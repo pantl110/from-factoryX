@@ -1,1 +1,1 @@
-# NextJS, Django Mono Repo Project
+# NextJS, Django Mono Repo Project# factory_x
