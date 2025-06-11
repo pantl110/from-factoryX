@@ -130,6 +130,14 @@ class User(AbstractUser):
         default=UserStatusChoice.active,
         help_text="회원 유형",
     )
+    company = models.ForeignKey(
+        "Company",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users",
+        help_text="소속 회사",
+    )
 
 
 class Jwt(models.Model):
@@ -138,3 +146,20 @@ class Jwt(models.Model):
     )
     access = models.TextField(help_text="Access Token")
     refresh = models.TextField(help_text="Refresh Token")
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=100, help_text="회사명")
+    business_registration_number = models.CharField(
+        max_length=20, unique=True, help_text="사업자 등록번호"
+    )
+    ceo_name = models.CharField(max_length=50, help_text="대표자명")
+    contact = models.CharField(max_length=100, help_text="연락망")
+    business_type = models.CharField(max_length=50, help_text="업태")
+    business_item = models.CharField(max_length=50, help_text="종목")
+    address = models.CharField(max_length=200, help_text="회사주소지")
+
+    def __str__(self):
+        return f"{self.name} ({self.business_registration_number})"
+
+
