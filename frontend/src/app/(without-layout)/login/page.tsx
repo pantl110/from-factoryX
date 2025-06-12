@@ -1,5 +1,7 @@
+"use client";
+
 const LoginPage = () => {
-  return <div>LoginPage</div>;
+  return <div className=""></div>;
 };
 
 export default LoginPage;
