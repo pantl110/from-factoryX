@@ -5,7 +5,7 @@ import { CaretDown } from "@phosphor-icons/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
-interface DropdownItem {
+interface DropdownItemProps {
   label: string;
   path: string;
 }
@@ -15,7 +15,7 @@ interface SideBarItemProps {
   label: string;
   path: string;
   hasDropdown?: boolean;
-  dropdownItems?: DropdownItem[];
+  dropdownItems?: DropdownItemProps[];
 }
 
 const SideBarItem = ({
@@ -48,8 +48,8 @@ const SideBarItem = ({
 
   return (
     <div>
-      <div
-        className="flex items-center justify-between h-[52px] px-4 bg-wh hover:bg-transparent rounded cursor-pointer"
+      <button
+        className="flex items-center justify-between h-[52px] px-4 bg-wh hover:bg-transparent rounded cursor-pointer w-full"
         onClick={handleClick}
       >
         <div className="flex items-center gap-2">
@@ -66,14 +66,14 @@ const SideBarItem = ({
             />
           )}
         </div>
-      </div>
+      </button>
 
       {hasDropdown && isDropdownOpen && (
         <div className="flex gap-4 flex-col ml-[28px] mt-2">
           {dropdownItems.map((item, index) => (
-            <div
+            <button
               key={index}
-              className="flex items-center px-4 cursor-pointer"
+              className="flex items-center px-4 cursor-pointer w-full text-left"
               onClick={() => handleDropdownItemClick(item.path)}
             >
               <p
@@ -81,7 +81,7 @@ const SideBarItem = ({
               >
                 {item.label}
               </p>
-            </div>
+            </button>
           ))}
         </div>
       )}
