@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import TaxDetailPanel from "./tax-detail-panel";
 import MainTitleSec from "./main-title-sec";
 import SearchDeleteTable from "./search-delete-table";
@@ -7,8 +8,16 @@ import TableHeader from "./table-header";
 import TableItem from "./table-item";
 
 const TaxPage = () => {
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+
   const handleTaxItemClick = (id: number) => {
-    console.log(id);
+    setSelectedId(id);
+    setIsPanelOpen(true);
+  };
+
+  const handleClosePanel = () => {
+    setIsPanelOpen(false);
   };
 
   return (
@@ -36,7 +45,16 @@ const TaxPage = () => {
           </div>
         </div>
       </div>
-      <TaxDetailPanel />
+      {isPanelOpen && (
+        <div className="fixed inset-0 bg-bl/50 transition-opacity duration-300" />
+      )}
+      <div
+        className={`fixed top-0 right-0 h-full transition-transform duration-300 ease-in-out ${
+          isPanelOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <TaxDetailPanel onClose={handleClosePanel} />
+      </div>
     </>
   );
 };
