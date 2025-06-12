@@ -25,7 +25,7 @@ const MiniBtn = ({
 
   return (
     <button
-      className={`h-10 px-4 py-2 rounded-md Sm_Heading-2 ${bgColor} ${textColor} ${borderClass} flex items-center gap-2`}
+      className={`h-10 px-4 py-2 rounded-md Me_Body-1 ${bgColor} ${textColor} ${borderClass} flex items-center gap-2`}
       onClick={onClick}
     >
       {Icon && <Icon size={20} className={iconColor} />}

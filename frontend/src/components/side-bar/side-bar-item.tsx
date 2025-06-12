@@ -10,7 +10,7 @@ const SideBarItem = ({ icon: Icon, label }: SideBarItemProps) => {
     <div className="flex items-center justify-between h-[52px] px-4 py-1 bg-wh hover:bg-transparent rounded">
       <div className="flex items-center gap-2">
         <Icon size={20} className="text-gr" />
-        <div className="Sm_Heading-1 text-dg">{label}</div>
+        <p className="Heading-4 text-dg">{label}</p>
       </div>
       <div className=""></div>
     </div>

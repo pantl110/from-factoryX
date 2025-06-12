@@ -17,7 +17,7 @@ const Input = ({
     <div className="flex flex-col gap-2 w-full">
       {label && (
         <div className="flex items-center gap-1 h-5">
-          <label className="Sm_Heading-3 text-dg">{label}</label>
+          <label className="Me_Body-1 text-dg">{label}</label>
           {required && <span className="text-primary">*</span>}
         </div>
       )}
