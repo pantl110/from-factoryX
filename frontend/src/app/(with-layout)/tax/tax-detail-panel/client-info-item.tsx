@@ -9,10 +9,10 @@ const ClientInfoItem = ({ label, value }: ClientInfoItemProps) => {
   return (
     <div className="flex w-full Me_Body-1">
       <div className="w-[134px] h-full bg-lg-table">
-        <p className="text-sv p-3">{label}</p>
+        <div className="text-sv p-3">{label}</div>
       </div>
       <div className="flex-1">
-        <p className="text-dg p-3">{value}</p>
+        <div className="text-dg p-3">{value}</div>
       </div>
     </div>
   );
