@@ -4,6 +4,7 @@ import ShortageCount from "./shortage-count";
 import ProductionYield from "./production-yield";
 import PendingQuoteItem from "./pending-quote-item";
 import ProcessProjectItem from "./process-project-item";
+import ProductionTable from "./production-table";
 
 import MiniBtn from "@/ui/mini-btn";
 
@@ -58,7 +59,17 @@ const DashboardPage = () => {
           </div>
         </div>
         <div>
-          <h3 className="Heading-3">오늘 생산 항목 리스트</h3>
+          <div className="flex justify-between items-center">
+            <h3 className="Heading-3">오늘 생산 항목 리스트</h3>
+            <MiniBtn
+              text="출력하기"
+              textColor="text-dg"
+              borderColor="border-lg"
+            />
+          </div>
+          <div className="mt-3">
+            <ProductionTable />
+          </div>
         </div>
         <div className="flex gap-5">
           <div className="flex-1">
