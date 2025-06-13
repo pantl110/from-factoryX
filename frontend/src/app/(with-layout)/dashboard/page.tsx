@@ -5,6 +5,8 @@ import ProductionYield from "./production-yield";
 import PendingQuoteItem from "./pending-quote-item";
 import ProcessProjectItem from "./process-project-item";
 import ProductionTable from "./production-table";
+import IssueItem from "./issue-item";
+import TaxItem from "./tax-item";
 
 import MiniBtn from "@/ui/mini-btn";
 
@@ -72,11 +74,57 @@ const DashboardPage = () => {
           </div>
         </div>
         <div className="flex gap-5">
-          <div className="flex-1">
-            <h3 className="Heading-3">이슈사항</h3>
+          <div className="flex flex-col flex-1 gap-3">
+            <div className="h-10">
+              <h3 className="Heading-3">이슈사항</h3>
+            </div>
+            <div className="flex flex-col gap-2.5 p-3 bg-bg rounded-sm">
+              <IssueItem />
+              <IssueItem />
+              <IssueItem />
+              <IssueItem />
+              <IssueItem />
+              <IssueItem />
+              <IssueItem />
+              <IssueItem />
+            </div>
           </div>
-          <div className="flex-1">
-            <h3 className="Heading-3">세무/회계</h3>
+          <div className="flex flex-col flex-1 gap-3">
+            <div className="flex items-center justify-between">
+              <h3 className="Heading-3">세무/회계</h3>
+              <MiniBtn
+                text="더보기"
+                textColor="text-dg"
+                borderColor="border-lg"
+              />
+            </div>
+            <div className="flex flex-col gap-3">
+              <TaxItem
+                type="매출"
+                text="나무는 딱딱해 세금계산서 발행"
+                date="2025-06-06"
+              />
+              <TaxItem
+                type="매입"
+                text="나무는 딱딱해 세금계산서 발행"
+                date="2025-06-06"
+              />
+              <TaxItem
+                type="매출"
+                text="나무는 딱딱해 세금계산서 발행"
+                date="2025-06-06"
+              />
+              <TaxItem
+                type="매입"
+                text="나무는 딱딱해 세금계산서 발행"
+                date="2025-06-06"
+              />
+              <TaxItem
+                type="매입"
+                text="나무는 딱딱해 세금계산서 발행"
+                date="2025-06-06"
+              />
+            </div>
           </div>
         </div>
       </div>
