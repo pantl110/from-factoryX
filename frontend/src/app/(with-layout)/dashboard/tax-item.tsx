@@ -7,12 +7,13 @@ interface TaxItemProps {
 }
 
 const TaxItem = ({ type, text, date }: TaxItemProps) => {
-  const textColor = type === "매출" ? "text-primary" : "text-red";
+  const chipColor = type === "매출" ? "text-primary" : "text-red";
+  const chipBg = type === "매출" ? "bg-primary-8" : "bg-red-8";
   return (
     <div className="flex items-center justify-between border border-[#eeeeee] rounded-sm py-3 px-5">
       <div className="flex items-center gap-4">
         <div className="flex items-center justify-center">
-          <Chip text={type} textColor={textColor} bgColor="bg-lg" />
+          <Chip text={type} textColor={chipColor} bgColor={chipBg} />
         </div>
         <p className="Me_Body-2 text-dg">{text}</p>
       </div>
