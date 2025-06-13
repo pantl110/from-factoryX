@@ -1,13 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import Chip from "@/ui/chip";
+import { ArrowLineLeftIcon } from "@phosphor-icons/react/dist/ssr";
+import Information from "./information";
 import ButtonSection from "./button-section";
 import InputSection from "./input-section";
 import PreviewImage from "./image-preview";
 import History from "./history";
-import Chip from "@/ui/chip";
-import { ArrowLineLeftIcon } from "@phosphor-icons/react/dist/ssr";
-import { useState } from "react";
-import Information from "./information";
 
 const QuotationPage = () => {
   const [activeTab, setActiveTab] = useState<"quotation" | "history">(
@@ -53,10 +53,11 @@ const QuotationPage = () => {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-[600px] border-r border-[#eeeeee] py-8 pr-10">
+        <div className="flex-1 border-r border-[#eeeeee] py-8 pr-10">
           {activeTab === "quotation" ? <PreviewImage /> : <History />}
         </div>
-        <div className="overflow-auto">
+
+        <div className="flex-1 overflow-auto">
           <div className="flex flex-col flex-1 max-w-[900px] py-8 pl-10 gap-11 ">
             <div className="flex items-center gap-1 pb-3 border-b border-[#eeeeee]">
               <div className="flex items-center justify-center w-10 h-10">

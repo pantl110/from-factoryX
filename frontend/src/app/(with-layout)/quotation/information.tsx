@@ -15,8 +15,8 @@ const Information = () => {
         />
       </div>
 
-      <div>
-        <div className="w-[938px] h-12 flex items-center bg-bg Me_Body-1 rounded text-sv">
+      <div className="w-[938px]">
+        <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv">
           <p className="flex-1 px-3">품목정보</p>
           <p className="flex-1 px-3">품목코드</p>
           <p className="flex-1 px-3">규격</p>

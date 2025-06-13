@@ -3,7 +3,7 @@ import {
   StatusType,
   StatusColorType,
   statusColorMap,
-} from "@/app/(with-layout)/project/statusColorMap";
+} from "@/app/(with-layout)/project/status-color-map";
 
 interface TableItemProps {
   status: StatusType;
