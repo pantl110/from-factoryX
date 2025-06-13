@@ -35,25 +35,32 @@ const DashboardPage = () => {
               borderColor="border-lg"
             />
           </div>
-          <div className="mt-2.5">
+          <div className="mt-3">
             <div className="flex gap-2">
               <PendingQuoteItem />
               <PendingQuoteItem />
             </div>
           </div>
         </div>
-        <div className="">
-          <h3 className="Heading-3">생산 프로젝트</h3>
-          <div className="mt-4">
+        <div>
+          <div className="flex justify-between items-center">
+            <h3 className="Heading-3">생산 프로젝트</h3>
+            <MiniBtn
+              text="더보기"
+              textColor="text-dg"
+              borderColor="border-lg"
+            />
+          </div>
+          <div className="mt-3">
             <div className="flex gap-2">
               <ProcessProjectItem />
             </div>
           </div>
         </div>
-        <div className="">
+        <div>
           <h3 className="Heading-3">오늘 생산 항목 리스트</h3>
         </div>
-        <div className="flex">
+        <div>
           <div className="flex-1">
             <h3 className="Heading-3">이슈사항</h3>
           </div>
