@@ -1,7 +1,7 @@
 import ClientInfoTable from "./client-info-table";
-import OrderItemsInfo from "./order-items-info";
-import DetailSalesHeader from "./detail-sales-header";
-import DetailSalesItem from "./detail-sales-item";
+import PriceInfo from "@/ui/price-info";
+import DetailSalesHeader from "@/app/(with-layout)/tax/tax-detail-panel/detail-sales-header";
+import DetailSalesItem from "@/app/(with-layout)/tax/tax-detail-panel/detail-sales-item";
 
 import { CaretLineRightIcon } from "@phosphor-icons/react/dist/ssr";
 
@@ -24,7 +24,10 @@ const TaxDetailPanel = ({ onClose }: TaxDetailPanelProps) => {
         </div>
         <div>
           <ClientInfoTable />
-          <OrderItemsInfo />
+          <div>
+            <h3 className="Heading-3 text-dg mb-3">주문 품목 정보</h3>
+            <PriceInfo />{" "}
+          </div>
         </div>
         <div>
           <DetailSalesHeader />
