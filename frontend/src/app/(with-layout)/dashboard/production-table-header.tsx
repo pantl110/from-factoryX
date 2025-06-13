@@ -1,4 +1,4 @@
-import { TriangleIcon, CaretUpDownIcon } from "@phosphor-icons/react/dist/ssr";
+import { CaretDownIcon, CaretUpDownIcon } from "@phosphor-icons/react/dist/ssr";
 
 const ProductionTableHeader = () => {
   return (
@@ -6,11 +6,7 @@ const ProductionTableHeader = () => {
       <div className="flex items-center py-1 px-3 w-[150px]">
         <p>진행상태</p>
         <div className="ml-1">
-          <TriangleIcon
-            size={12}
-            className="transform rotate-180"
-            weight="fill"
-          />
+          <CaretDownIcon size={14} weight="fill" />
         </div>
       </div>
       <div className="py-1 px-3 flex-1">

@@ -1,6 +1,6 @@
 import ChartChip from "./chart-chip";
 
-import { Triangle } from "@phosphor-icons/react/dist/ssr";
+import { CaretUpIcon } from "@phosphor-icons/react/dist/ssr";
 
 const ProductionYield = () => {
   return (
@@ -17,8 +17,8 @@ const ProductionYield = () => {
               <p>
                 + 0.8<span>%</span>
               </p>
-              <div className="flex items-center justify-center w-4 h-4">
-                <Triangle size={10} weight="fill" />
+              <div className="flex items-center justify-center w-4 h-4 ml-1">
+                <CaretUpIcon size={16} weight="fill" />
               </div>
             </div>
           </div>

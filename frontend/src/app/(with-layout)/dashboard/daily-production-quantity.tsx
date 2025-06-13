@@ -1,6 +1,6 @@
 import ChartChip from "./chart-chip";
 
-import { Triangle } from "@phosphor-icons/react/dist/ssr";
+import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 
 const DailyProductionQuantity = () => {
   return (
@@ -17,12 +17,8 @@ const DailyProductionQuantity = () => {
               <p>
                 - 0.8<span>%</span>
               </p>
-              <div className="flex items-center justify-center w-4 h-4">
-                <Triangle
-                  size={10}
-                  weight="fill"
-                  className="transform rotate-180"
-                />
+              <div className="flex items-center justify-center w-4 h-4 ml-1">
+                <CaretDownIcon size={16} weight="fill" />
               </div>
             </div>
           </div>

@@ -8,6 +8,11 @@ const ProductionTable = () => {
       <ProductionTableItem />
       <ProductionTableItem />
       <ProductionTableItem />
+      <ProductionTableItem />
+      <ProductionTableItem />
+      <ProductionTableItem />
+      <ProductionTableItem />
+      <ProductionTableItem />
     </>
   );
 };
