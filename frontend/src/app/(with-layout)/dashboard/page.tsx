@@ -60,7 +60,7 @@ const DashboardPage = () => {
         <div>
           <h3 className="Heading-3">오늘 생산 항목 리스트</h3>
         </div>
-        <div>
+        <div className="flex gap-5">
           <div className="flex-1">
             <h3 className="Heading-3">이슈사항</h3>
           </div>
