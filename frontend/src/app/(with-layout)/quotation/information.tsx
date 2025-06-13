@@ -1,6 +1,6 @@
 import React from "react";
 import MiniBtn from "@/ui/mini-btn";
-import InformationItem from "./information-item";
+import ProductItem from "./product-item";
 
 const Information = () => {
   return (
@@ -26,7 +26,7 @@ const Information = () => {
           <p className="flex-1 px-3">금액</p>
         </div>
         {Array.from({ length: 8 }).map((_, index) => (
-          <InformationItem key={index} />
+          <ProductItem key={index} />
         ))}
       </div>
     </div>

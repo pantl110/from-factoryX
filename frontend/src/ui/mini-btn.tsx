@@ -1,7 +1,6 @@
 "use client";
 
 import { IconProps } from "@phosphor-icons/react";
-import { log } from "console";
 
 interface MiniBtnProps {
   text: string;
