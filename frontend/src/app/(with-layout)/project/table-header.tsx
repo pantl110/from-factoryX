@@ -10,7 +10,7 @@ const TableHeader = ({ lastLabel }: TableHeaderProps) => {
       </div>
       <p className="w-[150px] py-1 px-3 text-sv">진행상태</p>
       <p className="flex-1 py-1 px-3 text-sv">업체명</p>
-      <p className="flex-1 py-1 px-3 text-sv">품목</p>
+      <p className="flex-1 py-1 px-3 text-sv">품목명</p>
       <p className="w-[200px] py-1 px-3 text-sv">진행일자</p>
       <p className="w-[200px] py-1 px-3 text-sv">{lastLabel}</p>
     </div>
