@@ -7,6 +7,7 @@ import History from "./history";
 import Chip from "@/ui/chip";
 import { ArrowLineLeftIcon } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
+import Information from "./information";
 
 const QuotationPage = () => {
   const [activeTab, setActiveTab] = useState<"quotation" | "history">(
@@ -15,7 +16,7 @@ const QuotationPage = () => {
 
   return (
     <div className="pt-7 px-10 h-[calc(100vh-61px)] flex flex-col">
-      <div className="flex gap-1 mb-6">
+      <div className="flex gap-1 mb-4">
         <div className="flex-1 gap-1">
           <Chip
             text="견적 협의중"
@@ -23,7 +24,7 @@ const QuotationPage = () => {
             bgColor="bg-primary-8"
             textColor="text-primary"
           />
-          <h1 className="Heading-1">플라스틱이 좋아</h1>
+          <h1 className="Heading-1 mt-2">플라스틱이 좋아</h1>
         </div>
         <ButtonSection />
       </div>
@@ -55,17 +56,20 @@ const QuotationPage = () => {
         <div className="w-[600px] border-r border-[#eeeeee] py-8 pr-10">
           {activeTab === "quotation" ? <PreviewImage /> : <History />}
         </div>
-        <div className="flex flex-col flex-1 max-w-[900px] py-8 pl-10 gap-11">
-          <div className="flex items-center gap-1 pb-3 border-b border-[#eeeeee]">
-            <div className="flex items-center justify-center w-10 h-10">
-              <ArrowLineLeftIcon size={20} className="text-dg" />
+        <div className="overflow-auto">
+          <div className="flex flex-col flex-1 max-w-[900px] py-8 pl-10 gap-11 ">
+            <div className="flex items-center gap-1 pb-3 border-b border-[#eeeeee]">
+              <div className="flex items-center justify-center w-10 h-10">
+                <ArrowLineLeftIcon size={20} className="text-dg" />
+              </div>
+              <h2 className="flex-1 Heading-2">견적서</h2>
             </div>
-            <h2 className="flex-1 Heading-2">견적서</h2>
+            <div className="flex flex-col flex-1 gap-5">
+              <h3 className="Heading-3">회사 정보</h3>
+              <InputSection />
+            </div>
           </div>
-          <div className="flex flex-col flex-1 gap-5 overflow-auto">
-            <h3 className="Heading-3">회사 정보</h3>
-            <InputSection />
-          </div>
+          <Information />
         </div>
       </div>
     </div>
