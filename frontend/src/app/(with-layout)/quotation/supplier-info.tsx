@@ -4,7 +4,7 @@ import InfoLabelValue from "@/ui/info-label-value";
 const SupplierInfo = () => {
   return (
     <div className="flex flex-col gap-3">
-      <div className="Heading-3">공급자 정보</div>
+      <h3 className="Heading-3">공급자 정보</h3>
       <div className="width-full border-b border-lg">
         <div className="flex">
           <InfoLabelValue label="회사명" value="주식회사 팩토리엑스" />

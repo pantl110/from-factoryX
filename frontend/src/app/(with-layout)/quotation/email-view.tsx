@@ -7,7 +7,7 @@ const EmailView = () => {
     <div className="width-[1000px] px-8 py-8 flex flex-col gap-6">
       <div className="pb-6 w-full flex justify-between border-b border-lg">
         <div>
-          <div className="Heading-2">이메일로 견적서를 보내시겠어요?</div>
+          <h2 className="Heading-2">이메일로 견적서를 보내시겠어요?</h2>
           <div className="mt-2.5 Me_Body-3 text-gr">
             받는 사람과 제목을 확인한 후, 이메일을 전송해 주세요
           </div>
