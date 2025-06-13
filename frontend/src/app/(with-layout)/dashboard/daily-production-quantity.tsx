@@ -4,7 +4,7 @@ import { Triangle } from "@phosphor-icons/react/dist/ssr";
 
 const DailyProductionQuantity = () => {
   return (
-    <div className="flex-1 pt-5 pb-4 px-5 rounded-lg border border-[#eeeeee]">
+    <div className="pt-5 pb-4 px-5 rounded-lg border border-[#eeeeee] h-[141px]">
       <div className="flex flex-col gap-1">
         <p className="Heading-4 text-sv">오늘 생산량</p>
         <p className="flex gap-1 Heading-1">
