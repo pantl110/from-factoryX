@@ -144,7 +144,7 @@ const SignupPage = () => {
                 <div className="flex flex-col">
                   <Input
                     type="text"
-                    placeholder="인증 코드를 입력해주세요."
+                    placeholder="이메일로 전송된 6자리 인증 코드를 입력해주세요."
                     label="인증 코드"
                     value={verificationCode}
                     onChange={handleVerificationCodeChange}
