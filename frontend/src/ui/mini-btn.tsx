@@ -1,7 +1,6 @@
 "use client";
 
 import { IconProps } from "@phosphor-icons/react";
-import { log } from "console";
 
 interface MiniBtnProps {
   text: string;
@@ -12,6 +11,7 @@ interface MiniBtnProps {
   icon?: React.ComponentType<IconProps>;
   iconColor?: string;
   onClick?: () => void;
+  height?: number;
 }
 
 const MiniBtn = ({
@@ -23,13 +23,15 @@ const MiniBtn = ({
   icon: Icon,
   iconColor,
   onClick,
+  height = 40,
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
   const hoverClass = hoverColor ? `hover:${hoverColor}` : "";
 
   return (
     <button
-      className={`h-10 px-4 py-2 rounded-md Me_Body-1 ${bgColor} ${textColor} ${borderClass} ${hoverClass} flex items-center gap-2 cursor-pointer`}
+      className={`px-4 py-2 rounded-md Me_Body-1 ${bgColor} ${textColor} ${borderClass} ${hoverClass} flex items-center justify-center gap-2 cursor-pointer`}
+      style={{ height: `${height}px` }}
       onClick={onClick}
     >
       {Icon && <Icon size={20} className={iconColor} />}
