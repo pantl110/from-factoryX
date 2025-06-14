@@ -12,6 +12,7 @@ interface MiniBtnProps {
   iconColor?: string;
   onClick?: () => void;
   height?: number;
+  disabled?: boolean;
 }
 
 const MiniBtn = ({
@@ -24,17 +25,21 @@ const MiniBtn = ({
   iconColor,
   onClick,
   height = 40,
+  disabled = false,
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
-  const hoverClass = hoverColor ? `hover:${hoverColor}` : "";
+  const hoverClass = hoverColor && !disabled ? `hover:${hoverColor}` : "";
 
   return (
     <button
-      className={`px-4 py-2 rounded-md Me_Body-1 ${bgColor} ${textColor} ${borderClass} ${hoverClass} flex items-center justify-center gap-2 cursor-pointer`}
+      className={`px-4 py-2 rounded-md Me_Body-1 ${disabled ? "bg-lg text-gr" : `${bgColor} ${textColor}`} ${borderClass} ${hoverClass} flex items-center justify-center gap-2 ${
+        disabled ? "cursor-not-allowed" : "cursor-pointer"
+      }`}
       style={{ height: `${height}px` }}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
     >
-      {Icon && <Icon size={20} className={iconColor} />}
+      {Icon && <Icon size={20} className={disabled ? "text-gr" : iconColor} />}
       <span>{text}</span>
     </button>
   );
