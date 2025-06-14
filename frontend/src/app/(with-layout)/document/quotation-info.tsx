@@ -1,5 +1,5 @@
 import React from "react";
-import ProductItem from "./product-item";
+import ProductItem from "../quotation/product-item";
 import PriceInfo from "@/ui/price-info";
 
 const QuotationInfo = () => {

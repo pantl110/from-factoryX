@@ -1,22 +1,19 @@
 import React from "react";
 import InfoLabelValue from "@/ui/info-label-value";
 
-const SupplierInfo = () => {
+const BuyerInfo = () => {
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3">공급자 정보</h3>
+      <h3 className="Heading-3">수요자 정보</h3>
       <div className="width-full border-b border-lg">
         <div className="flex">
-          <InfoLabelValue label="회사명" value="주식회사 팩토리엑스" />
-          <InfoLabelValue label="사업자등록번호" value="987-65-43210" />
+          <InfoLabelValue label="회사명" value="플라스틱이 좋아" />
+          <InfoLabelValue label="사업자등록번호" value="123-45-67890" />
         </div>
-        <div className="flex">
-          <InfoLabelValue label="대표자명" value="유길정" />
-          <InfoLabelValue label="납기일자" value="2025-06-10" />
-        </div>
+        <InfoLabelValue label="대표자명" value="홍길동" />
         <div className="flex">
           <InfoLabelValue label="업태" value="제조업" />
-          <InfoLabelValue label="종목" value="금형 제작" />
+          <InfoLabelValue label="종목" value="플라스틱 사출" />
         </div>
         <InfoLabelValue label="사업장 주소" value="경기도 남양주시" />
         <div className="flex">
@@ -29,4 +26,4 @@ const SupplierInfo = () => {
   );
 };
 
-export default SupplierInfo;
+export default BuyerInfo;
