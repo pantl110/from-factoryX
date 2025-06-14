@@ -1,5 +1,11 @@
+import ClientTable from "./client-table";
+
 const Client = () => {
-  return <div>Client</div>;
+  return (
+    <>
+      <ClientTable />
+    </>
+  );
 };
 
 export default Client;
