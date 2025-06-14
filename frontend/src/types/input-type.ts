@@ -17,12 +17,3 @@ export type InputType =
   | "hidden" // 숨김
   | "checkbox" // 체크박스
   | "radio"; // 라디오 버튼
-
-export interface InputProps {
-  label?: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  placeholder?: string;
-  required?: boolean;
-  type?: InputType;
-}
