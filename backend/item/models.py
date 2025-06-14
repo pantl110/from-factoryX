@@ -13,6 +13,7 @@ class Item(models.Model):
     warehouse_location = models.CharField(max_length=100, help_text="창고 위치")
     materials = models.ManyToManyField(
         'material.Material',
+        through='ItemMaterial',
         related_name='items',
         blank=True,
         help_text='이 품목(Item)을 만드는데 사용된 자재(Material)들'
@@ -20,3 +21,14 @@ class Item(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.code})"
+
+class ItemMaterial(models.Model):
+    item = models.ForeignKey('item.Item', on_delete=models.CASCADE)
+    material = models.ForeignKey('material.Material', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(help_text='이 품목을 만드는데 필요한 자재 수량')
+
+    class Meta:
+        unique_together = ('item', 'material')
+
+    def __str__(self):
+        return f"{self.item} - {self.material} : {self.quantity}개"
