@@ -1,9 +1,12 @@
+import { InputType } from "@/types/input-type";
+
 interface InputProps {
   label?: string;
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
   required?: boolean;
+  type?: InputType;
 }
 
 const Input = ({
@@ -12,6 +15,7 @@ const Input = ({
   onChange,
   placeholder = "검색어를 입력하세요.",
   required,
+  type = "text",
 }: InputProps) => {
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -22,7 +26,7 @@ const Input = ({
         </div>
       )}
       <input
-        type="text"
+        type={type}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
