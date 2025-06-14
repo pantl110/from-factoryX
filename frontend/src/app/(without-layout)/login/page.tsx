@@ -51,7 +51,6 @@ const LoginPage = () => {
               label="비밀번호"
               value={password.value}
               onChange={password.handleChange}
-              showPasswordToggle={true}
             />
             <div className="mt-1 mb-2 h-5">
               {password.error && (
