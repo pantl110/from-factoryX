@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Chip from "@/ui/chip";
 import { ArrowLineLeftIcon } from "@phosphor-icons/react/dist/ssr";
-import Information from "./information";
+import RequestInfo from "./request-info";
 import ButtonSection from "./button-section";
 import InputSection from "./input-section";
 import PreviewImage from "./image-preview";
@@ -72,7 +72,7 @@ const QuotationPage = () => {
                 <InputSection />
               </div>
             </div>
-            <Information />
+            <RequestInfo />
           </div>
         </div>
       </div>

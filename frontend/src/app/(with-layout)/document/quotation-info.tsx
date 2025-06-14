@@ -1,11 +1,11 @@
 import React from "react";
-import ProductItem from "./product-item";
+import ProductItem from "../quotation/product-item";
 import PriceInfo from "@/ui/price-info";
 
 const QuotationInfo = () => {
   return (
     <div className="flex flex-col gap-3">
-      <div className="Heading-3">견적 품목 정보</div>
+      <h3 className="Heading-3">견적 품목 정보</h3>
       <PriceInfo />
       <div>
         <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
