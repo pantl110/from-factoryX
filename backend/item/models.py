@@ -32,3 +32,24 @@ class ItemMaterial(models.Model):
 
     def __str__(self):
         return f"{self.item} - {self.material} : {self.quantity}개"
+
+class Return(models.Model):
+    """반품 모델"""
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.CASCADE,
+        related_name='returns',
+        help_text="반품된 품목"
+    )
+    return_quantity = models.PositiveIntegerField(help_text="반품수량")
+    return_date = models.DateField(help_text="반품일자")
+    
+    class Meta:
+        verbose_name = "반품"
+        verbose_name_plural = "반품"
+        ordering = ['-return_date']
+    
+    def __str__(self):
+        return f"{self.item.name} - {self.return_quantity}개 ({self.return_date})"
+
+

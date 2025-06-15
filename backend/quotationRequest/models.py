@@ -15,6 +15,8 @@ class Contact(models.Model):
     manager_email = models.EmailField(max_length=100, help_text="담당자 이메일")
     manager_phone = models.CharField(max_length=30, help_text="담당자 연락처")
     manager_fax = models.CharField(max_length=30, null=True, blank=True, help_text="담당자 팩스번호")
+    memo = models.TextField(null=True, blank=True, help_text="비고")
+    
 
     def __str__(self):
         return f"{self.company_name} - {self.manager_name}"

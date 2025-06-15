@@ -58,6 +58,13 @@ INSTALLED_APPS = [
     # local apps
     "user",
     "commando",
+    "common",
+    "quotationRequest",
+    "material",
+    "item",
+    "equipment", 
+    "project",
+    "document",
 ]
 
 MIDDLEWARE = [
