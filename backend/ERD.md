@@ -4,182 +4,182 @@
 erDiagram
     %% 사용자 및 회사 관련
     User {
-        id PK
-        username string
-        email string
-        status string
-        company_id FK
-        is_staff boolean
-        is_superuser boolean
-        date_joined datetime
+        int id
+        string username
+        string email
+        string status
+        int company_id
+        boolean is_staff
+        boolean is_superuser
+        datetime date_joined
     }
     
     Company {
-        id PK
-        name string
-        business_registration_number string
-        ceo_name string
-        contact string
-        business_type string
-        business_item string
-        address string
+        int id
+        string name
+        string business_registration_number
+        string ceo_name
+        string contact
+        string business_type
+        string business_item
+        string address
     }
     
     Jwt {
-        id PK
-        user_id FK
-        access text
-        refresh text
+        int id
+        int user_id
+        text access
+        text refresh
     }
     
     %% 공통 모델
     Unit {
-        id PK
-        code string
-        name string
-        description text
-        is_active boolean
+        int id
+        string code
+        string name
+        text description
+        boolean is_active
     }
     
     Memo {
-        id PK
-        memo_type string
-        title string
-        content text
-        created_at datetime
-        updated_at datetime
+        int id
+        string memo_type
+        string title
+        text content
+        datetime created_at
+        datetime updated_at
     }
     
     %% 자재 관리
     Material {
-        id PK
-        name string
-        code string
-        specification string
-        unit string
-        current_stock integer
-        min_stock integer
-        expiration_date date
-        received_date date
-        warehouse_location string
+        int id
+        string name
+        string code
+        string specification
+        string unit
+        int current_stock
+        int min_stock
+        date expiration_date
+        date received_date
+        string warehouse_location
     }
     
     %% 품목 관리
     Item {
-        id PK
-        name string
-        code string
-        specification string
-        unit string
-        current_stock integer
-        expiration_date date
-        received_date date
-        warehouse_location string
+        int id
+        string name
+        string code
+        string specification
+        string unit
+        int current_stock
+        date expiration_date
+        date received_date
+        string warehouse_location
     }
     
     ItemMaterial {
-        id PK
-        item_id FK
-        material_id FK
-        quantity integer
+        int id
+        int item_id
+        int material_id
+        int quantity
     }
     
     Return {
-        id PK
-        item_id FK
-        return_quantity integer
-        return_date date
+        int id
+        int item_id
+        int return_quantity
+        date return_date
     }
     
     %% 설비 관리
     Equipment {
-        id PK
-        status string
-        name string
-        type string
-        location string
-        special_notes text
+        int id
+        string status
+        string name
+        string type
+        string location
+        text special_notes
     }
     
     EquipmentItem {
-        id PK
-        equipment_id FK
-        item_id FK
-        production_time_per_unit float
+        int id
+        int equipment_id
+        int item_id
+        float production_time_per_unit
     }
     
     %% 프로젝트 관리
     Project {
-        id PK
-        status string
-        execution_date date
-        due_date date
-        completed_date date
+        int id
+        string status
+        date execution_date
+        date due_date
+        date completed_date
     }
     
     ProjectItem {
-        id PK
-        project_id FK
-        item_id FK
-        equipment_id FK
-        operation_status string
+        int id
+        int project_id
+        int item_id
+        int equipment_id
+        string operation_status
     }
     
     %% 견적 요청 관리
     Contact {
-        id PK
-        company_name string
-        business_registration_number string
-        ceo_name string
-        business_type string
-        business_item string
-        company_address string
-        manager_name string
-        manager_email string
-        manager_phone string
-        manager_fax string
-        memo text
+        int id
+        string company_name
+        string business_registration_number
+        string ceo_name
+        string business_type
+        string business_item
+        string company_address
+        string manager_name
+        string manager_email
+        string manager_phone
+        string manager_fax
+        text memo
     }
     
     QuotationRequest {
-        id PK
-        contact_id FK
-        due_date date
-        created_at date
-        status string
+        int id
+        int contact_id
+        date due_date
+        date created_at
+        string status
     }
     
     QuotationRequestItem {
-        id PK
-        quotation_request_id FK
-        item_name string
-        item_code string
-        specification string
-        unit string
-        unit_price integer
-        quantity integer
-        amount integer
+        int id
+        int quotation_request_id
+        string item_name
+        string item_code
+        string specification
+        string unit
+        int unit_price
+        int quantity
+        int amount
     }
     
     %% 문서 관리 (구현 예정)
     Order {
-        id PK
+        int id
     }
     
     ProductionInstruction {
-        id PK
+        int id
     }
     
     TransactionStatement {
-        id PK
+        int id
     }
     
     SalesTaxInvoice {
-        id PK
+        int id
     }
     
     PurchaseTaxInvoice {
-        id PK
+        int id
     }
     
     %% 관계 정의
