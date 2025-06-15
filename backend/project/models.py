@@ -14,6 +14,7 @@ class Project(models.Model):
         return f"{self.status} - {self.execution_date} ~ {self.due_date}"
 
 class ProjectItem(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,

@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 
 class BaseModel(models.Model):
@@ -12,6 +13,7 @@ class BaseModel(models.Model):
 
 
 class Unit(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=20, unique=True, help_text="단위코드")
     name = models.CharField(max_length=50, help_text="단위명")
     description = models.TextField(blank=True, help_text="설명")
@@ -23,6 +25,8 @@ class Unit(models.Model):
 
 class Memo(BaseModel):
     """메모 모델"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     MEMO_TYPE_CHOICES = [
         ('general', '일반'),

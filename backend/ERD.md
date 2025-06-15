@@ -4,7 +4,7 @@
 erDiagram
     %% 사용자 및 회사 관련
     User {
-        int id
+        uuid id
         string username
         string email
         string status
@@ -14,7 +14,7 @@ erDiagram
     }
     
     Company {
-        int id
+        uuid id
         string name
         string business_registration_number
         string ceo_name
@@ -25,24 +25,24 @@ erDiagram
     }
     
     UserCompanyInvitation {
-        int id
-        int user_id
-        int company_id
+        uuid id
+        uuid user_id
+        uuid company_id
         string invitation_status
         string permission
         datetime invited_date
     }
     
     Jwt {
-        int id
-        int user_id
+        uuid id
+        uuid user_id
         text access
         text refresh
     }
     
     %% 공통 모델
     Unit {
-        int id
+        uuid id
         string code
         string name
         text description
@@ -50,7 +50,7 @@ erDiagram
     }
     
     Memo {
-        int id
+        uuid id
         string memo_type
         string title
         text content
@@ -60,7 +60,7 @@ erDiagram
     
     %% 자재 관리
     Material {
-        int id
+        uuid id
         string name
         string code
         string specification
@@ -74,7 +74,7 @@ erDiagram
     
     %% 품목 관리
     Item {
-        int id
+        uuid id
         string name
         string code
         string specification
@@ -86,22 +86,22 @@ erDiagram
     }
     
     ItemMaterial {
-        int id
-        int item_id
-        int material_id
+        uuid id
+        uuid item_id
+        uuid material_id
         int quantity
     }
     
     Return {
-        int id
-        int item_id
+        uuid id
+        uuid item_id
         int return_quantity
         date return_date
     }
     
     %% 설비 관리
     Equipment {
-        int id
+        uuid id
         string status
         string name
         string type
@@ -110,15 +110,15 @@ erDiagram
     }
     
     EquipmentItem {
-        int id
-        int equipment_id
-        int item_id
+        uuid id
+        uuid equipment_id
+        uuid item_id
         float production_time_per_unit
     }
     
     %% 프로젝트 관리
     Project {
-        int id
+        uuid id
         string status
         date execution_date
         date due_date
@@ -126,16 +126,16 @@ erDiagram
     }
     
     ProjectItem {
-        int id
-        int project_id
-        int item_id
-        int equipment_id
+        uuid id
+        uuid project_id
+        uuid item_id
+        uuid equipment_id
         string operation_status
     }
     
     %% 견적 요청 관리
     Contact {
-        int id
+        uuid id
         string company_name
         string business_registration_number
         string ceo_name
@@ -150,16 +150,16 @@ erDiagram
     }
     
     QuotationRequest {
-        int id
-        int contact_id
+        uuid id
+        uuid contact_id
         date due_date
         date created_at
         string status
     }
     
     QuotationRequestItem {
-        int id
-        int quotation_request_id
+        uuid id
+        uuid quotation_request_id
         string item_name
         string item_code
         string specification
@@ -171,23 +171,23 @@ erDiagram
     
     %% 문서 관리 (구현 예정)
     Order {
-        int id
+        uuid id
     }
     
     ProductionInstruction {
-        int id
+        uuid id
     }
     
     TransactionStatement {
-        int id
+        uuid id
     }
     
     SalesTaxInvoice {
-        int id
+        uuid id
     }
     
     PurchaseTaxInvoice {
-        int id
+        uuid id
     }
     
     %% 관계 정의
