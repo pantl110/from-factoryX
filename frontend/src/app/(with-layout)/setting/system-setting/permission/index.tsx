@@ -29,7 +29,7 @@ const Permission = () => {
             bgColor="bg-primary-8"
           />
         </div>
-        <div className="">
+        <div>
           <PermissionTableHeader />
           <PermissionTableItem
             date="2025-06-14"
