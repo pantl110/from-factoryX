@@ -1,10 +1,26 @@
 import MiniBtn from "@/ui/mini-btn";
+import { StatusType } from "../types";
 
 interface MainTitleSecProps {
   onNewQuotation: () => void;
+  selectedStatus: StatusType | "전체";
+  onStatusChange: (status: StatusType | "전체") => void;
 }
 
-const MainTitleSec = ({ onNewQuotation }: MainTitleSecProps) => {
+const MainTitleSec = ({
+  onNewQuotation,
+  selectedStatus,
+  onStatusChange,
+}: MainTitleSecProps) => {
+  const statuses: (StatusType | "전체")[] = [
+    "전체",
+    "견적협의",
+    "생산 대기",
+    "생산 중",
+    "완료",
+    "납품",
+  ];
+
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
       <div className="flex items-center justify-between">
@@ -17,12 +33,15 @@ const MainTitleSec = ({ onNewQuotation }: MainTitleSecProps) => {
         />
       </div>
       <div className="flex gap-4 items-center Heading-3">
-        <h3 className="text-dg">전체</h3>
-        <h3 className="text-gr">견적 협의</h3>
-        <h3 className="text-gr">생산 대기</h3>
-        <h3 className="text-gr">생산 중</h3>
-        <h3 className="text-gr">생산 완료</h3>
-        <h3 className="text-gr">납품</h3>
+        {statuses.map((status) => (
+          <h3
+            key={status}
+            className={`cursor-pointer ${selectedStatus === status ? "text-dg" : "text-gr"}`}
+            onClick={() => onStatusChange(status)}
+          >
+            {status}
+          </h3>
+        ))}
       </div>
     </div>
   );
