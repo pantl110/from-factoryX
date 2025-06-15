@@ -1,10 +1,12 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 
 #견적서를 작성하면 연락처가 생김 -> 연락처 테이블로 쪼개질 예정
 
 class Contact(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     company_name = models.CharField(max_length=100, help_text="회사명")
     business_registration_number = models.CharField(max_length=20, help_text="사업자등록번호")
     ceo_name = models.CharField(max_length=50, help_text="대표자명")
@@ -22,6 +24,7 @@ class Contact(models.Model):
         return f"{self.company_name} - {self.manager_name}"
 
 class QuotationRequest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     contact = models.ForeignKey(
         Contact,
         on_delete=models.CASCADE,
@@ -36,6 +39,7 @@ class QuotationRequest(models.Model):
         return f"{self.contact.company_name} - ({self.status})"
 
 class QuotationRequestItem(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     quotation_request = models.ForeignKey(
         QuotationRequest,
         on_delete=models.CASCADE,

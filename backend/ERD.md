@@ -8,7 +8,6 @@ erDiagram
         string username
         string email
         string status
-        int company_id
         boolean is_staff
         boolean is_superuser
         datetime date_joined
@@ -23,6 +22,15 @@ erDiagram
         string business_type
         string business_item
         string address
+    }
+    
+    UserCompanyInvitation {
+        int id
+        int user_id
+        int company_id
+        string invitation_status
+        string permission
+        datetime invited_date
     }
     
     Jwt {
@@ -183,7 +191,8 @@ erDiagram
     }
     
     %% 관계 정의
-    Company ||--o{ User : "has"
+    User ||--o{ UserCompanyInvitation : "invited_to"
+    Company ||--o{ UserCompanyInvitation : "invites"
     User ||--|| Jwt : "has"
     
     Item ||--o{ ItemMaterial : "uses"
@@ -205,8 +214,9 @@ erDiagram
 ## 주요 관계 설명
 
 ### 1. 사용자 관리
-- **User ↔ Company**: 1:N 관계 (한 회사에 여러 사용자)
+- **User ↔ Company**: M:N 관계 (UserCompanyInvitation 중간 테이블)
 - **User ↔ Jwt**: 1:1 관계 (사용자당 하나의 JWT 토큰)
+- **UserCompanyInvitation**: 초대 시스템 관리 (초대 상태, 권한, 초대일자)
 
 ### 2. 제조 관계
 - **Item ↔ Material**: M:N 관계 (ItemMaterial 중간 테이블)
@@ -238,3 +248,34 @@ erDiagram
 2. **생산 흐름**: Item → Equipment → Project (생산 계획)
 3. **영업 흐름**: Contact → QuotationRequest → QuotationRequestItem
 4. **재고 관리**: Item stock, Material stock, Return 관리
+5. **초대 흐름**: Company → UserCompanyInvitation → User (이메일 초대 시스템)
+
+## 사용자-회사 초대 시스템
+
+### UserCompanyInvitation 테이블
+사용자와 회사를 연결하는 중간 테이블로 초대 시스템을 관리합니다.
+
+#### 초대 상태 (invitation_status)
+- **대기중** (`pending`): 초대 이메일이 발송되어 사용자 확인 대기 중
+- **완료** (`completed`): 사용자가 초대를 확인하여 회사 멤버가 됨
+- **만료** (`expired`): 초대 기간이 지나서 만료됨
+
+#### 권한 레벨 (permission)
+- **시스템관리자** (`system_admin`): 회사 내 모든 권한
+- **운영자** (`operator`): 일반 업무 처리 권한  
+- **조회자** (`viewer`): 읽기 전용 권한
+
+#### 초대 프로세스
+1. **초대 생성**: 관리자가 사용자를 회사에 초대 → `대기중` 상태로 생성
+2. **이메일 발송**: 시스템에서 초대 확인 이메일 발송
+3. **사용자 확인**: 사용자가 이메일의 확인 링크 클릭 → `완료` 상태로 변경
+4. **만료 처리**: 일정 기간 후 확인하지 않으면 → `만료` 상태로 변경
+
+### User 모델의 회사 관련 메서드
+```python
+user.get_active_companies()           # 속한 활성 회사들
+user.get_company_permission(company)  # 특정 회사에서의 권한
+user.is_company_member(company)       # 회사 멤버인지 확인
+user.get_pending_invitations()        # 대기중인 초대 목록
+user.can_manage_company(company)      # 회사 관리 권한 확인
+```

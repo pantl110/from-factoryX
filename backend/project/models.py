@@ -1,8 +1,10 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 
 class Project(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=50, help_text="진행상태")
     execution_date = models.DateField(help_text="집행일자")
     due_date = models.DateField(help_text="납기일자")

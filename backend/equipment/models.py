@@ -1,8 +1,10 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 
 class Equipment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=50, help_text="설비상태")
     name = models.CharField(max_length=100, help_text="설비명")
     type = models.CharField(max_length=50, help_text="설비유형")
@@ -21,6 +23,7 @@ class Equipment(models.Model):
 
 class EquipmentItem(models.Model):
     """설비와 품목 간의 관계 (생산 정보 포함)"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     equipment = models.ForeignKey('Equipment', on_delete=models.CASCADE)
     item = models.ForeignKey('item.Item', on_delete=models.CASCADE)
     production_time_per_unit = models.FloatField(help_text="단위당 생산시간(분)")

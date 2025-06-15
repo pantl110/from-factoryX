@@ -1,8 +1,10 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 
 class Material(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, help_text="자재명")
     code = models.CharField(max_length=50, unique=True, help_text="자재코드")
     specification = models.CharField(max_length=100, help_text="규격")
