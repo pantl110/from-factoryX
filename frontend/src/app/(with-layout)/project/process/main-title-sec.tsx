@@ -8,7 +8,7 @@ const MainTitleSec = ({ onNewQuotation }: MainTitleSecProps) => {
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
       <div className="flex items-center justify-between">
-        <h1 className="Heading-1 text-dg">진행 중인 프로젝트</h1>
+        <div className="Heading-1 text-dg">진행 중인 프로젝트</div>
         <MiniBtn
           bgColor="bg-primary"
           textColor="text-white"

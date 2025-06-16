@@ -1,7 +1,20 @@
+"use client";
+
 import MiniBtn from "@/ui/mini-btn";
 import React from "react";
+import { useRouter } from "next/navigation";
 
-const MainTitleSec = () => {
+interface MainTitleSecProps {
+  selectedTab: string;
+}
+
+const MainTitleSec = ({ selectedTab }: MainTitleSecProps) => {
+  const router = useRouter();
+
+  const handleTabClick = (tab: string) => {
+    router.push(`/stock/${tab}`);
+  };
+
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
       <div className="flex items-center justify-between">
@@ -13,8 +26,18 @@ const MainTitleSec = () => {
         />
       </div>
       <div className="flex gap-4 Heading-3">
-        <h3 className="text-dg">품목</h3>
-        <h3 className="text-gr">원자재</h3>
+        <h3
+          className={`${selectedTab === "product" ? "text-bl" : "text-gr"} cursor-pointer`}
+          onClick={() => handleTabClick("product")}
+        >
+          품목
+        </h3>
+        <h3
+          className={`${selectedTab === "materials" ? "text-bl" : "text-gr"} cursor-pointer`}
+          onClick={() => handleTabClick("materials")}
+        >
+          원자재
+        </h3>
       </div>
     </div>
   );
