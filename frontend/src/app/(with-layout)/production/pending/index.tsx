@@ -1,5 +1,5 @@
 const PendingPage = () => {
-  return <div>PendingPage</div>;
+  return <div></div>;
 };
 
 export default PendingPage;
