@@ -1,3 +1,5 @@
+"use client";
+
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 import { TrashIcon } from "@phosphor-icons/react/dist/ssr";
