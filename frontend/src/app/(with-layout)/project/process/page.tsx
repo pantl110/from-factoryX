@@ -1,33 +1,49 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import MainTitleSec from "./main-title-sec";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import TableHeader from "@/app/(with-layout)/project/table-header";
 import TableItem from "@/app/(with-layout)/project/table-item";
+import { projectData } from "@/mocks/projectData";
+import { StatusType } from "../types";
 
 const ProcessProjectPage = () => {
   const router = useRouter();
+  const [selectedStatus, setSelectedStatus] = useState<StatusType | "전체">(
+    "전체"
+  );
 
   const handleNewQuotation = () => {
     router.push("/quotation");
   };
 
+  const filteredProjects =
+    selectedStatus === "전체"
+      ? projectData
+      : projectData.filter((project) => project.status === selectedStatus);
+
   return (
     <div className="flex flex-col gap-8">
-      <MainTitleSec onNewQuotation={handleNewQuotation} />
+      <MainTitleSec
+        onNewQuotation={handleNewQuotation}
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+      />
       <div className="px-8">
         <SearchDeleteTable />
         <div>
           <TableHeader lastLabel="납기일자" />
-          {[...Array(9)].map((_, index) => (
+          {filteredProjects.map((project) => (
             <TableItem
-              key={index}
-              status="생산 중"
-              companyName="플라스틱이 좋아"
-              items="플라스틱 컵 외 3개"
-              startDate="2025-06-04"
-              endDate="2025-06-04"
+              key={project.id}
+              id={project.id}
+              status={project.status}
+              companyName={project.companyName}
+              items={project.items}
+              startDate={project.startDate}
+              endDate={project.endDate}
             />
           ))}
         </div>
