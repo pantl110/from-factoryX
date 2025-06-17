@@ -2,16 +2,22 @@ interface ChipProps {
   text: string;
   bgColor?: string;
   textColor?: string;
+  borderColor?: string;
   containerWidth?: string;
   sm?: boolean;
+  radius?: string;
+  onClick?: () => void;
 }
 
 const Chip = ({
   text,
   bgColor,
   textColor,
+  borderColor,
   containerWidth,
   sm = false,
+  radius = "rounded",
+  onClick,
 }: ChipProps) => {
   return (
     <div className={`${containerWidth}`}>
