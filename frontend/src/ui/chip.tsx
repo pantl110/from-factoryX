@@ -20,11 +20,11 @@ const Chip = ({
   onClick,
 }: ChipProps) => {
   return (
-    <div className={`${containerWidth}`}>
+    <div className={`${containerWidth} cursor-pointer`} onClick={onClick}>
       <div
-        className={`flex items-center w-fit rounded Me_Body-1 ${bgColor} ${textColor} ${
+        className={`flex items-center w-fit ${radius} Me_Body-1 ${bgColor} ${textColor} ${
           sm ? "h-7 px-2" : "h-9 px-3"
-        }`}
+        } ${borderColor ? `border ${borderColor}` : ""}`}
       >
         {text}
       </div>
