@@ -2,6 +2,7 @@ import MainTitleSec from "../main-title-sec";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import TableHeader from "./table-header";
 import TableItem from "./table-item";
+import MaterialsDetail from "./materials-detail";
 
 const MaterialtockPage = () => {
   return (
@@ -18,6 +19,8 @@ const MaterialtockPage = () => {
           </div>
         </div>
       </div>
+
+      <MaterialsDetail />
     </>
   );
 };

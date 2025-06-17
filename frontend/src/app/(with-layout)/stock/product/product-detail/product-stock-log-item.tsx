@@ -14,8 +14,8 @@ const ProductStockLogItem = ({
   amount,
   total,
 }: ProductStockLogItemProps) => {
-  const getTypeColor = (type: StockLogType) => {
-    switch (type) {
+  const getTypeColor = (status: StockLogType) => {
+    switch (status) {
       case "생산":
         return "text-primary";
       case "납품 출고":
@@ -25,8 +25,8 @@ const ProductStockLogItem = ({
     }
   };
 
-  const getAmountDisplay = (type: StockLogType, amount: number) => {
-    const sign = type === "생산" ? "+" : "-";
+  const getAmountDisplay = (status: StockLogType, amount: number) => {
+    const sign = status === "생산" ? "+" : "-";
     return `${sign}${amount.toLocaleString()}`;
   };
 
