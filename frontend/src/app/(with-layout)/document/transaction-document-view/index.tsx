@@ -1,8 +1,8 @@
 import React from "react";
-import DocumentViewTitle from "./document-view-title";
-import SupplierInfo from "./supplier-info";
+import DocumentViewTitle from "../document-view-title";
+import SupplierInfo from "../supplier-info";
 import BuyerInfo from "./buyer-info";
-import QuotationInfo from "./quotation-info";
+import QuotationInfo from "../quotation-info";
 
 const TransactionDocumentView = () => {
   return (
