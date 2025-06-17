@@ -1,9 +1,17 @@
+import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react/dist/ssr";
+import { useState } from "react";
+
+import { InputType } from "@/types/input-type";
+
 interface InputProps {
   label?: string;
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
   required?: boolean;
+  type?: InputType;
+  disabled?: boolean;
+  showPasswordToggle?: boolean;
 }
 
 const Input = ({
@@ -12,7 +20,16 @@ const Input = ({
   onChange,
   placeholder = "검색어를 입력하세요.",
   required,
+  type = "text",
+  disabled = false,
+  showPasswordToggle = false,
 }: InputProps) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <div className="flex flex-col gap-2 w-full">
       {label && (
@@ -21,13 +38,35 @@ const Input = ({
           {required && <span className="text-primary">*</span>}
         </div>
       )}
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange?.(e.target.value)}
-        placeholder={placeholder}
-        className="w-full h-12 min-h-9 rounded px-3 Re_Body-1 text-dg placeholder:text-sv outline-none border border-[#e4e4e7] hover:border-primary focus:border-gr focus:text-dg transition-colors"
-      />
+      <div className="relative">
+        <input
+          type={
+            showPasswordToggle ? (showPassword ? "text" : "password") : type
+          }
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={`w-full h-12 min-h-9 rounded px-3 Re_Body-1 text-dg placeholder:text-sv outline-none border border-[#e4e4e7] transition-colors ${
+            disabled
+              ? "bg-lg text-dg cursor-not-allowed"
+              : "hover:border-primary focus:border-gr focus:text-dg"
+          }`}
+        />
+        {showPasswordToggle && (
+          <button
+            type="button"
+            onClick={togglePasswordVisibility}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-dg hover:text-primary transition-colors"
+          >
+            {showPassword ? (
+              <EyeSlashIcon size={20} className="text-sv" />
+            ) : (
+              <EyeIcon size={20} className="text-sv" />
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 };

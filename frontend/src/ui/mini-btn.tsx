@@ -11,6 +11,8 @@ interface MiniBtnProps {
   icon?: React.ComponentType<IconProps>;
   iconColor?: string;
   onClick?: () => void;
+  height?: number;
+  disabled?: boolean;
 }
 
 const MiniBtn = ({
@@ -22,16 +24,22 @@ const MiniBtn = ({
   icon: Icon,
   iconColor,
   onClick,
+  height = 40,
+  disabled = false,
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
-  const hoverClass = hoverColor ? `hover:${hoverColor}` : "";
+  const hoverClass = hoverColor && !disabled ? `hover:${hoverColor}` : "";
 
   return (
     <button
-      className={`h-10 px-4 py-2 rounded-md Me_Body-1 ${bgColor} ${textColor} ${borderClass} ${hoverClass} flex items-center gap-2 cursor-pointer`}
-      onClick={onClick}
+      className={`px-4 py-2 rounded-md Me_Body-1 ${disabled ? "bg-lg text-gr" : `${bgColor} ${textColor}`} ${borderClass} ${hoverClass} flex items-center justify-center gap-2 ${
+        disabled ? "cursor-not-allowed" : "cursor-pointer"
+      }`}
+      style={{ height: `${height}px` }}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
     >
-      {Icon && <Icon size={20} className={iconColor} />}
+      {Icon && <Icon size={20} className={disabled ? "text-gr" : iconColor} />}
       <span>{text}</span>
     </button>
   );
