@@ -15,9 +15,9 @@ const CompletedTableItem = () => {
       <p className="flex-1 py-1 px-3">5,025</p>
       <p className="flex-1 py-1 px-3">1호기</p>
       <p className="flex-1 py-1 px-3">69초</p>
-      <p className="flex-1 py-1 px-3">
+      <div className="flex-1 py-1 px-3">
         <Chip text={status} textColor={textColor} bgColor={bgColor} />
-      </p>
+      </div>
       <p className="flex-1 py-1 px-3">김민수</p>
     </div>
   );
