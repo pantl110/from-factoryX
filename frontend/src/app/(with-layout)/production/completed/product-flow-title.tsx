@@ -3,7 +3,6 @@ import Chip from "@/ui/chip";
 import Input from "@/ui/input";
 
 const tabs = [
-  { label: "납품" },
   { label: "생산 내역" },
   { label: "생산 현황" },
   { label: "생산 계획" },
@@ -16,7 +15,11 @@ const ProductFlowTitle = () => {
     <div className="px-10 pt-7">
       <div className="flex justify-between">
         <div className="flex flex-col gap-2">
-          <Chip text="납품" textColor="text-green" bgColor="bg-green-8" />
+          <Chip
+            text="생산 완료"
+            textColor="text-primary"
+            bgColor="bg-primary-8"
+          />
           <h1 className="Heading-1 text-dg">플라스틱이 좋아</h1>
         </div>
         <div className="flex flex-col gap-1">
