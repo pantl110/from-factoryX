@@ -1,4 +1,10 @@
+import Chip from "@/ui/chip";
+import { StatusType, statusColorMap } from "./types";
+
 const CompletedTableItem = () => {
+  const status: StatusType = "충분";
+  const { textColor, bgColor } = statusColorMap[status];
+
   return (
     <div className="flex items-center w-full h-14 border-b border-[#eeeeee] Me_Body-1 text-dg">
       <p className="flex-1 py-1 px-3">P-001</p>
@@ -9,7 +15,9 @@ const CompletedTableItem = () => {
       <p className="flex-1 py-1 px-3">5,025</p>
       <p className="flex-1 py-1 px-3">1호기</p>
       <p className="flex-1 py-1 px-3">69초</p>
-      <p className="flex-1 py-1 px-3">충분</p>
+      <p className="flex-1 py-1 px-3">
+        <Chip text={status} textColor={textColor} bgColor={bgColor} />
+      </p>
       <p className="flex-1 py-1 px-3">김민수</p>
     </div>
   );
