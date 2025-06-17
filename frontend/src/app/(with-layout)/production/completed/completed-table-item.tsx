@@ -1,5 +1,5 @@
 import Chip from "@/ui/chip";
-import { StatusType, statusColorMap } from "./types";
+import { StatusType, statusColorMap } from "@/types/status-type";
 
 const CompletedTableItem = () => {
   const status: StatusType = "충분";

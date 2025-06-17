@@ -4,7 +4,7 @@ import {
   statusColorMap,
   OperationStatusType,
   operationStatusColorMap,
-} from "./types";
+} from "@/types/status-type";
 
 const InProgressTableItem = () => {
   const status: StatusType = "충분";
