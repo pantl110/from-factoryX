@@ -263,3 +263,40 @@ class UserCompanyInvitation(models.Model):
         return self.invitation_status == self.InvitationStatusChoice.pending
 
 
+class EmailVerification(models.Model):
+    """이메일 인증 코드 관리"""
+    
+    class VerificationType(models.TextChoices):
+        signup = ("회원가입", "회원가입")
+        password_reset = ("비밀번호재설정", "비밀번호재설정")
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(help_text="인증 대상 이메일")
+    code = models.CharField(max_length=6, help_text="인증 코드 (6자리)")
+    verification_type = models.CharField(
+        max_length=20,
+        choices=VerificationType.choices,
+        help_text="인증 타입"
+    )
+    is_verified = models.BooleanField(default=False, help_text="인증 완료 여부")
+    expires_at = models.DateTimeField(help_text="만료 시간")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="생성 시간")
+    
+    class Meta:
+        verbose_name = "이메일 인증"
+        verbose_name_plural = "이메일 인증"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.email} - {self.code} ({self.get_verification_type_display()})"
+    
+    def is_expired(self):
+        """인증 코드가 만료되었는지 확인"""
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+    
+    def is_valid(self):
+        """인증 코드가 유효한지 확인"""
+        return not self.is_expired() and not self.is_verified
+
+
