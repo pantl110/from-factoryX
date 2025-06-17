@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
+
 const StockPage = () => {
-  return <div>StockPage</div>;
+  redirect("/stock/product");
 };
 
 export default StockPage;

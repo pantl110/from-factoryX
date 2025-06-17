@@ -1,6 +1,6 @@
 import React from "react";
 
-const InformationItem = () => {
+const ProductItem = () => {
   return (
     <div className="w-full h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
       <p className="flex-1 px-3 truncate overflow-hidden whitespace-nowrap">
@@ -16,4 +16,4 @@ const InformationItem = () => {
   );
 };
 
-export default InformationItem;
+export default ProductItem;

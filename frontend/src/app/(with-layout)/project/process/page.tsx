@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import MainTitleSec from "./main-title-sec";
-import SearchDeleteTable from "@/app/(with-layout)/project/search-delete-table";
+import SearchDeleteTable from "@/ui/search-delete-table";
 import TableHeader from "@/app/(with-layout)/project/table-header";
 import TableItem from "@/app/(with-layout)/project/table-item";
 

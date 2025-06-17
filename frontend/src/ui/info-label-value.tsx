@@ -1,11 +1,11 @@
 import { ReactNode } from "react";
 
-interface ClientInfoItemProps {
+interface InfoLabelValueProps {
   label: string;
   value: ReactNode;
 }
 
-const ClientInfoItem = ({ label, value }: ClientInfoItemProps) => {
+const InfoLabelValue = ({ label, value }: InfoLabelValueProps) => {
   return (
     <div className="flex w-full Me_Body-1">
       <div className="w-[134px] h-full bg-lg-table">
@@ -18,4 +18,4 @@ const ClientInfoItem = ({ label, value }: ClientInfoItemProps) => {
   );
 };
 
-export default ClientInfoItem;
+export default InfoLabelValue;

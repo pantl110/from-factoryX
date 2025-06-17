@@ -8,7 +8,7 @@ import TableHeader from "./table-header";
 import TableItem from "./table-item";
 
 const TaxPage = () => {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [_selectedId, setSelectedId] = useState<number | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const handleTaxItemClick = (id: number) => {

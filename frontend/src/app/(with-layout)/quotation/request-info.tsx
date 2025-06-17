@@ -1,12 +1,12 @@
 import React from "react";
 import MiniBtn from "@/ui/mini-btn";
-import InformationItem from "./information-item";
+import ProductItem from "./product-item";
 
-const Information = () => {
+const RequestInfo = () => {
   return (
     <div className="pl-8 flex flex-col gap-5">
       <div className="flex justify-between items-center">
-        <div className="Heading-3">요청정보</div>
+        <h3 className="Heading-3">요청정보</h3>
         <MiniBtn
           text="품목 추가하기"
           textColor="text-dg"
@@ -26,11 +26,11 @@ const Information = () => {
           <p className="flex-1 px-3">금액</p>
         </div>
         {Array.from({ length: 8 }).map((_, index) => (
-          <InformationItem key={index} />
+          <ProductItem key={index} />
         ))}
       </div>
     </div>
   );
 };
 
-export default Information;
+export default RequestInfo;
