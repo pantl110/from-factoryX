@@ -17,8 +17,6 @@ const TableItem = () => {
           sm={true}
         />
       </div>
-      <p className="flex-1 px-3 text-dg">2,000</p>
-      <p className="flex-1 px-3 text-dg">오른쪽 창고 아래</p>
       <p className="flex-1 px-3 text-dg">2025-06-04</p>
     </div>
   );
