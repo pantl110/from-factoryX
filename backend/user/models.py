@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.apps import apps
 from django.contrib import auth
 from django.contrib.auth.hashers import make_password
+import uuid
 
 
 class CustomUserManager(UserManager):
@@ -81,6 +82,8 @@ class CustomUserManager(UserManager):
 
 class User(AbstractUser):
     """Custom User Model Definition"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     class UserStatusChoice(models.TextChoices):
         active = ("활성유저", "활성유저")  # 정상
@@ -131,10 +134,169 @@ class User(AbstractUser):
         help_text="회원 유형",
     )
 
+    def __str__(self):
+        return f"{self.username} ({self.get_status_display()})"
+    
+    def get_active_companies(self):
+        """사용자가 속한 활성 회사들 반환"""
+        return Company.objects.filter(
+            user_invitations__user=self,
+            user_invitations__invitation_status=UserCompanyInvitation.InvitationStatusChoice.completed
+        )
+    
+    def get_company_permission(self, company):
+        """특정 회사에서의 권한 조회"""
+        try:
+            invitation = UserCompanyInvitation.objects.get(
+                user=self, 
+                company=company,
+                invitation_status=UserCompanyInvitation.InvitationStatusChoice.completed
+            )
+            return invitation.permission
+        except UserCompanyInvitation.DoesNotExist:
+            return None
+    
+    def is_company_member(self, company):
+        """특정 회사의 활성 멤버인지 확인"""
+        return UserCompanyInvitation.objects.filter(
+            user=self,
+            company=company,
+            invitation_status=UserCompanyInvitation.InvitationStatusChoice.completed
+        ).exists()
+    
+    def can_manage_company(self, company):
+        """특정 회사 관리 권한 확인"""
+        permission = self.get_company_permission(company)
+        return permission == UserCompanyInvitation.PermissionChoice.system_admin
+    
+    def get_pending_invitations(self):
+        """대기중인 초대 목록 반환"""
+        return UserCompanyInvitation.objects.filter(
+            user=self,
+            invitation_status=UserCompanyInvitation.InvitationStatusChoice.pending
+        )
+
 
 class Jwt(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
         User, related_name="login_user", on_delete=models.CASCADE, help_text="회원"
     )
     access = models.TextField(help_text="Access Token")
     refresh = models.TextField(help_text="Refresh Token")
+
+
+class Company(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, help_text="회사명")
+    business_registration_number = models.CharField(
+        max_length=20, unique=True, help_text="사업자 등록번호"
+    )
+    ceo_name = models.CharField(max_length=50, help_text="대표자명")
+    contact = models.CharField(max_length=100, help_text="연락망")
+    business_type = models.CharField(max_length=50, help_text="업태")
+    business_item = models.CharField(max_length=50, help_text="종목")
+    address = models.CharField(max_length=200, help_text="회사주소지")
+
+    def __str__(self):
+        return f"{self.name} ({self.business_registration_number})"
+
+
+class UserCompanyInvitation(models.Model):
+    """사용자-회사 초대 테이블"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    class InvitationStatusChoice(models.TextChoices):
+        pending = ("대기중", "대기중")  # 초대 이메일 발송됨, 확인 대기
+        completed = ("완료", "완료")  # 사용자가 초대 확인하여 완료
+        expired = ("만료", "만료")  # 초대 기간 만료
+
+    class PermissionChoice(models.TextChoices):
+        system_admin = ("시스템관리자", "시스템관리자")
+        operator = ("운영자", "운영자")
+        viewer = ("조회자", "조회자")
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="company_invitations",
+        help_text="초대받은 사용자",
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="user_invitations",
+        help_text="초대한 회사",
+    )
+    invitation_status = models.CharField(
+        max_length=20,
+        choices=InvitationStatusChoice.choices,
+        default=InvitationStatusChoice.pending,
+        help_text="초대 상태",
+    )
+    permission = models.CharField(
+        max_length=20,
+        choices=PermissionChoice.choices,
+        default=PermissionChoice.viewer,
+        help_text="부여할 권한",
+    )
+    invited_date = models.DateTimeField(
+        auto_now_add=True, help_text="초대 날짜"
+    )
+
+    class Meta:
+        unique_together = ("user", "company")
+        verbose_name = "사용자-회사 초대"
+        verbose_name_plural = "사용자-회사 초대"
+        ordering = ["-invited_date"]
+
+    def __str__(self):
+        return f"{self.user.username} → {self.company.name} ({self.get_invitation_status_display()})"
+
+    def is_active(self):
+        """완료된 초대인지 확인"""
+        return self.invitation_status == self.InvitationStatusChoice.completed
+
+    def is_pending(self):
+        """대기중인 초대인지 확인"""
+        return self.invitation_status == self.InvitationStatusChoice.pending
+
+
+class EmailVerification(models.Model):
+    """이메일 인증 코드 관리"""
+    
+    class VerificationType(models.TextChoices):
+        signup = ("signup", "signup")
+        password_reset = ("password_reset", "password_reset")
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(help_text="인증 대상 이메일")
+    code = models.CharField(max_length=6, help_text="인증 코드 (6자리)")
+    verification_type = models.CharField(
+        max_length=20,
+        choices=VerificationType.choices,
+        help_text="인증 타입"
+    )
+    is_verified = models.BooleanField(default=False, help_text="인증 완료 여부")
+    expires_at = models.DateTimeField(help_text="만료 시간")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="생성 시간")
+    
+    class Meta:
+        verbose_name = "이메일 인증"
+        verbose_name_plural = "이메일 인증"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.email} - {self.code} ({self.get_verification_type_display()})"
+    
+    def is_expired(self):
+        """인증 코드가 만료되었는지 확인"""
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+    
+    def is_valid(self):
+        """인증 코드가 유효한지 확인"""
+        return not self.is_expired() and not self.is_verified
+
+
