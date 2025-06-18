@@ -16,7 +16,7 @@ const Delivery = () => {
           <MiniBtn text="세금계산서 생성" borderColor="border-[#eeeeee]" />
         </div>
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col w-full overflow-x-auto">
         <DeliveryTableHeader />
         <DeliveryTableItem />
         <DeliveryTableItem />

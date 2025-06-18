@@ -1,6 +1,6 @@
 const TableHeader = () => {
   return (
-    <div className="flex items-center w-full h-12 border-t border-b border-[#eeeeee] Me_Body-1 bg-bg rounded text-sv">
+    <div className="flex items-center w-[2040px] h-12 border-t border-b border-[#eeeeee] Me_Body-1 bg-bg rounded text-sv">
       <p className="w-[100px] py-1 px-3">가동상태</p>
       <p className="flex-[2] py-1 px-3">품목명</p>
       <p className="flex-1 py-1 px-3">품목코드</p>

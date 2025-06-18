@@ -1,34 +1,47 @@
-import React from "react";
-import Image from "next/image";
-import onboardingImage from "@/assets/onboarding.png";
-import MiniBtn from "@/ui/mini-btn";
+import React, { useState } from "react";
+import Welcome from "./welcome";
+import FirstStep from "./first-step";
+import { OnboardingStepType } from "./types";
 
 const OnboardingPage = () => {
+  const [currentStep, setCurrentStep] = useState<OnboardingStepType>("welcome");
+
+  const handleNextStep = () => {
+    switch (currentStep) {
+      case "welcome":
+        setCurrentStep("first-step");
+        break;
+      case "first-step":
+        setCurrentStep("second-step");
+        break;
+      case "second-step":
+        setCurrentStep("third-step");
+        break;
+      case "third-step":
+        // 마지막 단계
+        break;
+    }
+  };
+
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case "welcome":
+        return <Welcome onNextStep={handleNextStep} />;
+      case "first-step":
+        return <FirstStep onNextStep={handleNextStep} />;
+      case "second-step":
+        return <div>Second Step Component</div>; // 두 번째 단계 컴포넌트
+      case "third-step":
+        return <div>Third Step Component</div>; // 세 번째 단계 컴포넌트
+      default:
+        return <Welcome onNextStep={handleNextStep} />;
+    }
+  };
+
   return (
     <div className="bg-wh w-full h-screen">
       <div className="w-full h-screen bg-bl/80 flex justify-center items-center">
-        <div className="bg-wh z-1 w-[586px] pt-14 px-8 pb-6 flex flex-col items-center rounded-lg">
-          <h3 className="Heading-3 text-primary mb-2">
-            팩토리엑스에 오신 걸 환영합니다!
-          </h3>
-          <p className="Me_Body-2">
-            운영을 시작하려면, 먼저 품목과 설비를 등록해야 해요.
-          </p>
-          <p className="Me_Body-2">
-            등록이 완료되면, 생산부터 재고까지 한눈에 관리할 수 있어요!
-          </p>
-          <div className="p-7 mb-5">
-            <Image src={onboardingImage} alt="onboarding" />
-          </div>
-          <div className="w-full flex justify-end">
-            <MiniBtn
-              text="다음 단계"
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="#005DC7"
-            />
-          </div>
-        </div>
+        {renderCurrentStep()}
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ const ClientTableItem = ({
   email,
 }: ClientTableItemProps) => {
   return (
-    <div className="flex h-14 items-center py-1 px-3 w-full border-b border-[#eeeeee] Me_Body-1 text-dg">
+    <div className="flex h-14 items-center py-1 px-3 w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg">
       <p className="flex-1">{companyName}</p>
       <p className="flex-1">{businessNumber}</p>
       <p className="w-[100px]">{representativeName}</p>
