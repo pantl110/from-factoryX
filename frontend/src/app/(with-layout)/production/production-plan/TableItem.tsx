@@ -15,7 +15,7 @@ const TableItem = ({ operationStatus, materialStatus }: TableItemProps) => {
   const { textColor, bgColor } = operationStatusColorMap[operationStatus];
   const materialColor = inventoryStatusColorMap[materialStatus];
   return (
-    <div className="flex items-center w-full h-12 border-b border-[#eeeeee] Me_Body-1 bg-white text-dg">
+    <div className="flex items-center w-[2040px] h-12 border-b border-[#eeeeee] Me_Body-1 bg-white text-dg">
       <div className="w-[100px] py-1 px-3">
         <Chip text={operationStatus} textColor={textColor} bgColor={bgColor} />
       </div>
