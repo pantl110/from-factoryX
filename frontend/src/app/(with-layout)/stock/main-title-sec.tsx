@@ -1,18 +1,17 @@
 "use client";
 
-import MiniBtn from "@/ui/mini-btn";
 import React from "react";
-import { useRouter } from "next/navigation";
+import MiniBtn from "@/ui/mini-btn";
+import { StockTabType } from "./types";
 
 interface MainTitleSecProps {
-  selectedTab: string;
+  selectedTab: StockTabType;
+  onTabChange: (tab: StockTabType) => void;
 }
 
-const MainTitleSec = ({ selectedTab }: MainTitleSecProps) => {
-  const router = useRouter();
-
-  const handleTabClick = (tab: string) => {
-    router.push(`/stock/${tab}`);
+const MainTitleSec = ({ selectedTab, onTabChange }: MainTitleSecProps) => {
+  const handleTabClick = (tab: StockTabType) => {
+    onTabChange(tab);
   };
 
   return (
@@ -33,8 +32,8 @@ const MainTitleSec = ({ selectedTab }: MainTitleSecProps) => {
           품목
         </h3>
         <h3
-          className={`${selectedTab === "materials" ? "text-bl" : "text-gr"} cursor-pointer`}
-          onClick={() => handleTabClick("materials")}
+          className={`${selectedTab === "material" ? "text-bl" : "text-gr"} cursor-pointer`}
+          onClick={() => handleTabClick("material")}
         >
           원자재
         </h3>

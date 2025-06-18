@@ -1,24 +1,27 @@
-import Chip from "@/ui/chip";
+"use client";
+
 import React from "react";
+import Chip from "@/ui/chip";
+
 import { StatusType, statusColorMap } from "@/types/status-type";
 
-interface StockStatusItemProps {
+interface TableItemProps {
   materialName: string;
   materialCode: string;
-  inputQuantity: string;
   unit: string;
+  currentStock: number;
   status: StatusType;
   date: string;
 }
 
-const StockStatusItem = ({
+const TableItem = ({
   materialName,
   materialCode,
-  inputQuantity,
   unit,
+  currentStock,
   status,
   date,
-}: StockStatusItemProps) => {
+}: TableItemProps) => {
   const colors = statusColorMap[status];
 
   return (
@@ -27,14 +30,14 @@ const StockStatusItem = ({
         {materialName}
       </p>
       <p className="flex-1 px-3 text-dg">{materialCode}</p>
-      <p className="flex-1 px-3 text-dg">{inputQuantity}</p>
       <p className="w-[80px] px-3 text-dg">{unit}</p>
-      <div className="flex-1 px-3 text-dg">
+      <p className="flex-1 px-3 text-dg">{currentStock.toLocaleString()}</p>
+      <div className="px-3 w-[100px]">
         <Chip
           text={status}
-          sm={true}
-          textColor={colors.textColor}
           bgColor={colors.bgColor}
+          textColor={colors.textColor}
+          sm={true}
         />
       </div>
       <p className="flex-1 px-3 text-dg">{date}</p>
@@ -42,4 +45,4 @@ const StockStatusItem = ({
   );
 };
 
-export default StockStatusItem;
+export default TableItem;

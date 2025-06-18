@@ -7,7 +7,7 @@ const OnboardingPage = () => {
   return (
     <div className="bg-wh w-full h-screen">
       <div className="w-full h-screen bg-bl/80 flex justify-center items-center">
-        <div className="bg-wh z-1 w-[586px] pt-14 px-8 pb-6 flex flex-col items-center">
+        <div className="bg-wh z-1 w-[586px] pt-14 px-8 pb-6 flex flex-col items-center rounded-lg">
           <h3 className="Heading-3 text-primary mb-2">
             팩토리엑스에 오신 걸 환영합니다!
           </h3>

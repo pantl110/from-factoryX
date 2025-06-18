@@ -7,7 +7,7 @@ export type ProjectStatusType =
   | "납품";
 
 // 재고 상태 타입
-export type InventoryStatusType = "충분" | "부족";
+export type StatusType = "충분" | "부족";
 
 // 설비 가동 상태 타입
 export type OperationStatusType = "가동 대기" | "가동 중" | "가동 완료";
@@ -31,10 +31,7 @@ export const projectStatusColorMap: Record<
 };
 
 // 재고 상태별 색상 매핑
-export const inventoryStatusColorMap: Record<
-  InventoryStatusType,
-  StatusColorModel
-> = {
+export const statusColorMap: Record<StatusType, StatusColorModel> = {
   충분: { textColor: "text-primary", bgColor: "bg-primary-8" },
   부족: { textColor: "text-red", bgColor: "bg-red-8" },
 };

@@ -5,16 +5,17 @@ import SearchDeleteTable from "@/ui/search-delete-table";
 import MainTitleSec from "./main-title-sec";
 import DocumentTable from "./document-table";
 import { DocumentType } from "./types";
-import QuotationDocumentView from "./quotation-document-view";
+import QuotationDocumentView from "./quotation-doument-view";
 import ProductionDocumentView from "./production-document-view";
 import TransactionDocumentView from "./transaction-document-view";
+import Pagination from "@/components/pagination";
 
 const DocumentPage = () => {
   const [selectedType, setSelectedType] = useState<DocumentType>("all");
 
   return (
     <>
-      <div className="flex flex-col gap-2 w-full">
+      <div className="flex flex-col gap-8 w-full">
         <MainTitleSec
           selectedType={selectedType}
           setSelectedType={setSelectedType}
@@ -25,7 +26,7 @@ const DocumentPage = () => {
           <DocumentTable documentType={selectedType} />
         </div>
 
-        {/* 페이지네이션 */}
+        <Pagination />
       </div>
 
       <QuotationDocumentView />

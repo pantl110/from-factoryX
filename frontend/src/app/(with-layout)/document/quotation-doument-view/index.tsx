@@ -1,7 +1,7 @@
 import React from "react";
-import SupplierInfo from "./supplier-info";
-import QuotationInfo from "./quotation-info";
-import DocumentViewTitle from "./document-view-title";
+import SupplierInfo from "../supplier-info";
+import QuotationInfo from "../quotation-info";
+import DocumentViewTitle from "../document-view-title";
 
 const QuotationDocumentView = () => {
   return (
