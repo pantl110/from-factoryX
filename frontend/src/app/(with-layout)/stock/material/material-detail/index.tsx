@@ -5,7 +5,7 @@ import MaterialInfo from "./material-info";
 import MaterialStockLog from "./material-stock-log";
 import ProductRequiringMaterial from "./product-requiring-material";
 
-const MaterialsDetail = () => {
+const MaterialDetail = () => {
   return (
     <div className="bg-white px-10 py-5 flex flex-col gap-5">
       <div className="flex gap-2 items-center border-b border-[#eeeeee] pb-3">
@@ -53,4 +53,4 @@ const MaterialsDetail = () => {
   );
 };
 
-export default MaterialsDetail;
+export default MaterialDetail;
