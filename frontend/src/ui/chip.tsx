@@ -20,7 +20,22 @@ const Chip = ({
   onClick,
 }: ChipProps) => {
   return (
-    <div className={`${containerWidth} cursor-pointer`} onClick={onClick}>
+    <div
+      className={`${containerWidth} cursor-pointer`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+    >
       <div
         className={`flex items-center w-fit ${radius} Me_Body-1 ${bgColor} ${textColor} ${
           sm ? "h-7 px-2" : "h-9 px-3"

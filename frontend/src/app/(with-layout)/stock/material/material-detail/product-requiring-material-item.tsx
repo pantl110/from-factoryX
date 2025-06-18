@@ -1,5 +1,3 @@
-import React from "react";
-
 interface ProductRequiringMaterialItemProps {
   productName: string;
   productCode: string;

@@ -1,6 +1,6 @@
 export type PermissionType = "SYSTEM_ADMIN" | "OPERATOR" | "VIEWER";
 
-export interface PermissionInfo {
+export interface PermissionInfoModel {
   type: PermissionType;
   title: string;
   description: string;
@@ -10,7 +10,7 @@ export interface PermissionInfo {
   };
 }
 
-export const PERMISSION_INFO: Record<PermissionType, PermissionInfo> = {
+export const PERMISSION_INFO: Record<PermissionType, PermissionInfoModel> = {
   SYSTEM_ADMIN: {
     type: "SYSTEM_ADMIN",
     title: "시스템 관리자",

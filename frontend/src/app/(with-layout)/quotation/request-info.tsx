@@ -1,6 +1,6 @@
-import React from "react";
 import MiniBtn from "@/ui/mini-btn";
 import ProductItem from "./product-item";
+import dummyProducts from "@/mocks/quotation-products";
 
 const RequestInfo = () => {
   return (
@@ -25,8 +25,8 @@ const RequestInfo = () => {
           <p className="flex-1 px-3">제작수량</p>
           <p className="flex-1 px-3">금액</p>
         </div>
-        {Array.from({ length: 8 }).map((_, index) => (
-          <ProductItem key={index} />
+        {dummyProducts.map((item, index) => (
+          <ProductItem key={index} {...item} />
         ))}
       </div>
     </div>

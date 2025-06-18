@@ -1,4 +1,3 @@
-import React from "react";
 import MaterialStockLogItem from "./material-stock-log-item";
 
 const MaterialStockLog = () => {

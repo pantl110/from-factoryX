@@ -1,5 +1,4 @@
 import Chip from "@/ui/chip";
-import React from "react";
 import { StatusType, statusColorMap } from "@/types/status-type";
 
 interface StockStatusItemProps {

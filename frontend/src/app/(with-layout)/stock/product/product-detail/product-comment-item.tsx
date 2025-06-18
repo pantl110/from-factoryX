@@ -1,5 +1,3 @@
-import React from "react";
-
 const ProductCommentItem = () => {
   return (
     <div className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer">

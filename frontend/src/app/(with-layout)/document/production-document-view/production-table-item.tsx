@@ -1,5 +1,3 @@
-import React from "react";
-
 const ProductionTableItem = () => {
   return (
     <div className="w-full h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">

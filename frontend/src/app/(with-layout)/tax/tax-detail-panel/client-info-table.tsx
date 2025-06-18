@@ -1,5 +1,4 @@
 import InfoLabelValue from "@/ui/info-label-value";
-import Chip from "@/ui/chip";
 
 const ClientInfoTable = () => {
   return (
@@ -30,17 +29,7 @@ const ClientInfoTable = () => {
         </div>
         <div className="flex w-full border-b border-lg">
           <InfoLabelValue label="거래일자" value="2025-06-11" />
-          <InfoLabelValue
-            label="문서 상태"
-            value={
-              <Chip
-                text="매출"
-                bgColor="bg-primary-8"
-                textColor="text-primary"
-                sm
-              />
-            }
-          />
+          <InfoLabelValue label="문서 상태" chip={{ status: "충분" }} />
         </div>
         <div className="flex w-full border-b border-lg">
           <InfoLabelValue

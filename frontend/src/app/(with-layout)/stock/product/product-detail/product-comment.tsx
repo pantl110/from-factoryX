@@ -1,4 +1,3 @@
-import React from "react";
 import ProductCommentItem from "./product-comment-item";
 
 const ProductComment = () => {

@@ -23,7 +23,12 @@ const Pagination = () => {
     <div className="flex items-center justify-center py-5 px-6 gap-1 Me_Body-1">
       <div
         className={`flex items-center justify-center w-9 h-9 cursor-pointer`}
+        role="button"
+        tabIndex={0}
         onClick={handlePrevPage}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") handlePrevPage();
+        }}
       >
         <CaretLeftIcon
           size={20}
@@ -36,14 +41,24 @@ const Pagination = () => {
           className={`flex items-center justify-center w-9 h-9 cursor-pointer rounded-lg ${
             currentPage === page ? "bg-primary text-wh" : ""
           }`}
+          role="button"
+          tabIndex={0}
           onClick={() => setCurrentPage(page)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setCurrentPage(page);
+          }}
         >
           {page}
         </div>
       ))}
       <div
         className={`flex items-center justify-center w-9 h-9 cursor-pointer`}
+        role="button"
+        tabIndex={0}
         onClick={handleNextPage}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") handleNextPage();
+        }}
       >
         <CaretRightIcon
           size={20}

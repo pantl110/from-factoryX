@@ -1,13 +1,13 @@
 export type PlanType = "FREE" | "BASIC" | "PARTNERS";
 
-export interface PlanInfo {
+export interface PlanInfoModel {
   type: PlanType;
   title: string;
   price: string;
   description: string;
 }
 
-export const PLAN_INFO: Record<PlanType, PlanInfo> = {
+export const PLAN_INFO: Record<PlanType, PlanInfoModel> = {
   FREE: {
     type: "FREE",
     title: "무료 체험",

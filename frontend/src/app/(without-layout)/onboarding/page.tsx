@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState } from "react";
 import Welcome from "./welcome";
 import FirstStep from "./first-step";
 import { OnboardingStepType } from "./types";
