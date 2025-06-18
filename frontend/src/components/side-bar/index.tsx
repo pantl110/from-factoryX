@@ -1,8 +1,9 @@
+"use client";
+
 import {
   ChartBar,
   Package,
   Warehouse,
-  ListChecks,
   MoneyWavy,
   Files,
   Gear,
@@ -17,15 +18,23 @@ const SideBar = () => {
         <FactoryXLogo />
       </div>
       <div className="flex flex-col gap-1 px-2">
-        <SideBarItem icon={ChartBar} label="대시보드" />
-        <SideBarItem icon={Package} label="프로젝트관리" />
-        <SideBarItem icon={Warehouse} label="재고관리" />
-        <SideBarItem icon={ListChecks} label="품질관리" />
-        <SideBarItem icon={MoneyWavy} label="세무/회계" />
-        <SideBarItem icon={Files} label="문서함" />
+        <SideBarItem icon={ChartBar} label="대시보드" path="/dashboard" />
+        <SideBarItem
+          icon={Package}
+          label="프로젝트관리"
+          path="/project"
+          hasDropdown={true}
+          dropdownItems={[
+            { label: "진행 중인 프로젝트", path: "/project/process" },
+            { label: "완료된 프로젝트", path: "/project/completed" },
+          ]}
+        />
+        <SideBarItem icon={Warehouse} label="재고관리" path="/stock" />
+        <SideBarItem icon={MoneyWavy} label="세무/회계" path="/tax" />
+        <SideBarItem icon={Files} label="문서함" path="/document" />
       </div>
       <div className="mt-auto px-2 mb-8">
-        <SideBarItem icon={Gear} label="설정" />
+        <SideBarItem icon={Gear} label="설정" path="/setting" />
       </div>
     </aside>
   );

@@ -1,11 +1,18 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme inline {
   --color-primary: #016fee;
+  --color-primary-8: rgba(1, 111, 238, 0.08);
+  --color-primary-hover: #005dc7;
+  --color-secondary: #f2f8ff;
   --color-yellow: #f5a524;
+  --color-yellow-8: rgba(245, 165, 36, 0.08);
   --color-purple: #7828c8;
+  --color-purple-8: rgba(120, 40, 200, 0.08);
   --color-green: #17c964;
+  --color-green-8: rgba(23, 201, 100, 0.08);
   --color-red: #f31260;
+  --color-red-8: rgba(243, 18, 96, 0.08);
   --color-lg-table: #f4f4f5;
   --color-wh: #ffffff;
   --color-bg: #f0f0f0;
@@ -14,19 +21,6 @@
   --color-sv: #949494;
   --color-dg: #3d3d3d;
   --color-bl: #000000;
-  --color-yellow-8: rgba(245, 165, 36, 0.08);
-  --color-purple-8: rgba(120, 40, 200, 0.08);
-  --color-primary-8: rgba(1, 111, 238, 0.08);
-  --color-green-8: rgba(23, 201, 100, 0.08);
-  --color-red-8: rgba(243, 18, 96, 0.08);
-  --color-primary-hover: #edf5ff;
-  --color-red-hovernone: #fff0f5;
-  --color-lb: #f2f8ff;
-  --color-lr: #ffe6ee;
-  --color-lp: #f5ebff;
-  --color-lg_2: #fafafa;
-  --color-cellhover: #f7f7f7;
-  --color-hover-primary: #0068de;
 
   --font-family-sans: var(--font-pretendard);
 
@@ -37,61 +31,50 @@
 }
 
 @layer components {
-  .B_Heading-1 {
-    font-size: 40px;
-    line-height: 1.5;
-    font-weight: var(--font-weight-bold);
-    color: #18181b;
-    letter-spacing: -0.02em;
-  }
-  .B_Heading-2 {
-    font-size: 34px;
+  .Heading-1 {
+    font-size: 32px;
     line-height: 1.5;
     font-weight: var(--font-weight-bold);
     color: #18181b;
     letter-spacing: -0.02em;
   }
   .Heading-2 {
-    font-size: 30px;
+    font-size: 28px;
     line-height: 1.5;
     font-weight: var(--font-weight-bold);
     color: #18181b;
     letter-spacing: -0.02em;
   }
-  .B_Heading-3 {
+  .Heading-3 {
     font-size: 22px;
     line-height: 1.2;
     font-weight: var(--font-weight-bold);
     color: #18181b;
     letter-spacing: -0.02em;
   }
-  .Sm_Heading-1 {
+  .Heading-4 {
     font-size: 18px;
     line-height: 1.3;
     font-weight: var(--font-weight-semibold);
-    color: #000000;
+    color: #18181b;
+    letter-spacing: -0.02em;
   }
-  .Sm_Heading-2 {
-    font-size: 16px;
-    line-height: 1.2;
-    font-weight: var(--font-weight-semibold);
-    color: #000000;
-  }
-  .Sm_Heading-3 {
+  .Heading-5 {
     font-size: 14px;
     line-height: 1.2;
     font-weight: var(--font-weight-medium);
-    color: #000000;
+    color: #18181b;
+    letter-spacing: -0.02em;
   }
   .Me_Body-1 {
     font-size: 16px;
-    line-height: 1.2;
+    line-height: 1.6;
     font-weight: var(--font-weight-medium);
     color: #000000;
   }
   .Me_Body-2 {
     font-size: 18px;
-    line-height: 1.3;
+    line-height: 1.6;
     font-weight: var(--font-weight-medium);
     color: #000000;
   }
@@ -101,29 +84,11 @@
     font-weight: var(--font-weight-medium);
     color: #18181b;
   }
-  .Me_Body-4 {
-    font-size: 24px;
-    line-height: 1.2;
-    font-weight: var(--font-weight-medium);
-    color: #000000;
-  }
   .Re_Body-1 {
     font-size: 16px;
     line-height: 1.6;
     font-weight: var(--font-weight-medium);
     color: #000000;
-  }
-  .Re_Body-2 {
-    font-size: 14px;
-    line-height: 1.2;
-    font-weight: var(--font-weight-regular);
-    color: #000000;
-  }
-  .no {
-    font-size: 22px;
-    line-height: 1.4;
-    font-weight: var(--font-weight-medium);
-    color: #18181b;
   }
 }
 
