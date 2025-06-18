@@ -7,13 +7,13 @@ import SearchDeleteTable from "@/ui/search-delete-table";
 import TableHeader from "@/app/(with-layout)/project/table-header";
 import TableItem from "@/app/(with-layout)/project/table-item";
 import { projectData } from "@/mocks/projectData";
-import { StatusType } from "../types";
+import { ProjectStatusType } from "@/types/status-type";
 
 const ProcessProjectPage = () => {
   const router = useRouter();
-  const [selectedStatus, setSelectedStatus] = useState<StatusType | "전체">(
-    "전체"
-  );
+  const [selectedStatus, setSelectedStatus] = useState<
+    ProjectStatusType | "전체"
+  >("전체");
 
   const handleNewQuotation = () => {
     router.push("/quotation");
