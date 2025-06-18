@@ -1,8 +1,9 @@
 import Chip from "@/ui/chip";
 import Input from "@/ui/input";
+import { ProjectStatusType, projectStatusColorMap } from "@/types/status-type";
 
 export interface ProductFlowTitleProps {
-  status: string;
+  status: ProjectStatusType;
   tabs: string[];
   selectedTab: number;
   setSelectedTab: (idx: number) => void;
@@ -14,11 +15,12 @@ const ProductFlowTitle = ({
   selectedTab,
   setSelectedTab,
 }: ProductFlowTitleProps) => {
+  const { bgColor, textColor } = projectStatusColorMap[status];
   return (
     <div className="px-10 pt-7">
       <div className="flex justify-between">
         <div className="flex flex-col gap-2">
-          <Chip text={status} textColor="text-dg" bgColor="bg-bg" />
+          <Chip text={status} textColor={textColor} bgColor={bgColor} />
           <h1 className="Heading-1 text-dg">플라스틱이 좋아</h1>
         </div>
         <div className="flex flex-col gap-1">

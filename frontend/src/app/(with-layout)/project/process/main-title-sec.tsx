@@ -1,10 +1,10 @@
 import MiniBtn from "@/ui/mini-btn";
-import { StatusType } from "../types";
+import { ProjectStatusType } from "@/types/status-type";
 
 interface MainTitleSecProps {
   onNewQuotation: () => void;
-  selectedStatus: StatusType | "전체";
-  onStatusChange: (status: StatusType | "전체") => void;
+  selectedStatus: ProjectStatusType | "전체";
+  onStatusChange: (status: ProjectStatusType | "전체") => void;
 }
 
 const MainTitleSec = ({
@@ -12,7 +12,7 @@ const MainTitleSec = ({
   selectedStatus,
   onStatusChange,
 }: MainTitleSecProps) => {
-  const statuses: (StatusType | "전체")[] = [
+  const statuses: (ProjectStatusType | "전체")[] = [
     "전체",
     "견적협의",
     "생산 대기",
