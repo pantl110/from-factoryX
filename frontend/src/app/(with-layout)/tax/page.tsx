@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import TaxDetailPanel from "./tax-detail-panel";
 import MainTitleSec from "./main-title-sec";
 import SearchDeleteTable from "./search-delete-table";
