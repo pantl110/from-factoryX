@@ -3,7 +3,7 @@ import ClientTableItem from "./client-table-item";
 
 const ClientTable = () => {
   return (
-    <div className="w-full px-10">
+    <div className="w-full px-10 overflow-x-auto">
       <ClientTableHeader />
       <ClientTableItem
         companyName="(주)한솔화학"
