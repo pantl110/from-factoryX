@@ -3,7 +3,11 @@ import Image from "next/image";
 import onboardingImage from "@/assets/onboarding.png";
 import MiniBtn from "@/ui/mini-btn";
 
-const Welcome = () => {
+interface WelcomeProps {
+  onNextStep: () => void;
+}
+
+const Welcome = ({ onNextStep }: WelcomeProps) => {
   return (
     <div className="bg-wh z-1 w-[586px] pt-14 px-8 pb-6 flex flex-col items-center rounded-lg">
       <h3 className="Heading-3 text-primary mb-2">
@@ -24,6 +28,7 @@ const Welcome = () => {
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="#005DC7"
+          onClick={onNextStep}
         />
       </div>
     </div>
