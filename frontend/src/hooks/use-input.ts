@@ -24,7 +24,7 @@ export const useInput = ({
         setError(errorMessage);
       }
     },
-    [validate]
+    [validate],
   );
 
   const handleChange = useCallback(
@@ -39,7 +39,7 @@ export const useInput = ({
         validateValue(newValue);
       }, debounceTime);
     },
-    [validateValue, debounceTime]
+    [validateValue, debounceTime],
   );
 
   useEffect(() => {

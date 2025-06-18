@@ -34,13 +34,14 @@ const MainTitleSec = ({
       </div>
       <div className="flex gap-4 items-center Heading-3">
         {statuses.map((status) => (
-          <h3
+          <button
             key={status}
-            className={`cursor-pointer ${selectedStatus === status ? "text-dg" : "text-gr"}`}
+            type="button"
+            className={`cursor-pointer ${selectedStatus === status ? "text-dg" : "text-gr"} Heading-3`}
             onClick={() => onStatusChange(status)}
           >
             {status}
-          </h3>
+          </button>
         ))}
       </div>
     </div>

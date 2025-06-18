@@ -1,4 +1,3 @@
-import React from "react";
 import StockStatusItem from "./stock-status-item";
 
 const StockStatus = () => {

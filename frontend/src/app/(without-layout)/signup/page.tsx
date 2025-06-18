@@ -3,9 +3,9 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import Link from "next/link";
-import { useInput } from "@/hooks/useInput";
-import { useVerification } from "@/hooks/useVerification";
-import { usePassword } from "@/hooks/usePassword";
+import { useInput } from "@/hooks/use-input";
+import { useVerification } from "@/hooks/use-verification";
+import { usePassword } from "@/hooks/use-password";
 import { validateEmail } from "@/utils/validation";
 
 const SignupPage = () => {
@@ -81,7 +81,7 @@ const SignupPage = () => {
                       {verification.formatTime(verification.timeLeft)}
                     </span>
                     <button
-                      onClick={verification.resetTimer}
+                      onClick={verification.handleResetTimer}
                       className="text-sv Re_Body-1 underline"
                     >
                       재전송
@@ -118,7 +118,7 @@ const SignupPage = () => {
                   label="비밀번호"
                   value={password.password}
                   onChange={password.handlePasswordChange}
-                  showPasswordToggle={true}
+                  isShowPasswordToggle={true}
                 />
                 <div className="mt-1 mb-2 h-5">
                   {password.errors.password && (
@@ -135,7 +135,7 @@ const SignupPage = () => {
                   label="비밀번호 확인"
                   value={password.confirmPassword}
                   onChange={password.handleConfirmPasswordChange}
-                  showPasswordToggle={true}
+                  isShowPasswordToggle={true}
                 />
                 <div className="mt-1 mb-2 h-5">
                   {password.errors.confirmPassword && (

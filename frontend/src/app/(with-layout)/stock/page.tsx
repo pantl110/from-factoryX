@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import MainTitleSec from "./main-title-sec";
 import Product from "./product/index";
 import Material from "./material/index";

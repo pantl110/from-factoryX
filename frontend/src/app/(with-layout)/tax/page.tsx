@@ -50,7 +50,12 @@ const TaxPage = () => {
       {isPanelOpen && (
         <div
           className="fixed inset-0 bg-bl/50 transition-opacity duration-300"
+          role="button"
+          tabIndex={0}
           onClick={handleClosePanel}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleClosePanel();
+          }}
         />
       )}
       <div

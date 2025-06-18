@@ -1,4 +1,3 @@
-import React from "react";
 import ProductRequiringMaterialItem from "./product-requiring-material-item";
 
 const ProductRequiringMaterial = () => {

@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Chip from "@/ui/chip";
 
 import { StatusType, statusColorMap } from "@/types/status-type";

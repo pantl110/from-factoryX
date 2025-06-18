@@ -1,15 +1,15 @@
-import { StatusType } from "@/app/(with-layout)/project/types";
+import { ProjectStatusType } from "@/types/status-type";
 
-export interface ProjectData {
+export interface ProjectDataModel {
   id: number;
-  status: StatusType;
+  status: ProjectStatusType;
   companyName: string;
   items: string;
   startDate: string;
   endDate: string;
 }
 
-export const projectData: ProjectData[] = [
+export const projectData: ProjectDataModel[] = [
   {
     id: 1,
     status: "견적협의",

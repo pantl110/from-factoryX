@@ -1,4 +1,3 @@
-import React from "react";
 import DocumentViewTitle from "../document-view-title";
 import ProductionTableItem from "./production-table-item";
 

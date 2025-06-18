@@ -32,11 +32,21 @@ const TableItem = ({
   return (
     <div
       className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-gray-50"
+      role="button"
+      tabIndex={0}
       onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") handleClick();
+      }}
     >
       <div
         className="flex items-center py-3 px-2"
+        role="button"
+        tabIndex={0}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") e.stopPropagation();
+        }}
       >
         <input type="checkbox" className="w-4 h-4 border-sv" />
       </div>
