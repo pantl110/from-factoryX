@@ -1,20 +1,26 @@
-import { useState } from "react";
 import Chip from "@/ui/chip";
 import Input from "@/ui/input";
+import { ProjectStatusType, projectStatusColorMap } from "@/types/status-type";
 
-const tabs = [
-  { label: "생산 현황" },
-  { label: "생산 계획" },
-  { label: "견적서" },
-];
+export interface ProductFlowTitleProps {
+  status: ProjectStatusType;
+  tabs: string[];
+  selectedTab: number;
+  setSelectedTab: (idx: number) => void;
+}
 
-const ProductFlowTitle = () => {
-  const [selectedTab, setSelectedTab] = useState(0);
+const ProductFlowTitle = ({
+  status,
+  tabs,
+  selectedTab,
+  setSelectedTab,
+}: ProductFlowTitleProps) => {
+  const { bgColor, textColor } = projectStatusColorMap[status];
   return (
     <div className="px-10 pt-7">
       <div className="flex justify-between">
         <div className="flex flex-col gap-2">
-          <Chip text="생산 중" textColor="text-purple" bgColor="bg-purple-8" />
+          <Chip text={status} textColor={textColor} bgColor={bgColor} />
           <h1 className="Heading-1 text-dg">플라스틱이 좋아</h1>
         </div>
         <div className="flex flex-col gap-1">
@@ -33,7 +39,7 @@ const ProductFlowTitle = () => {
         <div className="flex gap-4 pt-3 w-full">
           {tabs.map((tab, idx) => (
             <button
-              key={tab.label}
+              key={tab}
               type="button"
               onClick={() => setSelectedTab(idx)}
               className={`Heading-3 px-2 pb-2 transition-colors duration-150 ${
@@ -42,7 +48,7 @@ const ProductFlowTitle = () => {
                   : "text-gr border-b-2 border-transparent"
               }`}
             >
-              {tab.label}
+              {tab}
             </button>
           ))}
         </div>

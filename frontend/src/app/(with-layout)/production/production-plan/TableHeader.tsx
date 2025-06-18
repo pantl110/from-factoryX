@@ -1,4 +1,4 @@
-const InProgressTableHeader = () => {
+const TableHeader = () => {
   return (
     <div className="flex items-center w-full h-12 border-t border-b border-[#eeeeee] Me_Body-1 bg-bg rounded text-sv">
       <p className="w-[100px] py-1 px-3">가동상태</p>
@@ -18,4 +18,4 @@ const InProgressTableHeader = () => {
   );
 };
 
-export default InProgressTableHeader;
+export default TableHeader;

@@ -1,23 +1,22 @@
-import ProductFlowTitle from "./product-flow-title";
 import MiniBtn from "@/ui/mini-btn";
 import DeliveryTableHeader from "./delivery-table-header";
 import DeliveryTableItem from "./delivery-table-item";
+import TaxInvoice from "./tax-invoice";
 
-const DeliveryPage = () => {
+const Delivery = () => {
   return (
-    <>
-      <ProductFlowTitle />
-      <div className="flex justify-between px-10 py-4">
+    <div className="flex flex-col px-10 pb-9">
+      <div className="flex justify-between py-4">
         <div className="flex gap-2">
-          <MiniBtn text="납품표 일괄 출력" borderColor="border-lg" />
-          <MiniBtn text="납품표 출력" borderColor="border-lg" />
+          <MiniBtn text="납품표 일괄 출력" borderColor="border-[#eeeeee]" />
+          <MiniBtn text="납품표 출력" borderColor="border-[#eeeeee]" />
         </div>
         <div className="flex gap-2">
-          <MiniBtn text="거래명세서 작성" borderColor="border-lg" />
-          <MiniBtn text="세금계산서 생성" borderColor="border-lg" />
+          <MiniBtn text="거래명세서 생성" borderColor="border-[#eeeeee]" />
+          <MiniBtn text="세금계산서 생성" borderColor="border-[#eeeeee]" />
         </div>
       </div>
-      <div className="px-10">
+      <div className="flex flex-col">
         <DeliveryTableHeader />
         <DeliveryTableItem />
         <DeliveryTableItem />
@@ -30,8 +29,9 @@ const DeliveryPage = () => {
         <DeliveryTableItem />
         <DeliveryTableItem />
       </div>
-    </>
+      <TaxInvoice />
+    </div>
   );
 };
 
-export default DeliveryPage;
+export default Delivery;

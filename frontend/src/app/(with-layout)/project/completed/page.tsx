@@ -1,7 +1,7 @@
 import MainTitleSec from "./main-title-sec";
 import SearchDeleteTable from "@/ui/search-delete-table";
-import TableHeader from "@/app/(with-layout)/project/table-header";
-import TableItem from "@/app/(with-layout)/project/table-item";
+import TableHeader from "../table-header";
+import TableItem from "../table-item";
 
 const CompletedProjectPage = () => {
   return (
@@ -14,6 +14,7 @@ const CompletedProjectPage = () => {
           {[...Array(9)].map((_, index) => (
             <TableItem
               key={index}
+              id={index}
               status="완료"
               companyName="플라스틱이 좋아"
               items="플라스틱 컵 외 3개"
