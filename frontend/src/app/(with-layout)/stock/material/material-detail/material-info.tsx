@@ -17,7 +17,12 @@ const MaterialInfo = () => {
         <InfoLabelValue label="최소 재고" value="2,000" />
       </div>
       <div className="flex">
-        <InfoLabelValue label="재고 상태" value="2,500" />
+        <InfoLabelValue
+          label="재고 상태"
+          chip={{
+            status: "충분",
+          }}
+        />
         <InfoLabelValue label="입고 일자" value="2025-05-26" />
       </div>
       <InfoLabelValue label="창고 위치" value="A동 자재실 랙3번" />
