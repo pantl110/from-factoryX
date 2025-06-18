@@ -1,6 +1,7 @@
 import MiniBtn from "@/ui/mini-btn";
 import DeliveryTableHeader from "./delivery-table-header";
 import DeliveryTableItem from "./delivery-table-item";
+import TaxInvoice from "./tax-invoice";
 
 const Delivery = () => {
   return (
@@ -28,6 +29,7 @@ const Delivery = () => {
         <DeliveryTableItem />
         <DeliveryTableItem />
       </div>
+      <TaxInvoice />
     </div>
   );
 };
