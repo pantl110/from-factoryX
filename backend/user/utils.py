@@ -138,9 +138,21 @@ def generate_verification_code():
 
 
 def send_verification_email(email, code, verification_type):
-    """인증 이메일 발송 (TODO: 실제 이메일 서비스 연동 필요)"""
-
-    if verification_type == "회원가입":
+    """인증 이메일 발송"""
+    from django.conf import settings
+    
+    # AWS SES 사용 여부 확인
+    if getattr(settings, 'USE_SES', False):
+        try:
+            from .backends import SESEmailService
+            ses_service = SESEmailService()
+            return ses_service.send_verification_email(email, code, verification_type)
+        except Exception as e:
+            print(f"SES 이메일 발송 실패: {e}")
+            return False
+    
+    # 개발 환경에서는 콘솔에 출력
+    if verification_type == "signup":
         subject = "[Factory X] 회원가입 인증 코드"
         message = f"""
 안녕하세요! Factory X입니다.
@@ -153,7 +165,7 @@ def send_verification_email(email, code, verification_type):
 
 감사합니다.
         """
-    elif verification_type == "비밀번호재설정":
+    elif verification_type == "password_reset":
         subject = "[Factory X] 비밀번호 재설정 인증 코드"
         message = f"""
 안녕하세요! Factory X입니다.
@@ -170,21 +182,22 @@ def send_verification_email(email, code, verification_type):
         return False
 
     try:
-        # TODO: 실제 운영에서는 SMTP 설정 필요
-        # send_mail(
-        #     subject,
-        #     message,
-        #     settings.DEFAULT_FROM_EMAIL,
-        #     [email],
-        #     fail_silently=False,
-        # )
+        # Django의 기본 이메일 백엔드 사용 (콘솔 또는 SMTP)
+        from django.core.mail import send_mail
+        
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
 
-        # 개발 환경에서는 콘솔에 출력
-        print(f"=== 이메일 발송 (개발용) ===")
+        print(f"=== 이메일 발송 ===")
         print(f"To: {email}")
         print(f"Subject: {subject}")
         print(f"Code: {code}")
-        print(f"========================")
+        print(f"=================")
 
         return True
     except Exception as e:

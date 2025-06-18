@@ -10,7 +10,10 @@ from django.conf import settings
 from api.exceptions import CustomAuthorizationError
 from django.http import JsonResponse
 from api.security import jwt_auth
-
+from email_validator import validate_email, EmailNotValidError
+from user.models import EmailVerification
+from django.utils import timezone
+from datetime import timedelta
 
 User = get_user_model()
 router = Router(tags=["Users"])
@@ -26,29 +29,27 @@ async def send_verification_code(request, data: EmailVerificationRequestIn):
     """이메일 인증 코드 발송"""
     
     # 이메일 형식 검증
-    if "@" not in data.email:
+    try:
+        validate_email(data.email)
+    except EmailNotValidError:
         raise HttpError(400, "올바른 이메일 형식이 아닙니다.")
     
     # 인증 타입 검증
-    valid_types = ["회원가입", "비밀번호재설정"]
+    valid_types = ["signup", "password_reset"]
     if data.verification_type not in valid_types:
         raise HttpError(400, "올바르지 않은 인증 타입입니다.")
     
     # 회원가입의 경우 이미 등록된 이메일인지 확인
-    if data.verification_type == "회원가입":
+    if data.verification_type == "signup":
         if await User.objects.filter(email=data.email).aexists():
             raise HttpError(400, "이미 등록된 이메일입니다.")
     
     # 비밀번호 재설정의 경우 등록된 이메일인지 확인
-    if data.verification_type == "비밀번호재설정":
+    if data.verification_type == "password_reset":
         if not await User.objects.filter(email=data.email).aexists():
             raise HttpError(400, "등록되지 않은 이메일입니다.")
     
     try:
-        from user.models import EmailVerification
-        from django.utils import timezone
-        from datetime import timedelta
-        
         # 기존 미인증 코드 삭제
         await EmailVerification.objects.filter(
             email=data.email,
@@ -147,7 +148,7 @@ async def reset_password(request, data: PasswordResetIn):
         verification = await EmailVerification.objects.aget(
             email=data.email,
             code=data.code,
-            verification_type="비밀번호재설정",
+            verification_type="password_reset",
             is_verified=True
         )
         
@@ -204,7 +205,7 @@ async def signup(request, data: UserSignupIn):
     from user.models import EmailVerification
     verification_exists = await EmailVerification.objects.filter(
         email=data.email,
-        verification_type="회원가입",
+        verification_type="signup",
         is_verified=True
     ).aexists()
     
@@ -235,7 +236,9 @@ async def signup(request, data: UserSignupIn):
 )
 async def login(request, data: UserLoginIn):
     # 이메일 형식 검증
-    if "@" not in data.email:
+    try:
+        validate_email(data.email)
+    except EmailNotValidError:
         raise HttpError(400, "올바른 이메일 형식이 아닙니다.")
     
     # 이메일로 사용자 찾기

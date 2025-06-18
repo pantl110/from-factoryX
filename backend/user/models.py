@@ -267,8 +267,8 @@ class EmailVerification(models.Model):
     """이메일 인증 코드 관리"""
     
     class VerificationType(models.TextChoices):
-        signup = ("회원가입", "회원가입")
-        password_reset = ("비밀번호재설정", "비밀번호재설정")
+        signup = ("signup", "signup")
+        password_reset = ("password_reset", "password_reset")
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(help_text="인증 대상 이메일")

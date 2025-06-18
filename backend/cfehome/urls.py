@@ -27,7 +27,7 @@ base_api = NinjaAPI(
     title="Factory X API",
     version="0.1.0",
     description="공장 관리 시스템 API",
-    docs_url="/docs/",
+    docs_url="/<engine>/",
     # docs_decorator=staff_member_required,  # 개발용으로 주석 처리
     docs=MixedDocs(),
 )

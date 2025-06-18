@@ -23,7 +23,7 @@ class TestEmailVerificationFlow(TransactionTestCase):
         # 1. 회원가입용 이메일 인증 코드 발송
         verification_data = {
             "email": self.test_email,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         response = await self.client.post("/send-verification-code", json=verification_data)
         self.assertEqual(response.status_code, 200)
@@ -33,7 +33,7 @@ class TestEmailVerificationFlow(TransactionTestCase):
         # 2. 발송된 인증 코드 확인 (DB에서 직접 조회)
         verification = await sync_to_async(EmailVerification.objects.get)(
             email=self.test_email,
-            verification_type="회원가입",
+            verification_type="signup",
             is_verified=False
         )
         self.assertIsNotNone(verification)
@@ -43,7 +43,7 @@ class TestEmailVerificationFlow(TransactionTestCase):
         code_verification_data = {
             "email": self.test_email,
             "code": verification.code,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         response = await self.client.post("/verify-code", json=code_verification_data)
         self.assertEqual(response.status_code, 200)
@@ -87,7 +87,7 @@ class TestEmailVerificationFlow(TransactionTestCase):
         # 1-1. 회원가입용 이메일 인증 코드 발송
         verification_data = {
             "email": self.test_email,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         response = await self.client.post("/send-verification-code", json=verification_data)
         self.assertEqual(response.status_code, 200)
@@ -95,14 +95,14 @@ class TestEmailVerificationFlow(TransactionTestCase):
         # 1-2. 인증 코드 확인 및 검증
         verification = await sync_to_async(EmailVerification.objects.get)(
             email=self.test_email,
-            verification_type="회원가입",
+            verification_type="signup",
             is_verified=False
         )
         
         code_verification_data = {
             "email": self.test_email,
             "code": verification.code,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         response = await self.client.post("/verify-code", json=code_verification_data)
         self.assertEqual(response.status_code, 200)
@@ -124,7 +124,7 @@ class TestEmailVerificationFlow(TransactionTestCase):
         # 2-1. 비밀번호 재설정용 이메일 인증 코드 발송
         password_reset_verification_data = {
             "email": self.test_email,
-            "verification_type": "비밀번호재설정"
+            "verification_type": "password_reset"
         }
         response = await self.client.post("/send-verification-code", json=password_reset_verification_data)
         self.assertEqual(response.status_code, 200)
@@ -132,14 +132,14 @@ class TestEmailVerificationFlow(TransactionTestCase):
         # 2-2. 비밀번호 재설정용 인증 코드 확인
         reset_verification = await sync_to_async(EmailVerification.objects.get)(
             email=self.test_email,
-            verification_type="비밀번호재설정",
+            verification_type="password_reset",
             is_verified=False
         )
         
         reset_code_verification_data = {
             "email": self.test_email,
             "code": reset_verification.code,
-            "verification_type": "비밀번호재설정"
+            "verification_type": "password_reset"
         }
         response = await self.client.post("/verify-code", json=reset_code_verification_data)
         self.assertEqual(response.status_code, 200)
@@ -189,7 +189,7 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
         """잘못된 이메일 형식 테스트"""
         verification_data = {
             "email": "invalid-email",
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         response = await self.client.post("/send-verification-code", json=verification_data)
         self.assertEqual(response.status_code, 400)
@@ -212,7 +212,7 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
         # 먼저 정상적으로 인증 코드 발송
         verification_data = {
             "email": self.test_email,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         await self.client.post("/send-verification-code", json=verification_data)
         
@@ -220,7 +220,7 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
         wrong_code_data = {
             "email": self.test_email,
             "code": "000000",
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         response = await self.client.post("/verify-code", json=wrong_code_data)
         self.assertEqual(response.status_code, 400)
@@ -232,14 +232,14 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
         # 인증 코드 발송
         verification_data = {
             "email": self.test_email,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         await self.client.post("/send-verification-code", json=verification_data)
         
         # DB에서 인증 코드를 강제로 만료시킴
         verification = await sync_to_async(EmailVerification.objects.get)(
             email=self.test_email,
-            verification_type="회원가입",
+            verification_type="signup",
             is_verified=False
         )
         verification.expires_at = timezone.now() - timedelta(minutes=1)
@@ -249,7 +249,7 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
         expired_code_data = {
             "email": self.test_email,
             "code": verification.code,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         response = await self.client.post("/verify-code", json=expired_code_data)
         self.assertEqual(response.status_code, 400)
@@ -268,7 +268,7 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
         # 동일한 이메일로 인증 코드 발송 시도
         verification_data = {
             "email": self.test_email,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         response = await self.client.post("/send-verification-code", json=verification_data)
         self.assertEqual(response.status_code, 400)
@@ -279,7 +279,7 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
         """존재하지 않는 이메일로 비밀번호 재설정 시도"""
         verification_data = {
             "email": "nonexistent@example.com",
-            "verification_type": "비밀번호재설정"
+            "verification_type": "password_reset"
         }
         response = await self.client.post("/send-verification-code", json=verification_data)
         self.assertEqual(response.status_code, 400)
@@ -306,20 +306,20 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
         # 먼저 이메일 인증 완료
         verification_data = {
             "email": self.test_email,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         await self.client.post("/send-verification-code", json=verification_data)
         
         verification = await sync_to_async(EmailVerification.objects.get)(
             email=self.test_email,
-            verification_type="회원가입",
+            verification_type="signup",
             is_verified=False
         )
         
         code_verification_data = {
             "email": self.test_email,
             "code": verification.code,
-            "verification_type": "회원가입"
+            "verification_type": "signup"
         }
         await self.client.post("/verify-code", json=code_verification_data)
         
