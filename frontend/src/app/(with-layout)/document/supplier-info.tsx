@@ -1,4 +1,3 @@
-import React from "react";
 import InfoLabelValue from "@/ui/info-label-value";
 
 interface SupplierInfoProps {

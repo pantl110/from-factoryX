@@ -1,4 +1,3 @@
-import React from "react";
 import DocumentViewTitle from "../document-view-title";
 import SupplierInfo from "../supplier-info";
 import BuyerInfo from "./buyer-info";

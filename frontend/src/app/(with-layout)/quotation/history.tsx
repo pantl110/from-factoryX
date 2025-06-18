@@ -1,4 +1,5 @@
 import HistoryItem from "./history-item";
+import dummyHistoryItems from "@/mocks/history-items";
 
 const History = () => {
   return (
@@ -9,11 +10,9 @@ const History = () => {
         <p className="flex-1 py-1 px-3 ">제작수량</p>
         <p className="flex-1 py-1 px-3 ">금액</p>
       </div>
-      <HistoryItem />
-      <HistoryItem />
-      <HistoryItem />
-      <HistoryItem />
-      <HistoryItem />
+      {dummyHistoryItems.map((item, idx) => (
+        <HistoryItem key={idx} {...item} />
+      ))}
     </div>
   );
 };

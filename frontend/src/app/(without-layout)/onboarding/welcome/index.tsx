@@ -1,4 +1,3 @@
-import React from "react";
 import Image from "next/image";
 import onboardingImage from "@/assets/onboarding.png";
 import MiniBtn from "@/ui/mini-btn";

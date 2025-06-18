@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import MiniBtn from "@/ui/mini-btn";
 import { StockTabType } from "./types";
 
@@ -25,18 +24,20 @@ const MainTitleSec = ({ selectedTab, onTabChange }: MainTitleSecProps) => {
         />
       </div>
       <div className="flex gap-4 Heading-3">
-        <h3
+        <button
+          type="button"
           className={`${selectedTab === "product" ? "text-bl" : "text-gr"} cursor-pointer`}
           onClick={() => handleTabClick("product")}
         >
           품목
-        </h3>
-        <h3
+        </button>
+        <button
+          type="button"
           className={`${selectedTab === "material" ? "text-bl" : "text-gr"} cursor-pointer`}
           onClick={() => handleTabClick("material")}
         >
           원자재
-        </h3>
+        </button>
       </div>
     </div>
   );

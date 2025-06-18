@@ -2,7 +2,7 @@
 
 import { useParams, notFound } from "next/navigation";
 import { useState } from "react";
-import { projectData } from "@/mocks/projectData";
+import { projectData, ProjectDataModel } from "@/mocks/project-data";
 import ProductFlowTitle from "../product-flow-title";
 import Quotation from "../quotation";
 import ProductionPlan from "../production-plan";
@@ -23,12 +23,12 @@ const getTabsByStatus = (status: string) => {
 const ProductionPage = () => {
   const params = useParams();
   const id = Number(params.id);
-  const project = projectData.find((item) => item.id === id);
+  const project = projectData.find((item: ProjectDataModel) => item.id === id);
+
+  const tabs = project ? getTabsByStatus(project.status) : [];
+  const [selectedTab, setSelectedTab] = useState(0);
 
   if (!project) return notFound();
-
-  const tabs = getTabsByStatus(project.status);
-  const [selectedTab, setSelectedTab] = useState(0);
 
   return (
     <div>

@@ -1,5 +1,4 @@
 import InfoLabelValue from "@/ui/info-label-value";
-import React from "react";
 
 const MaterialInfo = () => {
   return (

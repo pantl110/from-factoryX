@@ -1,6 +1,6 @@
-import React from "react";
 import ProductItem from "../quotation/product-item";
 import PriceInfo from "@/ui/price-info";
+import dummyProducts from "@/mocks/quotation-products";
 
 const QuotationInfo = () => {
   return (
@@ -17,8 +17,8 @@ const QuotationInfo = () => {
           <p className=" py-1 px-3 flex-1">제작수량</p>
           <p className=" py-1 px-3 flex-1">금액</p>
         </div>
-        {Array.from({ length: 8 }).map((_, index) => (
-          <ProductItem key={index} />
+        {dummyProducts.map((item, index) => (
+          <ProductItem key={index} {...item} />
         ))}
       </div>
     </div>

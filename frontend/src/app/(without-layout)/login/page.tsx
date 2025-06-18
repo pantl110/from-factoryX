@@ -3,7 +3,7 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import Link from "next/link";
-import { useInput } from "@/hooks/useInput";
+import { useInput } from "@/hooks/use-input";
 import { validateEmail, validatePassword } from "@/utils/validation";
 
 const LoginPage = () => {

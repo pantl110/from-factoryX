@@ -186,7 +186,7 @@ const eslintConfig = [
     "plugin:jsx-a11y/recommended",
     "plugin:@next/next/recommended",
     "plugin:prettier/recommended",
-    "next/core-web-vitals"
+    "next/core-web-vitals",
   ),
 ];
 

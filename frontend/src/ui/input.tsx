@@ -11,7 +11,7 @@ interface InputProps {
   required?: boolean;
   type?: InputType;
   disabled?: boolean;
-  showPasswordToggle?: boolean;
+  isShowPasswordToggle?: boolean;
 }
 
 const Input = ({
@@ -22,12 +22,12 @@ const Input = ({
   required,
   type = "text",
   disabled = false,
-  showPasswordToggle = false,
+  isShowPasswordToggle = false,
 }: InputProps) => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [isShowPassword, setisShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    setisShowPassword(!isShowPassword);
   };
 
   return (
@@ -41,7 +41,7 @@ const Input = ({
       <div className="relative">
         <input
           type={
-            showPasswordToggle ? (showPassword ? "text" : "password") : type
+            isShowPasswordToggle ? (isShowPassword ? "text" : "password") : type
           }
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
@@ -53,13 +53,13 @@ const Input = ({
               : "hover:border-primary focus:border-gr focus:text-dg"
           }`}
         />
-        {showPasswordToggle && (
+        {isShowPasswordToggle && (
           <button
             type="button"
             onClick={togglePasswordVisibility}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-dg hover:text-primary transition-colors"
           >
-            {showPassword ? (
+            {isShowPassword ? (
               <EyeSlashIcon size={20} className="text-sv" />
             ) : (
               <EyeIcon size={20} className="text-sv" />
