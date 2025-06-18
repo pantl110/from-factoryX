@@ -28,7 +28,7 @@ const TaxPage = () => {
         <MainTitleSec />
         <div className="px-8">
           <SearchDeleteTable />
-          <div>
+          <div className="w-full overflow-x-auto">
             <TableHeader />
             {[...Array(9)].map((_, index) => (
               <TableItem
@@ -50,7 +50,12 @@ const TaxPage = () => {
       {isPanelOpen && (
         <div
           className="fixed inset-0 bg-bl/50 transition-opacity duration-300"
+          role="button"
+          tabIndex={0}
           onClick={handleClosePanel}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleClosePanel();
+          }}
         />
       )}
       <div

@@ -7,7 +7,7 @@ import Client from "./client";
 
 const MasterData = () => {
   const [selectedChip, setSelectedChip] = useState<"equipment" | "client">(
-    "equipment"
+    "equipment",
   );
 
   const renderContent = () => {

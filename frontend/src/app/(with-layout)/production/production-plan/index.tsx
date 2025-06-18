@@ -1,5 +1,5 @@
-import TableHeader from "./TableHeader";
-import TableItem from "./TableItem";
+import TableHeader from "./table-header";
+import TableItem from "./table-item";
 
 const ProductionPlan = () => {
   return (

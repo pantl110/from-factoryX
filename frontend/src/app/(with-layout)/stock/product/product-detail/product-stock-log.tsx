@@ -1,4 +1,3 @@
-import React from "react";
 import ProductStockLogItem from "./product-stock-log-item";
 
 const ProductStockLog = () => {

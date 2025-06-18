@@ -1,5 +1,3 @@
-import React from "react";
-
 interface MaterialStockLogItemProps {
   date: string;
   status: string;

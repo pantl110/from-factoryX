@@ -26,7 +26,12 @@ const TableItem = ({
   return (
     <div
       className="flex items-center w-[1373px] h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer"
+      role="button"
+      tabIndex={0}
       onClick={() => onClick(id)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClick(id);
+      }}
     >
       <div className="flex items-center py-3 px-2">
         <input type="checkbox" className="w-4 h-4 border-sv" />

@@ -36,7 +36,7 @@ export const useVerification = ({
     setIsVerificationComplete(true);
   };
 
-  const resetTimer = () => {
+  const handleResetTimer = () => {
     setTimeLeft(initialTime);
   };
 
@@ -53,7 +53,7 @@ export const useVerification = ({
     formatTime,
     startVerification,
     completeVerification,
-    resetTimer,
+    handleResetTimer,
     reset,
   };
 };

@@ -1,4 +1,3 @@
-import React from "react";
 import MiniBtn from "@/ui/mini-btn";
 import QuotationDocumentView from "@/app/(with-layout)/document/quotation-doument-view";
 
