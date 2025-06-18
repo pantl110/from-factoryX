@@ -22,7 +22,9 @@ const TaxPage = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-8">
+      <div
+        className={`flex flex-col gap-8 ${isPanelOpen ? "overflow-hidden" : ""}`}
+      >
         <MainTitleSec />
         <div className="px-8">
           <SearchDeleteTable />
@@ -46,7 +48,10 @@ const TaxPage = () => {
         </div>
       </div>
       {isPanelOpen && (
-        <div className="fixed inset-0 bg-bl/50 transition-opacity duration-300" />
+        <div
+          className="fixed inset-0 bg-bl/50 transition-opacity duration-300"
+          onClick={handleClosePanel}
+        />
       )}
       <div
         className={`fixed top-0 right-0 h-full transition-transform duration-300 ease-in-out ${
