@@ -28,7 +28,7 @@ const TaxPage = () => {
         <MainTitleSec />
         <div className="px-8">
           <SearchDeleteTable />
-          <div>
+          <div className="w-full overflow-x-auto">
             <TableHeader />
             {[...Array(9)].map((_, index) => (
               <TableItem

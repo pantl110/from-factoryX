@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { OnboardingStepType } from "./types";
 import Welcome from "./welcome";
 import FirstStep from "./first-step";
-import { OnboardingStepType } from "./types";
+import SecondStep from "./second-step";
+import ThirdStep from "./third-step";
 
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState<OnboardingStepType>("welcome");
@@ -32,9 +34,9 @@ const OnboardingPage = () => {
       case "first-step":
         return <FirstStep onNextStep={handleNextStep} />;
       case "second-step":
-        return <div>Second Step Component</div>; // 두 번째 단계 컴포넌트
+        return <SecondStep onNextStep={handleNextStep} />;
       case "third-step":
-        return <div>Third Step Component</div>; // 세 번째 단계 컴포넌트
+        return <ThirdStep />;
       default:
         return <Welcome onNextStep={handleNextStep} />;
     }
