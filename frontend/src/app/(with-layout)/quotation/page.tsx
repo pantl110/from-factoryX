@@ -10,12 +10,14 @@ import PreviewImage from "./image-preview";
 import History from "./history";
 import EmailView from "./email-view";
 import OverlayView from "@/ui/ovelay-view";
+import PrintView from "./print-view";
 
 const QuotationPage = () => {
   const [activeTab, setActiveTab] = useState<"quotation" | "history">(
     "quotation",
   );
   const [isEmailOpen, setIsEmailOpen] = useState(false);
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
 
   return (
     <>
@@ -30,7 +32,10 @@ const QuotationPage = () => {
             />
             <h1 className="Heading-1 mt-2">플라스틱이 좋아</h1>
           </div>
-          <ButtonSection onEmailClick={() => setIsEmailOpen(true)} />
+          <ButtonSection
+            onEmailClick={() => setIsEmailOpen(true)}
+            onPrintClick={() => setIsPrintOpen(true)}
+          />
         </div>
 
         <div className="flex gap-4 items-center Heading-3 pb-1 border-b border-[#eeeeee]">
@@ -82,6 +87,11 @@ const QuotationPage = () => {
       {isEmailOpen && (
         <OverlayView onClose={() => setIsEmailOpen(false)}>
           <EmailView onClose={() => setIsEmailOpen(false)} />
+        </OverlayView>
+      )}
+      {isPrintOpen && (
+        <OverlayView onClose={() => setIsPrintOpen(false)}>
+          <PrintView onClose={() => setIsPrintOpen(false)} />
         </OverlayView>
       )}
     </>
