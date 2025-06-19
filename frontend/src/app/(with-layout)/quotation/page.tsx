@@ -84,14 +84,16 @@ const QuotationPage = () => {
         </div>
       </div>
 
-      {isEmailOpen && (
-        <OverlayView onClose={() => setIsEmailOpen(false)}>
-          <EmailView onClose={() => setIsEmailOpen(false)} />
-        </OverlayView>
-      )}
+      {/* 출력하기 버튼 */}
       {isPrintOpen && (
         <OverlayView onClose={() => setIsPrintOpen(false)}>
           <PrintView onClose={() => setIsPrintOpen(false)} />
+        </OverlayView>
+      )}
+      {/* 이메일 보내기 버튼 */}
+      {isEmailOpen && (
+        <OverlayView onClose={() => setIsEmailOpen(false)}>
+          <EmailView onClose={() => setIsEmailOpen(false)} />
         </OverlayView>
       )}
     </>
