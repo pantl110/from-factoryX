@@ -2,11 +2,11 @@ import QuotationDocumentView from "@/app/(with-layout)/document/quotation-doumen
 import MiniBtn from "@/ui/mini-btn";
 import { X } from "@phosphor-icons/react/dist/ssr";
 
-interface EmailViewProps {
+interface PrintViewProps {
   onClose?: () => void;
 }
 
-const EmailView = ({ onClose }: EmailViewProps) => {
+const PrintView = ({ onClose }: PrintViewProps) => {
   return (
     <div className="w-full flex flex-col gap-6 p-8">
       <div className="flex justify-between h-13 border-b border-lg">
@@ -21,13 +21,13 @@ const EmailView = ({ onClose }: EmailViewProps) => {
 
       <div className="pb-6 w-full flex justify-between border-b border-lg">
         <div>
-          <h2 className="Heading-2">이메일로 견적서를 보내시겠어요?</h2>
+          <h2 className="Heading-2">견적서를 출력하시겠어요?</h2>
           <div className="mt-2.5 Me_Body-3 text-gr">
-            받는 사람과 제목을 확인한 후, 이메일을 전송해 주세요
+            출력 전 견적서 내용을 한번 더 확인해 주세요.
           </div>
         </div>
         <MiniBtn
-          text="견적서 보내기"
+          text="견적서 출력하기"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="bg-primary-hover"
@@ -39,4 +39,4 @@ const EmailView = ({ onClose }: EmailViewProps) => {
   );
 };
 
-export default EmailView;
+export default PrintView;
