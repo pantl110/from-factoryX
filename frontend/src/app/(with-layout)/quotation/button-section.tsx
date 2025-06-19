@@ -9,9 +9,10 @@ import {
 
 interface ButtonSectionProps {
   onEmailClick?: () => void;
+  onPrintClick?: () => void;
 }
 
-const ButtonSection = ({ onEmailClick }: ButtonSectionProps) => {
+const ButtonSection = ({ onEmailClick, onPrintClick }: ButtonSectionProps) => {
   return (
     <div className="flex gap-1">
       <MiniBtn
@@ -20,6 +21,7 @@ const ButtonSection = ({ onEmailClick }: ButtonSectionProps) => {
         borderColor="border-[#eeeeee]"
         icon={PrinterIcon}
         iconColor="text-sv"
+        onClick={onPrintClick}
       />
       <MiniBtn
         text="이메일 보내기"
