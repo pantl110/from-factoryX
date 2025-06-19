@@ -11,12 +11,12 @@ const EmailView = ({ onClose }: EmailViewProps) => {
     <div className="w-full flex flex-col gap-6 p-8">
       <div className="flex justify-between h-13 border-b border-lg">
         <h3 className="Heading-3">견적서</h3>
-        <div
+        <button
           className="w-10 h-10 flex justify-center items-center cursor-pointer"
           onClick={onClose}
         >
           <X size={20} />
-        </div>
+        </button>
       </div>
 
       <div className="pb-6 w-full flex justify-between border-b border-lg">
