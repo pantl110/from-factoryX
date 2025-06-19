@@ -9,11 +9,13 @@ import InputSection from "./input-section";
 import PreviewImage from "./image-preview";
 import History from "./history";
 import EmailView from "./email-view";
+import OverlayView from "@/ui/ovelay-view";
 
 const QuotationPage = () => {
   const [activeTab, setActiveTab] = useState<"quotation" | "history">(
     "quotation",
   );
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
 
   return (
     <>
@@ -28,7 +30,7 @@ const QuotationPage = () => {
             />
             <h1 className="Heading-1 mt-2">플라스틱이 좋아</h1>
           </div>
-          <ButtonSection />
+          <ButtonSection onEmailClick={() => setIsEmailOpen(true)} />
         </div>
 
         <div className="flex gap-4 items-center Heading-3 pb-1 border-b border-[#eeeeee]">
@@ -54,12 +56,12 @@ const QuotationPage = () => {
           </button>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-y-hidden">
           <div className="flex-1 border-r border-[#eeeeee] py-8 pr-10">
             {activeTab === "quotation" ? <PreviewImage /> : <History />}
           </div>
 
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 min-w-0 overflow-y-auto">
             <div className="flex flex-col flex-1 max-w-[900px] py-8 pl-10 gap-11 ">
               <div className="flex items-center gap-1 pb-3 border-b border-[#eeeeee]">
                 <div className="flex items-center justify-center w-10 h-10">
@@ -76,7 +78,12 @@ const QuotationPage = () => {
           </div>
         </div>
       </div>
-      <EmailView />
+
+      {isEmailOpen && (
+        <OverlayView onClose={() => setIsEmailOpen(false)}>
+          <EmailView onClose={() => setIsEmailOpen(false)} />
+        </OverlayView>
+      )}
     </>
   );
 };

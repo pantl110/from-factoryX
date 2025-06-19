@@ -15,19 +15,21 @@ const RequestInfo = () => {
         />
       </div>
 
-      <div className="w-[938px]">
-        <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv">
-          <p className="flex-1 px-3">품목정보</p>
-          <p className="flex-1 px-3">품목코드</p>
-          <p className="flex-1 px-3">규격</p>
-          <p className="w-[80px] px-3">단위</p>
-          <p className="w-[100px] px-3">단가</p>
-          <p className="flex-1 px-3">제작수량</p>
-          <p className="flex-1 px-3">금액</p>
+      <div className="w-full overflow-x-auto">
+        <div className="w-[938px]">
+          <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv">
+            <p className="flex-1 px-3">품목정보</p>
+            <p className="flex-1 px-3">품목코드</p>
+            <p className="flex-1 px-3">규격</p>
+            <p className="w-[80px] px-3">단위</p>
+            <p className="w-[100px] px-3">단가</p>
+            <p className="flex-1 px-3">제작수량</p>
+            <p className="flex-1 px-3">금액</p>
+          </div>
+          {dummyProducts.map((item, index) => (
+            <ProductItem key={index} {...item} />
+          ))}
         </div>
-        {dummyProducts.map((item, index) => (
-          <ProductItem key={index} {...item} />
-        ))}
       </div>
     </div>
   );

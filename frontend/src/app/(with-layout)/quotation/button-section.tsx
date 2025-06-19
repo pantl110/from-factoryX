@@ -7,7 +7,11 @@ import {
   FactoryIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
-const ButtonSection = () => {
+interface ButtonSectionProps {
+  onEmailClick?: () => void;
+}
+
+const ButtonSection = ({ onEmailClick }: ButtonSectionProps) => {
   return (
     <div className="flex gap-1">
       <MiniBtn
@@ -23,6 +27,7 @@ const ButtonSection = () => {
         borderColor="border-[#eeeeee]"
         icon={PaperPlaneTiltIcon}
         iconColor="text-sv"
+        onClick={onEmailClick}
       />
       <MiniBtn
         text="생산 시작하기"

@@ -1,10 +1,25 @@
-import MiniBtn from "@/ui/mini-btn";
 import QuotationDocumentView from "@/app/(with-layout)/document/quotation-doument-view";
+import MiniBtn from "@/ui/mini-btn";
+import { X } from "@phosphor-icons/react/dist/ssr";
 
-const EmailView = () => {
+interface EmailViewProps {
+  onClose?: () => void;
+}
+
+const EmailView = ({ onClose }: EmailViewProps) => {
   return (
     <>
-      <div className="width-[1000px] px-8 pt-8 flex flex-col gap-6">
+      <div className="w-full flex flex-col gap-6 px-8 pt-8">
+        <div className="flex justify-between h-13 border-b border-lg">
+          <h3 className="Heading-3">견적서</h3>
+          <div
+            className="w-10 h-10 flex justify-center items-center cursor-pointer"
+            onClick={onClose}
+          >
+            <X size={20} />
+          </div>
+        </div>
+
         <div className="pb-6 w-full flex justify-between border-b border-lg">
           <div>
             <h2 className="Heading-2">이메일로 견적서를 보내시겠어요?</h2>
@@ -12,23 +27,16 @@ const EmailView = () => {
               받는 사람과 제목을 확인한 후, 이메일을 전송해 주세요
             </div>
           </div>
-          <div className="flex gap-2.5 justify-end ">
-            <MiniBtn
-              text="취소하기"
-              textColor="text-sv"
-              bgColor="bg-wh"
-              // borderColor="border-[#eeeeee]"
-            />
-            <MiniBtn
-              text="견적서 보내기"
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="bg-primary-hover"
-            />
-          </div>
+          <MiniBtn
+            text="견적서 보내기"
+            textColor="text-wh"
+            bgColor="bg-primary"
+            hoverColor="bg-primary-hover"
+          />
         </div>
+
+        <QuotationDocumentView />
       </div>
-      <QuotationDocumentView />
     </>
   );
 };
