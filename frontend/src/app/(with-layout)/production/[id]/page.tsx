@@ -11,9 +11,9 @@ import ProductionLog from "../production-log";
 import Delivery from "../delivery";
 
 const getTabsByStatus = (status: string) => {
-  if (status === "생산 대기") return ["생산 계획", "견적서"];
-  if (status === "생산 중") return ["생산 현황", "생산 계획", "견적서"];
-  if (status === "완료")
+  if (status === "생산 대기") return ["생산 계획", "주문서"];
+  if (status === "생산 중") return ["생산 현황", "생산 계획", "주문서"];
+  if (status === "생산 완료")
     return ["생산 내역", "생산 현황", "생산 계획", "견적서"];
   if (status === "납품")
     return ["납품", "생산 내역", "생산 현황", "생산 계획", "견적서"];

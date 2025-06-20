@@ -12,7 +12,7 @@ export interface ProjectDataModel {
 export const projectData: ProjectDataModel[] = [
   {
     id: 1,
-    status: "견적협의",
+    status: "견적 협의",
     companyName: "플라스틱이 좋아",
     items: "플라스틱 컵 외 2개",
     startDate: "2024-03-20",
@@ -36,7 +36,7 @@ export const projectData: ProjectDataModel[] = [
   },
   {
     id: 4,
-    status: "완료",
+    status: "생산 완료",
     companyName: "텍스타일",
     items: "면 티셔츠 외 5개",
     startDate: "2024-03-15",

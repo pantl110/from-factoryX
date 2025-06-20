@@ -2,7 +2,7 @@ import Chip from "@/ui/chip";
 
 const PendingQuoteItem = () => {
   return (
-    <div className="flex flex-col w-[453px] gap-2 p-4 border rounded-lg border-[#eeeeee]">
+    <div className="flex flex-col flex-shrink-0 w-[453px] gap-2 p-4 border rounded-lg border-[#eeeeee]">
       <div className="flex flex-col gap-2.5">
         <h4 className="Heading-4">알루미늄이 싫어!</h4>
         <div className="Me_Body-1 text-sv">

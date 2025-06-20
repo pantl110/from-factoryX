@@ -1,6 +1,6 @@
 import Chip from "@/ui/chip";
 import Input from "@/ui/input";
-import { ProjectStatusType, projectStatusColorMap } from "@/types/status-type";
+import { ProjectStatusType, ProjectStatusColorMap } from "@/types/status-type";
 
 export interface ProductFlowTitleProps {
   status: ProjectStatusType;
@@ -15,7 +15,7 @@ const ProductFlowTitle = ({
   selectedTab,
   setSelectedTab,
 }: ProductFlowTitleProps) => {
-  const { bgColor, textColor } = projectStatusColorMap[status];
+  const { bgColor, textColor } = ProjectStatusColorMap[status];
   return (
     <div className="px-10 pt-7">
       <div className="flex justify-between">

@@ -1,10 +1,10 @@
 import MiniBtn from "@/ui/mini-btn";
 import ProductItem from "./product-item";
 import dummyProducts from "@/mocks/quotation-products";
-import { ProductType } from "./types";
+import { ProductProps } from "./types";
 
 interface RequestInfoProps {
-  onProductClick: (product: ProductType) => void;
+  onProductClick: (product: ProductProps) => void;
 }
 
 const RequestInfo = ({ onProductClick }: RequestInfoProps) => {

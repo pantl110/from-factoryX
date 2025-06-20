@@ -1,6 +1,6 @@
-import { ProductType } from "./types";
+import { ProductProps } from "./types";
 
-interface ProductItemProps extends ProductType {
+interface ProductItemProps extends ProductProps {
   onClick?: () => void;
 }
 
