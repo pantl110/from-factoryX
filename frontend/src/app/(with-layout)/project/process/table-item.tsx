@@ -2,7 +2,7 @@
 
 import Chip from "@/ui/chip";
 import { useRouter } from "next/navigation";
-import { ProjectStatusType, projectStatusColorMap } from "@/types/status-type";
+import { ProjectStatusType, ProjectStatusColorMap } from "@/types/status-type";
 
 interface TableItemProps {
   id: number;
@@ -22,10 +22,10 @@ const TableItem = ({
   endDate,
 }: TableItemProps) => {
   const router = useRouter();
-  const chipColors = projectStatusColorMap[status];
+  const chipColors = ProjectStatusColorMap[status];
 
   const handleClick = () => {
-    if (status === "견적협의") return;
+    if (status === "견적 협의") return;
     router.push(`/production/${id}`);
   };
 

@@ -14,20 +14,20 @@ import History from "./history";
 import EmailView from "./email-view";
 import OverlayView from "@/ui/ovelay-view";
 import PrintView from "./print-view";
-import { ProductType } from "./types";
+import { ProductProps } from "./types";
 
 const QuotationPage = () => {
   const [activeTab, setActiveTab] = useState<"quotation" | "history">(
     "quotation",
   );
-  const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(
+  const [selectedProduct, setSelectedProduct] = useState<ProductProps | null>(
     null,
   );
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
 
-  const handleProductClick = (product: ProductType) => {
+  const handleProductClick = (product: ProductProps) => {
     setSelectedProduct(product);
     setActiveTab("history"); // 품목 클릭 시 히스토리탭 활성화
     setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소

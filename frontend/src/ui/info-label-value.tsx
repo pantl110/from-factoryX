@@ -1,16 +1,19 @@
 import Chip from "./chip";
-import { StatusType, statusColorMap } from "@/types/status-type";
+import {
+  InventoryStatusType,
+  InventoryStatusColorMap,
+} from "@/types/status-type";
 
 interface InfoLabelValueProps {
   label: string;
   value?: string;
   chip?: {
-    status: StatusType;
+    status: InventoryStatusType;
   };
 }
 
 const InfoLabelValue = ({ label, value, chip }: InfoLabelValueProps) => {
-  const colors = chip ? statusColorMap[chip.status] : null;
+  const colors = chip ? InventoryStatusColorMap[chip.status] : null;
 
   return (
     <div className="flex w-full Me_Body-1">

@@ -14,10 +14,10 @@ const MainTitleSec = ({
 }: MainTitleSecProps) => {
   const statuses: (ProjectStatusType | "전체")[] = [
     "전체",
-    "견적협의",
+    "견적 협의",
     "생산 대기",
     "생산 중",
-    "완료",
+    "생산 완료",
     "납품",
   ];
 

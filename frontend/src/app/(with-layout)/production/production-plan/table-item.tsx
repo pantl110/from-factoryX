@@ -1,9 +1,9 @@
 import Chip from "@/ui/chip";
 import {
   OperationStatusType,
-  operationStatusColorMap,
+  OperationStatusColorMap,
   InventoryStatusType,
-  inventoryStatusColorMap,
+  InventoryStatusColorMap,
 } from "@/types/status-type";
 
 interface TableItemProps {
@@ -12,8 +12,8 @@ interface TableItemProps {
 }
 
 const TableItem = ({ operationStatus, materialStatus }: TableItemProps) => {
-  const { textColor, bgColor } = operationStatusColorMap[operationStatus];
-  const materialColor = inventoryStatusColorMap[materialStatus];
+  const { textColor, bgColor } = OperationStatusColorMap[operationStatus];
+  const materialColor = InventoryStatusColorMap[materialStatus];
   return (
     <div className="flex items-center w-[2040px] h-12 border-b border-[#eeeeee] Me_Body-1 bg-white text-dg">
       <div className="w-[100px] py-1 px-3">
