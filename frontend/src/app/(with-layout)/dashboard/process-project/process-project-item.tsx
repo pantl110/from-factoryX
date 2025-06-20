@@ -2,7 +2,7 @@ import Chip from "@/ui/chip";
 
 const ProcessProjectItem = () => {
   return (
-    <div className="flex flex-col gap-4 w-[293px] p-4 border rounded-lg border-[#eeeeee]">
+    <div className="flex flex-col gap-4 w-[293px] flex-shrink-0 p-4 border rounded-lg border-[#eeeeee]">
       <div className="flex flex-col gap-1">
         <h4 className="Heading-4">플라스틱이 좋아</h4>
         <div className="Me_Body-1 text-sv">

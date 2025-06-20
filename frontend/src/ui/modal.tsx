@@ -17,7 +17,6 @@ const Modal = ({ children, title, subtitle, onClose }: ModalProps) => {
         if (e.key === "Escape") onClose?.();
       }}
     >
-      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
       <div
         className="bg-white w-[631px] p-6 rounded-lg"
         onClick={(e) => e.stopPropagation()}

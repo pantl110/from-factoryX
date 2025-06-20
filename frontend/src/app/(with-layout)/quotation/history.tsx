@@ -1,9 +1,9 @@
 import HistoryItem from "./history-item";
 import dummyHistoryItems from "@/mocks/history-items";
-import { ProductType } from "./types";
+import { ProductProps } from "./types";
 
 interface HistoryProps {
-  selectedProduct: ProductType;
+  selectedProduct: ProductProps;
 }
 
 const History = ({ selectedProduct }: HistoryProps) => {

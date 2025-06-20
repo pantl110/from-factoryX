@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import MainTitleSec from "./main-title-sec";
 import SearchDeleteTable from "@/ui/search-delete-table";
-import TableHeader from "@/app/(with-layout)/project/table-header";
-import TableItem from "@/app/(with-layout)/project/table-item";
 import { projectData } from "@/mocks/project-data";
 import { ProjectStatusType } from "@/types/status-type";
+import TableHeader from "./table-header";
+import TableItem from "./table-item";
 
 const ProcessProjectPage = () => {
   const router = useRouter();
@@ -34,7 +34,7 @@ const ProcessProjectPage = () => {
       <div className="px-8">
         <SearchDeleteTable />
         <div>
-          <TableHeader lastLabel="납기일자" />
+          <TableHeader />
           {filteredProjects.map((project) => (
             <TableItem
               key={project.id}
