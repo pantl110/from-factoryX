@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import Chip from "@/ui/chip";
-import { ArrowLineLeftIcon } from "@phosphor-icons/react/dist/ssr";
+import {
+  ArrowLineLeftIcon,
+  ArrowLineRightIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import RequestInfo from "./request-info";
 import ButtonSection from "./button-section";
 import InputSection from "./input-section";
@@ -22,21 +25,23 @@ const QuotationPage = () => {
   );
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
+  const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
 
   const handleProductClick = (product: ProductType) => {
     setSelectedProduct(product);
-    setActiveTab("history"); // 품목 클릭 시 히스토리탭이 활성화
+    setActiveTab("history"); // 품목 클릭 시 히스토리탭 활성화
+    setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
   };
-
-  const handleBackToPreview = () => {
+  const activateQuotationTab = () => {
     setSelectedProduct(null);
     setActiveTab("quotation"); // 견적요청서탭 활성화
+    setIsRightPanelExpanded(false); // 견적요청서탭 활성화 시 오른쪽 패널 다시 축소
   };
 
   return (
     <>
-      <div className="pt-7 px-10 h-[calc(100vh-61px)] flex flex-col">
-        <div className="flex gap-1 mb-4">
+      <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
+        <div className="flex gap-1 mb-4 pr-10">
           <div className="flex-1 gap-1">
             <Chip
               text="견적 협의중"
@@ -52,14 +57,14 @@ const QuotationPage = () => {
           />
         </div>
 
-        <div className="flex gap-4 items-center Heading-3 pb-1 border-b border-[#eeeeee]">
+        <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-[#eeeeee]">
           <button
             className={`${
               activeTab === "quotation"
                 ? "text-primary underline decoration-primary decoration-2 underline-offset-8"
                 : "text-gr"
             } cursor-pointer`}
-            onClick={handleBackToPreview}
+            onClick={activateQuotationTab}
           >
             견적요청서
           </button>
@@ -75,7 +80,12 @@ const QuotationPage = () => {
         </div>
 
         <div className="flex flex-1 overflow-y-hidden">
-          <div className="flex-1 border-r border-[#eeeeee] py-8 pr-10">
+          <div
+            className={`         
+              ${isRightPanelExpanded ? "hidden" : "w-1/2 min-w-[50%]"}
+              overflow-hidden border-r border-[#eeeeee] py-8 pr-10
+            `}
+          >
             {selectedProduct ? (
               <History selectedProduct={selectedProduct} />
             ) : (
@@ -83,12 +93,26 @@ const QuotationPage = () => {
             )}
           </div>
 
-          <div className="flex-1 min-w-0 overflow-y-auto">
-            <div className="flex flex-col flex-1 max-w-[900px] py-8 pl-10 gap-11 ">
+          <div
+            className={`         
+              ${isRightPanelExpanded ? "w-full" : "w-1/2"} overflow-y-auto
+            `}
+          >
+            <div
+              className={`flex flex-col flex-1 py-8 gap-11 pr-10
+              ${isRightPanelExpanded ? "pl-0" : "pl-10"}`}
+            >
               <div className="flex items-center gap-1 pb-3 border-b border-[#eeeeee]">
-                <div className="flex items-center justify-center w-10 h-10">
-                  <ArrowLineLeftIcon size={20} className="text-dg" />
-                </div>
+                <button
+                  className="flex items-center justify-center w-10 h-10 cursor-pointer"
+                  onClick={() => setIsRightPanelExpanded(!isRightPanelExpanded)}
+                >
+                  {isRightPanelExpanded ? (
+                    <ArrowLineRightIcon size={20} className="text-dg" />
+                  ) : (
+                    <ArrowLineLeftIcon size={20} className="text-dg" />
+                  )}
+                </button>
                 <h2 className="flex-1 Heading-2">견적서</h2>
               </div>
               <div className="flex flex-col flex-1 gap-5">
@@ -96,7 +120,14 @@ const QuotationPage = () => {
                 <InputSection />
               </div>
             </div>
-            <RequestInfo onProductClick={handleProductClick} />
+
+            <div
+              className={`flex flex-col gap-5 pb-8 pr-10 ${
+                isRightPanelExpanded ? "pl-0" : "pl-10"
+              }`}
+            >
+              <RequestInfo onProductClick={handleProductClick} />
+            </div>
           </div>
         </div>
       </div>
