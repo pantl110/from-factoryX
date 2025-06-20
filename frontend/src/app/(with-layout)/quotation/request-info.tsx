@@ -9,7 +9,7 @@ interface RequestInfoProps {
 
 const RequestInfo = ({ onProductClick }: RequestInfoProps) => {
   return (
-    <div className="pl-8 flex flex-col gap-5">
+    <>
       <div className="flex justify-between items-center">
         <h3 className="Heading-3">요청정보</h3>
         <MiniBtn
@@ -40,7 +40,7 @@ const RequestInfo = ({ onProductClick }: RequestInfoProps) => {
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
