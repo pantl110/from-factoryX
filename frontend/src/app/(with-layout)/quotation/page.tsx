@@ -11,13 +11,27 @@ import History from "./history";
 import EmailView from "./email-view";
 import OverlayView from "@/ui/ovelay-view";
 import PrintView from "./print-view";
+import { ProductType } from "./types";
 
 const QuotationPage = () => {
   const [activeTab, setActiveTab] = useState<"quotation" | "history">(
     "quotation",
   );
+  const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(
+    null,
+  );
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
+
+  const handleProductClick = (product: ProductType) => {
+    setSelectedProduct(product);
+    setActiveTab("history"); // 품목 클릭 시 히스토리탭이 활성화
+  };
+
+  const handleBackToPreview = () => {
+    setSelectedProduct(null);
+    setActiveTab("quotation"); // 견적요청서탭 활성화
+  };
 
   return (
     <>
@@ -40,17 +54,16 @@ const QuotationPage = () => {
 
         <div className="flex gap-4 items-center Heading-3 pb-1 border-b border-[#eeeeee]">
           <button
-            onClick={() => setActiveTab("quotation")}
             className={`${
               activeTab === "quotation"
                 ? "text-primary underline decoration-primary decoration-2 underline-offset-8"
                 : "text-gr"
-            }`}
+            } cursor-pointer`}
+            onClick={handleBackToPreview}
           >
             견적요청서
           </button>
-          <button
-            onClick={() => setActiveTab("history")}
+          <div
             className={`${
               activeTab === "history"
                 ? "text-primary underline decoration-primary decoration-2 underline-offset-8"
@@ -58,12 +71,16 @@ const QuotationPage = () => {
             }`}
           >
             히스토리
-          </button>
+          </div>
         </div>
 
         <div className="flex flex-1 overflow-y-hidden">
           <div className="flex-1 border-r border-[#eeeeee] py-8 pr-10">
-            {activeTab === "quotation" ? <PreviewImage /> : <History />}
+            {selectedProduct ? (
+              <History selectedProduct={selectedProduct} />
+            ) : (
+              <PreviewImage />
+            )}
           </div>
 
           <div className="flex-1 min-w-0 overflow-y-auto">
@@ -79,7 +96,7 @@ const QuotationPage = () => {
                 <InputSection />
               </div>
             </div>
-            <RequestInfo />
+            <RequestInfo onProductClick={handleProductClick} />
           </div>
         </div>
       </div>

@@ -20,7 +20,7 @@ const ButtonSection = ({ onEmailClick, onPrintClick }: ButtonSectionProps) => {
         textColor="text-dg"
         borderColor="border-[#eeeeee]"
         icon={PrinterIcon}
-        iconColor="text-sv"
+        iconColor="text-dg"
         onClick={onPrintClick}
       />
       <MiniBtn
@@ -28,7 +28,7 @@ const ButtonSection = ({ onEmailClick, onPrintClick }: ButtonSectionProps) => {
         textColor="text-dg"
         borderColor="border-[#eeeeee]"
         icon={PaperPlaneTiltIcon}
-        iconColor="text-sv"
+        iconColor="text-dg"
         onClick={onEmailClick}
       />
       <MiniBtn
