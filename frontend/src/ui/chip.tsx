@@ -21,7 +21,7 @@ const Chip = ({
 }: ChipProps) => {
   return (
     <div
-      className={`${containerWidth} cursor-pointer`}
+      className={`${containerWidth}`}
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
