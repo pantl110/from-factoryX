@@ -1,7 +1,7 @@
 "use client";
 
 import Chip from "@/ui/chip";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   CompletedProjectStatusType,
   CompletedProjectStatusColorMap,
@@ -11,32 +11,27 @@ interface TableItemProps {
   id: number;
   status: CompletedProjectStatusType;
   companyName: string;
-  items: string;
+  productName: string;
   date: string;
-  isTransactionIssued: boolean;
-  isTaxInvoiceIssued: boolean;
 }
 
 const TableItem = ({
   id,
   status,
   companyName,
-  items,
+  productName,
   date,
-  isTransactionIssued,
-  isTaxInvoiceIssued,
 }: TableItemProps) => {
-  // const router = useRouter();
+  const router = useRouter();
   const chipColors = CompletedProjectStatusColorMap[status];
-
   const handleClick = () => {
-    // if (status === "견적협의") return;
-    // router.push(`/production/${id}`);
+    if (status === "중단") return;
+    router.push(`/production/${id}`);
   };
 
   return (
     <div
-      className="flex items-center h-14 w-full minw-[1146px] border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-gray-50"
+      className="flex items-center h-14 w-full min-w-[1146px] border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-gray-50"
       role="button"
       tabIndex={0}
       onClick={handleClick}
@@ -63,30 +58,8 @@ const TableItem = ({
         />
       </div>
       <p className="flex-1 py-1 px-3 text-dg">{companyName}</p>
-      <p className="flex-1 py-1 px-3 text-dg">{items}</p>
+      <p className="flex-1 py-1 px-3 text-dg">{productName}</p>
       <p className="w-[200px] py-1 px-3 text-dg">{date}</p>
-      <p
-        className={`w-[200px] py-1 px-3 ${
-          status === "중단"
-            ? "text-sv"
-            : isTransactionIssued
-              ? "text-sv"
-              : "text-red"
-        }`}
-      >
-        {status === "중단" ? "-" : isTransactionIssued ? "완료" : "미작성"}
-      </p>
-      <p
-        className={`w-[200px] py-1 px-3 ${
-          status === "중단"
-            ? "text-sv"
-            : isTaxInvoiceIssued
-              ? "text-sv"
-              : "text-red"
-        }`}
-      >
-        {status === "중단" ? "-" : isTaxInvoiceIssued ? "완료" : "미작성"}
-      </p>
     </div>
   );
 };
