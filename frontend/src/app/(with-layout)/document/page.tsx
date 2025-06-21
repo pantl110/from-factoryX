@@ -4,14 +4,16 @@ import { useState } from "react";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import MainTitleSec from "./main-title-sec";
 import DocumentTable from "./document-table";
-import { DocumentType } from "./types";
 import QuotationDocumentView from "./quotation-doument-view";
 import ProductionDocumentView from "./production-document-view";
 import TransactionDocumentView from "./transaction-document-view";
 import Pagination from "@/components/pagination";
+import { DocumentType } from "@/types/status-type";
 
 const DocumentPage = () => {
-  const [selectedType, setSelectedType] = useState<DocumentType>("all");
+  const [selectedType, setSelectedType] = useState<DocumentType | "전체">(
+    "전체",
+  );
 
   return (
     <>
@@ -23,7 +25,7 @@ const DocumentPage = () => {
 
         <div className="px-8">
           <SearchDeleteTable />
-          <DocumentTable documentType={selectedType} />
+          <DocumentTable selectedType={selectedType} />
         </div>
 
         <Pagination />

@@ -1,12 +1,18 @@
 import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import DocumentTableItem from "./document-table-item";
-import { DocumentType } from "./types";
+import { DocumentType } from "@/types/status-type";
+import documentData from "@/mocks/document-data";
 
 interface DocumentTableProps {
-  documentType: DocumentType;
+  selectedType: DocumentType | "전체";
 }
 
-const DocumentTable = ({ documentType }: DocumentTableProps) => {
+const DocumentTable = ({ selectedType }: DocumentTableProps) => {
+  const filteredData =
+    selectedType === "전체"
+      ? documentData
+      : documentData.filter((item) => item.documentType === selectedType);
+
   return (
     <div>
       <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
@@ -18,8 +24,8 @@ const DocumentTable = ({ documentType }: DocumentTableProps) => {
         <p className="py-1 px-3 w-[150px]">등록일</p>
       </div>
 
-      {[...Array(9)].map((_, index) => (
-        <DocumentTableItem key={index} type={documentType} />
+      {filteredData.map((item, index) => (
+        <DocumentTableItem key={index} data={item} />
       ))}
     </div>
   );

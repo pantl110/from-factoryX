@@ -1,43 +1,34 @@
-import { DocumentType } from "./types";
+import { DocumentType } from "@/types/status-type";
 
 interface MainTitleSecProps {
-  selectedType: DocumentType;
-  setSelectedType: (type: DocumentType) => void;
+  selectedType: DocumentType | "전체";
+  setSelectedType: (type: DocumentType | "전체") => void;
 }
 
 const MainTitleSec = ({ selectedType, setSelectedType }: MainTitleSecProps) => {
+  const documentTypes = [
+    "전체",
+    "주문서",
+    "생산지시서",
+    "거래명세서",
+    "매출 세금계산서",
+    "매입 세금계산서",
+  ];
+
   return (
     <div className="flex flex-col gap-8 pt-10 px-10">
       <h1 className="Heading-1 text-dg">문서함</h1>
       <div className="flex gap-4 items-center Heading-3">
-        <button
-          type="button"
-          className={`cursor-pointer ${selectedType === "all" ? "text-dg" : "text-gr"} Heading-3`}
-          onClick={() => setSelectedType("all")}
-        >
-          전체
-        </button>
-        <button
-          type="button"
-          className={`cursor-pointer ${selectedType === "quotation" ? "text-dg" : "text-gr"} Heading-3`}
-          onClick={() => setSelectedType("quotation")}
-        >
-          견적서
-        </button>
-        <button
-          type="button"
-          className={`cursor-pointer ${selectedType === "production" ? "text-dg" : "text-gr"} Heading-3`}
-          onClick={() => setSelectedType("production")}
-        >
-          생산지시서
-        </button>
-        <button
-          type="button"
-          className={`cursor-pointer ${selectedType === "transaction" ? "text-dg" : "text-gr"} Heading-3`}
-          onClick={() => setSelectedType("transaction")}
-        >
-          거래명세서
-        </button>
+        {documentTypes.map((type) => (
+          <button
+            key={type}
+            type="button"
+            className={`cursor-pointer Heading-3 ${selectedType === type ? "text-dg" : "text-gr"}`}
+            onClick={() => setSelectedType(type)}
+          >
+            {type}
+          </button>
+        ))}
       </div>
     </div>
   );
