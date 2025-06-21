@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import MainTitleSec from "./main-title-sec";
 import SearchDeleteTable from "@/ui/search-delete-table";
@@ -12,11 +11,11 @@ import SelectModal from "./modals/select-modal";
 import UploadModal from "./modals/upload-modal";
 
 const ProcessProjectPage = () => {
-  // const router = useRouter();
+  // 탭 상태
   const [selectedStatus, setSelectedStatus] = useState<
     ProjectStatusType | "전체"
   >("전체");
-  // 모달 상태변화
+  // 모달 상태
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
@@ -54,6 +53,8 @@ const ProcessProjectPage = () => {
                 items={project.items}
                 startDate={project.startDate}
                 endDate={project.endDate}
+                transactionIssued={project.transactionIssued}
+                taxIssued={project.taxIssued}
               />
             ))}
           </div>

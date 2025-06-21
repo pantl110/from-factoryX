@@ -44,6 +44,24 @@ export const ProjectStatusColorMap: Record<
   납품: { bgColor: "bg-green-8", textColor: "text-green" },
 };
 
+// 거래명세서 발행 상태
+export type TransactionStatusType = "미작성" | "작성 완료";
+
+export const TransactionStatusColorMap: Record<TransactionStatusType, string> =
+  {
+    미작성: "text-gr",
+    "작성 완료": "text-primary",
+  };
+
+// 세금계산서 발행 상태
+export type TaxStatusType = "미발행" | "발행 중" | "발행 완료";
+
+export const TaxStatusColorMap: Record<TaxStatusType, string> = {
+  미발행: "text-gr",
+  "발행 중": "text-yellow",
+  "발행 완료": "text-primary",
+};
+
 // 완료된 프로젝트 상태
 export type CompletedProjectStatusType = "완료" | "중단";
 
