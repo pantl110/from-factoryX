@@ -28,11 +28,14 @@ const MiniBtn = ({
   disabled = false,
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
-  const hoverClass = hoverColor && !disabled ? `hover:${hoverColor}` : "";
 
   return (
     <button
-      className={`px-4 py-2 rounded-md Me_Body-1 ${disabled ? "bg-lg text-gr" : `${bgColor} ${textColor}`} ${borderClass} ${hoverClass} flex items-center justify-center gap-2 ${
+      className={`px-4 py-2 rounded-md Me_Body-1 ${
+        disabled
+          ? "bg-lg text-gr"
+          : `${bgColor} ${textColor} ${hoverColor || ""}`
+      } ${borderClass} flex items-center justify-center gap-2 ${
         disabled ? "cursor-not-allowed" : "cursor-pointer"
       }`}
       style={{ height: `${height}px` }}
