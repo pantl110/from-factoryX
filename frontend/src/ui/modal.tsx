@@ -5,20 +5,27 @@ interface ModalProps {
   title?: string;
   subtitle?: string;
   onClose?: () => void;
+  width?: string;
 }
 
-const Modal = ({ children, title, subtitle, onClose }: ModalProps) => {
+const Modal = ({
+  children,
+  title,
+  subtitle,
+  onClose,
+  width = "w-[631px]",
+}: ModalProps) => {
   return (
     <div
-      role="presentation"
+      // role="presentation"
       className="bg-black/50 w-full h-full fixed top-0 left-0 z-50 flex justify-center items-center"
       onClick={onClose}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") onClose?.();
-      }}
+      // onKeyDown={(e) => {
+      //   if (e.key === "Escape") onClose?.();
+      // }}
     >
       <div
-        className="bg-white w-[631px] p-6 rounded-lg"
+        className={`bg-white ${width} p-6 rounded-lg`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center">

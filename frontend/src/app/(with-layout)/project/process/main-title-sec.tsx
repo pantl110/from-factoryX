@@ -28,7 +28,7 @@ const MainTitleSec = ({
         <MiniBtn
           bgColor="bg-primary"
           textColor="text-white"
-          text="새 견적서 작성하기"
+          text="견적서 생성하기"
           onClick={onNewQuotation}
         />
       </div>
