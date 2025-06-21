@@ -3,7 +3,7 @@ import Input from "@/ui/input";
 import { ProjectStatusType, ProjectStatusColorMap } from "@/types/status-type";
 
 export interface ProductFlowTitleProps {
-  status: ProjectStatusType;
+  status: ProjectStatusType | "완료";
   tabs: string[];
   selectedTab: number;
   setSelectedTab: (idx: number) => void;
@@ -15,12 +15,13 @@ const ProductFlowTitle = ({
   selectedTab,
   setSelectedTab,
 }: ProductFlowTitleProps) => {
-  const { bgColor, textColor } = ProjectStatusColorMap[status];
+  const newStatus = status === "완료" ? "생산 완료" : status;
+  const { bgColor, textColor } = ProjectStatusColorMap[newStatus];
   return (
     <div className="px-10 pt-7">
       <div className="flex justify-between">
         <div className="flex flex-col gap-2">
-          <Chip text={status} textColor={textColor} bgColor={bgColor} />
+          <Chip text={newStatus} textColor={textColor} bgColor={bgColor} />
           <h1 className="Heading-1 text-dg">플라스틱이 좋아</h1>
         </div>
         <div className="flex flex-col gap-1">

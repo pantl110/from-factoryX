@@ -111,3 +111,11 @@ export const DocumentTypeColorMap: Record<DocumentType, StatusColorModel> = {
   "매출 세금계산서": { bgColor: "bg-primary-8", textColor: "text-primary" },
   "매입 세금계산서": { bgColor: "bg-red-8", textColor: "text-red" },
 };
+
+// 생산 흐름 상태 (진행중 + 완료됨)
+export type FlowStatusType = ProjectStatusType | CompletedProjectStatusType;
+
+export const FlowStatusColorMap: Record<FlowStatusType, StatusColorModel> = {
+  ...ProjectStatusColorMap,
+  ...CompletedProjectStatusColorMap,
+};
