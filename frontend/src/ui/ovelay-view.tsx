@@ -1,9 +1,20 @@
+import { useEffect } from "react";
+
 interface OverlayViewProps {
   children: React.ReactNode;
   onClose?: () => void;
 }
 
 const OverlayView = ({ children, onClose }: OverlayViewProps) => {
+  useEffect(() => {
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   return (
     <div
       role="presentation"

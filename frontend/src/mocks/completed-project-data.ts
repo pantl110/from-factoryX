@@ -6,8 +6,6 @@ export interface CompletedProjectDataModel {
   companyName: string;
   items: string;
   date: string;
-  isTransactionIssued: boolean;
-  isTaxInvoiceIssued: boolean;
 }
 
 const completedProjectData: CompletedProjectDataModel[] = [
@@ -17,8 +15,8 @@ const completedProjectData: CompletedProjectDataModel[] = [
     companyName: "플라스틱이 좋아",
     items: "플라스틱 컵 외 3개",
     date: "2025-06-31",
-    isTransactionIssued: true,
-    isTaxInvoiceIssued: true,
+    isTransactionIssued: "미작성",
+    isTaxIssued: "미발행",
   },
   {
     id: 2,
@@ -26,8 +24,8 @@ const completedProjectData: CompletedProjectDataModel[] = [
     companyName: "다이몰드",
     items: "금형케이스",
     date: "2024-06-30",
-    isTransactionIssued: true,
-    isTaxInvoiceIssued: true,
+    isTransactionIssued: "미작성",
+    isTaxIssued: "미발행",
   },
   {
     id: 3,
@@ -36,7 +34,7 @@ const completedProjectData: CompletedProjectDataModel[] = [
     items: "정밀 부품 외 2개",
     date: "2025-06-31",
     isTransactionIssued: false,
-    isTaxInvoiceIssued: false,
+    isTaxIssued: false,
   },
   {
     id: 4,
@@ -45,7 +43,7 @@ const completedProjectData: CompletedProjectDataModel[] = [
     items: "M8 볼트 세트",
     date: "2025-06-31",
     isTransactionIssued: false,
-    isTaxInvoiceIssued: false,
+    isTaxIssued: false,
   },
 ];
 
