@@ -2,6 +2,7 @@
 
 import MiniBtn from "@/ui/mini-btn";
 import { StockTabType } from "./types";
+import { CaretDown } from "@phosphor-icons/react";
 
 interface MainTitleSecProps {
   selectedTab: StockTabType;
@@ -20,7 +21,11 @@ const MainTitleSec = ({ selectedTab, onTabChange }: MainTitleSecProps) => {
         <MiniBtn
           bgColor="bg-primary"
           textColor="text-white"
-          text="품목 추가하기 "
+          text="품목 추가하기"
+          icon={CaretDown}
+          iconPosition="right"
+          iconColor="text-white"
+          hoverColor="hover:bg-[#005DC7]"
         />
       </div>
       <div className="flex gap-4 Heading-3">

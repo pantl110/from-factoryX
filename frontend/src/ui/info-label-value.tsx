@@ -9,10 +9,11 @@ import {
   FacilityStatusType,
   FacilityStatusColorMap,
 } from "@/app/(with-layout)/setting/master-data/facility/types";
+import { ReactNode } from "react";
 
 interface InfoLabelValueProps {
   label: string;
-  value?: string;
+  value?: ReactNode;
   chip?: {
     status: InventoryStatusType | TaxDocumentType | FacilityStatusType;
   };
@@ -29,7 +30,7 @@ const InfoLabelValue = ({ label, value, chip }: InfoLabelValueProps) => {
 
   return (
     <div className="flex w-full Me_Body-1 border-t border-lg">
-      <div className="w-[134px] h-full bg-lg-table">
+      <div className="w-[134px] bg-lg-table">
         <div className="text-sv p-3">{label}</div>
       </div>
       <div className="flex-1">
