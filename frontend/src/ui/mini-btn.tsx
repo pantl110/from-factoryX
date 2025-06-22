@@ -9,9 +9,10 @@ interface MiniBtnProps {
   hoverColor?: string;
   borderColor?: string;
   icon?: React.ComponentType<IconProps>;
+  iconPosition?: "left" | "right";
   iconColor?: string;
   onClick?: () => void;
-  height?: number;
+  height?: string;
   disabled?: boolean;
 }
 
@@ -22,23 +23,24 @@ const MiniBtn = ({
   hoverColor,
   borderColor,
   icon: Icon,
+  iconPosition = "left",
   iconColor,
   onClick,
-  height = 40,
+  height = "h-10",
   disabled = false,
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
+  const positionClass = iconPosition === "right" ? "flex-row-reverse" : "";
 
   return (
     <button
-      className={`px-4 py-2 rounded-md Me_Body-1 ${
+      className={`px-4 rounded-md Me_Body-1 ${height} ${
         disabled
           ? "bg-lg text-gr"
           : `${bgColor} ${textColor} ${hoverColor || ""}`
-      } ${borderClass} flex items-center justify-center gap-2 ${
+      } ${borderClass} flex items-center justify-center gap-2 ${positionClass} ${
         disabled ? "cursor-not-allowed" : "cursor-pointer"
       }`}
-      style={{ height: `${height}px` }}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
     >

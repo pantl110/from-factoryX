@@ -24,13 +24,14 @@ const SystemSetting = () => {
 
   return (
     <div>
-      <div className="flex gap-1 px-10 pb-5">
+      <div className="flex gap-1 px-10 pb-6">
         <Chip
           text="일반"
           textColor={selectedChip === "general" ? "text-bg" : "text-dg"}
           bgColor={selectedChip === "general" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
+          cursor="cursor-pointer"
           onClick={() => setSelectedChip("general")}
         />
         <Chip
@@ -39,6 +40,7 @@ const SystemSetting = () => {
           bgColor={selectedChip === "permission" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
+          cursor="cursor-pointer"
           onClick={() => setSelectedChip("permission")}
         />
         <Chip
@@ -47,6 +49,7 @@ const SystemSetting = () => {
           bgColor={selectedChip === "subscription" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
+          cursor="cursor-pointer"
           onClick={() => setSelectedChip("subscription")}
         />
       </div>
