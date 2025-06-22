@@ -6,6 +6,7 @@ interface ChipProps {
   containerWidth?: string;
   sm?: boolean;
   radius?: string;
+  icon?: React.ReactNode;
   onClick?: () => void;
 }
 
@@ -17,6 +18,7 @@ const Chip = ({
   containerWidth,
   sm = false,
   radius = "rounded",
+  icon,
   onClick,
 }: ChipProps) => {
   return (
@@ -37,11 +39,12 @@ const Chip = ({
       }
     >
       <div
-        className={`flex items-center w-fit ${radius} Me_Body-1 ${bgColor} ${textColor} ${
+        className={`flex gap-1 items-center w-fit ${radius} Me_Body-1 ${bgColor} ${textColor} ${
           sm ? "h-7 px-2" : "h-9 px-3"
         } ${borderColor ? `border ${borderColor}` : ""}`}
       >
-        {text}
+        <p>{text}</p>
+        {icon}
       </div>
     </div>
   );

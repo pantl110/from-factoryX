@@ -4,14 +4,23 @@ import Chip from "@/ui/chip";
 
 interface DocumentTableItemProps {
   data: DocumentDataModel;
+  onClick?: () => void;
 }
 
-const DocumentTableItem = ({ data }: DocumentTableItemProps) => {
+const DocumentTableItem = ({ data, onClick }: DocumentTableItemProps) => {
   const { documentType, companyName, date } = data;
   const { bgColor, textColor } = DocumentTypeColorMap[documentType];
 
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1">
+    <div
+      className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer hover:bg-gray-50"
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClick?.();
+      }}
+    >
       <div className="px-3 w-[150px]">
         <Chip text={documentType} bgColor={bgColor} textColor={textColor} />
       </div>

@@ -1,6 +1,6 @@
-import QuotationDocumentView from "@/app/(with-layout)/document/quotation-doument-view";
 import MiniBtn from "@/ui/mini-btn";
-import { X } from "@phosphor-icons/react/dist/ssr";
+import { PaperPlaneTilt, X } from "@phosphor-icons/react/dist/ssr";
+import OrderDocumentView from "../../document/order-document-view";
 
 interface EmailViewProps {
   onClose?: () => void;
@@ -31,10 +31,11 @@ const EmailView = ({ onClose }: EmailViewProps) => {
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="bg-primary-hover"
+          icon={PaperPlaneTilt}
         />
       </div>
 
-      <QuotationDocumentView />
+      <OrderDocumentView />
     </div>
   );
 };
