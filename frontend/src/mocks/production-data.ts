@@ -15,7 +15,7 @@ export const productionData: ProductionDataModel[] = [
     standard: "500ml",
     unit: "EA",
     quantity: 500,
-    machine: "1호기기",
+    machine: "1호기",
     productionTime: "2025-06-19 13:50",
   },
   {
@@ -24,7 +24,7 @@ export const productionData: ProductionDataModel[] = [
     standard: "500ml",
     unit: "EA",
     quantity: 500,
-    machine: "1호기기",
+    machine: "1호기",
     productionTime: "2025-06-19 13:50",
   },
   {
@@ -33,7 +33,7 @@ export const productionData: ProductionDataModel[] = [
     standard: "500ml",
     unit: "EA",
     quantity: 500,
-    machine: "2호기기",
+    machine: "2호기",
     productionTime: "2025-06-19 13:50",
   },
   {
