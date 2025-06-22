@@ -55,7 +55,7 @@ const Permission = () => {
         </div>
       </div>
 
-      {/* 모달 */}
+      {/* 초대하기 모달 */}
       {isInviteModalOpen && (
         <InviteModal onClose={() => setIsInviteModalOpen(false)} />
       )}
