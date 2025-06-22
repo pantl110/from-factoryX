@@ -58,6 +58,13 @@ INSTALLED_APPS = [
     # local apps
     "user",
     "commando",
+    "common",
+    "factory",
+    "document",
+    "project",
+    "subscription",
+    "notification",
+    "stock",
 ]
 
 MIDDLEWARE = [

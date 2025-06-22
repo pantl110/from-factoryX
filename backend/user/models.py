@@ -130,6 +130,12 @@ class User(AbstractUser):
         default=UserStatusChoice.active,
         help_text="회원 유형",
     )
+    phone_number = models.CharField(
+        max_length=15,
+        null=True,
+        blank=True,
+        help_text="전화번호",
+    )
 
 
 class Jwt(models.Model):
