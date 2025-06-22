@@ -45,49 +45,29 @@ const DocumentPage = () => {
 
       {/* 판넬 */}
       {selectedDocument && selectedDocument.documentType === "주문서" && (
-        <Panel
-          title="주문서"
-          isPanelOpen={true}
-          onClose={() => setSelectedDocument(null)}
-        >
+        <Panel title="주문서" onClose={() => setSelectedDocument(null)}>
           <OrderDocumentView />
         </Panel>
       )}
       {selectedDocument && selectedDocument.documentType === "생산지시서" && (
-        <Panel
-          title="생산지시서"
-          isPanelOpen={true}
-          onClose={() => setSelectedDocument(null)}
-        >
+        <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
           <ProductionDocumentView />
         </Panel>
       )}
       {selectedDocument && selectedDocument.documentType === "거래명세서" && (
-        <Panel
-          title="거래명세서"
-          isPanelOpen={true}
-          onClose={() => setSelectedDocument(null)}
-        >
+        <Panel title="거래명세서" onClose={() => setSelectedDocument(null)}>
           <TransactionDocumentView />
         </Panel>
       )}
       {selectedDocument &&
         selectedDocument.documentType === "매출 세금계산서" && (
-          <Panel
-            title="세무/회계"
-            isPanelOpen={true}
-            onClose={() => setSelectedDocument(null)}
-          >
+          <Panel title="세무/회계" onClose={() => setSelectedDocument(null)}>
             <TaxDocumentView taxType="매출" />
           </Panel>
         )}
       {selectedDocument &&
         selectedDocument.documentType === "매입 세금계산서" && (
-          <Panel
-            title="세무/회계"
-            isPanelOpen={true}
-            onClose={() => setSelectedDocument(null)}
-          >
+          <Panel title="세무/회계" onClose={() => setSelectedDocument(null)}>
             <TaxDocumentView taxType="매입" />
           </Panel>
         )}
