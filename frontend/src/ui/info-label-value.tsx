@@ -5,12 +5,16 @@ import {
   TaxDocumentType,
   TaxDocumentTypeColorMap,
 } from "@/types/status-type";
+import {
+  FacilityStatusType,
+  FacilityStatusColorMap,
+} from "@/app/(with-layout)/setting/master-data/facility/types";
 
 interface InfoLabelValueProps {
   label: string;
   value?: string;
   chip?: {
-    status: InventoryStatusType | TaxDocumentType;
+    status: InventoryStatusType | TaxDocumentType | FacilityStatusType;
   };
 }
 
@@ -18,7 +22,9 @@ const InfoLabelValue = ({ label, value, chip }: InfoLabelValueProps) => {
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
       ? TaxDocumentTypeColorMap[chip.status as TaxDocumentType]
-      : InventoryStatusColorMap[chip.status as InventoryStatusType]
+      : chip.status in FacilityStatusColorMap
+        ? FacilityStatusColorMap[chip.status as FacilityStatusType]
+        : InventoryStatusColorMap[chip.status as InventoryStatusType]
     : null;
 
   return (

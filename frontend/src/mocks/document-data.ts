@@ -1,4 +1,4 @@
-import { DocumentType } from "@/types/status-type";
+import { DocumentType } from "@/app/(with-layout)/document/types";
 
 export interface DocumentDataModel {
   documentType: DocumentType;

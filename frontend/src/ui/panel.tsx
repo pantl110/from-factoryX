@@ -40,7 +40,7 @@ const Panel = ({ children, title, onClose }: PanelProps) => {
             >
               <CaretLineRightIcon size={20} />
             </button>
-            <h3 className="Heading-3 text-dg">{title}</h3>
+            <h3 className="Heading-3">{title}</h3>
           </div>
 
           <div className="h-full overflow-y-auto">{children}</div>
