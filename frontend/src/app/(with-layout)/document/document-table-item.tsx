@@ -1,6 +1,6 @@
-import { DocumentTypeColorMap } from "@/types/status-type";
 import { DocumentDataModel } from "@/mocks/document-data";
 import Chip from "@/ui/chip";
+import { DocumentTypeColorMap } from "./types";
 
 interface DocumentTableItemProps {
   data: DocumentDataModel;

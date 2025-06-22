@@ -4,11 +4,17 @@ import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 import Facility from "./facility";
 import Client from "./client";
+import DeleteModal from "./facility/delete-modal";
 
 const MasterData = () => {
   const [selectedChip, setSelectedChip] = useState<"equipment" | "client">(
     "equipment",
   );
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const handleDelete = () => {
+    // 실제 삭제버튼 누를 시 동작
+    setIsDeleteModalOpen(false);
+  };
 
   const renderContent = () => {
     switch (selectedChip) {
@@ -30,6 +36,7 @@ const MasterData = () => {
           bgColor={selectedChip === "equipment" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
+          cursor="cursor-pointer"
           onClick={() => setSelectedChip("equipment")}
         />
         <Chip
@@ -38,6 +45,7 @@ const MasterData = () => {
           bgColor={selectedChip === "client" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
+          cursor="cursor-pointer"
           onClick={() => setSelectedChip("client")}
         />
       </div>
@@ -49,10 +57,23 @@ const MasterData = () => {
             textColor="text-dg"
             borderColor="border-[#eeeeee]"
           />
-          <MiniBtn text="삭제" textColor="text-red" bgColor="bg-red-8" />
+          <MiniBtn
+            text="삭제"
+            textColor="text-red"
+            bgColor="bg-red-8"
+            onClick={() => setIsDeleteModalOpen(true)}
+          />
         </div>
       </div>
       {renderContent()}
+
+      {/* 삭제 모달 */}
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };
