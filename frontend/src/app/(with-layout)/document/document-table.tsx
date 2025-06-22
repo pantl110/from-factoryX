@@ -2,12 +2,17 @@ import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import DocumentTableItem from "./document-table-item";
 import { DocumentType } from "@/types/status-type";
 import documentData from "@/mocks/document-data";
+import { DocumentDataModel } from "@/mocks/document-data";
 
 interface DocumentTableProps {
   selectedType: DocumentType | "전체";
+  onDocumentClick?: (document: DocumentDataModel) => void;
 }
 
-const DocumentTable = ({ selectedType }: DocumentTableProps) => {
+const DocumentTable = ({
+  selectedType,
+  onDocumentClick,
+}: DocumentTableProps) => {
   const filteredData =
     selectedType === "전체"
       ? documentData
@@ -25,7 +30,11 @@ const DocumentTable = ({ selectedType }: DocumentTableProps) => {
       </div>
 
       {filteredData.map((item, index) => (
-        <DocumentTableItem key={index} data={item} />
+        <DocumentTableItem
+          key={index}
+          data={item}
+          onClick={() => onDocumentClick?.(item)}
+        />
       ))}
     </div>
   );

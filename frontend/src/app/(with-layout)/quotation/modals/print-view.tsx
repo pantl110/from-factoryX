@@ -1,6 +1,6 @@
-import QuotationDocumentView from "@/app/(with-layout)/document/quotation-doument-view";
 import MiniBtn from "@/ui/mini-btn";
-import { X } from "@phosphor-icons/react/dist/ssr";
+import { PrinterIcon, X } from "@phosphor-icons/react/dist/ssr";
+import OrderDocumentView from "../../document/order-document-view";
 
 interface PrintViewProps {
   onClose?: () => void;
@@ -23,7 +23,7 @@ const PrintView = ({ onClose }: PrintViewProps) => {
         <div>
           <h2 className="Heading-2">견적서를 출력하시겠어요?</h2>
           <div className="mt-2.5 Me_Body-3 text-gr">
-            출력 전 견적서 내용을 한번 더 확인해 주세요.
+            출력 전 견적서 내용을 한 번 더 확인해 주세요.
           </div>
         </div>
         <MiniBtn
@@ -31,10 +31,12 @@ const PrintView = ({ onClose }: PrintViewProps) => {
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="bg-primary-hover"
+          icon={PrinterIcon}
+          iconColor="text-wh"
         />
       </div>
 
-      <QuotationDocumentView />
+      <OrderDocumentView />
     </div>
   );
 };

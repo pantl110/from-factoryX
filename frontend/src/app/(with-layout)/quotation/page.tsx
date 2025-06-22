@@ -5,27 +5,35 @@ import Chip from "@/ui/chip";
 import {
   ArrowLineLeftIcon,
   ArrowLineRightIcon,
+  CaretDownIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import RequestInfo from "./request-info";
 import ButtonSection from "./button-section";
 import InputSection from "./input-section";
 import PreviewImage from "./image-preview";
 import History from "./history";
-import EmailView from "./email-view";
+import EmailView from "./modals/email-view";
 import OverlayView from "@/ui/ovelay-view";
-import PrintView from "./print-view";
+import PrintView from "./modals/print-view";
 import { ProductProps } from "./types";
+import StartProductionModal from "./modals/start-production-modal";
 
 const QuotationPage = () => {
+  // 탭 상태
   const [activeTab, setActiveTab] = useState<"quotation" | "history">(
     "quotation",
   );
+  // 오른쪽 패널 확장 상태
+  const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
+  // 선택된 품목 상태 -> 히스토리 보여주기
   const [selectedProduct, setSelectedProduct] = useState<ProductProps | null>(
     null,
   );
+  // 모달 상태
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
-  const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
+  const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
+    useState(false);
 
   const handleProductClick = (product: ProductProps) => {
     setSelectedProduct(product);
@@ -44,16 +52,18 @@ const QuotationPage = () => {
         <div className="flex gap-1 mb-4 pr-10">
           <div className="flex-1 gap-1">
             <Chip
-              text="견적 협의중"
+              text="견적 협의"
               containerWidth="w-[150px]"
-              bgColor="bg-primary-8"
-              textColor="text-primary"
+              bgColor="bg-yellow-8"
+              textColor="text-yellow"
+              icon={<CaretDownIcon size={12} />}
             />
             <h1 className="Heading-1 mt-2">플라스틱이 좋아</h1>
           </div>
           <ButtonSection
             onEmailClick={() => setIsEmailOpen(true)}
             onPrintClick={() => setIsPrintOpen(true)}
+            onStartProductionClick={() => setIsStartProductionModalOpen(true)}
           />
         </div>
 
@@ -143,6 +153,12 @@ const QuotationPage = () => {
         <OverlayView onClose={() => setIsEmailOpen(false)}>
           <EmailView onClose={() => setIsEmailOpen(false)} />
         </OverlayView>
+      )}
+      {/* 생산 시작하기 버튼 */}
+      {isStartProductionModalOpen && (
+        <StartProductionModal
+          onClose={() => setIsStartProductionModalOpen(false)}
+        />
       )}
     </>
   );
