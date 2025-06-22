@@ -1,9 +1,7 @@
 const ProductionTableItem = () => {
   return (
     <div className="w-full h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <p className="flex-1 px-3 truncate overflow-hidden whitespace-nowrap">
-        A품목
-      </p>
+      <p className="flex-1 px-3 truncate title={title}">A품목</p>
       <p className="flex-1 px-3">P-001</p>
       <p className="flex-1 px-3">500ml</p>
       <p className="w-[80px] px-3">EA</p>

@@ -3,7 +3,7 @@ import ProductionTableItem from "./production-table-item";
 
 const ProductionDocumentView = () => {
   return (
-    <div className="width-[1000px] px-8 py-8 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <DocumentViewTitle
         title="생산 지시서"
         dateLabel="생산일자"

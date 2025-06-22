@@ -6,6 +6,7 @@ interface ModalProps {
   title?: string;
   subtitle?: string;
   onClose?: () => void;
+  sm?: boolean;
   width?: string;
 }
 
@@ -15,6 +16,7 @@ const Modal = ({
   subtitle,
   onClose,
   width = "w-[631px]",
+  sm = false,
 }: ModalProps) => {
   useEffect(() => {
     const originalStyle = document.body.style.overflow;
@@ -41,13 +43,15 @@ const Modal = ({
         <div className="flex justify-between items-center">
           <h3 className="Heading-3">{title}</h3>
           <button
-            className="w-10 h-10 flex justify-center items-center cursor-pointer"
+            className={`${sm ? "w-9 h-9" : "w-10 h-10"} flex justify-center items-center cursor-pointer`}
             onClick={onClose}
           >
-            <X size={20} />
+            <X size={sm ? 16 : 20} />
           </button>
         </div>
-        <div className="mt-1 Me_Body-2 text-gr">{subtitle}</div>
+        <div className={`mt-1 ${sm ? "Re_Body-2" : "Me_Body-2"} text-gr`}>
+          {subtitle}
+        </div>
 
         {children}
       </div>

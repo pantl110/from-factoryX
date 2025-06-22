@@ -1,10 +1,10 @@
+import DocumentViewTitle from "../document-view-title";
 import SupplierInfo from "../supplier-info";
 import QuotationInfo from "../quotation-info";
-import DocumentViewTitle from "../document-view-title";
 
-const QuotationDocumentView = () => {
+const OrderDocumentView = () => {
   return (
-    <div className="width-[1000px] flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <DocumentViewTitle
         title="[플라스틱이 좋아]건 견적서"
         dateLabel="발송일자"
@@ -16,4 +16,4 @@ const QuotationDocumentView = () => {
   );
 };
 
-export default QuotationDocumentView;
+export default OrderDocumentView;

@@ -22,9 +22,7 @@ const TaxPage = () => {
 
   return (
     <>
-      <div
-        className={`flex flex-col gap-8 ${isPanelOpen ? "overflow-hidden" : ""}`}
-      >
+      <div className={`flex flex-col gap-8`}>
         <MainTitleSec />
         <div className="px-8">
           <SearchDeleteTable />
@@ -47,24 +45,9 @@ const TaxPage = () => {
           </div>
         </div>
       </div>
-      {isPanelOpen && (
-        <div
-          className="fixed inset-0 bg-bl/50 transition-opacity duration-300"
-          role="button"
-          tabIndex={0}
-          onClick={handleClosePanel}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleClosePanel();
-          }}
-        />
-      )}
-      <div
-        className={`fixed top-0 right-0 h-full transition-transform duration-300 ease-in-out ${
-          isPanelOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <TaxDetailPanel onClose={handleClosePanel} />
-      </div>
+
+      {/* 판넬 */}
+      <TaxDetailPanel isPanelOpen={isPanelOpen} onClose={handleClosePanel} />
     </>
   );
 };
