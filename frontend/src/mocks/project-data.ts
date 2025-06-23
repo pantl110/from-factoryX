@@ -82,4 +82,14 @@ export const projectData: ProjectDataModel[] = [
     transactionIssued: "미작성",
     taxIssued: "미발행",
   },
+  {
+    id: 8,
+    status: "프로젝트 완료",
+    companyName: "플라스틱이 좋아",
+    items: "플라스틱 컵 외 3개",
+    startDate: "2025-06-08",
+    endDate: "2025-06-14",
+    transactionIssued: "미작성",
+    taxIssued: "미발행",
+  },
 ];
