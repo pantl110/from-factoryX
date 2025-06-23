@@ -1,11 +1,11 @@
 import Chip from "@/ui/chip";
 import {
-  ProductionStatus,
+  ProductionStatusType,
   ProductionStatusColorMap,
 } from "@/types/status-type";
 
 export interface ProductionTableItemProps {
-  status: ProductionStatus;
+  status: ProductionStatusType;
   productName: string;
   productCode: string;
   size: string;
