@@ -15,6 +15,7 @@ import Delivery from "../delivery";
 import TaxDocumentView from "../../document/tax-document-view";
 import TransactionDocumentView from "../../document/transaction-document-view";
 import OrderDocumentView from "../../document/order-document-view";
+import { ProjectStatusType } from "@/types/status-type";
 
 const getTabsByStatus = (status: string) => {
   if (status === "생산 대기") return ["생산 계획", "주문서"];
@@ -48,25 +49,37 @@ const ProductionPage = () => {
       (item: CompletedProjectDataModel) => item.id === id,
     );
 
-  if (!project || project.status === "중단") return notFound();
+  // Determine if the project is a stopped (중단) completed project
+  const isStopped = project && "status" in project && project.status === "중단"; // '보관된 프로젝트에서 중단 상태이면 is Stopped ture'
 
   const newStatus =
-    project.status === "완료" ? "프로젝트 완료" : project.status;
-  const tabs = getTabsByStatus(newStatus);
+    project?.status === "완료" ? "프로젝트 완료" : project?.status || null;
+  const tabs = getTabsByStatus(newStatus || "");
 
   useEffect(() => {
+    if (!project || isStopped) return;
     setPageStatus(newStatus);
     setSelectedTabGlobal(tabs[selectedTab]);
     return () => {
       setPageStatus(null);
       setSelectedTabGlobal(null);
     };
-  }, [newStatus, selectedTab, setPageStatus, setSelectedTabGlobal, tabs]);
+  }, [
+    project,
+    isStopped,
+    newStatus,
+    selectedTab,
+    setPageStatus,
+    setSelectedTabGlobal,
+    tabs,
+  ]);
+
+  if (!project || isStopped) return notFound();
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       <ProductFlowTitle
-        status={newStatus}
+        status={newStatus as ProjectStatusType}
         tabs={tabs}
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
