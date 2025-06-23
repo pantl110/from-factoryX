@@ -15,6 +15,10 @@ const TopBarContent = ({
   const isProductionPlanSaveActive =
     selectedTab === "생산 계획" && pageStatus === "생산 대기";
 
+  if (selectedTab === "주문서" || selectedTab === "생산 현황") {
+    return null;
+  }
+
   if (selectedTab === "생산 계획") {
     return (
       <div className="flex">
