@@ -10,7 +10,7 @@ const TopBar = () => {
   );
 
   const content =
-    topBarContentMap[pageStatus || "default"] || topBarContentMap.default;
+    topBarContentMap[pageStatus || "default"]?.() || topBarContentMap.default();
 
   return (
     <header className="flex items-center justify-between w-full h-[60px] px-10">

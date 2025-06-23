@@ -1,15 +1,21 @@
-import { useState } from "react";
 import ProductionPlanSaveModal from "./modals/production-plan-save-modal";
 import TableHeader from "./table-header";
 import TableItem from "./table-item";
 import { productionPlanData } from "@/mocks/production-plan-data";
+import usePageStatusStore from "@/store/page-status-store";
 
 const ProductionPlan = () => {
-  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  // production의 "생산 대기" 상태의 "생산 계획" 탭에서 저장 버튼 클릭 시 모달 오픈
+  const isProductionPlanSaveModalOpen = usePageStatusStore(
+    (state) => state.isProductionPlanSaveModalOpen,
+  );
+  const setProductionPlanSaveModalOpen = usePageStatusStore(
+    (state) => state.setProductionPlanSaveModalOpen,
+  );
 
-  const handleSave = () => {
-    // 저장 로직
-    setIsSaveModalOpen(false);
+  const handleProductionPlanSave = () => {
+    // 생산 계획 저장 로직
+    setProductionPlanSaveModalOpen(false);
   };
 
   return (
@@ -23,12 +29,12 @@ const ProductionPlan = () => {
         </div>
       </div>
 
-      {isSaveModalOpen && (
+      {isProductionPlanSaveModalOpen && (
         <ProductionPlanSaveModal
           onClose={() => {
-            setIsSaveModalOpen(false);
+            setProductionPlanSaveModalOpen(false);
           }}
-          onSave={handleSave}
+          onSave={handleProductionPlanSave}
         />
       )}
     </>
