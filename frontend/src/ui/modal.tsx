@@ -50,7 +50,13 @@ const Modal = ({
           </button>
         </div>
         <div className={`mt-1 ${sm ? "Re_Body-2" : "Me_Body-2"} text-gr`}>
-          {subtitle}
+          {subtitle &&
+            subtitle.split("\n").map((line, idx) => (
+              <span key={idx}>
+                {line}
+                {idx !== subtitle.split("\n").length - 1 && <br />}
+              </span>
+            ))}
         </div>
 
         {children}

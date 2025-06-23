@@ -29,7 +29,7 @@ const Dropdown = ({ children, onClose }: DropdownProps) => {
   return (
     <div
       ref={dropdownRef}
-      className="flex flex-col w-[235px] rounded-lg p-2 shadow-lg"
+      className="flex flex-col w-[235px] rounded-lg p-2 shadow-lg bg-wh"
     >
       {children}
     </div>
