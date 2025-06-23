@@ -13,7 +13,7 @@ const TransactionDocumentView = () => {
       />
       <SupplierInfo dateLabel="거래일자" />
       <BuyerInfo />
-      <QuotationInfo />
+      <QuotationInfo title="견적 품목 정보" />
     </div>
   );
 };

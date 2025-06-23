@@ -11,8 +11,8 @@ const BuyerInfo = () => {
         </div>
         <InfoLabelValue label="대표자명" value="홍길동" />
         <div className="flex">
-          <InfoLabelValue label="담당자 이메일" value="company@mail.com" />
           <InfoLabelValue label="담당자 연락처" value="010-9876-5432" />
+          <InfoLabelValue label="담당자 이메일" value="company@mail.com" />
         </div>
         <div className="flex">
           <InfoLabelValue label="업태" value="제조업" />
