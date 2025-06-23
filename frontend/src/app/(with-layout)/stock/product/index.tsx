@@ -7,16 +7,26 @@ import { productData, ProductDataModel } from "@/mocks/product-data";
 import { useState } from "react";
 import ProductDetail from "./product-detail";
 
-const Product = () => {
+interface ProductProps {
+  isCreatePanelOpen: boolean;
+  setIsCreatePanelOpen: (isOpen: boolean) => void;
+}
+
+const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
   const [selectedProduct, setSelectedProduct] =
     useState<ProductDataModel | null>(null);
 
   const handleItemClick = (product: ProductDataModel) => {
     setSelectedProduct(product);
   };
+
   const handlePanelClose = () => {
     setSelectedProduct(null);
+    setIsCreatePanelOpen(false);
   };
+
+  const isPanelOpen = selectedProduct !== null || isCreatePanelOpen;
+  const mode = isCreatePanelOpen ? "create" : "view";
 
   return (
     <>
@@ -36,8 +46,13 @@ const Product = () => {
         ))}
       </div>
 
-      {selectedProduct && (
-        <ProductDetail product={selectedProduct} onClose={handlePanelClose} />
+      {isPanelOpen && (
+        <ProductDetail
+          key={selectedProduct?.id || "create"}
+          product={selectedProduct}
+          onClose={handlePanelClose}
+          mode={mode}
+        />
       )}
     </>
   );
