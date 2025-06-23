@@ -7,7 +7,6 @@ interface MainTitleSecProps {
 
 const MainTitleSec = ({ selectedType, setSelectedType }: MainTitleSecProps) => {
   const documentTypes = [
-    "전체",
     "주문서",
     "생산지시서",
     "거래명세서",
