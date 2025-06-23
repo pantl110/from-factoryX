@@ -1,35 +1,26 @@
-"use client";
-
-import { useState } from "react";
 import MainTitleSec from "./main-title-sec";
 import SearchDeleteTable from "@/ui/search-delete-table";
-import TableHeader from "./table-header";
-import TableItem from "./table-item";
-import completedProjectData from "@/mocks/completed-project-data";
-import { CompletedProjectStatusType } from "@/types/status-type";
+import TableHeader from "../table-header";
+import TableItem from "../table-item";
 
 const CompletedProjectPage = () => {
-  const [selectedStatus, setSelectedStatus] = useState<
-    "전체" | CompletedProjectStatusType
-  >("전체");
-
-  const filteredProjects =
-    selectedStatus === "전체"
-      ? completedProjectData
-      : completedProjectData.filter((item) => item.status === selectedStatus);
-
   return (
-    <div className="flex flex-col gap-8">
-      <MainTitleSec
-        selectedStatus={selectedStatus}
-        onStatusChange={setSelectedStatus}
-      />
+    <div>
+      <MainTitleSec />
       <div className="px-8">
         <SearchDeleteTable />
         <div>
-          <TableHeader />
-          {filteredProjects.map((item) => (
-            <TableItem key={item.id} {...item} />
+          <TableHeader lastLabel="완료일자" />
+          {[...Array(9)].map((_, index) => (
+            <TableItem
+              key={index}
+              id={index}
+              status="완료"
+              companyName="플라스틱이 좋아"
+              items="플라스틱 컵 외 3개"
+              startDate="2025-06-04"
+              endDate="2025-06-04"
+            />
           ))}
         </div>
       </div>
