@@ -11,7 +11,7 @@ const TableHeader = () => {
       <p className="flex-2 px-3 text-sv">업체명</p>
       <p className="flex-2 px-3 text-sv">품목명</p>
       <div className="w-[200px] px-3 flex gap-1 items-center">
-        <p className=" text-sv">진행일자</p>
+        <p className=" text-sv">생산일자</p>
         <CaretUpDown size={16} className="text-sv" />
       </div>
       <div className="w-[200px] px-3 flex gap-1 items-center">

@@ -3,10 +3,16 @@ import { ReactNode } from "react";
 interface DropdownItemProps {
   icon?: ReactNode;
   text: string;
+  textColor?: string;
   onClick?: () => void;
 }
 
-const DropdownItem = ({ text, icon, onClick }: DropdownItemProps) => {
+const DropdownItem = ({
+  text,
+  icon,
+  textColor = "text-dg",
+  onClick,
+}: DropdownItemProps) => {
   return (
     <div
       className="flex gap-3 w-full h-10 items-center cursor-pointer rounded-lg p-2 hover:bg-bg"
@@ -17,7 +23,7 @@ const DropdownItem = ({ text, icon, onClick }: DropdownItemProps) => {
           {icon}
         </div>
       )}
-      <h4 className="Heading-4 text-dg">{text}</h4>
+      <h4 className={`Heading-4 ${textColor}`}>{text}</h4>
     </div>
   );
 };

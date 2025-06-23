@@ -5,6 +5,7 @@ import {
 } from "@/types/status-type";
 import { ProductionPlanData } from "@/mocks/production-plan-data";
 import { tableHeader } from "./types";
+import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 
 interface TableItemProps {
   item: ProductionPlanData;
@@ -36,7 +37,12 @@ const TableItem = ({ item }: TableItemProps) => {
         bgColor={materialColor.bgColor}
       />
     ),
-    "생산 설비": item.facility,
+    "생산 설비": (
+      <div className="flex items-center gap-2.5 cursor-pointer">
+        <p>{item.facility}</p>
+        <CaretDown size={16} className="text-sv" />
+      </div>
+    ),
     생산일자: item.productionTime,
     "단위당 소요 시간": item.unitTime,
     "마감 예정일자": item.endDate,
