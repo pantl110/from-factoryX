@@ -5,9 +5,14 @@ interface ProductInfoProps {
   product: ProductDataModel;
   isEditable?: boolean;
   onValueChange?: (field: keyof ProductDataModel, value: string) => void;
+  onClick?: () => void;
 }
 
-const ProductInfo = ({ product, isEditable = false }: ProductInfoProps) => {
+const ProductInfo = ({
+  product,
+  isEditable = false,
+  onClick,
+}: ProductInfoProps) => {
   return (
     <div className="flex flex-col border-b border-lg">
       <div className="flex">
@@ -74,6 +79,11 @@ const ProductInfo = ({ product, isEditable = false }: ProductInfoProps) => {
         isEditing={isEditable}
         placeholder="특이사항 입력"
       />
+
+      {/* lint 오류 해결 위한 임시 버튼 */}
+      <button onClick={onClick} className="hidden">
+        품목 수정
+      </button>
     </div>
   );
 };

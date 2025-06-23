@@ -39,7 +39,6 @@ const TableItem = ({
   const transactionColor = TransactionStatusColorMap[transactionIssued];
   const taxColor = TaxStatusColorMap[taxIssued];
 
-  const [isTaxDropdownOpen, setIsTaxDropdownOpen] = useState(false);
   const [isTransactionDropdownOpen, setIsTransactionDropdownOpen] =
     useState(false);
 

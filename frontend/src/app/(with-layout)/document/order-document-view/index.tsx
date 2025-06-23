@@ -1,6 +1,6 @@
 import DocumentViewTitle from "../document-view-title";
-import SupplierInfo from "../supplier-info";
 import QuotationInfo from "../quotation-info";
+import BuyerInfo from "../buyer-info";
 
 const OrderDocumentView = () => {
   return (
@@ -10,8 +10,8 @@ const OrderDocumentView = () => {
         dateLabel="발송일자"
         date="2025-07-31"
       />
-      <SupplierInfo dateLabel="납기일자" />
-      <QuotationInfo />
+      <BuyerInfo />
+      <QuotationInfo title="주문 품목 정보" />
     </div>
   );
 };

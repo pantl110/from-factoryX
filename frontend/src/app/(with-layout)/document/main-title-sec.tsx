@@ -1,13 +1,12 @@
-import { DocumentType } from "@/types/status-type";
+import { DocumentType } from "./types";
 
 interface MainTitleSecProps {
-  selectedType: DocumentType | "전체";
-  setSelectedType: (type: DocumentType | "전체") => void;
+  selectedType: DocumentType;
+  setSelectedType: (type: DocumentType) => void;
 }
 
 const MainTitleSec = ({ selectedType, setSelectedType }: MainTitleSecProps) => {
   const documentTypes = [
-    "전체",
     "주문서",
     "생산지시서",
     "거래명세서",

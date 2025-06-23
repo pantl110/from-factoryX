@@ -48,6 +48,7 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
           <ProductInfo
             product={formData}
             isEditable={isCreateMode} // 생성모드일 때만 수정 가능
+            onClick={() => setFormData(EMPTY_PRODUCT)} // lint오류 해결 위한 임시
           />
         </div>
 

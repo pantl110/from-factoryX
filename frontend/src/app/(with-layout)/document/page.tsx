@@ -5,7 +5,7 @@ import SearchDeleteTable from "@/ui/search-delete-table";
 import MainTitleSec from "./main-title-sec";
 import DocumentTable from "./document-table";
 import Pagination from "@/components/pagination";
-import { DocumentType } from "@/types/status-type";
+import { DocumentType } from "./types";
 import OrderDocumentView from "./order-document-view";
 import { DocumentDataModel } from "@/mocks/document-data";
 import Panel from "@/ui/panel";
@@ -14,9 +14,7 @@ import TransactionDocumentView from "./transaction-document-view";
 import TaxDocumentView from "./tax-document-view";
 
 const DocumentPage = () => {
-  const [selectedType, setSelectedType] = useState<DocumentType | "전체">(
-    "전체",
-  );
+  const [selectedType, setSelectedType] = useState<DocumentType>("주문서");
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentDataModel | null>(null);
 

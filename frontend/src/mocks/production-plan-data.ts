@@ -1,6 +1,6 @@
 import { OperationStatusType, InventoryStatusType } from "@/types/status-type";
 
-export interface ProductionPlanData {
+export interface ProductionPlanDataModel {
   id: number;
   operationStatus: OperationStatusType;
   productName: string;
@@ -16,7 +16,7 @@ export interface ProductionPlanData {
   endDate: string;
 }
 
-export const productionPlanData: ProductionPlanData[] = [
+export const productionPlanData: ProductionPlanDataModel[] = [
   {
     id: 1,
     operationStatus: "가동 대기",
