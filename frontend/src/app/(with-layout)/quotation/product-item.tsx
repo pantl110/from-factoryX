@@ -1,33 +1,33 @@
-interface ProductItemProps {
-  productName: string;
-  productCode: string;
-  specification: string;
-  unit: string;
-  quantity: string;
-  unitPrice: string;
-  totalPrice: string;
+import { ProductProps } from "./types";
+
+interface ProductItemProps extends ProductProps {
+  onClick?: () => void;
 }
 
 const ProductItem = ({
   productName,
   productCode,
-  specification,
+  size,
   unit,
   quantity,
   unitPrice,
   totalPrice,
+  onClick,
 }: ProductItemProps) => {
   return (
-    <div className="w-full h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
+    <div
+      className="h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer"
+      onClick={onClick}
+    >
       <p className="flex-1 px-3 truncate" title={productName}>
         {productName}
       </p>
       <p className="flex-1 px-3">{productCode}</p>
-      <p className="flex-1 px-3">{specification}</p>
+      <p className="flex-1 px-3">{size}</p>
       <p className="w-[80px] px-3">{unit}</p>
-      <p className="w-[100px] px-3">{quantity}</p>
-      <p className="flex-1 px-3">{unitPrice}</p>
-      <p className="flex-1 px-3">{totalPrice}</p>
+      <p className="flex-1 px-3">{quantity.toLocaleString()}</p>
+      <p className="w-[100px] px-3">{unitPrice.toLocaleString()}</p>
+      <p className="flex-1 px-3">{totalPrice.toLocaleString()}</p>
     </div>
   );
 };
