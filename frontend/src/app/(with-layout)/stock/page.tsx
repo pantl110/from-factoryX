@@ -6,6 +6,8 @@ import Product from "./product/index";
 import Material from "./material/index";
 import { StockTabType } from "./types";
 import ExcelUploadModal from "./product/modals/excel-upload-modal";
+import ClientInfoModal from "./material/modals/client-info-modal";
+import MaterialEnrollment from "./material/modals/material-enrollment";
 
 const StockPage = () => {
   const [selectedTab, setSelectedTab] = useState<StockTabType>("product");
@@ -15,6 +17,9 @@ const StockPage = () => {
     useState(false);
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
+  const [isClientInfoModalOpen, setIsClientInfoModalOpen] = useState(false);
+  const [isMaterialEnrollmentOpen, setIsMaterialEnrollmentOpen] =
+    useState(false);
 
   const handleTabChange = (tab: StockTabType) => {
     setSelectedTab(tab);
@@ -26,6 +31,14 @@ const StockPage = () => {
   const handleOpenCreatePanel = () => {
     setIsProductAddDropdownOpen(false);
     setIsCreatePanelOpen(true);
+  };
+  const handleOpenClientInfoModal = () => {
+    setIsMaterialAddDropdownOpen(false);
+    setIsClientInfoModalOpen(true);
+  };
+  const handleNextClientInfo = () => {
+    setIsClientInfoModalOpen(false);
+    setIsMaterialEnrollmentOpen(true);
   };
 
   return (
@@ -40,6 +53,7 @@ const StockPage = () => {
           isMaterialAddDropdownOpen={isMaterialAddDropdownOpen}
           onOpenExcelModal={handleOpenExcelModal}
           onOpenCreatePanel={handleOpenCreatePanel}
+          onOpenClientInfoModal={handleOpenClientInfoModal}
         />
         <div className="px-8">
           {selectedTab === "product" ? (
@@ -55,6 +69,17 @@ const StockPage = () => {
 
       {isExcelModalOpen && (
         <ExcelUploadModal onClose={() => setIsExcelModalOpen(false)} />
+      )}
+      {isClientInfoModalOpen && (
+        <ClientInfoModal
+          onClose={() => setIsClientInfoModalOpen(false)}
+          onNext={handleNextClientInfo}
+        />
+      )}
+      {isMaterialEnrollmentOpen && (
+        <MaterialEnrollment
+          onClose={() => setIsMaterialEnrollmentOpen(false)}
+        />
       )}
     </>
   );
