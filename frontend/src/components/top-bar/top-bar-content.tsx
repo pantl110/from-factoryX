@@ -15,6 +15,19 @@ const TopBarContent = ({
   const isProductionPlanSaveActive =
     selectedTab === "생산 계획" && pageStatus === "생산 대기";
 
+  if (pageStatus === "프로젝트 완료") {
+    return (
+      <div className="flex">
+        <MiniBtn
+          text="작업 재개"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+        />
+      </div>
+    );
+  }
+
   if (selectedTab === "주문서" || selectedTab === "생산 현황") {
     return null;
   }
@@ -29,6 +42,41 @@ const TopBarContent = ({
           hoverColor="hover:bg-secondary-hover"
           onClick={onProductionPlanSaveClick}
           disabled={!isProductionPlanSaveActive}
+        />
+      </div>
+    );
+  }
+
+  if (selectedTab === "생산 내역") {
+    if (pageStatus === "생산 완료") {
+      return (
+        <div className="flex">
+          <MiniBtn
+            text="다음단계"
+            textColor="text-primary"
+            bgColor="bg-primary-8"
+            hoverColor="hover:bg-secondary-hover"
+          />
+        </div>
+      );
+    }
+    return null;
+  }
+
+  if (selectedTab === "납품") {
+    return (
+      <div className="flex gap-2">
+        <MiniBtn
+          text="반품 등록"
+          textColor="text-red"
+          bgColor="bg-red-8"
+          hoverColor="hover:bg-red-hover"
+        />
+        <MiniBtn
+          text="보관함으로 이동"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
         />
       </div>
     );

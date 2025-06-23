@@ -23,7 +23,7 @@ const EmailView = ({ onClose }: EmailViewProps) => {
         <div>
           <h2 className="Heading-2">이메일로 견적서를 보내시겠어요?</h2>
           <div className="mt-2.5 Me_Body-3 text-gr">
-            받는 사람과 제목을 확인한 후, 이메일을 전송해 주세요
+            받는 사람과 정보를 확인한 후, 이메일을 전송해 주세요.
           </div>
         </div>
         <MiniBtn
