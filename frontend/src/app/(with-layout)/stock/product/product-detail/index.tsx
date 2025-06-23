@@ -9,7 +9,6 @@ import Panel from "@/ui/panel";
 import { ProductDataModel } from "@/mocks/product-data";
 import NoHistoryBox from "../no-history-box";
 import ConnectMaterialModal from "../modals/connect-material-modal";
-// import ProductForm from "./product-form"; // 생성/수정용 폼 컴포넌트 (가정)
 
 // '생성' 모드일 때 사용할 비어있는 품목 객체의 초기값
 const EMPTY_PRODUCT: ProductDataModel = {
@@ -38,23 +37,6 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
     product || EMPTY_PRODUCT,
   );
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-
-  const handleValueChange = (
-    field: keyof ProductDataModel,
-    value:
-      | string
-      | number
-      | boolean
-      | string[]
-      | number[]
-      | boolean[]
-      | undefined,
-  ) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [field]: value,
-    }));
-  };
 
   return (
     <Panel title="품목 재고관리" onClose={onClose}>

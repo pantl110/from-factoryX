@@ -10,6 +10,7 @@ const Client = () => {
         <ClientTableHeader />
         {clientData.map((client) => (
           <ClientTableItem
+            key={client.id}
             clientType={client.type}
             companyName={client.companyName}
             businessNumber={client.businessNumber}
