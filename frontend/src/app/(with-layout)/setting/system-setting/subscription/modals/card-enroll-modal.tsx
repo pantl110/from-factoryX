@@ -1,6 +1,6 @@
 import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal";
-import { X, QuestionIcon } from "@phosphor-icons/react/dist/ssr";
+import { QuestionIcon } from "@phosphor-icons/react/dist/ssr";
 
 interface CardEnrollModalProps {
   onClose: () => void;

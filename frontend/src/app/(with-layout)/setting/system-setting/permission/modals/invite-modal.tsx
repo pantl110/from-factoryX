@@ -9,21 +9,21 @@ interface InviteModalProps {
 }
 
 const InviteModal = ({ onClose }: InviteModalProps) => {
-  const [successOpen, setSuccessOpen] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
 
   const handleInvite = () => {
     // 실제 초대 로직
-    setSuccessOpen(true);
+    setIsSuccessOpen(true);
   };
 
   const handleSuccessClose = () => {
-    setSuccessOpen(false);
+    setIsSuccessOpen(false);
     onClose();
   };
 
   return (
     <>
-      {!successOpen ? (
+      {!isSuccessOpen ? (
         <Modal
           title="팩토리엑스에 팀원을 초대하세요."
           subtitle="초대할 분의 이메일과 권한을 설정해주세요."

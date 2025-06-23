@@ -18,10 +18,10 @@ import {
 
 const Subscription = () => {
   const planTypes: PlanType[] = ["BASIC", "PARTNERS"];
-  const [cardDropdownOpen, setCardDropdownOpen] = useState(false);
-  const [cardDropdownOpen2, setCardDropdownOpen2] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [enrollModalOpen, setEnrollModalOpen] = useState(false);
+  const [isCardDropdownOpen, setIsCardDropdownOpen] = useState(false);
+  const [isCardDropdownOpen2, setIsCardDropdownOpen2] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
 
   return (
     <div className="px-10 pb-8 flex flex-col gap-8">
@@ -45,17 +45,17 @@ const Subscription = () => {
             <h4 className="Heading-4">Master 19**</h4>
           </div>
           <div className="relative">
-            <button onClick={() => setCardDropdownOpen((v) => !v)}>
+            <button onClick={() => setIsCardDropdownOpen((v) => !v)}>
               <DotsThreeVerticalIcon size={24} className="text-gr" />
             </button>
-            {cardDropdownOpen && (
+            {isCardDropdownOpen && (
               <div className="absolute right-0 mt-2 z-50">
-                <Dropdown onClose={() => setCardDropdownOpen(false)}>
+                <Dropdown onClose={() => setIsCardDropdownOpen(false)}>
                   <div
                     className="group px-4 py-2 cursor-pointer flex items-center gap-2"
                     onClick={() => {
-                      setDeleteModalOpen(true);
-                      setCardDropdownOpen(false);
+                      setIsDeleteModalOpen(true);
+                      setIsCardDropdownOpen(false);
                     }}
                   >
                     <TrashIcon
@@ -72,17 +72,17 @@ const Subscription = () => {
         <div className="flex items-center justify-between h-18 py-4 px-6 border border-[#eeeeee] rounded-xl">
           <h4 className="Heading-4">Master 19**</h4>
           <div className="relative">
-            <button onClick={() => setCardDropdownOpen2((v) => !v)}>
+            <button onClick={() => setIsCardDropdownOpen2((v) => !v)}>
               <DotsThreeVerticalIcon size={24} className="text-gr" />
             </button>
-            {cardDropdownOpen2 && (
+            {isCardDropdownOpen2 && (
               <div className="absolute right-0 mt-2 z-50">
-                <Dropdown onClose={() => setCardDropdownOpen2(false)}>
+                <Dropdown onClose={() => setIsCardDropdownOpen2(false)}>
                   <div
                     className="group px-4 py-2  cursor-pointer flex items-center gap-2"
                     onClick={() => {
-                      setEnrollModalOpen(true);
-                      setCardDropdownOpen2(false);
+                      setIsEnrollModalOpen(true);
+                      setIsCardDropdownOpen2(false);
                     }}
                   >
                     <CrownSimpleIcon
@@ -94,8 +94,8 @@ const Subscription = () => {
                   <div
                     className="group px-4 py-2  cursor-pointer flex items-center gap-2"
                     onClick={() => {
-                      setDeleteModalOpen(true);
-                      setCardDropdownOpen2(false);
+                      setIsDeleteModalOpen(true);
+                      setIsCardDropdownOpen2(false);
                     }}
                   >
                     <TrashIcon
@@ -162,15 +162,15 @@ const Subscription = () => {
       </div>
 
       {/* CardDeleteModal */}
-      {deleteModalOpen && (
+      {isDeleteModalOpen && (
         <CardDeleteModal
-          onClose={() => setDeleteModalOpen(false)}
-          onConfirm={() => setDeleteModalOpen(false)}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={() => setIsDeleteModalOpen(false)}
         />
       )}
       {/* CardEnrollModal */}
-      {enrollModalOpen && (
-        <CardEnrollModal onClose={() => setEnrollModalOpen(false)} />
+      {isEnrollModalOpen && (
+        <CardEnrollModal onClose={() => setIsEnrollModalOpen(false)} />
       )}
     </div>
   );
