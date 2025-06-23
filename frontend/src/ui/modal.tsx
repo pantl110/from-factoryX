@@ -8,6 +8,7 @@ interface ModalProps {
   onClose?: () => void;
   sm?: boolean;
   width?: string;
+  height?: string;
 }
 
 const Modal = ({
@@ -16,6 +17,7 @@ const Modal = ({
   subtitle,
   onClose,
   width = "w-[631px]",
+  height = "",
   sm = false,
 }: ModalProps) => {
   useEffect(() => {
@@ -37,7 +39,7 @@ const Modal = ({
       }}
     >
       <div
-        className={`bg-white ${width} p-6 rounded-lg`}
+        className={`bg-white ${width} ${height} p-6 rounded-lg`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center">
