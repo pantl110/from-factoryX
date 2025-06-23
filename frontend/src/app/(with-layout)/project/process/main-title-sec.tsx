@@ -14,10 +14,10 @@ const MainTitleSec = ({
 }: MainTitleSecProps) => {
   const statuses: (ProjectStatusType | "전체")[] = [
     "전체",
-    "견적 협의",
+    "견적협의",
     "생산 대기",
     "생산 중",
-    "생산 완료",
+    "완료",
     "납품",
   ];
 
@@ -28,7 +28,7 @@ const MainTitleSec = ({
         <MiniBtn
           bgColor="bg-primary"
           textColor="text-white"
-          text="견적서 생성하기"
+          text="새 견적서 작성하기"
           onClick={onNewQuotation}
         />
       </div>

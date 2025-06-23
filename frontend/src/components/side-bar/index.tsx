@@ -26,7 +26,7 @@ const SideBar = () => {
           hasDropdown={true}
           dropdownItems={[
             { label: "진행 중인 프로젝트", path: "/project/process" },
-            { label: "보관된 프로젝트", path: "/project/completed" },
+            { label: "완료된 프로젝트", path: "/project/completed" },
           ]}
         />
         <SideBarItem icon={Warehouse} label="재고관리" path="/stock" />

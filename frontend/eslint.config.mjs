@@ -23,19 +23,6 @@ const eslintConfig = [
   {
     ignores: ["dist", ".eslintrc.cjs"],
   },
-
-  // 기본 설정
-  ...compat.extends(
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
-    "plugin:jsx-a11y/recommended",
-    "plugin:@next/next/recommended",
-    "plugin:prettier/recommended",
-    "next/core-web-vitals",
-  ),
-
-  // 커스텀 설정
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
@@ -74,8 +61,6 @@ const eslintConfig = [
       prettier: prettierPlugin,
       unicorn: unicornPlugin,
     },
-
-    // override
     rules: {
       "prettier/prettier": "error",
 
@@ -172,7 +157,6 @@ const eslintConfig = [
       ],
       "jsx-a11y/no-static-element-interactions": "off",
       "jsx-a11y/no-noninteractive-element-interactions": "off",
-      "jsx-a11y/click-events-have-key-events": "off",
 
       // 기타 규칙
       "no-console": ["warn", { allow: ["warn", "error"] }],
@@ -195,6 +179,15 @@ const eslintConfig = [
       "object-shorthand": "error",
     },
   },
+  ...compat.extends(
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:jsx-a11y/recommended",
+    "plugin:@next/next/recommended",
+    "plugin:prettier/recommended",
+    "next/core-web-vitals",
+  ),
 ];
 
 export default eslintConfig;

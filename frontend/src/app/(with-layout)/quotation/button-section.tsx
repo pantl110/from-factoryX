@@ -4,19 +4,10 @@ import MiniBtn from "@/ui/mini-btn";
 import {
   PrinterIcon,
   PaperPlaneTiltIcon,
+  FactoryIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
-interface ButtonSectionProps {
-  onEmailClick?: () => void;
-  onPrintClick?: () => void;
-  onStartProductionClick?: () => void;
-}
-
-const ButtonSection = ({
-  onEmailClick,
-  onPrintClick,
-  onStartProductionClick,
-}: ButtonSectionProps) => {
+const ButtonSection = () => {
   return (
     <div className="flex gap-1">
       <MiniBtn
@@ -24,22 +15,21 @@ const ButtonSection = ({
         textColor="text-dg"
         borderColor="border-[#eeeeee]"
         icon={PrinterIcon}
-        iconColor="text-dg"
-        onClick={onPrintClick}
+        iconColor="text-sv"
       />
       <MiniBtn
         text="이메일 보내기"
         textColor="text-dg"
         borderColor="border-[#eeeeee]"
         icon={PaperPlaneTiltIcon}
-        iconColor="text-dg"
-        onClick={onEmailClick}
+        iconColor="text-sv"
       />
       <MiniBtn
         text="생산 시작하기"
-        textColor="text-wh"
-        bgColor="bg-primary"
-        onClick={onStartProductionClick}
+        textColor="text-primary"
+        icon={FactoryIcon}
+        iconColor="text-primary"
+        bgColor="bg-primary-8"
       />
     </div>
   );
