@@ -11,7 +11,7 @@ const SearchInput = ({
 }: SearchInputProps) => {
   return (
     <div
-      className={`flex items-center ${width} h-11 rounded-lg border border-[#e4e4e7] hover:border-primary focus-within:border-gr transition-colors`}
+      className={`flex items-center ${width} h-12 rounded-lg border border-[#e4e4e7] hover:border-primary focus-within:border-gr transition-colors`}
     >
       <div className="flex items-center gap-2 py-1 px-3 w-full">
         <MagnifyingGlassIcon

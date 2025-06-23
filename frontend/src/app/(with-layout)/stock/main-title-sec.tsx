@@ -15,6 +15,7 @@ interface MainTitleSecProps {
   isMaterialAddDropdownOpen: boolean;
   onOpenExcelModal: () => void;
   onOpenCreatePanel: () => void;
+  onOpenClientInfoModal: () => void;
 }
 
 const MainTitleSec = ({
@@ -26,6 +27,7 @@ const MainTitleSec = ({
   isMaterialAddDropdownOpen,
   onOpenExcelModal,
   onOpenCreatePanel,
+  onOpenClientInfoModal,
 }: MainTitleSecProps) => {
   const handleTabClick = (tab: StockTabType) => {
     onTabChange(tab);
@@ -64,6 +66,8 @@ const MainTitleSec = ({
             <div className="absolute right-0 z-10">
               <MaterialAddDropdown
                 onClose={() => onMaterialAddDropdownOpen(false)}
+                onOpenExcelModal={onOpenExcelModal}
+                onOpenClientInfoModal={onOpenClientInfoModal}
               />
             </div>
           )}
