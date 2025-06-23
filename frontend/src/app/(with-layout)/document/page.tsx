@@ -4,14 +4,25 @@ import { useState } from "react";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import MainTitleSec from "./main-title-sec";
 import DocumentTable from "./document-table";
-import { DocumentType } from "./types";
-import QuotationDocumentView from "./quotation-doument-view";
+import Pagination from "@/components/pagination";
+import { DocumentType } from "@/types/status-type";
+import OrderDocumentView from "./order-document-view";
+import { DocumentDataModel } from "@/mocks/document-data";
+import Panel from "@/ui/panel";
 import ProductionDocumentView from "./production-document-view";
 import TransactionDocumentView from "./transaction-document-view";
-import Pagination from "@/components/pagination";
+import TaxDocumentView from "./tax-document-view";
 
 const DocumentPage = () => {
-  const [selectedType, setSelectedType] = useState<DocumentType>("all");
+  const [selectedType, setSelectedType] = useState<DocumentType | "전체">(
+    "전체",
+  );
+  const [selectedDocument, setSelectedDocument] =
+    useState<DocumentDataModel | null>(null);
+
+  const handleDocumentClick = (document: DocumentDataModel) => {
+    setSelectedDocument(document);
+  };
 
   return (
     <>
@@ -23,15 +34,43 @@ const DocumentPage = () => {
 
         <div className="px-8">
           <SearchDeleteTable />
-          <DocumentTable documentType={selectedType} />
+          <DocumentTable
+            selectedType={selectedType}
+            onDocumentClick={handleDocumentClick}
+          />
         </div>
 
         <Pagination />
       </div>
 
-      <QuotationDocumentView />
-      <ProductionDocumentView />
-      <TransactionDocumentView />
+      {/* 판넬 */}
+      {selectedDocument && selectedDocument.documentType === "주문서" && (
+        <Panel title="주문서" onClose={() => setSelectedDocument(null)}>
+          <OrderDocumentView />
+        </Panel>
+      )}
+      {selectedDocument && selectedDocument.documentType === "생산지시서" && (
+        <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
+          <ProductionDocumentView />
+        </Panel>
+      )}
+      {selectedDocument && selectedDocument.documentType === "거래명세서" && (
+        <Panel title="거래명세서" onClose={() => setSelectedDocument(null)}>
+          <TransactionDocumentView />
+        </Panel>
+      )}
+      {selectedDocument &&
+        selectedDocument.documentType === "매출 세금계산서" && (
+          <Panel title="세무/회계" onClose={() => setSelectedDocument(null)}>
+            <TaxDocumentView taxType="매출" />
+          </Panel>
+        )}
+      {selectedDocument &&
+        selectedDocument.documentType === "매입 세금계산서" && (
+          <Panel title="세무/회계" onClose={() => setSelectedDocument(null)}>
+            <TaxDocumentView taxType="매입" />
+          </Panel>
+        )}
     </>
   );
 };

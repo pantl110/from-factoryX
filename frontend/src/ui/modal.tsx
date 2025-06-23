@@ -1,13 +1,32 @@
 import { X } from "@phosphor-icons/react/dist/ssr";
+import { useEffect } from "react";
 
 interface ModalProps {
   children: React.ReactNode;
   title?: string;
   subtitle?: string;
   onClose?: () => void;
+  sm?: boolean;
+  width?: string;
 }
 
-const Modal = ({ children, title, subtitle, onClose }: ModalProps) => {
+const Modal = ({
+  children,
+  title,
+  subtitle,
+  onClose,
+  width = "w-[631px]",
+  sm = false,
+}: ModalProps) => {
+  useEffect(() => {
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   return (
     <div
       role="presentation"
@@ -17,21 +36,22 @@ const Modal = ({ children, title, subtitle, onClose }: ModalProps) => {
         if (e.key === "Escape") onClose?.();
       }}
     >
-      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
       <div
-        className="bg-white w-[631px] p-6 rounded-lg"
+        className={`bg-white ${width} p-6 rounded-lg`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center">
           <h3 className="Heading-3">{title}</h3>
           <button
-            className="w-10 h-10 flex justify-center items-center cursor-pointer"
+            className={`${sm ? "w-9 h-9" : "w-10 h-10"} flex justify-center items-center cursor-pointer`}
             onClick={onClose}
           >
-            <X size={20} />
+            <X size={sm ? 16 : 20} />
           </button>
         </div>
-        <div className="mt-1 Me_Body-2 text-gr">{subtitle}</div>
+        <div className={`mt-1 ${sm ? "Re_Body-2" : "Me_Body-2"} text-gr`}>
+          {subtitle}
+        </div>
 
         {children}
       </div>

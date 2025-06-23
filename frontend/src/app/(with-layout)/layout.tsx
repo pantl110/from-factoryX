@@ -1,5 +1,5 @@
-import SideBar from "@/components/side-bar";
 import TopBar from "@/components/top-bar";
+import SideBar from "@/components/side-bar";
 
 const WithLayout = ({ children }: { children: React.ReactNode }) => {
   return (

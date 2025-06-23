@@ -1,12 +1,15 @@
 import Chip from "@/ui/chip";
-import { StatusType, statusColorMap } from "@/types/status-type";
+import {
+  InventoryStatusType,
+  InventoryStatusColorMap,
+} from "@/types/status-type";
 
 interface StockStatusItemProps {
   materialName: string;
   materialCode: string;
   inputQuantity: string;
   unit: string;
-  status: StatusType;
+  status: InventoryStatusType;
   date: string;
 }
 
@@ -18,7 +21,7 @@ const StockStatusItem = ({
   status,
   date,
 }: StockStatusItemProps) => {
-  const colors = statusColorMap[status];
+  const colors = InventoryStatusColorMap[status];
 
   return (
     <div className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer">
