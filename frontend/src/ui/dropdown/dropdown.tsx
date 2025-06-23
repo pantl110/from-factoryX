@@ -24,7 +24,7 @@ const Dropdown = ({ children, onClose }: DropdownProps) => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside); // 언마운트 시 제거
     };
-  }, []);
+  }, [onClose]);
 
   return (
     <div

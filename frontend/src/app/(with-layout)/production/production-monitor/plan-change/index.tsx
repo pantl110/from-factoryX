@@ -1,5 +1,3 @@
-import MiniBtn from "@/ui/mini-btn";
-
 interface PlanChangeSectionProps {
   title: string;
   content: string;
