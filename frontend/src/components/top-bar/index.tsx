@@ -2,15 +2,16 @@
 
 import { CaretRight } from "@phosphor-icons/react/dist/ssr";
 import usePageStatusStore, { PageStatusState } from "@/store/page-status-store";
-import { topBarContentMap } from "./top-bar-content";
+import TopBarContent from "./top-bar-content";
 
 const TopBar = () => {
   const pageStatus = usePageStatusStore(
     (state: PageStatusState) => state.pageStatus,
   );
-
-  const content =
-    topBarContentMap[pageStatus || "default"]?.() || topBarContentMap.default();
+  const selectedTab = usePageStatusStore((state) => state.selectedTab);
+  const setProductionPlanSaveModalOpen = usePageStatusStore(
+    (state) => state.setProductionPlanSaveModalOpen,
+  );
 
   return (
     <header className="flex items-center justify-between w-full h-[60px] px-10">
@@ -19,7 +20,11 @@ const TopBar = () => {
         <CaretRight size={16} className="text-[#8c8c8c]" />
         <p className="Re_Body-1 text-dg">보관된 프로젝트</p>
       </div>
-      {content}
+      <TopBarContent
+        selectedTab={selectedTab}
+        pageStatus={pageStatus}
+        onProductionPlanSaveClick={() => setProductionPlanSaveModalOpen(true)}
+      />
     </header>
   );
 };
