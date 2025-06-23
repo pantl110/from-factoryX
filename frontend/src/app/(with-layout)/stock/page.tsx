@@ -5,7 +5,6 @@ import MainTitleSec from "./main-title-sec";
 import Product from "./product/index";
 import Material from "./material/index";
 import { StockTabType } from "./types";
-import ProductAddDropdown from "./product/modals/product-add-dropdown";
 import ExcelUploadModal from "./product/modals/excel-upload-modal";
 
 const StockPage = () => {
