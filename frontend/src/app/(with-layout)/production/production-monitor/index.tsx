@@ -1,84 +1,59 @@
-import { useState } from "react";
 import MiniBtn from "@/ui/mini-btn";
-import LogItem from "./log-item";
-import ReturnSection from "./return";
-import { logData, LogDataModel } from "@/mocks/log-data";
-import EmptyLog from "./emptyLog";
-import NoSelectedLog from "./no-selected-log";
-import MemoSection from "./memo";
-import PlanChangeSection from "./plan-change";
-import DeleteMemoModal from "./modals/delete-memo-modal";
-import CreateMemoModal from "./modals/create-memo-modal";
+import TimelineItem from "./timeline-item";
+import InfoLabelValue from "@/ui/info-label-value";
+import PriceInfo from "@/ui/price-info";
+import ReturnTableHeader from "./return-table-header";
+import ReturnTableItem from "./return-table-item";
 
 const ProductionMonitor = () => {
-  const [selectedLog, setSelectedLog] = useState<LogDataModel | null>(null);
-  const [isCreateMemoModalOpen, setIsCreateMemoModalOpen] = useState(false);
-  const [isDeleteMemoModalOpen, setIsDeleteMemoModalOpen] = useState(false);
-
   return (
-    <div className="flex gap-3 px-10 w-full h-full">
-      <div
-        className={`flex flex-col gap-4 h-full pt-5 px-3 flex-1 border-r ${
-          logData.length === 0 ? "border-none" : "border-[#eeeeee]"
-        }`}
-      >
-        <div className="flex flex-col gap-4 pb-10 h-full flex-1 min-h-0 overflow-y-auto">
+    <div className="flex gap-3 px-10">
+      <div className="flex-1 border-r border-[#eeeeee] h-full">
+        <div className="flex flex-col gap-2.5 pt-5 px-3">
           <div>
-            <MiniBtn
-              text="메모 작성"
-              borderColor="border-[#eeeeee]"
-              onClick={() => setIsCreateMemoModalOpen(true)}
-            />
+            <MiniBtn text="메모 작성" borderColor="border-[#eeeeee]" />
           </div>
-
-          {logData.length === 0 ? (
-            <EmptyLog />
-          ) : (
-            <div className="flex flex-col gap-4">
-              {logData.map((log) => (
-                <LogItem
-                  key={log.id}
-                  type={log.type}
-                  title={log.title}
-                  content={log.content}
-                  createdAt={log.createdAt}
-                  onClick={() => setSelectedLog(log)}
-                  isSelected={selectedLog?.id === log.id}
-                />
-              ))}
-            </div>
-          )}
+          <TimelineItem />
+          <TimelineItem />
+          <TimelineItem />
+          <TimelineItem />
+          <TimelineItem />
+          <TimelineItem />
+          <TimelineItem />
+          <TimelineItem />
         </div>
       </div>
-
-      {/* 오른쪽 영역: 선택된 로그에 따라 렌더링 */}
-      <div className="flex-1">
-        {selectedLog ? (
-          selectedLog.type === "memo" ? (
-            <MemoSection
-              title={selectedLog.title}
-              content={selectedLog.content}
-              setIsDeleteModalOpen={setIsDeleteMemoModalOpen}
-            />
-          ) : selectedLog.type === "return" ? (
-            <ReturnSection />
-          ) : selectedLog.type === "planChange" ? (
-            <PlanChangeSection
-              title={selectedLog.title}
-              content={selectedLog.content}
-            />
-          ) : null
-        ) : (
-          <NoSelectedLog />
-        )}
-
-        {/* 모달 */}
-        {isCreateMemoModalOpen && (
-          <CreateMemoModal onClose={() => setIsCreateMemoModalOpen(false)} />
-        )}
-        {isDeleteMemoModalOpen && (
-          <DeleteMemoModal onClose={() => setIsDeleteMemoModalOpen(false)} />
-        )}
+      <div className="flex-1 h-full">
+        <div className="flex flex-col gap-3 pt-5 pb-10">
+          <h3 className="Heading-3 text-dg">반품 정보</h3>
+          <div>
+            <div className="border-t border-b border-[#eeeeee]">
+              <InfoLabelValue label="반품 일자" value="2025-06-06" />
+            </div>
+            <div className="border-b border-[#eeeeee]">
+              <InfoLabelValue label="반품 수량" value="300" />
+            </div>
+            <div className="border-b border-[#eeeeee]">
+              <InfoLabelValue
+                label="생산해야되는 수량 -> 생산계획에 들어가야함"
+                value="200"
+              />
+            </div>
+            <div className="border-b border-[#eeeeee]">
+              <InfoLabelValue
+                label="재고에서 뺄 수량 -> 재고랑 연결"
+                value="100/100"
+              />
+            </div>
+          </div>
+          <PriceInfo />
+          <div>
+            <ReturnTableHeader />
+            <ReturnTableItem />
+            <ReturnTableItem />
+            <ReturnTableItem />
+          </div>
+        </div>
       </div>
     </div>
   );

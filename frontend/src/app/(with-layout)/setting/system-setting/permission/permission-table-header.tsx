@@ -1,11 +1,10 @@
 const PermissionTableHeader = () => {
   return (
     <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-1 border-t border-b border-[#eeeeee]">
-      <p className="px-3 w-[150px]">초대 상태</p>
-      <p className="px-3 w-[150px]">이름</p>
-      <p className="px-3 flex-1">이메일</p>
-      <p className="px-3 w-[150px]">권한</p>
-      <p className="px-3 w-[150px]">초대 날짜</p>
+      <p className="flex-1">날짜</p>
+      <p className="flex-[2]">카드</p>
+      <p className="flex-1">금액</p>
+      <p className="flex-1">플랜명</p>
     </div>
   );
 };

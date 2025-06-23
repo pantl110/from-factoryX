@@ -2,17 +2,14 @@
 
 import Chip from "@/ui/chip";
 
-import {
-  InventoryStatusType,
-  InventoryStatusColorMap,
-} from "@/types/status-type";
+import { StatusType, statusColorMap } from "@/types/status-type";
 
 interface TableItemProps {
   materialName: string;
   materialCode: string;
   unit: string;
   currentStock: number;
-  status: InventoryStatusType;
+  status: StatusType;
   date: string;
 }
 
@@ -24,7 +21,7 @@ const TableItem = ({
   status,
   date,
 }: TableItemProps) => {
-  const colors = InventoryStatusColorMap[status];
+  const colors = statusColorMap[status];
 
   return (
     <div className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer">
