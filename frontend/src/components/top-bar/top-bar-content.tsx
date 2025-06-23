@@ -1,5 +1,6 @@
 import MiniBtn from "@/ui/mini-btn";
 import { BellSimple, User } from "@phosphor-icons/react";
+import usePageStatusStore from "@/store/page-status-store";
 
 const defaultContent = (
   <div className="flex">
@@ -14,16 +15,20 @@ const defaultContent = (
   </div>
 );
 
-const productionWaitContent = (
-  <div className="flex">
-    <MiniBtn
-      text="저장하기"
-      textColor="text-primary"
-      bgColor="bg-primary-8"
-      hoverColor="hover:bg-bg"
-    />
-  </div>
-);
+const ProductionWaitContent = () => {
+  const selectedTab = usePageStatusStore((state) => state.selectedTab);
+  if (selectedTab !== "생산 계획") return defaultContent;
+  return (
+    <div className="flex">
+      <MiniBtn
+        text="저장하기"
+        textColor="text-primary"
+        bgColor="bg-primary-8"
+        hoverColor="hover:bg-primary-hover"
+      />
+    </div>
+  );
+};
 
 const projectCompletedContent = (
   <div className="flex">
@@ -37,7 +42,7 @@ const projectCompletedContent = (
 );
 
 export const topBarContentMap: Record<string, React.ReactNode> = {
-  "생산 대기": productionWaitContent,
+  "생산 대기": <ProductionWaitContent />,
   "프로젝트 완료": projectCompletedContent,
   default: defaultContent,
 };

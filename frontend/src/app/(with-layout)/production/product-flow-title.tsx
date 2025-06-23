@@ -43,7 +43,7 @@ const ProductFlowTitle = ({
               key={tab}
               type="button"
               onClick={() => setSelectedTab(idx)}
-              className={`Heading-3 px-2 pb-2 transition-colors duration-150 ${
+              className={`Heading-3 px-2 pb-2 transition-colors duration-150 cursor-pointer ${
                 selectedTab === idx
                   ? "text-primary border-b-2 border-primary"
                   : "text-gr border-b-2 border-transparent"
