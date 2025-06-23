@@ -1,18 +1,8 @@
 import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
 
-interface SearchInputProps {
-  width?: string;
-  placeholder?: string;
-}
-
-const SearchInput = ({
-  width = "w-[360px]",
-  placeholder = "검색어를 입력하세요.",
-}: SearchInputProps) => {
+const SearchInput = () => {
   return (
-    <div
-      className={`flex items-center ${width} h-11 rounded-lg border border-[#e4e4e7] hover:border-primary focus-within:border-gr transition-colors`}
-    >
+    <div className="flex items-center w-[360px] h-11 rounded-lg border border-[#e4e4e7] hover:border-primary focus-within:border-gr transition-colors">
       <div className="flex items-center gap-2 py-1 px-3 w-full">
         <MagnifyingGlassIcon
           size={20}
@@ -21,7 +11,7 @@ const SearchInput = ({
         <input
           className="Re_Body-1 w-full h-full outline-none text-sv placeholder:text-sv focus:text-dg transition-colors"
           type="text"
-          placeholder={placeholder}
+          placeholder="검색어를 입력하세요."
         />
       </div>
     </div>
