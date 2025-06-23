@@ -5,16 +5,16 @@ export interface StatusColorModel {
 }
 
 // 디자인팀 확인 필요// dashboard 생산 상태
-export type ProductionStatusType = "생산완료" | "가동대기" | "생산 중";
+export type ProductionStatusType = "생산 완료" | "가동 대기" | "생산 중";
 export const ProductionStatusColorMap: Record<
   ProductionStatusType,
   StatusColorModel
 > = {
-  생산완료: {
+  "생산 완료": {
     textColor: "text-primary",
     bgColor: "bg-primary-8",
   },
-  가동대기: {
+  "가동 대기": {
     textColor: "text-bl",
     bgColor: "bg-bg",
   },
@@ -30,16 +30,18 @@ export type ProjectStatusType =
   | "생산 대기"
   | "생산 중"
   | "생산 완료"
-  | "납품";
+  | "납품"
+  | "프로젝트 완료";
 export const ProjectStatusColorMap: Record<
   ProjectStatusType,
   StatusColorModel
 > = {
   "견적 협의": { bgColor: "bg-yellow-8", textColor: "text-yellow" },
-  "생산 대기": { bgColor: "bg-lg-table", textColor: "text-bl" },
+  "생산 대기": { bgColor: "bg-bg", textColor: "text-dg" },
   "생산 중": { bgColor: "bg-purple-8", textColor: "text-purple" },
   "생산 완료": { bgColor: "bg-primary-8", textColor: "text-primary" },
   납품: { bgColor: "bg-green-8", textColor: "text-green" },
+  "프로젝트 완료": { bgColor: "bg-primary-8", textColor: "text-primary" },
 };
 
 // 거래명세서 발행 상태
