@@ -10,6 +10,7 @@ interface ClientTableItemProps {
   businessCategory: string;
   contact: string;
   email: string;
+  onClick?: () => void;
 }
 
 const ClientTableItem = ({
@@ -21,10 +22,14 @@ const ClientTableItem = ({
   businessCategory,
   contact,
   email,
+  onClick,
 }: ClientTableItemProps) => {
   const clientTypeColor = ClientTypeColorMap[clientType];
   return (
-    <div className="flex h-14 items-center w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg">
+    <div
+      className="flex h-14 items-center w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer"
+      onClick={onClick}
+    >
       <div className="w-[150px]">
         <Chip
           text={clientType}
