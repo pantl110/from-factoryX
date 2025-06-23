@@ -1,24 +1,25 @@
-import { BellSimple, User, CaretRight } from "@phosphor-icons/react/dist/ssr";
+"use client";
+
+import { CaretRight } from "@phosphor-icons/react/dist/ssr";
+import usePageStatusStore, { PageStatusState } from "@/store/page-status-store";
+import { topBarContentMap } from "./top-bar-content";
 
 const TopBar = () => {
+  const pageStatus = usePageStatusStore(
+    (state: PageStatusState) => state.pageStatus,
+  );
+
+  const content =
+    topBarContentMap[pageStatus || "default"] || topBarContentMap.default;
+
   return (
     <header className="flex items-center justify-between w-full h-[60px] px-10">
       <div className="flex items-center gap-1">
-        <p className="Re_Body-1 text-dg">수주관리</p>
+        <p className="Re_Body-1 text-dg">프로젝트 관리</p>
         <CaretRight size={16} className="text-[#8c8c8c]" />
-        <p className="Re_Body-1 text-dg">진행 중인 작업 내역</p>
+        <p className="Re_Body-1 text-dg">보관된 프로젝트</p>
       </div>
-
-      <div className="flex">
-        <div className="flex items-center justify-center w-11 h-11">
-          <BellSimple size={20} className="text-dg" />
-        </div>
-        <div className="flex items-center justify-center w-11 h-11">
-          <div className="flex items-center justify-center bg-blue-200 rounded-full w-8 h-8 border-2 border-blue-600">
-            <User size={20} className="text-blue-600" />
-          </div>
-        </div>
-      </div>
+      {content}
     </header>
   );
 };
