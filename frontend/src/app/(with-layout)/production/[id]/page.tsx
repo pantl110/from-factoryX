@@ -64,7 +64,7 @@ const ProductionPage = () => {
   }, [newStatus, selectedTab, setPageStatus, setSelectedTabGlobal, tabs]);
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       <ProductFlowTitle
         status={newStatus}
         tabs={tabs}
