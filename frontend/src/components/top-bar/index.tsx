@@ -12,6 +12,9 @@ const TopBar = () => {
   const setProductionPlanSaveModalOpen = usePageStatusStore(
     (state) => state.setProductionPlanSaveModalOpen,
   );
+  const setAddReturnModalOpen = usePageStatusStore(
+    (state) => state.setAddReturnModalOpen,
+  );
 
   return (
     <header className="flex items-center justify-between w-full h-[60px] px-10">
@@ -24,6 +27,7 @@ const TopBar = () => {
         selectedTab={selectedTab}
         pageStatus={pageStatus}
         onProductionPlanSaveClick={() => setProductionPlanSaveModalOpen(true)}
+        onAddReturnClick={() => setAddReturnModalOpen(true)}
       />
     </header>
   );

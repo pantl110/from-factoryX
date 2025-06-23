@@ -1,12 +1,13 @@
 import MiniBtn from "@/ui/mini-btn";
 import DeliveryTableHeader from "./delivery-table-header";
 import DeliveryTableItem from "./delivery-table-item";
-import TaxInvoice from "./tax-invoice";
 import { useState } from "react";
 import PrintDeliveryModal from "./modals/print-delivery-modal";
 import PrintAllDeliveryModal from "./modals/print-all-delivery-modal";
 import CreateTransactionOverlayview from "./modals/create-transaction-overlayview";
 import CreateTaxOverlayview from "./modals/create-tax-overlayview";
+import usePageStatusStore from "@/store/page-status-store";
+import AddReturnModal from "./modals/add-return-modal";
 
 const Delivery = () => {
   const [isPrintAllDeliveryModalOpen, setIsPrintAllDeliveryModalOpen] =
@@ -19,6 +20,12 @@ const Delivery = () => {
   ] = useState(false);
   const [isCreateTaxOverlayviewOpen, setIsCreateTaxOverlayviewOpen] =
     useState(false);
+  const isAddReturnModalOpen = usePageStatusStore(
+    (state) => state.isAddReturnModalOpen,
+  );
+  const setAddReturnModalOpen = usePageStatusStore(
+    (state) => state.setAddReturnModalOpen,
+  );
 
   return (
     <>
@@ -62,7 +69,7 @@ const Delivery = () => {
           <DeliveryTableItem />
           <DeliveryTableItem />
         </div>
-        <TaxInvoice />
+        {/* <TaxInvoice /> */}
       </div>
 
       {/* 모달 */}
@@ -75,6 +82,9 @@ const Delivery = () => {
         <PrintDeliveryModal
           onClose={() => setIsPrintDeliveryModalOpen(false)}
         />
+      )}
+      {isAddReturnModalOpen && (
+        <AddReturnModal onClose={() => setAddReturnModalOpen(false)} />
       )}
 
       {/* overlayview */}

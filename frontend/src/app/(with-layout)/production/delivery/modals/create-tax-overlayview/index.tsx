@@ -1,5 +1,4 @@
 import DocumentViewTitle from "@/app/(with-layout)/document/document-view-title";
-import TaxDocumentView from "@/app/(with-layout)/document/tax-document-view";
 import OrderItemInfo from "@/app/(with-layout)/document/tax-document-view/order-item-info";
 import MiniBtn from "@/ui/mini-btn";
 import OverlayView from "@/ui/ovelay-view";
@@ -18,7 +17,7 @@ const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
           <div>
             <h2 className="Heading-2">세금계산서를 발행하시겠어요?</h2>
             <div className="mt-2.5 Me_Body-3 text-gr">
-              발행 전, 세금계싼서 내용을 한 번 더 확인해 주세요.
+              발행 전, 세금계산서 내용을 한 번 더 확인해 주세요.
             </div>
           </div>
           <div className="flex gap-2.5">

@@ -5,12 +5,14 @@ interface TopBarContentProps {
   selectedTab: string | null;
   pageStatus: string | null;
   onProductionPlanSaveClick?: () => void;
+  onAddReturnClick?: () => void;
 }
 
 const TopBarContent = ({
   selectedTab,
   pageStatus,
   onProductionPlanSaveClick,
+  onAddReturnClick,
 }: TopBarContentProps) => {
   const isProductionPlanSaveActive =
     selectedTab === "생산 계획" && pageStatus === "생산 대기";
@@ -71,6 +73,7 @@ const TopBarContent = ({
           textColor="text-red"
           bgColor="bg-red-8"
           hoverColor="hover:bg-red-hover"
+          onClick={onAddReturnClick}
         />
         <MiniBtn
           text="보관함으로 이동"
