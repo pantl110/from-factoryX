@@ -8,13 +8,13 @@ import completedProjectData, {
 } from "@/mocks/completed-project-data";
 import usePageStatusStore from "@/store/page-status-store";
 import ProductFlowTitle from "../product-flow-title";
-import Quotation from "../quotation";
 import ProductionPlan from "../production-plan";
 import ProductionMonitor from "../production-monitor";
 import ProductionLog from "../production-log";
 import Delivery from "../delivery";
 import TaxDocumentView from "../../document/tax-document-view";
 import TransactionDocumentView from "../../document/transaction-document-view";
+import OrderDocumentView from "../../document/order-document-view";
 
 const getTabsByStatus = (status: string) => {
   if (status === "생산 대기") return ["생산 계획", "주문서"];
@@ -49,13 +49,18 @@ const ProductionPage = () => {
   const tabs = getTabsByStatus(newStatus);
 
   const [selectedTab, setSelectedTab] = useState(0);
+  const setSelectedTabGlobal = usePageStatusStore(
+    (state) => state.setSelectedTab,
+  );
 
   useEffect(() => {
     setPageStatus(newStatus);
+    setSelectedTabGlobal(tabs[selectedTab]);
     return () => {
       setPageStatus(null);
+      setSelectedTabGlobal(null);
     };
-  }, [newStatus]);
+  }, [newStatus, selectedTab]);
 
   return (
     <div className="w-full">
@@ -65,6 +70,7 @@ const ProductionPage = () => {
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
       />
+
       {tabs[selectedTab] === "세금계산서" && (
         <div className="px-10 py-5">
           <TaxDocumentView taxType="매출" />
@@ -79,7 +85,11 @@ const ProductionPage = () => {
       {tabs[selectedTab] === "생산 현황" && <ProductionMonitor />}
       {tabs[selectedTab] === "생산 내역" && <ProductionLog />}
       {tabs[selectedTab] === "생산 계획" && <ProductionPlan />}
-      {tabs[selectedTab] === "주문서" && <Quotation />}
+      {tabs[selectedTab] === "주문서" && (
+        <div className="px-10 py-5">
+          <OrderDocumentView />
+        </div>
+      )}
     </div>
   );
 };

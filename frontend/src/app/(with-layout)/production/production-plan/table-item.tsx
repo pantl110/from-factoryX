@@ -37,15 +37,19 @@ const TableItem = ({ item }: TableItemProps) => {
       />
     ),
     "생산 설비": item.facility,
-    "생산 시간": item.productionTime,
+    생산일자: item.productionTime,
     "단위당 소요 시간": item.unitTime,
-    "마감 예정 일자": item.endDate,
+    "마감 예정일자": item.endDate,
   };
 
   return (
     <div className="flex items-center w-[1494px] h-12 border-b border-[#eeeeee] Me_Body-1 bg-white text-dg">
       {tableHeader.map((header) => (
-        <div key={header.name} className={`${header.width} px-3`}>
+        <div
+          key={header.name}
+          className={`${header.width} px-3 truncate`}
+          title={String(itemData[header.name as keyof typeof itemData] ?? "")}
+        >
           {itemData[header.name as keyof typeof itemData]}
         </div>
       ))}
