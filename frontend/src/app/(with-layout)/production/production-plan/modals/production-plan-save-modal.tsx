@@ -16,6 +16,7 @@ const ProductionPlanSaveModal = ({
       subtitle="수정한 정보는 저장되며, 이후 생산 일정과 작업 흐름에 적용돼요."
       width="w-[457px]"
       sm={true}
+      onClose={onClose}
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />

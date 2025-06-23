@@ -17,6 +17,10 @@ const defaultContent = (
 
 const ProductionWaitContent = () => {
   const selectedTab = usePageStatusStore((state) => state.selectedTab);
+  const setProductionPlanSaveModalOpen = usePageStatusStore(
+    (state) => state.setProductionPlanSaveModalOpen,
+  );
+
   if (selectedTab !== "생산 계획") return defaultContent;
   return (
     <div className="flex">
@@ -24,7 +28,8 @@ const ProductionWaitContent = () => {
         text="저장하기"
         textColor="text-primary"
         bgColor="bg-primary-8"
-        hoverColor="hover:bg-primary-hover"
+        hoverColor="hover:bg-secondary-hover"
+        onClick={() => setProductionPlanSaveModalOpen(true)}
       />
     </div>
   );
@@ -41,8 +46,8 @@ const projectCompletedContent = (
   </div>
 );
 
-export const topBarContentMap: Record<string, React.ReactNode> = {
-  "생산 대기": <ProductionWaitContent />,
-  "프로젝트 완료": projectCompletedContent,
-  default: defaultContent,
+export const topBarContentMap: Record<string, () => React.ReactNode> = {
+  "생산 대기": () => <ProductionWaitContent />,
+  "프로젝트 완료": () => projectCompletedContent,
+  default: () => defaultContent,
 };
