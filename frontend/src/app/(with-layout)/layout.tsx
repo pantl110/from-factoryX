@@ -1,5 +1,5 @@
-import SideBar from "@/components/side-bar";
 import TopBar from "@/components/top-bar";
+import SideBar from "@/components/side-bar";
 
 const WithLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -10,7 +10,7 @@ const WithLayout = ({ children }: { children: React.ReactNode }) => {
           <TopBar />
         </div>
         <div className="w-full h-[1px] bg-[#eeeeee]" />
-        <div className="max-w-[1400px] min-w-[1000px] mx-auto w-full flex-1">
+        <div className="max-w-[1400px] min-w-[1000px] mx-auto w-full flex-1 ">
           <main className="flex-1">{children}</main>
         </div>
       </div>
