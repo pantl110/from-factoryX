@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import MiniBtn from "@/ui/mini-btn";
 import { BellSimple, User } from "@phosphor-icons/react";
 import { notificationData } from "@/mocks/notification-data";

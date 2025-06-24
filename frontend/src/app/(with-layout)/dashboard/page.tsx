@@ -2,8 +2,6 @@ import MainTitleSec from "./main-title-sec";
 import DailyProductionQuantity from "./summary-KPI/daily-production-quantity";
 import ShortageCount from "./summary-KPI/shortage-count";
 import ProductionYield from "./summary-KPI/production-yield";
-import ProductionTable from "./today-production-schedule/production-table";
-import MiniBtn from "@/ui/mini-btn";
 import DeliveryTable from "./delivery-schedule/delivery-table";
 
 import PendingQuote from "./pending-quote";
