@@ -23,7 +23,7 @@ const MainTitleSec = ({ selectedType, setSelectedType }: MainTitleSecProps) => {
             key={type}
             type="button"
             className={`cursor-pointer Heading-3 ${selectedType === type ? "text-dg" : "text-gr"}`}
-            onClick={() => setSelectedType(type)}
+            onClick={() => setSelectedType(type as DocumentType)}
           >
             {type}
           </button>
