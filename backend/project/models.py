@@ -14,6 +14,11 @@ class Project(BaseModel):
         delivery = ("납품", "delivery")
         completed = ("프로젝트 완료", "completed")
 
+    class TaxInvoiceStatus(models.TextChoices):
+        pending = ("미발행", "pending")
+        processing = ("발행 중", "processing")
+        completed = ("발행 완료", "completed")
+
     quotation = models.ForeignKey(
         Quotation, on_delete=models.CASCADE, help_text="견적서"
     )
@@ -22,10 +27,25 @@ class Project(BaseModel):
         choices=ProjectStatus.choices,
         default=ProjectStatus.quotation,
     )
-    financial_document = models.ForeignKey(
-        FinancialDocument,
-        on_delete=models.CASCADE,
-        help_text="거래명세서 & 세금계산서",
+    is_transaction_publish = models.BooleanField(
+        default=False,
+        help_text="거래명세서 발행 여부",
+    )
+    tax_invoice_status = models.CharField(
+        max_length=10,
+        choices=TaxInvoiceStatus.choices,
+        default=TaxInvoiceStatus.pending,
+        help_text="세금계산서 발행 상태",
+    )
+    transact_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="거래명세서 발행 일자",
+    )
+    tax_invoice_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="세금계산서 발행 일자",
     )
 
 

@@ -136,6 +136,12 @@ class User(AbstractUser):
         blank=True,
         help_text="전화번호",
     )
+    profile_image = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="프로필 이미지",
+    )
 
 
 class Jwt(models.Model):

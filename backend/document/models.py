@@ -32,25 +32,3 @@ class QuotationProduct(BaseModel):
         blank=True,
         help_text="납품 일자",
     )
-
-
-# 거래명세서
-class FinancialDocument(BaseModel):
-    class TaxInvoiceStatus(models.TextChoices):
-        pending = ("미발행", "pending")
-        processing = ("발행 중", "processing")
-        completed = ("발행 완료", "completed")
-
-    factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
-    is_transaction_publish = models.BooleanField(
-        default=False,
-        help_text="거래명세서 발행 여부",
-    )
-    tax_invoice_status = models.CharField(
-        max_length=10,
-        choices=TaxInvoiceStatus.choices,
-        default=TaxInvoiceStatus.pending,
-        help_text="세금계산서 발행 상태",
-    )
-    transact_date = models.DateField(help_text="거래명세서 발행 일자")
-    tax_invoice_date = models.DateField(help_text="세금계산서 발행 일자")
