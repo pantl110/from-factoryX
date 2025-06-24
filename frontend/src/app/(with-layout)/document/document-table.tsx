@@ -1,8 +1,8 @@
 import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import DocumentTableItem from "./document-table-item";
-import { DocumentType } from "@/types/status-type";
 import documentData from "@/mocks/document-data";
 import { DocumentDataModel } from "@/mocks/document-data";
+import { DocumentType } from "./types";
 
 interface DocumentTableProps {
   selectedType: DocumentType | "전체";
