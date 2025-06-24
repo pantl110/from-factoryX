@@ -96,7 +96,7 @@ const FindPasswordPage = () => {
                 bgColor="bg-primary"
                 textColor="text-wh"
                 hoverColor="bg-primary"
-                height={48}
+                height="h-12"
                 onClick={
                   verification.isVerificationSent
                     ? handleVerificationComplete
@@ -150,7 +150,7 @@ const FindPasswordPage = () => {
                 bgColor="bg-primary"
                 textColor="text-wh"
                 hoverColor="bg-primary"
-                height={48}
+                height="h-12"
                 onClick={handlePasswordReset}
                 disabled={!password.isValid}
               />

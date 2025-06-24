@@ -1,6 +1,6 @@
 import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import DocumentTableItem from "./document-table-item";
-import { DocumentType } from "@/types/status-type";
+import { DocumentType } from "./types";
 import documentData from "@/mocks/document-data";
 import { DocumentDataModel } from "@/mocks/document-data";
 

@@ -3,12 +3,12 @@ import {
   OperationStatusColorMap,
   InventoryStatusColorMap,
 } from "@/types/status-type";
-import { ProductionPlanData } from "@/mocks/production-plan-data";
+import { ProductionPlanDataModel } from "@/mocks/production-plan-data";
 import { tableHeader } from "./types";
 import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 
 interface TableItemProps {
-  item: ProductionPlanData;
+  item: ProductionPlanDataModel;
 }
 
 const TableItem = ({ item }: TableItemProps) => {

@@ -63,7 +63,7 @@ const LoginPage = () => {
             bgColor="bg-primary"
             textColor="text-wh"
             hoverColor="bg-primary"
-            height={48}
+            height="h-12"
             onClick={handleLogin}
             disabled={!isButtonEnabled}
           />
