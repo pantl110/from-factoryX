@@ -92,4 +92,14 @@ export const projectData: ProjectDataModel[] = [
     transactionIssued: "미작성",
     taxIssued: "미발행",
   },
+  {
+    id: 9,
+    status: "견적 협의",
+    companyName: "메탈리카",
+    items: "정밀 부품 외 2개",
+    startDate: "-",
+    endDate: "2025-06-15",
+    transactionIssued: "미작성",
+    taxIssued: "미발행",
+  },
 ];

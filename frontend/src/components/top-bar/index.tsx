@@ -1,12 +1,12 @@
 "use client";
 
 import { CaretRight } from "@phosphor-icons/react/dist/ssr";
-import usePageStatusStore, { PageStatusState } from "@/store/page-status-store";
+import usePageStatusStore, { PageStatusModel } from "@/store/page-status-store";
 import TopBarContent from "./top-bar-content";
 
 const TopBar = () => {
   const pageStatus = usePageStatusStore(
-    (state: PageStatusState) => state.pageStatus,
+    (state: PageStatusModel) => state.pageStatus,
   );
   const selectedTab = usePageStatusStore((state) => state.selectedTab);
   const setProductionPlanSaveModalOpen = usePageStatusStore(

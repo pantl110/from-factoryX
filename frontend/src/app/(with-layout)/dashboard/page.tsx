@@ -2,12 +2,14 @@ import MainTitleSec from "./main-title-sec";
 import DailyProductionQuantity from "./summary-KPI/daily-production-quantity";
 import ShortageCount from "./summary-KPI/shortage-count";
 import ProductionYield from "./summary-KPI/production-yield";
-import PendingQuoteItem from "./pending-quote/pending-quote-item";
-import ProcessProjectItem from "./process-project/process-project-item";
 import ProductionTable from "./today-production-schedule/production-table";
-import TaxItem from "./tax/tax-item";
 import MiniBtn from "@/ui/mini-btn";
 import DeliveryTable from "./delivery-schedule/delivery-table";
+
+import PendingQuote from "./pending-quote";
+import ProcessProject from "./process-project";
+import Tax from "./tax";
+import TodayProductionSchedule from "./today-production-schedule";
 
 const DashboardPage = () => {
   return (
@@ -37,51 +39,13 @@ const DashboardPage = () => {
         </div>
 
         {/* 협의 중인 견적 */}
-        <div>
-          <div className="flex justify-between items-center">
-            <h3 className="Heading-3">협의 중인 견적</h3>
-            <MiniBtn
-              text="더보기"
-              textColor="text-dg"
-              borderColor="border-lg"
-            />
-          </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto">
-            <PendingQuoteItem />
-            <PendingQuoteItem />
-          </div>
-        </div>
+        <PendingQuote />
 
         {/* 생산 프로젝트 */}
-        <div>
-          <div className="flex justify-between items-center">
-            <h3 className="Heading-3">생산 프로젝트</h3>
-            <MiniBtn
-              text="더보기"
-              textColor="text-dg"
-              borderColor="border-lg"
-            />
-          </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto">
-            <ProcessProjectItem />
-            <ProcessProjectItem />
-          </div>
-        </div>
+        <ProcessProject />
 
         {/* 오늘의 생산 일정 */}
-        <div>
-          <div className="flex justify-between items-center">
-            <h3 className="Heading-3">오늘의 생산 일정</h3>
-            <MiniBtn
-              text="출력하기"
-              textColor="text-dg"
-              borderColor="border-lg"
-            />
-          </div>
-          <div className="mt-3 overflow-x-auto">
-            <ProductionTable />
-          </div>
-        </div>
+        <TodayProductionSchedule />
 
         {/* 납품 예정 현황 */}
         <div className="flex gap-5">
@@ -93,43 +57,7 @@ const DashboardPage = () => {
           </div>
 
           {/* 세무/회계 */}
-          <div className="flex flex-col flex-1 gap-3">
-            <div className="flex items-center justify-between">
-              <h3 className="Heading-3">세무/회계</h3>
-              <MiniBtn
-                text="더보기"
-                textColor="text-dg"
-                borderColor="border-lg"
-              />
-            </div>
-            <div className="flex flex-col gap-3">
-              <TaxItem
-                type="매출"
-                text="나무는 딱딱해 세금계산서 발행"
-                date="2025-06-06"
-              />
-              <TaxItem
-                type="매입"
-                text="나무는 딱딱해 세금계산서 발행"
-                date="2025-06-06"
-              />
-              <TaxItem
-                type="매출"
-                text="나무는 딱딱해 세금계산서 발행"
-                date="2025-06-06"
-              />
-              <TaxItem
-                type="매입"
-                text="나무는 딱딱해 세금계산서 발행"
-                date="2025-06-06"
-              />
-              <TaxItem
-                type="매입"
-                text="나무는 딱딱해 세금계산서 발행"
-                date="2025-06-06"
-              />
-            </div>
-          </div>
+          <Tax />
         </div>
       </div>
     </>
