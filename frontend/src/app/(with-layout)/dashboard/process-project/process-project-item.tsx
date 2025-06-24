@@ -1,14 +1,19 @@
 import Chip from "@/ui/chip";
+import { ProjectDataModel } from "@/mocks/project-data";
 
-const ProcessProjectItem = () => {
+interface ProcessProjectItemProps {
+  project: ProjectDataModel;
+}
+
+const ProcessProjectItem = ({ project }: ProcessProjectItemProps) => {
   return (
     <div className="flex flex-col gap-4 w-[293px] flex-shrink-0 p-4 border rounded-lg border-[#eeeeee]">
       <div className="flex flex-col gap-1">
-        <h4 className="Heading-4">플라스틱이 좋아</h4>
+        <h4 className="Heading-4">{project.companyName}</h4>
         <div className="Me_Body-1 text-sv">
-          <span>납기일자</span>
+          <span>{project.endDate}</span>
           <span className="text-gr"> | </span>
-          <span>2025-06-15</span>
+          <span>{project.items}</span>
         </div>
       </div>
       <div className="flex items-center">

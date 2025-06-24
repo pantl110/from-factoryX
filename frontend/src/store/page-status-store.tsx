@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 
-export interface PageStatusStateModel {
+export interface PageStatusModel {
   pageStatus: string | null;
   setPageStatus: (status: string | null) => void;
   selectedTab: string | null;
@@ -17,7 +17,7 @@ export interface PageStatusStateModel {
   setAddReturnModalOpen: (open: boolean) => void;
 }
 
-const usePageStatusStore = create<PageStatusStateModel>((set) => ({
+const usePageStatusStore = create<PageStatusModel>((set) => ({
   pageStatus: null,
   setPageStatus: (status) => set({ pageStatus: status }),
   selectedTab: null,

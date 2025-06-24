@@ -7,8 +7,8 @@ const ShortageCount = () => {
           <p className="Heading-1">
             3 <span>개</span>
           </p>
-          <div className="flex justify-end">
-            <button className="px-4 rounded-md Me_Body-1 border border-lg">
+          <div className="flex justify-end ">
+            <button className="px-4 rounded-md Me_Body-1 border border-lg hidden">
               확인하러 가기
             </button>
           </div>

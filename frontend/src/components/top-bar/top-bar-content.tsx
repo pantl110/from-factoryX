@@ -1,5 +1,8 @@
+"use client";
+
 import MiniBtn from "@/ui/mini-btn";
 import { BellSimple, User } from "@phosphor-icons/react";
+import { notificationData } from "@/mocks/notification-data";
 
 interface TopBarContentProps {
   selectedTab: string | null;
@@ -88,10 +91,13 @@ const TopBarContent = ({
   // default
   return (
     <div className="flex">
-      <div className="flex items-center justify-center w-11 h-11">
+      <div className="flex items-center justify-center w-11 h-11 relative cursor-pointer">
         <BellSimple size={20} className="text-dg" />
+        {notificationData.length > 0 && (
+          <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full" />
+        )}
       </div>
-      <div className="flex items-center justify-center w-11 h-11">
+      <div className="flex items-center justify-center w-11 h-11 cursor-pointer">
         <div className="flex items-center justify-center bg-blue-200 rounded-full w-8 h-8 border-2 border-blue-600">
           <User size={20} className="text-blue-600" />
         </div>
