@@ -5,6 +5,7 @@ interface DropdownProps {
   onClose: () => void;
   width?: string;
   style?: React.CSSProperties;
+  className?: string;
 }
 
 const Dropdown = ({
@@ -12,6 +13,7 @@ const Dropdown = ({
   onClose,
   width = "w-[235px]",
   style,
+  className = "",
 }: DropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +38,7 @@ const Dropdown = ({
   return (
     <div
       ref={dropdownRef}
-      className={`flex flex-col ${width} rounded-lg p-2 shadow-lg bg-wh`}
+      className={`flex flex-col ${width} rounded-lg p-2 shadow-lg bg-wh ${className}`}
       style={style}
     >
       {children}

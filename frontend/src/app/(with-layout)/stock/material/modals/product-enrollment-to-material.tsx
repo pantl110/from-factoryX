@@ -17,7 +17,7 @@ const ProductEnrollmentToMaterial = ({
     >
       <div className="flex justify-end h-12 gap-2.5 mt-4 items-center">
         <div className="flex-1">
-          <SearchInput placeholder="품목 검색" width="w-full" />
+          <SearchInput placeholder="품목 검색" width="w-full" value="" />
         </div>
         <MiniBtn
           text="직접 추가"

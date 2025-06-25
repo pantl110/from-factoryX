@@ -13,6 +13,7 @@ const crumbNameMap: Record<string, string> = {
   setting: "설정",
   production: "프로젝트 관리",
   return: "반품 관리",
+  quotation: "프로젝트 관리",
 };
 
 interface TopBarCrumbProps {

@@ -4,7 +4,7 @@ interface DropdownItemProps {
   icon?: ReactNode;
   text?: string;
   textColor?: string;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   children?: ReactNode;
 }
 

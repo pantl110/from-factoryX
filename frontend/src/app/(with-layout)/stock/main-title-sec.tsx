@@ -54,7 +54,7 @@ const MainTitleSec = ({
           />
 
           {isProductAddDropdownOpen && (
-            <div className="absolute right-0 z-10">
+            <div className="absolute right-0 top-12 z-10">
               <ProductAddDropdown
                 onClose={() => onProductAddDropdownOpen(false)}
                 onOpenExcelModal={onOpenExcelModal}
@@ -63,7 +63,7 @@ const MainTitleSec = ({
             </div>
           )}
           {isMaterialAddDropdownOpen && (
-            <div className="absolute right-0 z-10">
+            <div className="absolute right-0 top-12 z-10">
               <MaterialAddDropdown
                 onClose={() => onMaterialAddDropdownOpen(false)}
                 onOpenExcelModal={onOpenExcelModal}

@@ -16,14 +16,14 @@ const ProductAddDropdown = ({
   return (
     <Dropdown onClose={onClose}>
       <DropdownItem
+        text="개별 품목 추가"
+        icon={<Plus />}
+        onClick={onOpenCreatePanel}
+      />{" "}
+      <DropdownItem
         text="엑셀로 한 번에 등록"
         icon={<Upload />}
         onClick={onOpenExcelModal}
-      />
-      <DropdownItem
-        text="직접 하나씩 추가"
-        icon={<Plus />}
-        onClick={onOpenCreatePanel}
       />
     </Dropdown>
   );

@@ -3,8 +3,8 @@ import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
 interface SearchInputProps {
   width?: string;
   placeholder?: string;
-  value: string;
-  onChange: (value: string) => void;
+  value?: string;
+  onChange?: (value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
 }
@@ -31,7 +31,7 @@ const SearchInput = ({
           type="text"
           placeholder={placeholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChange?.(e.target.value)}
           onFocus={onFocus}
           onBlur={onBlur}
         />
