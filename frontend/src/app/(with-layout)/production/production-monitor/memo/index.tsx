@@ -12,7 +12,7 @@ const MemoSection = ({
   setIsDeleteModalOpen,
 }: MemoSectionProps) => {
   return (
-    <div className="mt-5 mb-10 h-full">
+    <div className="pt-5 pb-10 h-full">
       <div className="rounded flex flex-col gap-4 h-full">
         <div className="flex flex-col gap-3 flex-1">
           <div className="flex gap-2">

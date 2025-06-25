@@ -77,7 +77,7 @@ const ProductionPage = () => {
   if (!project || isStopped) return notFound();
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full flex-1 flex flex-col">
       <ProductFlowTitle
         status={newStatus as ProjectStatusType}
         tabs={tabs}
