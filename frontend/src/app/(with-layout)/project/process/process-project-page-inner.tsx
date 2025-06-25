@@ -24,6 +24,8 @@ const ProcessProjectPageInner = () => {
   // 모달 상태
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  // 버튼 상태
+  const [isDeleteBtnClicked, setIsDeleteBtnClicked] = useState(false);
 
   const handleNewQuotation = () => {
     setIsSelectModalOpen(true);
@@ -47,9 +49,12 @@ const ProcessProjectPageInner = () => {
           onStatusChange={setSelectedStatus}
         />
         <div className="px-8">
-          <SearchDeleteTable />
+          <SearchDeleteTable
+            isDeleteBtnClicked={isDeleteBtnClicked}
+            setIsDeleteBtnClicked={setIsDeleteBtnClicked}
+          />
           <div className="overflow-y-auto w-full">
-            <TableHeader />
+            <TableHeader isDeleteBtnClicked={isDeleteBtnClicked} />
             {filteredProjects.map((project) => (
               <TableItem
                 key={project.id}
@@ -61,6 +66,7 @@ const ProcessProjectPageInner = () => {
                 endDate={project.endDate}
                 transactionIssued={project.transactionIssued}
                 taxIssued={project.taxIssued}
+                isDeleteBtnClicked={isDeleteBtnClicked}
               />
             ))}
           </div>
