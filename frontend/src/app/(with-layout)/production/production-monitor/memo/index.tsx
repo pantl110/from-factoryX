@@ -1,4 +1,8 @@
+"use client";
+
 import MiniBtn from "@/ui/mini-btn";
+import { useEffect, useState } from "react";
+import SaveToast from "./save-toast";
 
 interface MemoSectionProps {
   title: string;
@@ -11,6 +15,21 @@ const MemoSection = ({
   content,
   setIsDeleteModalOpen,
 }: MemoSectionProps) => {
+  const [isSaveToastOpen, setIsSaveToastOpen] = useState(false);
+
+  useEffect(() => {
+    if (isSaveToastOpen) {
+      const timer = setTimeout(() => {
+        setIsSaveToastOpen(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSaveToastOpen]);
+
+  const handleMemoSave = () => {
+    // 메모 저장 로직
+    setIsSaveToastOpen(true);
+  };
   return (
     <div className="pt-5 pb-10 h-full">
       <div className="rounded flex flex-col gap-4 h-full">
@@ -30,9 +49,9 @@ const MemoSection = ({
         <div className="flex gap-2.5 justify-end">
           <MiniBtn
             text="삭제하기"
-            textColor="text-red"
-            bgColor="bg-red-8"
-            hoverColor="hover:bg-red-hover"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
             onClick={() => setIsDeleteModalOpen(true)}
           />
           <MiniBtn
@@ -40,9 +59,11 @@ const MemoSection = ({
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"
+            onClick={handleMemoSave}
           />
         </div>
       </div>
+      {isSaveToastOpen && <SaveToast />}
     </div>
   );
 };

@@ -2,9 +2,10 @@ import { ReactNode } from "react";
 
 interface DropdownItemProps {
   icon?: ReactNode;
-  text: string;
+  text?: string;
   textColor?: string;
   onClick?: () => void;
+  children?: ReactNode;
 }
 
 const DropdownItem = ({
@@ -12,6 +13,7 @@ const DropdownItem = ({
   icon,
   textColor = "text-dg",
   onClick,
+  children,
 }: DropdownItemProps) => {
   return (
     <div
@@ -23,7 +25,8 @@ const DropdownItem = ({
           {icon}
         </div>
       )}
-      <h4 className={`Heading-4 ${textColor}`}>{text}</h4>
+      {text && <h4 className={`Heading-4 ${textColor}`}>{text}</h4>}
+      {children}
     </div>
   );
 };

@@ -5,8 +5,6 @@ import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal";
 import SearchInput from "@/ui/search-input";
 import { useState } from "react";
-import Dropdown from "@/ui/dropdown/dropdown";
-import DropdownItem from "@/ui/dropdown/dropdown-item";
 import {
   ProductItemModel,
   ProductNameDropdown,
@@ -22,7 +20,7 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
   const [returnQuantity, setReturnQuantity] = useState("");
   const [isProductNameDropdownOpen, setIsProductNameDropdownOpen] =
     useState(false);
-  const [selectedProductName, setSelectedProductName] =
+  const [_selectedProductName, setSelectedProductName] =
     useState<ProductItemModel | null>(null);
 
   // 입력값과 처음부터 일치하는 항목만 필터링

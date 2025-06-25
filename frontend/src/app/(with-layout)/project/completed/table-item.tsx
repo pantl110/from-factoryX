@@ -13,6 +13,7 @@ interface TableItemProps {
   companyName: string;
   productName: string;
   date: string;
+  isDeleteMode?: boolean;
 }
 
 const TableItem = ({
@@ -21,6 +22,7 @@ const TableItem = ({
   companyName,
   productName,
   date,
+  isDeleteMode = false,
 }: TableItemProps) => {
   const router = useRouter();
   const chipColors = CompletedProjectStatusColorMap[status];
@@ -48,7 +50,9 @@ const TableItem = ({
           if (e.key === "Enter" || e.key === " ") e.stopPropagation();
         }}
       >
-        <input type="checkbox" className="w-4 h-4 border-sv" />
+        {isDeleteMode && (
+          <input type="checkbox" className="w-4 h-4 border-sv" />
+        )}
       </div>
       <div className="py-1 px-3 w-[150px]">
         <Chip

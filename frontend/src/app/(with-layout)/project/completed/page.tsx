@@ -31,9 +31,13 @@ const CompletedProjectPage = () => {
           setIsDeleteBtnClicked={setIsDeleteBtnClicked}
         />
         <div>
-          <TableHeader />
+          <TableHeader isDeleteMode={isDeleteBtnClicked} />
           {filteredProjects.map((item) => (
-            <TableItem key={item.id} {...item} />
+            <TableItem
+              key={item.id}
+              {...item}
+              isDeleteMode={isDeleteBtnClicked}
+            />
           ))}
         </div>
       </div>

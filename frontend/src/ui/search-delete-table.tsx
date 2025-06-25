@@ -18,7 +18,7 @@ const SearchDeleteTable = ({
 
   return (
     <div className="flex items-center justify-between pb-4">
-      <SearchInput />
+      <SearchInput value="" onChange={() => {}} />
       <MiniBtn
         text="삭제"
         textColor={isDeleteBtnClicked ? "text-red" : "text-dg"}
@@ -35,6 +35,7 @@ const SearchDeleteTable = ({
           }
         }}
       />
+
       {isDeleteModalOpen && (
         <DeleteModal
           onClose={() => {

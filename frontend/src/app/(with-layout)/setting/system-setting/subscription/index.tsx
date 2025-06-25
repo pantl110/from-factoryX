@@ -1,4 +1,3 @@
-import Chip from "@/ui/chip";
 import Dropdown from "@/ui/dropdown/dropdown";
 import { useState } from "react";
 
@@ -13,12 +12,11 @@ import { PlanType } from "./types";
 import {
   DotsThreeVerticalIcon,
   TrashIcon,
-  CrownSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 const Subscription = () => {
   const planTypes: PlanType[] = ["BASIC", "PARTNERS"];
-  const [isCardDropdownOpen, setIsCardDropdownOpen] = useState(false);
+  // const [isCardDropdownOpen, setIsCardDropdownOpen] = useState(false);
   const [isCardDropdownOpen2, setIsCardDropdownOpen2] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);

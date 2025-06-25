@@ -47,7 +47,7 @@ const TopBarContent = ({
     return (
       <div className="flex">
         <MiniBtn
-          text="저장하기"
+          text="다음 단계"
           textColor="text-primary"
           bgColor="bg-primary-8"
           hoverColor="hover:bg-secondary-hover"

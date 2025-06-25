@@ -4,12 +4,14 @@ interface DropdownProps {
   children: ReactNode;
   onClose: () => void;
   width?: string;
+  style?: React.CSSProperties;
 }
 
 const Dropdown = ({
   children,
   onClose,
   width = "w-[235px]",
+  style,
 }: DropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +37,7 @@ const Dropdown = ({
     <div
       ref={dropdownRef}
       className={`flex flex-col ${width} rounded-lg p-2 shadow-lg bg-wh`}
+      style={style}
     >
       {children}
     </div>
