@@ -19,6 +19,7 @@ const Tax = () => {
           onClick={() => {
             router.push("/tax");
           }}
+          hoverColor="hover:bg-bg"
         />
       </div>
       <div className="flex flex-col gap-3">

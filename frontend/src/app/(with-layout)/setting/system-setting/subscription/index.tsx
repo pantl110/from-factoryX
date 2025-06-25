@@ -1,4 +1,3 @@
-import Chip from "@/ui/chip";
 import Dropdown from "@/ui/dropdown/dropdown";
 import { useState } from "react";
 
@@ -13,12 +12,11 @@ import { PlanType } from "./types";
 import {
   DotsThreeVerticalIcon,
   TrashIcon,
-  CrownSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 const Subscription = () => {
   const planTypes: PlanType[] = ["BASIC", "PARTNERS"];
-  const [isCardDropdownOpen, setIsCardDropdownOpen] = useState(false);
+  // const [isCardDropdownOpen, setIsCardDropdownOpen] = useState(false);
   const [isCardDropdownOpen2, setIsCardDropdownOpen2] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
@@ -35,7 +33,7 @@ const Subscription = () => {
       {/* 결제 카드 설정 */}
       <div className="flex flex-col gap-4">
         <h3 className="Heading-3">결제 카드 설정</h3>
-        <div className="flex items-center justify-between h-18 py-4 px-6 border border-[#eeeeee] rounded-xl">
+        {/* <div className="flex items-center justify-between h-18 py-4 px-6 border border-[#eeeeee] rounded-xl">
           <div className="flex items-center gap-3">
             <Chip
               text="대표 카드"
@@ -44,6 +42,7 @@ const Subscription = () => {
             />
             <h4 className="Heading-4">Master 19**</h4>
           </div>
+
           <div className="relative">
             <button onClick={() => setIsCardDropdownOpen((v) => !v)}>
               <DotsThreeVerticalIcon size={24} className="text-gr" />
@@ -68,7 +67,7 @@ const Subscription = () => {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
         <div className="flex items-center justify-between h-18 py-4 px-6 border border-[#eeeeee] rounded-xl">
           <h4 className="Heading-4">Master 19**</h4>
           <div className="relative">
@@ -78,7 +77,7 @@ const Subscription = () => {
             {isCardDropdownOpen2 && (
               <div className="absolute right-0 mt-2 z-50">
                 <Dropdown onClose={() => setIsCardDropdownOpen2(false)}>
-                  <div
+                  {/* <div
                     className="group px-4 py-2  cursor-pointer flex items-center gap-2"
                     onClick={() => {
                       setIsEnrollModalOpen(true);
@@ -90,7 +89,7 @@ const Subscription = () => {
                       className="text-gr group-hover:text-yellow-400 transition-colors"
                     />
                     대표카드 등록
-                  </div>
+                  </div> */}
                   <div
                     className="group px-4 py-2  cursor-pointer flex items-center gap-2"
                     onClick={() => {

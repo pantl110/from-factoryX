@@ -6,7 +6,7 @@ interface MiniBtnProps {
   text: string;
   textColor?: string;
   bgColor?: string;
-  hoverColor?: string;
+  hoverColor: string;
   borderColor?: string;
   icon?: React.ComponentType<IconProps>;
   iconPosition?: "left" | "right";

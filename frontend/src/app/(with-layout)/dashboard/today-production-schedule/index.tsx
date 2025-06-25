@@ -22,6 +22,7 @@ const TodayProductionSchedule = () => {
             onClick={() => {
               setIsPrintOverlayOpen(true);
             }}
+            hoverColor="hover:bg-bg"
           />
         </div>
         <div className="mt-3 overflow-x-auto">
@@ -61,6 +62,7 @@ const TodayProductionSchedule = () => {
                 hoverColor="bg-primary-hover"
                 icon={PrinterIcon}
                 iconColor="text-wh"
+                borderColor="border-primary-hover"
               />
             </div>
             <ProductionDocumentView />

@@ -15,6 +15,10 @@ export interface PageStatusModel {
   // production의 "납품" 상태의 "납품" 탭에서 <반품 등록> 버튼 클릭 시 모달 오픈
   isAddReturnModalOpen: boolean;
   setAddReturnModalOpen: (open: boolean) => void;
+
+  // production의 "납품" 상태의 <보관함으로 이동> 버튼 클릭 시 모달 오픈
+  isMoveToStorageModalOpen: boolean;
+  setMoveToStorageModalOpen: (open: boolean) => void;
 }
 
 const usePageStatusStore = create<PageStatusModel>((set) => ({
@@ -27,6 +31,8 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
     set({ isProductionPlanSaveModalOpen: open }),
   isAddReturnModalOpen: false,
   setAddReturnModalOpen: (open) => set({ isAddReturnModalOpen: open }),
+  isMoveToStorageModalOpen: false,
+  setMoveToStorageModalOpen: (open) => set({ isMoveToStorageModalOpen: open }),
 }));
 
 export default usePageStatusStore;

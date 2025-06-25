@@ -5,8 +5,10 @@ import MiniBtn from "@/ui/mini-btn";
 import Link from "next/link";
 import { useInput } from "@/hooks/use-input";
 import { validateEmail, validatePassword } from "@/utils/validation";
+import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
+  const router = useRouter();
   const email = useInput({
     validate: validateEmail,
   });
@@ -18,6 +20,7 @@ const LoginPage = () => {
   const handleLogin = () => {
     if (email.value && password.value && !email.error && !password.error) {
       // 로그인 처리
+      router.push("/onboarding");
     }
   };
 
@@ -62,7 +65,7 @@ const LoginPage = () => {
             text="로그인"
             bgColor="bg-primary"
             textColor="text-wh"
-            hoverColor="bg-primary"
+            hoverColor="hover:bg-primary-hover"
             height="h-12"
             onClick={handleLogin}
             disabled={!isButtonEnabled}

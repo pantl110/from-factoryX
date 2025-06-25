@@ -1,9 +1,15 @@
+"use client";
+
 import SearchDeleteTable from "@/ui/search-delete-table";
 import TableHeader from "./table-header";
 import TableItem from "./table-item";
 import MaterialDetail from "./material-detail";
+import { useState } from "react";
+import Panel from "@/ui/panel";
 
 const Material = () => {
+  const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false);
+
   return (
     <>
       <SearchDeleteTable />
@@ -16,6 +22,7 @@ const Material = () => {
           currentStock={5000}
           status="충분"
           date="2025-06-04"
+          onClick={() => setIsMaterialDetailOpen(true)}
         />
         <TableItem
           materialName="투명 필름지"
@@ -24,6 +31,7 @@ const Material = () => {
           currentStock={1200}
           status="부족"
           date="2025-06-04"
+          onClick={() => setIsMaterialDetailOpen(true)}
         />
         <TableItem
           materialName="실리콘 고무 패킹"
@@ -32,6 +40,7 @@ const Material = () => {
           currentStock={3500}
           status="충분"
           date="2025-06-04"
+          onClick={() => setIsMaterialDetailOpen(true)}
         />
         <TableItem
           materialName="절연 테이프"
@@ -40,10 +49,17 @@ const Material = () => {
           currentStock={80}
           status="부족"
           date="2025-06-04"
+          onClick={() => setIsMaterialDetailOpen(true)}
         />
       </div>
-
-      <MaterialDetail />
+      {isMaterialDetailOpen && (
+        <Panel
+          title="원자재 재고관리"
+          onClose={() => setIsMaterialDetailOpen(false)}
+        >
+          <MaterialDetail />
+        </Panel>
+      )}
     </>
   );
 };

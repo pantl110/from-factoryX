@@ -20,12 +20,17 @@ const CreateTransactionOverlayview = ({
             </div>
           </div>
           <div className="flex gap-2.5">
-            <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />{" "}
+            <MiniBtn
+              text="취소하기"
+              textColor="text-sv"
+              onClick={onClose}
+              hoverColor=""
+            />
             <MiniBtn
               text="이메일 보내기"
               textColor="text-wh"
               bgColor="bg-primary"
-              hoverColor="bg-primary-hover"
+              hoverColor="hover:bg-primary-hover"
             />
           </div>
         </div>

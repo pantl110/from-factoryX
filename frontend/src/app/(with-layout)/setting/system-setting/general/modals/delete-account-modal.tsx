@@ -15,16 +15,22 @@ const DeleteAccountModal = ({
       title="계정을 정말 삭제하시겠어요?"
       subtitle="계정을 삭제하면 모든 정보가 사라지며, 복구할 수 없습니다."
       onClose={onClose}
-      width="w-[420px]"
+      width="w-[487px]"
       sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />
+        <MiniBtn
+          text="취소하기"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
         <MiniBtn
           text="삭제하기"
           bgColor="bg-red-8"
           textColor="text-red"
           onClick={onConfirm}
+          hoverColor="hover:bg-red-hover"
         />
       </div>
     </Modal>

@@ -16,12 +16,18 @@ const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
       onClose={onClose}
     >
       <div className="flex gap-[5px] justify-end mt-4">
-        <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />
+        <MiniBtn
+          text="취소하기"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
         <MiniBtn
           text="삭제하기"
           textColor="text-red"
           bgColor="bg-red-8"
           onClick={onDelete}
+          hoverColor="hover:bg-red-hover"
         />
       </div>
     </Modal>

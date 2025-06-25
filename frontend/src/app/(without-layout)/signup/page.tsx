@@ -95,7 +95,7 @@ const SignupPage = () => {
                 }
                 bgColor="bg-primary"
                 textColor="text-wh"
-                hoverColor="bg-primary"
+                hoverColor="hover:bg-primary-hover"
                 height="h-12"
                 onClick={
                   verification.isVerificationSent
@@ -149,7 +149,7 @@ const SignupPage = () => {
                 text="가입 완료"
                 bgColor="bg-primary"
                 textColor="text-wh"
-                hoverColor="bg-primary"
+                hoverColor="hover:bg-primary-hover"
                 height="h-12"
                 onClick={handleSignupComplete}
                 disabled={!password.isValid}

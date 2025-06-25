@@ -15,8 +15,9 @@ const RequestInfo = ({ onProductClick }: RequestInfoProps) => {
         <MiniBtn
           text="품목 추가하기"
           textColor="text-dg"
-          borderColor="border-[#eeeeee]"
+          borderColor="border-lg"
           iconColor="text-sv"
+          hoverColor="hover:bg-bg"
         />
       </div>
 

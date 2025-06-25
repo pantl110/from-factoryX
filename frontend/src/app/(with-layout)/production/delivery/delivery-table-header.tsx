@@ -12,7 +12,6 @@ const DeliveryTableHeader = () => {
       <p className="w-[100px] py-1 px-3 text-sv">단가</p>
       <p className="flex-1 py-1 px-3 text-sv">금액</p>
       <p className="flex-1 py-1 px-3 text-sv">납품일자</p>
-      <p className="w-[130px] py-1 px-3 text-sv">납품표</p>
     </div>
   );
 };

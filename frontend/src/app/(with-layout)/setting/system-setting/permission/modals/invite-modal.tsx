@@ -41,16 +41,23 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               icon={CaretDown}
               iconPosition="right"
               height="h-12"
+              hoverColor="hover:bg-bg"
             />
           </div>
 
           <div className="flex mt-5 justify-end gap-2.5">
-            <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />
+            <MiniBtn
+              text="취소하기"
+              textColor="text-sv"
+              onClick={onClose}
+              hoverColor=""
+            />
             <MiniBtn
               text="초대하기"
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={handleInvite}
+              hoverColor="hover:bg-primary-hover"
             />
           </div>
         </Modal>
@@ -69,6 +76,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={handleSuccessClose}
+              hoverColor="hover:bg-primary-hover"
             />
           </div>
         </Modal>

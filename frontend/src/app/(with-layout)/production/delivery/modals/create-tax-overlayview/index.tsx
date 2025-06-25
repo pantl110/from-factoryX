@@ -21,18 +21,23 @@ const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
             </div>
           </div>
           <div className="flex gap-2.5">
-            <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />{" "}
             <MiniBtn
-              text="이메일 보내기"
+              text="취소하기"
+              textColor="text-sv"
+              onClick={onClose}
+              hoverColor=""
+            />
+            <MiniBtn
+              text="발행하기 "
               textColor="text-wh"
               bgColor="bg-primary"
-              hoverColor="bg-primary-hover"
+              hoverColor="hover:bg-primary-hover"
             />
           </div>
         </div>
         <div className="flex flex-col gap-6">
           <DocumentViewTitle
-            title="[플라스틱이 좋아]건 거래명세서"
+            title="[플라스틱이 좋아]건 세금계산서"
             dateLabel="작성일자"
             date="2025-07-31"
           />

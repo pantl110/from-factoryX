@@ -11,9 +11,10 @@ const SearchDeleteTable = () => {
       <MiniBtn
         text="삭제"
         textColor="text-dg"
-        borderColor="border-[#eeeeee]"
+        borderColor="border-lg"
         icon={TrashIcon}
         iconColor="text-sv"
+        hoverColor="hover:bg-bg"
       />
     </div>
   );

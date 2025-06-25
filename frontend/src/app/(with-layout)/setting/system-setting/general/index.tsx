@@ -35,7 +35,7 @@ const General = () => {
                 <Input placeholder="" label="시스템 관리자" />
               </div>
               <div className="flex gap-2">
-                <Input placeholder="" label="이메일" required />
+                <Input placeholder="yoo@gmail.com" label="이메일" required />
                 <Input placeholder="" label="연락처" />
               </div>
             </div>
@@ -45,6 +45,7 @@ const General = () => {
               text="저장하기"
               textColor="text-primary"
               bgColor="bg-primary-8"
+              hoverColor="hover:bg-secondary-hover"
             />
           </div>
         </div>
@@ -78,6 +79,7 @@ const General = () => {
               text="저장하기"
               textColor="text-primary"
               bgColor="bg-primary-8"
+              hoverColor="hover:bg-secondary-hover"
             />
           </div>
         </div>
@@ -96,6 +98,7 @@ const General = () => {
               bgColor="bg-red-8"
               textColor="text-red"
               onClick={() => setIsDeleteModalOpen(true)}
+              hoverColor="hover:bg-red-hover"
             />
           </div>
         </div>

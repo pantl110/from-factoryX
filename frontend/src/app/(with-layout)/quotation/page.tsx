@@ -17,6 +17,7 @@ import OverlayView from "@/ui/ovelay-view";
 import PrintView from "./modals/print-view";
 import { ProductProps } from "./types";
 import StartProductionModal from "./modals/start-production-modal";
+import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
 
 const QuotationPage = () => {
   // 탭 상태
@@ -34,6 +35,9 @@ const QuotationPage = () => {
   const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
+  // 드랍다운 상태
+  const [isQuotationStatusDropdownOpen, setIsQuotationStatusDropdownOpen] =
+    useState(false);
 
   const handleProductClick = (product: ProductProps) => {
     setSelectedProduct(product);
@@ -50,14 +54,29 @@ const QuotationPage = () => {
     <>
       <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
         <div className="flex gap-1 mb-4 pr-10">
-          <div className="flex-1 gap-1">
-            <Chip
-              text="견적 협의"
-              containerWidth="w-[150px]"
-              bgColor="bg-yellow-8"
-              textColor="text-yellow"
-              icon={<CaretDownIcon size={12} />}
-            />
+          <div
+            className="flex-1 gap-1 "
+            onClick={() => {
+              setIsQuotationStatusDropdownOpen(true);
+            }}
+          >
+            <div className="cursor-pointer relative">
+              <Chip
+                text="견적 협의"
+                containerWidth="w-full"
+                bgColor="bg-yellow-8"
+                textColor="text-yellow"
+                icon={<CaretDownIcon size={12} />}
+              />
+
+              {isQuotationStatusDropdownOpen && (
+                <div className="absolute left-13 top-11 -translate-x-1/2">
+                  <QuotationStatusDropdown
+                    onClose={() => setIsQuotationStatusDropdownOpen(false)}
+                  />
+                </div>
+              )}
+            </div>
             <h1 className="Heading-1 mt-2">플라스틱이 좋아</h1>
           </div>
           <ButtonSection

@@ -21,6 +21,7 @@ const TransactionStateDropdown = ({
           key={state}
           text={state}
           textColor={TransactionStatusColorMap[state]}
+          onClick={onClose}
         />
       ))}
     </Dropdown>

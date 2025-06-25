@@ -9,7 +9,9 @@ interface TopBarContentProps {
   pageStatus: string | null;
   onProductionPlanSaveClick?: () => void;
   onAddReturnClick?: () => void;
+  onMoveToStorageClick?: () => void;
   onNotificationClick?: () => void;
+  onProfileClick?: () => void;
 }
 
 const TopBarContent = ({
@@ -17,16 +19,18 @@ const TopBarContent = ({
   pageStatus,
   onProductionPlanSaveClick,
   onAddReturnClick,
+  onMoveToStorageClick,
   onNotificationClick,
+  onProfileClick,
 }: TopBarContentProps) => {
   const isProductionPlanSaveActive =
     selectedTab === "생산 계획" && pageStatus === "생산 대기";
 
   if (pageStatus === "프로젝트 완료") {
     return (
-      <div className="flex">
+      <div className="flex gap-2">
         <MiniBtn
-          text="작업 재개"
+          text="다시 진행하기"
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
@@ -43,7 +47,7 @@ const TopBarContent = ({
     return (
       <div className="flex">
         <MiniBtn
-          text="저장하기"
+          text="다음 단계"
           textColor="text-primary"
           bgColor="bg-primary-8"
           hoverColor="hover:bg-secondary-hover"
@@ -85,6 +89,7 @@ const TopBarContent = ({
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
+          onClick={onMoveToStorageClick}
         />
       </div>
     );
@@ -93,17 +98,19 @@ const TopBarContent = ({
   // default
   return (
     <div className="flex">
-      <div className="flex items-center justify-center w-11 h-11 relative cursor-pointer">
-        <BellSimple
-          size={20}
-          className="text-dg"
-          onClick={onNotificationClick}
-        />
+      <div
+        className="flex items-center justify-center w-11 h-11 relative cursor-pointer"
+        onClick={onNotificationClick}
+      >
+        <BellSimple size={20} className="text-dg" />
         {notificationData.length > 0 && (
           <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full" />
         )}
       </div>
-      <div className="flex items-center justify-center w-11 h-11 cursor-pointer">
+      <div
+        className="flex items-center justify-center w-11 h-11 cursor-pointer"
+        onClick={onProfileClick}
+      >
         <div className="flex items-center justify-center bg-blue-200 rounded-full w-8 h-8 border-2 border-blue-600">
           <User size={20} className="text-blue-600" />
         </div>

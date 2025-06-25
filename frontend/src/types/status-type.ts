@@ -71,7 +71,11 @@ export const CompletedProjectStatusColorMap: Record<
 };
 
 // production의 설비 가동 상태
-export type OperationStatusType = "가동 대기" | "가동 중" | "가동 완료";
+export type OperationStatusType =
+  | "가동 대기"
+  | "가동 중"
+  | "가동 완료"
+  | "가동 중지";
 export const OperationStatusColorMap: Record<
   OperationStatusType,
   StatusColorModel
@@ -79,6 +83,7 @@ export const OperationStatusColorMap: Record<
   "가동 대기": { textColor: "text-dg", bgColor: "bg-bg" },
   "가동 중": { textColor: "text-purple", bgColor: "bg-purple-8" },
   "가동 완료": { textColor: "text-primary", bgColor: "bg-primary-8" },
+  "가동 중지": { textColor: "text-red", bgColor: "bg-red-8" },
 };
 
 // 재고 상태

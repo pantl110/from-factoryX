@@ -98,8 +98,19 @@ const CardEnrollModal = ({ onClose }: CardEnrollModalProps) => {
         </div>
       </div>
       <div className="flex justify-end mt-4">
-        <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />
-        <MiniBtn text="추가하기" bgColor="bg-lg" textColor="text-gr" />
+        <MiniBtn
+          text="취소하기"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
+        <MiniBtn
+          text="추가하기"
+          bgColor="bg-wh"
+          textColor="text-primary"
+          hoverColor="hover:bg-primary-hover"
+          disabled={true}
+        />
       </div>
     </Modal>
   );

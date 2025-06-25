@@ -18,8 +18,13 @@ const ReturnInfo = ({ returnData }: ReturnInfoProps) => {
             text="수정하기"
             textColor="text-dg"
             borderColor="border-lg"
+            hoverColor="hover:bg-bg"
           />
-          <MiniBtn text="생산 등록하기" disabled={true} />
+          <MiniBtn
+            text="생산 등록하기"
+            disabled={true}
+            hoverColor="hover:bg-bg"
+          />
         </div>
       </div>
 

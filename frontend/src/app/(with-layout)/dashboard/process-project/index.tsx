@@ -23,11 +23,18 @@ const ProcessProject = () => {
           onClick={() => {
             router.push("/project/process?tab=inProduction");
           }}
+          hoverColor="hover:bg-bg"
         />
       </div>
       <div className="mt-3 flex gap-2 overflow-x-auto">
         {processProjects.map((project) => (
-          <ProcessProjectItem project={project} key={project.id} />
+          <ProcessProjectItem
+            project={project}
+            key={project.id}
+            onClick={() => {
+              router.push(`/production/${project.id}`);
+            }}
+          />
         ))}
       </div>
     </div>

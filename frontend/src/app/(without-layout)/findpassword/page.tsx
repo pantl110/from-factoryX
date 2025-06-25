@@ -95,7 +95,7 @@ const FindPasswordPage = () => {
                 }
                 bgColor="bg-primary"
                 textColor="text-wh"
-                hoverColor="bg-primary"
+                hoverColor="hover:bg-primary-hover"
                 height="h-12"
                 onClick={
                   verification.isVerificationSent
@@ -149,7 +149,7 @@ const FindPasswordPage = () => {
                 text="비밀번호 변경"
                 bgColor="bg-primary"
                 textColor="text-wh"
-                hoverColor="bg-primary"
+                hoverColor="hover:bg-primary-hover"
                 height="h-12"
                 onClick={handlePasswordReset}
                 disabled={!password.isValid}

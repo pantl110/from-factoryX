@@ -42,12 +42,18 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
           </div>
         </div>
         <div className="flex justify-end gap-2.5">
-          <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />
+          <MiniBtn
+            text="취소하기"
+            textColor="text-sv"
+            onClick={onClose}
+            hoverColor=""
+          />
           <MiniBtn
             text="다음 단계"
             bgColor="bg-primary"
             textColor="text-wh"
             onClick={onNext}
+            hoverColor="hover:bg-primary-hover"
           />
         </div>
       </div>

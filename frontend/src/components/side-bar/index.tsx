@@ -21,7 +21,7 @@ const SideBar = () => {
         <SideBarItem icon={ChartBar} label="대시보드" path="/dashboard" />
         <SideBarItem
           icon={Package}
-          label="프로젝트관리"
+          label="프로젝트 관리"
           path="/project"
           hasDropdown={true}
           dropdownItems={[
@@ -29,7 +29,7 @@ const SideBar = () => {
             { label: "보관된 프로젝트", path: "/project/completed" },
           ]}
         />
-        <SideBarItem icon={Warehouse} label="재고관리" path="/stock" />
+        <SideBarItem icon={Warehouse} label="재고 관리" path="/stock" />
         <SideBarItem icon={MoneyWavy} label="세무/회계" path="/tax" />
         <SideBarItem icon={Files} label="문서함" path="/document" />
       </div>

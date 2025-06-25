@@ -9,9 +9,10 @@ import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 
 interface TableItemProps {
   item: ProductionPlanDataModel;
+  onOperationStatusClick: (e: React.MouseEvent) => void;
 }
 
-const TableItem = ({ item }: TableItemProps) => {
+const TableItem = ({ item, onOperationStatusClick }: TableItemProps) => {
   const { operationStatus, materialStatus } = item;
   const operationColor = OperationStatusColorMap[operationStatus];
   const materialColor = InventoryStatusColorMap[materialStatus];
@@ -33,8 +34,12 @@ const TableItem = ({ item }: TableItemProps) => {
     "생산 자재 상태": (
       <Chip
         text={materialStatus}
-        textColor={materialColor.textColor}
-        bgColor={materialColor.bgColor}
+        textColor={
+          operationStatus === "가동 완료" ? "text-sv" : materialColor.textColor
+        }
+        bgColor={
+          operationStatus === "가동 완료" ? "bg-bg" : materialColor.bgColor
+        }
       />
     ),
     "생산 설비": (
@@ -49,12 +54,31 @@ const TableItem = ({ item }: TableItemProps) => {
   };
 
   return (
-    <div className="flex items-center w-[1494px] h-12 border-b border-[#eeeeee] Me_Body-1 bg-white text-dg">
+    <div
+      className={`flex items-center w-[1494px] h-12 border-b border-[#eeeeee] Me_Body-1 bg-whit ${
+        operationStatus === "가동 완료" ? "text-gr" : "text-dg"
+      }`}
+    >
       {tableHeader.map((header) => (
         <div
           key={header.name}
-          className={`${header.width} px-3 truncate`}
+          className={`${header.width} px-3 truncate ${
+            header.name === "가동 상태"
+              ? operationStatus !== "가동 완료"
+                ? "relative cursor-pointer"
+                : "relative"
+              : ""
+          }`}
           title={String(itemData[header.name as keyof typeof itemData] ?? "")}
+          onClick={
+            header.name === "가동 상태"
+              ? (e) => {
+                  if (operationStatus !== "가동 완료") {
+                    onOperationStatusClick(e);
+                  }
+                }
+              : undefined
+          }
         >
           {itemData[header.name as keyof typeof itemData]}
         </div>

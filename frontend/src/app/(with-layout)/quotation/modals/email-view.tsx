@@ -30,7 +30,7 @@ const EmailView = ({ onClose }: EmailViewProps) => {
           text="견적서 보내기"
           textColor="text-wh"
           bgColor="bg-primary"
-          hoverColor="bg-primary-hover"
+          hoverColor="hover:bg-primary-hover"
           icon={PaperPlaneTilt}
         />
       </div>
