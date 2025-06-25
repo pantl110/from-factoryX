@@ -34,25 +34,33 @@ const Delivery = () => {
           <div className="flex gap-2">
             <MiniBtn
               text="납품표 일괄 출력"
-              borderColor="border-[#eeeeee]"
+              textColor="text-dg"
+              borderColor="border-lg"
               onClick={() => setIsPrintAllDeliveryModalOpen(true)}
+              hoverColor="hover:bg-bg"
             />
             <MiniBtn
               text="납품표 출력"
-              borderColor="border-[#eeeeee]"
+              textColor="text-dg"
+              borderColor="border-lg"
               onClick={() => setIsPrintDeliveryModalOpen(true)}
+              hoverColor="hover:bg-bg"
             />
           </div>
           <div className="flex gap-2">
             <MiniBtn
               text="거래명세서 생성"
-              borderColor="border-[#eeeeee]"
+              textColor="text-dg"
+              borderColor="border-lg"
               onClick={() => setIsCreateTransactionOverlayviewOpen(true)}
+              hoverColor="hover:bg-bg"
             />
             <MiniBtn
               text="세금계산서 생성"
-              borderColor="border-[#eeeeee]"
+              textColor="text-dg"
+              borderColor="border-lg"
               onClick={() => setIsCreateTaxOverlayviewOpen(true)}
+              hoverColor="hover:bg-bg"
             />
           </div>
         </div>

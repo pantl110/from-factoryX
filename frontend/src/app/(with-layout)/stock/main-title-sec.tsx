@@ -40,12 +40,12 @@ const MainTitleSec = ({
         <div className="relative">
           <MiniBtn
             bgColor="bg-primary"
-            textColor="text-white"
+            textColor="text-wh"
             text={selectedTab === "product" ? "품목 추가하기" : "자재 추가하기"}
             icon={CaretDown}
             iconPosition="right"
             iconColor="text-white"
-            hoverColor="hover:bg-[#005DC7]"
+            hoverColor="hover:bg-primary-hover"
             onClick={() =>
               selectedTab === "product"
                 ? onProductAddDropdownOpen(true)

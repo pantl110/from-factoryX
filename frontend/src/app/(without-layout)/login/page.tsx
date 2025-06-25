@@ -65,7 +65,7 @@ const LoginPage = () => {
             text="로그인"
             bgColor="bg-primary"
             textColor="text-wh"
-            hoverColor="bg-primary"
+            hoverColor="hover:bg-primary-hover"
             height="h-12"
             onClick={handleLogin}
             disabled={!isButtonEnabled}

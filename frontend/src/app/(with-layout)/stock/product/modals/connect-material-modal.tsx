@@ -33,7 +33,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
           text="추가하기"
           textColor="text-wh"
           bgColor="bg-primary"
-          hoverColor="bg-[#005249]"
+          hoverColor="hover:bg-primary-hover"
         />
       </div>
     </Modal>

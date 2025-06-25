@@ -2,12 +2,12 @@
 
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
-import DeleteModal from "@/app/(with-layout)/project/process/modals/delete-modal";
 import { useState } from "react";
+import DeleteModal from "../app/(with-layout)/project/modals/delete-modal";
 
 interface SearchDeleteTableProps {
-  isDeleteBtnClicked: boolean;
-  setIsDeleteBtnClicked: (isDeleteBtnClicked: boolean) => void;
+  isDeleteBtnClicked?: boolean;
+  setIsDeleteBtnClicked?: (isDeleteBtnClicked: boolean) => void;
 }
 
 const SearchDeleteTable = ({
@@ -31,7 +31,7 @@ const SearchDeleteTable = ({
           if (isDeleteBtnClicked) {
             setIsDeleteModalOpen(true);
           } else {
-            setIsDeleteBtnClicked(true);
+            setIsDeleteBtnClicked?.(true);
           }
         }}
       />
@@ -39,7 +39,7 @@ const SearchDeleteTable = ({
         <DeleteModal
           onClose={() => {
             setIsDeleteModalOpen(false);
-            setIsDeleteBtnClicked(false);
+            setIsDeleteBtnClicked?.(false);
           }}
         />
       )}

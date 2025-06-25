@@ -12,6 +12,7 @@ const CompletedProjectPage = () => {
   const [selectedStatus, setSelectedStatus] = useState<
     "전체" | CompletedProjectStatusType
   >("전체");
+  const [isDeleteBtnClicked, setIsDeleteBtnClicked] = useState(false);
 
   const filteredProjects =
     selectedStatus === "전체"
@@ -25,7 +26,10 @@ const CompletedProjectPage = () => {
         onStatusChange={setSelectedStatus}
       />
       <div className="px-8">
-        <SearchDeleteTable />
+        <SearchDeleteTable
+          isDeleteBtnClicked={isDeleteBtnClicked}
+          setIsDeleteBtnClicked={setIsDeleteBtnClicked}
+        />
         <div>
           <TableHeader />
           {filteredProjects.map((item) => (

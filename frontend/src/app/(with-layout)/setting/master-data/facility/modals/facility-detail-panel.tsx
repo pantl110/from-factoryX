@@ -45,7 +45,7 @@ const FacilityDetailPanel = ({
           <textarea
             name=""
             id=""
-            className="w-full h-[200px] border border-lg rounded-lg pt-5 px-3 Re_Body-1 text-gr"
+            className="w-full h-[200px] border border-lg rounded-lg pt-5 px-3 Re_Body-1 text-gr resize-none"
           ></textarea>
         </div>
 

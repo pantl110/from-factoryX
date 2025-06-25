@@ -30,6 +30,7 @@ const MainTitleSec = ({
           textColor="text-white"
           text="견적서 생성하기"
           onClick={onNewQuotation}
+          hoverColor="hover:bg-primary-hover"
         />
       </div>
       <div className="flex gap-4 items-center Heading-3">

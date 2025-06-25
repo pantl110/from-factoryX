@@ -1,7 +1,6 @@
 import { usePathname } from "next/navigation";
 import { CaretRight } from "@phosphor-icons/react";
 import { projectData } from "@/mocks/project-data";
-import { PageStatusModel } from "@/store/page-status-store";
 
 const crumbNameMap: Record<string, string> = {
   dashboard: "대시보드",

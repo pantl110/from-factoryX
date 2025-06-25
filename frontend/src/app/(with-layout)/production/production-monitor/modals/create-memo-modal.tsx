@@ -21,11 +21,16 @@ const CreateMemoModal = ({ onClose }: CreateMemoModalProps) => {
           placeholder="제목을 입력하세요."
         />
         <textarea
-          className="h-[448px] mt-4 Re_Body-1 text-gr px-3 py-5 border border-[#E4E4E7] rounded overflow-y-auto"
+          className="resize-none h-[448px] mt-4 Re_Body-1 text-gr px-3 py-5 border border-[#E4E4E7] rounded overflow-y-auto"
           placeholder="메모를 입력하세요."
         />
         <div className="flex gap-2.5 justify-end mt-4">
-          <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />
+          <MiniBtn
+            text="취소하기"
+            textColor="text-sv"
+            onClick={onClose}
+            hoverColor=""
+          />
           <MiniBtn
             text="메모 생성하기"
             textColor="text-wh"

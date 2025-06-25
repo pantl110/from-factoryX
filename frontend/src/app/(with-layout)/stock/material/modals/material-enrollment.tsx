@@ -20,14 +20,26 @@ const MaterialEnrollment = ({ onClose }: MaterialEnrollmentProps) => {
         </div>
         <MiniBtn
           text="직접 추가"
-          textColor="text-bl"
+          textColor="text-dg"
           borderColor="border-lg"
           height="h-12"
+          hoverColor="hover:bg-bg"
         />
       </div>
       <div className="flex h-10 gap-2.5 justify-end mt-4">
-        <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />
-        <MiniBtn text="추가하기" textColor="text-gr" bgColor="bg-lg" />
+        <MiniBtn
+          text="취소하기"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
+        <MiniBtn
+          text="등록하기"
+          textColor="text-wh"
+          bgColor="bg-primary"
+          hoverColor="hover:bg-primary-hover"
+          disabled={true}
+        />
       </div>
     </Modal>
   );

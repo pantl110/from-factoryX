@@ -61,7 +61,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
           text="다음 단계"
           textColor="text-wh"
           bgColor="bg-primary"
-          hoverColor="#005DC7"
+          hoverColor="hover:bg-primary-hover"
           onClick={onNextStep}
         />
       </div>

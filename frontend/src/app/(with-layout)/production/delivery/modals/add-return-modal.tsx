@@ -33,7 +33,12 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
         />
       </div>
       <div className="flex gap-2.5 mt-4 justify-end">
-        <MiniBtn text="취소하기" onClick={onClose} textColor="text-sv" />
+        <MiniBtn
+          text="취소하기"
+          onClick={onClose}
+          textColor="text-sv"
+          hoverColor=""
+        />
         <MiniBtn
           text="등록하기"
           onClick={onClose}

@@ -58,7 +58,8 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
             <MiniBtn
               text="연결하기"
               textColor="text-dg"
-              borderColor="border-[#eeeeee]"
+              borderColor="border-lg"
+              hoverColor="hover:bg-bg"
               onClick={() => setIsMaterialModalOpen(true)}
             />
           </div>

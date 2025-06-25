@@ -16,12 +16,18 @@ const StartProductionModal = ({ onClose }: StartProductionModalProps) => {
       sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />
+        <MiniBtn
+          text="취소하기"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
         <MiniBtn
           text="생산 시작하기"
           textColor="text-wh"
           bgColor="bg-primary"
           onClick={onClose}
+          hoverColor="hover:bg-primary-hover"
         />
       </div>
     </Modal>

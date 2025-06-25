@@ -36,6 +36,7 @@ const Permission = () => {
               onClick={() => {
                 setIsInviteModalOpen(true);
               }}
+              hoverColor="hover:bg-secondary-hover"
             />
           </div>
 

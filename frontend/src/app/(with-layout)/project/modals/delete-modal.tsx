@@ -15,7 +15,12 @@ const DeleteModal = ({ onClose }: DeleteModalProps) => {
       subtitle="이 작업은 되돌릴 수 없습니다.선택한 항목이 영구적으로 삭제됩니다."
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text="취소하기" onClick={onClose} textColor="text-sv" />
+        <MiniBtn
+          text="취소하기"
+          onClick={onClose}
+          textColor="text-sv"
+          hoverColor=""
+        />
         <MiniBtn
           text="삭제하기"
           onClick={onClose}

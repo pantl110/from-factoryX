@@ -36,7 +36,8 @@ const MaterialDetail = () => {
             <MiniBtn
               text="추가하기"
               textColor="text-dg"
-              borderColor="border-[#eeeeee]"
+              borderColor="border-lg"
+              hoverColor="hover:bg-bg"
             />
           </div>
           <ProductRequiringMaterial />

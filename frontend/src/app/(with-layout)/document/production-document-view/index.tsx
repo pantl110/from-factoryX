@@ -54,7 +54,7 @@ const ProductionDocumentView = () => {
           placeholder="메모를 입력하세요."
           //   value={value}
           //   onChange={(e) => onChange?.(e.target.value)}
-          className="w-full min-h-50 rounded px-3 py-5 Re_Body-1 text-dg placeholder:text-sv outline-none border border-[#e4e4e7] hover:border-primary focus:border-gr focus:text-dg transition-colors"
+          className="w-full min-h-50 rounded px-3 py-5 Re_Body-1 text-dg placeholder:text-sv outline-none border border-[#e4e4e7] hover:border-primary focus:border-gr focus:text-dg transition-colors resize-none"
         />
       </div>
     </div>

@@ -55,13 +55,15 @@ const MasterData = () => {
           <MiniBtn
             text="추가"
             textColor="text-dg"
-            borderColor="border-[#eeeeee]"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
           />
           <MiniBtn
             text="삭제"
             textColor="text-red"
             bgColor="bg-red-8"
             onClick={() => setIsDeleteModalOpen(true)}
+            hoverColor="hover:bg-red-hover"
           />
         </div>
       </div>

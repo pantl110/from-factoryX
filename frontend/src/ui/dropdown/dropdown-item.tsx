@@ -15,7 +15,7 @@ const DropdownItem = ({
 }: DropdownItemProps) => {
   return (
     <div
-      className="flex gap-3 w-full h-10 items-center cursor-pointer rounded-lg p-2 hover:bg-bg"
+      className="flex gap-3 w-full h-12 items-center cursor-pointer rounded-[4px] p-2 hover:bg-bg"
       onClick={onClick}
     >
       {icon && (
