@@ -25,11 +25,7 @@ const TopBar = () => {
     <>
       <header className="flex items-center justify-between w-full h-[60px] px-10">
         <TopBarCrumb pageStatus={pageStatus || ""} />
-        {/* <div className="flex items-center gap-1">
-          <p className="Re_Body-1 text-dg">프로젝트 관리</p>
-          <CaretRight size={16} className="text-[#8c8c8c]" />
-          <p className="Re_Body-1 text-dg">보관된 프로젝트</p>
-        </div> */}
+
         <TopBarContent
           selectedTab={selectedTab}
           pageStatus={pageStatus}

@@ -27,7 +27,13 @@ const PendingQuote = () => {
       </div>
       <div className="mt-3 flex gap-2 overflow-x-auto">
         {pendingQuotes.map((project) => (
-          <PendingQuoteItem project={project} key={project.id} />
+          <PendingQuoteItem
+            project={project}
+            key={project.id}
+            onClick={() => {
+              router.push(`/production/${project.id}`);
+            }}
+          />
         ))}
       </div>
     </div>

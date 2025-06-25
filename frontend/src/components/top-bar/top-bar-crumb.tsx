@@ -46,7 +46,7 @@ const TopBarCrumb = ({ pageStatus }: TopBarCrumbProps) => {
   return (
     <div className="flex items-center gap-1">
       {finalCrumbs.map((crumb, idx) => (
-        <div key={crumb + idx} className="flex items-center gap-1 ">
+        <div key={idx} className="flex items-center gap-1 ">
           <p className="Re_Body-1 text-dg">{crumbNameMap[crumb] || crumb}</p>
           {idx < finalCrumbs.length - 1 && (
             <CaretRight size={16} className="text-[#8c8c8c]" />
