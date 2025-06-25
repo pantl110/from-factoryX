@@ -12,10 +12,10 @@ const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState<OnboardingStepType>("welcome");
   const router = useRouter();
   const steps = ["welcome", "first-step", "second-step", "third-step"] as const;
-  type Step = (typeof steps)[number];
+  type StepType = (typeof steps)[number];
 
   const handleNextStep = () => {
-    const currentIdx = steps.indexOf(currentStep as Step);
+    const currentIdx = steps.indexOf(currentStep as StepType);
     if (currentIdx < steps.length - 1) {
       setCurrentStep(steps[currentIdx + 1]);
     } else {
@@ -23,7 +23,7 @@ const OnboardingPage = () => {
     }
   };
   const handlePrevStep = () => {
-    const currentIdx = steps.indexOf(currentStep as Step);
+    const currentIdx = steps.indexOf(currentStep as StepType);
     if (currentIdx > 0) {
       setCurrentStep(steps[currentIdx - 1]);
     }
@@ -46,9 +46,7 @@ const OnboardingPage = () => {
           <ThirdStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
         );
       default:
-        return (
-          <Welcome onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
-        );
+        return <Welcome onNextStep={handleNextStep} />;
     }
   };
 
