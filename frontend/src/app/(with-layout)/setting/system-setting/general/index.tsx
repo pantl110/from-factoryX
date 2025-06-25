@@ -35,7 +35,7 @@ const General = () => {
                 <Input placeholder="" label="시스템 관리자" />
               </div>
               <div className="flex gap-2">
-                <Input placeholder="" label="이메일" required />
+                <Input placeholder="yoo@gmail.com" label="이메일" required />
                 <Input placeholder="" label="연락처" />
               </div>
             </div>
