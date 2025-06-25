@@ -1,65 +1,42 @@
-import Input from "@/ui/input";
-import Progress from "../progress";
 import MiniBtn from "@/ui/mini-btn";
-import Item from "../item";
 
-const ThirdStep = () => {
+interface ThirdStepProps {
+  onNextStep: () => void;
+  onPrevStep: () => void;
+}
+
+const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
   return (
-    <div className="bg-wh z-1 w-[791px] h-[718px] pt-10 px-8 pb-6 flex flex-col items-center rounded-lg justify-between">
-      <div className="flex flex-col gap-6">
-        <Progress currentStep="third" />
-        <div className="flex flex-col gap-3 items-center">
+    <div className="bg-wh z-1 w-[586px] py-10 px-8 flex flex-col gap-7 items-center rounded-lg">
+      {/* 컨텐츠 영역 */}
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-2 items-center">
           <h3 className="Heading-3 text-primary">
-            해당 품목을 생산할 수 있는 설비를 추가해 주세요.
+            팩토리엑스에 오신 걸 환영합니다!
           </h3>
-          <div
-            className="w-[538px] flex flex-col gap-3 p-5 border-lg rounded-xl shadow"
-            // style={{ boxShadow: "4px 4px 12px -8px #000000" }}
-          >
-            <div className="flex-1">
-              <Input
-                label="생산설비"
-                type="text"
-                placeholder=""
-                required={true}
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <MiniBtn
-                text="취소하기"
-                textColor="text-sv"
-                bgColor="bg-wh"
-                hoverColor="bg-bg"
-              />
-              <MiniBtn
-                text="추가하기"
-                textColor="text-bl"
-                bgColor="bg-wh"
-                borderColor="border-lg"
-                hoverColor="bg-bg"
-              />
-            </div>
-          </div>
-
-          <div className="w-[538px] h-[265px] bg-bg rounded-xl pt-2 pr-1 pl-3 overflow-y-auto">
-            <Item material="1호기" />
-            <Item material="2호기" />
-            <Item material="3호기" />
-            <Item material="4호기" />
-            <Item material="5호기" />
-            <Item material="6호기" />
-            <Item material="7호기" />
+          <div className="Me_Body-2 text-bl text-center">
+            이제 생산부터 재고까지 모든 과정을 한눈에 관리할 수 있어요.
+            <br />
+            지금 바로 공장 운영을 시작해보세요!
           </div>
         </div>
       </div>
 
-      <div className="w-full flex justify-end">
+      {/* 모달버튼 영역 */}
+      <div className="w-full flex justify-end gap-2.5">
         <MiniBtn
-          text="완료"
+          text="이전 단계"
+          textColor="text-sv"
+          bgColor="bg-wh"
+          hoverColor="bg-bg"
+          onClick={onPrevStep}
+        />
+        <MiniBtn
+          text="다음 단계"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="#005DC7"
-          // onClick={}
+          onClick={onNextStep}
         />
       </div>
     </div>

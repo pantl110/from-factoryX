@@ -9,6 +9,7 @@ interface TopBarContentProps {
   pageStatus: string | null;
   onProductionPlanSaveClick?: () => void;
   onAddReturnClick?: () => void;
+  onNotificationClick?: () => void;
 }
 
 const TopBarContent = ({
@@ -16,6 +17,7 @@ const TopBarContent = ({
   pageStatus,
   onProductionPlanSaveClick,
   onAddReturnClick,
+  onNotificationClick,
 }: TopBarContentProps) => {
   const isProductionPlanSaveActive =
     selectedTab === "생산 계획" && pageStatus === "생산 대기";
@@ -92,7 +94,11 @@ const TopBarContent = ({
   return (
     <div className="flex">
       <div className="flex items-center justify-center w-11 h-11 relative cursor-pointer">
-        <BellSimple size={20} className="text-dg" />
+        <BellSimple
+          size={20}
+          className="text-dg"
+          onClick={onNotificationClick}
+        />
         {notificationData.length > 0 && (
           <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full" />
         )}

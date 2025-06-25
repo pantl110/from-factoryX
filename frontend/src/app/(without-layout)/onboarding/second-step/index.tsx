@@ -1,85 +1,62 @@
-import Input from "@/ui/input";
-import Progress from "../progress";
+import InfoLabelValue from "@/ui/info-label-value";
 import MiniBtn from "@/ui/mini-btn";
-import Item from "../item";
+import { Plus } from "@phosphor-icons/react/dist/ssr";
+import MaterialInputItem from "./material-input-item";
 
 interface SecondStepProps {
   onNextStep: () => void;
+  onPrevStep: () => void;
 }
 
-const SecondStep = ({ onNextStep }: SecondStepProps) => {
+const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
   return (
-    <div className="bg-wh z-1 w-[791px] h-[718px] pt-10 px-8 pb-6 flex flex-col items-center rounded-lg justify-between">
-      <div className="flex flex-col gap-6">
-        <Progress currentStep="second" />
-        <div className="flex flex-col gap-3 items-center">
+    <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col gap-7 items-center rounded-lg">
+      {/* 컨텐츠 영역 */}
+      <div className="flex flex-col gap-8">
+        {/* 타이틀 영역 */}
+        <div className="flex flex-col gap-2 items-center">
           <h3 className="Heading-3 text-primary">
             해당 품목을 만들 때 필요한 원자재를 추가해 주세요.
           </h3>
-          <div
-            className="w-[538px] flex flex-col gap-3 p-5 border-lg rounded-xl shadow"
-            // style={{ boxShadow: "4px 4px 12px -8px #000000" }}
-          >
-            <div className="flex gap-3">
-              <div className="flex-2">
-                <Input
-                  label="품목명"
-                  type="text"
-                  placeholder=""
-                  required={true}
-                />
-              </div>
-              <div className="flex-2">
-                <Input
-                  label="규격"
-                  type="text"
-                  placeholder=""
-                  required={true}
-                />
-              </div>
-              <div className="flex-1">
-                <Input
-                  label="단위"
-                  type="text"
-                  placeholder=""
-                  required={true}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 justify-end">
-              <MiniBtn
-                text="취소하기"
-                textColor="text-sv"
-                bgColor="bg-wh"
-                hoverColor="bg-bg"
-              />
-              <MiniBtn
-                text="추가하기"
-                textColor="text-bl"
-                bgColor="bg-wh"
-                borderColor="border-lg"
-                hoverColor="bg-bg"
-              />
-            </div>
+          <div className="Me_Body-2 text-bl text-center">
+            운영을 시작하려면 먼저 품목과 설비 정보를 등록해야 해요.
+            <br />
+            등록이 완료되면 생산부터 재고까지 한눈에 관리할 수 있어요!
           </div>
+        </div>
 
-          <div className="w-[538px] h-[265px] bg-bg rounded-xl pt-2 pr-1 pl-3 overflow-y-auto">
-            <Item material="나무" />
-            <Item material="나무" />
-            <Item material="나무" />
-            <Item material="나무" />
-            <Item material="나무" />
-            <Item material="나무" />
-            <Item material="나무" />
-            <Item material="나무" />
-            <Item material="나무" />
-            <Item material="나무" />
+        {/* 표 영역  */}
+        <div>
+          <div className="flex">
+            <InfoLabelValue label="품목명" value="투명아크릴판" />
+            <InfoLabelValue label="품목코드" value="12345" />
           </div>
+          <div className="flex">
+            <InfoLabelValue label="규격" value="100x300mm" />
+            <InfoLabelValue label="단위" value="EA" />
+          </div>
+        </div>
+
+        {/* input container */}
+        <div className="flex flex-col gap-2">
+          <MaterialInputItem />
+          <MaterialInputItem />
+          <button className="w-full h-12 min-h-8 flex gap-2 items-center justify-center bg-bg Re-Body-1 text-sv border border-[#E4E4E7] rounded shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-primary-8 hover:text-dg">
+            추가하기
+            <Plus size={24} />
+          </button>
         </div>
       </div>
 
-      <div className="w-full flex justify-end">
+      {/* 모달버튼 영역 */}
+      <div className="w-full flex justify-end gap-2.5">
+        <MiniBtn
+          text="이전 단계"
+          textColor="text-sv"
+          bgColor="bg-wh"
+          hoverColor="bg-bg"
+          onClick={onPrevStep}
+        />
         <MiniBtn
           text="다음 단계"
           textColor="text-wh"

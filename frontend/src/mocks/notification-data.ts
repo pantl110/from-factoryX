@@ -1,4 +1,4 @@
-import { NotificationModel } from "@/app/(with-layout)/dashboard/types";
+import { NotificationModel } from "@/components/top-bar/types";
 
 export const notificationData: NotificationModel[] = [
   {

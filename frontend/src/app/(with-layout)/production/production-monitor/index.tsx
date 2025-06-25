@@ -16,13 +16,14 @@ const ProductionMonitor = () => {
   const [isDeleteMemoModalOpen, setIsDeleteMemoModalOpen] = useState(false);
 
   return (
-    <div className="flex gap-3 px-10 w-full h-full">
+    <div className="flex-1 flex gap-3 px-10 w-full min-h-0">
+      {/* 왼쪽 영역 */}
       <div
-        className={`flex flex-col gap-4 h-full pt-5 px-3 flex-1 border-r ${
+        className={`flex flex-col gap-4 h-full pt-5 px-3 mb-10 border-r ${
           logData.length === 0 ? "border-none" : "border-[#eeeeee]"
         }`}
       >
-        <div className="flex flex-col gap-4 pb-10 h-full flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-col gap-4 h-full flex-1 min-h-0">
           <div>
             <MiniBtn
               text="메모 작성"
@@ -52,7 +53,7 @@ const ProductionMonitor = () => {
       </div>
 
       {/* 오른쪽 영역: 선택된 로그에 따라 렌더링 */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         {selectedLog ? (
           selectedLog.type === "memo" ? (
             <MemoSection

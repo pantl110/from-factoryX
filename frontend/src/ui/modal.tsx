@@ -9,6 +9,7 @@ interface ModalProps {
   sm?: boolean;
   width?: string;
   height?: string;
+  button?: React.ReactNode;
 }
 
 const Modal = ({
@@ -19,6 +20,7 @@ const Modal = ({
   width = "w-[631px]",
   height = "",
   sm = false,
+  button,
 }: ModalProps) => {
   useEffect(() => {
     const originalStyle = document.body.style.overflow;
@@ -43,7 +45,10 @@ const Modal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center">
-          <h3 className="Heading-3">{title}</h3>
+          <div className="flex gap-3 items-center">
+            <h3 className="Heading-3">{title}</h3>
+            {button}
+          </div>
           <button
             className={`${sm ? "w-9 h-9" : "w-10 h-10"} flex justify-center items-center cursor-pointer`}
             onClick={onClose}

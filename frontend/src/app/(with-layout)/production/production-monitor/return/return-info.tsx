@@ -8,9 +8,11 @@ interface ReturnInfoProps {
 
 const ReturnInfo = ({ returnData }: ReturnInfoProps) => {
   return (
-    <div className="flex flex-col gap-3 pt-5 pb-10">
+    <div className="flex flex-col gap-3">
       <div className="flex justify-between">
-        <h3 className="Heading-3 text-dg">반품 정보 {returnData.id}</h3>
+        <h3 className="Heading-3 text-dg flex items-center">
+          반품 정보 {returnData.id}
+        </h3>
         <div className="flex gap-2.5">
           <MiniBtn
             text="수정하기"

@@ -4,7 +4,7 @@ import PurchaseTableTiem from "./purchase-table-tiem";
 const PurchaseItemInfo = () => {
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3">구매 품목 정보</h3>
+      <h3 className="Heading-3">구매 자재 정보</h3>
       <PriceInfo textColor="text-red" />
       <div className="w-full">
         <div className="flex items-center h-12 w-full border-t border-b border-lg Me_Body-1 text-sv rounded-sm">

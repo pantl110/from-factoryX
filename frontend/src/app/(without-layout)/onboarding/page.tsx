@@ -6,24 +6,26 @@ import Welcome from "./welcome";
 import FirstStep from "./first-step";
 import SecondStep from "./second-step";
 import ThirdStep from "./third-step";
+import { useRouter } from "next/navigation";
 
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState<OnboardingStepType>("welcome");
+  const router = useRouter();
+  const steps = ["welcome", "first-step", "second-step", "third-step"] as const;
+  type Step = (typeof steps)[number];
 
   const handleNextStep = () => {
-    switch (currentStep) {
-      case "welcome":
-        setCurrentStep("first-step");
-        break;
-      case "first-step":
-        setCurrentStep("second-step");
-        break;
-      case "second-step":
-        setCurrentStep("third-step");
-        break;
-      case "third-step":
-        // 마지막 단계
-        break;
+    const currentIdx = steps.indexOf(currentStep as Step);
+    if (currentIdx < steps.length - 1) {
+      setCurrentStep(steps[currentIdx + 1]);
+    } else {
+      router.push("/dashboard"); // 마지막 단계
+    }
+  };
+  const handlePrevStep = () => {
+    const currentIdx = steps.indexOf(currentStep as Step);
+    if (currentIdx > 0) {
+      setCurrentStep(steps[currentIdx - 1]);
     }
   };
 
@@ -32,13 +34,21 @@ const OnboardingPage = () => {
       case "welcome":
         return <Welcome onNextStep={handleNextStep} />;
       case "first-step":
-        return <FirstStep onNextStep={handleNextStep} />;
+        return (
+          <FirstStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
+        );
       case "second-step":
-        return <SecondStep onNextStep={handleNextStep} />;
+        return (
+          <SecondStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
+        );
       case "third-step":
-        return <ThirdStep />;
+        return (
+          <ThirdStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
+        );
       default:
-        return <Welcome onNextStep={handleNextStep} />;
+        return (
+          <Welcome onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
+        );
     }
   };
 
