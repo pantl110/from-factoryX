@@ -5,6 +5,7 @@ import usePageStatusStore, { PageStatusModel } from "@/store/page-status-store";
 import TopBarContent from "./top-bar-content";
 import { useState } from "react";
 import NotificationModal from "./modals/notification-modal";
+import ProfileModal from "./modals/profile-modal";
 
 const TopBar = () => {
   const pageStatus = usePageStatusStore(
@@ -18,6 +19,7 @@ const TopBar = () => {
     (state) => state.setAddReturnModalOpen,
   );
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   return (
     <>
@@ -33,10 +35,14 @@ const TopBar = () => {
           onProductionPlanSaveClick={() => setProductionPlanSaveModalOpen(true)}
           onAddReturnClick={() => setAddReturnModalOpen(true)}
           onNotificationClick={() => setIsNotificationModalOpen(true)}
+          onProfileClick={() => setIsProfileModalOpen(true)}
         />
       </header>
       {isNotificationModalOpen && (
         <NotificationModal onClose={() => setIsNotificationModalOpen(false)} />
+      )}
+      {isProfileModalOpen && (
+        <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
       )}
     </>
   );

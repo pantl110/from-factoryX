@@ -35,7 +35,7 @@ const SystemSetting = () => {
           onClick={() => setSelectedChip("general")}
         />
         <Chip
-          text="권한설정"
+          text="권한 설정"
           textColor={selectedChip === "permission" ? "text-bg" : "text-dg"}
           bgColor={selectedChip === "permission" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
@@ -44,7 +44,7 @@ const SystemSetting = () => {
           onClick={() => setSelectedChip("permission")}
         />
         <Chip
-          text="구독관리"
+          text="구독 관리"
           textColor={selectedChip === "subscription" ? "text-bg" : "text-dg"}
           bgColor={selectedChip === "subscription" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
