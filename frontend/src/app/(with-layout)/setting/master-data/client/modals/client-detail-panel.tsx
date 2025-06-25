@@ -39,7 +39,7 @@ const ClientDetailPanel = ({ onClose, client }: ClientDetailPanelProps) => {
             <InfoLabelValue label="종목" value={client.businessCategory} />
           </div>
           <div className="flex">
-            <InfoLabelValue label="사업장 주소" value="" />
+            <InfoLabelValue label="사업장 주소" value={client.address} />
           </div>
           <div className="flex">
             <InfoLabelValue

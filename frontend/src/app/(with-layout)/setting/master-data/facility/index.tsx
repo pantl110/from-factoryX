@@ -4,7 +4,6 @@ import { useState } from "react";
 import { facilityData, FacilityDataModel } from "@/mocks/facility-data";
 import FacilityTableHeader from "./facility-table-header";
 import FacilityTableItem from "./facility-table-item";
-import Pagination from "@/components/pagination";
 import FacilityDetailPanel from "./modals/facility-detail-panel";
 
 const Facility = () => {
@@ -30,7 +29,7 @@ const Facility = () => {
           />
         ))}
       </div>
-      <Pagination />
+      {/* <Pagination /> */}
 
       {/* 설비 상세 판넬 */}
       {selectedFacility && (

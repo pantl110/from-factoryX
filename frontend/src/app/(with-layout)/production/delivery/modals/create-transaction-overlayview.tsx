@@ -30,7 +30,7 @@ const CreateTransactionOverlayview = ({
               text="이메일 보내기"
               textColor="text-wh"
               bgColor="bg-primary"
-              hoverColor="bg-primary-hover"
+              hoverColor="hover:bg-primary-hover"
             />
           </div>
         </div>

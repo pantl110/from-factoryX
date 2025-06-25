@@ -9,6 +9,7 @@ interface TopBarContentProps {
   pageStatus: string | null;
   onProductionPlanSaveClick?: () => void;
   onAddReturnClick?: () => void;
+  onMoveToStorageClick?: () => void;
   onNotificationClick?: () => void;
   onProfileClick?: () => void;
 }
@@ -18,6 +19,7 @@ const TopBarContent = ({
   pageStatus,
   onProductionPlanSaveClick,
   onAddReturnClick,
+  onMoveToStorageClick,
   onNotificationClick,
   onProfileClick,
 }: TopBarContentProps) => {
@@ -26,9 +28,9 @@ const TopBarContent = ({
 
   if (pageStatus === "프로젝트 완료") {
     return (
-      <div className="flex">
+      <div className="flex gap-2">
         <MiniBtn
-          text="작업 재개"
+          text="다시 진행하기"
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
@@ -87,6 +89,7 @@ const TopBarContent = ({
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
+          onClick={onMoveToStorageClick}
         />
       </div>
     );

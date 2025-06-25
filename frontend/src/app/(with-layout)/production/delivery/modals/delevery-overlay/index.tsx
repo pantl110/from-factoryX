@@ -1,34 +1,34 @@
 import DocumentViewTitle from "@/app/(with-layout)/document/document-view-title";
-import OrderItemInfo from "@/app/(with-layout)/document/tax-document-view/order-item-info";
+import InfoLabelValue from "@/ui/info-label-value";
 import MiniBtn from "@/ui/mini-btn";
 import OverlayView from "@/ui/ovelay-view";
-import ProviderInfo from "./provider-info";
-import BuyerInfo from "./buyer-info";
+import { DeliveryDataModel } from "../../types";
 
-interface CreateTaxOverlayviewProps {
+interface DeliveryOverlayProps {
   onClose: () => void;
+  data: DeliveryDataModel;
 }
 
-const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
+const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
   return (
     <OverlayView onClose={onClose}>
       <div className="w-full flex flex-col gap-6 p-8">
         <div className="pb-6 w-full flex justify-between border-b border-lg">
           <div>
-            <h2 className="Heading-2">세금계산서를 발행하시겠어요?</h2>
+            <h2 className="Heading-2">납품표를 출력하시겠어요?</h2>
             <div className="mt-2.5 Me_Body-3 text-gr">
-              발행 전, 세금계산서 내용을 한 번 더 확인해 주세요.
+              출력 전, 납품서 내용을 한 번 더 확인해 주세요.
             </div>
           </div>
           <div className="flex gap-2.5">
             <MiniBtn
               text="취소하기"
               textColor="text-sv"
-              onClick={onClose}
               hoverColor=""
+              onClick={onClose}
             />
             <MiniBtn
-              text="발행하기 "
+              text="발행하기"
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"
@@ -36,20 +36,17 @@ const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
           </div>
         </div>
         <div className="flex flex-col gap-6">
-          <DocumentViewTitle
-            title="[플라스틱이 좋아]건 세금계산서"
-            dateLabel="작성일자"
-            date="2025-07-31"
-          />
-          <div className="flex gap-5">
-            <ProviderInfo />
-            <BuyerInfo />
+          <DocumentViewTitle title="납품표" />
+          <div className="flex flex-col">
+            <InfoLabelValue label="납품처" value={data.companyName} />
+            <InfoLabelValue label="품목명" value={data.productName} />
+            <InfoLabelValue label="규격" value={data.size} />
+            <InfoLabelValue label="수량" value={data.quantity} />
           </div>
-          <OrderItemInfo />
         </div>
       </div>
     </OverlayView>
   );
 };
 
-export default CreateTaxOverlayview;
+export default DeliveryOverlay;

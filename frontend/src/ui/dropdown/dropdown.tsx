@@ -3,9 +3,14 @@ import { ReactNode, useRef, useEffect } from "react";
 interface DropdownProps {
   children: ReactNode;
   onClose: () => void;
+  width?: string;
 }
 
-const Dropdown = ({ children, onClose }: DropdownProps) => {
+const Dropdown = ({
+  children,
+  onClose,
+  width = "w-[235px]",
+}: DropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 외부 클릭 시 닫기
@@ -29,7 +34,7 @@ const Dropdown = ({ children, onClose }: DropdownProps) => {
   return (
     <div
       ref={dropdownRef}
-      className="flex flex-col w-[235px] rounded-lg p-2 shadow-lg bg-wh"
+      className={`flex flex-col ${width} rounded-lg p-2 shadow-lg bg-wh`}
     >
       {children}
     </div>

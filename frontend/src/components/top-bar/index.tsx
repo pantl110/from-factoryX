@@ -18,6 +18,9 @@ const TopBar = () => {
   const setAddReturnModalOpen = usePageStatusStore(
     (state) => state.setAddReturnModalOpen,
   );
+  const setMoveToStorageModalOpen = usePageStatusStore(
+    (state) => state.setMoveToStorageModalOpen,
+  );
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
@@ -31,6 +34,7 @@ const TopBar = () => {
           pageStatus={pageStatus}
           onProductionPlanSaveClick={() => setProductionPlanSaveModalOpen(true)}
           onAddReturnClick={() => setAddReturnModalOpen(true)}
+          onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
           onNotificationClick={() => setIsNotificationModalOpen(true)}
           onProfileClick={() => setIsProfileModalOpen(true)}
         />

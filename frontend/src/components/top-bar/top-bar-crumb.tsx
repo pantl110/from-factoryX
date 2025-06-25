@@ -34,7 +34,7 @@ const TopBarCrumb = ({ pageStatus }: TopBarCrumbProps) => {
 
   let finalCrumbs: string[] = crumbs;
   if (isProductionDetail) {
-    if (pageStatus === "완료" || pageStatus === "생산 완료") {
+    if (pageStatus === "완료" || pageStatus === "프로젝트 완료") {
       finalCrumbs = ["project", "completed"];
     } else {
       finalCrumbs = ["project", "process"];

@@ -7,7 +7,9 @@ import PrintAllDeliveryModal from "./modals/print-all-delivery-modal";
 import CreateTransactionOverlayview from "./modals/create-transaction-overlayview";
 import CreateTaxOverlayview from "./modals/create-tax-overlayview";
 import usePageStatusStore from "@/store/page-status-store";
-import AddReturnModal from "./modals/add-return-modal";
+import AddReturnModal from "./modals/add-return-modal/add-return-modal";
+import MoveToStorageModal from "./modals/move-to-storage-modal";
+import { deliveryData } from "@/mocks/delivery-data";
 
 const Delivery = () => {
   const [isPrintAllDeliveryModalOpen, setIsPrintAllDeliveryModalOpen] =
@@ -25,6 +27,12 @@ const Delivery = () => {
   );
   const setAddReturnModalOpen = usePageStatusStore(
     (state) => state.setAddReturnModalOpen,
+  );
+  const isMoveToStorageModalOpen = usePageStatusStore(
+    (state) => state.isMoveToStorageModalOpen,
+  );
+  const setMoveToStorageModalOpen = usePageStatusStore(
+    (state) => state.setMoveToStorageModalOpen,
   );
 
   return (
@@ -66,16 +74,9 @@ const Delivery = () => {
         </div>
         <div className="flex flex-col w-full overflow-x-auto">
           <DeliveryTableHeader />
-          <DeliveryTableItem />
-          <DeliveryTableItem />
-          <DeliveryTableItem />
-          <DeliveryTableItem />
-          <DeliveryTableItem />
-          <DeliveryTableItem />
-          <DeliveryTableItem />
-          <DeliveryTableItem />
-          <DeliveryTableItem />
-          <DeliveryTableItem />
+          {deliveryData.map((data) => (
+            <DeliveryTableItem key={data.id} data={data} />
+          ))}
         </div>
         {/* <TaxInvoice /> */}
       </div>
@@ -93,6 +94,9 @@ const Delivery = () => {
       )}
       {isAddReturnModalOpen && (
         <AddReturnModal onClose={() => setAddReturnModalOpen(false)} />
+      )}
+      {isMoveToStorageModalOpen && (
+        <MoveToStorageModal onClose={() => setMoveToStorageModalOpen(false)} />
       )}
 
       {/* overlayview */}
