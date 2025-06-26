@@ -7,7 +7,7 @@ interface ChipProps {
   sm?: boolean;
   radius?: string;
   icon?: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   cursor?: string;
 }
 
@@ -23,10 +23,15 @@ const Chip = ({
   onClick,
   cursor = "",
 }: ChipProps) => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClick?.(e);
+  };
+
   return (
     <div
       className={`${containerWidth}`}
-      onClick={onClick}
+      onClick={handleClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={

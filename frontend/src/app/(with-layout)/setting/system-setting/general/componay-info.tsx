@@ -3,24 +3,13 @@ import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "@/hooks/use-form";
 import { useState } from "react";
 import SaveModal from "./modals/save-modal";
-
-interface CompanyFormData {
-  companyName: string;
-  businessNumber: string;
-  ceoName: string;
-  managerEmail: string;
-  managerPhone: string;
-  managerFax: string;
-  businessType: string;
-  businessCategory: string;
-  address: string;
-}
+import { CompanyFormDataModel } from "./types";
 
 const CompanyInfo = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
   const { formData, showErrors, handleChange, handleSubmit } =
-    useForm<CompanyFormData>({
+    useForm<CompanyFormDataModel>({
       initialData: {
         companyName: "",
         businessNumber: "",

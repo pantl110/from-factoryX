@@ -34,7 +34,7 @@ const MiniBtn = ({
 
   return (
     <button
-      className={`px-4 rounded-md Me_Body-1 ${height} ${
+      className={`px-4 rounded-md Me_Body-1 ${height} transition-all duration-200 ease-in-out ${
         disabled
           ? "bg-lg text-gr"
           : `${bgColor} ${textColor} ${hoverColor || ""}`
@@ -44,7 +44,12 @@ const MiniBtn = ({
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
     >
-      {Icon && <Icon size={20} className={disabled ? "text-gr" : iconColor} />}
+      {Icon && (
+        <Icon
+          size={20}
+          className={`transition-colors duration-200 ease-in-out ${disabled ? "text-gr" : iconColor}`}
+        />
+      )}
       <span>{text}</span>
     </button>
   );

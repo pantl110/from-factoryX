@@ -2,7 +2,6 @@ import { useState } from "react";
 import { clientData, ClientDataModel } from "@/mocks/client-data";
 import ClientTableHeader from "./client-table-header";
 import ClientTableItem from "./client-table-item";
-import Pagination from "@/components/pagination";
 import ClientDetailPanel from "./modals/client-detail-panel";
 
 const Client = () => {
@@ -10,16 +9,13 @@ const Client = () => {
     null,
   );
 
-  const handleItemClick = (client: ClientDataModel) => {
+  const handleTypeChange = (client: ClientDataModel) => {
     setSelectedClient(client);
-  };
-  const handlePanelClose = () => {
-    setSelectedClient(null);
   };
 
   return (
     <>
-      <div className="w-full px-10 overflow-x-auto">
+      <div className="w-full px-10 overflow-x-auto flex flex-col flex-1">
         <ClientTableHeader />
         {clientData.map((client) => (
           <ClientTableItem
@@ -32,13 +28,19 @@ const Client = () => {
             businessCategory={client.businessCategory}
             contact={client.contact}
             email={client.email}
-            onClick={() => handleItemClick(client)}
+            onClick={() => handleTypeChange(client)}
           />
         ))}
       </div>
-      <Pagination />
+
+      {/* panel */}
       {selectedClient && (
-        <ClientDetailPanel onClose={handlePanelClose} client={selectedClient} />
+        <ClientDetailPanel
+          onClose={() => {
+            setSelectedClient(null);
+          }}
+          client={selectedClient}
+        />
       )}
     </>
   );
