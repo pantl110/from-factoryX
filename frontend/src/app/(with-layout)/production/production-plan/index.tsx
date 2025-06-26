@@ -8,6 +8,7 @@ import { productionPlanData } from "@/mocks/production-plan-data";
 import usePageStatusStore from "@/store/page-status-store";
 import OperationStatusDropdown from "./modals/operation-status-dropdown";
 import { createPortal } from "react-dom";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 
 const ProductionPlan = () => {
   // production의 "생산 대기" 상태의 "생산 계획" 탭에서 저장 버튼 클릭 시 모달 오픈
@@ -18,12 +19,14 @@ const ProductionPlan = () => {
     (state) => state.setProductionPlanSaveModalOpen,
   );
   // 가동상태 드랍다운운을 row별로 관리
+  const {
+    isOpen: isOperationStatusDropdownOpen,
+    openDropdown: openOperationStatusDropdown,
+    closeDropdown: closeOperationStatusDropdown,
+    anchorRect: operationStatusAnchorRect,
+  } = usePortalDropdown();
   const [operationStatusDropdownRowId, setOperationStatusDropdownRowId] =
     useState<number | null>(null);
-  const [dropdownPosition, setDropdownPosition] = useState<{
-    left: number;
-    top: number;
-  } | null>(null);
 
   const handleProductionPlanSave = () => {
     // 생산 계획 저장 로직
@@ -31,16 +34,12 @@ const ProductionPlan = () => {
   };
 
   const handleOperationStatusClick = (e: React.MouseEvent, rowId: number) => {
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    setDropdownPosition({
-      left: rect.left,
-      top: rect.bottom,
-    });
+    openOperationStatusDropdown(e);
     setOperationStatusDropdownRowId(rowId);
   };
   const handleCloseOperationStatusModal = () => {
     setOperationStatusDropdownRowId(null);
-    setDropdownPosition(null);
+    closeOperationStatusDropdown();
   };
 
   return (
@@ -61,15 +60,16 @@ const ProductionPlan = () => {
       </div>
 
       {operationStatusDropdownRowId !== null &&
-        dropdownPosition &&
+        isOperationStatusDropdownOpen &&
+        operationStatusAnchorRect &&
         createPortal(
           <OperationStatusDropdown
             onClose={handleCloseOperationStatusModal}
             style={{
               position: "fixed",
-              left: dropdownPosition.left,
-              top: dropdownPosition.top,
-              zIndex: 50,
+              left: operationStatusAnchorRect.left,
+              top: operationStatusAnchorRect.bottom,
+              zIndex: 10,
             }}
           />,
           document.body,

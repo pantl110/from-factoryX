@@ -57,8 +57,8 @@ const TableItem = ({
   } = usePortalDropdown();
 
   const handleClick = () => {
-    if (status === "견적 협의") return;
-    router.push(`/production/${id}`);
+    if (status === "견적 협의") router.push(`/quotation`);
+    else router.push(`/production/${id}`);
   };
 
   return (

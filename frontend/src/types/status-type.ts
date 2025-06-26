@@ -2,6 +2,7 @@
 export interface StatusColorModel {
   bgColor: string;
   textColor: string;
+  hover?: string;
 }
 
 // 디자인팀 확인 필요// dashboard 생산 상태
@@ -80,10 +81,26 @@ export const OperationStatusColorMap: Record<
   OperationStatusType,
   StatusColorModel
 > = {
-  "가동 대기": { textColor: "text-dg", bgColor: "bg-bg" },
-  "가동 중": { textColor: "text-purple", bgColor: "bg-purple-8" },
-  "가동 완료": { textColor: "text-primary", bgColor: "bg-primary-8" },
-  "가동 중지": { textColor: "text-red", bgColor: "bg-red-8" },
+  "가동 대기": {
+    textColor: "text-dg",
+    bgColor: "bg-bg",
+    hover: "hover:bg-gray-100",
+  },
+  "가동 중": {
+    textColor: "text-purple",
+    bgColor: "bg-purple-8",
+    hover: "hover:bg-purple-hover",
+  },
+  "가동 완료": {
+    textColor: "text-primary",
+    bgColor: "bg-primary-8",
+    hover: "hover:bg-secondary-hover",
+  },
+  "가동 중지": {
+    textColor: "text-red",
+    bgColor: "bg-red-8",
+    hover: "hover:bg-red-hover",
+  },
 };
 
 // 재고 상태

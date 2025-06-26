@@ -12,7 +12,7 @@ const EmailView = ({ onClose }: EmailViewProps) => {
       <div className="flex justify-between h-13 border-b border-lg">
         <h3 className="Heading-3">견적서</h3>
         <button
-          className="w-10 h-10 flex justify-center items-center cursor-pointer"
+          className="w-10 h-10 flex justify-center items-center cursor-pointer rounded-[8px] hover:bg-bg transition-colors duration-200 ease-in-out"
           onClick={onClose}
         >
           <X size={20} />

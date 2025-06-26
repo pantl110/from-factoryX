@@ -6,6 +6,7 @@ interface DropdownItemProps {
   textColor?: string;
   onClick?: (e?: React.MouseEvent) => void;
   children?: ReactNode;
+  noHover?: boolean;
 }
 
 const DropdownItem = ({
@@ -14,10 +15,13 @@ const DropdownItem = ({
   textColor = "text-dg",
   onClick,
   children,
+  noHover = false,
 }: DropdownItemProps) => {
   return (
     <div
-      className="flex gap-3 w-full h-12 items-center cursor-pointer rounded-[4px] p-2 hover:bg-bg transition-all duration-200 ease-in-out"
+      className={`flex gap-3 w-full h-12 items-center cursor-pointer rounded-[4px] p-2 transition-all duration-200 ease-in-out ${
+        noHover ? "" : "hover:bg-bg"
+      }`}
       onClick={(e) => {
         e.stopPropagation();
         onClick?.(e);

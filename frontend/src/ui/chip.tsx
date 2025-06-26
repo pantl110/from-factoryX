@@ -9,6 +9,7 @@ interface ChipProps {
   icon?: React.ReactNode;
   onClick?: (e?: React.MouseEvent) => void;
   cursor?: string;
+  hover?: string;
 }
 
 const Chip = ({
@@ -22,6 +23,7 @@ const Chip = ({
   icon,
   onClick,
   cursor = "",
+  hover = "",
 }: ChipProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -46,7 +48,7 @@ const Chip = ({
       }
     >
       <div
-        className={`flex gap-1 items-center w-fit ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${
+        className={`flex gap-1 items-center w-fit ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${hover} ${
           sm ? "h-7 px-2" : "h-9 px-3"
         } ${borderColor ? `border ${borderColor}` : ""}`}
       >

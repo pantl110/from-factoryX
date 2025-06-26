@@ -5,8 +5,6 @@ const ReturnTableItem = () => {
       <p className="flex-1 py-1 px-3">1110010</p>
       <p className="flex-1 py-1 px-3">500ml</p>
       <p className="w-[80px] py-1 px-3">EA</p>
-      <p className="flex-1 py-1 px-3">1000</p>
-      <p className="flex-1 py-1 px-3">10</p>
       <p className="flex-1 py-1 px-3">5,000</p>
     </div>
   );

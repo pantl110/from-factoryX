@@ -16,32 +16,52 @@ const OperationStatusDropdown = ({
 
   return (
     <Dropdown onClose={onClose} width="w-[120px]" style={style}>
-      <DropdownItem onClick={onClose}>
+      <DropdownItem noHover={true}>
         <Chip
           text="가동 대기"
           bgColor={color["가동 대기"].bgColor}
           textColor={color["가동 대기"].textColor}
+          onClick={(e) => {
+            e?.stopPropagation();
+            onClose();
+          }}
+          hover={color["가동 대기"].hover}
         />
       </DropdownItem>
-      <DropdownItem onClick={onClose}>
+      <DropdownItem noHover={true}>
         <Chip
           text="가동 중"
           bgColor={color["가동 중"].bgColor}
           textColor={color["가동 중"].textColor}
+          onClick={(e) => {
+            e?.stopPropagation();
+            onClose();
+          }}
+          hover={color["가동 중"].hover}
         />
       </DropdownItem>
-      <DropdownItem onClick={onClose}>
+      <DropdownItem noHover={true}>
         <Chip
           text="가동 완료"
           bgColor={color["가동 완료"].bgColor}
           textColor={color["가동 완료"].textColor}
+          onClick={(e) => {
+            e?.stopPropagation();
+            onClose();
+          }}
+          hover={color["가동 완료"].hover}
         />
       </DropdownItem>
-      <DropdownItem onClick={onClose}>
+      <DropdownItem noHover={true}>
         <Chip
           text="가동 중지"
           bgColor={color["가동 중지"].bgColor}
           textColor={color["가동 중지"].textColor}
+          onClick={(e) => {
+            e?.stopPropagation();
+            onClose();
+          }}
+          hover={color["가동 중지"].hover}
         />
       </DropdownItem>
     </Dropdown>
