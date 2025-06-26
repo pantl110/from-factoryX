@@ -6,8 +6,8 @@ import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 import Facility from "./facility";
 import Client from "./client";
-import DeleteModal from "./facility/delete-modal";
 import { useDeleteMode } from "@/hooks/use-delete-mode";
+import DeleteModal from "@/ui/modal/delete-modal";
 
 const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();

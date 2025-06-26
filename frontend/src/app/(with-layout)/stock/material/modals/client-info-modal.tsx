@@ -1,6 +1,6 @@
 import MiniBtn from "@/ui/mini-btn";
 import Input from "@/ui/input";
-import Modal from "@/ui/modal";
+import Modal from "@/ui/modal/modal";
 
 interface ClientInfoModalProps {
   onClose?: () => void;

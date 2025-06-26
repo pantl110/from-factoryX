@@ -1,6 +1,6 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal";
+import Modal from "@/ui/modal/modal";
 import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 

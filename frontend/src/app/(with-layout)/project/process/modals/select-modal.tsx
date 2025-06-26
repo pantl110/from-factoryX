@@ -1,4 +1,4 @@
-import Modal from "@/ui/modal";
+import Modal from "@/ui/modal/modal";
 import { Upload, Keyboard } from "@phosphor-icons/react/dist/ssr";
 import { useRouter } from "next/navigation";
 

@@ -1,20 +1,40 @@
 "use client";
 
-import SearchDeleteTable from "@/ui/search-delete-table";
 import TableHeader from "./table-header";
 import TableItem from "./table-item";
 import MaterialDetail from "./material-detail";
 import { useState } from "react";
 import Panel from "@/ui/panel";
+import { useDeleteMode } from "@/hooks/use-delete-mode";
+import SearchInput from "@/ui/search-input";
+import MiniBtn from "@/ui/mini-btn";
+import DeleteModal from "@/ui/modal/delete-modal";
 
 const Material = () => {
+  const {
+    isDeleteMode,
+    isDeleteModalOpen,
+    toggleDeleteMode,
+    closeDeleteModal,
+  } = useDeleteMode();
   const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false);
 
   return (
     <>
-      <SearchDeleteTable />
+      <div className="flex items-center justify-between pb-4">
+        <SearchInput />
+        <MiniBtn
+          text="삭제"
+          textColor={isDeleteMode ? "text-red" : "text-dg"}
+          borderColor={isDeleteMode ? "border-none" : "border-lg"}
+          bgColor={isDeleteMode ? "bg-red-8" : "bg-wh"}
+          hoverColor={isDeleteMode ? "hover:bg-red-hover" : "hover:bg-bg"}
+          onClick={toggleDeleteMode}
+        />
+      </div>
+
       <div>
-        <TableHeader />
+        <TableHeader isDeleteMode={isDeleteMode} />
         <TableItem
           materialName="알루미늄 시트"
           materialCode="RM-001"
@@ -23,6 +43,7 @@ const Material = () => {
           status="충분"
           date="2025-06-04"
           onClick={() => setIsMaterialDetailOpen(true)}
+          isDeleteMode={isDeleteMode}
         />
         <TableItem
           materialName="투명 필름지"
@@ -32,6 +53,7 @@ const Material = () => {
           status="부족"
           date="2025-06-04"
           onClick={() => setIsMaterialDetailOpen(true)}
+          isDeleteMode={isDeleteMode}
         />
         <TableItem
           materialName="실리콘 고무 패킹"
@@ -41,6 +63,7 @@ const Material = () => {
           status="충분"
           date="2025-06-04"
           onClick={() => setIsMaterialDetailOpen(true)}
+          isDeleteMode={isDeleteMode}
         />
         <TableItem
           materialName="절연 테이프"
@@ -50,8 +73,10 @@ const Material = () => {
           status="부족"
           date="2025-06-04"
           onClick={() => setIsMaterialDetailOpen(true)}
+          isDeleteMode={isDeleteMode}
         />
       </div>
+
       {isMaterialDetailOpen && (
         <Panel
           title="원자재 재고관리"
@@ -60,6 +85,7 @@ const Material = () => {
           <MaterialDetail />
         </Panel>
       )}
+      {isDeleteModalOpen && <DeleteModal onClose={closeDeleteModal} />}
     </>
   );
 };

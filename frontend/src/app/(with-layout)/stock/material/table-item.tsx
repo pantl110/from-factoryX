@@ -15,6 +15,7 @@ interface TableItemProps {
   status: InventoryStatusType;
   date: string;
   onClick?: () => void;
+  isDeleteMode: boolean;
 }
 
 const TableItem = ({
@@ -25,6 +26,7 @@ const TableItem = ({
   status,
   date,
   onClick,
+  isDeleteMode,
 }: TableItemProps) => {
   const colors = InventoryStatusColorMap[status];
 
@@ -34,6 +36,14 @@ const TableItem = ({
         className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer"
         onClick={onClick}
       >
+        {isDeleteMode && (
+          <div
+            className="flex items-center px-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input type="checkbox" className="w-4 h-4 border-sv" />
+          </div>
+        )}
         <p className="flex-1 px-3 text-dg truncate" title={materialName}>
           {materialName}
         </p>

@@ -2,7 +2,7 @@
 
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal";
+import Modal from "@/ui/modal/modal";
 import SearchInput from "@/ui/search-input";
 import { useState } from "react";
 import {

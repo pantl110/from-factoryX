@@ -1,4 +1,4 @@
-import Modal from "@/ui/modal";
+import Modal from "@/ui/modal/modal";
 import MiniBtn from "@/ui/mini-btn";
 
 interface ExcelUploadModalProps {
