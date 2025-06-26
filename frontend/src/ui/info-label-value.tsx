@@ -22,6 +22,8 @@ interface InfoLabelValueProps {
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  inputType?: string;
+  unit?: string;
 }
 
 const InfoLabelValue = ({
@@ -33,6 +35,8 @@ const InfoLabelValue = ({
   onChange,
   onFocus,
   onBlur,
+  inputType = "text",
+  unit,
 }: InfoLabelValueProps) => {
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
@@ -46,15 +50,19 @@ const InfoLabelValue = ({
     // 수정 모드인 경우
     if (isEditing) {
       return (
-        <input
-          defaultValue={typeof value === "string" ? value : ""}
-          placeholder={placeholder}
-          onChange={onChange}
-          className="w-full"
-          style={{ outline: "none" }}
-          onFocus={onFocus}
-          onBlur={onBlur}
-        />
+        <div className="flex items-center w-full">
+          <input
+            type={inputType}
+            defaultValue={typeof value === "string" ? value : ""}
+            placeholder={placeholder}
+            onChange={onChange}
+            className="w-full"
+            style={{ outline: "none" }}
+            onFocus={onFocus}
+            onBlur={onBlur}
+          />
+          {unit && <span className="ml-1 text-dg">{unit}</span>}
+        </div>
       );
     }
 

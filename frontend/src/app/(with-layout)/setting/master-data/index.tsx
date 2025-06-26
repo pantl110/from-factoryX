@@ -61,24 +61,17 @@ const MasterData = () => {
       </div>
       <div className="flex items-center justify-between px-10 pb-4">
         <SearchInput />
-        <div className="flex gap-1">
-          <MiniBtn
-            text="추가"
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
-          />
-          <MiniBtn
-            text="삭제"
-            textColor={deleteMode.isDeleteMode ? "text-red" : "text-dg"}
-            borderColor={deleteMode.isDeleteMode ? "border-none" : "border-lg"}
-            bgColor={deleteMode.isDeleteMode ? "bg-red-8" : "bg-wh"}
-            onClick={deleteMode.toggleDeleteMode}
-            hoverColor={
-              deleteMode.isDeleteMode ? "hover:bg-red-hover" : "hover:bg-bg"
-            }
-          />
-        </div>
+
+        <MiniBtn
+          text="삭제"
+          textColor={deleteMode.isDeleteMode ? "text-red" : "text-dg"}
+          borderColor={deleteMode.isDeleteMode ? "border-none" : "border-lg"}
+          bgColor={deleteMode.isDeleteMode ? "bg-red-8" : "bg-wh"}
+          onClick={deleteMode.toggleDeleteMode}
+          hoverColor={
+            deleteMode.isDeleteMode ? "hover:bg-red-hover" : "hover:bg-bg"
+          }
+        />
       </div>
       {renderContent()}
       {deleteMode.isDeleteModalOpen && (

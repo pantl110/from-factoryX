@@ -27,7 +27,7 @@ const SearchInput = ({
           className="text-sv focus-within:text-dg"
         />
         <input
-          className="Re_Body-1 w-full h-full outline-none text-sv placeholder:text-sv focus:text-dg transition-colors"
+          className="Re_Body-1 w-full h-full outline-none text-bl placeholder:text-sv transition-colors"
           type="text"
           placeholder={placeholder}
           value={value}

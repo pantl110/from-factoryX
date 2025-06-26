@@ -39,60 +39,62 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
 
   return (
-    <Panel title="품목 재고관리" onClose={onClose}>
-      <div className="flex flex-col gap-10">
-        <div className="flex flex-col gap-3">
-          <h3 className="Heading-3 text-dg h-10 flex items-center">
-            품목 정보
-          </h3>
-          <ProductInfo
-            product={formData}
-            isEditable={isCreateMode} // 생성모드일 때만 수정 가능
-            onValueChange={(value) =>
-              setFormData((prev: ProductDataModel) => ({ ...prev, ...value }))
-            }
-          />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <div className="h-10 flex items-center justify-between">
-            <h3 className="Heading-3 text-dg ">원자재 재고 상태</h3>
-            <MiniBtn
-              text="연결하기"
-              textColor="text-dg"
-              borderColor="border-lg"
-              hoverColor="hover:bg-bg"
-              onClick={() => setIsMaterialModalOpen(true)}
+    <>
+      <Panel title="품목 재고관리" onClose={onClose}>
+        <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-3">
+            <h3 className="Heading-3 text-dg h-10 flex items-center">
+              품목 정보
+            </h3>
+            <ProductInfo
+              product={formData}
+              isEditable={isCreateMode} // 생성모드일 때만 수정 가능
+              onValueChange={(value) =>
+                setFormData((prev: ProductDataModel) => ({ ...prev, ...value }))
+              }
             />
           </div>
-          {isCreateMode ? (
-            <NoHistoryBox
-              title="이 품목에 연결된 원자재가 아직 없어요."
-              text="원자재를 연결하면 이곳에 재고 상태가 표시됩니다."
-            />
-          ) : (
-            <StockStatus />
-          )}
-        </div>
 
-        <div className="flex flex-col gap-3">
-          <h3 className="Heading-3 text-dg h-10 flex items-center">
-            품목 재고 이력
-          </h3>
-          {isCreateMode ? (
-            <NoHistoryBox
-              title="이 품목의 재고 이력이 아직 없어요."
-              text="입고, 출고 재고 관련 이력이 등록되면 이곳에 표시됩니다."
-            />
-          ) : (
-            <ProductStockLog />
-          )}
+          <div className="flex flex-col gap-3">
+            <div className="h-10 flex items-center justify-between">
+              <h3 className="Heading-3 text-dg ">원자재 재고 상태</h3>
+              <MiniBtn
+                text="연결하기"
+                textColor="text-dg"
+                borderColor="border-lg"
+                hoverColor="hover:bg-bg"
+                onClick={() => setIsMaterialModalOpen(true)}
+              />
+            </div>
+            {isCreateMode ? (
+              <NoHistoryBox
+                title="이 품목에 연결된 원자재가 아직 없어요."
+                text="원자재를 연결하면 이곳에 재고 상태가 표시됩니다."
+              />
+            ) : (
+              <StockStatus />
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <h3 className="Heading-3 text-dg h-10 flex items-center">
+              품목 재고 이력
+            </h3>
+            {isCreateMode ? (
+              <NoHistoryBox
+                title="이 품목의 재고 이력이 아직 없어요."
+                text="입고, 출고 재고 관련 이력이 등록되면 이곳에 표시됩니다."
+              />
+            ) : (
+              <ProductStockLog />
+            )}
+          </div>
         </div>
-      </div>
+      </Panel>
       {isMaterialModalOpen && (
         <ConnectMaterialModal onClose={() => setIsMaterialModalOpen(false)} />
       )}
-    </Panel>
+    </>
   );
 };
 

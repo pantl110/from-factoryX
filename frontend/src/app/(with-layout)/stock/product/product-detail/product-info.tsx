@@ -107,12 +107,30 @@ const ProductInfo = ({
           value={product.stock === -1 ? "" : product.stock.toLocaleString()}
           isEditing={isEditable}
           placeholder="현재 재고 입력"
+          inputType="number"
+          onChange={(e) => {
+            const value = e.target.value.replace(/[^0-9]/g, "");
+            if (onValueChange) onValueChange({ stock: Number(value) });
+          }}
         />
         <InfoLabelValue
           label="평균 생산 시간"
-          value={product.productionTime}
+          value={
+            isEditable
+              ? product.productionTime
+              : product.productionTime
+                ? `${product.productionTime}`
+                : "-"
+          }
           isEditing={isEditable}
           placeholder="-"
+          inputType="number"
+          onChange={(e) => {
+            // 숫자만 허용
+            const value = e.target.value.replace(/[^0-9]/g, "");
+            if (onValueChange) onValueChange({ productionTime: value });
+          }}
+          unit="초"
         />
       </div>
       <InfoLabelValue
