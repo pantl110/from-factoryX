@@ -9,6 +9,7 @@ import Panel from "@/ui/panel";
 import { ProductDataModel } from "@/types/data-model";
 import NoHistoryBox from "../no-history-box";
 import ConnectMaterialModal from "../modals/connect-material-modal";
+import ProductStockModal from "../modals/product-stock-modal";
 
 // '생성' 모드일 때 사용할 비어있는 품목 객체의 초기값
 const EMPTY_PRODUCT: ProductDataModel = {
@@ -37,6 +38,7 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
     product || EMPTY_PRODUCT,
   );
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
+  const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false); // 판넬의 모달
 
   return (
     <>
@@ -86,13 +88,20 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
                 text="입고, 출고 재고 관련 이력이 등록되면 이곳에 표시됩니다."
               />
             ) : (
-              <ProductStockLog />
+              <ProductStockLog
+                setIsProductStockModalOpen={setIsProductStockModalOpen}
+              />
             )}
           </div>
         </div>
       </Panel>
+
+      {/* 모달 */}
       {isMaterialModalOpen && (
         <ConnectMaterialModal onClose={() => setIsMaterialModalOpen(false)} />
+      )}
+      {isProductStockModalOpen && (
+        <ProductStockModal onClose={() => setIsProductStockModalOpen(false)} />
       )}
     </>
   );

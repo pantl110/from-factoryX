@@ -5,6 +5,7 @@ interface ProductStockLogItemProps {
   status: StockLogType;
   amount: number;
   total: number;
+  onClick: () => void;
 }
 
 const ProductStockLogItem = ({
@@ -12,6 +13,7 @@ const ProductStockLogItem = ({
   status,
   amount,
   total,
+  onClick,
 }: ProductStockLogItemProps) => {
   const getTypeColor = (status: StockLogType) => {
     switch (status) {
@@ -30,7 +32,10 @@ const ProductStockLogItem = ({
   };
 
   return (
-    <div className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer">
+    <div
+      className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
+      onClick={onClick}
+    >
       <p className="w-[150px] px-3 text-dg">{date}</p>
       <p className={`w-[150px] px-3 ${getTypeColor(status)}`}>{status}</p>
       <p className={`flex-1 px-3 ${getTypeColor(status)}`}>

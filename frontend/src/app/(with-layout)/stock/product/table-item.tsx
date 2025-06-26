@@ -19,7 +19,7 @@ const TableItem = ({
 }: TableItemProps) => {
   return (
     <div
-      className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-lg-table"
+      className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
       {isDeleteMode && (

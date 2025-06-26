@@ -61,7 +61,7 @@ const ClientTableItem = ({
 
   return (
     <div
-      className="flex h-14 items-center w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer"
+      className="flex h-14 items-center w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
       {isDeleteMode && (

@@ -23,7 +23,7 @@ const TableItem = ({
   const { bgColor, textColor } = TaxDocumentTypeColorMap[taxType];
   return (
     <div
-      className="flex items-center border-b border-lg h-14 w-full min-w-[1018px] text-bl Me_Body-1 hover:bg-gray-50 cursor-pointer"
+      className="flex items-center border-b border-lg h-14 w-full min-w-[1018px] text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer"
       onClick={onItemClick}
       role="button"
       tabIndex={0}

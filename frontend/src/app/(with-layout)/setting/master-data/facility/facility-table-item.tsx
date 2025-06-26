@@ -21,7 +21,7 @@ const FacilityTableItem = ({
   const statusColor = FacilityStatusColorMap[status];
   return (
     <div
-      className="flex h-14 items-center px-3 w-full border-b border-[#eeeeee] Me_Body-1 text-dg hover:bg-gray-50 cursor-pointer"
+      className="flex h-14 items-center px-3 w-full border-b border-[#eeeeee] Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer"
       onClick={onClick}
       role="button"
       tabIndex={0}

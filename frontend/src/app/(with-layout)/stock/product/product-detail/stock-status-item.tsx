@@ -24,7 +24,7 @@ const StockStatusItem = ({
   const colors = InventoryStatusColorMap[status];
 
   return (
-    <div className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer">
+    <div className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1">
       <p className="flex-1 px-3 text-dg truncate" title={materialName}>
         {materialName}
       </p>
