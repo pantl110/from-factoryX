@@ -11,8 +11,9 @@ const TopBar = () => {
   const pageStatus = usePageStatusStore(
     (state: PageStatusModel) => state.pageStatus,
   );
-  const selectedTab = usePageStatusStore((state) => state.selectedTab);
-  const selectedChip = usePageStatusStore((state) => state.selectedChip);
+  const settingTab = usePageStatusStore((state) => state.settingTab);
+  const settingChip = usePageStatusStore((state) => state.settingChip);
+  const productionTab = usePageStatusStore((state) => state.productionTab);
   const setProductionPlanSaveModalOpen = usePageStatusStore(
     (state) => state.setProductionPlanSaveModalOpen,
   );
@@ -30,13 +31,14 @@ const TopBar = () => {
       <header className="flex items-center justify-between w-full h-[60px] px-10">
         <TopBarCrumb
           pageStatus={pageStatus || ""}
-          selectedTab={selectedTab || undefined}
-          selectedChip={selectedChip || undefined}
+          settingTab={settingTab || undefined}
+          settingChip={settingChip || undefined}
+          productionTab={productionTab || undefined}
         />
 
         <TopBarContent
-          selectedTab={selectedTab}
           pageStatus={pageStatus}
+          productionTab={productionTab}
           onProductionPlanSaveClick={() => setProductionPlanSaveModalOpen(true)}
           onAddReturnClick={() => setAddReturnModalOpen(true)}
           onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}

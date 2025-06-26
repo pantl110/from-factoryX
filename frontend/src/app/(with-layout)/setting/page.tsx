@@ -6,13 +6,13 @@ import SystemSetting from "./system-setting";
 import MasterData from "./master-data";
 
 const SettingPage = () => {
-  const { selectedTab, setSelectedTab } = usePageStatusStore();
+  const { settingTab, setSettingTab } = usePageStatusStore();
 
   useEffect(() => {
-    if (!selectedTab) {
-      setSelectedTab("system"); // 초기 탭을 시스템 설정으로 설정
+    if (!settingTab) {
+      setSettingTab("system"); // 초기 탭을 시스템 설정으로 설정
     }
-  }, [selectedTab, setSelectedTab]);
+  }, [settingTab, setSettingTab]);
 
   return (
     <div className="max-w-[1400px] min-w-[1200px]">
@@ -22,22 +22,22 @@ const SettingPage = () => {
           <div className="flex gap-4 Heading-3 mb-3">
             <button
               type="button"
-              className={`cursor-pointer ${selectedTab === "system" ? "text-dg" : "text-gr"}`}
-              onClick={() => setSelectedTab("system")}
+              className={`cursor-pointer ${settingTab === "system" ? "text-dg" : "text-gr"}`}
+              onClick={() => setSettingTab("system")}
             >
               시스템 설정
             </button>
             <button
               type="button"
-              className={`cursor-pointer ${selectedTab === "master" ? "text-dg" : "text-gr"}`}
-              onClick={() => setSelectedTab("master")}
+              className={`cursor-pointer ${settingTab === "master" ? "text-dg" : "text-gr"}`}
+              onClick={() => setSettingTab("master")}
             >
               마스터 데이터 관리
             </button>
           </div>
         </div>
-        {selectedTab === "system" && <SystemSetting />}
-        {selectedTab === "master" && <MasterData />}
+        {settingTab === "system" && <SystemSetting />}
+        {settingTab === "master" && <MasterData />}
       </div>
     </div>
   );

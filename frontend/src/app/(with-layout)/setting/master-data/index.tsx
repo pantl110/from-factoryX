@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import usePageStatusStore from "@/store/page-status-store";
+import { SettingChipType } from "@/components/top-bar/types";
 import Chip from "@/ui/chip";
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
@@ -8,17 +9,17 @@ import Client from "./client";
 import DeleteModal from "./facility/delete-modal";
 
 const MasterData = () => {
-  const { selectedChip, setSelectedChip } = usePageStatusStore();
+  const { settingChip, setSettingChip } = usePageStatusStore();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (
-      !selectedChip ||
-      (selectedChip !== "equipment" && selectedChip !== "client")
+      !settingChip ||
+      (settingChip !== "equipment" && settingChip !== "client")
     ) {
-      setSelectedChip("equipment"); // 설비관리 칩을 기본으로 설정
+      setSettingChip("equipment" as SettingChipType); // 설비관리 칩을 기본으로 설정
     }
-  }, [selectedChip, setSelectedChip]);
+  }, [settingChip, setSettingChip]);
 
   const handleDelete = () => {
     // 실제 삭제버튼 누를 시 동작
@@ -26,7 +27,7 @@ const MasterData = () => {
   };
 
   const renderContent = () => {
-    switch (selectedChip) {
+    switch (settingChip) {
       case "equipment":
         return <Facility />;
       case "client":
@@ -41,21 +42,21 @@ const MasterData = () => {
       <div className="flex gap-1 px-10 pb-5">
         <Chip
           text="설비 관리"
-          textColor={selectedChip === "equipment" ? "text-bg" : "text-dg"}
-          bgColor={selectedChip === "equipment" ? "bg-dg" : "bg-transparent"}
+          textColor={settingChip === "equipment" ? "text-bg" : "text-dg"}
+          bgColor={settingChip === "equipment" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSelectedChip("equipment")}
+          onClick={() => setSettingChip("equipment" as SettingChipType)}
         />
         <Chip
           text="거래처 정보"
-          textColor={selectedChip === "client" ? "text-bg" : "text-dg"}
-          bgColor={selectedChip === "client" ? "bg-dg" : "bg-transparent"}
+          textColor={settingChip === "client" ? "text-bg" : "text-dg"}
+          bgColor={settingChip === "client" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSelectedChip("client")}
+          onClick={() => setSettingChip("client" as SettingChipType)}
         />
       </div>
       <div className="flex items-center justify-between px-10 pb-4">

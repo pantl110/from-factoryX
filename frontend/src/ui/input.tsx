@@ -12,6 +12,7 @@ interface InputProps {
   type?: InputType;
   disabled?: boolean;
   isShowPasswordToggle?: boolean;
+  showError?: boolean;
 }
 
 const Input = ({
@@ -23,12 +24,15 @@ const Input = ({
   type = "text",
   disabled = false,
   isShowPasswordToggle = false,
+  showError = false,
 }: InputProps) => {
   const [isShowPassword, setisShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setisShowPassword(!isShowPassword);
   };
+
+  const hasError = showError && required && (!value || value.trim() === "");
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -47,10 +51,12 @@ const Input = ({
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full h-12 min-h-9 rounded px-3 Re_Body-1 text-bl placeholder:text-sv outline-none border border-[#e4e4e7] transition-colors ${
+          className={`w-full h-12 min-h-9 rounded px-3 Re_Body-1 text-bl placeholder:text-sv outline-none border transition-colors ${
             disabled
-              ? "bg-lg text-dg cursor-not-allowed"
-              : "hover:border-primary focus:border-primary  focus:text-bl"
+              ? "bg-lg text-dg cursor-not-allowed border-[#e4e4e7]"
+              : hasError
+                ? "border-red hover:border-primary focus:border-primary focus:text-bl"
+                : "border-[#e4e4e7] hover:border-primary focus:border-primary focus:text-bl"
           }`}
         />
         {isShowPasswordToggle && (

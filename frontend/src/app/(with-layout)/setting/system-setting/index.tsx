@@ -6,21 +6,21 @@ import Permission from "./permission";
 import Subscription from "./subscription";
 
 const SystemSetting = () => {
-  const { selectedChip, setSelectedChip } = usePageStatusStore();
+  const { settingChip, setSettingChip } = usePageStatusStore();
 
   useEffect(() => {
     if (
-      !selectedChip ||
-      (selectedChip !== "general" &&
-        selectedChip !== "permission" &&
-        selectedChip !== "subscription")
+      !settingChip ||
+      (settingChip !== "general" &&
+        settingChip !== "permission" &&
+        settingChip !== "subscription")
     ) {
-      setSelectedChip("general"); // 초기 칩을 일반으로 설정
+      setSettingChip("general"); // 초기 칩을 일반으로 설정
     }
-  }, [selectedChip, setSelectedChip]);
+  }, [settingChip, setSettingChip]);
 
   const renderContent = () => {
-    switch (selectedChip) {
+    switch (settingChip) {
       case "general":
         return <General />;
       case "permission":
@@ -37,30 +37,30 @@ const SystemSetting = () => {
       <div className="flex gap-1 px-10 pb-6">
         <Chip
           text="일반"
-          textColor={selectedChip === "general" ? "text-bg" : "text-dg"}
-          bgColor={selectedChip === "general" ? "bg-dg" : "bg-transparent"}
+          textColor={settingChip === "general" ? "text-bg" : "text-dg"}
+          bgColor={settingChip === "general" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSelectedChip("general")}
+          onClick={() => setSettingChip("general")}
         />
         <Chip
           text="권한 설정"
-          textColor={selectedChip === "permission" ? "text-bg" : "text-dg"}
-          bgColor={selectedChip === "permission" ? "bg-dg" : "bg-transparent"}
+          textColor={settingChip === "permission" ? "text-bg" : "text-dg"}
+          bgColor={settingChip === "permission" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSelectedChip("permission")}
+          onClick={() => setSettingChip("permission")}
         />
         <Chip
           text="구독 관리"
-          textColor={selectedChip === "subscription" ? "text-bg" : "text-dg"}
-          bgColor={selectedChip === "subscription" ? "bg-dg" : "bg-transparent"}
+          textColor={settingChip === "subscription" ? "text-bg" : "text-dg"}
+          bgColor={settingChip === "subscription" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSelectedChip("subscription")}
+          onClick={() => setSettingChip("subscription")}
         />
       </div>
       {renderContent()}

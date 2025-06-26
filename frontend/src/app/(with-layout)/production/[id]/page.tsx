@@ -16,8 +16,9 @@ import TaxDocumentView from "../../document/tax-document-view";
 import TransactionDocumentView from "../../document/transaction-document-view";
 import OrderDocumentView from "../../document/order-document-view";
 import { ProjectStatusType } from "@/types/status-type";
+import { ProductionTabType } from "@/components/top-bar/types";
 
-const getTabsByStatus = (status: string) => {
+const getTabsByStatus = (status: string): ProductionTabType[] => {
   if (status === "생산 대기") return ["생산 계획", "주문서"];
   if (status === "생산 중") return ["생산 현황", "생산 계획", "주문서"];
   if (status === "생산 완료") return ["생산 현황", "생산 내역", "주문서"];
@@ -39,8 +40,8 @@ const ProductionPage = () => {
   const id = Number(params.id);
   const setPageStatus = usePageStatusStore((state) => state.setPageStatus); // 바뀐 프로젝트상태 전역상태로로관리 -> top-bar 상태에 적용
   const [selectedTab, setSelectedTab] = useState(0);
-  const setSelectedTabGlobal = usePageStatusStore(
-    (state) => state.setSelectedTab, // 바뀐 탭 전역상태로관리 -> top-bar 상태에 적용
+  const setProductionTab = usePageStatusStore(
+    (state) => state.setProductionTab, // 바뀐 탭 전역상태로관리 -> top-bar 상태에 적용
   );
 
   const project =
@@ -59,10 +60,10 @@ const ProductionPage = () => {
   useEffect(() => {
     if (!project || isStopped) return;
     setPageStatus(newStatus);
-    setSelectedTabGlobal(tabs[selectedTab]);
+    setProductionTab(tabs[selectedTab]);
     return () => {
       setPageStatus(null);
-      setSelectedTabGlobal(null);
+      setProductionTab(null);
     };
   }, [
     project,
@@ -70,7 +71,7 @@ const ProductionPage = () => {
     newStatus,
     selectedTab,
     setPageStatus,
-    setSelectedTabGlobal,
+    setProductionTab,
     tabs,
   ]);
 
