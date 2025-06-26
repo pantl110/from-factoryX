@@ -6,9 +6,11 @@ import { CameraIcon } from "@phosphor-icons/react/dist/ssr";
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import DeleteAccountModal from "./modals/delete-account-modal";
+import SaveModal from "./modals/save-modal";
 
 const General = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
   const handleDeleteConfirm = () => {
     // 실제 계정 삭제 로직 추후 추가
@@ -46,6 +48,7 @@ const General = () => {
               textColor="text-primary"
               bgColor="bg-primary-8"
               hoverColor="hover:bg-secondary-hover"
+              onClick={() => setIsSaveModalOpen(true)}
             />
           </div>
         </div>
@@ -80,6 +83,7 @@ const General = () => {
               textColor="text-primary"
               bgColor="bg-primary-8"
               hoverColor="hover:bg-secondary-hover"
+              onClick={() => setIsSaveModalOpen(true)}
             />
           </div>
         </div>
@@ -109,6 +113,9 @@ const General = () => {
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDeleteConfirm}
         />
+      )}
+      {isSaveModalOpen && (
+        <SaveModal onClose={() => setIsSaveModalOpen(false)} />
       )}
     </>
   );
