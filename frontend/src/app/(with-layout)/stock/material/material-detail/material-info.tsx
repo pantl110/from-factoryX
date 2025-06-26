@@ -26,13 +26,13 @@ const MaterialInfo = () => {
       <div className="flex">
         <InfoLabelValue
           label="자재명"
-          value={info.materialName}
+          value={info.materialName ?? ""}
           isEditing={true}
           onChange={handleChange("materialName")}
         />
         <InfoLabelValue
           label="자재 코드"
-          value={info.materialCode}
+          value={info.materialCode ?? ""}
           isEditing={true}
           onChange={handleChange("materialCode")}
         />
@@ -40,13 +40,13 @@ const MaterialInfo = () => {
       <div className="flex">
         <InfoLabelValue
           label="규격"
-          value={info.size}
+          value={info.size ?? ""}
           isEditing={true}
           onChange={handleChange("size")}
         />
         <InfoLabelValue
           label="단위"
-          value={info.unit}
+          value={info.unit ?? ""}
           isEditing={true}
           onChange={handleChange("unit")}
         />
@@ -54,13 +54,13 @@ const MaterialInfo = () => {
       <div className="flex">
         <InfoLabelValue
           label="현재 재고"
-          value={info.currentStock}
+          value={info.currentStock ?? ""}
           isEditing={true}
           onChange={handleChange("currentStock")}
         />
         <InfoLabelValue
           label="최소 재고"
-          value={info.minStock}
+          value={info.minStock ?? ""}
           isEditing={true}
           onChange={handleChange("minStock")}
         />
@@ -68,7 +68,7 @@ const MaterialInfo = () => {
       <div className="flex">
         <InfoLabelValue
           label="재고 상태"
-          value={info.status}
+          value={info.status ?? ""}
           chip={{
             status: "충분",
           }}
@@ -77,14 +77,14 @@ const MaterialInfo = () => {
         />
         <InfoLabelValue
           label="입고 일자"
-          value={info.date}
+          value={info.date ?? ""}
           isEditing={true}
           onChange={handleChange("date")}
         />
       </div>
       <InfoLabelValue
         label="창고 위치"
-        value={info.location}
+        value={info.location ?? ""}
         isEditing={true}
         onChange={handleChange("location")}
       />

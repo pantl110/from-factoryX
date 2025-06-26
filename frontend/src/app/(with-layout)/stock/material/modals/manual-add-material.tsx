@@ -3,7 +3,7 @@ import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "@/hooks/use-form";
 
-interface ManualAddProps {
+interface ManualAddMaterialProps {
   setIsManualAddMode: (v: boolean) => void;
   setSelectedMaterials: (
     fn: (prev: MaterialDataModel[]) => MaterialDataModel[],
@@ -17,10 +17,10 @@ const initialMaterial: MaterialDataModel = {
   usageQuantity: null,
 };
 
-const ManualAdd = ({
+const ManualAddMaterial = ({
   setIsManualAddMode,
   setSelectedMaterials,
-}: ManualAddProps) => {
+}: ManualAddMaterialProps) => {
   const {
     formData: manualMaterial,
     showErrors,
@@ -29,18 +29,11 @@ const ManualAdd = ({
   } = useForm<MaterialDataModel>({
     initialData: initialMaterial,
     validationRules: {
-      materialName: (v) => !!(v || "").trim(),
-      size: (v) => !!(v || "").trim(),
+      materialName: (v) => !!v.trim(),
+      size: (v) => !!v.trim(),
       usageQuantity: (v) => v !== null && Number(v) > 0,
     },
   });
-  console.log("manualMaterial", manualMaterial);
-  // 폼 리셋 함수
-  const resetForm = () => {
-    handleChange("materialName", "");
-    handleChange("size", "");
-    handleChange("usageQuantity", "");
-  };
 
   return (
     <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
@@ -52,9 +45,7 @@ const ManualAdd = ({
             value={manualMaterial.materialName}
             onChange={(value) => handleChange("materialName", value)}
             required
-            showError={
-              showErrors && !(manualMaterial.materialName || "").trim()
-            }
+            showError={showErrors && !manualMaterial.materialName.trim()}
           />
         </div>
         <div className="flex-2">
@@ -64,7 +55,7 @@ const ManualAdd = ({
             value={manualMaterial.size}
             onChange={(value) => handleChange("size", value)}
             required
-            showError={showErrors && !(manualMaterial.size || "").trim()}
+            showError={showErrors && !manualMaterial.size.trim()}
           />
         </div>
         <div className="flex-1">
@@ -74,9 +65,9 @@ const ManualAdd = ({
             type="number"
             required
             value={
-              manualMaterial.usageQuantity === null
-                ? ""
-                : manualMaterial.usageQuantity.toString()
+              manualMaterial.usageQuantity != null
+                ? manualMaterial.usageQuantity.toString()
+                : ""
             }
             onChange={(value) => handleChange("usageQuantity", value)}
             showError={
@@ -104,16 +95,14 @@ const ManualAdd = ({
               setSelectedMaterials((prev) => [
                 ...prev,
                 {
-                  id: Date.now(),
+                  id: Date.now() + Math.random(),
                   materialName: manualMaterial.materialName,
                   size: manualMaterial.size,
                   usageQuantity: Number(manualMaterial.usageQuantity),
                 },
               ]);
-
               // 폼 리셋
-              resetForm();
-              setIsManualAddMode(false);
+              window.setTimeout(() => setIsManualAddMode(false), 0);
             })
           }
         />
@@ -122,4 +111,4 @@ const ManualAdd = ({
   );
 };
 
-export default ManualAdd;
+export default ManualAddMaterial;

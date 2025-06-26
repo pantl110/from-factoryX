@@ -2,8 +2,9 @@ export interface MaterialDataModel {
   id: number | null;
   materialName: string;
   size: string;
-  usageQuantity: number | null;
+  usageQuantity?: number | null;
   unitPrice?: number | null;
+  unit?: string;
 }
 
 export const materialData: MaterialDataModel[] = [
@@ -13,6 +14,7 @@ export const materialData: MaterialDataModel[] = [
     size: "500ml",
     usageQuantity: 100,
     unitPrice: 5000,
+    unit: "EA",
   },
   {
     id: 2,
@@ -20,6 +22,7 @@ export const materialData: MaterialDataModel[] = [
     size: "500ml",
     usageQuantity: 100,
     unitPrice: 5000,
+    unit: "EA",
   },
   {
     id: 3,
@@ -27,5 +30,6 @@ export const materialData: MaterialDataModel[] = [
     size: "500ml",
     usageQuantity: 100,
     unitPrice: 5000,
+    unit: "EA",
   },
 ];

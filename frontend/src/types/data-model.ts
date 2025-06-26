@@ -5,13 +5,13 @@ export interface MaterialModel {
 }
 
 export interface ProductDataModel {
-  id: number;
+  id: number | null;
   productName: string;
-  productCode: string;
+  productCode?: string;
   size: string;
   unit: string;
-  stock: number;
-  productionTime: string;
+  stock?: number;
+  productionTime?: string;
   location?: string;
   comment?: string[];
   returnQuantity?: number;

@@ -6,7 +6,7 @@ import { materialData } from "@/mocks/material-data";
 import { MaterialNameDropdown } from "@/ui/dropdown/material-name-dropdown";
 import { useState } from "react";
 import { X } from "@phosphor-icons/react/dist/ssr";
-import ManualAdd from "./manual-add";
+import ManualAddMaterial from "./manual-add-material";
 
 interface MaterialEnrollmentProps {
   onClose?: () => void;
@@ -78,7 +78,7 @@ const MaterialEnrollmentModal = ({
 
       {/* 직접 추가 area */}
       {isManualAddMode && (
-        <ManualAdd
+        <ManualAddMaterial
           setIsManualAddMode={setIsManualAddMode}
           setSelectedMaterials={setSelectedMaterials}
         />
@@ -105,15 +105,21 @@ const MaterialEnrollmentModal = ({
                   className="flex-1 px-3 text-dg truncate"
                   title={mat.materialName}
                 >
-                  {mat.materialName}
+                  {mat.materialName ?? "-"}
                 </p>
-                <p className="flex-1 px-3 text-dg">{mat.size}</p>
-                <p className="w-[80px] px-3 text-dg">{mat.usageQuantity}</p>
+                <p className="w-[80px] px-3 text-dg">{mat.unit ?? "-"}</p>
+                <p className="flex-1 px-3 text-dg">
+                  {mat.usageQuantity ?? "-"}
+                </p>
                 <p className="w-[100px] px-3 text-dg">
-                  {mat.unitPrice?.toLocaleString()}
+                  {mat.unitPrice != null
+                    ? mat.unitPrice?.toLocaleString()
+                    : "-"}
                 </p>
                 <p className="flex-1 px-3 text-dg">
-                  {(mat.unitPrice ?? 0) * (mat.usageQuantity ?? 0)}
+                  {mat.unitPrice != null && mat.usageQuantity != null
+                    ? (mat.unitPrice! * mat.usageQuantity!).toLocaleString()
+                    : "-"}
                 </p>
                 {mat.id !== null && (
                   <div

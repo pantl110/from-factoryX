@@ -2,78 +2,79 @@ import { MaterialDataModel } from "@/mocks/material-data";
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "@/hooks/use-form";
+import { ProductDataModel } from "@/types/data-model";
 
-interface ManualAddProps {
+interface ManualAddProductProps {
   setIsManualAddMode: (v: boolean) => void;
-  setSelectedMaterials: (
-    fn: (prev: MaterialDataModel[]) => MaterialDataModel[],
+  setSelectedProducts?: (
+    fn: (prev: ProductDataModel[]) => ProductDataModel[],
   ) => void;
 }
 
-const initialMaterial: MaterialDataModel = {
+const initialProduct: ProductDataModel = {
   id: null,
-  materialName: "",
+  productName: "",
   size: "",
-  usageQuantity: null,
+  unit: "",
 };
 
-const ManualAdd = ({
+const ManualAddProduct = ({
   setIsManualAddMode,
-  setSelectedMaterials,
-}: ManualAddProps) => {
+  setSelectedProducts,
+}: ManualAddProductProps) => {
   const {
-    formData: manualMaterial,
+    formData: manualProduct,
     showErrors,
     handleChange,
     handleSubmit,
-  } = useForm<MaterialDataModel>({
-    initialData: initialMaterial,
+  } = useForm<ProductDataModel>({
+    initialData: initialProduct,
     validationRules: {
-      materialName: (v) => !!v.trim(),
-      size: (v) => !!v.trim(),
-      usageQuantity: (v) => v !== null && Number(v) > 0,
+      productName: (v) => !!(v || "").trim(),
+      size: (v) => !!(v || "").trim(),
+      unit: (v) => !!(v || "").trim(),
     },
   });
+  // 폼 리셋 함수
+  const resetForm = () => {
+    handleChange("productName", "");
+    handleChange("size", "");
+    handleChange("unit", "");
+  };
 
   return (
     <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
       <div className="flex gap-2.5">
         <div className="flex-2">
           <Input
-            placeholder="자재명 입력"
-            label="자재명"
-            value={manualMaterial.materialName}
-            onChange={(value) => handleChange("materialName", value)}
+            placeholder="품목명 입력"
+            label="품목명"
+            value={manualProduct.productName}
+            onChange={(value) => handleChange("productName", value)}
             required
-            showError={showErrors && !manualMaterial.materialName.trim()}
+            showError={showErrors && !(manualProduct.productName || "").trim()}
           />
         </div>
         <div className="flex-2">
           <Input
             placeholder="규격 입력"
             label="규격"
-            value={manualMaterial.size}
+            value={manualProduct.size}
             onChange={(value) => handleChange("size", value)}
             required
-            showError={showErrors && !manualMaterial.size.trim()}
+            showError={showErrors && !(manualProduct.size || "").trim()}
           />
         </div>
         <div className="flex-1">
           <Input
-            placeholder="EX) 100"
-            label="사용 수량"
-            type="number"
+            placeholder="EX) EA"
+            label="단위"
             required
-            value={
-              manualMaterial.usageQuantity === null
-                ? ""
-                : manualMaterial.usageQuantity.toString()
-            }
-            onChange={(value) => handleChange("usageQuantity", value)}
+            value={manualProduct.unit}
+            onChange={(value) => handleChange("unit", value)}
             showError={
               showErrors &&
-              (manualMaterial.usageQuantity === null ||
-                Number(manualMaterial.usageQuantity) <= 0)
+              (manualProduct.unit === null || Number(manualProduct.unit) <= 0)
             }
           />
         </div>
@@ -92,17 +93,19 @@ const ManualAdd = ({
           hoverColor="hover:bg-secondary-hover"
           onClick={() =>
             handleSubmit(() => {
-              setSelectedMaterials((prev) => [
+              setSelectedProducts?.((prev) => [
                 ...prev,
                 {
-                  id: Date.now(),
-                  materialName: manualMaterial.materialName,
-                  size: manualMaterial.size,
-                  usageQuantity: Number(manualMaterial.usageQuantity),
+                  id: Date.now() + Math.random(),
+                  productName: manualProduct.productName,
+                  size: manualProduct.size,
+                  unit: manualProduct.unit,
                 },
               ]);
+
               // 폼 리셋
-              window.setTimeout(() => setIsManualAddMode(false), 0);
+              resetForm();
+              setIsManualAddMode(false);
             })
           }
         />
@@ -111,4 +114,4 @@ const ManualAdd = ({
   );
 };
 
-export default ManualAdd;
+export default ManualAddProduct;

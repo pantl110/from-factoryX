@@ -2,14 +2,18 @@ import MiniBtn from "@/ui/mini-btn";
 import MaterialInfo from "./material-info";
 import ProductRequiringMaterial from "./product-requiring-material";
 import QuotationHistory from "./quotation-history.tsx";
+import { useState } from "react";
 
 interface MaterialDetailProps {
   setIsCustomerInfoModalOpen: (isOpen: boolean) => void;
+  setIsProductEnrollmentModalOpen: (isOpen: boolean) => void;
 }
 
 const MaterialDetail = ({
   setIsCustomerInfoModalOpen,
+  setIsProductEnrollmentModalOpen,
 }: MaterialDetailProps) => {
+  useState(false);
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-3">
@@ -36,6 +40,7 @@ const MaterialDetail = ({
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
+            onClick={() => setIsProductEnrollmentModalOpen(true)}
           />
         </div>
         <ProductRequiringMaterial />

@@ -12,6 +12,7 @@ import MaterialEnrollmentModal from "./material/modals/material-enrollment-modal
 import Panel from "@/ui/panel";
 import MaterialDetail from "./material/material-detail";
 import CustomerInfoModal from "./material/modals/customer-info-modal";
+import ProductEnrollmentModal from "./material/modals/product-enrollment-modal";
 
 const StockPage = () => {
   const stockTab =
@@ -33,6 +34,8 @@ const StockPage = () => {
     useState(false);
   const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false);
   const [isCustomerInfoModalOpen, setIsCustomerInfoModalOpen] = useState(false);
+  const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
+    useState(false);
 
   const handleTabChange = (tab: StockTabType) => {
     setStockTab(tab);
@@ -106,12 +109,19 @@ const StockPage = () => {
         >
           <MaterialDetail
             setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen}
+            setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
           />
         </Panel>
       )}
       {/* MaterialDetail의 거래처 정보 상세보기 모달 */}
       {isCustomerInfoModalOpen && (
         <CustomerInfoModal onClose={() => setIsCustomerInfoModalOpen(false)} />
+      )}
+      {/* MaterialDetail의 추가하기 버튼 모달 */}
+      {isProductEnrollmentModalOpen && (
+        <ProductEnrollmentModal
+          onClose={() => setIsProductEnrollmentModalOpen(false)}
+        />
       )}
     </>
   );

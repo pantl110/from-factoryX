@@ -1,38 +1,33 @@
+import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal/modal";
-import SearchInput from "@/ui/search-input";
 import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
-import { materialData, MaterialDataModel } from "@/mocks/material-data";
-import { MaterialNameDropdown } from "@/ui/dropdown/material-name-dropdown";
+import { productData } from "@/mocks/product-data";
 import { useState } from "react";
+import { ProductDataModel } from "@/types/data-model";
+import { ProductNameDropdown } from "@/ui/dropdown/product-name-dropdown";
 import { X } from "@phosphor-icons/react/dist/ssr";
-import ManualAddMaterial from "../../material/modals/manual-add-material";
+import ManualAddProduct from "./manual-add-product";
 
-interface ConnectMaterialModalProps {
-  onClose: () => void;
+interface ProductEnrollmentModalProps {
+  onClose?: () => void;
 }
 
-const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
+const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
   const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } =
-    useDropdownFilter(materialData, (item) => item.materialName);
+    useDropdownFilter(productData, (item) => item.productName);
 
-  const [selectedMaterials, setSelectedMaterials] = useState<
-    MaterialDataModel[]
-  >([]);
+  const [selectedProducts, setSelectedProducts] = useState<ProductDataModel[]>(
+    [],
+  );
   const [isManualAddMode, setIsManualAddMode] = useState(false);
-  const [manualMaterial, setManualMaterial] = useState<MaterialDataModel>({
-    id: null,
-    materialName: "",
-    size: "",
-    usageQuantity: null,
-  });
 
   // 원자재 선택 시
-  const handleSelectMaterial = (item: MaterialDataModel) => {
+  const handleSelectProduct = (item: ProductDataModel) => {
     handleSelect(item);
     setInput("");
-    setSelectedMaterials((prev) => {
-      if (!prev.some((mat) => mat.id === item.id)) {
+    setSelectedProducts((prev) => {
+      if (!prev.some((product) => product.id === item.id)) {
         return [...prev, item];
       }
       return prev;
@@ -40,19 +35,19 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
     setIsOpen(false);
   };
 
-  const handleRemoveMaterial = (id: number) => {
-    setSelectedMaterials((prev) => prev.filter((mat) => mat.id !== id));
+  const handleRemoveProduct = (id: number) => {
+    setSelectedProducts((prev) => prev.filter((product) => product.id !== id));
   };
 
   return (
     <Modal
-      title="품목과 연결할 원자재를 선택하거나 새로 추가해 주세요."
+      title="해당 원자재와 연결할 품목을 등록해 주세요."
       width="w-[586px]"
       onClose={onClose}
     >
       <div className="mt-4 flex gap-2.5 relative">
         <SearchInput
-          placeholder="원자재 검색"
+          placeholder="품목 검색"
           width="flex-1"
           value={input}
           onChange={setInput}
@@ -70,9 +65,9 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
 
         {isOpen && filtered.length > 0 && (
           <div className="absolute left-0 top-12 z-10 w-[437px]">
-            <MaterialNameDropdown
+            <ProductNameDropdown
               items={filtered}
-              onSelect={handleSelectMaterial}
+              onSelect={handleSelectProduct}
               width="w-full"
             />
           </div>
@@ -81,24 +76,24 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
 
       {/* 직접 추가 모드 */}
       {isManualAddMode ? (
-        <ManualAddMaterial
+        <ManualAddProduct
           setIsManualAddMode={setIsManualAddMode}
-          setSelectedMaterials={setSelectedMaterials}
+          setSelectedProducts={setSelectedProducts}
         />
       ) : (
-        // 선택한 원자재 list
-        selectedMaterials.length > 0 && (
+        // 선택한 품목 list
+        selectedProducts.length > 0 && (
           <div className="mt-4 flex flex-col">
-            {selectedMaterials.map((mat) => (
+            {selectedProducts.map((product) => (
               <div
-                key={mat.id}
+                key={product.id}
                 className="flex justify-between items-center h-10"
               >
-                <p className="Me_body-1 text-dg">{mat.materialName}</p>
-                {mat.id !== null && (
+                <p className="Me_body-1 text-dg">{product.productName}</p>
+                {product.id !== null && (
                   <div
                     className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                    onClick={() => handleRemoveMaterial(mat.id!)}
+                    onClick={() => handleRemoveProduct(product.id!)}
                   >
                     <X size={16} className="text-gr" />
                   </div>
@@ -121,7 +116,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"
-          disabled={selectedMaterials.length === 0 || isManualAddMode}
+          disabled={selectedProducts.length === 0 || isManualAddMode}
           onClick={onClose}
         />
       </div>
@@ -129,4 +124,4 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
   );
 };
 
-export default ConnectMaterialModal;
+export default ProductEnrollmentModal;
