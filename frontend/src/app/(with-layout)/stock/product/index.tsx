@@ -1,15 +1,15 @@
 "use client";
 
-import SearchDeleteTable from "@/ui/search-delete-table";
 import TableHeader from "./table-header";
 import TableItem from "./table-item";
-import { productData, ProductDataModel } from "@/mocks/product-data";
+import { productData } from "@/mocks/product-data";
 import { useState } from "react";
 import ProductDetail from "./product-detail";
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 import { useDeleteMode } from "@/hooks/use-delete-mode";
 import DeleteModal from "@/ui/modal/delete-modal";
+import { ProductDataModel } from "@/types/data-model";
 
 interface ProductProps {
   isCreatePanelOpen: boolean;
@@ -58,10 +58,10 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
           <TableItem
             key={item.id}
             productName={item.productName}
-            productCode={item.productCode}
-            size={item.size}
-            unit={item.unit}
-            stock={item.stock}
+            productCode={item.productCode ?? ""}
+            size={item.size ?? ""}
+            unit={item.unit ?? ""}
+            stock={item.stock ?? 0}
             onClick={() => handleItemClick(item)}
             isDeleteMode={isDeleteMode}
           />

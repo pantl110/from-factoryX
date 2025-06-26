@@ -104,7 +104,11 @@ const ProductInfo = ({
       <div className="flex">
         <InfoLabelValue
           label="현재 재고"
-          value={product.stock === -1 ? "" : product.stock.toLocaleString()}
+          value={
+            product.stock === -1 || product.stock === undefined
+              ? ""
+              : product.stock.toLocaleString()
+          }
           isEditing={isEditable}
           placeholder="현재 재고 입력"
           inputType="number"

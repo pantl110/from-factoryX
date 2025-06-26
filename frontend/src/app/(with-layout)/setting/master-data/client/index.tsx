@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { clientData, ClientDataModel } from "@/mocks/client-data";
+import { clientData } from "@/mocks/client-data";
 import ClientTableHeader from "./client-table-header";
 import ClientTableItem from "./client-table-item";
 import ClientDetailPanel from "./modals/client-detail-panel";
+import { ClientDataModel } from "@/types/data-model";
 
 interface ClientProps {
   isDeleteMode: boolean;
@@ -30,8 +31,8 @@ const Client = ({ isDeleteMode }: ClientProps) => {
             representativeName={client.representativeName}
             businessType={client.businessType}
             businessCategory={client.businessCategory}
-            contact={client.contact}
-            email={client.email}
+            contact={client.contact ?? ""}
+            email={client.email ?? ""}
             onClick={() => handleTypeChange(client)}
             isDeleteMode={isDeleteMode}
           />

@@ -10,9 +10,9 @@ import {
   TransactionStatusColorMap,
   TaxStatusColorMap,
 } from "@/types/status-type";
-import { useState } from "react";
 import TransactionStateDropdown from "./modals/transaction-state-dropdown";
 import TaxStateDropdown from "./modals/tax-state-dropdown";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 
 interface TableItemProps {
   id: number;
@@ -42,9 +42,19 @@ const TableItem = ({
   const transactionColor = TransactionStatusColorMap[transactionIssued];
   const taxColor = TaxStatusColorMap[taxIssued];
 
-  const [isTransactionDropdownOpen, setIsTransactionDropdownOpen] =
-    useState(false);
-  const [isTaxDropdownOpen, setIsTaxDropdownOpen] = useState(false);
+  const {
+    isOpen: isTransactionDropdownOpen,
+    openDropdown: openTransactionDropdown,
+    closeDropdown: closeTransactionDropdown,
+    anchorRect: transactionAnchorRect,
+  } = usePortalDropdown();
+
+  const {
+    isOpen: isTaxDropdownOpen,
+    openDropdown: openTaxDropdown,
+    closeDropdown: closeTaxDropdown,
+    anchorRect: taxAnchorRect,
+  } = usePortalDropdown();
 
   const handleClick = () => {
     if (status === "견적 협의") return;
@@ -83,31 +93,45 @@ const TableItem = ({
       <div className="relative" onClick={(e) => e.stopPropagation()}>
         <p
           className={`w-[200px] py-1 px-3 ${transactionColor} cursor-pointer`}
-          onClick={() => setIsTransactionDropdownOpen((prev) => !prev)}
+          onClick={openTransactionDropdown}
         >
           {transactionIssued}
         </p>
-        {isTransactionDropdownOpen && (
-          <div className="absolute left-0 top-full z-10">
-            <TransactionStateDropdown
-              onClose={() => setIsTransactionDropdownOpen(false)}
-            />
-          </div>
-        )}
       </div>
+      {isTransactionDropdownOpen && transactionAnchorRect && (
+        <div
+          style={{
+            position: "fixed",
+            left: transactionAnchorRect.left,
+            top: transactionAnchorRect.bottom,
+            zIndex: 10,
+            width: transactionAnchorRect.width,
+          }}
+        >
+          <TransactionStateDropdown onClose={closeTransactionDropdown} />
+        </div>
+      )}
       <div className="relative" onClick={(e) => e.stopPropagation()}>
         <p
           className={`w-[200px] py-1 px-3 ${taxColor}`}
-          onClick={() => setIsTaxDropdownOpen((prev) => !prev)}
+          onClick={openTaxDropdown}
         >
           {taxIssued}
         </p>
-        {isTaxDropdownOpen && (
-          <div className="absolute left-0 top-full z-10">
-            <TaxStateDropdown onClose={() => setIsTaxDropdownOpen(false)} />
-          </div>
-        )}
       </div>
+      {isTaxDropdownOpen && taxAnchorRect && (
+        <div
+          style={{
+            position: "fixed",
+            left: taxAnchorRect.left,
+            top: taxAnchorRect.bottom,
+            zIndex: 10,
+            width: taxAnchorRect.width,
+          }}
+        >
+          <TaxStateDropdown onClose={closeTaxDropdown} />
+        </div>
+      )}
     </div>
   );
 };

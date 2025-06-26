@@ -5,6 +5,7 @@ export interface MaterialDataModel {
   usageQuantity?: number | null;
   unitPrice?: number | null;
   unit?: string;
+  [key: string]: unknown;
 }
 
 export const materialData: MaterialDataModel[] = [

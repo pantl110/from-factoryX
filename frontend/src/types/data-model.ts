@@ -15,6 +15,7 @@ export interface ProductDataModel {
   location?: string;
   comment?: string[];
   returnQuantity?: number;
+  [key: string]: unknown;
 }
 
 import { ClientType } from "@/app/(with-layout)/setting/master-data/client/types";
@@ -31,4 +32,5 @@ export interface ClientDataModel {
   email?: string;
   address?: string;
   comment?: string;
+  [key: string]: unknown;
 }

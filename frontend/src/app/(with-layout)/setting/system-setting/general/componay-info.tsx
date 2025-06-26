@@ -8,7 +8,7 @@ import { CompanyFormDataModel } from "./types";
 const CompanyInfo = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
-  const { formData, showErrors, handleChange, handleSubmit } =
+  const { formData, isShowErrors, handleChange, handleSubmit } =
     useForm<CompanyFormDataModel>({
       initialData: {
         companyName: "",
@@ -48,7 +48,7 @@ const CompanyInfo = () => {
               required
               value={formData.companyName}
               onChange={(value) => handleChange("companyName", value)}
-              showError={showErrors}
+              showError={isShowErrors}
             />
             <Input
               placeholder=""
@@ -56,7 +56,7 @@ const CompanyInfo = () => {
               required
               value={formData.businessNumber}
               onChange={(value) => handleChange("businessNumber", value)}
-              showError={showErrors}
+              showError={isShowErrors}
             />
           </div>
           <div className="flex gap-2">
@@ -66,7 +66,7 @@ const CompanyInfo = () => {
               required
               value={formData.ceoName}
               onChange={(value) => handleChange("ceoName", value)}
-              showError={showErrors}
+              showError={isShowErrors}
             />
             <Input
               placeholder=""
@@ -74,7 +74,7 @@ const CompanyInfo = () => {
               required
               value={formData.managerEmail}
               onChange={(value) => handleChange("managerEmail", value)}
-              showError={showErrors}
+              showError={isShowErrors}
             />
           </div>
           <div className="flex gap-2">
@@ -98,7 +98,7 @@ const CompanyInfo = () => {
               required
               value={formData.businessType}
               onChange={(value) => handleChange("businessType", value)}
-              showError={showErrors}
+              showError={isShowErrors}
             />
             <Input
               placeholder=""
@@ -106,7 +106,7 @@ const CompanyInfo = () => {
               required
               value={formData.businessCategory}
               onChange={(value) => handleChange("businessCategory", value)}
-              showError={showErrors}
+              showError={isShowErrors}
             />
           </div>
           <Input
@@ -115,7 +115,7 @@ const CompanyInfo = () => {
             required
             value={formData.address}
             onChange={(value) => handleChange("address", value)}
-            showError={showErrors}
+            showError={isShowErrors}
           />
         </div>
         <div className="flex justify-end">

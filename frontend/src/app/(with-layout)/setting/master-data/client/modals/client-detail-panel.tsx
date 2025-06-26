@@ -1,6 +1,6 @@
 import Panel from "@/ui/panel";
 import InfoLabelValue from "@/ui/info-label-value";
-import { ClientDataModel } from "@/mocks/client-data";
+import { ClientDataModel } from "@/types/data-model";
 import { ClientTypeColorMap } from "../types";
 import Chip from "@/ui/chip";
 

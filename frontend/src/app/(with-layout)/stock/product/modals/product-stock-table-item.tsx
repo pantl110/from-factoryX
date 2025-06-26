@@ -1,4 +1,3 @@
-import { InventoryStatusColorMap } from "@/types/status-type";
 import Chip from "@/ui/chip";
 
 const ProductStockTableItem = () => {

@@ -3,6 +3,7 @@ export interface ProfileFormDataModel {
   role: string;
   email: string;
   phone: string;
+  [key: string]: unknown;
 }
 
 export interface CompanyFormDataModel {
@@ -15,4 +16,5 @@ export interface CompanyFormDataModel {
   businessType: string;
   businessCategory: string;
   address: string;
+  [key: string]: string;
 }

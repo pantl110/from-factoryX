@@ -32,9 +32,9 @@ const SelectModal = ({ onClose, onUploadClick }: SelectModalProps) => {
           <Upload
             size={32}
             weight="fill"
-            className="text-lg group-hover:text-primary"
+            className="text-lg group-hover:text-primary transition-colors duration-200"
           />
-          <p className="Me_Body-2 text-sv group-hover:text-primary">
+          <p className="Me_Body-2 text-sv group-hover:text-primary transition-colors duration-200">
             견적요청서 업로드
           </p>
         </div>

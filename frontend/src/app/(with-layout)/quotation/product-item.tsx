@@ -16,7 +16,7 @@ const ProductItem = ({
 }: ProductItemProps) => {
   return (
     <div
-      className="h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer"
+      className="h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
       <p className="flex-1 px-3 truncate" title={productName}>

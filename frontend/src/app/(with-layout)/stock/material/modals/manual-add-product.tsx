@@ -1,4 +1,3 @@
-import { MaterialDataModel } from "@/mocks/material-data";
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "@/hooks/use-form";
@@ -24,7 +23,7 @@ const ManualAddProduct = ({
 }: ManualAddProductProps) => {
   const {
     formData: manualProduct,
-    showErrors,
+    isShowErrors,
     handleChange,
     handleSubmit,
   } = useForm<ProductDataModel>({
@@ -52,7 +51,9 @@ const ManualAddProduct = ({
             value={manualProduct.productName}
             onChange={(value) => handleChange("productName", value)}
             required
-            showError={showErrors && !(manualProduct.productName || "").trim()}
+            showError={
+              isShowErrors && !(manualProduct.productName || "").trim()
+            }
           />
         </div>
         <div className="flex-2">
@@ -62,7 +63,7 @@ const ManualAddProduct = ({
             value={manualProduct.size}
             onChange={(value) => handleChange("size", value)}
             required
-            showError={showErrors && !(manualProduct.size || "").trim()}
+            showError={isShowErrors && !(manualProduct.size || "").trim()}
           />
         </div>
         <div className="flex-1">
@@ -73,7 +74,7 @@ const ManualAddProduct = ({
             value={manualProduct.unit}
             onChange={(value) => handleChange("unit", value)}
             showError={
-              showErrors &&
+              isShowErrors &&
               (manualProduct.unit === null || Number(manualProduct.unit) <= 0)
             }
           />

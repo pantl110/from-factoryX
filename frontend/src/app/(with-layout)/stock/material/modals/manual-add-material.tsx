@@ -23,7 +23,7 @@ const ManualAddMaterial = ({
 }: ManualAddMaterialProps) => {
   const {
     formData: manualMaterial,
-    showErrors,
+    isShowErrors,
     handleChange,
     handleSubmit,
   } = useForm<MaterialDataModel>({
@@ -45,7 +45,7 @@ const ManualAddMaterial = ({
             value={manualMaterial.materialName}
             onChange={(value) => handleChange("materialName", value)}
             required
-            showError={showErrors && !manualMaterial.materialName.trim()}
+            showError={isShowErrors && !manualMaterial.materialName.trim()}
           />
         </div>
         <div className="flex-2">
@@ -55,7 +55,7 @@ const ManualAddMaterial = ({
             value={manualMaterial.size}
             onChange={(value) => handleChange("size", value)}
             required
-            showError={showErrors && !manualMaterial.size.trim()}
+            showError={isShowErrors && !manualMaterial.size.trim()}
           />
         </div>
         <div className="flex-1">
@@ -65,13 +65,13 @@ const ManualAddMaterial = ({
             type="number"
             required
             value={
-              manualMaterial.usageQuantity != null
-                ? manualMaterial.usageQuantity.toString()
+              manualMaterial.usageQuantity !== null
+                ? manualMaterial.usageQuantity?.toString()
                 : ""
             }
             onChange={(value) => handleChange("usageQuantity", value)}
             showError={
-              showErrors &&
+              isShowErrors &&
               (manualMaterial.usageQuantity === null ||
                 Number(manualMaterial.usageQuantity) <= 0)
             }

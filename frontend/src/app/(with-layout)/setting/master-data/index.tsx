@@ -26,6 +26,14 @@ const MasterData = () => {
   const isEquipmentTab = settingChip === "equipment";
   const deleteMode = isEquipmentTab ? equipmentDelete : clientDelete;
 
+  const handleEquipmentChipClick = () =>
+    setSettingChip("equipment" as SettingChipType);
+  const handleClientChipClick = () =>
+    setSettingChip("client" as SettingChipType);
+
+  const handleDeleteBtnClick = () => deleteMode.toggleDeleteMode();
+  const handleDeleteModalClose = () => deleteMode.closeDeleteModal();
+
   const renderContent = () => {
     switch (settingChip) {
       case "equipment":
@@ -47,7 +55,7 @@ const MasterData = () => {
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSettingChip("equipment" as SettingChipType)}
+          onClick={handleEquipmentChipClick}
         />
         <Chip
           text="거래처 정보"
@@ -56,7 +64,7 @@ const MasterData = () => {
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSettingChip("client" as SettingChipType)}
+          onClick={handleClientChipClick}
         />
       </div>
       <div className="flex items-center justify-between px-10 pb-4">
@@ -67,7 +75,7 @@ const MasterData = () => {
           textColor={deleteMode.isDeleteMode ? "text-red" : "text-dg"}
           borderColor={deleteMode.isDeleteMode ? "border-none" : "border-lg"}
           bgColor={deleteMode.isDeleteMode ? "bg-red-8" : "bg-wh"}
-          onClick={deleteMode.toggleDeleteMode}
+          onClick={handleDeleteBtnClick}
           hoverColor={
             deleteMode.isDeleteMode ? "hover:bg-red-hover" : "hover:bg-bg"
           }
@@ -75,7 +83,7 @@ const MasterData = () => {
       </div>
       {renderContent()}
       {deleteMode.isDeleteModalOpen && (
-        <DeleteModal onClose={deleteMode.closeDeleteModal} />
+        <DeleteModal onClose={handleDeleteModalClose} />
       )}
     </div>
   );

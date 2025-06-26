@@ -5,12 +5,12 @@ interface UseFormProps<T> {
   validationRules?: Partial<Record<keyof T, (value: string) => boolean>>;
 }
 
-export const useForm = <T extends Record<string, any>>({
+export const useForm = <T extends Record<string, unknown>>({
   initialData,
   validationRules = {},
 }: UseFormProps<T>) => {
   const [formData, setFormData] = useState<T>(initialData);
-  const [showErrors, setShowErrors] = useState(false);
+  const [isShowErrors, setShowErrors] = useState(false);
 
   const validateField = (field: keyof T, value: string): boolean => {
     const validator = validationRules[field];
@@ -23,7 +23,7 @@ export const useForm = <T extends Record<string, any>>({
 
   const validateForm = (): boolean => {
     const isValid = Object.keys(validationRules).every((field) =>
-      validateField(field as keyof T, formData[field as keyof T]),
+      validateField(field as keyof T, String(formData[field as keyof T])),
     );
     return isValid;
   };
@@ -44,7 +44,7 @@ export const useForm = <T extends Record<string, any>>({
 
   return {
     formData,
-    showErrors,
+    isShowErrors,
     handleChange,
     handleSubmit,
     // reset,

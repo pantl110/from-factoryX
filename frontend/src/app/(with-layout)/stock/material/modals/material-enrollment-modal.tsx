@@ -112,19 +112,22 @@ const MaterialEnrollmentModal = ({
                   {mat.usageQuantity ?? "-"}
                 </p>
                 <p className="w-[100px] px-3 text-dg">
-                  {mat.unitPrice != null
-                    ? mat.unitPrice?.toLocaleString()
+                  {mat.unitPrice !== null && mat.unitPrice !== undefined
+                    ? mat.unitPrice.toLocaleString()
                     : "-"}
                 </p>
                 <p className="flex-1 px-3 text-dg">
-                  {mat.unitPrice != null && mat.usageQuantity != null
-                    ? (mat.unitPrice! * mat.usageQuantity!).toLocaleString()
+                  {mat.unitPrice !== null &&
+                  mat.unitPrice !== undefined &&
+                  mat.usageQuantity !== null &&
+                  mat.usageQuantity !== undefined
+                    ? (mat.unitPrice * mat.usageQuantity).toLocaleString()
                     : "-"}
                 </p>
-                {mat.id !== null && (
+                {mat.id !== null && mat.id !== undefined && (
                   <div
                     className="w-[40px] hover:bg-bg flex items-center justify-center h-full transition-colors duration-200 cursor-pointer"
-                    onClick={() => handleRemoveMaterial(mat.id!)}
+                    onClick={() => handleRemoveMaterial(mat.id as number)}
                   >
                     <X
                       size={16}

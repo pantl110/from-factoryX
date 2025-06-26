@@ -18,7 +18,7 @@ const TableHeader = ({ isDeleteMode }: TableHeaderProps) => {
       <p className="flex-1 py-1 px-3 text-sv">품목명</p>
       <div className="w-[200px] px-3 flex gap-1 items-center">
         <p className=" text-sv">완료일자</p>
-        <CaretUpDown size={16} className="text-sv" />
+        <CaretUpDown size={21} className="text-sv" />
       </div>
     </div>
   );

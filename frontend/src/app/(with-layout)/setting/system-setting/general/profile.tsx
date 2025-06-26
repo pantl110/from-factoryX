@@ -9,7 +9,7 @@ import { ProfileFormDataModel } from "./types";
 const Profile = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
-  const { formData, showErrors, handleChange, handleSubmit } =
+  const { formData, isShowErrors, handleChange, handleSubmit } =
     useForm<ProfileFormDataModel>({
       initialData: {
         name: "",
@@ -48,7 +48,7 @@ const Profile = () => {
                 required
                 value={formData.name}
                 onChange={(value) => handleChange("name", value)}
-                showError={showErrors}
+                showError={isShowErrors}
               />
               <Input
                 placeholder=""
@@ -64,7 +64,7 @@ const Profile = () => {
                 required
                 value={formData.email}
                 onChange={(value) => handleChange("email", value)}
-                showError={showErrors}
+                showError={isShowErrors}
               />
               <Input
                 placeholder=""

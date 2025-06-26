@@ -1,13 +1,13 @@
-import SearchInput from "@/ui/search-input";
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
 import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
 import { productData } from "@/mocks/product-data";
-import { useState } from "react";
 import { ProductDataModel } from "@/types/data-model";
 import { ProductNameDropdown } from "@/ui/dropdown/product-name-dropdown";
+import MiniBtn from "@/ui/mini-btn";
+import Modal from "@/ui/modal/modal";
+import SearchInput from "@/ui/search-input";
 import { X } from "@phosphor-icons/react/dist/ssr";
-import ManualAddProduct from "./manual-add-product";
+import { useState } from "react";
+import ManualAddProduct from "@/app/(with-layout)/stock/material/modals/manual-add-product";
 
 interface ProductEnrollmentModalProps {
   onClose?: () => void;
@@ -41,13 +41,14 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
 
   return (
     <Modal
-      title="해당 원자재와 연결할 품목을 등록해 주세요."
+      title="견적서에 포함되지 않은 품목을 추가해 주세요."
+      subtitle="OCR로 인식되지 않았거나, 추가 요청된 품목이 있다면 등록해 주세요."
       width="w-[586px]"
       onClose={onClose}
     >
       <div className="mt-4 flex gap-2.5 relative">
         <SearchInput
-          placeholder="품목 검색"
+          placeholder="품목명 검색"
           width="flex-1"
           value={input}
           onChange={setInput}

@@ -13,7 +13,7 @@ interface TableItemProps {
   unit: string;
   currentStock: number;
   status: InventoryStatusType;
-  date: string;
+  _date: string;
   onClick?: () => void;
   isDeleteMode: boolean;
 }
@@ -24,7 +24,6 @@ const TableItem = ({
   unit,
   currentStock,
   status,
-  date,
   onClick,
   isDeleteMode,
 }: TableItemProps) => {

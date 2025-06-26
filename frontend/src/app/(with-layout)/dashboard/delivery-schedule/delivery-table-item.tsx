@@ -1,3 +1,5 @@
+"use client";
+
 import Chip from "@/ui/chip";
 
 interface DeliveryTableItemProps {

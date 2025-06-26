@@ -41,7 +41,7 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
           unit="EA"
           currentStock={5000}
           status="충분"
-          date="2025-06-04"
+          _date="2025-06-04"
           onClick={() => setIsMaterialDetailOpen(true)}
           isDeleteMode={isDeleteMode}
         />
@@ -51,7 +51,7 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
           unit="m"
           currentStock={1200}
           status="부족"
-          date="2025-06-04"
+          _date="2025-06-04"
           onClick={() => setIsMaterialDetailOpen(true)}
           isDeleteMode={isDeleteMode}
         />
@@ -61,7 +61,7 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
           unit="EA"
           currentStock={3500}
           status="충분"
-          date="2025-06-04"
+          _date="2025-06-04"
           onClick={() => setIsMaterialDetailOpen(true)}
           isDeleteMode={isDeleteMode}
         />
@@ -71,7 +71,7 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
           unit="롤"
           currentStock={80}
           status="부족"
-          date="2025-06-04"
+          _date="2025-06-04"
           onClick={() => setIsMaterialDetailOpen(true)}
           isDeleteMode={isDeleteMode}
         />

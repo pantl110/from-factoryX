@@ -19,7 +19,7 @@ export function useDropdownFilter<T>(
 
   // 입력값 변경 핸들러
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const { value } = e.target;
     setInput(value);
     const nextFiltered = value
       ? items.filter((item) => getLabel(item).startsWith(value))

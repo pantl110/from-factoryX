@@ -29,7 +29,6 @@ const MiniBtn = ({
   onClick,
   height = "h-10",
   disabled = false,
-  isDeleteMode = false,
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
   const positionClass = iconPosition === "right" ? "flex-row-reverse" : "";

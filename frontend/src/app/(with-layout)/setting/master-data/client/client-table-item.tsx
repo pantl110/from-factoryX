@@ -1,8 +1,8 @@
 import Chip from "@/ui/chip";
 import { ClientType, ClientTypeColorMap } from "./types";
+import { createPortal } from "react-dom";
 import ClientTypeDropdown from "./modals/client-type-dropdown";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
-import { createPortal } from "react-dom";
 
 interface ClientTableItemProps {
   clientType: ClientType;
@@ -20,7 +20,6 @@ interface ClientTableItemProps {
 
 const PortalDropdown = ({
   anchorRect,
-  onClose,
   children,
 }: {
   anchorRect: DOMRect | null;

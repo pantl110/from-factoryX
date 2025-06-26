@@ -10,7 +10,7 @@ interface ClientInfoModalProps {
 }
 
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
-  const { formData, showErrors, handleChange, handleSubmit } =
+  const { formData, isShowErrors, handleChange, handleSubmit } =
     useForm<ClientDataModel>({
       initialData: {
         id: 0,
@@ -50,7 +50,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               required
               value={formData.companyName}
               onChange={(v) => handleChange("companyName", v)}
-              showError={showErrors && !(formData.companyName || "").trim()}
+              showError={isShowErrors && !(formData.companyName || "").trim()}
             />
             <Input
               label="사업자등록번호"
@@ -59,7 +59,9 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               required
               value={formData.businessNumber}
               onChange={(v) => handleChange("businessNumber", v)}
-              showError={showErrors && !(formData.businessNumber || "").trim()}
+              showError={
+                isShowErrors && !(formData.businessNumber || "").trim()
+              }
             />
           </div>
           <div className="flex gap-2.5">
@@ -70,7 +72,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               value={formData.representativeName}
               onChange={(v) => handleChange("representativeName", v)}
               showError={
-                showErrors && !(formData.representativeName || "").trim()
+                isShowErrors && !(formData.representativeName || "").trim()
               }
             />
             <Input
@@ -103,7 +105,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               required
               value={formData.businessType}
               onChange={(v) => handleChange("businessType", v)}
-              showError={showErrors && !(formData.businessType || "").trim()}
+              showError={isShowErrors && !(formData.businessType || "").trim()}
             />
             <Input
               label="종목"
@@ -112,7 +114,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               value={formData.businessCategory}
               onChange={(v) => handleChange("businessCategory", v)}
               showError={
-                showErrors && !(formData.businessCategory || "").trim()
+                isShowErrors && !(formData.businessCategory || "").trim()
               }
             />
           </div>

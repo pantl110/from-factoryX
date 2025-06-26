@@ -20,12 +20,6 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
     MaterialDataModel[]
   >([]);
   const [isManualAddMode, setIsManualAddMode] = useState(false);
-  const [manualMaterial, setManualMaterial] = useState<MaterialDataModel>({
-    id: null,
-    materialName: "",
-    size: "",
-    usageQuantity: null,
-  });
 
   // 원자재 선택 시
   const handleSelectMaterial = (item: MaterialDataModel) => {
@@ -95,10 +89,10 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
                 className="flex justify-between items-center h-10"
               >
                 <p className="Me_body-1 text-dg">{mat.materialName}</p>
-                {mat.id !== null && (
+                {mat.id !== null && mat.id !== undefined && (
                   <div
                     className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                    onClick={() => handleRemoveMaterial(mat.id!)}
+                    onClick={() => handleRemoveMaterial(mat.id as number)}
                   >
                     <X size={16} className="text-gr" />
                   </div>
