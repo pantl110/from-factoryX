@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import usePageStatusStore from "@/store/page-status-store";
 import { SettingChipType } from "@/components/top-bar/types";
 import Chip from "@/ui/chip";
@@ -7,10 +7,12 @@ import MiniBtn from "@/ui/mini-btn";
 import Facility from "./facility";
 import Client from "./client";
 import DeleteModal from "./facility/delete-modal";
+import { useDeleteMode } from "@/hooks/use-delete-mode";
 
 const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const equipmentDelete = useDeleteMode();
+  const clientDelete = useDeleteMode();
 
   useEffect(() => {
     if (
@@ -21,17 +23,15 @@ const MasterData = () => {
     }
   }, [settingChip, setSettingChip]);
 
-  const handleDelete = () => {
-    // 실제 삭제버튼 누를 시 동작
-    setIsDeleteModalOpen(false);
-  };
+  const isEquipmentTab = settingChip === "equipment";
+  const deleteMode = isEquipmentTab ? equipmentDelete : clientDelete;
 
   const renderContent = () => {
     switch (settingChip) {
       case "equipment":
-        return <Facility />;
+        return <Facility isDeleteMode={equipmentDelete.isDeleteMode} />;
       case "client":
-        return <Client />;
+        return <Client isDeleteMode={clientDelete.isDeleteMode} />;
       default:
         return null;
     }
@@ -70,21 +70,19 @@ const MasterData = () => {
           />
           <MiniBtn
             text="삭제"
-            textColor="text-dg"
-            borderColor="border-lg"
-            onClick={() => setIsDeleteModalOpen(true)}
-            hoverColor="hover:bg-bg"
+            textColor={deleteMode.isDeleteMode ? "text-red" : "text-dg"}
+            borderColor={deleteMode.isDeleteMode ? "border-none" : "border-lg"}
+            bgColor={deleteMode.isDeleteMode ? "bg-red-8" : "bg-wh"}
+            onClick={deleteMode.toggleDeleteMode}
+            hoverColor={
+              deleteMode.isDeleteMode ? "hover:bg-red-hover" : "hover:bg-bg"
+            }
           />
         </div>
       </div>
       {renderContent()}
-
-      {/* 삭제 모달 */}
-      {isDeleteModalOpen && (
-        <DeleteModal
-          onClose={() => setIsDeleteModalOpen(false)}
-          onDelete={handleDelete}
-        />
+      {deleteMode.isDeleteModalOpen && (
+        <DeleteModal onClose={deleteMode.closeDeleteModal} />
       )}
     </div>
   );

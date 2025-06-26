@@ -5,6 +5,7 @@ import {
   ProductionTabType,
   SettingTabType,
   SettingChipType,
+  StockTabType,
 } from "@/components/top-bar/types";
 
 export interface PageStatusModel {
@@ -17,6 +18,9 @@ export interface PageStatusModel {
 
   productionTab: ProductionTabType | null;
   setProductionTab: (tab: ProductionTabType | null) => void;
+
+  stockTab: StockTabType | null;
+  setStockTab: (tab: StockTabType | null) => void;
 
   // production의 "생산 대기" 상태의 "생산 계획" 탭에서 <저장> 버튼 클릭 시 모달 오픈
   isProductionPlanSaveModalOpen: boolean;
@@ -45,6 +49,10 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   setAddReturnModalOpen: (open) => set({ isAddReturnModalOpen: open }),
   isMoveToStorageModalOpen: false,
   setMoveToStorageModalOpen: (open) => set({ isMoveToStorageModalOpen: open }),
+
+  // stock page
+  stockTab: null,
+  setStockTab: (tab) => set({ stockTab: tab }),
 
   // setting page
   settingTab: null,

@@ -21,7 +21,7 @@ const ExcelUploadModal = ({ onClose }: ExcelUploadModalProps) => {
           hoverColor="hover:bg-bg"
         />
       </div>
-      <div className="flex flex-col gap-4 justify-center items-center mt-2 h-60 border-2 border-dashed border-gr rounded-lg hover:bg-primary-8 hover:border-primary">
+      <div className="flex flex-col gap-4 justify-center items-center mt-2 h-60 border-2 border-dashed border-gr rounded-lg hover:bg-primary-8 hover:border-primary transition-colors duration-200">
         <p className="Me_body-2 text-dg">
           파일을 끌어다 놓거나, 아래 버튼으로 업로드할 수 있어요.
         </p>

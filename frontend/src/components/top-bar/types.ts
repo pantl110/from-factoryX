@@ -15,14 +15,6 @@ export interface NotificationModel {
 }
 
 // top-bar crumb 타입
-export type SettingTabType = "system" | "master";
-export type SettingChipType =
-  | "general"
-  | "permission"
-  | "subscription"
-  | "equipment"
-  | "client";
-
 // production page tab 타입
 export type ProductionTabType =
   | "세금계산서"
@@ -32,3 +24,14 @@ export type ProductionTabType =
   | "생산 내역"
   | "생산 계획"
   | "주문서";
+
+// setting page tab 타입
+export type StockTabType = "product" | "material";
+
+export type SettingTabType = "system" | "master";
+export type SettingChipType =
+  | "general"
+  | "permission"
+  | "subscription"
+  | "equipment"
+  | "client";

@@ -3,10 +3,9 @@ import Modal from "@/ui/modal";
 
 interface DeleteModalProps {
   onClose: () => void;
-  onDelete: () => void;
 }
 
-const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
+const DeleteModal = ({ onClose }: DeleteModalProps) => {
   return (
     <Modal
       title="삭제하시겠습니까?"
@@ -26,7 +25,7 @@ const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
           text="삭제하기"
           textColor="text-red"
           bgColor="bg-red-8"
-          onClick={onDelete}
+          onClick={onClose}
           hoverColor="hover:bg-red-hover"
         />
       </div>

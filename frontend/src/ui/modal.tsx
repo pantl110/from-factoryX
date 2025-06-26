@@ -50,7 +50,7 @@ const Modal = ({
             {button}
           </div>
           <button
-            className={`${sm ? "w-9 h-9" : "w-10 h-10"} flex justify-center items-center cursor-pointer`}
+            className={`${sm ? "w-9 h-9" : "w-10 h-10"} flex justify-center items-center cursor-pointer rounded-lg transition-colors duration-200 hover:bg-bg`}
             onClick={onClose}
           >
             <X size={sm ? 16 : 20} />

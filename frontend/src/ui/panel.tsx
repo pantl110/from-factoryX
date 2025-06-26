@@ -20,7 +20,7 @@ const Panel = ({ children, title, onClose }: PanelProps) => {
   return (
     <>
       <div
-        className="fixed inset-0 bg-bl/50 transition-opacity duration-300"
+        className="fixed inset-0 bg-bl/50 transition-opacity duration-200"
         role="button"
         tabIndex={0}
         onClick={onClose}

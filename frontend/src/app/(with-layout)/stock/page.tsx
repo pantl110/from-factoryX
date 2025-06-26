@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainTitleSec from "./main-title-sec";
 import Product from "./product/index";
 import Material from "./material/index";
@@ -8,9 +8,17 @@ import { StockTabType } from "./types";
 import ExcelUploadModal from "./product/modals/excel-upload-modal";
 import ClientInfoModal from "./material/modals/client-info-modal";
 import MaterialEnrollment from "./material/modals/material-enrollment";
+import usePageStatusStore from "@/store/page-status-store";
 
 const StockPage = () => {
-  const [selectedTab, setSelectedTab] = useState<StockTabType>("product");
+  const stockTab =
+    (usePageStatusStore((state) => state.stockTab) as StockTabType) || null;
+  const setStockTab = usePageStatusStore((state) => state.setStockTab);
+
+  useEffect(() => {
+    if (!stockTab) setStockTab("product");
+  }, [stockTab, setStockTab]);
+
   const [isProductAddDropdownOpen, setIsProductAddDropdownOpen] =
     useState(false);
   const [isMaterialAddDropdownOpen, setIsMaterialAddDropdownOpen] =
@@ -22,7 +30,7 @@ const StockPage = () => {
     useState(false);
 
   const handleTabChange = (tab: StockTabType) => {
-    setSelectedTab(tab);
+    setStockTab(tab);
   };
   const handleOpenExcelModal = () => {
     setIsProductAddDropdownOpen(false);
@@ -45,7 +53,7 @@ const StockPage = () => {
     <>
       <div className="flex flex-col gap-8">
         <MainTitleSec
-          selectedTab={selectedTab}
+          selectedTab={stockTab}
           onTabChange={handleTabChange}
           onProductAddDropdownOpen={setIsProductAddDropdownOpen}
           isProductAddDropdownOpen={isProductAddDropdownOpen}
@@ -56,7 +64,7 @@ const StockPage = () => {
           onOpenClientInfoModal={handleOpenClientInfoModal}
         />
         <div className="px-8">
-          {selectedTab === "product" ? (
+          {stockTab === "product" ? (
             <Product
               isCreatePanelOpen={isCreatePanelOpen}
               setIsCreatePanelOpen={setIsCreatePanelOpen}

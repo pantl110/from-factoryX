@@ -5,25 +5,40 @@ import {
   ProductionTabType,
   SettingTabType,
   SettingChipType,
+  StockTabType,
 } from "@/components/top-bar/types";
 
 const crumbNameMap: Record<string, string> = {
   dashboard: "대시보드",
+
   project: "프로젝트 관리",
   completed: "보관된 프로젝트",
   process: "진행 중인 프로젝트",
-  stock: "재고관리",
-  tax: "세무/회계",
-  document: "문서함",
-  setting: "설정",
+
   production: "프로젝트 관리",
   return: "반품 관리",
   quotation: "프로젝트 관리",
+
+  stock: "재고 관리",
+  product: "품목",
+  material: "원자재",
+
+  tax: "세무/회계",
+
+  document: "문서함",
+
+  setting: "설정",
+  general: "일반",
+  permission: "권한 설정",
+  subscription: "구독 관리",
+  equipment: "설비 관리",
+  client: "거래처 정보",
 };
 
 interface TopBarCrumbProps {
   pageStatus: string;
   productionTab?: ProductionTabType;
+  stockTab?: StockTabType;
   settingTab?: SettingTabType;
   settingChip?: SettingChipType;
 }
@@ -31,6 +46,7 @@ interface TopBarCrumbProps {
 const TopBarCrumb = ({
   pageStatus,
   // productionTab,
+  stockTab,
   settingTab,
   settingChip,
 }: TopBarCrumbProps) => {
@@ -57,6 +73,11 @@ const TopBarCrumb = ({
     // if (productionTab) finalCrumbs.push(productionTab);
   }
 
+  // stock 페이지인 경우 탭 상태 추가
+  if (crumbs[0] === "stock" && stockTab) {
+    finalCrumbs = ["stock", stockTab];
+  }
+
   // 설정 페이지인 경우 탭과 칩 상태 추가
   if (crumbs[0] === "setting") {
     if (settingTab === "system") {
@@ -65,21 +86,12 @@ const TopBarCrumb = ({
         settingChip &&
         ["general", "permission", "subscription"].includes(settingChip)
       ) {
-        const chipNameMap: Record<string, string> = {
-          general: "일반",
-          permission: "권한 설정",
-          subscription: "구독 관리",
-        };
-        finalCrumbs.push(chipNameMap[settingChip]);
+        finalCrumbs.push(crumbNameMap[settingChip] || settingChip);
       }
     } else if (settingTab === "master") {
       finalCrumbs = ["setting", "마스터 데이터 관리"];
       if (settingChip && ["equipment", "client"].includes(settingChip)) {
-        const chipNameMap: Record<string, string> = {
-          equipment: "설비 관리",
-          client: "거래처 정보",
-        };
-        finalCrumbs.push(chipNameMap[settingChip]);
+        finalCrumbs.push(crumbNameMap[settingChip] || settingChip);
       }
     }
   }

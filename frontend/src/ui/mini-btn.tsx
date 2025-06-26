@@ -14,6 +14,7 @@ interface MiniBtnProps {
   onClick?: () => void;
   height?: string;
   disabled?: boolean;
+  isDeleteMode?: boolean;
 }
 
 const MiniBtn = ({
@@ -28,6 +29,7 @@ const MiniBtn = ({
   onClick,
   height = "h-10",
   disabled = false,
+  isDeleteMode = false,
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
   const positionClass = iconPosition === "right" ? "flex-row-reverse" : "";
@@ -40,7 +42,7 @@ const MiniBtn = ({
           : `${bgColor} ${textColor} ${hoverColor || ""}`
       } ${borderClass} flex items-center justify-center gap-2 ${positionClass} ${
         disabled ? "cursor-not-allowed" : "cursor-pointer"
-      }`}
+      } transition-colors duration-200`}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
     >
