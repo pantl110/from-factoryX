@@ -52,6 +52,10 @@ const Input = ({
           placeholder={placeholder}
           disabled={disabled}
           className={`w-full h-12 min-h-9 rounded px-3 Re_Body-1 text-bl placeholder:text-sv outline-none border transition-colors ${
+            type === "number"
+              ? "appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              : ""
+          } ${
             disabled
               ? "bg-lg text-dg cursor-not-allowed border-[#e4e4e7]"
               : hasError

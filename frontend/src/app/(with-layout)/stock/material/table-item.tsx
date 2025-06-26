@@ -50,7 +50,7 @@ const TableItem = ({
         <p className="flex-1 px-3 text-dg">{materialCode}</p>
         <p className="w-[80px] px-3 text-dg">{unit}</p>
         <p className="flex-1 px-3 text-dg">{currentStock.toLocaleString()}</p>
-        <div className="px-3 w-[100px]">
+        <div className="px-3 w-[150px]">
           <Chip
             text={status}
             bgColor={colors.bgColor}
@@ -58,7 +58,6 @@ const TableItem = ({
             sm={true}
           />
         </div>
-        <p className="flex-1 px-3 text-dg">{date}</p>
       </div>
     </>
   );

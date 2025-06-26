@@ -5,10 +5,13 @@ import MainTitleSec from "./main-title-sec";
 import Product from "./product/index";
 import Material from "./material/index";
 import { StockTabType } from "./types";
-import ExcelUploadModal from "./product/modals/excel-upload-modal";
+import ExcelUploadModal from "./modals/excel-upload-modal";
 import ClientInfoModal from "./material/modals/client-info-modal";
-import MaterialEnrollment from "./material/modals/material-enrollment";
 import usePageStatusStore from "@/store/page-status-store";
+import MaterialEnrollmentModal from "./material/modals/material-enrollment-modal";
+import Panel from "@/ui/panel";
+import MaterialDetail from "./material/material-detail";
+import CustomerInfoModal from "./material/modals/customer-info-modal";
 
 const StockPage = () => {
   const stockTab =
@@ -26,8 +29,10 @@ const StockPage = () => {
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const [isClientInfoModalOpen, setIsClientInfoModalOpen] = useState(false);
-  const [isMaterialEnrollmentOpen, setIsMaterialEnrollmentOpen] =
+  const [isMaterialEnrollmentModalOpen, setIsMaterialEnrollmentModalOpen] =
     useState(false);
+  const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false);
+  const [isCustomerInfoModalOpen, setIsCustomerInfoModalOpen] = useState(false);
 
   const handleTabChange = (tab: StockTabType) => {
     setStockTab(tab);
@@ -46,7 +51,11 @@ const StockPage = () => {
   };
   const handleNextClientInfo = () => {
     setIsClientInfoModalOpen(false);
-    setIsMaterialEnrollmentOpen(true);
+    setIsMaterialEnrollmentModalOpen(true);
+  };
+  const handleMaterialRegister = () => {
+    setIsMaterialEnrollmentModalOpen(false);
+    setIsMaterialDetailOpen(true);
   };
 
   return (
@@ -70,7 +79,7 @@ const StockPage = () => {
               setIsCreatePanelOpen={setIsCreatePanelOpen}
             />
           ) : (
-            <Material />
+            <Material setIsMaterialDetailOpen={setIsMaterialDetailOpen} />
           )}
         </div>
       </div>
@@ -84,10 +93,25 @@ const StockPage = () => {
           onNext={handleNextClientInfo}
         />
       )}
-      {isMaterialEnrollmentOpen && (
-        <MaterialEnrollment
-          onClose={() => setIsMaterialEnrollmentOpen(false)}
+      {isMaterialEnrollmentModalOpen && (
+        <MaterialEnrollmentModal
+          onClose={() => setIsMaterialEnrollmentModalOpen(false)}
+          onRegister={handleMaterialRegister}
         />
+      )}
+      {isMaterialDetailOpen && (
+        <Panel
+          title="원자재 재고관리"
+          onClose={() => setIsMaterialDetailOpen(false)}
+        >
+          <MaterialDetail
+            setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen}
+          />
+        </Panel>
+      )}
+      {/* MaterialDetail의 거래처 정보 상세보기 모달 */}
+      {isCustomerInfoModalOpen && (
+        <CustomerInfoModal onClose={() => setIsCustomerInfoModalOpen(false)} />
       )}
     </>
   );

@@ -2,22 +2,22 @@
 
 import TableHeader from "./table-header";
 import TableItem from "./table-item";
-import MaterialDetail from "./material-detail";
-import { useState } from "react";
-import Panel from "@/ui/panel";
 import { useDeleteMode } from "@/hooks/use-delete-mode";
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 import DeleteModal from "@/ui/modal/delete-modal";
 
-const Material = () => {
+interface MaterialProps {
+  setIsMaterialDetailOpen: (v: boolean) => void;
+}
+
+const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
   const {
     isDeleteMode,
     isDeleteModalOpen,
     toggleDeleteMode,
     closeDeleteModal,
   } = useDeleteMode();
-  const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false);
 
   return (
     <>
@@ -77,14 +77,6 @@ const Material = () => {
         />
       </div>
 
-      {isMaterialDetailOpen && (
-        <Panel
-          title="원자재 재고관리"
-          onClose={() => setIsMaterialDetailOpen(false)}
-        >
-          <MaterialDetail />
-        </Panel>
-      )}
       {isDeleteModalOpen && <DeleteModal onClose={closeDeleteModal} />}
     </>
   );

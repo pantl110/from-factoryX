@@ -20,16 +20,9 @@ const TableHeader = ({ isDeleteMode }: TableHeaderProps) => {
       <p className="w-[80px] px-3 text-sv">단위</p>
       <div className="px-3 flex-1 flex items-center gap-1">
         <p className="text-sv">현재 재고</p>
-        <CaretUpDown size={11} className="text-sv" />
+        <CaretUpDown size={21} className="text-sv" />
       </div>
-      <div className="px-3 w-[100px] flex items-center gap-1">
-        <p className="text-sv">상태</p>
-        {/* <CaretUpDown size={11} className="text-sv" /> */}
-      </div>
-      <div className="px-3 flex-1 flex items-center gap-1">
-        <p className="text-sv">입고일자</p>
-        <CaretUpDown size={11} className="text-sv" />
-      </div>
+      <p className="w-[150px] text-sv px-3">자재 상태</p>
     </div>
   );
 };
