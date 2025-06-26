@@ -1,8 +1,8 @@
 export interface MaterialDataModel {
-  id: number;
+  id: number | null;
   materialName: string;
   size: string;
-  usageQuantity: number;
+  usageQuantity: number | null;
 }
 
 export const materialData: MaterialDataModel[] = [
