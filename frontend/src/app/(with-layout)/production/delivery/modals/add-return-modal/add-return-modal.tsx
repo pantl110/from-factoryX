@@ -5,11 +5,10 @@ import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal/modal";
 import SearchInput from "@/ui/search-input";
 import { useState } from "react";
-import {
-  ProductItemModel,
-  ProductNameDropdown,
-  productNameDropdownItems,
-} from "./product-name-dropdown";
+
+import { ProductNameDropdown } from "@/ui/dropdown/product-name-dropdown";
+import { ProductDataModel } from "@/types/data-model";
+import { productData } from "@/mocks/product-data";
 
 interface AddReturnModalProps {
   onClose: () => void;
@@ -21,13 +20,11 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
   const [isProductNameDropdownOpen, setIsProductNameDropdownOpen] =
     useState(false);
   const [_selectedProductName, setSelectedProductName] =
-    useState<ProductItemModel | null>(null);
+    useState<ProductDataModel | null>(null);
 
   // 입력값과 처음부터 일치하는 항목만 필터링
   const matchedItems = productName
-    ? productNameDropdownItems.filter((item) =>
-        item.name.startsWith(productName),
-      )
+    ? productData.filter((item) => item.productName.startsWith(productName))
     : [];
 
   // 오늘 날짜를 YYYY-MM-DD로 반환하는 함수
@@ -40,10 +37,10 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
   };
 
   // 드롭다운에서 선택 시 두 상태를 각각 업데이트
-  const handleSelectProduct = (item: ProductItemModel) => {
+  const handleSelectProduct = (item: ProductDataModel) => {
     setSelectedProductName(item);
-    setProductName(item.name);
-    setReturnQuantity(item.return_quantity.toString());
+    setProductName(item.productName);
+    setReturnQuantity(item.returnQuantity?.toString() || "");
     setIsProductNameDropdownOpen(false);
   };
 
@@ -68,8 +65,9 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
         {isProductNameDropdownOpen && matchedItems.length > 0 && (
           <div className="absolute left-0 top-2.5 w-full z-10">
             <ProductNameDropdown
-              items={matchedItems}
+              items={matchedItems as ProductDataModel[]}
               onSelect={handleSelectProduct}
+              width="w-[586px]"
             />
           </div>
         )}

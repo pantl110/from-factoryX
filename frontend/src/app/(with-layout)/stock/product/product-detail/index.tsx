@@ -6,7 +6,7 @@ import MiniBtn from "@/ui/mini-btn";
 import StockStatus from "./stock-status";
 import ProductStockLog from "./product-stock-log";
 import Panel from "@/ui/panel";
-import { ProductDataModel } from "@/mocks/product-data";
+import { ProductDataModel } from "@/types/data-model";
 import NoHistoryBox from "../no-history-box";
 import ConnectMaterialModal from "../modals/connect-material-modal";
 
@@ -48,7 +48,9 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
           <ProductInfo
             product={formData}
             isEditable={isCreateMode} // 생성모드일 때만 수정 가능
-            onClick={() => setFormData(EMPTY_PRODUCT)} // lint오류 해결 위한 임시
+            onValueChange={(value) =>
+              setFormData((prev: ProductDataModel) => ({ ...prev, ...value }))
+            }
           />
         </div>
 

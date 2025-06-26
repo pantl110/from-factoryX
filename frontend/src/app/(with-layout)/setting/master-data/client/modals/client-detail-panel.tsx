@@ -13,8 +13,9 @@ const ClientDetailPanel = ({ onClose, client }: ClientDetailPanelProps) => {
   const clientTypeColor = ClientTypeColorMap[client.type];
   return (
     <Panel title="거래처" onClose={onClose}>
-      <div className="flex flex-col gap-3 border-b border-lg">
+      <div className="flex flex-col gap-3">
         <h3 className="Heading-3">거래처 정보</h3>
+
         <div>
           <div className="flex">
             <InfoLabelValue label="거래처명" value={client.companyName} />
@@ -54,7 +55,7 @@ const ClientDetailPanel = ({ onClose, client }: ClientDetailPanelProps) => {
               }
             />
           </div>
-          <div className="flex">
+          <div className="flex border-b border-lg">
             <InfoLabelValue label="비고" value="" />
           </div>
         </div>

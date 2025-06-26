@@ -1,4 +1,5 @@
 import Chip from "./chip";
+import React, { ChangeEvent, ReactNode } from "react";
 import {
   InventoryStatusType,
   InventoryStatusColorMap,
@@ -9,7 +10,6 @@ import {
   FacilityStatusType,
   FacilityStatusColorMap,
 } from "@/app/(with-layout)/setting/master-data/facility/types";
-import { ReactNode, ChangeEvent } from "react";
 
 interface InfoLabelValueProps {
   label: string;
@@ -19,7 +19,9 @@ interface InfoLabelValueProps {
   };
   isEditing?: boolean;
   placeholder?: string;
-  onValueChange?: (value: string) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 const InfoLabelValue = ({
@@ -28,7 +30,9 @@ const InfoLabelValue = ({
   chip,
   isEditing = false,
   placeholder,
-  onValueChange,
+  onChange,
+  onFocus,
+  onBlur,
 }: InfoLabelValueProps) => {
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
@@ -45,10 +49,11 @@ const InfoLabelValue = ({
         <input
           defaultValue={typeof value === "string" ? value : ""}
           placeholder={placeholder}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            onValueChange?.(e.target.value)
-          }
+          onChange={onChange}
           className="w-full"
+          style={{ outline: "none" }}
+          onFocus={onFocus}
+          onBlur={onBlur}
         />
       );
     }
