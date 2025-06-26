@@ -52,8 +52,10 @@ const General = () => {
             />
           </div>
         </div>
+
+        {/* 회사정보  */}
         <div className="flex flex-col py-8 gap-4 border-b border-b-[#eeeeee]">
-          <h3 className="Heading-3">회사정보</h3>
+          <h3 className="Heading-3">회사 정보</h3>
           <div className="flex flex-col gap-4">
             <div className="flex gap-2">
               <Input placeholder="" label="회사명" required />
@@ -62,10 +64,6 @@ const General = () => {
             <div className="flex gap-2">
               <Input placeholder="" label="대표자명" required />
               <Input placeholder="" label="담당자 이메일" required />
-            </div>
-            <div className="flex gap-2">
-              <Input placeholder="" label="담당자 연락처" />
-              <Input placeholder="" label="담당자 팩스" />
             </div>
             <div className="flex gap-2">
               <Input placeholder="" label="담당자 연락처" />

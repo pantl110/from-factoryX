@@ -1,6 +1,7 @@
 import { usePathname } from "next/navigation";
 import { CaretRight } from "@phosphor-icons/react";
 import { projectData } from "@/mocks/project-data";
+import { SelectedTabType, SelectedChipType } from "./types";
 
 const crumbNameMap: Record<string, string> = {
   dashboard: "대시보드",
@@ -18,9 +19,15 @@ const crumbNameMap: Record<string, string> = {
 
 interface TopBarCrumbProps {
   pageStatus: string;
+  selectedTab?: SelectedTabType;
+  selectedChip?: SelectedChipType;
 }
 
-const TopBarCrumb = ({ pageStatus }: TopBarCrumbProps) => {
+const TopBarCrumb = ({
+  pageStatus,
+  selectedTab,
+  selectedChip,
+}: TopBarCrumbProps) => {
   const pathname = usePathname();
   const crumbs = pathname.split("/").filter(Boolean);
 
@@ -41,6 +48,33 @@ const TopBarCrumb = ({ pageStatus }: TopBarCrumbProps) => {
       finalCrumbs = ["project", "process"];
     }
     if (companyName) finalCrumbs.push(companyName);
+  }
+
+  // 설정 페이지인 경우 탭과 칩 상태 추가
+  if (crumbs[0] === "setting") {
+    if (selectedTab === "system") {
+      finalCrumbs = ["setting", "시스템 설정"];
+      if (
+        selectedChip &&
+        ["general", "permission", "subscription"].includes(selectedChip)
+      ) {
+        const chipNameMap: Record<string, string> = {
+          general: "일반",
+          permission: "권한 설정",
+          subscription: "구독 관리",
+        };
+        finalCrumbs.push(chipNameMap[selectedChip]);
+      }
+    } else if (selectedTab === "master") {
+      finalCrumbs = ["setting", "마스터 데이터 관리"];
+      if (selectedChip && ["equipment", "client"].includes(selectedChip)) {
+        const chipNameMap: Record<string, string> = {
+          equipment: "설비 관리",
+          client: "거래처 정보",
+        };
+        finalCrumbs.push(chipNameMap[selectedChip]);
+      }
+    }
   }
 
   return (

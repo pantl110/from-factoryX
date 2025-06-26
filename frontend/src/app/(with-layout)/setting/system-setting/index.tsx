@@ -1,13 +1,23 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import usePageStatusStore from "@/store/page-status-store";
 import Chip from "@/ui/chip";
 import General from "./general";
 import Permission from "./permission";
 import Subscription from "./subscription";
 
 const SystemSetting = () => {
-  const [selectedChip, setSelectedChip] = useState<
-    "general" | "permission" | "subscription"
-  >("general");
+  const { selectedChip, setSelectedChip } = usePageStatusStore();
+
+  useEffect(() => {
+    if (
+      !selectedChip ||
+      (selectedChip !== "general" &&
+        selectedChip !== "permission" &&
+        selectedChip !== "subscription")
+    ) {
+      setSelectedChip("general"); // 초기 칩을 일반으로 설정
+    }
+  }, [selectedChip, setSelectedChip]);
 
   const renderContent = () => {
     switch (selectedChip) {

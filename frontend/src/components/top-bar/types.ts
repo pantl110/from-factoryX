@@ -13,3 +13,12 @@ export interface NotificationModel {
   message: string;
   date: string;
 }
+
+// top-bar crumb 타입
+export type SelectedTabType = "system" | "master";
+export type SelectedChipType =
+  | "general"
+  | "permission"
+  | "subscription"
+  | "equipment"
+  | "client";

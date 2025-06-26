@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import usePageStatusStore from "@/store/page-status-store";
 import Chip from "@/ui/chip";
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
@@ -7,10 +8,18 @@ import Client from "./client";
 import DeleteModal from "./facility/delete-modal";
 
 const MasterData = () => {
-  const [selectedChip, setSelectedChip] = useState<"equipment" | "client">(
-    "equipment",
-  );
+  const { selectedChip, setSelectedChip } = usePageStatusStore();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (
+      !selectedChip ||
+      (selectedChip !== "equipment" && selectedChip !== "client")
+    ) {
+      setSelectedChip("equipment"); // 설비관리 칩을 기본으로 설정
+    }
+  }, [selectedChip, setSelectedChip]);
+
   const handleDelete = () => {
     // 실제 삭제버튼 누를 시 동작
     setIsDeleteModalOpen(false);

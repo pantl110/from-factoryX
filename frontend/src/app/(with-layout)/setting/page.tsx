@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
+import usePageStatusStore from "@/store/page-status-store";
 import SystemSetting from "./system-setting";
 import MasterData from "./master-data";
 
 const SettingPage = () => {
-  const [selectedTab, setSelectedTab] = useState<"system" | "master">("system");
+  const { selectedTab, setSelectedTab } = usePageStatusStore();
+
+  useEffect(() => {
+    if (!selectedTab) {
+      setSelectedTab("system"); // 초기 탭을 시스템 설정으로 설정
+    }
+  }, [selectedTab, setSelectedTab]);
 
   return (
     <div className="max-w-[1400px] min-w-[1200px]">

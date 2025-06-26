@@ -1,12 +1,15 @@
 "use client";
 
 import { create } from "zustand";
+import { SelectedTabType, SelectedChipType } from "@/components/top-bar/types";
 
 export interface PageStatusModel {
   pageStatus: string | null;
   setPageStatus: (status: string | null) => void;
-  selectedTab: string | null;
-  setSelectedTab: (tab: string | null) => void;
+  selectedTab: SelectedTabType | null;
+  setSelectedTab: (tab: SelectedTabType | null) => void;
+  selectedChip: SelectedChipType | null;
+  setSelectedChip: (chip: SelectedChipType | null) => void;
 
   // production의 "생산 대기" 상태의 "생산 계획" 탭에서 <저장> 버튼 클릭 시 모달 오픈
   isProductionPlanSaveModalOpen: boolean;
@@ -26,6 +29,8 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   setPageStatus: (status) => set({ pageStatus: status }),
   selectedTab: null,
   setSelectedTab: (tab) => set({ selectedTab: tab }),
+  selectedChip: null,
+  setSelectedChip: (chip) => set({ selectedChip: chip }),
   isProductionPlanSaveModalOpen: false,
   setProductionPlanSaveModalOpen: (open) =>
     set({ isProductionPlanSaveModalOpen: open }),
