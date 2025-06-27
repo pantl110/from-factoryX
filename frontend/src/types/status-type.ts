@@ -113,6 +113,22 @@ export const InventoryStatusColorMap: Record<
   부족: { textColor: "text-red", bgColor: "bg-red-8" },
 };
 
+// 납품 상태
+export type DeliveryStatusType = "예정" | "완료";
+export const DeliveryStatusColorMap: Record<
+  DeliveryStatusType,
+  StatusColorModel
+> = {
+  예정: {
+    textColor: "text-bl",
+    bgColor: "bg-bg",
+  },
+  완료: {
+    textColor: "text-primary",
+    bgColor: "bg-primary-8",
+  },
+};
+
 // 세금계산서 종류
 export type TaxDocumentType = "매출" | "매입";
 export const TaxDocumentTypeColorMap: Record<

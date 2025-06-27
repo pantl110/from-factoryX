@@ -5,43 +5,58 @@ import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal/modal";
 import SearchInput from "@/ui/search-input";
 import { useState } from "react";
-
 import { ProductNameDropdown } from "@/ui/dropdown/product-name-dropdown";
 import { ProductDataModel } from "@/types/data-model";
 import { productData } from "@/mocks/product-data";
+import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
+import { useInput } from "@/hooks/use-input";
+import { getToday } from "@/hooks/get-today";
 
 interface AddReturnModalProps {
   onClose: () => void;
 }
 
 const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
-  const [productName, setProductName] = useState("");
-  const [returnQuantity, setReturnQuantity] = useState("");
-  const [isProductNameDropdownOpen, setIsProductNameDropdownOpen] =
-    useState(false);
+  const {
+    input: productName,
+    isOpen: isProductNameDropdownOpen,
+    setIsOpen: setIsProductNameDropdownOpen,
+    filtered: matchedItems,
+    handleInputChange,
+    handleSelect,
+  } = useDropdownFilter(productData, (item) => item.productName);
+
+  // input 검사 훅
+  const {
+    value: returnQuantity,
+    error: returnQuantityError,
+    handleChange: handleReturnQuantityChange,
+  } = useInput({
+    validate: (v) => (!v ? "반품 수량을 입력해 주세요." : ""),
+    initialValue: "",
+  });
+
+  // 날짜 입력 useInput 적용
+  const {
+    value: returnDate,
+    error: returnDateError,
+    handleChange: handleReturnDateChange,
+  } = useInput({
+    validate: (v) => (!v ? "반품 일자를 입력해 주세요." : ""),
+    initialValue: getToday(),
+  });
+
   const [_selectedProductName, setSelectedProductName] =
     useState<ProductDataModel | null>(null);
 
-  // 입력값과 처음부터 일치하는 항목만 필터링
-  const matchedItems = productName
-    ? productData.filter((item) => item.productName.startsWith(productName))
-    : [];
-
-  // 오늘 날짜를 YYYY-MM-DD로 반환하는 함수
-  const getToday = () => {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  };
+  const [showSearchIcon, setShowSearchIcon] = useState(true);
 
   // 드롭다운에서 선택 시 두 상태를 각각 업데이트
   const handleSelectProduct = (item: ProductDataModel) => {
     setSelectedProductName(item);
-    setProductName(item.productName);
-    setReturnQuantity(item.returnQuantity?.toString() || "");
-    setIsProductNameDropdownOpen(false);
+    handleSelect(item);
+    handleReturnQuantityChange(item.returnQuantity?.toString() || "");
+    setShowSearchIcon(false);
   };
 
   return (
@@ -56,14 +71,22 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
           placeholder="품목명 검색"
           width="w-full"
           value={productName}
-          onChange={setProductName}
-          onFocus={() => setIsProductNameDropdownOpen(true)}
+          onChange={(value) =>
+            handleInputChange({
+              target: { value },
+            } as React.ChangeEvent<HTMLInputElement>)
+          }
+          onFocus={() => {
+            setIsProductNameDropdownOpen(true);
+            setShowSearchIcon(true);
+          }}
           onBlur={() =>
             setTimeout(() => setIsProductNameDropdownOpen(false), 100)
           }
+          showIcon={showSearchIcon}
         />
         {isProductNameDropdownOpen && matchedItems.length > 0 && (
-          <div className="absolute left-0 top-2.5 w-full z-10">
+          <div className="absolute left-0 top-[calc(100%+8px)] z-10">
             <ProductNameDropdown
               items={matchedItems as ProductDataModel[]}
               onSelect={handleSelectProduct}
@@ -78,7 +101,9 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
           placeholder="반품할 수량을 입력해 주세요."
           required
           value={returnQuantity}
-          onChange={setReturnQuantity}
+          onChange={handleReturnQuantityChange}
+          showError={!!returnQuantityError}
+          type="number"
         />
       </div>
       <div className="w-full mt-4">
@@ -86,7 +111,10 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
           label="반품 일자"
           placeholder="반품할 일자를 입력해 주세요."
           required
-          value={getToday()}
+          value={returnDate}
+          onChange={handleReturnDateChange}
+          showError={!!returnDateError}
+          type="date"
         />
       </div>
       <div className="flex gap-2.5 mt-4 justify-end">

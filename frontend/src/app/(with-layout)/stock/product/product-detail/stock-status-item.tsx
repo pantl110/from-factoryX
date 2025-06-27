@@ -3,8 +3,6 @@ import {
   InventoryStatusType,
   InventoryStatusColorMap,
 } from "@/types/status-type";
-import { useState } from "react";
-import MaterialStockStatusModal from "../modals/material-stock-status-modal";
 
 interface StockStatusItemProps {
   materialName: string;

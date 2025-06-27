@@ -9,6 +9,7 @@ import CreateTaxOverlayview from "./modals/create-tax-overlayview";
 import usePageStatusStore from "@/store/page-status-store";
 import MoveToStorageModal from "./modals/move-to-storage-modal";
 import { deliveryData } from "@/mocks/delivery-data";
+import AddReturnModal from "./modals/add-return-modal/add-return-modal";
 
 const Delivery = () => {
   const [isPrintAllDeliveryModalOpen, setIsPrintAllDeliveryModalOpen] =
@@ -26,6 +27,12 @@ const Delivery = () => {
   );
   const setMoveToStorageModalOpen = usePageStatusStore(
     (state) => state.setMoveToStorageModalOpen,
+  );
+  const isAddReturnModalOpen = usePageStatusStore(
+    (state) => state.isAddReturnModalOpen,
+  );
+  const setAddReturnModalOpen = usePageStatusStore(
+    (state) => state.setAddReturnModalOpen,
   );
 
   return (
@@ -87,6 +94,9 @@ const Delivery = () => {
       )}
       {isMoveToStorageModalOpen && (
         <MoveToStorageModal onClose={() => setMoveToStorageModalOpen(false)} />
+      )}
+      {isAddReturnModalOpen && (
+        <AddReturnModal onClose={() => setAddReturnModalOpen(false)} />
       )}
 
       {/* overlayview */}
