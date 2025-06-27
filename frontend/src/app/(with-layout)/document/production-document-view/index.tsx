@@ -26,9 +26,9 @@ const ProductionDocumentView = () => {
               productName={item.productName}
               standard={item.standard}
               unit={item.unit}
-              quantity={item.quantity}
-              machine={item.machine}
-              productionTime={item.productionTime}
+              productionQuantity={item.productionQuantity || 0}
+              machine={item.machine || "-"}
+              productionTime={item.productionTime || "-"}
             />
           ))}
         </div>

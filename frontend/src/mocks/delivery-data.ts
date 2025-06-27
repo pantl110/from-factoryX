@@ -12,6 +12,7 @@ export const deliveryData: DeliveryDataModel[] = [
     totalPrice: 1000000,
     date: "2025-05-06",
     companyName: "플라스틱이 좋아",
+    deliveryStatus: "예정",
   },
   {
     id: 2,
@@ -24,6 +25,7 @@ export const deliveryData: DeliveryDataModel[] = [
     totalPrice: 1200000,
     date: "2025-05-07",
     companyName: "플라스틱이 좋아",
+    deliveryStatus: "예정",
   },
   {
     id: 3,
@@ -36,6 +38,7 @@ export const deliveryData: DeliveryDataModel[] = [
     totalPrice: 1200000,
     date: "2025-05-07",
     companyName: "플라스틱이 좋아",
+    deliveryStatus: "예정",
   },
   {
     id: 4,
@@ -48,5 +51,6 @@ export const deliveryData: DeliveryDataModel[] = [
     totalPrice: 1200000,
     date: "2025-05-07",
     companyName: "플라스틱이 좋아",
+    deliveryStatus: "완료",
   },
 ];

@@ -1,27 +1,45 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import usePageStatusStore from "@/store/page-status-store";
+import { SettingChipType } from "@/components/top-bar/types";
 import Chip from "@/ui/chip";
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 import Facility from "./facility";
 import Client from "./client";
-import DeleteModal from "./facility/delete-modal";
+import { useDeleteMode } from "@/hooks/use-delete-mode";
+import DeleteModal from "@/ui/modal/delete-modal";
 
 const MasterData = () => {
-  const [selectedChip, setSelectedChip] = useState<"equipment" | "client">(
-    "equipment",
-  );
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const handleDelete = () => {
-    // 실제 삭제버튼 누를 시 동작
-    setIsDeleteModalOpen(false);
-  };
+  const { settingChip, setSettingChip } = usePageStatusStore();
+  const equipmentDelete = useDeleteMode();
+  const clientDelete = useDeleteMode();
+
+  useEffect(() => {
+    if (
+      !settingChip ||
+      (settingChip !== "equipment" && settingChip !== "client")
+    ) {
+      setSettingChip("equipment" as SettingChipType); // 설비관리 칩을 기본으로 설정
+    }
+  }, [settingChip, setSettingChip]);
+
+  const isEquipmentTab = settingChip === "equipment";
+  const deleteMode = isEquipmentTab ? equipmentDelete : clientDelete;
+
+  const handleEquipmentChipClick = () =>
+    setSettingChip("equipment" as SettingChipType);
+  const handleClientChipClick = () =>
+    setSettingChip("client" as SettingChipType);
+
+  const handleDeleteBtnClick = () => deleteMode.toggleDeleteMode();
+  const handleDeleteModalClose = () => deleteMode.closeDeleteModal();
 
   const renderContent = () => {
-    switch (selectedChip) {
+    switch (settingChip) {
       case "equipment":
-        return <Facility />;
+        return <Facility isDeleteMode={equipmentDelete.isDeleteMode} />;
       case "client":
-        return <Client />;
+        return <Client isDeleteMode={clientDelete.isDeleteMode} />;
       default:
         return null;
     }
@@ -32,49 +50,40 @@ const MasterData = () => {
       <div className="flex gap-1 px-10 pb-5">
         <Chip
           text="설비 관리"
-          textColor={selectedChip === "equipment" ? "text-bg" : "text-dg"}
-          bgColor={selectedChip === "equipment" ? "bg-dg" : "bg-transparent"}
+          textColor={settingChip === "equipment" ? "text-bg" : "text-dg"}
+          bgColor={settingChip === "equipment" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSelectedChip("equipment")}
+          onClick={handleEquipmentChipClick}
         />
         <Chip
           text="거래처 정보"
-          textColor={selectedChip === "client" ? "text-bg" : "text-dg"}
-          bgColor={selectedChip === "client" ? "bg-dg" : "bg-transparent"}
+          textColor={settingChip === "client" ? "text-bg" : "text-dg"}
+          bgColor={settingChip === "client" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSelectedChip("client")}
+          onClick={handleClientChipClick}
         />
       </div>
       <div className="flex items-center justify-between px-10 pb-4">
         <SearchInput />
-        <div className="flex gap-1">
-          <MiniBtn
-            text="추가"
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
-          />
-          <MiniBtn
-            text="삭제"
-            textColor="text-dg"
-            borderColor="border-lg"
-            onClick={() => setIsDeleteModalOpen(true)}
-            hoverColor="hover:bg-bg"
-          />
-        </div>
+
+        <MiniBtn
+          text="삭제"
+          textColor={deleteMode.isDeleteMode ? "text-red" : "text-dg"}
+          borderColor={deleteMode.isDeleteMode ? "border-none" : "border-lg"}
+          bgColor={deleteMode.isDeleteMode ? "bg-red-8" : "bg-wh"}
+          onClick={handleDeleteBtnClick}
+          hoverColor={
+            deleteMode.isDeleteMode ? "hover:bg-red-hover" : "hover:bg-bg"
+          }
+        />
       </div>
       {renderContent()}
-
-      {/* 삭제 모달 */}
-      {isDeleteModalOpen && (
-        <DeleteModal
-          onClose={() => setIsDeleteModalOpen(false)}
-          onDelete={handleDelete}
-        />
+      {deleteMode.isDeleteModalOpen && (
+        <DeleteModal onClose={handleDeleteModalClose} />
       )}
     </div>
   );

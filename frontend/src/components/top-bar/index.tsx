@@ -11,7 +11,11 @@ const TopBar = () => {
   const pageStatus = usePageStatusStore(
     (state: PageStatusModel) => state.pageStatus,
   );
-  const selectedTab = usePageStatusStore((state) => state.selectedTab);
+
+  const productionTab = usePageStatusStore((state) => state.productionTab);
+  const stockTab = usePageStatusStore((state) => state.stockTab);
+  const settingTab = usePageStatusStore((state) => state.settingTab);
+  const settingChip = usePageStatusStore((state) => state.settingChip);
   const setProductionPlanSaveModalOpen = usePageStatusStore(
     (state) => state.setProductionPlanSaveModalOpen,
   );
@@ -27,11 +31,17 @@ const TopBar = () => {
   return (
     <>
       <header className="flex items-center justify-between w-full h-[60px] px-10">
-        <TopBarCrumb pageStatus={pageStatus || ""} />
+        <TopBarCrumb
+          pageStatus={pageStatus || ""}
+          productionTab={productionTab || undefined}
+          stockTab={stockTab || undefined}
+          settingTab={settingTab || undefined}
+          settingChip={settingChip || undefined}
+        />
 
         <TopBarContent
-          selectedTab={selectedTab}
           pageStatus={pageStatus}
+          productionTab={productionTab}
           onProductionPlanSaveClick={() => setProductionPlanSaveModalOpen(true)}
           onAddReturnClick={() => setAddReturnModalOpen(true)}
           onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
@@ -39,6 +49,7 @@ const TopBar = () => {
           onProfileClick={() => setIsProfileModalOpen(true)}
         />
       </header>
+
       {isNotificationModalOpen && (
         <NotificationModal onClose={() => setIsNotificationModalOpen(false)} />
       )}

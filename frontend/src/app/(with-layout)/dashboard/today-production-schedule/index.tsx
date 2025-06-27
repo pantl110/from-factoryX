@@ -28,6 +28,15 @@ const TodayProductionSchedule = () => {
         <div className="mt-3 overflow-x-auto">
           <ProductionTable />
         </div>
+        <div className="mt-2">
+          <MiniBtn
+            text="5개씩 더보기"
+            textColor="text-dg"
+            hoverColor="hover:bg-bg"
+            borderColor="border-lg"
+            width="w-full"
+          />
+        </div>
       </div>
 
       {/* overlay */}
@@ -41,7 +50,7 @@ const TodayProductionSchedule = () => {
             <div className="flex justify-between h-13 border-b border-lg">
               <h3 className="Heading-3">생산지시서</h3>
               <button
-                className="w-10 h-10 flex justify-center items-center cursor-pointer"
+                className="w-10 h-10 flex justify-center items-center cursor-pointer hover:bg-bg rounded-[8px] transition-colors ease-in-out duration-200"
                 onClick={() => setIsPrintOverlayOpen(false)}
               >
                 <X size={20} />
@@ -59,7 +68,7 @@ const TodayProductionSchedule = () => {
                 text="생산지시서 출력하기"
                 textColor="text-wh"
                 bgColor="bg-primary"
-                hoverColor="bg-primary-hover"
+                hoverColor="hover:bg-primary-hover"
                 icon={PrinterIcon}
                 iconColor="text-wh"
                 borderColor="border-primary-hover"

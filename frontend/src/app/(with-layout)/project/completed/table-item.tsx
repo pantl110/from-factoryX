@@ -33,7 +33,7 @@ const TableItem = ({
 
   return (
     <div
-      className="flex items-center h-14 w-full min-w-[1146px] border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-gray-50"
+      className="flex items-center h-14 w-full min-w-[1146px] border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
       role="button"
       tabIndex={0}
       onClick={handleClick}

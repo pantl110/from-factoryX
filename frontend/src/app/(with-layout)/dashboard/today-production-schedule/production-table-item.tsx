@@ -28,7 +28,7 @@ const ProductionTableItem = ({
   const colors = ProductionStatusColorMap[status];
 
   return (
-    <div className="flex w-[1324px] h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
+    <div className="flex min-w-[1324px] h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
       <div className="flex items-center py-1 px-3 w-[150px]">
         <Chip
           text={status}

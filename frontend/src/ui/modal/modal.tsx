@@ -34,7 +34,7 @@ const Modal = ({
   return (
     <div
       role="presentation"
-      className="bg-black/50 w-full h-full fixed top-0 left-0 z-50 flex justify-center items-center"
+      className="bg-black/50 w-full h-full fixed top-0 left-0 flex justify-center items-center z-50"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === "Escape") onClose?.();
@@ -50,10 +50,10 @@ const Modal = ({
             {button}
           </div>
           <button
-            className={`${sm ? "w-9 h-9" : "w-10 h-10"} flex justify-center items-center cursor-pointer`}
+            className={`${sm ? "w-9 h-9" : "w-10 h-10"} flex justify-center items-center cursor-pointer rounded-lg transition-colors duration-200 hover:bg-bg`}
             onClick={onClose}
           >
-            <X size={sm ? 16 : 20} />
+            <X size={16} />
           </button>
         </div>
         <div className={`mt-1 ${sm ? "Re_Body-2" : "Me_Body-2"} text-gr`}>

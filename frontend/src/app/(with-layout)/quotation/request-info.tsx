@@ -5,9 +5,13 @@ import { ProductProps } from "./types";
 
 interface RequestInfoProps {
   onProductClick: (product: ProductProps) => void;
+  setIsProductEnrollmentModalOpen: (isOpen: boolean) => void;
 }
 
-const RequestInfo = ({ onProductClick }: RequestInfoProps) => {
+const RequestInfo = ({
+  onProductClick,
+  setIsProductEnrollmentModalOpen,
+}: RequestInfoProps) => {
   return (
     <>
       <div className="flex justify-between items-center">
@@ -18,11 +22,12 @@ const RequestInfo = ({ onProductClick }: RequestInfoProps) => {
           borderColor="border-lg"
           iconColor="text-sv"
           hoverColor="hover:bg-bg"
+          onClick={() => setIsProductEnrollmentModalOpen(true)}
         />
       </div>
 
-      <div className="w-full overflow-x-auto">
-        <div className="w-[938px]">
+      <div className="w-full overflow-x-auto mb-30 ">
+        <div className="min-w-[938px]">
           <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
             <p className=" py-1 px-3 flex-1">품목명</p>
             <p className=" py-1 px-3 flex-1">품목 코드</p>

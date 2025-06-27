@@ -18,6 +18,9 @@ import PrintView from "./modals/print-view";
 import { ProductProps } from "./types";
 import StartProductionModal from "./modals/start-production-modal";
 import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
+import ProductEnrollmentModal from "./modals/product-enrollment-modal";
+import { useForm } from "@/hooks/use-form";
 
 const QuotationPage = () => {
   // 탭 상태
@@ -35,9 +38,38 @@ const QuotationPage = () => {
   const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
-  // 드랍다운 상태
-  const [isQuotationStatusDropdownOpen, setIsQuotationStatusDropdownOpen] =
+  const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
+  // 드랍다운 상태
+  const {
+    isOpen: isQuotationStatusDropdownOpen,
+    openDropdown: openQuotationStatusDropdown,
+    closeDropdown: closeQuotationStatusDropdown,
+    anchorRect: quotationStatusAnchorRect,
+  } = usePortalDropdown();
+
+  const initialData = {
+    companyName: "",
+    businessNumber: "",
+    ceoName: "",
+    dueDate: "",
+    companyAddress: "",
+    deliveryAddress: "",
+    managerName: "",
+    managerEmail: "",
+    managerPhone: "",
+    managerFax: "",
+  };
+  const validationRules = {
+    companyName: (v: string) => !!v,
+    businessNumber: (v: string) => !!v,
+    ceoName: (v: string) => !!v,
+    dueDate: (v: string) => !!v,
+    companyAddress: (v: string) => !!v,
+    managerName: (v: string) => !!v,
+    managerEmail: (v: string) => !!v,
+  };
+  const form = useForm({ initialData, validationRules });
 
   const handleProductClick = (product: ProductProps) => {
     setSelectedProduct(product);
@@ -54,12 +86,7 @@ const QuotationPage = () => {
     <>
       <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
         <div className="flex gap-1 mb-4 pr-10">
-          <div
-            className="flex-1 gap-1 "
-            onClick={() => {
-              setIsQuotationStatusDropdownOpen(true);
-            }}
-          >
+          <div className="flex-1 gap-1 ">
             <div className="cursor-pointer relative">
               <Chip
                 text="견적 협의"
@@ -67,12 +94,21 @@ const QuotationPage = () => {
                 bgColor="bg-yellow-8"
                 textColor="text-yellow"
                 icon={<CaretDownIcon size={12} />}
+                onClick={(e) => {
+                  if (e) openQuotationStatusDropdown(e);
+                }}
               />
-
-              {isQuotationStatusDropdownOpen && (
-                <div className="absolute left-13 top-11 -translate-x-1/2">
+              {isQuotationStatusDropdownOpen && quotationStatusAnchorRect && (
+                <div
+                  style={{
+                    position: "fixed",
+                    left: quotationStatusAnchorRect.left,
+                    top: quotationStatusAnchorRect.bottom,
+                    zIndex: 10,
+                  }}
+                >
                   <QuotationStatusDropdown
-                    onClose={() => setIsQuotationStatusDropdownOpen(false)}
+                    onClose={closeQuotationStatusDropdown}
                   />
                 </div>
               )}
@@ -82,7 +118,11 @@ const QuotationPage = () => {
           <ButtonSection
             onEmailClick={() => setIsEmailOpen(true)}
             onPrintClick={() => setIsPrintOpen(true)}
-            onStartProductionClick={() => setIsStartProductionModalOpen(true)}
+            onStartProductionClick={() => {
+              form.handleSubmit(() => {
+                setIsStartProductionModalOpen(true);
+              });
+            }}
           />
         </div>
 
@@ -124,8 +164,7 @@ const QuotationPage = () => {
 
           <div
             className={`         
-              ${isRightPanelExpanded ? "w-full" : "w-1/2"} overflow-y-auto
-            `}
+              ${isRightPanelExpanded ? "w-full" : "w-1/2"}`}
           >
             <div
               className={`flex flex-col flex-1 py-8 gap-11 pr-10
@@ -144,18 +183,29 @@ const QuotationPage = () => {
                 </button>
                 <h2 className="flex-1 Heading-2">견적서</h2>
               </div>
-              <div className="flex flex-col flex-1 gap-5">
-                <h3 className="Heading-3">회사 정보</h3>
-                <InputSection />
-              </div>
             </div>
 
-            <div
-              className={`flex flex-col gap-5 pb-8 pr-10 ${
-                isRightPanelExpanded ? "pl-0" : "pl-10"
-              }`}
-            >
-              <RequestInfo onProductClick={handleProductClick} />
+            <div className="overflow-y-auto scrollbar-hide h-full">
+              <div className="flex flex-col flex-1 gap-5 px-10 pb-11">
+                <h3 className="Heading-3">회사 정보</h3>
+                <InputSection
+                  form={{ ...form, handleChange: form.handleChange as any }}
+                  isShowErrors={form.isShowErrors}
+                />
+              </div>
+
+              <div
+                className={`flex flex-col gap-5 pb-8 pr-10 ${
+                  isRightPanelExpanded ? "pl-0" : "pl-10"
+                }`}
+              >
+                <RequestInfo
+                  onProductClick={handleProductClick}
+                  setIsProductEnrollmentModalOpen={
+                    setIsProductEnrollmentModalOpen
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -177,6 +227,13 @@ const QuotationPage = () => {
       {isStartProductionModalOpen && (
         <StartProductionModal
           onClose={() => setIsStartProductionModalOpen(false)}
+        />
+      )}
+
+      {/* 품목 등록 모달 */}
+      {isProductEnrollmentModalOpen && (
+        <ProductEnrollmentModal
+          onClose={() => setIsProductEnrollmentModalOpen(false)}
         />
       )}
     </>

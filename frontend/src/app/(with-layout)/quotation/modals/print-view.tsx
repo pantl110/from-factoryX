@@ -1,6 +1,6 @@
 import MiniBtn from "@/ui/mini-btn";
 import { PrinterIcon, X } from "@phosphor-icons/react/dist/ssr";
-import OrderDocumentView from "../../document/order-document-view";
+import QuotationDocumentView from "../../document/order-document-view/quotation-document-view";
 
 interface PrintViewProps {
   onClose?: () => void;
@@ -12,7 +12,7 @@ const PrintView = ({ onClose }: PrintViewProps) => {
       <div className="flex justify-between h-13 border-b border-lg">
         <h3 className="Heading-3">견적서</h3>
         <button
-          className="w-10 h-10 flex justify-center items-center cursor-pointer"
+          className="w-10 h-10 flex justify-center items-center cursor-pointer rounded-[8px] hover:bg-bg transition-colors duration-200 ease-in-out"
           onClick={onClose}
         >
           <X size={20} />
@@ -30,13 +30,12 @@ const PrintView = ({ onClose }: PrintViewProps) => {
           text="견적서 출력하기"
           textColor="text-wh"
           bgColor="bg-primary"
-          hoverColor="bg-primary-hover"
+          hoverColor="hover:bg-primary-hover"
           icon={PrinterIcon}
           iconColor="text-wh"
         />
       </div>
-
-      <OrderDocumentView />
+      <QuotationDocumentView />
     </div>
   );
 };

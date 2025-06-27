@@ -1,0 +1,33 @@
+import Chip from "@/ui/chip";
+import Dropdown from "@/ui/dropdown/dropdown";
+import DropdownItem from "@/ui/dropdown/dropdown-item";
+
+interface DeliveryStatusDropdownProps {
+  onClose: () => void;
+}
+const DeliveryStatusDropdown = ({ onClose }: DeliveryStatusDropdownProps) => {
+  return (
+    <Dropdown width="w-full" onClose={onClose}>
+      <DropdownItem>
+        <Chip
+          text="예정"
+          sm={true}
+          bgColor="bg-bg"
+          textColor="text-bl"
+          hover="hover:bg-bg-hover"
+        />
+      </DropdownItem>
+      <DropdownItem>
+        <Chip
+          text="완료"
+          sm={true}
+          textColor="text-primary"
+          bgColor="bg-primary-8"
+          hover="hover:bg-primary-hover"
+        />
+      </DropdownItem>
+    </Dropdown>
+  );
+};
+
+export default DeliveryStatusDropdown;

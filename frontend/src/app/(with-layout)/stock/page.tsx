@@ -1,16 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainTitleSec from "./main-title-sec";
 import Product from "./product/index";
 import Material from "./material/index";
 import { StockTabType } from "./types";
-import ExcelUploadModal from "./product/modals/excel-upload-modal";
+import ExcelUploadModal from "./modals/excel-upload-modal";
 import ClientInfoModal from "./material/modals/client-info-modal";
-import MaterialEnrollment from "./material/modals/material-enrollment";
+import usePageStatusStore from "@/store/page-status-store";
+import MaterialEnrollmentModal from "./material/modals/material-enrollment-modal";
+import Panel from "@/ui/panel";
+import MaterialDetail from "./material/material-detail";
+import CustomerInfoModal from "./material/modals/customer-info-modal";
+import ProductEnrollmentModal from "./material/modals/product-enrollment-modal";
 
 const StockPage = () => {
-  const [selectedTab, setSelectedTab] = useState<StockTabType>("product");
+  const stockTab =
+    (usePageStatusStore((state) => state.stockTab) as StockTabType) || null;
+  const setStockTab = usePageStatusStore((state) => state.setStockTab);
+
+  useEffect(() => {
+    if (!stockTab) setStockTab("product");
+  }, [stockTab, setStockTab]);
+
   const [isProductAddDropdownOpen, setIsProductAddDropdownOpen] =
     useState(false);
   const [isMaterialAddDropdownOpen, setIsMaterialAddDropdownOpen] =
@@ -18,11 +30,15 @@ const StockPage = () => {
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const [isClientInfoModalOpen, setIsClientInfoModalOpen] = useState(false);
-  const [isMaterialEnrollmentOpen, setIsMaterialEnrollmentOpen] =
+  const [isMaterialEnrollmentModalOpen, setIsMaterialEnrollmentModalOpen] =
+    useState(false);
+  const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false);
+  const [isCustomerInfoModalOpen, setIsCustomerInfoModalOpen] = useState(false);
+  const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
 
   const handleTabChange = (tab: StockTabType) => {
-    setSelectedTab(tab);
+    setStockTab(tab);
   };
   const handleOpenExcelModal = () => {
     setIsProductAddDropdownOpen(false);
@@ -38,14 +54,18 @@ const StockPage = () => {
   };
   const handleNextClientInfo = () => {
     setIsClientInfoModalOpen(false);
-    setIsMaterialEnrollmentOpen(true);
+    setIsMaterialEnrollmentModalOpen(true);
+  };
+  const handleMaterialRegister = () => {
+    setIsMaterialEnrollmentModalOpen(false);
+    setIsMaterialDetailOpen(true);
   };
 
   return (
     <>
       <div className="flex flex-col gap-8">
         <MainTitleSec
-          selectedTab={selectedTab}
+          selectedTab={stockTab}
           onTabChange={handleTabChange}
           onProductAddDropdownOpen={setIsProductAddDropdownOpen}
           isProductAddDropdownOpen={isProductAddDropdownOpen}
@@ -56,13 +76,13 @@ const StockPage = () => {
           onOpenClientInfoModal={handleOpenClientInfoModal}
         />
         <div className="px-8">
-          {selectedTab === "product" ? (
+          {stockTab === "product" ? (
             <Product
               isCreatePanelOpen={isCreatePanelOpen}
               setIsCreatePanelOpen={setIsCreatePanelOpen}
             />
           ) : (
-            <Material />
+            <Material setIsMaterialDetailOpen={setIsMaterialDetailOpen} />
           )}
         </div>
       </div>
@@ -76,9 +96,31 @@ const StockPage = () => {
           onNext={handleNextClientInfo}
         />
       )}
-      {isMaterialEnrollmentOpen && (
-        <MaterialEnrollment
-          onClose={() => setIsMaterialEnrollmentOpen(false)}
+      {isMaterialEnrollmentModalOpen && (
+        <MaterialEnrollmentModal
+          onClose={() => setIsMaterialEnrollmentModalOpen(false)}
+          onRegister={handleMaterialRegister}
+        />
+      )}
+      {isMaterialDetailOpen && (
+        <Panel
+          title="원자재 재고관리"
+          onClose={() => setIsMaterialDetailOpen(false)}
+        >
+          <MaterialDetail
+            setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen}
+            setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
+          />
+        </Panel>
+      )}
+      {/* MaterialDetail의 거래처 정보 상세보기 모달 */}
+      {isCustomerInfoModalOpen && (
+        <CustomerInfoModal onClose={() => setIsCustomerInfoModalOpen(false)} />
+      )}
+      {/* MaterialDetail의 추가하기 버튼 모달 */}
+      {isProductEnrollmentModalOpen && (
+        <ProductEnrollmentModal
+          onClose={() => setIsProductEnrollmentModalOpen(false)}
         />
       )}
     </>

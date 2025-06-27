@@ -13,7 +13,7 @@ const PlanItem = ({ type }: PlanItemProps) => {
       <div className="flex items-center justify-between">
         <h3 className="Heading-3">{info.title}</h3>
         <MiniBtn
-          text="구매하기"
+          text="구독하기"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"

@@ -71,7 +71,10 @@ const Subscription = () => {
         <div className="flex items-center justify-between h-18 py-4 px-6 border border-[#eeeeee] rounded-xl">
           <h4 className="Heading-4">Master 19**</h4>
           <div className="relative">
-            <button onClick={() => setIsCardDropdownOpen2((v) => !v)}>
+            <button
+              onClick={() => setIsCardDropdownOpen2((v) => !v)}
+              className="cursor-pointer"
+            >
               <DotsThreeVerticalIcon size={24} className="text-gr" />
             </button>
             {isCardDropdownOpen2 && (

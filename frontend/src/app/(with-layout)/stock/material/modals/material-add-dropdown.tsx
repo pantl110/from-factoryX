@@ -16,14 +16,14 @@ const MaterialAddDropdown = ({
   return (
     <Dropdown onClose={onClose}>
       <DropdownItem
-        text="엑셀로 한 번에 등록"
-        icon={<Upload />}
-        onClick={onOpenExcelModal}
-      />
-      <DropdownItem
         text="개별 자재 추가"
         icon={<Plus />}
         onClick={onOpenClientInfoModal}
+      />{" "}
+      <DropdownItem
+        text="엑셀로 한 번에 등록"
+        icon={<Upload />}
+        onClick={onOpenExcelModal}
       />
     </Dropdown>
   );
