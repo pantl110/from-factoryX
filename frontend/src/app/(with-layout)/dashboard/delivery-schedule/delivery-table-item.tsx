@@ -1,25 +1,32 @@
 "use client";
 
-import Chip from "@/ui/chip";
+import { ArrowSquareOut } from "@phosphor-icons/react/dist/ssr";
 
 interface DeliveryTableItemProps {
-  status: string;
+  projectName: string;
   productName: string;
   date: string;
 }
 
 const DeliveryTableItem = ({
-  status,
+  projectName,
   productName,
   date,
 }: DeliveryTableItemProps) => {
   return (
-    <div className="flex w-full h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <div className="flex items-center py-1 px-3 w-[150px]">
-        <Chip text={status} textColor="text-green" bgColor="bg-green-8" />
+    <div className="group flex w-full h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200">
+      <p className="px-3 w-[150px] truncate" title={projectName}>
+        {projectName}
+      </p>
+      <p className="px-3 flex-1 truncate" title={productName || ""}>
+        {productName}
+      </p>
+      <p className="px-3 flex-1 truncate" title={date || ""}>
+        {date}
+      </p>
+      <div className="w-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-200">
+        <ArrowSquareOut size={24} />
       </div>
-      <p className="py-1 px-3 flex-1">{productName}</p>
-      <p className="py-1 px-3 flex-1">{date}</p>
     </div>
   );
 };

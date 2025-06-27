@@ -70,7 +70,13 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
           width="w-[487px]"
           onClose={handleSuccessClose}
         >
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-end mt-4 gap-[5px]">
+            <MiniBtn
+              text="닫기"
+              textColor="text-sv"
+              onClick={handleSuccessClose}
+              hoverColor=""
+            />
             <MiniBtn
               text="확인"
               textColor="text-wh"

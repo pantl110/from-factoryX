@@ -15,6 +15,7 @@ interface MiniBtnProps {
   height?: string;
   disabled?: boolean;
   isDeleteMode?: boolean;
+  width?: string;
 }
 
 const MiniBtn = ({
@@ -29,13 +30,14 @@ const MiniBtn = ({
   onClick,
   height = "h-10",
   disabled = false,
+  width = "w-fit",
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
   const positionClass = iconPosition === "right" ? "flex-row-reverse" : "";
 
   return (
     <button
-      className={`px-4 rounded-md Me_Body-1 ${height} transition-all duration-200 ease-in-out ${
+      className={`px-4 rounded-md Me_Body-1 ${height} ${width} transition-all duration-200 ease-in-out ${
         disabled
           ? "bg-lg text-gr"
           : `${bgColor} ${textColor} ${hoverColor || ""}`

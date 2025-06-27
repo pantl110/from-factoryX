@@ -20,6 +20,7 @@ import StartProductionModal from "./modals/start-production-modal";
 import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import ProductEnrollmentModal from "./modals/product-enrollment-modal";
+import { useForm } from "@/hooks/use-form";
 
 const QuotationPage = () => {
   // 탭 상태
@@ -46,6 +47,29 @@ const QuotationPage = () => {
     closeDropdown: closeQuotationStatusDropdown,
     anchorRect: quotationStatusAnchorRect,
   } = usePortalDropdown();
+
+  const initialData = {
+    companyName: "",
+    businessNumber: "",
+    ceoName: "",
+    dueDate: "",
+    companyAddress: "",
+    deliveryAddress: "",
+    managerName: "",
+    managerEmail: "",
+    managerPhone: "",
+    managerFax: "",
+  };
+  const validationRules = {
+    companyName: (v: string) => !!v,
+    businessNumber: (v: string) => !!v,
+    ceoName: (v: string) => !!v,
+    dueDate: (v: string) => !!v,
+    companyAddress: (v: string) => !!v,
+    managerName: (v: string) => !!v,
+    managerEmail: (v: string) => !!v,
+  };
+  const form = useForm({ initialData, validationRules });
 
   const handleProductClick = (product: ProductProps) => {
     setSelectedProduct(product);
@@ -94,7 +118,11 @@ const QuotationPage = () => {
           <ButtonSection
             onEmailClick={() => setIsEmailOpen(true)}
             onPrintClick={() => setIsPrintOpen(true)}
-            onStartProductionClick={() => setIsStartProductionModalOpen(true)}
+            onStartProductionClick={() => {
+              form.handleSubmit(() => {
+                setIsStartProductionModalOpen(true);
+              });
+            }}
           />
         </div>
 
@@ -160,7 +188,10 @@ const QuotationPage = () => {
             <div className="overflow-y-auto scrollbar-hide h-full">
               <div className="flex flex-col flex-1 gap-5 px-10 pb-11">
                 <h3 className="Heading-3">회사 정보</h3>
-                <InputSection />
+                <InputSection
+                  form={{ ...form, handleChange: form.handleChange as any }}
+                  isShowErrors={form.isShowErrors}
+                />
               </div>
 
               <div

@@ -80,6 +80,7 @@ const MaterialInfo = () => {
           value={info.date ?? ""}
           isEditing={true}
           onChange={handleChange("date")}
+          inputType="date"
         />
       </div>
       <InfoLabelValue

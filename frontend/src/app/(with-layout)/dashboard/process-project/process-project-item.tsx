@@ -17,9 +17,9 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
       <div className="flex flex-col gap-1">
         <h4 className="Heading-4">{project.companyName}</h4>
         <div className="Me_Body-1 text-sv">
-          <span>{project.endDate}</span>
+          <span>납기일자</span>
           <span className="text-gr"> | </span>
-          <span>{project.items}</span>
+          <span>{project.endDate}</span>
         </div>
       </div>
       <div className="flex items-center">
