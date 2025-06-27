@@ -20,7 +20,7 @@ const Panel = ({ children, title, onClose }: PanelProps) => {
   return (
     <>
       <div
-        className="fixed inset-0 bg-bl/50 transition-opacity duration-200"
+        className="fixed inset-0 bg-bl/50 transition-opacity duration-200 z-10"
         role="button"
         tabIndex={0}
         onClick={onClose}
@@ -30,7 +30,7 @@ const Panel = ({ children, title, onClose }: PanelProps) => {
       />
 
       <div
-        className={`fixed top-0 right-0 h-full transition-transform duration-300 ease-in-out translate-x-0`}
+        className={`fixed top-0 right-0 h-full transition-transform duration-300 ease-in-out translate-x-0 z-20`}
       >
         <div className="w-[1000px] bg-white h-full flex flex-col gap-6 px-10 pt-5">
           <div className="flex gap-2 items-center border-b border-[#eeeeee] pb-2 sticky top-0 bg-white z-10">

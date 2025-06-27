@@ -34,7 +34,7 @@ const Modal = ({
   return (
     <div
       role="presentation"
-      className="bg-black/50 w-full h-full fixed top-0 left-0 z-50 flex justify-center items-center"
+      className="bg-black/50 w-full h-full fixed top-0 left-0 flex justify-center items-center z-50"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === "Escape") onClose?.();

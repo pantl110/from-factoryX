@@ -10,6 +10,7 @@ import { ProductDataModel } from "@/types/data-model";
 import NoHistoryBox from "../no-history-box";
 import ConnectMaterialModal from "../modals/connect-material-modal";
 import ProductStockModal from "../modals/product-stock-modal";
+import MaterialStockStatusModal from "../modals/material-stock-status-modal";
 
 // '생성' 모드일 때 사용할 비어있는 품목 객체의 초기값
 const EMPTY_PRODUCT: ProductDataModel = {
@@ -38,7 +39,9 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
     product || EMPTY_PRODUCT,
   );
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-  const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false); // 판넬의 모달
+  const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false); // 판넬의 연결하기 버튼 모달
+  const [isMaterialStockStatusModalOpen, setIsMaterialStockStatusModalOpen] =
+    useState(false); // 판넬의 원자재 재고 상태 모달
 
   return (
     <>
@@ -74,7 +77,11 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
                 text="원자재를 연결하면 이곳에 재고 상태가 표시됩니다."
               />
             ) : (
-              <StockStatus />
+              <StockStatus
+                setIsMaterialStockStatusModalOpen={
+                  setIsMaterialStockStatusModalOpen
+                }
+              />
             )}
           </div>
 
@@ -102,6 +109,11 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
       )}
       {isProductStockModalOpen && (
         <ProductStockModal onClose={() => setIsProductStockModalOpen(false)} />
+      )}
+      {isMaterialStockStatusModalOpen && (
+        <MaterialStockStatusModal
+          onClose={() => setIsMaterialStockStatusModalOpen(false)}
+        />
       )}
     </>
   );

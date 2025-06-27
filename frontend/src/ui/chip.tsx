@@ -52,7 +52,7 @@ const Chip = ({
           sm ? "h-7 px-2" : "h-9 px-3"
         } ${borderColor ? `border ${borderColor}` : ""}`}
       >
-        <p>{text}</p>
+        <span>{text}</span>
         {icon}
       </div>
     </div>
