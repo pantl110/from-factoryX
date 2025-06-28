@@ -102,6 +102,10 @@ body,
   height: 100%;
 }
 
+button {
+  cursor: pointer;
+}
+
 .scrollbar-hide {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */

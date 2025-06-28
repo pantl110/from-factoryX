@@ -26,7 +26,7 @@ const TopBar = () => {
 
   return (
     <>
-      <header className="flex items-center justify-between w-full h-[60px] px-10">
+      <header className="flex items-center justify-between w-full h-[60px] px-10 relative">
         <TopBarCrumb pageStatus={pageStatus || ""} />
 
         <TopBarContent
@@ -38,12 +38,16 @@ const TopBar = () => {
           onNotificationClick={() => setIsNotificationModalOpen(true)}
           onProfileClick={() => setIsProfileModalOpen(true)}
         />
+
+        {isProfileModalOpen && (
+          <div className="absolute top-17 right-0">
+            <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
+          </div>
+        )}
       </header>
+
       {isNotificationModalOpen && (
         <NotificationModal onClose={() => setIsNotificationModalOpen(false)} />
-      )}
-      {isProfileModalOpen && (
-        <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
       )}
     </>
   );

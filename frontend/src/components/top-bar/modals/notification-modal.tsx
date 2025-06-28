@@ -2,12 +2,14 @@ import Modal from "@/ui/modal";
 import NotificationItem from "./notification-item";
 import { notificationData } from "@/mocks/notification-data";
 import MiniBtn from "@/ui/mini-btn";
+import { useState } from "react";
 
 interface NotificationModalProps {
   onClose: () => void;
 }
 
 const NotificationModal = ({ onClose }: NotificationModalProps) => {
+  const [isReadAll, setIsReadAll] = useState(false);
   return (
     <Modal
       onClose={onClose}
@@ -21,12 +23,18 @@ const NotificationModal = ({ onClose }: NotificationModalProps) => {
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
+          onClick={() => setIsReadAll(true)}
         />
       }
     >
       <div className="h-[calc(100%-24px)] overflow-y-auto scrollbar-hide">
         {notificationData.map((item) => (
-          <NotificationItem key={item.id} item={item} />
+          <NotificationItem
+            key={item.id}
+            item={item}
+            isReadAll={isReadAll}
+            setIsReadAll={setIsReadAll}
+          />
         ))}
       </div>
     </Modal>

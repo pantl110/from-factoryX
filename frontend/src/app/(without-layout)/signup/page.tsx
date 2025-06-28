@@ -7,6 +7,7 @@ import { useInput } from "@/hooks/use-input";
 import { useVerification } from "@/hooks/use-verification";
 import { usePassword } from "@/hooks/use-password";
 import { validateEmail } from "@/utils/validation";
+import FactoryXLogo from "@/ui/icons/factory-x-logo";
 
 const SignupPage = () => {
   const email = useInput({
@@ -14,9 +15,7 @@ const SignupPage = () => {
   });
 
   const verificationCode = useInput();
-
   const verification = useVerification();
-
   const password = usePassword();
 
   const handleSignup = () => {
@@ -37,7 +36,9 @@ const SignupPage = () => {
 
   return (
     <div className="flex min-h-screen">
-      <div className="flex-1 bg-primary"></div>
+      <div className="flex-1 flex flex-col items-center justify-center bg-primary">
+        <FactoryXLogo width={168.908} height={30.558} color="white" />
+      </div>
       <div className="flex flex-col flex-1 gap-5 items-center justify-center w-full">
         <div className="flex flex-col items-center">
           <h2 className="Heading-2">회원가입</h2>

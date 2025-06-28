@@ -41,7 +41,7 @@ const TodayProductionSchedule = () => {
             <div className="flex justify-between h-13 border-b border-lg">
               <h3 className="Heading-3">생산지시서</h3>
               <button
-                className="w-10 h-10 flex justify-center items-center cursor-pointer"
+                className="w-10 h-10 flex justify-center items-center cursor-pointer hover:bg-bg rounded-lg"
                 onClick={() => setIsPrintOverlayOpen(false)}
               >
                 <X size={20} />
@@ -59,7 +59,7 @@ const TodayProductionSchedule = () => {
                 text="생산지시서 출력하기"
                 textColor="text-wh"
                 bgColor="bg-primary"
-                hoverColor="bg-primary-hover"
+                hoverColor="hover:bg-primary-hover"
                 icon={PrinterIcon}
                 iconColor="text-wh"
                 borderColor="border-primary-hover"

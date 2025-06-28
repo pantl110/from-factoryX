@@ -13,11 +13,11 @@ const DeliveryTableItem = ({
 }: DeliveryTableItemProps) => {
   return (
     <div className="flex w-full h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <div className="flex items-center py-1 px-3 w-[150px]">
+      <div className="flex items-center px-3 w-[150px]">
         <Chip text={status} textColor="text-green" bgColor="bg-green-8" />
       </div>
-      <p className="py-1 px-3 flex-1">{productName}</p>
-      <p className="py-1 px-3 flex-1">{date}</p>
+      <p className="px-3 flex-1">{productName}</p>
+      <p className="px-3 flex-1">{date}</p>
     </div>
   );
 };

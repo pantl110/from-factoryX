@@ -3,8 +3,14 @@ import { ExclamationMark, Check, Info } from "@phosphor-icons/react";
 
 interface NotificationItemProps {
   item: NotificationModel;
+  isReadAll: boolean;
+  setIsReadAll: (isReadAll: boolean) => void;
 }
-const NotificationItem = ({ item }: NotificationItemProps) => {
+const NotificationItem = ({
+  item,
+  isReadAll,
+  setIsReadAll,
+}: NotificationItemProps) => {
   let icon = null;
 
   switch (item.type) {
@@ -39,9 +45,11 @@ const NotificationItem = ({ item }: NotificationItemProps) => {
       <div className="flex gap-2 items-center">
         {icon}
 
-        <p className="Me_Body-2 text-dg">{item.message}</p>
+        <p className={`Me_Body-2 ${isReadAll ? "text-sv" : "text-dg"}`}>
+          {item.message}
+        </p>
       </div>
-      <p className="px-7 Me_Body-2 text-dg">{item.date}</p>
+      <p className="px-7 Me_Body-2 text-gr">{item.date}</p>
     </div>
   );
 };

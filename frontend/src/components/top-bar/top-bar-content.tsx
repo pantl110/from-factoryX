@@ -97,22 +97,22 @@ const TopBarContent = ({
 
   // default
   return (
-    <div className="flex">
+    <div className="flex items-center gap-1">
       <div
-        className="flex items-center justify-center w-11 h-11 relative cursor-pointer"
+        className="flex items-center justify-center w-11 h-11 relative cursor-pointer hover:bg-bg rounded-lg"
         onClick={onNotificationClick}
       >
         <BellSimple size={20} className="text-dg" />
         {notificationData.length > 0 && (
-          <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full" />
+          <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full " />
         )}
       </div>
       <div
-        className="flex items-center justify-center w-11 h-11 cursor-pointer"
+        className="flex items-center justify-center w-10 h-10"
         onClick={onProfileClick}
       >
-        <div className="flex items-center justify-center bg-blue-200 rounded-full w-8 h-8 border-2 border-blue-600">
-          <User size={20} className="text-blue-600" />
+        <div className="flex items-center justify-center rounded-full w-8 h-8 bg-primary-8 border border-primary Me_Body-3 text-primary text-[12px] cursor-pointer">
+          JG
         </div>
       </div>
     </div>

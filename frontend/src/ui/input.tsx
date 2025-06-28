@@ -49,7 +49,7 @@ const Input = ({
           disabled={disabled}
           className={`w-full h-12 min-h-9 rounded px-3 Re_Body-1 text-bl placeholder:text-sv outline-none border border-[#e4e4e7] transition-colors ${
             disabled
-              ? "bg-lg text-dg cursor-not-allowed"
+              ? "bg-bg text-dg cursor-not-allowed"
               : "hover:border-primary focus:border-primary  focus:text-bl"
           }`}
         />

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useInput } from "@/hooks/use-input";
 import { validateEmail, validatePassword } from "@/utils/validation";
 import { useRouter } from "next/navigation";
+import FactoryXLogo from "@/ui/icons/factory-x-logo";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -29,7 +30,9 @@ const LoginPage = () => {
 
   return (
     <div className="flex min-h-screen">
-      <div className="flex-1 bg-primary"></div>
+      <div className="flex-1 bg-primary flex flex-col items-center justify-center">
+        <FactoryXLogo width={168.908} height={30.558} color="white" />
+      </div>
       <div className="flex flex-col flex-1 gap-5 items-center justify-center w-full">
         <h2 className="Heading-2">로그인</h2>
         <div className="flex flex-col w-full px-[100px]">
