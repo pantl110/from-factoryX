@@ -8,8 +8,10 @@
   --color-secondary-hover: rgba(1, 111, 238, 0.12);
   --color-yellow: #f5a524;
   --color-yellow-8: rgba(245, 165, 36, 0.08);
+  --color-yellow-hover: rgba(245, 165, 36, 0.12);
   --color-purple: #7828c8;
   --color-purple-8: rgba(120, 40, 200, 0.08);
+  --color-purple-hover: rgba(120, 40, 200, 0.12);
   --color-green: #17c964;
   --color-green-8: rgba(23, 201, 100, 0.08);
   --color-red: #f31260;
@@ -17,7 +19,7 @@
   --color-red-hover: rgba(243, 18, 96, 0.12);
   --color-lg-table: #f4f4f5;
   --color-wh: #ffffff;
-  --color-bg: #f0f0f0;
+  --color-bg: #f4f4f5;
   --color-lg: #e3e3e3;
   --color-gr: #bababa;
   --color-sv: #949494;

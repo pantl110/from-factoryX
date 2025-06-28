@@ -44,7 +44,7 @@ const LogItem = ({
 
   return (
     <div
-      className={`border border-[#eeeeee] rounded-lg p-3 ${isSelected ? "bg-primary-8" : ""}`}
+      className={`border rounded-lg p-3 ${isSelected ? "bg-primary-8 border-primary" : "border-[#eeeeee]"} hover:border-primary`}
       onClick={onClick}
       style={{ cursor: onClick ? "pointer" : undefined }}
     >
@@ -53,8 +53,10 @@ const LogItem = ({
           <div className="w-6 h-6">{icon[type]}</div>
           <h4 className="Heading-4 text-dg">{title}</h4>
         </div>
-        <div className="flex w-full items-center justify-between text-sv">
-          <p className="Me_Body-2 text-sv">{content}</p>
+        <div className="flex w-full items-center justify-between">
+          <p className={`Me_Body-2 ${isSelected ? "text-dg" : "text-sv"}`}>
+            {content}
+          </p>
           <p className="flex items-end Re_Body-1 text-sv">{createdAt}</p>
         </div>
       </div>

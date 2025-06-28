@@ -19,7 +19,7 @@ const ProductAddDropdown = ({
         text="개별 품목 추가"
         icon={<Plus />}
         onClick={onOpenCreatePanel}
-      />{" "}
+      />
       <DropdownItem
         text="엑셀로 한 번에 등록"
         icon={<Upload />}

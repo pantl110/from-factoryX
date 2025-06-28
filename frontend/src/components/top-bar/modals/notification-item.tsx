@@ -1,5 +1,5 @@
 import { NotificationModel } from "../types";
-import { ExclamationMark, Check, Info } from "@phosphor-icons/react";
+import { ExclamationMark, CheckSquare, Info } from "@phosphor-icons/react";
 
 interface NotificationItemProps {
   item: NotificationModel;
@@ -27,7 +27,7 @@ const NotificationItem = ({
       icon = <ExclamationMark size={24} weight="fill" className="text-red" />;
       break;
     case "taxIssue":
-      icon = <Check size={24} className="text-primary" weight="fill" />;
+      icon = <CheckSquare size={24} className="text-primary" weight="fill" />;
       break;
     case "debt":
       icon = <Info size={24} className="text-sv" weight="fill" />;

@@ -1,14 +1,4 @@
-export interface ProductDataModel {
-  id: number;
-  productName: string;
-  productCode: string;
-  size: string;
-  unit: string;
-  stock: number;
-  productionTime: string;
-  location?: string;
-  comment?: string[];
-}
+import { ProductDataModel } from "@/types/data-model";
 
 export const productData: ProductDataModel[] = [
   {
@@ -48,5 +38,51 @@ export const productData: ProductDataModel[] = [
     unit: "롤",
     stock: 180,
     productionTime: "30초",
+  },
+  {
+    id: 5,
+    productName: "플라스틱 판때기",
+    productCode: "PRM-005",
+    size: "100x300mm",
+    unit: "EA",
+    stock: 2500,
+    productionTime: "30초",
+    location: "A동 2층 랙3번",
+    comment: ["모서리 이상함.", "색깔 이상함."],
+    returnQuantity: 10,
+  },
+  {
+    id: 6,
+    productName: "플라스틱 뚜껑 ",
+    productCode: "PRM-006",
+    size: "100x300mm",
+    unit: "EA",
+    stock: 2500,
+    productionTime: "30초",
+    location: "A동 2층 랙3번",
+    comment: ["색깔 이상함."],
+    returnQuantity: 10,
+  },
+  {
+    id: 7,
+    productName: "플라스틱 판",
+    productCode: "PRM-007",
+    size: "100x300mm",
+    unit: "EA",
+    stock: 2500,
+    productionTime: "30초",
+    location: "A동 2층 랙3번",
+    returnQuantity: 10,
+  },
+  {
+    id: 8,
+    productName: "플라스틱 컵",
+    productCode: "PRM-008",
+    size: "100x300mm",
+    unit: "EA",
+    stock: 2500,
+    productionTime: "30초",
+    location: "A동 2층 랙3번",
+    returnQuantity: 10,
   },
 ];

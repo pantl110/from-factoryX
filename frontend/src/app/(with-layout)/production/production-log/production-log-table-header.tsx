@@ -1,16 +1,17 @@
 const ProductionLogTableHeader = () => {
   return (
-    <div className="flex items-center h-12 Me_Body-1 text-sv rounded bg-lg-table">
-      <p className="flex-1 py-1 px-3">품목코드</p>
-      <p className="flex-[2] py-1 px-3">품목명</p>
-      <p className="flex-1 py-1 px-3">규격</p>
-      <p className="w-[80px] py-1 px-3">단위</p>
-      <p className="flex-1 py-1 px-3">목표수량</p>
-      <p className="flex-1 py-1 px-3">생산수량</p>
-      <p className="flex-1 py-1 px-3">생산설비</p>
-      <p className="flex-1 py-1 px-3">단위당 시간</p>
-      <p className="flex-1 py-1 px-3">자재상태</p>
-      <p className="flex-1 py-1 px-3">생산 담당자</p>
+    <div className="flex items-center h-12 min-w-[1559px] Me_Body-1 text-sv rounded bg-lg-table">
+      <p className="flex-[2] px-3">품목명</p>
+      <p className="flex-1 px-3">품목코드</p>
+      <p className="flex-1 px-3">규격</p>
+      <p className="w-[80px] px-3">단위</p>
+      <p className="flex-1 px-3">주문 수량</p>
+      <p className="flex-1 px-3">생산 수량</p>
+      <p className="flex-1 px-3">생산 설비</p>
+      <p className="w-[200px] px-3">생산 일자</p>
+      <p className="w-[140px] px-3">단위당 소요 시간</p>
+      <p className="w-[150px] px-3">자재 상태</p>
+      <p className="w-[200px] px-3">마감일자</p>
     </div>
   );
 };

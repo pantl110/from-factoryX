@@ -1,4 +1,4 @@
-import Modal from "@/ui/modal";
+import Modal from "@/ui/modal/modal";
 import NotificationItem from "./notification-item";
 import { notificationData } from "@/mocks/notification-data";
 import MiniBtn from "@/ui/mini-btn";

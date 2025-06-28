@@ -3,10 +3,12 @@
 import MiniBtn from "@/ui/mini-btn";
 import { BellSimple, User } from "@phosphor-icons/react";
 import { notificationData } from "@/mocks/notification-data";
+import { ProductionTabType } from "./types";
 
 interface TopBarContentProps {
-  selectedTab: string | null;
+  productionTab: ProductionTabType | null;
   pageStatus: string | null;
+
   onProductionPlanSaveClick?: () => void;
   onAddReturnClick?: () => void;
   onMoveToStorageClick?: () => void;
@@ -15,7 +17,7 @@ interface TopBarContentProps {
 }
 
 const TopBarContent = ({
-  selectedTab,
+  productionTab,
   pageStatus,
   onProductionPlanSaveClick,
   onAddReturnClick,
@@ -24,7 +26,7 @@ const TopBarContent = ({
   onProfileClick,
 }: TopBarContentProps) => {
   const isProductionPlanSaveActive =
-    selectedTab === "생산 계획" && pageStatus === "생산 대기";
+    productionTab === "생산 계획" && pageStatus === "생산 대기";
 
   if (pageStatus === "프로젝트 완료") {
     return (
@@ -39,11 +41,11 @@ const TopBarContent = ({
     );
   }
 
-  if (selectedTab === "주문서" || selectedTab === "생산 현황") {
+  if (productionTab === "주문서" || productionTab === "생산 현황") {
     return null;
   }
 
-  if (selectedTab === "생산 계획") {
+  if (productionTab === "생산 계획") {
     return (
       <div className="flex">
         <MiniBtn
@@ -58,7 +60,7 @@ const TopBarContent = ({
     );
   }
 
-  if (selectedTab === "생산 내역") {
+  if (productionTab === "생산 내역") {
     if (pageStatus === "생산 완료") {
       return (
         <div className="flex">
@@ -74,7 +76,7 @@ const TopBarContent = ({
     return null;
   }
 
-  if (selectedTab === "납품") {
+  if (productionTab === "납품") {
     return (
       <div className="flex gap-2">
         <MiniBtn

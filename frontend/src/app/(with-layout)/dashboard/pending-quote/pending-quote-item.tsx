@@ -1,3 +1,5 @@
+"use client";
+
 import { ProjectDataModel } from "@/mocks/project-data";
 import Chip from "@/ui/chip";
 

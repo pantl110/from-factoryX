@@ -14,16 +14,30 @@ const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
           e?.stopPropagation();
           onClose();
         }}
+        noHover={true}
       >
-        <Chip text="견적 협의" bgColor="bg-yellow-8" textColor="text-yellow" />
+        <Chip
+          text="견적 협의"
+          bgColor="bg-yellow-8"
+          textColor="text-yellow"
+          hover="hover:bg-yellow-hover"
+          onClick={onClose}
+        />
       </DropdownItem>
       <DropdownItem
         onClick={(e) => {
           e?.stopPropagation();
           onClose();
         }}
+        noHover={true}
       >
-        <Chip text="중단" bgColor="bg-red-8" textColor="text-red" />
+        <Chip
+          text="중단"
+          bgColor="bg-red-8"
+          textColor="text-red"
+          hover="hover:bg-red-hover"
+          onClick={onClose}
+        />
       </DropdownItem>
     </Dropdown>
   );

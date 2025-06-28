@@ -12,6 +12,8 @@ interface InputProps {
   type?: InputType;
   disabled?: boolean;
   isShowPasswordToggle?: boolean;
+  showError?: boolean;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
 const Input = ({
@@ -23,11 +25,41 @@ const Input = ({
   type = "text",
   disabled = false,
   isShowPasswordToggle = false,
+  showError = false,
+  inputRef,
 }: InputProps) => {
   const [isShowPassword, setisShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setisShowPassword(!isShowPassword);
+  };
+
+  const hasError = showError && required && (!value || value.trim() === "");
+
+  const getInputClassName = () => {
+    let className =
+      "w-full h-12 min-h-9 rounded px-3 Re_Body-1 placeholder:text-sv outline-none border transition-colors";
+
+    if (type === "number") {
+      className +=
+        " appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+    }
+
+    if (disabled) {
+      className += " bg-lg text-dg cursor-not-allowed border-[#e4e4e7]";
+    } else if (hasError) {
+      className +=
+        " border-red hover:border-primary focus:border-primary focus:text-bl";
+    } else {
+      className +=
+        " border-[#e4e4e7] hover:border-primary focus:border-primary focus:text-bl";
+    }
+
+    if (type === "date") {
+      className += !value ? " text-sv" : " text-bl";
+    }
+
+    return className;
   };
 
   return (
@@ -40,6 +72,7 @@ const Input = ({
       )}
       <div className="relative">
         <input
+          ref={inputRef}
           type={
             isShowPasswordToggle ? (isShowPassword ? "text" : "password") : type
           }
@@ -47,11 +80,7 @@ const Input = ({
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full h-12 min-h-9 rounded px-3 Re_Body-1 text-bl placeholder:text-sv outline-none border border-[#e4e4e7] transition-colors ${
-            disabled
-              ? "bg-bg text-dg cursor-not-allowed"
-              : "hover:border-primary focus:border-primary  focus:text-bl"
-          }`}
+          className={getInputClassName()}
         />
         {isShowPasswordToggle && (
           <button

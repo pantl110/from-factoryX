@@ -1,4 +1,5 @@
 import Chip from "./chip";
+import React, { ChangeEvent, ReactNode } from "react";
 import {
   InventoryStatusType,
   InventoryStatusColorMap,
@@ -9,7 +10,6 @@ import {
   FacilityStatusType,
   FacilityStatusColorMap,
 } from "@/app/(with-layout)/setting/master-data/facility/types";
-import { ReactNode, ChangeEvent } from "react";
 
 interface InfoLabelValueProps {
   label: string;
@@ -19,7 +19,11 @@ interface InfoLabelValueProps {
   };
   isEditing?: boolean;
   placeholder?: string;
-  onValueChange?: (value: string) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  inputType?: string;
+  unit?: string;
 }
 
 const InfoLabelValue = ({
@@ -28,7 +32,11 @@ const InfoLabelValue = ({
   chip,
   isEditing = false,
   placeholder,
-  onValueChange,
+  onChange,
+  onFocus,
+  onBlur,
+  inputType = "text",
+  unit,
 }: InfoLabelValueProps) => {
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
@@ -42,14 +50,19 @@ const InfoLabelValue = ({
     // 수정 모드인 경우
     if (isEditing) {
       return (
-        <input
-          defaultValue={typeof value === "string" ? value : ""}
-          placeholder={placeholder}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            onValueChange?.(e.target.value)
-          }
-          className="w-full"
-        />
+        <div className="flex items-center w-full">
+          <input
+            type={inputType}
+            defaultValue={typeof value === "string" ? value : ""}
+            placeholder={placeholder}
+            onChange={onChange}
+            className="w-full"
+            style={{ outline: "none" }}
+            onFocus={onFocus}
+            onBlur={onBlur}
+          />
+          {unit && <span className="ml-1 text-dg">{unit}</span>}
+        </div>
       );
     }
 

@@ -1,3 +1,5 @@
+import { DeliveryStatusType } from "@/types/status-type";
+
 export interface DeliveryDataModel {
   id: number;
   productCode: string;
@@ -9,4 +11,5 @@ export interface DeliveryDataModel {
   totalPrice: number;
   date: string;
   companyName: string;
+  deliveryStatus?: DeliveryStatusType;
 }

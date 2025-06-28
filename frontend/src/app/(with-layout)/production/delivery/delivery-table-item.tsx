@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { DeliveryDataModel } from "./types";
 import DeliveryOverlay from "./modals/delevery-overlay";
+import Chip from "@/ui/chip";
+import {
+  DeliveryStatusColorMap,
+  DeliveryStatusType,
+} from "@/types/status-type";
 
 interface DeliveryTableItemProps {
   data: DeliveryDataModel;
@@ -8,6 +13,8 @@ interface DeliveryTableItemProps {
 
 const DeliveryTableItem = ({ data }: DeliveryTableItemProps) => {
   const [isDeliveryOverlayOpen, setIsDeliveryOverlayOpen] = useState(false);
+  const colors =
+    DeliveryStatusColorMap[data.deliveryStatus as DeliveryStatusType];
 
   return (
     <>
@@ -15,9 +22,16 @@ const DeliveryTableItem = ({ data }: DeliveryTableItemProps) => {
         <div className="flex items-center py-3 px-2">
           <input type="checkbox" className="w-4 h-4 border-sv" />
         </div>
-        <p className="flex-1 px-3 text-dg Me_Body-1">{data.productCode}</p>
+        <div className="w-[150px] flex items-center py-3 px-2">
+          <Chip
+            text={data.deliveryStatus || ""}
+            sm={true}
+            bgColor={colors.bgColor}
+            textColor={colors.textColor}
+          />
+        </div>
         <div
-          className="flex-[2] px-3 flex justify-between cursor-pointer group"
+          className="flex-2 px-3 flex justify-between cursor-pointer group"
           onClick={() => setIsDeliveryOverlayOpen(true)}
         >
           <p className=" text-dg Me_Body-1">{data.productName}</p>
@@ -25,13 +39,15 @@ const DeliveryTableItem = ({ data }: DeliveryTableItemProps) => {
             납품표 보기
           </p>
         </div>
+        <p className="flex-1 px-3 text-dg Me_Body-1">{data.productCode}</p>{" "}
         <p className="flex-1 px-3 tex t-dg Me_Body-1">{data.size}</p>
         <p className="w-[80px] px-3 text-dg Me_Body-1">{data.unit}</p>
-        <p className="flex-1 px-3 text-dg Me_Body-1">{data.quantity}</p>
-        <p className="w-[100px] px-3 text-dg Me_Body-1">{data.unitPrice}</p>
-        <p className="flex-1 px-3 text-dg Me_Body-1">{data.totalPrice}</p>
+        <p className="flex-1 px-3 text-dg Me_Body-1">
+          {data.quantity.toLocaleString()}
+        </p>
         <p className="flex-1 px-3 text-dg Me_Body-1">{data.date}</p>
       </div>
+
       {isDeliveryOverlayOpen && (
         <DeliveryOverlay
           onClose={() => setIsDeliveryOverlayOpen(false)}

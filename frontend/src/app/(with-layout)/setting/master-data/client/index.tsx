@@ -1,26 +1,27 @@
 import { useState } from "react";
-import { clientData, ClientDataModel } from "@/mocks/client-data";
+import { clientData } from "@/mocks/client-data";
 import ClientTableHeader from "./client-table-header";
 import ClientTableItem from "./client-table-item";
-import Pagination from "@/components/pagination";
 import ClientDetailPanel from "./modals/client-detail-panel";
+import { ClientDataModel } from "@/types/data-model";
 
-const Client = () => {
+interface ClientProps {
+  isDeleteMode: boolean;
+}
+
+const Client = ({ isDeleteMode }: ClientProps) => {
   const [selectedClient, setSelectedClient] = useState<ClientDataModel | null>(
     null,
   );
 
-  const handleItemClick = (client: ClientDataModel) => {
+  const handleTypeChange = (client: ClientDataModel) => {
     setSelectedClient(client);
-  };
-  const handlePanelClose = () => {
-    setSelectedClient(null);
   };
 
   return (
     <>
-      <div className="w-full px-10 overflow-x-auto">
-        <ClientTableHeader />
+      <div className="w-full px-10 overflow-x-auto flex flex-col flex-1">
+        <ClientTableHeader isDeleteMode={isDeleteMode} />
         {clientData.map((client) => (
           <ClientTableItem
             key={client.id}
@@ -30,15 +31,22 @@ const Client = () => {
             representativeName={client.representativeName}
             businessType={client.businessType}
             businessCategory={client.businessCategory}
-            contact={client.contact}
-            email={client.email}
-            onClick={() => handleItemClick(client)}
+            contact={client.contact ?? ""}
+            email={client.email ?? ""}
+            onClick={() => handleTypeChange(client)}
+            isDeleteMode={isDeleteMode}
           />
         ))}
       </div>
-      <Pagination />
+
+      {/* panel */}
       {selectedClient && (
-        <ClientDetailPanel onClose={handlePanelClose} client={selectedClient} />
+        <ClientDetailPanel
+          onClose={() => {
+            setSelectedClient(null);
+          }}
+          client={selectedClient}
+        />
       )}
     </>
   );

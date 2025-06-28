@@ -1,12 +1,26 @@
 "use client";
 
 import { create } from "zustand";
+import {
+  ProductionTabType,
+  SettingTabType,
+  SettingChipType,
+  StockTabType,
+} from "@/components/top-bar/types";
 
 export interface PageStatusModel {
   pageStatus: string | null;
   setPageStatus: (status: string | null) => void;
-  selectedTab: string | null;
-  setSelectedTab: (tab: string | null) => void;
+  settingTab: SettingTabType | null;
+  setSettingTab: (tab: SettingTabType | null) => void;
+  settingChip: SettingChipType | null;
+  setSettingChip: (chip: SettingChipType | null) => void;
+
+  productionTab: ProductionTabType | null;
+  setProductionTab: (tab: ProductionTabType | null) => void;
+
+  stockTab: StockTabType | null;
+  setStockTab: (tab: StockTabType | null) => void;
 
   // production의 "생산 대기" 상태의 "생산 계획" 탭에서 <저장> 버튼 클릭 시 모달 오픈
   isProductionPlanSaveModalOpen: boolean;
@@ -24,8 +38,10 @@ export interface PageStatusModel {
 const usePageStatusStore = create<PageStatusModel>((set) => ({
   pageStatus: null,
   setPageStatus: (status) => set({ pageStatus: status }),
-  selectedTab: null,
-  setSelectedTab: (tab) => set({ selectedTab: tab }),
+
+  // production page
+  productionTab: null,
+  setProductionTab: (tab) => set({ productionTab: tab }),
   isProductionPlanSaveModalOpen: false,
   setProductionPlanSaveModalOpen: (open) =>
     set({ isProductionPlanSaveModalOpen: open }),
@@ -33,6 +49,16 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   setAddReturnModalOpen: (open) => set({ isAddReturnModalOpen: open }),
   isMoveToStorageModalOpen: false,
   setMoveToStorageModalOpen: (open) => set({ isMoveToStorageModalOpen: open }),
+
+  // stock page
+  stockTab: null,
+  setStockTab: (tab) => set({ stockTab: tab }),
+
+  // setting page
+  settingTab: null,
+  setSettingTab: (tab) => set({ settingTab: tab }),
+  settingChip: null,
+  setSettingChip: (chip) => set({ settingChip: chip }),
 }));
 
 export default usePageStatusStore;
