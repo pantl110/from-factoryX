@@ -4,13 +4,8 @@ import { ExclamationMark, CheckSquare, Info } from "@phosphor-icons/react";
 interface NotificationItemProps {
   item: NotificationModel;
   isReadAll: boolean;
-  setIsReadAll: (isReadAll: boolean) => void;
 }
-const NotificationItem = ({
-  item,
-  isReadAll,
-  setIsReadAll,
-}: NotificationItemProps) => {
+const NotificationItem = ({ item, isReadAll }: NotificationItemProps) => {
   let icon = null;
 
   switch (item.type) {

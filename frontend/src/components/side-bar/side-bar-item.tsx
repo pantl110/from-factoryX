@@ -54,7 +54,7 @@ const SideBarItem = ({
       >
         <div className="flex items-center gap-2">
           <Icon size={20} className={isActive ? "text-primary" : "text-gr"} />
-          <p className={`Heading-4 ${isActive ? "text-bl" : "text-sv"}`}>
+          <p className={`Heading-4 ${isActive ? "text-bl" : "text-dg"}`}>
             {label}
           </p>
         </div>
@@ -62,7 +62,7 @@ const SideBarItem = ({
           {hasDropdown && (
             <CaretDown
               size={20}
-              className={`text-dg transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              className={`text-sv transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
             />
           )}
         </div>
@@ -77,7 +77,7 @@ const SideBarItem = ({
               onClick={() => handleDropdownItemClick(item.path)}
             >
               <p
-                className={`Me_Body-1 text-dg ${pathname === item.path ? "text-primary" : ""}`}
+                className={`Me_Body-1 text-dg hover:text-primary ${pathname === item.path ? "text-primary" : ""}`}
               >
                 {item.label}
               </p>

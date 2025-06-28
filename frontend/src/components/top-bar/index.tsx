@@ -30,7 +30,7 @@ const TopBar = () => {
 
   return (
     <>
-      <header className="flex items-center justify-between w-full h-[60px] px-10">
+      <header className="flex items-center justify-between w-full h-[60px] px-10 relative">
         <TopBarCrumb
           pageStatus={pageStatus || ""}
           productionTab={productionTab || undefined}
