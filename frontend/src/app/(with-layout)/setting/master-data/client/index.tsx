@@ -20,7 +20,7 @@ const Client = ({ isDeleteMode }: ClientProps) => {
 
   return (
     <>
-      <div className="w-full px-10 overflow-x-auto flex flex-col flex-1">
+      <div className="w-full mx-10 overflow-x-auto flex flex-col flex-1 max-w-[1320px]">
         <ClientTableHeader isDeleteMode={isDeleteMode} />
         {clientData.map((client) => (
           <ClientTableItem

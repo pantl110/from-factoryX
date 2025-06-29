@@ -36,7 +36,7 @@ const Panel = ({ children, title, onClose }: PanelProps) => {
           <div className="flex gap-2 items-center border-b border-[#eeeeee] pb-2 sticky top-0 bg-white z-10">
             <button
               onClick={onClose}
-              className="flex items-center justify-center w-10 h-10 cursor-pointer"
+              className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-bg rounded-lg transition-all duration-200"
             >
               <CaretLineRightIcon size={20} />
             </button>

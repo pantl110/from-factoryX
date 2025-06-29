@@ -84,7 +84,7 @@ export const OperationStatusColorMap: Record<
   "가동 대기": {
     textColor: "text-dg",
     bgColor: "bg-bg",
-    hover: "hover:bg-gray-100",
+    hover: "hover:bg-lg",
   },
   "가동 중": {
     textColor: "text-purple",

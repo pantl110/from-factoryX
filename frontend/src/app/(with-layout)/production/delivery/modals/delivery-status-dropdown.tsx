@@ -14,7 +14,7 @@ const DeliveryStatusDropdown = ({ onClose }: DeliveryStatusDropdownProps) => {
           sm={true}
           bgColor="bg-bg"
           textColor="text-bl"
-          hover="hover:bg-bg-hover"
+          hover="hover:bg-lg"
         />
       </DropdownItem>
       <DropdownItem>
