@@ -1,5 +1,3 @@
-import { CaretDown } from "@phosphor-icons/react/dist/ssr";
-
 interface ClientTableHeaderProps {
   isDeleteMode: boolean;
 }

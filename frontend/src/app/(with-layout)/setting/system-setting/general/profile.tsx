@@ -5,6 +5,7 @@ import { CameraIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import SaveModal from "./modals/save-modal";
 import { ProfileFormDataModel } from "./types";
+import { handleNumberKeyDown, formatPhoneNumber } from "@/hooks/format-number";
 
 const Profile = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -45,14 +46,13 @@ const Profile = () => {
               <Input
                 placeholder=""
                 label="이름"
-                required
                 value={formData.name}
                 onChange={(value) => handleChange("name", value)}
                 showError={isShowErrors}
               />
               <Input
-                placeholder=""
-                label="시스템 관리자"
+                placeholder="시스템 관리자"
+                label="권한"
                 value={formData.role}
                 onChange={(value) => handleChange("role", value)}
               />
@@ -61,7 +61,6 @@ const Profile = () => {
               <Input
                 placeholder="yoo@gmail.com"
                 label="이메일"
-                required
                 value={formData.email}
                 onChange={(value) => handleChange("email", value)}
                 showError={isShowErrors}
@@ -70,7 +69,10 @@ const Profile = () => {
                 placeholder=""
                 label="연락처"
                 value={formData.phone}
-                onChange={(value) => handleChange("phone", value)}
+                onChange={(value) =>
+                  handleChange("phone", formatPhoneNumber(value))
+                }
+                onKeyDown={handleNumberKeyDown}
               />
             </div>
           </div>
