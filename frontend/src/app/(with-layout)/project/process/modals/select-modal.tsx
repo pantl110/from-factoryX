@@ -1,16 +1,28 @@
 import Modal from "@/ui/modal/modal";
 import { Upload, Keyboard } from "@phosphor-icons/react/dist/ssr";
 import { useRouter } from "next/navigation";
+import { clientData } from "@/mocks/client-data";
 
 interface SelectModalProps {
   onClose: () => void;
   onUploadClick: () => void;
+  onDirectInputClick: (clientData?: any) => void;
 }
 
-const SelectModal = ({ onClose, onUploadClick }: SelectModalProps) => {
+const SelectModal = ({
+  onClose,
+  onUploadClick,
+  onDirectInputClick,
+}: SelectModalProps) => {
   const router = useRouter();
+
   const handleGoToQuotation = () => {
+    onDirectInputClick(); // 빈 값으로 설정
     router.push("/quotation");
+  };
+
+  const handleUploadClick = () => {
+    onUploadClick(); // upload-modal 열기만 하고, clientData는 upload-modal에서 처리
   };
 
   return (
@@ -23,9 +35,9 @@ const SelectModal = ({ onClose, onUploadClick }: SelectModalProps) => {
         <div
           role="button"
           tabIndex={0}
-          onClick={onUploadClick}
+          onClick={handleUploadClick}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") onUploadClick();
+            if (e.key === "Enter" || e.key === " ") handleUploadClick();
           }}
           className="group flex flex-1 flex-col h-[215px] items-center justify-center gap-2.5 border-1 border-lg rounded-lg hover:border-primary hover:cursor-pointer"
         >

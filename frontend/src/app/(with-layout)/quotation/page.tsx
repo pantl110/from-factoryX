@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Chip from "@/ui/chip";
+import { useState, useMemo } from "react";
 import {
   ArrowLineLeftIcon,
   ArrowLineRightIcon,
-  CaretDownIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import RequestInfo from "./request-info";
-import ButtonSection from "./button-section";
 import InputSection from "./input-section";
 import PreviewImage from "./image-preview";
 import History from "./history";
@@ -17,11 +14,12 @@ import OverlayView from "@/ui/ovelay-view";
 import PrintView from "./modals/print-view";
 import { ProductModel } from "./types";
 import StartProductionModal from "./modals/start-production-modal";
-import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
-import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import ProductEnrollmentModal from "./modals/product-enrollment-modal";
 import { useForm } from "@/hooks/use-form";
 import { ClientDataModel } from "@/types/data-model";
+import { useSearchParams } from "next/navigation";
+import TabArea from "./tab-area";
+import TitleSec from "./title-sec";
 
 const QuotationPage = () => {
   // 탭 상태
@@ -41,29 +39,52 @@ const QuotationPage = () => {
     useState(false);
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
-  // 프로젝트 이름 상태
-  const [projectName, setProjectName] = useState("플라스틱이 좋아");
-  // 드랍다운 상태
-  const {
-    isOpen: isQuotationStatusDropdownOpen,
-    openDropdown: openQuotationStatusDropdown,
-    closeDropdown: closeQuotationStatusDropdown,
-    anchorRect: quotationStatusAnchorRect,
-  } = usePortalDropdown();
 
-  const initialData: ClientDataModel = {
-    id: 0,
-    type: "발주처",
-    companyName: "",
-    businessNumber: "",
-    representativeName: "",
-    dueDate: "",
-    email: "",
-    companyAddress: "",
-    deliveryAddress: "",
-    contact: "",
-    fax: "",
-  };
+  // URL 파라미터에서 clientData 가져오기
+  const searchParams = useSearchParams();
+  const clientDataParam = searchParams.get("clientData");
+
+  // 초기 데이터 설정
+  const initialData = useMemo((): ClientDataModel => {
+    if (clientDataParam) {
+      try {
+        const parsedData = JSON.parse(decodeURIComponent(clientDataParam));
+
+        return {
+          id: parsedData.id || 0,
+          type: parsedData.type || "발주처",
+          companyName: parsedData.companyName || "",
+          businessNumber: String(parsedData.businessNumber || ""),
+          representativeName: parsedData.representativeName || "",
+          dueDate: parsedData.dueDate || "",
+          email: parsedData.email || "",
+          companyAddress: parsedData.companyAddress || "",
+          deliveryAddress: parsedData.deliveryAddress || "",
+          contact: String(parsedData.contact || ""),
+          fax: String(parsedData.fax || ""),
+        };
+      } catch (error) {
+        // console.error("Failed to parse clientData:", error);
+      }
+    }
+
+    // 기본값
+    return {
+      id: 0,
+      type: "발주처",
+      companyName: "",
+      businessNumber: "",
+      representativeName: "",
+      dueDate: "",
+      email: "",
+      companyAddress: "",
+      deliveryAddress: "",
+      contact: "",
+      fax: "",
+    };
+  }, [clientDataParam]);
+
+  // 견적서 입력 유효성 검사
   const validationRules = {
     companyName: (v: string) => !!v,
     businessNumber: (v: string) => !!v,
@@ -88,74 +109,16 @@ const QuotationPage = () => {
   return (
     <>
       <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
-        <div className="flex gap-1 mb-4 pr-10">
-          <div className="flex-1 gap-1 ">
-            <div className="cursor-pointer relative">
-              <Chip
-                text="견적 협의"
-                containerWidth="w-full"
-                bgColor="bg-yellow-8"
-                textColor="text-yellow"
-                icon={<CaretDownIcon size={12} />}
-                onClick={(e) => {
-                  if (e) openQuotationStatusDropdown(e);
-                }}
-              />
-              {isQuotationStatusDropdownOpen && quotationStatusAnchorRect && (
-                <div
-                  style={{
-                    position: "fixed",
-                    left: quotationStatusAnchorRect.left,
-                    top: quotationStatusAnchorRect.bottom,
-                    zIndex: 10,
-                  }}
-                >
-                  <QuotationStatusDropdown
-                    onClose={closeQuotationStatusDropdown}
-                  />
-                </div>
-              )}
-            </div>
-            <input
-              type="text"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              className="Heading-1 mt-2 outline-none placeholder:text-gr"
-              placeholder="프로젝트명을 입력해주세요."
-            />
-          </div>
-          <ButtonSection
-            onEmailClick={() => setIsEmailOpen(true)}
-            onPrintClick={() => setIsPrintOpen(true)}
-            onStartProductionClick={() => {
-              form.handleSubmit(() => {
-                setIsStartProductionModalOpen(true);
-              });
-            }}
-          />
-        </div>
-
-        <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-[#eeeeee]">
-          <button
-            className={`${
-              activeTab === "quotation"
-                ? "text-primary underline decoration-primary decoration-2 underline-offset-8"
-                : "text-gr"
-            } cursor-pointer`}
-            onClick={activateQuotationTab}
-          >
-            견적요청서
-          </button>
-          <div
-            className={`${
-              activeTab === "history"
-                ? "text-primary underline decoration-primary decoration-2 underline-offset-8"
-                : "text-gr"
-            }`}
-          >
-            히스토리
-          </div>
-        </div>
+        <TitleSec
+          form={form}
+          setIsEmailOpen={setIsEmailOpen}
+          setIsPrintOpen={setIsPrintOpen}
+          setIsStartProductionModalOpen={setIsStartProductionModalOpen}
+        />
+        <TabArea
+          activeTab={activeTab}
+          activateQuotationTab={activateQuotationTab}
+        />
 
         <div className="flex flex-1 overflow-y-hidden">
           <div
@@ -179,9 +142,9 @@ const QuotationPage = () => {
               className={`flex flex-col flex-1 py-8 gap-11 pr-10
               ${isRightPanelExpanded ? "pl-0" : "pl-10"}`}
             >
-              <div className="flex items-center gap-1 pb-3 border-b border-[#eeeeee]">
+              <div className="flex items-center gap-2 pb-3 border-b border-[#eeeeee]">
                 <button
-                  className="flex items-center justify-center w-10 h-10 cursor-pointer"
+                  className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-bg transition-colors rounded-lg duration-200"
                   onClick={() => setIsRightPanelExpanded(!isRightPanelExpanded)}
                 >
                   {isRightPanelExpanded ? (
@@ -196,7 +159,7 @@ const QuotationPage = () => {
 
             <div className="overflow-y-auto scrollbar-hide h-full">
               <div className="flex flex-col flex-1 gap-5 px-10 pb-11">
-                <h3 className="Heading-3">회사 정보</h3>
+                <h3 className="Heading-3">거래처 정보</h3>
                 <InputSection form={form} isShowErrors={form.isShowErrors} />
               </div>
 

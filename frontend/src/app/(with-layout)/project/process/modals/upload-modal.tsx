@@ -1,16 +1,15 @@
 import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal/modal";
-import { useRouter } from "next/navigation";
+import { clientData } from "@/mocks/client-data";
 
 interface UploadModalProps {
   onClose: () => void;
+  onComplete: (clientData?: any) => void;
 }
 
-const UploadModal = ({ onClose }: UploadModalProps) => {
-  const router = useRouter();
-
+const UploadModal = ({ onClose, onComplete }: UploadModalProps) => {
   const handleComplete = () => {
-    router.push("/quotation");
+    onComplete(clientData[0]);
   };
 
   return (

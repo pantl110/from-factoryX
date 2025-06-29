@@ -1,10 +1,10 @@
 import MiniBtn from "@/ui/mini-btn";
 import ProductItem from "./product-item";
 import dummyProducts from "@/mocks/quotation-products";
-import { ProductProps } from "./types";
+import { ProductModel } from "./types";
 
 interface RequestInfoProps {
-  onProductClick: (product: ProductProps) => void;
+  onProductClick: (product: ProductModel) => void;
   setIsProductEnrollmentModalOpen: (isOpen: boolean) => void;
 }
 

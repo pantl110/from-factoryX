@@ -14,6 +14,7 @@ interface InputProps {
   isShowPasswordToggle?: boolean;
   showError?: boolean;
   inputRef?: React.RefObject<HTMLInputElement>;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const Input = ({
@@ -27,6 +28,7 @@ const Input = ({
   isShowPasswordToggle = false,
   showError = false,
   inputRef,
+  onKeyDown,
 }: InputProps) => {
   const [isShowPassword, setisShowPassword] = useState(false);
 
@@ -78,6 +80,7 @@ const Input = ({
           }
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
+          onKeyDown={onKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           className={getInputClassName()}

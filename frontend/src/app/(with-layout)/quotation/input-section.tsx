@@ -3,6 +3,13 @@
 import Input from "@/ui/input";
 import { useForm } from "@/hooks/use-form";
 import { ClientDataModel } from "@/types/data-model";
+import {
+  extractNumbers,
+  formatBusinessNumber,
+  formatPhoneNumber,
+  formatFaxNumber,
+  handleNumberKeyDown,
+} from "@/hooks/format-number";
 
 interface InputSectionProps {
   form: ReturnType<typeof useForm<ClientDataModel>>;
@@ -14,8 +21,8 @@ const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
     <div className="flex flex-col gap-4">
       <div className="flex gap-2">
         <Input
-          label="회사명"
-          placeholder="회사명을 입력하세요."
+          label="거래처명"
+          placeholder="거래처명을 입력하세요."
           required
           value={form.formData.companyName}
           onChange={(v) => form.handleChange("companyName", v)}
@@ -25,10 +32,13 @@ const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
           label="사업자등록번호"
           placeholder="사업자등록번호를 입력하세요."
           required
-          value={form.formData.businessNumber}
-          onChange={(v) => form.handleChange("businessNumber", v)}
+          value={formatBusinessNumber(form.formData.businessNumber)}
+          onChange={(v) => {
+            const numbers = extractNumbers(v);
+            form.handleChange("businessNumber", numbers);
+          }}
+          onKeyDown={handleNumberKeyDown}
           showError={isShowErrors && !form.formData.businessNumber}
-          type="number"
         />
       </div>
       <div className="flex gap-2">
@@ -89,16 +99,22 @@ const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
         <Input
           label="담당자 연락처"
           placeholder="담당자 연락처를 입력하세요."
-          value={form.formData.contact}
-          onChange={(v) => form.handleChange("contact", v)}
-          type="number"
+          value={formatPhoneNumber(form.formData.contact || "")}
+          onChange={(v) => {
+            const numbers = extractNumbers(v);
+            form.handleChange("contact", numbers);
+          }}
+          onKeyDown={handleNumberKeyDown}
         />
         <Input
           label="담당자 팩스"
           placeholder="담당자 팩스를 입력하세요."
-          value={form.formData.fax}
-          onChange={(v) => form.handleChange("fax", v)}
-          type="number"
+          value={formatFaxNumber(form.formData.fax || "")}
+          onChange={(v) => {
+            const numbers = extractNumbers(v);
+            form.handleChange("fax", numbers);
+          }}
+          onKeyDown={handleNumberKeyDown}
         />
       </div>
     </div>

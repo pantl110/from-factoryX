@@ -1,9 +1,21 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 interface UseFormProps<T> {
   initialData: T;
   validationRules?: Partial<Record<keyof T, (value: string) => boolean>>;
 }
+
+// 깊은 비교
+const useDeepCompareEffect = (effect: () => void, deps: any[]) => {
+  const depsRef = useRef(deps);
+  const depsString = JSON.stringify(deps);
+  const prevDepsString = JSON.stringify(depsRef.current);
+
+  if (depsString !== prevDepsString) {
+    depsRef.current = deps;
+    effect();
+  }
+};
 
 export const useForm = <T extends Record<string, unknown>>({
   initialData,
@@ -11,6 +23,10 @@ export const useForm = <T extends Record<string, unknown>>({
 }: UseFormProps<T>) => {
   const [formData, setFormData] = useState<T>(initialData);
   const [isShowErrors, setShowErrors] = useState(false);
+
+  useDeepCompareEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
 
   const validateField = (field: keyof T, value: string): boolean => {
     const validator = validationRules[field];

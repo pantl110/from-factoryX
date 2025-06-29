@@ -9,11 +9,13 @@ import TableHeader from "./table-header";
 import TableItem from "./table-item";
 import SelectModal from "./modals/select-modal";
 import UploadModal from "./modals/upload-modal";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Pagination from "@/components/pagination";
 import usePagination from "@/hooks/use-pagination";
+import { ClientDataModel } from "@/types/data-model";
 
 const ProcessProjectPageInner = () => {
+  const router = useRouter();
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
@@ -54,6 +56,18 @@ const ProcessProjectPageInner = () => {
   const handleStatusChange = (status: ProjectStatusType | "전체") => {
     setSelectedStatus(status);
     setCurrentPage(1); // 상태 변경 시 표는 첫 페이지로 이동
+  };
+
+  const handleDirectInputClick = (clientData?: ClientDataModel) => {
+    if (clientData) {
+      // clientData가 있으면 URL 파라미터로 전달
+      const params = new URLSearchParams();
+      params.set("clientData", JSON.stringify(clientData));
+      router.push(`/quotation?${params.toString()}`);
+    } else {
+      // clientData가 없으면 빈 값으로 이동
+      router.push("/quotation");
+    }
   };
 
   return (
@@ -101,10 +115,14 @@ const ProcessProjectPageInner = () => {
         <SelectModal
           onClose={() => setIsSelectModalOpen(false)}
           onUploadClick={handleOpenUploadModal}
+          onDirectInputClick={handleDirectInputClick}
         />
       )}
       {isUploadModalOpen && (
-        <UploadModal onClose={() => setIsUploadModalOpen(false)} />
+        <UploadModal
+          onClose={() => setIsUploadModalOpen(false)}
+          onComplete={handleDirectInputClick}
+        />
       )}
     </>
   );
