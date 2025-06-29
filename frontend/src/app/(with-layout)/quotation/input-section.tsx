@@ -10,6 +10,13 @@ import {
   formatFaxNumber,
   handleNumberKeyDown,
 } from "@/hooks/format-number";
+import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
+import { clientData } from "@/mocks/client-data";
+import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
+import { createPortal } from "react-dom";
+import { useState } from "react";
+import { MaterialNameDropdown } from "@/ui/dropdown/material-name-dropdown";
 // import InputDatepicker from "@/ui/input-datepicker";
 
 interface InputSectionProps {
@@ -18,29 +25,83 @@ interface InputSectionProps {
 }
 
 const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
+  const [selectedClients, setSelectedClients] = useState<typeof clientData>([]);
+  const {
+    input: companyNameInput,
+    setInput: setCompanyNameInput,
+    isOpen: isCompanyNameDropdownOpen,
+    setIsOpen: setIsCompanyNameDropdownOpen,
+    filtered: filteredClients,
+    handleInputChange: handleCompanyNameInputChange,
+    handleSelect: handleCompanyNameSelect,
+  } = useDropdownFilter(clientData, (item) => item.companyName);
+
+  const handleSelectClient = (item: (typeof clientData)[number]) => {
+    handleCompanyNameSelect(item);
+    setCompanyNameInput(item.companyName);
+
+    // 선택한 거래처 정보로 폼 자동 채우기
+    form.handleChange("companyName", item.companyName);
+    form.handleChange("businessNumber", item.businessNumber);
+    form.handleChange("representativeName", item.representativeName);
+    form.handleChange("companyAddress", item.companyAddress);
+    form.handleChange("deliveryAddress", item.deliveryAddress || "");
+    form.handleChange("email", item.email);
+    form.handleChange("contact", item.contact || "");
+    form.handleChange("fax", item.fax || "");
+
+    setSelectedClients((prev) => {
+      if (!prev.some((client) => client.id === item.id)) {
+        return [...prev, item];
+      }
+      return prev;
+    });
+    setIsCompanyNameDropdownOpen(false);
+  };
+  const handleRemoveClient = (id: number) => {
+    setSelectedClients((prev) => prev.filter((client) => client.id !== id));
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-2">
-        <Input
-          label="거래처명"
-          placeholder="거래처명을 입력하세요."
-          required
-          value={form.formData.companyName}
-          onChange={(v) => form.handleChange("companyName", v)}
-          showError={isShowErrors && !form.formData.companyName}
-        />
-        <Input
-          label="사업자등록번호"
-          placeholder="사업자등록번호를 입력하세요."
-          required
-          value={formatBusinessNumber(form.formData.businessNumber)}
-          onChange={(v) => {
-            const numbers = extractNumbers(v);
-            form.handleChange("businessNumber", numbers);
-          }}
-          onKeyDown={handleNumberKeyDown}
-          showError={isShowErrors && !form.formData.businessNumber}
-        />
+        <div className="flex-1 relative">
+          <Input
+            label="거래처명"
+            placeholder="거래처명을 입력하세요."
+            required
+            value={companyNameInput}
+            onChange={setCompanyNameInput}
+            onFocus={() => setIsCompanyNameDropdownOpen(true)}
+            onBlur={() =>
+              setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
+            }
+          />
+
+          {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
+            <div className="absolute left-0 top-21 z-10 w-full">
+              <ClientNameDropdown
+                items={filteredClients}
+                onSelect={handleSelectClient}
+                width="w-full"
+              />
+            </div>
+          )}
+        </div>
+        <div className="flex-1">
+          <Input
+            label="사업자등록번호"
+            placeholder="사업자등록번호를 입력하세요."
+            required
+            value={formatBusinessNumber(form.formData.businessNumber)}
+            onChange={(v) => {
+              const numbers = extractNumbers(v);
+              form.handleChange("businessNumber", numbers);
+            }}
+            onKeyDown={handleNumberKeyDown}
+            showError={isShowErrors && !form.formData.businessNumber}
+          />
+        </div>
       </div>
       <div className="flex gap-2">
         <Input

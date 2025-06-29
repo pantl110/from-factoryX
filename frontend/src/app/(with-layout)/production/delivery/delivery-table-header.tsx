@@ -1,6 +1,6 @@
 const DeliveryTableHeader = () => {
   return (
-    <div className="flex items-center h-12 w-[1305px] Me_Body-1 rounded bg-lg-table">
+    <div className="flex items-center h-12 min-w-[1305px] Me_Body-1 rounded bg-lg-table">
       <div className="flex items-center py-3 px-2">
         <input type="checkbox" className="w-4 h-4 border-sv" />
       </div>

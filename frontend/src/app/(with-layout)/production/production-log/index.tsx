@@ -4,7 +4,7 @@ import ProductionLogTableItem from "./production-log-table-item";
 
 const ProductionLog = () => {
   return (
-    <div className="flex flex-col ml-10 pr-10 pt-4 pb-9 overflow-x-auto w-full">
+    <div className="flex flex-col mx-10 pt-4 pb-9 w-full overflow-x-auto max-w-[1320px]">
       <ProductionLogTableHeader />
       {productionData.map((product) => (
         <ProductionLogTableItem key={product.id} product={product} />

@@ -14,6 +14,8 @@ interface InputProps {
   showError?: boolean;
   inputRef?: React.RefObject<HTMLInputElement>;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 const Input = ({
@@ -28,6 +30,8 @@ const Input = ({
   showError = false,
   inputRef,
   onKeyDown,
+  onFocus,
+  onBlur,
 }: InputProps) => {
   const [isShowPassword, setisShowPassword] = useState(false);
 
@@ -57,8 +61,6 @@ const Input = ({
     }
 
     if (type === "date") {
-      className +=
-        " appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
       className += !value ? " text-sv" : " text-bl";
     }
 
@@ -83,6 +85,8 @@ const Input = ({
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           onKeyDown={onKeyDown}
+          onFocus={onFocus}
+          onBlur={onBlur}
           placeholder={placeholder}
           disabled={disabled}
           className={getInputClassName()}

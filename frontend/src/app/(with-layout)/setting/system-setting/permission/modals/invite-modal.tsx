@@ -3,6 +3,7 @@ import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal/modal";
 import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
+import AuthDropdown from "./auth-dropdown";
 
 interface InviteModalProps {
   onClose: () => void;
@@ -10,6 +11,7 @@ interface InviteModalProps {
 
 const InviteModal = ({ onClose }: InviteModalProps) => {
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [isAuthDropdownOpen, setIsAuthDropdownOpen] = useState(false);
 
   const handleInvite = () => {
     // 실제 초대 로직
@@ -34,15 +36,24 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
             <div className="flex-1">
               <Input placeholder="이메일을 입력하세요." />
             </div>
-            <MiniBtn
-              text="권한"
-              textColor="text-dg"
-              borderColor="border-lg"
-              icon={CaretDown}
-              iconPosition="right"
-              height="h-12"
-              hoverColor="hover:bg-bg"
-            />
+
+            <div className="relative">
+              <MiniBtn
+                text="권한"
+                textColor="text-dg"
+                borderColor="border-lg"
+                icon={CaretDown}
+                iconPosition="right"
+                height="h-12"
+                hoverColor="hover:bg-bg"
+                onClick={() => setIsAuthDropdownOpen(true)}
+              />
+              {isAuthDropdownOpen && (
+                <div className="absolute top-14 right-0">
+                  <AuthDropdown onClose={() => setIsAuthDropdownOpen(false)} />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex mt-5 justify-end gap-2.5">

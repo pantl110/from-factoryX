@@ -18,7 +18,7 @@ const DeliveryTableItem = ({ data }: DeliveryTableItemProps) => {
 
   return (
     <>
-      <div className="flex items-center h-14 w-[1305px] rounded border-b border-[#eeeeee]">
+      <div className="flex items-center h-14 min-w-[1305px] rounded border-b border-[#eeeeee]">
         <div className="flex items-center py-3 px-2">
           <input type="checkbox" className="w-4 h-4 border-sv" />
         </div>

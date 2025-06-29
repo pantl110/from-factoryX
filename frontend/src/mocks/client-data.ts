@@ -68,6 +68,7 @@ export const clientData: ClientDataModel[] = [
     companyAddress: "서울특별시 마포구 합정동 456-78 7층",
     comment: "플라스틱 전문 제조업체입니다.",
     dueDate: "2025-02-15",
+    fax: "0212345678",
   },
   {
     id: 6,
