@@ -17,7 +17,7 @@ const ClientTableHeader = ({ isDeleteMode }: ClientTableHeaderProps) => {
       )}
       <div className="w-[150px] px-3 flex gap-1 items-center">
         <p className=" text-sv">거래처</p>
-        <CaretDown size={16} className="text-sv" />
+        {/* <CaretDown size={16} className="text-sv" /> */}
       </div>
       <p className="px-3 flex-1">회사명</p>
       <p className="px-3 flex-1">사업자등록번호</p>

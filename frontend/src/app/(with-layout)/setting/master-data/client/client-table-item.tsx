@@ -68,7 +68,7 @@ const ClientTableItem = ({
           <input type="checkbox" className="w-4 h-4 border-sv" />
         </div>
       )}
-      <div className="px-3 w-[150px]" onClick={(e) => e.stopPropagation()}>
+      <div className="px-3 w-[150px]">
         <div>
           <Chip
             text={clientType}
@@ -76,9 +76,6 @@ const ClientTableItem = ({
             textColor={clientTypeColor.textColor}
             radius="rounded-sm"
             cursor="cursor-pointer"
-            onClick={(e) => {
-              if (e) openDropdown(e);
-            }}
           />
         </div>
       </div>
