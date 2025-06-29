@@ -9,6 +9,7 @@ import usePageStatusStore from "@/store/page-status-store";
 import OperationStatusDropdown from "./modals/operation-status-dropdown";
 import { createPortal } from "react-dom";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
+import FacilityDropdown from "./modals/facility-dropdown";
 
 const ProductionPlan = () => {
   // production의 "생산 대기" 상태의 "생산 계획" 탭에서 저장 버튼 클릭 시 모달 오픈
@@ -27,12 +28,6 @@ const ProductionPlan = () => {
   } = usePortalDropdown();
   const [operationStatusDropdownRowId, setOperationStatusDropdownRowId] =
     useState<number | null>(null);
-
-  const handleProductionPlanSave = () => {
-    // 생산 계획 저장 로직
-    setProductionPlanSaveModalOpen(false);
-  };
-
   const handleOperationStatusClick = (e: React.MouseEvent, rowId: number) => {
     openOperationStatusDropdown(e);
     setOperationStatusDropdownRowId(rowId);
@@ -40,6 +35,30 @@ const ProductionPlan = () => {
   const handleCloseOperationStatusModal = () => {
     setOperationStatusDropdownRowId(null);
     closeOperationStatusDropdown();
+  };
+
+  // 시설 드랍다운을 row별로 관리
+  const {
+    isOpen: isFacilityDropdownOpen,
+    openDropdown: openFacilityDropdown,
+    closeDropdown: closeFacilityDropdown,
+    anchorRect: facilityAnchorRect,
+  } = usePortalDropdown();
+  const [facilityDropdownRowId, setFacilityDropdownRowId] = useState<
+    number | null
+  >(null);
+  const handleFacilityClick = (e: React.MouseEvent, rowId: number) => {
+    openFacilityDropdown(e);
+    setFacilityDropdownRowId(rowId);
+  };
+  const handleCloseFacilityModal = () => {
+    setFacilityDropdownRowId(null);
+    closeFacilityDropdown();
+  };
+
+  const handleProductionPlanSave = () => {
+    // 생산 계획 저장 로직
+    setProductionPlanSaveModalOpen(false);
   };
 
   return (
@@ -54,6 +73,7 @@ const ProductionPlan = () => {
               onOperationStatusClick={(e) =>
                 handleOperationStatusClick(e, item.id)
               }
+              onFacilityClick={(e) => handleFacilityClick(e, item.id)}
             />
           ))}
         </div>
@@ -69,6 +89,22 @@ const ProductionPlan = () => {
               position: "fixed",
               left: operationStatusAnchorRect.left,
               top: operationStatusAnchorRect.bottom,
+              zIndex: 10,
+            }}
+          />,
+          document.body,
+        )}
+
+      {facilityDropdownRowId !== null &&
+        isFacilityDropdownOpen &&
+        facilityAnchorRect &&
+        createPortal(
+          <FacilityDropdown
+            onClose={handleCloseFacilityModal}
+            style={{
+              position: "fixed",
+              left: facilityAnchorRect.left,
+              top: facilityAnchorRect.bottom,
               zIndex: 10,
             }}
           />,

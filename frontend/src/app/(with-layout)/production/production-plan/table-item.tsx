@@ -13,9 +13,14 @@ import { productData } from "@/mocks/product-data";
 interface TableItemProps {
   item: ProductionPlanDataModel;
   onOperationStatusClick: (e: React.MouseEvent) => void;
+  onFacilityClick: (e: React.MouseEvent) => void;
 }
 
-const TableItem = ({ item, onOperationStatusClick }: TableItemProps) => {
+const TableItem = ({
+  item,
+  onOperationStatusClick,
+  onFacilityClick,
+}: TableItemProps) => {
   const { operationStatus, materialStatus } = item;
   const operationColor = OperationStatusColorMap[operationStatus];
   const materialColor = InventoryStatusColorMap[materialStatus];
@@ -65,7 +70,17 @@ const TableItem = ({ item, onOperationStatusClick }: TableItemProps) => {
       </div>
     ),
     "생산 설비": (
-      <div className="flex items-center gap-2.5 cursor-pointer">
+      <div
+        className={`flex items-center gap-2.5 ${
+          operationStatus === "가동 완료" ? "" : "cursor-pointer"
+        }`}
+        onClick={(e) => {
+          if (e && operationStatus !== "가동 완료") {
+            e.stopPropagation();
+            onFacilityClick(e);
+          }
+        }}
+      >
         <p>{item.facility}</p>
         <CaretDown size={16} className="text-sv" />
       </div>
