@@ -6,7 +6,7 @@ interface UseFormProps<T> {
 }
 
 // 깊은 비교
-const useDeepCompareEffect = (effect: () => void, deps: any[]) => {
+const useDeepCompareEffect = (effect: () => void, deps: unknown[]) => {
   const depsRef = useRef(deps);
   const depsString = JSON.stringify(deps);
   const prevDepsString = JSON.stringify(depsRef.current);

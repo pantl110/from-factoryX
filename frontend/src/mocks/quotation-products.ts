@@ -1,5 +1,6 @@
 const dummyProducts = [
   {
+    id: 1,
     productName: "제품A",
     productCode: "A001",
     size: "100x200",
@@ -9,6 +10,7 @@ const dummyProducts = [
     totalPrice: 10000,
   },
   {
+    id: 2,
     productName: "제품B",
     productCode: "B002",
     size: "200x300",
@@ -18,6 +20,7 @@ const dummyProducts = [
     totalPrice: 10000,
   },
   {
+    id: 3,
     productName: "제품C",
     productCode: "C003",
     size: "150x250",
@@ -27,6 +30,7 @@ const dummyProducts = [
     totalPrice: 12000,
   },
   {
+    id: 4,
     productName: "제품D",
     productCode: "D004",
     size: "300x400",
@@ -36,6 +40,7 @@ const dummyProducts = [
     totalPrice: 10000,
   },
   {
+    id: 5,
     productName: "제품E",
     productCode: "E005",
     size: "120x220",
@@ -45,6 +50,7 @@ const dummyProducts = [
     totalPrice: 8400,
   },
   {
+    id: 6,
     productName: "제품F",
     productCode: "F006",
     size: "180x280",
@@ -54,6 +60,7 @@ const dummyProducts = [
     totalPrice: 10000,
   },
   {
+    id: 7,
     productName: "제품G",
     productCode: "G007",
     size: "110x210",
@@ -63,6 +70,7 @@ const dummyProducts = [
     totalPrice: 10800,
   },
   {
+    id: 8,
     productName: "제품H",
     productCode: "H008",
     size: "130x230",

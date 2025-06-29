@@ -13,10 +13,7 @@ import {
 import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
 import { clientData } from "@/mocks/client-data";
 import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
-import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
-import { createPortal } from "react-dom";
 import { useState } from "react";
-import { MaterialNameDropdown } from "@/ui/dropdown/material-name-dropdown";
 // import InputDatepicker from "@/ui/input-datepicker";
 
 interface InputSectionProps {
@@ -25,14 +22,16 @@ interface InputSectionProps {
 }
 
 const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
-  const [selectedClients, setSelectedClients] = useState<typeof clientData>([]);
+  const [_selectedClients, setSelectedClients] = useState<typeof clientData>(
+    [],
+  );
   const {
     input: companyNameInput,
     setInput: setCompanyNameInput,
     isOpen: isCompanyNameDropdownOpen,
     setIsOpen: setIsCompanyNameDropdownOpen,
     filtered: filteredClients,
-    handleInputChange: handleCompanyNameInputChange,
+    // handleInputChange: handleCompanyNameInputChange,
     handleSelect: handleCompanyNameSelect,
   } = useDropdownFilter(clientData, (item) => item.companyName);
 
@@ -58,9 +57,9 @@ const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
     });
     setIsCompanyNameDropdownOpen(false);
   };
-  const handleRemoveClient = (id: number) => {
-    setSelectedClients((prev) => prev.filter((client) => client.id !== id));
-  };
+  // const handleRemoveClient = (id: number) => {
+  //   setSelectedClients((prev) => prev.filter((client) => client.id !== id));
+  // };
 
   return (
     <div className="flex flex-col gap-4">

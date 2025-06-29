@@ -72,6 +72,7 @@ const LoginPage = () => {
             height="h-12"
             onClick={handleLogin}
             disabled={!isButtonEnabled}
+            width="w-full"
           />
           <div className="flex justify-center items-center Me-Body-1 text-sv gap-5 mt-5">
             <Link href="/signup">회원가입</Link>

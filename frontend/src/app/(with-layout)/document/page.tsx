@@ -4,7 +4,7 @@ import { useState } from "react";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import MainTitleSec from "./main-title-sec";
 import DocumentTable from "./document-table";
-import Pagination from "@/components/pagination";
+// import Pagination from "@/components/pagination";
 import { DocumentType } from "./types";
 import OrderDocumentView from "./order-document-view";
 import { DocumentDataModel } from "@/mocks/document-data";
@@ -38,7 +38,7 @@ const DocumentPage = () => {
           />
         </div>
 
-        <Pagination />
+        {/* <Pagination currentPage={1} totalPages={10} onPageChange={() => {}} /> */}
       </div>
 
       {/* 판넬 */}

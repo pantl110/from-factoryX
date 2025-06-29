@@ -1,6 +1,6 @@
-import { ProductProps } from "./types";
+import { ProductDataModel } from "@/types/data-model";
 
-interface ProductItemProps extends ProductProps {
+interface ProductItemProps extends ProductDataModel {
   onClick?: () => void;
 }
 
@@ -25,9 +25,9 @@ const ProductItem = ({
       <p className="flex-1 px-3">{productCode}</p>
       <p className="flex-1 px-3">{size}</p>
       <p className="w-[80px] px-3">{unit}</p>
-      <p className="flex-1 px-3">{quantity.toLocaleString()}</p>
-      <p className="w-[100px] px-3">{unitPrice.toLocaleString()}</p>
-      <p className="flex-1 px-3">{totalPrice.toLocaleString()}</p>
+      <p className="flex-1 px-3">{quantity?.toLocaleString()}</p>
+      <p className="w-[100px] px-3">{unitPrice?.toLocaleString()}</p>
+      <p className="flex-1 px-3">{totalPrice?.toLocaleString()}</p>
     </div>
   );
 };

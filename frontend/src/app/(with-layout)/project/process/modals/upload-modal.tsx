@@ -1,10 +1,11 @@
 import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal/modal";
 import { clientData } from "@/mocks/client-data";
+import { ClientDataModel } from "@/types/data-model";
 
 interface UploadModalProps {
   onClose: () => void;
-  onComplete: (clientData?: any) => void;
+  onComplete: (clientData?: ClientDataModel) => void;
 }
 
 const UploadModal = ({ onClose, onComplete }: UploadModalProps) => {

@@ -29,8 +29,8 @@ const Client = ({ isDeleteMode }: ClientProps) => {
             companyName={client.companyName}
             businessNumber={client.businessNumber}
             representativeName={client.representativeName}
-            businessType={client.businessType}
-            businessCategory={client.businessCategory}
+            businessType={client.businessType ?? ""}
+            businessCategory={client.businessCategory ?? ""}
             contact={client.contact ?? ""}
             email={client.email ?? ""}
             onClick={() => handleTypeChange(client)}
