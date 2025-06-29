@@ -90,6 +90,7 @@ const FindPasswordPage = () => {
                 </div>
               )}
               <MiniBtn
+                width="w-full"
                 text={
                   verification.isVerificationSent ? "인증 완료" : "이메일 인증"
                 }
@@ -146,6 +147,7 @@ const FindPasswordPage = () => {
                 </div>
               </div>
               <MiniBtn
+                width="w-full"
                 text="비밀번호 변경"
                 bgColor="bg-primary"
                 textColor="text-wh"

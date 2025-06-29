@@ -8,6 +8,7 @@ import PendingQuote from "./pending-quote";
 import ProcessProject from "./process-project";
 import Tax from "./tax";
 import TodayProductionSchedule from "./today-production-schedule";
+import ProfitGraph from "./profit-graph";
 
 const DashboardPage = () => {
   return (
@@ -25,15 +26,7 @@ const DashboardPage = () => {
           </div>
 
           {/* 생산 이익 그래프 */}
-          <div className="flex flex-col flex-1 gap-3">
-            <h3 className="Heading-3">생산 이익 그래프</h3>
-            <div
-              className="border border-[#eeeeee] rounded-lg h-full
-             flex justify-center items-center bg-bg"
-            >
-              <p className="Re_Body-1 text-sv">그래프</p>
-            </div>
-          </div>
+          <ProfitGraph />
         </div>
 
         {/* 협의 중인 견적 */}

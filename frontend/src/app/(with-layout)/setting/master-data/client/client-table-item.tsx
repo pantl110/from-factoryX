@@ -1,8 +1,5 @@
 import Chip from "@/ui/chip";
 import { ClientType, ClientTypeColorMap } from "./types";
-import { createPortal } from "react-dom";
-import ClientTypeDropdown from "./modals/client-type-dropdown";
-import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 
 interface ClientTableItemProps {
   clientType: ClientType;
@@ -18,23 +15,23 @@ interface ClientTableItemProps {
   isDeleteMode: boolean;
 }
 
-const PortalDropdown = ({
-  anchorRect,
-  children,
-}: {
-  anchorRect: DOMRect | null;
-  onClose: () => void;
-  children: React.ReactNode;
-}) => {
-  if (!anchorRect) return null;
-  const style: React.CSSProperties = {
-    position: "absolute",
-    top: anchorRect.bottom + 8,
-    left: anchorRect.left,
-    zIndex: 50,
-  };
-  return createPortal(<div style={style}>{children}</div>, document.body);
-};
+// const PortalDropdown = ({
+//   anchorRect,
+//   children,
+// }: {
+//   anchorRect: DOMRect | null;
+//   onClose: () => void;
+//   children: React.ReactNode;
+// }) => {
+//   if (!anchorRect) return null;
+//   const style: React.CSSProperties = {
+//     position: "absolute",
+//     top: anchorRect.bottom + 8,
+//     left: anchorRect.left,
+//     zIndex: 50,
+//   };
+//   return createPortal(<div style={style}>{children}</div>, document.body);
+// };
 
 const ClientTableItem = ({
   clientType,
@@ -46,17 +43,17 @@ const ClientTableItem = ({
   contact,
   email,
   onClick,
-  onClientTypeChange,
+  // onClientTypeChange,
   isDeleteMode,
 }: ClientTableItemProps) => {
   const clientTypeColor = ClientTypeColorMap[clientType];
-  const { isOpen, openDropdown, closeDropdown, anchorRect } =
-    usePortalDropdown();
+  // const { isOpen, openDropdown, closeDropdown, anchorRect } =
+  //   usePortalDropdown();
 
-  const handleClientTypeSelect = (newClientType: ClientType) => {
-    onClientTypeChange?.(newClientType);
-    closeDropdown();
-  };
+  // const handleClientTypeSelect = (newClientType: ClientType) => {
+  //   onClientTypeChange?.(newClientType);
+  //   closeDropdown();
+  // };
 
   return (
     <div
@@ -94,7 +91,7 @@ const ClientTableItem = ({
       <p className="px-3 flex-1">{email}</p>
 
       {/* client type dropdown */}
-      {isOpen && anchorRect && (
+      {/* {isOpen && anchorRect && (
         <PortalDropdown anchorRect={anchorRect} onClose={closeDropdown}>
           <ClientTypeDropdown
             onClose={closeDropdown}
@@ -102,7 +99,7 @@ const ClientTableItem = ({
             currentClientType={clientType}
           />
         </PortalDropdown>
-      )}
+      )} */}
     </div>
   );
 };

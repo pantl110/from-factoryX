@@ -30,7 +30,7 @@ const ProductFlowTitle = ({
             <p className="w-[30px] h-[77px] pt-7 px-2 Re_Body-1 text-sv">__</p>
             <Input label="생산마감일" type="date" />
           </div>
-          <div className="flex justify-between p-3 rounded-lg bg-[#f5f5f5] w-[356px] Heading-5">
+          <div className="flex justify-between p-3 rounded-lg bg-[#f5f5f5] Heading-5">
             <h6>납기일</h6>
             <h6>2025-07-31</h6>
           </div>

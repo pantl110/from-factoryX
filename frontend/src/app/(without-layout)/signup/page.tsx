@@ -91,6 +91,7 @@ const SignupPage = () => {
                 </div>
               )}
               <MiniBtn
+                width="w-full"
                 text={
                   verification.isVerificationSent ? "인증 완료" : "이메일 인증"
                 }
@@ -147,6 +148,7 @@ const SignupPage = () => {
                 </div>
               </div>
               <MiniBtn
+                width="w-full"
                 text="가입 완료"
                 bgColor="bg-primary"
                 textColor="text-wh"

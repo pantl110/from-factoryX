@@ -21,7 +21,7 @@ const CreateMemoModal = ({ onClose }: CreateMemoModalProps) => {
           placeholder="제목을 입력하세요."
         />
         <textarea
-          className="resize-none h-[448px] mt-4 Re_Body-1 text-gr px-3 py-5 border border-[#E4E4E7] rounded overflow-y-auto"
+          className="resize-none h-[448px] mt-4 Re_Body-1 text-gr px-3 py-5 border border-[#E4E4E7] rounded overflow-y-auto scrollbar-hide"
           placeholder="메모를 입력하세요."
         />
         <div className="flex gap-2.5 justify-end mt-4">

@@ -26,7 +26,7 @@ const ProductionMonitor = () => {
           logData.length === 0 ? "border-none" : "border-[#eeeeee]"
         }`}
       >
-        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto">
+        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto scrollbar-hide">
           <div>
             <MiniBtn
               text="메모 작성"

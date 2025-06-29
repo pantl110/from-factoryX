@@ -83,7 +83,7 @@ const ProcessProjectPageInner = () => {
             isDeleteBtnClicked={isDeleteBtnClicked}
             setIsDeleteBtnClicked={setIsDeleteBtnClicked}
           />
-          <div className="overflow-y-auto w-full">
+          <div className="overflow-y-auto w-full scrollbar-hide">
             <TableHeader isDeleteBtnClicked={isDeleteBtnClicked} />
             {currentProjects.map((project) => (
               <TableItem

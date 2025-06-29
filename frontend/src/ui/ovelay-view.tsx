@@ -25,7 +25,7 @@ const OverlayView = ({ children, onClose }: OverlayViewProps) => {
       }}
     >
       <div
-        className="bg-white w-[85%] h-[85%] overflow-y-auto"
+        className="bg-white w-[85%] h-[85%] overflow-y-auto scrollbar-hide"
         onClick={(e) => e.stopPropagation()}
       >
         {children}
