@@ -3,7 +3,7 @@
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 import { useState } from "react";
-import DeleteModal from "../app/(with-layout)/project/modals/delete-modal";
+import DeleteModal from "./modal/delete-modal";
 
 interface SearchDeleteTableProps {
   isDeleteBtnClicked?: boolean;

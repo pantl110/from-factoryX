@@ -11,8 +11,9 @@ export const clientData: ClientDataModel[] = [
     businessCategory: "시설성형",
     contact: "02-3456-7890",
     email: "purchasing@hansolchem.com",
-    address: "서울특별시 강남구 역삼동 123-45 10층",
+    companyAddress: "서울특별시 강남구 역삼동 123-45 10층",
     comment: "주문 횟수가 많은 거래처입니다.",
+    dueDate: "2025-01-01",
   },
   {
     id: 2,
@@ -24,8 +25,9 @@ export const clientData: ClientDataModel[] = [
     businessCategory: "플라스틱 원료",
     contact: "031-111-2222",
     email: "sales@ecoplastic.co.kr",
-    address: "경기도 성남시 분당구 정자동 123-45 5층",
+    companyAddress: "경기도 성남시 분당구 정자동 123-45 5층",
     comment: "주문 횟수가 많은 거래처입니다.",
+    dueDate: "2025-01-01",
   },
   {
     id: 3,
@@ -37,7 +39,8 @@ export const clientData: ClientDataModel[] = [
     businessCategory: "자동차 부품",
     contact: "052-987-6543",
     email: "rnd@miraemotors.com",
-    address: "부산광역시 해운대구 우동 123-45 3층",
+    companyAddress: "부산광역시 해운대구 우동 123-45 3층",
+    dueDate: "2025-01-01",
   },
   {
     id: 4,
@@ -49,6 +52,7 @@ export const clientData: ClientDataModel[] = [
     businessCategory: "철강",
     contact: "054-280-5000",
     email: "info@steelkorea.com",
-    address: "부산광역시 해운대구 우동 123-45 3층",
+    companyAddress: "부산광역시 해운대구 우동 123-45 3층",
+    dueDate: "2025-01-01",
   },
 ];

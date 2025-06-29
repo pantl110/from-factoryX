@@ -1,7 +1,7 @@
 "use client";
 
 import MiniBtn from "@/ui/mini-btn";
-import { BellSimple, User } from "@phosphor-icons/react";
+import { BellSimple } from "@phosphor-icons/react";
 import { notificationData } from "@/mocks/notification-data";
 import { ProductionTabType } from "./types";
 

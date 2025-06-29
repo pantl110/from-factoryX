@@ -2,9 +2,10 @@
 
 import Input from "@/ui/input";
 import { useForm } from "@/hooks/use-form";
+import { ClientDataModel } from "@/types/data-model";
 
 interface InputSectionProps {
-  form: ReturnType<typeof useForm<any>>;
+  form: ReturnType<typeof useForm<ClientDataModel>>;
   isShowErrors: boolean;
 }
 
@@ -35,9 +36,9 @@ const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
           label="대표자명"
           placeholder="대표자명을 입력하세요."
           required
-          value={form.formData.ceoName}
-          onChange={(v) => form.handleChange("ceoName", v)}
-          showError={isShowErrors && !form.formData.ceoName}
+          value={form.formData.representativeName}
+          onChange={(v) => form.handleChange("representativeName", v)}
+          showError={isShowErrors && !form.formData.representativeName}
         />
         <Input
           label="납기일자"
@@ -71,32 +72,32 @@ const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
           label="담당자명"
           placeholder="담당자명을 입력하세요."
           required
-          value={form.formData.managerName}
-          onChange={(v) => form.handleChange("managerName", v)}
-          showError={isShowErrors && !form.formData.managerName}
+          value={form.formData.representativeName}
+          onChange={(v) => form.handleChange("representativeName", v)}
+          showError={isShowErrors && !form.formData.representativeName}
         />
         <Input
           label="담당자 이메일"
           placeholder="담당자 이메일을 입력하세요."
           required
-          value={form.formData.managerEmail}
-          onChange={(v) => form.handleChange("managerEmail", v)}
-          showError={isShowErrors && !form.formData.managerEmail}
+          value={form.formData.email}
+          onChange={(v) => form.handleChange("email", v)}
+          showError={isShowErrors && !form.formData.email}
         />
       </div>
       <div className="flex gap-2">
         <Input
           label="담당자 연락처"
           placeholder="담당자 연락처를 입력하세요."
-          value={form.formData.managerPhone}
-          onChange={(v) => form.handleChange("managerPhone", v)}
+          value={form.formData.contact}
+          onChange={(v) => form.handleChange("contact", v)}
           type="number"
         />
         <Input
           label="담당자 팩스"
           placeholder="담당자 팩스를 입력하세요."
-          value={form.formData.managerFax}
-          onChange={(v) => form.handleChange("managerFax", v)}
+          value={form.formData.fax}
+          onChange={(v) => form.handleChange("fax", v)}
           type="number"
         />
       </div>

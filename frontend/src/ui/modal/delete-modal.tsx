@@ -11,7 +11,7 @@ const DeleteModal = ({ onClose }: DeleteModalProps) => {
       title="삭제하시겠습니까?"
       subtitle="이 작업은 되돌릴 수 없습니다. 선택한 항목이 영구적으로 삭제됩니다."
       sm={true}
-      width="w-[487px]"
+      width="w-[560px]"
       onClose={onClose}
     >
       <div className="flex gap-[5px] justify-end mt-4">

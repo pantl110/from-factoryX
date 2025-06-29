@@ -6,7 +6,7 @@ interface UsePaginationProps<T> {
   initialPage?: number;
 }
 
-interface UsePaginationReturn<T> {
+interface UsePaginationModel<T> {
   currentItems: T[];
   currentPage: number;
   totalPages: number;
@@ -24,7 +24,7 @@ const usePagination = <T>({
   items,
   itemsPerPage,
   initialPage = 1,
-}: UsePaginationProps<T>): UsePaginationReturn<T> => {
+}: UsePaginationProps<T>): UsePaginationModel<T> => {
   const [currentPage, setCurrentPage] = useState(initialPage);
 
   const paginationData = useMemo(() => {

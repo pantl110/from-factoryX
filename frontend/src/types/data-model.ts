@@ -25,12 +25,14 @@ export interface ClientDataModel {
   companyName: string;
   businessNumber: string;
   representativeName: string;
-  businessType: string; // 업태
-  businessCategory: string; // 종목
+  dueDate: string;
+  businessType?: string; // 업태
+  businessCategory?: string; // 종목
   contact?: string;
   fax?: string;
-  email?: string;
-  address?: string;
+  email: string;
+  companyAddress: string;
+  deliveryAddress?: string;
   comment?: string;
   [key: string]: unknown;
 }

@@ -15,12 +15,13 @@ import History from "./history";
 import EmailView from "./modals/email-view";
 import OverlayView from "@/ui/ovelay-view";
 import PrintView from "./modals/print-view";
-import { ProductProps } from "./types";
+import { ProductModel } from "./types";
 import StartProductionModal from "./modals/start-production-modal";
 import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import ProductEnrollmentModal from "./modals/product-enrollment-modal";
 import { useForm } from "@/hooks/use-form";
+import { ClientDataModel } from "@/types/data-model";
 
 const QuotationPage = () => {
   // 탭 상태
@@ -30,7 +31,7 @@ const QuotationPage = () => {
   // 오른쪽 패널 확장 상태
   const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
   // 선택된 품목 상태 -> 히스토리 보여주기
-  const [selectedProduct, setSelectedProduct] = useState<ProductProps | null>(
+  const [selectedProduct, setSelectedProduct] = useState<ProductModel | null>(
     null,
   );
   // 모달 상태
@@ -40,6 +41,8 @@ const QuotationPage = () => {
     useState(false);
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
+  // 프로젝트 이름 상태
+  const [projectName, setProjectName] = useState("플라스틱이 좋아");
   // 드랍다운 상태
   const {
     isOpen: isQuotationStatusDropdownOpen,
@@ -48,30 +51,30 @@ const QuotationPage = () => {
     anchorRect: quotationStatusAnchorRect,
   } = usePortalDropdown();
 
-  const initialData = {
+  const initialData: ClientDataModel = {
+    id: 0,
+    type: "발주처",
     companyName: "",
     businessNumber: "",
-    ceoName: "",
+    representativeName: "",
     dueDate: "",
+    email: "",
     companyAddress: "",
     deliveryAddress: "",
-    managerName: "",
-    managerEmail: "",
-    managerPhone: "",
-    managerFax: "",
+    contact: "",
+    fax: "",
   };
   const validationRules = {
     companyName: (v: string) => !!v,
     businessNumber: (v: string) => !!v,
-    ceoName: (v: string) => !!v,
+    representativeName: (v: string) => !!v,
     dueDate: (v: string) => !!v,
     companyAddress: (v: string) => !!v,
-    managerName: (v: string) => !!v,
-    managerEmail: (v: string) => !!v,
+    email: (v: string) => !!v,
   };
-  const form = useForm({ initialData, validationRules });
+  const form = useForm<ClientDataModel>({ initialData, validationRules });
 
-  const handleProductClick = (product: ProductProps) => {
+  const handleProductClick = (product: ProductModel) => {
     setSelectedProduct(product);
     setActiveTab("history"); // 품목 클릭 시 히스토리탭 활성화
     setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
@@ -113,7 +116,13 @@ const QuotationPage = () => {
                 </div>
               )}
             </div>
-            <h1 className="Heading-1 mt-2">플라스틱이 좋아</h1>
+            <input
+              type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className="Heading-1 mt-2 outline-none placeholder:text-gr"
+              placeholder="프로젝트명을 입력해주세요."
+            />
           </div>
           <ButtonSection
             onEmailClick={() => setIsEmailOpen(true)}
@@ -188,10 +197,7 @@ const QuotationPage = () => {
             <div className="overflow-y-auto scrollbar-hide h-full">
               <div className="flex flex-col flex-1 gap-5 px-10 pb-11">
                 <h3 className="Heading-3">회사 정보</h3>
-                <InputSection
-                  form={{ ...form, handleChange: form.handleChange as any }}
-                  isShowErrors={form.isShowErrors}
-                />
+                <InputSection form={form} isShowErrors={form.isShowErrors} />
               </div>
 
               <div

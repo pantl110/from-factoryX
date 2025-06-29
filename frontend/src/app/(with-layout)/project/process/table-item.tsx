@@ -153,7 +153,7 @@ const TableItem = ({
       )}
 
       <button
-        className="w-9 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200"
+        className="w-9 h-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200"
         onClick={(e) => {
           e.stopPropagation();
           openDeleteDropdown(e);
