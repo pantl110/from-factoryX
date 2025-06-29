@@ -1,6 +1,5 @@
 import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
-
 import { InputType } from "@/types/input-type";
 
 interface InputProps {
@@ -40,7 +39,7 @@ const Input = ({
 
   const getInputClassName = () => {
     let className =
-      "w-full h-12 min-h-9 rounded px-3 Re_Body-1 placeholder:text-sv outline-none border transition-colors";
+      "w-full h-12 min-h-9 rounded px-3 Re_Body-1 placeholder:text-sv outline-none border transition-colors duration-300";
 
     if (type === "number") {
       className +=
@@ -58,6 +57,8 @@ const Input = ({
     }
 
     if (type === "date") {
+      className +=
+        " appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
       className += !value ? " text-sv" : " text-bl";
     }
 
@@ -72,6 +73,7 @@ const Input = ({
           {required && <span className="text-primary">*</span>}
         </div>
       )}
+
       <div className="relative">
         <input
           ref={inputRef}

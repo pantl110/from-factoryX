@@ -10,12 +10,14 @@ interface ButtonSectionProps {
   onEmailClick?: () => void;
   onPrintClick?: () => void;
   onStartProductionClick?: () => void;
+  isClientData: boolean;
 }
 
 const ButtonSection = ({
   onEmailClick,
   onPrintClick,
   onStartProductionClick,
+  isClientData,
 }: ButtonSectionProps) => {
   return (
     <div className="flex gap-1">
@@ -27,6 +29,7 @@ const ButtonSection = ({
         iconColor="text-dg"
         onClick={onPrintClick}
         hoverColor="hover:bg-bg"
+        disabled={!isClientData}
       />
       <MiniBtn
         text="이메일 보내기"
@@ -36,6 +39,7 @@ const ButtonSection = ({
         iconColor="text-dg"
         onClick={onEmailClick}
         hoverColor="hover:bg-bg"
+        disabled={!isClientData}
       />
       <MiniBtn
         text="생산 시작하기"
@@ -43,6 +47,7 @@ const ButtonSection = ({
         bgColor="bg-primary"
         onClick={onStartProductionClick}
         hoverColor="hover:bg-primary-hover"
+        disabled={!isClientData}
       />
     </div>
   );

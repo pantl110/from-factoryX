@@ -115,3 +115,15 @@ button {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+.react-datepicker-wrapper {
+  width: 100% !important;
+  /* display: block !important; */
+}
+
+/* .react-datepicker.month-container {
+  width: 100% !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+} */

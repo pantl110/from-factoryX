@@ -22,9 +22,13 @@ import TabArea from "./tab-area";
 import TitleSec from "./title-sec";
 
 const QuotationPage = () => {
-  // 탭 상태
+  // URL 파라미터에서 clientData 가져오기
+  const searchParams = useSearchParams();
+  const clientDataParam = searchParams.get("clientData");
+
+  // 탭 상태 - 데이터가 없으면 히스토리 탭 활성화
   const [activeTab, setActiveTab] = useState<"quotation" | "history">(
-    "quotation",
+    clientDataParam ? "quotation" : "history",
   );
   // 오른쪽 패널 확장 상태
   const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
@@ -39,10 +43,6 @@ const QuotationPage = () => {
     useState(false);
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
-
-  // URL 파라미터에서 clientData 가져오기
-  const searchParams = useSearchParams();
-  const clientDataParam = searchParams.get("clientData");
 
   // 초기 데이터 설정
   const initialData = useMemo((): ClientDataModel => {
@@ -114,10 +114,12 @@ const QuotationPage = () => {
           setIsEmailOpen={setIsEmailOpen}
           setIsPrintOpen={setIsPrintOpen}
           setIsStartProductionModalOpen={setIsStartProductionModalOpen}
+          isClientData={!!clientDataParam}
         />
         <TabArea
           activeTab={activeTab}
           activateQuotationTab={activateQuotationTab}
+          clientDataParam={clientDataParam}
         />
 
         <div className="flex flex-1 overflow-y-hidden">
@@ -129,8 +131,10 @@ const QuotationPage = () => {
           >
             {selectedProduct ? (
               <History selectedProduct={selectedProduct} />
-            ) : (
+            ) : clientDataParam ? (
               <PreviewImage />
+            ) : (
+              <History selectedProduct={null} />
             )}
           </div>
 
@@ -173,6 +177,7 @@ const QuotationPage = () => {
                   setIsProductEnrollmentModalOpen={
                     setIsProductEnrollmentModalOpen
                   }
+                  clientDataParam={clientDataParam}
                 />
               </div>
             </div>

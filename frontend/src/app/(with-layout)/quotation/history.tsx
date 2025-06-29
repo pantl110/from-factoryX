@@ -1,12 +1,24 @@
 import HistoryItem from "./history-item";
 import dummyHistoryItems from "@/mocks/history-items";
-import { ProductProps } from "./types";
+import { ProductModel } from "./types";
 
 interface HistoryProps {
-  selectedProduct: ProductProps;
+  selectedProduct: ProductModel | null;
 }
 
 const History = ({ selectedProduct }: HistoryProps) => {
+  // selectedProduct가 없으면 빈 상태 표시
+  if (!selectedProduct) {
+    return (
+      <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-[#E4E4E7]">
+        <h4 className="Heading-4 text-dg">히스토리가 아직 없어요.</h4>
+        <p className="R_Body-1 text-gr">
+          처음 등록된 품목이라, 과거 단가나 수량 기록이 아직 없어요.
+        </p>
+      </div>
+    );
+  }
+
   const filteredHistoryItems = dummyHistoryItems.filter(
     (item) => item.productName === selectedProduct.productName,
   );

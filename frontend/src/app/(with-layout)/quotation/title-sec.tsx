@@ -12,12 +12,14 @@ interface TitleSecProps {
   setIsEmailOpen: (isEmailOpen: boolean) => void;
   setIsPrintOpen: (isPrintOpen: boolean) => void;
   setIsStartProductionModalOpen: (isStartProductionModalOpen: boolean) => void;
+  isClientData: boolean;
 }
 const TitleSec = ({
   form,
   setIsEmailOpen,
   setIsPrintOpen,
   setIsStartProductionModalOpen,
+  isClientData,
 }: TitleSecProps) => {
   // 프로젝트 이름 상태
   const [projectName, setProjectName] = useState("플라스틱이 좋아");
@@ -72,6 +74,7 @@ const TitleSec = ({
             setIsStartProductionModalOpen(true);
           });
         }}
+        isClientData={isClientData}
       />
     </div>
   );

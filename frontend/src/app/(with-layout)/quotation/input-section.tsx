@@ -10,6 +10,7 @@ import {
   formatFaxNumber,
   handleNumberKeyDown,
 } from "@/hooks/format-number";
+// import InputDatepicker from "@/ui/input-datepicker";
 
 interface InputSectionProps {
   form: ReturnType<typeof useForm<ClientDataModel>>;
@@ -58,6 +59,13 @@ const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
           showError={isShowErrors && !form.formData.dueDate}
           type="date"
         />
+        {/* <InputDatepicker
+          label="납기일자"
+          required
+          value={form.formData.dueDate}
+          onChange={(v) => form.handleChange("dueDate", v)}
+          showError={isShowErrors && !form.formData.dueDate}
+        /> */}
       </div>
       <div className="flex gap-2">
         <Input
