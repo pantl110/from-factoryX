@@ -16,14 +16,17 @@ const ProductionMonitor = () => {
   const [isDeleteMemoModalOpen, setIsDeleteMemoModalOpen] = useState(false);
 
   return (
-    <div className="flex gap-3 px-10 w-full min-h-0">
+    <div
+      className="flex gap-3 px-10 w-full min-h-0 flex-1"
+      style={{ height: "calc(100vh - 333px)" }}
+    >
       {/* 왼쪽 영역 */}
       <div
-        className={`w-[50%] flex flex-col gap-4 h-full pt-5 px-3 mb-10 border-r ${
+        className={`w-[50%] flex flex-col gap-4 flex-1 pt-5 px-3 mb-10 border-r ${
           logData.length === 0 ? "border-none" : "border-[#eeeeee]"
         }`}
       >
-        <div className="flex flex-col gap-4 h-full min-h-0">
+        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto">
           <div>
             <MiniBtn
               text="메모 작성"
@@ -37,7 +40,7 @@ const ProductionMonitor = () => {
           {logData.length === 0 ? (
             <EmptyLog />
           ) : (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 flex-1">
               {logData.map((log) => (
                 <LogItem
                   key={log.id}

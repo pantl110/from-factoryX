@@ -78,7 +78,7 @@ const ProductionPage = () => {
   if (!project || isStopped) return notFound();
 
   return (
-    <div className="w-full h-full flex-1 flex flex-col">
+    <div className="w-full h-full flex-1 flex flex-col min-h-0">
       <ProductFlowTitle
         status={newStatus as ProjectStatusType}
         tabs={tabs}
@@ -97,7 +97,11 @@ const ProductionPage = () => {
         </div>
       )}
       {tabs[selectedTab] === "납품" && <Delivery />}
-      {tabs[selectedTab] === "생산 현황" && <ProductionMonitor />}
+      {tabs[selectedTab] === "생산 현황" && (
+        <div className="flex-1 min-h-0">
+          <ProductionMonitor />
+        </div>
+      )}
       {tabs[selectedTab] === "생산 내역" && <ProductionLog />}
       {tabs[selectedTab] === "생산 계획" && <ProductionPlan />}
       {tabs[selectedTab] === "주문서" && (
