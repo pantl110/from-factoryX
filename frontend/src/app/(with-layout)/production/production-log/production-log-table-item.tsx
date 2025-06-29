@@ -41,12 +41,14 @@ const ProductionLogTableItem = ({ product }: ProductionLogTableItemProps) => {
                     : "bg-red-8"
                 }
               />
-              <p
-                className="cursor-pointer Re_Body-1 text-gr flex items-center opacity-0 hover:opacity-100 transition-opacity duration-200 ease-in-out"
-                onClick={() => setIsProductDetailOpen(true)}
-              >
-                상세보기
-              </p>
+              {product.materialStatus === "부족" && (
+                <p
+                  className="cursor-pointer Re_Body-1 text-gr flex items-center opacity-0 hover:opacity-100 transition-opacity duration-200 ease-in-out"
+                  onClick={() => setIsProductDetailOpen(true)}
+                >
+                  상세보기
+                </p>
+              )}
             </div>
           )}
         </div>

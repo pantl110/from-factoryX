@@ -22,7 +22,7 @@ const Chip = ({
   radius = "rounded",
   icon,
   onClick,
-  cursor = "",
+  cursor = onClick ? "cursor-pointer" : "",
   hover = "",
 }: ChipProps) => {
   const handleClick = (e: React.MouseEvent) => {
