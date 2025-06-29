@@ -13,6 +13,8 @@ import {
 import TransactionStateDropdown from "./modals/transaction-state-dropdown";
 import TaxStateDropdown from "./modals/tax-state-dropdown";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
+import { DotsThree } from "@phosphor-icons/react";
+import DeleteDropdown from "@/ui/dropdown/delete-dropdown";
 
 interface TableItemProps {
   id: number;
@@ -56,6 +58,13 @@ const TableItem = ({
     anchorRect: taxAnchorRect,
   } = usePortalDropdown();
 
+  const {
+    isOpen: isDeleteDropdownOpen,
+    openDropdown: openDeleteDropdown,
+    closeDropdown: closeDeleteDropdown,
+    anchorRect: deleteAnchorRect,
+  } = usePortalDropdown();
+
   const handleClick = () => {
     if (status === "견적 협의") router.push(`/quotation`);
     else router.push(`/production/${id}`);
@@ -86,10 +95,18 @@ const TableItem = ({
           textColor={chipColors.textColor}
         />
       </div>
-      <p className="flex-2 py-1 px-3 text-dg">{companyName}</p>
-      <p className="flex-2 py-1 px-3 text-dg">{items}</p>
-      <p className="w-[200px] py-1 px-3 text-dg">{startDate}</p>
-      <p className="w-[200px] py-1 px-3 text-dg">{endDate}</p>
+      <p className="flex-2 py-1 px-3 text-dg truncate" title={companyName}>
+        {companyName}
+      </p>
+      <p className="flex-2 py-1 px-3 text-dg truncate" title={items}>
+        {items}
+      </p>
+      <p className="w-[200px] py-1 px-3 text-dg truncate" title={startDate}>
+        {startDate}
+      </p>
+      <p className="w-[200px] py-1 px-3 text-dg truncate" title={endDate}>
+        {endDate}
+      </p>
       <div className="relative" onClick={(e) => e.stopPropagation()}>
         <p
           className={`w-[200px] py-1 px-3 ${transactionColor} cursor-pointer`}
@@ -98,6 +115,8 @@ const TableItem = ({
           {transactionIssued}
         </p>
       </div>
+
+      {/* 발행 여부 dropdown */}
       {isTransactionDropdownOpen && transactionAnchorRect && (
         <div
           style={{
@@ -130,6 +149,29 @@ const TableItem = ({
           }}
         >
           <TaxStateDropdown onClose={closeTaxDropdown} />
+        </div>
+      )}
+
+      <button
+        className="w-9 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200"
+        onClick={(e) => {
+          e.stopPropagation();
+          openDeleteDropdown(e);
+        }}
+      >
+        <DotsThree size={20} className="text-sv" />
+      </button>
+      {/* Delete dropdown */}
+      {isDeleteDropdownOpen && deleteAnchorRect && (
+        <div
+          style={{
+            position: "fixed",
+            right: window.innerWidth - deleteAnchorRect.right,
+            top: deleteAnchorRect.bottom,
+            zIndex: 10,
+          }}
+        >
+          <DeleteDropdown onClose={closeDeleteDropdown} />
         </div>
       )}
     </div>

@@ -10,6 +10,8 @@ import TableItem from "./table-item";
 import SelectModal from "./modals/select-modal";
 import UploadModal from "./modals/upload-modal";
 import { useSearchParams } from "next/navigation";
+import Pagination from "@/components/pagination";
+import usePagination from "@/hooks/use-pagination";
 
 const ProcessProjectPageInner = () => {
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
@@ -27,6 +29,21 @@ const ProcessProjectPageInner = () => {
   // 버튼 상태
   const [isDeleteBtnClicked, setIsDeleteBtnClicked] = useState(false);
 
+  const filteredProjects =
+    selectedStatus === "전체"
+      ? projectData
+      : projectData.filter((project) => project.status === selectedStatus);
+
+  const {
+    currentItems: currentProjects,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+  } = usePagination({
+    items: filteredProjects,
+    itemsPerPage: 10,
+  }); // pagination hook
+
   const handleNewQuotation = () => {
     setIsSelectModalOpen(true);
   };
@@ -34,11 +51,10 @@ const ProcessProjectPageInner = () => {
     setIsSelectModalOpen(false);
     setIsUploadModalOpen(true);
   };
-
-  const filteredProjects =
-    selectedStatus === "전체"
-      ? projectData
-      : projectData.filter((project) => project.status === selectedStatus);
+  const handleStatusChange = (status: ProjectStatusType | "전체") => {
+    setSelectedStatus(status);
+    setCurrentPage(1); // 상태 변경 시 표는 첫 페이지로 이동
+  };
 
   return (
     <>
@@ -46,7 +62,7 @@ const ProcessProjectPageInner = () => {
         <MainTitleSec
           onNewQuotation={handleNewQuotation}
           selectedStatus={selectedStatus}
-          onStatusChange={setSelectedStatus}
+          onStatusChange={handleStatusChange}
         />
         <div className="px-8">
           <SearchDeleteTable
@@ -55,7 +71,7 @@ const ProcessProjectPageInner = () => {
           />
           <div className="overflow-y-auto w-full">
             <TableHeader isDeleteBtnClicked={isDeleteBtnClicked} />
-            {filteredProjects.map((project) => (
+            {currentProjects.map((project) => (
               <TableItem
                 key={project.id}
                 id={project.id}
@@ -70,6 +86,13 @@ const ProcessProjectPageInner = () => {
               />
             ))}
           </div>
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </div>
       </div>
 

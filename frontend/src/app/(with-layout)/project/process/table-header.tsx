@@ -32,6 +32,7 @@ const TableHeader = ({ isDeleteBtnClicked }: TableHeaderProps) => {
         <p className=" text-sv">세금계산서 발행 여부</p>
         <CaretDown size={16} className="text-sv" />
       </div>
+      <div className="w-9" />
     </div>
   );
 };

@@ -8,14 +8,14 @@ import {
 const transactionStates: TransactionStatusType[] = ["미작성", "작성 완료"];
 
 interface TransactionStateDropdownProps {
-  onClose?: () => void;
+  onClose: () => void;
 }
 
 const TransactionStateDropdown = ({
   onClose,
 }: TransactionStateDropdownProps) => {
   return (
-    <Dropdown onClose={onClose || (() => {})}>
+    <Dropdown onClose={onClose}>
       {transactionStates.map((state) => (
         <DropdownItem
           key={state}

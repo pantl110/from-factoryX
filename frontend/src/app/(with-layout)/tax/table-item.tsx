@@ -31,7 +31,10 @@ const TableItem = ({
         if (e.key === "Enter" || e.key === " ") onItemClick?.();
       }}
     >
-      <div className="flex items-center py-3 px-2">
+      <div
+        className="flex items-center py-3 px-2"
+        onClick={(e) => e.stopPropagation()}
+      >
         <input type="checkbox" className="w-4 h-4 border-sv" />
       </div>
 
