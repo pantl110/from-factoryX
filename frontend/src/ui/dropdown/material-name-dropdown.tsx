@@ -13,7 +13,7 @@ export const MaterialNameDropdown = ({
 }) => {
   return (
     <Dropdown onClose={() => {}} width={width}>
-      {items.map((item) => (
+      {items.slice(0, 6).map((item) => (
         <DropdownItem
           key={item.id}
           text={item.materialName}
