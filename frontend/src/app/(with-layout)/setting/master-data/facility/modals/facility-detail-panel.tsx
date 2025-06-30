@@ -3,6 +3,7 @@ import { FacilityDataModel } from "@/mocks/facility-data";
 import InfoLabelValue from "@/ui/info-label-value";
 import { FacilityStatusType } from "../types";
 import FacilityHistoryItem from "./facility-history-item";
+import { FacilityStatusColorMap } from "../types";
 
 interface FacilityDetailPanelProps {
   facility: FacilityDataModel;
@@ -13,6 +14,10 @@ const FacilityDetailPanel = ({
   facility,
   onClose,
 }: FacilityDetailPanelProps) => {
+  const statusColor = facility.status
+    ? FacilityStatusColorMap[facility.status as FacilityStatusType]
+    : null;
+
   return (
     <Panel title="설비 관리" onClose={onClose}>
       <div className="flex flex-col gap-10">
@@ -21,7 +26,12 @@ const FacilityDetailPanel = ({
           <h3 className="Heading-3">설비 정보</h3>
           <div className="flex flex-col">
             <div className="flex">
-              <InfoLabelValue label="설비명" value={facility.name} />
+              <InfoLabelValue
+                label="설비명"
+                value={facility.name}
+                placeholder="설비명을 입력하세요."
+                isEditing={true}
+              />
               <InfoLabelValue
                 label="가동 상태"
                 chip={{
@@ -32,9 +42,16 @@ const FacilityDetailPanel = ({
             <div className="flex">
               <InfoLabelValue
                 label="자동 배정 순위"
-                value={facility.priority.toString()}
+                value={facility.priority?.toString()}
+                placeholder="자동 배정 순위를 입력하세요."
+                isEditing={true}
               />
-              <InfoLabelValue label="설비위치" value={facility.location} />
+              <InfoLabelValue
+                label="설비위치"
+                value={facility.location}
+                placeholder="설비위치를 입력하세요."
+                isEditing={true}
+              />
             </div>
           </div>
         </div>
@@ -46,7 +63,8 @@ const FacilityDetailPanel = ({
             name=""
             id=""
             className="w-full h-[200px] border border-lg rounded-lg pt-5 px-3 Re_Body-1 text-gr resize-none"
-          ></textarea>
+            placeholder="특이사항을 입력하세요."
+          />
         </div>
 
         {/* 생산 히스토리 */}
