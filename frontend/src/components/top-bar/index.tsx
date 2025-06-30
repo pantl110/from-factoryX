@@ -6,8 +6,13 @@ import { useState } from "react";
 import NotificationModal from "./modals/notification-modal";
 import ProfileModal from "./modals/profile-modal";
 import TopBarCrumb from "./top-bar-crumb";
+import { usePathname } from "next/navigation";
 
-const TopBar = () => {
+interface TopBarProps {
+  isSidebarVisible: boolean;
+}
+
+const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   const pageStatus = usePageStatusStore(
     (state: PageStatusModel) => state.pageStatus,
   );
@@ -27,10 +32,15 @@ const TopBar = () => {
   );
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <>
-      <header className=" w-[calc(100%-256px)] fixed z-40 bg-white border-b border-[#eeeeee]">
+      <header
+        className={`${
+          isSidebarVisible ? "w-[calc(100%-256px)]" : "w-full"
+        } fixed z-40 bg-white border-b border-[#eeeeee] transition-width duration-300`}
+      >
         <div className="max-w-[1400px] min-w-[1000px] mx-auto px-10 flex items-center justify-between h-[60px]">
           <TopBarCrumb
             pageStatus={pageStatus || ""}
@@ -52,8 +62,8 @@ const TopBar = () => {
             onProfileClick={() => setIsProfileModalOpen(true)}
           />
 
-          {isProfileModalOpen && (
-            <div className="absolute top-17 right-0">
+          {isProfileModalOpen && !pathname.includes("production") && (
+            <div className="absolute top-17 right-10">
               <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
             </div>
           )}
