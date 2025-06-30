@@ -22,13 +22,13 @@ const CompanyInfo = () => {
         address: "",
       },
       validationRules: {
-        companyName: (value) => value.trim() !== "",
-        businessNumber: (value) => value.trim() !== "",
-        ceoName: (value) => value.trim() !== "",
-        managerEmail: (value) => value.trim() !== "",
-        businessType: (value) => value.trim() !== "",
-        businessCategory: (value) => value.trim() !== "",
-        address: (value) => value.trim() !== "",
+        // companyName: (value) => value.trim() !== "",
+        // businessNumber: (value) => value.trim() !== "",
+        // ceoName: (value) => value.trim() !== "",
+        // managerEmail: (value) => value.trim() !== "",
+        // businessType: (value) => value.trim() !== "",
+        // businessCategory: (value) => value.trim() !== "",
+        // address: (value) => value.trim() !== "",
       },
     });
 
@@ -45,7 +45,7 @@ const CompanyInfo = () => {
             <Input
               placeholder=""
               label="회사명"
-              required
+              // required
               value={formData.companyName}
               onChange={(value) => handleChange("companyName", value)}
               showError={isShowErrors}
@@ -53,7 +53,7 @@ const CompanyInfo = () => {
             <Input
               placeholder=""
               label="사업자등록번호"
-              required
+              // required
               value={formData.businessNumber}
               onChange={(value) => handleChange("businessNumber", value)}
               showError={isShowErrors}
@@ -63,7 +63,7 @@ const CompanyInfo = () => {
             <Input
               placeholder=""
               label="대표자명"
-              required
+              // required
               value={formData.ceoName}
               onChange={(value) => handleChange("ceoName", value)}
               showError={isShowErrors}
@@ -71,7 +71,7 @@ const CompanyInfo = () => {
             <Input
               placeholder=""
               label="담당자 이메일"
-              required
+              // required
               value={formData.managerEmail}
               onChange={(value) => handleChange("managerEmail", value)}
               showError={isShowErrors}
@@ -95,7 +95,7 @@ const CompanyInfo = () => {
             <Input
               placeholder=""
               label="업태"
-              required
+              // required
               value={formData.businessType}
               onChange={(value) => handleChange("businessType", value)}
               showError={isShowErrors}
@@ -103,7 +103,7 @@ const CompanyInfo = () => {
             <Input
               placeholder=""
               label="종목"
-              required
+              // required
               value={formData.businessCategory}
               onChange={(value) => handleChange("businessCategory", value)}
               showError={isShowErrors}
@@ -112,7 +112,7 @@ const CompanyInfo = () => {
           <Input
             placeholder=""
             label="사업장 주소"
-            required
+            // required
             value={formData.address}
             onChange={(value) => handleChange("address", value)}
             showError={isShowErrors}

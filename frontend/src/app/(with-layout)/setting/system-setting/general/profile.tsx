@@ -19,8 +19,8 @@ const Profile = () => {
         phone: "",
       },
       validationRules: {
-        name: (value) => value.trim() !== "",
-        email: (value) => value.trim() !== "",
+        // name: (value) => value.trim() !== "",
+        // email: (value) => value.trim() !== "",
       },
     });
 
