@@ -24,12 +24,10 @@ const WithLayout = ({ children }: { children: React.ReactNode }) => {
           isProductionPage && !isSidebarVisible ? "ml-0" : "ml-64"
         }`}
       >
-        <div className="max-w-[1400px] min-w-[1000px] mx-auto w-full">
+        <div className="w-full relative">
           <TopBar />
         </div>
-        <div className="w-full h-[1px] bg-[#eeeeee]" />
-
-        <div className="flex flex-col flex-1 max-w-[1400px] min-w-[1000px] mx-auto w-full">
+        <div className="flex flex-col flex-1 max-w-[1400px] min-w-[1000px] mx-auto w-full mt-[60px]">
           <main className="flex flex-col flex-1 min-h-0 h-full">
             {children}
           </main>

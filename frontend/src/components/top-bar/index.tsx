@@ -30,30 +30,34 @@ const TopBar = () => {
 
   return (
     <>
-      <header className="flex items-center justify-between w-full h-[60px] px-10 relative">
-        <TopBarCrumb
-          pageStatus={pageStatus || ""}
-          productionTab={productionTab || undefined}
-          stockTab={stockTab || undefined}
-          settingTab={settingTab || undefined}
-          settingChip={settingChip || undefined}
-        />
+      <header className=" w-[calc(100%-256px)] fixed z-40 bg-white border-b border-[#eeeeee]">
+        <div className="max-w-[1400px] min-w-[1000px] mx-auto px-10 flex items-center justify-between h-[60px]">
+          <TopBarCrumb
+            pageStatus={pageStatus || ""}
+            productionTab={productionTab || undefined}
+            stockTab={stockTab || undefined}
+            settingTab={settingTab || undefined}
+            settingChip={settingChip || undefined}
+          />
 
-        <TopBarContent
-          pageStatus={pageStatus}
-          productionTab={productionTab}
-          onProductionPlanSaveClick={() => setProductionPlanSaveModalOpen(true)}
-          onAddReturnClick={() => setAddReturnModalOpen(true)}
-          onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
-          onNotificationClick={() => setIsNotificationModalOpen(true)}
-          onProfileClick={() => setIsProfileModalOpen(true)}
-        />
+          <TopBarContent
+            pageStatus={pageStatus}
+            productionTab={productionTab}
+            onProductionPlanSaveClick={() =>
+              setProductionPlanSaveModalOpen(true)
+            }
+            onAddReturnClick={() => setAddReturnModalOpen(true)}
+            onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
+            onNotificationClick={() => setIsNotificationModalOpen(true)}
+            onProfileClick={() => setIsProfileModalOpen(true)}
+          />
 
-        {isProfileModalOpen && (
-          <div className="absolute top-17 right-0">
-            <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
-          </div>
-        )}
+          {isProfileModalOpen && (
+            <div className="absolute top-17 right-0">
+              <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
+            </div>
+          )}
+        </div>
       </header>
 
       {isNotificationModalOpen && (
