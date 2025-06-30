@@ -18,8 +18,9 @@ const UploadModal = ({ onClose, onComplete }: UploadModalProps) => {
       title="견적 요청서를 파일을 업로드해 주세요."
       subtitle="이미지 파일을 이곳에 끌어다 놓거나 직접 추가할 수 있어요."
       onClose={onClose}
+      width="w-[600px]"
     >
-      <div className="mt-4 flex justify-end">
+      <div className="mt-2 flex justify-end">
         <MiniBtn
           text="샘플 엑셀 다운로드"
           textColor="text-dg"

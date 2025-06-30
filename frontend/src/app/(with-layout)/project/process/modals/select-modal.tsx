@@ -30,6 +30,7 @@ const SelectModal = ({
       title="견적 요청서를 등록해주세요."
       subtitle="이미지 파일 형식의 요청서를 등록하거나 직접 입력할 수 있어요."
       onClose={onClose}
+      width="w-[600px]"
     >
       <div className="mt-6 flex gap-2.5">
         <div

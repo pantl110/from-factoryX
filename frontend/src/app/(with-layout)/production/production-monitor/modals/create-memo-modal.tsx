@@ -8,11 +8,10 @@ interface CreateMemoModalProps {
 const CreateMemoModal = ({ onClose }: CreateMemoModalProps) => {
   return (
     <Modal
-      title="메모 작성"
+      title="생산 메모를 등록해 주세요."
       subtitle="입력된 메모는 생산 현황에서 확인할 수 있어요."
-      width="w-[586px]"
+      width="w-[600px]"
       height="h-[691px]"
-      sm={true}
       onClose={onClose}
     >
       <div className="flex flex-col min-h-0 h-full">

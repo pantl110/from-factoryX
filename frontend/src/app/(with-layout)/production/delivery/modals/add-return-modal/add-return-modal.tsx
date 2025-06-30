@@ -64,7 +64,7 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
       title="반품할 상품을 등록해 주세요."
       subtitle="반품할 품목명과 수량을 입력해 주세요."
       onClose={onClose}
-      width="w-[586px]"
+      width="w-[600px]"
     >
       <div className="w-full mt-4 relative">
         <SearchInput

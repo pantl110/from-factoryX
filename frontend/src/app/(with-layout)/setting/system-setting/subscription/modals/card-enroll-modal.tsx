@@ -11,7 +11,7 @@ const CardEnrollModal = ({ onClose }: CardEnrollModalProps) => {
     <Modal
       title="사용하실 결제 카드를 등록해주세요."
       onClose={onClose}
-      width="w-[586px]"
+      width="w-[600px]"
     >
       <div className="flex flex-col gap-1">
         <p className="Me_Body-2 text-gr">

@@ -44,7 +44,7 @@ const MaterialEnrollmentModal = ({
       title="이 거래처에서 구매한 원자재를 등록해주세요."
       subtitle="입력한 거래처로부터 실제로 구매한 원자재 정보를 입력해 주세요."
       onClose={onClose}
-      width="w-[586px]"
+      width="w-[600px]"
     >
       <div className="flex justify-end h-12 gap-2.5 mt-4 items-center">
         <div className="flex-1 relative">

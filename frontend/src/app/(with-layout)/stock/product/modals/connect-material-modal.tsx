@@ -41,7 +41,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
   return (
     <Modal
       title="품목과 연결할 원자재를 선택하거나 새로 추가해 주세요."
-      width="w-[586px]"
+      width="w-[600px]"
       onClose={onClose}
     >
       <div className="mt-4 flex gap-2.5 relative">

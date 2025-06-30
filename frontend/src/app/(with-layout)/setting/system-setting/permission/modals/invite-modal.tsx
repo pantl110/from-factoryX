@@ -30,7 +30,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
           title="팩토리엑스에 팀원을 초대하세요."
           subtitle="초대할 분의 이메일과 권한을 설정해주세요."
           onClose={onClose}
-          width="w-[586px]"
+          width="w-[600px]"
         >
           <div className="flex gap-2.5 w-full mt-4">
             <div className="flex-1">

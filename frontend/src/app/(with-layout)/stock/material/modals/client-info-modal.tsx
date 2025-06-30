@@ -70,7 +70,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       title="거래처 정보를 입력해주세요."
       subtitle="등록된 정보는 이후 문서 작성 시 자동으로 불러와져요."
       onClose={onClose}
-      width="w-[586px]"
+      width="w-[600px]"
     >
       <div className="flex flex-col gap-7 mt-4">
         <div className="flex flex-col gap-4">

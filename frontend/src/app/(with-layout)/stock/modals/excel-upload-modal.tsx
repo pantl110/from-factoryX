@@ -12,7 +12,7 @@ const ExcelUploadModal = ({ onClose }: ExcelUploadModalProps) => {
       subtitle="예시 파일에 맞춰 작성한 후 업로드하면 품목이 자동 등록돼요."
       onClose={onClose}
     >
-      <div className="flex justify-end mt-4">
+      <div className="flex justify-end mt-2">
         <MiniBtn
           text="샘플 엑셀 다운로드"
           textColor="text-dg"

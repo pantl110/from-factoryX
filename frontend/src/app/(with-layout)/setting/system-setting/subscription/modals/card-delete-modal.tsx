@@ -12,7 +12,6 @@ const CardDeleteModal = ({ onClose, onConfirm }: CardDeleteModalProps) => {
       title="카드를 정말 삭제하시겠어요?"
       subtitle="카드를 삭제하면 모든 정보가 사라지며, 복구할 수 없습니다."
       onClose={onClose}
-      width="w-[420px]"
       sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">

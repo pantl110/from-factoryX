@@ -42,7 +42,7 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
   return (
     <Modal
       title="해당 원자재와 연결할 품목을 등록해 주세요."
-      width="w-[586px]"
+      width="w-[600px]"
       onClose={onClose}
     >
       <div className="mt-4 flex gap-2.5 relative">

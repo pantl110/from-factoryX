@@ -9,7 +9,6 @@ const MoveToStorageModal = ({ onClose }: MoveToStorageModalProps) => {
     <Modal
       title="프로젝트를 보관하시겠습니까?"
       onClose={onClose}
-      width="w-[487px]"
       subtitle="납품 예정된 품목이 완료 처리되며, 프로젝트는 보관함으로 이동됩니다."
       sm={true}
     >

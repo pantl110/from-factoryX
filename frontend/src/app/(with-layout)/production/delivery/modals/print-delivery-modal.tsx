@@ -12,7 +12,6 @@ const PrintDeliveryModal = ({ onClose }: PrintDeliveryModalProps) => {
       subtitle="선택한 납품 정보를 문서로 출력합니다."
       sm={true}
       onClose={onClose}
-      width="w-[487px]"
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn
