@@ -6,6 +6,7 @@ const PermissionTableHeader = () => {
       <p className="px-3 flex-1">이메일</p>
       <p className="px-3 w-[150px]">권한</p>
       <p className="px-3 w-[150px]">초대 날짜</p>
+      <div className="w-9"></div>
     </div>
   );
 };
