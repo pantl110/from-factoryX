@@ -3,7 +3,7 @@ import { FacilityDataModel } from "@/mocks/facility-data";
 import InfoLabelValue from "@/ui/info-label-value";
 import { FacilityStatusType } from "../types";
 import FacilityHistoryItem from "./facility-history-item";
-import { FacilityStatusColorMap } from "../types";
+import EmptySpace from "@/ui/empty-space";
 
 interface FacilityDetailPanelProps {
   facility: FacilityDataModel;
@@ -14,10 +14,6 @@ const FacilityDetailPanel = ({
   facility,
   onClose,
 }: FacilityDetailPanelProps) => {
-  const statusColor = facility.status
-    ? FacilityStatusColorMap[facility.status as FacilityStatusType]
-    : null;
-
   return (
     <Panel title="설비 관리" onClose={onClose}>
       <div className="flex flex-col gap-10">
@@ -45,6 +41,7 @@ const FacilityDetailPanel = ({
                 value={facility.priority?.toString()}
                 placeholder="자동 배정 순위를 입력하세요."
                 isEditing={true}
+                inputType="number"
               />
               <InfoLabelValue
                 label="설비위치"
@@ -71,27 +68,37 @@ const FacilityDetailPanel = ({
         <div className="flex flex-col gap-3">
           <h3 className="Heading-3">생산 히스토리</h3>
           <div className="flex flex-col">
-            <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-              <p className="px-3 flex-1">품목명</p>
-              <p className="px-3 flex-1">생산 수량</p>
-              <p className="px-3 flex-1">생산일자</p>
-              <p className="px-3 flex-1">단위당 시간</p>
-              <p className="px-3 flex-1">마감 시간</p>
-            </div>
-            <FacilityHistoryItem
-              productName="플라스틱컵 A"
-              quantity={100}
-              date="2025-06-20 11:00"
-              unitTime="60초"
-              deadlineTime="2025-06-20 13:00"
-            />
-            <FacilityHistoryItem
-              productName="플라스틱컵 B"
-              quantity={120}
-              date="2025-06-20 11:00"
-              unitTime="90초"
-              deadlineTime="2025-06-20 14:00"
-            />
+            {facility && facility.name ? (
+              <>
+                <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
+                  <p className="px-3 flex-1">품목명</p>
+                  <p className="px-3 flex-1">생산 수량</p>
+                  <p className="px-3 flex-1">생산일자</p>
+                  <p className="px-3 flex-1">단위당 시간</p>
+                  <p className="px-3 flex-1">마감 시간</p>
+                </div>
+                <FacilityHistoryItem
+                  productName="플라스틱컵 A"
+                  quantity={100}
+                  date="2025-06-20 11:00"
+                  unitTime="60초"
+                  deadlineTime="2025-06-20 13:00"
+                />
+                <FacilityHistoryItem
+                  productName="플라스틱컵 B"
+                  quantity={120}
+                  date="2025-06-20 11:00"
+                  unitTime="90초"
+                  deadlineTime="2025-06-20 14:00"
+                />
+              </>
+            ) : (
+              <EmptySpace
+                title="생산 기록이 아직 없습니다."
+                description="이 설비로 시작되면 목록이 표시됩니다."
+                height="h-50"
+              />
+            )}
           </div>
         </div>
       </div>

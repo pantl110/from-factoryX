@@ -133,8 +133,18 @@ textarea {
   }
 }
 
-/*    pt-5 px-3 Re_Body-1 text-gr */
+/* number input 화살표 숨기기 */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
 
+/* scrollbar 숨기기 */
 .scrollbar-hide {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
