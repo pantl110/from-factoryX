@@ -8,7 +8,7 @@ interface UploadModalProps {
   onComplete: (clientData?: ClientDataModel) => void;
 }
 
-const UploadModal = ({ onClose, onComplete }: UploadModalProps) => {
+const ExcelUploadModal = ({ onClose, onComplete }: UploadModalProps) => {
   const handleComplete = () => {
     onComplete(clientData[0]);
   };
@@ -29,7 +29,10 @@ const UploadModal = ({ onClose, onComplete }: UploadModalProps) => {
           borderColor="border-lg"
         />
       </div>
-      <div className="mt-3 h-[240px] rounded-lg border-2 border-dashed border-gr flex flex-col gap-2 justify-center items-center hover:border-primary hover:cursor-pointer hover:bg-secondary">
+      <div
+        className="mt-3 h-60 rounded-lg border-2 border-dashed border-gr flex flex-col gap-2 justify-center items-center
+      hover:bg-secondary transition-colors duration-200 hover:border-primary"
+      >
         <p className="Me_Body-2 text-dg">
           파일을 끌어다 놓거나, 아래 버튼으로 업로드 할 수 있어요.
         </p>
@@ -41,18 +44,8 @@ const UploadModal = ({ onClose, onComplete }: UploadModalProps) => {
           borderColor="border-lg"
         />
       </div>
-      <div className="mt-4 flex justify-end">
-        <MiniBtn
-          text="완료"
-          textColor="text-dg"
-          bgColor="bg-wh"
-          hoverColor="hover:bg-bg"
-          borderColor="border-lg"
-          onClick={handleComplete}
-        />
-      </div>
     </Modal>
   );
 };
 
-export default UploadModal;
+export default ExcelUploadModal;

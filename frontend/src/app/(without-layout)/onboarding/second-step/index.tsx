@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { SecondStepFormDataModel } from "../types";
 
 interface SecondStepProps {
   onNextStep: () => void;
@@ -13,16 +14,21 @@ interface SecondStepProps {
 }
 
 // Yup 스키마 정의
-const createValidationSchema = (materialCount: number) => {
-  const materialFields: Record<string, yup.StringSchema> = {};
+const createValidationSchema = (
+  materialCount: number, // 생성할 자재 항목의 개수
+): yup.ObjectSchema<SecondStepFormDataModel> => {
+  const materialFields: Record<string, yup.StringSchema | yup.NumberSchema> =
+    {};
 
   for (let i = 0; i < materialCount; i++) {
     materialFields[`materialName_${i}`] = yup.string().required();
     materialFields[`size_${i}`] = yup.string().required();
-    materialFields[`usageQuantity_${i}`] = yup.string().required();
-  }
+    materialFields[`usageQuantity_${i}`] = yup.number().required().positive();
+  } // 자재 항목의 개수만큼 반복하여 스키마 생성
 
-  return yup.object(materialFields);
+  return yup.object(
+    materialFields,
+  ) as yup.ObjectSchema<SecondStepFormDataModel>;
 };
 
 const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
@@ -33,8 +39,8 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
     handleSubmit,
     formState: { errors },
     clearErrors,
-  } = useForm({
-    resolver: yupResolver(createValidationSchema(materialItems.length + 1)), // +1 for the first item
+  } = useForm<SecondStepFormDataModel>({
+    resolver: yupResolver(createValidationSchema(materialItems.length + 1)),
     mode: "onChange",
   });
 

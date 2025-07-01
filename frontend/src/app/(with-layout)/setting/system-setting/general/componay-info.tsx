@@ -1,33 +1,20 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import { useState } from "react";
 import SaveModal from "./modals/save-modal";
-
-// Yup 스키마 정의
-const companySchema = yup.object({
-  companyName: yup.string().required(),
-  businessNumber: yup.string().required(),
-  ceoName: yup.string().required(),
-  managerEmail: yup.string().email().required(),
-  managerPhone: yup.string().optional(),
-  managerFax: yup.string().optional(),
-  businessType: yup.string().required(),
-  businessCategory: yup.string().required(),
-  address: yup.string().required(),
-});
+import {
+  formatBusinessNumber,
+  formatFaxNumber,
+  formatPhoneNumber,
+  handleNumberKeyDown,
+} from "@/hooks/format-number";
+import { CompanyFormDataModel } from "./types";
 
 const CompanyInfo = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(companySchema),
+  const { register, handleSubmit, setValue } = useForm<CompanyFormDataModel>({
     defaultValues: {
       companyName: "",
       businessNumber: "",
@@ -39,15 +26,28 @@ const CompanyInfo = () => {
       businessCategory: "",
       address: "",
     },
-    mode: "onChange",
   });
 
   const onSubmit = () =>
-    // data: CompanyFormDataModel
+    // data: CompanyFormData
     {
       // console.log("회사 정보:", data);
       setIsSaveModalOpen(true);
     };
+  const handleBusinessNumberChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const formattedValue = formatBusinessNumber(e.target.value);
+    setValue("businessNumber", formattedValue);
+  };
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatPhoneNumber(e.target.value);
+    setValue("managerPhone", formattedValue);
+  };
+  const handleFaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatFaxNumber(e.target.value);
+    setValue("managerFax", formattedValue);
+  };
 
   return (
     <>
@@ -56,70 +56,62 @@ const CompanyInfo = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex gap-2">
             <Input
-              placeholder=""
+              placeholder="회사명을 입력해주세요."
               label="회사명"
-              required
               {...register("companyName")}
-              showError={!!errors.companyName}
             />
             <Input
-              placeholder=""
+              placeholder="사업자등록번호(숫자만 입력)"
               label="사업자등록번호"
-              required
               {...register("businessNumber")}
-              showError={!!errors.businessNumber}
+              onChange={handleBusinessNumberChange}
+              onKeyDown={handleNumberKeyDown}
             />
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder=""
+              placeholder="대표자명을 입력해주세요."
               label="대표자명"
-              required
               {...register("ceoName")}
-              showError={!!errors.ceoName}
             />
             <Input
-              placeholder=""
-              label="담당자 이메일"
-              required
+              placeholder="연락 가능한 이메일 주소를 입력해주세요."
+              label="이메일"
               {...register("managerEmail")}
-              showError={!!errors.managerEmail}
             />
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder=""
-              label="담당자 연락처"
+              placeholder="전화번호를 입력해주세요."
+              label="연락처"
               {...register("managerPhone")}
+              onChange={handlePhoneChange}
+              onKeyDown={handleNumberKeyDown}
             />
             <Input
-              placeholder=""
-              label="담당자 팩스"
+              placeholder="팩스번호를 입력해주세요."
+              label="팩스"
               {...register("managerFax")}
+              onChange={handleFaxChange}
+              onKeyDown={handleNumberKeyDown}
             />
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder=""
+              placeholder="업태를 입력해주세요."
               label="업태"
-              required
               {...register("businessType")}
-              showError={!!errors.businessType}
             />
             <Input
-              placeholder=""
+              placeholder="종목을 입력해주세요."
               label="종목"
-              required
               {...register("businessCategory")}
-              showError={!!errors.businessCategory}
             />
           </div>
           <Input
-            placeholder=""
+            placeholder="사업장 주소를 입력해주세요."
             label="사업장 주소"
-            required
             {...register("address")}
-            showError={!!errors.address}
           />
           <div className="flex justify-end">
             <MiniBtn

@@ -1,4 +1,5 @@
-import { CameraIcon, X } from "@phosphor-icons/react";
+import PrifileImage from "@/ui/prifile-image";
+import { X } from "@phosphor-icons/react";
 import { useEffect, useRef } from "react";
 
 interface ProfileModalProps {
@@ -33,11 +34,9 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex gap-6">
-        {/* 아이콘 */}
+        {/* 프로필 사진 */}
         <div>
-          <div className="flex items-center justify-center rounded-full w-[72px] h-[72px] bg-primary-8 border border-primary Me_Body-3 text-primary">
-            JG
-          </div>
+          <PrifileImage />
         </div>
 
         {/* 개인 정보 */}

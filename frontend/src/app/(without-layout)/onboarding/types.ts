@@ -10,3 +10,7 @@ export interface FirstStepFormDataModel {
   size: string;
   unit: string;
 }
+
+export interface SecondStepFormDataModel {
+  [key: string]: string | number;
+}

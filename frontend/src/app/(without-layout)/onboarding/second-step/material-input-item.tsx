@@ -1,12 +1,13 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { SecondStepFormDataModel } from "../types";
 
 interface MaterialInputItemProps {
   plusMode?: boolean;
   onDelete?: () => void;
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
+  register: UseFormRegister<SecondStepFormDataModel>;
+  errors: FieldErrors<SecondStepFormDataModel>;
   index: number;
 }
 
@@ -46,7 +47,9 @@ const MaterialInputItem = ({
             type="number"
             placeholder="EX) 100"
             required={true}
-            {...(register && { ...register(`usageQuantity_${index}`) })}
+            {...(register && {
+              ...register(`usageQuantity_${index}`, { valueAsNumber: true }),
+            })}
             showError={!!errors?.[`usageQuantity_${index}`]}
           />
         </div>

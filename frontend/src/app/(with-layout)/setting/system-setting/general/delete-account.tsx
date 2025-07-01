@@ -7,6 +7,7 @@ const DeleteAccount = () => {
 
   const handleDeleteConfirm = () => {
     // 실제 계정 삭제 로직 추후 추가
+    setIsDeleteModalOpen(false);
   };
 
   return (

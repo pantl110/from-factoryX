@@ -20,6 +20,7 @@ interface InputProps {
   onFocus?: () => void;
   onBlur?: (() => void) | ((e: React.FocusEvent<HTMLInputElement>) => void);
   name?: string;
+  disabledSetting?: boolean;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -40,6 +41,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       onFocus,
       onBlur,
       name,
+      disabledSetting = false,
     },
     ref,
   ) => {
@@ -60,6 +62,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
       if (disabled) {
         className += " bg-lg text-dg cursor-not-allowed border-[#e4e4e7]";
+      } else if (disabledSetting) {
+        className += " text-sv cursor-not-allowed border-[#e4e4e7] ";
       } else if (showError) {
         className +=
           " border-red hover:border-primary focus:border-primary focus:text-bl";
@@ -153,7 +157,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             onFocus={onFocus}
             onBlur={handleBlur}
             placeholder={placeholder}
-            disabled={disabled}
+            disabled={disabled || disabledSetting}
             className={getInputClassName()}
           />
 
