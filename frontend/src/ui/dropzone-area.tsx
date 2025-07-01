@@ -11,9 +11,14 @@ import {
 interface DropzoneProps {
   isMultiple?: boolean;
   onClose?: () => void;
+  onComplete?: (files: File[]) => void;
 }
 
-const Dropzone = ({ isMultiple = false, onClose }: DropzoneProps) => {
+const DropzoneArea = ({
+  isMultiple = false,
+  onClose,
+  onComplete,
+}: DropzoneProps) => {
   const [files, setFiles] = useState<File[]>([]);
 
   const onDrop = useCallback(
@@ -72,25 +77,35 @@ const Dropzone = ({ isMultiple = false, onClose }: DropzoneProps) => {
     <>
       <div
         {...getRootProps()}
-        className={`mt-4 h-60 rounded-lg border-2 border-dashed border-gr flex flex-col gap-2 justify-center items-center ${
+        className={`h-60 rounded-lg border-2 border-dashed border-gr flex flex-col gap-2 justify-center items-center ${
           isDragActive
             ? "bg-secondary transition-colors duration-200 border-primary"
             : ""
         }`}
       >
-        <input {...getInputProps()} />
-        <p className="Me_Body-2 text-dg">
-          파일을 끌어다 놓거나, 아래 버튼으로 업로드 할 수 있어요.
-        </p>
-        <MiniBtn
-          text="내 컴퓨터에서 선택"
-          textColor="text-dg"
-          bgColor="bg-wh"
-          hoverColor="hover:bg-bg"
-          borderColor="border-lg"
-          type="button"
-          onClick={open}
-        />
+        {isDragActive ? (
+          <>
+            {/* 드래그 시 이미지 */}
+            <Image className="text-primary w-[68px] h-[73px]" weight="fill" />
+          </>
+        ) : (
+          <>
+            {/* 기본 이미지 */}
+            <input {...getInputProps()} />
+            <p className="Me_Body-2 text-dg">
+              파일을 끌어다 놓거나, 아래 버튼으로 업로드 할 수 있어요.
+            </p>
+            <MiniBtn
+              text="내 컴퓨터에서 선택"
+              textColor="text-dg"
+              bgColor="bg-wh"
+              hoverColor="hover:bg-bg"
+              borderColor="border-lg"
+              type="button"
+              onClick={open}
+            />
+          </>
+        )}
       </div>
 
       {/* 파일 목록 렌더링 */}
@@ -121,11 +136,11 @@ const Dropzone = ({ isMultiple = false, onClose }: DropzoneProps) => {
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"
-          onClick={onClose}
+          onClick={onComplete ? onComplete : onClose}
         />
       </div>
     </>
   );
 };
 
-export default Dropzone;
+export default DropzoneArea;

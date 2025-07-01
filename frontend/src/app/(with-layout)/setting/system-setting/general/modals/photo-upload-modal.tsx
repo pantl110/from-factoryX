@@ -1,6 +1,5 @@
-import Dropzone from "@/ui/dropzone";
+import DropzoneArea from "@/ui/dropzone-area";
 import Modal from "@/ui/modal/modal";
-import { useCallback } from "react";
 
 interface PhotoUploadModalProps {
   onClose: () => void;
@@ -14,7 +13,9 @@ const PhotoUploadModal = ({ onClose }: PhotoUploadModalProps) => {
       onClose={onClose}
       width="w-[600px]"
     >
-      <Dropzone onClose={onClose} />
+      <div className="mt-4">
+        <DropzoneArea onClose={onClose} />
+      </div>
     </Modal>
   );
 };
