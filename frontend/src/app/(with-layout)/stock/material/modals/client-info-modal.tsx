@@ -105,7 +105,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
                 type="number"
                 required
                 value={formData.businessNumber}
-                onChange={(v) => handleChange("businessNumber", v)}
+                onChange={(v: string) => handleChange("businessNumber", v)}
                 showError={
                   isShowErrors && !(formData.businessNumber || "").trim()
                 }
@@ -118,7 +118,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               placeholder="대표자명 입력"
               required
               value={formData.representativeName}
-              onChange={(v) => handleChange("representativeName", v)}
+              onChange={(v: string) => handleChange("representativeName", v)}
               showError={
                 isShowErrors && !(formData.representativeName || "").trim()
               }
@@ -127,7 +127,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="담당자 이메일"
               placeholder="담당자 이메일 입력"
               value={formData.email}
-              onChange={(v) => handleChange("email", v)}
+              onChange={(v: string) => handleChange("email", v)}
             />
           </div>
           <div className="flex gap-2.5">
@@ -136,14 +136,14 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               placeholder="담당자 연락처 입력"
               type="number"
               value={formData.contact}
-              onChange={(v) => handleChange("contact", v)}
+              onChange={(v: string) => handleChange("contact", v)}
             />
             <Input
               label="팩스 번호"
               placeholder="팩스 번호 입력"
               type="number"
               value={formData.fax}
-              onChange={(v) => handleChange("fax", v)}
+              onChange={(v: string) => handleChange("fax", v)}
             />
           </div>
           <div className="flex gap-2.5">
@@ -152,7 +152,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               placeholder="업태 입력"
               required
               value={formData.businessType}
-              onChange={(v) => handleChange("businessType", v)}
+              onChange={(v: string) => handleChange("businessType", v)}
               showError={isShowErrors && !(formData.businessType || "").trim()}
             />
             <Input
@@ -160,7 +160,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               placeholder="종목 입력"
               required
               value={formData.businessCategory}
-              onChange={(v) => handleChange("businessCategory", v)}
+              onChange={(v: string) => handleChange("businessCategory", v)}
               showError={
                 isShowErrors && !(formData.businessCategory || "").trim()
               }
@@ -171,7 +171,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="사업장 주소"
               placeholder="사업장 주소 입력"
               value={formData.companyAddress}
-              onChange={(v) => handleChange("companyAddress", v)}
+              onChange={(v: string) => handleChange("companyAddress", v)}
             />
           </div>
         </div>

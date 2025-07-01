@@ -78,8 +78,8 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
           subtitle={
             "입력한 이메일로 초대 메일이 전송되었어요.\n팀원이 가입을 완료하면 자동으로 권한이 적용돼요."
           }
-          width="w-[487px]"
           onClose={handleSuccessClose}
+          sm={true}
         >
           <div className="flex justify-end mt-4 gap-[5px]">
             <MiniBtn

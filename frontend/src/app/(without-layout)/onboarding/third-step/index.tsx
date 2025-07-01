@@ -32,7 +32,7 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
           onClick={onPrevStep}
         />
         <MiniBtn
-          text="다음 단계"
+          text="시작하기"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"

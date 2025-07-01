@@ -43,7 +43,7 @@ const ManualAddMaterial = ({
             placeholder="자재명 입력"
             label="자재명"
             value={manualMaterial.materialName}
-            onChange={(value) => handleChange("materialName", value)}
+            onChange={(value: string) => handleChange("materialName", value)}
             required
             showError={isShowErrors && !manualMaterial.materialName.trim()}
           />
@@ -53,7 +53,7 @@ const ManualAddMaterial = ({
             placeholder="규격 입력"
             label="규격"
             value={manualMaterial.size}
-            onChange={(value) => handleChange("size", value)}
+            onChange={(value: string) => handleChange("size", value)}
             required
             showError={isShowErrors && !manualMaterial.size.trim()}
           />
@@ -69,7 +69,7 @@ const ManualAddMaterial = ({
                 ? manualMaterial.usageQuantity?.toString()
                 : ""
             }
-            onChange={(value) => handleChange("usageQuantity", value)}
+            onChange={(value: string) => handleChange("usageQuantity", value)}
             showError={
               isShowErrors &&
               (manualMaterial.usageQuantity === null ||
@@ -78,6 +78,7 @@ const ManualAddMaterial = ({
           />
         </div>
       </div>
+
       <div className="flex gap-2 justify-end">
         <MiniBtn
           text="취소하기"

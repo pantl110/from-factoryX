@@ -1,5 +1,5 @@
 import { CaretLineRightIcon } from "@phosphor-icons/react/dist/ssr";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 interface PanelProps {
   children: React.ReactNode;
@@ -10,6 +10,15 @@ interface PanelProps {
 const Panel = ({ children, title, onClose }: PanelProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(true);
+
+  const handleClose = useCallback(() => {
+    setIsVisible(false);
+    // 애니메이션이 끝난 후 DOM에서 제거
+    setTimeout(() => {
+      setShouldRender(false);
+      onClose();
+    }, 200); // duration-200과 맞춤
+  }, [onClose]);
 
   useEffect(() => {
     // 스크롤 막기
@@ -38,16 +47,7 @@ const Panel = ({ children, title, onClose }: PanelProps) => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
-
-  const handleClose = () => {
-    setIsVisible(false);
-    // 애니메이션이 끝난 후 DOM에서 제거
-    setTimeout(() => {
-      setShouldRender(false);
-      onClose();
-    }, 200); // duration-200과 맞춤
-  };
+  }, [handleClose]);
 
   if (!shouldRender) return null;
 

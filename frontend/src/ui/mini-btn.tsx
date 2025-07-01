@@ -16,6 +16,7 @@ interface MiniBtnProps {
   disabled?: boolean;
   isDeleteMode?: boolean;
   width?: string;
+  type?: "submit" | "reset" | "button";
 }
 
 const MiniBtn = ({
@@ -31,6 +32,7 @@ const MiniBtn = ({
   height = "h-10",
   disabled = false,
   width = "w-fit",
+  type,
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
   const positionClass = iconPosition === "right" ? "flex-row-reverse" : "";
@@ -46,6 +48,7 @@ const MiniBtn = ({
       } transition-colors duration-200`}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
+      type={type}
     >
       {Icon && (
         <Icon

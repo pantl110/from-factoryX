@@ -49,7 +49,7 @@ const ManualAddProduct = ({
             placeholder="품목명 입력"
             label="품목명"
             value={manualProduct.productName}
-            onChange={(value) => handleChange("productName", value)}
+            onChange={(value: string) => handleChange("productName", value)}
             required
             showError={
               isShowErrors && !(manualProduct.productName || "").trim()
@@ -61,7 +61,7 @@ const ManualAddProduct = ({
             placeholder="규격 입력"
             label="규격"
             value={manualProduct.size}
-            onChange={(value) => handleChange("size", value)}
+            onChange={(value: string) => handleChange("size", value)}
             required
             showError={isShowErrors && !(manualProduct.size || "").trim()}
           />
@@ -72,7 +72,7 @@ const ManualAddProduct = ({
             label="단위"
             required
             value={manualProduct.unit}
-            onChange={(value) => handleChange("unit", value)}
+            onChange={(value: string) => handleChange("unit", value)}
             showError={
               isShowErrors &&
               (manualProduct.unit === null || Number(manualProduct.unit) <= 0)

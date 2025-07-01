@@ -1,12 +1,4 @@
-export interface MaterialDataModel {
-  id: number | null;
-  materialName: string;
-  size: string;
-  usageQuantity?: number | null;
-  unitPrice?: number | null;
-  unit?: string;
-  [key: string]: unknown;
-}
+import { MaterialDataModel } from "@/types/data-model";
 
 export const materialData: MaterialDataModel[] = [
   {

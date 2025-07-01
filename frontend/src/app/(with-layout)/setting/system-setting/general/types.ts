@@ -11,10 +11,10 @@ export interface CompanyFormDataModel {
   businessNumber: string;
   ceoName: string;
   managerEmail: string;
-  managerPhone: string;
-  managerFax: string;
+  managerPhone?: string;
+  managerFax?: string;
   businessType: string;
   businessCategory: string;
   address: string;
-  [key: string]: string;
+  [key: string]: string | undefined;
 }

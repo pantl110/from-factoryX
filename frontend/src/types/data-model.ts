@@ -18,6 +18,16 @@ export interface ProductDataModel {
   [key: string]: unknown;
 }
 
+export interface MaterialDataModel {
+  id: number | null;
+  materialName: string;
+  size: string;
+  usageQuantity?: number | null;
+  unitPrice?: number | null;
+  unit?: string;
+  [key: string]: unknown;
+}
+
 import { ClientType } from "@/app/(with-layout)/setting/master-data/client/types";
 export interface ClientDataModel {
   id: number;

@@ -47,14 +47,14 @@ const Profile = () => {
                 placeholder=""
                 label="이름"
                 value={formData.name}
-                onChange={(value) => handleChange("name", value)}
+                onChange={(value: string) => handleChange("name", value)}
                 showError={isShowErrors}
               />
               <Input
                 placeholder="시스템 관리자"
                 label="권한"
                 value={formData.role}
-                onChange={(value) => handleChange("role", value)}
+                onChange={(value: string) => handleChange("role", value)}
               />
             </div>
             <div className="flex gap-2">
@@ -62,14 +62,14 @@ const Profile = () => {
                 placeholder="yoo@gmail.com"
                 label="이메일"
                 value={formData.email}
-                onChange={(value) => handleChange("email", value)}
+                onChange={(value: string) => handleChange("email", value)}
                 showError={isShowErrors}
               />
               <Input
                 placeholder=""
                 label="연락처"
                 value={formData.phone}
-                onChange={(value) =>
+                onChange={(value: string) =>
                   handleChange("phone", formatPhoneNumber(value))
                 }
                 onKeyDown={handleNumberKeyDown}
