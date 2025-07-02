@@ -19,3 +19,21 @@ class MaterialSimpleSchema(BaseModel):
     id: int
     name: str
     code: str
+
+class ProductMaterialRelationSchema(BaseModel):
+    id: int
+    material_id: int
+    material_name: str
+    quantity: float
+
+class ProductMaterialRelationListSchema(BaseModel):
+    relations: List[ProductMaterialRelationSchema]
+    total_count: int
+
+class ProductSimpleSchema(BaseModel):
+    id: int
+    name: str
+    code: str
+    spec: str
+    unit: str
+    current_stock: int

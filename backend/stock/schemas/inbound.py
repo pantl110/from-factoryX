@@ -22,3 +22,7 @@ class MaterialExcelUploadResponseSchema(BaseModel):
     success: bool
     message: str
     data: Optional[List[Any]] = None
+
+class ProductMaterialConnectSchema(BaseModel):
+    material_id: int
+    quantity: float

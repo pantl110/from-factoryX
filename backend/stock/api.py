@@ -1,11 +1,12 @@
 from ninja import Router, Query, File
 from django.shortcuts import get_object_or_404
-from stock.models import Material, Factory
-from stock.schemas.inbound import MaterialCreateSchema, MaterialUpdateSchema, MaterialExcelUploadResponseSchema
-from stock.schemas.outbound import MaterialResponseSchema, MaterialListResponseSchema, MaterialSimpleSchema
+from stock.models import Material, Factory, Product, MaterialProduct
+from stock.schemas.inbound import MaterialCreateSchema, MaterialUpdateSchema, MaterialExcelUploadResponseSchema, ProductMaterialConnectSchema
+from stock.schemas.outbound import MaterialResponseSchema, MaterialListResponseSchema, MaterialSimpleSchema, ProductMaterialRelationSchema, ProductMaterialRelationListSchema, ProductSimpleSchema
 from typing import List
 from api.security import jwt_auth
 from ninja.files import UploadedFile
+from ninja.errors import HttpError
 import pandas as pd
 import tempfile, os
 
@@ -181,3 +182,108 @@ def upload_material_excel(request, file: UploadedFile = File(...)):
 
     except Exception as e:
         return {"success": False, "message": f"파일 처리 중 오류: {str(e)}", "data": None}
+
+@router.get(
+    "/products/{product_id}/materials",
+    summary="[R] 품목-원자재 연결 목록 조회",
+    description="특정 품목에 연결된 원자재 목록을 반환합니다.",
+    response=ProductMaterialRelationListSchema,
+)
+def get_product_material_relations(request, product_id: int):
+    """
+    특정 품목에 연결된 원자재 목록을 반환합니다.
+    """
+    relations = MaterialProduct.objects.filter(product_id=product_id)
+    result = [
+        ProductMaterialRelationSchema(
+            id=rel.id,
+            material_id=rel.material.id,
+            material_name=rel.material.name,
+            quantity=float(rel.quantity),
+        ) for rel in relations
+    ]
+    return ProductMaterialRelationListSchema(relations=result, total_count=len(result))
+
+@router.post(
+    "/products/{product_id}/add-material",
+    summary="[C] 품목-원자재 연결 추가",
+    description="특정 품목에 원자재를 연결합니다.",
+    response=ProductMaterialRelationSchema,
+)
+def add_product_material_relation(request, product_id: int, payload: ProductMaterialConnectSchema):
+    """
+    특정 품목에 원자재를 연결합니다.
+    """
+    product = get_object_or_404(Product, id=product_id)
+    material = get_object_or_404(Material, id=payload.material_id)
+    relation = MaterialProduct.objects.create(
+        product=product,
+        material=material,
+        quantity=payload.quantity,
+    )
+    return ProductMaterialRelationSchema(
+        id=relation.id,
+        material_id=material.id,
+        material_name=material.name,
+        quantity=float(relation.quantity),
+    )
+
+@router.delete(
+    "/products/{product_id}/materials/{relation_id}",
+    summary="[D] 품목-원자재 연결 삭제",
+    description="특정 품목에서 원자재 연결을 삭제합니다.",
+)
+def delete_product_material_relation(request, product_id: int, relation_id: int):
+    """
+    특정 품목에서 원자재 연결을 삭제합니다.
+    """
+    relation = get_object_or_404(MaterialProduct, id=relation_id, product_id=product_id)
+    relation.delete()
+    return {"success": True, "message": "연결이 삭제되었습니다."}
+
+@router.put(
+    "/products/{product_id}",
+    summary="[U] 품목 정보 수정",
+    description="품목의 정보를 수정합니다.",
+)
+def update_product(request, product_id: int, payload):
+    """
+    품목 정보를 수정합니다.
+    """
+    product = get_object_or_404(Product, id=product_id)
+    errors = []
+    if not getattr(payload, 'name', None):
+        errors.append("품목명을 입력해주세요.")
+    if not getattr(payload, 'code', None):
+        errors.append("품목 코드를 입력해주세요.")
+    if not getattr(payload, 'spec', None):
+        errors.append("규격을 입력해주세요.")
+    if not getattr(payload, 'unit', None):
+        errors.append("단위를 입력해주세요.")
+    if errors:
+        raise HttpError(400, "일부 필수 항목이 비어 있습니다. " + " ".join(errors))
+    # 실제 수정 로직 (예시)
+    for field, value in payload.dict(exclude_unset=True).items():
+        setattr(product, field, value)
+    product.save()
+    # 응답 스키마는 필요에 따라 작성
+    return {"success": True, "message": "수정되었습니다."}
+
+@router.get(
+    "/products/simple",
+    summary="[R] 품목 간단 목록 조회",
+    description="품목명, 품목 코드, 규격, 단위, 현재 재고만 반환하는 간단한 품목 목록을 제공합니다.",
+    response=List[ProductSimpleSchema],
+)
+def list_simple_products(request):
+    qs = Product.objects.all().order_by("name")
+    return [
+        ProductSimpleSchema(
+            id=p.id,
+            name=p.name,
+            code=p.code,
+            spec=p.spec,
+            unit=p.unit,
+            current_stock=getattr(p, "current_stock", 0),
+        ) for p in qs
+    ]
