@@ -34,11 +34,10 @@ const TitleSec = ({
 
   return (
     <div className="flex gap-1 mb-4 pr-10">
-      <div className="flex-1 gap-1 ">
-        <div className="cursor-pointer relative">
+      <div className="flex-1 gap-1">
+        <div className="cursor-pointer relative w-fit">
           <Chip
             text="견적 협의"
-            containerWidth="w-full"
             bgColor="bg-yellow-8"
             textColor="text-yellow"
             icon={<CaretDownIcon size={12} />}
