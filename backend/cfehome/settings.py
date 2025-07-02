@@ -36,6 +36,7 @@ if DEBUG:
     ALLOWED_HOSTS += [
         "127.0.0.1",
         "localhost",
+        "0.0.0.0",
     ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -211,3 +212,35 @@ if DEBUG:
     FRONTEND_URL = "http://127.0.0.1:3000"
 else:
     FRONTEND_URL = config("FRONTEND_URL", default=None)
+
+# Redis Cache Settings
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": config("REDIS_URL", default="redis://redis:6379/1"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# AWS SES Email Settings
+USE_SES = config("USE_SES", default=False, cast=bool)
+
+if USE_SES:
+    # AWS SES Configuration
+    AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default=None)
+    AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default=None)
+    AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", default="ap-northeast-2")
+    AWS_SES_REGION = config("AWS_SES_REGION", default="ap-northeast-2")
+    
+    # Email backend using SES
+    EMAIL_BACKEND = "user.backends.SESEmailBackend"
+    
+    # Default from email
+    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@yourdomain.com")
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
+else:
+    # Console backend for development
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = "noreply@localhost"
