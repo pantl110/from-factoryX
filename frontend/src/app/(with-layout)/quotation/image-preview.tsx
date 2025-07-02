@@ -1,6 +1,7 @@
 import { ArrowsOutIcon } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 import EnlargeImageOverlay from "./modals/enlarge-image-overlay";
+import Image from "next/image";
 
 interface ImagePreviewProps {
   className?: string;
@@ -8,15 +9,17 @@ interface ImagePreviewProps {
 
 const ImagePreview = ({ className = "" }: ImagePreviewProps) => {
   const [isEnlargeOpen, setIsEnlargeOpen] = useState(false);
-  const imageUrl =
-    "https://yimgf-thinkzon.yesform.com/docimgs/public/1/37/36098/36097517.jpg";
+  const imageUrl = "/36097517.jpg";
+
   return (
     <div
       className={`bg-sv rounded-lg h-full relative ${className} flex items-center justify-center`}
     >
-      <img
+      <Image
         src={imageUrl}
         alt="견적서"
+        width={500}
+        height={300}
         className="w-[95%] max-h-[95%] object-contain rounded-lg"
       />
       <button
@@ -28,7 +31,6 @@ const ImagePreview = ({ className = "" }: ImagePreviewProps) => {
       {isEnlargeOpen && (
         <EnlargeImageOverlay
           imageUrl={imageUrl}
-          setIsEnlargeOpen={setIsEnlargeOpen}
           onClose={() => setIsEnlargeOpen(false)}
         />
       )}
