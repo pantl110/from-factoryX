@@ -5,7 +5,7 @@ import { CameraIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import SaveModal from "./modals/save-modal";
 import { ProfileFormDataModel } from "./types";
-import { handleNumberKeyDown, formatPhoneNumber } from "@/hooks/format-number";
+import { formatPhoneNumber } from "@/hooks/format-number";
 import PhotoUploadModal from "./modals/photo-upload-modal";
 import ProfileImage from "@/ui/profile-image";
 
@@ -72,7 +72,6 @@ const Profile = () => {
                 label="연락처"
                 {...register("phone")}
                 onChange={handlePhoneChange}
-                onKeyDown={handleNumberKeyDown}
               />
             </div>
           </div>

@@ -65,7 +65,6 @@ const CompanyInfo = () => {
               label="사업자등록번호"
               {...register("businessNumber")}
               onChange={handleBusinessNumberChange}
-              onKeyDown={handleNumberKeyDown}
             />
           </div>
           <div className="flex gap-2">
@@ -86,14 +85,12 @@ const CompanyInfo = () => {
               label="연락처"
               {...register("managerPhone")}
               onChange={handlePhoneChange}
-              onKeyDown={handleNumberKeyDown}
             />
             <Input
               placeholder="팩스번호를 입력하세요."
               label="팩스"
               {...register("managerFax")}
               onChange={handleFaxChange}
-              onKeyDown={handleNumberKeyDown}
             />
           </div>
           <div className="flex gap-2">

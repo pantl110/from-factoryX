@@ -4,22 +4,22 @@ import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { useState } from "react";
-import { useForm } from "@/hooks/use-form";
-import { ClientDataModel } from "@/types/data-model";
+import { UseFormTrigger } from "react-hook-form";
 
 interface TitleSecProps {
-  form: ReturnType<typeof useForm<ClientDataModel>>;
-  setIsEmailOpen: (isEmailOpen: boolean) => void;
-  setIsPrintOpen: (isPrintOpen: boolean) => void;
-  setIsStartProductionModalOpen: (isStartProductionModalOpen: boolean) => void;
+  setIsEmailOpen: (open: boolean) => void;
+  setIsPrintOpen: (open: boolean) => void;
+  setIsStartProductionModalOpen: (open: boolean) => void;
   isClientData: boolean;
+  trigger: UseFormTrigger<any>;
 }
+
 const TitleSec = ({
-  form,
   setIsEmailOpen,
   setIsPrintOpen,
   setIsStartProductionModalOpen,
   isClientData,
+  trigger,
 }: TitleSecProps) => {
   // 프로젝트 이름 상태
   const [projectName, setProjectName] = useState("플라스틱이 좋아");
@@ -69,10 +69,11 @@ const TitleSec = ({
       <ButtonSection
         onEmailClick={() => setIsEmailOpen(true)}
         onPrintClick={() => setIsPrintOpen(true)}
-        onStartProductionClick={() => {
-          form.handleSubmit(() => {
+        onStartProductionClick={async () => {
+          const valid = await trigger();
+          if (valid) {
             setIsStartProductionModalOpen(true);
-          });
+          }
         }}
         isClientData={isClientData}
       />

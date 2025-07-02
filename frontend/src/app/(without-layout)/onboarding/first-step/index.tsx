@@ -1,8 +1,6 @@
 import MiniBtn from "@/ui/mini-btn";
 import Input from "@/ui/input";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import { FirstStepFormDataModel } from "../types";
 
 interface FirstStepProps {
@@ -10,21 +8,12 @@ interface FirstStepProps {
   onPrevStep: () => void;
 }
 
-// Yup 스키마 정의
-const firstStepSchema = yup.object({
-  productName: yup.string().required(),
-  productCode: yup.string().required(),
-  size: yup.string().required(),
-  unit: yup.string().required(),
-});
-
 const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FirstStepFormDataModel>({
-    resolver: yupResolver(firstStepSchema),
     defaultValues: {
       productName: "",
       productCode: "",
@@ -66,7 +55,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   type="text"
                   placeholder="자재명 입력"
                   required={true}
-                  {...register("productName")}
+                  {...register("productName", { required: true })}
                   showError={!!errors.productName}
                 />
                 <Input
@@ -74,7 +63,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   type="text"
                   placeholder="품목 코드 입력"
                   required={true}
-                  {...register("productCode")}
+                  {...register("productCode", { required: true })}
                   showError={!!errors.productCode}
                 />
               </div>
@@ -84,7 +73,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   type="text"
                   placeholder="규격 입력"
                   required={true}
-                  {...register("size")}
+                  {...register("size", { required: true })}
                   showError={!!errors.size}
                 />
                 <Input
@@ -92,7 +81,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   type="text"
                   placeholder="단위 입력"
                   required={true}
-                  {...register("unit")}
+                  {...register("unit", { required: true })}
                   showError={!!errors.unit}
                 />
               </div>
