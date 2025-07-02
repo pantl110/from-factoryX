@@ -1,7 +1,6 @@
 from django.db import models
 from common.models import BaseModel
 from factory.models import Factory, FactoryClient
-from project.models import Project
 from stock.models import Product
 
 
@@ -45,10 +44,5 @@ class TaxInvoice(BaseModel):
         choices=TaxInvoiceType.choices,
         default=TaxInvoiceType.receipt,
     )
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey("project.Project", on_delete=models.CASCADE)
     client = models.ForeignKey(FactoryClient, on_delete=models.CASCADE)
-    products = models.ManyToManyField(
-        Product,
-        through="TaxInvoiceProduct",
-        help_text="세금계산서에 포함된 제품들",
-    )
