@@ -1,12 +1,20 @@
 import MiniBtn from "@/ui/mini-btn";
 import { PrinterIcon, X } from "@phosphor-icons/react/dist/ssr";
 import QuotationDocumentView from "../../document/order-document-view/quotation-document-view";
+import { useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 
 interface PrintViewProps {
   onClose?: () => void;
 }
 
 const PrintView = ({ onClose }: PrintViewProps) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({
+    contentRef,
+    documentTitle: "견적서", // 문서 제목
+  });
+
   return (
     <div className="w-full flex flex-col gap-6 px-8 pb-8">
       <div className="sticky pt-8 top-0 bg-wh">
@@ -20,7 +28,7 @@ const PrintView = ({ onClose }: PrintViewProps) => {
           </button>
         </div>
 
-        <div className="py-6 w-full flex justify-between border-b border-lg">
+        <div className="py-6 pt-6 w-full flex justify-between border-b border-lg">
           <div>
             <h2 className="Heading-2">견적서를 출력하시겠어요?</h2>
             <div className="mt-2.5 Me_Body-3 text-gr">
@@ -34,10 +42,14 @@ const PrintView = ({ onClose }: PrintViewProps) => {
             hoverColor="hover:bg-primary-hover"
             icon={PrinterIcon}
             iconColor="text-wh"
+            onClick={reactToPrintFn}
           />
         </div>
       </div>
-      <QuotationDocumentView />
+
+      <div ref={contentRef}>
+        <QuotationDocumentView />
+      </div>
     </div>
   );
 };

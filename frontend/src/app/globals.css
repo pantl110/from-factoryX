@@ -153,6 +153,34 @@ input[type="number"] {
   display: none; /* Chrome, Safari, Opera */
 }
 
+/* 프린트 시 문서 스타일 설정 */
+@media print {
+  /* 폰트 */
+  * {
+    font-family:
+      "Pretendard",
+      /* pretendard가 로드되지 않을 시 대체 폰트 */ -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      sans-serif !important;
+  }
+
+  /* 페이지 나눔 설정 */
+  tr {
+    page-break-inside: avoid; /* 테이블 행이 잘리지 않도록 */
+    break-inside: avoid;
+  }
+
+  /* 페이지 여백 설정 */
+  @page {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 40px;
+    margin-right: 40px;
+  }
+}
+
 .react-datepicker-wrapper {
   width: 100% !important;
   /* display: block !important; */
