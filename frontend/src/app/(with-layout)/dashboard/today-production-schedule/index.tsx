@@ -2,13 +2,19 @@
 
 import MiniBtn from "@/ui/mini-btn";
 import ProductionTable from "./production-table";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ProductionDocumentView from "../../document/production-document-view";
 import OverlayView from "@/ui/ovelay-view";
 import { X, PrinterIcon } from "@phosphor-icons/react/dist/ssr";
+import { useReactToPrint } from "react-to-print";
 
 const TodayProductionSchedule = () => {
   const [isPrintOverlayOpen, setIsPrintOverlayOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({
+    contentRef,
+    documentTitle: "생산 지시서", // 문서 제목
+  });
 
   return (
     <>
@@ -73,10 +79,14 @@ const TodayProductionSchedule = () => {
                   icon={PrinterIcon}
                   iconColor="text-wh"
                   borderColor="border-primary-hover"
+                  onClick={reactToPrintFn}
                 />
               </div>
             </div>
-            <ProductionDocumentView />
+
+            <div ref={contentRef}>
+              <ProductionDocumentView />
+            </div>
           </div>
         </OverlayView>
       )}
