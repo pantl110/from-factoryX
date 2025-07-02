@@ -1,10 +1,14 @@
 "use client";
 
 import Input from "@/ui/input";
-import { Controller } from "react-hook-form";
+import {
+  Controller,
+  UseFormSetValue,
+  FieldErrors,
+  Control,
+} from "react-hook-form";
 
 import {
-  extractNumbers,
   formatBusinessNumber,
   formatPhoneNumber,
   formatFaxNumber,
@@ -12,30 +16,19 @@ import {
 import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
 import { clientData } from "@/mocks/client-data";
 import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ClientDataModel } from "@/types/data-model";
-import {
-  UseFormRegister,
-  UseFormSetValue,
-  UseFormWatch,
-  FieldErrors,
-} from "react-hook-form";
-// import InputDatepicker from "@/ui/input-datepicker";
 
 interface InputSectionProps {
   clientDataParam: string | null;
-  register: UseFormRegister<ClientDataModel>;
   setValue: UseFormSetValue<ClientDataModel>;
-  watch: UseFormWatch<ClientDataModel>;
   errors: FieldErrors<ClientDataModel>;
-  control: any;
+  control: Control<ClientDataModel>;
 }
 
 const InputSection = ({
   clientDataParam,
-  register,
   setValue,
-  watch,
   errors,
   control,
 }: InputSectionProps) => {
@@ -69,7 +62,7 @@ const InputSection = ({
             setValue(key as string, value ?? "");
           }
         });
-      } catch (e) {
+      } catch {
         // 파싱 에러 무시
       }
     }
@@ -116,22 +109,24 @@ const InputSection = ({
             name="companyName"
             control={control}
             rules={{ required: true }}
-            render={({ field }) => (
-              <Input
-                label="거래처명"
-                placeholder="거래처명을 입력하세요."
-                required
-                showError={!!errors.companyName}
-                value={companyNameInput}
-                onChange={setCompanyNameInput}
-                onFocus={() => setIsCompanyNameDropdownOpen(true)}
-                onBlur={() =>
-                  setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
-                }
-                ref={field.ref}
-                name={field.name}
-              />
-            )}
+            render={({ field }) => {
+              const handleCompanyNameBlur = () =>
+                setTimeout(() => setIsCompanyNameDropdownOpen(false), 150);
+              return (
+                <Input
+                  label="거래처명"
+                  placeholder="거래처명을 입력하세요."
+                  required
+                  showError={!!errors.companyName}
+                  value={companyNameInput}
+                  onChange={setCompanyNameInput}
+                  onFocus={() => setIsCompanyNameDropdownOpen(true)}
+                  onBlur={handleCompanyNameBlur}
+                  ref={field.ref}
+                  name={field.name}
+                />
+              );
+            }}
           />
           {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
             <div className="absolute left-0 top-21 z-10 w-full">
@@ -148,19 +143,22 @@ const InputSection = ({
             name="businessNumber"
             control={control}
             rules={{ required: true }}
-            render={({ field }) => (
-              <Input
-                label="사업자등록번호"
-                placeholder="사업자등록번호를 입력하세요."
-                required
-                showError={!!errors.businessNumber}
-                value={field.value || ""}
-                onChange={handleBusinessNumberChange}
-                onBlur={field.onBlur}
-                ref={field.ref}
-                name={field.name}
-              />
-            )}
+            render={({ field }) => {
+              const handleBusinessNumberBlur = field.onBlur;
+              return (
+                <Input
+                  label="사업자등록번호"
+                  placeholder="사업자등록번호를 입력하세요."
+                  required
+                  showError={!!errors.businessNumber}
+                  value={field.value || ""}
+                  onChange={handleBusinessNumberChange}
+                  onBlur={handleBusinessNumberBlur}
+                  ref={field.ref}
+                  name={field.name}
+                />
+              );
+            }}
           />
         </div>
       </div>
@@ -264,32 +262,38 @@ const InputSection = ({
         <Controller
           name="contact"
           control={control}
-          render={({ field }) => (
-            <Input
-              label="담당자 연락처"
-              placeholder="담당자 연락처를 입력하세요."
-              value={field.value || ""}
-              onChange={handlePhoneChange}
-              onBlur={field.onBlur}
-              ref={field.ref}
-              name={field.name}
-            />
-          )}
+          render={({ field }) => {
+            const handleContactBlur = field.onBlur;
+            return (
+              <Input
+                label="담당자 연락처"
+                placeholder="담당자 연락처를 입력하세요."
+                value={field.value || ""}
+                onChange={handlePhoneChange}
+                onBlur={handleContactBlur}
+                ref={field.ref}
+                name={field.name}
+              />
+            );
+          }}
         />
         <Controller
           name="fax"
           control={control}
-          render={({ field }) => (
-            <Input
-              label="담당자 팩스"
-              placeholder="담당자 팩스를 입력하세요."
-              value={field.value || ""}
-              onChange={handleFaxChange}
-              onBlur={field.onBlur}
-              ref={field.ref}
-              name={field.name}
-            />
-          )}
+          render={({ field }) => {
+            const handleFaxBlur = field.onBlur;
+            return (
+              <Input
+                label="담당자 팩스"
+                placeholder="담당자 팩스를 입력하세요."
+                value={field.value || ""}
+                onChange={handleFaxChange}
+                onBlur={handleFaxBlur}
+                ref={field.ref}
+                name={field.name}
+              />
+            );
+          }}
         />
       </div>
     </div>

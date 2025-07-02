@@ -19,7 +19,7 @@ export interface ProductDataModel {
 }
 
 export interface MaterialDataModel {
-  id: number | null;
+  id: string;
   materialName: string;
   size: string;
   usageQuantity?: number | null;

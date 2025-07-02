@@ -1,7 +1,7 @@
-import { MaterialDataModel } from "@/mocks/material-data";
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "@/hooks/use-form";
+import { MaterialDataModel } from "@/types/data-model";
 
 interface ManualAddMaterialProps {
   setIsManualAddMode: (v: boolean) => void;
@@ -11,7 +11,7 @@ interface ManualAddMaterialProps {
 }
 
 const initialMaterial: MaterialDataModel = {
-  id: null,
+  id: crypto.randomUUID(),
   materialName: "",
   size: "",
   usageQuantity: null,
@@ -96,7 +96,7 @@ const ManualAddMaterial = ({
               setSelectedMaterials((prev) => [
                 ...prev,
                 {
-                  id: Date.now() + Math.random(),
+                  id: crypto.randomUUID(),
                   materialName: manualMaterial.materialName,
                   size: manualMaterial.size,
                   usageQuantity: Number(manualMaterial.usageQuantity),

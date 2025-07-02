@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ArrowLineLeftIcon,
   ArrowLineRightIcon,
@@ -28,10 +28,7 @@ const QuotationPageContent = () => {
 
   // 거래처 정보 폼
   const {
-    register,
-    handleSubmit,
     setValue,
-    watch,
     control,
     trigger,
     formState: { errors },
@@ -145,9 +142,7 @@ const QuotationPageContent = () => {
                 <InputSection
                   clientDataParam={clientDataParam}
                   control={control}
-                  register={register}
                   setValue={setValue}
-                  watch={watch}
                   errors={errors}
                 />
               </div>

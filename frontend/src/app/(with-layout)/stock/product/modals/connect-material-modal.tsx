@@ -2,11 +2,12 @@ import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal/modal";
 import SearchInput from "@/ui/search-input";
 import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
-import { materialData, MaterialDataModel } from "@/mocks/material-data";
+import { materialData } from "@/mocks/material-data";
 import { MaterialNameDropdown } from "@/ui/dropdown/material-name-dropdown";
 import { useState } from "react";
 import { X } from "@phosphor-icons/react/dist/ssr";
 import ManualAddMaterial from "../../material/modals/manual-add-material";
+import { MaterialDataModel } from "@/types/data-model";
 
 interface ConnectMaterialModalProps {
   onClose: () => void;
@@ -34,7 +35,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
     setIsOpen(false);
   };
 
-  const handleRemoveMaterial = (id: number) => {
+  const handleRemoveMaterial = (id: string) => {
     setSelectedMaterials((prev) => prev.filter((mat) => mat.id !== id));
   };
 
@@ -92,7 +93,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
                 {mat.id !== null && mat.id !== undefined && (
                   <div
                     className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                    onClick={() => handleRemoveMaterial(mat.id as number)}
+                    onClick={() => handleRemoveMaterial(mat.id as string)}
                   >
                     <X size={16} className="text-gr" />
                   </div>

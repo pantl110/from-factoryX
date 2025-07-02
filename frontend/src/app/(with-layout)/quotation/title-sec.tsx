@@ -5,13 +5,14 @@ import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { useState } from "react";
 import { UseFormTrigger } from "react-hook-form";
+import { ClientDataModel } from "@/types/data-model";
 
 interface TitleSecProps {
   setIsEmailOpen: (open: boolean) => void;
   setIsPrintOpen: (open: boolean) => void;
   setIsStartProductionModalOpen: (open: boolean) => void;
   isClientData: boolean;
-  trigger: UseFormTrigger<any>;
+  trigger: UseFormTrigger<ClientDataModel>;
 }
 
 const TitleSec = ({
@@ -70,8 +71,8 @@ const TitleSec = ({
         onEmailClick={() => setIsEmailOpen(true)}
         onPrintClick={() => setIsPrintOpen(true)}
         onStartProductionClick={async () => {
-          const valid = await trigger();
-          if (valid) {
+          const isValid = await trigger();
+          if (isValid) {
             setIsStartProductionModalOpen(true);
           }
         }}

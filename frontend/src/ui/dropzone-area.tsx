@@ -51,13 +51,13 @@ const DropzoneArea = ({
   const getFileTypeInfo = (type: string) => {
     if (type.startsWith("image/")) {
       return {
-        icon: <Image size={32} className="text-primary" />,
+        icon: <Image size={32} className="text-primary" alt="" />,
         label: "이미지",
       };
     }
     if (type === "application/pdf") {
       return {
-        icon: <FilePdf size={32} className="text-primary" />,
+        icon: <FilePdf size={32} className="text-primary" alt="" />,
         label: "PDF",
       };
     }
@@ -68,12 +68,12 @@ const DropzoneArea = ({
       type === "application/excel"
     ) {
       return {
-        icon: <MicrosoftExcelLogo size={32} className="text-primary" />,
+        icon: <MicrosoftExcelLogo size={32} className="text-primary" alt="" />,
         label: "엑셀",
       };
     }
     return {
-      icon: <File size={32} className="text-primary" />,
+      icon: <File size={32} className="text-primary" alt="" />,
       label: "기타",
     };
   };
@@ -93,7 +93,11 @@ const DropzoneArea = ({
           {isDragActive ? (
             <>
               {/* 드래그 시 이미지 */}
-              <Image className="text-primary w-[68px] h-[73px]" weight="fill" />
+              <Image
+                className="text-primary w-[68px] h-[73px]"
+                weight="fill"
+                alt=""
+              />
             </>
           ) : (
             <>
@@ -126,7 +130,9 @@ const DropzoneArea = ({
                 className="p-3 flex gap-3 border border-lg rounded-[4px] items-center"
               >
                 <div className="w-10 h-10 rounded-[4px] border border-lg p-1">
-                  {getFileTypeInfo(file.type).icon}
+                  {React.cloneElement(getFileTypeInfo(file.type).icon, {
+                    alt: "",
+                  })}
                 </div>
                 <div className="flex justify-between w-full items-center">
                   <div className="flex flex-col">

@@ -35,7 +35,7 @@ const MaterialEnrollmentModal = ({
     });
     setIsOpen(false);
   };
-  const handleRemoveMaterial = (id: number) => {
+  const handleRemoveMaterial = (id: string) => {
     setSelectedMaterials((prev) => prev.filter((mat) => mat.id !== id));
   };
 
@@ -127,7 +127,7 @@ const MaterialEnrollmentModal = ({
                 {mat.id !== null && mat.id !== undefined && (
                   <div
                     className="w-[40px] hover:bg-bg flex items-center justify-center h-full transition-colors duration-200 cursor-pointer"
-                    onClick={() => handleRemoveMaterial(mat.id as number)}
+                    onClick={() => handleRemoveMaterial(mat.id as string)}
                   >
                     <X
                       size={16}

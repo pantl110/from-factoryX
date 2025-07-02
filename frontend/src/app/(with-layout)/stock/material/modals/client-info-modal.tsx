@@ -16,7 +16,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
   const { formData, isShowErrors, handleChange, handleSubmit } =
     useForm<ClientDataModel>({
       initialData: {
-        id: 0,
+        id: crypto.randomUUID(),
         type: "발주처",
         companyName: "",
         businessNumber: "",
@@ -28,6 +28,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         email: "",
         companyAddress: "",
         dueDate: "",
+        responsibleName: "",
       },
       validationRules: {
         companyName: (v) => !!(v || "").trim(),

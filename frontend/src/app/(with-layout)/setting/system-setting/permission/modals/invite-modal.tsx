@@ -5,7 +5,6 @@ import { CaretDown, X } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 import AuthDropdown from "./auth-dropdown";
 import { MemberFromDataModel } from "../../general/types";
-import { CarProfileIcon } from "@phosphor-icons/react";
 import ProfileImage from "@/ui/profile-image";
 import Chip from "@/ui/chip";
 import { PERMISSION_INFO, PermissionRoleType } from "../types";
@@ -31,7 +30,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
       // 이메일이 있는 상태에서 권한 선택 시 멤버 리스트에 추가
       const newMember: MemberFromDataModel = {
         email: memberInput.email,
-        auth: auth, // 드롭다운에서 선택한 실제 값
+        auth, // 드롭다운에서 선택한 실제 값
         id: crypto.randomUUID(),
       };
       setMembers((prev) => [...prev, newMember]);

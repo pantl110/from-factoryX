@@ -7,7 +7,6 @@ import {
   formatBusinessNumber,
   formatFaxNumber,
   formatPhoneNumber,
-  handleNumberKeyDown,
 } from "@/hooks/format-number";
 import { CompanyFormDataModel } from "./types";
 

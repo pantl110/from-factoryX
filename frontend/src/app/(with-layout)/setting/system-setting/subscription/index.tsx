@@ -5,7 +5,6 @@ import FreePlan from "./free-plan";
 import PlanItem from "./plan-item";
 import SubscriptionTableHeader from "./subscription-table-header";
 import SubscriptionTableItem from "./subscription-table-item";
-import CardDeleteModal from "./modals/card-change-modal";
 import CardEnrollModal from "./modals/card-enroll-modal";
 import { PlanType } from "./types";
 
