@@ -167,6 +167,11 @@ input[type="number"] {
   }
 
   /* 페이지 나눔 설정 */
+  p {
+    page-break-inside: avoid; /* 요소 내부에서 페이지 나눔 방지 */
+    break-inside: avoid;
+  }
+
   tr {
     page-break-inside: avoid; /* 테이블 행이 잘리지 않도록 */
     break-inside: avoid;
@@ -174,10 +179,7 @@ input[type="number"] {
 
   /* 페이지 여백 설정 */
   @page {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    margin-left: 40px;
-    margin-right: 40px;
+    margin: 32px;
   }
 }
 

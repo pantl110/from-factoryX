@@ -15,20 +15,20 @@ const ProductItem = ({
   onClick,
 }: ProductItemProps) => {
   return (
-    <div
+    <tr
       className="h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
-      <p className="flex-1 px-3 truncate" title={productName}>
+      <td className="flex-1 px-3 truncate" title={productName}>
         {productName}
-      </p>
-      <p className="flex-1 px-3">{productCode}</p>
-      <p className="flex-1 px-3">{size}</p>
-      <p className="w-[80px] px-3">{unit}</p>
-      <p className="flex-1 px-3">{quantity?.toLocaleString()}</p>
-      <p className="w-[100px] px-3">{unitPrice?.toLocaleString()}</p>
-      <p className="flex-1 px-3">{totalPrice?.toLocaleString()}</p>
-    </div>
+      </td>
+      <td className="flex-1 px-3">{productCode}</td>
+      <td className="flex-1 px-3">{size}</td>
+      <td className="w-[80px] px-3">{unit}</td>
+      <td className="flex-1 px-3">{quantity?.toLocaleString()}</td>
+      <td className="w-[100px] px-3">{unitPrice?.toLocaleString()}</td>
+      <td className="flex-1 px-3">{totalPrice?.toLocaleString()}</td>
+    </tr>
   );
 };
 

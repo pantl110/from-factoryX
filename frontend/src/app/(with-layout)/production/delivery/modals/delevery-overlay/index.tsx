@@ -3,6 +3,8 @@ import InfoLabelValue from "@/ui/info-label-value";
 import MiniBtn from "@/ui/mini-btn";
 import OverlayView from "@/ui/ovelay-view";
 import { DeliveryDataModel } from "../../types";
+import { useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 
 interface DeliveryOverlayProps {
   onClose: () => void;
@@ -10,6 +12,12 @@ interface DeliveryOverlayProps {
 }
 
 const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({
+    contentRef,
+    documentTitle: "납품표", // 문서 제목
+  });
+
   return (
     <OverlayView onClose={onClose}>
       <div className="w-full flex flex-col gap-6 px-8 pb-8">
@@ -32,16 +40,19 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"
+              onClick={reactToPrintFn}
             />
           </div>
         </div>
-        <div className="flex flex-col gap-6">
-          <DocumentViewTitle title="납품표" />
-          <div className="flex flex-col">
-            <InfoLabelValue label="납품처" value={data.companyName} />
-            <InfoLabelValue label="품목명" value={data.productName} />
-            <InfoLabelValue label="규격" value={data.size} />
-            <InfoLabelValue label="수량" value={data.quantity} />
+        <div ref={contentRef}>
+          <div className="flex flex-col gap-6">
+            <DocumentViewTitle title="납품표" />
+            <div className="flex flex-col">
+              <InfoLabelValue label="납품처" value={data.companyName} />
+              <InfoLabelValue label="품목명" value={data.productName} />
+              <InfoLabelValue label="규격" value={data.size} />
+              <InfoLabelValue label="수량" value={data.quantity} />
+            </div>
           </div>
         </div>
       </div>
