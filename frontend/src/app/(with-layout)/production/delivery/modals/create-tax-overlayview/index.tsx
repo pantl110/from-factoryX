@@ -12,8 +12,8 @@ interface CreateTaxOverlayviewProps {
 const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
   return (
     <OverlayView onClose={onClose}>
-      <div className="w-full flex flex-col gap-6 p-8">
-        <div className="pb-6 w-full flex justify-between border-b border-lg">
+      <div className="w-full flex flex-col gap-6 px-8 pb-8">
+        <div className="pb-6 w-full flex justify-between border-b border-lg sticky pt-8 top-0 bg-wh">
           <div>
             <h2 className="Heading-2">세금계산서를 발행하시겠어요?</h2>
             <div className="mt-2.5 Me_Body-3 text-gr">

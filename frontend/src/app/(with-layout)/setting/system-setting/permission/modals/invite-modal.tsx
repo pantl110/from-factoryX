@@ -1,9 +1,14 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal/modal";
-import { CaretDown } from "@phosphor-icons/react/dist/ssr";
+import { CaretDown, X } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 import AuthDropdown from "./auth-dropdown";
+import { MemberFromDataModel } from "../../general/types";
+import { CarProfileIcon } from "@phosphor-icons/react";
+import ProfileImage from "@/ui/profile-image";
+import Chip from "@/ui/chip";
+import { PERMISSION_INFO, PermissionRoleType } from "../types";
 
 interface InviteModalProps {
   onClose: () => void;
@@ -12,12 +17,28 @@ interface InviteModalProps {
 const InviteModal = ({ onClose }: InviteModalProps) => {
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [isAuthDropdownOpen, setIsAuthDropdownOpen] = useState(false);
+  const [members, setMembers] = useState<MemberFromDataModel[]>([]);
+  const [memberInput, setMemberInput] = useState({
+    email: "",
+    auth: "",
+  });
 
-  const handleInvite = () => {
-    // 실제 초대 로직
-    setIsSuccessOpen(true);
+  const handleRemoveMember = (id: string) => {
+    setMembers((prev) => prev.filter((member) => member.id !== id));
   };
-
+  const handleAuthSelect = (auth: string) => {
+    if (memberInput.email) {
+      // 이메일이 있는 상태에서 권한 선택 시 멤버 리스트에 추가
+      const newMember: MemberFromDataModel = {
+        email: memberInput.email,
+        auth: auth, // 드롭다운에서 선택한 실제 값
+        id: crypto.randomUUID(),
+      };
+      setMembers((prev) => [...prev, newMember]);
+      setMemberInput({ email: "", auth: "" }); // 입력 필드 초기화
+    }
+    setIsAuthDropdownOpen(false);
+  };
   const handleSuccessClose = () => {
     setIsSuccessOpen(false);
     onClose();
@@ -32,9 +53,15 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
           onClose={onClose}
           width="w-[600px]"
         >
-          <div className="flex gap-2.5 w-full mt-4">
+          <div className="flex gap-2.5 w-full mt-4 mb-5">
             <div className="flex-1">
-              <Input placeholder="이메일을 입력하세요." />
+              <Input
+                placeholder="이메일을 입력하세요."
+                value={memberInput.email}
+                onChange={(value: string) =>
+                  setMemberInput((prev) => ({ ...prev, email: value }))
+                }
+              />
             </div>
 
             <div className="relative">
@@ -47,14 +74,62 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                 height="h-12"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsAuthDropdownOpen(true)}
+                disabled={!memberInput.email}
               />
-              {isAuthDropdownOpen && (
+              {isAuthDropdownOpen && memberInput.email && (
                 <div className="absolute top-14 right-0">
-                  <AuthDropdown onClose={() => setIsAuthDropdownOpen(false)} />
+                  <AuthDropdown
+                    onClose={() => setIsAuthDropdownOpen(false)}
+                    onSelect={handleAuthSelect}
+                  />
                 </div>
               )}
             </div>
           </div>
+
+          {/* 멤버 리스트 */}
+          {members.length > 0 && (
+            <div className="pt-4 border-t border-lg">
+              <h4 className="Heading-5 text-dg mb-2">멤버</h4>
+              <div className="flex flex-col gap-2">
+                {members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between p-3 border border-lg rounded-[4px]"
+                  >
+                    <div className="flex gap-3">
+                      <ProfileImage
+                        text={member.email.slice(0, 2).toUpperCase()}
+                        size="small"
+                      />
+                      <p className="Me_Body-2">{member.email}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Chip
+                        text={member.auth}
+                        sm={true}
+                        bgColor={
+                          PERMISSION_INFO[member.auth as PermissionRoleType]
+                            .chipColor.bg
+                        }
+                        textColor={
+                          PERMISSION_INFO[member.auth as PermissionRoleType]
+                            .chipColor.text
+                        }
+                        borderColor="border-lg"
+                      />
+                      <button
+                        onClick={() => handleRemoveMember(member.id)}
+                        className="w-10 h-10 hover:bg-bg rounded-[8px] flex justify-center items-center"
+                      >
+                        <X size={16} className="text-sv" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex mt-5 justify-end gap-2.5">
             <MiniBtn
@@ -67,8 +142,9 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               text="초대하기"
               textColor="text-wh"
               bgColor="bg-primary"
-              onClick={handleInvite}
+              onClick={() => setIsSuccessOpen(true)}
               hoverColor="hover:bg-primary-hover"
+              disabled={members.length === 0}
             />
           </div>
         </Modal>

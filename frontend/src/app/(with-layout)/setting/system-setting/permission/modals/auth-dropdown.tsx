@@ -4,9 +4,15 @@ import DropdownItem from "@/ui/dropdown/dropdown-item";
 
 interface AuthDropdownProps {
   onClose: () => void;
+  onSelect?: (auth: string) => void;
 }
 
-const AuthDropdown = ({ onClose }: AuthDropdownProps) => {
+const AuthDropdown = ({ onClose, onSelect }: AuthDropdownProps) => {
+  const handleAuthSelect = (auth: string) => {
+    onSelect?.(auth);
+    onClose();
+  };
+
   return (
     <Dropdown onClose={onClose} width="w-[98px]">
       <DropdownItem noHover={true}>
@@ -15,16 +21,16 @@ const AuthDropdown = ({ onClose }: AuthDropdownProps) => {
           textColor="text-primary"
           bgColor="bg-primary-8"
           hover="hover:bg-secondary-hover"
-          onClick={onClose}
+          onClick={() => handleAuthSelect("운영자")}
         />
       </DropdownItem>
-      <DropdownItem onClick={onClose} noHover={true}>
+      <DropdownItem onClick={() => handleAuthSelect("조회자")} noHover={true}>
         <Chip
           text="조회자"
           textColor="text-yellow"
           bgColor="bg-yellow-8"
           hover="hover:bg-yellow-hover"
-          onClick={onClose}
+          onClick={() => handleAuthSelect("조회자")}
         />
       </DropdownItem>
     </Dropdown>

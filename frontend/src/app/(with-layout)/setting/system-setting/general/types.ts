@@ -18,3 +18,9 @@ export interface CompanyFormDataModel {
   address: string;
   [key: string]: string | undefined;
 }
+
+export interface MemberFromDataModel {
+  email: string;
+  auth: string;
+  id: string;
+}

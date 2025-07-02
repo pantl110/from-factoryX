@@ -56,7 +56,7 @@ const CompanyInfo = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex gap-2">
             <Input
-              placeholder="회사명을 입력해주세요."
+              placeholder="회사명을 입력하세요."
               label="회사명"
               {...register("companyName")}
             />
@@ -70,26 +70,26 @@ const CompanyInfo = () => {
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="대표자명을 입력해주세요."
+              placeholder="대표자명을 입력하세요."
               label="대표자명"
               {...register("ceoName")}
             />
             <Input
-              placeholder="연락 가능한 이메일 주소를 입력해주세요."
+              placeholder="연락 가능한 이메일 주소를 입력하세요."
               label="이메일"
               {...register("managerEmail")}
             />
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="전화번호를 입력해주세요."
+              placeholder="전화번호를 입력하세요."
               label="연락처"
               {...register("managerPhone")}
               onChange={handlePhoneChange}
               onKeyDown={handleNumberKeyDown}
             />
             <Input
-              placeholder="팩스번호를 입력해주세요."
+              placeholder="팩스번호를 입력하세요."
               label="팩스"
               {...register("managerFax")}
               onChange={handleFaxChange}
@@ -98,18 +98,18 @@ const CompanyInfo = () => {
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="업태를 입력해주세요."
+              placeholder="업태를 입력하세요."
               label="업태"
               {...register("businessType")}
             />
             <Input
-              placeholder="종목을 입력해주세요."
+              placeholder="종목을 입력하세요."
               label="종목"
               {...register("businessCategory")}
             />
           </div>
           <Input
-            placeholder="사업장 주소를 입력해주세요."
+            placeholder="사업장 주소를 입력하세요."
             label="사업장 주소"
             {...register("address")}
           />

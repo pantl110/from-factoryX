@@ -1,4 +1,4 @@
-import PrifileImage from "@/ui/prifile-image";
+import ProfileImage from "@/ui/profile-image";
 import { X } from "@phosphor-icons/react";
 import { useEffect, useRef } from "react";
 
@@ -36,7 +36,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
       <div className="flex gap-6">
         {/* 프로필 사진 */}
         <div>
-          <PrifileImage />
+          <ProfileImage text="YO" />
         </div>
 
         {/* 개인 정보 */}

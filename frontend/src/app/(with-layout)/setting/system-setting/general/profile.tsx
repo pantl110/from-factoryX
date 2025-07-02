@@ -6,8 +6,8 @@ import { useState } from "react";
 import SaveModal from "./modals/save-modal";
 import { ProfileFormDataModel } from "./types";
 import { handleNumberKeyDown, formatPhoneNumber } from "@/hooks/format-number";
-import PrifileImage from "@/ui/prifile-image";
 import PhotoUploadModal from "./modals/photo-upload-modal";
+import ProfileImage from "@/ui/profile-image";
 
 const Profile = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -40,7 +40,7 @@ const Profile = () => {
         <h3 className="Heading-3">프로필 설정</h3>
         <div className="flex flex-col gap-8">
           <div className="relative">
-            <PrifileImage />
+            <ProfileImage text="YO" />
             <div
               onClick={() => setIsPhotoUploadModalOpen(true)}
               className="cursor-pointer absolute top-11 left-11 flex items-center justify-center w-[33px] h-[33px] rounded-full border border-lg text-sv bg-white z-20"
@@ -50,7 +50,11 @@ const Profile = () => {
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex gap-2">
-              <Input placeholder="" label="이름" {...register("name")} />
+              <Input
+                placeholder="이름을 입력하세요."
+                label="이름"
+                {...register("name")}
+              />
               <Input
                 label="권한"
                 {...register("role")}
@@ -64,7 +68,7 @@ const Profile = () => {
                 disabledSetting={true}
               />
               <Input
-                placeholder=""
+                placeholder="전화번호를 입력하세요."
                 label="연락처"
                 {...register("phone")}
                 onChange={handlePhoneChange}
