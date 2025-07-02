@@ -1,6 +1,6 @@
 from django.db import models
 from common.models import BaseModel
-from document.models import Quotation, QuotationProduct, FinancialDocument
+from document.models import Quotation, QuotationProduct
 from factory.models import FactoryEquipment
 
 
