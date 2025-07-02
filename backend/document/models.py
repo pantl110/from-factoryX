@@ -1,6 +1,7 @@
 from django.db import models
 from common.models import BaseModel
 from factory.models import Factory, FactoryClient
+from project.models import Project
 from stock.models import Product
 
 
@@ -31,4 +32,23 @@ class QuotationProduct(BaseModel):
         null=True,
         blank=True,
         help_text="납품 일자",
+    )
+
+
+class TaxInvoice(BaseModel):
+    class TaxInvoiceType(models.TextChoices):
+        receipt = ("영수", "receipt")
+        invoice = ("청구", "invoice")
+
+    type = models.CharField(
+        max_length=10,
+        choices=TaxInvoiceType.choices,
+        default=TaxInvoiceType.receipt,
+    )
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    client = models.ForeignKey(FactoryClient, on_delete=models.CASCADE)
+    products = models.ManyToManyField(
+        Product,
+        through="TaxInvoiceProduct",
+        help_text="세금계산서에 포함된 제품들",
     )

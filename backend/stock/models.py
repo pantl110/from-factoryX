@@ -1,6 +1,6 @@
 from django.db import models
 from common.models import BaseModel
-from factory.models import Factory
+from factory.models import Factory, FactoryClient
 
 
 # Create your models here.
@@ -23,9 +23,11 @@ class Material(BaseModel):
         help_text="규격",
     )
     current_stock = models.IntegerField(
+        default=0,
         help_text="현재 재고",
     )
     standard_stock = models.IntegerField(
+        default=0,
         help_text="안전 재고",
     )
     # 이 원자재로 만들 수 있는 품목들
@@ -33,7 +35,37 @@ class Material(BaseModel):
         "Product",
         through="MaterialProduct",
         related_name="materials",
-        help_text="이 원자재로 만들 수 있는 품목들",
+        blank=True,
+        help_text="이 원자재로 만들 수 있는 품목들 (선택사항)",
+    )
+
+
+class MaterialHistory(BaseModel):
+    class MaterialHistoryType(models.TextChoices):
+        purchase = ("구매", "purchase")
+        consumption = ("소모", "consumption")
+
+    type = models.CharField(
+        max_length=10,
+        choices=MaterialHistoryType.choices,
+        default=MaterialHistoryType.purchase,
+    )
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    client = models.ForeignKey(
+        FactoryClient,
+        on_delete=models.CASCADE,
+        help_text="고객",
+    )
+    quantity = models.IntegerField(
+        help_text="재고 변동 수량",
+    )
+    price = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="구매 단가 (원자재 구매 시에만 입력)",
+    )
+    total_stock = models.IntegerField(
+        help_text="재고 변동 후 재고",
     )
 
 
@@ -56,6 +88,7 @@ class Product(BaseModel):
         help_text="규격",
     )
     current_stock = models.IntegerField(
+        default=0,
         help_text="현재 재고",
     )
     average_production_time = models.IntegerField(
@@ -66,7 +99,8 @@ class Product(BaseModel):
     buffer_rate = models.DecimalField(
         max_digits=5,
         decimal_places=2,
-        help_text="재고 버퍼 비율",
+        default=0.10,
+        help_text="재고 버퍼 비율 (기본값: 10%)",
     )
     location = models.CharField(
         max_length=100,
