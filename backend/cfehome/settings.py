@@ -60,12 +60,12 @@ INSTALLED_APPS = [
     "user",
     "commando",
     "common",
-    "quotationRequest",
-    "material",
-    "item",
-    "equipment", 
-    "project",
+    "factory",
     "document",
+    "project",
+    "subscription",
+    "notification",
+    "stock",
 ]
 
 MIDDLEWARE = [

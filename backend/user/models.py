@@ -133,6 +133,18 @@ class User(AbstractUser):
         default=UserStatusChoice.active,
         help_text="회원 유형",
     )
+    phone_number = models.CharField(
+        max_length=15,
+        null=True,
+        blank=True,
+        help_text="전화번호",
+    )
+    profile_image = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="프로필 이미지",
+    )
 
     def __str__(self):
         return f"{self.username} ({self.get_status_display()})"
