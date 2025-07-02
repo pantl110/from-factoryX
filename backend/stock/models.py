@@ -115,6 +115,25 @@ class Product(BaseModel):
     )
 
 
+class ProductHistory(BaseModel):
+    class ProductHistoryType(models.TextChoices):
+        IN = ("입고", "in")
+        OUT = ("출고", "out")
+
+    type = models.CharField(
+        max_length=10,
+        choices=ProductHistoryType.choices,
+        default=ProductHistoryType.IN,
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField(
+        help_text="재고 변동 수량",
+    )
+    total_stock = models.IntegerField(
+        help_text="재고 변동 후 재고",
+    )
+
+
 class MaterialProduct(BaseModel):
     material = models.ForeignKey(Material, on_delete=models.CASCADE, help_text="원자재")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, help_text="제품")
