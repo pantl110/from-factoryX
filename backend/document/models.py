@@ -46,3 +46,13 @@ class TaxInvoice(BaseModel):
     )
     project = models.ForeignKey("project.Project", on_delete=models.CASCADE)
     client = models.ForeignKey(FactoryClient, on_delete=models.CASCADE)
+
+
+class WorkInstruction(BaseModel):
+    plans = models.ManyToManyField(
+        "project.ProjectPlan",
+        null=True,
+        blank=True,
+        help_text="연결된 생산 계획들",
+    )
+    memo = models.TextField(help_text="메모", null=True, blank=True)
