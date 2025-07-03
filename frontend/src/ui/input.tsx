@@ -1,23 +1,22 @@
 import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react/dist/ssr";
 import { useState, forwardRef } from "react";
-import { InputType } from "@/types/input-type";
 
 interface InputProps {
   label?: string;
-  value?: string;
+  value?: string | number | readonly string[];
   onChange?:
     | ((value: string) => void)
     | ((e: React.ChangeEvent<HTMLInputElement>) => void);
   placeholder?: string;
   required?: boolean;
-  type?: InputType;
+  type?: HTMLInputElement["type"];
   disabled?: boolean;
   isShowPasswordToggle?: boolean;
   showError?: boolean;
   errorMessage?: string;
   inputRef?: React.RefObject<HTMLInputElement>;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  onFocus?: () => void;
+  onFocus?: (() => void) | ((e: React.FocusEvent<HTMLInputElement>) => void);
   onBlur?: (() => void) | ((e: React.FocusEvent<HTMLInputElement>) => void);
   name?: string;
   disabledSetting?: boolean;

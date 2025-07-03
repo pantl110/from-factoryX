@@ -1,19 +1,47 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import SaveModal from "./modals/save-modal";
-import {
-  formatBusinessNumber,
-  formatFaxNumber,
-  formatPhoneNumber,
-} from "@/hooks/format-number";
 import { CompanyFormDataModel } from "./types";
+import { InputMask } from "@react-input/mask";
+
+const BusinessNumberInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input
+    label="사업자등록번호"
+    placeholder="사업자등록번호를 입력하세요."
+    ref={ref}
+    {...props}
+  />
+));
+BusinessNumberInput.displayName = "BusinessNumberInput";
+const PhoneInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input
+    placeholder="전화번호를 입력하세요."
+    label="연락처"
+    ref={ref}
+    {...props}
+  />
+));
+PhoneInput.displayName = "PhoneInput";
+const FaxInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input placeholder="팩스를 입력하세요." label="팩스" ref={ref} {...props} />
+));
+FaxInput.displayName = "FaxInput";
 
 const CompanyInfo = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
-  const { register, handleSubmit, setValue } = useForm<CompanyFormDataModel>({
+  const { register, handleSubmit } = useForm<CompanyFormDataModel>({
     defaultValues: {
       companyName: "",
       businessNumber: "",
@@ -33,20 +61,6 @@ const CompanyInfo = () => {
       // console.log("회사 정보:", data);
       setIsSaveModalOpen(true);
     };
-  const handleBusinessNumberChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const formattedValue = formatBusinessNumber(e.target.value);
-    setValue("businessNumber", formattedValue);
-  };
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatPhoneNumber(e.target.value);
-    setValue("managerPhone", formattedValue);
-  };
-  const handleFaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatFaxNumber(e.target.value);
-    setValue("managerFax", formattedValue);
-  };
 
   return (
     <>
@@ -59,11 +73,11 @@ const CompanyInfo = () => {
               label="회사명"
               {...register("companyName")}
             />
-            <Input
-              placeholder="사업자등록번호(숫자만 입력)"
-              label="사업자등록번호"
+            <InputMask
+              component={BusinessNumberInput}
+              mask="000-00-00000"
+              replacement={{ 0: /[0-9]/ }}
               {...register("businessNumber")}
-              onChange={handleBusinessNumberChange}
             />
           </div>
           <div className="flex gap-2">
@@ -79,17 +93,17 @@ const CompanyInfo = () => {
             />
           </div>
           <div className="flex gap-2">
-            <Input
-              placeholder="전화번호를 입력하세요."
-              label="연락처"
+            <InputMask
+              component={PhoneInput}
+              mask="000-0000-0000"
+              replacement={{ 0: /[0-9]/ }}
               {...register("managerPhone")}
-              onChange={handlePhoneChange}
             />
-            <Input
-              placeholder="팩스번호를 입력하세요."
-              label="팩스"
+            <InputMask
+              component={FaxInput}
+              mask="000-0000-0000"
+              replacement={{ 0: /[0-9]/ }}
               {...register("managerFax")}
-              onChange={handleFaxChange}
             />
           </div>
           <div className="flex gap-2">

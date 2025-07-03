@@ -7,17 +7,17 @@ import {
   FieldErrors,
   Control,
 } from "react-hook-form";
-
+import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
+import { clientData } from "@/mocks/client-data";
+import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
+import { forwardRef, useEffect } from "react";
+import { ClientDataModel } from "@/types/data-model";
+import { InputMask } from "@react-input/mask";
 import {
   formatBusinessNumber,
   formatPhoneNumber,
   formatFaxNumber,
 } from "@/hooks/format-number";
-import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
-import { clientData } from "@/mocks/client-data";
-import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
-import { useEffect } from "react";
-import { ClientDataModel } from "@/types/data-model";
 
 interface InputSectionProps {
   clientDataParam: string | null;
@@ -26,6 +26,45 @@ interface InputSectionProps {
   control: Control<ClientDataModel>;
 }
 
+const BusinessNumberInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>(({ showError, ...props }, ref) => (
+  <Input
+    label="사업자등록번호"
+    placeholder="사업자등록번호를 입력하세요."
+    required
+    ref={ref}
+    {...props}
+    showError={showError}
+  />
+));
+BusinessNumberInput.displayName = "BusinessNumberInput";
+const PhoneInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input
+    placeholder="담당자 연락처를 입력하세요."
+    label="담당자 연락처"
+    ref={ref}
+    {...props}
+  />
+));
+PhoneInput.displayName = "PhoneInput";
+const FaxInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input
+    label="담당자 팩스"
+    placeholder="담당자 팩스를 입력하세요."
+    ref={ref}
+    {...props}
+  />
+));
+FaxInput.displayName = "FaxInput";
+
 const InputSection = ({
   clientDataParam,
   setValue,
@@ -33,7 +72,6 @@ const InputSection = ({
   control,
 }: InputSectionProps) => {
   const {
-    input: companyNameInput,
     setInput: setCompanyNameInput,
     isOpen: isCompanyNameDropdownOpen,
     setIsOpen: setIsCompanyNameDropdownOpen,
@@ -57,7 +95,6 @@ const InputSection = ({
             setValue("fax", formatFaxNumber(String(value ?? "")));
           } else if (key === "companyName") {
             setValue("companyName", String(value ?? ""));
-            setCompanyNameInput(String(value ?? ""));
           } else {
             setValue(key as string, value ?? "");
           }
@@ -66,7 +103,7 @@ const InputSection = ({
         // 파싱 에러 무시
       }
     }
-  }, [clientDataParam, setValue, setCompanyNameInput]);
+  }, [clientDataParam, setValue]);
 
   const handleSelectClient = (item: ClientDataModel) => {
     handleCompanyNameSelect(item);
@@ -90,17 +127,6 @@ const InputSection = ({
     setIsCompanyNameDropdownOpen(false);
   };
 
-  // 숫자 형식 변환
-  const handleBusinessNumberChange = (value: string) => {
-    setValue("businessNumber", formatBusinessNumber(value));
-  };
-  const handlePhoneChange = (value: string) => {
-    setValue("contact", formatPhoneNumber(value));
-  };
-  const handleFaxChange = (value: string) => {
-    setValue("fax", formatFaxNumber(value));
-  };
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-2">
@@ -118,8 +144,11 @@ const InputSection = ({
                   placeholder="거래처명을 입력하세요."
                   required
                   showError={!!errors.companyName}
-                  value={companyNameInput}
-                  onChange={setCompanyNameInput}
+                  value={field.value || ""}
+                  onChange={(value: string) => {
+                    field.onChange(value);
+                    setCompanyNameInput(value);
+                  }}
                   onFocus={() => setIsCompanyNameDropdownOpen(true)}
                   onBlur={handleCompanyNameBlur}
                   ref={field.ref}
@@ -144,18 +173,13 @@ const InputSection = ({
             control={control}
             rules={{ required: true }}
             render={({ field }) => {
-              const handleBusinessNumberBlur = field.onBlur;
               return (
-                <Input
-                  label="사업자등록번호"
-                  placeholder="사업자등록번호를 입력하세요."
-                  required
+                <InputMask
+                  component={BusinessNumberInput}
+                  mask="000-00-00000"
+                  replacement={{ 0: /[0-9]/ }}
+                  {...field}
                   showError={!!errors.businessNumber}
-                  value={field.value || ""}
-                  onChange={handleBusinessNumberChange}
-                  onBlur={handleBusinessNumberBlur}
-                  ref={field.ref}
-                  name={field.name}
                 />
               );
             }}
@@ -263,16 +287,12 @@ const InputSection = ({
           name="contact"
           control={control}
           render={({ field }) => {
-            const handleContactBlur = field.onBlur;
             return (
-              <Input
-                label="담당자 연락처"
-                placeholder="담당자 연락처를 입력하세요."
-                value={field.value || ""}
-                onChange={handlePhoneChange}
-                onBlur={handleContactBlur}
-                ref={field.ref}
-                name={field.name}
+              <InputMask
+                component={PhoneInput}
+                mask="000-0000-0000"
+                replacement={{ 0: /[0-9]/ }}
+                {...field}
               />
             );
           }}
@@ -281,16 +301,12 @@ const InputSection = ({
           name="fax"
           control={control}
           render={({ field }) => {
-            const handleFaxBlur = field.onBlur;
             return (
-              <Input
-                label="담당자 팩스"
-                placeholder="담당자 팩스를 입력하세요."
-                value={field.value || ""}
-                onChange={handleFaxChange}
-                onBlur={handleFaxBlur}
-                ref={field.ref}
-                name={field.name}
+              <InputMask
+                component={FaxInput}
+                mask="000-0000-0000"
+                replacement={{ 0: /[0-9]/ }}
+                {...field}
               />
             );
           }}

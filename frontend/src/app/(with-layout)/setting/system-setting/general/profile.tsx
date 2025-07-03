@@ -2,18 +2,31 @@ import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "react-hook-form";
 import { CameraIcon } from "@phosphor-icons/react";
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import SaveModal from "./modals/save-modal";
 import { ProfileFormDataModel } from "./types";
-import { formatPhoneNumber } from "@/hooks/format-number";
 import PhotoUploadModal from "./modals/photo-upload-modal";
 import ProfileImage from "@/ui/profile-image";
+import { InputMask } from "@react-input/mask";
+
+const PhoneInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input
+    placeholder="전화번호를 입력하세요."
+    label="연락처"
+    ref={ref}
+    {...props}
+  />
+));
+PhoneInput.displayName = "PhoneInput";
 
 const Profile = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
 
-  const { register, handleSubmit, setValue } = useForm<ProfileFormDataModel>({
+  const { register, handleSubmit } = useForm<ProfileFormDataModel>({
     defaultValues: {
       name: "",
       role: "시스템 관리자", // 사용자에 따라 고정값 변경 필요
@@ -24,11 +37,6 @@ const Profile = () => {
 
   const onSubmit = () => {
     setIsSaveModalOpen(true);
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatPhoneNumber(e.target.value);
-    setValue("phone", formattedValue);
   };
 
   return (
@@ -67,11 +75,11 @@ const Profile = () => {
                 {...register("email")}
                 disabledSetting={true}
               />
-              <Input
-                placeholder="전화번호를 입력하세요."
-                label="연락처"
+              <InputMask
+                component={PhoneInput}
+                mask="000-0000-0000"
+                replacement={{ 0: /[0-9]/ }}
                 {...register("phone")}
-                onChange={handlePhoneChange}
               />
             </div>
           </div>
