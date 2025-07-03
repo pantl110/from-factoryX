@@ -25,7 +25,8 @@ from api.exceptions import CustomAuthorizationError
 from django.http import JsonResponse
 from api.security import jwt_auth
 from email_validator import validate_email, EmailNotValidError
-from user.models import EmailVerification
+
+# from user.models import EmailVerification
 from django.utils import timezone
 from datetime import timedelta
 
@@ -248,19 +249,19 @@ async def signup(request, data: UserSignupIn):
 )
 async def login(request, data: UserLoginIn):
     # 이메일 형식 검증
-    try:
-        validate_email(data.email)
-    except EmailNotValidError:
-        raise HttpError(400, "올바른 이메일 형식이 아닙니다.")
+    # try:
+    #     validate_email(data.email)
+    # except EmailNotValidError:
+    #     raise HttpError(400, "올바른 이메일 형식이 아닙니다.")
 
     # 이메일로 사용자 찾기
     try:
-        user = await User.objects.aget(email=data.email)
+        user = await User.objects.aget(username=data.username)
     except User.DoesNotExist:
-        raise HttpError(400, "등록되지 않은 이메일입니다.")
+        raise HttpError(400, "등록되지 않은 아이디입니다.")
 
-    if not await sync_to_async(user.check_password)(data.password):
-        raise HttpError(400, "비밀번호가 일치하지 않습니다.")
+    # if not await sync_to_async(user.check_password)(data.password):
+    #     raise HttpError(400, "비밀번호가 일치하지 않습니다.")
 
     await Jwt.objects.filter(user_id=user.id).adelete()
 
