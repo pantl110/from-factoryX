@@ -18,7 +18,7 @@ const DashboardPage = () => {
       <div className="flex flex-col gap-11 p-10">
         <div className="flex gap-5">
           {/* Summary KPI */}
-          <div className="flex flex-col gap-3 w-[280px]">
+          <div className="flex flex-col gap-3 w-[280px] min-w-[248px]">
             <h3 className="Heading-3">Summary KPI</h3>
             <DailyProductionQuantity />
             <ShortageCount />

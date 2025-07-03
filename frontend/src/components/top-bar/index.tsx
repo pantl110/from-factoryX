@@ -4,9 +4,7 @@ import usePageStatusStore, { PageStatusModel } from "@/store/page-status-store";
 import TopBarContent from "./top-bar-content";
 import { useState } from "react";
 import NotificationModal from "./modals/notification-modal";
-import ProfileModal from "./modals/profile-modal";
 import TopBarCrumb from "./top-bar-crumb";
-import { usePathname } from "next/navigation";
 
 interface TopBarProps {
   isSidebarVisible: boolean;
@@ -31,8 +29,6 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
     (state) => state.setMoveToStorageModalOpen,
   );
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const pathname = usePathname();
 
   return (
     <>
@@ -59,14 +55,7 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
             onAddReturnClick={() => setAddReturnModalOpen(true)}
             onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
             onNotificationClick={() => setIsNotificationModalOpen(true)}
-            onProfileClick={() => setIsProfileModalOpen(true)}
           />
-
-          {isProfileModalOpen && !pathname.includes("production") && (
-            <div className="absolute top-17 right-10">
-              <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
-            </div>
-          )}
         </div>
       </header>
 

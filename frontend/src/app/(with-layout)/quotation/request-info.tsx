@@ -30,16 +30,16 @@ const RequestInfo = ({
 
       {clientDataParam ? (
         <div className="w-full overflow-x-auto mb-30 ">
-          <table className="min-w-[938px]">
+          <table className="w-full min-w-[938px]">
             <thead>
               <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-                <th className="px-3 flex-1">품목명</th>
-                <th className="px-3 flex-1">품목 코드</th>
-                <th className="px-3 flex-1">규격</th>
-                <th className="px-3 w-[80px]">단위</th>
-                <th className="px-3 flex-1">제작수량</th>
-                <th className="px-3 w-[100px]">단가</th>
-                <th className="px-3 flex-1">금액</th>
+                <th className="text-left px-3 flex-1">품목명</th>
+                <th className="text-left px-3 flex-1">품목 코드</th>
+                <th className="text-left px-3 flex-1">규격</th>
+                <th className="text-left px-3 w-[80px]">단위</th>
+                <th className="text-left px-3 flex-1">제작수량</th>
+                <th className="text-left px-3 w-[100px]">단가</th>
+                <th className="text-left px-3 flex-1">금액</th>
               </tr>
             </thead>
             <tbody>

@@ -159,6 +159,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             placeholder={placeholder}
             disabled={disabled || disabledSetting}
             className={getInputClassName()}
+            onWheel={type === "number" ? (e) => e.preventDefault() : undefined}
           />
 
           {isShowPasswordToggle && (

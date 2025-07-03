@@ -27,8 +27,10 @@ const MaterialInputItem = ({
             type="text"
             placeholder="자재명 입력"
             required={true}
-            {...(register && { ...register(`materialName_${index}`) })}
-            showError={!!errors?.[`materialName_${index}`]}
+            {...(register && {
+              ...register(`materials.${index}.materialName`),
+            })}
+            showError={!!errors?.materials?.[index]?.materialName}
           />
         </div>
         <div className="flex-2">
@@ -37,8 +39,8 @@ const MaterialInputItem = ({
             type="text"
             placeholder="규격 입력"
             required={true}
-            {...(register && { ...register(`size_${index}`) })}
-            showError={!!errors?.[`size_${index}`]}
+            {...(register && { ...register(`materials.${index}.size`) })}
+            showError={!!errors?.materials?.[index]?.size}
           />
         </div>
         <div className="flex-1">
@@ -48,9 +50,11 @@ const MaterialInputItem = ({
             placeholder="EX) 100"
             required={true}
             {...(register && {
-              ...register(`usageQuantity_${index}`, { valueAsNumber: true }),
+              ...register(`materials.${index}.usageQuantity`, {
+                valueAsNumber: true,
+              }),
             })}
-            showError={!!errors?.[`usageQuantity_${index}`]}
+            showError={!!errors?.materials?.[index]?.usageQuantity}
           />
         </div>
       </div>

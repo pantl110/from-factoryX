@@ -2,8 +2,8 @@ import InfoLabelValue from "@/ui/info-label-value";
 import MiniBtn from "@/ui/mini-btn";
 import { Plus } from "@phosphor-icons/react/dist/ssr";
 import MaterialInputItem from "./material-input-item";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useCallback } from "react";
+import { useForm, useFieldArray, Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { SecondStepFormDataModel } from "../types";
@@ -14,49 +14,80 @@ interface SecondStepProps {
 }
 
 // Yup 스키마 정의
-const createValidationSchema = (
-  materialCount: number, // 생성할 자재 항목의 개수
-): yup.ObjectSchema<SecondStepFormDataModel> => {
-  const materialFields: Record<string, yup.StringSchema | yup.NumberSchema> =
-    {};
-
-  for (let i = 0; i < materialCount; i++) {
-    materialFields[`materialName_${i}`] = yup.string().required();
-    materialFields[`size_${i}`] = yup.string().required();
-    materialFields[`usageQuantity_${i}`] = yup.number().required().positive();
-  } // 자재 항목의 개수만큼 반복하여 스키마 생성
-
-  return yup.object(
-    materialFields,
-  ) as yup.ObjectSchema<SecondStepFormDataModel>;
-};
+const validationSchema = yup.object({
+  materials: yup
+    .array()
+    .of(
+      yup.object({
+        materialName: yup.string().required(),
+        size: yup.string().required(),
+        usageQuantity: yup
+          .number()
+          .transform((value, originalValue) =>
+            originalValue === "" ? undefined : value,
+          )
+          .required()
+          .positive(),
+      }),
+    )
+    .min(1)
+    .required(),
+});
 
 const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
-  const [materialItems, setMaterialItems] = useState<number[]>([]); // 초기 아이템 0개
-
   const {
     register,
     handleSubmit,
     formState: { errors },
     clearErrors,
+    control,
   } = useForm<SecondStepFormDataModel>({
-    resolver: yupResolver(createValidationSchema(materialItems.length + 1)),
-    mode: "onChange",
+    resolver: yupResolver(
+      validationSchema,
+    ) as unknown as Resolver<SecondStepFormDataModel>,
+    mode: "onSubmit",
+    defaultValues: {
+      materials: [
+        {
+          materialName: "",
+          size: "",
+          usageQuantity: "",
+        },
+      ],
+    },
   });
 
-  const handleAddMaterial = () => {
-    clearErrors(); // 유효성 검사 에러 상태를 초기화
-    setMaterialItems((prev) => [...prev, prev.length]);
-  };
-  const handleDeleteMaterial = (index: number) => {
-    setMaterialItems((prev) => prev.filter((_, i) => i !== index));
-  };
-  const onSubmit = () => {
-    onNextStep();
-  };
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "materials",
+  });
+
+  const handleAddMaterial = useCallback(() => {
+    clearErrors();
+    append({
+      materialName: "",
+      size: "",
+      usageQuantity: "",
+    });
+  }, [append, clearErrors]);
+
+  const handleDeleteMaterial = useCallback(
+    (index: number) => {
+      clearErrors();
+      remove(index);
+    },
+    [remove, clearErrors],
+  );
+
+  const onSubmit = () =>
+    // data: SecondStepFormDataModel
+    {
+      // console.log("DB에 저장할 데이터:", data.materials);
+      onNextStep();
+    };
 
   return (
-    <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col gap-7 items-center rounded-lg max-h-full">
+    <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col gap-7 items-center rounded-lg max-h-[85vh]">
       <div className="flex flex-col gap-8 w-full">
         {/* 타이틀 영역 */}
         <div className="flex flex-col gap-2 items-center">
@@ -84,23 +115,24 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
       </div>
 
       {/* input container */}
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-7">
-        <div className="flex flex-col gap-2 overflow-y-auto">
-          <MaterialInputItem
-            plusMode={false}
-            register={register}
-            errors={errors}
-            index={0}
-          />
-          {materialItems.map((item, index) => (
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-7 h-full overflow-y-auto scrollbar-hide"
+      >
+        <div className="flex flex-col gap-2 h-full">
+          {fields.map((field, index) => (
             <MaterialInputItem
-              key={item}
-              onDelete={() => handleDeleteMaterial(index)}
+              plusMode={index === 0 ? false : true}
+              key={field.id}
+              onDelete={
+                index === 0 ? undefined : () => handleDeleteMaterial(index)
+              }
               register={register}
               errors={errors}
-              index={index + 1}
+              index={index}
             />
           ))}
+
           <button
             type="button"
             onClick={handleAddMaterial}
@@ -110,6 +142,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
             <Plus size={24} />
           </button>
         </div>
+
         {/* 모달버튼 영역 */}
         <div className="w-full flex justify-end gap-2.5">
           <MiniBtn

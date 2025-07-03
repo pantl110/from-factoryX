@@ -118,7 +118,7 @@ const QuotationPageContent = () => {
                 ${isRightPanelExpanded ? "w-full" : "w-1/2"}`}
           >
             <div
-              className={`flex flex-col flex-1 py-8 gap-11 pr-10
+              className={`flex flex-col flex-1 pt-8 gap-11 pr-10
                 ${isRightPanelExpanded ? "pl-0" : "pl-10"}`}
             >
               <div className="flex items-center gap-2 pb-3 border-b border-[#eeeeee]">
@@ -136,7 +136,7 @@ const QuotationPageContent = () => {
               </div>
             </div>
 
-            <div className="overflow-y-auto scrollbar-hide h-full">
+            <div className="overflow-y-auto scrollbar-hide h-full pt-8">
               <div className="flex flex-col flex-1 gap-5 px-10 pb-11">
                 <h3 className="Heading-3">거래처 정보</h3>
                 <InputSection

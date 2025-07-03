@@ -32,7 +32,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
 
   return (
     <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col items-center rounded-lg">
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 w-full">
         {/* 타이틀 영역 */}
         <div className="flex flex-col gap-2 items-center">
           <h3 className="Heading-3 text-primary">

@@ -8,7 +8,7 @@ interface WelcomeProps {
 
 const Welcome = ({ onNextStep }: WelcomeProps) => {
   return (
-    <div className="bg-wh z-1 w-[600px] pt-14 px-8 pb-6 flex flex-col items-center rounded-lg">
+    <div className="bg-wh z-1 w-[586px] pt-14 px-8 pb-6 flex flex-col items-center rounded-lg">
       <h3 className="Heading-3 text-primary mb-2">
         팩토리엑스에 오신 걸 환영합니다!
       </h3>
