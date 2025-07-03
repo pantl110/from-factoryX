@@ -3,7 +3,7 @@ import QuotationPageContent from "./quotation-page-content";
 
 const QuotationPage = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={null}>
       <QuotationPageContent />
     </Suspense>
   );

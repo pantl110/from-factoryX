@@ -4,22 +4,23 @@ import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { useState } from "react";
-import { useForm } from "@/hooks/use-form";
+import { UseFormTrigger } from "react-hook-form";
 import { ClientDataModel } from "@/types/data-model";
 
 interface TitleSecProps {
-  form: ReturnType<typeof useForm<ClientDataModel>>;
-  setIsEmailOpen: (isEmailOpen: boolean) => void;
-  setIsPrintOpen: (isPrintOpen: boolean) => void;
-  setIsStartProductionModalOpen: (isStartProductionModalOpen: boolean) => void;
+  setIsEmailOpen: (open: boolean) => void;
+  setIsPrintOpen: (open: boolean) => void;
+  setIsStartProductionModalOpen: (open: boolean) => void;
   isClientData: boolean;
+  trigger: UseFormTrigger<ClientDataModel>;
 }
+
 const TitleSec = ({
-  form,
   setIsEmailOpen,
   setIsPrintOpen,
   setIsStartProductionModalOpen,
   isClientData,
+  trigger,
 }: TitleSecProps) => {
   // 프로젝트 이름 상태
   const [projectName, setProjectName] = useState("플라스틱이 좋아");
@@ -33,11 +34,10 @@ const TitleSec = ({
 
   return (
     <div className="flex gap-1 mb-4 pr-10">
-      <div className="flex-1 gap-1 ">
-        <div className="cursor-pointer relative">
+      <div className="flex-1 gap-1">
+        <div className="cursor-pointer relative w-fit">
           <Chip
             text="견적 협의"
-            containerWidth="w-full"
             bgColor="bg-yellow-8"
             textColor="text-yellow"
             icon={<CaretDownIcon size={12} />}
@@ -69,10 +69,11 @@ const TitleSec = ({
       <ButtonSection
         onEmailClick={() => setIsEmailOpen(true)}
         onPrintClick={() => setIsPrintOpen(true)}
-        onStartProductionClick={() => {
-          form.handleSubmit(() => {
+        onStartProductionClick={async () => {
+          const isValid = await trigger();
+          if (isValid) {
             setIsStartProductionModalOpen(true);
-          });
+          }
         }}
         isClientData={isClientData}
       />

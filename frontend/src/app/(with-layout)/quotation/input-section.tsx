@@ -1,82 +1,162 @@
 "use client";
 
 import Input from "@/ui/input";
-import { useForm } from "@/hooks/use-form";
-import { ClientDataModel } from "@/types/data-model";
 import {
-  extractNumbers,
-  formatBusinessNumber,
-  formatPhoneNumber,
-  formatFaxNumber,
-  handleNumberKeyDown,
-} from "@/hooks/format-number";
+  Controller,
+  UseFormSetValue,
+  FieldErrors,
+  Control,
+} from "react-hook-form";
 import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
 import { clientData } from "@/mocks/client-data";
 import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
-import { useState } from "react";
-// import InputDatepicker from "@/ui/input-datepicker";
+import { forwardRef, useEffect } from "react";
+import { ClientDataModel } from "@/types/data-model";
+import { InputMask } from "@react-input/mask";
+import {
+  formatBusinessNumber,
+  formatPhoneNumber,
+  formatFaxNumber,
+} from "@/hooks/format-number";
 
 interface InputSectionProps {
-  form: ReturnType<typeof useForm<ClientDataModel>>;
-  isShowErrors: boolean;
+  clientDataParam: string | null;
+  setValue: UseFormSetValue<ClientDataModel>;
+  errors: FieldErrors<ClientDataModel>;
+  control: Control<ClientDataModel>;
 }
 
-const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
-  const [_selectedClients, setSelectedClients] = useState<typeof clientData>(
-    [],
-  );
+const BusinessNumberInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>(({ showError, ...props }, ref) => (
+  <Input
+    label="사업자등록번호"
+    placeholder="사업자등록번호를 입력하세요."
+    required
+    ref={ref}
+    {...props}
+    showError={showError}
+  />
+));
+BusinessNumberInput.displayName = "BusinessNumberInput";
+const PhoneInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input
+    placeholder="담당자 연락처를 입력하세요."
+    label="담당자 연락처"
+    ref={ref}
+    {...props}
+  />
+));
+PhoneInput.displayName = "PhoneInput";
+const FaxInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input
+    label="담당자 팩스"
+    placeholder="담당자 팩스를 입력하세요."
+    ref={ref}
+    {...props}
+  />
+));
+FaxInput.displayName = "FaxInput";
+
+const InputSection = ({
+  clientDataParam,
+  setValue,
+  errors,
+  control,
+}: InputSectionProps) => {
   const {
-    input: companyNameInput,
     setInput: setCompanyNameInput,
     isOpen: isCompanyNameDropdownOpen,
     setIsOpen: setIsCompanyNameDropdownOpen,
     filtered: filteredClients,
-    // handleInputChange: handleCompanyNameInputChange,
     handleSelect: handleCompanyNameSelect,
   } = useDropdownFilter(clientData, (item) => item.companyName);
 
-  const handleSelectClient = (item: (typeof clientData)[number]) => {
+  useEffect(() => {
+    if (clientDataParam) {
+      try {
+        const data = JSON.parse(decodeURIComponent(clientDataParam));
+        Object.entries(data).forEach(([key, value]) => {
+          if (key === "businessNumber") {
+            setValue(
+              "businessNumber",
+              formatBusinessNumber(String(value ?? "")),
+            );
+          } else if (key === "contact") {
+            setValue("contact", formatPhoneNumber(String(value ?? "")));
+          } else if (key === "fax") {
+            setValue("fax", formatFaxNumber(String(value ?? "")));
+          } else if (key === "companyName") {
+            setValue("companyName", String(value ?? ""));
+          } else {
+            setValue(key as string, value ?? "");
+          }
+        });
+      } catch {
+        // 파싱 에러 무시
+      }
+    }
+  }, [clientDataParam, setValue]);
+
+  const handleSelectClient = (item: ClientDataModel) => {
     handleCompanyNameSelect(item);
-    setCompanyNameInput(item.companyName);
 
     // 선택한 거래처 정보로 폼 자동 채우기
-    form.handleChange("companyName", item.companyName);
-    form.handleChange("businessNumber", item.businessNumber);
-    form.handleChange("representativeName", item.representativeName);
-    form.handleChange("companyAddress", item.companyAddress);
-    form.handleChange("deliveryAddress", item.deliveryAddress || "");
-    form.handleChange("email", item.email);
-    form.handleChange("contact", item.contact || "");
-    form.handleChange("fax", item.fax || "");
+    setValue("companyName", item.companyName);
+    setValue(
+      "businessNumber",
+      formatBusinessNumber(String(item.businessNumber ?? "")),
+    );
+    setValue("representativeName", item.representativeName);
+    setValue("dueDate", item.dueDate);
+    setValue("responsibleName", item.responsibleName);
+    setValue("companyAddress", item.companyAddress);
+    setValue("deliveryAddress", item.deliveryAddress || "");
+    setValue("responsibleName", item.responsibleName);
+    setValue("email", item.email);
+    setValue("contact", formatPhoneNumber(String(item.contact ?? "")));
+    setValue("fax", formatFaxNumber(String(item.fax ?? "")));
 
-    setSelectedClients((prev) => {
-      if (!prev.some((client) => client.id === item.id)) {
-        return [...prev, item];
-      }
-      return prev;
-    });
     setIsCompanyNameDropdownOpen(false);
   };
-  // const handleRemoveClient = (id: number) => {
-  //   setSelectedClients((prev) => prev.filter((client) => client.id !== id));
-  // };
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-2">
         <div className="flex-1 relative">
-          <Input
-            label="거래처명"
-            placeholder="거래처명을 입력하세요."
-            required
-            value={companyNameInput}
-            onChange={setCompanyNameInput}
-            onFocus={() => setIsCompanyNameDropdownOpen(true)}
-            onBlur={() =>
-              setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
-            }
+          <Controller
+            name="companyName"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => {
+              const handleCompanyNameBlur = () =>
+                setTimeout(() => setIsCompanyNameDropdownOpen(false), 150);
+              return (
+                <Input
+                  label="거래처명"
+                  placeholder="거래처명을 입력하세요."
+                  required
+                  showError={!!errors.companyName}
+                  value={field.value || ""}
+                  onChange={(value: string) => {
+                    field.onChange(value);
+                    setCompanyNameInput(value);
+                  }}
+                  onFocus={() => setIsCompanyNameDropdownOpen(true)}
+                  onBlur={handleCompanyNameBlur}
+                  ref={field.ref}
+                  name={field.name}
+                />
+              );
+            }}
           />
-
           {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
             <div className="absolute left-0 top-21 z-10 w-full">
               <ClientNameDropdown
@@ -88,36 +168,52 @@ const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
           )}
         </div>
         <div className="flex-1">
-          <Input
-            label="사업자등록번호"
-            placeholder="사업자등록번호를 입력하세요."
-            required
-            value={formatBusinessNumber(form.formData.businessNumber)}
-            onChange={(v) => {
-              const numbers = extractNumbers(v);
-              form.handleChange("businessNumber", numbers);
+          <Controller
+            name="businessNumber"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => {
+              return (
+                <InputMask
+                  component={BusinessNumberInput}
+                  mask="000-00-00000"
+                  replacement={{ 0: /[0-9]/ }}
+                  {...field}
+                  showError={!!errors.businessNumber}
+                />
+              );
             }}
-            onKeyDown={handleNumberKeyDown}
-            showError={isShowErrors && !form.formData.businessNumber}
           />
         </div>
       </div>
       <div className="flex gap-2">
-        <Input
-          label="대표자명"
-          placeholder="대표자명을 입력하세요."
-          required
-          value={form.formData.representativeName}
-          onChange={(v) => form.handleChange("representativeName", v)}
-          showError={isShowErrors && !form.formData.representativeName}
+        <Controller
+          name="representativeName"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Input
+              label="대표자명"
+              placeholder="대표자명을 입력하세요."
+              required
+              showError={!!errors.representativeName}
+              {...field}
+            />
+          )}
         />
-        <Input
-          label="납기일자"
-          required
-          value={form.formData.dueDate}
-          onChange={(v) => form.handleChange("dueDate", v)}
-          showError={isShowErrors && !form.formData.dueDate}
-          type="date"
+        <Controller
+          name="dueDate"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Input
+              label="납기일자"
+              required
+              type="date"
+              showError={!!errors.dueDate}
+              {...field}
+            />
+          )}
         />
         {/* <InputDatepicker
           label="납기일자"
@@ -128,61 +224,92 @@ const InputSection = ({ form, isShowErrors }: InputSectionProps) => {
         /> */}
       </div>
       <div className="flex gap-2">
-        <Input
-          label="회사주소"
-          placeholder="회사주소를 입력하세요."
-          required
-          value={form.formData.companyAddress}
-          onChange={(v) => form.handleChange("companyAddress", v)}
-          showError={isShowErrors && !form.formData.companyAddress}
+        <Controller
+          name="companyAddress"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Input
+              label="회사주소"
+              placeholder="회사주소를 입력하세요."
+              required
+              showError={!!errors.companyAddress}
+              {...field}
+            />
+          )}
         />
       </div>
       <div className="flex gap-2">
-        <Input
-          label="납품주소"
-          placeholder="납품주소를 입력하세요."
-          value={form.formData.deliveryAddress}
-          onChange={(v) => form.handleChange("deliveryAddress", v)}
+        <Controller
+          name="deliveryAddress"
+          control={control}
+          render={({ field }) => (
+            <Input
+              label="납품주소"
+              placeholder="납품주소를 입력하세요."
+              {...field}
+            />
+          )}
         />
       </div>
       <div className="flex gap-2">
-        <Input
-          label="담당자명"
-          placeholder="담당자명을 입력하세요."
-          required
-          value={form.formData.representativeName}
-          onChange={(v) => form.handleChange("representativeName", v)}
-          showError={isShowErrors && !form.formData.representativeName}
+        <Controller
+          name="responsibleName"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Input
+              label="담당자명"
+              placeholder="담당자명을 입력하세요."
+              required
+              showError={!!errors.responsibleName}
+              {...field}
+            />
+          )}
         />
-        <Input
-          label="담당자 이메일"
-          placeholder="담당자 이메일을 입력하세요."
-          required
-          value={form.formData.email}
-          onChange={(v) => form.handleChange("email", v)}
-          showError={isShowErrors && !form.formData.email}
+        <Controller
+          name="email"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Input
+              label="담당자 이메일"
+              placeholder="담당자 이메일을 입력하세요."
+              required
+              showError={!!errors.email}
+              {...field}
+            />
+          )}
         />
       </div>
       <div className="flex gap-2">
-        <Input
-          label="담당자 연락처"
-          placeholder="담당자 연락처를 입력하세요."
-          value={formatPhoneNumber(form.formData.contact || "")}
-          onChange={(v) => {
-            const numbers = extractNumbers(v);
-            form.handleChange("contact", numbers);
+        <Controller
+          name="contact"
+          control={control}
+          render={({ field }) => {
+            return (
+              <InputMask
+                component={PhoneInput}
+                mask="000-0000-0000"
+                replacement={{ 0: /[0-9]/ }}
+                {...field}
+              />
+            );
           }}
-          onKeyDown={handleNumberKeyDown}
         />
-        <Input
-          label="담당자 팩스"
-          placeholder="담당자 팩스를 입력하세요."
-          value={formatFaxNumber(form.formData.fax || "")}
-          onChange={(v) => {
-            const numbers = extractNumbers(v);
-            form.handleChange("fax", numbers);
+        <Controller
+          name="fax"
+          control={control}
+          render={({ field }) => {
+            return (
+              <InputMask
+                component={FaxInput}
+                mask="000-0000-0000"
+                replacement={{ 0: /[0-9]/ }}
+                {...field}
+              />
+            );
           }}
-          onKeyDown={handleNumberKeyDown}
         />
       </div>
     </div>

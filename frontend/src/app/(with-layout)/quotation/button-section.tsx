@@ -47,7 +47,6 @@ const ButtonSection = ({
         bgColor="bg-primary"
         onClick={onStartProductionClick}
         hoverColor="hover:bg-primary-hover"
-        disabled={!isClientData}
       />
     </div>
   );

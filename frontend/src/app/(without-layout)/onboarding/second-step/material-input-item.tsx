@@ -1,8 +1,25 @@
 import Input from "@/ui/input";
+import MiniBtn from "@/ui/mini-btn";
+import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { SecondStepFormDataModel } from "../types";
 
-const MaterialInputItem = () => {
+interface MaterialInputItemProps {
+  plusMode?: boolean;
+  onDelete?: () => void;
+  register: UseFormRegister<SecondStepFormDataModel>;
+  errors: FieldErrors<SecondStepFormDataModel>;
+  index: number;
+}
+
+const MaterialInputItem = ({
+  plusMode = true,
+  onDelete,
+  register,
+  errors,
+  index,
+}: MaterialInputItemProps) => {
   return (
-    <div className="w-[736px] flex flex-col gap-3 p-5 border border-lg rounded-xl shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
+    <div className="w-full flex flex-col gap-3 p-5 border border-lg rounded-xl shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
       <div className="flex gap-2.5 flex-1">
         <div className="flex-2">
           <Input
@@ -10,6 +27,10 @@ const MaterialInputItem = () => {
             type="text"
             placeholder="자재명 입력"
             required={true}
+            {...(register && {
+              ...register(`materials.${index}.materialName`),
+            })}
+            showError={!!errors?.materials?.[index]?.materialName}
           />
         </div>
         <div className="flex-2">
@@ -18,17 +39,36 @@ const MaterialInputItem = () => {
             type="text"
             placeholder="규격 입력"
             required={true}
+            {...(register && { ...register(`materials.${index}.size`) })}
+            showError={!!errors?.materials?.[index]?.size}
           />
         </div>
         <div className="flex-1">
           <Input
             label="사용 수량"
-            type="text"
+            type="number"
             placeholder="EX) 100"
             required={true}
+            {...(register && {
+              ...register(`materials.${index}.usageQuantity`, {
+                valueAsNumber: true,
+              }),
+            })}
+            showError={!!errors?.materials?.[index]?.usageQuantity}
           />
         </div>
       </div>
+      {plusMode && (
+        <div className="flex justify-end">
+          <MiniBtn
+            text="삭제하기"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            onClick={onDelete}
+          />
+        </div>
+      )}
     </div>
   );
 };

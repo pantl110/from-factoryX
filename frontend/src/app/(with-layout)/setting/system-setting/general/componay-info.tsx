@@ -1,132 +1,138 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
-import { useForm } from "@/hooks/use-form";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { forwardRef, useState } from "react";
 import SaveModal from "./modals/save-modal";
 import { CompanyFormDataModel } from "./types";
+import { InputMask } from "@react-input/mask";
+
+const BusinessNumberInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input
+    label="사업자등록번호"
+    placeholder="사업자등록번호를 입력하세요."
+    ref={ref}
+    {...props}
+  />
+));
+BusinessNumberInput.displayName = "BusinessNumberInput";
+const PhoneInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input
+    placeholder="전화번호를 입력하세요."
+    label="연락처"
+    ref={ref}
+    {...props}
+  />
+));
+PhoneInput.displayName = "PhoneInput";
+const FaxInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => (
+  <Input placeholder="팩스를 입력하세요." label="팩스" ref={ref} {...props} />
+));
+FaxInput.displayName = "FaxInput";
 
 const CompanyInfo = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
-  const { formData, isShowErrors, handleChange, handleSubmit } =
-    useForm<CompanyFormDataModel>({
-      initialData: {
-        companyName: "",
-        businessNumber: "",
-        ceoName: "",
-        managerEmail: "",
-        managerPhone: "",
-        managerFax: "",
-        businessType: "",
-        businessCategory: "",
-        address: "",
-      },
-      validationRules: {
-        companyName: (value) => value.trim() !== "",
-        businessNumber: (value) => value.trim() !== "",
-        ceoName: (value) => value.trim() !== "",
-        managerEmail: (value) => value.trim() !== "",
-        businessType: (value) => value.trim() !== "",
-        businessCategory: (value) => value.trim() !== "",
-        address: (value) => value.trim() !== "",
-      },
-    });
+  const { register, handleSubmit } = useForm<CompanyFormDataModel>({
+    defaultValues: {
+      companyName: "",
+      businessNumber: "",
+      ceoName: "",
+      managerEmail: "",
+      managerPhone: "",
+      managerFax: "",
+      businessType: "",
+      businessCategory: "",
+      address: "",
+    },
+  });
 
-  const handleCompanySave = () => {
-    handleSubmit(() => setIsSaveModalOpen(true));
-  };
+  const onSubmit = () =>
+    // data: CompanyFormData
+    {
+      // console.log("회사 정보:", data);
+      setIsSaveModalOpen(true);
+    };
 
   return (
     <>
       <div className="flex flex-col py-8 gap-4 border-b border-b-[#eeeeee]">
         <h3 className="Heading-3">회사 정보</h3>
-        <div className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex gap-2">
             <Input
-              placeholder=""
+              placeholder="회사명을 입력하세요."
               label="회사명"
-              required
-              value={formData.companyName}
-              onChange={(value) => handleChange("companyName", value)}
-              showError={isShowErrors}
+              {...register("companyName")}
             />
-            <Input
-              placeholder=""
-              label="사업자등록번호"
-              required
-              value={formData.businessNumber}
-              onChange={(value) => handleChange("businessNumber", value)}
-              showError={isShowErrors}
+            <InputMask
+              component={BusinessNumberInput}
+              mask="000-00-00000"
+              replacement={{ 0: /[0-9]/ }}
+              {...register("businessNumber")}
             />
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder=""
+              placeholder="대표자명을 입력하세요."
               label="대표자명"
-              required
-              value={formData.ceoName}
-              onChange={(value) => handleChange("ceoName", value)}
-              showError={isShowErrors}
+              {...register("ceoName")}
             />
             <Input
-              placeholder=""
-              label="담당자 이메일"
-              required
-              value={formData.managerEmail}
-              onChange={(value) => handleChange("managerEmail", value)}
-              showError={isShowErrors}
+              placeholder="연락 가능한 이메일 주소를 입력하세요."
+              label="이메일"
+              {...register("managerEmail")}
+            />
+          </div>
+          <div className="flex gap-2">
+            <InputMask
+              component={PhoneInput}
+              mask="000-0000-0000"
+              replacement={{ 0: /[0-9]/ }}
+              {...register("managerPhone")}
+            />
+            <InputMask
+              component={FaxInput}
+              mask="000-0000-0000"
+              replacement={{ 0: /[0-9]/ }}
+              {...register("managerFax")}
             />
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder=""
-              label="담당자 연락처"
-              value={formData.managerPhone}
-              onChange={(value) => handleChange("managerPhone", value)}
-            />
-            <Input
-              placeholder=""
-              label="담당자 팩스"
-              value={formData.managerFax}
-              onChange={(value) => handleChange("managerFax", value)}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Input
-              placeholder=""
+              placeholder="업태를 입력하세요."
               label="업태"
-              required
-              value={formData.businessType}
-              onChange={(value) => handleChange("businessType", value)}
-              showError={isShowErrors}
+              {...register("businessType")}
             />
             <Input
-              placeholder=""
+              placeholder="종목을 입력하세요."
               label="종목"
-              required
-              value={formData.businessCategory}
-              onChange={(value) => handleChange("businessCategory", value)}
-              showError={isShowErrors}
+              {...register("businessCategory")}
             />
           </div>
           <Input
-            placeholder=""
+            placeholder="사업장 주소를 입력하세요."
             label="사업장 주소"
-            required
-            value={formData.address}
-            onChange={(value) => handleChange("address", value)}
-            showError={isShowErrors}
+            {...register("address")}
           />
-        </div>
-        <div className="flex justify-end">
-          <MiniBtn
-            text="저장하기"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            hoverColor="hover:bg-secondary-hover"
-            onClick={handleCompanySave}
-          />
-        </div>
+          <div className="flex justify-end">
+            <MiniBtn
+              text="저장하기"
+              textColor="text-primary"
+              bgColor="bg-primary-8"
+              hoverColor="hover:bg-secondary-hover"
+              type="submit"
+            />
+          </div>
+        </form>
       </div>
 
       {/* 모달 */}

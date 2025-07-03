@@ -4,7 +4,7 @@ export interface FacilityDataModel {
   id: number;
   status: FacilityStatusType;
   name: string;
-  priority: number;
+  priority: number | null;
   location: string;
 }
 

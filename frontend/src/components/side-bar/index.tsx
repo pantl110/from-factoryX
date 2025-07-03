@@ -36,7 +36,7 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
       {/* Production 페이지에서 마우스 감지 영역 */}
       {isProductionPage && (
         <div
-          className="fixed left-0 top-0 w-20 h-screen z-40"
+          className="fixed left-0 top-0 w-7 h-screen z-40" // width가 40px 미만이어야 함! // 사이드바 사라졌을 때 여백이 40px
           onMouseEnter={() => setIsHovered(true)}
         />
       )}

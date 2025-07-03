@@ -12,7 +12,6 @@ const StartProductionModal = ({ onClose }: StartProductionModalProps) => {
       title="생산을 시작하겠습니까?"
       subtitle="해당 작업을 진행하면 프로젝트 상태가 '생산 대기'로 변경됩니다.
 생산을 시작하시려면 아래 버튼을 눌러주세요."
-      width="w-[457px]"
       sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">

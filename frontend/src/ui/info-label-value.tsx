@@ -77,6 +77,12 @@ const InfoLabelValue = ({
         />
       );
     }
+
+    // value가 없거나 빈 문자열이면 placeholder 표시
+    if (!value || (typeof value === "string" && value.trim() === "")) {
+      return <span className="text-gr Me_Body-1">{placeholder || "-"}</span>;
+    }
+
     return value;
   };
 

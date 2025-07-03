@@ -4,6 +4,10 @@ import MiniBtn from "@/ui/mini-btn";
 import { BellSimple } from "@phosphor-icons/react";
 import { notificationData } from "@/mocks/notification-data";
 import { ProductionTabType } from "./types";
+import ProfileImage from "@/ui/profile-image";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import ProfileModal from "./modals/profile-modal";
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
@@ -13,7 +17,6 @@ interface TopBarContentProps {
   onAddReturnClick?: () => void;
   onMoveToStorageClick?: () => void;
   onNotificationClick?: () => void;
-  onProfileClick?: () => void;
 }
 
 const TopBarContent = ({
@@ -23,10 +26,11 @@ const TopBarContent = ({
   onAddReturnClick,
   onMoveToStorageClick,
   onNotificationClick,
-  onProfileClick,
 }: TopBarContentProps) => {
   const isProductionPlanSaveActive =
     productionTab === "생산 계획" && pageStatus === "생산 대기";
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const pathname = usePathname();
 
   if (pageStatus === "프로젝트 완료") {
     return (
@@ -110,12 +114,16 @@ const TopBarContent = ({
         )}
       </div>
       <div
-        className="flex items-center justify-center w-10 h-10"
-        onClick={onProfileClick}
+        className="flex items-center justify-center w-10 h-10 cursor-pointer relative"
+        onClick={() => setIsProfileModalOpen(true)}
       >
-        <div className="flex items-center justify-center rounded-full w-8 h-8 bg-primary-8 border border-primary Me_Body-3 text-primary text-[12px] cursor-pointer">
-          JG
-        </div>
+        <ProfileImage text="YO" size="small" />
+
+        {isProfileModalOpen && !pathname.includes("production") && (
+          <div className="absolute top-14.5 right-0">
+            <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -43,7 +43,7 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
     <Modal
       title="견적서에 포함되지 않은 품목을 추가해 주세요."
       subtitle="OCR로 인식되지 않았거나, 추가 요청된 품목이 있다면 등록해 주세요."
-      width="w-[586px]"
+      width="w-[600px]"
       onClose={onClose}
     >
       <div className="mt-4 flex gap-2.5 relative">

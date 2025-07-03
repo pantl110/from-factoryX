@@ -18,9 +18,19 @@ export interface ProductDataModel {
   [key: string]: unknown;
 }
 
+export interface MaterialDataModel {
+  id: string;
+  materialName: string;
+  size: string;
+  usageQuantity?: number | null;
+  unitPrice?: number | null;
+  unit?: string;
+  [key: string]: unknown;
+}
+
 import { ClientType } from "@/app/(with-layout)/setting/master-data/client/types";
 export interface ClientDataModel {
-  id: number;
+  id: string;
   type: ClientType;
   companyName: string;
   businessNumber: string;
@@ -28,10 +38,11 @@ export interface ClientDataModel {
   dueDate: string;
   businessType?: string; // 업태
   businessCategory?: string; // 종목
+  companyAddress: string;
+  responsibleName: string;
+  email: string;
   contact?: string;
   fax?: string;
-  email: string;
-  companyAddress: string;
   deliveryAddress?: string;
   comment?: string;
   [key: string]: unknown;

@@ -1,42 +1,58 @@
 import MiniBtn from "@/ui/mini-btn";
 import Input from "@/ui/input";
 import Modal from "@/ui/modal/modal";
-import { useForm } from "@/hooks/use-form";
 import { ClientDataModel } from "@/types/data-model";
 import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
 import { clientData } from "@/mocks/client-data";
 import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
+import { useForm } from "react-hook-form";
+import { InputMask } from "@react-input/mask";
+import { forwardRef } from "react";
 
 interface ClientInfoModalProps {
   onClose?: () => void;
   onNext?: () => void;
 }
 
+const BusinessNumberInput = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>(({ showError, ...props }, ref) => (
+  <Input
+    label="사업자등록번호"
+    placeholder="사업자등록번호 입력"
+    required
+    ref={ref}
+    {...props}
+    showError={showError}
+  />
+));
+BusinessNumberInput.displayName = "BusinessNumberInput";
+
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
-  const { formData, isShowErrors, handleChange, handleSubmit } =
-    useForm<ClientDataModel>({
-      initialData: {
-        id: 0,
-        type: "발주처",
-        companyName: "",
-        businessNumber: "",
-        representativeName: "",
-        businessType: "",
-        businessCategory: "",
-        contact: "",
-        fax: "",
-        email: "",
-        companyAddress: "",
-        dueDate: "",
-      },
-      validationRules: {
-        companyName: (v) => !!(v || "").trim(),
-        businessNumber: (v) => !!(v || "").trim(),
-        representativeName: (v) => !!(v || "").trim(),
-        businessType: (v) => !!(v || "").trim(),
-        businessCategory: (v) => !!(v || "").trim(),
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<ClientDataModel>({
+    mode: "onChange",
+    defaultValues: {
+      id: crypto.randomUUID(),
+      type: "발주처",
+      companyName: "",
+      businessNumber: "",
+      representativeName: "",
+      businessType: "",
+      businessCategory: "",
+      contact: "",
+      fax: "",
+      email: "",
+      companyAddress: "",
+      dueDate: "",
+      responsibleName: "",
+    },
+  });
 
   const {
     input: companyNameInput,
@@ -52,15 +68,15 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     setCompanyNameInput(item.companyName);
 
     // 선택한 거래처 정보로 폼 자동 채우기
-    handleChange("companyName", item.companyName);
-    handleChange("businessNumber", item.businessNumber);
-    handleChange("representativeName", item.representativeName);
-    handleChange("companyAddress", item.companyAddress);
-    handleChange("email", item.email);
-    handleChange("contact", item.contact || "");
-    handleChange("fax", item.fax || "");
-    handleChange("businessType", item.businessType || "");
-    handleChange("businessCategory", item.businessCategory || "");
+    setValue("companyName", item.companyName);
+    setValue("businessNumber", item.businessNumber);
+    setValue("representativeName", item.representativeName);
+    setValue("companyAddress", item.companyAddress);
+    setValue("email", item.email);
+    setValue("contact", item.contact || "");
+    setValue("fax", item.fax || "");
+    setValue("businessType", item.businessType || "");
+    setValue("businessCategory", item.businessCategory || "");
 
     setIsCompanyNameDropdownOpen(false);
   };
@@ -70,9 +86,12 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       title="거래처 정보를 입력해주세요."
       subtitle="등록된 정보는 이후 문서 작성 시 자동으로 불러와져요."
       onClose={onClose}
-      width="w-[586px]"
+      width="w-[600px]"
     >
-      <div className="flex flex-col gap-7 mt-4">
+      <form
+        className="flex flex-col gap-7 mt-4"
+        onSubmit={handleSubmit(() => onNext && onNext())}
+      >
         <div className="flex flex-col gap-4">
           <div className="flex gap-2.5">
             <div className="flex-1 relative">
@@ -80,13 +99,17 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
                 label="거래처명"
                 placeholder="거래처명 입력"
                 required
+                {...register("companyName", { required: true })}
                 value={companyNameInput}
-                onChange={setCompanyNameInput}
+                onChange={(value: string) => {
+                  setCompanyNameInput(value);
+                  setValue("companyName", value);
+                }}
                 onFocus={() => setIsCompanyNameDropdownOpen(true)}
                 onBlur={() =>
                   setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
                 }
-                showError={isShowErrors && !(formData.companyName || "").trim()}
+                showError={!!errors.companyName}
               />
               {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
                 <div className="absolute left-0 top-21 z-10 w-full">
@@ -99,16 +122,12 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               )}
             </div>
             <div className="flex-1">
-              <Input
-                label="사업자등록번호"
-                placeholder="사업자등록번호 입력"
-                type="number"
-                required
-                value={formData.businessNumber}
-                onChange={(v) => handleChange("businessNumber", v)}
-                showError={
-                  isShowErrors && !(formData.businessNumber || "").trim()
-                }
+              <InputMask
+                component={BusinessNumberInput} // render → component 방식으로 변경
+                mask="000-00-00000"
+                replacement={{ 0: /[0-9]/ }}
+                {...register("businessNumber", { required: true })}
+                showError={!!errors.businessNumber}
               />
             </div>
           </div>
@@ -117,17 +136,15 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="대표자명"
               placeholder="대표자명 입력"
               required
-              value={formData.representativeName}
-              onChange={(v) => handleChange("representativeName", v)}
-              showError={
-                isShowErrors && !(formData.representativeName || "").trim()
-              }
+              {...register("representativeName", {
+                required: true,
+              })}
+              showError={!!errors.representativeName}
             />
             <Input
               label="담당자 이메일"
               placeholder="담당자 이메일 입력"
-              value={formData.email}
-              onChange={(v) => handleChange("email", v)}
+              {...register("email")}
             />
           </div>
           <div className="flex gap-2.5">
@@ -135,15 +152,13 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="담당자 연락처"
               placeholder="담당자 연락처 입력"
               type="number"
-              value={formData.contact}
-              onChange={(v) => handleChange("contact", v)}
+              {...register("contact")}
             />
             <Input
               label="팩스 번호"
               placeholder="팩스 번호 입력"
               type="number"
-              value={formData.fax}
-              onChange={(v) => handleChange("fax", v)}
+              {...register("fax")}
             />
           </div>
           <div className="flex gap-2.5">
@@ -151,27 +166,26 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="업태"
               placeholder="업태 입력"
               required
-              value={formData.businessType}
-              onChange={(v) => handleChange("businessType", v)}
-              showError={isShowErrors && !(formData.businessType || "").trim()}
+              {...register("businessType", {
+                required: true,
+              })}
+              showError={!!errors.businessType}
             />
             <Input
               label="종목"
               placeholder="종목 입력"
               required
-              value={formData.businessCategory}
-              onChange={(v) => handleChange("businessCategory", v)}
-              showError={
-                isShowErrors && !(formData.businessCategory || "").trim()
-              }
+              {...register("businessCategory", {
+                required: true,
+              })}
+              showError={!!errors.businessCategory}
             />
           </div>
           <div className="flex gap-2.5">
             <Input
               label="사업장 주소"
               placeholder="사업장 주소 입력"
-              value={formData.companyAddress}
-              onChange={(v) => handleChange("companyAddress", v)}
+              {...register("companyAddress")}
             />
           </div>
         </div>
@@ -186,11 +200,11 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
             text="다음 단계"
             bgColor="bg-primary"
             textColor="text-wh"
-            onClick={() => handleSubmit(() => onNext && onNext())}
+            type="submit"
             hoverColor="hover:bg-primary-hover"
           />
         </div>
-      </div>
+      </form>
     </Modal>
   );
 };

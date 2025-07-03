@@ -2,7 +2,7 @@ import { ClientDataModel } from "@/types/data-model";
 
 export const clientData: ClientDataModel[] = [
   {
-    id: 1,
+    id: "b3e1c2d4-5f6a-7b8c-9d0e-1f2a3b4c5d6e",
     type: "수주처",
     companyName: "(주)한솔케미칼",
     businessNumber: "2208112345",
@@ -14,9 +14,11 @@ export const clientData: ClientDataModel[] = [
     companyAddress: "서울특별시 강남구 역삼동 123-45 10층",
     comment: "주문 횟수가 많은 거래처입니다.",
     dueDate: "2025-01-01",
+    responsibleName: "김한솔",
+    fax: "0234567890",
   },
   {
-    id: 2,
+    id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     type: "발주처",
     companyName: "(주)에코플라스틱",
     businessNumber: "1234567890",
@@ -28,9 +30,10 @@ export const clientData: ClientDataModel[] = [
     companyAddress: "경기도 성남시 분당구 정자동 123-45 5층",
     comment: "주문 횟수가 많은 거래처입니다.",
     dueDate: "2025-01-01",
+    responsibleName: "박환경",
   },
   {
-    id: 3,
+    id: "c0ffee00-1234-5678-9abc-def012345678",
     type: "수주처",
     companyName: "미래자동차",
     businessNumber: "3332211111",
@@ -41,9 +44,10 @@ export const clientData: ClientDataModel[] = [
     email: "rnd@miraemotors.com",
     companyAddress: "부산광역시 해운대구 우동 123-45 3층",
     dueDate: "2025-01-01",
+    responsibleName: "최미래",
   },
   {
-    id: 4,
+    id: "deadbeef-0000-1111-2222-333344445555",
     type: "발주처",
     companyName: "강철산업",
     businessNumber: "4567890123",
@@ -54,9 +58,10 @@ export const clientData: ClientDataModel[] = [
     email: "info@steelkorea.com",
     companyAddress: "부산광역시 해운대구 우동 123-45 3층",
     dueDate: "2025-01-01",
+    responsibleName: "이강철",
   },
   {
-    id: 5,
+    id: "123e4567-e89b-12d3-a456-426614174000",
     type: "발주처",
     companyName: "플라스틱월드",
     businessNumber: "7891234567",
@@ -69,9 +74,10 @@ export const clientData: ClientDataModel[] = [
     comment: "플라스틱 전문 제조업체입니다.",
     dueDate: "2025-02-15",
     fax: "0212345678",
+    responsibleName: "정플라스틱",
   },
   {
-    id: 6,
+    id: "abcdefab-cdef-1234-5678-abcdefabcdef",
     type: "수주처",
     companyName: "플러스케미칼",
     businessNumber: "9876543210",
@@ -83,9 +89,10 @@ export const clientData: ClientDataModel[] = [
     companyAddress: "인천광역시 연수구 송도동 789-12 12층",
     comment: "고품질 화학 원료 공급업체입니다.",
     dueDate: "2025-03-20",
+    responsibleName: "김플러스",
   },
   {
-    id: 7,
+    id: "feedface-1234-5678-9abc-def012345678",
     type: "발주처",
     companyName: "플렉스산업",
     businessNumber: "1112233333",
@@ -97,5 +104,6 @@ export const clientData: ClientDataModel[] = [
     companyAddress: "충청남도 천안시 동남구 111-22 4층",
     comment: "유연 소재 전문 제조업체입니다.",
     dueDate: "2025-04-10",
+    responsibleName: "박플렉스",
   },
 ];

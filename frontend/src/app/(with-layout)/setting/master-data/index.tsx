@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import usePageStatusStore from "@/store/page-status-store";
 import { SettingChipType } from "@/components/top-bar/types";
 import Chip from "@/ui/chip";
@@ -13,6 +13,8 @@ const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();
   const equipmentDelete = useDeleteMode();
   const clientDelete = useDeleteMode();
+  const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
+    useState(false);
 
   useEffect(() => {
     if (
@@ -34,10 +36,24 @@ const MasterData = () => {
   const handleDeleteBtnClick = () => deleteMode.toggleDeleteMode();
   const handleDeleteModalClose = () => deleteMode.closeDeleteModal();
 
+  const handleAddBtnClick = () => {
+    if (settingChip === "equipment") {
+      setIsEquipmentCreatePanelOpen(true);
+    } else {
+      // setIsClientModalOpen(true);
+    }
+  };
+
   const renderContent = () => {
     switch (settingChip) {
       case "equipment":
-        return <Facility isDeleteMode={equipmentDelete.isDeleteMode} />;
+        return (
+          <Facility
+            isDeleteMode={equipmentDelete.isDeleteMode}
+            isCreatePanelOpen={isEquipmentCreatePanelOpen}
+            setIsCreatePanelOpen={setIsEquipmentCreatePanelOpen}
+          />
+        );
       case "client":
         return <Client isDeleteMode={clientDelete.isDeleteMode} />;
       default:
@@ -71,12 +87,16 @@ const MasterData = () => {
         <SearchInput />
 
         <div className="flex gap-2">
-          <MiniBtn
-            text="추가"
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-lg"
-          />
+          {settingChip === "equipment" && (
+            <MiniBtn
+              text="추가"
+              textColor="text-dg"
+              borderColor="border-lg"
+              hoverColor="hover:bg-lg"
+              onClick={handleAddBtnClick}
+            />
+          )}
+
           <MiniBtn
             text="삭제"
             textColor={deleteMode.isDeleteMode ? "text-red" : "text-dg"}

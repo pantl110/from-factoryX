@@ -17,7 +17,7 @@ const Modal = ({
   title,
   subtitle,
   onClose,
-  width = "w-[631px]",
+  width = "w-[520px]",
   height = "",
   sm = false,
   button,

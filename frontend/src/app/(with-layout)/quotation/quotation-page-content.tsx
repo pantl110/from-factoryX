@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   ArrowLineLeftIcon,
   ArrowLineRightIcon,
@@ -15,16 +15,42 @@ import PrintView from "./modals/print-view";
 import { ProductModel } from "./types";
 import StartProductionModal from "./modals/start-production-modal";
 import ProductEnrollmentModal from "./modals/product-enrollment-modal";
-import { useForm } from "@/hooks/use-form";
 import { ClientDataModel } from "@/types/data-model";
 import { useSearchParams } from "next/navigation";
 import TabArea from "./tab-area";
 import TitleSec from "./title-sec";
+import { useForm } from "react-hook-form";
 
 const QuotationPageContent = () => {
   // URL 파라미터에서 clientData 가져오기
   const searchParams = useSearchParams();
   const clientDataParam = searchParams.get("clientData");
+
+  // 거래처 정보 폼
+  const {
+    setValue,
+    control,
+    trigger,
+    formState: { errors },
+  } = useForm<ClientDataModel>({
+    defaultValues: {
+      id: crypto.randomUUID(),
+      type: "발주처",
+      companyName: "",
+      businessNumber: "",
+      representativeName: "",
+      dueDate: "",
+      businessType: "",
+      businessCategory: "",
+      contact: "",
+      fax: "",
+      email: "",
+      companyAddress: "",
+      deliveryAddress: "",
+      comment: "",
+      responsibleName: "",
+    },
+  });
 
   // 탭 상태 - 데이터가 없으면 히스토리 탭 활성화
   const [activeTab, setActiveTab] = useState<"quotation" | "history">(
@@ -44,70 +70,6 @@ const QuotationPageContent = () => {
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
 
-  // 초기 데이터 설정
-  const initialData = useMemo((): ClientDataModel => {
-    if (clientDataParam) {
-      try {
-        const parsedData = JSON.parse(decodeURIComponent(clientDataParam));
-
-        return {
-          id: parsedData.id || 0,
-          type: parsedData.type || "발주처",
-          companyName: parsedData.companyName || "",
-          businessNumber: String(parsedData.businessNumber || ""),
-          representativeName: parsedData.representativeName || "",
-          dueDate: parsedData.dueDate || "",
-          email: parsedData.email || "",
-          companyAddress: parsedData.companyAddress || "",
-          deliveryAddress: parsedData.deliveryAddress || "",
-          contact: String(parsedData.contact || ""),
-          fax: String(parsedData.fax || ""),
-        };
-      } catch {
-        // 에러 발생 시 기본값 사용
-        return {
-          id: 0,
-          type: "발주처",
-          companyName: "",
-          businessNumber: "",
-          representativeName: "",
-          dueDate: "",
-          email: "",
-          companyAddress: "",
-          deliveryAddress: "",
-          contact: "",
-          fax: "",
-        };
-      }
-    }
-
-    // 기본값
-    return {
-      id: 0,
-      type: "발주처",
-      companyName: "",
-      businessNumber: "",
-      representativeName: "",
-      dueDate: "",
-      email: "",
-      companyAddress: "",
-      deliveryAddress: "",
-      contact: "",
-      fax: "",
-    };
-  }, [clientDataParam]);
-
-  // 견적서 입력 유효성 검사
-  const validationRules = {
-    companyName: (v: string) => !!v,
-    businessNumber: (v: string) => !!v,
-    representativeName: (v: string) => !!v,
-    dueDate: (v: string) => !!v,
-    companyAddress: (v: string) => !!v,
-    email: (v: string) => !!v,
-  };
-  const form = useForm<ClientDataModel>({ initialData, validationRules });
-
   const handleProductClick = (product: ProductModel) => {
     setSelectedProduct(product);
     setActiveTab("history"); // 품목 클릭 시 히스토리탭 활성화
@@ -123,11 +85,11 @@ const QuotationPageContent = () => {
     <>
       <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
         <TitleSec
-          form={form}
           setIsEmailOpen={setIsEmailOpen}
           setIsPrintOpen={setIsPrintOpen}
           setIsStartProductionModalOpen={setIsStartProductionModalOpen}
           isClientData={!!clientDataParam}
+          trigger={trigger}
         />
         <TabArea
           activeTab={activeTab}
@@ -156,7 +118,7 @@ const QuotationPageContent = () => {
                 ${isRightPanelExpanded ? "w-full" : "w-1/2"}`}
           >
             <div
-              className={`flex flex-col flex-1 py-8 gap-11 pr-10
+              className={`flex flex-col flex-1 pt-8 gap-11 pr-10
                 ${isRightPanelExpanded ? "pl-0" : "pl-10"}`}
             >
               <div className="flex items-center gap-2 pb-3 border-b border-[#eeeeee]">
@@ -174,10 +136,15 @@ const QuotationPageContent = () => {
               </div>
             </div>
 
-            <div className="overflow-y-auto scrollbar-hide h-full">
+            <div className="overflow-y-auto scrollbar-hide h-full pt-8">
               <div className="flex flex-col flex-1 gap-5 px-10 pb-11">
                 <h3 className="Heading-3">거래처 정보</h3>
-                <InputSection form={form} isShowErrors={form.isShowErrors} />
+                <InputSection
+                  clientDataParam={clientDataParam}
+                  control={control}
+                  setValue={setValue}
+                  errors={errors}
+                />
               </div>
 
               <div

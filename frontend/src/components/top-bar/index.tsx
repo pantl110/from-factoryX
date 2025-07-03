@@ -4,10 +4,13 @@ import usePageStatusStore, { PageStatusModel } from "@/store/page-status-store";
 import TopBarContent from "./top-bar-content";
 import { useState } from "react";
 import NotificationModal from "./modals/notification-modal";
-import ProfileModal from "./modals/profile-modal";
 import TopBarCrumb from "./top-bar-crumb";
 
-const TopBar = () => {
+interface TopBarProps {
+  isSidebarVisible: boolean;
+}
+
+const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   const pageStatus = usePageStatusStore(
     (state: PageStatusModel) => state.pageStatus,
   );
@@ -26,34 +29,34 @@ const TopBar = () => {
     (state) => state.setMoveToStorageModalOpen,
   );
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   return (
     <>
-      <header className="flex items-center justify-between w-full h-[60px] px-10 relative">
-        <TopBarCrumb
-          pageStatus={pageStatus || ""}
-          productionTab={productionTab || undefined}
-          stockTab={stockTab || undefined}
-          settingTab={settingTab || undefined}
-          settingChip={settingChip || undefined}
-        />
+      <header
+        className={`${
+          isSidebarVisible ? "w-[calc(100%-256px)]" : "w-full"
+        } fixed z-40 bg-white border-b border-[#eeeeee] transition-width duration-300`}
+      >
+        <div className="max-w-[1400px] min-w-[1000px] mx-auto px-10 flex items-center justify-between h-[60px]">
+          <TopBarCrumb
+            pageStatus={pageStatus || ""}
+            productionTab={productionTab || undefined}
+            stockTab={stockTab || undefined}
+            settingTab={settingTab || undefined}
+            settingChip={settingChip || undefined}
+          />
 
-        <TopBarContent
-          pageStatus={pageStatus}
-          productionTab={productionTab}
-          onProductionPlanSaveClick={() => setProductionPlanSaveModalOpen(true)}
-          onAddReturnClick={() => setAddReturnModalOpen(true)}
-          onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
-          onNotificationClick={() => setIsNotificationModalOpen(true)}
-          onProfileClick={() => setIsProfileModalOpen(true)}
-        />
-
-        {isProfileModalOpen && (
-          <div className="absolute top-17 right-0">
-            <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
-          </div>
-        )}
+          <TopBarContent
+            pageStatus={pageStatus}
+            productionTab={productionTab}
+            onProductionPlanSaveClick={() =>
+              setProductionPlanSaveModalOpen(true)
+            }
+            onAddReturnClick={() => setAddReturnModalOpen(true)}
+            onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
+            onNotificationClick={() => setIsNotificationModalOpen(true)}
+          />
+        </div>
       </header>
 
       {isNotificationModalOpen && (

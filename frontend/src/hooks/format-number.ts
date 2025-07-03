@@ -8,7 +8,6 @@ export const extractNumbers = (value: string): string => {
 export const formatBusinessNumber = (value: string): string => {
   const numbers = extractNumbers(value); // 숫자만 추출
 
-  // 길이에 따라 포맷팅
   if (numbers.length <= 3) {
     return numbers;
   } else if (numbers.length <= 5) {
@@ -22,7 +21,6 @@ export const formatBusinessNumber = (value: string): string => {
 export const formatPhoneNumber = (value: string): string => {
   const numbers = extractNumbers(value); // 숫자만 추출
 
-  // 길이에 따라 포맷팅
   if (numbers.length <= 3) {
     return numbers;
   } else if (numbers.length <= 7) {
@@ -36,7 +34,6 @@ export const formatPhoneNumber = (value: string): string => {
 export const formatFaxNumber = (value: string): string => {
   const numbers = extractNumbers(value); // 숫자만 추출
 
-  // 길이에 따라 포맷팅
   if (numbers.length <= 3) {
     return numbers;
   } else if (numbers.length <= 6) {

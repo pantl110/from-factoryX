@@ -15,7 +15,7 @@ export const ClientNameDropdown = ({
 }) => {
   return (
     <Dropdown onClose={() => {}} width={width} style={style}>
-      {items.map((item) => (
+      {items.slice(0, 6).map((item) => (
         <DropdownItem
           key={item.id}
           text={item.companyName}

@@ -1,21 +1,45 @@
-import { CameraIcon, X } from "@phosphor-icons/react";
+import ProfileImage from "@/ui/profile-image";
+import { X } from "@phosphor-icons/react";
+import { useEffect, useRef } from "react";
 
 interface ProfileModalProps {
   onClose: () => void;
 }
 
 const ProfileModal = ({ onClose }: ProfileModalProps) => {
+  const profileModalRef = useRef<HTMLDivElement>(null);
+
+  // 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileModalRef.current &&
+        !profileModalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside); // 이벤트 리스너 등록
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside); // 언마운트 시 제거
+    };
+  }, [onClose]);
+
   return (
-    <div className="bg-white w-[400px] px-6 py-5 rounded-[12px] border border-lg shadow-[0px_1px_4px_0px_rgba(0,0,0,0.12)]">
+    <div
+      ref={profileModalRef}
+      className="bg-white w-[400px] px-6 py-5 rounded-[12px] border border-lg shadow-[0px_1px_4px_0px_rgba(0,0,0,0.12)]"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="flex gap-6">
-        <div className="relative">
-          <div className="flex items-center justify-center rounded-full w-[72px] h-[72px] bg-primary-8 border border-primary Me_Body-3 text-primary">
-            JG
-          </div>
-          <div className="absolute top-11 left-11 flex items-center justify-center w-[33px] h-[33px] rounded-full border border-lg text-sv bg-white z-20">
-            <CameraIcon size={16} weight="fill" />
-          </div>
+        {/* 프로필 사진 */}
+        <div>
+          <ProfileImage text="YO" />
         </div>
+
+        {/* 개인 정보 */}
         <div className="flex flex-col w-full">
           <div className="flex gap-2.5 items-center justify-between">
             <h4 className="Heading-4">yoogj1998@naver.com</h4>

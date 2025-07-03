@@ -8,7 +8,7 @@ import { ProjectStatusType } from "@/types/status-type";
 import TableHeader from "./table-header";
 import TableItem from "./table-item";
 import SelectModal from "./modals/select-modal";
-import UploadModal from "./modals/upload-modal";
+import ExcelUploadModal from "./modals/excel-upload-modal";
 import { useSearchParams, useRouter } from "next/navigation";
 import Pagination from "@/components/pagination";
 import usePagination from "@/hooks/use-pagination";
@@ -119,7 +119,7 @@ const ProcessProjectPageInner = () => {
         />
       )}
       {isUploadModalOpen && (
-        <UploadModal
+        <ExcelUploadModal
           onClose={() => setIsUploadModalOpen(false)}
           onComplete={handleDirectInputClick}
         />

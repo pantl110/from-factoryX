@@ -13,7 +13,12 @@ export function useDropdownFilter<T>(
   // 입력값으로 필터링된 리스트
   const filtered = useMemo(
     () =>
-      input ? items.filter((item) => getLabel(item).startsWith(input)) : [],
+      input
+        ? items.filter(
+            (item) =>
+              item && getLabel(item) && getLabel(item).startsWith(input),
+          )
+        : [],
     [input, items, getLabel],
   );
 
@@ -22,7 +27,9 @@ export function useDropdownFilter<T>(
     const { value } = e.target;
     setInput(value);
     const nextFiltered = value
-      ? items.filter((item) => getLabel(item).startsWith(value))
+      ? items.filter(
+          (item) => item && getLabel(item) && getLabel(item).startsWith(value),
+        )
       : [];
     setIsOpen(!!value && nextFiltered.length > 0);
   };
