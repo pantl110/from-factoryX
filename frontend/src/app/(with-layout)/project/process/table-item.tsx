@@ -25,7 +25,9 @@ interface TableItemProps {
   endDate: string;
   transactionIssued: TransactionStatusType;
   taxIssued: TaxStatusType;
-  isDeleteBtnClicked: boolean;
+  isDeleteMode?: boolean;
+  checked?: boolean;
+  onToggle?: () => void;
 }
 
 const TableItem = ({
@@ -37,7 +39,9 @@ const TableItem = ({
   endDate,
   transactionIssued,
   taxIssued,
-  isDeleteBtnClicked,
+  isDeleteMode = false,
+  checked = false,
+  onToggle,
 }: TableItemProps) => {
   const router = useRouter();
   const chipColors = ProjectStatusColorMap[status];
@@ -80,12 +84,17 @@ const TableItem = ({
         if (e.key === "Enter" || e.key === " ") handleClick();
       }}
     >
-      {isDeleteBtnClicked && (
+      {isDeleteMode && (
         <div
           className="flex items-center py-3 px-2"
           onClick={(e) => e.stopPropagation()}
         >
-          <input type="checkbox" className="w-4 h-4 border-sv" />
+          <input
+            type="checkbox"
+            className="w-4 h-4 border-sv"
+            checked={checked}
+            onChange={onToggle}
+          />
         </div>
       )}
       <div className="py-1 px-3 w-[150px]">

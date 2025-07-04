@@ -15,7 +15,7 @@ const TransactionStateDropdown = ({
   onClose,
 }: TransactionStateDropdownProps) => {
   return (
-    <Dropdown onClose={onClose}>
+    <Dropdown onClose={onClose} width="w-fit">
       {transactionStates.map((state) => (
         <DropdownItem
           key={state}

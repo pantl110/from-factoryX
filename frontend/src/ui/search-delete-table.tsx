@@ -2,48 +2,41 @@
 
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
-import { useState } from "react";
 import DeleteModal from "./modal/delete-modal";
+import { useDeleteMode } from "@/hooks/use-delete-mode";
 
 interface SearchDeleteTableProps {
-  isDeleteBtnClicked?: boolean;
-  setIsDeleteBtnClicked?: (isDeleteBtnClicked: boolean) => void;
+  checkedIds?: (string | number)[];
+  isDeleteMode: boolean;
+  toggleDeleteMode: (selectedIds: (string | number)[]) => void;
 }
 
 const SearchDeleteTable = ({
-  isDeleteBtnClicked,
-  setIsDeleteBtnClicked,
+  checkedIds = [],
+  isDeleteMode,
+  toggleDeleteMode,
 }: SearchDeleteTableProps) => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
   return (
     <div className="flex items-center justify-between pb-4">
       <SearchInput value="" onChange={() => {}} />
       <MiniBtn
         text="삭제"
-        textColor={isDeleteBtnClicked ? "text-red" : "text-dg"}
-        borderColor={isDeleteBtnClicked ? "" : "border-[#eeeeee]"}
-        bgColor={isDeleteBtnClicked ? "bg-red-8" : "bg-white"}
-        hoverColor={
-          isDeleteBtnClicked ? "hover:bg-red-hover" : "hover:bg-gray-50"
+        textColor={
+          isDeleteMode && checkedIds.length > 0 ? "text-red" : "text-dg"
         }
-        onClick={() => {
-          if (isDeleteBtnClicked) {
-            setIsDeleteModalOpen(true);
-          } else {
-            setIsDeleteBtnClicked?.(true);
-          }
-        }}
+        borderColor={
+          isDeleteMode && checkedIds.length > 0 ? "" : "border-[#eeeeee]"
+        }
+        bgColor={
+          isDeleteMode && checkedIds.length > 0 ? "bg-red-8" : "bg-white"
+        }
+        hoverColor={
+          isDeleteMode && checkedIds.length > 0
+            ? "hover:bg-red-hover"
+            : "hover:bg-gray-50"
+        }
+        onClick={() => toggleDeleteMode(checkedIds)}
       />
-
-      {isDeleteModalOpen && (
-        <DeleteModal
-          onClose={() => {
-            setIsDeleteModalOpen(false);
-            setIsDeleteBtnClicked?.(false);
-          }}
-        />
-      )}
     </div>
   );
 };

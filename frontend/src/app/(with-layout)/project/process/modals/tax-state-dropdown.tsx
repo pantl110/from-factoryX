@@ -10,7 +10,7 @@ interface TaxStateDropdownProps {
 
 const TaxStateDropdown = ({ onClose }: TaxStateDropdownProps) => {
   return (
-    <Dropdown onClose={onClose}>
+    <Dropdown onClose={onClose} width="w-fit">
       {taxStates.map((state) => (
         <DropdownItem
           key={state}

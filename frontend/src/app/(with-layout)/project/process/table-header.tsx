@@ -2,15 +2,26 @@ import { CaretUpDown } from "@phosphor-icons/react/dist/ssr";
 import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 
 interface TableHeaderProps {
-  isDeleteBtnClicked: boolean;
+  isDeleteMode?: boolean;
+  isAllChecked?: boolean;
+  onToggleAll?: () => void;
 }
 
-const TableHeader = ({ isDeleteBtnClicked }: TableHeaderProps) => {
+const TableHeader = ({
+  isDeleteMode = false,
+  isAllChecked = false,
+  onToggleAll,
+}: TableHeaderProps) => {
   return (
     <div className="flex items-center h-12 w-[1448px] border-t border-b border-[#eeeeee] Me_Body-1">
-      {isDeleteBtnClicked && (
+      {isDeleteMode && (
         <div className="flex items-center py-3 px-2">
-          <input type="checkbox" className="w-4 h-4 border-sv" />
+          <input
+            type="checkbox"
+            className="w-4 h-4 border-sv"
+            checked={isAllChecked}
+            onChange={onToggleAll}
+          />
         </div>
       )}
       <p className="w-[150px] px-3 text-sv">진행상태</p>

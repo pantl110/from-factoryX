@@ -13,6 +13,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Pagination from "@/components/pagination";
 import usePagination from "@/hooks/use-pagination";
 import { ClientDataModel } from "@/types/data-model";
+import { useCheckAll } from "@/hooks/use-check-all";
+import { useDeleteMode } from "@/hooks/use-delete-mode";
+import DeleteModal from "@/ui/modal/delete-modal";
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
@@ -28,8 +31,14 @@ const ProcessProjectPageInner = () => {
   // 모달 상태
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  // 버튼 상태
-  const [isDeleteBtnClicked, setIsDeleteBtnClicked] = useState(false);
+
+  const {
+    isDeleteMode,
+    isDeleteModalOpen,
+    toggleDeleteMode,
+    closeDeleteModal,
+    resetDeleteMode,
+  } = useDeleteMode();
 
   const filteredProjects =
     selectedStatus === "전체"
@@ -45,6 +54,16 @@ const ProcessProjectPageInner = () => {
     items: filteredProjects,
     itemsPerPage: 10,
   }); // pagination hook
+
+  const currentIds = currentProjects.map((project) => project.id);
+  const {
+    isAllChecked,
+    isChecked,
+    toggleAll,
+    toggleOne,
+    checkedIds,
+    setAllChecked,
+  } = useCheckAll(currentIds);
 
   const handleNewQuotation = () => {
     setIsSelectModalOpen(true);
@@ -69,6 +88,11 @@ const ProcessProjectPageInner = () => {
       router.push("/quotation");
     }
   };
+  const handleResetDeleteMode = () => {
+    // 삭제 모드와 체크박스 해제
+    resetDeleteMode();
+    setAllChecked(false);
+  };
 
   return (
     <>
@@ -80,11 +104,16 @@ const ProcessProjectPageInner = () => {
         />
         <div className="px-8">
           <SearchDeleteTable
-            isDeleteBtnClicked={isDeleteBtnClicked}
-            setIsDeleteBtnClicked={setIsDeleteBtnClicked}
+            checkedIds={checkedIds}
+            isDeleteMode={isDeleteMode}
+            toggleDeleteMode={toggleDeleteMode}
           />
-          <div className="overflow-y-auto w-full scrollbar-hide">
-            <TableHeader isDeleteBtnClicked={isDeleteBtnClicked} />
+          <div className="overflow-y-auto w-full">
+            <TableHeader
+              isDeleteMode={isDeleteMode}
+              isAllChecked={isAllChecked}
+              onToggleAll={toggleAll}
+            />
             {currentProjects.map((project) => (
               <TableItem
                 key={project.id}
@@ -96,7 +125,9 @@ const ProcessProjectPageInner = () => {
                 endDate={project.endDate}
                 transactionIssued={project.transactionIssued}
                 taxIssued={project.taxIssued}
-                isDeleteBtnClicked={isDeleteBtnClicked}
+                isDeleteMode={isDeleteMode}
+                checked={isChecked(project.id)}
+                onToggle={() => toggleOne(project.id)}
               />
             ))}
           </div>
@@ -122,6 +153,12 @@ const ProcessProjectPageInner = () => {
         <ExcelUploadModal
           onClose={() => setIsUploadModalOpen(false)}
           onComplete={handleDirectInputClick}
+        />
+      )}
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onClose={closeDeleteModal}
+          onDelete={handleResetDeleteMode}
         />
       )}
     </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import MainTitleSec from "./main-title-sec";
 import Product from "./product/index";
 import Material from "./material/index";
@@ -18,10 +19,16 @@ const StockPage = () => {
   const stockTab =
     (usePageStatusStore((state) => state.stockTab) as StockTabType) || null;
   const setStockTab = usePageStatusStore((state) => state.setStockTab);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!stockTab) setStockTab("product");
-  }, [stockTab, setStockTab]);
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "material") {
+      setStockTab("material");
+    } else if (!stockTab) {
+      setStockTab("product");
+    }
+  }, [stockTab, setStockTab, searchParams]);
 
   const [isProductAddDropdownOpen, setIsProductAddDropdownOpen] =
     useState(false);
