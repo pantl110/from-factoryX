@@ -1,16 +1,32 @@
+"use client";
+
+import { useEffect } from "react";
 import MainTitleSec from "./main-title-sec";
 import DailyProductionQuantity from "./summary-KPI/daily-production-quantity";
 import ShortageCount from "./summary-KPI/shortage-count";
 import ProductionYield from "./summary-KPI/production-yield";
 import DeliveryTable from "./delivery-schedule/delivery-table";
-
 import PendingQuote from "./pending-quote";
 import ProcessProject from "./process-project";
 import Tax from "./tax";
 import TodayProductionSchedule from "./today-production-schedule";
 import ProfitGraph from "./profit-graph";
+import useToast from "@/hooks/use-toast";
+import Toast from "@/ui/toast";
+import { useSearchParams } from "next/navigation";
+import { House } from "@phosphor-icons/react";
 
 const DashboardPage = () => {
+  const { isToastOpen, isVisible, showToast } = useToast(2000);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const from = searchParams.get("from");
+    if (from === "onboarding") {
+      showToast();
+    }
+  }, [searchParams]);
+
   return (
     <>
       <MainTitleSec />
@@ -51,6 +67,16 @@ const DashboardPage = () => {
           <Tax />
         </div>
       </div>
+
+      {isToastOpen && (
+        <Toast
+          icon={<House size={20} className="text-primary" />}
+          text="이제 팩토리엑스를 시작해볼까요?"
+          subtext="가입이 완료되었어요!"
+          type="primary"
+          isVisible={isVisible}
+        />
+      )}
     </>
   );
 };

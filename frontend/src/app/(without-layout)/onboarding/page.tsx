@@ -20,7 +20,7 @@ const OnboardingPage = () => {
     if (currentIdx < steps.length - 1) {
       setCurrentStep(steps[currentIdx + 1]);
     } else {
-      router.push("/dashboard"); // 마지막 단계
+      router.push("/dashboard?from=onboarding"); // 마지막 단계
     }
   };
   const handlePrevStep = () => {

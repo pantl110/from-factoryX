@@ -1,8 +1,9 @@
 "use client";
 
 import MiniBtn from "@/ui/mini-btn";
-import { useEffect, useState } from "react";
 import SaveToast from "./save-toast";
+import useToast from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface MemoSectionProps {
   title: string;
@@ -15,20 +16,12 @@ const MemoSection = ({
   content,
   setIsDeleteModalOpen,
 }: MemoSectionProps) => {
-  const [isSaveToastOpen, setIsSaveToastOpen] = useState(false);
-
-  useEffect(() => {
-    if (isSaveToastOpen) {
-      const timer = setTimeout(() => {
-        setIsSaveToastOpen(false);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [isSaveToastOpen]);
+  const { isToastOpen: isSaveToastOpen, isVisible, showToast } = useToast();
+  const [memoContent, setMemoContent] = useState(content);
 
   const handleMemoSave = () => {
     // 메모 저장 로직
-    setIsSaveToastOpen(true);
+    showToast();
   };
   return (
     <div className="pt-5 pb-10 h-full">
@@ -42,20 +35,22 @@ const MemoSection = ({
               {title}
             </div>
           </div>
-          <div className="border px-3 Re_Body-1 text-dg border-[#E4E4E7] min-h-8 rounded-lg py-5 flex-1">
-            {content}
-          </div>
+          <textarea
+            className="border px-3 Re_Body-1 text-dg border-[#E4E4E7] min-h-8 rounded-lg py-5 flex-1"
+            value={memoContent}
+            onChange={(e) => setMemoContent(e.target.value)}
+          />
         </div>
         <div className="flex gap-2.5 justify-end">
           <MiniBtn
-            text="삭제하기"
+            text="삭제"
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
             onClick={() => setIsDeleteModalOpen(true)}
           />
           <MiniBtn
-            text="저장하기"
+            text="저장"
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"
@@ -63,7 +58,7 @@ const MemoSection = ({
           />
         </div>
       </div>
-      {isSaveToastOpen && <SaveToast />}
+      {isSaveToastOpen && <SaveToast isVisible={isVisible} />}
     </div>
   );
 };
