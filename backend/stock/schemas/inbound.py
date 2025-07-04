@@ -1,54 +1,72 @@
+from ninja import ModelSchema, Field
+from stock.models import Material, MaterialHistory
+from typing import Optional, List
 from pydantic import BaseModel
-from typing import Optional, List, Any
 
-class MaterialCreateSchema(BaseModel):
-    factory_id: int
-    name: str
-    code: str
-    unit: str
-    spec: str
-    current_stock: Optional[int] = 0
-    standard_stock: Optional[int] = 0
 
-class MaterialUpdateSchema(BaseModel):
-    name: Optional[str]
-    code: Optional[str]
-    unit: Optional[str]
-    spec: Optional[str]
-    current_stock: Optional[int]
-    standard_stock: Optional[int]
+class MaterialCreateIn(ModelSchema):
+    class Meta:
+        model = Material
+        exclude = [
+            "id",
+            "factory",
+            "created_at",
+            "updated_at",
+            "current_stock",
+            "products",
+        ]
 
-class MaterialExcelUploadResponseSchema(BaseModel):
-    success: bool
-    message: str
-    data: Optional[List[Any]] = None
 
-class ProductMaterialConnectSchema(BaseModel):
-    material_id: int
-    quantity: float
+class MaterialUpdateIn(ModelSchema):
+    name: Optional[str] = Field(default=None, description="자재명")
+    code: Optional[str] = Field(default=None, description="자재코드")
+    unit: Optional[str] = Field(default=None, description="단위")
+    spec: Optional[str] = Field(default=None, description="규격")
+    standard_stock: Optional[int] = Field(default=None, description="안전 재고")
 
-class ProductCreateSchema(BaseModel):
-    factory_id: int
-    name: str
-    code: str
-    spec: str
-    unit: str
-    current_stock: Optional[int] = 0
-    average_production_time: Optional[int] = None
-    location: Optional[str] = None
-    note: Optional[str] = None
+    class Meta:
+        model = Material
+        exclude = [
+            "id",
+            "factory",
+            "created_at",
+            "updated_at",
+            "current_stock",
+            "products",
+        ]
 
-class ProductUpdateSchema(BaseModel):
-    name: Optional[str]
-    code: Optional[str]
-    spec: Optional[str]
-    unit: Optional[str]
-    current_stock: Optional[int]
-    average_production_time: Optional[int]
-    location: Optional[str]
-    note: Optional[str]
 
-class ProductExcelUploadResponseSchema(BaseModel):
-    success: bool
-    message: str
-    data: Optional[List[Any]] = None
+class MaterialHistoryCreateIn(ModelSchema):
+    client_id: int = Field(description="거래처 ID")
+    
+    class Meta:
+        model = MaterialHistory
+        exclude = [
+            "id",
+            "material",
+            "client",
+            "created_at",
+            "updated_at",
+            "total_stock",
+        ]
+
+
+class MaterialHistoryUpdateIn(ModelSchema):
+    quantity: Optional[int] = Field(default=None, description="재고 변동 수량")
+    price: Optional[int] = Field(default=None, description="구매 단가")
+
+    class Meta:
+        model = MaterialHistory
+        exclude = [
+            "id",
+            "material",
+            "client",
+            "type",
+            "created_at",
+            "updated_at",
+            "total_stock",
+        ]
+
+
+class MaterialBulkCreateIn(BaseModel):
+    materials: List[MaterialCreateIn]
