@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import MiniBtn from "@/ui/mini-btn";
 import Input from "@/ui/input";
 import { useForm } from "react-hook-form";
@@ -13,6 +14,8 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
+    getValues,
   } = useForm<FirstStepFormDataModel>({
     defaultValues: {
       productName: "",
@@ -23,12 +26,33 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
     mode: "onChange",
   });
 
-  const onSubmit = () =>
-    // data: FirstStepFormData
-    {
-      // console.log("폼 데이터:", data);
-      onNextStep();
-    };
+  // sessionStorage에서 데이터 복원
+  useEffect(() => {
+    const savedData = sessionStorage.getItem("onboarding-step1-product");
+
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        if (data.productName !== undefined) {
+          // 데이터 구조 확인
+          reset(data);
+        }
+      } catch (error) {}
+    }
+  }, [reset]);
+
+  const saveFormData = (data: FirstStepFormDataModel) => {
+    sessionStorage.setItem("onboarding-step1-product", JSON.stringify(data)); // sessionStorage에 저장
+  };
+  const handlePrevStep = (data: FirstStepFormDataModel) => {
+    saveFormData(data);
+    onPrevStep();
+  };
+
+  const onSubmit = (data: FirstStepFormDataModel) => {
+    saveFormData(data);
+    onNextStep();
+  };
 
   return (
     <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col items-center rounded-lg">
@@ -95,7 +119,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
               textColor="text-sv"
               bgColor="bg-wh"
               hoverColor="bg-bg"
-              onClick={onPrevStep}
+              onClick={() => handlePrevStep(getValues())}
             />
             <MiniBtn
               text="다음 단계"

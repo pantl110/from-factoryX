@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState<OnboardingStepType>("welcome");
+
   const router = useRouter();
   const steps = ["welcome", "first-step", "second-step", "third-step"] as const;
   type StepType = (typeof steps)[number];

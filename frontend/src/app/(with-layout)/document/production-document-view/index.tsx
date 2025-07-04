@@ -2,8 +2,11 @@ import { productionData } from "@/mocks/production-data";
 import DocumentViewTitle from "../document-view-title";
 import CommentItem from "./comment-item";
 import ProductionTableItem from "./production-table-item";
+import { useState } from "react";
 
 const ProductionDocumentView = () => {
+  const [value, setValue] = useState("");
+
   return (
     <div className="flex flex-col gap-6">
       <DocumentViewTitle title="2025-06-13 생산 지시서" />
@@ -52,10 +55,18 @@ const ProductionDocumentView = () => {
         <h3 className="Heading-3">메모</h3>
         <textarea
           placeholder="메모를 입력하세요."
-          //   value={value}
-          //   onChange={(e) => onChange?.(e.target.value)}
-          className="w-full min-h-50 rounded px-3 py-5 Re_Body-1 text-dg placeholder:text-sv outline-none border border-[#e4e4e7] hover:border-primary focus:border-gr focus:text-dg transition-colors resize-none"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="w-full min-h-50 print:hidden overflow-hidden"
+          onInput={(e) => {
+            const target = e.target as HTMLTextAreaElement;
+            target.style.height = "auto";
+            target.style.height = target.scrollHeight + "px";
+          }}
         />
+        <div className="textarea hidden print:block whitespace-pre-wrap w-full min-h-50">
+          {value}
+        </div>
       </div>
     </div>
   );

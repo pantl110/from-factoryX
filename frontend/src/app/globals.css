@@ -108,7 +108,8 @@ button {
   cursor: pointer;
 }
 
-textarea {
+textarea,
+.textarea {
   resize: none;
 
   border: 1px solid #e3e3e3;
@@ -126,6 +127,8 @@ textarea {
 
   &:focus {
     outline: none;
+    color: #3d3d3d;
+    border: 1px solid #e3e3e3;
   }
 
   &::placeholder {

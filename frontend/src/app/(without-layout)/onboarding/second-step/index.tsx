@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import InfoLabelValue from "@/ui/info-label-value";
 import MiniBtn from "@/ui/mini-btn";
 import { Plus } from "@phosphor-icons/react/dist/ssr";
@@ -41,6 +42,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
     formState: { errors },
     clearErrors,
     control,
+    reset,
   } = useForm<SecondStepFormDataModel>({
     resolver: yupResolver(
       validationSchema,
@@ -56,6 +58,24 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
       ],
     },
   });
+
+  // sessionStorage에서 데이터 복원
+  useEffect(() => {
+    const savedData = sessionStorage.getItem("onboarding-step2-materials");
+
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+
+        // 데이터 구조 확인
+        if (data.materials !== undefined) {
+          reset(data);
+        }
+      } catch (error) {
+        console.error("SecondStep 데이터 파싱 오류:", error);
+      }
+    }
+  }, [reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -79,12 +99,10 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
     [remove, clearErrors],
   );
 
-  const onSubmit = () =>
-    // data: SecondStepFormDataModel
-    {
-      // console.log("DB에 저장할 데이터:", data.materials);
-      onNextStep();
-    };
+  const onSubmit = (data: SecondStepFormDataModel) => {
+    sessionStorage.setItem("onboarding-step2-materials", JSON.stringify(data)); // sessionStorage에 저장
+    onNextStep();
+  };
 
   return (
     <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col gap-7 items-center rounded-lg max-h-[85vh]">
