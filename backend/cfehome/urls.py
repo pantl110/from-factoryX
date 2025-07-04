@@ -21,6 +21,7 @@ from ninja import NinjaAPI
 from api.docs import MixedDocs
 from user.api import router as user_router
 from stock.api import router as stock_router
+from factory.api import router as factory_router
 from django.contrib.admin.views.decorators import staff_member_required
 
 base_api = NinjaAPI(
@@ -40,6 +41,7 @@ def health_check_handler(request):
 
 base_api.add_router("v1/auth", user_router)
 base_api.add_router("v1/stock", stock_router)
+base_api.add_router("v1/factory", factory_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

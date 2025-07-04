@@ -36,11 +36,9 @@ class UserUpdateIn(Schema):
 
 
 class UserLoginIn(Schema):
-    email: str
+    username: str
     password: str
 
 
 class RefreshTokenIn(Schema):
     refresh_token: str
-
-
