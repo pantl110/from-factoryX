@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from ninja import ModelSchema
+from stock.models import Product
 
 class MaterialResponseSchema(BaseModel):
     id: int
@@ -80,3 +82,8 @@ class ProductionTimeSchema(BaseModel):
     품목명: str
     평균생산시간_초: int
     평균생산시간_분: float
+
+class ProductOut(ModelSchema):
+    class Meta:
+        model = Product
+        fields = "__all__"
