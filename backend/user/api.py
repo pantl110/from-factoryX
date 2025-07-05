@@ -24,11 +24,11 @@ from django.conf import settings
 from api.exceptions import CustomAuthorizationError
 from django.http import JsonResponse
 from api.security import jwt_auth
-from email_validator import validate_email, EmailNotValidError
-
-# from user.models import EmailVerification
+from user.utils import validate_email_format
+from user.models import EmailVerification
 from django.utils import timezone
 from datetime import timedelta
+from uuid import UUID
 
 User = get_user_model()
 router = Router(tags=["Users"])
@@ -44,10 +44,7 @@ async def send_verification_code(request, data: EmailVerificationRequestIn):
     """이메일 인증 코드 발송"""
 
     # 이메일 형식 검증
-    try:
-        validate_email(data.email)
-    except EmailNotValidError:
-        raise HttpError(400, "올바른 이메일 형식이 아닙니다.")
+    await validate_email_format(data.email)
 
     # 인증 타입 검증
     valid_types = ["signup", "password_reset"]
@@ -74,14 +71,13 @@ async def send_verification_code(request, data: EmailVerificationRequestIn):
 
         # 새 인증 코드 생성
         code = utils.generate_verification_code()
-        expires_at = timezone.now() + timedelta(minutes=5)  # 5분 후 만료
 
         verification = await EmailVerification.objects.acreate(
             email=data.email,
             code=code,
             verification_type=data.verification_type,
-            expires_at=expires_at,
         )
+        expires_at = verification.created_at + timedelta(minutes=3)  # 3분 후 만료
 
         # 이메일 발송 (동기 함수)
         send_success = await sync_to_async(utils.send_verification_email)(
@@ -91,7 +87,7 @@ async def send_verification_code(request, data: EmailVerificationRequestIn):
         if send_success:
             return {
                 "detail": "인증 코드가 발송되었습니다.",
-                "expires_at": verification.expires_at.isoformat(),
+                "expires_at": expires_at.isoformat(),
             }
         else:
             await verification.adelete()
@@ -122,7 +118,7 @@ async def verify_code(request, data: EmailVerificationCodeIn):
         )
 
         # 만료 시간 확인
-        if verification.is_expired():
+        if verification.created_at + timedelta(minutes=3) < timezone.now():
             raise HttpError(400, "인증 코드가 만료되었습니다.")
 
         # 인증 완료 처리
@@ -165,7 +161,7 @@ async def reset_password(request, data: PasswordResetIn):
         )
 
         # 만료 시간 확인 (인증 후 5분 내에 비밀번호 재설정해야 함)
-        if verification.is_expired():
+        if verification.created_at + timedelta(minutes=5) < timezone.now():
             raise HttpError(400, "인증 시간이 만료되었습니다. 다시 인증해주세요.")
 
         # 사용자 찾기
@@ -198,9 +194,6 @@ async def reset_password(request, data: PasswordResetIn):
     response={200: UserMeOut},
 )
 async def signup(request, data: UserSignupIn):
-    if await User.objects.filter(username=data.username).aexists():
-        raise HttpError(420, "이미 등록된 아이디입니다.")
-
     if await User.objects.filter(email=data.email).aexists():
         raise HttpError(420, "이미 등록된 이메일입니다.")
 
@@ -225,7 +218,6 @@ async def signup(request, data: UserSignupIn):
 
     try:
         user = await sync_to_async(User.objects.create_user)(
-            username=data.username,
             email=data.email,
             password=data.password,
         )
@@ -249,19 +241,16 @@ async def signup(request, data: UserSignupIn):
 )
 async def login(request, data: UserLoginIn):
     # 이메일 형식 검증
-    # try:
-    #     validate_email(data.email)
-    # except EmailNotValidError:
-    #     raise HttpError(400, "올바른 이메일 형식이 아닙니다.")
+    await validate_email_format(data.email)
 
     # 이메일로 사용자 찾기
     try:
-        user = await User.objects.aget(username=data.username)
+        user = await User.objects.aget(email=data.email)
     except User.DoesNotExist:
-        raise HttpError(400, "등록되지 않은 아이디입니다.")
+        raise HttpError(400, "등록되지 않은 이메일입니다.")
 
-    # if not await sync_to_async(user.check_password)(data.password):
-    #     raise HttpError(400, "비밀번호가 일치하지 않습니다.")
+    if not await sync_to_async(user.check_password)(data.password):
+        raise HttpError(400, "비밀번호가 일치하지 않습니다.")
 
     await Jwt.objects.filter(user_id=user.id).adelete()
 
@@ -367,7 +356,7 @@ async def get_me(request):
     response={200: UserMeOut},
     auth=jwt_auth,
 )
-async def update_user(request, user_id: int, data: UserUpdateIn):
+async def update_user(request, user_id: UUID, data: UserUpdateIn):
     async def get_user_by_id(user_id: int):
         return await User.objects.aget(id=user_id)
 

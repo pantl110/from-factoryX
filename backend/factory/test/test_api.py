@@ -54,10 +54,8 @@ class TestUser(TestCase):
         headers = await self.authenticate()
         response = await self.client.get("", headers=headers)
         data = response.json()
-        # print("🐍 File: test/test_api.py | Line: 51 | setUp ~ data", data)
         self.assertEqual(response.status_code, 200)
         result = data.get("data", [])
-        # print("🐍 File: test/test_api.py | Line: 60 | setUp ~ result", result)
 
     async def test_get_factory(self):
         """
