@@ -28,6 +28,9 @@ class FactoryUpdateIn(ModelSchema):
 
 
 class FactoryEqCreateIn(ModelSchema):
+    # accept factory PK directly
+    factory: int
+
     class Meta:
         model = FactoryEquipment
         exclude = [
@@ -39,7 +42,12 @@ class FactoryEqCreateIn(ModelSchema):
 
 class FactoryEqUpdateIn(ModelSchema):
     name: Optional[str] = Field(default=None, description="공장 설비 이름")
-
+    factory: Optional[int] = Field(default=None, description="공장 ID")
+    priority: Optional[int] = Field(default=None, description="우선순위")
+    note: Optional[str] = Field(default=None, description="설비 설명")
+    status: Optional[str] = Field(default=None, description="설비 상태")
+    location: Optional[str] = Field(default=None, description="설비 위치")
+    
     class Meta:
         model = FactoryEquipment
         exclude = [

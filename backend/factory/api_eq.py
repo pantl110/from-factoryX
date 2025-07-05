@@ -19,9 +19,11 @@ router = Router(tags=["FactoryEquipment"])
 )
 async def create_factory_eq(request, payload: FactoryEqCreateIn):
     user = request.auth
-    factory_eq = await FactoryEquipment.objects.acreate(
-        **payload.dict(),
-    )
+    data = payload.dict()
+    # allow integer primary key for factory field
+    if isinstance(data.get("factory"), int):
+        data["factory_id"] = data.pop("factory")
+    factory_eq = await FactoryEquipment.objects.acreate(**data)
     return 201, factory_eq
 
 @router.get(

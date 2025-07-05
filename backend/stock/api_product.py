@@ -20,9 +20,10 @@ router = Router(tags=["Product"])
 )
 async def create_product(request, payload: ProductCreateIn):
     user = request.auth
-    product = await Product.objects.acreate(
-        **payload.dict(),
-    )
+    data = payload.dict()
+    if isinstance(data.get("factory"), int):
+        data["factory_id"] = data.pop("factory")
+    product = await Product.objects.acreate(**data)
     return 201, product
 
 @router.get(
@@ -62,6 +63,8 @@ async def get_product(request, product_id: int):
 async def update_product(request, product_id: int, payload: ProductUpdateIn):
     product = await get_product_by_id(product_id)
     update_data = payload.dict(exclude_unset=True)
+    if isinstance(update_data.get("factory"), int):
+        update_data["factory_id"] = update_data.pop("factory")
     for key, value in update_data.items():
         setattr(product, key, value)
     await sync_to_async(product.save)()
