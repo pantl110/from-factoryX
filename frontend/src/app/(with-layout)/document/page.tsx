@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import MainTitleSec from "./main-title-sec";
 import DocumentTable from "./document-table";
@@ -12,8 +12,9 @@ import Panel from "@/ui/panel";
 import ProductionDocumentView from "./production-document-view";
 import TransactionDocumentView from "./transaction-document-view";
 import TaxDocumentView from "./tax-document-view";
+import Spinner from "@/ui/spinner";
 
-const DocumentPage = () => {
+const DocumentPageContent = () => {
   const [selectedType, setSelectedType] = useState<DocumentType>("주문서");
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentDataModel | null>(null);
@@ -74,6 +75,20 @@ const DocumentPage = () => {
           </Panel>
         )}
     </>
+  );
+};
+
+const DocumentPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spinner />
+        </div>
+      }
+    >
+      <DocumentPageContent />
+    </Suspense>
   );
 };
 

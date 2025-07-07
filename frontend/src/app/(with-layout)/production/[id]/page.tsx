@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, notFound } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { projectData, ProjectDataModel } from "@/mocks/project-data";
 import completedProjectData, {
   CompletedProjectDataModel,
@@ -17,6 +17,7 @@ import TransactionDocumentView from "../../document/transaction-document-view";
 import OrderDocumentView from "../../document/order-document-view";
 import { ProjectStatusType } from "@/types/status-type";
 import { ProductionTabType } from "@/components/top-bar/types";
+import Spinner from "@/ui/spinner";
 
 const getTabsByStatus = (status: string): ProductionTabType[] => {
   if (status === "생산 대기") return ["생산 계획", "주문서"];
@@ -35,7 +36,7 @@ const getTabsByStatus = (status: string): ProductionTabType[] => {
   return ["생산 계획", "주문서"];
 };
 
-const ProductionPage = () => {
+const ProductionPageContent = () => {
   const params = useParams();
   const id = Number(params.id);
   const setPageStatus = usePageStatusStore((state) => state.setPageStatus); // 바뀐 프로젝트상태 전역상태로로관리 -> top-bar 상태에 적용
@@ -110,6 +111,20 @@ const ProductionPage = () => {
         </div>
       )}
     </div>
+  );
+};
+
+const ProductionPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spinner />
+        </div>
+      }
+    >
+      <ProductionPageContent />
+    </Suspense>
   );
 };
 

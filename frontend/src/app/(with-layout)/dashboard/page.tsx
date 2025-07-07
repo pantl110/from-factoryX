@@ -84,7 +84,13 @@ const DashboardPageContent = () => {
 
 const DashboardPage = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spinner />
+        </div>
+      }
+    >
       <DashboardPageContent />
     </Suspense>
   );

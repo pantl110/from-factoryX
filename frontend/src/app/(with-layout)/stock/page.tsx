@@ -14,6 +14,7 @@ import Panel from "@/ui/panel";
 import MaterialDetail from "./material/material-detail";
 import CustomerInfoModal from "./material/modals/customer-info-modal";
 import ProductEnrollmentModal from "./material/modals/product-enrollment-modal";
+import Spinner from "@/ui/spinner";
 
 const StockPageContent = () => {
   const stockTab =
@@ -136,7 +137,13 @@ const StockPageContent = () => {
 
 const StockPage = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spinner />
+        </div>
+      }
+    >
       <StockPageContent />
     </Suspense>
   );

@@ -109,21 +109,21 @@ const ProductionTable = () => {
 
   return (
     <>
-    <div className="mt-3 overflow-x-auto h-[328px]">
-      <ProductionTableHeader />
-      {currentProductions.map((item) => (
-        <ProductionTableItem
-          key={item.id}
-          status={item.status}
-          productName={item.productName}
-          productCode={item.productCode}
-          size={item.size}
-          unit={item.unit}
-          quantity={item.quantity}
-          machine={item.machine}
-          time={item.time}
-        />
-      ))}
+      <div className="mt-3 overflow-x-auto h-[328px]">
+        <ProductionTableHeader />
+        {currentProductions.map((item) => (
+          <ProductionTableItem
+            key={item.id}
+            status={item.status}
+            productName={item.productName}
+            productCode={item.productCode}
+            size={item.size}
+            unit={item.unit}
+            quantity={item.quantity}
+            machine={item.machine}
+            time={item.time}
+          />
+        ))}
       </div>
       {totalPages > 1 && (
         <div className="flex justify-center mt-3">

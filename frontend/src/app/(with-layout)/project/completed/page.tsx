@@ -14,7 +14,7 @@ const CompletedProjectPage = () => {
   const [selectedStatus, setSelectedStatus] = useState<
     "전체" | CompletedProjectStatusType
   >("전체");
-  const [isDeleteBtnClicked, setIsDeleteBtnClicked] = useState(false);
+  const [isDeleteBtnClicked, _setIsDeleteBtnClicked] = useState(false);
 
   const filteredProjects =
     selectedStatus === "전체"

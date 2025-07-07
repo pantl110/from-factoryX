@@ -1,13 +1,13 @@
 "use client";
 
-import TopBar from "@/components/top-bar";
-import SideBar from "@/components/side-bar";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
+import SideBar from "@/components/side-bar";
+import TopBar from "@/components/top-bar";
+import { usePathname } from "next/navigation";
 
-const WithLayout = ({ children }: { children: React.ReactNode }) => {
-  const pathname = usePathname();
+const Layout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const pathname = usePathname();
 
   const isProductionPage = pathname.startsWith("/production/"); // production 페이지인지 확인
 
@@ -28,7 +28,7 @@ const WithLayout = ({ children }: { children: React.ReactNode }) => {
           <TopBar isSidebarVisible={isSidebarVisible} />
         </div>
         <div className="flex flex-col flex-1 max-w-[1400px] min-w-[1000px] mx-auto w-full mt-[60px]">
-          <main className="flex flex-col flex-1 min-h-0 h-full">
+          <main className="flex flex-col flex-1 min-h-0 h-full relative">
             {children}
           </main>
         </div>
@@ -37,4 +37,4 @@ const WithLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default WithLayout;
+export default Layout;

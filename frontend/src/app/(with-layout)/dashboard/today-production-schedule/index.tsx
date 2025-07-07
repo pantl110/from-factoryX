@@ -31,7 +31,7 @@ const TodayProductionSchedule = () => {
             hoverColor="hover:bg-bg"
           />
         </div>
-          <ProductionTable />
+        <ProductionTable />
       </div>
 
       {/* overlay */}

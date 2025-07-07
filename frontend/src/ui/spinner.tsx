@@ -25,7 +25,7 @@ const Spinner = () => {
         strokeWidth={strokeWidth}
         fill="none"
       />
-      
+
       {/* 파란색 원호 */}
       <circle
         cx={size / 2}
@@ -55,4 +55,4 @@ const Spinner = () => {
   );
 };
 
-export default Spinner; 
+export default Spinner;

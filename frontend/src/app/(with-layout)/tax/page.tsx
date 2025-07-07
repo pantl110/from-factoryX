@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import MainTitleSec from "./main-title-sec";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import TableHeader from "./table-header";
@@ -8,8 +8,9 @@ import TableItem from "./table-item";
 import TaxDetailPanel from "./tax-detail-panel";
 import { taxData, TaxDataModel } from "@/mocks/tax-data";
 import { TaxDocumentType } from "@/types/status-type";
+import Spinner from "@/ui/spinner";
 
-const TaxPage = () => {
+const TaxPageContent = () => {
   const [selectedTaxType, setSelectedTaxType] = useState<
     TaxDocumentType | "전체"
   >("전체");
@@ -64,6 +65,20 @@ const TaxPage = () => {
         <TaxDetailPanel item={selectedItem} onClose={handleClosePanel} />
       )}
     </>
+  );
+};
+
+const TaxPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spinner />
+        </div>
+      }
+    >
+      <TaxPageContent />
+    </Suspense>
   );
 };
 

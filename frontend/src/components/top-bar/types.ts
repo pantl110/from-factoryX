@@ -1,17 +1,14 @@
 export type NotificationType =
   | "materialShortage" // 원자재 부족
-  | "facilityIssue"// 설비 이상: 가동 불가 등
+  | "facilityIssue" // 설비 이상: 가동 불가 등
   | "productionIssue" // 생산 계획에 이상: 테이블에 빨간 색상
-  
   | "productionComplete" // 생산 완료
   | "salesTaxIssued" // 매출 세금계산서 발행
   | "purchaseTaxReceived" // 매입 세금계산서 들어옴 (API)
   | "receiptReceived" // 현금영수증 들어옴 (API)
-
   | "roleChanged" // 권한 변경
   | "deliveryDate" // 납기일이 3일 남았을 때
-  | "productionPlanChanged" // 생산 계획 변경
-
+  | "productionPlanChanged"; // 생산 계획 변경
 
 export interface NotificationModel {
   id: number;
