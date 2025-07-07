@@ -5,26 +5,6 @@ export interface StatusColorModel {
   hover?: string;
 }
 
-// 디자인팀 확인 필요// dashboard 생산 상태
-export type ProductionStatusType = "생산 완료" | "가동 대기" | "생산 중";
-export const ProductionStatusColorMap: Record<
-  ProductionStatusType,
-  StatusColorModel
-> = {
-  "생산 완료": {
-    textColor: "text-primary",
-    bgColor: "bg-primary-8",
-  },
-  "가동 대기": {
-    textColor: "text-bl",
-    bgColor: "bg-bg",
-  },
-  "생산 중": {
-    textColor: "text-purple",
-    bgColor: "bg-purple-8",
-  },
-};
-
 // 진행중인 프로젝트 상태
 export type ProjectStatusType =
   | "견적 협의"

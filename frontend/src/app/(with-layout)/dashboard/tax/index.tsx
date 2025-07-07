@@ -9,9 +9,9 @@ const Tax = () => {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col flex-1 gap-3">
+    <div className="flex flex-col flex-1 min-w-0 gap-3">
       <div className="flex items-center justify-between">
-        <h3 className="Heading-3">세무/회계</h3>
+        <h3 className="Heading-3">세금계산서 현황</h3>
         <MiniBtn
           text="더보기"
           textColor="text-dg"

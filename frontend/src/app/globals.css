@@ -198,6 +198,22 @@ input[type="number"] {
   @page {
     margin: 32px;
   }
+
+  /* 인쇄 시 줄바꿈 유틸리티 */
+  .print-break {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    text-overflow: initial !important;
+  }
+  .print-row-48 {
+    min-height: 48px !important;
+    height: auto !important;
+    line-height: normal !important;
+    align-items: flex-start !important;
+    padding-bottom: 19px !important;
+    padding-top: 19px !important;
+  }
 }
 
 .react-datepicker-wrapper {

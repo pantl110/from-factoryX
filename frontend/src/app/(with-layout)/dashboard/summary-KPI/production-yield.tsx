@@ -22,7 +22,7 @@ const ProductionYield = () => {
               </div>
             </div>
           </div>
-          <ChartChip up={true} />
+          {/* <ChartChip up={true} /> */}
         </div>
       </div>
     </div>

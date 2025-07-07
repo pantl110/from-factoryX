@@ -21,7 +21,7 @@ const DailyProductionQuantity = () => {
               </div>
             </div>
           </div>
-          <ChartChip up={false} />
+          {/* <ChartChip up={false} /> */}
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import ProductionTableItem from "./production-table-item";
 const productionScheduleData = [
   {
     id: 1,
-    status: "생산 완료" as const,
+    companyName: "플라스틱이 좋아",
     productName: "A품목",
     productCode: "P-001",
     size: "500ml",
@@ -18,7 +18,7 @@ const productionScheduleData = [
   },
   {
     id: 2,
-    status: "생산 중" as const,
+    companyName: "플라스틱 마스터",
     productName: "A품목",
     productCode: "P-001",
     size: "500ml",
@@ -29,7 +29,7 @@ const productionScheduleData = [
   },
   {
     id: 3,
-    status: "가동 대기" as const,
+    companyName: "플라스틱 프로",
     productName: "A품목",
     productCode: "P-001",
     size: "500ml",
@@ -40,7 +40,7 @@ const productionScheduleData = [
   },
   {
     id: 4,
-    status: "생산 완료" as const,
+    companyName: "플라스틱 엑스퍼트",
     productName: "A품목",
     productCode: "P-001",
     size: "500ml",
@@ -51,7 +51,7 @@ const productionScheduleData = [
   },
   {
     id: 5,
-    status: "생산 중" as const,
+    companyName: "플라스틱 스페셜",
     productName: "B품목",
     productCode: "P-002",
     size: "1L",
@@ -62,7 +62,7 @@ const productionScheduleData = [
   },
   {
     id: 6,
-    status: "가동 대기" as const,
+    companyName: "플라스틱 프리미엄",
     productName: "C품목",
     productCode: "P-003",
     size: "250ml",
@@ -73,7 +73,7 @@ const productionScheduleData = [
   },
   {
     id: 7,
-    status: "생산 완료" as const,
+    companyName: "플라스틱 베스트",
     productName: "D품목",
     productCode: "P-004",
     size: "750ml",
@@ -84,7 +84,7 @@ const productionScheduleData = [
   },
   {
     id: 8,
-    status: "생산 중" as const,
+    companyName: "플라스틱 퍼펙트",
     productName: "E품목",
     productCode: "P-005",
     size: "2L",
@@ -114,7 +114,7 @@ const ProductionTable = () => {
         {currentProductions.map((item) => (
           <ProductionTableItem
             key={item.id}
-            status={item.status}
+            companyName={item.companyName}
             productName={item.productName}
             productCode={item.productCode}
             size={item.size}

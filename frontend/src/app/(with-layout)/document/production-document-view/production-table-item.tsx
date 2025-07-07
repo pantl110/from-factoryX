@@ -16,15 +16,25 @@ const ProductionTableItem = ({
   productionTime,
 }: ProductionTableItemProps) => {
   return (
-    <div className="w-full h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <p className="flex-1 px-3 truncate" title={productName}>
+    <div className="w-full h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee] print-row-48">
+      <p className="flex-2 px-3 truncate print-break" title={productName}>
         {productName}
       </p>
-      <p className="flex-1 px-3">{standard}</p>
-      <p className="w-[80px] px-3">{unit}</p>
-      <p className="flex-1 px-3">{productionQuantity.toLocaleString()}</p>
-      <p className="w-[120px] px-3">{machine}</p>
-      <p className="flex-1 px-3">{productionTime}</p>
+      <p className="flex-1 px-3 truncate" title={standard}>
+        {standard}
+      </p>
+      <p className="w-[80px] px-3" >
+        {unit}
+      </p>
+      <p className="flex-1 px-3">
+        {productionQuantity.toLocaleString()}
+      </p>
+      <p className="flex-[0.8] px-3">
+        {machine}
+      </p>
+      <p className="flex-[0.8] px-3">
+        {productionTime}
+      </p>
     </div>
   );
 };

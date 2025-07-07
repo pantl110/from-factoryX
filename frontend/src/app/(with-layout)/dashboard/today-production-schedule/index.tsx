@@ -22,7 +22,7 @@ const TodayProductionSchedule = () => {
         <div className="flex justify-between items-center">
           <h3 className="Heading-3">오늘의 생산 일정</h3>
           <MiniBtn
-            text="생산지시서 출력하기"
+            text="생산지시서 출력"
             textColor="text-dg"
             borderColor="border-lg"
             onClick={() => {
@@ -37,36 +37,30 @@ const TodayProductionSchedule = () => {
       {/* overlay */}
       {isPrintOverlayOpen && (
         <OverlayView onClose={() => setIsPrintOverlayOpen(false)}>
-          {/* <div className="py-5 px-10">
-            <ProductionDocumentView />
-          </div> */}
-
           <div className="w-full flex flex-col p-8">
-            <div className="flex justify-between items-start h-13 border-b border-lg">
+            <div className="flex justify-between items-center h-13 pb-3 border-b border-lg">
               <h3 className="Heading-3">생산지시서</h3>
               <button
                 className="w-10 h-10 flex justify-center items-center cursor-pointer hover:bg-bg rounded-[8px] transition-colors ease-in-out duration-200"
                 onClick={() => setIsPrintOverlayOpen(false)}
               >
-                <X size={20} />
+                <X size={16} className="text-sv" />
               </button>
             </div>
 
             <div className="sticky top-0 bg-wh mb-6">
               <div className="py-6 w-full flex justify-between border-b border-lg">
                 <div>
-                  <h2 className="Heading-2">생산지서를 출력하시겠어요?</h2>
+                  <h2 className="Heading-2">생산지시서를 출력하시겠어요?</h2>
                   <div className="mt-2.5 Me_Body-3 text-gr">
                     출력 전, 생산지시서 내용을 한 번 더 확인해 주세요.
                   </div>
                 </div>
                 <MiniBtn
-                  text="생산지시서 출력하기"
+                  text="생산지시서 출력"
                   textColor="text-wh"
                   bgColor="bg-primary"
                   hoverColor="hover:bg-primary-hover"
-                  icon={PrinterIcon}
-                  iconColor="text-wh"
                   borderColor="border-primary-hover"
                   onClick={reactToPrintFn}
                 />

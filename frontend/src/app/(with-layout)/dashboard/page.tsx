@@ -57,8 +57,8 @@ const DashboardPageContent = () => {
 
         {/* 납품 예정 현황 */}
         <div className="flex gap-5">
-          <div className="flex flex-col flex-1 gap-3">
-            <div className="h-10">
+          <div className="flex flex-col flex-1 min-w-0 gap-3">
+            <div className="h-10 flex items-center">
               <h3 className="Heading-3">납품 예정 현황</h3>
             </div>
             <DeliveryTable />
