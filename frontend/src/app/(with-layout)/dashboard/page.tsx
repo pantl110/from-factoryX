@@ -14,7 +14,7 @@ import ProfitGraph from "./profit-graph";
 import useToast from "@/hooks/use-toast";
 import Toast from "@/ui/toast";
 import { useSearchParams } from "next/navigation";
-import { House } from "@phosphor-icons/react";
+import { CheckCircle } from "@phosphor-icons/react";
 import Spinner from "@/ui/spinner";
 
 const DashboardPageContent = () => {
@@ -71,7 +71,7 @@ const DashboardPageContent = () => {
 
       {isToastOpen && (
         <Toast
-          icon={<House size={20} className="text-primary" />}
+          icon={<CheckCircle size={20} className="text-primary" />}
           text="이제 팩토리엑스를 시작해볼까요?"
           subtext="가입이 완료되었어요!"
           type="primary"

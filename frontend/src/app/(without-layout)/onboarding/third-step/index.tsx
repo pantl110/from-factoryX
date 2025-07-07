@@ -22,7 +22,7 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
             지금 바로 공장 운영을 시작해보세요!
             <br />
             <br />
-            기존에 사용 중인 품목과 원자재를 미리 등록해두면
+            기존에 사용 중인 <span className="text-primary">품목과 원자재를 미리 등록</span>해두면
             <br />
             팩토리엑스를 더욱 효율적으로 활용하실 수 있습니다.
           </div>

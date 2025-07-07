@@ -7,7 +7,6 @@ interface MaterialInputItemProps {
   plusMode?: boolean;
   onDelete?: () => void;
   register: UseFormRegister<SecondStepFormDataModel>;
-  errors: FieldErrors<SecondStepFormDataModel>;
   index: number;
 }
 
@@ -15,7 +14,6 @@ const MaterialInputItem = ({
   plusMode = true,
   onDelete,
   register,
-  errors,
   index,
 }: MaterialInputItemProps) => {
   return (
@@ -30,7 +28,6 @@ const MaterialInputItem = ({
             {...(register && {
               ...register(`materials.${index}.materialName`),
             })}
-            showError={!!errors?.materials?.[index]?.materialName}
           />
         </div>
         <div className="flex-2">
@@ -40,7 +37,6 @@ const MaterialInputItem = ({
             placeholder="규격 입력"
             required={true}
             {...(register && { ...register(`materials.${index}.size`) })}
-            showError={!!errors?.materials?.[index]?.size}
           />
         </div>
         <div className="flex-1">
@@ -54,7 +50,6 @@ const MaterialInputItem = ({
                 valueAsNumber: true,
               }),
             })}
-            showError={!!errors?.materials?.[index]?.usageQuantity}
           />
         </div>
       </div>

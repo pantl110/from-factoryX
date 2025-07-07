@@ -39,7 +39,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { isValid },
     clearErrors,
     control,
     reset,
@@ -47,7 +47,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
     resolver: yupResolver(
       validationSchema,
     ) as unknown as Resolver<SecondStepFormDataModel>,
-    mode: "onSubmit",
+    mode: "onChange",
     defaultValues: {
       materials: [
         {
@@ -105,7 +105,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
   };
 
   return (
-    <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col gap-7 items-center rounded-lg max-h-[85vh]">
+    <div className="bg-wh z-1 w-[800px] pt-10 px-8 flex flex-col gap-7 items-center rounded-lg max-h-[85vh]">
       <div className="flex flex-col gap-8 w-full">
         {/* 타이틀 영역 */}
         <div className="flex flex-col gap-2 items-center">
@@ -146,7 +146,6 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
                 index === 0 ? undefined : () => handleDeleteMaterial(index)
               }
               register={register}
-              errors={errors}
               index={index}
             />
           ))}
@@ -162,9 +161,9 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
         </div>
 
         {/* 모달버튼 영역 */}
-        <div className="w-full flex justify-end gap-2.5">
+        <div className="w-full flex justify-end gap-2.5 mb-8">
           <MiniBtn
-            text="이전 단계"
+            text="이전"
             textColor="text-sv"
             bgColor="bg-wh"
             hoverColor="bg-bg"
@@ -172,11 +171,12 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
             type="button"
           />
           <MiniBtn
-            text="다음 단계"
+            text="다음"
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"
             type="submit"
+            disabled={!isValid}
           />
         </div>
       </form>
