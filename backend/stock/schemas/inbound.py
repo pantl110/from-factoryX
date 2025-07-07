@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List, Any
-from stock.models import Product
+from stock.models import Product, ProductHistory
 from ninja import ModelSchema, Field
 from factory.models import Factory, FactoryEquipment
 
@@ -30,36 +30,6 @@ class ProductMaterialConnectSchema(BaseModel):
     material_id: int
     quantity: float
 
-class ProductCreateIn(ModelSchema):
-    # accept factory primary key directly
-    factory: int
-    class Meta:
-        model = Product
-        exclude = [
-            "id",
-            "created_at",
-            "updated_at",
-        ]
-
-class ProductUpdateIn(ModelSchema):
-    factory: Optional[int] = Field(default=None, description="공장 ID")
-    name: Optional[str] = Field(default=None, description="제품명")
-    code: Optional[str] = Field(default=None, description="제품코드")
-    unit: Optional[str] = Field(default=None, description="단위")
-    spec: Optional[str] = Field(default=None, description="규격")
-    current_stock: Optional[int] = Field(default=None, description="현재 재고")
-    average_production_time: Optional[int] = Field(default=None, description="평균 생산 시간(초)")
-    buffer_rate: Optional[float] = Field(default=None, description="버퍼율")
-    location: Optional[str] = Field(default=None, description="위치")
-    note: Optional[str] = Field(default=None, description="특이사항")
-
-    class Meta:
-        model = Product
-        exclude = [
-            "id",
-            "created_at",
-            "updated_at",
-        ]
 
 class ProductCreateSchema(BaseModel):
     factory_id: int
@@ -86,3 +56,62 @@ class ProductExcelUploadResponseSchema(BaseModel):
     success: bool
     message: str
     data: Optional[List[Any]] = None
+
+class ProductCreateIn(ModelSchema):
+    """제품 생성 스키마"""
+    factory: int
+    class Meta:
+        model = Product
+        exclude = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]
+
+class ProductUpdateIn(ModelSchema):
+    """제품 수정 스키마"""
+    factory: Optional[int] = Field(default=None, description="공장 ID")
+    name: Optional[str] = Field(default=None, description="제품명")
+    code: Optional[str] = Field(default=None, description="제품코드")
+    unit: Optional[str] = Field(default=None, description="단위")
+    spec: Optional[str] = Field(default=None, description="규격")
+    current_stock: Optional[int] = Field(default=None, description="현재 재고")
+    average_production_time: Optional[int] = Field(default=None, description="평균 생산 시간(초)")
+    buffer_rate: Optional[float] = Field(default=None, description="버퍼율")
+    location: Optional[str] = Field(default=None, description="위치")
+    note: Optional[str] = Field(default=None, description="특이사항")
+
+    class Meta:
+        model = Product
+        exclude = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]
+
+class ProductHistoryCreateIn(ModelSchema):
+    """제품 입출고 이력 생성 입력 스키마"""
+
+    product: int = Field(..., description="제품 ID")
+
+    class Meta:
+        model = ProductHistory
+        exclude = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class ProductHistoryUpdateIn(ModelSchema):
+    """제품 입출고 이력 수정 입력 스키마 (부분 수정 지원)"""
+
+    product: Optional[int] = Field(None, description="제품 ID")
+
+    class Meta:
+        model = ProductHistory
+        exclude = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]

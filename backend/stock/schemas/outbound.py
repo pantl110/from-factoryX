@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from ninja import ModelSchema
-from stock.models import Product
+from stock.models import Product, ProductHistory
 
 class MaterialResponseSchema(BaseModel):
     id: int
@@ -86,4 +86,10 @@ class ProductionTimeSchema(BaseModel):
 class ProductOut(ModelSchema):
     class Meta:
         model = Product
+        fields = "__all__"
+
+
+class ProductHistoryOut(ModelSchema):
+    class Meta:
+        model = ProductHistory
         fields = "__all__"

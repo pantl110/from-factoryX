@@ -24,6 +24,7 @@ from stock.api import router as stock_router
 from factory.api import router as factory_router
 from factory.api_eq import router as factoryEQ_router
 from stock.api_product import router as stockProduct_router
+from stock.api_product_history import router as stockProductHistory_router
 from django.contrib.admin.views.decorators import staff_member_required
 
 base_api = NinjaAPI(
@@ -46,6 +47,7 @@ base_api.add_router("v1/stock", stock_router)
 base_api.add_router("v1/factory", factory_router)
 base_api.add_router("v1/factory/equiment", factoryEQ_router)
 base_api.add_router("v1/stock/product", stockProduct_router)
+base_api.add_router("v1/stock/product/history", stockProductHistory_router)
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", base_api.urls),
