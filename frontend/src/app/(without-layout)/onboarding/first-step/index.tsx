@@ -37,7 +37,9 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
           // 데이터 구조 확인
           reset(data);
         }
-      } catch (error) {}
+      } catch {
+        // Silently ignore parsing errors
+      }
     }
   }, [reset]);
 

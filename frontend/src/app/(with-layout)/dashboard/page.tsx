@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import MainTitleSec from "./main-title-sec";
 import DailyProductionQuantity from "./summary-KPI/daily-production-quantity";
 import ShortageCount from "./summary-KPI/shortage-count";
@@ -16,7 +16,7 @@ import Toast from "@/ui/toast";
 import { useSearchParams } from "next/navigation";
 import { House } from "@phosphor-icons/react";
 
-const DashboardPage = () => {
+const DashboardPageContent = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
   const searchParams = useSearchParams();
 
@@ -25,7 +25,7 @@ const DashboardPage = () => {
     if (from === "onboarding") {
       showToast();
     }
-  }, [searchParams]);
+  }, [searchParams, showToast]);
 
   return (
     <>
@@ -78,6 +78,14 @@ const DashboardPage = () => {
         />
       )}
     </>
+  );
+};
+
+const DashboardPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DashboardPageContent />
+    </Suspense>
   );
 };
 

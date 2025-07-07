@@ -33,7 +33,7 @@ const MasterData = () => {
   const handleClientChipClick = () =>
     setSettingChip("client" as SettingChipType);
 
-  const handleDeleteBtnClick = () => deleteMode.toggleDeleteMode();
+  const handleDeleteBtnClick = () => deleteMode.toggleDeleteMode([]);
   const handleDeleteModalClose = () => deleteMode.closeDeleteModal();
 
   const handleAddBtnClick = () => {

@@ -38,7 +38,11 @@ const TaxPage = () => {
           setSelectedTaxType={setSelectedTaxType}
         />
         <div className="px-8">
-          <SearchDeleteTable />
+          <SearchDeleteTable
+            isDeleteMode={false}
+            toggleDeleteMode={() => {}}
+            checkedIds={[]}
+          />
           <div className="w-full overflow-x-auto">
             <TableHeader />
             {filteredData.map((item) => (

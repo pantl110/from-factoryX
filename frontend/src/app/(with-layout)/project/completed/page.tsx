@@ -45,8 +45,9 @@ const CompletedProjectPage = () => {
         />
         <div className="px-8">
           <SearchDeleteTable
-            isDeleteBtnClicked={isDeleteBtnClicked}
-            setIsDeleteBtnClicked={setIsDeleteBtnClicked}
+            isDeleteMode={isDeleteBtnClicked}
+            toggleDeleteMode={() => {}}
+            checkedIds={[]}
           />
           <div>
             <TableHeader isDeleteMode={isDeleteBtnClicked} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import MainTitleSec from "./main-title-sec";
 import Product from "./product/index";
@@ -15,7 +15,7 @@ import MaterialDetail from "./material/material-detail";
 import CustomerInfoModal from "./material/modals/customer-info-modal";
 import ProductEnrollmentModal from "./material/modals/product-enrollment-modal";
 
-const StockPage = () => {
+const StockPageContent = () => {
   const stockTab =
     (usePageStatusStore((state) => state.stockTab) as StockTabType) || null;
   const setStockTab = usePageStatusStore((state) => state.setStockTab);
@@ -131,6 +131,14 @@ const StockPage = () => {
         />
       )}
     </>
+  );
+};
+
+const StockPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <StockPageContent />
+    </Suspense>
   );
 };
 

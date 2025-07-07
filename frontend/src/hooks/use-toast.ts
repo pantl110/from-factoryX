@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 
-interface UseToastReturn {
+interface UseToastReturnProps {
   isToastOpen: boolean;
   isVisible: boolean;
   showToast: () => void;
   hideToast: () => void;
 }
 
-const useToast = (duration: number = 2000): UseToastReturn => {
+const useToast = (duration: number = 2000): UseToastReturnProps => {
   const [isToastOpen, setIsToastOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 

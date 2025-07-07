@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import InfoLabelValue from "@/ui/info-label-value";
 import MiniBtn from "@/ui/mini-btn";
 import { Plus } from "@phosphor-icons/react/dist/ssr";

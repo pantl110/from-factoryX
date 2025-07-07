@@ -31,7 +31,11 @@ const DocumentPage = () => {
         />
 
         <div className="px-8">
-          <SearchDeleteTable />
+          <SearchDeleteTable
+            isDeleteMode={false}
+            toggleDeleteMode={() => {}}
+            checkedIds={[]}
+          />
           <DocumentTable
             selectedType={selectedType}
             onDocumentClick={handleDocumentClick}

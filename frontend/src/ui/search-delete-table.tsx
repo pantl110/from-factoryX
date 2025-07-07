@@ -2,8 +2,6 @@
 
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
-import DeleteModal from "./modal/delete-modal";
-import { useDeleteMode } from "@/hooks/use-delete-mode";
 
 interface SearchDeleteTableProps {
   checkedIds?: (string | number)[];

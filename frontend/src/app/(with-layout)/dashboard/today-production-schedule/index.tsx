@@ -34,15 +34,6 @@ const TodayProductionSchedule = () => {
         <div className="mt-3 overflow-x-auto">
           <ProductionTable />
         </div>
-        <div className="mt-2">
-          <MiniBtn
-            text="5개씩 더보기"
-            textColor="text-dg"
-            hoverColor="hover:bg-bg"
-            borderColor="border-lg"
-            width="w-full"
-          />
-        </div>
       </div>
 
       {/* overlay */}

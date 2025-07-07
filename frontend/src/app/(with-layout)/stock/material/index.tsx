@@ -29,7 +29,7 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
           borderColor={isDeleteMode ? "border-none" : "border-lg"}
           bgColor={isDeleteMode ? "bg-red-8" : "bg-wh"}
           hoverColor={isDeleteMode ? "hover:bg-red-hover" : "hover:bg-bg"}
-          onClick={toggleDeleteMode}
+          onClick={() => toggleDeleteMode([])}
         />
       </div>
 
