@@ -15,6 +15,7 @@ import useToast from "@/hooks/use-toast";
 import Toast from "@/ui/toast";
 import { useSearchParams } from "next/navigation";
 import { House } from "@phosphor-icons/react";
+import Spinner from "@/ui/spinner";
 
 const DashboardPageContent = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
