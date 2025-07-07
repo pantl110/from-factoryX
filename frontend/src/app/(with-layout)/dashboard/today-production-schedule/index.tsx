@@ -31,9 +31,7 @@ const TodayProductionSchedule = () => {
             hoverColor="hover:bg-bg"
           />
         </div>
-        <div className="mt-3 overflow-x-auto">
           <ProductionTable />
-        </div>
       </div>
 
       {/* overlay */}
