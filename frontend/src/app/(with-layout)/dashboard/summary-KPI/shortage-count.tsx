@@ -18,7 +18,7 @@ const ShortageCount = () => {
               }}
               className="px-4 rounded-md Me_Body-1 text-dg border border-lg opacity-0 hover:bg-bg group-hover:opacity-100 transition-opacity duration-200"
             >
-             부족한 자재 확인
+              부족한 자재 확인
             </button>
           </div>
         </div>

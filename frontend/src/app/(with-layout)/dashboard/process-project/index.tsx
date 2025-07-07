@@ -36,7 +36,6 @@ const ProcessProject = () => {
             }}
           />
         ))}
-        
       </div>
     </div>
   );

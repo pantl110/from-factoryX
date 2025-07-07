@@ -38,7 +38,8 @@ const DeliveryTable = () => {
             onPageChange={setCurrentPage}
           />
         </div>
-      )}    </div>
+      )}{" "}
+    </div>
   );
 };
 

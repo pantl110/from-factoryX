@@ -23,18 +23,10 @@ const ProductionTableItem = ({
       <p className="flex-1 px-3 truncate" title={standard}>
         {standard}
       </p>
-      <p className="w-[80px] px-3" >
-        {unit}
-      </p>
-      <p className="flex-1 px-3">
-        {productionQuantity.toLocaleString()}
-      </p>
-      <p className="flex-[0.8] px-3">
-        {machine}
-      </p>
-      <p className="flex-[0.8] px-3">
-        {productionTime}
-      </p>
+      <p className="w-[80px] px-3">{unit}</p>
+      <p className="flex-1 px-3">{productionQuantity.toLocaleString()}</p>
+      <p className="flex-[0.8] px-3">{machine}</p>
+      <p className="flex-[0.8] px-3">{productionTime}</p>
     </div>
   );
 };

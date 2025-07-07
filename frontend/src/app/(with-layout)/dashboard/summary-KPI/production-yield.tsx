@@ -1,5 +1,3 @@
-import ChartChip from "./chart-chip";
-
 import { CaretUpIcon } from "@phosphor-icons/react/dist/ssr";
 
 const ProductionYield = () => {

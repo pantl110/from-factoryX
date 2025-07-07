@@ -145,9 +145,9 @@ const InputSection = ({
                   required
                   showError={!!errors.companyName}
                   value={field.value || ""}
-                  onChange={(value: string) => {
-                    field.onChange(value);
-                    setCompanyNameInput(value);
+                  onChange={(e) => {
+                    field.onChange(e);
+                    setCompanyNameInput(e.target.value);
                   }}
                   onFocus={() => setIsCompanyNameDropdownOpen(true)}
                   onBlur={handleCompanyNameBlur}

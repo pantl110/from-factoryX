@@ -10,21 +10,16 @@ interface FirstStepProps {
 }
 
 const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    getValues,
-    watch,
-  } = useForm<FirstStepFormDataModel>({
-    defaultValues: {
-      productName: "",
-      productCode: "",
-      size: "",
-      unit: "",
-    },
-    mode: "onChange",
-  });
+  const { register, handleSubmit, reset, getValues, watch } =
+    useForm<FirstStepFormDataModel>({
+      defaultValues: {
+        productName: "",
+        productCode: "",
+        size: "",
+        unit: "",
+      },
+      mode: "onChange",
+    });
 
   // 입력값 실시간 감지
   const values = watch();

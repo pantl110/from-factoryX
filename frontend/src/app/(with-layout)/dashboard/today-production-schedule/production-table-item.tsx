@@ -1,4 +1,3 @@
-
 export interface ProductionTableItemProps {
   companyName: string;
   productName: string;
@@ -20,7 +19,6 @@ const ProductionTableItem = ({
   machine,
   time,
 }: ProductionTableItemProps) => {
-
   return (
     <div className="flex min-w-[1324px] h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
       <p className="px-3 flex-2 truncate" title={companyName}>
@@ -38,7 +36,10 @@ const ProductionTableItem = ({
       <p className="px-3 w-[80px] truncate" title={unit}>
         {unit}
       </p>
-      <p className="flex items-center px-3 flex-1 truncate" title={quantity.toLocaleString()}>
+      <p
+        className="flex items-center px-3 flex-1 truncate"
+        title={quantity.toLocaleString()}
+      >
         {quantity.toLocaleString()}
       </p>
       <p className="flex items-center px-3 flex-2 truncate" title={machine}>

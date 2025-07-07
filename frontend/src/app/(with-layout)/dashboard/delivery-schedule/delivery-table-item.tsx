@@ -21,9 +21,7 @@ const DeliveryTableItem = ({
       <p className="px-3 flex-1 truncate" title={productName || ""}>
         {productName}
       </p>
-      <p className="px-3 flex-1">
-        {date}
-      </p>
+      <p className="px-3 flex-1">{date}</p>
       <div className="w-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-200">
         <ArrowSquareOut size={24} />
       </div>

@@ -5,7 +5,7 @@ import ProductionTable from "./production-table";
 import { useRef, useState } from "react";
 import ProductionDocumentView from "../../document/production-document-view";
 import OverlayView from "@/ui/ovelay-view";
-import { X, PrinterIcon } from "@phosphor-icons/react/dist/ssr";
+import { X } from "@phosphor-icons/react/dist/ssr";
 import { useReactToPrint } from "react-to-print";
 
 const TodayProductionSchedule = () => {

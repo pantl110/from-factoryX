@@ -1,6 +1,6 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
-import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { UseFormRegister } from "react-hook-form";
 import { SecondStepFormDataModel } from "../types";
 
 interface MaterialInputItemProps {

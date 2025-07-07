@@ -1,4 +1,3 @@
-import ChartChip from "./chart-chip";
 import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 
 const DailyProductionQuantity = () => {

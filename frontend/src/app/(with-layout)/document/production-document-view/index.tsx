@@ -6,11 +6,14 @@ import { useState } from "react";
 
 // 프로젝트명별로 그룹핑 함수
 const groupByProject = (data: typeof productionData) => {
-  return data.reduce<Record<string, typeof productionData>>( (acc, item) => {
-    if (!acc[item.projectName]) acc[item.projectName] = [];
-    acc[item.projectName].push(item);
-    return acc;
-  }, {} as Record<string, typeof productionData>);
+  return data.reduce<Record<string, typeof productionData>>(
+    (acc, item) => {
+      if (!acc[item.projectName]) acc[item.projectName] = [];
+      acc[item.projectName].push(item);
+      return acc;
+    },
+    {} as Record<string, typeof productionData>,
+  );
 };
 
 const ProductionDocumentView = () => {

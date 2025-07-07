@@ -101,7 +101,7 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
           placeholder="반품할 수량을 입력해 주세요."
           required
           value={returnQuantity}
-          onChange={handleReturnQuantityChange}
+          onChange={(e) => handleReturnQuantityChange(e.target.value)}
           showError={!!returnQuantityError}
           type="number"
         />
@@ -112,7 +112,7 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
           placeholder="반품할 일자를 입력해 주세요."
           required
           value={returnDate}
-          onChange={handleReturnDateChange}
+          onChange={(e) => handleReturnDateChange(e.target.value)}
           showError={!!returnDateError}
           type="date"
         />

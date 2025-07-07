@@ -4,9 +4,7 @@ import { useState, forwardRef } from "react";
 interface InputProps {
   label?: string;
   value?: string | number | readonly string[];
-  onChange?:
-    | ((value: string) => void)
-    | ((e: React.ChangeEvent<HTMLInputElement>) => void);
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   required?: boolean;
   type?: HTMLInputElement["type"];
@@ -79,54 +77,16 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!onChange) {
-        return;
+      if (type === "number") {
+        e.target.value = e.target.value.replace(/[^0-9]/g, "");
       }
-
-      try {
-        // React Hook Form의 register 함수인지 확인 (매개변수 개수로 판단)
-        const onChangeStr = onChange.toString();
-        if (onChangeStr.includes("e.") || onChangeStr.includes("event")) {
-          // React Hook Form 방식: (e: ChangeEvent) => void
-          (onChange as (e: React.ChangeEvent<HTMLInputElement>) => void)(e);
-        } else {
-          // 기존 방식: (value: string) => void
-          (onChange as (value: string) => void)(e?.target?.value || "");
-        }
-      } catch (error) {
-        console.error("Error in handleChange:", error);
-        // 에러가 발생하면 기본 방식으로 시도
-        try {
-          (onChange as (value: string) => void)(e?.target?.value || "");
-        } catch (fallbackError) {
-          console.error("Fallback error in handleChange:", fallbackError);
-        }
+      if (onChange) {
+        onChange(e);
       }
     };
-
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      if (!onBlur) {
-        return;
-      }
-
-      try {
-        // React Hook Form의 register 함수인지 확인
-        const onBlurStr = onBlur.toString();
-        if (onBlurStr.includes("e.") || onBlurStr.includes("event")) {
-          // React Hook Form 방식: (e: FocusEvent) => void
-          (onBlur as (e: React.FocusEvent<HTMLInputElement>) => void)(e);
-        } else {
-          // 기존 방식: () => void
-          (onBlur as () => void)();
-        }
-      } catch (error) {
-        console.error("Error in handleBlur:", error);
-        // 에러가 발생하면 기본 방식으로 시도
-        try {
-          (onBlur as () => void)();
-        } catch (fallbackError) {
-          console.error("Fallback error in handleBlur:", fallbackError);
-        }
+      if (onBlur) {
+        onBlur(e);
       }
     };
 
@@ -159,6 +119,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled || disabledSetting}
             className={getInputClassName()}
             onWheel={type === "number" ? (e) => e.preventDefault() : undefined}
+            pattern={type === "number" ? "[0-9]*" : undefined}
           />
 
           {isShowPasswordToggle && (

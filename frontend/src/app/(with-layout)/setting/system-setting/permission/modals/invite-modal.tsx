@@ -57,8 +57,8 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               <Input
                 placeholder="이메일을 입력하세요."
                 value={memberInput.email}
-                onChange={(value: string) =>
-                  setMemberInput((prev) => ({ ...prev, email: value }))
+                onChange={(e) =>
+                  setMemberInput((prev) => ({ ...prev, email: e.target.value }))
                 }
               />
             </div>

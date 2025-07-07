@@ -101,9 +101,9 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
                 required
                 {...register("companyName", { required: true })}
                 value={companyNameInput}
-                onChange={(value: string) => {
-                  setCompanyNameInput(value);
-                  setValue("companyName", value);
+                onChange={(e) => {
+                  setCompanyNameInput(e.target.value);
+                  setValue("companyName", e.target.value);
                 }}
                 onFocus={() => setIsCompanyNameDropdownOpen(true)}
                 onBlur={() =>
