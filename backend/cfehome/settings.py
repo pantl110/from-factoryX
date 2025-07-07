@@ -66,6 +66,8 @@ INSTALLED_APPS = [
     "subscription",
     "notification",
     "stock",
+    "tax",
+    "location",
 ]
 
 MIDDLEWARE = [
@@ -220,7 +222,7 @@ CACHES = {
         "LOCATION": config("REDIS_URL", default="redis://redis:6379/1"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        },
     }
 }
 
@@ -233,10 +235,10 @@ if USE_SES:
     AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default=None)
     AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", default="ap-northeast-2")
     AWS_SES_REGION = config("AWS_SES_REGION", default="ap-northeast-2")
-    
+
     # Email backend using SES
     EMAIL_BACKEND = "user.backends.SESEmailBackend"
-    
+
     # Default from email
     DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@yourdomain.com")
     SERVER_EMAIL = DEFAULT_FROM_EMAIL

@@ -30,6 +30,13 @@ class Material(BaseModel):
         default=0,
         help_text="안전 재고",
     )
+    location = models.ForeignKey(
+        "location.Location",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="위치",
+    )
     # 이 원자재로 만들 수 있는 품목들
     products = models.ManyToManyField(
         "Product",
@@ -67,6 +74,20 @@ class MaterialHistory(BaseModel):
     total_stock = models.IntegerField(
         help_text="재고 변동 후 재고",
     )
+    purchase_tax_invoice = models.ForeignKey(
+        "tax.NationalTaxService",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="구매 세금계산서",
+    )
+    cash_receipt = models.ForeignKey(
+        "tax.CashReceipt",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="현금영수증",
+    )
 
 
 class Product(BaseModel):
@@ -102,8 +123,9 @@ class Product(BaseModel):
         default=0.10,
         help_text="재고 버퍼 비율 (기본값: 10%)",
     )
-    location = models.CharField(
-        max_length=100,
+    location = models.ForeignKey(
+        "location.Location",
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         help_text="위치",

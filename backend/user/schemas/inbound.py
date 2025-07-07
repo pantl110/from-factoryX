@@ -42,5 +42,3 @@ class UserLoginIn(Schema):
 
 class RefreshTokenIn(Schema):
     refresh_token: str
-
-

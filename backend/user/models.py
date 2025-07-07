@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.apps import apps
 from django.contrib import auth
 from django.contrib.auth.hashers import make_password
-import uuid
 
 
 class CustomUserManager(UserManager):
@@ -83,8 +82,6 @@ class CustomUserManager(UserManager):
 class User(AbstractUser):
     """Custom User Model Definition"""
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
     class UserStatusChoice(models.TextChoices):
         active = ("활성유저", "활성유저")  # 정상
         admin = ("관리자", "관리자")  # 관리자
@@ -133,22 +130,9 @@ class User(AbstractUser):
         default=UserStatusChoice.active,
         help_text="회원 유형",
     )
-    phone_number = models.CharField(
-        max_length=15,
-        null=True,
-        blank=True,
-        help_text="전화번호",
-    )
-    profile_image = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text="프로필 이미지",
-    )
 
 
 class Jwt(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
         User, related_name="login_user", on_delete=models.CASCADE, help_text="회원"
     )

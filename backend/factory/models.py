@@ -81,13 +81,13 @@ class FactoryEquipment(BaseModel):
         default=EquipmentStatus.standby,
     )
     priority = models.IntegerField(
-        help_text="우선순위",
+        help_text="자동 배정 순위",
     )
     location = models.CharField(
         max_length=100,
         null=True,
         blank=True,
-        help_text="위치",
+        help_text="설비 위치",
     )
     note = models.TextField(
         null=True,
