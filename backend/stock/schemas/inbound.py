@@ -69,9 +69,12 @@ class ProductFilter(FilterSchema):
         default=None, q="name__icontains", description="제품 이름"
     )
 
+
 class ProductCreateIn(ModelSchema):
     """제품 생성 스키마"""
+
     factory: int
+
     class Meta:
         model = Product
         exclude = [
@@ -80,15 +83,19 @@ class ProductCreateIn(ModelSchema):
             "updated_at",
         ]
 
+
 class ProductUpdateIn(ModelSchema):
     """제품 수정 스키마"""
+
     factory: Optional[int] = Field(default=None, description="공장 ID")
     name: Optional[str] = Field(default=None, description="제품명")
     code: Optional[str] = Field(default=None, description="제품코드")
     unit: Optional[str] = Field(default=None, description="단위")
     spec: Optional[str] = Field(default=None, description="규격")
     current_stock: Optional[int] = Field(default=None, description="현재 재고")
-    average_production_time: Optional[int] = Field(default=None, description="평균 생산 시간(초)")
+    average_production_time: Optional[int] = Field(
+        default=None, description="평균 생산 시간(초)"
+    )
     buffer_rate: Optional[float] = Field(default=None, description="버퍼율")
     location: Optional[str] = Field(default=None, description="위치")
     note: Optional[str] = Field(default=None, description="특이사항")
@@ -134,7 +141,7 @@ class MaterialCreateIn(ModelSchema):
             "created_at",
             "updated_at",
             "current_stock",
-            "products",
+            # "products",
         ]
 
 
@@ -153,13 +160,13 @@ class MaterialUpdateIn(ModelSchema):
             "created_at",
             "updated_at",
             "current_stock",
-            "products",
+            # "products",
         ]
 
 
 class MaterialHistoryCreateIn(ModelSchema):
     client_id: int = Field(description="거래처 ID")
-    
+
     class Meta:
         model = MaterialHistory
         exclude = [

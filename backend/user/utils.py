@@ -1,3 +1,4 @@
+from ninja.errors import HttpError
 import jwt, random, string
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -5,9 +6,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from api.exceptions import CustomAuthorizationError
 from zoneinfo import ZoneInfo
-from django.core.mail import send_mail
+from uuid import UUID
 import re
-from ninja.errors import HttpError
+
 
 User = get_user_model()
 
@@ -281,3 +282,10 @@ def verify_email_code(email, code, verification_type):
 
     except EmailVerification.DoesNotExist:
         return False, "유효하지 않은 인증 코드입니다."
+
+
+async def get_user_by_id(user_id: UUID):
+    try:
+        return await User.objects.aget(id=user_id)
+    except User.DoesNotExist:
+        raise HttpError(404, "사용자를 찾을 수 없습니다.")

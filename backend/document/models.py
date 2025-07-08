@@ -1,8 +1,6 @@
 from django.db import models
 from common.models import BaseModel
 from factory.models import Factory, FactoryClient
-from stock.models import Product
-from project.models import Project
 
 
 # Create your models here.
@@ -20,7 +18,7 @@ class Quotation(BaseModel):
         help_text="고객",
     )
     project = models.ForeignKey(
-        Project,
+        "project.Project",
         on_delete=models.CASCADE,
         related_name="quotations",
         help_text="프로젝트",
@@ -42,7 +40,7 @@ class QuotationProduct(BaseModel):
         help_text="견적서",
     )
     product = models.ForeignKey(
-        Product,
+        "stock.Product",
         on_delete=models.CASCADE,
         related_name="quotation_products",
         help_text="제품",
