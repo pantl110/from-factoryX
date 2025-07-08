@@ -1,5 +1,4 @@
 from django.db import models
-import uuid
 
 
 class BaseModel(models.Model):
@@ -10,45 +9,3 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
-
-
-class Unit(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    code = models.CharField(max_length=20, unique=True, help_text="단위코드")
-    name = models.CharField(max_length=50, help_text="단위명")
-    description = models.TextField(blank=True, help_text="설명")
-    is_active = models.BooleanField(default=True, help_text="사용여부")
-
-    def __str__(self):
-        return f"{self.name} ({self.code})"
-
-
-class Memo(BaseModel):
-    """메모 모델"""
-    
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-    MEMO_TYPE_CHOICES = [
-        ('general', '일반'),
-        ('important', '중요'),
-        ('urgent', '긴급'),
-        ('reminder', '알림'),
-        ('note', '참고'),
-    ]
-
-    memo_type = models.CharField(
-        max_length=20,
-        choices=MEMO_TYPE_CHOICES,
-        default='general',
-        help_text="메모 타입"
-    )
-    title = models.CharField(max_length=200, help_text="제목")
-    content = models.TextField(help_text="내용")
-
-    class Meta:
-        verbose_name = "메모"
-        verbose_name_plural = "메모"
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f"[{self.get_memo_type_display()}] {self.title}"

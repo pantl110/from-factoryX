@@ -27,25 +27,17 @@ class Project(BaseModel):
         choices=ProjectStatus.choices,
         default=ProjectStatus.quotation,
     )
-    is_transaction_publish = models.BooleanField(
-        default=False,
-        help_text="거래명세서 발행 여부",
-    )
-    tax_invoice_status = models.CharField(
-        max_length=10,
-        choices=TaxInvoiceStatus.choices,
-        default=TaxInvoiceStatus.pending,
-        help_text="세금계산서 발행 상태",
-    )
     transact_date = models.DateField(
         null=True,
         blank=True,
-        help_text="거래명세서 발행 일자",
+        help_text="거래명세서 발행 일자",  # 발행일자가 생기면 거래명세서 발행된 것. null이면 발행 안된 것.
     )
-    tax_invoice_date = models.DateField(
+    tax_invoice = models.ForeignKey(
+        "tax.NationalTaxService",
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
-        help_text="세금계산서 발행 일자",
+        help_text="세금계산서",
     )
 
 
@@ -86,3 +78,15 @@ class ProjectLog(BaseModel):
     )
     title = models.CharField(max_length=100, help_text="로그 제목")
     content = models.TextField(help_text="로그 내용")
+
+
+# 반품 등록
+class Refund(BaseModel):
+    project_log = models.ForeignKey(ProjectLog, on_delete=models.CASCADE)
+    product = models.ForeignKey("stock.Product", on_delete=models.CASCADE)
+    amount = models.IntegerField(help_text="반품 수량")
+    refund_date = models.DateField(help_text="반품 일자")
+    current_stock = models.IntegerField(help_text="현재 재고")  # 그 당시 현재 재고
+    production_amount = models.IntegerField(
+        null=True, blank=True, help_text="생산 수량"
+    )

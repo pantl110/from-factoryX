@@ -66,6 +66,8 @@ INSTALLED_APPS = [
     "subscription",
     "notification",
     "stock",
+    "tax",
+    "location",
 ]
 
 MIDDLEWARE = [
