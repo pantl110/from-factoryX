@@ -3,7 +3,7 @@ from user.models import User
 
 
 class UserMeOut(Schema):
-    username: str
+    email: str
     status: str
 
 

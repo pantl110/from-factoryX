@@ -1,14 +1,16 @@
-from ninja import Schema
+from ninja import Schema, Field, ModelSchema
 from user.models import User
 
 
 class UserSignupIn(Schema):
-    username: str
     email: str
     password: str
     password_confirm: str
     terms_of_service: bool
     privacy_policy_agreement: bool
+    marketing_agreement: bool = Field(
+        default=False, description="마케팅 정보 수신 동의 여부"
+    )
 
 
 class EmailVerificationRequestIn(Schema):
@@ -29,14 +31,18 @@ class PasswordResetIn(Schema):
     new_password_confirm: str
 
 
-class UserUpdateIn(Schema):
-    real_name: str
-    phone: str
-    memo: str
+class UserUpdateIn(ModelSchema):
+    class Meta:
+        model = User
+        fields = [
+            "phone_number",
+            "profile_image",
+            "marketing_agreement",
+        ]
 
 
 class UserLoginIn(Schema):
-    username: str
+    email: str
     password: str
 
 

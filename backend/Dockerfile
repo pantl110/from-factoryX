@@ -24,13 +24,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create and set the working directory
-RUN mkdir -p /app
+RUN mkdir -p /backend
 
 # Copy requirements and install dependencies
 COPY requirements.txt /tmp/requirements.txt
-COPY ./ /app
+COPY ./ /backend
 
-WORKDIR /app
+WORKDIR /backend
 
 # Set environment variables
 ARG DJANGO_SECRET_KEY

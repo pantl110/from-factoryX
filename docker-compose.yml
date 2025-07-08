@@ -22,7 +22,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend:/backend
     depends_on:
       - redis
 
@@ -51,6 +51,7 @@ services:
 
 networks:
   network:
+
 
 volumes:
   redis_data:

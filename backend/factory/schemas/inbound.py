@@ -1,5 +1,5 @@
 from ninja import ModelSchema, Field
-from factory.models import Factory, FactoryEquipment
+from factory.models import Factory, FactoryEquipment, FactoryClient
 from typing import Optional
 
 
@@ -35,6 +35,13 @@ class FactoryEqCreateIn(ModelSchema):
         model = FactoryEquipment
         exclude = [
             "id",
+# 거래처 관련 스키마
+class FactoryClientCreateIn(ModelSchema):
+    class Meta:
+        model = FactoryClient
+        exclude = [
+            "id",
+            "factory",
             "created_at",
             "updated_at",
         ]
@@ -52,6 +59,13 @@ class FactoryEqUpdateIn(ModelSchema):
         model = FactoryEquipment
         exclude = [
             "id",
+# 거래처 관련 스키마
+class FactoryClientUpdateIn(ModelSchema):
+    class Meta:
+        model = FactoryClient
+        exclude = [
+            "id",
+            "factory",
             "created_at",
             "updated_at",
         ]

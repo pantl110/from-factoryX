@@ -1,56 +1,27 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from ninja import ModelSchema
-from stock.models import Product, ProductHistory
+from stock.models import Product, ProductHistory, Material, MaterialHistory
+from factory.models import FactoryClient
 
-class MaterialResponseSchema(BaseModel):
-    id: int
-    factory_id: int
-    name: str
-    code: str
-    unit: str
-    spec: str
-    current_stock: int
-    standard_stock: int
 
-class MaterialListResponseSchema(BaseModel):
-    materials: List[MaterialResponseSchema]
-    total_count: int
+class MaterialOut(ModelSchema):
+    class Meta:
+        model = Material
+        exclude = ["products"]
 
-class MaterialSimpleSchema(BaseModel):
-    id: int
-    name: str
-    code: str
 
-class ProductMaterialRelationSchema(BaseModel):
-    id: int
-    material_id: int
-    material_name: str
-    quantity: float
+class MaterialHistoryOut(ModelSchema):
+    class Meta:
+        model = MaterialHistory
+        fields = "__all__"
 
-class ProductMaterialRelationListSchema(BaseModel):
-    relations: List[ProductMaterialRelationSchema]
-    total_count: int
 
-class ProductSimpleSchema(BaseModel):
-    id: int
-    name: str
-    code: str
-    spec: str
-    unit: str
-    current_stock: int
+class MaterialDetailOut(ModelSchema):
+    class Meta:
+        model = Material
+        exclude = ["products"]
 
-class ProductResponseSchema(BaseModel):
-    id: int
-    factory_id: int
-    name: str
-    code: str
-    spec: str
-    unit: str
-    current_stock: int
-    average_production_time: Optional[int]
-    location: Optional[str]
-    note: Optional[str]
 
 class ProductListResponseSchema(BaseModel):
     products: List[ProductResponseSchema]
@@ -92,4 +63,10 @@ class ProductOut(ModelSchema):
 class ProductHistoryOut(ModelSchema):
     class Meta:
         model = ProductHistory
+        fields = "__all__"
+class MaterialHistoryDetailOut(ModelSchema):
+    client_name: str = ""
+    
+    class Meta:
+        model = MaterialHistory
         fields = "__all__"

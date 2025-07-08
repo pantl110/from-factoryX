@@ -66,6 +66,8 @@ INSTALLED_APPS = [
     "subscription",
     "notification",
     "stock",
+    "tax",
+    "location",
 ]
 
 MIDDLEWARE = [
@@ -125,7 +127,12 @@ WSGI_APPLICATION = "cfehome.wsgi.application"
 
 CONN_MAX_AGE = config("CONN_MAX_AGE", cast=int, default=300)
 DATABASE_URL = config("DATABASE_URL", default=None)
-DATABASES = {}
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    },
+}
 if DATABASE_URL is not None:
     import dj_database_url
 

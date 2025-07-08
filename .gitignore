@@ -125,11 +125,10 @@ celerybeat.pid
 
 # Environments
 .env
-<<<<<<< HEAD
 local-cdn
 .venv
-=======
-.venv
+backend/.venv
+
 env/
 venv/
 ENV/
@@ -185,4 +184,3 @@ local-cdn
 # poetry
 pyproject.toml
 poetry.lock
->>>>>>> c8f0cb7e7b3797b367d9250f7bbf9d19d0faa980
