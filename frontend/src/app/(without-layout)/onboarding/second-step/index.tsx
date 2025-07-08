@@ -135,9 +135,9 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
       {/* input container */}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col gap-7 h-full overflow-y-auto scrollbar-hide"
+        className="flex flex-col gap-7 h-full overflow-y-auto scrollbar-hide w-full"
       >
-        <div className="flex flex-col gap-2 h-full">
+        <div className="flex flex-col gap-5 h-full">
           {fields.map((field, index) => (
             <MaterialInputItem
               plusMode={index === 0 ? false : true}
@@ -153,7 +153,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
           <button
             type="button"
             onClick={handleAddMaterial}
-            className="w-full h-12 min-h-8 flex gap-2 items-center justify-center bg-bg Re_Body-1 text-sv border border-[#E4E4E7] rounded shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-primary-8 hover:text-dg"
+            className="w-full h-12 min-h-8 flex gap-2 items-center justify-center bg-bg Re_Body-1 text-sv border border-[#E4E4E7] rounded shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-secondary-hover hover:text-dg"
           >
             추가하기
             <Plus size={24} />

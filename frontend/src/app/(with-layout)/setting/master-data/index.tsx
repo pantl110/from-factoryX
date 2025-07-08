@@ -6,15 +6,49 @@ import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 import Facility from "./facility";
 import Client from "./client";
-import { useDeleteMode } from "@/hooks/use-delete-mode";
+import { facilityData } from "@/mocks/facility-data";
+import { clientData } from "@/mocks/client-data";
+import { useCheckAll } from "@/hooks/use-check-all";
 import DeleteModal from "@/ui/modal/delete-modal";
 
 const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();
-  const equipmentDelete = useDeleteMode();
-  const clientDelete = useDeleteMode();
   const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
     useState(false);
+
+  // 체크박스 상태를 상위에서 관리
+  const {
+    checkedCount: facilityCheckedCount,
+    isAllChecked: isFacilityAllChecked,
+    isChecked: isFacilityChecked,
+    toggleAll: facilityToggleAll,
+    toggleOne: facilityToggleOne,
+    getDeleteButtonText: getFacilityDeleteButtonText,
+    setAllChecked: facilitySetAllChecked,
+  } = useCheckAll(facilityData.map((item) => item.id));
+
+  const {
+    checkedCount: clientCheckedCount,
+    isAllChecked: isClientAllChecked,
+    isChecked: isClientChecked,
+    toggleAll: clientToggleAll,
+    toggleOne: clientToggleOne,
+    getDeleteButtonText: getClientDeleteButtonText,
+    setAllChecked: clientSetAllChecked,
+  } = useCheckAll(clientData.map((item) => item.id));
+
+  // 삭제 모달 상태 관리
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // 현재 탭에 따라 상태/함수 선택
+  const checkedCount =
+    settingChip === "equipment" ? facilityCheckedCount : clientCheckedCount;
+  const getDeleteButtonText =
+    settingChip === "equipment"
+      ? getFacilityDeleteButtonText
+      : getClientDeleteButtonText;
+  const setAllChecked =
+    settingChip === "equipment" ? facilitySetAllChecked : clientSetAllChecked;
 
   useEffect(() => {
     if (
@@ -25,16 +59,10 @@ const MasterData = () => {
     }
   }, [settingChip, setSettingChip]);
 
-  const isEquipmentTab = settingChip === "equipment";
-  const deleteMode = isEquipmentTab ? equipmentDelete : clientDelete;
-
   const handleEquipmentChipClick = () =>
     setSettingChip("equipment" as SettingChipType);
   const handleClientChipClick = () =>
     setSettingChip("client" as SettingChipType);
-
-  const handleDeleteBtnClick = () => deleteMode.toggleDeleteMode([]);
-  const handleDeleteModalClose = () => deleteMode.closeDeleteModal();
 
   const handleAddBtnClick = () => {
     if (settingChip === "equipment") {
@@ -44,18 +72,47 @@ const MasterData = () => {
     }
   };
 
+  // 삭제 버튼 클릭 시 모달 오픈
+  const handleDeleteBtnClick = () => {
+    if (checkedCount > 0) {
+      setIsDeleteModalOpen(true);
+    }
+  };
+
+  // 삭제 모달에서 확인 시 실제 삭제 로직 실행
+  const handleDeleteConfirm = () => {
+    // 실제 삭제 로직 구현 필요 (예: checkedIds에 해당하는 데이터 삭제)
+    // 예시: alert(`삭제: ${checkedIds.join(", ")}`);
+    setAllChecked(false); // 삭제 확정 시에만 체크 해제
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleClearAllChecked = () => {
+    setAllChecked(false);
+  };
+
   const renderContent = () => {
     switch (settingChip) {
       case "equipment":
         return (
           <Facility
-            isDeleteMode={equipmentDelete.isDeleteMode}
             isCreatePanelOpen={isEquipmentCreatePanelOpen}
             setIsCreatePanelOpen={setIsEquipmentCreatePanelOpen}
+            isAllChecked={isFacilityAllChecked}
+            isChecked={isFacilityChecked}
+            toggleAll={facilityToggleAll}
+            toggleOne={facilityToggleOne}
           />
         );
       case "client":
-        return <Client isDeleteMode={clientDelete.isDeleteMode} />;
+        return (
+          <Client
+            isAllChecked={isClientAllChecked}
+            isChecked={isClientChecked}
+            toggleAll={clientToggleAll}
+            toggleOne={clientToggleOne}
+          />
+        );
       default:
         return null;
     }
@@ -85,7 +142,6 @@ const MasterData = () => {
       </div>
       <div className="flex items-center justify-between px-10 pb-4">
         <SearchInput />
-
         <div className="flex gap-2">
           {settingChip === "equipment" && (
             <MiniBtn
@@ -97,21 +153,31 @@ const MasterData = () => {
             />
           )}
 
+          {/* 삭제 버튼 */}
           <MiniBtn
-            text="삭제"
-            textColor={deleteMode.isDeleteMode ? "text-red" : "text-dg"}
-            borderColor={deleteMode.isDeleteMode ? "border-none" : "border-lg"}
-            bgColor={deleteMode.isDeleteMode ? "bg-red-8" : "bg-wh"}
+            text="취소"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            onClick={handleClearAllChecked}
+          />
+          <MiniBtn
+            text={getDeleteButtonText()}
+            textColor={checkedCount > 0 ? "text-red" : "text-dg"}
+            borderColor={checkedCount > 0 ? "border-none" : "border-lg"}
+            bgColor={checkedCount > 0 ? "bg-red-8" : "bg-wh"}
+            hoverColor={checkedCount > 0 ? "hover:bg-red-hover" : "hover:bg-bg"}
             onClick={handleDeleteBtnClick}
-            hoverColor={
-              deleteMode.isDeleteMode ? "hover:bg-red-hover" : "hover:bg-bg"
-            }
           />
         </div>
       </div>
       {renderContent()}
-      {deleteMode.isDeleteModalOpen && (
-        <DeleteModal onClose={handleDeleteModalClose} />
+
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleDeleteConfirm}
+        />
       )}
     </div>
   );

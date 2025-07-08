@@ -10,6 +10,14 @@ export function useCheckAll<T extends string | number>(itemIds: T[]) {
   const isAllChecked =
     itemIds.length > 0 && checkedIds.length === itemIds.length; // 전체 선택 여부
   const isChecked = (id: T) => checkedIds.includes(id); // 개별 체크 여부
+  const checkedCount = checkedIds.length; // 선택된 항목 수
+
+  // 삭제 버튼 텍스트 생성
+  const getDeleteButtonText = () => {
+    if (checkedCount === 0) return "삭제";
+    if (isAllChecked) return "전체 삭제";
+    return `${checkedCount}개 항목 삭제`;
+  };
 
   // 전체 토글
   const toggleAll = useCallback(() => {
@@ -34,10 +42,12 @@ export function useCheckAll<T extends string | number>(itemIds: T[]) {
 
   return {
     checkedIds,
+    checkedCount,
     isAllChecked,
     isChecked,
     toggleAll,
     toggleOne,
     setAllChecked,
+    getDeleteButtonText,
   };
 }

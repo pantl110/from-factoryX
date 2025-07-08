@@ -4,37 +4,39 @@ import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 
 interface SearchDeleteTableProps {
-  checkedIds?: (string | number)[];
-  isDeleteMode: boolean;
-  toggleDeleteMode: (selectedIds: (string | number)[]) => void;
+  checkedCount: number;
+  deleteButtonText: string;
+  onDelete: () => void;
+  onCancel: () => void;
 }
 
 const SearchDeleteTable = ({
-  checkedIds = [],
-  isDeleteMode,
-  toggleDeleteMode,
+  checkedCount,
+  deleteButtonText,
+  onDelete,
+  onCancel,
 }: SearchDeleteTableProps) => {
   return (
     <div className="flex items-center justify-between pb-4">
       <SearchInput value="" onChange={() => {}} />
-      <MiniBtn
-        text="삭제"
-        textColor={
-          isDeleteMode && checkedIds.length > 0 ? "text-red" : "text-dg"
-        }
-        borderColor={
-          isDeleteMode && checkedIds.length > 0 ? "" : "border-[#eeeeee]"
-        }
-        bgColor={
-          isDeleteMode && checkedIds.length > 0 ? "bg-red-8" : "bg-white"
-        }
-        hoverColor={
-          isDeleteMode && checkedIds.length > 0
-            ? "hover:bg-red-hover"
-            : "hover:bg-gray-50"
-        }
-        onClick={() => toggleDeleteMode(checkedIds)}
-      />
+      <div className="flex gap-1">
+        <MiniBtn
+          text="취소"
+          textColor="text-dg"
+          borderColor="border-lg"
+          bgColor="bg-white"
+          hoverColor="hover:bg-bg"
+          onClick={onCancel}
+        />
+        <MiniBtn
+          text={deleteButtonText}
+          textColor={checkedCount > 0 ? "text-red" : "text-dg"}
+          borderColor={checkedCount > 0 ? "" : "border-lg"}
+          bgColor={checkedCount > 0 ? "bg-red-8" : "bg-white"}
+          hoverColor={checkedCount > 0 ? "hover:bg-red-hover" : "hover:bg-bg"}
+          onClick={checkedCount > 0 ? onDelete : () => {}}
+        />
+      </div>
     </div>
   );
 };

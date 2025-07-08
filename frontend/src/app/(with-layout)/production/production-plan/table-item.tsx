@@ -59,7 +59,6 @@ const TableItem = ({
           bgColor={
             operationStatus === "가동 완료" ? "bg-bg" : materialColor.bgColor
           }
-          sm={true}
         />
         <p
           className="cursor-pointer Re_Body-1 text-gr flex items-center opacity-0 hover:opacity-100 transition-opacity duration-200 ease-in-out"

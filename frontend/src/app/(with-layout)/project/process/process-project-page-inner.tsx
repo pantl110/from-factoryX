@@ -14,7 +14,6 @@ import Pagination from "@/components/pagination";
 import usePagination from "@/hooks/use-pagination";
 import { ClientDataModel } from "@/types/data-model";
 import { useCheckAll } from "@/hooks/use-check-all";
-import { useDeleteMode } from "@/hooks/use-delete-mode";
 import DeleteModal from "@/ui/modal/delete-modal";
 
 const ProcessProjectPageInner = () => {
@@ -31,14 +30,7 @@ const ProcessProjectPageInner = () => {
   // 모달 상태
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-
-  const {
-    isDeleteMode,
-    isDeleteModalOpen,
-    toggleDeleteMode,
-    closeDeleteModal,
-    resetDeleteMode,
-  } = useDeleteMode();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const filteredProjects =
     selectedStatus === "전체"
@@ -57,12 +49,13 @@ const ProcessProjectPageInner = () => {
 
   const currentIds = currentProjects.map((project) => project.id);
   const {
+    checkedCount,
     isAllChecked,
     isChecked,
     toggleAll,
     toggleOne,
-    checkedIds,
     setAllChecked,
+    getDeleteButtonText,
   } = useCheckAll(currentIds);
 
   const handleNewQuotation = () => {
@@ -88,11 +81,6 @@ const ProcessProjectPageInner = () => {
       router.push("/quotation");
     }
   };
-  const handleResetDeleteMode = () => {
-    // 삭제 모드와 체크박스 해제
-    resetDeleteMode();
-    setAllChecked(false);
-  };
 
   return (
     <>
@@ -104,16 +92,13 @@ const ProcessProjectPageInner = () => {
         />
         <div className="px-8">
           <SearchDeleteTable
-            checkedIds={checkedIds}
-            isDeleteMode={isDeleteMode}
-            toggleDeleteMode={toggleDeleteMode}
+            checkedCount={checkedCount}
+            deleteButtonText={getDeleteButtonText()}
+            onDelete={() => setIsDeleteModalOpen(true)}
+            onCancel={() => setAllChecked(false)}
           />
           <div className="overflow-y-auto w-full">
-            <TableHeader
-              isDeleteMode={isDeleteMode}
-              isAllChecked={isAllChecked}
-              onToggleAll={toggleAll}
-            />
+            <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
             {currentProjects.map((project) => (
               <TableItem
                 key={project.id}
@@ -125,7 +110,6 @@ const ProcessProjectPageInner = () => {
                 endDate={project.endDate}
                 transactionIssued={project.transactionIssued}
                 taxIssued={project.taxIssued}
-                isDeleteMode={isDeleteMode}
                 checked={isChecked(project.id)}
                 onToggle={() => toggleOne(project.id)}
               />
@@ -157,8 +141,8 @@ const ProcessProjectPageInner = () => {
       )}
       {isDeleteModalOpen && (
         <DeleteModal
-          onClose={closeDeleteModal}
-          onDelete={handleResetDeleteMode}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={() => setIsDeleteModalOpen(false)}
         />
       )}
     </>

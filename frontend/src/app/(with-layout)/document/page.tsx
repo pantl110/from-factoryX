@@ -7,17 +7,31 @@ import DocumentTable from "./document-table";
 // import Pagination from "@/components/pagination";
 import { DocumentType } from "./types";
 import OrderDocumentView from "./order-document-view";
-import { DocumentDataModel } from "@/mocks/document-data";
+import documentData, { DocumentDataModel } from "@/mocks/document-data";
 import Panel from "@/ui/panel";
 import ProductionDocumentView from "./production-document-view";
 import TransactionDocumentView from "./transaction-document-view";
 import TaxDocumentView from "./tax-document-view";
 import Spinner from "@/ui/spinner";
+import { useCheckAll } from "@/hooks/use-check-all";
 
 const DocumentPageContent = () => {
   const [selectedType, setSelectedType] = useState<DocumentType>("주문서");
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentDataModel | null>(null);
+
+  const filteredData = documentData.filter(
+    (item) => item.documentType === selectedType,
+  );
+  const {
+    checkedCount,
+    isAllChecked,
+    isChecked,
+    toggleAll,
+    toggleOne,
+    setAllChecked,
+    getDeleteButtonText,
+  } = useCheckAll(filteredData.map((item) => item.id));
 
   const handleDocumentClick = (document: DocumentDataModel) => {
     setSelectedDocument(document);
@@ -33,13 +47,18 @@ const DocumentPageContent = () => {
 
         <div className="px-8">
           <SearchDeleteTable
-            isDeleteMode={false}
-            toggleDeleteMode={() => {}}
-            checkedIds={[]}
+            checkedCount={checkedCount}
+            deleteButtonText={getDeleteButtonText()}
+            onDelete={() => {}}
+            onCancel={() => setAllChecked(false)}
           />
           <DocumentTable
-            selectedType={selectedType}
+            data={filteredData}
             onDocumentClick={handleDocumentClick}
+            isAllChecked={isAllChecked}
+            onToggleAll={toggleAll}
+            isChecked={isChecked}
+            toggleOne={toggleOne}
           />
         </div>
 

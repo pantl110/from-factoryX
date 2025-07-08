@@ -1,13 +1,21 @@
 import { DocumentDataModel } from "@/mocks/document-data";
 import Chip from "@/ui/chip";
 import { DocumentTypeColorMap } from "./types";
+import Checkbox from "@/ui/checkbox";
 
 interface DocumentTableItemProps {
   data: DocumentDataModel;
   onClick?: () => void;
+  checked: boolean;
+  onToggle: () => void;
 }
 
-const DocumentTableItem = ({ data, onClick }: DocumentTableItemProps) => {
+const DocumentTableItem = ({
+  data,
+  onClick,
+  checked,
+  onToggle,
+}: DocumentTableItemProps) => {
   const { documentType, companyName, date } = data;
   const { bgColor, textColor } = DocumentTypeColorMap[documentType];
 
@@ -21,6 +29,7 @@ const DocumentTableItem = ({ data, onClick }: DocumentTableItemProps) => {
         if (e.key === "Enter" || e.key === " ") onClick?.();
       }}
     >
+      <Checkbox isChecked={checked} onToggle={onToggle} />
       <div className="px-3 w-[150px]">
         <Chip text={documentType} bgColor={bgColor} textColor={textColor} />
       </div>

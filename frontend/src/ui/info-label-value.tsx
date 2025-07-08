@@ -73,7 +73,6 @@ const InfoLabelValue = ({
           text={chip.status}
           bgColor={colors.bgColor}
           textColor={colors.textColor}
-          sm={true}
         />
       );
     }

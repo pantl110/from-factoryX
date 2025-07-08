@@ -50,7 +50,6 @@ const ClientDetailPanel = ({ onClose, client }: ClientDetailPanelProps) => {
                   text={client.type}
                   bgColor={clientTypeColor.bgColor}
                   textColor={clientTypeColor.textColor}
-                  sm={true}
                 />
               }
             />

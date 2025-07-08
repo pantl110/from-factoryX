@@ -6,6 +6,7 @@ import {
   CompletedProjectStatusType,
   CompletedProjectStatusColorMap,
 } from "@/types/status-type";
+import Checkbox from "@/ui/checkbox";
 
 interface TableItemProps {
   id: number;
@@ -13,7 +14,8 @@ interface TableItemProps {
   companyName: string;
   productName: string;
   date: string;
-  isDeleteMode?: boolean;
+  checked: boolean;
+  onToggle: () => void;
 }
 
 const TableItem = ({
@@ -22,7 +24,8 @@ const TableItem = ({
   companyName,
   productName,
   date,
-  isDeleteMode = false,
+  checked,
+  onToggle,
 }: TableItemProps) => {
   const router = useRouter();
   const chipColors = CompletedProjectStatusColorMap[status];
@@ -50,9 +53,7 @@ const TableItem = ({
           if (e.key === "Enter" || e.key === " ") e.stopPropagation();
         }}
       >
-        {isDeleteMode && (
-          <input type="checkbox" className="w-4 h-4 border-sv" />
-        )}
+        <Checkbox isChecked={checked} onToggle={onToggle} />
       </div>
       <div className="py-1 px-3 w-[150px]">
         <Chip

@@ -15,6 +15,7 @@ import TaxStateDropdown from "./modals/tax-state-dropdown";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { DotsThree } from "@phosphor-icons/react";
 import DeleteDropdown from "@/ui/dropdown/delete-dropdown";
+import Checkbox from "@/ui/checkbox";
 
 interface TableItemProps {
   id: number;
@@ -25,7 +26,6 @@ interface TableItemProps {
   endDate: string;
   transactionIssued: TransactionStatusType;
   taxIssued: TaxStatusType;
-  isDeleteMode?: boolean;
   checked?: boolean;
   onToggle?: () => void;
 }
@@ -39,7 +39,6 @@ const TableItem = ({
   endDate,
   transactionIssued,
   taxIssued,
-  isDeleteMode = false,
   checked = false,
   onToggle,
 }: TableItemProps) => {
@@ -84,19 +83,7 @@ const TableItem = ({
         if (e.key === "Enter" || e.key === " ") handleClick();
       }}
     >
-      {isDeleteMode && (
-        <div
-          className="flex items-center py-3 px-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <input
-            type="checkbox"
-            className="w-4 h-4 border-sv"
-            checked={checked}
-            onChange={onToggle}
-          />
-        </div>
-      )}
+      <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
       <div className="py-1 px-3 w-[150px]">
         <Chip
           text={status}

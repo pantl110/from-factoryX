@@ -1,6 +1,5 @@
 import Chip from "@/ui/chip";
 import ButtonSection from "./button-section";
-import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
 import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { useState } from "react";
@@ -40,7 +39,7 @@ const TitleSec = ({
             text="견적 협의"
             bgColor="bg-yellow-8"
             textColor="text-yellow"
-            icon={<CaretDownIcon size={12} />}
+            state={true}
             onClick={(e) => {
               if (e) openQuotationStatusDropdown(e);
             }}

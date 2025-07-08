@@ -1,16 +1,16 @@
+import Checkbox from "@/ui/checkbox";
 import { CaretUpDown } from "@phosphor-icons/react/dist/ssr";
 
 interface TableHeaderProps {
-  isDeleteMode: boolean;
+  checkedCount: number;
+  onToggleAll: () => void;
 }
 
-const TableHeader = ({ isDeleteMode }: TableHeaderProps) => {
+const TableHeader = ({ checkedCount, onToggleAll }: TableHeaderProps) => {
   return (
     <div className="flex items-center h-12 w-full min-w-[1146px] border-t border-b border-[#eeeeee] Me_Body-1">
       <div className="flex items-center py-3 px-2">
-        {isDeleteMode && (
-          <input type="checkbox" className="w-4 h-4 border-sv" />
-        )}
+        <Checkbox isChecked={checkedCount > 0} onToggle={onToggleAll} />
       </div>
 
       <p className="w-[150px] py-1 px-3 text-sv">진행상태</p>

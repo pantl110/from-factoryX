@@ -6,10 +6,18 @@ import ClientDetailPanel from "./modals/client-detail-panel";
 import { ClientDataModel } from "@/types/data-model";
 
 interface ClientProps {
-  isDeleteMode: boolean;
+  isAllChecked: boolean;
+  isChecked: (id: string) => boolean;
+  toggleAll: () => void;
+  toggleOne: (id: string) => void;
 }
 
-const Client = ({ isDeleteMode }: ClientProps) => {
+const Client = ({
+  isAllChecked,
+  isChecked,
+  toggleAll,
+  toggleOne,
+}: ClientProps) => {
   const [selectedClient, setSelectedClient] = useState<ClientDataModel | null>(
     null,
   );
@@ -21,7 +29,10 @@ const Client = ({ isDeleteMode }: ClientProps) => {
   return (
     <>
       <div className="w-full mx-10 overflow-x-auto flex flex-col flex-1 max-w-[1320px]">
-        <ClientTableHeader isDeleteMode={isDeleteMode} />
+        <ClientTableHeader
+          isAllChecked={isAllChecked}
+          onToggleAll={toggleAll}
+        />
         {clientData.map((client) => (
           <ClientTableItem
             key={client.id}
@@ -34,7 +45,8 @@ const Client = ({ isDeleteMode }: ClientProps) => {
             contact={client.contact ?? ""}
             email={client.email ?? ""}
             onClick={() => handleTypeChange(client)}
-            isDeleteMode={isDeleteMode}
+            isChecked={isChecked(client.id)}
+            onToggleCheck={() => toggleOne(client.id)}
           />
         ))}
       </div>

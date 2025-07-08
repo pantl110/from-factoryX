@@ -9,6 +9,7 @@ import TaxDetailPanel from "./tax-detail-panel";
 import { taxData, TaxDataModel } from "@/mocks/tax-data";
 import { TaxDocumentType } from "@/types/status-type";
 import Spinner from "@/ui/spinner";
+import { useCheckAll } from "@/hooks/use-check-all";
 
 const TaxPageContent = () => {
   const [selectedTaxType, setSelectedTaxType] = useState<
@@ -31,6 +32,15 @@ const TaxPageContent = () => {
       ? taxData
       : taxData.filter((item) => item.taxType === selectedTaxType);
 
+  const {
+    checkedCount,
+    isChecked,
+    toggleAll,
+    toggleOne,
+    setAllChecked,
+    getDeleteButtonText,
+  } = useCheckAll(filteredData.map((item) => item.id));
+
   return (
     <>
       <div className={`flex flex-col gap-8`}>
@@ -40,12 +50,13 @@ const TaxPageContent = () => {
         />
         <div className="px-8">
           <SearchDeleteTable
-            isDeleteMode={false}
-            toggleDeleteMode={() => {}}
-            checkedIds={[]}
+            checkedCount={checkedCount}
+            deleteButtonText={getDeleteButtonText()}
+            onDelete={() => {}}
+            onCancel={() => setAllChecked(false)}
           />
           <div className="w-full overflow-x-auto">
-            <TableHeader />
+            <TableHeader checkedCount={checkedCount} onToggleAll={toggleAll} />
             {filteredData.map((item) => (
               <TableItem
                 key={item.id}
@@ -56,6 +67,8 @@ const TaxPageContent = () => {
                 supplyAmount={item.supplyAmount}
                 taxAmount={item.taxAmount}
                 totalAmount={item.totalAmount}
+                checked={isChecked(item.id)}
+                onToggle={() => toggleOne(item.id)}
               />
             ))}
           </div>

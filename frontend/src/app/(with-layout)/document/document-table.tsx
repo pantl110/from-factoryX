@@ -1,26 +1,32 @@
 import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import DocumentTableItem from "./document-table-item";
-import { DocumentType } from "./types";
-import documentData from "@/mocks/document-data";
 import { DocumentDataModel } from "@/mocks/document-data";
+import Checkbox from "@/ui/checkbox";
 
 interface DocumentTableProps {
-  selectedType: DocumentType | "전체";
+  data: DocumentDataModel[];
   onDocumentClick?: (document: DocumentDataModel) => void;
+  isAllChecked: boolean;
+  onToggleAll: () => void;
+  isChecked: (id: string) => boolean;
+  toggleOne: (id: string) => void;
 }
 
 const DocumentTable = ({
-  selectedType,
+  data,
   onDocumentClick,
+  isAllChecked,
+  onToggleAll,
+  isChecked,
+  toggleOne,
 }: DocumentTableProps) => {
-  const filteredData =
-    selectedType === "전체"
-      ? documentData
-      : documentData.filter((item) => item.documentType === selectedType);
-
   return (
     <div>
       <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
+        <Checkbox
+          isChecked={isAllChecked}
+          onToggle={onToggleAll || (() => {})}
+        />
         <div className="py-1 px-3 flex gap-1 w-[150px] items-center">
           <p>문서유형</p>
           <CaretDownIcon size={20} />
@@ -29,11 +35,13 @@ const DocumentTable = ({
         <p className="py-1 px-3 w-[150px]">등록일</p>
       </div>
 
-      {filteredData.map((item, index) => (
+      {data.map((item, index) => (
         <DocumentTableItem
           key={index}
           data={item}
           onClick={() => onDocumentClick?.(item)}
+          checked={isChecked(item.id)}
+          onToggle={() => toggleOne(item.id)}
         />
       ))}
     </div>

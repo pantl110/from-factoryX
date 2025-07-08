@@ -25,7 +25,6 @@ const DeliveryTableItem = ({ data }: DeliveryTableItemProps) => {
         <div className="w-[150px] flex items-center py-3 px-2">
           <Chip
             text={data.deliveryStatus || ""}
-            sm={true}
             bgColor={colors.bgColor}
             textColor={colors.textColor}
           />

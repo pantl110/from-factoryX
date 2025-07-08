@@ -1,11 +1,15 @@
 import { CaretUpDownIcon } from "@phosphor-icons/react/dist/ssr";
+import Checkbox from "@/ui/checkbox";
 
-const TableHeader = () => {
+interface TableHeaderProps {
+  checkedCount: number;
+  onToggleAll: () => void;
+}
+
+const TableHeader = ({ checkedCount, onToggleAll }: TableHeaderProps) => {
   return (
     <div className="text-sv flex items-center w-full min-w-[1018px] h-12 border-t border-b border-[#eeeeee] Me_Body-1">
-      <div className="flex items-center py-3 px-2">
-        <input type="checkbox" className="w-4 h-4 border-sv" />
-      </div>
+      <Checkbox isChecked={checkedCount > 0} onToggle={onToggleAll} />
 
       <p className="w-[150px] py-1 px-3">진행상태</p>
       <div className="py-1 px-3 flex gap-1 w-[200px] items-center">

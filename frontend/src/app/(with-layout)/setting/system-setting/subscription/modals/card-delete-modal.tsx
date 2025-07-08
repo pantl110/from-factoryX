@@ -1,20 +1,20 @@
 import MiniBtn from "@/ui/mini-btn";
 import Modal from "@/ui/modal/modal";
 
-interface DeleteModalProps {
+interface CardDeleteModalProps {
   onClose: () => void;
-  onDelete?: () => void;
+  onConfirm: () => void;
 }
 
-const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
+const CardDeleteModal = ({ onClose, onConfirm }: CardDeleteModalProps) => {
   return (
     <Modal
-      title="삭제하시겠습니까?"
-      subtitle="이 작업은 되돌릴 수 없어요. 선택한 항목이 영구적으로 삭제돼요."
-      sm={true}
+      title="카드를 삭제하시겠어요?"
+      subtitle="삭제된 카드는 복구할 수 없어요."
       onClose={onClose}
+      sm={true}
     >
-      <div className="flex gap-[5px] justify-end mt-4">
+      <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn
           text="취소"
           textColor="text-sv"
@@ -23,9 +23,9 @@ const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
         />
         <MiniBtn
           text="삭제"
-          textColor="text-red"
           bgColor="bg-red-8"
-          onClick={onDelete}
+          textColor="text-red"
+          onClick={onConfirm}
           hoverColor="hover:bg-red-hover"
         />
       </div>
@@ -33,4 +33,4 @@ const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
   );
 };
 
-export default DeleteModal;
+export default CardDeleteModal;
