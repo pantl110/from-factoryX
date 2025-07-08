@@ -125,8 +125,10 @@ celerybeat.pid
 
 # Environments
 .env
-backend/.venv
+local-cdn
 .venv
+backend/.venv
+
 env/
 venv/
 ENV/

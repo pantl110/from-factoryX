@@ -1,4 +1,5 @@
 from ninja.errors import HttpError
+from factory.models import Factory, FactoryEquipment
 from factory.models import Factory, FactoryClient
 from django.db.models import Q
 
@@ -10,9 +11,15 @@ async def get_factory_by_id(factory_id: int, user=None):
     except Factory.DoesNotExist:
         raise HttpError(404, "해당 공장이 존재하지 않습니다.")
 
+
+async def get_factory_eq_by_id(equipment_id: int, user=None):
+        # Get equipment and ensure it belongs to a factory owned by the user
+        equipment = await FactoryEquipment.objects.select_related("factory").aget(id=equipment_id, factory__owner=user)
+        return equipment
+    except FactoryEquipment.DoesNotExist:
+        raise HttpError(404, "해당 설비가 존재하지 않습니다.")
 # 거래처 관련 유틸리티 함수
 async def get_factory_client_by_id(client_id: int, factory_id: int, user=None):
-    try:
         client = await FactoryClient.objects.aget(
             id=client_id, 
             factory_id=factory_id,

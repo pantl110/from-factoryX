@@ -1,5 +1,5 @@
 from ninja import ModelSchema
-from factory.models import Factory, FactoryClient
+from factory.models import Factory, FactoryEquipment, FactoryClient
 
 
 class FactoryOut(ModelSchema):
@@ -7,6 +7,9 @@ class FactoryOut(ModelSchema):
         model = Factory
         fields = "__all__"
 
+class FactoryEqOut(ModelSchema):
+    class Meta:
+        model = FactoryEquipment
 # 거래처 관련 스키마
 class FactoryClientOut(ModelSchema):
     class Meta:

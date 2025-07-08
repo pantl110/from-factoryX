@@ -24,6 +24,9 @@ from stock.api import router as stock_router
 from stock.material_api import router as material_router
 from stock.material_history_api import router as material_history_router
 from factory.api import router as factory_router
+from factory.api_eq import router as factoryEQ_router
+from stock.api_product import router as stockProduct_router
+from stock.api_product_history import router as stockProductHistory_router
 from factory.client_api import router as factory_client_router
 from django.contrib.admin.views.decorators import staff_member_required
 
@@ -47,6 +50,9 @@ base_api.add_router("v1/stock", stock_router)
 base_api.add_router("v1/stock", material_router)
 base_api.add_router("v1/stock", material_history_router)
 base_api.add_router("v1/factory", factory_router)
+base_api.add_router("v1/factory/equiment", factoryEQ_router)
+base_api.add_router("v1/stock/product", stockProduct_router)
+base_api.add_router("v1/stock/product/history", stockProductHistory_router)
 base_api.add_router("v1/factory", factory_client_router)
 
 urlpatterns = [
