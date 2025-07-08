@@ -13,6 +13,9 @@ migrate:
 startapp:
 	docker-compose run --rm backend sh -c "python manage.py startapp $(filter-out $@,$(MAKECMDGOALS))"
 
+test:
+	docker-compose run --rm backend sh -c "python manage.py test"
+
 testapp:
 	docker-compose run --rm backend sh -c "python manage.py test $(filter-out $@,$(MAKECMDGOALS))"
 
