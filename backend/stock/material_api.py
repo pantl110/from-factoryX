@@ -85,15 +85,15 @@ async def get_material(request, material_id: int):
 @router.get(
     "/{material_id}/detail",
     summary="[C] 원자재 상세 조회 (업체별 단가 비교)",
-    description="원자재의 업체별 단가 비교 정보를 포함한 상세 정보를 조회합니다.",
+    description="원자재의 업체별 단가 비교 정보를 포함한 상세 정보를 조회합니다. 조회 기간을 설정할 수 있습니다.",
     response={200: MaterialDetailOut},
     auth=jwt_auth,
 )
-async def get_material_detail(request, material_id: int, months: int = 3):
+async def get_material_detail(request, material_id: int, days: int = 90):
     user = request.auth
     material = await get_material_by_id(material_id, user)
     
-    start_date = timezone.now() - timedelta(days=months * 30)
+    start_date = timezone.now() - timedelta(days=days)
     purchase_history = await sync_to_async(list)(
         MaterialHistory.objects.filter(
             material=material,
