@@ -139,8 +139,6 @@ async def reset_password(request, data: PasswordResetIn):
         raise HttpError(400, "비밀번호가 일치하지 않습니다.")
 
     try:
-        from user.models import EmailVerification
-
         # 인증된 코드 확인 (이미 verified=True인 코드 찾기)
         verification = await EmailVerification.objects.aget(
             email=data.email,
@@ -183,8 +181,14 @@ async def reset_password(request, data: PasswordResetIn):
     response={200: UserMeOut},
 )
 async def signup(request, data: UserSignupIn):
-    if await User.objects.filter(email=data.email).aexists():
-        raise HttpError(420, "이미 등록된 이메일입니다.")
+    user = None
+    try:
+        user = await User.objects.aget(email=data.email)
+    except User.DoesNotExist:
+        pass
+
+    if user and user.status == User.UserStatusChoice.active:
+        raise HttpError(400, "이미 가입된 이메일입니다.")
 
     if data.password != data.password_confirm:
         raise HttpError(400, "비밀번호가 일치하지 않습니다.")
@@ -196,8 +200,6 @@ async def signup(request, data: UserSignupIn):
         raise HttpError(400, "개인정보 수집 및 이용 동의에 동의해주세요.")
 
     # 이메일 인증 완료 여부 확인
-    from user.models import EmailVerification
-
     verification_exists = await EmailVerification.objects.filter(
         email=data.email, verification_type="signup", is_verified=True
     ).aexists()
@@ -205,19 +207,24 @@ async def signup(request, data: UserSignupIn):
     if not verification_exists:
         raise HttpError(400, "이메일 인증을 먼저 완료해주세요.")
 
-    try:
-        user = await sync_to_async(User.objects.create_user)(
-            email=data.email,
-            password=data.password,
-        )
+    if user and user.status == User.UserStatusChoice.withdraw:
+        user.status = User.UserStatusChoice.inactive
+        await user.asave()
+    else:
+        # 신규 사용자 생성
+        try:
+            user = await sync_to_async(User.objects.create_user)(
+                email=data.email,
+                password=data.password,
+            )
 
-        user = await User.objects.aget(id=user.id)
+            user = await User.objects.aget(id=user.id)
 
-        return user
-    except Exception as e:
-        raise HttpError(
-            400, "회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-        )
+            return user
+        except Exception as e:
+            raise HttpError(
+                400, "회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+            )
 
 
 @router.post(
@@ -240,6 +247,9 @@ async def login(request, data: UserLoginIn):
 
     if not await sync_to_async(user.check_password)(data.password):
         raise HttpError(400, "비밀번호가 일치하지 않습니다.")
+
+    if user.status == User.UserStatusChoice.withdraw:
+        raise HttpError(400, "탈퇴한 계정입니다. 재가입이 필요합니다.")
 
     await Jwt.objects.filter(user_id=user.id).adelete()
 
@@ -352,3 +362,17 @@ async def update_user(request, payload: UserUpdateIn):
         setattr(user, attr, value)
     await user.asave()
     return user
+
+
+@router.post(
+    "/withdraw",
+    summary="[C] 회원 탈퇴",
+    description="회원 탈퇴를 진행합니다.",
+    response={200: SuccessOut},
+    auth=jwt_auth,
+)
+async def withdraw(request):
+    user = request.auth
+    user.status = User.UserStatusChoice.withdraw
+    await user.asave()
+    return {"detail": "회원 탈퇴가 완료되었습니다."}
