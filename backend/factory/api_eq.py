@@ -1,10 +1,14 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.pagination import paginate
 from api.security import jwt_auth
 from factory.models import FactoryEquipment, Factory
 from asgiref.sync import sync_to_async
 from typing import List
-from factory.schemas.inbound import FactoryEqCreateIn, FactoryEqUpdateIn
+from factory.schemas.inbound import (
+    FactoryEqCreateIn,
+    FactoryEqUpdateIn,
+    FactoryEqFilter,
+)
 from factory.schemas.outbound import FactoryEqOut
 from factory.utils import get_factory_eq_by_id
 
@@ -37,12 +41,23 @@ async def create_factory_eq(request, payload: FactoryEqCreateIn):
     auth=jwt_auth,
 )
 @paginate
-async def list_factoriesEq(request):
+async def list_factoriesEq(request, filters: FactoryEqFilter = Query(...)):
     user = request.auth
+
     # 단일 쿼리로 사용자가 소유한 공장의 모든 설비 조회
-    factoriesEq = await sync_to_async(list)(
-        FactoryEquipment.objects.filter(factory__owner=user).order_by("-created_at")
-    )
+    # factoriesEq = await sync_to_async(list)(
+    #     FactoryEquipment.objects.filter(factory__owner=user).order_by("-created_at")
+    # )
+    @sync_to_async
+    def get_factories_eq():
+        queryset = FactoryEquipment.objects.filter(factory__owner=user).order_by(
+            "-created_at"
+        )
+        queryset = filters.filter(queryset)
+        return list(queryset)
+
+    factoriesEq = await get_factories_eq()
+
     return factoriesEq
 
 

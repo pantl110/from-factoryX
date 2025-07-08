@@ -4,6 +4,7 @@ from factory.api import router
 from ninja.testing import TestAsyncClient
 from user.models import User
 from factory.models import Factory
+from user.models import EmailVerification
 
 
 class TestUser(TestCase):
@@ -11,8 +12,14 @@ class TestUser(TestCase):
         self.client = TestAsyncClient(router)
         self.auth_client = TestAsyncClient(user_router)
         self.user = User.objects.create_user(
-            username="test1",
+            email="test@example.com",
             password="password1234!",
+        )
+        self.verification = EmailVerification.objects.create(
+            email=self.user.email,
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
         )
         self.factory = Factory.objects.create(
             owner=self.user,
@@ -22,8 +29,8 @@ class TestUser(TestCase):
 
     async def authenticate(self):
         data = {
-            "username": self.user.username,
-            "password": self.user.password,
+            "email": self.user.email,
+            "password": "password1234!",
         }
         response = await self.auth_client.post("/login", json=data)
         data = response.json()

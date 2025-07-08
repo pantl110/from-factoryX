@@ -4,6 +4,7 @@ from factory.client_api import router
 from ninja.testing import TestAsyncClient
 from user.models import User
 from factory.models import Factory, FactoryClient
+from user.models import EmailVerification
 
 
 class TestFactoryClient(TestCase):
@@ -14,6 +15,12 @@ class TestFactoryClient(TestCase):
             username="testuser",
             password="password1234!",
             email="testuser@example.com",
+        )
+        self.verification = EmailVerification.objects.create(
+            email=self.user.email,
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
         )
         self.factory = Factory.objects.create(
             owner=self.user,
@@ -84,9 +91,7 @@ class TestFactoryClient(TestCase):
             "address": "서울시 강남구",
         }
         response = await self.client.post(
-            f"/{self.factory.id}/clients", 
-            headers=headers, 
-            json=payload
+            f"/{self.factory.id}/clients", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 201)
         data = response.json()
@@ -99,10 +104,7 @@ class TestFactoryClient(TestCase):
         공장 클라이언트 목록 조회 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(
-            f"/{self.factory.id}/clients", 
-            headers=headers
-        )
+        response = await self.client.get(f"/{self.factory.id}/clients", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
@@ -116,8 +118,7 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.factory.id}/clients/{self.test_client.id}", 
-            headers=headers
+            f"/{self.factory.id}/clients/{self.test_client.id}", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -134,9 +135,9 @@ class TestFactoryClient(TestCase):
             "phone": "010-5555-6666",
         }
         response = await self.client.patch(
-            f"/{self.factory.id}/clients/{self.test_client.id}", 
-            headers=headers, 
-            json=payload
+            f"/{self.factory.id}/clients/{self.test_client.id}",
+            headers=headers,
+            json=payload,
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -151,8 +152,7 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.delete(
-            f"/{self.factory.id}/clients/{self.test_client.id}", 
-            headers=headers
+            f"/{self.factory.id}/clients/{self.test_client.id}", headers=headers
         )
         self.assertEqual(response.status_code, 204)
         # 클라이언트가 삭제되었는지 확인
@@ -164,8 +164,7 @@ class TestFactoryClient(TestCase):
         """존재하지 않는 클라이언트 조회 테스트"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.factory.id}/clients/99999", 
-            headers=headers
+            f"/{self.factory.id}/clients/99999", headers=headers
         )
         self.assertEqual(response.status_code, 404)
 
@@ -176,9 +175,7 @@ class TestFactoryClient(TestCase):
         headers = await self.authenticate()
         payload = {"name": "Updated Client"}
         response = await self.client.patch(
-            f"/{self.factory.id}/clients/99999", 
-            headers=headers, 
-            json=payload
+            f"/{self.factory.id}/clients/99999", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 404)
 
@@ -188,8 +185,7 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.delete(
-            f"/{self.factory.id}/clients/99999", 
-            headers=headers
+            f"/{self.factory.id}/clients/99999", headers=headers
         )
         self.assertEqual(response.status_code, 404)
 
@@ -200,8 +196,7 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.factory.id}/clients/search?q=삼성", 
-            headers=headers
+            f"/{self.factory.id}/clients/search?q=삼성", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -215,8 +210,7 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.factory.id}/clients/search?q=124-81", 
-            headers=headers
+            f"/{self.factory.id}/clients/search?q=124-81", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -230,8 +224,7 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.factory.id}/clients/search?q=정의선", 
-            headers=headers
+            f"/{self.factory.id}/clients/search?q=정의선", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -245,8 +238,7 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.factory.id}/clients/search?q=전자", 
-            headers=headers
+            f"/{self.factory.id}/clients/search?q=전자", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -262,8 +254,7 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.factory.id}/clients/search?q=삼성", 
-            headers=headers
+            f"/{self.factory.id}/clients/search?q=삼성", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -277,8 +268,7 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.factory.id}/clients/search?q=존재하지않는거래처", 
-            headers=headers
+            f"/{self.factory.id}/clients/search?q=존재하지않는거래처", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -291,10 +281,11 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.factory.id}/clients/search?q=", 
-            headers=headers
+            f"/{self.factory.id}/clients/search?q=", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
-        self.assertEqual(len(result), 4)  # 모든 거래처 (Test Client, 삼성전자, LG전자, 현대자동차) 
+        self.assertEqual(
+            len(result), 4
+        )  # 모든 거래처 (Test Client, 삼성전자, LG전자, 현대자동차)

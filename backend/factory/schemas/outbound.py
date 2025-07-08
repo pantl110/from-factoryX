@@ -7,9 +7,13 @@ class FactoryOut(ModelSchema):
         model = Factory
         fields = "__all__"
 
+
 class FactoryEqOut(ModelSchema):
     class Meta:
         model = FactoryEquipment
+        fields = "__all__"
+
+
 # 거래처 관련 스키마
 class FactoryClientOut(ModelSchema):
     class Meta:

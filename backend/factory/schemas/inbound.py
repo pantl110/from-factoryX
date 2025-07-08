@@ -1,6 +1,13 @@
-from ninja import ModelSchema, Field
+from ninja import ModelSchema, Field, FilterSchema
 from factory.models import Factory, FactoryEquipment, FactoryClient
 from typing import Optional
+
+
+class FactoryEqFilter(FilterSchema):
+    name: Optional[str] = Field(
+        default=None, q="name__icontains", description="설비 이름"
+    )
+    # http://127.0.0.1:8000/api/v1/factory/equipment/?name=설비1
 
 
 class FactoryCreateIn(ModelSchema):
