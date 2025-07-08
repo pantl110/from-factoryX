@@ -6,7 +6,7 @@ from factory.schemas.outbound import FactoryClientOut
 from factory.models import Factory, FactoryClient
 from asgiref.sync import sync_to_async
 from typing import List
-from factory.utils import get_factory_client_by_id, get_factory_clients_by_factory
+from factory.utils import get_factory_client_by_id, get_factory_clients_by_factory, search_factory_clients_by_factory
 
 router = Router(tags=["Factory Client"])
 
@@ -39,6 +39,20 @@ async def create_factory_client(request, factory_id: int, payload: FactoryClient
 async def list_factory_clients(request, factory_id: int):
     user = request.auth
     clients = await get_factory_clients_by_factory(factory_id, user)
+    return await sync_to_async(list)(clients)
+
+
+@router.get(
+    "/{factory_id}/clients/search",
+    summary="[C] 공장 거래처 검색",
+    description="공장의 거래처를 이름, 사업자등록번호, 대표자명으로 검색합니다.",
+    response={200: List[FactoryClientOut]},
+    auth=jwt_auth,
+)
+@paginate
+async def search_factory_clients(request, factory_id: int, q: str):
+    user = request.auth
+    clients = await search_factory_clients_by_factory(factory_id, user, q)
     return await sync_to_async(list)(clients)
 
 
