@@ -24,6 +24,9 @@ const crumbNameMap: Record<string, string> = {
   material: "원자재",
 
   tax: "세무/회계",
+  list: "세금계산서 내역",
+  draft: "세금계산서 임시보관함",
+  receipt: "현금영수증",
 
   document: "문서함",
 
