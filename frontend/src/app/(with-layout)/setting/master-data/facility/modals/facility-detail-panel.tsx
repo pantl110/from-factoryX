@@ -4,6 +4,7 @@ import InfoLabelValue from "@/ui/info-label-value";
 import { FacilityStatusType } from "../types";
 import FacilityHistoryItem from "./facility-history-item";
 import EmptySpace from "@/ui/empty-space";
+import TextareaAutosize from "react-textarea-autosize";
 
 interface FacilityDetailPanelProps {
   facility: FacilityDataModel;
@@ -21,45 +22,40 @@ const FacilityDetailPanel = ({
         <div className="flex flex-col gap-3 border-b border-lg">
           <h3 className="Heading-3">설비 정보</h3>
           <div className="flex flex-col">
-            <div className="flex">
-              <InfoLabelValue
-                label="설비명"
-                value={facility.name}
-                placeholder="설비명을 입력하세요."
-                isEditing={true}
-              />
-              <InfoLabelValue
-                label="가동 상태"
-                chip={{
-                  status: facility.status as FacilityStatusType,
-                }}
-              />
-            </div>
-            <div className="flex">
-              <InfoLabelValue
-                label="자동 배정 순위"
-                value={facility.priority?.toString()}
-                placeholder="자동 배정 순위를 입력하세요."
-                isEditing={true}
-                inputType="number"
-              />
-              <InfoLabelValue
-                label="설비위치"
-                value={facility.location}
-                placeholder="설비위치를 입력하세요."
-                isEditing={true}
-              />
-            </div>
+            <InfoLabelValue
+              label="설비명"
+              value={facility.name}
+              placeholder="설비명을 입력하세요."
+              isEditing={true}
+            />
+            <InfoLabelValue
+              label="가동 상태"
+              chip={{
+                status: facility.status as FacilityStatusType,
+              }}
+            />
+            <InfoLabelValue
+              label="자동 배정 순위"
+              value={facility.priority?.toString()}
+              placeholder="자동 배정 순위를 입력하세요."
+              isEditing={true}
+              inputType="number"
+            />
+            <InfoLabelValue
+              label="설비위치"
+              value={facility.location}
+              placeholder="설비위치를 입력하세요."
+              isEditing={true}
+            />
           </div>
         </div>
 
         {/* 특이사항 */}
         <div className="flex flex-col gap-3">
           <h3 className="Heading-3">특이사항</h3>
-          <textarea
-            name=""
-            id=""
-            className="w-full h-[200px] border border-lg rounded-lg pt-5 px-3 Re_Body-1 text-gr resize-none"
+          <TextareaAutosize
+            minRows={6}
+            className="w-full border border-lg rounded-lg pt-5 px-3 Re_Body-1 text-gr resize-none"
             placeholder="특이사항을 입력하세요."
           />
         </div>
@@ -75,7 +71,7 @@ const FacilityDetailPanel = ({
                   <p className="px-3 flex-1">생산 수량</p>
                   <p className="px-3 flex-1">생산일자</p>
                   <p className="px-3 flex-1">단위당 시간</p>
-                  <p className="px-3 flex-1">마감 시간</p>
+                  <p className="px-3 flex-1">생산 마감일자</p>
                 </div>
                 <FacilityHistoryItem
                   productName="플라스틱컵 A"

@@ -17,14 +17,34 @@ export const formatBusinessNumber = (value: string): string => {
   }
 };
 
-// 전화번호 포맷팅 함수
+// 전화번호 포맷팅 함수 (2자리/3자리 국번 모두 지원)
 export const formatPhoneNumber = (value: string): string => {
-  const numbers = extractNumbers(value); // 숫자만 추출
+  const numbers = extractNumbers(value);
 
+  if (numbers.length < 2) {
+    return numbers;
+  }
+
+  // 2자리 국번 (서울: 02)
+  if (numbers.startsWith("02")) {
+    if (numbers.length <= 2) {
+      return numbers;
+    } else if (numbers.length <= 5) {
+      return `${numbers.slice(0, 2)}-${numbers.slice(2)}`;
+    } else if (numbers.length <= 9) {
+      return `${numbers.slice(0, 2)}-${numbers.slice(2, 6)}-${numbers.slice(6, 10)}`;
+    } else {
+      return `${numbers.slice(0, 2)}-${numbers.slice(2, 6)}-${numbers.slice(6, 10)}`;
+    }
+  }
+
+  // 3자리 국번 (그 외 지역/휴대폰)
   if (numbers.length <= 3) {
     return numbers;
   } else if (numbers.length <= 7) {
     return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  } else if (numbers.length <= 11) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
   } else {
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
   }

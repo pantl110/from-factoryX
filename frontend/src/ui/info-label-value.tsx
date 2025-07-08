@@ -10,6 +10,7 @@ import {
   FacilityStatusType,
   FacilityStatusColorMap,
 } from "@/app/(with-layout)/setting/master-data/facility/types";
+import TextareaAutosize from "react-textarea-autosize";
 
 interface InfoLabelValueProps {
   label: string;
@@ -19,11 +20,16 @@ interface InfoLabelValueProps {
   };
   isEditing?: boolean;
   placeholder?: string;
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
-  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onFocus?: (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
+  onBlur?: (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
   inputType?: string;
   unit?: string;
+  textarea?: boolean;
 }
 
 const InfoLabelValue = ({
@@ -37,6 +43,7 @@ const InfoLabelValue = ({
   onBlur,
   inputType = "text",
   unit,
+  textarea = false,
 }: InfoLabelValueProps) => {
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
@@ -49,6 +56,21 @@ const InfoLabelValue = ({
   const renderContent = () => {
     // 수정 모드인 경우
     if (isEditing) {
+      if (textarea) {
+        return (
+          <TextareaAutosize
+            minRows={1}
+            defaultValue={typeof value === "string" ? value : ""}
+            placeholder={placeholder}
+            onChange={onChange}
+            className="w-full noDefaultStyle"
+            style={{ outline: "none" }}
+            onFocus={onFocus}
+            onBlur={onBlur}
+          />
+        );
+      }
+
       return (
         <div className="flex items-center w-full">
           <input
@@ -90,8 +112,10 @@ const InfoLabelValue = ({
       <div className="w-[134px] bg-lg-table">
         <div className="text-sv p-3">{label}</div>
       </div>
-      <div className="flex-1">
-        <div className="text-dg p-3">{renderContent()}</div>
+      <div className="flex-1 flex items-center">
+        <div className="text-dg px-3 flex-1 flex items-center">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useState, Suspense } from "react";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import MainTitleSec from "./main-title-sec";
 import DocumentTable from "./document-table";
-// import Pagination from "@/components/pagination";
+import Pagination from "@/components/pagination";
 import { DocumentType } from "./types";
 import OrderDocumentView from "./order-document-view";
 import documentData, { DocumentDataModel } from "@/mocks/document-data";
@@ -14,15 +14,26 @@ import TransactionDocumentView from "./transaction-document-view";
 import TaxDocumentView from "./tax-document-view";
 import Spinner from "@/ui/spinner";
 import { useCheckAll } from "@/hooks/use-check-all";
+import DeleteModal from "@/ui/modal/delete-modal";
+import usePagination from "@/hooks/use-pagination";
 
 const DocumentPageContent = () => {
   const [selectedType, setSelectedType] = useState<DocumentType>("주문서");
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentDataModel | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const filteredData = documentData.filter(
     (item) => item.documentType === selectedType,
   );
+
+  const {
+    currentItems: pagedData,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+  } = usePagination({ items: filteredData, itemsPerPage: 10 });
+
   const {
     checkedCount,
     isAllChecked,
@@ -31,10 +42,15 @@ const DocumentPageContent = () => {
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(filteredData.map((item) => item.id));
+  } = useCheckAll(pagedData.map((item) => item.id));
 
   const handleDocumentClick = (document: DocumentDataModel) => {
     setSelectedDocument(document);
+  };
+
+  const handleDelete = () => {
+    setIsDeleteModalOpen(false);
+    setAllChecked(false);
   };
 
   return (
@@ -49,20 +65,24 @@ const DocumentPageContent = () => {
           <SearchDeleteTable
             checkedCount={checkedCount}
             deleteButtonText={getDeleteButtonText()}
-            onDelete={() => {}}
+            onDelete={() => setIsDeleteModalOpen(true)}
             onCancel={() => setAllChecked(false)}
           />
           <DocumentTable
-            data={filteredData}
+            data={pagedData}
             onDocumentClick={handleDocumentClick}
             isAllChecked={isAllChecked}
             onToggleAll={toggleAll}
             isChecked={isChecked}
             toggleOne={toggleOne}
+            selectedType={selectedType}
+          />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
         </div>
-
-        {/* <Pagination currentPage={1} totalPages={10} onPageChange={() => {}} /> */}
       </div>
 
       {/* 판넬 */}
@@ -83,16 +103,29 @@ const DocumentPageContent = () => {
       )}
       {selectedDocument &&
         selectedDocument.documentType === "매출 세금계산서" && (
-          <Panel title="세무/회계" onClose={() => setSelectedDocument(null)}>
+          <Panel
+            title="매출 세금계산서"
+            onClose={() => setSelectedDocument(null)}
+          >
             <TaxDocumentView taxType="매출" />
           </Panel>
         )}
       {selectedDocument &&
         selectedDocument.documentType === "매입 세금계산서" && (
-          <Panel title="세무/회계" onClose={() => setSelectedDocument(null)}>
+          <Panel
+            title="매입 세금계산서"
+            onClose={() => setSelectedDocument(null)}
+          >
             <TaxDocumentView taxType="매입" />
           </Panel>
         )}
+
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleDelete}
+        />
+      )}
     </>
   );
 };

@@ -8,6 +8,7 @@ interface DocumentTableItemProps {
   onClick?: () => void;
   checked: boolean;
   onToggle: () => void;
+  isTaxDocument?: boolean;
 }
 
 const DocumentTableItem = ({
@@ -15,8 +16,18 @@ const DocumentTableItem = ({
   onClick,
   checked,
   onToggle,
+  isTaxDocument = false,
 }: DocumentTableItemProps) => {
-  const { documentType, companyName, date } = data;
+  const {
+    documentType,
+    companyName,
+    productName,
+    date,
+    supplyPrice,
+    taxPrice,
+    totalPrice,
+    writtenDate,
+  } = data;
   const { bgColor, textColor } = DocumentTypeColorMap[documentType];
 
   return (
@@ -30,11 +41,26 @@ const DocumentTableItem = ({
       }}
     >
       <Checkbox isChecked={checked} onToggle={onToggle} />
-      <div className="px-3 w-[150px]">
-        <Chip text={documentType} bgColor={bgColor} textColor={textColor} />
-      </div>
-      <p className="px-3 flex-1">{companyName}</p>
-      <p className="px-3 w-[150px]">{date}</p>
+      {isTaxDocument ? (
+        <>
+          <p className="px-3 flex-1">{companyName}</p>
+          <p className="px-3 flex-1">{productName}</p>
+          <p className="px-3 flex-1">{supplyPrice?.toLocaleString() || "-"}</p>
+          <p className="px-3 flex-1">{taxPrice?.toLocaleString() || "-"}</p>
+          <p className="px-3 flex-1">{totalPrice?.toLocaleString() || "-"}</p>
+          <p className="px-3 w-[150px]">{writtenDate || "-"}</p>
+          <p className="px-3 w-[150px]">{date}</p>
+        </>
+      ) : (
+        <>
+          <div className="px-3 flex-[0.5]">
+            <Chip text={documentType} bgColor={bgColor} textColor={textColor} />
+          </div>
+          <p className="px-3 flex-1">{companyName}</p>
+          <p className="px-3 flex-1">{productName}</p>
+          <p className="px-3 flex-[0.5]">{date}</p>
+        </>
+      )}
     </div>
   );
 };

@@ -3,6 +3,7 @@ import DocumentViewTitle from "../document-view-title";
 import CommentItem from "./comment-item";
 import ProductionTableItem from "./production-table-item";
 import { useState } from "react";
+import TextareaAutosize from "react-textarea-autosize";
 
 // 프로젝트명별로 그룹핑 함수
 const groupByProject = (data: typeof productionData) => {
@@ -70,16 +71,12 @@ const ProductionDocumentView = () => {
       {/* 메모 */}
       <div className="flex flex-col gap-3">
         <h3 className="Heading-3">메모</h3>
-        <textarea
+        <TextareaAutosize
           placeholder="메모를 입력하세요."
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="w-full min-h-50 print:hidden overflow-hidden"
-          onInput={(e) => {
-            const target = e.target as HTMLTextAreaElement;
-            target.style.height = "auto";
-            target.style.height = target.scrollHeight + "px";
-          }}
+          className="w-full print:hidden"
+          minRows={6}
         />
         <div className="textarea hidden print:block whitespace-pre-wrap w-full min-h-50">
           {value}

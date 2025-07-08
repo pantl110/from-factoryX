@@ -11,6 +11,8 @@ interface ChipProps {
   onClick?: (e?: React.MouseEvent) => void;
   cursor?: string;
   hover?: string;
+  height?: string;
+  padding?: string;
 }
 
 const Chip = ({
@@ -24,6 +26,8 @@ const Chip = ({
   onClick,
   cursor = onClick ? "cursor-pointer" : "",
   hover = "",
+  height = "h-8",
+  padding = "px-3",
 }: ChipProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -33,7 +37,7 @@ const Chip = ({
   return (
     <div
       className={`${containerWidth}`}
-      onClick={handleClick}
+      onClick={onClick ? handleClick : undefined}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={
@@ -48,7 +52,7 @@ const Chip = ({
       }
     >
       <div
-        className={`flex gap-1 items-center w-fit h-8 px-3 ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${hover} ${borderColor ? `border ${borderColor}` : ""} ${
+        className={`flex gap-1 items-center w-fit ${height} ${padding} ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${hover} ${borderColor ? `border ${borderColor}` : ""} ${
           state ? "cursor-pointer" : ""
         }`}
       >

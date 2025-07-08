@@ -60,10 +60,12 @@ const ProductInfo = ({
           isEditing={isEditable}
           placeholder="품목명 입력"
           onChange={(e) => {
-            handleInputChange(e);
+            handleInputChange(e as React.ChangeEvent<HTMLInputElement>);
             if (onValueChange) onValueChange({ productName: e.target.value });
           }}
-          onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
+          onFocus={(
+            e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+          ) => {
             if (e.target.value && matchedItems.length > 0)
               setIsProductNameDropdownOpen(true);
           }}

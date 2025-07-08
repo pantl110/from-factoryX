@@ -17,7 +17,8 @@ const MaterialInfo = () => {
   const [info, setInfo] = useState(initialInfo);
 
   const handleChange =
-    (key: keyof typeof info) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (key: keyof typeof info) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setInfo((prev) => ({ ...prev, [key]: e.target.value }));
     };
 

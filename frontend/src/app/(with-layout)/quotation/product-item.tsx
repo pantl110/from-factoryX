@@ -1,7 +1,9 @@
 import { ProductDataModel } from "@/types/data-model";
+import { X } from "@phosphor-icons/react";
 
 interface ProductItemProps extends ProductDataModel {
   onClick?: () => void;
+  transaction?: boolean;
 }
 
 const ProductItem = ({
@@ -13,10 +15,11 @@ const ProductItem = ({
   unitPrice,
   totalPrice,
   onClick,
+  transaction = false,
 }: ProductItemProps) => {
   return (
     <tr
-      className="h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer hover:bg-bg transition-colors duration-200"
+      className="h-14 flex items-center Me_Body-1 text-dg border-b border-lg"
       onClick={onClick}
     >
       <td className="flex-1 px-3 truncate" title={productName}>
@@ -28,6 +31,11 @@ const ProductItem = ({
       <td className="flex-1 px-3">{quantity?.toLocaleString()}</td>
       <td className="w-[100px] px-3">{unitPrice?.toLocaleString()}</td>
       <td className="flex-1 px-3">{totalPrice?.toLocaleString()}</td>
+      {!transaction && (
+        <td className="w-8 h-full flex justify-center items-center cursor-pointer">
+          <X size={16} className="text-sv" />
+        </td>
+      )}
     </tr>
   );
 };

@@ -43,6 +43,8 @@ const SystemSetting = () => {
           borderColor="border-lg"
           cursor="cursor-pointer"
           onClick={() => setSettingChip("general")}
+          height="h-9"
+          padding="px-4"
         />
         <Chip
           text="권한 설정"
@@ -52,6 +54,8 @@ const SystemSetting = () => {
           borderColor="border-lg"
           cursor="cursor-pointer"
           onClick={() => setSettingChip("permission")}
+          height="h-9"
+          padding="px-4"
         />
         <Chip
           text="구독 관리"
@@ -61,6 +65,8 @@ const SystemSetting = () => {
           borderColor="border-lg"
           cursor="cursor-pointer"
           onClick={() => setSettingChip("subscription")}
+          height="h-9"
+          padding="px-4"
         />
       </div>
       {renderContent()}

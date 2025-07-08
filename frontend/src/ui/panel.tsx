@@ -1,13 +1,20 @@
 import { CaretLineRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { useEffect, useState, useCallback } from "react";
+import MiniBtn from "./mini-btn";
 
 interface PanelProps {
   children: React.ReactNode;
   title: string;
   onClose: () => void;
+  hasSaveButton?: boolean;
 }
 
-const Panel = ({ children, title, onClose }: PanelProps) => {
+const Panel = ({
+  children,
+  title,
+  onClose,
+  hasSaveButton = false,
+}: PanelProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(true);
 
@@ -69,14 +76,24 @@ const Panel = ({ children, title, onClose }: PanelProps) => {
         }`}
       >
         <div className="w-[1000px] bg-white h-full flex flex-col gap-6 px-10 pt-5">
-          <div className="flex gap-2 items-center border-b border-[#eeeeee] pb-2 sticky top-0 bg-white z-10">
-            <button
-              onClick={handleClose}
-              className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-bg rounded-lg transition-all duration-200"
-            >
-              <CaretLineRightIcon size={20} />
-            </button>
-            <h3 className="Heading-3">{title}</h3>
+          <div className="flex justify-between border-b border-lg pb-3">
+            <div className="flex gap-2 items-center sticky top-0 bg-white z-10">
+              <h3 className="Heading-3">{title}</h3>
+              <button
+                onClick={handleClose}
+                className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-bg rounded-lg transition-all duration-200"
+              >
+                <CaretLineRightIcon size={16} className="text-sv" />
+              </button>
+            </div>
+            {hasSaveButton && (
+              <MiniBtn
+                text="저장"
+                textColor="text-primary"
+                bgColor="bg-primary-8"
+                hoverColor="bg-secondary-hover"
+              />
+            )}
           </div>
 
           <div className="h-full overflow-y-auto scrollbar-hide mb-5">

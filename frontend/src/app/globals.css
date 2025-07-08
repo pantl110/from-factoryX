@@ -136,6 +136,20 @@ textarea,
   }
 }
 
+textarea.noDefaultStyle {
+  border: none !important;
+  border-radius: 0 !important;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 0px;
+  padding-right: 0px;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  font-weight: inherit !important;
+  color: inherit !important;
+  resize: none !important;
+}
+
 /* number input spin 버튼 숨기기 */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {

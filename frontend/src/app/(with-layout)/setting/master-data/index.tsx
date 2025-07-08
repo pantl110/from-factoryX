@@ -129,6 +129,8 @@ const MasterData = () => {
           borderColor="border-lg"
           cursor="cursor-pointer"
           onClick={handleEquipmentChipClick}
+          height="h-9"
+          padding="px-4"
         />
         <Chip
           text="거래처 정보"
@@ -138,10 +140,18 @@ const MasterData = () => {
           borderColor="border-lg"
           cursor="cursor-pointer"
           onClick={handleClientChipClick}
+          height="h-9"
+          padding="px-4"
         />
       </div>
       <div className="flex items-center justify-between px-10 pb-4">
-        <SearchInput />
+        <SearchInput
+          placeholder={
+            settingChip === "client"
+              ? "회사명, 대표자명, 연락처 등을 입력해 검색하세요."
+              : "검색어를 입력하세요."
+          }
+        />
         <div className="flex gap-2">
           {settingChip === "equipment" && (
             <MiniBtn
