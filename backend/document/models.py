@@ -34,24 +34,9 @@ class QuotationProduct(BaseModel):
     )
 
 
-class TaxInvoice(BaseModel):
-    class TaxInvoiceType(models.TextChoices):
-        receipt = ("영수", "receipt")
-        invoice = ("청구", "invoice")
-
-    type = models.CharField(
-        max_length=10,
-        choices=TaxInvoiceType.choices,
-        default=TaxInvoiceType.receipt,
-    )
-    project = models.ForeignKey("project.Project", on_delete=models.CASCADE)
-    client = models.ForeignKey(FactoryClient, on_delete=models.CASCADE)
-
-
 class WorkInstruction(BaseModel):
     plans = models.ManyToManyField(
         "project.ProjectPlan",
-        null=True,
         blank=True,
         help_text="연결된 생산 계획들",
     )

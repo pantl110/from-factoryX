@@ -63,6 +63,12 @@ class Factory(BaseModel):
         default=False,
         help_text="트라이얼 여부",
     )
+    billing_key = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="결제 키",
+    )
 
 
 class FactoryEquipment(BaseModel):
@@ -81,13 +87,13 @@ class FactoryEquipment(BaseModel):
         default=EquipmentStatus.standby,
     )
     priority = models.IntegerField(
-        help_text="우선순위",
+        help_text="자동 배정 순위",
     )
     location = models.CharField(
         max_length=100,
         null=True,
         blank=True,
-        help_text="위치",
+        help_text="설비 위치",
     )
     note = models.TextField(
         null=True,

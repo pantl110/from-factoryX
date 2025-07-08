@@ -84,8 +84,6 @@ class CustomUserManager(UserManager):
 class User(AbstractUser):
     """Custom User Model Definition"""
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
     class UserStatusChoice(models.TextChoices):
         inactive = ("비활성유저", "비활성유저")  # 비활성
         active = ("활성유저", "활성유저")  # 정상
@@ -160,7 +158,6 @@ class User(AbstractUser):
 
 
 class Jwt(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
         User, related_name="login_user", on_delete=models.CASCADE, help_text="회원"
     )
