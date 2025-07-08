@@ -17,6 +17,8 @@ from user.models import User
 from factory.models import Factory
 from stock.models import Product, ProductHistory
 
+from user.models import EmailVerification
+
 
 class TestProductHistoryAPI(TestCase):
     """ProductHistory CRUD API tests"""
@@ -28,8 +30,14 @@ class TestProductHistoryAPI(TestCase):
 
         # Create user & factory
         self.user = User.objects.create_user(
-            username="test_history_user",
+            email="test@example.com",
             password="password1234!",
+        )
+        self.verification = EmailVerification.objects.create(
+            email=self.user.email,
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
         )
         self.factory = Factory.objects.create(
             owner=self.user,
@@ -56,7 +64,7 @@ class TestProductHistoryAPI(TestCase):
 
     async def authenticate(self):
         """Return headers with valid JWT token for the test user."""
-        data = {"username": self.user.username, "password": "password1234!"}
+        data = {"email": self.user.email, "password": "password1234!"}
         response = await self.auth_client.post("/login", json=data)
         self.assertEqual(response.status_code, 200)
         tokens = response.json()
@@ -88,6 +96,34 @@ class TestProductHistoryAPI(TestCase):
         # Depending on pagination style, the key may be either "data" (custom) or "items" (default ninja paginate)
         self.assertTrue("data" in data or "items" in data)
 
+    async def test_list_histories_with_start_date(self):
+        """[R] 시작일만 사용한 목록 조회 테스트"""
+        headers = await self.authenticate()
+        start_date = str(self.history.created_at.date())
+        response = await self.client.get("", headers=headers, params={"start_date": start_date})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue("data" in data or "items" in data)
+
+    async def test_list_histories_with_end_date(self):
+        """[R] 종료일만 사용한 목록 조회 테스트"""
+        headers = await self.authenticate()
+        end_date = str(self.history.created_at.date())
+        response = await self.client.get("", headers=headers, params={"end_date": end_date})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue("data" in data or "items" in data)
+
+    async def test_list_histories_with_start_and_end(self):
+        """[R] 시작·종료일 모두 사용한 목록 조회 테스트"""
+        headers = await self.authenticate()
+        date_str = str(self.history.created_at.date())
+        params = {"start_date": date_str, "end_date": date_str}
+        response = await self.client.get("", headers=headers, params=params)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue("data" in data or "items" in data)
+
     async def test_get_history(self):
         """[R] 이력 상세 조회 테스트"""
         headers = await self.authenticate()
@@ -96,23 +132,6 @@ class TestProductHistoryAPI(TestCase):
         data = response.json()
         self.assertEqual(data["id"], self.history.id)
         self.assertEqual(data["quantity"], self.history.quantity)
-
-    async def test_update_history(self):
-        """[U] 이력 수정 테스트"""
-        headers = await self.authenticate()
-        payload = {"quantity": 20, "total_stock": 20}
-        response = await self.client.patch(f"/{self.history.id}", headers=headers, json=payload)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["quantity"], payload["quantity"])
-
-    async def test_delete_history(self):
-        """[D] 이력 삭제 테스트"""
-        headers = await self.authenticate()
-        response = await self.client.delete(f"/{self.history.id}", headers=headers)
-        self.assertEqual(response.status_code, 204)
-        # verify
-        self.assertFalse(await ProductHistory.objects.filter(id=self.history.id).aexists())
 
 
 # -----------------------------------------------------------------------------

@@ -7,7 +7,6 @@ class FactoryEqFilter(FilterSchema):
     name: Optional[str] = Field(
         default=None, q="name__icontains", description="설비 이름"
     )
-    # http://127.0.0.1:8000/api/v1/factory/equipment/?name=설비1
 
 
 class FactoryCreateIn(ModelSchema):
@@ -47,6 +46,21 @@ class FactoryEqCreateIn(ModelSchema):
         ]
 
 
+class FactoryEqUpdateIn(ModelSchema):
+    name: Optional[str] = Field(default=None, description="공장 설비 이름")
+    factory: Optional[int] = Field(default=None, description="공장 ID")
+    priority: Optional[int] = Field(default=None, description="우선순위")
+    status: Optional[str] = Field(default=None, description="설비 상태")
+
+    class Meta:
+        model = FactoryEquipment
+        exclude = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]
+
+
 # 거래처 관련 스키마
 class FactoryClientCreateIn(ModelSchema):
     class Meta:
@@ -58,22 +72,6 @@ class FactoryClientCreateIn(ModelSchema):
             "updated_at",
         ]
 
-
-class FactoryEqUpdateIn(ModelSchema):
-    name: Optional[str] = Field(default=None, description="공장 설비 이름")
-    factory: Optional[int] = Field(default=None, description="공장 ID")
-    priority: Optional[int] = Field(default=None, description="우선순위")
-    note: Optional[str] = Field(default=None, description="설비 설명")
-    status: Optional[str] = Field(default=None, description="설비 상태")
-    location: Optional[str] = Field(default=None, description="설비 위치")
-
-    class Meta:
-        model = FactoryEquipment
-        exclude = [
-            "id",
-            "created_at",
-            "updated_at",
-        ]
 
 
 # 거래처 관련 스키마

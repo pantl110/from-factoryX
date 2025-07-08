@@ -1,8 +1,9 @@
-from ninja import ModelSchema, Field
+from ninja import ModelSchema, Field, FilterSchema
 from pydantic import BaseModel
 from typing import Optional, List, Any
 from stock.models import Material, MaterialHistory, Product, ProductHistory
 from factory.models import Factory, FactoryEquipment
+
 
 class MaterialCreateSchema(BaseModel):
     factory_id: int
@@ -13,6 +14,7 @@ class MaterialCreateSchema(BaseModel):
     current_stock: Optional[int] = 0
     standard_stock: Optional[int] = 0
 
+
 class MaterialUpdateSchema(BaseModel):
     name: Optional[str]
     code: Optional[str]
@@ -21,10 +23,12 @@ class MaterialUpdateSchema(BaseModel):
     current_stock: Optional[int]
     standard_stock: Optional[int]
 
+
 class MaterialExcelUploadResponseSchema(BaseModel):
     success: bool
     message: str
     data: Optional[List[Any]] = None
+
 
 class ProductMaterialConnectSchema(BaseModel):
     material_id: int
@@ -42,6 +46,7 @@ class ProductCreateSchema(BaseModel):
     location: Optional[str] = None
     note: Optional[str] = None
 
+
 class ProductUpdateSchema(BaseModel):
     name: Optional[str]
     code: Optional[str]
@@ -52,10 +57,17 @@ class ProductUpdateSchema(BaseModel):
     location: Optional[str]
     note: Optional[str]
 
+
 class ProductExcelUploadResponseSchema(BaseModel):
     success: bool
     message: str
     data: Optional[List[Any]] = None
+
+
+class ProductFilter(FilterSchema):
+    name: Optional[str] = Field(
+        default=None, q="name__icontains", description="제품 이름"
+    )
 
 class ProductCreateIn(ModelSchema):
     """제품 생성 스키마"""
@@ -89,24 +101,20 @@ class ProductUpdateIn(ModelSchema):
             "updated_at",
         ]
 
+
+class ProductHistoryFilter(FilterSchema):
+    start_date: Optional[str] = Field(
+        default=None, q="created_at__date__gte", description="조회 시작일 (YYYY-MM-DD)"
+    )
+    end_date: Optional[str] = Field(
+        default=None, q="created_at__date__lte", description="조회 종료일 (YYYY-MM-DD)"
+    )
+
+
 class ProductHistoryCreateIn(ModelSchema):
     """제품 입출고 이력 생성 입력 스키마"""
 
     product: int = Field(..., description="제품 ID")
-
-    class Meta:
-        model = ProductHistory
-        exclude = [
-            "id",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class ProductHistoryUpdateIn(ModelSchema):
-    """제품 입출고 이력 수정 입력 스키마 (부분 수정 지원)"""
-
-    product: Optional[int] = Field(None, description="제품 ID")
 
     class Meta:
         model = ProductHistory

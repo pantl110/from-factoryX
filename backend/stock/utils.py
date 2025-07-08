@@ -1,21 +1,21 @@
 from ninja.errors import HttpError
 from stock.models import Product, ProductHistory, Material, MaterialHistory
-from factory.models import Factory
 from django.utils import timezone
 from datetime import timedelta
 
 
-async def get_product_by_id(product_id: int):
+async def get_product_by_id(product_id: int, user=None):
     try:
-        product = await Product.objects.aget(id=product_id)
+        product = await Product.objects.aget(id=product_id, factory__owner=user)
         return product
     except Product.DoesNotExist:
         raise HttpError(404, "해당 제품이 존재하지 않습니다.")
     
 
-async def get_history_by_id(history_id: int):
+async def get_history_by_id(history_id: int, user=None):
     try:
-        return await ProductHistory.objects.select_related("product__factory").aget(id=history_id)
+        product_history = await ProductHistory.objects.aget(id=history_id, product__factory__owner=user)
+        return product_history
     except ProductHistory.DoesNotExist:
         raise HttpError(404, "해당 입출고 이력이 존재하지 않습니다.")
 

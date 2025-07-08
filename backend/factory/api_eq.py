@@ -25,7 +25,6 @@ router = Router(tags=["FactoryEquipment"])
 async def create_factory_eq(request, payload: FactoryEqCreateIn):
     user = request.auth
     data = payload.dict()
-    # 본인의 공장인지 검증
     factory_id = data.pop("factory")
     factory = await get_factory_by_id(factory_id, user)
     factory_eq = await FactoryEquipment.objects.acreate(factory=factory, **data)
@@ -42,11 +41,6 @@ async def create_factory_eq(request, payload: FactoryEqCreateIn):
 @paginate
 async def list_factoriesEq(request, filters: FactoryEqFilter = Query(...)):
     user = request.auth
-
-    # 단일 쿼리로 사용자가 소유한 공장의 모든 설비 조회
-    # factoriesEq = await sync_to_async(list)(
-    #     FactoryEquipment.objects.filter(factory__owner=user).order_by("-created_at")
-    # )
     @sync_to_async
     def get_factories_eq():
         queryset = FactoryEquipment.objects.filter(factory__owner=user).order_by(
@@ -86,7 +80,7 @@ async def update_factory_eq(request, factory_eq_id: int, payload: FactoryEqUpdat
     update_data = payload.dict(exclude_unset=True)
     for key, value in update_data.items():
         setattr(factory_eq, key, value)
-    await sync_to_async(factory_eq.save)()
+    await factory_eq.asave()
     return factory_eq
 
 
