@@ -8,7 +8,7 @@ from factory.models import FactoryClient
 class MaterialOut(ModelSchema):
     class Meta:
         model = Material
-        exclude = ["products"]
+        fields = "__all__"
 
 
 class MaterialHistoryOut(ModelSchema):
@@ -20,7 +20,7 @@ class MaterialHistoryOut(ModelSchema):
 class MaterialDetailOut(ModelSchema):
     class Meta:
         model = Material
-        exclude = ["products"]
+        fields = "__all__"
 
 
 class ProductListResponseSchema(BaseModel):

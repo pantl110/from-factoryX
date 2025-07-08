@@ -77,8 +77,7 @@ class TestUser(TestCase):
         data = {
             "marketing_agreement": True,
         }
-        response = await self.client.patch(
-            f"/{self.user.id}", json=data, headers=headers
-        )
+        response = await self.client.patch(f"/me", json=data, headers=headers)
         data = response.json()
+        # print("🐍 File: tests/test_apis.py | Line: 84 | setUp ~ data", data)
         self.assertEqual(response.status_code, 200)

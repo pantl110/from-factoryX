@@ -230,10 +230,13 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
             "verification_type": "signup",
         }
         response = await self.client.post("/verify-code", json=expired_code_data)
-        response_data = response.json()
+        data = response.json()
+        # print(
+        #     "🐍 File: tests/test_email_verification.py | Line: 234 | setUp ~ data", data
+        # )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("인증 코드가 만료되었습니다", response_data["detail"])
+        self.assertIn("인증 코드가 만료되었습니다", data["detail"])
 
     async def test_duplicate_email_signup(self):
         """이미 등록된 이메일로 회원가입 시도"""
