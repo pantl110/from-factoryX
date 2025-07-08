@@ -13,8 +13,20 @@ class TaxInvoiceType(models.TextChoices):
     purchase = ("매입", "purchase")
 
 
+class PublishStatus(models.TextChoices):
+    temporary = ("임시 저장", "temporary")
+    pending = ("발행 대기", "pending")
+    published = ("발행 완료", "published")
+
+
 # 국세청 API 세금계산서 데이터 저장
 class NationalTaxService(BaseModel):
+    publish_status = models.CharField(
+        max_length=10,
+        choices=PublishStatus.choices,
+        default=PublishStatus.temporary,
+        help_text="발행 상태",
+    )
     tax_invoice_type = models.CharField(
         max_length=10,
         choices=TaxInvoiceType.choices,

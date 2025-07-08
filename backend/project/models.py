@@ -30,7 +30,7 @@ class Project(BaseModel):
     transact_date = models.DateField(
         null=True,
         blank=True,
-        help_text="거래명세서 발행 일자",
+        help_text="거래명세서 발행 일자",  # 발행일자가 생기면 거래명세서 발행된 것. null이면 발행 안된 것.
     )
     tax_invoice = models.ForeignKey(
         "tax.NationalTaxService",
