@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import MainTitleSec from "./main-title-sec";
+import MainTitleSec from "../main-title-sec";
 import SearchDeleteTable from "@/ui/search-delete-table";
-import TableHeader from "./table-header";
-import TableItem from "./table-item";
-import TaxDetailPanel from "./tax-detail-panel";
+import TableHeader from "../table-header";
+import TableItem from "../table-item";
+import TaxDetailPanel from "../tax-detail-panel";
 import { taxData, TaxDataModel } from "@/mocks/tax-data";
 import { TaxDocumentType } from "@/types/status-type";
 import Spinner from "@/ui/spinner";
