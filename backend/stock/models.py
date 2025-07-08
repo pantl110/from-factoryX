@@ -5,7 +5,9 @@ from factory.models import Factory, FactoryClient
 
 # Create your models here.
 class Material(BaseModel):
-    factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
+    factory = models.ForeignKey(
+        Factory, related_name="materials", on_delete=models.CASCADE
+    )
     name = models.CharField(
         max_length=100,
         help_text="자재명",
@@ -32,18 +34,11 @@ class Material(BaseModel):
     )
     location = models.ForeignKey(
         "location.Location",
+        related_name="materials",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         help_text="위치",
-    )
-    # 이 원자재로 만들 수 있는 품목들
-    products = models.ManyToManyField(
-        "Product",
-        through="MaterialProduct",
-        related_name="materials",
-        blank=True,
-        help_text="이 원자재로 만들 수 있는 품목들 (선택사항)",
     )
 
 
@@ -57,9 +52,12 @@ class MaterialHistory(BaseModel):
         choices=MaterialHistoryType.choices,
         default=MaterialHistoryType.purchase,
     )
-    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    material = models.ForeignKey(
+        Material, related_name="histories", on_delete=models.CASCADE
+    )
     client = models.ForeignKey(
         FactoryClient,
+        related_name="material_histories",
         on_delete=models.CASCADE,
         help_text="고객",
     )
@@ -76,6 +74,7 @@ class MaterialHistory(BaseModel):
     )
     purchase_tax_invoice = models.ForeignKey(
         "tax.NationalTaxService",
+        related_name="material_histories",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -83,6 +82,7 @@ class MaterialHistory(BaseModel):
     )
     cash_receipt = models.ForeignKey(
         "tax.CashReceipt",
+        related_name="material_histories",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -91,7 +91,9 @@ class MaterialHistory(BaseModel):
 
 
 class Product(BaseModel):
-    factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
+    factory = models.ForeignKey(
+        Factory, related_name="products", on_delete=models.CASCADE
+    )
     name = models.CharField(
         max_length=100,
         help_text="제품명",
@@ -125,6 +127,7 @@ class Product(BaseModel):
     )
     location = models.ForeignKey(
         "location.Location",
+        related_name="products",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -147,7 +150,9 @@ class ProductHistory(BaseModel):
         choices=ProductHistoryType.choices,
         default=ProductHistoryType.IN,
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        Product, related_name="histories", on_delete=models.CASCADE
+    )
     quantity = models.IntegerField(
         help_text="재고 변동 수량",
     )
@@ -157,8 +162,12 @@ class ProductHistory(BaseModel):
 
 
 class MaterialProduct(BaseModel):
-    material = models.ForeignKey(Material, on_delete=models.CASCADE, help_text="원자재")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, help_text="제품")
+    product = models.ForeignKey(
+        Product, related_name="material_products", on_delete=models.CASCADE
+    )
+    material = models.ForeignKey(
+        Material, related_name="material_products", on_delete=models.CASCADE
+    )
     quantity = models.DecimalField(
         max_digits=10, decimal_places=2, help_text="제품 1개 생산에 필요한 원자재 수량"
     )
