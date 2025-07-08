@@ -28,7 +28,10 @@ class Notification(BaseModel):
         production_schedule_changed = ("생산 일정 변경", "production_schedule_changed")
 
     receiver = models.ForeignKey(
-        FactoryMember, on_delete=models.CASCADE, help_text="수신자"
+        FactoryMember,
+        related_name="notifications",
+        on_delete=models.CASCADE,
+        help_text="수신자",
     )
     type = models.CharField(
         max_length=20,

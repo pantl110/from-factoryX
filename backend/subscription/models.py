@@ -21,8 +21,12 @@ class Subscription(BaseModel):
 
 
 class SubscriptionHistory(BaseModel):
-    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
-    factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
+    subscription = models.ForeignKey(
+        Subscription, related_name="subscription_histories", on_delete=models.CASCADE
+    )
+    factory = models.ForeignKey(
+        Factory, related_name="subscription_histories", on_delete=models.CASCADE
+    )
     start_date = models.DateField(
         help_text="시작일",
     )

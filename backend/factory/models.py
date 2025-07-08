@@ -6,7 +6,7 @@ from common.models import BaseModel
 # Create your models here.
 class Factory(BaseModel):
 
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, related_name="factories", on_delete=models.CASCADE)
 
     name = models.CharField(
         max_length=100,
@@ -76,7 +76,9 @@ class FactoryEquipment(BaseModel):
         standby = ("가동 대기", "standby")
         running = ("가동 중", "running")
 
-    factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
+    factory = models.ForeignKey(
+        Factory, related_name="equipments", on_delete=models.CASCADE
+    )
     name = models.CharField(
         max_length=100,
         help_text="설비명",
@@ -107,7 +109,9 @@ class FactoryClient(BaseModel):
         customer = ("수주처", "customer")
         supplier = ("발주처", "supplier")
 
-    factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
+    factory = models.ForeignKey(
+        Factory, related_name="clients", on_delete=models.CASCADE
+    )
     name = models.CharField(
         max_length=100,
         help_text="회사명",
@@ -179,10 +183,11 @@ class FactoryMember(BaseModel):
         active = ("활성", "active")
 
     factory = models.ForeignKey(
-        Factory, on_delete=models.CASCADE, related_name="members"
+        Factory, related_name="members", on_delete=models.CASCADE
     )
     user = models.ForeignKey(
         User,
+        related_name="factory_members",
         on_delete=models.CASCADE,
         null=True,
         blank=True,

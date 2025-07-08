@@ -19,9 +19,6 @@ class Project(BaseModel):
         processing = ("발행 중", "processing")
         completed = ("발행 완료", "completed")
 
-    quotation = models.ForeignKey(
-        Quotation, on_delete=models.CASCADE, help_text="견적서"
-    )
     status = models.CharField(
         max_length=10,
         choices=ProjectStatus.choices,
@@ -34,6 +31,7 @@ class Project(BaseModel):
     )
     tax_invoice = models.ForeignKey(
         "tax.NationalTaxService",
+        related_name="projects",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -49,15 +47,21 @@ class ProjectPlan(BaseModel):
         completed = ("가동 완료", "completed")
         impossible = ("가동 불가", "impossible")
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, related_name="plans", on_delete=models.CASCADE)
     status = models.CharField(
         max_length=10,
         choices=ProductionStatus.choices,
         default=ProductionStatus.pending,
     )
-    product = models.ForeignKey(QuotationProduct, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        QuotationProduct,
+        related_name="plans",
+        on_delete=models.CASCADE,
+    )
     quantity = models.IntegerField(help_text="생산 수량")
-    equipment = models.ForeignKey(FactoryEquipment, on_delete=models.CASCADE)
+    equipment = models.ForeignKey(
+        FactoryEquipment, related_name="plans", on_delete=models.CASCADE
+    )
     start_date = models.DateField(help_text="생산 일자")
     end_date = models.DateField(help_text="마감 예정 일자")
     avg_production_time = models.IntegerField(help_text="평균 생산 시간(초)")
@@ -70,7 +74,7 @@ class ProjectLog(BaseModel):
         memo = ("메모", "memo")
         refund = ("반품", "refund")
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, related_name="logs", on_delete=models.CASCADE)
     type = models.CharField(
         max_length=10,
         choices=LogType.choices,
@@ -82,8 +86,12 @@ class ProjectLog(BaseModel):
 
 # 반품 등록
 class Refund(BaseModel):
-    project_log = models.ForeignKey(ProjectLog, on_delete=models.CASCADE)
-    product = models.ForeignKey("stock.Product", on_delete=models.CASCADE)
+    project_log = models.ForeignKey(
+        ProjectLog, related_name="refunds", on_delete=models.CASCADE
+    )
+    product = models.ForeignKey(
+        "stock.Product", related_name="refunds", on_delete=models.CASCADE
+    )
     amount = models.IntegerField(help_text="반품 수량")
     refund_date = models.DateField(help_text="반품 일자")
     current_stock = models.IntegerField(help_text="현재 재고")  # 그 당시 현재 재고

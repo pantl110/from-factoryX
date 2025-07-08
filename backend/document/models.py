@@ -2,25 +2,45 @@ from django.db import models
 from common.models import BaseModel
 from factory.models import Factory, FactoryClient
 from stock.models import Product
+from project.models import Project
 
 
 # Create your models here.
 class Quotation(BaseModel):
-    factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
-    client = models.ForeignKey(FactoryClient, on_delete=models.CASCADE)
-    products = models.ManyToManyField(
-        Product,
-        through="QuotationProduct",
-        help_text="견적서에 포함된 제품들",
+    factory = models.ForeignKey(
+        Factory,
+        on_delete=models.CASCADE,
+        related_name="quotations",
+        help_text="공장",
+    )
+    client = models.ForeignKey(
+        FactoryClient,
+        on_delete=models.CASCADE,
+        related_name="quotations",
+        help_text="고객",
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="quotations",
+        help_text="프로젝트",
     )
     due_date = models.DateField(help_text="납기일자")
 
 
 class QuotationProduct(BaseModel):
     quotation = models.ForeignKey(
-        Quotation, on_delete=models.CASCADE, help_text="견적서"
+        Quotation,
+        on_delete=models.CASCADE,
+        related_name="products",
+        help_text="견적서",
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, help_text="제품")
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="quotation_products",
+        help_text="제품",
+    )
     quantity = models.IntegerField(help_text="수량")
     unit_price = models.IntegerField(help_text="단가")
     is_delivery = models.BooleanField(
@@ -38,6 +58,7 @@ class WorkInstruction(BaseModel):
     plans = models.ManyToManyField(
         "project.ProjectPlan",
         blank=True,
+        related_name="work_instructions",
         help_text="연결된 생산 계획들",
     )
     memo = models.TextField(help_text="메모", null=True, blank=True)

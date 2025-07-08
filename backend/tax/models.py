@@ -40,9 +40,12 @@ class NationalTaxService(BaseModel):
         help_text="거래 유형",
     )
     transaction_date = models.DateField(help_text="거래 일자")
-    client = models.ForeignKey(FactoryClient, on_delete=models.CASCADE)
+    client = models.ForeignKey(
+        FactoryClient, related_name="tax_invoices", on_delete=models.CASCADE
+    )
     product = models.ManyToManyField(
         "stock.Product",
+        related_name="tax_invoices",
         help_text="품목명",
     )
     transaction_amount = models.IntegerField(help_text="공급 가액")
@@ -62,9 +65,12 @@ class CashReceipt(BaseModel):
         max_length=100,
         help_text="거래 용도",
     )
-    client = models.ForeignKey(FactoryClient, on_delete=models.CASCADE)
+    client = models.ForeignKey(
+        FactoryClient, related_name="cash_receipts", on_delete=models.CASCADE
+    )
     product = models.ManyToManyField(
         "stock.Product",
+        related_name="cash_receipts",
         help_text="품목명",
     )
     transaction_amount = models.IntegerField(help_text="공급 가액")
