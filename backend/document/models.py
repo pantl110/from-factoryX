@@ -26,6 +26,12 @@ class Quotation(BaseModel):
         help_text="프로젝트",
     )
     due_date = models.DateField(help_text="납기일자")
+    uploaded_file = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="업로드 파일",
+    )
 
 
 class QuotationProduct(BaseModel):
