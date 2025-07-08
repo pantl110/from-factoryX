@@ -15,6 +15,7 @@ class TestMaterial(TestCase):
         self.user = User.objects.create_user(
             username="testuser",
             password="password1234!",
+            email="testuser@example.com",
         )
         self.factory = Factory.objects.create(
             owner=self.user,
@@ -41,7 +42,7 @@ class TestMaterial(TestCase):
 
     async def authenticate(self):
         data = {
-            "username": self.user.username,
+            "email": self.user.email,
             "password": "password1234!",
         }
         response = await self.auth_client.post("/login", json=data)
@@ -140,6 +141,88 @@ class TestMaterial(TestCase):
         )
         
         response = await self.client.get(f"/{self.material.id}/detail", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Test Material")
+
+    async def test_get_material_detail_with_days_parameter(self):
+        """
+        원자재 상세 조회 - days 파라미터 테스트
+        """
+        headers = await self.authenticate()
+        
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=self.client_obj,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=50,
+            price=1000,
+            total_stock=150,
+        )
+        
+        # 30일 기간으로 조회
+        response = await self.client.get(f"/{self.material.id}/detail?days=30", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Test Material")
+
+    async def test_get_material_detail_default_period(self):
+        """
+        원자재 상세 조회 - 기본 기간(90일) 테스트
+        """
+        headers = await self.authenticate()
+        
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=self.client_obj,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=50,
+            price=1000,
+            total_stock=150,
+        )
+        
+        response = await self.client.get(f"/{self.material.id}/detail", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Test Material")
+
+    async def test_get_material_detail_long_period(self):
+        """
+        원자재 상세 조회 - 긴 기간(365일) 테스트
+        """
+        headers = await self.authenticate()
+        
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=self.client_obj,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=50,
+            price=1000,
+            total_stock=150,
+        )
+        
+        # 365일 기간으로 조회
+        response = await self.client.get(f"/{self.material.id}/detail?days=365", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Test Material")
+
+    async def test_get_material_detail_short_period(self):
+        """
+        원자재 상세 조회 - 짧은 기간(7일) 테스트
+        """
+        headers = await self.authenticate()
+        
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=self.client_obj,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=50,
+            price=1000,
+            total_stock=150,
+        )
+        
+        response = await self.client.get(f"/{self.material.id}/detail?days=7", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["name"], "Test Material")
