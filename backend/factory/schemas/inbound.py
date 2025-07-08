@@ -35,6 +35,11 @@ class FactoryEqCreateIn(ModelSchema):
         model = FactoryEquipment
         exclude = [
             "id",
+            "created_at",
+            "updated_at",
+        ]
+
+
 # 거래처 관련 스키마
 class FactoryClientCreateIn(ModelSchema):
     class Meta:
@@ -54,11 +59,16 @@ class FactoryEqUpdateIn(ModelSchema):
     note: Optional[str] = Field(default=None, description="설비 설명")
     status: Optional[str] = Field(default=None, description="설비 상태")
     location: Optional[str] = Field(default=None, description="설비 위치")
-    
+
     class Meta:
         model = FactoryEquipment
         exclude = [
             "id",
+            "created_at",
+            "updated_at",
+        ]
+
+
 # 거래처 관련 스키마
 class FactoryClientUpdateIn(ModelSchema):
     class Meta:
