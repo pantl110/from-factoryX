@@ -10,7 +10,7 @@ from factory.schemas.inbound import (
     FactoryEqFilter,
 )
 from factory.schemas.outbound import FactoryEqOut
-from factory.utils import get_factory_eq_by_id
+from factory.utils import get_factory_eq_by_id, get_factory_by_id
 
 router = Router(tags=["FactoryEquipment"])
 
@@ -26,10 +26,9 @@ async def create_factory_eq(request, payload: FactoryEqCreateIn):
     user = request.auth
     data = payload.dict()
     # 본인의 공장인지 검증
-    # allow integer primary key for factory field
-    if isinstance(data.get("factory"), int):
-        data["factory_id"] = data.pop("factory")
-    factory_eq = await FactoryEquipment.objects.acreate(**data)
+    factory_id = data.pop("factory")
+    factory = await get_factory_by_id(factory_id, user)
+    factory_eq = await FactoryEquipment.objects.acreate(factory=factory, **data)
     return 201, factory_eq
 
 
