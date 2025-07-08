@@ -1,10 +1,12 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "react-hook-form";
-import { forwardRef, useState } from "react";
-import SaveModal from "./modals/save-modal";
+import { forwardRef } from "react";
 import { CompanyFormDataModel } from "./types";
 import { InputMask } from "@react-input/mask";
+import useToast from "@/hooks/use-toast";
+import Toast from "@/ui/toast";
+import { CheckCircle } from "@phosphor-icons/react";
 
 const BusinessNumberInput = forwardRef<
   HTMLInputElement,
@@ -39,7 +41,7 @@ const FaxInput = forwardRef<
 FaxInput.displayName = "FaxInput";
 
 const CompanyInfo = () => {
-  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const { isToastOpen, isVisible, showToast } = useToast(2000);
 
   const { register, handleSubmit } = useForm<CompanyFormDataModel>({
     defaultValues: {
@@ -55,12 +57,10 @@ const CompanyInfo = () => {
     },
   });
 
-  const onSubmit = () =>
-    // data: CompanyFormData
-    {
-      // console.log("회사 정보:", data);
-      setIsSaveModalOpen(true);
-    };
+  const onSubmit = () => {
+    // console.log("회사 정보:", data);
+    showToast();
+  };
 
   return (
     <>
@@ -135,9 +135,15 @@ const CompanyInfo = () => {
         </form>
       </div>
 
-      {/* 모달 */}
-      {isSaveModalOpen && (
-        <SaveModal onClose={() => setIsSaveModalOpen(false)} />
+      {/* 토스트 */}
+      {isToastOpen && (
+        <Toast
+          icon={<CheckCircle size={24} className="text-primary" />}
+          text="저장이 완료되었어요."
+          subtext="입력하신 회사 정보가 업데이트되었어요."
+          type="primary"
+          isVisible={isVisible}
+        />
       )}
     </>
   );

@@ -14,8 +14,8 @@ const Toast = ({ icon, text, subtext, type, isVisible = true }: ToastProps) => {
           isVisible ? "toast-in" : "toast-out"
         } ${
           type === "red"
-            ? "border-red shadow-[4px_4px_20px_-12px_rgba(243,18,96,1)]"
-            : "border-primary shadow-[4px_4px_20px_-12px_rgba(1,111,238,1)]"
+            ? "border border-red shadow-[4px_4px_20px_-12px_rgba(243,18,96,1)]"
+            : "border border-primary shadow-[4px_4px_20px_-12px_rgba(1,111,238,1)]"
         }`}
       >
         <div className="flex items-center gap-1">
