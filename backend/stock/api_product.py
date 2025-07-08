@@ -1,13 +1,14 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.pagination import paginate
 from api.security import jwt_auth
-from factory.models import Factory
-from stock.models import Product
 from asgiref.sync import sync_to_async
 from typing import List
-from stock.schemas.inbound import ProductCreateIn, ProductUpdateIn
+from stock.models import Product
+from stock.schemas.inbound import ProductCreateIn, ProductUpdateIn, ProductFilter
 from stock.schemas.outbound import ProductOut
 from stock.utils import get_product_by_id
+from factory.utils import get_factory_by_id
+
 
 router = Router(tags=["Product"])
 
@@ -21,9 +22,9 @@ router = Router(tags=["Product"])
 async def create_product(request, payload: ProductCreateIn):
     user = request.auth
     data = payload.dict()
-    if isinstance(data.get("factory"), int):
-        data["factory_id"] = data.pop("factory")
-    product = await Product.objects.acreate(**data)
+    factory_id = data.pop("factory")
+    factory = await get_factory_by_id(factory_id, user)
+    product = await Product.objects.acreate(factory=factory,**data)
     return 201, product
 
 @router.get(
@@ -34,12 +35,16 @@ async def create_product(request, payload: ProductCreateIn):
     auth=jwt_auth,
 )
 @paginate
-async def list_products(request):
+async def list_products(request, filters: ProductFilter = Query(...)):
     user = request.auth
-    # 단일 쿼리로 사용자가 소유한 공장의 제품 조회
-    products = await sync_to_async(list)(
-        Product.objects.filter(factory__owner=user).order_by("-created_at")
-    )
+    @sync_to_async
+    def get_products():
+        queryset = Product.objects.filter(factory__owner=user).order_by("-created_at")
+        queryset = filters.filter(queryset)
+        return list(queryset)
+
+    products = await get_products()
+
     return products
 
 @router.get(
@@ -50,7 +55,8 @@ async def list_products(request):
     auth=jwt_auth,
 )
 async def get_product(request, product_id: int):
-    product = await get_product_by_id(product_id)
+    user = request.auth
+    product = await get_product_by_id(product_id, user)
     return product
 
 @router.patch(
@@ -61,13 +67,12 @@ async def get_product(request, product_id: int):
     auth=jwt_auth,
 )
 async def update_product(request, product_id: int, payload: ProductUpdateIn):
-    product = await get_product_by_id(product_id)
+    user = request.auth
+    product = await get_product_by_id(product_id, user)
     update_data = payload.dict(exclude_unset=True)
-    if isinstance(update_data.get("factory"), int):
-        update_data["factory_id"] = update_data.pop("factory")
     for key, value in update_data.items():
         setattr(product, key, value)
-    await sync_to_async(product.save)()
+    await product.asave()
     return product
 
 @router.delete(
@@ -78,7 +83,8 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
     auth=jwt_auth,
 )
 async def delete_product(request, product_id: int):
-    product = await get_product_by_id(product_id)
+    user = request.auth
+    product = await get_product_by_id(product_id, user)
     await product.adelete()
     return 204, None
 

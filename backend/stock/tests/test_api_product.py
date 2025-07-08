@@ -8,6 +8,8 @@ from user.models import User
 from factory.models import Factory
 from stock.models import Product
 
+from user.models import EmailVerification
+
 
 class TestProductAPI(TestCase):
     """Product CRUD API tests"""
@@ -19,8 +21,14 @@ class TestProductAPI(TestCase):
 
         # Create a user and factory
         self.user = User.objects.create_user(
-            username="test_product_user",
+            email="test@example.com",
             password="password1234!",
+        )
+        self.verification = EmailVerification.objects.create(
+            email=self.user.email,
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
         )
         self.factory = Factory.objects.create(
             owner=self.user,
@@ -40,7 +48,7 @@ class TestProductAPI(TestCase):
     async def authenticate(self):
         """Obtain JWT access token and return Authorization headers."""
         data = {
-            "username": self.user.username,
+            "email": self.user.email,
             "password": "password1234!",
         }
         response = await self.auth_client.post("/login", json=data)
