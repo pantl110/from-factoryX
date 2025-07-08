@@ -10,6 +10,7 @@ interface ModalProps {
   width?: string;
   height?: string;
   button?: React.ReactNode;
+  gap?: string;
 }
 
 const Modal = ({
@@ -21,6 +22,7 @@ const Modal = ({
   height = "",
   sm = false,
   button,
+  gap = "mt-2",
 }: ModalProps) => {
   useEffect(() => {
     const originalStyle = document.body.style.overflow;
@@ -56,7 +58,7 @@ const Modal = ({
             <X size={16} className="text-sv" />
           </button>
         </div>
-        <div className={`mt-1 ${sm ? "Re_Body-2" : "Me_Body-2"} text-gr`}>
+        <div className={`${gap} Me_Body-2 text-gr`}>
           {subtitle &&
             subtitle.split("\n").map((line, idx) => (
               <span key={idx}>

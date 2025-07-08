@@ -34,12 +34,12 @@ export const formatPhoneNumber = (value: string): string => {
 export const formatFaxNumber = (value: string): string => {
   const numbers = extractNumbers(value); // 숫자만 추출
 
-  if (numbers.length <= 3) {
+  if (numbers.length <= 2) {
     return numbers;
   } else if (numbers.length <= 6) {
-    return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
+    return `${numbers.slice(0, 2)}-${numbers.slice(2)}`;
   } else {
-    return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+    return `${numbers.slice(0, 2)}-${numbers.slice(2, 5)}-${numbers.slice(5, 9)}`;
   }
 };
 

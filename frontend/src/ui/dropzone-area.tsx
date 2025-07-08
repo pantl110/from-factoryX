@@ -13,12 +13,16 @@ interface DropzoneProps {
   isMultiple?: boolean;
   onClose?: () => void;
   onComplete?: (files: File[]) => void;
+  accept?: Record<string, string[]>;
+  onFileUpload?: (hasFiles: boolean) => void;
 }
 
 const DropzoneArea = ({
   isMultiple = false,
   onClose,
   onComplete,
+  accept,
+  onFileUpload,
 }: DropzoneProps) => {
   const [files, setFiles] = useState<File[]>([]);
 
@@ -27,19 +31,24 @@ const DropzoneArea = ({
       const newFiles = acceptedFiles.filter(
         (file) => !files.some((f) => f.name === file.name),
       ); // 중복된 파일은 제외하고 새로운 파일만 추가
-      setFiles((prev) => [...prev, ...newFiles]);
+      const updatedFiles = [...files, ...newFiles];
+      setFiles(updatedFiles);
+      onFileUpload?.(updatedFiles.length > 0);
     },
-    [files],
+    [files, onFileUpload],
   );
 
   const handleRemoveFile = (indexToRemove: number) => {
-    setFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
+    const updatedFiles = files.filter((_, index) => index !== indexToRemove);
+    setFiles(updatedFiles);
+    onFileUpload?.(updatedFiles.length > 0);
   };
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     noClick: true,
     onDrop,
     multiple: isMultiple,
+    accept,
     // accept: {
     //   "image/*": [], // 이미지 허용
     //   "application/pdf": [], // PDF 허용
@@ -153,7 +162,7 @@ const DropzoneArea = ({
           </ul>
           <div className="mt-4 flex justify-end">
             <MiniBtn
-              text="완료"
+              text="업로드"
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"

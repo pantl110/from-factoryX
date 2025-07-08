@@ -1,44 +1,15 @@
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
 import { useForm } from "react-hook-form";
-import { forwardRef } from "react";
 import { CompanyFormDataModel } from "./types";
-import { InputMask } from "@react-input/mask";
 import useToast from "@/hooks/use-toast";
 import Toast from "@/ui/toast";
 import { CheckCircle } from "@phosphor-icons/react";
-
-const BusinessNumberInput = forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<typeof Input>
->((props, ref) => (
-  <Input
-    label="사업자등록번호"
-    placeholder="사업자등록번호를 입력하세요."
-    ref={ref}
-    {...props}
-  />
-));
-BusinessNumberInput.displayName = "BusinessNumberInput";
-const PhoneInput = forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<typeof Input>
->((props, ref) => (
-  <Input
-    placeholder="전화번호를 입력하세요."
-    label="연락처"
-    ref={ref}
-    {...props}
-  />
-));
-PhoneInput.displayName = "PhoneInput";
-const FaxInput = forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<typeof Input>
->((props, ref) => (
-  <Input placeholder="팩스를 입력하세요." label="팩스" ref={ref} {...props} />
-));
-FaxInput.displayName = "FaxInput";
+import {
+  formatBusinessNumber,
+  formatPhoneNumber,
+  formatFaxNumber,
+} from "@/hooks/format-number";
 
 const CompanyInfo = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
@@ -71,13 +42,19 @@ const CompanyInfo = () => {
             <Input
               placeholder="회사명을 입력하세요."
               label="회사명"
+              required
               {...register("companyName")}
             />
-            <InputMask
-              component={BusinessNumberInput}
-              mask="000-00-00000"
-              replacement={{ 0: /[0-9]/ }}
-              {...register("businessNumber")}
+            <Input
+              label="사업자등록번호"
+              placeholder="사업자등록번호를 입력하세요."
+              required
+              {...register("businessNumber", {
+                onChange: (e) => {
+                  const formatted = formatBusinessNumber(e.target.value);
+                  e.target.value = formatted;
+                },
+              })}
             />
           </div>
           <div className="flex gap-2">
@@ -87,23 +64,31 @@ const CompanyInfo = () => {
               {...register("ceoName")}
             />
             <Input
-              placeholder="연락 가능한 이메일 주소를 입력하세요."
+              placeholder="이메일을 입력하세요."
               label="이메일"
               {...register("managerEmail")}
             />
           </div>
           <div className="flex gap-2">
-            <InputMask
-              component={PhoneInput}
-              mask="000-0000-0000"
-              replacement={{ 0: /[0-9]/ }}
-              {...register("managerPhone")}
+            <Input
+              placeholder="연락처를 입력하세요."
+              label="연락처"
+              {...register("managerPhone", {
+                onChange: (e) => {
+                  const formatted = formatPhoneNumber(e.target.value);
+                  e.target.value = formatted;
+                },
+              })}
             />
-            <InputMask
-              component={FaxInput}
-              mask="000-0000-0000"
-              replacement={{ 0: /[0-9]/ }}
-              {...register("managerFax")}
+            <Input
+              placeholder="팩스 번호를 입력하세요."
+              label="팩스 번호"
+              {...register("managerFax", {
+                onChange: (e) => {
+                  const formatted = formatFaxNumber(e.target.value);
+                  e.target.value = formatted;
+                },
+              })}
             />
           </div>
           <div className="flex gap-2">
@@ -125,7 +110,7 @@ const CompanyInfo = () => {
           />
           <div className="flex justify-end">
             <MiniBtn
-              text="저장하기"
+              text="저장"
               textColor="text-primary"
               bgColor="bg-primary-8"
               hoverColor="hover:bg-secondary-hover"

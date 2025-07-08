@@ -80,7 +80,7 @@ const Profile = () => {
         </div>
         <div className="flex justify-end">
           <MiniBtn
-            text="저장하기"
+            text="저장"
             textColor="text-primary"
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
