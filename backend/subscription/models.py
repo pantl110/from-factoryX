@@ -18,6 +18,9 @@ class Subscription(BaseModel):
     price = models.IntegerField(
         help_text="가격",
     )
+    tax_invoice_count = models.IntegerField(
+        help_text="세금계산서 발행 제한 개수",  # 플랜 별 횟수 차별 제공
+    )
 
 
 class SubscriptionHistory(BaseModel):
