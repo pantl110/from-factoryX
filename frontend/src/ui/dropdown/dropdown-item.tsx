@@ -21,9 +21,7 @@ const DropdownItem = ({
 }: DropdownItemProps) => {
   return (
     <div
-      className={`bg-wh flex gap-3 w-full ${chip ? "h-fit" : "h-12"} items-center cursor-pointer rounded-[4px] ${
-        chip ? "p-0" : "p-2"
-      } transition-all duration-200 ease-in-out ${
+      className={`bg-wh flex gap-3 w-full ${chip ? "h-fit" : "h-12"} items-center cursor-pointer rounded-[4px] p-0 transition-all duration-200 ease-in-out ${
         noHover ? "" : "hover:bg-bg"
       }`}
       onClick={(e) => {
@@ -38,7 +36,7 @@ const DropdownItem = ({
       )}
       {text && (
         <h4
-          className={`Heading-4 ${textColor} transition-colors duration-200 ease-in-out`}
+          className={`Heading-4 ${textColor} transition-colors duration-200 ease-in-out text-center w-full`}
         >
           {text}
         </h4>

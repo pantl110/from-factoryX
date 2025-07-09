@@ -118,3 +118,13 @@ export const TaxDocumentTypeColorMap: Record<
   매출: { bgColor: "bg-primary-8", textColor: "text-primary" },
   매입: { bgColor: "bg-red-8", textColor: "text-red" },
 };
+
+// 세금계간서 임시보관함 상태
+export type TaxDraftStatusType = "임시 저장" | "발행 대기";
+export const TaxDraftStatusColorMap: Record<
+  TaxDraftStatusType,
+  StatusColorModel
+> = {
+  "임시 저장": { textColor: "text-primary", bgColor: "bg-bg" },
+  "발행 대기": { textColor: "text-dg", bgColor: "bg-bg" },
+};

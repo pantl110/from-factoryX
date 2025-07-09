@@ -4,8 +4,8 @@ import OrderTableItem from "./order-table-item";
 const OrderItemInfo = () => {
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3">주문 품목 정보</h3>
-      <PriceInfo />
+      <h3 className="Heading-3 h-10 items-center flex">주문 품목 정보</h3>
+
       <div className="w-full">
         <div className="flex items-center h-12 w-full border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
           <p className="px-3 flex-2">품목명</p>
@@ -22,6 +22,8 @@ const OrderItemInfo = () => {
         <OrderTableItem />
         <OrderTableItem />
       </div>
+
+      <PriceInfo />
     </div>
   );
 };

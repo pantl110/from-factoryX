@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useEffect } from "react";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import MainTitleSec from "./main-title-sec";
 import DocumentTable from "./document-table";
@@ -45,13 +44,6 @@ const DocumentPageContent = () => {
     getDeleteButtonText,
   } = useCheckAll(pagedData.map((item) => item.id));
 
-  // 탭 변경 시 페이지와 체크박스 상태 리셋
-  useEffect(() => {
-    setCurrentPage(1);
-    setAllChecked(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedType]);
-
   const handleDocumentClick = (document: DocumentDataModel) => {
     setSelectedDocument(document);
   };
@@ -61,12 +53,20 @@ const DocumentPageContent = () => {
     setAllChecked(false);
   };
 
+  // 탭 변경 핸들러
+  const handleTabChange = (type: DocumentType) => {
+    setSelectedType(type);
+    // 탭 변경 시 첫 페이지로 이동하고 체크박스 초기화
+    setCurrentPage(1);
+    setAllChecked(false);
+  };
+
   return (
     <>
       <div className="flex flex-col gap-8 w-full">
         <MainTitleSec
           selectedType={selectedType}
-          setSelectedType={setSelectedType}
+          setSelectedType={handleTabChange}
         />
 
         <div className="px-10 pb-10">

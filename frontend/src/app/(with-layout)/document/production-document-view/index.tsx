@@ -29,7 +29,7 @@ const ProductionDocumentView = () => {
       <div className="flex flex-col gap-6">
         {Object.entries(grouped).map(([projectName, items]) => (
           <div key={projectName} className="flex flex-col gap-3">
-            <h3 className="Heading-3">{projectName}</h3>
+            <h3 className="Heading-3 h-10 items-center flex">{projectName}</h3>
             <div>
               <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv">
                 <p className="flex-2 px-3">품목명</p>
@@ -57,7 +57,7 @@ const ProductionDocumentView = () => {
 
       {/* 특이사항 */}
       <div className="flex flex-col gap-3">
-        <h3 className="Heading-3">특이사항</h3>
+        <h3 className="Heading-3 h-10 items-center flex">특이사항</h3>
         <CommentItem
           title="A 품목"
           comment="입고 시 포장 파손, 날개 검수 필요"
@@ -70,7 +70,7 @@ const ProductionDocumentView = () => {
 
       {/* 메모 */}
       <div className="flex flex-col gap-3">
-        <h3 className="Heading-3">메모</h3>
+        <h3 className="Heading-3 h-10 items-center flex">메모</h3>
         <TextareaAutosize
           placeholder="메모를 입력하세요."
           value={value}

@@ -3,8 +3,8 @@
 import { useState, Suspense } from "react";
 import { useEffect } from "react";
 import MainTitleSec from "./main-title-sec";
-import TableHeader from "../table-header";
-import TableItem from "../table-item";
+import TableHeader from "./table-header";
+import TableItem from "./table-item";
 import TaxDetailPanel from "../tax-detail-panel";
 import { taxData, TaxDataModel } from "@/mocks/tax-data";
 import { TaxDocumentType } from "@/types/status-type";
@@ -107,7 +107,7 @@ const TaxPageContent = () => {
 
   return (
     <>
-      <div className={`flex flex-col gap-8`}>
+      <div className="flex flex-col gap-8">
         <MainTitleSec
           selectedTaxType={selectedTaxType}
           setSelectedTaxType={setSelectedTaxType}
@@ -190,6 +190,8 @@ const TaxPageContent = () => {
           )}
         </div>
       </div>
+
+      {/* 디테일 판넬 */}
       {isPanelOpen && selectedItem && (
         <TaxDetailPanel item={selectedItem} onClose={handleClosePanel} />
       )}

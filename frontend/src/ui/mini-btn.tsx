@@ -1,8 +1,13 @@
 "use client";
 
 import { IconProps } from "@phosphor-icons/react";
+import { ButtonHTMLAttributes } from "react";
 
-interface MiniBtnProps {
+interface MiniBtnProps
+  extends Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    "className" | "children"
+  > {
   text: string;
   textColor?: string;
   bgColor?: string;
@@ -11,12 +16,8 @@ interface MiniBtnProps {
   icon?: React.ComponentType<IconProps>;
   iconPosition?: "left" | "right";
   iconColor?: string;
-  onClick?: () => void;
-  height?: string;
-  disabled?: boolean;
-  isDeleteMode?: boolean;
   width?: string;
-  type?: "submit" | "reset" | "button";
+  height?: string;
 }
 
 const MiniBtn = ({
@@ -28,11 +29,9 @@ const MiniBtn = ({
   icon: Icon,
   iconPosition = "left",
   iconColor,
-  onClick,
-  height = "h-10",
-  disabled = false,
   width = "w-fit",
-  type,
+  height = "h-10",
+  ...rest
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : "";
   const positionClass = iconPosition === "right" ? "flex-row-reverse" : "";
@@ -40,20 +39,18 @@ const MiniBtn = ({
   return (
     <button
       className={`px-4 rounded-md Me_Body-1 ${height} ${width} transition-all duration-200 ease-in-out ${
-        disabled
+        rest.disabled
           ? "bg-lg text-gr"
           : `${bgColor} ${textColor} ${hoverColor || ""}`
       } ${borderClass} flex items-center justify-center gap-2 ${positionClass} ${
-        disabled ? "cursor-not-allowed" : "cursor-pointer"
+        rest.disabled ? "cursor-not-allowed" : "cursor-pointer"
       } transition-colors duration-200`}
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
-      type={type}
+      {...rest}
     >
       {Icon && (
         <Icon
           size={20}
-          className={`transition-colors duration-200 ease-in-out ${disabled ? "text-gr" : iconColor}`}
+          className={`transition-colors duration-200 ease-in-out ${rest.disabled ? "text-gr" : iconColor}`}
         />
       )}
       <span>{text}</span>

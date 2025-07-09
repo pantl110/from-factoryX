@@ -8,7 +8,7 @@ interface TaxBuyerProviderInfoProps {
 const TaxBuyerProviderInfo = ({ taxType }: TaxBuyerProviderInfoProps) => {
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3">
+      <h3 className="Heading-3 h-10 items-center flex">
         {taxType === "매출" ? "거래처 정보" : "구매처 정보"}
       </h3>
       <div className="width-full border-b border-lg">

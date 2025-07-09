@@ -10,7 +10,7 @@ const ProductListInfo = ({ transaction = false }: ProductListInfoProps) => {
   const title = transaction ? "거래 품목 정보" : "주문 품목 정보";
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3">{title}</h3>
+      <h3 className="Heading-3 h-10 items-center flex">{title}</h3>
       <PriceInfo />
       <table>
         <thead>
