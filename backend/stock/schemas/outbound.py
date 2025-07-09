@@ -1,25 +1,45 @@
 from pydantic import BaseModel
-from typing import Optional, List
-from ninja import ModelSchema
+from typing import Optional, List, Dict, Any
+from ninja import ModelSchema, Field
 from stock.models import Product, ProductHistory, Material, MaterialHistory
 from factory.models import FactoryClient
 
 
 class MaterialOut(ModelSchema):
+    """원자재 출력 스키마 - 기본 정보"""
+    class Meta:
+        model = Material
+        fields = "__all__"
+
+
+class MaterialDetailOut(ModelSchema):
+    """원자재 출력 스키마 - 상세 정보 (업체별 단가 비교 포함)"""
+    client_stats: Optional[Dict[str, Any]] = Field(default=None, description="업체별 통계")
+    location_name: Optional[str] = Field(default=None, description="위치명")
+    created_at_formatted: Optional[str] = Field(default=None, description="등록일시")
+    updated_at_formatted: Optional[str] = Field(default=None, description="수정일시")
+    
     class Meta:
         model = Material
         fields = "__all__"
 
 
 class MaterialHistoryOut(ModelSchema):
+    """원자재 히스토리 출력 스키마 - 기본 정보"""
     class Meta:
         model = MaterialHistory
         fields = "__all__"
 
 
-class MaterialDetailOut(ModelSchema):
+class MaterialHistoryDetailOut(ModelSchema):
+    """원자재 히스토리 출력 스키마 - 상세 정보"""
+    client_name: Optional[str] = Field(default=None, description="거래처명")
+    material_name: Optional[str] = Field(default=None, description="원자재명")
+    material_code: Optional[str] = Field(default=None, description="원자재코드")
+    created_at_formatted: Optional[str] = Field(default=None, description="처리일시")
+    
     class Meta:
-        model = Material
+        model = MaterialHistory
         fields = "__all__"
 
 
@@ -68,12 +88,4 @@ class ProductOut(ModelSchema):
 class ProductHistoryOut(ModelSchema):
     class Meta:
         model = ProductHistory
-        fields = "__all__"
-
-
-class MaterialHistoryDetailOut(ModelSchema):
-    client_name: str = ""
-
-    class Meta:
-        model = MaterialHistory
         fields = "__all__"
