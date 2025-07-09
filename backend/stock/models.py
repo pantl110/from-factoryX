@@ -41,6 +41,10 @@ class Material(BaseModel):
         help_text="위치",
     )
 
+    class Meta:
+        unique_together = ['factory', 'code']
+        ordering = ['-created_at']
+
 
 class MaterialHistory(BaseModel):
     class MaterialHistoryType(models.TextChoices):
