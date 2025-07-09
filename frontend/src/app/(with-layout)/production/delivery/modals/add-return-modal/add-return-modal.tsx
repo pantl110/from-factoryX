@@ -11,6 +11,7 @@ import { productData } from "@/mocks/product-data";
 import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
 import { useInput } from "@/hooks/use-input";
 import { getToday } from "@/hooks/get-today";
+import { formatDate } from "@/hooks/format-number";
 
 interface AddReturnModalProps {
   onClose: () => void;
@@ -90,7 +91,7 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
             <ProductNameDropdown
               items={matchedItems as ProductDataModel[]}
               onSelect={handleSelectProduct}
-              width="w-[586px]"
+              width="w-[551px]"
             />
           </div>
         )}
@@ -112,20 +113,22 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
           placeholder="반품할 일자를 입력해 주세요."
           required
           value={returnDate}
-          onChange={(e) => handleReturnDateChange(e.target.value)}
+          onChange={(e) => {
+            const formatted = formatDate(e.target.value);
+            handleReturnDateChange(formatted);
+          }}
           showError={!!returnDateError}
-          type="date"
         />
       </div>
       <div className="flex gap-2.5 mt-4 justify-end">
         <MiniBtn
-          text="취소하기"
+          text="취소"
           onClick={onClose}
           textColor="text-sv"
           hoverColor=""
         />
         <MiniBtn
-          text="등록하기"
+          text="등록"
           onClick={onClose}
           textColor="text-wh"
           bgColor="bg-primary"

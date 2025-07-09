@@ -17,7 +17,7 @@ const ProductionMonitor = () => {
 
   return (
     <div
-      className="flex gap-3 px-10 w-full min-h-0 flex-1"
+      className="flex gap-3 px-10 w-full min-h-0 h-full flex-1 pb-10"
       style={{ height: "calc(100vh - 333px)" }}
     >
       {/* 왼쪽 영역 */}

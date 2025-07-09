@@ -11,7 +11,7 @@ const ProductListInfo = ({ transaction = false }: ProductListInfoProps) => {
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">{title}</h3>
-      <PriceInfo />
+
       <table>
         <thead>
           <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
@@ -31,6 +31,8 @@ const ProductListInfo = ({ transaction = false }: ProductListInfoProps) => {
           ))}
         </tbody>
       </table>
+
+      <PriceInfo />
     </div>
   );
 };

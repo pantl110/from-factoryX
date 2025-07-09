@@ -106,7 +106,7 @@ const ProductionPageContent = () => {
       {tabs[selectedTab] === "생산 내역" && <ProductionLog />}
       {tabs[selectedTab] === "생산 계획" && <ProductionPlan />}
       {tabs[selectedTab] === "주문서" && (
-        <div className="px-10 py-5">
+        <div className="px-10 pt-5 pb-10">
           <OrderDocumentView />
         </div>
       )}

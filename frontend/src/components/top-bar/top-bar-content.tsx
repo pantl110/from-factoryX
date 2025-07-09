@@ -36,7 +36,7 @@ const TopBarContent = ({
     return (
       <div className="flex gap-2">
         <MiniBtn
-          text="다시 진행하기"
+          text="진행 상태로 전환"
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
@@ -46,14 +46,27 @@ const TopBarContent = ({
   }
 
   if (productionTab === "주문서" || productionTab === "생산 현황") {
-    return null;
+    return (
+      <MiniBtn
+        text="세금계산서 생성"
+        textColor="text-dg"
+        borderColor="border-lg"
+        hoverColor="hover:bg-bg"
+      />
+    );
   }
 
   if (productionTab === "생산 계획") {
     return (
-      <div className="flex">
+      <div className="flex gap-2">
         <MiniBtn
-          text="다음 단계"
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+        />
+        <MiniBtn
+          text="다음"
           textColor="text-primary"
           bgColor="bg-primary-8"
           hoverColor="hover:bg-secondary-hover"
@@ -67,9 +80,15 @@ const TopBarContent = ({
   if (productionTab === "생산 내역") {
     if (pageStatus === "생산 완료") {
       return (
-        <div className="flex">
+        <div className="flex gap-2">
           <MiniBtn
-            text="다음단계"
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+          />
+          <MiniBtn
+            text="다음"
             textColor="text-primary"
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
@@ -77,12 +96,25 @@ const TopBarContent = ({
         </div>
       );
     }
-    return null;
+    return (
+      <MiniBtn
+        text="세금계산서 생성"
+        textColor="text-dg"
+        borderColor="border-lg"
+        hoverColor="hover:bg-bg"
+      />
+    );
   }
 
   if (productionTab === "납품") {
     return (
       <div className="flex gap-2">
+        <MiniBtn
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+        />
         <MiniBtn
           text="반품 등록"
           textColor="text-red"
@@ -92,9 +124,9 @@ const TopBarContent = ({
         />
         <MiniBtn
           text="보관함으로 이동"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
+          textColor="text-primary"
+          bgColor="bg-primary-8"
+          hoverColor="hover:bg-secondary-hover"
           onClick={onMoveToStorageClick}
         />
       </div>
