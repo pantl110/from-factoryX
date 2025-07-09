@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import { useEffect } from "react";
 import SearchDeleteTable from "@/ui/search-delete-table";
 import MainTitleSec from "./main-title-sec";
 import DocumentTable from "./document-table";
@@ -44,6 +45,13 @@ const DocumentPageContent = () => {
     getDeleteButtonText,
   } = useCheckAll(pagedData.map((item) => item.id));
 
+  // 탭 변경 시 페이지와 체크박스 상태 리셋
+  useEffect(() => {
+    setCurrentPage(1);
+    setAllChecked(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedType]);
+
   const handleDocumentClick = (document: DocumentDataModel) => {
     setSelectedDocument(document);
   };
@@ -61,7 +69,7 @@ const DocumentPageContent = () => {
           setSelectedType={setSelectedType}
         />
 
-        <div className="px-8">
+        <div className="px-10 pb-10">
           <SearchDeleteTable
             checkedCount={checkedCount}
             deleteButtonText={getDeleteButtonText()}
@@ -77,11 +85,13 @@ const DocumentPageContent = () => {
             toggleOne={toggleOne}
             selectedType={selectedType}
           />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+          {totalPages >= 2 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </div>
       </div>
 

@@ -83,7 +83,7 @@ const StockPageContent = () => {
           onOpenCreatePanel={handleOpenCreatePanel}
           onOpenClientInfoModal={handleOpenClientInfoModal}
         />
-        <div className="px-8">
+        <div className="px-10 pb-10">
           {stockTab === "product" ? (
             <Product
               isCreatePanelOpen={isCreatePanelOpen}

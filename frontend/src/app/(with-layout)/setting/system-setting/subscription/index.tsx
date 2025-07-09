@@ -17,7 +17,7 @@ const Subscription = () => {
   const btnText = "카드 변경"; // 카드 변경, 카드 추가 // 사용자 상황에 따라 변경 필요
 
   return (
-    <div className="px-10 pb-8 flex flex-col gap-8">
+    <div className="px-10 pb-10 flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <FreePlan />
         {planTypes.map((type) => (

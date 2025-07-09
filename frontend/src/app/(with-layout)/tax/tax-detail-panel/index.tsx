@@ -9,7 +9,7 @@ interface TaxDetailPanelProps {
 
 const TaxDetailPanel = ({ item, onClose }: TaxDetailPanelProps) => {
   return (
-    <Panel title="세무/회계" onClose={onClose}>
+    <Panel title={`${item.taxType} 세금계산서`} onClose={onClose}>
       <TaxDocumentView taxType={item.taxType} />
     </Panel>
   );

@@ -50,7 +50,7 @@ const Facility = ({
 
   return (
     <>
-      <div className="w-full px-10">
+      <div className="w-full px-10 pb-10">
         <FacilityTableHeader
           isAllChecked={isAllChecked}
           onToggleAll={toggleAll}

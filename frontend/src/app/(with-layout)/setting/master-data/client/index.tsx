@@ -28,7 +28,7 @@ const Client = ({
 
   return (
     <>
-      <div className="w-full mx-10 overflow-x-auto flex flex-col flex-1 max-w-[1320px]">
+      <div className="w-full mx-10 overflow-x-auto flex flex-col flex-1 max-w-[1320px] mb-10">
         <ClientTableHeader
           isAllChecked={isAllChecked}
           onToggleAll={toggleAll}

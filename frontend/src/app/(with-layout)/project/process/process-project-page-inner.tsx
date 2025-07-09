@@ -90,7 +90,7 @@ const ProcessProjectPageInner = () => {
           selectedStatus={selectedStatus}
           onStatusChange={handleStatusChange}
         />
-        <div className="px-8">
+        <div className="px-10 pb-10">
           <SearchDeleteTable
             checkedCount={checkedCount}
             deleteButtonText={getDeleteButtonText()}

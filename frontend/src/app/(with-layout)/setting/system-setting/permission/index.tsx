@@ -21,8 +21,14 @@ const Permission = () => {
     "조회자",
   ];
 
+  const sortedData = [...permissionData].sort((a, b) =>
+    b.date.localeCompare(a.date),
+  );
+  const { currentItems, currentPage, totalPages, setCurrentPage } =
+    usePagination({ items: sortedData, itemsPerPage: 8 });
+
   // 체크박스 관리
-  const itemIds = permissionData.map((item) => item.id);
+  const itemIds = currentItems.map((item) => item.id);
   const {
     // checkedIds,
     checkedCount,
@@ -33,12 +39,6 @@ const Permission = () => {
     setAllChecked,
     getDeleteButtonText,
   } = useCheckAll(itemIds);
-
-  const sortedData = [...permissionData].sort((a, b) =>
-    b.date.localeCompare(a.date),
-  );
-  const { currentItems, currentPage, totalPages, setCurrentPage } =
-    usePagination({ items: sortedData, itemsPerPage: 8 });
 
   // 삭제 처리
   const handleDelete = () => {
@@ -51,7 +51,7 @@ const Permission = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-6 pb-8 px-10">
+      <div className="flex flex-col gap-6 pb-10 px-10">
         <div className="flex flex-col gap-7 pb-8 border-b border-[#eeeeee]">
           {permissionRoleTypes.map((type) => (
             <PermissionInfoItem key={type} type={type} />
@@ -116,11 +116,13 @@ const Permission = () => {
                 />
               ))}
             </div>
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+            {totalPages >= 2 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </div>
         </div>
       </div>
