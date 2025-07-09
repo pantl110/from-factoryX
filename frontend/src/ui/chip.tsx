@@ -1,15 +1,18 @@
+import { CaretDown } from "@phosphor-icons/react";
+
 interface ChipProps {
   text: string;
   bgColor?: string;
   textColor?: string;
   borderColor?: string;
   containerWidth?: string;
-  sm?: boolean;
+  state?: boolean;
   radius?: string;
-  icon?: React.ReactNode;
   onClick?: (e?: React.MouseEvent) => void;
   cursor?: string;
   hover?: string;
+  height?: string;
+  padding?: string;
 }
 
 const Chip = ({
@@ -18,12 +21,13 @@ const Chip = ({
   textColor,
   borderColor,
   containerWidth,
-  sm = false,
+  state = false,
   radius = "rounded",
-  icon,
   onClick,
   cursor = onClick ? "cursor-pointer" : "",
   hover = "",
+  height = "h-8",
+  padding = "px-3",
 }: ChipProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -33,7 +37,7 @@ const Chip = ({
   return (
     <div
       className={`${containerWidth}`}
-      onClick={handleClick}
+      onClick={onClick ? handleClick : undefined}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={
@@ -48,12 +52,12 @@ const Chip = ({
       }
     >
       <div
-        className={`flex gap-1 items-center w-fit ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${hover} ${
-          sm ? "h-7 px-2" : "h-9 px-3"
-        } ${borderColor ? `border ${borderColor}` : ""}`}
+        className={`flex gap-1 items-center w-fit ${height} ${padding} ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${hover} ${borderColor ? `border ${borderColor}` : ""} ${
+          state ? "cursor-pointer" : ""
+        }`}
       >
         <span>{text}</span>
-        {icon}
+        {state && <CaretDown size={12} />}
       </div>
     </div>
   );

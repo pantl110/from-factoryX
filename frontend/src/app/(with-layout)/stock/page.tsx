@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import MainTitleSec from "./main-title-sec";
 import Product from "./product/index";
 import Material from "./material/index";
@@ -13,15 +14,22 @@ import Panel from "@/ui/panel";
 import MaterialDetail from "./material/material-detail";
 import CustomerInfoModal from "./material/modals/customer-info-modal";
 import ProductEnrollmentModal from "./material/modals/product-enrollment-modal";
+import Spinner from "@/ui/spinner";
 
-const StockPage = () => {
+const StockPageContent = () => {
   const stockTab =
     (usePageStatusStore((state) => state.stockTab) as StockTabType) || null;
   const setStockTab = usePageStatusStore((state) => state.setStockTab);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!stockTab) setStockTab("product");
-  }, [stockTab, setStockTab]);
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "material") {
+      setStockTab("material");
+    } else if (!stockTab) {
+      setStockTab("product");
+    }
+  }, [stockTab, setStockTab, searchParams]);
 
   const [isProductAddDropdownOpen, setIsProductAddDropdownOpen] =
     useState(false);
@@ -75,7 +83,7 @@ const StockPage = () => {
           onOpenCreatePanel={handleOpenCreatePanel}
           onOpenClientInfoModal={handleOpenClientInfoModal}
         />
-        <div className="px-8">
+        <div className="px-10 pb-10">
           {stockTab === "product" ? (
             <Product
               isCreatePanelOpen={isCreatePanelOpen}
@@ -124,6 +132,20 @@ const StockPage = () => {
         />
       )}
     </>
+  );
+};
+
+const StockPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spinner />
+        </div>
+      }
+    >
+      <StockPageContent />
+    </Suspense>
   );
 };
 

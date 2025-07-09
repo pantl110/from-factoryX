@@ -20,6 +20,7 @@ export const ClientNameDropdown = ({
           key={item.id}
           text={item.companyName}
           onClick={() => onSelect(item)}
+          search={true}
         />
       ))}
     </Dropdown>

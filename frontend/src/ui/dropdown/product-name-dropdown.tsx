@@ -19,6 +19,7 @@ export const ProductNameDropdown = ({
           key={item.id}
           text={item.productName}
           onClick={() => onSelect(item)}
+          search={true}
         />
       ))}
     </Dropdown>

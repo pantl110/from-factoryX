@@ -46,55 +46,71 @@ const ManualAddMaterial = ({
   return (
     <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex gap-2.5">
-          <div className="flex-2">
-            <Input
-              placeholder="자재명 입력"
-              label="자재명"
-              required
-              {...register("materialName", {
-                required: true,
-                validate: (v) => !!v.trim(),
-              })}
-              showError={!!errors.materialName}
-            />
+        <div className="flex flex-col gap-2.5">
+          <div className="flex w-full gap-2.5">
+            <div className="flex-1">
+              <Input
+                placeholder="자재명을 입력하세요."
+                label="자재명"
+                required
+                {...register("materialName", {
+                  required: true,
+                  validate: (v) => !!v.trim(),
+                })}
+                showError={!!errors.materialName}
+              />
+            </div>
+            <div className="flex-1">
+              <Input
+                placeholder="자재코드를 입력하세요."
+                label="자재코드"
+                required
+                {...register("materialCode", {
+                  required: true,
+                  validate: (v: unknown) => typeof v === "string" && !!v.trim(),
+                })}
+                showError={!!errors.materialCode}
+              />
+            </div>
           </div>
-          <div className="flex-2">
-            <Input
-              placeholder="규격 입력"
-              label="규격"
-              required
-              {...register("size", {
-                required: true,
-                validate: (v) => !!v.trim(),
-              })}
-              showError={!!errors.size}
-            />
-          </div>
-          <div className="flex-1">
-            <Input
-              placeholder="EX) 100"
-              label="사용 수량"
-              type="number"
-              required
-              {...register("usageQuantity", {
-                required: true,
-                validate: (v) => v !== null && Number(v) > 0,
-                setValueAs: (v) => (v === "" ? null : Number(v)),
-              })}
-              showError={!!errors.usageQuantity}
-            />
+          <div className="flex w-full gap-2.5">
+            <div className="flex-1">
+              <Input
+                placeholder="규격을 입력하세요."
+                label="규격"
+                required
+                {...register("size", {
+                  required: true,
+                  validate: (v) => !!v.trim(),
+                })}
+                showError={!!errors.size}
+              />
+            </div>
+            <div className="flex-1">
+              <Input
+                placeholder="사용 수량을 입력하세요."
+                label="사용 수량"
+                type="number"
+                required
+                {...register("usageQuantity", {
+                  required: true,
+                  validate: (v) => v !== null && Number(v) > 0,
+                  setValueAs: (v) => (v === "" ? null : Number(v)),
+                })}
+                showError={!!errors.usageQuantity}
+              />
+            </div>
           </div>
         </div>
         <div className="flex gap-2 justify-end mt-3">
           <MiniBtn
-            text="취소하기"
+            text="취소"
             textColor="text-sv"
             hoverColor=""
             onClick={() => setIsManualAddMode(false)}
           />
           <MiniBtn
-            text="추가하기"
+            text="추가"
             textColor="text-primary"
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"

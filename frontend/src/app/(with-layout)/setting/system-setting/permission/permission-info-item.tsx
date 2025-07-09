@@ -1,12 +1,12 @@
 import Chip from "@/ui/chip";
-import { PermissionRoleType, PERMISSION_INFO } from "./types";
+import { PermissionRoleType, PermissionRoleInfo } from "./types";
 
 interface PermissionInfoItemProps {
   type: PermissionRoleType;
 }
 
 const PermissionInfoItem = ({ type }: PermissionInfoItemProps) => {
-  const info = PERMISSION_INFO[type];
+  const info = PermissionRoleInfo[type];
 
   return (
     <div className="flex flex-col gap-2">

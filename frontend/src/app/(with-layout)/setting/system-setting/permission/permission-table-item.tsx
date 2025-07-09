@@ -1,14 +1,22 @@
-import { useState } from "react";
-import { InvitationStatusColorMap, InvitationStatusType } from "./types";
-import { Trash } from "@phosphor-icons/react";
-import DeleteTeamMemberModal from "./modals/delete-team-member-modal";
+import {
+  InvitationStatusColorMap,
+  InvitationStatusType,
+  PermissionRoleInfo,
+  PermissionRoleType,
+} from "./types";
+import Checkbox from "@/ui/checkbox";
+import Chip from "@/ui/chip";
+import AuthDropdown from "./modals/auth-dropdown";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 
 interface PermissionTableItemProps {
   invitationStatus: InvitationStatusType;
-  name: string | null;
+  name?: string;
   email: string;
   permission: string;
   date: string;
+  isChecked?: boolean;
+  onToggle?: () => void;
 }
 
 const PermissionTableItem = ({
@@ -17,32 +25,65 @@ const PermissionTableItem = ({
   email,
   permission,
   date,
+  isChecked = false,
+  onToggle,
 }: PermissionTableItemProps) => {
-  const [isDeleteTeamMemberModalOpen, setIsDeleteTeamMemberModalOpen] =
-    useState(false);
-
   const textColor = InvitationStatusColorMap[invitationStatus];
+  const authColors = PermissionRoleInfo[permission as PermissionRoleType];
+
+  // 권한 드롭다운 관리
+  const {
+    isOpen: isAuthDropdownOpen,
+    anchorRect: authAnchorRect,
+    openDropdown: openAuthDropdown,
+    closeDropdown: closeAuthDropdown,
+  } = usePortalDropdown();
+
+  const handleAuthChange = () =>
+    // newAuth: string
+
+    {
+      // console.log("권한 변경:", newAuth);
+      // TODO: API 호출로 권한 변경 처리
+    };
 
   return (
     <>
       <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-[#eeeeee] group">
+        <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
         <p className={`px-3 flex-1 ${textColor}`}>{invitationStatus}</p>
         <p className="px-3 flex-1">{name ?? "-"}</p>
         <p className="px-3 flex-2">{email}</p>
-        <p className="px-3 flex-1">{permission}</p>
+        <div className="px-3 flex-1">
+          <Chip
+            text={permission}
+            textColor={authColors.chipColor.text}
+            bgColor={authColors.chipColor.bg}
+            hover={authColors.chipColor.hover}
+            state={true}
+            cursor="cursor-pointer"
+            onClick={(e) => openAuthDropdown(e as React.MouseEvent)}
+          />
+        </div>
         <p className="px-3 flex-1">{date}</p>
-        <button
-          onClick={() => setIsDeleteTeamMemberModalOpen(true)}
-          className="relative w-9 h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        >
-          <Trash size={20} className="text-sv" />
-        </button>
       </div>
 
-      {isDeleteTeamMemberModalOpen && (
-        <DeleteTeamMemberModal
-          onClose={() => setIsDeleteTeamMemberModalOpen(false)}
-        />
+      {/* 권한 드롭다운 */}
+      {isAuthDropdownOpen && authAnchorRect && (
+        <div
+          style={{
+            position: "fixed",
+            left: authAnchorRect.left,
+            top: authAnchorRect.bottom + 8,
+            zIndex: 10,
+            width: authAnchorRect.width,
+          }}
+        >
+          <AuthDropdown
+            onClose={closeAuthDropdown}
+            onSelect={handleAuthChange}
+          />
+        </div>
       )}
     </>
   );

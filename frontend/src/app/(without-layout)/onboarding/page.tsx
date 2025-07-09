@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState<OnboardingStepType>("welcome");
+
   const router = useRouter();
   const steps = ["welcome", "first-step", "second-step", "third-step"] as const;
   type StepType = (typeof steps)[number];
@@ -19,7 +20,7 @@ const OnboardingPage = () => {
     if (currentIdx < steps.length - 1) {
       setCurrentStep(steps[currentIdx + 1]);
     } else {
-      router.push("/dashboard"); // 마지막 단계
+      router.push("/dashboard?from=onboarding"); // 마지막 단계
     }
   };
   const handlePrevStep = () => {

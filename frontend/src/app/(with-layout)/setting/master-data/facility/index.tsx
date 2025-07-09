@@ -8,15 +8,21 @@ import FacilityDetailPanel from "./modals/facility-detail-panel";
 import { FacilityStatusType } from "./types";
 
 interface FacilityProps {
-  isDeleteMode?: boolean;
   isCreatePanelOpen?: boolean;
   setIsCreatePanelOpen?: (isOpen: boolean) => void;
+  isAllChecked: boolean;
+  isChecked: (id: number) => boolean;
+  toggleAll: () => void;
+  toggleOne: (id: number) => void;
 }
 
 const Facility = ({
-  isDeleteMode,
   isCreatePanelOpen = false,
   setIsCreatePanelOpen,
+  isAllChecked,
+  isChecked,
+  toggleAll,
+  toggleOne,
 }: FacilityProps) => {
   const [selectedFacility, setSelectedFacility] =
     useState<FacilityDataModel | null>(null);
@@ -44,14 +50,18 @@ const Facility = ({
 
   return (
     <>
-      <div className="w-full px-10">
-        <FacilityTableHeader isDeleteMode={isDeleteMode} />
+      <div className="w-full px-10 pb-10">
+        <FacilityTableHeader
+          isAllChecked={isAllChecked}
+          onToggleAll={toggleAll}
+        />
         {facilityData.map((item) => (
           <FacilityTableItem
             key={item.id}
             facility={item}
-            isDeleteMode={isDeleteMode}
             onClick={() => handleItemClick(item)}
+            isChecked={isChecked(item.id)}
+            onToggle={() => toggleOne(item.id)}
           />
         ))}
       </div>

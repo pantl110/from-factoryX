@@ -59,7 +59,7 @@ const SignupPage = () => {
                   placeholder="이메일을 입력해주세요."
                   label="이메일"
                   value={email.value}
-                  onChange={email.handleChange}
+                  onChange={(e) => email.handleChange(e.target.value)}
                   disabled={verification.isVerificationSent}
                 />
                 <div className="mt-1 mb-2 h-5">
@@ -75,7 +75,9 @@ const SignupPage = () => {
                     placeholder="이메일로 전송된 6자리 인증 코드를 입력해주세요."
                     label="인증 코드"
                     value={verificationCode.value}
-                    onChange={verificationCode.handleChange}
+                    onChange={(e) =>
+                      verificationCode.handleChange(e.target.value)
+                    }
                   />
                   <div className="mt-2 mb-5 h-5 flex justify-between items-center">
                     <span className="text-dg Re_Body-1">
@@ -119,7 +121,9 @@ const SignupPage = () => {
                   placeholder="비밀번호를 입력해주세요."
                   label="비밀번호"
                   value={password.password}
-                  onChange={password.handlePasswordChange}
+                  onChange={(e) =>
+                    password.handlePasswordChange(e.target.value)
+                  }
                   isShowPasswordToggle={true}
                 />
                 <div className="mt-1 mb-2 h-5">
@@ -136,7 +140,9 @@ const SignupPage = () => {
                   placeholder="비밀번호를 다시 입력해주세요."
                   label="비밀번호 확인"
                   value={password.confirmPassword}
-                  onChange={password.handleConfirmPasswordChange}
+                  onChange={(e) =>
+                    password.handleConfirmPasswordChange(e.target.value)
+                  }
                   isShowPasswordToggle={true}
                 />
                 <div className="mt-1 mb-2 h-5">

@@ -34,7 +34,6 @@ const MaterialStockStatusItem = ({
       <div className="flex-1 px-3">
         <Chip
           text={inventoryStatus}
-          sm={true}
           textColor={colors.textColor}
           bgColor={colors.bgColor}
         />

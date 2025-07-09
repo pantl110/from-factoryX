@@ -5,7 +5,7 @@ import DeleteAccount from "./delete-account";
 const General = () => {
   return (
     <div className="px-10">
-      {/* 프로필 설정 */}
+      {/* 프로필 정보 */}
       <Profile />
 
       {/* 회사정보  */}

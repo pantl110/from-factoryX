@@ -47,7 +47,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
     >
       <div className="mt-4 flex gap-2.5 relative">
         <SearchInput
-          placeholder="원자재 검색"
+          placeholder="원자재를 검색하세요."
           width="flex-1"
           value={input}
           onChange={setInput}
@@ -64,7 +64,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
         />
 
         {isOpen && filtered.length > 0 && (
-          <div className="absolute left-0 top-12 z-10 w-[437px]">
+          <div className="absolute left-0 top-14 z-10 w-[451px] h-[256px] overflow-y-auto">
             <MaterialNameDropdown
               items={filtered}
               onSelect={handleSelectMaterial}
@@ -106,13 +106,13 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
 
       <div className="mt-4 flex gap-2.5 justify-end">
         <MiniBtn
-          text="취소하기"
+          text="취소"
           textColor="text-sv"
           hoverColor="bg-bg"
           onClick={onClose}
         />
         <MiniBtn
-          text="추가하기"
+          text="추가"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"

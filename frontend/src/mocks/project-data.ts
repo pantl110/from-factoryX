@@ -7,8 +7,7 @@ export interface ProjectDataModel {
   items: string;
   startDate: string;
   endDate: string;
-  transactionIssued: "미작성" | "작성 완료";
-  taxIssued: "미발행" | "발행 중" | "발행 완료";
+  taxIssued: "보기" | "연결 필요" | "미발행";
   productName?: string;
 }
 
@@ -20,8 +19,7 @@ export const projectData: ProjectDataModel[] = [
     items: "M8 볼트 세트",
     startDate: "2025-06-06",
     endDate: "2025-06-11",
-    transactionIssued: "미작성",
-    taxIssued: "미발행",
+    taxIssued: "연결 필요",
     productName: "M8 볼트 세트",
   },
   {
@@ -31,7 +29,6 @@ export const projectData: ProjectDataModel[] = [
     items: "금형 케이스",
     startDate: "2025-06-04",
     endDate: "2025-06-15",
-    transactionIssued: "미작성",
     taxIssued: "미발행",
     productName: "플라스틱 뚜껑",
   },
@@ -42,7 +39,6 @@ export const projectData: ProjectDataModel[] = [
     items: "성일 부품 외 2개",
     startDate: "2025-06-12",
     endDate: "2025-06-11",
-    transactionIssued: "미작성",
     taxIssued: "미발행",
     productName: "플라스틱 고리",
   },
@@ -53,8 +49,7 @@ export const projectData: ProjectDataModel[] = [
     items: "테스크 키트 외 1개",
     startDate: "2025-06-04",
     endDate: "2025-06-10",
-    transactionIssued: "작성 완료",
-    taxIssued: "발행 중",
+    taxIssued: "연결 필요",
     productName: "테스크 키트",
   },
   {
@@ -64,8 +59,7 @@ export const projectData: ProjectDataModel[] = [
     items: "정밀 부품 외 2개",
     startDate: "-",
     endDate: "2025-06-15",
-    transactionIssued: "미작성",
-    taxIssued: "미발행",
+    taxIssued: "보기",
     productName: "정밀 부품",
   },
   {
@@ -75,8 +69,7 @@ export const projectData: ProjectDataModel[] = [
     items: "금형 케이스",
     startDate: "2025-06-04",
     endDate: "2025-06-13",
-    transactionIssued: "미작성",
-    taxIssued: "미발행",
+    taxIssued: "보기",
     productName: "플라스틱 고리",
   },
   {
@@ -86,8 +79,7 @@ export const projectData: ProjectDataModel[] = [
     items: "플라스틱 컵 외 3개",
     startDate: "2025-06-08",
     endDate: "2025-06-14",
-    transactionIssued: "미작성",
-    taxIssued: "미발행",
+    taxIssued: "보기",
     productName: "플라스틱 컵",
   },
   {
@@ -97,8 +89,7 @@ export const projectData: ProjectDataModel[] = [
     items: "플라스틱 컵 외 3개",
     startDate: "2025-06-08",
     endDate: "2025-06-14",
-    transactionIssued: "미작성",
-    taxIssued: "미발행",
+    taxIssued: "보기",
     productName: "플라스틱 컵",
   },
   {
@@ -108,8 +99,7 @@ export const projectData: ProjectDataModel[] = [
     items: "정밀 부품 외 2개",
     startDate: "-",
     endDate: "2025-06-15",
-    transactionIssued: "미작성",
-    taxIssued: "미발행",
+    taxIssued: "보기",
     productName: "정밀 부품",
   },
 ];

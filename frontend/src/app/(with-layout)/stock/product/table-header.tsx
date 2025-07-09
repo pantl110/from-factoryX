@@ -1,18 +1,14 @@
+import Checkbox from "@/ui/checkbox";
+
 interface TableHeaderProps {
-  isDeleteMode: boolean;
+  isAllChecked: boolean;
+  onToggleAll: () => void;
 }
 
-const TableHeader = ({ isDeleteMode }: TableHeaderProps) => {
+const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
   return (
     <div className="flex items-center h-12 border-t border-b border-[#eeeeee] Me_Body-1">
-      {isDeleteMode && (
-        <div
-          className="flex items-center px-3"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <input type="checkbox" className="w-4 h-4 border-sv" />
-        </div>
-      )}
+      <Checkbox isChecked={isAllChecked} onToggle={onToggleAll || (() => {})} />
       <p className="flex-1 px-3 text-sv">품목명</p>
       <p className="flex-1 px-3 text-sv">품목 코드</p>
       <p className="flex-1 px-3 text-sv">규격</p>

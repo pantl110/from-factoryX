@@ -10,6 +10,9 @@ interface ModalProps {
   width?: string;
   height?: string;
   button?: React.ReactNode;
+  gap?: string;
+  className?: string;
+  scroll?: boolean;
 }
 
 const Modal = ({
@@ -21,6 +24,9 @@ const Modal = ({
   height = "",
   sm = false,
   button,
+  gap,
+  className,
+  scroll = false,
 }: ModalProps) => {
   useEffect(() => {
     const originalStyle = document.body.style.overflow;
@@ -41,10 +47,12 @@ const Modal = ({
       }}
     >
       <div
-        className={`bg-white ${width} ${height} p-6 rounded-lg`}
+        className={`bg-white ${width} ${height} ${scroll ? "" : "p-6"} rounded-lg max-h-[85%] ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center">
+        <div
+          className={`flex justify-between items-center ${scroll ? "px-6 pt-6" : ""}`}
+        >
           <div className="flex gap-3 items-center">
             <h3 className="Heading-3">{title}</h3>
             {button}
@@ -53,10 +61,14 @@ const Modal = ({
             className={`${sm ? "w-9 h-9" : "w-10 h-10"} flex justify-center items-center cursor-pointer rounded-lg transition-colors duration-200 hover:bg-bg`}
             onClick={onClose}
           >
-            <X size={16} />
+            <X size={16} className="text-sv" />
           </button>
         </div>
-        <div className={`mt-1 ${sm ? "Re_Body-2" : "Me_Body-2"} text-gr`}>
+        <div
+          className={`${gap ? gap : sm ? "mt-2" : "mt-1"} Me_Body-2 text-gr ${
+            scroll ? "px-6" : ""
+          }`}
+        >
           {subtitle &&
             subtitle.split("\n").map((line, idx) => (
               <span key={idx}>

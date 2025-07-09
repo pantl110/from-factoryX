@@ -11,7 +11,6 @@ const DeliveryStatusDropdown = ({ onClose }: DeliveryStatusDropdownProps) => {
       <DropdownItem>
         <Chip
           text="예정"
-          sm={true}
           bgColor="bg-bg"
           textColor="text-bl"
           hover="hover:bg-lg"
@@ -20,7 +19,6 @@ const DeliveryStatusDropdown = ({ onClose }: DeliveryStatusDropdownProps) => {
       <DropdownItem>
         <Chip
           text="완료"
-          sm={true}
           textColor="text-primary"
           bgColor="bg-primary-8"
           hover="hover:bg-primary-hover"

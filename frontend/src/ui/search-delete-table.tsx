@@ -2,48 +2,43 @@
 
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
-import { useState } from "react";
-import DeleteModal from "./modal/delete-modal";
 
 interface SearchDeleteTableProps {
-  isDeleteBtnClicked?: boolean;
-  setIsDeleteBtnClicked?: (isDeleteBtnClicked: boolean) => void;
+  placeholder?: string;
+  checkedCount: number;
+  deleteButtonText: string;
+  onDelete: () => void;
+  onCancel: () => void;
 }
 
 const SearchDeleteTable = ({
-  isDeleteBtnClicked,
-  setIsDeleteBtnClicked,
+  placeholder,
+  checkedCount,
+  deleteButtonText,
+  onDelete,
+  onCancel,
 }: SearchDeleteTableProps) => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
   return (
     <div className="flex items-center justify-between pb-4">
-      <SearchInput value="" onChange={() => {}} />
-      <MiniBtn
-        text="삭제"
-        textColor={isDeleteBtnClicked ? "text-red" : "text-dg"}
-        borderColor={isDeleteBtnClicked ? "" : "border-[#eeeeee]"}
-        bgColor={isDeleteBtnClicked ? "bg-red-8" : "bg-white"}
-        hoverColor={
-          isDeleteBtnClicked ? "hover:bg-red-hover" : "hover:bg-gray-50"
-        }
-        onClick={() => {
-          if (isDeleteBtnClicked) {
-            setIsDeleteModalOpen(true);
-          } else {
-            setIsDeleteBtnClicked?.(true);
-          }
-        }}
-      />
-
-      {isDeleteModalOpen && (
-        <DeleteModal
-          onClose={() => {
-            setIsDeleteModalOpen(false);
-            setIsDeleteBtnClicked?.(false);
-          }}
+      <SearchInput value="" onChange={() => {}} placeholder={placeholder} />
+      <div className="flex gap-1">
+        <MiniBtn
+          text="취소"
+          textColor="text-dg"
+          borderColor="border-lg"
+          bgColor="bg-white"
+          hoverColor="hover:bg-bg"
+          onClick={onCancel}
         />
-      )}
+        <MiniBtn
+          text={deleteButtonText}
+          textColor={checkedCount > 0 ? "text-red" : "text-dg"}
+          borderColor={checkedCount > 0 ? "" : "border-lg"}
+          bgColor={checkedCount > 0 ? "bg-red-8" : "bg-white"}
+          hoverColor={checkedCount > 0 ? "hover:bg-red-hover" : "hover:bg-bg"}
+          onClick={checkedCount > 0 ? onDelete : () => {}}
+        />
+      </div>
     </div>
   );
 };

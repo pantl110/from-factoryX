@@ -1,16 +1,33 @@
+"use client";
+
+import { useEffect, Suspense } from "react";
 import MainTitleSec from "./main-title-sec";
 import DailyProductionQuantity from "./summary-KPI/daily-production-quantity";
 import ShortageCount from "./summary-KPI/shortage-count";
 import ProductionYield from "./summary-KPI/production-yield";
 import DeliveryTable from "./delivery-schedule/delivery-table";
-
 import PendingQuote from "./pending-quote";
 import ProcessProject from "./process-project";
 import Tax from "./tax";
 import TodayProductionSchedule from "./today-production-schedule";
 import ProfitGraph from "./profit-graph";
+import useToast from "@/hooks/use-toast";
+import Toast from "@/ui/toast";
+import { useSearchParams } from "next/navigation";
+import { CheckCircle } from "@phosphor-icons/react";
+import Spinner from "@/ui/spinner";
 
-const DashboardPage = () => {
+const DashboardPageContent = () => {
+  const { isToastOpen, isVisible, showToast } = useToast(2000);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const from = searchParams.get("from");
+    if (from === "onboarding") {
+      showToast();
+    }
+  }, [searchParams, showToast]);
+
   return (
     <>
       <MainTitleSec />
@@ -40,8 +57,8 @@ const DashboardPage = () => {
 
         {/* 납품 예정 현황 */}
         <div className="flex gap-5">
-          <div className="flex flex-col flex-1 gap-3">
-            <div className="h-10">
+          <div className="flex flex-col flex-1 min-w-0 gap-3">
+            <div className="h-10 flex items-center">
               <h3 className="Heading-3">납품 예정 현황</h3>
             </div>
             <DeliveryTable />
@@ -51,7 +68,31 @@ const DashboardPage = () => {
           <Tax />
         </div>
       </div>
+
+      {isToastOpen && (
+        <Toast
+          icon={<CheckCircle size={20} className="text-primary" />}
+          text="이제 팩토리엑스를 시작해볼까요?"
+          subtext="가입이 완료되었어요!"
+          type="primary"
+          isVisible={isVisible}
+        />
+      )}
     </>
+  );
+};
+
+const DashboardPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spinner />
+        </div>
+      }
+    >
+      <DashboardPageContent />
+    </Suspense>
   );
 };
 

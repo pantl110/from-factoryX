@@ -1,17 +1,20 @@
 import Chip from "@/ui/chip";
 import { FacilityStatusColorMap, FacilityStatusType } from "./types";
 import { FacilityDataModel } from "@/mocks/facility-data";
+import Checkbox from "@/ui/checkbox";
 
 export interface FacilityTableItemProps {
   facility: FacilityDataModel;
   onClick?: () => void;
-  isDeleteMode?: boolean;
+  isChecked?: boolean;
+  onToggle?: () => void;
 }
 
 const FacilityTableItem = ({
   facility,
   onClick,
-  isDeleteMode,
+  isChecked,
+  onToggle,
 }: FacilityTableItemProps) => {
   const statusColor = facility.status
     ? FacilityStatusColorMap[facility.status as FacilityStatusType]
@@ -27,14 +30,10 @@ const FacilityTableItem = ({
         if (e.key === "Enter" || e.key === " ") onClick?.();
       }}
     >
-      {isDeleteMode && (
-        <div
-          className="flex items-center px-3"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <input type="checkbox" className="w-4 h-4 border-sv" />
-        </div>
-      )}
+      <Checkbox
+        isChecked={isChecked || false}
+        onToggle={onToggle || (() => {})}
+      />
       <div className="flex-1 px-3">
         <Chip
           text={facility.status as FacilityStatusType}

@@ -6,6 +6,7 @@ import {
   InventoryStatusType,
   InventoryStatusColorMap,
 } from "@/types/status-type";
+import Checkbox from "@/ui/checkbox";
 
 interface TableItemProps {
   materialName: string;
@@ -15,7 +16,8 @@ interface TableItemProps {
   status: InventoryStatusType;
   _date: string;
   onClick?: () => void;
-  isDeleteMode: boolean;
+  checked: boolean;
+  onToggle: () => void;
 }
 
 const TableItem = ({
@@ -25,7 +27,8 @@ const TableItem = ({
   currentStock,
   status,
   onClick,
-  isDeleteMode,
+  checked,
+  onToggle,
 }: TableItemProps) => {
   const colors = InventoryStatusColorMap[status];
 
@@ -35,14 +38,7 @@ const TableItem = ({
         className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
         onClick={onClick}
       >
-        {isDeleteMode && (
-          <div
-            className="flex items-center px-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <input type="checkbox" className="w-4 h-4 border-sv" />
-          </div>
-        )}
+        <Checkbox isChecked={checked} onToggle={onToggle} />
         <p className="flex-1 px-3 text-dg truncate" title={materialName}>
           {materialName}
         </p>
@@ -54,7 +50,6 @@ const TableItem = ({
             text={status}
             bgColor={colors.bgColor}
             textColor={colors.textColor}
-            sm={true}
           />
         </div>
       </div>

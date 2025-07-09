@@ -3,9 +3,13 @@ import Modal from "@/ui/modal/modal";
 
 interface DeleteTeamMemberModalProps {
   onClose: () => void;
+  onDelete: () => void;
 }
 
-const DeleteTeamMemberModal = ({ onClose }: DeleteTeamMemberModalProps) => {
+const DeleteTeamMemberModal = ({
+  onClose,
+  onDelete,
+}: DeleteTeamMemberModalProps) => {
   return (
     <Modal
       title="해당 팀원을 삭제하시겠어요?"
@@ -17,16 +21,16 @@ const DeleteTeamMemberModal = ({ onClose }: DeleteTeamMemberModalProps) => {
     >
       <div className="flex justify-end mt-4 gap-[5px]">
         <MiniBtn
-          text="닫기"
+          text="취소"
           textColor="text-sv"
           onClick={onClose}
           hoverColor=""
         />
         <MiniBtn
-          text="삭제하기"
+          text="삭제"
           textColor="text-red"
           bgColor="bg-red-8"
-          onClick={onClose}
+          onClick={onDelete}
           hoverColor="hover:bg-red-hover "
         />
       </div>

@@ -12,12 +12,7 @@ const ProductStockTableItem = () => {
       <p className="flex-1 px-3 text-red">-200</p>
       <p className="flex-1 px-3 text-dg">4,800</p>
       <div className="flex-1 px-3 text-dg">
-        <Chip
-          text="충분"
-          bgColor="bg-primary-8"
-          textColor="text-primary"
-          sm={true}
-        />
+        <Chip text="충분" bgColor="bg-primary-8" textColor="text-primary" />
       </div>
     </div>
   );

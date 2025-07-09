@@ -63,7 +63,7 @@ const ProductionPlan = () => {
 
   return (
     <>
-      <div className="mx-10 pt-4 pb-9">
+      <div className="mx-10 pt-4 pb-10">
         <div className="w-full overflow-x-auto">
           <TableHeader />
           {productionPlanData.map((item) => (

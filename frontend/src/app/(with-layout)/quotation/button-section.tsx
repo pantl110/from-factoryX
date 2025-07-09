@@ -1,10 +1,7 @@
 "use client";
 
 import MiniBtn from "@/ui/mini-btn";
-import {
-  PrinterIcon,
-  PaperPlaneTiltIcon,
-} from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 
 interface ButtonSectionProps {
   onEmailClick?: () => void;
@@ -17,34 +14,35 @@ const ButtonSection = ({
   onEmailClick,
   onPrintClick,
   onStartProductionClick,
-  isClientData,
 }: ButtonSectionProps) => {
   return (
     <div className="flex gap-1">
       <MiniBtn
-        text="출력하기"
+        text="세금계산서 생성"
         textColor="text-dg"
         borderColor="border-lg"
-        icon={PrinterIcon}
-        iconColor="text-dg"
+        hoverColor="hover:bg-bg"
+      />
+      <MiniBtn
+        text="출력"
+        textColor="text-dg"
+        borderColor="border-lg"
         onClick={onPrintClick}
         hoverColor="hover:bg-bg"
-        disabled={!isClientData}
       />
       <MiniBtn
-        text="이메일 보내기"
+        text="이메일 전송"
         textColor="text-dg"
         borderColor="border-lg"
-        icon={PaperPlaneTiltIcon}
-        iconColor="text-dg"
         onClick={onEmailClick}
         hoverColor="hover:bg-bg"
-        disabled={!isClientData}
       />
       <MiniBtn
-        text="생산 시작하기"
+        text="생산 시작"
         textColor="text-wh"
         bgColor="bg-primary"
+        icon={ArrowRight}
+        iconPosition="right"
         onClick={onStartProductionClick}
         hoverColor="hover:bg-primary-hover"
       />

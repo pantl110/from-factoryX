@@ -1,7 +1,7 @@
 import DocumentViewTitle from "../document-view-title";
-import SupplierInfo from "../supplier-info";
-import BuyerInfo from "../buyer-info";
-import QuotationInfo from "../quotation-info";
+import ProductListInfo from "../product-list-info";
+import BuyerInfo from "./buyer-info";
+import SellerInfo from "./seller-info";
 
 const TransactionDocumentView = () => {
   return (
@@ -11,9 +11,9 @@ const TransactionDocumentView = () => {
         dateLabel="작성일자"
         date="2025-07-31"
       />
-      <SupplierInfo dateLabel="거래일자" />
+      <SellerInfo />
       <BuyerInfo />
-      <QuotationInfo title="견적 품목 정보" />
+      <ProductListInfo transaction />
     </div>
   );
 };

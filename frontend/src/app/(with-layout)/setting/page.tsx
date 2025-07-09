@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import usePageStatusStore from "@/store/page-status-store";
 import SystemSetting from "./system-setting";
 import MasterData from "./master-data";
+import Spinner from "@/ui/spinner";
 
-const SettingPage = () => {
+const SettingPageContent = () => {
   const { settingTab, setSettingTab } = usePageStatusStore();
 
   useEffect(() => {
@@ -40,6 +41,20 @@ const SettingPage = () => {
         {settingTab === "master" && <MasterData />}
       </div>
     </div>
+  );
+};
+
+const SettingPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spinner />
+        </div>
+      }
+    >
+      <SettingPageContent />
+    </Suspense>
   );
 };
 

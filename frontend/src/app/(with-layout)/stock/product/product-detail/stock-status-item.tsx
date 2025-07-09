@@ -39,7 +39,6 @@ const StockStatusItem = ({
       <div className="flex-1 px-3 text-dg flex justify-between">
         <Chip
           text={status}
-          sm={true}
           textColor={colors.textColor}
           bgColor={colors.bgColor}
         />

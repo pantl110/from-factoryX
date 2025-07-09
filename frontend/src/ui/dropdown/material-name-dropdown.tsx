@@ -2,24 +2,29 @@ import { MaterialDataModel } from "@/types/data-model";
 import Dropdown from "@/ui/dropdown/dropdown";
 import DropdownItem from "@/ui/dropdown/dropdown-item";
 
+interface MaterialNameDropdownProps {
+  items: MaterialDataModel[];
+  onSelect: (item: MaterialDataModel) => void;
+  width?: string;
+}
+
 export const MaterialNameDropdown = ({
   items,
   onSelect,
   width,
-}: {
-  items: MaterialDataModel[];
-  onSelect: (item: MaterialDataModel) => void;
-  width?: string;
-}) => {
+}: MaterialNameDropdownProps) => {
   return (
     <Dropdown onClose={() => {}} width={width}>
-      {items.slice(0, 6).map((item) => (
-        <DropdownItem
-          key={item.id}
-          text={item.materialName}
-          onClick={() => onSelect(item)}
-        />
-      ))}
+      <div className="flex flex-col">
+        {items.map((item) => (
+          <DropdownItem
+            key={item.id}
+            text={item.materialName}
+            onClick={() => onSelect(item)}
+            search={true}
+          />
+        ))}
+      </div>
     </Dropdown>
   );
 };

@@ -2,39 +2,43 @@
 
 import { projectData } from "@/mocks/project-data";
 import DeliveryTableItem from "./delivery-table-item";
-import { useState } from "react";
-import MiniBtn from "@/ui/mini-btn";
+import Pagination from "@/components/pagination";
+import usePagination from "@/hooks/use-pagination";
 
 const DeliveryTable = () => {
-  const [visibleCount, setVisibleCount] = useState(5);
+  const { currentItems, currentPage, totalPages, setCurrentPage } =
+    usePagination({
+      items: projectData,
+      itemsPerPage: 5,
+    });
 
   return (
-    <div>
-      <div className="flex w-full h-12 items-center Me_Body-1 text-sv border-t border-b border-[#eeeeee]">
-        <p className="px-3 w-[150px]">프로젝트명</p>
-        <p className="px-3 flex-1">품목명</p>
-        <p className="px-3 flex-1">납품일자</p>
-        <div className="w-10"></div>
+    <div className="flex flex-col h-105 justify-between">
+      <div>
+        <div className="flex w-full h-12 items-center Me_Body-1 text-sv border-t border-b border-[#eeeeee]">
+          <p className="px-3 w-[150px]">업체명</p>
+          <p className="px-3 flex-1">품목명</p>
+          <p className="px-3 flex-1">납품일자</p>
+          <div className="w-10"></div>
+        </div>
+        {currentItems.map((project) => (
+          <DeliveryTableItem
+            key={project.id}
+            projectName={project.companyName}
+            productName={project.productName || ""}
+            date={project.endDate}
+          />
+        ))}
       </div>
-      {projectData.slice(0, visibleCount).map((project) => (
-        <DeliveryTableItem
-          key={project.id}
-          projectName={project.companyName}
-          productName={project.productName || ""}
-          date={project.endDate}
-        />
-      ))}
-      {visibleCount < projectData.length && (
-        <div className="mt-3" onClick={() => setVisibleCount(visibleCount + 5)}>
-          <MiniBtn
-            text="5개씩 더보기"
-            textColor="text-dg"
-            hoverColor="hover:bg-bg"
-            borderColor="border-lg"
-            width="w-full"
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-3">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
         </div>
-      )}
+      )}{" "}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import MiniBtn from "@/ui/mini-btn";
 import { ProjectStatusType } from "@/types/status-type";
+import { CaretDown } from "@phosphor-icons/react";
 
 interface MainTitleSecProps {
   onNewQuotation: () => void;
@@ -28,9 +29,11 @@ const MainTitleSec = ({
         <MiniBtn
           bgColor="bg-primary"
           textColor="text-white"
-          text="견적서 생성하기"
+          text="견적서 생성"
           onClick={onNewQuotation}
           hoverColor="hover:bg-primary-hover"
+          icon={CaretDown}
+          iconPosition="right"
         />
       </div>
       <div className="flex gap-4 items-center Heading-3">

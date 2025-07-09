@@ -7,9 +7,9 @@ import { useState } from "react";
 import ProductDetail from "./product-detail";
 import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
-import { useDeleteMode } from "@/hooks/use-delete-mode";
 import DeleteModal from "@/ui/modal/delete-modal";
 import { ProductDataModel } from "@/types/data-model";
+import { useCheckAll } from "@/hooks/use-check-all";
 
 interface ProductProps {
   isCreatePanelOpen: boolean;
@@ -18,12 +18,16 @@ interface ProductProps {
 
 const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
   const {
-    isDeleteMode,
-    isDeleteModalOpen,
-    toggleDeleteMode,
-    closeDeleteModal,
-  } = useDeleteMode();
+    checkedCount,
+    isAllChecked,
+    isChecked,
+    toggleAll,
+    toggleOne,
+    setAllChecked,
+    getDeleteButtonText,
+  } = useCheckAll(productData.map((item) => item.id ?? 0));
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] =
     useState<ProductDataModel | null>(null);
 
@@ -42,18 +46,30 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
     <>
       <div className="flex items-center justify-between pb-4">
         <SearchInput />
-        <MiniBtn
-          text="삭제"
-          textColor={isDeleteMode ? "text-red" : "text-dg"}
-          borderColor={isDeleteMode ? "border-none" : "border-lg"}
-          bgColor={isDeleteMode ? "bg-red-8" : "bg-wh"}
-          hoverColor={isDeleteMode ? "hover:bg-red-hover" : "hover:bg-bg"}
-          onClick={toggleDeleteMode}
-        />
+        <div className="flex gap-1">
+          <MiniBtn
+            text="취소"
+            textColor="text-dg"
+            borderColor="border-lg"
+            bgColor="bg-white"
+            hoverColor="hover:bg-bg"
+            onClick={() => setAllChecked(false)}
+          />
+          <MiniBtn
+            text={getDeleteButtonText()}
+            textColor={checkedCount > 0 ? "text-red" : "text-dg"}
+            borderColor={checkedCount > 0 ? "border-none" : "border-lg"}
+            bgColor={checkedCount > 0 ? "bg-red-8" : "bg-wh"}
+            hoverColor={checkedCount > 0 ? "hover:bg-red-hover" : "hover:bg-bg"}
+            onClick={
+              checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
+            }
+          />
+        </div>
       </div>
 
       <div>
-        <TableHeader isDeleteMode={isDeleteMode} />
+        <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
         {productData.map((item) => (
           <TableItem
             key={item.id}
@@ -63,7 +79,8 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
             unit={item.unit ?? ""}
             stock={item.stock ?? 0}
             onClick={() => handleItemClick(item)}
-            isDeleteMode={isDeleteMode}
+            checked={isChecked(item.id ?? 0)}
+            onToggle={() => toggleOne(item.id ?? 0)}
           />
         ))}
       </div>
@@ -76,7 +93,9 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
           mode={mode}
         />
       )}
-      {isDeleteModalOpen && <DeleteModal onClose={closeDeleteModal} />}
+      {isDeleteModalOpen && (
+        <DeleteModal onClose={() => setIsDeleteModalOpen(false)} />
+      )}
     </>
   );
 };

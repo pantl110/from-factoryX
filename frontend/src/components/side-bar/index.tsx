@@ -63,7 +63,17 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
             ]}
           />
           <SideBarItem icon={Warehouse} label="재고 관리" path="/stock" />
-          <SideBarItem icon={MoneyWavy} label="세무/회계" path="/tax" />
+          <SideBarItem
+            icon={MoneyWavy}
+            label="세무/회계"
+            path="/tax"
+            hasDropdown={true}
+            dropdownItems={[
+              { label: "세금계산서 내역", path: "/tax/list" },
+              { label: "세금계산서 임시보관함", path: "/tax/draft" },
+              { label: "현금영수증", path: "/tax/receipt" },
+            ]}
+          />
           <SideBarItem icon={Files} label="문서함" path="/document" />
         </div>
         <div className="mt-auto px-2 mb-8">

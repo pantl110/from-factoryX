@@ -126,13 +126,10 @@ const MaterialEnrollmentModal = ({
                 </p>
                 {mat.id !== null && mat.id !== undefined && (
                   <div
-                    className="w-[40px] hover:bg-bg flex items-center justify-center h-full transition-colors duration-200 cursor-pointer"
+                    className="w-[40px] flex items-center justify-center h-full cursor-pointer"
                     onClick={() => handleRemoveMaterial(mat.id as string)}
                   >
-                    <X
-                      size={16}
-                      className="text-gr opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    />
+                    <X size={16} className="text-gr" />
                   </div>
                 )}
               </div>
@@ -143,13 +140,13 @@ const MaterialEnrollmentModal = ({
 
       <div className="flex h-10 gap-2.5 justify-end mt-4">
         <MiniBtn
-          text="취소하기"
+          text="취소"
           textColor="text-sv"
           onClick={onClose}
           hoverColor=""
         />
         <MiniBtn
-          text="등록하기"
+          text="등록"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"

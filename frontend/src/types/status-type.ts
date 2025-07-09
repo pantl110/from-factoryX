@@ -5,26 +5,6 @@ export interface StatusColorModel {
   hover?: string;
 }
 
-// 디자인팀 확인 필요// dashboard 생산 상태
-export type ProductionStatusType = "생산 완료" | "가동 대기" | "생산 중";
-export const ProductionStatusColorMap: Record<
-  ProductionStatusType,
-  StatusColorModel
-> = {
-  "생산 완료": {
-    textColor: "text-primary",
-    bgColor: "bg-primary-8",
-  },
-  "가동 대기": {
-    textColor: "text-bl",
-    bgColor: "bg-bg",
-  },
-  "생산 중": {
-    textColor: "text-purple",
-    bgColor: "bg-purple-8",
-  },
-};
-
 // 진행중인 프로젝트 상태
 export type ProjectStatusType =
   | "견적 협의"
@@ -54,12 +34,12 @@ export const TransactionStatusColorMap: Record<TransactionStatusType, string> =
   };
 
 // 세금계산서 발행 상태
-export type TaxStatusType = "미발행" | "발행 중" | "발행 완료";
-export const TaxStatusColorMap: Record<TaxStatusType, string> = {
-  미발행: "text-gr",
-  "발행 중": "text-yellow",
-  "발행 완료": "text-primary",
-};
+export type TaxStatusType = "보기" | "연결 필요" | "미발행";
+// export const TaxStatusColorMap: Record<TaxStatusType, string> = {
+//   보기: "text-gr",
+//   "연결 필요": "text-yellow",
+//   미발행: "text-primary",
+// };
 
 // 완료된 프로젝트 상태
 export type CompletedProjectStatusType = "완료" | "중단";
@@ -137,4 +117,14 @@ export const TaxDocumentTypeColorMap: Record<
 > = {
   매출: { bgColor: "bg-primary-8", textColor: "text-primary" },
   매입: { bgColor: "bg-red-8", textColor: "text-red" },
+};
+
+// 세금계간서 임시보관함 상태
+export type TaxDraftStatusType = "임시 저장" | "발행 대기";
+export const TaxDraftStatusColorMap: Record<
+  TaxDraftStatusType,
+  StatusColorModel
+> = {
+  "임시 저장": { textColor: "text-primary", bgColor: "bg-bg" },
+  "발행 대기": { textColor: "text-dg", bgColor: "bg-bg" },
 };

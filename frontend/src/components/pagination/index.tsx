@@ -52,7 +52,7 @@ const Pagination = ({
   };
 
   return (
-    <div className="flex items-center justify-center py-5 px-6 gap-1 Me_Body-1">
+    <div className="flex items-center justify-center py-3 px-6 gap-1 Me_Body-1">
       <div
         className={`flex items-center justify-center w-9 h-9 ${
           currentPage === 1 ? "cursor-default" : "cursor-pointer"
@@ -66,14 +66,16 @@ const Pagination = ({
       >
         <CaretLeftIcon
           size={20}
-          className={currentPage === 1 ? "text-gr" : "text-sv"}
+          className={currentPage === 1 ? "text-lg" : "text-sv"}
         />
       </div>
       {getPageNumbers().map((page) => (
         <div
           key={page}
-          className={`flex items-center justify-center w-9 h-9 cursor-pointer rounded-lg ${
-            currentPage === page ? "bg-primary text-wh" : ""
+          className={`flex items-center justify-center w-9 h-9 rounded-[8px] Me_Body-1 transition-colors duration-200 ${
+            currentPage === page
+              ? "text-primary"
+              : "text-dg hover:bg-[#F5F5F5] cursor-pointer"
           }`}
           role="button"
           tabIndex={0}
@@ -98,7 +100,7 @@ const Pagination = ({
       >
         <CaretRightIcon
           size={20}
-          className={currentPage === totalPages ? "text-gr" : "text-sv"}
+          className={currentPage === totalPages ? "text-lg" : "text-sv"}
         />
       </div>
     </div>

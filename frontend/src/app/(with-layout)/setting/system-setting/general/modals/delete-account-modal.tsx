@@ -19,13 +19,13 @@ const DeleteAccountModal = ({
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn
-          text="취소하기"
+          text="취소"
           textColor="text-sv"
           onClick={onClose}
           hoverColor=""
         />
         <MiniBtn
-          text="삭제하기"
+          text="삭제"
           bgColor="bg-red-8"
           textColor="text-red"
           onClick={onConfirm}

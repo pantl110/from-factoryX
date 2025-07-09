@@ -42,7 +42,7 @@ const LoginPage = () => {
               placeholder="이메일을 입력해주세요."
               label="이메일"
               value={email.value}
-              onChange={email.handleChange}
+              onChange={(e) => email.handleChange(e.target.value)}
             />
             <div className="mt-1 mb-2 h-5">
               {email.error && (
@@ -56,7 +56,7 @@ const LoginPage = () => {
               placeholder="비밀번호를 입력해주세요."
               label="비밀번호"
               value={password.value}
-              onChange={password.handleChange}
+              onChange={(e) => password.handleChange(e.target.value)}
             />
             <div className="mt-1 mb-2 h-5">
               {password.error && (

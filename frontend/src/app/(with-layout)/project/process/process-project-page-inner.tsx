@@ -13,6 +13,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Pagination from "@/components/pagination";
 import usePagination from "@/hooks/use-pagination";
 import { ClientDataModel } from "@/types/data-model";
+import { useCheckAll } from "@/hooks/use-check-all";
+import DeleteModal from "@/ui/modal/delete-modal";
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
@@ -28,23 +30,47 @@ const ProcessProjectPageInner = () => {
   // 모달 상태
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  // 버튼 상태
-  const [isDeleteBtnClicked, setIsDeleteBtnClicked] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [sortKey, setSortKey] = useState<"startDate" | "endDate">("startDate");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const filteredProjects =
     selectedStatus === "전체"
       ? projectData
       : projectData.filter((project) => project.status === selectedStatus);
 
+  // 정렬 적용
+  const sortedProjects = [...filteredProjects].sort((a, b) => {
+    const aValue = a[sortKey];
+    const bValue = b[sortKey];
+    if (sortOrder === "asc") {
+      return aValue.localeCompare(bValue);
+    } else {
+      return bValue.localeCompare(aValue);
+    }
+  });
+
+  // 페이지네이션에 정렬된 데이터 사용
   const {
     currentItems: currentProjects,
     currentPage,
     totalPages,
     setCurrentPage,
   } = usePagination({
-    items: filteredProjects,
+    items: sortedProjects,
     itemsPerPage: 10,
-  }); // pagination hook
+  });
+
+  const currentIds = currentProjects.map((project) => project.id);
+  const {
+    checkedCount,
+    isAllChecked,
+    isChecked,
+    toggleAll,
+    toggleOne,
+    setAllChecked,
+    getDeleteButtonText,
+  } = useCheckAll(currentIds);
 
   const handleNewQuotation = () => {
     setIsSelectModalOpen(true);
@@ -70,6 +96,17 @@ const ProcessProjectPageInner = () => {
     }
   };
 
+  // 정렬 핸들러
+  const handleSort = (key: "startDate" | "endDate") => {
+    if (sortKey === key) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+    setCurrentPage(1);
+  };
+
   return (
     <>
       <div className="flex flex-col gap-8">
@@ -78,13 +115,20 @@ const ProcessProjectPageInner = () => {
           selectedStatus={selectedStatus}
           onStatusChange={handleStatusChange}
         />
-        <div className="px-8">
+        <div className="px-10 pb-10">
           <SearchDeleteTable
-            isDeleteBtnClicked={isDeleteBtnClicked}
-            setIsDeleteBtnClicked={setIsDeleteBtnClicked}
+            placeholder="업체명이나 품목명을 검색하세요."
+            checkedCount={checkedCount}
+            deleteButtonText={getDeleteButtonText()}
+            onDelete={() => setIsDeleteModalOpen(true)}
+            onCancel={() => setAllChecked(false)}
           />
-          <div className="overflow-y-auto w-full scrollbar-hide">
-            <TableHeader isDeleteBtnClicked={isDeleteBtnClicked} />
+          <div className="overflow-y-auto w-full">
+            <TableHeader
+              isAllChecked={isAllChecked}
+              onToggleAll={toggleAll}
+              onSort={handleSort}
+            />
             {currentProjects.map((project) => (
               <TableItem
                 key={project.id}
@@ -94,9 +138,9 @@ const ProcessProjectPageInner = () => {
                 items={project.items}
                 startDate={project.startDate}
                 endDate={project.endDate}
-                transactionIssued={project.transactionIssued}
                 taxIssued={project.taxIssued}
-                isDeleteBtnClicked={isDeleteBtnClicked}
+                checked={isChecked(project.id)}
+                onToggle={() => toggleOne(project.id)}
               />
             ))}
           </div>
@@ -122,6 +166,12 @@ const ProcessProjectPageInner = () => {
         <ExcelUploadModal
           onClose={() => setIsUploadModalOpen(false)}
           onComplete={handleDirectInputClick}
+        />
+      )}
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={() => setIsDeleteModalOpen(false)}
         />
       )}
     </>

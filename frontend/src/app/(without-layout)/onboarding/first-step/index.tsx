@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import MiniBtn from "@/ui/mini-btn";
 import Input from "@/ui/input";
 import { useForm } from "react-hook-form";
@@ -9,26 +10,54 @@ interface FirstStepProps {
 }
 
 const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FirstStepFormDataModel>({
-    defaultValues: {
-      productName: "",
-      productCode: "",
-      size: "",
-      unit: "",
-    },
-    mode: "onChange",
-  });
+  const { register, handleSubmit, reset, getValues, watch } =
+    useForm<FirstStepFormDataModel>({
+      defaultValues: {
+        productName: "",
+        productCode: "",
+        size: "",
+        unit: "",
+      },
+      mode: "onChange",
+    });
 
-  const onSubmit = () =>
-    // data: FirstStepFormData
-    {
-      // console.log("폼 데이터:", data);
-      onNextStep();
-    };
+  // 입력값 실시간 감지
+  const values = watch();
+  const isValid =
+    !!values.productName &&
+    !!values.productCode &&
+    !!values.size &&
+    !!values.unit;
+
+  // sessionStorage에서 데이터 복원
+  useEffect(() => {
+    const savedData = sessionStorage.getItem("onboarding-step1-product");
+
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        if (data.productName !== undefined) {
+          // 데이터 구조 확인
+          reset(data);
+        }
+      } catch {
+        // Silently ignore parsing errors
+      }
+    }
+  }, [reset]);
+
+  const saveFormData = (data: FirstStepFormDataModel) => {
+    sessionStorage.setItem("onboarding-step1-product", JSON.stringify(data)); // sessionStorage에 저장
+  };
+  const handlePrevStep = (data: FirstStepFormDataModel) => {
+    saveFormData(data);
+    onPrevStep();
+  };
+
+  const onSubmit = (data: FirstStepFormDataModel) => {
+    saveFormData(data);
+    onNextStep();
+  };
 
   return (
     <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col items-center rounded-lg">
@@ -56,7 +85,6 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   placeholder="자재명 입력"
                   required={true}
                   {...register("productName", { required: true })}
-                  showError={!!errors.productName}
                 />
                 <Input
                   label="품목 코드"
@@ -64,7 +92,6 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   placeholder="품목 코드 입력"
                   required={true}
                   {...register("productCode", { required: true })}
-                  showError={!!errors.productCode}
                 />
               </div>
               <div className="flex gap-2.5 flex-1">
@@ -74,7 +101,6 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   placeholder="규격 입력"
                   required={true}
                   {...register("size", { required: true })}
-                  showError={!!errors.size}
                 />
                 <Input
                   label="단위"
@@ -82,7 +108,6 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   placeholder="단위 입력"
                   required={true}
                   {...register("unit", { required: true })}
-                  showError={!!errors.unit}
                 />
               </div>
             </div>
@@ -91,18 +116,19 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
           {/* 버튼 영역 */}
           <div className="w-full flex justify-end gap-2.5">
             <MiniBtn
-              text="이전 단계"
+              text="이전"
               textColor="text-sv"
               bgColor="bg-wh"
               hoverColor="bg-bg"
-              onClick={onPrevStep}
+              onClick={() => handlePrevStep(getValues())}
             />
             <MiniBtn
-              text="다음 단계"
+              text="다음"
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"
               type="submit"
+              disabled={!isValid}
             />
           </div>
         </form>

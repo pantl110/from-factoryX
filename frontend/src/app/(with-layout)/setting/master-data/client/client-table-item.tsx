@@ -1,5 +1,7 @@
 import Chip from "@/ui/chip";
 import { ClientType, ClientTypeColorMap } from "./types";
+import Checkbox from "@/ui/checkbox";
+import React from "react";
 
 interface ClientTableItemProps {
   clientType: ClientType;
@@ -12,7 +14,8 @@ interface ClientTableItemProps {
   email: string;
   onClick?: () => void;
   onClientTypeChange?: (clientType: ClientType) => void;
-  isDeleteMode: boolean;
+  isChecked?: boolean;
+  onToggleCheck?: () => void;
 }
 
 // const PortalDropdown = ({
@@ -44,7 +47,8 @@ const ClientTableItem = ({
   email,
   onClick,
   // onClientTypeChange,
-  isDeleteMode,
+  isChecked,
+  onToggleCheck,
 }: ClientTableItemProps) => {
   const clientTypeColor = ClientTypeColorMap[clientType];
   // const { isOpen, openDropdown, closeDropdown, anchorRect } =
@@ -60,14 +64,10 @@ const ClientTableItem = ({
       className="flex h-14 items-center w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
-      {isDeleteMode && (
-        <div
-          className="flex items-center px-3"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <input type="checkbox" className="w-4 h-4 border-sv" />
-        </div>
-      )}
+      <Checkbox
+        isChecked={isChecked || false}
+        onToggle={onToggleCheck || (() => {})}
+      />
       <div className="px-3 w-[150px]">
         <div>
           <Chip

@@ -1,50 +1,77 @@
+import MiniBtn from "@/ui/mini-btn";
 import { NotificationModel } from "../types";
-import { ExclamationMark, CheckSquare, Info } from "@phosphor-icons/react";
+import { ExclamationMark, CheckSquare, Siren } from "@phosphor-icons/react";
 
 interface NotificationItemProps {
   item: NotificationModel;
-  isReadAll: boolean;
+  onRead: () => void;
 }
-const NotificationItem = ({ item, isReadAll }: NotificationItemProps) => {
-  let icon = null;
 
-  switch (item.type) {
-    case "materialShortage":
-      icon = <ExclamationMark size={24} weight="fill" className="text-red" />;
-      break;
-    case "importDelay":
-      icon = <ExclamationMark size={24} weight="fill" className="text-red" />;
-      break;
-    case "deliveryDate":
-      icon = <ExclamationMark size={24} weight="fill" className="text-red" />;
-      break;
-    case "return":
-      icon = <ExclamationMark size={24} weight="fill" className="text-red" />;
-      break;
-    case "taxIssue":
-      icon = <CheckSquare size={24} className="text-primary" weight="fill" />;
-      break;
-    case "debt":
-      icon = <Info size={24} className="text-sv" weight="fill" />;
-      break;
-    case "scheduleConflict":
-      icon = <Info size={24} className="text-sv" weight="fill" />;
-      break;
+const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
+  // 알림 타입별 아이콘과 색상 매핑
+  const getNotificationIcon = (type: string) => {
+    const iconConfig = {
+      // 경고/오류 (빨간색)
+      warning: { icon: ExclamationMark, color: "text-red" },
+      // 성공/완료 (파란색)
+      completed: { icon: CheckSquare, color: "text-primary" },
+      // 정보/알림 (회색)
+      info: { icon: Siren, color: "text-gr" },
+    };
 
-    default:
-      icon = <Info size={24} className="text-sv" weight="fill" />;
-  }
+    // 타입별 그룹 분류
+    const warningTypes = [
+      "materialShortage",
+      "facilityIssue",
+      "productionIssue",
+    ];
+    const completedTypes = [
+      "productionComplete",
+      "salesTaxIssued",
+      "purchaseTaxReceived",
+      "receiptReceived",
+    ];
+    const infoTypes = ["roleChanged", "deliveryDate", "productionPlanChanged"];
+
+    let config;
+    if (warningTypes.includes(type)) {
+      config = iconConfig.warning;
+    } else if (completedTypes.includes(type)) {
+      config = iconConfig.completed;
+    } else if (infoTypes.includes(type)) {
+      config = iconConfig.info;
+    } else {
+      config = iconConfig.info;
+    }
+
+    const IconComponent = config.icon;
+    return <IconComponent size={24} weight="fill" className={config.color} />;
+  };
+
+  const icon = getNotificationIcon(item.type);
 
   return (
-    <div className="w-full my-3 rounded ">
+    <div className="w-full my-3 rounded">
       <div className="flex gap-2 items-center">
         {icon}
-
-        <p className={`Me_Body-2 ${isReadAll ? "text-sv" : "text-dg"}`}>
+        <p className={`Me_Body-2 ${item.isRead ? "text-sv" : "text-dg"}`}>
           {item.message}
         </p>
       </div>
-      <p className="px-7 Me_Body-2 text-gr">{item.date}</p>
+
+      <div className="flex justify-between pl-8 pr-3 h-8 items-end">
+        <p className="Me_Body-2 text-gr">{item.date}</p>
+        {!item.isRead && (
+          <MiniBtn
+            text="읽음"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            height="h-8"
+            onClick={onRead}
+          />
+        )}
+      </div>
     </div>
   );
 };

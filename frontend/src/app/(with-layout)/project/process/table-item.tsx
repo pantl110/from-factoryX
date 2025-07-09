@@ -5,16 +5,10 @@ import { useRouter } from "next/navigation";
 import {
   ProjectStatusType,
   ProjectStatusColorMap,
-  TransactionStatusType,
   TaxStatusType,
-  TransactionStatusColorMap,
-  TaxStatusColorMap,
 } from "@/types/status-type";
-import TransactionStateDropdown from "./modals/transaction-state-dropdown";
-import TaxStateDropdown from "./modals/tax-state-dropdown";
-import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
-import { DotsThree } from "@phosphor-icons/react";
-import DeleteDropdown from "@/ui/dropdown/delete-dropdown";
+import Checkbox from "@/ui/checkbox";
+import MiniBtn from "@/ui/mini-btn";
 
 interface TableItemProps {
   id: number;
@@ -23,9 +17,9 @@ interface TableItemProps {
   items: string;
   startDate: string;
   endDate: string;
-  transactionIssued: TransactionStatusType;
   taxIssued: TaxStatusType;
-  isDeleteBtnClicked: boolean;
+  checked?: boolean;
+  onToggle?: () => void;
 }
 
 const TableItem = ({
@@ -35,35 +29,12 @@ const TableItem = ({
   items,
   startDate,
   endDate,
-  transactionIssued,
   taxIssued,
-  isDeleteBtnClicked,
+  checked = false,
+  onToggle,
 }: TableItemProps) => {
   const router = useRouter();
   const chipColors = ProjectStatusColorMap[status];
-  const transactionColor = TransactionStatusColorMap[transactionIssued];
-  const taxColor = TaxStatusColorMap[taxIssued];
-
-  const {
-    isOpen: isTransactionDropdownOpen,
-    openDropdown: openTransactionDropdown,
-    closeDropdown: closeTransactionDropdown,
-    anchorRect: transactionAnchorRect,
-  } = usePortalDropdown();
-
-  const {
-    isOpen: isTaxDropdownOpen,
-    openDropdown: openTaxDropdown,
-    closeDropdown: closeTaxDropdown,
-    anchorRect: taxAnchorRect,
-  } = usePortalDropdown();
-
-  const {
-    isOpen: isDeleteDropdownOpen,
-    openDropdown: openDeleteDropdown,
-    closeDropdown: closeDeleteDropdown,
-    anchorRect: deleteAnchorRect,
-  } = usePortalDropdown();
 
   const handleClick = () => {
     if (status === "견적 협의") router.push(`/quotation`);
@@ -72,7 +43,7 @@ const TableItem = ({
 
   return (
     <div
-      className="flex items-center h-14 w-[1448px] border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-gray-50"
+      className="flex items-center h-14 w-[1448px] border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg"
       role="button"
       tabIndex={0}
       onClick={handleClick}
@@ -80,14 +51,7 @@ const TableItem = ({
         if (e.key === "Enter" || e.key === " ") handleClick();
       }}
     >
-      {isDeleteBtnClicked && (
-        <div
-          className="flex items-center py-3 px-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <input type="checkbox" className="w-4 h-4 border-sv" />
-        </div>
-      )}
+      <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
       <div className="py-1 px-3 w-[150px]">
         <Chip
           text={status}
@@ -107,73 +71,43 @@ const TableItem = ({
       <p className="w-[200px] py-1 px-3 text-dg truncate" title={endDate}>
         {endDate}
       </p>
-      <div className="relative" onClick={(e) => e.stopPropagation()}>
-        <p
-          className={`w-[200px] py-1 px-3 ${transactionColor} cursor-pointer`}
-          onClick={openTransactionDropdown}
-        >
-          {transactionIssued}
-        </p>
-      </div>
-
-      {/* 발행 여부 dropdown */}
-      {isTransactionDropdownOpen && transactionAnchorRect && (
-        <div
-          style={{
-            position: "fixed",
-            left: transactionAnchorRect.left,
-            top: transactionAnchorRect.bottom,
-            zIndex: 10,
-            width: transactionAnchorRect.width,
-          }}
-        >
-          <TransactionStateDropdown onClose={closeTransactionDropdown} />
-        </div>
-      )}
-      <div className="relative" onClick={(e) => e.stopPropagation()}>
-        <p
-          className={`w-[200px] py-1 px-3 ${taxColor}`}
-          onClick={openTaxDropdown}
-        >
-          {taxIssued}
-        </p>
-      </div>
-      {isTaxDropdownOpen && taxAnchorRect && (
-        <div
-          style={{
-            position: "fixed",
-            left: taxAnchorRect.left,
-            top: taxAnchorRect.bottom,
-            zIndex: 10,
-            width: taxAnchorRect.width,
-          }}
-        >
-          <TaxStateDropdown onClose={closeTaxDropdown} />
-        </div>
-      )}
-
-      <button
-        className="w-9 h-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200"
+      <div
+        className="w-[200px] px-3"
         onClick={(e) => {
           e.stopPropagation();
-          openDeleteDropdown(e);
         }}
       >
-        <DotsThree size={20} className="text-sv" />
-      </button>
-      {/* Delete dropdown */}
-      {isDeleteDropdownOpen && deleteAnchorRect && (
-        <div
-          style={{
-            position: "fixed",
-            right: window.innerWidth - deleteAnchorRect.right,
-            top: deleteAnchorRect.bottom,
-            zIndex: 10,
-          }}
-        >
-          <DeleteDropdown onClose={closeDeleteDropdown} />
-        </div>
-      )}
+        {taxIssued === "보기" ? (
+          <MiniBtn
+            text={taxIssued}
+            bgColor="bg-wh"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            height="h-8"
+            onClick={() => {
+              router.push(`/tax/list`);
+            }}
+          />
+        ) : taxIssued === "연결 필요" ? (
+          <MiniBtn
+            text="연결 필요"
+            bgColor="bg-bg"
+            textColor="text-dg"
+            hoverColor="hover:bg-lg"
+            height="h-8"
+          />
+        ) : (
+          <MiniBtn
+            text="미발행"
+            bgColor="bg-bg"
+            textColor="text-dg"
+            hoverColor="hover:bg-lg"
+            height="h-8"
+            disabled
+          />
+        )}
+      </div>
     </div>
   );
 };

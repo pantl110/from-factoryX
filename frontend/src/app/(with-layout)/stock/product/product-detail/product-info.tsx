@@ -58,18 +58,21 @@ const ProductInfo = ({
           label="품목명"
           value={productName}
           isEditing={isEditable}
-          placeholder="품목명 입력"
+          placeholder="(필수) 품목명을 입력하세요."
           onChange={(e) => {
-            handleInputChange(e);
+            handleInputChange(e as React.ChangeEvent<HTMLInputElement>);
             if (onValueChange) onValueChange({ productName: e.target.value });
           }}
-          onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
+          onFocus={(
+            e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+          ) => {
             if (e.target.value && matchedItems.length > 0)
               setIsProductNameDropdownOpen(true);
           }}
           onBlur={() =>
             setTimeout(() => setIsProductNameDropdownOpen(false), 150)
           }
+          required
         />
         {isProductNameDropdownOpen && matchedItems.length > 0 && (
           <div className="absolute left-[134px] top-12 z-10">
@@ -82,23 +85,26 @@ const ProductInfo = ({
         )}
         <InfoLabelValue
           label="품목 코드"
+          required
           value={product.productCode}
           isEditing={isEditable}
-          placeholder="품목 코드 입력"
+          placeholder="(필수) 품목 코드를 입력하세요."
         />
       </div>
       <div className="flex">
         <InfoLabelValue
           label="규격"
+          required
           value={product.size}
           isEditing={isEditable}
-          placeholder="규격 입력"
+          placeholder="(필수) 규격을 입력하세요."
         />
         <InfoLabelValue
           label="단위"
+          required
           value={product.unit}
           isEditing={isEditable}
-          placeholder="단위 입력"
+          placeholder="(필수) 단위를 입력하세요."
         />
       </div>
       <div className="flex">
@@ -110,7 +116,7 @@ const ProductInfo = ({
               : product.stock.toLocaleString()
           }
           isEditing={isEditable}
-          placeholder="현재 재고 입력"
+          placeholder="현재 재고 수량을 입력하세요."
           inputType="number"
           onChange={(e) => {
             const value = e.target.value.replace(/[^0-9]/g, "");
@@ -134,15 +140,8 @@ const ProductInfo = ({
             const value = e.target.value.replace(/[^0-9]/g, "");
             if (onValueChange) onValueChange({ productionTime: value });
           }}
-          unit="초"
         />
       </div>
-      <InfoLabelValue
-        label="창고 위치"
-        value={isEditable ? product.location : product.location || "-"}
-        isEditing={isEditable}
-        placeholder="위치 입력"
-      />
       <InfoLabelValue
         label="특이사항"
         value={
@@ -159,6 +158,7 @@ const ProductInfo = ({
           )
         }
         isEditing={isEditable}
+        textarea={true}
         placeholder="특이사항 입력"
       />
 

@@ -7,7 +7,7 @@ interface ThirdStepProps {
 
 const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
   return (
-    <div className="bg-wh z-1 w-[586px] py-10 px-8 flex flex-col gap-7 items-center rounded-lg">
+    <div className="bg-wh z-1 w-[586px] py-10 px-8 flex flex-col gap-4 items-center rounded-lg">
       {/* 컨텐츠 영역 */}
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-2 items-center">
@@ -15,9 +15,18 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
             팩토리엑스에 오신 걸 환영합니다!
           </h3>
           <div className="Me_Body-2 text-bl text-center">
-            이제 생산부터 재고까지 모든 과정을 한눈에 관리할 수 있어요.
+            이제 생산부터 재고까지,
+            <br />
+            모든 과정을 한곳에서 손쉽게 관리할 수 있어요.
             <br />
             지금 바로 공장 운영을 시작해보세요!
+            <br />
+            <br />
+            기존에 사용 중인{" "}
+            <span className="text-primary">품목과 원자재를 미리 등록</span>
+            해두면
+            <br />
+            팩토리엑스를 더욱 효율적으로 활용하실 수 있습니다.
           </div>
         </div>
       </div>
