@@ -7,6 +7,7 @@ import {
   CompletedProjectStatusColorMap,
 } from "@/types/status-type";
 import Checkbox from "@/ui/checkbox";
+import { CopySimple } from "@phosphor-icons/react/dist/ssr";
 
 interface TableItemProps {
   id: number;
@@ -36,7 +37,7 @@ const TableItem = ({
 
   return (
     <div
-      className="flex items-center h-14 w-full min-w-[1146px] border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
+      className="group flex items-center h-14 w-full min-w-[1146px] border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
       role="button"
       tabIndex={0}
       onClick={handleClick}
@@ -65,6 +66,19 @@ const TableItem = ({
       <p className="flex-1 py-1 px-3 text-dg">{companyName}</p>
       <p className="flex-1 py-1 px-3 text-dg">{productName}</p>
       <p className="w-[200px] py-1 px-3 text-dg">{date}</p>
+      <div
+        className="w-9"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {status === "완료" && (
+          <CopySimple
+            size={20}
+            className="text-sv opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          />
+        )}
+      </div>
     </div>
   );
 };

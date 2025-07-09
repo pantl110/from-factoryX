@@ -4,6 +4,7 @@ import SearchInput from "@/ui/search-input";
 import MiniBtn from "@/ui/mini-btn";
 
 interface SearchDeleteTableProps {
+  placeholder?: string;
   checkedCount: number;
   deleteButtonText: string;
   onDelete: () => void;
@@ -11,6 +12,7 @@ interface SearchDeleteTableProps {
 }
 
 const SearchDeleteTable = ({
+  placeholder,
   checkedCount,
   deleteButtonText,
   onDelete,
@@ -18,7 +20,7 @@ const SearchDeleteTable = ({
 }: SearchDeleteTableProps) => {
   return (
     <div className="flex items-center justify-between pb-4">
-      <SearchInput value="" onChange={() => {}} />
+      <SearchInput value="" onChange={() => {}} placeholder={placeholder} />
       <div className="flex gap-1">
         <MiniBtn
           text="취소"

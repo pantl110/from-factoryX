@@ -34,12 +34,12 @@ export const TransactionStatusColorMap: Record<TransactionStatusType, string> =
   };
 
 // 세금계산서 발행 상태
-export type TaxStatusType = "미발행" | "발행 중" | "발행 완료";
-export const TaxStatusColorMap: Record<TaxStatusType, string> = {
-  미발행: "text-gr",
-  "발행 중": "text-yellow",
-  "발행 완료": "text-primary",
-};
+export type TaxStatusType = "보기" | "연결 필요" | "미발행";
+// export const TaxStatusColorMap: Record<TaxStatusType, string> = {
+//   보기: "text-gr",
+//   "연결 필요": "text-yellow",
+//   미발행: "text-primary",
+// };
 
 // 완료된 프로젝트 상태
 export type CompletedProjectStatusType = "완료" | "중단";

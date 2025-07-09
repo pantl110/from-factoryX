@@ -17,11 +17,24 @@ const CompletedProjectPage = () => {
     "전체" | CompletedProjectStatusType
   >("전체");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [sortKey, setSortKey] = useState<"date">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const filteredProjects =
     selectedStatus === "전체"
       ? completedProjectData
       : completedProjectData.filter((item) => item.status === selectedStatus);
+
+  // 정렬 적용
+  const sortedProjects = [...filteredProjects].sort((a, b) => {
+    const aValue = a[sortKey];
+    const bValue = b[sortKey];
+    if (sortOrder === "asc") {
+      return aValue.localeCompare(bValue);
+    } else {
+      return bValue.localeCompare(aValue);
+    }
+  });
 
   const {
     currentItems: currentProjects,
@@ -29,7 +42,7 @@ const CompletedProjectPage = () => {
     totalPages,
     setCurrentPage,
   } = usePagination({
-    items: filteredProjects,
+    items: sortedProjects,
     itemsPerPage: 10,
   }); // pagination hook
 
@@ -47,6 +60,17 @@ const CompletedProjectPage = () => {
     setCurrentPage(1); // 상태 변경 시 첫 페이지로 이동
   };
 
+  // 정렬 핸들러
+  const handleSort = (key: "date") => {
+    if (sortKey === key) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+    setCurrentPage(1);
+  };
+
   return (
     <>
       <div className="flex flex-col gap-8">
@@ -62,7 +86,11 @@ const CompletedProjectPage = () => {
             onCancel={() => setAllChecked(false)}
           />
           <div>
-            <TableHeader checkedCount={checkedCount} onToggleAll={toggleAll} />
+            <TableHeader
+              checkedCount={checkedCount}
+              onToggleAll={toggleAll}
+              onSort={handleSort}
+            />
             {currentProjects.map((item) => (
               <TableItem
                 key={item.id}
