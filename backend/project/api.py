@@ -10,24 +10,49 @@ from document.models import Quotation, QuotationProduct
 from factory.models import FactoryEquipment
 from asgiref.sync import sync_to_async
 from typing import List
+from factory.models import Factory, FactoryClient
+from stock.models import Product
 
 router = Router(tags=["Project"])
 
-# 프로젝트 생성
+# 프로젝트 생성 후 견적서 생성
 @router.post(
     "/projects",
     summary="[C] 프로젝트 생성",
-    description="견적서와 연동하여 새로운 프로젝트를 생성합니다.",
+    description="새로운 프로젝트를 생성하고 연관된 견적서를 생성합니다.",
     response={201: ProjectOut},
     auth=jwt_auth
 )
 async def create_project(request, payload: ProjectCreateIn):
     user = request.auth
-    quotation = await Quotation.objects.aget(id=payload.quotation_id)
+    
+    # 1. 프로젝트 생성
     project = await Project.objects.acreate(
         status=payload.status or Project.ProjectStatus.quotation,
         transact_date=payload.transact_date,
     )
+    
+    # 2. 견적서 생성
+    factory = await Factory.objects.aget(id=payload.factory_id)
+    client = await FactoryClient.objects.aget(id=payload.client_id)
+    quotation = await Quotation.objects.acreate(
+        factory=factory,
+        client=client,
+        project=project,
+        due_date=payload.due_date,
+        uploaded_file=payload.uploaded_file,
+    )
+    
+    # 3. 견적서 제품들 생성
+    for product_data in payload.products:
+        product = await Product.objects.aget(id=product_data["product_id"])
+        await QuotationProduct.objects.acreate(
+            quotation=quotation,
+            product=product,
+            quantity=product_data["quantity"],
+            unit_price=product_data["unit_price"],
+        )
+    
     return 201, ProjectOut.model_validate({
         "id": project.id,
         "status": project.status,

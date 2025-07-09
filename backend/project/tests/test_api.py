@@ -54,7 +54,18 @@ class ProjectAPITestCase(TestCase):
         """
         프로젝트 생성 테스트
         """
-        payload = {"quotation_id": self.quotation.id}
+        payload = {
+            "factory_id": self.factory.id,
+            "client_id": self.factory_client.id,
+            "due_date": str(datetime.date.today()),
+            "products": [
+                {
+                    "product_id": self.stock_product.id,
+                    "quantity": 10,
+                    "unit_price": 1000
+                }
+            ]
+        }
         response = self.client.post("/v1/project/projects", data=json.dumps(payload), content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()["status"], Project.ProjectStatus.quotation)

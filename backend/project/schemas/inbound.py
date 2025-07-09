@@ -3,9 +3,18 @@ from typing import Optional, List
 import datetime
 
 class ProjectCreateIn(BaseModel):
-    quotation_id: int
+    # 프로젝트 정보
     status: Optional[str] = None
     transact_date: Optional[datetime.date] = None
+    
+    # 견적서 생성 정보
+    factory_id: int
+    client_id: int
+    due_date: datetime.date
+    uploaded_file: Optional[str] = None
+    
+    # 견적서 제품 정보
+    products: List[dict] = Field(default_factory=list)  # [{"product_id": int, "quantity": int, "unit_price": int}]
 
 class ProjectUpdateIn(BaseModel):
     status: Optional[str] = None
