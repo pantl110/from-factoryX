@@ -105,7 +105,9 @@ class LocationTestCase(TestCase):
         self.assertEqual(loc2.type, "invalid")
 
     def test_multiple_locations_and_query(self):
-        """다중 위치 생성 및 조회 테스트"""
+        """
+        다중 위치 생성 및 조회 테스트
+        """
         # 여러 위치 생성
         loc1 = Location.objects.create(type="material", location="F-1", images=[])
         loc2 = Location.objects.create(type="material", location="F-2", images=[])

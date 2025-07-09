@@ -27,7 +27,6 @@ class QuotationProductAPITestCase(TestCase):
         self.login()
 
     def login(self):
-        # JWT 로그인
         response = self.client.post(
             "/v1/auth/login",
             {"email": self.user.email, "password": "pw"},
@@ -44,7 +43,7 @@ class QuotationProductAPITestCase(TestCase):
         """
         견적서 품목 생성 API 테스트
         """
-        url = "/v1/document/quotation-product/quotation_products/"
+        url = "/v1/document/quotation-product/quotation_products"
         data = {
             "quotation": self.quotation.id,
             "product": self.product.id,
@@ -65,18 +64,8 @@ class QuotationProductAPITestCase(TestCase):
         # 테스트 데이터 생성
         QuotationProduct.objects.create(quotation=self.quotation, product=self.product, quantity=5, unit_price=500)
         
-        url = "/v1/document/quotation-product/quotation_products/list"
-        data = {
-            "quotation_id": self.quotation.id,
-            "product_id": None,
-            "is_delivery": None
-        }
-        response = self.client.post(url, data, content_type="application/json")
-        
-        # 에러 발생 시 디버깅 정보 출력
-        if response.status_code != 200:
-            print(f"Response status: {response.status_code}")
-            print(f"Response content: {response.content}")
+        url = f"/v1/document/quotation-product/quotation_products?factory_id={self.factory.id}"
+        response = self.client.get(url)
         
         # 응답 검증
         self.assertEqual(response.status_code, 200)  # OK
@@ -89,9 +78,8 @@ class QuotationProductAPITestCase(TestCase):
         # 테스트 데이터 생성
         qp = QuotationProduct.objects.create(quotation=self.quotation, product=self.product, quantity=5, unit_price=500)
         
-        url = "/v1/document/quotation-product/quotation_products/detail"
-        data = {"id": qp.id}
-        response = self.client.post(url, data, content_type="application/json")
+        url = f"/v1/document/quotation-product/quotation_products/{qp.id}?factory_id={self.factory.id}"
+        response = self.client.get(url)
         
         # 응답 검증
         self.assertEqual(response.status_code, 200)  # OK
@@ -104,8 +92,13 @@ class QuotationProductAPITestCase(TestCase):
         # 테스트 데이터 생성
         qp = QuotationProduct.objects.create(quotation=self.quotation, product=self.product, quantity=5, unit_price=500)
         
-        url = "/v1/document/quotation-product/quotation_products/update"
-        data = {"id": qp.id, "quantity": 20, "unit_price": 2000}
+        url = "/v1/document/quotation-product/quotation_products"
+        data = {
+            "quotation_product_id": qp.id,
+            "factory_id": self.factory.id,
+            "quantity": 20,
+            "unit_price": 2000
+        }
         response = self.client.patch(url, data, content_type="application/json")
         
         # 응답 검증
@@ -120,8 +113,11 @@ class QuotationProductAPITestCase(TestCase):
         # 테스트 데이터 생성
         qp = QuotationProduct.objects.create(quotation=self.quotation, product=self.product, quantity=5, unit_price=500)
         
-        url = "/v1/document/quotation-product/quotation_products/update-delivery"
-        data = {"id": qp.id, "is_delivery": True, "delivery_date": "2024-06-01"}
+        url = f"/v1/document/quotation-product/quotation_products/{qp.id}/delivery?factory_id={self.factory.id}"
+        data = {
+            "is_delivery": True,
+            "delivery_date": "2024-06-01"
+        }
         response = self.client.patch(url, data, content_type="application/json")
         
         # 응답 검증

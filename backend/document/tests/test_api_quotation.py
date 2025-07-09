@@ -5,6 +5,7 @@ from project.models import Project
 from document.models import Quotation
 
 class QuotationActionAPITestCase(TestCase):
+    
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username="testuser", password="pw", email="testuser@example.com")
@@ -22,7 +23,6 @@ class QuotationActionAPITestCase(TestCase):
         self.login()
 
     def login(self):
-        # JWT 로그인
         response = self.client.post(
             "/v1/auth/login",
             {"email": self.user.email, "password": "pw"},
@@ -39,7 +39,7 @@ class QuotationActionAPITestCase(TestCase):
         """
         세금계산서 생성 요청 성공 테스트
         """
-        url = f"/v1/document/quotation/quotations/{self.quotation.id}/generate-tax-invoice/"
+        url = f"/v1/document/quotation/quotations/{self.quotation.id}/tax-invoice?factory_id={self.factory.id}"
         payload = {"issue_type": "normal"}
         response = self.client.post(url, payload, content_type="application/json")
         
@@ -51,7 +51,7 @@ class QuotationActionAPITestCase(TestCase):
         """
         존재하지 않는 견적서 ID로 세금계산서 생성 요청 테스트
         """
-        url = f"/v1/document/quotation/quotations/99999/generate-tax-invoice/"
+        url = f"/v1/document/quotation/quotations/99999/tax-invoice?factory_id={self.factory.id}"
         payload = {"issue_type": "normal"}
         response = self.client.post(url, payload, content_type="application/json")
         
@@ -77,7 +77,7 @@ class QuotationActionAPITestCase(TestCase):
         )
         
         # 다른 사용자의 견적서에 대해 세금계산서 생성 요청
-        url = f"/v1/document/quotation/quotations/{other_quotation.id}/generate-tax-invoice/"
+        url = f"/v1/document/quotation/quotations/{other_quotation.id}/tax-invoice?factory_id={other_factory.id}"
         payload = {"issue_type": "normal"}
         response = self.client.post(url, payload, content_type="application/json")
         
@@ -88,7 +88,7 @@ class QuotationActionAPITestCase(TestCase):
         """
         필수 필드 누락 시 세금계산서 생성 요청 테스트
         """
-        url = f"/v1/document/quotation/quotations/{self.quotation.id}/generate-tax-invoice/"
+        url = f"/v1/document/quotation/quotations/{self.quotation.id}/tax-invoice?factory_id={self.factory.id}"
         payload = {}  # issue_type 누락
         response = self.client.post(url, payload, content_type="application/json")
         
@@ -99,7 +99,7 @@ class QuotationActionAPITestCase(TestCase):
         """
         세금계산서 생성 비동기 작업 트리거 테스트
         """
-        url = f"/v1/document/quotation/quotations/{self.quotation.id}/generate-tax-invoice/"
+        url = f"/v1/document/quotation/quotations/{self.quotation.id}/tax-invoice?factory_id={self.factory.id}"
         payload = {"issue_type": "normal"}
         response = self.client.post(url, payload, content_type="application/json")
         
@@ -111,7 +111,7 @@ class QuotationActionAPITestCase(TestCase):
         """
         추가 필드가 포함된 세금계산서 생성 요청 테스트
         """
-        url = f"/v1/document/quotation/quotations/{self.quotation.id}/generate-tax-invoice/"
+        url = f"/v1/document/quotation/quotations/{self.quotation.id}/tax-invoice?factory_id={self.factory.id}"
         payload = {"issue_type": "normal", "extra_field": "value"}
         response = self.client.post(url, payload, content_type="application/json")
         
