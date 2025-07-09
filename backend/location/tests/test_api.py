@@ -1,10 +1,12 @@
 from django.test import TestCase
+from django.urls import reverse
 from user.models import User
 from factory.models import Factory
 from location.models import Location
 from stock.models import Material
+import json
 
-class LocationTestCase(TestCase):
+class LocationAPITestCase(TestCase):
     def setUp(self):
         # 테스트 사용자 생성
         self.user = User.objects.create_user(username="testuser", password="password1234!", email="testuser@example.com")
@@ -23,146 +25,195 @@ class LocationTestCase(TestCase):
             standard_stock=5,
         )
 
-    def test_create_location_and_field_types(self):
+    def test_create_location_api(self):
         """
-        위치 생성 및 필드 타입 검증 테스트
+        위치 생성 API 테스트
         """
-        # 위치 생성
-        loc = Location.objects.create(type="material", location="A-1 창고", images=["https://test.com/img1.jpg"])
+        location_data = {
+            "type": "material",
+            "location": "A-1 창고",
+            "images": ["https://test.com/img1.jpg"]
+        }
         
-        # 필드 값 검증
-        self.assertEqual(loc.location, "A-1 창고")
-        self.assertIsInstance(loc.images, list)  # images 필드가 리스트 타입인지 확인
-        self.assertEqual(loc.images[0], "https://test.com/img1.jpg")
-        self.assertEqual(loc.type, "material")
+        response = self.client.post("/api/v1/location/", 
+                                   data=json.dumps(location_data),
+                                   content_type="application/json")
         
-        # 타임스탬프 필드 존재 확인
-        self.assertIsNotNone(loc.created_at)
-        self.assertIsNotNone(loc.updated_at)
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data["location"], "A-1 창고")
+        self.assertEqual(data["type"], "material")
+        self.assertEqual(data["images"], ["https://test.com/img1.jpg"])
 
-    def test_location_str_and_repr(self):
+    def test_get_location_list_api(self):
         """
-        위치 객체의 문자열 표현 테스트
+        위치 목록 조회 API 테스트
         """
-        loc = Location.objects.create(type="material", location="B-1", images=[])
+        # 테스트 데이터 생성
+        Location.objects.create(type="material", location="B-1", images=[])
+        Location.objects.create(type="product", location="B-2", images=[])
         
-        # __str__ 메서드가 "Location object"를 포함하는지 확인
-        self.assertIn("Location object", str(loc))
+        response = self.client.get("/api/v1/location/")
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 2)
 
-    def test_update_location_images(self):
+    def test_get_location_detail_api(self):
         """
-        위치 이미지 배열 업데이트 테스트
+        위치 상세 조회 API 테스트
         """
-        # 초기 위치 생성
-        loc = Location.objects.create(type="material", location="C-1", images=["url1"])
+        loc = Location.objects.create(type="material", location="C-1", images=["url1", "url2"])
         
-        # 이미지 배열에 새 URL 추가
-        loc.images.append("url2")
-        loc.save()
+        response = self.client.get(f"/api/v1/location/{loc.id}/")
         
-        # DB에서 다시 로드하여 변경사항 확인
-        loc.refresh_from_db()
-        self.assertIn("url2", loc.images)
-        self.assertEqual(len(loc.images), 2)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["location"], "C-1")
+        self.assertEqual(data["type"], "material")
+        self.assertEqual(data["images"], ["url1", "url2"])
 
-    def test_delete_location_and_material_relation(self):
+    def test_update_location_api(self):
         """
-        위치 삭제 시 재료와의 관계 처리 테스트
+        위치 수정 API 테스트
         """
-        # 위치 생성 및 재료와 연결
-        loc = Location.objects.create(type="material", location="D-1", images=[])
-        self.material.location = loc
-        self.material.save()
+        loc = Location.objects.create(type="material", location="D-1", images=["url1"])
         
-        # 삭제 전 ID 저장
-        loc_id = loc.id
-        self.material_id = self.material.id
+        update_data = {
+            "location": "D-1-수정",
+            "images": ["url1", "url2", "url3"]
+        }
         
-        # 위치 삭제
-        loc.delete()
+        response = self.client.put(f"/api/v1/location/{loc.id}/",
+                                  data=json.dumps(update_data),
+                                  content_type="application/json")
         
-        # 위치가 실제로 삭제되었는지 확인
-        self.assertFalse(Location.objects.filter(id=loc_id).exists())
-        
-        # 재료의 location 필드가 None으로 설정되었는지 확인
-        from stock.models import Material
-        try:
-            material = Material.objects.get(id=self.material_id)
-            self.assertIsNone(material.location)
-        except Material.DoesNotExist:
-            pass  # 삭제된 경우도 허용
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["location"], "D-1-수정")
+        self.assertEqual(len(data["images"]), 3)
 
-    def test_location_type_choices(self):
+    def test_delete_location_api(self):
         """
-        위치 타입 선택 테스트
+        위치 삭제 API 테스트
         """
-        # 유효한 타입으로 위치 생성
-        loc = Location.objects.create(type="product", location="E-1", images=[])
-        self.assertEqual(loc.type, "product")
+        loc = Location.objects.create(type="material", location="E-1", images=[])
         
-        # 잘못된 값도 저장됨 (Django 기본 동작)
-        loc2 = Location.objects.create(type="invalid", location="E-2", images=[])
-        self.assertEqual(loc2.type, "invalid")
+        response = self.client.delete(f"/api/v1/location/{loc.id}/")
+        
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Location.objects.filter(id=loc.id).exists())
 
-    def test_multiple_locations_and_query(self):
+    def test_location_type_filter_api(self):
         """
-        다중 위치 생성 및 조회 테스트
+        위치 타입별 필터링 API 테스트
         """
-        # 여러 위치 생성
-        loc1 = Location.objects.create(type="material", location="F-1", images=[])
-        loc2 = Location.objects.create(type="material", location="F-2", images=[])
-        loc3 = Location.objects.create(type="product", location="F-3", images=[])
+        # 테스트 데이터 생성
+        Location.objects.create(type="material", location="F-1", images=[])
+        Location.objects.create(type="material", location="F-2", images=[])
+        Location.objects.create(type="product", location="F-3", images=[])
         
-        # material 타입의 위치만 조회
-        all_material = Location.objects.filter(type="material")
+        response = self.client.get("/api/v1/location/?type=material")
         
-        # 검증
-        self.assertEqual(all_material.count(), 2)
-        self.assertIn(loc1, all_material)
-        self.assertIn(loc2, all_material)
-        self.assertNotIn(loc3, all_material)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        for item in data:
+            self.assertEqual(item["type"], "material")
 
-    def test_location_unicode_and_repr(self):
+    def test_location_validation_api(self):
         """
-        위치 유니코드 문자열 처리 테스트
+        위치 생성 시 유효성 검증 API 테스트
         """
-        # 한글 포함 위치명으로 위치 생성
-        loc = Location.objects.create(type="material", location="유니코드창고", images=[])
+        # 필수 필드 누락
+        invalid_data = {
+            "type": "material"
+            # location 필드 누락
+        }
         
-        # 문자열 표현에 "Location object"가 포함되는지 확인
-        self.assertIn("Location object", str(loc))
+        response = self.client.post("/api/v1/location/",
+                                   data=json.dumps(invalid_data),
+                                   content_type="application/json")
+        
+        self.assertEqual(response.status_code, 400)
 
-    def test_location_images_empty(self):
+    def test_location_unicode_api(self):
         """
-        빈 이미지 배열 처리 테스트
+        위치 한글 처리 API 테스트
         """
-        # 빈 배열로 위치 생성
-        loc = Location.objects.create(type="material", location="G-1", images=[])
-        self.assertEqual(loc.images, [])
+        location_data = {
+            "type": "material",
+            "location": "유니코드창고",
+            "images": []
+        }
+        
+        response = self.client.post("/api/v1/location/",
+                                   data=json.dumps(location_data),
+                                   content_type="application/json")
+        
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data["location"], "유니코드창고")
 
-    def test_location_images_null(self):
+    def test_location_images_empty_api(self):
         """
-        Null 이미지 배열 처리 테스트
+        빈 이미지 배열 처리 API 테스트
         """
-        # None으로 이미지 설정
-        loc = Location.objects.create(type="material", location="G-2", images=None)
-        self.assertIsNone(loc.images)
+        location_data = {
+            "type": "material",
+            "location": "G-1",
+            "images": []
+        }
+        
+        response = self.client.post("/api/v1/location/",
+                                   data=json.dumps(location_data),
+                                   content_type="application/json")
+        
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data["images"], [])
 
-    def test_location_update_timestamp(self):
+    def test_location_images_null_api(self):
         """
-        위치 업데이트 시 타임스탬프 변경 테스트
+        Null 이미지 배열 처리 API 테스트
         """
-        import time
+        location_data = {
+            "type": "material",
+            "location": "G-2",
+            "images": None
+        }
         
-        # 초기 위치 생성
-        loc = Location.objects.create(type="material", location="H-1", images=[])
-        old_updated = loc.updated_at
+        response = self.client.post("/api/v1/location/",
+                                   data=json.dumps(location_data),
+                                   content_type="application/json")
         
-        # 1초 대기 후 위치 정보 수정
-        time.sleep(1)
-        loc.location = "H-1-수정"
-        loc.save()
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertIsNone(data["images"])
+
+    def test_location_patch_api(self):
+        """
+        위치 부분 수정 API 테스트
+        """
+        loc = Location.objects.create(type="material", location="H-1", images=["url1"])
         
-        # DB에서 다시 로드하여 updated_at이 변경되었는지 확인
-        loc.refresh_from_db()
-        self.assertGreater(loc.updated_at, old_updated)
+        patch_data = {
+            "location": "H-1-부분수정"
+        }
+        
+        response = self.client.patch(f"/api/v1/location/{loc.id}/",
+                                    data=json.dumps(patch_data),
+                                    content_type="application/json")
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["location"], "H-1-부분수정")
+        self.assertEqual(data["images"], ["url1"])  # 기존 값 유지
+
+    def test_location_not_found_api(self):
+        """
+        존재하지 않는 위치 조회 API 테스트
+        """
+        response = self.client.get("/api/v1/location/99999/")
+        
+        self.assertEqual(response.status_code, 404)

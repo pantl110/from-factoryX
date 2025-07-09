@@ -34,6 +34,7 @@ from location.api import router as location_router
 from document.api import router as document_router
 from document.api_quotation import router as quotation_router
 from document.api_quotation_product import router as quotation_product_router
+from project.api import router as project_router
 from django.contrib.admin.views.decorators import staff_member_required
 
 base_api = NinjaAPI(
@@ -64,6 +65,7 @@ base_api.add_router("v1/location", location_router)
 base_api.add_router("v1/document", document_router)
 base_api.add_router("v1/document/quotation", quotation_router)
 base_api.add_router("v1/document/quotation-product", quotation_product_router)
+base_api.add_router("v1/project", project_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
