@@ -8,6 +8,23 @@ class QuotationCreateIn(Schema):
     project: int
     due_date: date
 
+class QuotationFilter(FilterSchema):
+    client_id: Optional[int] = Field(None, q="client_id")
+    project_id: Optional[int] = Field(None, q="project_id")
+    due_date: Optional[date] = Field(None, q="due_date")
+
+class QuotationDetailIn(Schema):
+    quotation_id: int
+    factory_id: int
+
+class QuotationUpdateIn(Schema):
+    quotation_id: int
+    factory_id: int
+    due_date: Optional[date] = None
+
+class QuotationDeleteIn(Schema):
+    quotation_id: int
+
 class QuotationSendEmailIn(Schema):
     recipient_email: str
     subject: str
@@ -31,14 +48,17 @@ class QuotationProductDetailIn(Schema):
     id: int
 
 class QuotationProductUpdateIn(Schema):
-    id: int
+    quotation_product_id: int
+    factory_id: int
     quantity: Optional[int]
     unit_price: Optional[int]
 
 class QuotationProductDeliveryUpdateIn(Schema):
-    id: int
     is_delivery: bool
     delivery_date: date
+
+class QuotationProductDeleteIn(Schema):
+    quotation_product_id: int
 
 class QuotationProductFilter(FilterSchema):
     quotation_id: Optional[int] = Field(None, q="quotation_id")

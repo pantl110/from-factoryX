@@ -15,6 +15,7 @@ class FactoryCreateIn(ModelSchema):
 
 
 class FactoryUpdateIn(ModelSchema):
+    factory_id: int = Field(description="공장 ID")
     name: Optional[str] = Field(default=None, description="공장 이름")
 
     class Meta:
@@ -25,6 +26,19 @@ class FactoryUpdateIn(ModelSchema):
             "created_at",
             "updated_at",
         ]
+
+
+class FactoryFilter(FilterSchema):
+    name: Optional[str] = Field(default=None, q="name__icontains", description="공장명")
+    address: Optional[str] = Field(default=None, q="address__icontains", description="공장 주소")
+
+
+class FactoryDetailIn(Schema):
+    factory_id: int
+
+
+class FactoryDeleteIn(Schema):
+    factory_id: int
 
 
 class FactoryEqCreateIn(ModelSchema):
