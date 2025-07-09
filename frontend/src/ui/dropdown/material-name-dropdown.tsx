@@ -15,12 +15,13 @@ export const MaterialNameDropdown = ({
 }: MaterialNameDropdownProps) => {
   return (
     <Dropdown onClose={() => {}} width={width}>
-      <div className="flex flex-col overflow-y-auto max-h-72">
+      <div className="flex flex-col">
         {items.map((item) => (
           <DropdownItem
             key={item.id}
             text={item.materialName}
             onClick={() => onSelect(item)}
+            search={true}
           />
         ))}
       </div>

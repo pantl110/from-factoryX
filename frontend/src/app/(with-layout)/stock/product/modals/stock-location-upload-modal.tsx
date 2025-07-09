@@ -1,19 +1,18 @@
 import Modal from "@/ui/modal/modal";
-import { clientData } from "@/mocks/client-data";
-import { ClientDataModel } from "@/types/data-model";
 import DropzoneArea from "@/ui/dropzone-area";
 import { useState } from "react";
 
-interface UploadModalProps {
+interface StockLocationUploadModalProps {
   onClose: () => void;
-  onComplete: (clientData?: ClientDataModel) => void;
 }
 
-const ExcelUploadModal = ({ onClose, onComplete }: UploadModalProps) => {
+const StockLocationUploadModal = ({
+  onClose,
+}: StockLocationUploadModalProps) => {
   const [hasFiles, setHasFiles] = useState(false);
 
   const handleComplete = () => {
-    onComplete(clientData[0]);
+    onClose();
   };
 
   const onFileUpload = (hasFiles: boolean) => {
@@ -22,11 +21,11 @@ const ExcelUploadModal = ({ onClose, onComplete }: UploadModalProps) => {
 
   const title = hasFiles
     ? "업로드된 파일을 확인해 주세요."
-    : "견적 요청서 파일을 업로드해 주세요.";
+    : "품목 창고 사진을 업로드해 주세요.";
 
   const subtitle = hasFiles
     ? "파일이 맞는지 확인 후, 업로드를 눌러주세요."
-    : "이미지 또는 PDF 파일을 끌어다 놓거나 업로드할 수 있어요.";
+    : "JPG, PNG 등 이미지 파일만 업로드할 수 있어요.";
 
   return (
     <Modal
@@ -41,8 +40,10 @@ const ExcelUploadModal = ({ onClose, onComplete }: UploadModalProps) => {
           onComplete={handleComplete}
           onFileUpload={onFileUpload}
           accept={{
-            "image/*": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"],
-            "application/pdf": [".pdf"],
+            "image/jpeg": [".jpg", ".jpeg"],
+            "image/png": [".png"],
+            "image/gif": [".gif"],
+            "image/webp": [".webp"],
           }}
         />
       </div>
@@ -50,4 +51,4 @@ const ExcelUploadModal = ({ onClose, onComplete }: UploadModalProps) => {
   );
 };
 
-export default ExcelUploadModal;
+export default StockLocationUploadModal;

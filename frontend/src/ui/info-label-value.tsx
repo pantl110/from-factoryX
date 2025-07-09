@@ -28,8 +28,8 @@ interface InfoLabelValueProps {
     e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
   inputType?: string;
-  unit?: string;
   textarea?: boolean;
+  required?: boolean;
 }
 
 const InfoLabelValue = ({
@@ -42,8 +42,8 @@ const InfoLabelValue = ({
   onFocus,
   onBlur,
   inputType = "text",
-  unit,
   textarea = false,
+  required = false,
 }: InfoLabelValueProps) => {
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
@@ -78,12 +78,11 @@ const InfoLabelValue = ({
             defaultValue={typeof value === "string" ? value : ""}
             placeholder={placeholder}
             onChange={onChange}
-            className="w-full"
+            className="w-full placeholder:text-gr"
             style={{ outline: "none" }}
             onFocus={onFocus}
             onBlur={onBlur}
           />
-          {unit && <span className="ml-1 text-dg">{unit}</span>}
         </div>
       );
     }
@@ -104,13 +103,28 @@ const InfoLabelValue = ({
       return <span className="text-gr Me_Body-1">{placeholder || "-"}</span>;
     }
 
+    // 숫자 값이고 unit이 있는 경우 unit을 뒤에 표시
+    // if (
+    //   unit &&
+    //   (typeof value === "number" ||
+    //     (typeof value === "string" && !isNaN(Number(value))))
+    // ) {
+    //   return (
+    //     <div className="flex items-center">
+    //       <span>{value}</span>
+    //       <span className="ml-1 text-dg">{unit}</span>
+    //     </div>
+    //   );
+    // }
+
     return value;
   };
 
   return (
     <div className="flex w-full Me_Body-1 border-t border-lg">
-      <div className="w-[134px] bg-lg-table">
-        <div className="text-sv p-3">{label}</div>
+      <div className="w-[134px] bg-lg-table flex gap-2 p-3">
+        <div className="text-sv">{label}</div>
+        {required && isEditing && <div className="text-sv">*</div>}
       </div>
       <div className="flex-1 flex items-center">
         <div className="text-dg px-3 flex-1 flex items-center">

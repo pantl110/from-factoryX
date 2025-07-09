@@ -2,6 +2,7 @@ import MiniBtn from "@/ui/mini-btn";
 import ProductItem from "./product-item";
 import dummyProducts from "@/mocks/quotation-products";
 import { ProductModel } from "./types";
+import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 
 interface RequestInfoProps {
   onProductClick: (product: ProductModel) => void;
@@ -22,7 +23,8 @@ const RequestInfo = ({
           text="품목 추가하기"
           textColor="text-dg"
           borderColor="border-lg"
-          iconColor="text-sv"
+          icon={CaretDown}
+          iconPosition="right"
           hoverColor="hover:bg-bg"
           onClick={() => setIsProductEnrollmentModalOpen(true)}
         />

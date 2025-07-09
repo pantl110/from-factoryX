@@ -8,6 +8,7 @@ interface DropdownItemProps {
   children?: ReactNode;
   noHover?: boolean;
   chip?: boolean;
+  search?: boolean;
 }
 
 const DropdownItem = ({
@@ -18,10 +19,11 @@ const DropdownItem = ({
   children,
   noHover = false,
   chip = false,
+  search = false,
 }: DropdownItemProps) => {
   return (
     <div
-      className={`bg-wh flex gap-3 w-full ${chip ? "h-fit" : "h-12"} items-center cursor-pointer rounded-[4px] p-0 transition-all duration-200 ease-in-out ${
+      className={`bg-wh flex gap-3 w-full ${chip ? "h-fit" : search ? "h-10" : "h-12"} items-center cursor-pointer rounded-[4px] p-0 transition-all duration-200 ease-in-out ${
         noHover ? "" : "hover:bg-bg"
       }`}
       onClick={(e) => {
@@ -36,7 +38,7 @@ const DropdownItem = ({
       )}
       {text && (
         <h4
-          className={`Heading-4 ${textColor} transition-colors duration-200 ease-in-out text-center w-full`}
+          className={`${search ? "Me_Body-1" : "Heading-4"} ${textColor} transition-colors duration-200 ease-in-out ${search ? "text-left pl-2" : "text-center"} w-full`}
         >
           {text}
         </h4>

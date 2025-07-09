@@ -4,6 +4,19 @@ export const extractNumbers = (value: string): string => {
   return value.replace(/[^0-9]/g, "");
 };
 
+// 날짜 포맷팅 함수 (YYYY-MM-DD)
+export const formatDate = (value: string): string => {
+  const numbers = extractNumbers(value);
+
+  if (numbers.length <= 4) {
+    return numbers;
+  } else if (numbers.length <= 6) {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4)}`;
+  } else {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 8)}`;
+  }
+};
+
 // 사업자등록번호 포맷팅 함수
 export const formatBusinessNumber = (value: string): string => {
   const numbers = extractNumbers(value); // 숫자만 추출

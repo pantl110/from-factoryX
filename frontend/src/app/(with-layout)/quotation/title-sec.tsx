@@ -49,7 +49,7 @@ const TitleSec = ({
               style={{
                 position: "fixed",
                 left: quotationStatusAnchorRect.left,
-                top: quotationStatusAnchorRect.bottom,
+                top: quotationStatusAnchorRect.bottom + 8,
                 zIndex: 10,
               }}
             >

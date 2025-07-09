@@ -8,13 +8,19 @@ interface QuotationStatusDropdownProps {
 
 const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
   return (
-    <Dropdown width="w-full" onClose={onClose}>
+    <Dropdown
+      width="w-full"
+      onClose={onClose}
+      padding="p-4"
+      className="gap-2.5"
+    >
       <DropdownItem
         onClick={(e) => {
           e?.stopPropagation();
           onClose();
         }}
         noHover={true}
+        chip={true}
       >
         <Chip
           text="견적 협의"
@@ -30,6 +36,7 @@ const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
           onClose();
         }}
         noHover={true}
+        chip={true}
       >
         <Chip
           text="중단"

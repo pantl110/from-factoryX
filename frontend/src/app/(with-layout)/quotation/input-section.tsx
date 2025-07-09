@@ -10,13 +10,13 @@ import {
 import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
 import { clientData } from "@/mocks/client-data";
 import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
-import { forwardRef, useEffect } from "react";
+import { useEffect } from "react";
 import { ClientDataModel } from "@/types/data-model";
-import { InputMask } from "@react-input/mask";
 import {
   formatBusinessNumber,
   formatPhoneNumber,
   formatFaxNumber,
+  formatDate,
 } from "@/hooks/format-number";
 
 interface InputSectionProps {
@@ -25,45 +25,6 @@ interface InputSectionProps {
   errors: FieldErrors<ClientDataModel>;
   control: Control<ClientDataModel>;
 }
-
-const BusinessNumberInput = forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<typeof Input>
->(({ showError, ...props }, ref) => (
-  <Input
-    label="사업자등록번호"
-    placeholder="사업자등록번호를 입력하세요."
-    required
-    ref={ref}
-    {...props}
-    showError={showError}
-  />
-));
-BusinessNumberInput.displayName = "BusinessNumberInput";
-const PhoneInput = forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<typeof Input>
->((props, ref) => (
-  <Input
-    placeholder="담당자 연락처를 입력하세요."
-    label="담당자 연락처"
-    ref={ref}
-    {...props}
-  />
-));
-PhoneInput.displayName = "PhoneInput";
-const FaxInput = forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<typeof Input>
->((props, ref) => (
-  <Input
-    label="담당자 팩스"
-    placeholder="담당자 팩스를 입력하세요."
-    ref={ref}
-    {...props}
-  />
-));
-FaxInput.displayName = "FaxInput";
 
 const InputSection = ({
   clientDataParam,
@@ -140,8 +101,8 @@ const InputSection = ({
                 setTimeout(() => setIsCompanyNameDropdownOpen(false), 150);
               return (
                 <Input
-                  label="거래처명"
-                  placeholder="거래처명을 입력하세요."
+                  label="업체명"
+                  placeholder="업체명을 입력하세요."
                   required
                   showError={!!errors.companyName}
                   value={field.value || ""}
@@ -174,12 +135,18 @@ const InputSection = ({
             rules={{ required: true }}
             render={({ field }) => {
               return (
-                <InputMask
-                  component={BusinessNumberInput}
-                  mask="000-00-00000"
-                  replacement={{ 0: /[0-9]/ }}
-                  {...field}
+                <Input
+                  label="사업자등록번호"
+                  placeholder="사업자등록번호를 입력하세요."
+                  required
                   showError={!!errors.businessNumber}
+                  value={field.value || ""}
+                  onChange={(e) => {
+                    const formatted = formatBusinessNumber(e.target.value);
+                    field.onChange(formatted);
+                  }}
+                  ref={field.ref}
+                  name={field.name}
                 />
               );
             }}
@@ -208,20 +175,19 @@ const InputSection = ({
           render={({ field }) => (
             <Input
               label="납기일자"
+              placeholder="납기일자를 입력하세요."
               required
-              type="date"
               showError={!!errors.dueDate}
-              {...field}
+              value={field.value || ""}
+              onChange={(e) => {
+                const formatted = formatDate(e.target.value);
+                field.onChange(formatted);
+              }}
+              ref={field.ref}
+              name={field.name}
             />
           )}
         />
-        {/* <InputDatepicker
-          label="납기일자"
-          required
-          value={form.formData.dueDate}
-          onChange={(v) => form.handleChange("dueDate", v)}
-          showError={isShowErrors && !form.formData.dueDate}
-        /> */}
       </div>
       <div className="flex gap-2">
         <Controller
@@ -230,9 +196,21 @@ const InputSection = ({
           rules={{ required: true }}
           render={({ field }) => (
             <Input
-              label="회사주소"
-              placeholder="회사주소를 입력하세요."
-              required
+              label="업태"
+              placeholder="업태를 입력하세요."
+              showError={!!errors.companyAddress}
+              {...field}
+            />
+          )}
+        />
+        <Controller
+          name="companyAddress"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Input
+              label="종목"
+              placeholder="종목을 입력하세요."
               showError={!!errors.companyAddress}
               {...field}
             />
@@ -245,8 +223,9 @@ const InputSection = ({
           control={control}
           render={({ field }) => (
             <Input
-              label="납품주소"
-              placeholder="납품주소를 입력하세요."
+              label="사업상 주소"
+              placeholder="사업상 주소를 입력하세요."
+              required
               {...field}
             />
           )}
@@ -273,7 +252,7 @@ const InputSection = ({
           rules={{ required: true }}
           render={({ field }) => (
             <Input
-              label="담당자 이메일"
+              label="이메일"
               placeholder="담당자 이메일을 입력하세요."
               required
               showError={!!errors.email}
@@ -288,11 +267,16 @@ const InputSection = ({
           control={control}
           render={({ field }) => {
             return (
-              <InputMask
-                component={PhoneInput}
-                mask="000-0000-0000"
-                replacement={{ 0: /[0-9]/ }}
-                {...field}
+              <Input
+                placeholder="연락처를 입력하세요."
+                label="연락처"
+                value={field.value || ""}
+                onChange={(e) => {
+                  const formatted = formatPhoneNumber(e.target.value);
+                  field.onChange(formatted);
+                }}
+                ref={field.ref}
+                name={field.name}
               />
             );
           }}
@@ -302,11 +286,16 @@ const InputSection = ({
           control={control}
           render={({ field }) => {
             return (
-              <InputMask
-                component={FaxInput}
-                mask="000-0000-0000"
-                replacement={{ 0: /[0-9]/ }}
-                {...field}
+              <Input
+                label="팩스 번호"
+                placeholder="팩스 번호를 입력하세요."
+                value={field.value || ""}
+                onChange={(e) => {
+                  const formatted = formatFaxNumber(e.target.value);
+                  field.onChange(formatted);
+                }}
+                ref={field.ref}
+                name={field.name}
               />
             );
           }}

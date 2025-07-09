@@ -6,28 +6,15 @@ import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
 import { clientData } from "@/mocks/client-data";
 import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
 import { useForm } from "react-hook-form";
-import { InputMask } from "@react-input/mask";
-import { forwardRef } from "react";
+import {
+  formatBusinessNumber,
+  handleNumberKeyDown,
+} from "@/hooks/format-number";
 
 interface ClientInfoModalProps {
   onClose?: () => void;
   onNext?: () => void;
 }
-
-const BusinessNumberInput = forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<typeof Input>
->(({ showError, ...props }, ref) => (
-  <Input
-    label="사업자등록번호"
-    placeholder="사업자등록번호 입력"
-    required
-    ref={ref}
-    {...props}
-    showError={showError}
-  />
-));
-BusinessNumberInput.displayName = "BusinessNumberInput";
 
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
   const {
@@ -35,6 +22,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<ClientDataModel>({
     mode: "onChange",
     defaultValues: {
@@ -63,13 +51,30 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     handleSelect: handleCompanyNameSelect,
   } = useDropdownFilter(clientData, (item) => item.companyName);
 
+  // 필수 필드들의 값 감시
+  const companyName = watch("companyName");
+  const businessNumber = watch("businessNumber");
+  const representativeName = watch("representativeName");
+  const businessType = watch("businessType");
+  const businessCategory = watch("businessCategory");
+  const companyAddress = watch("companyAddress");
+
+  // 모든 필수 필드가 입력되었는지 확인
+  const isFormValid =
+    companyName?.trim() &&
+    businessNumber?.trim() &&
+    representativeName?.trim() &&
+    businessType?.trim() &&
+    businessCategory?.trim() &&
+    companyAddress?.trim();
+
   const handleSelectClient = (item: ClientDataModel) => {
     handleCompanyNameSelect(item);
     setCompanyNameInput(item.companyName);
 
     // 선택한 거래처 정보로 폼 자동 채우기
     setValue("companyName", item.companyName);
-    setValue("businessNumber", item.businessNumber);
+    setValue("businessNumber", formatBusinessNumber(item.businessNumber));
     setValue("representativeName", item.representativeName);
     setValue("companyAddress", item.companyAddress);
     setValue("email", item.email);
@@ -93,78 +98,61 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         onSubmit={handleSubmit(() => onNext && onNext())}
       >
         <div className="flex flex-col gap-4">
-          <div className="flex gap-2.5">
-            <div className="flex-1 relative">
-              <Input
-                label="거래처명"
-                placeholder="거래처명 입력"
-                required
-                {...register("companyName", { required: true })}
-                value={companyNameInput}
-                onChange={(e) => {
-                  setCompanyNameInput(e.target.value);
-                  setValue("companyName", e.target.value);
-                }}
-                onFocus={() => setIsCompanyNameDropdownOpen(true)}
-                onBlur={() =>
-                  setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
-                }
-                showError={!!errors.companyName}
-              />
-              {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
-                <div className="absolute left-0 top-21 z-10 w-full">
-                  <ClientNameDropdown
-                    items={filteredClients}
-                    onSelect={handleSelectClient}
-                    width="w-full"
-                  />
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
-              <InputMask
-                component={BusinessNumberInput} // render → component 방식으로 변경
-                mask="000-00-00000"
-                replacement={{ 0: /[0-9]/ }}
-                {...register("businessNumber", { required: true })}
-                showError={!!errors.businessNumber}
-              />
-            </div>
-          </div>
-          <div className="flex gap-2.5">
+          <div className="flex-1 relative">
             <Input
-              label="대표자명"
-              placeholder="대표자명 입력"
+              label="업체명"
+              placeholder="업체명을 입력하세요."
               required
-              {...register("representativeName", {
-                required: true,
-              })}
-              showError={!!errors.representativeName}
+              {...register("companyName", { required: true })}
+              value={companyNameInput}
+              onChange={(e) => {
+                setCompanyNameInput(e.target.value);
+                setValue("companyName", e.target.value);
+              }}
+              onFocus={() => setIsCompanyNameDropdownOpen(true)}
+              onBlur={() =>
+                setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
+              }
+              showError={!!errors.companyName}
             />
+            {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
+              <div className="absolute left-0 top-21 z-10 w-full">
+                <ClientNameDropdown
+                  items={filteredClients}
+                  onSelect={handleSelectClient}
+                  width="w-full"
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex-1">
             <Input
-              label="담당자 이메일"
-              placeholder="담당자 이메일 입력"
-              {...register("email")}
+              label="사업자등록번호"
+              placeholder="사업자등록번호를 입력하세요."
+              required
+              {...register("businessNumber", { required: true })}
+              onChange={(e) => {
+                const formatted = formatBusinessNumber(e.target.value);
+                e.target.value = formatted;
+                setValue("businessNumber", formatted);
+              }}
+              onKeyDown={handleNumberKeyDown}
+              showError={!!errors.businessNumber}
             />
           </div>
-          <div className="flex gap-2.5">
-            <Input
-              label="담당자 연락처"
-              placeholder="담당자 연락처 입력"
-              type="number"
-              {...register("contact")}
-            />
-            <Input
-              label="팩스 번호"
-              placeholder="팩스 번호 입력"
-              type="number"
-              {...register("fax")}
-            />
-          </div>
+          <Input
+            label="대표자명"
+            placeholder="대표자명을 입력하세요."
+            required
+            {...register("representativeName", {
+              required: true,
+            })}
+            showError={!!errors.representativeName}
+          />
           <div className="flex gap-2.5">
             <Input
               label="업태"
-              placeholder="업태 입력"
+              placeholder="업태를 입력하세요."
               required
               {...register("businessType", {
                 required: true,
@@ -173,7 +161,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
             />
             <Input
               label="종목"
-              placeholder="종목 입력"
+              placeholder="종목을 입력하세요."
               required
               {...register("businessCategory", {
                 required: true,
@@ -181,27 +169,32 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               showError={!!errors.businessCategory}
             />
           </div>
-          <div className="flex gap-2.5">
+          <div className="flex-1">
             <Input
               label="사업장 주소"
-              placeholder="사업장 주소 입력"
-              {...register("companyAddress")}
+              required
+              placeholder="사업장 주소를 입력하세요."
+              {...register("companyAddress", {
+                required: true,
+              })}
+              showError={!!errors.companyAddress}
             />
           </div>
         </div>
         <div className="flex justify-end gap-2.5">
           <MiniBtn
-            text="취소하기"
+            text="취소"
             textColor="text-sv"
             onClick={onClose}
             hoverColor=""
           />
           <MiniBtn
-            text="다음 단계"
+            text="다음"
             bgColor="bg-primary"
             textColor="text-wh"
             type="submit"
             hoverColor="hover:bg-primary-hover"
+            disabled={!isFormValid}
           />
         </div>
       </form>
