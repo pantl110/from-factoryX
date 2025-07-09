@@ -1,6 +1,6 @@
 from django.test import TestCase
 from user.api import router as user_router
-from stock.material_api import router
+from stock.api_material import router
 from ninja.testing import TestAsyncClient
 from user.models import User
 from factory.models import Factory, FactoryClient
