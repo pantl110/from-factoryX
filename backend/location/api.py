@@ -16,7 +16,8 @@ router = Router(tags=["Location"])
 
 @router.post(
     "/locations",
-    summary="위치 생성",
+    summary="[C] 위치 생성",
+    description="공장 내 새로운 위치를 생성합니다.",
     response={201: LocationOut},
     auth=jwt_auth,
 )
@@ -30,7 +31,8 @@ async def create_location(request, payload: LocationCreateIn):
 
 @router.get(
     "/locations",
-    summary="위치 목록 조회",
+    summary="[C] 위치 목록 조회",
+    description="공장의 위치 목록을 조회합니다. 재고가 있는 위치만 표시되며 필터링이 가능합니다.",
     response={200: List[LocationOut]},
     auth=jwt_auth,
 )
@@ -54,7 +56,8 @@ async def list_locations(request, factory_id: int, filters: LocationFilter = Que
 
 @router.post(
     "/locations/detail",
-    summary="위치 상세 조회",
+    summary="[C] 위치 상세 조회",
+    description="위치 ID로 위치 정보를 상세 조회합니다.",
     response={200: LocationOut},
     auth=jwt_auth,
 )
@@ -65,7 +68,8 @@ async def get_location(request, payload: LocationDetailIn):
 
 @router.patch(
     "/locations",
-    summary="위치 수정",
+    summary="[C] 위치 정보 수정",
+    description="위치 ID로 위치 정보를 수정합니다.",
     response={200: LocationOut},
     auth=jwt_auth,
 )
@@ -82,7 +86,8 @@ async def update_location(request, payload: LocationUpdateIn):
 
 @router.delete(
     "/locations",
-    summary="위치 삭제",
+    summary="[C] 위치 삭제",
+    description="위치 ID로 위치를 삭제합니다.",
     response={204: None},
     auth=jwt_auth,
 )

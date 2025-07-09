@@ -31,6 +31,9 @@ from stock.api_material import router as material_router
 from stock.api_material_history import router as material_history_router
 from factory.api_client import router as factory_client_router
 from location.api import router as location_router
+from document.api import router as document_router
+from document.api_quotation import router as quotation_router
+from document.api_quotation_product import router as quotation_product_router
 from django.contrib.admin.views.decorators import staff_member_required
 
 base_api = NinjaAPI(
@@ -58,6 +61,9 @@ base_api.add_router("v1/stock/product", stockProduct_router)
 base_api.add_router("v1/stock/product/history", stockProductHistory_router)
 base_api.add_router("v1/factory/client", factory_client_router)
 base_api.add_router("v1/location", location_router)
+base_api.add_router("v1/document", document_router)
+base_api.add_router("v1/document/quotation", quotation_router)
+base_api.add_router("v1/document/quotation-product", quotation_product_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
