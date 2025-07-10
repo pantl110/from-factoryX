@@ -2,10 +2,12 @@
 
 import Input from "@/ui/input";
 import MiniBtn from "@/ui/mini-btn";
+import Checkbox from "@/ui/checkbox";
 import Link from "next/link";
 import { useInput } from "@/hooks/use-input";
 import { useVerification } from "@/hooks/use-verification";
 import { usePassword } from "@/hooks/use-password";
+import { useCheckAll } from "@/hooks/use-check-all";
 import { validateEmail } from "@/utils/validation";
 import FactoryXLogo from "@/ui/icons/factory-x-logo";
 
@@ -17,6 +19,7 @@ const SignupPage = () => {
   const verificationCode = useInput();
   const verification = useVerification();
   const password = usePassword();
+  const checkboxes = useCheckAll(["service", "privacy", "marketing"]);
 
   const handleSignup = () => {
     if (email.value && !email.error) {
@@ -33,6 +36,10 @@ const SignupPage = () => {
   const handleSignupComplete = () => {
     // 회원가입 완료 처리
   };
+
+  // 필수 약관 체크 여부 확인
+  const isRequiredTermsChecked =
+    checkboxes.isChecked("service") && checkboxes.isChecked("privacy");
 
   return (
     <div className="flex min-h-screen">
@@ -109,7 +116,7 @@ const SignupPage = () => {
                 disabled={
                   verification.isVerificationSent
                     ? !verificationCode.value
-                    : !email.value || !!email.error
+                    : !email.value || !!email.error || !isRequiredTermsChecked
                 }
               />
             </>
@@ -165,6 +172,48 @@ const SignupPage = () => {
               />
             </>
           )}
+
+          {/* 약관 동의 */}
+          <div className="flex flex-col gap-2 mt-5">
+            <div className="flex gap-2">
+              <Checkbox
+                isChecked={checkboxes.isAllChecked}
+                onToggle={checkboxes.toggleAll}
+              />
+              <p className="text-bl Me_Body-1">모두 동의</p>
+            </div>
+            <div className="flex justify-between">
+              <div className="flex gap-2">
+                <Checkbox
+                  isChecked={checkboxes.isChecked("service")}
+                  onToggle={() => checkboxes.toggleOne("service")}
+                />
+                <p className="text-sv Me_Body-1">서비스 이용약관 (필수)</p>
+              </div>
+              <p className="text-sv Me_Body-1">약관 보기</p>
+            </div>
+            <div className="flex justify-between">
+              <div className="flex gap-2">
+                <Checkbox
+                  isChecked={checkboxes.isChecked("privacy")}
+                  onToggle={() => checkboxes.toggleOne("privacy")}
+                />
+                <p className="text-sv Me_Body-1">
+                  개인정보 수집 및 이용 동의 (필수)
+                </p>
+              </div>
+              <p className="text-sv Me_Body-1">약관 보기</p>
+            </div>
+            <div className="flex gap-2">
+              <Checkbox
+                isChecked={checkboxes.isChecked("marketing")}
+                onToggle={() => checkboxes.toggleOne("marketing")}
+              />
+              <p className="text-sv Me_Body-1">마케팅 정보 수신 동의 (선택)</p>
+            </div>
+          </div>
+
+          {/* 로그인 비밀번호 찾기 */}
           <div className="flex justify-center items-center Me-Body-1 text-sv gap-5 mt-5">
             <Link href="/login">로그인</Link>
             <Link href="/findpassword">비밀번호 찾기</Link>
