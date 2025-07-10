@@ -24,8 +24,8 @@ const MemoSection = ({
     showToast();
   };
   return (
-    <div className="pt-5 pb-10 h-full">
-      <div className="rounded flex flex-col gap-4 h-full">
+    <>
+      <div className="rounded flex flex-col gap-4 h-full pb-10">
         <div className="flex flex-col gap-3 flex-1">
           <div className="flex gap-2">
             <div className="h-11 px-3 w-[110px] Me_Body-1 bg-bg flex items-center justify-center rounded">
@@ -59,7 +59,7 @@ const MemoSection = ({
         </div>
       </div>
       {isSaveToastOpen && <SaveToast isVisible={isVisible} />}
-    </div>
+    </>
   );
 };
 

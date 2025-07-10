@@ -37,8 +37,8 @@ const Delivery = () => {
 
   return (
     <>
-      <div className="flex flex-col px-10 pb-9">
-        <div className="flex justify-between py-4">
+      <div className="flex flex-col px-10 pt-5 pb-10">
+        <div className="flex justify-between pb-4">
           <div className="flex gap-2">
             <MiniBtn
               text="납품표 일괄 출력"

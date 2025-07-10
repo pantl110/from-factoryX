@@ -44,7 +44,7 @@ const LogItem = ({
 
   return (
     <div
-      className={`border rounded-lg p-3 ${isSelected ? "bg-primary-8 border-primary" : "border-[#eeeeee]"} hover:border-primary`}
+      className={`border rounded-lg p-3 ${isSelected ? "bg-primary-8 border-primary" : "border-lg"} hover:border-primary`}
       onClick={onClick}
       style={{ cursor: onClick ? "pointer" : undefined }}
     >

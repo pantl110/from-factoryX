@@ -17,9 +17,7 @@ const ReturnInfo = ({ returnData, isProduction }: ReturnInfoProps) => {
     <>
       <div className="flex flex-col gap-3">
         <div className="flex justify-between">
-          <h3 className="Heading-3 text-dg flex items-center">
-            반품 정보 {returnData.id}
-          </h3>
+          <h3 className="Heading-3 text-dg flex items-center">반품 정보</h3>
           <div className="flex gap-2.5">
             <div className={`${isProduction ? "hidden" : ""}`}>
               <MiniBtn

@@ -17,16 +17,12 @@ const ProductionMonitor = () => {
 
   return (
     <div
-      className="flex gap-3 px-10 w-full min-h-0 h-full flex-1 pb-10"
-      style={{ height: "calc(100vh - 333px)" }}
+      className="flex gap-3 px-10 w-full overflow-y-hidden"
+      style={{ height: "calc(100vh - 253px)" }}
     >
       {/* 왼쪽 영역 */}
-      <div
-        className={`w-[50%] flex flex-col gap-4 flex-1 pt-5 px-3 mb-10 border-r ${
-          logData.length === 0 ? "border-none" : "border-[#eeeeee]"
-        }`}
-      >
-        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto scrollbar-hide">
+      <div className={`w-[50%] flex flex-col gap-4 flex-1 pt-5`}>
+        <div className="flex flex-col gap-4 h-full min-h-0">
           <div>
             <MiniBtn
               text="메모 작성"
@@ -40,7 +36,7 @@ const ProductionMonitor = () => {
           {logData.length === 0 ? (
             <EmptyLog />
           ) : (
-            <div className="flex flex-col gap-4 flex-1">
+            <div className="flex flex-col gap-4 flex-1 pb-10 h-full min-h-0 overflow-y-auto scrollbar-hide">
               {logData.map((log) => (
                 <LogItem
                   key={log.id}
@@ -57,8 +53,10 @@ const ProductionMonitor = () => {
         </div>
       </div>
 
+      {logData.length === 0 ? null : <div className="w-1 border-r border-lg" />}
+
       {/* 오른쪽 영역: 선택된 로그에 따라 렌더링 */}
-      <div className="w-[50%]">
+      <div className="w-[50%] flex-1 pt-5">
         {selectedLog ? (
           selectedLog.type === "memo" ? (
             <MemoSection
