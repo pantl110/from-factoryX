@@ -23,7 +23,7 @@ class Quotation(BaseModel):
         related_name="quotations",
         help_text="프로젝트",
     )
-    due_date = models.DateField(help_text="납기일자")
+    due_date = models.DateField(null=True, blank=True, help_text="납기일자")
     uploaded_file = models.CharField(
         max_length=255,
         null=True,
