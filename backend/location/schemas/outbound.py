@@ -1,7 +1,10 @@
-from ninja import ModelSchema
-from location.models import Location
+from ninja import Schema
 
-class LocationOut(ModelSchema):
-    class Meta:
-        model = Location
-        fields = "__all__"
+class LocationListOut(Schema):
+    id: int
+    type: str
+    location: str
+    images: list
+
+class ErrorOut(Schema):
+    detail: str
