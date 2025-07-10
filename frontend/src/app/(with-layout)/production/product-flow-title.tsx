@@ -18,8 +18,8 @@ const ProductFlowTitle = ({
   const { bgColor, textColor } = ProjectStatusColorMap[status];
 
   return (
-    <div className="px-10 pt-7">
-      <div className="flex justify-between">
+    <>
+      <div className="px-10 pt-7 flex justify-between">
         <div className="flex flex-col gap-2">
           <Chip text={status} textColor={textColor} bgColor={bgColor} />
           <h1 className="Heading-1 text-dg">플라스틱이 좋아</h1>
@@ -36,14 +36,15 @@ const ProductFlowTitle = ({
           </div>
         </div>
       </div>
-      <div className="h-[62px] border-b border-lg flex items-end">
-        <div className="flex gap-4 pt-3 w-full">
+
+      <div className="px-10 flex flex-col items-end sticky top-15 bg-white z-1">
+        <div className="flex gap-4 pt-3 w-full border-b border-lg">
           {tabs.map((tab, idx) => (
             <button
               key={tab}
               type="button"
               onClick={() => setSelectedTab(idx)}
-              className={`Heading-3 px-2 pb-2 transition-colors duration-150 cursor-pointer ${
+              className={`Heading-3 pb-3 transition-colors duration-150 cursor-pointer ${
                 selectedTab === idx
                   ? "text-primary border-b-2 border-primary"
                   : "text-gr border-b-2 border-transparent"
@@ -53,8 +54,9 @@ const ProductFlowTitle = ({
             </button>
           ))}
         </div>
+        {/* <div className="h-[1px] bg-lg w-full"></div> */}
       </div>
-    </div>
+    </>
   );
 };
 

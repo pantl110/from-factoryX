@@ -98,11 +98,7 @@ const ProductionPageContent = () => {
         </div>
       )}
       {tabs[selectedTab] === "납품" && <Delivery />}
-      {tabs[selectedTab] === "생산 현황" && (
-        // <div className="flex-1 min-h-0">
-        <ProductionMonitor />
-        // </div>
-      )}
+      {tabs[selectedTab] === "생산 현황" && <ProductionMonitor />}
       {tabs[selectedTab] === "생산 내역" && <ProductionLog />}
       {tabs[selectedTab] === "생산 계획" && <ProductionPlan />}
       {tabs[selectedTab] === "주문서" && (

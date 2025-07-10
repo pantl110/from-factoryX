@@ -1,6 +1,7 @@
 const ProductionLogTableHeader = () => {
   return (
     <div className="flex items-center h-12 min-w-[1559px] Me_Body-1 text-sv rounded bg-lg-table">
+      {/* //  sticky top-[113px] */}
       <p className="flex-[2] px-3">품목명</p>
       <p className="flex-1 px-3">품목코드</p>
       <p className="flex-1 px-3">규격</p>

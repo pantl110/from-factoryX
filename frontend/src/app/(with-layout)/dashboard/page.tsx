@@ -64,7 +64,7 @@ const DashboardPageContent = () => {
             <DeliveryTable />
           </div>
 
-          {/* 세무/회계 */}
+          {/* 세금계산서 현황 */}
           <Tax />
         </div>
       </div>

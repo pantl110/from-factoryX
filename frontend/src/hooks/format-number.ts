@@ -107,3 +107,35 @@ export const handleNumberKeyDown = (
     e.preventDefault();
   }
 };
+
+// 시간 포맷팅 함수 (HH:MM)
+export const formatTime = (value: string): string => {
+  const numbers = extractNumbers(value);
+
+  if (numbers.length <= 2) {
+    return numbers;
+  } else if (numbers.length <= 4) {
+    return `${numbers.slice(0, 2)}:${numbers.slice(2)}`;
+  } else {
+    return `${numbers.slice(0, 2)}:${numbers.slice(2, 4)}`;
+  }
+};
+
+// 날짜와 시간 포맷팅 함수 (YYYY-MM-DD HH:MM)
+export const formatDateTime = (value: string): string => {
+  const numbers = extractNumbers(value);
+
+  if (numbers.length <= 4) {
+    return numbers;
+  } else if (numbers.length <= 6) {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4)}`;
+  } else if (numbers.length <= 8) {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6)}`;
+  } else if (numbers.length <= 10) {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 8)} ${numbers.slice(8)}`;
+  } else if (numbers.length <= 12) {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 8)} ${numbers.slice(8, 10)}:${numbers.slice(10)}`;
+  } else {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 8)} ${numbers.slice(8, 10)}:${numbers.slice(10, 12)}`;
+  }
+};
