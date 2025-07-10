@@ -163,6 +163,12 @@ class FactoryClient(BaseModel):
         blank=True,
         help_text="주소",
     )
+    manager = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="담당자",
+    )
     note = models.TextField(
         null=True,
         blank=True,
