@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     # third party
     "corsheaders",
     # local apps
+    # "aws",
     "user",
     "commando",
     "common",
@@ -251,3 +252,10 @@ else:
     # Console backend for development
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     DEFAULT_FROM_EMAIL = "noreply@localhost"
+
+# AWS S3 Storage Settings
+# AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default=None)
+# AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default=None)
+# AWS_REGION = config("AWS_REGION", default="ap-northeast-2")
+# AWS_CLOUDFRONT_URL = config("AWS_CLOUDFRONT_URL", default=None)
+# AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default=None)
