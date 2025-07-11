@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
 from api.docs import MixedDocs
+from aws.api import router as aws_router
 from user.api import router as user_router
 from stock.api import router as stock_router
 from stock.api_material import router as material_router
@@ -52,6 +53,7 @@ def health_check_handler(request):
     return {"ping": "pong"}
 
 
+base_api.add_router("v1/aws", aws_router)
 base_api.add_router("v1/auth", user_router)
 base_api.add_router("v1/stock", stock_router)
 base_api.add_router("v1/stock/material", material_router)
