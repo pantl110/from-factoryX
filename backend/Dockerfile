@@ -54,4 +54,12 @@ RUN apt-get remove --purge -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# 사용자 설정
+RUN adduser \
+    --disabled-password \
+    --no-create-home \
+    django-user
+
+USER django-user
+
 CMD ["bash", "./paracord_runner.sh"]
