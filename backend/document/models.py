@@ -9,12 +9,16 @@ class Quotation(BaseModel):
         Factory,
         on_delete=models.CASCADE,
         related_name="quotations",
+        null=True,
+        blank=True,
         help_text="공장",
     )
     client = models.ForeignKey(
         FactoryClient,
         on_delete=models.CASCADE,
         related_name="quotations",
+        null=True,
+        blank=True,
         help_text="고객",
     )
     project = models.ForeignKey(
