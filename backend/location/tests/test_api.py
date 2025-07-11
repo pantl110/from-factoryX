@@ -318,10 +318,9 @@ class LocationAPITestCase(TestCase):
         self.material.location.add(location)
         
         # 위치 수정
-        url = '/v1/location'
+        url = f'/v1/location/{self.material.id}'
         data = {
             'type': 'material',
-            'id': self.material.id,
             'location': 'B-2-2',
             'images': ['new_image.jpg']
         }
@@ -353,10 +352,9 @@ class LocationAPITestCase(TestCase):
         self.product.location.add(location)
         
         # 위치 수정
-        url = '/v1/location'
+        url = f'/v1/location/{self.product.id}'
         data = {
             'type': 'product',
-            'id': self.product.id,
             'location': 'C-3-3',
             'images': ['updated_image1.jpg', 'updated_image2.jpg']
         }
@@ -379,10 +377,9 @@ class LocationAPITestCase(TestCase):
 
     def test_update_location_invalid_type(self):
         """잘못된 타입으로 위치 수정 시도 테스트"""
-        url = '/v1/location'
+        url = f'/v1/location/{self.material.id}'
         data = {
             'type': 'invalid_type',
-            'id': self.material.id,
             'location': 'A-1-1',
             'images': []
         }
@@ -398,10 +395,9 @@ class LocationAPITestCase(TestCase):
 
     def test_update_location_nonexistent_material(self):
         """존재하지 않는 원자재 ID로 위치 수정 시도 테스트"""
-        url = '/v1/location'
+        url = '/v1/location/99999'
         data = {
             'type': 'material',
-            'id': 99999,  # 존재하지 않는 ID
             'location': 'A-1-1',
             'images': []
         }
@@ -417,10 +413,9 @@ class LocationAPITestCase(TestCase):
 
     def test_update_location_nonexistent_product(self):
         """존재하지 않는 품목 ID로 위치 수정 시도 테스트"""
-        url = '/v1/location'
+        url = '/v1/location/99999'
         data = {
             'type': 'product',
-            'id': 99999,  # 존재하지 않는 ID
             'location': 'B-2-1',
             'images': []
         }
@@ -436,10 +431,9 @@ class LocationAPITestCase(TestCase):
 
     def test_update_location_without_location(self):
         """위치가 연결되지 않은 원자재/품목 수정 시도 테스트"""
-        url = '/v1/location'
+        url = f'/v1/location/{self.material.id}'
         data = {
             'type': 'material',
-            'id': self.material.id,
             'location': 'A-1-1',
             'images': []
         }
@@ -469,7 +463,7 @@ class LocationAPITestCase(TestCase):
         self.material.location.add(location1, location2)
         
         # 위치 삭제
-        url = f'/v1/location?type=material&id={self.material.id}'
+        url = f'/v1/location/{self.material.id}?type=material'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -493,7 +487,7 @@ class LocationAPITestCase(TestCase):
         self.product.location.add(location)
         
         # 위치 삭제
-        url = f'/v1/location?type=product&id={self.product.id}'
+        url = f'/v1/location/{self.product.id}?type=product'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -508,7 +502,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_invalid_type(self):
         """잘못된 타입으로 위치 삭제 시도 테스트"""
-        url = '/v1/location?type=invalid_type&id=1'
+        url = '/v1/location/1?type=invalid_type'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -518,7 +512,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_nonexistent_material(self):
         """존재하지 않는 원자재 ID로 위치 삭제 시도 테스트"""
-        url = '/v1/location?type=material&id=99999'
+        url = '/v1/location/99999?type=material'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -528,7 +522,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_nonexistent_product(self):
         """존재하지 않는 품목 ID로 위치 삭제 시도 테스트"""
-        url = '/v1/location?type=product&id=99999'
+        url = '/v1/location/99999?type=product'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -538,7 +532,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_without_location(self):
         """위치가 연결되지 않은 원자재/품목 삭제 시도 테스트"""
-        url = f'/v1/location?type=material&id={self.material.id}'
+        url = f'/v1/location/{self.material.id}?type=material'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
