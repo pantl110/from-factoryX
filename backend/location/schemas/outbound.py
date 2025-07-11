@@ -1,4 +1,5 @@
 from ninja import Schema
+from typing import List
 
 class LocationListOut(Schema):
     id: int
@@ -6,5 +7,11 @@ class LocationListOut(Schema):
     location: str
     images: list
 
-class ErrorOut(Schema):
-    detail: str
+class LocationDetailOut(Schema):
+    id: int
+    type: str
+    location: str
+    images: List[str] = []
+
+class ItemLocationsListOut(Schema):
+    locations: List[LocationDetailOut]

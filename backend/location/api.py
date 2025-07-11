@@ -1,27 +1,34 @@
 from ninja import Router
+from ninja.errors import HttpError
+from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from location.schemas.inbound import LocationCreateIn, LocationUpdateIn
-from location.schemas.outbound import LocationListOut, ErrorOut
+from location.schemas.outbound import LocationListOut, LocationDetailOut, ItemLocationsListOut
 from location.models import Location
 from stock.models import Material, Product
 
 router = Router(tags=["Location"], auth=jwt_auth)
 
+
 @router.post(
-    "/location/create", 
+    "", 
     summary="[C] 창고 위치 생성", 
     description="material id/product id에 창고 위치를 생성합니다.",
-    response={ 200: LocationListOut, 400: ErrorOut, 404: ErrorOut, 500: ErrorOut }
+    response={ 200: LocationDetailOut, 400: dict, 404: dict, 500: dict }
     )
-async def create_location(request,payload: LocationCreateIn):
+async def create_location(request, payload: LocationCreateIn):
 
-    model_map = {
-        "material": Material,
-        "product": Product
-    }
+    if payload.type == "material":
+        target_model = Material
+    elif payload.type == "product":
+        target_model = Product
+    else:
+        raise HttpError(400, "올바르지 않은 타입입니다.")
     
-    if payload.type not in model_map:
-        return 400, ErrorOut(detail="")
+    try:
+        item = await target_model.objects.aget(id=payload.id)
+    except target_model.DoesNotExist:
+        raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
 
     location, created = await Location.objects.aget_or_create(
         type=payload.type,
@@ -29,157 +36,125 @@ async def create_location(request,payload: LocationCreateIn):
         defaults={'images': payload.images or []}
     )
     
-    try:
-        target_model = model_map[payload.type]
-        
-        item = await target_model.objects.aget(id=payload.id)
-        
-        item.location = location
-        await item.asave()
-        
-        # location 객체의 값을 완전히 분리해서 추출
-        loc = await Location.objects.aget(id=item.location_id)
-        location_name = loc.location
-        location_images = loc.images or []
-        
-        return 200, LocationListOut.model_validate({
-            "id": item.id,
-            "type": payload.type,
-            "location": location_name,
-            "images": location_images
-        })
-
-    except target_model.DoesNotExist:
-        return 404, ErrorOut(detail="")
-
-    except Exception as e:
-        return 500, ErrorOut(detail="")
+    # ManyToMany 관계에 추가
+    await sync_to_async(item.location.add)(location)
+    
+    return 200, LocationDetailOut(
+        id=location.id,
+        type=location.type,
+        location=location.location,
+        images=location.images or []
+    )
 
 
 @router.get(
-    "/location/list", 
-    summary="[C] 창고 위치 목록 조회",
+    "", 
+    summary="[C] 모든 창고 위치 목록 조회",
     description="material id/product id로 창고 위치를 조회합니다.",
-    response={ 200: LocationListOut, 400: ErrorOut, 404: ErrorOut, 500: ErrorOut }
+    response={ 200: ItemLocationsListOut, 400: dict, 404: dict, 500: dict }
     )
 async def list_locations(request, type: str, id: int):
-    model_map = {
-        "material": Material,
-        "product": Product
-    }
 
-    if type not in model_map:
-        return 400, ErrorOut(detail="")
-
-    target_model = model_map[type]
+    if type == "material":
+        target_model = Material
+    elif type == "product":
+        target_model = Product
+    else:
+        raise HttpError(400, "올바르지 않은 타입입니다.")
 
     try:
         item = await target_model.objects.aget(id=id)
-
-        if not item.location_id:
-            return 404, ErrorOut(detail="")
-
-        loc = await Location.objects.aget(id=item.location_id)
-        location_name = loc.location
-        location_images = loc.images or []
-
-        return 200, LocationListOut.model_validate({
-            "id": item.id,
-            "type": type,
-            "location": location_name,
-            "images": location_images
-        })
-
     except target_model.DoesNotExist:
-        return 404, ErrorOut(detail="")
+        raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
 
-    except Exception as e:
-        return 500, ErrorOut(detail="")
+    locations = await sync_to_async(list)(item.location.all())
+
+    if not locations:
+        raise HttpError(404, "해당 아이템에 연결된 위치 정보가 없습니다.")
+
+    locations_detail_list = [
+        LocationDetailOut(
+            id=loc.id,
+            type=loc.type,
+            location=loc.location,
+            images=loc.images or []
+        ) for loc in locations
+    ]
+
+    return 200, ItemLocationsListOut(
+        locations=locations_detail_list
+    )
 
 
 @router.patch(
-    "/location/update", 
+    "", 
     summary="[C] 창고 위치 수정", 
     description="material id/product id의 기존 위치를 새로운 위치로 수정합니다.",
-    response={ 200: LocationListOut, 400: ErrorOut, 404: ErrorOut, 500: ErrorOut }
+    response={ 200: LocationDetailOut, 400: dict, 404: dict, 500: dict }
     )
 async def update_location(request, payload: LocationUpdateIn):
 
-    model_map = {
-        "material": Material,
-        "product": Product
-    }
+    if payload.type == "material":
+        target_model = Material
+    elif payload.type == "product":
+        target_model = Product
+    else:
+        raise HttpError(400, "올바르지 않은 타입입니다.")
     
-    if payload.type not in model_map:
-        return 400, ErrorOut(detail="")
-
     try:
-        target_model = model_map[payload.type]
-        
         item = await target_model.objects.aget(id=payload.id)
-        
-        if not item.location_id:
-            return 404, ErrorOut(detail="")
-        
-        new_location, created = await Location.objects.aget_or_create(
-            type=payload.type,
-            location=payload.location,
-            defaults={'images': payload.images or []}
-        )
-        
-        item.location = new_location
-        await item.asave()
-        
-        loc = await Location.objects.aget(id=item.location_id)
-        location_name = loc.location
-        location_images = loc.images or []
-        
-        return 200, LocationListOut.model_validate({
-            "id": item.id,
-            "type": payload.type,
-            "location": location_name,
-            "images": location_images
-        })
-
     except target_model.DoesNotExist:
-        return 404, ErrorOut(detail="")
-
-    except Exception as e:
-        return 500, ErrorOut(detail="")
+        raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
+    
+    # 기존 위치 확인
+    existing_locations = await sync_to_async(list)(item.location.all())
+    if not existing_locations:
+        raise HttpError(404, "위치 정보가 없습니다.")
+    
+    new_location, created = await Location.objects.aget_or_create(
+        type=payload.type,
+        location=payload.location,
+        defaults={'images': payload.images or []}
+    )
+    
+    # 기존 위치 제거 후 새 위치 추가
+    await sync_to_async(item.location.clear)()
+    await sync_to_async(item.location.add)(new_location)
+    
+    return 200, LocationDetailOut(
+        id=new_location.id,
+        type=new_location.type,
+        location=new_location.location,
+        images=new_location.images or []
+    )
 
 
 @router.delete(
-    "/location/delete", 
+    "", 
     summary="[C] 창고 위치 삭제", 
     description="material id/product id의 위치 연결을 해제합니다.",
-    response={ 200: dict, 400: ErrorOut, 404: ErrorOut, 500: ErrorOut }
+    response={ 200: dict, 400: dict, 404: dict, 500: dict }
     )
 async def delete_location(request, type: str, id: int):
 
-    model_map = {
-        "material": Material,
-        "product": Product
-    }
+    if type == "material":
+        target_model = Material
+    elif type == "product":
+        target_model = Product
+    else:
+        raise HttpError(400, "올바르지 않은 타입입니다.")
     
-    if type not in model_map:
-        return 400, ErrorOut(detail="")
-
     try:
-        target_model = model_map[type]
-        
         item = await target_model.objects.aget(id=id)
-        
-        if not item.location_id:
-            return 404, ErrorOut(detail="")
-        
-        # 위치 연결 해제
-        item.location = None
-        await item.asave()
-        
-        return 200, {"detail": ""}
-
     except target_model.DoesNotExist:
-        return 404, ErrorOut(detail="")
-
-    except Exception as e:
-        return 500, ErrorOut(detail="")
+        raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
+    
+    # 기존 위치 확인
+    existing_locations = await sync_to_async(list)(item.location.all())
+    if not existing_locations:
+        raise HttpError(404, "위치 정보가 없습니다.")
+    
+    # 모든 위치 연결 해제
+    await sync_to_async(item.location.clear)()
+    
+    return 200, {"message": "위치 연결이 해제되었습니다."}

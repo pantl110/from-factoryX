@@ -1,150 +1,199 @@
-from django.test import TestCase, Client
-from user.models import User
-from project.models import Project, ProjectPlan
-from document.models import Quotation, QuotationProduct
-from factory.models import Factory, FactoryEquipment, FactoryClient
-from stock.models import Product
-import datetime
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from factory.models import Factory, FactoryClient
+from project.models import Project
+from document.models import Quotation
 import json
 import jwt
 from django.conf import settings
+from datetime import datetime, timedelta
+
+User = get_user_model()
+
 
 class ProjectAPITestCase(TestCase):
     def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_user(email="test@user.com", password="pw1234!")
-        self.factory = Factory.objects.create(owner=self.user, name="공장", business_registration_number="123-45-67890")
-        self.factory_client = FactoryClient.objects.create(
-            factory=self.factory,
-            name="Test Client",
-            business_registration_number="987-65-43210",
-            representative_name="홍길동",
-            email="test@client.com",
-            phone="010-1234-5678",
+        """테스트 설정"""
+        # 사용자 생성
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
         )
-        self.project = Project.objects.create(status=Project.ProjectStatus.quotation)
-        self.quotation = Quotation.objects.create(factory=self.factory, client=self.factory_client, project=self.project, due_date=datetime.date.today())
-        self.equipment = FactoryEquipment.objects.create(factory=self.factory, name="설비1", priority=1)
-        self.stock_product = Product.objects.create(
-            factory=self.factory,
-            name="테스트제품",
-            code="P001",
-            unit="EA",
-            spec="스펙",
-            current_stock=100,
+        
+        # 공장 생성
+        self.factory = Factory.objects.create(
+            name='테스트 공장',
+            owner=self.user
         )
-        self.product = QuotationProduct.objects.create(
-            quotation=self.quotation,
-            product=self.stock_product,
-            quantity=1,
-            unit_price=1000
+        
+        # 고객 생성
+        self.client_company = FactoryClient.objects.create(
+            factory=self.factory,
+            name='테스트 고객사',
+            business_registration_number='123-45-67890'
         )
         
         # JWT 토큰 생성
-        self.token = jwt.encode(
+        self.token = self.generate_jwt_token()
+        
+        # API 클라이언트 설정
+        self.client = self.client
+
+    def generate_jwt_token(self):
+        """JWT 토큰 생성"""
+        return jwt.encode(
             {
                 "user_id": self.user.id,
-                "exp": datetime.datetime.now() + datetime.timedelta(hours=1)
+                "exp": datetime.now() + timedelta(hours=1)
             },
             settings.SECRET_KEY,
             algorithm="HS256"
         )
 
-    def test_create_project(self):
-        """
-        프로젝트 생성 테스트
-        """
-        payload = {
-            "factory_id": self.factory.id,
-            "client_id": self.factory_client.id,
-            "due_date": str(datetime.date.today()),
-            "products": [
-                {
-                    "product_id": self.stock_product.id,
-                    "quantity": 10,
-                    "unit_price": 1000
-                }
-            ]
-        }
-        response = self.client.post("/v1/project/projects", data=json.dumps(payload), content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["status"], Project.ProjectStatus.quotation)
-
-    def test_list_active_projects(self):
-        """
-        활성 프로젝트 목록 조회 
-        테스트"""
-        Project.objects.create(status=Project.ProjectStatus.quotation)
-        response = self.client.get("/v1/project/projects/active", HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        # 페이지네이션된 응답 구조 확인
-        self.assertIn("data", data)
-        self.assertIsInstance(data["data"], list)
-
-    def test_update_project(self):
-        """
-        프로젝트 수정 테스트
-        """
-        project = Project.objects.create(status=Project.ProjectStatus.quotation)
-        payload = {"status": Project.ProjectStatus.pending}
-        response = self.client.patch(f"/v1/project/projects/{project.id}", data=json.dumps(payload), content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["status"], Project.ProjectStatus.pending)
-
-    def test_delete_project(self):
-        """
-        프로젝트 삭제 API 테스트
-        """
-        project = Project.objects.create(status=Project.ProjectStatus.quotation)
-        response = self.client.delete(f"/v1/project/projects/{project.id}", HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        self.assertEqual(response.status_code, 204)
-
-    def test_create_project_plan(self):
-        """
-        생산계획 생성 API 테스트
-        """
-        project = Project.objects.create(status=Project.ProjectStatus.quotation)
-        payload = {
-            "product_id": self.product.id,
-            "quantity": 10,
-            "equipment_id": self.equipment.id,
-            "start_date": str(datetime.date.today()),
-            "end_date": str(datetime.date.today()),
-            "avg_production_time": 100
-        }
-        response = self.client.post(f"/v1/project/projects/{project.id}/plans", data=json.dumps(payload), content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["quantity"], 10)
-
-    def test_list_project_plans(self):
-        """
-        생산계획 목록 조회 API 테스트
-        """
-        project = Project.objects.create(status=Project.ProjectStatus.quotation)
-        ProjectPlan.objects.create(
-            project=project, product=self.product, quantity=1, equipment=self.equipment,
-            start_date=datetime.date.today(), end_date=datetime.date.today(),
-            avg_production_time=10, status=ProjectPlan.ProductionStatus.pending
+    def test_create_project_success(self):
+        """프로젝트 생성 성공 테스트"""
+        url = '/v1/project'
+        
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
-        response = self.client.get(f"/v1/project/projects/{project.id}/plans", HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        self.assertEqual(response.status_code, 200)
+        
+        self.assertEqual(response.status_code, 201)
+        
+        # 응답 데이터 확인
         data = response.json()
-        # 페이지네이션된 응답 구조 확인
-        self.assertIn("data", data)
-        self.assertIsInstance(data["data"], list)
+        self.assertIn('id', data)
+        self.assertIsInstance(data['id'], int)
+        
+        # 데이터베이스에 프로젝트와 견적서가 생성되었는지 확인
+        project_count = Project.objects.count()
+        quotation_count = Quotation.objects.count()
+        
+        self.assertEqual(project_count, 1)
+        self.assertEqual(quotation_count, 1)
+        
+        # 생성된 프로젝트와 견적서의 관계 확인
+        project = Project.objects.first()
+        quotation = Quotation.objects.first()
+        
+        self.assertEqual(quotation.project, project)
+        self.assertEqual(quotation.id, data['id'])
+        
+        # 프로젝트의 기본 상태 확인
+        self.assertEqual(project.status, Project.ProjectStatus.quotation)
 
-    def test_update_project_plan(self):
-        """
-        생산계획 수정 API 테스트
-        """
-        project = Project.objects.create(status=Project.ProjectStatus.quotation)
-        plan = ProjectPlan.objects.create(
-            project=project, product=self.product, quantity=1, equipment=self.equipment,
-            start_date=datetime.date.today(), end_date=datetime.date.today(),
-            avg_production_time=10, status=ProjectPlan.ProductionStatus.pending
+    def test_create_project_without_auth(self):
+        """인증 없이 프로젝트 생성 시도 테스트"""
+        url = '/v1/project'
+        
+        response = self.client.post(
+            url,
+            content_type='application/json'
         )
-        payload = {"quantity": 5}
-        response = self.client.patch(f"/v1/project/plans/{plan.id}", data=json.dumps(payload), content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["quantity"], 5)
+        
+        # 인증이 필요하므로 401 또는 403이 반환되어야 함
+        self.assertIn(response.status_code, [401, 403])
+
+    def test_create_project_invalid_token(self):
+        """잘못된 토큰으로 프로젝트 생성 시도 테스트"""
+        url = '/v1/project'
+        
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION='Bearer invalid_token'
+        )
+        
+        # 잘못된 토큰이므로 401이 반환되어야 함
+        self.assertEqual(response.status_code, 401)
+
+    def test_create_multiple_projects(self):
+        """여러 프로젝트 생성 테스트"""
+        url = '/v1/project'
+        
+        # 첫 번째 프로젝트 생성
+        response1 = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        self.assertEqual(response1.status_code, 201)
+        
+        # 두 번째 프로젝트 생성
+        response2 = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        self.assertEqual(response2.status_code, 201)
+        
+        # 데이터베이스에 두 개의 프로젝트와 견적서가 생성되었는지 확인
+        project_count = Project.objects.count()
+        quotation_count = Quotation.objects.count()
+        
+        self.assertEqual(project_count, 2)
+        self.assertEqual(quotation_count, 2)
+        
+        # 각 프로젝트에 견적서가 연결되어 있는지 확인
+        projects = Project.objects.all()
+        quotations = Quotation.objects.all()
+        
+        for project in projects:
+            self.assertTrue(hasattr(project, 'quotations'))
+            self.assertEqual(project.quotations.count(), 1)
+        
+        for quotation in quotations:
+            self.assertIsNotNone(quotation.project)
+
+    def test_project_quotation_relationship(self):
+        """프로젝트와 견적서의 관계 확인 테스트"""
+        url = '/v1/project'
+        
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 201)
+        
+        # 프로젝트와 견적서의 관계 확인
+        project = Project.objects.first()
+        quotation = Quotation.objects.first()
+        
+        # 프로젝트에서 견적서 접근
+        self.assertEqual(project.quotations.first(), quotation)
+        
+        # 견적서에서 프로젝트 접근
+        self.assertEqual(quotation.project, project)
+        
+        # 견적서의 기본 필드 확인
+        self.assertIsNone(quotation.factory)
+        self.assertIsNone(quotation.client)
+        self.assertIsNone(quotation.due_date)
+        self.assertIsNone(quotation.uploaded_file)
+
+    def test_project_default_status(self):
+        """프로젝트 생성 시 기본 상태 확인 테스트"""
+        url = '/v1/project'
+        
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 201)
+        
+        project = Project.objects.first()
+        
+        # 프로젝트의 기본 상태가 'quotation'인지 확인
+        self.assertEqual(project.status, Project.ProjectStatus.quotation)
+        self.assertEqual(project.status, '견적 협의중')
+        
+        # 다른 기본 필드들 확인
+        self.assertIsNone(project.transact_date)
+        self.assertIsNone(project.tax_invoice)

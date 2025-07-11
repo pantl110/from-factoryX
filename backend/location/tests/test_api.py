@@ -64,7 +64,7 @@ class LocationAPITestCase(TestCase):
 
     def test_create_material_location(self):
         """원자재 위치 생성 테스트"""
-        url = '/v1/location/location/create'
+        url = '/v1/location'
         data = {
             'type': 'material',
             'id': self.material.id,
@@ -83,13 +83,14 @@ class LocationAPITestCase(TestCase):
         
         # 원자재가 위치와 연결되었는지 확인
         self.material.refresh_from_db()
-        self.assertIsNotNone(self.material.location)
-        self.assertEqual(self.material.location.location, 'A-1-1')
-        self.assertEqual(self.material.location.type, 'material')
+        locations = self.material.location.all()
+        self.assertEqual(locations.count(), 1)
+        self.assertEqual(locations.first().location, 'A-1-1')
+        self.assertEqual(locations.first().type, 'material')
 
     def test_create_product_location(self):
         """품목 위치 생성 테스트"""
-        url = '/v1/location/location/create'
+        url = '/v1/location'
         data = {
             'type': 'product',
             'id': self.product.id,
@@ -108,14 +109,57 @@ class LocationAPITestCase(TestCase):
         
         # 품목이 위치와 연결되었는지 확인
         self.product.refresh_from_db()
-        self.assertIsNotNone(self.product.location)
-        self.assertEqual(self.product.location.location, 'B-2-1')
-        self.assertEqual(self.product.location.type, 'product')
-        self.assertEqual(self.product.location.images, ['image1.jpg', 'image2.jpg'])
+        locations = self.product.location.all()
+        self.assertEqual(locations.count(), 1)
+        self.assertEqual(locations.first().location, 'B-2-1')
+        self.assertEqual(locations.first().type, 'product')
+        self.assertEqual(locations.first().images, ['image1.jpg', 'image2.jpg'])
+
+    def test_create_multiple_locations(self):
+        """한 아이템에 여러 위치 생성 테스트"""
+        url = '/v1/location'
+        
+        # 첫 번째 위치 생성
+        data1 = {
+            'type': 'material',
+            'id': self.material.id,
+            'location': 'A-1-1',
+            'images': []
+        }
+        response1 = self.client.post(
+            url, 
+            data1, 
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        self.assertEqual(response1.status_code, 200)
+        
+        # 두 번째 위치 생성
+        data2 = {
+            'type': 'material',
+            'id': self.material.id,
+            'location': 'A-1-2',
+            'images': ['image1.jpg']
+        }
+        response2 = self.client.post(
+            url, 
+            data2, 
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        self.assertEqual(response2.status_code, 200)
+        
+        # 두 개의 위치가 모두 연결되었는지 확인
+        self.material.refresh_from_db()
+        locations = self.material.location.all()
+        self.assertEqual(locations.count(), 2)
+        location_names = [loc.location for loc in locations]
+        self.assertIn('A-1-1', location_names)
+        self.assertIn('A-1-2', location_names)
 
     def test_create_location_invalid_type(self):
         """잘못된 타입으로 위치 생성 시도 테스트"""
-        url = '/v1/location/location/create'
+        url = '/v1/location'
         data = {
             'type': 'invalid_type',
             'id': self.material.id,
@@ -134,7 +178,7 @@ class LocationAPITestCase(TestCase):
 
     def test_create_location_nonexistent_material(self):
         """존재하지 않는 원자재 ID로 위치 생성 시도 테스트"""
-        url = '/v1/location/location/create'
+        url = '/v1/location'
         data = {
             'type': 'material',
             'id': 99999,  # 존재하지 않는 ID
@@ -153,7 +197,7 @@ class LocationAPITestCase(TestCase):
 
     def test_create_location_nonexistent_product(self):
         """존재하지 않는 품목 ID로 위치 생성 시도 테스트"""
-        url = '/v1/location/location/create'
+        url = '/v1/location'
         data = {
             'type': 'product',
             'id': 99999,  # 존재하지 않는 ID
@@ -170,60 +214,61 @@ class LocationAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 404)
 
-    def test_list_material_location(self):
-        """원자재 위치 조회 테스트"""
+    def test_list_material_locations(self):
+        """원자재 위치 목록 조회 테스트"""
         # 먼저 위치 생성
-        location = Location.objects.create(
+        location1 = Location.objects.create(
             type='material',
             location='A-1-1',
             images=[]
         )
-        self.material.location = location
-        self.material.save()
+        location2 = Location.objects.create(
+            type='material',
+            location='A-1-2',
+            images=['image1.jpg']
+        )
+        self.material.location.add(location1, location2)
         
-        # 위치가 실제로 설정되었는지 확인
-        self.material.refresh_from_db()
-        self.assertIsNotNone(self.material.location)
-        
-        url = f'/v1/location/location/list?type=material&id={self.material.id}'
+        url = f'/v1/location?type=material&id={self.material.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['location'], 'A-1-1')
-        self.assertEqual(response.json()['type'], 'material')
+        data = response.json()
+        self.assertEqual(len(data['locations']), 2)
+        
+        location_names = [loc['location'] for loc in data['locations']]
+        self.assertIn('A-1-1', location_names)
+        self.assertIn('A-1-2', location_names)
 
-    def test_list_product_location(self):
-        """품목 위치 조회 테스트"""
+    def test_list_product_locations(self):
+        """품목 위치 목록 조회 테스트"""
         # 먼저 위치 생성
         location = Location.objects.create(
             type='product',
             location='B-2-1',
             images=['image1.jpg']
         )
-        self.product.location = location
-        self.product.save()
+        self.product.location.add(location)
         
-        # 위치가 실제로 설정되었는지 확인
-        self.product.refresh_from_db()
-        self.assertIsNotNone(self.product.location)
-        
-        url = f'/v1/location/location/list?type=product&id={self.product.id}'
+        url = f'/v1/location?type=product&id={self.product.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['location'], 'B-2-1')
-        self.assertEqual(response.json()['type'], 'product')
-        self.assertEqual(response.json()['images'], ['image1.jpg'])
+        data = response.json()
+        self.assertEqual(len(data['locations']), 1)
+        self.assertEqual(data['locations'][0]['location'], 'B-2-1')
+        self.assertEqual(data['locations'][0]['type'], 'product')
+        self.assertEqual(data['locations'][0]['images'], ['image1.jpg'])
 
-    def test_list_location_without_location(self):
+    def test_list_locations_without_location(self):
         """위치가 연결되지 않은 원자재/품목 조회 테스트"""
-        url = f'/v1/location/location/list?type=material&id={self.material.id}'
+        url = f'/v1/location?type=material&id={self.material.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -232,9 +277,9 @@ class LocationAPITestCase(TestCase):
         # 위치가 없으면 404를 반환해야 함
         self.assertEqual(response.status_code, 404)
 
-    def test_list_location_nonexistent_material(self):
+    def test_list_locations_nonexistent_material(self):
         """존재하지 않는 원자재 ID로 위치 조회 시도 테스트"""
-        url = '/v1/location/location/list?type=material&id=99999'
+        url = '/v1/location?type=material&id=99999'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -242,9 +287,9 @@ class LocationAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 404)
 
-    def test_list_location_nonexistent_product(self):
+    def test_list_locations_nonexistent_product(self):
         """존재하지 않는 품목 ID로 위치 조회 시도 테스트"""
-        url = '/v1/location/location/list?type=product&id=99999'
+        url = '/v1/location?type=product&id=99999'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -252,62 +297,15 @@ class LocationAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 404)
 
-    def test_list_location_invalid_type(self):
+    def test_list_locations_invalid_type(self):
         """잘못된 타입으로 위치 조회 시도 테스트"""
-        url = f'/v1/location/location/list?type=invalid_type&id={self.material.id}'
+        url = f'/v1/location?type=invalid_type&id={self.material.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         
         self.assertEqual(response.status_code, 400)
-
-    def test_location_reuse(self):
-        """동일한 위치 재사용 테스트"""
-        # 첫 번째 원자재에 위치 생성
-        data1 = {
-            'type': 'material',
-            'id': self.material.id,
-            'location': 'A-1-1',
-            'images': []
-        }
-        response1 = self.client.post(
-            '/v1/location/location/create', 
-            data1, 
-            content_type='application/json',
-            HTTP_AUTHORIZATION=f'Bearer {self.token}'
-        )
-        self.assertEqual(response1.status_code, 200)
-        
-        # 새로운 원자재 생성
-        material2 = Material.objects.create(
-            factory=self.factory,
-            name='테스트 원자재 2',
-            code='MAT-002',
-            unit='kg',
-            spec='200x300mm',
-            current_stock=200
-        )
-        
-        # 동일한 위치를 두 번째 원자재에 연결
-        data2 = {
-            'type': 'material',
-            'id': material2.id,
-            'location': 'A-1-1',
-            'images': []
-        }
-        response2 = self.client.post(
-            '/v1/location/location/create', 
-            data2, 
-            content_type='application/json',
-            HTTP_AUTHORIZATION=f'Bearer {self.token}'
-        )
-        self.assertEqual(response2.status_code, 200)
-        
-        # 두 원자재가 같은 위치 객체를 참조하는지 확인
-        self.material.refresh_from_db()
-        material2.refresh_from_db()
-        self.assertEqual(self.material.location.id, material2.location.id)
 
     def test_update_material_location(self):
         """원자재 위치 수정 테스트"""
@@ -317,11 +315,10 @@ class LocationAPITestCase(TestCase):
             location='A-1-1',
             images=[]
         )
-        self.material.location = location
-        self.material.save()
+        self.material.location.add(location)
         
         # 위치 수정
-        url = '/v1/location/location/update'
+        url = '/v1/location'
         data = {
             'type': 'material',
             'id': self.material.id,
@@ -340,8 +337,10 @@ class LocationAPITestCase(TestCase):
         
         # 원자재의 위치가 수정되었는지 확인
         self.material.refresh_from_db()
-        self.assertEqual(self.material.location.location, 'B-2-2')
-        self.assertEqual(self.material.location.images, ['new_image.jpg'])
+        locations = self.material.location.all()
+        self.assertEqual(locations.count(), 1)
+        self.assertEqual(locations.first().location, 'B-2-2')
+        self.assertEqual(locations.first().images, ['new_image.jpg'])
 
     def test_update_product_location(self):
         """품목 위치 수정 테스트"""
@@ -351,11 +350,10 @@ class LocationAPITestCase(TestCase):
             location='B-2-1',
             images=['old_image.jpg']
         )
-        self.product.location = location
-        self.product.save()
+        self.product.location.add(location)
         
         # 위치 수정
-        url = '/v1/location/location/update'
+        url = '/v1/location'
         data = {
             'type': 'product',
             'id': self.product.id,
@@ -374,12 +372,14 @@ class LocationAPITestCase(TestCase):
         
         # 품목의 위치가 수정되었는지 확인
         self.product.refresh_from_db()
-        self.assertEqual(self.product.location.location, 'C-3-3')
-        self.assertEqual(self.product.location.images, ['updated_image1.jpg', 'updated_image2.jpg'])
+        locations = self.product.location.all()
+        self.assertEqual(locations.count(), 1)
+        self.assertEqual(locations.first().location, 'C-3-3')
+        self.assertEqual(locations.first().images, ['updated_image1.jpg', 'updated_image2.jpg'])
 
     def test_update_location_invalid_type(self):
         """잘못된 타입으로 위치 수정 시도 테스트"""
-        url = '/v1/location/location/update'
+        url = '/v1/location'
         data = {
             'type': 'invalid_type',
             'id': self.material.id,
@@ -398,7 +398,7 @@ class LocationAPITestCase(TestCase):
 
     def test_update_location_nonexistent_material(self):
         """존재하지 않는 원자재 ID로 위치 수정 시도 테스트"""
-        url = '/v1/location/location/update'
+        url = '/v1/location'
         data = {
             'type': 'material',
             'id': 99999,  # 존재하지 않는 ID
@@ -417,7 +417,7 @@ class LocationAPITestCase(TestCase):
 
     def test_update_location_nonexistent_product(self):
         """존재하지 않는 품목 ID로 위치 수정 시도 테스트"""
-        url = '/v1/location/location/update'
+        url = '/v1/location'
         data = {
             'type': 'product',
             'id': 99999,  # 존재하지 않는 ID
@@ -436,7 +436,7 @@ class LocationAPITestCase(TestCase):
 
     def test_update_location_without_location(self):
         """위치가 연결되지 않은 원자재/품목 수정 시도 테스트"""
-        url = '/v1/location/location/update'
+        url = '/v1/location'
         data = {
             'type': 'material',
             'id': self.material.id,
@@ -453,19 +453,23 @@ class LocationAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 404)
 
-    def test_delete_material_location(self):
+    def test_delete_material_locations(self):
         """원자재 위치 삭제 테스트"""
         # 먼저 위치 생성
-        location = Location.objects.create(
+        location1 = Location.objects.create(
             type='material',
             location='A-1-1',
             images=[]
         )
-        self.material.location = location
-        self.material.save()
+        location2 = Location.objects.create(
+            type='material',
+            location='A-1-2',
+            images=['image1.jpg']
+        )
+        self.material.location.add(location1, location2)
         
         # 위치 삭제
-        url = f'/v1/location/location/delete?type=material&id={self.material.id}'
+        url = f'/v1/location?type=material&id={self.material.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -473,11 +477,12 @@ class LocationAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 200)
         
-        # 원자재의 위치가 해제되었는지 확인
+        # 원자재의 모든 위치가 해제되었는지 확인
         self.material.refresh_from_db()
-        self.assertIsNone(self.material.location)
+        locations = self.material.location.all()
+        self.assertEqual(locations.count(), 0)
 
-    def test_delete_product_location(self):
+    def test_delete_product_locations(self):
         """품목 위치 삭제 테스트"""
         # 먼저 위치 생성
         location = Location.objects.create(
@@ -485,11 +490,10 @@ class LocationAPITestCase(TestCase):
             location='B-2-1',
             images=['image1.jpg']
         )
-        self.product.location = location
-        self.product.save()
+        self.product.location.add(location)
         
         # 위치 삭제
-        url = f'/v1/location/location/delete?type=product&id={self.product.id}'
+        url = f'/v1/location?type=product&id={self.product.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -499,11 +503,12 @@ class LocationAPITestCase(TestCase):
         
         # 품목의 위치가 해제되었는지 확인
         self.product.refresh_from_db()
-        self.assertIsNone(self.product.location)
+        locations = self.product.location.all()
+        self.assertEqual(locations.count(), 0)
 
     def test_delete_location_invalid_type(self):
         """잘못된 타입으로 위치 삭제 시도 테스트"""
-        url = '/v1/location/location/delete?type=invalid_type&id=1'
+        url = '/v1/location?type=invalid_type&id=1'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -513,7 +518,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_nonexistent_material(self):
         """존재하지 않는 원자재 ID로 위치 삭제 시도 테스트"""
-        url = '/v1/location/location/delete?type=material&id=99999'
+        url = '/v1/location?type=material&id=99999'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -523,7 +528,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_nonexistent_product(self):
         """존재하지 않는 품목 ID로 위치 삭제 시도 테스트"""
-        url = '/v1/location/location/delete?type=product&id=99999'
+        url = '/v1/location?type=product&id=99999'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -533,7 +538,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_without_location(self):
         """위치가 연결되지 않은 원자재/품목 삭제 시도 테스트"""
-        url = f'/v1/location/location/delete?type=material&id={self.material.id}'
+        url = f'/v1/location?type=material&id={self.material.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
