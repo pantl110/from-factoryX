@@ -1,18 +1,41 @@
 from ninja import Schema
-from typing import Optional
+from typing import List, Optional
 from datetime import date
 
 
-""" 견적서 생성을 위한 스키마 """
-class QuotationCreateIn(Schema):
-    # 프로젝트 ID만 받아서 연결
-    project_id: int
+class ClientInfoIn(Schema):
+    name: str
+    business_registration_number: str
+    representative_name: str
+    business_type: str
+    business_category: str
+    address: str
+    manager: str
+    email: str
+    phone: str
+    fax: str
 
+class ProductInfoIn(Schema):
+    id: int
+    name: str
+    code: str
+    spec: str
+    unit: str
+    quantity: int
+    unit_price: int
+    amount: int
 
 class QuotationProductCreateIn(Schema):
     quotation_id: int
     product_id: int
     quantity: int
     unit_price: int
-    is_delivery: Optional[bool] = False
     delivery_date: Optional[date] = None
+
+class QuotationSaveIn(Schema):
+    quotation_id: int
+    client: ClientInfoIn
+    due_date: str
+    products: List[ProductInfoIn]
+    action: str
+

@@ -41,7 +41,7 @@ async def create_stock_material(request, payload: MaterialCreateIn):
 
 @router.get(
     "/materials",
-    summary="[C] 원원자재 목록 조회",
+    summary="[C] 원자재 목록 조회",
     description="공장의 원원자재 목록을 조회합니다. 필터링이 가능합니다.",
     response={200: List[MaterialOut]},
     auth=jwt_auth,
