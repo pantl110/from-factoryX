@@ -203,6 +203,200 @@ class ProjectPlanAPITestCase(TestCase):
         
         self.assertIn(response.status_code, [401, 403])
 
+    def test_update_project_plan_success(self):
+        """프로젝트 생산 계획 수정 성공 테스트"""
+        # 먼저 생산 계획 생성
+        create_url = '/v1/project/plan'
+        create_payload = {
+            'project_id': self.project.id,
+            'quotation_product_ids': [self.quotation_product.id],
+            'production_quantities': [10],
+            'equipment_ids': [self.equipment.id],
+            'start_dates': ['2025-07-13'],
+            'end_dates': ['2025-07-14'],
+            'avg_production_times': [3600]
+        }
+        
+        create_response = self.client.post(
+            create_url,
+            data=json.dumps(create_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(create_response.status_code, 200)
+        plan_id = create_response.json()['created_plans'][0]['id']
+        
+        # 생산 계획 수정
+        update_url = f'/v1/project/plan/{plan_id}'
+        update_payload = {
+            'quantity': 15,
+            'status': '가동 중',
+            'avg_production_time': 7200
+        }
+        
+        response = self.client.patch(
+            update_url,
+            data=json.dumps(update_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertIn('message', data)
+        self.assertIn('성공', data['message'])
+
+    def test_update_project_plan_nonexistent(self):
+        """존재하지 않는 생산 계획 수정 시도 테스트"""
+        url = '/v1/project/plan/999'
+        payload = {
+            'quantity': 15
+        }
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_project_plan_invalid_equipment(self):
+        """존재하지 않는 설비로 수정 시도 테스트"""
+        # 먼저 생산 계획 생성
+        create_url = '/v1/project/plan'
+        create_payload = {
+            'project_id': self.project.id,
+            'quotation_product_ids': [self.quotation_product.id],
+            'production_quantities': [10],
+            'equipment_ids': [self.equipment.id],
+            'start_dates': ['2025-07-13'],
+            'end_dates': ['2025-07-14'],
+            'avg_production_times': [3600]
+        }
+        
+        create_response = self.client.post(
+            create_url,
+            data=json.dumps(create_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(create_response.status_code, 200)
+        plan_id = create_response.json()['created_plans'][0]['id']
+        
+        # 존재하지 않는 설비로 수정 시도
+        update_url = f'/v1/project/plan/{plan_id}'
+        update_payload = {
+            'equipment_id': 999
+        }
+        
+        response = self.client.patch(
+            update_url,
+            data=json.dumps(update_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_project_plan_invalid_status(self):
+        """올바르지 않은 상태값으로 수정 시도 테스트"""
+        # 먼저 생산 계획 생성
+        create_url = '/v1/project/plan'
+        create_payload = {
+            'project_id': self.project.id,
+            'quotation_product_ids': [self.quotation_product.id],
+            'production_quantities': [10],
+            'equipment_ids': [self.equipment.id],
+            'start_dates': ['2025-07-13'],
+            'end_dates': ['2025-07-14'],
+            'avg_production_times': [3600]
+        }
+        
+        create_response = self.client.post(
+            create_url,
+            data=json.dumps(create_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(create_response.status_code, 200)
+        plan_id = create_response.json()['created_plans'][0]['id']
+        
+        # 올바르지 않은 상태값으로 수정 시도
+        update_url = f'/v1/project/plan/{plan_id}'
+        update_payload = {
+            'status': '잘못된상태'
+        }
+        
+        response = self.client.patch(
+            update_url,
+            data=json.dumps(update_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_project_plan_invalid_quantity(self):
+        """올바르지 않은 수량으로 수정 시도 테스트"""
+        # 먼저 생산 계획 생성
+        create_url = '/v1/project/plan'
+        create_payload = {
+            'project_id': self.project.id,
+            'quotation_product_ids': [self.quotation_product.id],
+            'production_quantities': [10],
+            'equipment_ids': [self.equipment.id],
+            'start_dates': ['2025-07-13'],
+            'end_dates': ['2025-07-14'],
+            'avg_production_times': [3600]
+        }
+        
+        create_response = self.client.post(
+            create_url,
+            data=json.dumps(create_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(create_response.status_code, 200)
+        plan_id = create_response.json()['created_plans'][0]['id']
+        
+        # 올바르지 않은 수량으로 수정 시도
+        update_url = f'/v1/project/plan/{plan_id}'
+        update_payload = {
+            'quantity': 0
+        }
+        
+        response = self.client.patch(
+            update_url,
+            data=json.dumps(update_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_project_plan_without_auth(self):
+        """인증 없이 생산 계획 수정 시도 테스트"""
+        url = '/v1/project/plan/1'
+        payload = {
+            'quantity': 15
+        }
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        
+        self.assertIn(response.status_code, [401, 403])
+
     def test_list_project_plans_success(self):
         """프로젝트 생산 계획 조회 성공 테스트"""
         # 먼저 생산 계획 생성
@@ -224,7 +418,7 @@ class ProjectPlanAPITestCase(TestCase):
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         
-        # 생산 계획 조회
+        # 프로젝트 생산 계획 조회
         list_url = f'/v1/project/plan?project_id={self.project.id}'
         
         response = self.client.get(
@@ -241,16 +435,37 @@ class ProjectPlanAPITestCase(TestCase):
         
         # 첫 번째 계획 확인
         plan1 = data[0]
+        self.assertEqual(plan1['id'], 1)
         self.assertEqual(plan1['project_id'], self.project.id)
-        self.assertEqual(plan1['quotation_product_id'], self.quotation_product.id)
-        self.assertEqual(plan1['equipment_id'], self.equipment.id)
         self.assertEqual(plan1['quantity'], 8)
+        
+        # 견적서 품목 정보 확인
+        self.assertIn('quotation_product', plan1)
+        quotation_product = plan1['quotation_product']
+        self.assertEqual(quotation_product['id'], self.quotation_product.id)
+        self.assertEqual(quotation_product['quantity'], self.quotation_product.quantity)
+        self.assertEqual(quotation_product['unit_price'], self.quotation_product.unit_price)
+        
+        # 제품 정보 확인
+        self.assertIn('product', quotation_product)
+        product = quotation_product['product']
+        self.assertEqual(product['id'], self.product.id)
+        self.assertEqual(product['name'], self.product.name)
+        self.assertEqual(product['code'], self.product.code)
+        self.assertEqual(product['unit'], self.product.unit)
+        self.assertEqual(product['spec'], self.product.spec)
+        
+        # 설비 정보 확인
+        self.assertIn('equipment', plan1)
+        equipment = plan1['equipment']
+        self.assertEqual(equipment['id'], self.equipment.id)
+        self.assertEqual(equipment['name'], self.equipment.name)
+        self.assertEqual(equipment['priority'], self.equipment.priority)
         
         # 두 번째 계획 확인
         plan2 = data[1]
+        self.assertEqual(plan2['id'], 2)
         self.assertEqual(plan2['project_id'], self.project.id)
-        self.assertEqual(plan2['quotation_product_id'], self.quotation_product.id)
-        self.assertEqual(plan2['equipment_id'], self.equipment.id)
         self.assertEqual(plan2['quantity'], 2)
 
     def test_list_project_plans_nonexistent_project(self):
@@ -266,7 +481,10 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_list_project_plans_no_plans(self):
         """생산 계획이 없는 프로젝트 조회 시도 테스트"""
-        url = f'/v1/project/plan?project_id={self.project.id}'
+        # 새로운 프로젝트 생성 (생산 계획 없음)
+        new_project = Project.objects.create()
+        
+        url = f'/v1/project/plan?project_id={new_project.id}'
         
         response = self.client.get(
             url,
@@ -277,8 +495,136 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_list_project_plans_without_auth(self):
         """인증 없이 생산 계획 조회 시도 테스트"""
-        url = f'/v1/project/plan?project_id={self.project.id}'
+        url = '/v1/project/plan?project_id=1'
         
         response = self.client.get(url)
         
-        self.assertIn(response.status_code, [401, 403]) 
+        self.assertIn(response.status_code, [401, 403])
+
+    def test_list_ongoing_project_plans_success(self):
+        """진행 중인 프로젝트 계획 조회 성공 테스트"""
+        # 먼저 생산 계획 생성
+        create_url = '/v1/project/plan'
+        create_payload = {
+            'project_id': self.project.id,
+            'quotation_product_ids': [self.quotation_product.id],
+            'production_quantities': [8],
+            'equipment_ids': [self.equipment.id],
+            'start_dates': ['2025-07-13'],
+            'end_dates': ['2025-07-14'],
+            'avg_production_times': [3600]
+        }
+        
+        self.client.post(
+            create_url,
+            data=json.dumps(create_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        # 진행 중인 프로젝트 계획 조회 (쿼리 파라미터 없이)
+        list_url = '/v1/project/plan/ongoing'
+        
+        response = self.client.get(
+            list_url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertGreater(len(data), 0)
+        
+        # 첫 번째 계획 확인
+        plan = data[0]
+        self.assertEqual(plan['project_id'], self.project.id)
+        self.assertEqual(plan['quantity'], 8)
+        
+        # 견적서 품목 정보 확인
+        self.assertIn('quotation_product', plan)
+        quotation_product = plan['quotation_product']
+        self.assertEqual(quotation_product['id'], self.quotation_product.id)
+        
+        # 제품 정보 확인
+        self.assertIn('product', quotation_product)
+        product = quotation_product['product']
+        self.assertEqual(product['id'], self.product.id)
+        self.assertEqual(product['name'], self.product.name)
+        
+        # 설비 정보 확인
+        self.assertIn('equipment', plan)
+        equipment = plan['equipment']
+        self.assertEqual(equipment['id'], self.equipment.id)
+        self.assertEqual(equipment['name'], self.equipment.name)
+
+    def test_list_ongoing_project_plans_with_search(self):
+        """진행 중인 프로젝트 계획 조회 (고객사 회사명 검색) 테스트"""
+        # 먼저 생산 계획 생성
+        create_url = '/v1/project/plan'
+        create_payload = {
+            'project_id': self.project.id,
+            'quotation_product_ids': [self.quotation_product.id],
+            'production_quantities': [8],
+            'equipment_ids': [self.equipment.id],
+            'start_dates': ['2025-07-13'],
+            'end_dates': ['2025-07-14'],
+            'avg_production_times': [3600]
+        }
+        
+        self.client.post(
+            create_url,
+            data=json.dumps(create_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        # 고객사 회사명으로 검색
+        list_url = f'/v1/project/plan/ongoing?client_name={self.client_company.name}'
+        
+        response = self.client.get(
+            list_url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertGreater(len(data), 0)
+
+    def test_list_completed_project_plans_empty(self):
+        """완료된 프로젝트 계획 조회 (빈 결과) 테스트"""
+        # 완료된 프로젝트 계획 조회 (쿼리 파라미터 없이)
+        list_url = '/v1/project/plan/completed'
+        
+        response = self.client.get(
+            list_url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertIn('detail', data)
+        self.assertIn('없습니다', data['detail'])
+
+    def test_list_ongoing_project_plans_empty(self):
+        """진행 중인 프로젝트 계획 조회 (빈 결과) 테스트"""
+        # 존재하지 않는 프로젝트가 없으므로 쿼리 파라미터 없이 호출
+        list_url = '/v1/project/plan/ongoing'
+        
+        response = self.client.get(
+            list_url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertIn('detail', data)
+        self.assertIn('없습니다', data['detail']) 
