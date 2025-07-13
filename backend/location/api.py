@@ -36,7 +36,6 @@ async def create_location(request, payload: LocationCreateIn):
         defaults={'images': payload.images or []}
     )
     
-    # ManyToMany 관계에 추가
     await sync_to_async(item.location.add)(location)
     
     return 200, LocationDetailOut(
@@ -87,12 +86,12 @@ async def list_locations(request, type: str, id: int):
 
 
 @router.patch(
-    "/{id}", 
+    "/{location_id}", 
     summary="[C] 창고 위치 수정", 
     description="material id/product id의 기존 위치를 새로운 위치로 수정합니다.",
     response={ 200: LocationDetailOut, 400: dict, 404: dict, 500: dict }
     )
-async def update_location(request, id: int, payload: LocationUpdateIn):
+async def update_location(request, location_id: int, payload: LocationUpdateIn):
 
     if payload.type == "material":
         target_model = Material
@@ -102,7 +101,7 @@ async def update_location(request, id: int, payload: LocationUpdateIn):
         raise HttpError(400, "올바르지 않은 타입입니다.")
     
     try:
-        item = await target_model.objects.aget(id=id)
+        item = await target_model.objects.aget(id=location_id)
     except target_model.DoesNotExist:
         raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
     
@@ -130,12 +129,12 @@ async def update_location(request, id: int, payload: LocationUpdateIn):
 
 
 @router.delete(
-    "/{id}", 
+    "/{location_id}", 
     summary="[C] 창고 위치 삭제", 
     description="material id/product id의 위치 연결을 해제합니다.",
     response={ 200: dict, 400: dict, 404: dict, 500: dict }
     )
-async def delete_location(request, id: int, type: str):
+async def delete_location(request, location_id: int, type: str):
 
     if type == "material":
         target_model = Material
@@ -145,7 +144,7 @@ async def delete_location(request, id: int, type: str):
         raise HttpError(400, "올바르지 않은 타입입니다.")
     
     try:
-        item = await target_model.objects.aget(id=id)
+        item = await target_model.objects.aget(id=location_id)
     except target_model.DoesNotExist:
         raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
     
