@@ -23,18 +23,17 @@ from aws.api import router as aws_router
 from user.api import router as user_router
 from stock.api import router as stock_router
 from stock.api_material import router as material_router
-from stock.api_material_history import router as material_history_router
+from stock.api_material_history import router as materialHistory_router
 from factory.api import router as factory_router
 from factory.api_eq import router as factoryEQ_router
 from stock.api_product import router as stockProduct_router
 from stock.api_product_history import router as stockProductHistory_router
-from stock.api_material import router as material_router
-from stock.api_material_history import router as material_history_router
-from factory.api_client import router as factory_client_router
+from factory.api_client import router as factoryClient_router
 from location.api import router as location_router
 from document.api_quotation import router as quotation_router
-from document.api_quotation_product import router as quotation_product_router
+from document.api_quotation_product import router as quotationProduct_router
 from project.api_project import router as project_router
+from project.api_project_plan import router as projectPlan_router
 from django.contrib.admin.views.decorators import staff_member_required
 
 base_api = NinjaAPI(
@@ -56,15 +55,16 @@ base_api.add_router("v1/aws", aws_router)
 base_api.add_router("v1/auth", user_router)
 base_api.add_router("v1/stock", stock_router)
 base_api.add_router("v1/stock/material", material_router)
-base_api.add_router("v1/stock/material/history", material_history_router)
+base_api.add_router("v1/stock/material/history", materialHistory_router)
 base_api.add_router("v1/factory", factory_router)
 base_api.add_router("v1/factory/equipment", factoryEQ_router)
 base_api.add_router("v1/stock/product", stockProduct_router)
 base_api.add_router("v1/stock/product/history", stockProductHistory_router)
-base_api.add_router("v1/factory/client", factory_client_router)
+base_api.add_router("v1/factory/client", factoryClient_router)
 base_api.add_router("v1/location", location_router)
 base_api.add_router("v1/document/quotation", quotation_router)
-base_api.add_router("v1/document/quotation/product", quotation_product_router)
+base_api.add_router("v1/document/quotation/product", quotationProduct_router)
+base_api.add_router("v1/project/plan", projectPlan_router)
 base_api.add_router("v1/project", project_router)
 
 urlpatterns = [
