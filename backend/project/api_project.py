@@ -1,6 +1,5 @@
 from ninja import Router
 from ninja.errors import HttpError
-from ninja.pagination import paginate
 from api.security import jwt_auth
 from project.schemas.outbound import ProjectCreateOut, ProjectDetailOut, ProjectUpdateOut
 from project.schemas.inbound import ProjectStatusUpdateIn, ProjectTransactDateUpdateIn
@@ -46,6 +45,7 @@ async def delete_project(request, project_id: int):
         
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
+
     except Exception as e:
         raise HttpError(500, "프로젝트 삭제 중 내부 서버 오류가 발생했습니다.")
 
@@ -57,7 +57,6 @@ async def delete_project(request, project_id: int):
     response={200: ProjectDetailOut, 400: dict, 404: dict, 500: dict}
 )
 async def update_project_status(request, project_id: int, payload: ProjectStatusUpdateIn):
-    # 유효한 상태값인지 확인
     valid_statuses = [choice[0] for choice in Project.ProjectStatus.choices]
     if payload.status not in valid_statuses:
         raise HttpError(400, "올바르지 않은 상태값입니다.")
@@ -78,6 +77,7 @@ async def update_project_status(request, project_id: int, payload: ProjectStatus
         
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
+
     except Exception as e:
         raise HttpError(500, "프로젝트 상태 업데이트 중 내부 서버 오류가 발생했습니다.")
 
@@ -105,20 +105,6 @@ async def update_project_transact_date(request, project_id: int, payload: Projec
         
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
+
     except Exception as e:
         raise HttpError(500, "거래명세서 발급일 업데이트 중 내부 서버 오류가 발생했습니다.")
-
-
-"""
-ToDo: 프로젝트 삭제 api 추가, 프로젝트 수정 api 추가
-
-1. 프로젝트 삭제 api 추가
-
-2. 프로젝트 수정 api 추가
-- 상태 업데이트 api
-- 거래명세서 발급일 업데이트 api
-
-
-api 만들 때 주의사항
-model.py 참고, 다른 api들과 코드컨벤션 맞춰서 작성(location api 참고)
-"""

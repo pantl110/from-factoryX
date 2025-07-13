@@ -532,13 +532,20 @@ class ProjectPlanAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 200)
         
-        # 응답 데이터 확인
+        # 응답 데이터 확인 (페이지네이션 형식)
         data = response.json()
-        self.assertIsInstance(data, list)
-        self.assertGreater(len(data), 0)
+        self.assertIsInstance(data, dict)
+        self.assertIn('data', data)
+        self.assertIn('count', data)
+        self.assertIn('totalCnt', data)
+        self.assertIn('curPage', data)
+        
+        plans = data['data']
+        self.assertIsInstance(plans, list)
+        self.assertGreater(len(plans), 0)
         
         # 첫 번째 계획 확인
-        plan = data[0]
+        plan = plans[0]
         self.assertEqual(plan['project_id'], self.project.id)
         self.assertEqual(plan['quantity'], 8)
         
@@ -590,10 +597,17 @@ class ProjectPlanAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 200)
         
-        # 응답 데이터 확인
+        # 응답 데이터 확인 (페이지네이션 형식)
         data = response.json()
-        self.assertIsInstance(data, list)
-        self.assertGreater(len(data), 0)
+        self.assertIsInstance(data, dict)
+        self.assertIn('data', data)
+        self.assertIn('count', data)
+        self.assertIn('totalCnt', data)
+        self.assertIn('curPage', data)
+        
+        plans = data['data']
+        self.assertIsInstance(plans, list)
+        self.assertGreater(len(plans), 0)
 
     def test_list_completed_project_plans_empty(self):
         """완료된 프로젝트 계획 조회 (빈 결과) 테스트"""
