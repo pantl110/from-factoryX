@@ -34,7 +34,7 @@ from factory.api_client import router as factory_client_router
 from location.api import router as location_router
 from document.api_quotation import router as quotation_router
 from document.api_quotation_product import router as quotation_product_router
-from project.api import router as project_router
+from project.api_project import router as project_router
 from django.contrib.admin.views.decorators import staff_member_required
 
 base_api = NinjaAPI(
