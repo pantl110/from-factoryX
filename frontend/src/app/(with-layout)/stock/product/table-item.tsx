@@ -1,14 +1,14 @@
-import Checkbox from "@/ui/checkbox";
+import Checkbox from '@/ui/checkbox'
 
 interface TableItemProps {
-  productName: string;
-  productCode: string;
-  size: string;
-  unit: string;
-  stock: number;
-  onClick: () => void;
-  checked: boolean;
-  onToggle: () => void;
+  productName: string
+  productCode: string
+  size: string
+  unit: string
+  stock: number
+  onClick: () => void
+  checked: boolean
+  onToggle: () => void
 }
 
 const TableItem = ({
@@ -33,7 +33,7 @@ const TableItem = ({
       <p className="w-[80px] px-3 text-dg">{unit}</p>
       <p className="flex-1 px-3 text-dg">{stock.toLocaleString()}</p>
     </div>
-  );
-};
+  )
+}
 
-export default TableItem;
+export default TableItem

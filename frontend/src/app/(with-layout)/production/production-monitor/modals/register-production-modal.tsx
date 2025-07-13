@@ -1,8 +1,8 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
+import MiniBtn from '@/ui/mini-btn'
+import Modal from '@/ui/modal/modal'
 
 interface RegisterProductionModalProps {
-  onClose: () => void;
+  onClose: () => void
 }
 
 const RegisterProductionModal = ({ onClose }: RegisterProductionModalProps) => {
@@ -14,12 +14,7 @@ const RegisterProductionModal = ({ onClose }: RegisterProductionModalProps) => {
       onClose={onClose}
     >
       <div className="m-4 flex justify-end gap-[5px]">
-        <MiniBtn
-          text="취소하기"
-          textColor="text-sv"
-          hoverColor=""
-          onClick={onClose}
-        />
+        <MiniBtn text="취소하기" textColor="text-sv" hoverColor="" onClick={onClose} />
         <MiniBtn
           text="생산 시작"
           hoverColor="hover:bg-primary-hover"
@@ -29,7 +24,7 @@ const RegisterProductionModal = ({ onClose }: RegisterProductionModalProps) => {
         />
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default RegisterProductionModal;
+export default RegisterProductionModal

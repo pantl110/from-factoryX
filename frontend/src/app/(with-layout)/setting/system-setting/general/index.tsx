@@ -1,6 +1,6 @@
-import Profile from "./profile";
-import CompanyInfo from "./componay-info";
-import DeleteAccount from "./delete-account";
+import Profile from './profile'
+import CompanyInfo from './componay-info'
+import DeleteAccount from './delete-account'
 
 const General = () => {
   return (
@@ -14,7 +14,7 @@ const General = () => {
       {/* 계정 삭제 */}
       <DeleteAccount />
     </div>
-  );
-};
+  )
+}
 
-export default General;
+export default General

@@ -1,11 +1,9 @@
-import StockStatusItem from "./stock-status-item";
+import StockStatusItem from './stock-status-item'
 
 interface StockStatusProps {
-  setIsMaterialStockStatusModalOpen: (isOpen: boolean) => void;
+  setIsMaterialStockStatusModalOpen: (isOpen: boolean) => void
 }
-const StockStatus = ({
-  setIsMaterialStockStatusModalOpen,
-}: StockStatusProps) => {
+const StockStatus = ({ setIsMaterialStockStatusModalOpen }: StockStatusProps) => {
   return (
     <div>
       <div className="flex items-center h-12 border-t border-b border-[#eeeeee] Me_Body-1">
@@ -44,7 +42,7 @@ const StockStatus = ({
         setIsMaterialStockStatusModalOpen={setIsMaterialStockStatusModalOpen}
       />
     </div>
-  );
-};
+  )
+}
 
-export default StockStatus;
+export default StockStatus

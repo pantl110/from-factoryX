@@ -1,14 +1,11 @@
-import Checkbox from "@/ui/checkbox";
+import Checkbox from '@/ui/checkbox'
 
 interface PermissionTableHeaderProps {
-  isAllChecked: boolean;
-  onToggleAll: () => void;
+  isAllChecked: boolean
+  onToggleAll: () => void
 }
 
-const PermissionTableHeader = ({
-  isAllChecked,
-  onToggleAll,
-}: PermissionTableHeaderProps) => {
+const PermissionTableHeader = ({ isAllChecked, onToggleAll }: PermissionTableHeaderProps) => {
   return (
     <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-1 border-t border-b border-[#eeeeee]">
       <Checkbox isChecked={isAllChecked} onToggle={onToggleAll} />
@@ -18,7 +15,7 @@ const PermissionTableHeader = ({
       <p className="px-3 flex-1">권한</p>
       <p className="px-3 flex-1">초대 날짜</p>
     </div>
-  );
-};
+  )
+}
 
-export default PermissionTableHeader;
+export default PermissionTableHeader

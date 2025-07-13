@@ -7,7 +7,7 @@ const ReturnTableHeader = () => {
       <p className="w-[80px] px-3">단위</p>
       <p className="flex-1 px-3">환불액</p>
     </div>
-  );
-};
+  )
+}
 
-export default ReturnTableHeader;
+export default ReturnTableHeader

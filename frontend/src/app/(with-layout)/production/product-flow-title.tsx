@@ -1,21 +1,16 @@
-import Chip from "@/ui/chip";
-import Input from "@/ui/input";
-import { ProjectStatusType, ProjectStatusColorMap } from "@/types/status-type";
+import Chip from '@/ui/chip'
+import Input from '@/ui/input'
+import { ProjectStatusType, ProjectStatusColorMap } from '@/types/status-type'
 
 export interface ProductFlowTitleProps {
-  status: ProjectStatusType;
-  tabs: string[];
-  selectedTab: number;
-  setSelectedTab: (idx: number) => void;
+  status: ProjectStatusType
+  tabs: string[]
+  selectedTab: number
+  setSelectedTab: (idx: number) => void
 }
 
-const ProductFlowTitle = ({
-  status,
-  tabs,
-  selectedTab,
-  setSelectedTab,
-}: ProductFlowTitleProps) => {
-  const { bgColor, textColor } = ProjectStatusColorMap[status];
+const ProductFlowTitle = ({ status, tabs, selectedTab, setSelectedTab }: ProductFlowTitleProps) => {
+  const { bgColor, textColor } = ProjectStatusColorMap[status]
 
   return (
     <>
@@ -46,8 +41,8 @@ const ProductFlowTitle = ({
               onClick={() => setSelectedTab(idx)}
               className={`Heading-3 pb-3 transition-colors duration-150 cursor-pointer ${
                 selectedTab === idx
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gr border-b-2 border-transparent"
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-gr border-b-2 border-transparent'
               }`}
             >
               {tab}
@@ -57,7 +52,7 @@ const ProductFlowTitle = ({
         {/* <div className="h-[1px] bg-lg w-full"></div> */}
       </div>
     </>
-  );
-};
+  )
+}
 
-export default ProductFlowTitle;
+export default ProductFlowTitle

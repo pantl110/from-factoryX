@@ -1,12 +1,12 @@
 export interface ProductionTableItemProps {
-  companyName: string;
-  productName: string;
-  productCode: string;
-  size: string;
-  unit: string;
-  quantity: number;
-  machine: string;
-  time: string;
+  companyName: string
+  productName: string
+  productCode: string
+  size: string
+  unit: string
+  quantity: number
+  machine: string
+  time: string
 }
 
 const ProductionTableItem = ({
@@ -36,10 +36,7 @@ const ProductionTableItem = ({
       <p className="px-3 w-[80px] truncate" title={unit}>
         {unit}
       </p>
-      <p
-        className="flex items-center px-3 flex-1 truncate"
-        title={quantity.toLocaleString()}
-      >
+      <p className="flex items-center px-3 flex-1 truncate" title={quantity.toLocaleString()}>
         {quantity.toLocaleString()}
       </p>
       <p className="flex items-center px-3 flex-2 truncate" title={machine}>
@@ -49,7 +46,7 @@ const ProductionTableItem = ({
         {time}
       </p>
     </div>
-  );
-};
+  )
+}
 
-export default ProductionTableItem;
+export default ProductionTableItem

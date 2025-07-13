@@ -1,19 +1,19 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { facilityData, FacilityDataModel } from "@/mocks/facility-data";
-import FacilityTableHeader from "./facility-table-header";
-import FacilityTableItem from "./facility-table-item";
-import FacilityDetailPanel from "./modals/facility-detail-panel";
-import { FacilityStatusType } from "./types";
+import { useState } from 'react'
+import { facilityData, FacilityDataModel } from '@/mocks/facility-data'
+import FacilityTableHeader from './facility-table-header'
+import FacilityTableItem from './facility-table-item'
+import FacilityDetailPanel from './modals/facility-detail-panel'
+import { FacilityStatusType } from './types'
 
 interface FacilityProps {
-  isCreatePanelOpen?: boolean;
-  setIsCreatePanelOpen?: (isOpen: boolean) => void;
-  isAllChecked: boolean;
-  isChecked: (id: number) => boolean;
-  toggleAll: () => void;
-  toggleOne: (id: number) => void;
+  isCreatePanelOpen?: boolean
+  setIsCreatePanelOpen?: (isOpen: boolean) => void
+  isAllChecked: boolean
+  isChecked: (id: number) => boolean
+  toggleAll: () => void
+  toggleOne: (id: number) => void
 }
 
 const Facility = ({
@@ -24,37 +24,33 @@ const Facility = ({
   toggleAll,
   toggleOne,
 }: FacilityProps) => {
-  const [selectedFacility, setSelectedFacility] =
-    useState<FacilityDataModel | null>(null);
+  const [selectedFacility, setSelectedFacility] = useState<FacilityDataModel | null>(null)
 
   const handleItemClick = (facility: FacilityDataModel) => {
-    setSelectedFacility(facility);
-  };
+    setSelectedFacility(facility)
+  }
 
   const handlePanelClose = () => {
-    setSelectedFacility(null);
-  };
+    setSelectedFacility(null)
+  }
 
   const handleCreatePanelClose = () => {
-    setIsCreatePanelOpen?.(false);
-  };
+    setIsCreatePanelOpen?.(false)
+  }
 
   // 빈 설비 데이터 (새 설비 생성용)
   const emptyFacility: FacilityDataModel = {
     id: 0,
-    name: "",
-    status: "가동 대기" as FacilityStatusType,
+    name: '',
+    status: '가동 대기' as FacilityStatusType,
     priority: null,
-    location: "",
-  };
+    location: '',
+  }
 
   return (
     <>
       <div className="w-full px-10 pb-10">
-        <FacilityTableHeader
-          isAllChecked={isAllChecked}
-          onToggleAll={toggleAll}
-        />
+        <FacilityTableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
         {facilityData.map((item) => (
           <FacilityTableItem
             key={item.id}
@@ -68,21 +64,15 @@ const Facility = ({
 
       {/* 설비 상세 판넬 (기존 설비 조회) */}
       {selectedFacility && (
-        <FacilityDetailPanel
-          facility={selectedFacility}
-          onClose={handlePanelClose}
-        />
+        <FacilityDetailPanel facility={selectedFacility} onClose={handlePanelClose} />
       )}
 
       {/* 설비 생성 판넬 (빈 데이터) */}
       {isCreatePanelOpen && (
-        <FacilityDetailPanel
-          facility={emptyFacility}
-          onClose={handleCreatePanelClose}
-        />
+        <FacilityDetailPanel facility={emptyFacility} onClose={handleCreatePanelClose} />
       )}
     </>
-  );
-};
+  )
+}
 
-export default Facility;
+export default Facility

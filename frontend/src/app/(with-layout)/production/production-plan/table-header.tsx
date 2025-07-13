@@ -1,4 +1,4 @@
-import { tableHeader } from "./types";
+import { tableHeader } from './types'
 
 const TableHeader = () => {
   return (
@@ -9,7 +9,7 @@ const TableHeader = () => {
         </p>
       ))}
     </div>
-  );
-};
+  )
+}
 
-export default TableHeader;
+export default TableHeader

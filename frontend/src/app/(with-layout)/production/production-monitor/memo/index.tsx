@@ -1,28 +1,24 @@
-"use client";
+'use client'
 
-import MiniBtn from "@/ui/mini-btn";
-import SaveToast from "./save-toast";
-import useToast from "@/hooks/use-toast";
-import { useState } from "react";
+import MiniBtn from '@/ui/mini-btn'
+import SaveToast from './save-toast'
+import useToast from '@/hooks/use-toast'
+import { useState } from 'react'
 
 interface MemoSectionProps {
-  title: string;
-  content: string;
-  setIsDeleteModalOpen: (isOpen: boolean) => void;
+  title: string
+  content: string
+  setIsDeleteModalOpen: (isOpen: boolean) => void
 }
 
-const MemoSection = ({
-  title,
-  content,
-  setIsDeleteModalOpen,
-}: MemoSectionProps) => {
-  const { isToastOpen: isSaveToastOpen, isVisible, showToast } = useToast();
-  const [memoContent, setMemoContent] = useState(content);
+const MemoSection = ({ title, content, setIsDeleteModalOpen }: MemoSectionProps) => {
+  const { isToastOpen: isSaveToastOpen, isVisible, showToast } = useToast()
+  const [memoContent, setMemoContent] = useState(content)
 
   const handleMemoSave = () => {
     // 메모 저장 로직
-    showToast();
-  };
+    showToast()
+  }
   return (
     <>
       <div className="rounded flex flex-col gap-4 h-full pb-10">
@@ -60,7 +56,7 @@ const MemoSection = ({
       </div>
       {isSaveToastOpen && <SaveToast isVisible={isVisible} />}
     </>
-  );
-};
+  )
+}
 
-export default MemoSection;
+export default MemoSection

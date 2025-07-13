@@ -1,21 +1,21 @@
-import Chip from "@/ui/chip";
-import { ClientType, ClientTypeColorMap } from "./types";
-import Checkbox from "@/ui/checkbox";
-import React from "react";
+import Chip from '@/ui/chip'
+import { ClientType, ClientTypeColorMap } from './types'
+import Checkbox from '@/ui/checkbox'
+import React from 'react'
 
 interface ClientTableItemProps {
-  clientType: ClientType;
-  companyName: string;
-  businessNumber: string;
-  representativeName: string;
-  businessType: string;
-  businessCategory: string;
-  contact: string;
-  email: string;
-  onClick?: () => void;
-  onClientTypeChange?: (clientType: ClientType) => void;
-  isChecked?: boolean;
-  onToggleCheck?: () => void;
+  clientType: ClientType
+  companyName: string
+  businessNumber: string
+  representativeName: string
+  businessType: string
+  businessCategory: string
+  contact: string
+  email: string
+  onClick?: () => void
+  onClientTypeChange?: (clientType: ClientType) => void
+  isChecked?: boolean
+  onToggleCheck?: () => void
 }
 
 // const PortalDropdown = ({
@@ -50,7 +50,7 @@ const ClientTableItem = ({
   isChecked,
   onToggleCheck,
 }: ClientTableItemProps) => {
-  const clientTypeColor = ClientTypeColorMap[clientType];
+  const clientTypeColor = ClientTypeColorMap[clientType]
   // const { isOpen, openDropdown, closeDropdown, anchorRect } =
   //   usePortalDropdown();
 
@@ -64,10 +64,7 @@ const ClientTableItem = ({
       className="flex h-14 items-center w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
-      <Checkbox
-        isChecked={isChecked || false}
-        onToggle={onToggleCheck || (() => {})}
-      />
+      <Checkbox isChecked={isChecked || false} onToggle={onToggleCheck || (() => {})} />
       <div className="px-3 w-[150px]">
         <div>
           <Chip
@@ -98,7 +95,7 @@ const ClientTableItem = ({
         </PortalDropdown>
       )} */}
     </div>
-  );
-};
+  )
+}
 
-export default ClientTableItem;
+export default ClientTableItem

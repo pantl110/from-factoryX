@@ -9,7 +9,7 @@ const TaxInvoiceTableItem = () => {
       <p className="flex-1 py-1 px-3">1,000,000</p>
       <p className="flex-1 py-1 px-3">100,000</p>
     </div>
-  );
-};
+  )
+}
 
-export default TaxInvoiceTableItem;
+export default TaxInvoiceTableItem

@@ -1,34 +1,31 @@
-import MiniBtn from "@/ui/mini-btn";
-import ProfileImage from "@/ui/profile-image";
-import { X } from "@phosphor-icons/react";
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import MiniBtn from '@/ui/mini-btn'
+import ProfileImage from '@/ui/profile-image'
+import { X } from '@phosphor-icons/react'
+import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface ProfileModalProps {
-  onClose: () => void;
+  onClose: () => void
 }
 
 const ProfileModal = ({ onClose }: ProfileModalProps) => {
-  const profileModalRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const profileModalRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   // 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        profileModalRef.current &&
-        !profileModalRef.current.contains(event.target as Node)
-      ) {
-        onClose();
+      if (profileModalRef.current && !profileModalRef.current.contains(event.target as Node)) {
+        onClose()
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside); // 이벤트 리스너 등록
+    document.addEventListener('mousedown', handleClickOutside) // 이벤트 리스너 등록
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside); // 언마운트 시 제거
-    };
-  }, [onClose]);
+      document.removeEventListener('mousedown', handleClickOutside) // 언마운트 시 제거
+    }
+  }, [onClose])
 
   return (
     <div
@@ -73,8 +70,8 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
             hoverColor="bg-bg"
             width="w-full"
             onClick={() => {
-              router.push("/setting");
-              onClose();
+              router.push('/setting')
+              onClose()
             }}
           />
         </div>
@@ -89,7 +86,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProfileModal;
+export default ProfileModal

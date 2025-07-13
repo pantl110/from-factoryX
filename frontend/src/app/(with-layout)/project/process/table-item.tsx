@@ -1,25 +1,21 @@
-"use client";
+'use client'
 
-import Chip from "@/ui/chip";
-import { useRouter } from "next/navigation";
-import {
-  ProjectStatusType,
-  ProjectStatusColorMap,
-  TaxStatusType,
-} from "@/types/status-type";
-import Checkbox from "@/ui/checkbox";
-import MiniBtn from "@/ui/mini-btn";
+import Chip from '@/ui/chip'
+import { useRouter } from 'next/navigation'
+import { ProjectStatusType, ProjectStatusColorMap, TaxStatusType } from '@/types/status-type'
+import Checkbox from '@/ui/checkbox'
+import MiniBtn from '@/ui/mini-btn'
 
 interface TableItemProps {
-  id: number;
-  status: ProjectStatusType;
-  companyName: string;
-  items: string;
-  startDate: string;
-  endDate: string;
-  taxIssued: TaxStatusType;
-  checked?: boolean;
-  onToggle?: () => void;
+  id: number
+  status: ProjectStatusType
+  companyName: string
+  items: string
+  startDate: string
+  endDate: string
+  taxIssued: TaxStatusType
+  checked?: boolean
+  onToggle?: () => void
 }
 
 const TableItem = ({
@@ -33,13 +29,13 @@ const TableItem = ({
   checked = false,
   onToggle,
 }: TableItemProps) => {
-  const router = useRouter();
-  const chipColors = ProjectStatusColorMap[status];
+  const router = useRouter()
+  const chipColors = ProjectStatusColorMap[status]
 
   const handleClick = () => {
-    if (status === "견적 협의") router.push(`/quotation`);
-    else router.push(`/production/${id}`);
-  };
+    if (status === '견적 협의') router.push(`/quotation`)
+    else router.push(`/production/${id}`)
+  }
 
   return (
     <div
@@ -48,16 +44,12 @@ const TableItem = ({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") handleClick();
+        if (e.key === 'Enter' || e.key === ' ') handleClick()
       }}
     >
       <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
       <div className="py-1 px-3 w-[150px]">
-        <Chip
-          text={status}
-          bgColor={chipColors.bgColor}
-          textColor={chipColors.textColor}
-        />
+        <Chip text={status} bgColor={chipColors.bgColor} textColor={chipColors.textColor} />
       </div>
       <p className="flex-2 py-1 px-3 text-dg truncate" title={companyName}>
         {companyName}
@@ -74,10 +66,10 @@ const TableItem = ({
       <div
         className="w-[200px] px-3"
         onClick={(e) => {
-          e.stopPropagation();
+          e.stopPropagation()
         }}
       >
-        {taxIssued === "보기" ? (
+        {taxIssued === '보기' ? (
           <MiniBtn
             text={taxIssued}
             bgColor="bg-wh"
@@ -86,10 +78,10 @@ const TableItem = ({
             hoverColor="hover:bg-bg"
             height="h-8"
             onClick={() => {
-              router.push(`/tax/list`);
+              router.push(`/tax/list`)
             }}
           />
-        ) : taxIssued === "연결 필요" ? (
+        ) : taxIssued === '연결 필요' ? (
           <MiniBtn
             text="연결 필요"
             bgColor="bg-bg"
@@ -109,7 +101,7 @@ const TableItem = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default TableItem;
+export default TableItem

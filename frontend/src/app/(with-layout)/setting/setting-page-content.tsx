@@ -1,15 +1,18 @@
-"use client";
+'use client'
 
-import usePageStatusStore from "@/store/page-status-store";
-import SystemSetting from "./system-setting";
-import MasterData from "./master-data";
+import usePageStatusStore from '@/store/page-status-store'
+import SystemSetting from './system-setting'
+import MasterData from './master-data'
+import { useEffect } from 'react'
 
 const SettingPageContent = () => {
-  const { settingTab, setSettingTab } = usePageStatusStore();
+  const { settingTab, setSettingTab } = usePageStatusStore()
 
-  if (!settingTab) {
-    setSettingTab("system"); // 초기 탭을 시스템 설정으로 설정
-  }
+  useEffect(() => {
+    if (!settingTab) {
+      setSettingTab('system') // 초기 탭을 시스템 설정으로 설정
+    }
+  }, [settingTab, setSettingTab])
 
   return (
     <div className="max-w-[1400px] min-w-[1200px]">
@@ -19,25 +22,25 @@ const SettingPageContent = () => {
           <div className="flex gap-4 Heading-3 mb-3">
             <button
               type="button"
-              className={`cursor-pointer ${settingTab === "system" ? "text-dg" : "text-gr"}`}
-              onClick={() => setSettingTab("system")}
+              className={`cursor-pointer ${settingTab === 'system' ? 'text-dg' : 'text-gr'}`}
+              onClick={() => setSettingTab('system')}
             >
               시스템 설정
             </button>
             <button
               type="button"
-              className={`cursor-pointer ${settingTab === "master" ? "text-dg" : "text-gr"}`}
-              onClick={() => setSettingTab("master")}
+              className={`cursor-pointer ${settingTab === 'master' ? 'text-dg' : 'text-gr'}`}
+              onClick={() => setSettingTab('master')}
             >
               마스터 데이터 관리
             </button>
           </div>
         </div>
-        {settingTab === "system" && <SystemSetting />}
-        {settingTab === "master" && <MasterData />}
+        {settingTab === 'system' && <SystemSetting />}
+        {settingTab === 'master' && <MasterData />}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SettingPageContent;
+export default SettingPageContent

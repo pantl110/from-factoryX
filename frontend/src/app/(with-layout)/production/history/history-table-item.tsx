@@ -8,7 +8,7 @@ const HistoryTableItem = () => {
       <p className="flex-1 py-1 px-3 text-red">-200</p>
       <p className="flex-1 py-1 px-3">4,590</p>
     </div>
-  );
-};
+  )
+}
 
-export default HistoryTableItem;
+export default HistoryTableItem

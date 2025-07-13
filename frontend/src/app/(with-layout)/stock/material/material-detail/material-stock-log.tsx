@@ -1,4 +1,4 @@
-import MaterialStockLogItem from "./material-stock-log-item";
+import MaterialStockLogItem from './material-stock-log-item'
 
 const MaterialStockLog = () => {
   return (
@@ -32,7 +32,7 @@ const MaterialStockLog = () => {
         currentStock={3500}
       />
     </div>
-  );
-};
+  )
+}
 
-export default MaterialStockLog;
+export default MaterialStockLog

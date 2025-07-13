@@ -1,4 +1,4 @@
-import { XIcon } from "@phosphor-icons/react/dist/ssr";
+import { XIcon } from '@phosphor-icons/react/dist/ssr'
 
 const DocumentTitle = () => {
   return (
@@ -8,7 +8,7 @@ const DocumentTitle = () => {
         <XIcon size={20} />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default DocumentTitle;
+export default DocumentTitle

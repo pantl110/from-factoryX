@@ -1,14 +1,10 @@
 interface DocumentViewTitleProps {
-  title: string;
-  dateLabel?: string;
-  date?: string;
+  title: string
+  dateLabel?: string
+  date?: string
 }
 
-const DocumentViewTitle = ({
-  title,
-  dateLabel,
-  date,
-}: DocumentViewTitleProps) => {
+const DocumentViewTitle = ({ title, dateLabel, date }: DocumentViewTitleProps) => {
   return (
     <div className="flex justify-between">
       <h2 className="Heading-2">{title}</h2>
@@ -17,7 +13,7 @@ const DocumentViewTitle = ({
         {date && <h5>{date}</h5>}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default DocumentViewTitle;
+export default DocumentViewTitle

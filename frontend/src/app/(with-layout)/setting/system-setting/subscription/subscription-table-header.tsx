@@ -6,7 +6,7 @@ const SubscriptionTableHeader = () => {
       <p className="flex-1">금액</p>
       <p className="flex-1">플랜명</p>
     </div>
-  );
-};
+  )
+}
 
-export default SubscriptionTableHeader;
+export default SubscriptionTableHeader

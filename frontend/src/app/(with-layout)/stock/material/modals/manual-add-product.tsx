@@ -1,19 +1,14 @@
-import Input from "@/ui/input";
-import MiniBtn from "@/ui/mini-btn";
-import { useForm } from "react-hook-form";
-import { ProductDataModel } from "@/types/data-model";
+import Input from '@/ui/input'
+import MiniBtn from '@/ui/mini-btn'
+import { useForm } from 'react-hook-form'
+import { ProductDataModel } from '@/types/data-model'
 
 interface ManualAddProductProps {
-  setIsManualAddMode: (v: boolean) => void;
-  setSelectedProducts?: (
-    fn: (prev: ProductDataModel[]) => ProductDataModel[],
-  ) => void;
+  setIsManualAddMode: (v: boolean) => void
+  setSelectedProducts?: (fn: (prev: ProductDataModel[]) => ProductDataModel[]) => void
 }
 
-const ManualAddProduct = ({
-  setIsManualAddMode,
-  setSelectedProducts,
-}: ManualAddProductProps) => {
+const ManualAddProduct = ({ setIsManualAddMode, setSelectedProducts }: ManualAddProductProps) => {
   const {
     register,
     handleSubmit,
@@ -22,12 +17,12 @@ const ManualAddProduct = ({
   } = useForm<ProductDataModel>({
     defaultValues: {
       id: null,
-      productName: "",
-      size: "",
-      unit: "",
+      productName: '',
+      size: '',
+      unit: '',
     },
-    mode: "onBlur",
-  });
+    mode: 'onBlur',
+  })
 
   const onSubmit = (data: ProductDataModel) => {
     setSelectedProducts?.((prev) => [
@@ -38,10 +33,10 @@ const ManualAddProduct = ({
         size: data.size,
         unit: data.unit,
       },
-    ]);
-    reset();
-    setIsManualAddMode(false);
-  };
+    ])
+    reset()
+    setIsManualAddMode(false)
+  }
 
   return (
     <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
@@ -52,9 +47,9 @@ const ManualAddProduct = ({
               placeholder="품목명 입력"
               label="품목명"
               required
-              {...register("productName", {
+              {...register('productName', {
                 required: true,
-                validate: (v) => !!(v || "").trim(),
+                validate: (v) => !!(v || '').trim(),
               })}
               showError={!!errors.productName}
             />
@@ -64,9 +59,9 @@ const ManualAddProduct = ({
               placeholder="규격 입력"
               label="규격"
               required
-              {...register("size", {
+              {...register('size', {
                 required: true,
-                validate: (v) => !!(v || "").trim(),
+                validate: (v) => !!(v || '').trim(),
               })}
               showError={!!errors.size}
             />
@@ -76,9 +71,9 @@ const ManualAddProduct = ({
               placeholder="EX) EA"
               label="단위"
               required
-              {...register("unit", {
+              {...register('unit', {
                 required: true,
-                validate: (v) => !!(v || "").trim(),
+                validate: (v) => !!(v || '').trim(),
               })}
               showError={!!errors.unit}
             />
@@ -101,7 +96,7 @@ const ManualAddProduct = ({
         </div>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default ManualAddProduct;
+export default ManualAddProduct

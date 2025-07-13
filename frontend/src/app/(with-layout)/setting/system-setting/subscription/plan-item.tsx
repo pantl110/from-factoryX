@@ -1,15 +1,15 @@
-import MiniBtn from "@/ui/mini-btn";
-import { PlanType, PLAN_INFO } from "./types";
-import { useState } from "react";
-import SubscribeModal from "./modals/subscribe-modal";
+import MiniBtn from '@/ui/mini-btn'
+import { PlanType, PLAN_INFO } from './types'
+import { useState } from 'react'
+import SubscribeModal from './modals/subscribe-modal'
 
 interface PlanItemProps {
-  type: PlanType;
+  type: PlanType
 }
 
 const PlanItem = ({ type }: PlanItemProps) => {
-  const info = PLAN_INFO[type];
-  const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+  const info = PLAN_INFO[type]
+  const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false)
 
   return (
     <>
@@ -25,18 +25,13 @@ const PlanItem = ({ type }: PlanItemProps) => {
           />
         </div>
         <h4 className="Heading-4 text-primary">월 {info.price}원</h4>
-        <p className="text-dg Re_Body-1 whitespace-pre-line">
-          {info.description}
-        </p>
+        <p className="text-dg Re_Body-1 whitespace-pre-line">{info.description}</p>
       </div>
       {isSubscribeModalOpen && (
-        <SubscribeModal
-          onClose={() => setIsSubscribeModalOpen(false)}
-          planTitle={info.title}
-        />
+        <SubscribeModal onClose={() => setIsSubscribeModalOpen(false)} planTitle={info.title} />
       )}
     </>
-  );
-};
+  )
+}
 
-export default PlanItem;
+export default PlanItem

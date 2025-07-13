@@ -1,8 +1,8 @@
-import Toast from "@/ui/toast";
-import { WarningCircle } from "@phosphor-icons/react/dist/ssr";
+import Toast from '@/ui/toast'
+import { WarningCircle } from '@phosphor-icons/react/dist/ssr'
 
 interface SaveToastProps {
-  isVisible: boolean;
+  isVisible: boolean
 }
 
 const SaveToast = ({ isVisible }: SaveToastProps) => {
@@ -14,7 +14,7 @@ const SaveToast = ({ isVisible }: SaveToastProps) => {
       type="primary"
       isVisible={isVisible}
     />
-  );
-};
+  )
+}
 
-export default SaveToast;
+export default SaveToast

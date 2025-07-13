@@ -1,23 +1,23 @@
-import { CaretDown, CaretLineRightIcon } from "@phosphor-icons/react/dist/ssr";
-import { useEffect, useState, useCallback } from "react";
-import MiniBtn from "./mini-btn";
-import IssueTypeDropdown from "../app/(with-layout)/tax/list/modals/create-tax-panel/issue-type-dropdown";
+import { CaretDown, CaretLineRightIcon } from '@phosphor-icons/react/dist/ssr'
+import { useEffect, useState, useCallback } from 'react'
+import MiniBtn from './mini-btn'
+import IssueTypeDropdown from '../app/(with-layout)/tax/list/modals/create-tax-panel/issue-type-dropdown'
 
 interface PanelProps {
-  children: React.ReactNode;
-  title: string;
-  onClose: () => void;
-  hasSaveButton?: boolean;
+  children: React.ReactNode
+  title: string
+  onClose: () => void
+  hasSaveButton?: boolean
   // 세금계산서 생성 관련 props
-  isCreateTax?: boolean;
+  isCreateTax?: boolean
   // 발행 방식 드롭다운 관련 props
-  isIssueTypeDropdownOpen?: boolean;
-  onIssueTypeDropdownOpen?: () => void;
-  onIssueTypeDropdownClose?: () => void;
-  onIssueTypeSelect?: (issueType: "청구" | "영수") => void;
+  isIssueTypeDropdownOpen?: boolean
+  onIssueTypeDropdownOpen?: () => void
+  onIssueTypeDropdownClose?: () => void
+  onIssueTypeSelect?: (issueType: '청구' | '영수') => void
   // 세금계산서 임시보관함 관련 props
-  isDraft?: boolean;
-  onIssueClick?: () => void;
+  isDraft?: boolean
+  onIssueClick?: () => void
 }
 
 const Panel = ({
@@ -33,68 +33,66 @@ const Panel = ({
   isDraft = false,
   onIssueClick,
 }: PanelProps) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [shouldRender, setShouldRender] = useState(true);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [isVisible, setIsVisible] = useState(false)
+  const [shouldRender, setShouldRender] = useState(true)
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
 
   const handleClose = useCallback(() => {
-    setIsVisible(false);
+    setIsVisible(false)
     // 애니메이션이 끝난 후 DOM에서 제거
     setTimeout(() => {
-      setShouldRender(false);
-      onClose();
-    }, 200); // duration-200과 맞춤
-  }, [onClose]);
+      setShouldRender(false)
+      onClose()
+    }, 200) // duration-200과 맞춤
+  }, [onClose])
 
   const handleDropdownOpen = () => {
     // 버튼 위치 계산
-    const button = document.querySelector(
-      "[data-issue-type-button]",
-    ) as HTMLElement;
+    const button = document.querySelector('[data-issue-type-button]') as HTMLElement
     if (button) {
-      const rect = button.getBoundingClientRect();
+      const rect = button.getBoundingClientRect()
       setDropdownPosition({
         top: rect.bottom + window.scrollY,
         left: rect.right - 123, // 드롭다운 너비만큼 조정
-      });
+      })
     }
-    onIssueTypeDropdownOpen?.();
-  };
+    onIssueTypeDropdownOpen?.()
+  }
 
   const handleDropdownClose = () => {
-    onIssueTypeDropdownClose?.();
-  };
+    onIssueTypeDropdownClose?.()
+  }
 
   useEffect(() => {
     // 스크롤 막기
-    const originalStyle = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const originalStyle = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
 
     // 애니메이션 시작
     requestAnimationFrame(() => {
-      setIsVisible(true);
-    });
+      setIsVisible(true)
+    })
 
     return () => {
-      document.body.style.overflow = originalStyle;
-    };
-  }, []);
+      document.body.style.overflow = originalStyle
+    }
+  }, [])
 
   useEffect(() => {
     // ESC 키 이벤트 리스너
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        handleClose();
+      if (e.key === 'Escape') {
+        handleClose()
       }
-    };
+    }
 
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown)
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleClose]);
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [handleClose])
 
-  if (!shouldRender) return null;
+  if (!shouldRender) return null
 
   return (
     <>
@@ -104,13 +102,13 @@ const Panel = ({
         tabIndex={0}
         onClick={handleClose}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") handleClose();
+          if (e.key === 'Enter' || e.key === ' ') handleClose()
         }}
       />
 
       <div
         className={`fixed top-0 right-0 h-full transition-transform duration-200 ease-in-out z-40 ${
-          isVisible ? "translate-x-0" : "translate-x-full"
+          isVisible ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="w-[1000px] bg-white h-full flex flex-col px-10 pt-5">
@@ -177,21 +175,19 @@ const Panel = ({
                   bgColor="bg-primary"
                   hoverColor="hover:bg-primary-hover"
                   onClick={() => {
-                    handleClose();
-                    onIssueClick?.();
+                    handleClose()
+                    onIssueClick?.()
                   }}
                 />
               </div>
             )}
           </div>
 
-          <div className="h-full overflow-y-auto scrollbar-hide pb-5 pt-6">
-            {children}
-          </div>
+          <div className="h-full overflow-y-auto scrollbar-hide pb-5 pt-6">{children}</div>
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Panel;
+export default Panel

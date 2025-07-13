@@ -1,8 +1,8 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
+import MiniBtn from '@/ui/mini-btn'
+import Modal from '@/ui/modal/modal'
 
 interface CreateMemoModalProps {
-  onClose: () => void;
+  onClose: () => void
 }
 
 const CreateMemoModal = ({ onClose }: CreateMemoModalProps) => {
@@ -24,12 +24,7 @@ const CreateMemoModal = ({ onClose }: CreateMemoModalProps) => {
           placeholder="메모를 입력하세요."
         />
         <div className="flex gap-2.5 justify-end mt-4">
-          <MiniBtn
-            text="취소하기"
-            textColor="text-sv"
-            onClick={onClose}
-            hoverColor=""
-          />
+          <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} hoverColor="" />
           <MiniBtn
             text="메모 생성하기"
             textColor="text-wh"
@@ -40,7 +35,7 @@ const CreateMemoModal = ({ onClose }: CreateMemoModalProps) => {
         </div>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default CreateMemoModal;
+export default CreateMemoModal

@@ -1,43 +1,43 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
-import SearchInput from "@/ui/search-input";
-import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
-import { materialData } from "@/mocks/material-data";
-import { MaterialNameDropdown } from "@/ui/dropdown/material-name-dropdown";
-import { useState } from "react";
-import { X } from "@phosphor-icons/react/dist/ssr";
-import ManualAddMaterial from "../../material/modals/manual-add-material";
-import { MaterialDataModel } from "@/types/data-model";
+import MiniBtn from '@/ui/mini-btn'
+import Modal from '@/ui/modal/modal'
+import SearchInput from '@/ui/search-input'
+import { useDropdownFilter } from '@/hooks/use-dropdown-filter'
+import { materialData } from '@/mocks/material-data'
+import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown'
+import { useState } from 'react'
+import { X } from '@phosphor-icons/react/dist/ssr'
+import ManualAddMaterial from '../../material/modals/manual-add-material'
+import { MaterialDataModel } from '@/types/data-model'
 
 interface ConnectMaterialModalProps {
-  onClose: () => void;
+  onClose: () => void
 }
 
 const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
-  const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } =
-    useDropdownFilter(materialData, (item) => item.materialName);
+  const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } = useDropdownFilter(
+    materialData,
+    (item) => item.materialName
+  )
 
-  const [selectedMaterials, setSelectedMaterials] = useState<
-    MaterialDataModel[]
-  >([]);
-  const [isManualAddMode, setIsManualAddMode] = useState(false);
+  const [selectedMaterials, setSelectedMaterials] = useState<MaterialDataModel[]>([])
+  const [isManualAddMode, setIsManualAddMode] = useState(false)
 
   // 원자재 선택 시
   const handleSelectMaterial = (item: MaterialDataModel) => {
-    handleSelect(item);
-    setInput("");
+    handleSelect(item)
+    setInput('')
     setSelectedMaterials((prev) => {
       if (!prev.some((mat) => mat.id === item.id)) {
-        return [...prev, item];
+        return [...prev, item]
       }
-      return prev;
-    });
-    setIsOpen(false);
-  };
+      return prev
+    })
+    setIsOpen(false)
+  }
 
   const handleRemoveMaterial = (id: string) => {
-    setSelectedMaterials((prev) => prev.filter((mat) => mat.id !== id));
-  };
+    setSelectedMaterials((prev) => prev.filter((mat) => mat.id !== id))
+  }
 
   return (
     <Modal
@@ -65,11 +65,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
 
         {isOpen && filtered.length > 0 && (
           <div className="absolute left-0 top-14 z-10 w-[451px] h-[256px] overflow-y-auto">
-            <MaterialNameDropdown
-              items={filtered}
-              onSelect={handleSelectMaterial}
-              width="w-full"
-            />
+            <MaterialNameDropdown items={filtered} onSelect={handleSelectMaterial} width="w-full" />
           </div>
         )}
       </div>
@@ -85,10 +81,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
         selectedMaterials.length > 0 && (
           <div className="mt-4 flex flex-col">
             {selectedMaterials.map((mat) => (
-              <div
-                key={mat.id}
-                className="flex justify-between items-center h-10"
-              >
+              <div key={mat.id} className="flex justify-between items-center h-10">
                 <p className="Me_body-1 text-dg">{mat.materialName}</p>
                 {mat.id !== null && mat.id !== undefined && (
                   <div
@@ -105,12 +98,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
       )}
 
       <div className="mt-4 flex gap-2.5 justify-end">
-        <MiniBtn
-          text="취소"
-          textColor="text-sv"
-          hoverColor="bg-bg"
-          onClick={onClose}
-        />
+        <MiniBtn text="취소" textColor="text-sv" hoverColor="bg-bg" onClick={onClose} />
         <MiniBtn
           text="추가"
           textColor="text-wh"
@@ -121,7 +109,7 @@ const ConnectMaterialModal = ({ onClose }: ConnectMaterialModalProps) => {
         />
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default ConnectMaterialModal;
+export default ConnectMaterialModal

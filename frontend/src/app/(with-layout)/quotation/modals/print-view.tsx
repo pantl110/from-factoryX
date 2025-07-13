@@ -1,19 +1,19 @@
-import MiniBtn from "@/ui/mini-btn";
-import { PrinterIcon, X } from "@phosphor-icons/react/dist/ssr";
-import { useRef } from "react";
-import { useReactToPrint } from "react-to-print";
-import QuotationDocumentView from "../../document/quotation-document-view/quotation-document-view";
+import MiniBtn from '@/ui/mini-btn'
+import { PrinterIcon, X } from '@phosphor-icons/react/dist/ssr'
+import { useRef } from 'react'
+import { useReactToPrint } from 'react-to-print'
+import QuotationDocumentView from '../../document/quotation-document-view/quotation-document-view'
 
 interface PrintViewProps {
-  onClose?: () => void;
+  onClose?: () => void
 }
 
 const PrintView = ({ onClose }: PrintViewProps) => {
-  const contentRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null)
   const reactToPrintFn = useReactToPrint({
     contentRef,
-    documentTitle: "견적서", // 문서 제목
-  });
+    documentTitle: '견적서', // 문서 제목
+  })
 
   return (
     <div className="w-full flex flex-col gap-6 px-8 pb-8">
@@ -51,7 +51,7 @@ const PrintView = ({ onClose }: PrintViewProps) => {
         <QuotationDocumentView />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PrintView;
+export default PrintView

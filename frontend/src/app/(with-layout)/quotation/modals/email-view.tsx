@@ -1,9 +1,9 @@
-import MiniBtn from "@/ui/mini-btn";
-import { PaperPlaneTilt, X } from "@phosphor-icons/react/dist/ssr";
-import OrderDocumentView from "../../document/order-document-view";
+import MiniBtn from '@/ui/mini-btn'
+import { PaperPlaneTilt, X } from '@phosphor-icons/react/dist/ssr'
+import OrderDocumentView from '../../document/order-document-view'
 
 interface EmailViewProps {
-  onClose?: () => void;
+  onClose?: () => void
 }
 
 const EmailView = ({ onClose }: EmailViewProps) => {
@@ -39,7 +39,7 @@ const EmailView = ({ onClose }: EmailViewProps) => {
 
       <OrderDocumentView />
     </div>
-  );
-};
+  )
+}
 
-export default EmailView;
+export default EmailView

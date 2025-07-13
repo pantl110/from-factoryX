@@ -1,6 +1,6 @@
 interface NoHistoryBoxProps {
-  title: string;
-  text: string;
+  title: string
+  text: string
 }
 
 const NoHistoryBox = ({ title, text }: NoHistoryBoxProps) => {
@@ -9,7 +9,7 @@ const NoHistoryBox = ({ title, text }: NoHistoryBoxProps) => {
       <h4 className="Heading-4 text-dg">{title}</h4>
       <p className="Re_Body-1 text-gr">{text}</p>
     </div>
-  );
-};
+  )
+}
 
-export default NoHistoryBox;
+export default NoHistoryBox

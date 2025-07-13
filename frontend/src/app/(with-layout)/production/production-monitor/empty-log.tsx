@@ -6,7 +6,7 @@ const EmptyLog = () => {
         생산 설비를 바꾸거나 메모를 추가하면 로그가 자동으로 기록돼요.
       </p>
     </div>
-  );
-};
+  )
+}
 
-export default EmptyLog;
+export default EmptyLog

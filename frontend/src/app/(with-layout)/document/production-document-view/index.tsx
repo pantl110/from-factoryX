@@ -1,25 +1,25 @@
-import { productionData } from "@/mocks/production-data";
-import DocumentViewTitle from "../document-view-title";
-import CommentItem from "./comment-item";
-import ProductionTableItem from "./production-table-item";
-import { useState } from "react";
-import TextareaAutosize from "react-textarea-autosize";
+import { productionData } from '@/mocks/production-data'
+import DocumentViewTitle from '../document-view-title'
+import CommentItem from './comment-item'
+import ProductionTableItem from './production-table-item'
+import { useState } from 'react'
+import TextareaAutosize from 'react-textarea-autosize'
 
 // 프로젝트명별로 그룹핑 함수
 const groupByProject = (data: typeof productionData) => {
   return data.reduce<Record<string, typeof productionData>>(
     (acc, item) => {
-      if (!acc[item.projectName]) acc[item.projectName] = [];
-      acc[item.projectName].push(item);
-      return acc;
+      if (!acc[item.projectName]) acc[item.projectName] = []
+      acc[item.projectName].push(item)
+      return acc
     },
-    {} as Record<string, typeof productionData>,
-  );
-};
+    {} as Record<string, typeof productionData>
+  )
+}
 
 const ProductionDocumentView = () => {
-  const [value, setValue] = useState("");
-  const grouped = groupByProject(productionData);
+  const [value, setValue] = useState('')
+  const grouped = groupByProject(productionData)
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,8 +46,8 @@ const ProductionDocumentView = () => {
                   standard={item.standard}
                   unit={item.unit}
                   productionQuantity={item.productionQuantity || 0}
-                  machine={item.machine || "-"}
-                  productionTime={item.productionTime || "-"}
+                  machine={item.machine || '-'}
+                  productionTime={item.productionTime || '-'}
                 />
               ))}
             </div>
@@ -58,14 +58,8 @@ const ProductionDocumentView = () => {
       {/* 특이사항 */}
       <div className="flex flex-col gap-3">
         <h3 className="Heading-3 h-10 items-center flex">특이사항</h3>
-        <CommentItem
-          title="A 품목"
-          comment="입고 시 포장 파손, 날개 검수 필요"
-        />
-        <CommentItem
-          title="B 품목"
-          comment="입고 시 포장 파손, 날개 검수 필요"
-        />
+        <CommentItem title="A 품목" comment="입고 시 포장 파손, 날개 검수 필요" />
+        <CommentItem title="B 품목" comment="입고 시 포장 파손, 날개 검수 필요" />
       </div>
 
       {/* 메모 */}
@@ -83,7 +77,7 @@ const ProductionDocumentView = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProductionDocumentView;
+export default ProductionDocumentView

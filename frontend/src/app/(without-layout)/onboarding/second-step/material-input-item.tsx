@@ -1,13 +1,13 @@
-import Input from "@/ui/input";
-import MiniBtn from "@/ui/mini-btn";
-import { UseFormRegister } from "react-hook-form";
-import { SecondStepFormDataModel } from "../types";
+import Input from '@/ui/input'
+import MiniBtn from '@/ui/mini-btn'
+import { UseFormRegister } from 'react-hook-form'
+import { SecondStepFormDataModel } from '../types'
 
 interface MaterialInputItemProps {
-  plusMode?: boolean;
-  onDelete?: () => void;
-  register: UseFormRegister<SecondStepFormDataModel>;
-  index: number;
+  plusMode?: boolean
+  onDelete?: () => void
+  register: UseFormRegister<SecondStepFormDataModel>
+  index: number
 }
 
 const MaterialInputItem = ({
@@ -81,7 +81,7 @@ const MaterialInputItem = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default MaterialInputItem;
+export default MaterialInputItem

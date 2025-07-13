@@ -9,7 +9,7 @@ const QuotationTableItem = () => {
       <p className="w-[100px] py-1 px-3">5,000</p>
       <p className="flex-1 py-1 px-3">500,000</p>
     </div>
-  );
-};
+  )
+}
 
-export default QuotationTableItem;
+export default QuotationTableItem

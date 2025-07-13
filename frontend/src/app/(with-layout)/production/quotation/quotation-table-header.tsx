@@ -9,7 +9,7 @@ const QuotationTableHeader = () => {
       <p className="w-[100px] py-1 px-3">단가</p>
       <p className="flex-1 py-1 px-3">금액</p>
     </div>
-  );
-};
+  )
+}
 
-export default QuotationTableHeader;
+export default QuotationTableHeader

@@ -1,21 +1,21 @@
-"use client";
+'use client'
 
-import TableHeader from "./table-header";
-import TableItem from "./table-item";
-import SearchInput from "@/ui/search-input";
-import MiniBtn from "@/ui/mini-btn";
-import DeleteModal from "@/ui/modal/delete-modal";
-import { useState } from "react";
-import { useCheckAll } from "@/hooks/use-check-all";
+import TableHeader from './table-header'
+import TableItem from './table-item'
+import SearchInput from '@/ui/search-input'
+import MiniBtn from '@/ui/mini-btn'
+import DeleteModal from '@/ui/modal/delete-modal'
+import { useState } from 'react'
+import { useCheckAll } from '@/hooks/use-check-all'
 
 interface MaterialProps {
-  setIsMaterialDetailOpen: (v: boolean) => void;
+  setIsMaterialDetailOpen: (v: boolean) => void
 }
 
 const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
-  const currentIds = [1, 2, 3, 4, 5];
+  const currentIds = [1, 2, 3, 4, 5]
 
   const {
     checkedCount,
@@ -25,7 +25,7 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(currentIds);
+  } = useCheckAll(currentIds)
 
   return (
     <>
@@ -42,13 +42,11 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
           />
           <MiniBtn
             text={getDeleteButtonText()}
-            textColor={checkedCount > 0 ? "text-red" : "text-dg"}
-            borderColor={checkedCount > 0 ? "border-none" : "border-lg"}
-            bgColor={checkedCount > 0 ? "bg-red-8" : "bg-wh"}
-            hoverColor={checkedCount > 0 ? "hover:bg-red-hover" : "hover:bg-bg"}
-            onClick={
-              checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
-            }
+            textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+            borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
+            bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
+            hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
+            onClick={checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}}
           />
         </div>
       </div>
@@ -101,11 +99,9 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
         />
       </div>
 
-      {isDeleteModalOpen && (
-        <DeleteModal onClose={() => setIsDeleteModalOpen(false)} />
-      )}
+      {isDeleteModalOpen && <DeleteModal onClose={() => setIsDeleteModalOpen(false)} />}
     </>
-  );
-};
+  )
+}
 
-export default Material;
+export default Material

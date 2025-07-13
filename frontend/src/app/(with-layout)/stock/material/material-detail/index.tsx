@@ -1,35 +1,29 @@
-import MiniBtn from "@/ui/mini-btn";
-import MaterialInfo from "./material-info";
-import ProductRequiringMaterial from "./product-requiring-material";
-import QuotationHistory from "./quotation-history.tsx";
-import { useState } from "react";
+import MiniBtn from '@/ui/mini-btn'
+import MaterialInfo from './material-info'
+import ProductRequiringMaterial from './product-requiring-material'
+import QuotationHistory from './quotation-history.tsx'
+import { useState } from 'react'
 
 interface MaterialDetailProps {
-  setIsCustomerInfoModalOpen: (isOpen: boolean) => void;
-  setIsProductEnrollmentModalOpen: (isOpen: boolean) => void;
+  setIsCustomerInfoModalOpen: (isOpen: boolean) => void
+  setIsProductEnrollmentModalOpen: (isOpen: boolean) => void
 }
 
 const MaterialDetail = ({
   setIsCustomerInfoModalOpen,
   setIsProductEnrollmentModalOpen,
 }: MaterialDetailProps) => {
-  useState(false);
+  useState(false)
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 text-dg h-10 flex items-center">
-          원자재 정보
-        </h3>
+        <h3 className="Heading-3 text-dg h-10 flex items-center">원자재 정보</h3>
         <MaterialInfo />
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 text-dg h-10 flex items-center">
-          업체별 견적 내용
-        </h3>
-        <QuotationHistory
-          setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen}
-        />
+        <h3 className="Heading-3 text-dg h-10 flex items-center">업체별 견적 내용</h3>
+        <QuotationHistory setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen} />
       </div>
 
       <div className="flex flex-col gap-3">
@@ -53,7 +47,7 @@ const MaterialDetail = ({
         <MaterialStockLog />
       </div> */}
     </div>
-  );
-};
+  )
+}
 
-export default MaterialDetail;
+export default MaterialDetail

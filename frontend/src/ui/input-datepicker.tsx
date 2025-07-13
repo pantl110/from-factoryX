@@ -1,38 +1,36 @@
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { useState } from "react";
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
+import { useState } from 'react'
 
 interface InputDatepickerProps {
-  label?: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  placeholder?: string;
-  required?: boolean;
-  showError?: boolean;
-  inputRef?: React.RefObject<HTMLInputElement>;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void;
+  label?: string
+  value?: string
+  onChange?: (value: string) => void
+  placeholder?: string
+  required?: boolean
+  showError?: boolean
+  inputRef?: React.RefObject<HTMLInputElement>
+  onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void
 }
 
 const InputDatepicker = ({
   label,
   value,
   onChange,
-  placeholder = "연도-월-일",
+  placeholder = '연도-월-일',
   required,
   showError = false,
   inputRef,
   onKeyDown,
 }: InputDatepickerProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    value ? new Date(value) : null,
-  );
+  const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null)
 
   const handleChange = (date: Date | null) => {
-    setSelectedDate(date);
-    onChange?.(date ? date.toISOString().slice(0, 10) : "");
-  };
+    setSelectedDate(date)
+    onChange?.(date ? date.toISOString().slice(0, 10) : '')
+  }
 
-  const hasError = showError && required && (!value || value.trim() === "");
+  const hasError = showError && required && (!value || value.trim() === '')
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -88,10 +86,7 @@ const InputDatepicker = ({
           {required && <span className="text-primary">*</span>}
         </div>
       )}
-      <div
-        className="relative w-full flex items-center justify-center"
-        ref={inputRef}
-      >
+      <div className="relative w-full flex items-center justify-center" ref={inputRef}>
         <DatePicker
           value={value}
           selected={selectedDate}
@@ -102,17 +97,17 @@ const InputDatepicker = ({
           className={`w-full h-12 min-h-9 rounded px-3 Re_Body-1 placeholder:text-sv outline-none border transition-colors duration-200
           ${
             hasError
-              ? "border-red hover:border-primary focus:border-primary focus:text-bl"
-              : "border-[#e4e4e7] hover:border-primary focus:border-primary focus:text-bl"
+              ? 'border-red hover:border-primary focus:border-primary focus:text-bl'
+              : 'border-[#e4e4e7] hover:border-primary focus:border-primary focus:text-bl'
           }
-          ${!value ? "text-sv" : "text-bl"}
+          ${!value ? 'text-sv' : 'text-bl'}
         `}
           calendarClassName="w-full"
           popperClassName="w-full"
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default InputDatepicker;
+export default InputDatepicker

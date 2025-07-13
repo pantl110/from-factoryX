@@ -1,4 +1,4 @@
-import Input from "@/ui/input";
+import Input from '@/ui/input'
 
 const TaxInvoiceInfo = () => {
   return (
@@ -42,7 +42,7 @@ const TaxInvoiceInfo = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default TaxInvoiceInfo;
+export default TaxInvoiceInfo

@@ -1,17 +1,17 @@
-import Chip from "@/ui/chip";
-import ButtonSection from "./button-section";
-import QuotationStatusDropdown from "./modals/quotation-status-dropdown";
-import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
-import { useState } from "react";
-import { UseFormTrigger } from "react-hook-form";
-import { ClientDataModel } from "@/types/data-model";
+import Chip from '@/ui/chip'
+import ButtonSection from './button-section'
+import QuotationStatusDropdown from './modals/quotation-status-dropdown'
+import { usePortalDropdown } from '@/hooks/use-portal-dropdown'
+import { useState } from 'react'
+import { UseFormTrigger } from 'react-hook-form'
+import { ClientDataModel } from '@/types/data-model'
 
 interface TitleSecProps {
-  setIsEmailOpen: (open: boolean) => void;
-  setIsPrintOpen: (open: boolean) => void;
-  setIsStartProductionModalOpen: (open: boolean) => void;
-  isClientData: boolean;
-  trigger: UseFormTrigger<ClientDataModel>;
+  setIsEmailOpen: (open: boolean) => void
+  setIsPrintOpen: (open: boolean) => void
+  setIsStartProductionModalOpen: (open: boolean) => void
+  isClientData: boolean
+  trigger: UseFormTrigger<ClientDataModel>
 }
 
 const TitleSec = ({
@@ -22,14 +22,14 @@ const TitleSec = ({
   trigger,
 }: TitleSecProps) => {
   // 프로젝트 이름 상태
-  const [projectName, setProjectName] = useState("플라스틱이 좋아");
+  const [projectName, setProjectName] = useState('플라스틱이 좋아')
   // 드랍다운 상태
   const {
     isOpen: isQuotationStatusDropdownOpen,
     openDropdown: openQuotationStatusDropdown,
     closeDropdown: closeQuotationStatusDropdown,
     anchorRect: quotationStatusAnchorRect,
-  } = usePortalDropdown();
+  } = usePortalDropdown()
 
   return (
     <div className="flex gap-1 mb-4 pr-10">
@@ -41,13 +41,13 @@ const TitleSec = ({
             textColor="text-yellow"
             state={true}
             onClick={(e) => {
-              if (e) openQuotationStatusDropdown(e);
+              if (e) openQuotationStatusDropdown(e)
             }}
           />
           {isQuotationStatusDropdownOpen && quotationStatusAnchorRect && (
             <div
               style={{
-                position: "fixed",
+                position: 'fixed',
                 left: quotationStatusAnchorRect.left,
                 top: quotationStatusAnchorRect.bottom + 8,
                 zIndex: 10,
@@ -69,15 +69,15 @@ const TitleSec = ({
         onEmailClick={() => setIsEmailOpen(true)}
         onPrintClick={() => setIsPrintOpen(true)}
         onStartProductionClick={async () => {
-          const isValid = await trigger();
+          const isValid = await trigger()
           if (isValid) {
-            setIsStartProductionModalOpen(true);
+            setIsStartProductionModalOpen(true)
           }
         }}
         isClientData={isClientData}
       />
     </div>
-  );
-};
+  )
+}
 
-export default TitleSec;
+export default TitleSec

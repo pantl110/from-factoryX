@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   ChartBar,
@@ -7,29 +7,29 @@ import {
   MoneyWavy,
   Files,
   Gear,
-} from "@phosphor-icons/react/dist/ssr";
-import SideBarItem from "@/components/side-bar/side-bar-item";
-import FactoryXLogo from "@/ui/icons/factory-x-logo";
-import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+} from '@phosphor-icons/react/dist/ssr'
+import SideBarItem from '@/components/side-bar/side-bar-item'
+import FactoryXLogo from '@/ui/icons/factory-x-logo'
+import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 interface SideBarProps {
-  onVisibilityChange?: (visible: boolean) => void;
+  onVisibilityChange?: (visible: boolean) => void
 }
 
 const SideBar = ({ onVisibilityChange }: SideBarProps) => {
-  const pathname = usePathname();
-  const [isHovered, setIsHovered] = useState(false);
+  const pathname = usePathname()
+  const [isHovered, setIsHovered] = useState(false)
 
-  const isProductionPage = pathname.startsWith("/production/"); // production 페이지인지 확인
-  const shouldHide = isProductionPage && !isHovered; // production 페이지이고 호버되지 않았으면 숨김
+  const isProductionPage = pathname.startsWith('/production/') // production 페이지인지 확인
+  const shouldHide = isProductionPage && !isHovered // production 페이지이고 호버되지 않았으면 숨김
 
   // 사이드바 상태가 변경될 때마다 부모 컴포넌트에 알림
   useEffect(() => {
     if (onVisibilityChange) {
-      onVisibilityChange(!shouldHide);
+      onVisibilityChange(!shouldHide)
     }
-  }, [shouldHide, onVisibilityChange]);
+  }, [shouldHide, onVisibilityChange])
 
   return (
     <>
@@ -43,7 +43,7 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
 
       <aside
         className={`fixed left-0 top-0 w-64 h-screen flex flex-col border-r border-[#eeeeee] bg-white z-50 transition-all duration-300 ease-in-out ${
-          shouldHide ? "-translate-x-full" : "translate-x-0"
+          shouldHide ? '-translate-x-full' : 'translate-x-0'
         }`}
         onMouseLeave={() => isProductionPage && setIsHovered(false)}
       >
@@ -58,8 +58,8 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
             path="/project"
             hasDropdown={true}
             dropdownItems={[
-              { label: "진행 중인 프로젝트", path: "/project/process" },
-              { label: "보관된 프로젝트", path: "/project/completed" },
+              { label: '진행 중인 프로젝트', path: '/project/process' },
+              { label: '보관된 프로젝트', path: '/project/completed' },
             ]}
           />
           <SideBarItem icon={Warehouse} label="재고 관리" path="/stock" />
@@ -69,9 +69,9 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
             path="/tax"
             hasDropdown={true}
             dropdownItems={[
-              { label: "세금계산서 내역", path: "/tax/list" },
-              { label: "세금계산서 임시보관함", path: "/tax/draft" },
-              { label: "현금영수증", path: "/tax/receipt" },
+              { label: '세금계산서 내역', path: '/tax/list' },
+              { label: '세금계산서 임시보관함', path: '/tax/draft' },
+              { label: '현금영수증', path: '/tax/receipt' },
             ]}
           />
           <SideBarItem icon={Files} label="문서함" path="/document" />
@@ -81,7 +81,7 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
         </div>
       </aside>
     </>
-  );
-};
+  )
+}
 
-export default SideBar;
+export default SideBar

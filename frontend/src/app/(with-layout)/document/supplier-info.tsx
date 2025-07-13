@@ -1,7 +1,7 @@
-import InfoLabelValue from "@/ui/info-label-value";
+import InfoLabelValue from '@/ui/info-label-value'
 
 interface SupplierInfoProps {
-  dateLabel: string;
+  dateLabel: string
 }
 
 const SupplierInfo = ({ dateLabel }: SupplierInfoProps) => {
@@ -29,7 +29,7 @@ const SupplierInfo = ({ dateLabel }: SupplierInfoProps) => {
         <InfoLabelValue label="사업장 주소" value="경기도 남양주시" />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SupplierInfo;
+export default SupplierInfo

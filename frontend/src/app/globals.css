@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme inline {
   --color-primary: #016fee;
@@ -151,12 +151,12 @@ textarea.noDefaultStyle {
 }
 
 /* number input spin 버튼 숨기기 */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
@@ -175,10 +175,10 @@ input[type="number"] {
   /* 폰트 */
   * {
     font-family:
-      "Pretendard",
+      'Pretendard',
       /* pretendard가 로드되지 않을 시 대체 폰트 */ -apple-system,
       BlinkMacSystemFont,
-      "Segoe UI",
+      'Segoe UI',
       Roboto,
       sans-serif !important;
   }

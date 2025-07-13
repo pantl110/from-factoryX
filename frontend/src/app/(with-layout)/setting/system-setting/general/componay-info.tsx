@@ -1,37 +1,33 @@
-import Input from "@/ui/input";
-import MiniBtn from "@/ui/mini-btn";
-import { useForm } from "react-hook-form";
-import { CompanyFormDataModel } from "./types";
-import useToast from "@/hooks/use-toast";
-import Toast from "@/ui/toast";
-import { CheckCircle } from "@phosphor-icons/react";
-import {
-  formatBusinessNumber,
-  formatPhoneNumber,
-  formatFaxNumber,
-} from "@/hooks/format-number";
+import Input from '@/ui/input'
+import MiniBtn from '@/ui/mini-btn'
+import { useForm } from 'react-hook-form'
+import { CompanyFormDataModel } from './types'
+import useToast from '@/hooks/use-toast'
+import Toast from '@/ui/toast'
+import { CheckCircle } from '@phosphor-icons/react'
+import { formatBusinessNumber, formatPhoneNumber, formatFaxNumber } from '@/hooks/format-number'
 
 const CompanyInfo = () => {
-  const { isToastOpen, isVisible, showToast } = useToast(2000);
+  const { isToastOpen, isVisible, showToast } = useToast(2000)
 
   const { register, handleSubmit } = useForm<CompanyFormDataModel>({
     defaultValues: {
-      companyName: "",
-      businessNumber: "",
-      ceoName: "",
-      managerEmail: "",
-      managerPhone: "",
-      managerFax: "",
-      businessType: "",
-      businessCategory: "",
-      address: "",
+      companyName: '',
+      businessNumber: '',
+      ceoName: '',
+      managerEmail: '',
+      managerPhone: '',
+      managerFax: '',
+      businessType: '',
+      businessCategory: '',
+      address: '',
     },
-  });
+  })
 
   const onSubmit = () => {
     // console.log("회사 정보:", data);
-    showToast();
-  };
+    showToast()
+  }
 
   return (
     <>
@@ -43,70 +39,62 @@ const CompanyInfo = () => {
               placeholder="회사명을 입력하세요."
               label="회사명"
               required
-              {...register("companyName")}
+              {...register('companyName')}
             />
             <Input
               label="사업자등록번호"
               placeholder="사업자등록번호를 입력하세요."
               required
-              {...register("businessNumber", {
+              {...register('businessNumber', {
                 onChange: (e) => {
-                  const formatted = formatBusinessNumber(e.target.value);
-                  e.target.value = formatted;
+                  const formatted = formatBusinessNumber(e.target.value)
+                  e.target.value = formatted
                 },
               })}
             />
           </div>
           <div className="flex gap-2">
-            <Input
-              placeholder="대표자명을 입력하세요."
-              label="대표자명"
-              {...register("ceoName")}
-            />
+            <Input placeholder="대표자명을 입력하세요." label="대표자명" {...register('ceoName')} />
             <Input
               placeholder="이메일을 입력하세요."
               label="이메일"
-              {...register("managerEmail")}
+              {...register('managerEmail')}
             />
           </div>
           <div className="flex gap-2">
             <Input
               placeholder="연락처를 입력하세요."
               label="연락처"
-              {...register("managerPhone", {
+              {...register('managerPhone', {
                 onChange: (e) => {
-                  const formatted = formatPhoneNumber(e.target.value);
-                  e.target.value = formatted;
+                  const formatted = formatPhoneNumber(e.target.value)
+                  e.target.value = formatted
                 },
               })}
             />
             <Input
               placeholder="팩스 번호를 입력하세요."
               label="팩스 번호"
-              {...register("managerFax", {
+              {...register('managerFax', {
                 onChange: (e) => {
-                  const formatted = formatFaxNumber(e.target.value);
-                  e.target.value = formatted;
+                  const formatted = formatFaxNumber(e.target.value)
+                  e.target.value = formatted
                 },
               })}
             />
           </div>
           <div className="flex gap-2">
-            <Input
-              placeholder="업태를 입력하세요."
-              label="업태"
-              {...register("businessType")}
-            />
+            <Input placeholder="업태를 입력하세요." label="업태" {...register('businessType')} />
             <Input
               placeholder="종목을 입력하세요."
               label="종목"
-              {...register("businessCategory")}
+              {...register('businessCategory')}
             />
           </div>
           <Input
             placeholder="사업장 주소를 입력하세요."
             label="사업장 주소"
-            {...register("address")}
+            {...register('address')}
           />
           <div className="flex justify-end">
             <MiniBtn
@@ -131,7 +119,7 @@ const CompanyInfo = () => {
         />
       )}
     </>
-  );
-};
+  )
+}
 
-export default CompanyInfo;
+export default CompanyInfo

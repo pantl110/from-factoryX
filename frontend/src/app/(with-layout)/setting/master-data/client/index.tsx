@@ -1,38 +1,28 @@
-import { useState } from "react";
-import { clientData } from "@/mocks/client-data";
-import ClientTableHeader from "./client-table-header";
-import ClientTableItem from "./client-table-item";
-import ClientDetailPanel from "./modals/client-detail-panel";
-import { ClientDataModel } from "@/types/data-model";
+import { useState } from 'react'
+import { clientData } from '@/mocks/client-data'
+import ClientTableHeader from './client-table-header'
+import ClientTableItem from './client-table-item'
+import ClientDetailPanel from './modals/client-detail-panel'
+import { ClientDataModel } from '@/types/data-model'
 
 interface ClientProps {
-  isAllChecked: boolean;
-  isChecked: (id: string) => boolean;
-  toggleAll: () => void;
-  toggleOne: (id: string) => void;
+  isAllChecked: boolean
+  isChecked: (id: string) => boolean
+  toggleAll: () => void
+  toggleOne: (id: string) => void
 }
 
-const Client = ({
-  isAllChecked,
-  isChecked,
-  toggleAll,
-  toggleOne,
-}: ClientProps) => {
-  const [selectedClient, setSelectedClient] = useState<ClientDataModel | null>(
-    null,
-  );
+const Client = ({ isAllChecked, isChecked, toggleAll, toggleOne }: ClientProps) => {
+  const [selectedClient, setSelectedClient] = useState<ClientDataModel | null>(null)
 
   const handleTypeChange = (client: ClientDataModel) => {
-    setSelectedClient(client);
-  };
+    setSelectedClient(client)
+  }
 
   return (
     <>
       <div className="w-full mx-10 overflow-x-auto flex flex-col flex-1 max-w-[1320px] mb-10">
-        <ClientTableHeader
-          isAllChecked={isAllChecked}
-          onToggleAll={toggleAll}
-        />
+        <ClientTableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
         {clientData.map((client) => (
           <ClientTableItem
             key={client.id}
@@ -40,10 +30,10 @@ const Client = ({
             companyName={client.companyName}
             businessNumber={client.businessNumber}
             representativeName={client.representativeName}
-            businessType={client.businessType ?? ""}
-            businessCategory={client.businessCategory ?? ""}
-            contact={client.contact ?? ""}
-            email={client.email ?? ""}
+            businessType={client.businessType ?? ''}
+            businessCategory={client.businessCategory ?? ''}
+            contact={client.contact ?? ''}
+            email={client.email ?? ''}
             onClick={() => handleTypeChange(client)}
             isChecked={isChecked(client.id)}
             onToggleCheck={() => toggleOne(client.id)}
@@ -55,13 +45,13 @@ const Client = ({
       {selectedClient && (
         <ClientDetailPanel
           onClose={() => {
-            setSelectedClient(null);
+            setSelectedClient(null)
           }}
           client={selectedClient}
         />
       )}
     </>
-  );
-};
+  )
+}
 
-export default Client;
+export default Client

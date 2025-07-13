@@ -1,17 +1,16 @@
-import InfoLabelValue from "@/ui/info-label-value";
-import MiniBtn from "@/ui/mini-btn";
-import { ReturnDataModel } from "@/mocks/return-data";
-import { useState } from "react";
-import RegisterProductionModal from "../modals/register-production-modal";
+import InfoLabelValue from '@/ui/info-label-value'
+import MiniBtn from '@/ui/mini-btn'
+import { ReturnDataModel } from '@/mocks/return-data'
+import { useState } from 'react'
+import RegisterProductionModal from '../modals/register-production-modal'
 
 interface ReturnInfoProps {
-  returnData: ReturnDataModel;
-  isProduction?: boolean;
+  returnData: ReturnDataModel
+  isProduction?: boolean
 }
 
 const ReturnInfo = ({ returnData, isProduction }: ReturnInfoProps) => {
-  const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
-    useState(false);
+  const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] = useState(false)
 
   return (
     <>
@@ -19,7 +18,7 @@ const ReturnInfo = ({ returnData, isProduction }: ReturnInfoProps) => {
         <div className="flex justify-between">
           <h3 className="Heading-3 text-dg flex items-center">반품 정보</h3>
           <div className="flex gap-2.5">
-            <div className={`${isProduction ? "hidden" : ""}`}>
+            <div className={`${isProduction ? 'hidden' : ''}`}>
               <MiniBtn
                 text="수정하기"
                 textColor="text-dg"
@@ -47,30 +46,22 @@ const ReturnInfo = ({ returnData, isProduction }: ReturnInfoProps) => {
             <InfoLabelValue label="반품일자" value={returnData.returnDate} />
           </div>
           <div className="border-b border-[#eeeeee]">
-            <InfoLabelValue
-              label="반품수량"
-              value={returnData.returnQuantity}
-            />
+            <InfoLabelValue label="반품수량" value={returnData.returnQuantity} />
           </div>
           <div className="border-b border-[#eeeeee]">
             <InfoLabelValue label="현재재고" value={returnData.currentStock} />
           </div>
           <div className="border-b border-[#eeeeee]">
-            <InfoLabelValue
-              label="생산수량"
-              value={returnData.productionQuantity}
-            />
+            <InfoLabelValue label="생산수량" value={returnData.productionQuantity} />
           </div>
         </div>
       </div>
 
       {isRegisterProductionModalOpen && (
-        <RegisterProductionModal
-          onClose={() => setIsRegisterProductionModalOpen(false)}
-        />
+        <RegisterProductionModal onClose={() => setIsRegisterProductionModalOpen(false)} />
       )}
     </>
-  );
-};
+  )
+}
 
-export default ReturnInfo;
+export default ReturnInfo

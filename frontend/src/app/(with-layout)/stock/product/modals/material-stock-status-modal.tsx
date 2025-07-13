@@ -1,19 +1,12 @@
-import Modal from "@/ui/modal/modal";
-import MaterialStockStatusItem from "./material-stock-status-item";
+import Modal from '@/ui/modal/modal'
+import MaterialStockStatusItem from './material-stock-status-item'
 
 interface MaterialStockStatusModalProps {
-  onClose: () => void;
+  onClose: () => void
 }
-const MaterialStockStatusModal = ({
-  onClose,
-}: MaterialStockStatusModalProps) => {
+const MaterialStockStatusModal = ({ onClose }: MaterialStockStatusModalProps) => {
   return (
-    <Modal
-      width="w-[947px]"
-      title="원자재 재고 상태"
-      onClose={onClose}
-      sm={true}
-    >
+    <Modal width="w-[947px]" title="원자재 재고 상태" onClose={onClose} sm={true}>
       <div className="flex flex-col mt-4">
         <div className="flex items-center h-12 border-t border-b border-[#eeeeee] Me_Body-1">
           <p className="flex-2 px-3 text-sv">자재명</p>
@@ -50,7 +43,7 @@ const MaterialStockStatusModal = ({
         />
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default MaterialStockStatusModal;
+export default MaterialStockStatusModal

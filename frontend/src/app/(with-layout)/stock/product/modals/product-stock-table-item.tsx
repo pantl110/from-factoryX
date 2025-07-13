@@ -1,4 +1,4 @@
-import Chip from "@/ui/chip";
+import Chip from '@/ui/chip'
 
 const ProductStockTableItem = () => {
   //   const color = InventoryStatusColorMap;
@@ -15,7 +15,7 @@ const ProductStockTableItem = () => {
         <Chip text="충분" bgColor="bg-primary-8" textColor="text-primary" />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProductStockTableItem;
+export default ProductStockTableItem

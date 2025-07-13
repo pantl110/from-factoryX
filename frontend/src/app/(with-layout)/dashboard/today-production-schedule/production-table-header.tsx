@@ -26,7 +26,7 @@ const ProductionTableHeader = () => {
         <p>생산시간</p>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProductionTableHeader;
+export default ProductionTableHeader

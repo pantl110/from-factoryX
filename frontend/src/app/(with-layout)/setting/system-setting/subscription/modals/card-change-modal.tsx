@@ -1,9 +1,9 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
+import MiniBtn from '@/ui/mini-btn'
+import Modal from '@/ui/modal/modal'
 
 interface CardChangeModalProps {
-  onClose: () => void;
-  onConfirm: () => void;
+  onClose: () => void
+  onConfirm: () => void
 }
 
 const CardChangeModal = ({ onClose, onConfirm }: CardChangeModalProps) => {
@@ -15,12 +15,7 @@ const CardChangeModal = ({ onClose, onConfirm }: CardChangeModalProps) => {
       sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn
-          text="취소"
-          textColor="text-sv"
-          onClick={onClose}
-          hoverColor=""
-        />
+        <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
         <MiniBtn
           text="결제 카드 변경"
           bgColor="bg-primary"
@@ -30,7 +25,7 @@ const CardChangeModal = ({ onClose, onConfirm }: CardChangeModalProps) => {
         />
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default CardChangeModal;
+export default CardChangeModal

@@ -1,9 +1,9 @@
-import Dropdown from "@/ui/dropdown/dropdown";
-import DropdownItem from "@/ui/dropdown/dropdown-item";
+import Dropdown from '@/ui/dropdown/dropdown'
+import DropdownItem from '@/ui/dropdown/dropdown-item'
 
 interface FacilityDropdownProps {
-  onClose: () => void;
-  style?: React.CSSProperties;
+  onClose: () => void
+  style?: React.CSSProperties
 }
 
 const FacilityDropdown = ({ onClose, style }: FacilityDropdownProps) => {
@@ -14,7 +14,7 @@ const FacilityDropdown = ({ onClose, style }: FacilityDropdownProps) => {
         <DropdownItem text="2호기" onClick={onClose} />
       </Dropdown>
     </div>
-  );
-};
+  )
+}
 
-export default FacilityDropdown;
+export default FacilityDropdown

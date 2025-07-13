@@ -1,9 +1,9 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
+import MiniBtn from '@/ui/mini-btn'
+import Modal from '@/ui/modal/modal'
 
 interface DeleteModalProps {
-  onClose: () => void;
-  onDelete?: () => void;
+  onClose: () => void
+  onDelete?: () => void
 }
 
 const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
@@ -15,12 +15,7 @@ const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
       onClose={onClose}
     >
       <div className="flex gap-[5px] justify-end mt-4">
-        <MiniBtn
-          text="취소"
-          textColor="text-sv"
-          onClick={onClose}
-          hoverColor=""
-        />
+        <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
         <MiniBtn
           text="삭제"
           textColor="text-red"
@@ -30,7 +25,7 @@ const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
         />
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default DeleteModal;
+export default DeleteModal

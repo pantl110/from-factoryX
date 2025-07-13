@@ -1,92 +1,76 @@
-"use client";
+'use client'
 
-import Input from "@/ui/input";
-import {
-  Controller,
-  UseFormSetValue,
-  FieldErrors,
-  Control,
-} from "react-hook-form";
-import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
-import { clientData } from "@/mocks/client-data";
-import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
-import { useEffect } from "react";
-import { ClientDataModel } from "@/types/data-model";
+import Input from '@/ui/input'
+import { Controller, UseFormSetValue, FieldErrors, Control } from 'react-hook-form'
+import { useDropdownFilter } from '@/hooks/use-dropdown-filter'
+import { clientData } from '@/mocks/client-data'
+import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown'
+import { useEffect } from 'react'
+import { ClientDataModel } from '@/types/data-model'
 import {
   formatBusinessNumber,
   formatPhoneNumber,
   formatFaxNumber,
   formatDate,
-} from "@/hooks/format-number";
+} from '@/hooks/format-number'
 
 interface InputSectionProps {
-  clientDataParam: string | null;
-  setValue: UseFormSetValue<ClientDataModel>;
-  errors: FieldErrors<ClientDataModel>;
-  control: Control<ClientDataModel>;
+  clientDataParam: string | null
+  setValue: UseFormSetValue<ClientDataModel>
+  errors: FieldErrors<ClientDataModel>
+  control: Control<ClientDataModel>
 }
 
-const InputSection = ({
-  clientDataParam,
-  setValue,
-  errors,
-  control,
-}: InputSectionProps) => {
+const InputSection = ({ clientDataParam, setValue, errors, control }: InputSectionProps) => {
   const {
     setInput: setCompanyNameInput,
     isOpen: isCompanyNameDropdownOpen,
     setIsOpen: setIsCompanyNameDropdownOpen,
     filtered: filteredClients,
     handleSelect: handleCompanyNameSelect,
-  } = useDropdownFilter(clientData, (item) => item.companyName);
+  } = useDropdownFilter(clientData, (item) => item.companyName)
 
   useEffect(() => {
     if (clientDataParam) {
       try {
-        const data = JSON.parse(decodeURIComponent(clientDataParam));
+        const data = JSON.parse(decodeURIComponent(clientDataParam))
         Object.entries(data).forEach(([key, value]) => {
-          if (key === "businessNumber") {
-            setValue(
-              "businessNumber",
-              formatBusinessNumber(String(value ?? "")),
-            );
-          } else if (key === "contact") {
-            setValue("contact", formatPhoneNumber(String(value ?? "")));
-          } else if (key === "fax") {
-            setValue("fax", formatFaxNumber(String(value ?? "")));
-          } else if (key === "companyName") {
-            setValue("companyName", String(value ?? ""));
+          if (key === 'businessNumber') {
+            setValue('businessNumber', formatBusinessNumber(String(value ?? '')))
+          } else if (key === 'contact') {
+            setValue('contact', formatPhoneNumber(String(value ?? '')))
+          } else if (key === 'fax') {
+            setValue('fax', formatFaxNumber(String(value ?? '')))
+          } else if (key === 'companyName') {
+            setValue('companyName', String(value ?? ''))
           } else {
-            setValue(key as string, value ?? "");
+            setValue(key as string, value ?? '')
           }
-        });
+        })
       } catch {
         // 파싱 에러 무시
       }
     }
-  }, [clientDataParam, setValue]);
+  }, [clientDataParam, setValue])
 
   const handleSelectClient = (item: ClientDataModel) => {
-    handleCompanyNameSelect(item);
+    handleCompanyNameSelect(item)
 
     // 선택한 거래처 정보로 폼 자동 채우기
-    setValue("companyName", item.companyName);
-    setValue(
-      "businessNumber",
-      formatBusinessNumber(String(item.businessNumber ?? "")),
-    );
-    setValue("representativeName", item.representativeName);
-    setValue("dueDate", item.dueDate);
-    setValue("responsibleName", item.responsibleName);
-    setValue("companyAddress", item.companyAddress);
-    setValue("deliveryAddress", item.deliveryAddress || "");
-    setValue("responsibleName", item.responsibleName);
-    setValue("email", item.email);
-    setValue("contact", formatPhoneNumber(String(item.contact ?? "")));
-    setValue("fax", formatFaxNumber(String(item.fax ?? "")));
+    setValue('companyName', item.companyName)
+    setValue('businessNumber', formatBusinessNumber(String(item.businessNumber ?? '')))
+    setValue('representativeName', item.representativeName)
+    setValue('dueDate', item.dueDate)
+    setValue('responsibleName', item.responsibleName)
+    setValue('companyAddress', item.companyAddress)
+    setValue('deliveryAddress', item.deliveryAddress || '')
+    setValue('responsibleName', item.responsibleName)
+    setValue('email', item.email)
+    setValue('contact', formatPhoneNumber(String(item.contact ?? '')))
+    setValue('fax', formatFaxNumber(String(item.fax ?? '')))
 
-    setIsCompanyNameDropdownOpen(false);
-  };
+    setIsCompanyNameDropdownOpen(false)
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -98,24 +82,24 @@ const InputSection = ({
             rules={{ required: true }}
             render={({ field }) => {
               const handleCompanyNameBlur = () =>
-                setTimeout(() => setIsCompanyNameDropdownOpen(false), 150);
+                setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
               return (
                 <Input
                   label="업체명"
                   placeholder="업체명을 입력하세요."
                   required
                   showError={!!errors.companyName}
-                  value={field.value || ""}
+                  value={field.value || ''}
                   onChange={(e) => {
-                    field.onChange(e);
-                    setCompanyNameInput(e.target.value);
+                    field.onChange(e)
+                    setCompanyNameInput(e.target.value)
                   }}
                   onFocus={() => setIsCompanyNameDropdownOpen(true)}
                   onBlur={handleCompanyNameBlur}
                   ref={field.ref}
                   name={field.name}
                 />
-              );
+              )
             }}
           />
           {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
@@ -140,15 +124,15 @@ const InputSection = ({
                   placeholder="사업자등록번호를 입력하세요."
                   required
                   showError={!!errors.businessNumber}
-                  value={field.value || ""}
+                  value={field.value || ''}
                   onChange={(e) => {
-                    const formatted = formatBusinessNumber(e.target.value);
-                    field.onChange(formatted);
+                    const formatted = formatBusinessNumber(e.target.value)
+                    field.onChange(formatted)
                   }}
                   ref={field.ref}
                   name={field.name}
                 />
-              );
+              )
             }}
           />
         </div>
@@ -178,10 +162,10 @@ const InputSection = ({
               placeholder="납기일자를 입력하세요."
               required
               showError={!!errors.dueDate}
-              value={field.value || ""}
+              value={field.value || ''}
               onChange={(e) => {
-                const formatted = formatDate(e.target.value);
-                field.onChange(formatted);
+                const formatted = formatDate(e.target.value)
+                field.onChange(formatted)
               }}
               ref={field.ref}
               name={field.name}
@@ -270,15 +254,15 @@ const InputSection = ({
               <Input
                 placeholder="연락처를 입력하세요."
                 label="연락처"
-                value={field.value || ""}
+                value={field.value || ''}
                 onChange={(e) => {
-                  const formatted = formatPhoneNumber(e.target.value);
-                  field.onChange(formatted);
+                  const formatted = formatPhoneNumber(e.target.value)
+                  field.onChange(formatted)
                 }}
                 ref={field.ref}
                 name={field.name}
               />
-            );
+            )
           }}
         />
         <Controller
@@ -289,20 +273,20 @@ const InputSection = ({
               <Input
                 label="팩스 번호"
                 placeholder="팩스 번호를 입력하세요."
-                value={field.value || ""}
+                value={field.value || ''}
                 onChange={(e) => {
-                  const formatted = formatFaxNumber(e.target.value);
-                  field.onChange(formatted);
+                  const formatted = formatFaxNumber(e.target.value)
+                  field.onChange(formatted)
                 }}
                 ref={field.ref}
                 name={field.name}
               />
-            );
+            )
           }}
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default InputSection;
+export default InputSection

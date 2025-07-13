@@ -1,13 +1,13 @@
-import ProductItem from "../quotation/product-item";
-import PriceInfo from "@/ui/price-info";
-import dummyProducts from "@/mocks/quotation-products";
+import ProductItem from '../quotation/product-item'
+import PriceInfo from '@/ui/price-info'
+import dummyProducts from '@/mocks/quotation-products'
 
 interface ProductListInfoProps {
-  transaction?: boolean;
+  transaction?: boolean
 }
 
 const ProductListInfo = ({ transaction = false }: ProductListInfoProps) => {
-  const title = transaction ? "거래 품목 정보" : "주문 품목 정보";
+  const title = transaction ? '거래 품목 정보' : '주문 품목 정보'
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">{title}</h3>
@@ -34,7 +34,7 @@ const ProductListInfo = ({ transaction = false }: ProductListInfoProps) => {
 
       <PriceInfo />
     </div>
-  );
-};
+  )
+}
 
-export default ProductListInfo;
+export default ProductListInfo

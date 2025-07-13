@@ -1,4 +1,4 @@
-import Chip from "@/ui/chip";
+import Chip from '@/ui/chip'
 
 const TaxInvoiceTitle = () => {
   return (
@@ -12,7 +12,7 @@ const TaxInvoiceTitle = () => {
         <h6 className="Heading-5">2025-07-31</h6>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default TaxInvoiceTitle;
+export default TaxInvoiceTitle

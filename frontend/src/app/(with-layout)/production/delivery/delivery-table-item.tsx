@@ -1,20 +1,16 @@
-import { useState } from "react";
-import { DeliveryDataModel } from "./types";
-import DeliveryOverlay from "./modals/delevery-overlay";
-import Chip from "@/ui/chip";
-import {
-  DeliveryStatusColorMap,
-  DeliveryStatusType,
-} from "@/types/status-type";
+import { useState } from 'react'
+import { DeliveryDataModel } from './types'
+import DeliveryOverlay from './modals/delevery-overlay'
+import Chip from '@/ui/chip'
+import { DeliveryStatusColorMap, DeliveryStatusType } from '@/types/status-type'
 
 interface DeliveryTableItemProps {
-  data: DeliveryDataModel;
+  data: DeliveryDataModel
 }
 
 const DeliveryTableItem = ({ data }: DeliveryTableItemProps) => {
-  const [isDeliveryOverlayOpen, setIsDeliveryOverlayOpen] = useState(false);
-  const colors =
-    DeliveryStatusColorMap[data.deliveryStatus as DeliveryStatusType];
+  const [isDeliveryOverlayOpen, setIsDeliveryOverlayOpen] = useState(false)
+  const colors = DeliveryStatusColorMap[data.deliveryStatus as DeliveryStatusType]
 
   return (
     <>
@@ -24,7 +20,7 @@ const DeliveryTableItem = ({ data }: DeliveryTableItemProps) => {
         </div>
         <div className="w-[150px] flex items-center py-3 px-2">
           <Chip
-            text={data.deliveryStatus || ""}
+            text={data.deliveryStatus || ''}
             bgColor={colors.bgColor}
             textColor={colors.textColor}
           />
@@ -38,23 +34,18 @@ const DeliveryTableItem = ({ data }: DeliveryTableItemProps) => {
             납품표 보기
           </p>
         </div>
-        <p className="flex-1 px-3 text-dg Me_Body-1">{data.productCode}</p>{" "}
+        <p className="flex-1 px-3 text-dg Me_Body-1">{data.productCode}</p>{' '}
         <p className="flex-1 px-3 tex t-dg Me_Body-1">{data.size}</p>
         <p className="w-[80px] px-3 text-dg Me_Body-1">{data.unit}</p>
-        <p className="flex-1 px-3 text-dg Me_Body-1">
-          {data.quantity.toLocaleString()}
-        </p>
+        <p className="flex-1 px-3 text-dg Me_Body-1">{data.quantity.toLocaleString()}</p>
         <p className="flex-1 px-3 text-dg Me_Body-1">{data.date}</p>
       </div>
 
       {isDeliveryOverlayOpen && (
-        <DeliveryOverlay
-          onClose={() => setIsDeliveryOverlayOpen(false)}
-          data={data}
-        />
+        <DeliveryOverlay onClose={() => setIsDeliveryOverlayOpen(false)} data={data} />
       )}
     </>
-  );
-};
+  )
+}
 
-export default DeliveryTableItem;
+export default DeliveryTableItem

@@ -1,9 +1,9 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
+import MiniBtn from '@/ui/mini-btn'
+import Modal from '@/ui/modal/modal'
 
 interface CardDeleteModalProps {
-  onClose: () => void;
-  onConfirm: () => void;
+  onClose: () => void
+  onConfirm: () => void
 }
 
 const CardDeleteModal = ({ onClose, onConfirm }: CardDeleteModalProps) => {
@@ -15,12 +15,7 @@ const CardDeleteModal = ({ onClose, onConfirm }: CardDeleteModalProps) => {
       sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn
-          text="취소"
-          textColor="text-sv"
-          onClick={onClose}
-          hoverColor=""
-        />
+        <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
         <MiniBtn
           text="삭제"
           bgColor="bg-red-8"
@@ -30,7 +25,7 @@ const CardDeleteModal = ({ onClose, onConfirm }: CardDeleteModalProps) => {
         />
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default CardDeleteModal;
+export default CardDeleteModal

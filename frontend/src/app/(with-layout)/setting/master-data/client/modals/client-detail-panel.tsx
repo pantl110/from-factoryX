@@ -1,21 +1,17 @@
-import Panel from "@/ui/panel";
-import InfoLabelValue from "@/ui/info-label-value";
-import { ClientDataModel } from "@/types/data-model";
-import { ClientTypeColorMap } from "../types";
-import Chip from "@/ui/chip";
-import {
-  formatBusinessNumber,
-  formatPhoneNumber,
-  formatFaxNumber,
-} from "@/hooks/format-number";
+import Panel from '@/ui/panel'
+import InfoLabelValue from '@/ui/info-label-value'
+import { ClientDataModel } from '@/types/data-model'
+import { ClientTypeColorMap } from '../types'
+import Chip from '@/ui/chip'
+import { formatBusinessNumber, formatPhoneNumber, formatFaxNumber } from '@/hooks/format-number'
 
 interface ClientDetailPanelProps {
-  onClose: () => void;
-  client: ClientDataModel;
+  onClose: () => void
+  client: ClientDataModel
 }
 
 const ClientDetailPanel = ({ onClose, client }: ClientDetailPanelProps) => {
-  const clientTypeColor = ClientTypeColorMap[client.type];
+  const clientTypeColor = ClientTypeColorMap[client.type]
   return (
     <Panel title="거래처" onClose={onClose} hasSaveButton={true}>
       <div className="flex flex-col gap-3">
@@ -23,11 +19,7 @@ const ClientDetailPanel = ({ onClose, client }: ClientDetailPanelProps) => {
 
         <div>
           <div className="flex">
-            <InfoLabelValue
-              label="거래처명"
-              value={client.companyName}
-              isEditing={true}
-            />
+            <InfoLabelValue label="거래처명" value={client.companyName} isEditing={true} />
             <InfoLabelValue
               label="사업자등록번호"
               value={formatBusinessNumber(client.businessNumber)}
@@ -35,49 +27,29 @@ const ClientDetailPanel = ({ onClose, client }: ClientDetailPanelProps) => {
             />
           </div>
           <div className="flex">
-            <InfoLabelValue
-              label="대표자명"
-              value={client.representativeName}
-              isEditing={true}
-            />
-            <InfoLabelValue
-              label="이메일"
-              value={client.email}
-              isEditing={true}
-            />
+            <InfoLabelValue label="대표자명" value={client.representativeName} isEditing={true} />
+            <InfoLabelValue label="이메일" value={client.email} isEditing={true} />
           </div>
           <div className="flex">
             <InfoLabelValue
               label="연락처"
-              value={formatPhoneNumber(client.contact || "")}
+              value={formatPhoneNumber(client.contact || '')}
               isEditing={true}
               placeholder="-"
             />
             <InfoLabelValue
               label="팩스 번호"
-              value={formatFaxNumber(client.fax || "")}
+              value={formatFaxNumber(client.fax || '')}
               isEditing={true}
               placeholder="-"
             />
           </div>
           <div className="flex">
-            <InfoLabelValue
-              label="업태"
-              value={client.businessType}
-              isEditing={true}
-            />
-            <InfoLabelValue
-              label="종목"
-              value={client.businessCategory}
-              isEditing={true}
-            />
+            <InfoLabelValue label="업태" value={client.businessType} isEditing={true} />
+            <InfoLabelValue label="종목" value={client.businessCategory} isEditing={true} />
           </div>
           <div className="flex">
-            <InfoLabelValue
-              label="사업장 주소"
-              value={client.companyAddress}
-              isEditing={true}
-            />
+            <InfoLabelValue label="사업장 주소" value={client.companyAddress} isEditing={true} />
           </div>
           <div className="flex">
             <InfoLabelValue
@@ -103,7 +75,7 @@ const ClientDetailPanel = ({ onClose, client }: ClientDetailPanelProps) => {
         </div>
       </div>
     </Panel>
-  );
-};
+  )
+}
 
-export default ClientDetailPanel;
+export default ClientDetailPanel

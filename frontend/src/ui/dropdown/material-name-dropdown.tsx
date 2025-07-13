@@ -1,18 +1,14 @@
-import { MaterialDataModel } from "@/types/data-model";
-import Dropdown from "@/ui/dropdown/dropdown";
-import DropdownItem from "@/ui/dropdown/dropdown-item";
+import { MaterialDataModel } from '@/types/data-model'
+import Dropdown from '@/ui/dropdown/dropdown'
+import DropdownItem from '@/ui/dropdown/dropdown-item'
 
 interface MaterialNameDropdownProps {
-  items: MaterialDataModel[];
-  onSelect: (item: MaterialDataModel) => void;
-  width?: string;
+  items: MaterialDataModel[]
+  onSelect: (item: MaterialDataModel) => void
+  width?: string
 }
 
-export const MaterialNameDropdown = ({
-  items,
-  onSelect,
-  width,
-}: MaterialNameDropdownProps) => {
+export const MaterialNameDropdown = ({ items, onSelect, width }: MaterialNameDropdownProps) => {
   return (
     <Dropdown onClose={() => {}} width={width}>
       <div className="flex flex-col">
@@ -26,5 +22,5 @@ export const MaterialNameDropdown = ({
         ))}
       </div>
     </Dropdown>
-  );
-};
+  )
+}

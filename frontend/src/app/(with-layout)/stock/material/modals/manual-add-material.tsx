@@ -1,13 +1,11 @@
-import Input from "@/ui/input";
-import MiniBtn from "@/ui/mini-btn";
-import { useForm } from "react-hook-form";
-import { MaterialDataModel } from "@/types/data-model";
+import Input from '@/ui/input'
+import MiniBtn from '@/ui/mini-btn'
+import { useForm } from 'react-hook-form'
+import { MaterialDataModel } from '@/types/data-model'
 
 interface ManualAddMaterialProps {
-  setIsManualAddMode: (v: boolean) => void;
-  setSelectedMaterials: (
-    fn: (prev: MaterialDataModel[]) => MaterialDataModel[],
-  ) => void;
+  setIsManualAddMode: (v: boolean) => void
+  setSelectedMaterials: (fn: (prev: MaterialDataModel[]) => MaterialDataModel[]) => void
 }
 
 const ManualAddMaterial = ({
@@ -22,12 +20,12 @@ const ManualAddMaterial = ({
   } = useForm<MaterialDataModel>({
     defaultValues: {
       id: crypto.randomUUID(),
-      materialName: "",
-      size: "",
+      materialName: '',
+      size: '',
       usageQuantity: null,
     },
-    mode: "onBlur",
-  });
+    mode: 'onBlur',
+  })
 
   const onSubmit = (data: MaterialDataModel) => {
     setSelectedMaterials((prev) => [
@@ -38,10 +36,10 @@ const ManualAddMaterial = ({
         size: data.size,
         usageQuantity: Number(data.usageQuantity),
       },
-    ]);
-    reset();
-    window.setTimeout(() => setIsManualAddMode(false), 0);
-  };
+    ])
+    reset()
+    window.setTimeout(() => setIsManualAddMode(false), 0)
+  }
 
   return (
     <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
@@ -53,7 +51,7 @@ const ManualAddMaterial = ({
                 placeholder="자재명을 입력하세요."
                 label="자재명"
                 required
-                {...register("materialName", {
+                {...register('materialName', {
                   required: true,
                   validate: (v) => !!v.trim(),
                 })}
@@ -65,9 +63,9 @@ const ManualAddMaterial = ({
                 placeholder="자재코드를 입력하세요."
                 label="자재코드"
                 required
-                {...register("materialCode", {
+                {...register('materialCode', {
                   required: true,
-                  validate: (v: unknown) => typeof v === "string" && !!v.trim(),
+                  validate: (v: unknown) => typeof v === 'string' && !!v.trim(),
                 })}
                 showError={!!errors.materialCode}
               />
@@ -79,7 +77,7 @@ const ManualAddMaterial = ({
                 placeholder="규격을 입력하세요."
                 label="규격"
                 required
-                {...register("size", {
+                {...register('size', {
                   required: true,
                   validate: (v) => !!v.trim(),
                 })}
@@ -92,10 +90,10 @@ const ManualAddMaterial = ({
                 label="사용 수량"
                 type="number"
                 required
-                {...register("usageQuantity", {
+                {...register('usageQuantity', {
                   required: true,
                   validate: (v) => v !== null && Number(v) > 0,
-                  setValueAs: (v) => (v === "" ? null : Number(v)),
+                  setValueAs: (v) => (v === '' ? null : Number(v)),
                 })}
                 showError={!!errors.usageQuantity}
               />
@@ -119,7 +117,7 @@ const ManualAddMaterial = ({
         </div>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default ManualAddMaterial;
+export default ManualAddMaterial

@@ -1,72 +1,65 @@
-import { useEffect } from "react";
-import MiniBtn from "@/ui/mini-btn";
-import Input from "@/ui/input";
-import { useForm } from "react-hook-form";
-import { FirstStepFormDataModel } from "../types";
+import { useEffect } from 'react'
+import MiniBtn from '@/ui/mini-btn'
+import Input from '@/ui/input'
+import { useForm } from 'react-hook-form'
+import { FirstStepFormDataModel } from '../types'
 
 interface FirstStepProps {
-  onNextStep: () => void;
-  onPrevStep: () => void;
+  onNextStep: () => void
+  onPrevStep: () => void
 }
 
 const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
-  const { register, handleSubmit, reset, getValues, watch } =
-    useForm<FirstStepFormDataModel>({
-      defaultValues: {
-        productName: "",
-        productCode: "",
-        size: "",
-        unit: "",
-      },
-      mode: "onChange",
-    });
+  const { register, handleSubmit, reset, getValues, watch } = useForm<FirstStepFormDataModel>({
+    defaultValues: {
+      productName: '',
+      productCode: '',
+      size: '',
+      unit: '',
+    },
+    mode: 'onChange',
+  })
 
   // 입력값 실시간 감지
-  const values = watch();
-  const isValid =
-    !!values.productName &&
-    !!values.productCode &&
-    !!values.size &&
-    !!values.unit;
+  const values = watch()
+  const isValid = !!values.productName && !!values.productCode && !!values.size && !!values.unit
 
   // sessionStorage에서 데이터 복원
   useEffect(() => {
-    const savedData = sessionStorage.getItem("onboarding-step1-product");
+    const savedData = sessionStorage.getItem('onboarding-step1-product')
 
     if (savedData) {
       try {
-        const data = JSON.parse(savedData);
+        const data = JSON.parse(savedData)
         if (data.productName !== undefined) {
           // 데이터 구조 확인
-          reset(data);
+          reset(data)
         }
       } catch {
         // Silently ignore parsing errors
       }
     }
-  }, [reset]);
+  }, [reset])
 
   const saveFormData = (data: FirstStepFormDataModel) => {
-    sessionStorage.setItem("onboarding-step1-product", JSON.stringify(data)); // sessionStorage에 저장
-  };
+    sessionStorage.setItem('onboarding-step1-product', JSON.stringify(data)) // sessionStorage에 저장
+  }
   const handlePrevStep = (data: FirstStepFormDataModel) => {
-    saveFormData(data);
-    onPrevStep();
-  };
+    saveFormData(data)
+    onPrevStep()
+  }
 
   const onSubmit = (data: FirstStepFormDataModel) => {
-    saveFormData(data);
-    onNextStep();
-  };
+    saveFormData(data)
+    onNextStep()
+  }
 
   return (
     <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col items-center rounded-lg">
       <div className="flex flex-col gap-8 w-full">
         {/* 타이틀 영역 */}
         <div className="flex flex-col gap-2 items-center">
-          <h3 className="Heading-3 text-primary">
-            등록할 품목 정보를 입력해주세요.
-          </h3>
+          <h3 className="Heading-3 text-primary">등록할 품목 정보를 입력해주세요.</h3>
           <div className="Me_Body-2 text-bl text-center">
             운영을 시작하려면 먼저 품목과 설비 정보를 등록해야 해요.
             <br />
@@ -84,14 +77,14 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   type="text"
                   placeholder="자재명 입력"
                   required={true}
-                  {...register("productName", { required: true })}
+                  {...register('productName', { required: true })}
                 />
                 <Input
                   label="품목 코드"
                   type="text"
                   placeholder="품목 코드 입력"
                   required={true}
-                  {...register("productCode", { required: true })}
+                  {...register('productCode', { required: true })}
                 />
               </div>
               <div className="flex gap-2.5 flex-1">
@@ -100,14 +93,14 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                   type="text"
                   placeholder="규격 입력"
                   required={true}
-                  {...register("size", { required: true })}
+                  {...register('size', { required: true })}
                 />
                 <Input
                   label="단위"
                   type="text"
                   placeholder="단위 입력"
                   required={true}
-                  {...register("unit", { required: true })}
+                  {...register('unit', { required: true })}
                 />
               </div>
             </div>
@@ -134,7 +127,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FirstStep;
+export default FirstStep

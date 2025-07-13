@@ -10,9 +10,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
-  "prettier": {
-    "endOfLine": "auto"
-  },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@phosphor-icons/react": "^2.1.10",

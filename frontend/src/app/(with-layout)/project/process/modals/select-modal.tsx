@@ -1,29 +1,25 @@
-import { ClientDataModel } from "@/types/data-model";
-import Modal from "@/ui/modal/modal";
-import { Upload, Keyboard } from "@phosphor-icons/react/dist/ssr";
-import { useRouter } from "next/navigation";
+import { ClientDataModel } from '@/types/data-model'
+import Modal from '@/ui/modal/modal'
+import { Upload, Keyboard } from '@phosphor-icons/react/dist/ssr'
+import { useRouter } from 'next/navigation'
 
 interface SelectModalProps {
-  onClose: () => void;
-  onUploadClick: () => void;
-  onDirectInputClick: (clientData?: ClientDataModel) => void;
+  onClose: () => void
+  onUploadClick: () => void
+  onDirectInputClick: (clientData?: ClientDataModel) => void
 }
 
-const SelectModal = ({
-  onClose,
-  onUploadClick,
-  onDirectInputClick,
-}: SelectModalProps) => {
-  const router = useRouter();
+const SelectModal = ({ onClose, onUploadClick, onDirectInputClick }: SelectModalProps) => {
+  const router = useRouter()
 
   const handleGoToQuotation = () => {
-    onDirectInputClick(); // 빈 값으로 설정
-    router.push("/quotation");
-  };
+    onDirectInputClick() // 빈 값으로 설정
+    router.push('/quotation')
+  }
 
   const handleUploadClick = () => {
-    onUploadClick(); // upload-modal 열기만 하고, clientData는 upload-modal에서 처리
-  };
+    onUploadClick() // upload-modal 열기만 하고, clientData는 upload-modal에서 처리
+  }
 
   return (
     <Modal
@@ -38,7 +34,7 @@ const SelectModal = ({
           tabIndex={0}
           onClick={handleUploadClick}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleUploadClick();
+            if (e.key === 'Enter' || e.key === ' ') handleUploadClick()
           }}
           className="group flex flex-1 flex-col h-[215px] items-center justify-center gap-2.5 border-1 border-lg rounded-lg hover:border-primary hover:cursor-pointer"
         >
@@ -56,22 +52,16 @@ const SelectModal = ({
           tabIndex={0}
           onClick={handleGoToQuotation}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleGoToQuotation();
+            if (e.key === 'Enter' || e.key === ' ') handleGoToQuotation()
           }}
           className="group flex flex-1 flex-col h-[215px] items-center justify-center gap-2.5 border-1 border-lg rounded-lg hover:border-primary hover:cursor-pointer"
         >
-          <Keyboard
-            size={32}
-            weight="fill"
-            className="text-lg group-hover:text-primary"
-          />
-          <p className="Me_Body-2 text-sv group-hover:text-primary">
-            견적서 직접 입력
-          </p>
+          <Keyboard size={32} weight="fill" className="text-lg group-hover:text-primary" />
+          <p className="Me_Body-2 text-sv group-hover:text-primary">견적서 직접 입력</p>
         </div>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default SelectModal;
+export default SelectModal

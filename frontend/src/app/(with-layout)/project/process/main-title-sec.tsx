@@ -1,26 +1,22 @@
-import MiniBtn from "@/ui/mini-btn";
-import { ProjectStatusType } from "@/types/status-type";
-import { CaretDown } from "@phosphor-icons/react";
+import MiniBtn from '@/ui/mini-btn'
+import { ProjectStatusType } from '@/types/status-type'
+import { CaretDown } from '@phosphor-icons/react'
 
 interface MainTitleSecProps {
-  onNewQuotation: () => void;
-  selectedStatus: ProjectStatusType | "전체";
-  onStatusChange: (status: ProjectStatusType | "전체") => void;
+  onNewQuotation: () => void
+  selectedStatus: ProjectStatusType | '전체'
+  onStatusChange: (status: ProjectStatusType | '전체') => void
 }
 
-const MainTitleSec = ({
-  onNewQuotation,
-  selectedStatus,
-  onStatusChange,
-}: MainTitleSecProps) => {
-  const statuses: (ProjectStatusType | "전체")[] = [
-    "전체",
-    "견적 협의",
-    "생산 대기",
-    "생산 중",
-    "생산 완료",
-    "납품",
-  ];
+const MainTitleSec = ({ onNewQuotation, selectedStatus, onStatusChange }: MainTitleSecProps) => {
+  const statuses: (ProjectStatusType | '전체')[] = [
+    '전체',
+    '견적 협의',
+    '생산 대기',
+    '생산 중',
+    '생산 완료',
+    '납품',
+  ]
 
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
@@ -41,7 +37,7 @@ const MainTitleSec = ({
           <button
             key={status}
             type="button"
-            className={`cursor-pointer ${selectedStatus === status ? "text-dg" : "text-gr"} Heading-3`}
+            className={`cursor-pointer ${selectedStatus === status ? 'text-dg' : 'text-gr'} Heading-3`}
             onClick={() => onStatusChange(status)}
           >
             {status}
@@ -49,7 +45,7 @@ const MainTitleSec = ({
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MainTitleSec;
+export default MainTitleSec

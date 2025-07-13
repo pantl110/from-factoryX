@@ -1,6 +1,6 @@
-import { productionData } from "@/mocks/production-data";
-import ProductionLogTableHeader from "./production-log-table-header";
-import ProductionLogTableItem from "./production-log-table-item";
+import { productionData } from '@/mocks/production-data'
+import ProductionLogTableHeader from './production-log-table-header'
+import ProductionLogTableItem from './production-log-table-item'
 
 const ProductionLog = () => {
   return (
@@ -12,7 +12,7 @@ const ProductionLog = () => {
         ))}
       </div>
     </>
-  );
-};
+  )
+}
 
-export default ProductionLog;
+export default ProductionLog

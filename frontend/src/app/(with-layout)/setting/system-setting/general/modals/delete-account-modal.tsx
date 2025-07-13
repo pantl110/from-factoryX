@@ -1,15 +1,12 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
+import MiniBtn from '@/ui/mini-btn'
+import Modal from '@/ui/modal/modal'
 
 interface DeleteAccountModalProps {
-  onClose: () => void;
-  onConfirm: () => void;
+  onClose: () => void
+  onConfirm: () => void
 }
 
-const DeleteAccountModal = ({
-  onClose,
-  onConfirm,
-}: DeleteAccountModalProps) => {
+const DeleteAccountModal = ({ onClose, onConfirm }: DeleteAccountModalProps) => {
   return (
     <Modal
       title="계정을 정말 삭제하시겠어요?"
@@ -18,12 +15,7 @@ const DeleteAccountModal = ({
       sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn
-          text="취소"
-          textColor="text-sv"
-          onClick={onClose}
-          hoverColor=""
-        />
+        <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
         <MiniBtn
           text="삭제"
           bgColor="bg-red-8"
@@ -33,7 +25,7 @@ const DeleteAccountModal = ({
         />
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default DeleteAccountModal;
+export default DeleteAccountModal

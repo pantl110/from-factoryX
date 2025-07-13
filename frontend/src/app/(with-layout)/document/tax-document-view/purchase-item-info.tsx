@@ -1,5 +1,5 @@
-import PriceInfo from "@/ui/price-info";
-import PurchaseTableTiem from "./purchase-table-tiem";
+import PriceInfo from '@/ui/price-info'
+import PurchaseTableTiem from './purchase-table-tiem'
 
 const PurchaseItemInfo = () => {
   return (
@@ -25,7 +25,7 @@ const PurchaseItemInfo = () => {
 
       <PriceInfo textColor="text-red" />
     </div>
-  );
-};
+  )
+}
 
-export default PurchaseItemInfo;
+export default PurchaseItemInfo

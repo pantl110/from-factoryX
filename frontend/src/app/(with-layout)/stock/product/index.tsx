@@ -1,19 +1,19 @@
-"use client";
+'use client'
 
-import TableHeader from "./table-header";
-import TableItem from "./table-item";
-import { productData } from "@/mocks/product-data";
-import { useState } from "react";
-import ProductDetail from "./product-detail";
-import SearchInput from "@/ui/search-input";
-import MiniBtn from "@/ui/mini-btn";
-import DeleteModal from "@/ui/modal/delete-modal";
-import { ProductDataModel } from "@/types/data-model";
-import { useCheckAll } from "@/hooks/use-check-all";
+import TableHeader from './table-header'
+import TableItem from './table-item'
+import { productData } from '@/mocks/product-data'
+import { useState } from 'react'
+import ProductDetail from './product-detail'
+import SearchInput from '@/ui/search-input'
+import MiniBtn from '@/ui/mini-btn'
+import DeleteModal from '@/ui/modal/delete-modal'
+import { ProductDataModel } from '@/types/data-model'
+import { useCheckAll } from '@/hooks/use-check-all'
 
 interface ProductProps {
-  isCreatePanelOpen: boolean;
-  setIsCreatePanelOpen: (isOpen: boolean) => void;
+  isCreatePanelOpen: boolean
+  setIsCreatePanelOpen: (isOpen: boolean) => void
 }
 
 const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
@@ -25,22 +25,21 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(productData.map((item) => item.id ?? 0));
+  } = useCheckAll(productData.map((item) => item.id ?? 0))
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] =
-    useState<ProductDataModel | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<ProductDataModel | null>(null)
 
   const handleItemClick = (product: ProductDataModel) => {
-    setSelectedProduct(product);
-  };
+    setSelectedProduct(product)
+  }
   const handlePanelClose = () => {
-    setSelectedProduct(null);
-    setIsCreatePanelOpen(false);
-  };
+    setSelectedProduct(null)
+    setIsCreatePanelOpen(false)
+  }
 
-  const isPanelOpen = selectedProduct !== null || isCreatePanelOpen;
-  const mode = isCreatePanelOpen ? "create" : "view";
+  const isPanelOpen = selectedProduct !== null || isCreatePanelOpen
+  const mode = isCreatePanelOpen ? 'create' : 'view'
 
   return (
     <>
@@ -57,13 +56,11 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
           />
           <MiniBtn
             text={getDeleteButtonText()}
-            textColor={checkedCount > 0 ? "text-red" : "text-dg"}
-            borderColor={checkedCount > 0 ? "border-none" : "border-lg"}
-            bgColor={checkedCount > 0 ? "bg-red-8" : "bg-wh"}
-            hoverColor={checkedCount > 0 ? "hover:bg-red-hover" : "hover:bg-bg"}
-            onClick={
-              checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
-            }
+            textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+            borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
+            bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
+            hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
+            onClick={checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}}
           />
         </div>
       </div>
@@ -74,9 +71,9 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
           <TableItem
             key={item.id}
             productName={item.productName}
-            productCode={item.productCode ?? ""}
-            size={item.size ?? ""}
-            unit={item.unit ?? ""}
+            productCode={item.productCode ?? ''}
+            size={item.size ?? ''}
+            unit={item.unit ?? ''}
             stock={item.stock ?? 0}
             onClick={() => handleItemClick(item)}
             checked={isChecked(item.id ?? 0)}
@@ -87,17 +84,15 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
 
       {isPanelOpen && (
         <ProductDetail
-          key={selectedProduct?.id || "create"}
+          key={selectedProduct?.id || 'create'}
           product={selectedProduct}
           onClose={handlePanelClose}
           mode={mode}
         />
       )}
-      {isDeleteModalOpen && (
-        <DeleteModal onClose={() => setIsDeleteModalOpen(false)} />
-      )}
+      {isDeleteModalOpen && <DeleteModal onClose={() => setIsDeleteModalOpen(false)} />}
     </>
-  );
-};
+  )
+}
 
-export default Product;
+export default Product

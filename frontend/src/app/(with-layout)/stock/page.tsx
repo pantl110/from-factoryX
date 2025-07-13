@@ -1,73 +1,68 @@
-"use client";
+'use client'
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import MainTitleSec from "./main-title-sec";
-import Product from "./product/index";
-import Material from "./material/index";
-import { StockTabType } from "./types";
-import ExcelUploadModal from "./modals/excel-upload-modal";
-import ClientInfoModal from "./material/modals/client-info-modal";
-import usePageStatusStore from "@/store/page-status-store";
-import MaterialEnrollmentModal from "./material/modals/material-enrollment-modal";
-import Panel from "@/ui/panel";
-import MaterialDetail from "./material/material-detail";
-import CustomerInfoModal from "./material/modals/customer-info-modal";
-import ProductEnrollmentModal from "./material/modals/product-enrollment-modal";
-import Spinner from "@/ui/spinner";
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import MainTitleSec from './main-title-sec'
+import Product from './product/index'
+import Material from './material/index'
+import { StockTabType } from './types'
+import ExcelUploadModal from './modals/excel-upload-modal'
+import ClientInfoModal from './material/modals/client-info-modal'
+import usePageStatusStore from '@/store/page-status-store'
+import MaterialEnrollmentModal from './material/modals/material-enrollment-modal'
+import Panel from '@/ui/panel'
+import MaterialDetail from './material/material-detail'
+import CustomerInfoModal from './material/modals/customer-info-modal'
+import ProductEnrollmentModal from './material/modals/product-enrollment-modal'
+import Spinner from '@/ui/spinner'
 
 const StockPageContent = () => {
-  const stockTab =
-    (usePageStatusStore((state) => state.stockTab) as StockTabType) || null;
-  const setStockTab = usePageStatusStore((state) => state.setStockTab);
-  const searchParams = useSearchParams();
+  const stockTab = (usePageStatusStore((state) => state.stockTab) as StockTabType) || null
+  const setStockTab = usePageStatusStore((state) => state.setStockTab)
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam === "material") {
-      setStockTab("material");
+    const tabParam = searchParams.get('tab')
+    if (tabParam === 'material') {
+      setStockTab('material')
     } else if (!stockTab) {
-      setStockTab("product");
+      setStockTab('product')
     }
-  }, [stockTab, setStockTab, searchParams]);
+  }, [stockTab, setStockTab, searchParams])
 
-  const [isProductAddDropdownOpen, setIsProductAddDropdownOpen] =
-    useState(false);
-  const [isMaterialAddDropdownOpen, setIsMaterialAddDropdownOpen] =
-    useState(false);
-  const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
-  const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
-  const [isClientInfoModalOpen, setIsClientInfoModalOpen] = useState(false);
-  const [isMaterialEnrollmentModalOpen, setIsMaterialEnrollmentModalOpen] =
-    useState(false);
-  const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false);
-  const [isCustomerInfoModalOpen, setIsCustomerInfoModalOpen] = useState(false);
-  const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
-    useState(false);
+  const [isProductAddDropdownOpen, setIsProductAddDropdownOpen] = useState(false)
+  const [isMaterialAddDropdownOpen, setIsMaterialAddDropdownOpen] = useState(false)
+  const [isExcelModalOpen, setIsExcelModalOpen] = useState(false)
+  const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false)
+  const [isClientInfoModalOpen, setIsClientInfoModalOpen] = useState(false)
+  const [isMaterialEnrollmentModalOpen, setIsMaterialEnrollmentModalOpen] = useState(false)
+  const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false)
+  const [isCustomerInfoModalOpen, setIsCustomerInfoModalOpen] = useState(false)
+  const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] = useState(false)
 
   const handleTabChange = (tab: StockTabType) => {
-    setStockTab(tab);
-  };
+    setStockTab(tab)
+  }
   const handleOpenExcelModal = () => {
-    setIsProductAddDropdownOpen(false);
-    setIsExcelModalOpen(true);
-  };
+    setIsProductAddDropdownOpen(false)
+    setIsExcelModalOpen(true)
+  }
   const handleOpenCreatePanel = () => {
-    setIsProductAddDropdownOpen(false);
-    setIsCreatePanelOpen(true);
-  };
+    setIsProductAddDropdownOpen(false)
+    setIsCreatePanelOpen(true)
+  }
   const handleOpenClientInfoModal = () => {
-    setIsMaterialAddDropdownOpen(false);
-    setIsClientInfoModalOpen(true);
-  };
+    setIsMaterialAddDropdownOpen(false)
+    setIsClientInfoModalOpen(true)
+  }
   const handleNextClientInfo = () => {
-    setIsClientInfoModalOpen(false);
-    setIsMaterialEnrollmentModalOpen(true);
-  };
+    setIsClientInfoModalOpen(false)
+    setIsMaterialEnrollmentModalOpen(true)
+  }
   const handleMaterialRegister = () => {
-    setIsMaterialEnrollmentModalOpen(false);
-    setIsMaterialDetailOpen(true);
-  };
+    setIsMaterialEnrollmentModalOpen(false)
+    setIsMaterialDetailOpen(true)
+  }
 
   return (
     <>
@@ -84,7 +79,7 @@ const StockPageContent = () => {
           onOpenClientInfoModal={handleOpenClientInfoModal}
         />
         <div className="px-10 pb-10">
-          {stockTab === "product" ? (
+          {stockTab === 'product' ? (
             <Product
               isCreatePanelOpen={isCreatePanelOpen}
               setIsCreatePanelOpen={setIsCreatePanelOpen}
@@ -95,9 +90,7 @@ const StockPageContent = () => {
         </div>
       </div>
 
-      {isExcelModalOpen && (
-        <ExcelUploadModal onClose={() => setIsExcelModalOpen(false)} />
-      )}
+      {isExcelModalOpen && <ExcelUploadModal onClose={() => setIsExcelModalOpen(false)} />}
       {isClientInfoModalOpen && (
         <ClientInfoModal
           onClose={() => setIsClientInfoModalOpen(false)}
@@ -111,10 +104,7 @@ const StockPageContent = () => {
         />
       )}
       {isMaterialDetailOpen && (
-        <Panel
-          title="원자재 재고관리"
-          onClose={() => setIsMaterialDetailOpen(false)}
-        >
+        <Panel title="원자재 재고관리" onClose={() => setIsMaterialDetailOpen(false)}>
           <MaterialDetail
             setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen}
             setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
@@ -127,13 +117,11 @@ const StockPageContent = () => {
       )}
       {/* MaterialDetail의 추가하기 버튼 모달 */}
       {isProductEnrollmentModalOpen && (
-        <ProductEnrollmentModal
-          onClose={() => setIsProductEnrollmentModalOpen(false)}
-        />
+        <ProductEnrollmentModal onClose={() => setIsProductEnrollmentModalOpen(false)} />
       )}
     </>
-  );
-};
+  )
+}
 
 const StockPage = () => {
   return (
@@ -146,7 +134,7 @@ const StockPage = () => {
     >
       <StockPageContent />
     </Suspense>
-  );
-};
+  )
+}
 
-export default StockPage;
+export default StockPage

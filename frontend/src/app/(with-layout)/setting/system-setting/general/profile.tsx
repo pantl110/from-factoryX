@@ -1,30 +1,30 @@
-import Input from "@/ui/input";
-import MiniBtn from "@/ui/mini-btn";
-import { useForm } from "react-hook-form";
-import { CameraIcon } from "@phosphor-icons/react";
-import { useState } from "react";
-import { ProfileFormDataModel } from "./types";
-import PhotoUploadModal from "./modals/photo-upload-modal";
-import ProfileImage from "@/ui/profile-image";
-import { formatPhoneNumber } from "@/hooks/format-number";
-import useToast from "@/hooks/use-toast";
-import Toast from "@/ui/toast";
-import { CheckCircle } from "@phosphor-icons/react";
+import Input from '@/ui/input'
+import MiniBtn from '@/ui/mini-btn'
+import { useForm } from 'react-hook-form'
+import { CameraIcon } from '@phosphor-icons/react'
+import { useState } from 'react'
+import { ProfileFormDataModel } from './types'
+import PhotoUploadModal from './modals/photo-upload-modal'
+import ProfileImage from '@/ui/profile-image'
+import { formatPhoneNumber } from '@/hooks/format-number'
+import useToast from '@/hooks/use-toast'
+import Toast from '@/ui/toast'
+import { CheckCircle } from '@phosphor-icons/react'
 
 const Profile = () => {
-  const { isToastOpen, isVisible, showToast } = useToast(2000);
-  const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
+  const { isToastOpen, isVisible, showToast } = useToast(2000)
+  const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false)
 
   const { register, handleSubmit } = useForm<ProfileFormDataModel>({
     defaultValues: {
-      name: "",
-      phone: "",
+      name: '',
+      phone: '',
     },
-  });
+  })
 
   const onSubmit = () => {
-    showToast();
-  };
+    showToast()
+  }
 
   return (
     <>
@@ -45,11 +45,7 @@ const Profile = () => {
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex gap-2">
-              <Input
-                placeholder="이름을 입력하세요."
-                label="이름"
-                {...register("name")}
-              />
+              <Input placeholder="이름을 입력하세요." label="이름" {...register('name')} />
               <Input
                 label="권한"
                 value="시스템 관리자" // 사용자에 따라 고정값 변경 필요
@@ -68,10 +64,10 @@ const Profile = () => {
                 placeholder="연락처를 입력하세요."
                 label="연락처"
                 type="tel"
-                {...register("phone", {
+                {...register('phone', {
                   onChange: (e) => {
-                    const formatted = formatPhoneNumber(e.target.value);
-                    e.target.value = formatted;
+                    const formatted = formatPhoneNumber(e.target.value)
+                    e.target.value = formatted
                   },
                 })}
               />
@@ -103,7 +99,7 @@ const Profile = () => {
         <PhotoUploadModal onClose={() => setIsPhotoUploadModalOpen(false)} />
       )}
     </>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile

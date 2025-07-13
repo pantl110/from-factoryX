@@ -1,1 +1,1 @@
-export type StockLogType = "생산" | "납품 출고";
+export type StockLogType = '생산' | '납품 출고'

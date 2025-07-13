@@ -1,8 +1,8 @@
-import Modal from "@/ui/modal/modal";
-import ProductStockTableItem from "./product-stock-table-item";
+import Modal from '@/ui/modal/modal'
+import ProductStockTableItem from './product-stock-table-item'
 
 interface ProductStockModalProps {
-  onClose: () => void;
+  onClose: () => void
 }
 
 const ProductStockModal = ({ onClose }: ProductStockModalProps) => {
@@ -22,7 +22,7 @@ const ProductStockModal = ({ onClose }: ProductStockModalProps) => {
       <ProductStockTableItem />
       <ProductStockTableItem />
     </Modal>
-  );
-};
+  )
+}
 
-export default ProductStockModal;
+export default ProductStockModal

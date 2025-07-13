@@ -1,6 +1,6 @@
-import { Suspense } from "react";
-import QuotationPageContent from "./quotation-page-content";
-import Spinner from "@/ui/spinner";
+import { Suspense } from 'react'
+import QuotationPageContent from './quotation-page-content'
+import Spinner from '@/ui/spinner'
 
 const QuotationPage = () => {
   return (
@@ -13,7 +13,7 @@ const QuotationPage = () => {
     >
       <QuotationPageContent />
     </Suspense>
-  );
-};
+  )
+}
 
-export default QuotationPage;
+export default QuotationPage

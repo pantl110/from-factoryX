@@ -1,4 +1,4 @@
-import Chart from "./chart";
+import Chart from './chart'
 
 const ProfitGraph = () => {
   return (
@@ -20,7 +20,7 @@ const ProfitGraph = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProfitGraph;
+export default ProfitGraph

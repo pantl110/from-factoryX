@@ -1,8 +1,8 @@
-import Checkbox from "@/ui/checkbox";
+import Checkbox from '@/ui/checkbox'
 
 interface TableHeaderProps {
-  isAllChecked: boolean;
-  onToggleAll: () => void;
+  isAllChecked: boolean
+  onToggleAll: () => void
 }
 
 const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
@@ -15,7 +15,7 @@ const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
       <p className="w-[80px] px-3 text-sv">단위</p>
       <p className="flex-1 px-3 text-sv">현재 재고</p>
     </div>
-  );
-};
+  )
+}
 
-export default TableHeader;
+export default TableHeader

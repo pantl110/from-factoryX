@@ -1,12 +1,10 @@
-import ProductStockLogItem from "./product-stock-log-item";
+import ProductStockLogItem from './product-stock-log-item'
 
 interface ProductStockLogProps {
-  setIsProductStockModalOpen: (v: boolean) => void;
+  setIsProductStockModalOpen: (v: boolean) => void
 }
 
-const ProductStockLog = ({
-  setIsProductStockModalOpen,
-}: ProductStockLogProps) => {
+const ProductStockLog = ({ setIsProductStockModalOpen }: ProductStockLogProps) => {
   return (
     <>
       <div>
@@ -33,7 +31,7 @@ const ProductStockLog = ({
         />
       </div>
     </>
-  );
-};
+  )
+}
 
-export default ProductStockLog;
+export default ProductStockLog

@@ -7,7 +7,7 @@ const ReturnTableItem = () => {
       <p className="w-[80px] py-1 px-3">EA</p>
       <p className="flex-1 py-1 px-3">5,000</p>
     </div>
-  );
-};
+  )
+}
 
-export default ReturnTableItem;
+export default ReturnTableItem

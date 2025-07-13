@@ -1,23 +1,18 @@
-import { productData } from "@/mocks/product-data";
-import { ProductDataModel } from "@/types/data-model";
-import { ProductNameDropdown } from "@/ui/dropdown/product-name-dropdown";
-import InfoLabelValue from "@/ui/info-label-value";
-import { useEffect } from "react";
-import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
+import { productData } from '@/mocks/product-data'
+import { ProductDataModel } from '@/types/data-model'
+import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown'
+import InfoLabelValue from '@/ui/info-label-value'
+import { useEffect } from 'react'
+import { useDropdownFilter } from '@/hooks/use-dropdown-filter'
 
 interface ProductInfoProps {
-  product: ProductDataModel;
-  isEditable?: boolean;
-  onValueChange?: (value: Partial<ProductDataModel>) => void;
-  onClick?: () => void;
+  product: ProductDataModel
+  isEditable?: boolean
+  onValueChange?: (value: Partial<ProductDataModel>) => void
+  onClick?: () => void
 }
 
-const ProductInfo = ({
-  product,
-  isEditable = false,
-  onValueChange,
-  onClick,
-}: ProductInfoProps) => {
+const ProductInfo = ({ product, isEditable = false, onValueChange, onClick }: ProductInfoProps) => {
   // useDropdownFilter 훅 사용
   const {
     input: productName,
@@ -27,16 +22,16 @@ const ProductInfo = ({
     filtered: matchedItems,
     handleInputChange,
     handleSelect,
-  } = useDropdownFilter(productData, (item) => item.productName);
+  } = useDropdownFilter(productData, (item) => item.productName)
 
   // product prop이 바뀌면 productName도 동기화
   useEffect(() => {
-    setProductName(product.productName || "");
-  }, [product.productName, setProductName]);
+    setProductName(product.productName || '')
+  }, [product.productName, setProductName])
 
   // 드롭다운에서 선택 시 onValueChange도 호출
   const handleSelectProduct = (item: ProductDataModel) => {
-    handleSelect(item);
+    handleSelect(item)
     if (onValueChange) {
       onValueChange({
         productName: item.productName,
@@ -47,9 +42,9 @@ const ProductInfo = ({
         productionTime: item.productionTime,
         location: item.location,
         comment: item.comment,
-      });
+      })
     }
-  };
+  }
 
   return (
     <div className="flex flex-col border-b border-lg">
@@ -60,18 +55,13 @@ const ProductInfo = ({
           isEditing={isEditable}
           placeholder="(필수) 품목명을 입력하세요."
           onChange={(e) => {
-            handleInputChange(e as React.ChangeEvent<HTMLInputElement>);
-            if (onValueChange) onValueChange({ productName: e.target.value });
+            handleInputChange(e as React.ChangeEvent<HTMLInputElement>)
+            if (onValueChange) onValueChange({ productName: e.target.value })
           }}
-          onFocus={(
-            e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
-          ) => {
-            if (e.target.value && matchedItems.length > 0)
-              setIsProductNameDropdownOpen(true);
+          onFocus={(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            if (e.target.value && matchedItems.length > 0) setIsProductNameDropdownOpen(true)
           }}
-          onBlur={() =>
-            setTimeout(() => setIsProductNameDropdownOpen(false), 150)
-          }
+          onBlur={() => setTimeout(() => setIsProductNameDropdownOpen(false), 150)}
           required
         />
         {isProductNameDropdownOpen && matchedItems.length > 0 && (
@@ -112,15 +102,15 @@ const ProductInfo = ({
           label="현재 재고"
           value={
             product.stock === -1 || product.stock === undefined
-              ? ""
+              ? ''
               : product.stock.toLocaleString()
           }
           isEditing={isEditable}
           placeholder="현재 재고 수량을 입력하세요."
           inputType="number"
           onChange={(e) => {
-            const value = e.target.value.replace(/[^0-9]/g, "");
-            if (onValueChange) onValueChange({ stock: Number(value) });
+            const value = e.target.value.replace(/[^0-9]/g, '')
+            if (onValueChange) onValueChange({ stock: Number(value) })
           }}
         />
         <InfoLabelValue
@@ -130,15 +120,15 @@ const ProductInfo = ({
               ? product.productionTime
               : product.productionTime
                 ? `${product.productionTime}`
-                : "-"
+                : '-'
           }
           isEditing={isEditable}
           placeholder="-"
           inputType="number"
           onChange={(e) => {
             // 숫자만 허용
-            const value = e.target.value.replace(/[^0-9]/g, "");
-            if (onValueChange) onValueChange({ productionTime: value });
+            const value = e.target.value.replace(/[^0-9]/g, '')
+            if (onValueChange) onValueChange({ productionTime: value })
           }}
         />
       </div>
@@ -152,9 +142,9 @@ const ProductInfo = ({
               ))}
             </ul>
           ) : isEditable ? ( // 편집 중이면 빈 값, 아니면 "-"
-            ""
+            ''
           ) : (
-            "-"
+            '-'
           )
         }
         isEditing={isEditable}
@@ -167,7 +157,7 @@ const ProductInfo = ({
         품목 수정
       </button>
     </div>
-  );
-};
+  )
+}
 
-export default ProductInfo;
+export default ProductInfo

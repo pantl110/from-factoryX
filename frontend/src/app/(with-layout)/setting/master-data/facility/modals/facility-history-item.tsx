@@ -1,9 +1,9 @@
 interface FacilityHistoryItemProps {
-  productName: string;
-  quantity: number;
-  date: string;
-  unitTime: string;
-  deadlineTime: string;
+  productName: string
+  quantity: number
+  date: string
+  unitTime: string
+  deadlineTime: string
 }
 
 const FacilityHistoryItem = ({
@@ -23,7 +23,7 @@ const FacilityHistoryItem = ({
       <p className="flex-1 px-3">{unitTime}</p>
       <p className="flex-1 px-3">{deadlineTime}</p>
     </div>
-  );
-};
+  )
+}
 
-export default FacilityHistoryItem;
+export default FacilityHistoryItem

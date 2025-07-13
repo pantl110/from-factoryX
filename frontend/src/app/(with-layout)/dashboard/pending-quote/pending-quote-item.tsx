@@ -1,11 +1,11 @@
-"use client";
+'use client'
 
-import { ProjectDataModel } from "@/mocks/project-data";
-import Chip from "@/ui/chip";
+import { ProjectDataModel } from '@/mocks/project-data'
+import Chip from '@/ui/chip'
 
 interface PendingQuoteItemProps {
-  project: ProjectDataModel;
-  onClick: () => void;
+  project: ProjectDataModel
+  onClick: () => void
 }
 
 const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
@@ -27,7 +27,7 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
         <Chip text="견적 협의" bgColor="bg-bg" textColor="text-bl" />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PendingQuoteItem;
+export default PendingQuoteItem

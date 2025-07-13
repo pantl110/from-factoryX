@@ -1,20 +1,17 @@
-import Panel from "@/ui/panel";
-import { FacilityDataModel } from "@/mocks/facility-data";
-import InfoLabelValue from "@/ui/info-label-value";
-import { FacilityStatusType } from "../types";
-import FacilityHistoryItem from "./facility-history-item";
-import EmptySpace from "@/ui/empty-space";
-import TextareaAutosize from "react-textarea-autosize";
+import Panel from '@/ui/panel'
+import { FacilityDataModel } from '@/mocks/facility-data'
+import InfoLabelValue from '@/ui/info-label-value'
+import { FacilityStatusType } from '../types'
+import FacilityHistoryItem from './facility-history-item'
+import EmptySpace from '@/ui/empty-space'
+import TextareaAutosize from 'react-textarea-autosize'
 
 interface FacilityDetailPanelProps {
-  facility: FacilityDataModel;
-  onClose: () => void;
+  facility: FacilityDataModel
+  onClose: () => void
 }
 
-const FacilityDetailPanel = ({
-  facility,
-  onClose,
-}: FacilityDetailPanelProps) => {
+const FacilityDetailPanel = ({ facility, onClose }: FacilityDetailPanelProps) => {
   return (
     <Panel title="설비 관리" onClose={onClose}>
       <div className="flex flex-col gap-10">
@@ -99,7 +96,7 @@ const FacilityDetailPanel = ({
         </div>
       </div>
     </Panel>
-  );
-};
+  )
+}
 
-export default FacilityDetailPanel;
+export default FacilityDetailPanel

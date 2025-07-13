@@ -1,22 +1,17 @@
-import Chip from "@/ui/chip";
-import { TaxDocumentTypeColorMap } from "@/types/status-type";
-import Checkbox from "@/ui/checkbox";
-import { TaxDataModel } from "@/mocks/tax-data";
+import Chip from '@/ui/chip'
+import { TaxDocumentTypeColorMap } from '@/types/status-type'
+import Checkbox from '@/ui/checkbox'
+import { TaxDataModel } from '@/mocks/tax-data'
 
 interface TableItemProps {
-  onItemClick?: () => void;
-  item: TaxDataModel;
-  onToggle: () => void;
-  isChecked: boolean;
+  onItemClick?: () => void
+  item: TaxDataModel
+  onToggle: () => void
+  isChecked: boolean
 }
 
-const TableItem = ({
-  onItemClick,
-  item,
-  onToggle,
-  isChecked,
-}: TableItemProps) => {
-  const { bgColor, textColor } = TaxDocumentTypeColorMap[item.taxType];
+const TableItem = ({ onItemClick, item, onToggle, isChecked }: TableItemProps) => {
+  const { bgColor, textColor } = TaxDocumentTypeColorMap[item.taxType]
   return (
     <div
       className="flex items-center border-b border-lg h-14 w-full min-w-[1018px] text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer"
@@ -24,7 +19,7 @@ const TableItem = ({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onItemClick?.();
+        if (e.key === 'Enter' || e.key === ' ') onItemClick?.()
       }}
     >
       <Checkbox isChecked={isChecked} onToggle={onToggle} />
@@ -38,7 +33,7 @@ const TableItem = ({
       <p className="flex-2 px-3 text-dg">{item.taxAmount}</p>
       <p className="flex-2 px-3 text-dg">{item.totalAmount}</p>
     </div>
-  );
-};
+  )
+}
 
-export default TableItem;
+export default TableItem

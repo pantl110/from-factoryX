@@ -1,24 +1,19 @@
-import Chip from "@/ui/chip";
-import { FacilityStatusColorMap, FacilityStatusType } from "./types";
-import { FacilityDataModel } from "@/mocks/facility-data";
-import Checkbox from "@/ui/checkbox";
+import Chip from '@/ui/chip'
+import { FacilityStatusColorMap, FacilityStatusType } from './types'
+import { FacilityDataModel } from '@/mocks/facility-data'
+import Checkbox from '@/ui/checkbox'
 
 export interface FacilityTableItemProps {
-  facility: FacilityDataModel;
-  onClick?: () => void;
-  isChecked?: boolean;
-  onToggle?: () => void;
+  facility: FacilityDataModel
+  onClick?: () => void
+  isChecked?: boolean
+  onToggle?: () => void
 }
 
-const FacilityTableItem = ({
-  facility,
-  onClick,
-  isChecked,
-  onToggle,
-}: FacilityTableItemProps) => {
+const FacilityTableItem = ({ facility, onClick, isChecked, onToggle }: FacilityTableItemProps) => {
   const statusColor = facility.status
     ? FacilityStatusColorMap[facility.status as FacilityStatusType]
-    : null;
+    : null
 
   return (
     <div
@@ -27,13 +22,10 @@ const FacilityTableItem = ({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onClick?.();
+        if (e.key === 'Enter' || e.key === ' ') onClick?.()
       }}
     >
-      <Checkbox
-        isChecked={isChecked || false}
-        onToggle={onToggle || (() => {})}
-      />
+      <Checkbox isChecked={isChecked || false} onToggle={onToggle || (() => {})} />
       <div className="flex-1 px-3">
         <Chip
           text={facility.status as FacilityStatusType}
@@ -46,7 +38,7 @@ const FacilityTableItem = ({
       <p className="flex-1 px-3">{facility.priority}</p>
       <p className="flex-2 px-3">{facility.location}</p>
     </div>
-  );
-};
+  )
+}
 
-export default FacilityTableItem;
+export default FacilityTableItem

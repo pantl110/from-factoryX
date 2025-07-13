@@ -1,24 +1,21 @@
-import { useEffect } from "react";
-import { ArrowsInSimple } from "@phosphor-icons/react";
-import Image from "next/image";
+import { useEffect } from 'react'
+import { ArrowsInSimple } from '@phosphor-icons/react'
+import Image from 'next/image'
 
 interface EnlargeImageOverlayProps {
-  imageUrl: string;
-  onClose: () => void;
+  imageUrl: string
+  onClose: () => void
 }
 
-const EnlargeImageOverlay = ({
-  imageUrl,
-  onClose,
-}: EnlargeImageOverlayProps) => {
+const EnlargeImageOverlay = ({ imageUrl, onClose }: EnlargeImageOverlayProps) => {
   useEffect(() => {
-    const originalStyle = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const originalStyle = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
 
     return () => {
-      document.body.style.overflow = originalStyle;
-    };
-  }, []);
+      document.body.style.overflow = originalStyle
+    }
+  }, [])
 
   return (
     <div
@@ -26,7 +23,7 @@ const EnlargeImageOverlay = ({
       className="bg-black/50 w-full min-w-[1000px] h-full fixed top-0 left-0 z-50 flex justify-center items-center"
       onClick={onClose}
       onKeyDown={(e) => {
-        if (e.key === "Escape") onClose?.();
+        if (e.key === 'Escape') onClose?.()
       }}
     >
       <div
@@ -48,7 +45,7 @@ const EnlargeImageOverlay = ({
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default EnlargeImageOverlay;
+export default EnlargeImageOverlay

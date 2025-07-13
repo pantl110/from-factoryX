@@ -1,6 +1,6 @@
-import DocumentViewTitle from "../document-view-title";
-import ProductListInfo from "../product-list-info";
-import SupplierInfo from "../supplier-info";
+import DocumentViewTitle from '../document-view-title'
+import ProductListInfo from '../product-list-info'
+import SupplierInfo from '../supplier-info'
 
 const QuotationDocumentView = () => {
   return (
@@ -13,7 +13,7 @@ const QuotationDocumentView = () => {
       <SupplierInfo dateLabel="견적일자" />
       <ProductListInfo />
     </div>
-  );
-};
+  )
+}
 
-export default QuotationDocumentView;
+export default QuotationDocumentView

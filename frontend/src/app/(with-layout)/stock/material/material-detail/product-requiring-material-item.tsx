@@ -1,8 +1,8 @@
 interface ProductRequiringMaterialItemProps {
-  productName: string;
-  productCode: string;
-  size: string;
-  unit: string;
+  productName: string
+  productCode: string
+  size: string
+  unit: string
 }
 
 const ProductRequiringMaterialItem = ({
@@ -18,7 +18,7 @@ const ProductRequiringMaterialItem = ({
       <p className="flex-1 px-3 text-dg">{size}</p>
       <p className="w-[80px] px-3 text-dg">{unit}</p>
     </div>
-  );
-};
+  )
+}
 
-export default ProductRequiringMaterialItem;
+export default ProductRequiringMaterialItem

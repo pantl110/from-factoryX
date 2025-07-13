@@ -1,14 +1,14 @@
-"use client";
+'use client'
 
-import SearchInput from "@/ui/search-input";
-import MiniBtn from "@/ui/mini-btn";
+import SearchInput from '@/ui/search-input'
+import MiniBtn from '@/ui/mini-btn'
 
 interface SearchDeleteTableProps {
-  placeholder?: string;
-  checkedCount: number;
-  deleteButtonText: string;
-  onDelete: () => void;
-  onCancel: () => void;
+  placeholder?: string
+  checkedCount: number
+  deleteButtonText: string
+  onDelete: () => void
+  onCancel: () => void
 }
 
 const SearchDeleteTable = ({
@@ -32,15 +32,15 @@ const SearchDeleteTable = ({
         />
         <MiniBtn
           text={deleteButtonText}
-          textColor={checkedCount > 0 ? "text-red" : "text-dg"}
-          borderColor={checkedCount > 0 ? "" : "border-lg"}
-          bgColor={checkedCount > 0 ? "bg-red-8" : "bg-white"}
-          hoverColor={checkedCount > 0 ? "hover:bg-red-hover" : "hover:bg-bg"}
+          textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+          borderColor={checkedCount > 0 ? '' : 'border-lg'}
+          bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-white'}
+          hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
           onClick={checkedCount > 0 ? onDelete : () => {}}
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SearchDeleteTable;
+export default SearchDeleteTable

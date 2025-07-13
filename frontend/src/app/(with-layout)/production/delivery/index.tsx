@@ -1,39 +1,26 @@
-import MiniBtn from "@/ui/mini-btn";
-import DeliveryTableHeader from "./delivery-table-header";
-import DeliveryTableItem from "./delivery-table-item";
-import { useState } from "react";
-import PrintDeliveryModal from "./modals/print-delivery-modal";
-import PrintAllDeliveryModal from "./modals/print-all-delivery-modal";
-import CreateTransactionOverlayview from "./modals/create-transaction-overlayview";
-import CreateTaxOverlayview from "./modals/create-tax-overlayview";
-import usePageStatusStore from "@/store/page-status-store";
-import MoveToStorageModal from "./modals/move-to-storage-modal";
-import { deliveryData } from "@/mocks/delivery-data";
-import AddReturnModal from "./modals/add-return-modal/add-return-modal";
+import MiniBtn from '@/ui/mini-btn'
+import DeliveryTableHeader from './delivery-table-header'
+import DeliveryTableItem from './delivery-table-item'
+import { useState } from 'react'
+import PrintDeliveryModal from './modals/print-delivery-modal'
+import PrintAllDeliveryModal from './modals/print-all-delivery-modal'
+import CreateTransactionOverlayview from './modals/create-transaction-overlayview'
+import CreateTaxOverlayview from './modals/create-tax-overlayview'
+import usePageStatusStore from '@/store/page-status-store'
+import MoveToStorageModal from './modals/move-to-storage-modal'
+import { deliveryData } from '@/mocks/delivery-data'
+import AddReturnModal from './modals/add-return-modal/add-return-modal'
 
 const Delivery = () => {
-  const [isPrintAllDeliveryModalOpen, setIsPrintAllDeliveryModalOpen] =
-    useState(false);
-  const [isPrintDeliveryModalOpen, setIsPrintDeliveryModalOpen] =
-    useState(false);
-  const [
-    isCreateTransactionOverlayviewOpen,
-    setIsCreateTransactionOverlayviewOpen,
-  ] = useState(false);
-  const [isCreateTaxOverlayviewOpen, setIsCreateTaxOverlayviewOpen] =
-    useState(false);
-  const isMoveToStorageModalOpen = usePageStatusStore(
-    (state) => state.isMoveToStorageModalOpen,
-  );
-  const setMoveToStorageModalOpen = usePageStatusStore(
-    (state) => state.setMoveToStorageModalOpen,
-  );
-  const isAddReturnModalOpen = usePageStatusStore(
-    (state) => state.isAddReturnModalOpen,
-  );
-  const setAddReturnModalOpen = usePageStatusStore(
-    (state) => state.setAddReturnModalOpen,
-  );
+  const [isPrintAllDeliveryModalOpen, setIsPrintAllDeliveryModalOpen] = useState(false)
+  const [isPrintDeliveryModalOpen, setIsPrintDeliveryModalOpen] = useState(false)
+  const [isCreateTransactionOverlayviewOpen, setIsCreateTransactionOverlayviewOpen] =
+    useState(false)
+  const [isCreateTaxOverlayviewOpen, setIsCreateTaxOverlayviewOpen] = useState(false)
+  const isMoveToStorageModalOpen = usePageStatusStore((state) => state.isMoveToStorageModalOpen)
+  const setMoveToStorageModalOpen = usePageStatusStore((state) => state.setMoveToStorageModalOpen)
+  const isAddReturnModalOpen = usePageStatusStore((state) => state.isAddReturnModalOpen)
+  const setAddReturnModalOpen = usePageStatusStore((state) => state.setAddReturnModalOpen)
 
   return (
     <>
@@ -83,21 +70,15 @@ const Delivery = () => {
 
       {/* 모달 */}
       {isPrintAllDeliveryModalOpen && (
-        <PrintAllDeliveryModal
-          onClose={() => setIsPrintAllDeliveryModalOpen(false)}
-        />
+        <PrintAllDeliveryModal onClose={() => setIsPrintAllDeliveryModalOpen(false)} />
       )}
       {isPrintDeliveryModalOpen && (
-        <PrintDeliveryModal
-          onClose={() => setIsPrintDeliveryModalOpen(false)}
-        />
+        <PrintDeliveryModal onClose={() => setIsPrintDeliveryModalOpen(false)} />
       )}
       {isMoveToStorageModalOpen && (
         <MoveToStorageModal onClose={() => setMoveToStorageModalOpen(false)} />
       )}
-      {isAddReturnModalOpen && (
-        <AddReturnModal onClose={() => setAddReturnModalOpen(false)} />
-      )}
+      {isAddReturnModalOpen && <AddReturnModal onClose={() => setAddReturnModalOpen(false)} />}
 
       {/* overlayview */}
       {isCreateTransactionOverlayviewOpen && (
@@ -106,12 +87,10 @@ const Delivery = () => {
         />
       )}
       {isCreateTaxOverlayviewOpen && (
-        <CreateTaxOverlayview
-          onClose={() => setIsCreateTaxOverlayviewOpen(false)}
-        />
+        <CreateTaxOverlayview onClose={() => setIsCreateTaxOverlayviewOpen(false)} />
       )}
     </>
-  );
-};
+  )
+}
 
-export default Delivery;
+export default Delivery

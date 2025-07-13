@@ -12,7 +12,7 @@ const DeliveryTableHeader = () => {
       <p className="flex-1 py-1 px-3 text-sv">납품 수량</p>
       <p className="flex-1 py-1 px-3 text-sv">납품일자</p>
     </div>
-  );
-};
+  )
+}
 
-export default DeliveryTableHeader;
+export default DeliveryTableHeader

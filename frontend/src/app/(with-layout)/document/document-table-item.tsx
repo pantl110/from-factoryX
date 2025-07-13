@@ -1,14 +1,14 @@
-import { DocumentDataModel } from "@/mocks/document-data";
-import Chip from "@/ui/chip";
-import { DocumentTypeColorMap } from "./types";
-import Checkbox from "@/ui/checkbox";
+import { DocumentDataModel } from '@/mocks/document-data'
+import Chip from '@/ui/chip'
+import { DocumentTypeColorMap } from './types'
+import Checkbox from '@/ui/checkbox'
 
 interface DocumentTableItemProps {
-  data: DocumentDataModel;
-  onClick?: () => void;
-  checked: boolean;
-  onToggle: () => void;
-  isTaxDocument?: boolean;
+  data: DocumentDataModel
+  onClick?: () => void
+  checked: boolean
+  onToggle: () => void
+  isTaxDocument?: boolean
 }
 
 const DocumentTableItem = ({
@@ -27,8 +27,8 @@ const DocumentTableItem = ({
     taxPrice,
     totalPrice,
     writtenDate,
-  } = data;
-  const { bgColor, textColor } = DocumentTypeColorMap[documentType];
+  } = data
+  const { bgColor, textColor } = DocumentTypeColorMap[documentType]
 
   return (
     <div
@@ -37,7 +37,7 @@ const DocumentTableItem = ({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onClick?.();
+        if (e.key === 'Enter' || e.key === ' ') onClick?.()
       }}
     >
       <Checkbox isChecked={checked} onToggle={onToggle} />
@@ -45,10 +45,10 @@ const DocumentTableItem = ({
         <>
           <p className="px-3 flex-1">{companyName}</p>
           <p className="px-3 flex-1">{productName}</p>
-          <p className="px-3 flex-1">{supplyPrice?.toLocaleString() || "-"}</p>
-          <p className="px-3 flex-1">{taxPrice?.toLocaleString() || "-"}</p>
-          <p className="px-3 flex-1">{totalPrice?.toLocaleString() || "-"}</p>
-          <p className="px-3 w-[150px]">{writtenDate || "-"}</p>
+          <p className="px-3 flex-1">{supplyPrice?.toLocaleString() || '-'}</p>
+          <p className="px-3 flex-1">{taxPrice?.toLocaleString() || '-'}</p>
+          <p className="px-3 flex-1">{totalPrice?.toLocaleString() || '-'}</p>
+          <p className="px-3 w-[150px]">{writtenDate || '-'}</p>
           <p className="px-3 w-[150px]">{date}</p>
         </>
       ) : (
@@ -62,7 +62,7 @@ const DocumentTableItem = ({
         </>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default DocumentTableItem;
+export default DocumentTableItem

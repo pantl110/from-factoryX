@@ -1,4 +1,4 @@
-import { CaretUpIcon } from "@phosphor-icons/react/dist/ssr";
+import { CaretUpIcon } from '@phosphor-icons/react/dist/ssr'
 
 const ProductionYield = () => {
   return (
@@ -24,7 +24,7 @@ const ProductionYield = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProductionYield;
+export default ProductionYield
