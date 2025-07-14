@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryEquipment
-from project.models import Project
+from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
 from stock.models import Product
 import json
@@ -106,11 +106,6 @@ class ProjectPlanAPITestCase(TestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
-        
-        # 응답 내용 출력
-        print(f"Response status: {response.status_code}")
-        print(f"Response content: {response.content}")
-        print(f"Response headers: {dict(response.headers)}")
         
         self.assertEqual(response.status_code, 200)
         
@@ -641,4 +636,188 @@ class ProjectPlanAPITestCase(TestCase):
         # 응답 데이터 확인
         data = response.json()
         self.assertIn('detail', data)
-        self.assertIn('없습니다', data['detail']) 
+        self.assertIn('없습니다', data['detail'])
+
+    def test_update_project_plan_equipment_change_log_creation(self):
+        """생산 중인 프로젝트의 설비 변경 시 로그 생성 테스트"""
+        # 먼저 생산 계획 생성
+        create_url = '/v1/project/plan'
+        create_payload = {
+            'project_id': self.project.id,
+            'quotation_product_ids': [self.quotation_product.id],
+            'production_quantities': [8],
+            'equipment_ids': [self.equipment.id],
+            'start_dates': ['2025-07-13'],
+            'end_dates': ['2025-07-14'],
+            'avg_production_times': [3600]
+        }
+        
+        response = self.client.post(
+            create_url,
+            data=json.dumps(create_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 생성된 계획의 ID 가져오기
+        plan_id = response.json()['created_plans'][0]['id']
+        
+        # 계획 상태를 "가동 중"으로 변경
+        update_status_url = f'/v1/project/plan/{plan_id}'
+        status_payload = {
+            'status': '가동 중'
+        }
+        
+        response = self.client.patch(
+            update_status_url,
+            data=json.dumps(status_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 새로운 설비 생성
+        new_equipment = FactoryEquipment.objects.create(
+            factory=self.factory,
+            name='새로운 설비',
+            priority=2
+        )
+        
+        # 설비 변경 (가동 중 상태에서)
+        equipment_change_payload = {
+            'equipment_id': new_equipment.id
+        }
+        
+        response = self.client.patch(
+            update_status_url,
+            data=json.dumps(equipment_change_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 프로젝트 로그가 생성되었는지 확인
+        logs = ProjectLog.objects.filter(project=self.project)
+        self.assertEqual(logs.count(), 1)
+        
+        log = logs.first()
+        self.assertEqual(log.type, ProjectLog.LogType.plan)
+        self.assertEqual(log.title, "생산 설비 변경")
+        self.assertIn("테스트 설비", log.content)
+        self.assertIn("새로운 설비", log.content)
+        self.assertIn("라인에서", log.content)
+        self.assertIn("라인으로 변경되었어요", log.content)
+
+    def test_update_project_plan_equipment_change_no_log_when_not_producing(self):
+        """생산 중이 아닌 상태에서 설비 변경 시 로그 생성 안됨 테스트"""
+        # 먼저 생산 계획 생성
+        create_url = '/v1/project/plan'
+        create_payload = {
+            'project_id': self.project.id,
+            'quotation_product_ids': [self.quotation_product.id],
+            'production_quantities': [8],
+            'equipment_ids': [self.equipment.id],
+            'start_dates': ['2025-07-13'],
+            'end_dates': ['2025-07-14'],
+            'avg_production_times': [3600]
+        }
+        
+        response = self.client.post(
+            create_url,
+            data=json.dumps(create_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 생성된 계획의 ID 가져오기
+        plan_id = response.json()['created_plans'][0]['id']
+        
+        # 새로운 설비 생성
+        new_equipment = FactoryEquipment.objects.create(
+            factory=self.factory,
+            name='새로운 설비',
+            priority=2
+        )
+        
+        # 설비 변경 (생산 중이 아닌 상태에서)
+        equipment_change_payload = {
+            'equipment_id': new_equipment.id
+        }
+        
+        response = self.client.patch(
+            f'/v1/project/plan/{plan_id}',
+            data=json.dumps(equipment_change_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 프로젝트 로그가 생성되지 않았는지 확인
+        logs = ProjectLog.objects.filter(project=self.project)
+        self.assertEqual(logs.count(), 0)
+
+    def test_update_project_plan_equipment_change_no_log_when_same_equipment(self):
+        """같은 설비로 변경 시 로그 생성 안됨 테스트"""
+        # 먼저 생산 계획 생성
+        create_url = '/v1/project/plan'
+        create_payload = {
+            'project_id': self.project.id,
+            'quotation_product_ids': [self.quotation_product.id],
+            'production_quantities': [8],
+            'equipment_ids': [self.equipment.id],
+            'start_dates': ['2025-07-13'],
+            'end_dates': ['2025-07-14'],
+            'avg_production_times': [3600]
+        }
+        
+        response = self.client.post(
+            create_url,
+            data=json.dumps(create_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 생성된 계획의 ID 가져오기
+        plan_id = response.json()['created_plans'][0]['id']
+        
+        # 계획 상태를 "가동 중"으로 변경
+        update_status_url = f'/v1/project/plan/{plan_id}'
+        status_payload = {
+            'status': '가동 중'
+        }
+        
+        response = self.client.patch(
+            update_status_url,
+            data=json.dumps(status_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 같은 설비로 변경 (실제로는 변경되지 않음)
+        equipment_change_payload = {
+            'equipment_id': self.equipment.id
+        }
+        
+        response = self.client.patch(
+            update_status_url,
+            data=json.dumps(equipment_change_payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 프로젝트 로그가 생성되지 않았는지 확인
+        logs = ProjectLog.objects.filter(project=self.project)
+        self.assertEqual(logs.count(), 0)
