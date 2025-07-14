@@ -1,5 +1,6 @@
 from ninja import Router
 from ninja.errors import HttpError
+from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from stock.schemas.inbound import MaterialHistoryCreateIn, SingleMaterialHistoryCreateIn
@@ -87,42 +88,33 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     response={ 200: MaterialHistoryDetailOut, 400: dict, 404: dict, 500: dict }
     )
 async def create_single_material_history(request, payload: SingleMaterialHistoryCreateIn):
-    """단일 원자재 히스토리 생성 API"""
-    
-    # 원자재 조회
     try:
         material = await Material.objects.aget(id=payload.material_id)
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
     
-    # 거래처 조회
     try:
         client = await FactoryClient.objects.aget(id=payload.client_id)
     except FactoryClient.DoesNotExist:
         raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
     
-    # 거래 타입 검증
     if payload.type not in [MaterialHistory.MaterialHistoryType.purchase, MaterialHistory.MaterialHistoryType.consumption]:
         raise HttpError(400, "잘못된 거래 타입입니다. 'purchase' 또는 'consumption'을 입력해주세요.")
     
-    # 구매 시 가격 필수
     if payload.type == MaterialHistory.MaterialHistoryType.purchase and payload.price is None:
         raise HttpError(400, "구매 시에는 가격을 입력해주세요.")
     
-    # 재고 계산
     current_stock = material.current_stock
     if payload.type == MaterialHistory.MaterialHistoryType.purchase:
         new_stock = current_stock + payload.quantity
-    else:  # consumption
+    else:
         new_stock = current_stock - payload.quantity
         if new_stock < 0:
             raise HttpError(400, "재고가 부족합니다.")
     
-    # 재고 업데이트
     material.current_stock = new_stock
     await sync_to_async(material.save)()
     
-    # 히스토리 생성
     material_history = await MaterialHistory.objects.acreate(
         type=payload.type,
         material=material,
@@ -149,19 +141,19 @@ async def create_single_material_history(request, payload: SingleMaterialHistory
     description="특정 원자재의 모든 히스토리를 조회합니다.",
     response={ 200: list[MaterialHistoryDetailOut], 404: dict, 500: dict }
     )
+@paginate
 async def get_material_history(request, material_id: int):
-    """원자재 전체 히스토리 조회 API"""
-    
-    # 원자재 조회
     try:
         material = await Material.objects.aget(id=material_id)
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
     
-    # 히스토리 조회 (최신순)
-    histories = await sync_to_async(list)(
-        MaterialHistory.objects.filter(material=material).order_by('-created_at')
-    )
+    @sync_to_async
+    def get_histories():
+        queryset = MaterialHistory.objects.filter(material=material).order_by('-created_at')
+        return list(queryset)
+    
+    histories = await get_histories()
     
     history_list = []
     for history in histories:
@@ -175,7 +167,7 @@ async def get_material_history(request, material_id: int):
             total_stock=history.total_stock
         ))
     
-    return 200, history_list
+    return history_list
 
 
 @router.get(
@@ -184,36 +176,32 @@ async def get_material_history(request, material_id: int):
     description="특정 원자재의 최근 N개월 또는 N일 히스토리를 조회합니다.",
     response={ 200: list[MaterialHistoryDetailOut], 404: dict, 500: dict }
     )
+@paginate
 async def get_material_history_by_period(request, material_id: int, months: int = None, days: int = None):
-    """원자재 기간별 히스토리 조회 API"""
-    
-    # 원자재 조회
     try:
         material = await Material.objects.aget(id=material_id)
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
     
-    # 기간 계산
     from django.utils import timezone
     from datetime import timedelta
     
     if days is not None:
-        # 일 단위로 계산
         start_date = timezone.now() - timedelta(days=days)
     elif months is not None:
-        # 월 단위로 계산 (기본값: 3개월)
         start_date = timezone.now() - timedelta(days=months * 30)
     else:
-        # 기본값: 3개월
         start_date = timezone.now() - timedelta(days=3 * 30)
     
-    # 히스토리 조회 (최신순, 기간 제한)
-    histories = await sync_to_async(list)(
-        MaterialHistory.objects.filter(
+    @sync_to_async
+    def get_histories():
+        queryset = MaterialHistory.objects.filter(
             material=material,
             created_at__gte=start_date
         ).order_by('-created_at')
-    )
+        return list(queryset)
+    
+    histories = await get_histories()
     
     history_list = []
     for history in histories:
@@ -227,6 +215,6 @@ async def get_material_history_by_period(request, material_id: int, months: int 
             total_stock=history.total_stock
         ))
     
-    return 200, history_list
+    return history_list
 
 
