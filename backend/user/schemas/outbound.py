@@ -5,6 +5,8 @@ from user.models import User
 class UserMeOut(Schema):
     email: str
     status: str
+    username: str
+    phone_number: str
 
 
 class UserLoginOut(Schema):
