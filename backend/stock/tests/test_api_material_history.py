@@ -345,11 +345,11 @@ class TestMaterialHistoryAPI(TestCase):
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
-        self.assertEqual(len(data), 2)  # 구매 1개 + 소모 1개
+        self.assertEqual(len(data["data"]), 2)  # 구매 1개 + 소모 1개
         
         # 최신순으로 정렬되어 있는지 확인 (소모가 먼저, 구매가 나중에)
-        self.assertEqual(data[0]["type"], "소모")
-        self.assertEqual(data[1]["type"], "구매")
+        self.assertEqual(data["data"][0]["type"], "소모")
+        self.assertEqual(data["data"][1]["type"], "구매")
 
     async def test_get_material_history_material_not_found(self):
         """존재하지 않는 원자재 히스토리 조회 테스트"""
@@ -394,28 +394,28 @@ class TestMaterialHistoryAPI(TestCase):
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
-        self.assertEqual(len(data), 2)  # 최근 3개월 내의 모든 히스토리
+        self.assertEqual(len(data["data"]), 2)  # 최근 3개월 내의 모든 히스토리
         
         # 최근 1개월 히스토리 조회
         response = await self.client.get(f"/{self.material.id}/period?months=1", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
-        self.assertEqual(len(data), 2)  # 1개월 내의 모든 히스토리
+        self.assertEqual(len(data["data"]), 2)  # 1개월 내의 모든 히스토리
         
         # 최근 7일 히스토리 조회
         response = await self.client.get(f"/{self.material.id}/period?days=7", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
-        self.assertEqual(len(data), 2)  # 7일 내의 모든 히스토리
+        self.assertEqual(len(data["data"]), 2)  # 7일 내의 모든 히스토리
         
         # 최근 30일 히스토리 조회
         response = await self.client.get(f"/{self.material.id}/period?days=30", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
-        self.assertEqual(len(data), 2)  # 30일 내의 모든 히스토리
+        self.assertEqual(len(data["data"]), 2)  # 30일 내의 모든 히스토리
 
     async def test_get_material_history_by_period_material_not_found(self):
         """존재하지 않는 원자재 기간별 히스토리 조회 테스트"""
