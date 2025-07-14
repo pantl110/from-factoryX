@@ -1,7 +1,7 @@
 from ninja import Router, Query
 from ninja.pagination import paginate
 from api.security import jwt_auth
-from factory.schemas.inbound import FactoryClientCreateIn, FactoryClientUpdateIn, FactoryClientFilter, FactoryClientDetailIn, FactoryClientDeleteIn, FactoryClientSearchIn
+from factory.schemas.inbound import FactoryClientCreateIn, FactoryClientUpdateIn, FactoryClientFilter, FactoryClientSearchIn
 from factory.schemas.outbound import FactoryClientOut, FactoryClientDetailOut
 from factory.models import Factory, FactoryClient
 from asgiref.sync import sync_to_async
@@ -12,7 +12,7 @@ router = Router(tags=["Factory Client"])
 
 
 @router.post(
-    "/clients",
+    "",
     summary="[C] 공장 거래처 등록",
     description="공장에 거래처를 등록합니다.",
     response={201: FactoryClientOut},
@@ -28,7 +28,7 @@ async def create_factory_client(request, payload: FactoryClientCreateIn):
 
 
 @router.get(
-    "/clients",
+    "",
     summary="[C] 공장 거래처 목록 조회",
     description="공장의 거래처 목록을 조회합니다. 필터링이 가능합니다.",
     response={200: List[FactoryClientOut]},
@@ -52,7 +52,7 @@ async def list_factory_clients(request, factory_id: int, filters: FactoryClientF
 
 
 @router.post(
-    "/clients/search",
+    "/search",
     summary="[C] 공장 거래처 검색",
     description="공장의 거래처를 이름, 사업자등록번호, 대표자명으로 검색합니다.",
     response={200: List[FactoryClientOut]},
@@ -85,20 +85,17 @@ async def search_factory_clients(request, payload: FactoryClientSearchIn):
     return clients
 
 
-@router.post(
-    "/clients/detail",
+@router.get(
+    "/{client_id}",
     summary="[C] 공장 거래처 상세 조회",
     description="공장 거래처 ID로 거래처 정보를 조회합니다.",
-    response={200: FactoryClientDetailOut},
+    response={200: FactoryClientDetailOut, 404: dict},
     auth=jwt_auth,
 )
-async def get_factory_client(request, payload: FactoryClientDetailIn):
+async def get_factory_client(request, client_id: int, factory_id: int):
     user = request.auth
-    client_id = payload.client_id
-    factory_id = payload.factory_id
     client = await get_factory_client_by_id(client_id, factory_id, user)
     
-    # 상세 정보 추가 (ForeignKey 접근은 sync_to_async로 감싸야 함)
     client.factory_name = await sync_to_async(lambda: client.factory.name)()
     client.created_at_formatted = client.created_at.strftime("%Y-%m-%d %H:%M:%S")
     client.updated_at_formatted = client.updated_at.strftime("%Y-%m-%d %H:%M:%S")
@@ -107,17 +104,15 @@ async def get_factory_client(request, payload: FactoryClientDetailIn):
 
 
 @router.patch(
-    "/clients",
+    "/{client_id}",
     summary="[C] 공장 거래처 정보 수정",
     description="공장 거래처 ID로 거래처 정보를 수정합니다.",
-    response={200: FactoryClientOut},
+    response={200: FactoryClientOut, 404: dict},
     auth=jwt_auth,
 )
-async def update_factory_client(request, payload: FactoryClientUpdateIn):
+async def update_factory_client(request, client_id: int, factory_id: int, payload: FactoryClientUpdateIn):
     user = request.auth
     data = payload.dict(exclude_unset=True)
-    client_id = data.pop("client_id")
-    factory_id = data.pop("factory_id")
     client = await get_factory_client_by_id(client_id, factory_id, user)
     for attr, value in data.items():
         setattr(client, attr, value)
@@ -126,16 +121,14 @@ async def update_factory_client(request, payload: FactoryClientUpdateIn):
 
 
 @router.delete(
-    "/clients",
+    "/{client_id}",
     summary="[C] 공장 거래처 삭제",
     description="공장 거래처 ID로 거래처를 삭제합니다.",
-    response={204: None},
+    response={204: None, 404: dict},
     auth=jwt_auth,
 )
-async def delete_factory_client(request, payload: FactoryClientDeleteIn):
+async def delete_factory_client(request, client_id: int, factory_id: int):
     user = request.auth
-    client_id = payload.client_id
-    factory_id = payload.factory_id
     client = await get_factory_client_by_id(client_id, factory_id, user)
     await client.adelete()
     return 204, None 
