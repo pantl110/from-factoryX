@@ -91,7 +91,7 @@ class TestFactoryClient(TestCase):
             "business_category": "전자제품",
             "address": "서울시 강남구",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertIn("id", data)
@@ -103,7 +103,7 @@ class TestFactoryClient(TestCase):
         공장 클라이언트 목록 조회 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(f"/clients?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
@@ -120,7 +120,7 @@ class TestFactoryClient(TestCase):
             "factory_id": self.factory.id,
             "q": "삼성"
         }
-        response = await self.client.post("/clients/search", headers=headers, json=payload)
+        response = await self.client.post("/search", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
@@ -132,11 +132,7 @@ class TestFactoryClient(TestCase):
         공장 클라이언트 상세 조회 테스트
         """
         headers = await self.authenticate()
-        payload = {
-            "factory_id": self.factory.id,
-            "client_id": self.test_client.id
-        }
-        response = await self.client.post("/clients/detail", headers=headers, json=payload)
+        response = await self.client.get(f"/{self.test_client.id}?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], self.test_client.id)
@@ -149,13 +145,11 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         payload = {
-            "factory_id": self.factory.id,
-            "client_id": self.test_client.id,
             "name": "Updated Client",
             "email": "updated@client.com",
             "phone": "010-5555-6666",
         }
-        response = await self.client.patch("/clients", headers=headers, json=payload)
+        response = await self.client.patch(f"/{self.test_client.id}?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], self.test_client.id)
@@ -168,11 +162,7 @@ class TestFactoryClient(TestCase):
         공장 클라이언트 삭제 테스트
         """
         headers = await self.authenticate()
-        payload = {
-            "factory_id": self.factory.id,
-            "client_id": self.test_client.id
-        }
-        response = await self.client.delete("/clients", headers=headers, json=payload)
+        response = await self.client.delete(f"/{self.test_client.id}?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 204)
         # 클라이언트가 삭제되었는지 확인
         self.assertFalse(
@@ -182,11 +172,7 @@ class TestFactoryClient(TestCase):
     async def test_get_factory_client_not_found(self):
         """존재하지 않는 클라이언트 조회 테스트"""
         headers = await self.authenticate()
-        payload = {
-            "factory_id": self.factory.id,
-            "client_id": 99999
-        }
-        response = await self.client.post("/clients/detail", headers=headers, json=payload)
+        response = await self.client.get(f"/99999?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 404)
 
     async def test_update_factory_client_not_found(self):
@@ -195,11 +181,9 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         payload = {
-            "factory_id": self.factory.id,
-            "client_id": 99999,
             "name": "Updated Client"
         }
-        response = await self.client.patch("/clients", headers=headers, json=payload)
+        response = await self.client.patch(f"/99999?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 404)
 
     async def test_delete_factory_client_not_found(self):
@@ -207,11 +191,7 @@ class TestFactoryClient(TestCase):
         존재하지 않는 클라이언트 삭제 테스트
         """
         headers = await self.authenticate()
-        payload = {
-            "factory_id": self.factory.id,
-            "client_id": 99999
-        }
-        response = await self.client.delete("/clients", headers=headers, json=payload)
+        response = await self.client.delete(f"/99999?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 404)
 
 
@@ -224,7 +204,7 @@ class TestFactoryClient(TestCase):
             "factory_id": self.factory.id,
             "q": "삼성"
         }
-        response = await self.client.post("/clients/search", headers=headers, json=payload)
+        response = await self.client.post("/search", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
@@ -240,7 +220,7 @@ class TestFactoryClient(TestCase):
             "factory_id": self.factory.id,
             "q": "124-81"
         }
-        response = await self.client.post("/clients/search", headers=headers, json=payload)
+        response = await self.client.post("/search", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
@@ -256,7 +236,7 @@ class TestFactoryClient(TestCase):
             "factory_id": self.factory.id,
             "q": "정의선"
         }
-        response = await self.client.post("/clients/search", headers=headers, json=payload)
+        response = await self.client.post("/search", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
@@ -272,7 +252,7 @@ class TestFactoryClient(TestCase):
             "factory_id": self.factory.id,
             "q": "전자"
         }
-        response = await self.client.post("/clients/search", headers=headers, json=payload)
+        response = await self.client.post("/search", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
@@ -290,7 +270,7 @@ class TestFactoryClient(TestCase):
             "factory_id": self.factory.id,
             "q": "존재하지않는거래처"
         }
-        response = await self.client.post("/clients/search", headers=headers, json=payload)
+        response = await self.client.post("/search", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
@@ -305,7 +285,7 @@ class TestFactoryClient(TestCase):
             "factory_id": self.factory.id,
             "q": ""
         }
-        response = await self.client.post("/clients/search", headers=headers, json=payload)
+        response = await self.client.post("/search", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
@@ -321,7 +301,7 @@ class TestFactoryClient(TestCase):
             "name": "New Client",
             "business_registration_number": "111-22-33333",
         }
-        response = await self.client.post("/clients", json=payload)
+        response = await self.client.post("", json=payload)
         self.assertEqual(response.status_code, 401)
 
     # 권한 컨트롤 테스트
@@ -347,7 +327,7 @@ class TestFactoryClient(TestCase):
             "name": "New Client",
             "business_registration_number": "111-22-33333",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         self.assertEqual(response.status_code, 404)  # 공장을 찾을 수 없음
 
     async def test_access_other_user_client(self):
@@ -375,11 +355,7 @@ class TestFactoryClient(TestCase):
         )
         
         headers = await self.authenticate()
-        payload = {
-            "factory_id": other_factory.id,
-            "client_id": other_client.id
-        }
-        response = await self.client.post("/clients/detail", headers=headers, json=payload)
+        response = await self.client.get(f"/{other_client.id}?factory_id={other_factory.id}", headers=headers)
         self.assertEqual(response.status_code, 404)  # 거래처를 찾을 수 없음
 
 
@@ -392,10 +368,11 @@ class TestFactoryClient(TestCase):
         # name 누락
         payload = {
             "factory_id": self.factory.id,
+            "name": "",
             "business_registration_number": "111-22-33333",
             "representative_name": "김철수",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         self.assertIn(response.status_code, [201, 400, 422])
         
         # business_registration_number 누락
@@ -404,7 +381,7 @@ class TestFactoryClient(TestCase):
             "name": "New Client",
             "representative_name": "김철수",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         self.assertIn(response.status_code, [201, 400, 422])
 
     async def test_create_client_invalid_email_format(self):
@@ -419,7 +396,7 @@ class TestFactoryClient(TestCase):
             "representative_name": "김철수",
             "email": "invalid-email-format",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         # 현재 API에서는 이메일 검증이 없을 수 있으므로 실제 응답 확인
         self.assertIn(response.status_code, [201, 400, 422])
 
@@ -435,7 +412,7 @@ class TestFactoryClient(TestCase):
             "representative_name": "김철수",
             "phone": "invalid-phone",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         # 현재 API에서는 전화번호 검증이 없을 수 있으므로 실제 응답 확인
         self.assertIn(response.status_code, [201, 400, 422])
 
@@ -450,7 +427,7 @@ class TestFactoryClient(TestCase):
             "business_registration_number": self.test_client.business_registration_number,  # 기존 번호 사용
             "representative_name": "김철수",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         # 현재 API에서는 중복 검증이 없을 수 있으므로 실제 응답 확인
         self.assertIn(response.status_code, [201, 400, 422])
 
@@ -465,7 +442,7 @@ class TestFactoryClient(TestCase):
             "business_registration_number": "111-22-33333",
             "representative_name": "김철수",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         # 현재 API에서는 빈 이름 검증이 없을 수 있으므로 실제 응답 확인
         self.assertIn(response.status_code, [201, 400, 422])
 
@@ -480,7 +457,7 @@ class TestFactoryClient(TestCase):
             "business_registration_number": "111-22-33333",
             "representative_name": "김철수",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         self.assertIn(response.status_code, [201, 400, 422])
 
     # 추가 예외 케이스 테스트
@@ -494,7 +471,7 @@ class TestFactoryClient(TestCase):
             "name": "New Client",
             "business_registration_number": "111-22-33333",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         self.assertEqual(response.status_code, 404)
 
     async def test_list_clients_nonexistent_factory(self):
@@ -502,7 +479,7 @@ class TestFactoryClient(TestCase):
         존재하지 않는 공장의 거래처 목록 조회 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get("/clients?factory_id=99999", headers=headers)
+        response = await self.client.get("?factory_id=99999", headers=headers)
         # 현재 API에서는 빈 결과를 반환할 수 있으므로 실제 응답 확인
         self.assertIn(response.status_code, [200, 404])
 
@@ -515,7 +492,7 @@ class TestFactoryClient(TestCase):
             "factory_id": 99999,
             "q": "삼성"
         }
-        response = await self.client.post("/clients/search", headers=headers, json=payload)
+        response = await self.client.post("/search", headers=headers, json=payload)
         self.assertEqual(response.status_code, 404)
 
     async def test_update_client_invalid_data(self):
@@ -546,7 +523,7 @@ class TestFactoryClient(TestCase):
             "representative_name": "김철수",
             "email": "test@example.com",
         }
-        response = await self.client.post("/clients", headers=headers, json=payload)
+        response = await self.client.post("", headers=headers, json=payload)
         # 특수문자가 포함되어도 정상 처리되어야 함 (XSS 방지 로직이 있다면 400/422)
         self.assertIn(response.status_code, [201, 400, 422])
 
@@ -557,7 +534,7 @@ class TestFactoryClient(TestCase):
         headers = await self.authenticate()
         
         # 기본 목록 조회 (최신순 정렬 확인)
-        response = await self.client.get(f"/clients?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         result = data.get("data", [])
