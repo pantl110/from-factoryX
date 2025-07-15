@@ -4,10 +4,13 @@ import { useState } from 'react'
 import SideBar from '@/components/side-bar'
 import TopBar from '@/components/top-bar'
 import { usePathname } from 'next/navigation'
+// import { useAuthGuard } from '@/hooks/use-auth-guard'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true)
   const pathname = usePathname()
+
+  // useAuthGuard() // 로그인 안되어있으면 로그인 페이지로 리다이렉트
 
   const isProductionPage = pathname.startsWith('/production/') // production 페이지인지 확인
 

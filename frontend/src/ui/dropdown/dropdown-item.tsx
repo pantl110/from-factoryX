@@ -38,7 +38,7 @@ const DropdownItem = ({
       )}
       {text && (
         <h4
-          className={`${search ? 'Me_Body-1' : 'Heading-4'} ${textColor} transition-colors duration-200 ease-in-out ${search ? 'text-left pl-2' : 'text-center'} w-full`}
+          className={`${search ? 'Me_Body-1' : 'Heading-4'} ${textColor} transition-colors duration-200 ease-in-out ${search ? 'text-left pl-2' : 'text-center'} w-full text-center`}
         >
           {text}
         </h4>

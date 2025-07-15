@@ -17,7 +17,7 @@ import ProductEnrollmentModal from './material/modals/product-enrollment-modal'
 import Spinner from '@/ui/spinner'
 
 const StockPageContent = () => {
-  const stockTab = (usePageStatusStore((state) => state.stockTab) as StockTabType) || null
+  const stockTab = usePageStatusStore((state) => state.stockTab)
   const setStockTab = usePageStatusStore((state) => state.setStockTab)
   const searchParams = useSearchParams()
 
@@ -25,10 +25,8 @@ const StockPageContent = () => {
     const tabParam = searchParams.get('tab')
     if (tabParam === 'material') {
       setStockTab('material')
-    } else if (!stockTab) {
-      setStockTab('product')
     }
-  }, [stockTab, setStockTab, searchParams])
+  }, [setStockTab, searchParams])
 
   const [isProductAddDropdownOpen, setIsProductAddDropdownOpen] = useState(false)
   const [isMaterialAddDropdownOpen, setIsMaterialAddDropdownOpen] = useState(false)

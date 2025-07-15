@@ -1,4 +1,6 @@
 // 데이터 모델
+
+// Users API
 // 이메일 인증 코드 발송
 export interface SendVerificationCodeModel {
   email: string
@@ -52,8 +54,81 @@ export interface LoginResponseModel {
   status: string
 }
 
+// 로그아웃
+export interface LogoutResponseModel {
+  detail: string
+}
+
+// 내 정보 조회
+export interface UserInfoModel {
+  email: string
+  status: string
+  username?: string | null
+  phone_number?: string | null
+  profile_image?: string | null
+}
+
+// 회원 정보 수정
+export interface UpdateUserInfoModel {
+  username?: string
+  phone_number?: string | null
+  profile_image?: string | null
+}
+
+//////////////////////
+// Factory API
+// 공장 등록
+export interface FactoriesModel {
+  name: string
+  business_registration_number?: string
+  representative_name?: string
+  manager_email?: string
+  manager_phone?: string
+  manager_fax?: string
+  business_type?: string
+  business_category?: string
+  business_address?: string
+  is_trial?: boolean
+  billing_key?: string
+}
+
+export interface FactoriesResponseModel {
+  id: number
+  created_at: string
+  updated_at: string
+  owner: number
+  name: string
+  business_registration_number: string
+  representative_name: string
+  manager_email: string
+  manager_phone: string
+  manager_fax: string
+  business_type: string
+  business_category: string
+  business_address: string
+  is_trial: boolean
+  billing_key: string
+}
+
+// 공장 수정
+export interface FactoriesUpdateModel {
+  factory_id: number
+  name: string
+  business_registration_number: string
+  representative_name: string
+  manager_email: string
+  manager_phone: string
+  manager_fax: string
+  business_type: string
+  business_category: string
+  business_address: string
+  is_trial: boolean
+  billing_key: string
+}
+
 //////////////////////
 
+//////////////////////
 // API 응답 모델
 export interface ApiPaginationInfoModel {
   current_page: number

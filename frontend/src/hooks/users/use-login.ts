@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { LoginFormDataModel, LoginResponseModel } from '@/types/data-model'
+import { useAuthStore } from '@/store/auth-store'
 
 interface UseLoginReturnModel {
   login: (data: LoginFormDataModel) => Promise<{
@@ -13,6 +14,7 @@ interface UseLoginReturnModel {
 
 export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false)
+  const { setUserInfo, setAuthenticated } = useAuthStore()
 
   const login = async (data: LoginFormDataModel) => {
     setIsLoading(true)
@@ -20,6 +22,7 @@ export const useLogin = (): UseLoginReturnModel => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/login`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -31,7 +34,28 @@ export const useLogin = (): UseLoginReturnModel => {
 
       if (response.ok) {
         const result = await response.json()
-        // 로그인 성공
+
+        // 로그인 성공 후 사용자 정보 자동 fetch
+        try {
+          const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/me`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${result.access_token}`,
+            },
+          })
+
+          if (userResponse.ok) {
+            const userData = await userResponse.json()
+            // 전역 상태에 사용자 정보 저장
+            setUserInfo(userData)
+            setAuthenticated(true)
+          }
+        } catch {
+          // 사용자 정보 fetch 실패 시 무시
+        }
+
         return {
           success: true,
           data: result,

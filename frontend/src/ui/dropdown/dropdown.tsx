@@ -7,6 +7,7 @@ interface DropdownProps {
   style?: React.CSSProperties
   className?: string
   padding?: string
+  borderColor?: string
 }
 
 const Dropdown = ({
@@ -16,6 +17,7 @@ const Dropdown = ({
   style,
   className = '',
   padding = 'p-2',
+  borderColor = '',
 }: DropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -37,7 +39,7 @@ const Dropdown = ({
   return (
     <div
       ref={dropdownRef}
-      className={`flex flex-col ${width} rounded-lg ${padding} shadow-lg bg-white z-30 ${className}`}
+      className={`${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} rounded-lg ${padding} shadow-lg bg-white z-30 ${className}`}
       style={style}
     >
       {children}

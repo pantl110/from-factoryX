@@ -4,13 +4,31 @@ import { useState } from 'react'
 
 interface PhotoUploadModalProps {
   onClose: () => void
+  onImageSelected: (base64Data: string) => void
 }
 
-const PhotoUploadModal = ({ onClose }: PhotoUploadModalProps) => {
+const PhotoUploadModal = ({ onClose, onImageSelected }: PhotoUploadModalProps) => {
   const [hasFiles, setHasFiles] = useState(false)
 
   const onFileUpload = (hasFiles: boolean) => {
     setHasFiles(hasFiles)
+  }
+
+  // 업로드 버튼 클릭 시
+  const handleUpload = async (files: File[]) => {
+    if (files.length === 0) return
+
+    const file = files[0]
+    // 저장되는 파일정보가 너무 길어서 현재 오류 // s3 파일 저장 후 파일 url로 db에 저장 필요
+    // 파일을 base64로 변환
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target?.result as string
+      const base64Data = result.split(',')[1] // 데이터 부분만 추출
+      onImageSelected(base64Data) // 부모 컴포넌트에 base64 데이터 전달
+      onClose() // 모달 닫기
+    }
+    reader.readAsDataURL(file)
   }
 
   const title = hasFiles ? '업로드된 파일을 확인해 주세요.' : '새 프로필 사진을 업로드해주세요.'
@@ -28,6 +46,8 @@ const PhotoUploadModal = ({ onClose }: PhotoUploadModalProps) => {
             'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'],
           }}
           onFileUpload={onFileUpload}
+          onComplete={handleUpload}
+          isMultiple={false}
         />
       </div>
     </Modal>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SignupFormDataModel } from '@/types/data-model'
 import { useRouter } from 'next/navigation'
+import { useCreateFactory } from '@/hooks'
 
 export interface UseSignupReturnModel {
   signup: (data: SignupFormDataModel) => Promise<void>
@@ -16,6 +17,7 @@ export const useSignup = (): UseSignupReturnModel => {
   const [isSuccess, setIsSuccess] = useState(false)
 
   const router = useRouter()
+  const { createFactory } = useCreateFactory()
 
   const signup = async (data: SignupFormDataModel): Promise<void> => {
     setIsLoading(true)
@@ -45,8 +47,8 @@ export const useSignup = (): UseSignupReturnModel => {
       }
 
       setIsSuccess(true)
-      // 회원가입 성공 후 처리 // 로그인 페이지로 리다이렉트
-      router.push('/login')
+      await createFactory({ name: '' }) // 회원가입 성공 시 공장 생성
+      router.push('/login') // 로그인 페이지로 리다이렉트
     } catch {
       setError('회원가입 중 오류가 발생했습니다.')
     } finally {

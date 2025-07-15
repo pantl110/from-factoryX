@@ -10,9 +10,11 @@ import { useState } from 'react'
 import AgreeArea from './agree-area'
 import PasswordStep from './password-step'
 import EmailStep from './email-step'
+import { useRouter } from 'next/navigation'
 
 const SignupPage = () => {
   const [verificationCode, setVerificationCode] = useState('')
+  const router = useRouter()
 
   const {
     register,
@@ -51,6 +53,9 @@ const SignupPage = () => {
 
   const handleSignupComplete = async (data: SignupFormDataModel) => {
     await signup.signup(data)
+    if (signup.isSuccess) {
+      router.push('/login')
+    }
   }
 
   // 필수 약관 체크 여부 확인

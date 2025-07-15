@@ -56,7 +56,7 @@ const LoginPage = () => {
       </div>
       <div className="flex flex-col flex-1 gap-5 items-center justify-center w-full">
         <h2 className="Heading-2">로그인</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col w-full px-[100px]">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col w-100">
           <div className="flex flex-col">
             <Input
               type="email"
