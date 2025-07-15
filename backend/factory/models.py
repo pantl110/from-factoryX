@@ -69,6 +69,9 @@ class Factory(BaseModel):
         blank=True,
         help_text="결제 키",
     )
+    inviting = models.JSONField(
+        default=list, blank=True, help_text="초대 중인 이메일 목록"
+    )
 
 
 class FactoryEquipment(BaseModel):
