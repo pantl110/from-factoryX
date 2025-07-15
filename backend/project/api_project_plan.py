@@ -5,7 +5,7 @@ from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from project.schemas.inbound import ProjectPlanCreateIn, ProjectPlanUpdateIn, ProjectPlanListFilter
 from project.schemas.outbound import ProjectPlansCreateOut, ProjectPlanDetailOut, ProjectPlanDetailWithRelationsOut, ProductDetailOut, QuotationProductDetailOut, EquipmentDetailOut
-from project.models import Project, ProjectPlan
+from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
 from factory.models import FactoryEquipment
 from stock.models import Product
@@ -371,7 +371,7 @@ async def list_project_plans(request, project_id: int):
 @router.patch(
     "/{plan_id}",
     summary="[C] 프로젝트 생산 계획 수정",
-    description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다.",
+    description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다. 만약 가동 중인 설비가 변경된다면 프로젝트 로그도 생성됩니다.",
     response={200: dict, 400: dict, 404: dict, 500: dict}
 )
 async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn):
@@ -379,6 +379,8 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         plan = await ProjectPlan.objects.aget(id=plan_id)
     except ProjectPlan.DoesNotExist:
         raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
+    
+    old_equipment = await FactoryEquipment.objects.aget(id=plan.equipment_id) if plan.equipment_id else None
     
     if payload.equipment_id is not None:
         try:
@@ -411,5 +413,18 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         plan.avg_production_time = payload.avg_production_time
     
     await plan.asave()
+    
+    if (payload.equipment_id is not None and 
+        old_equipment and 
+        plan.equipment and 
+        old_equipment.id != plan.equipment.id and
+        plan.status == "가동 중"):  # 가동 중 상태 확인
+        project = await Project.objects.aget(id=plan.project_id)
+        await ProjectLog.objects.acreate(
+            project=project,
+            type=ProjectLog.LogType.plan,
+            title="생산 설비 변경",
+            content=f"사용 설비가 {old_equipment.name}라인에서 {plan.equipment.name}라인으로 변경되었어요"
+        )
     
     return 200, {"message": "프로젝트 생산 계획이 성공적으로 수정되었습니다."}

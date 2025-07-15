@@ -38,7 +38,6 @@ class MaterialSummaryOut(BaseModel):
 
 
 class MaterialDetailOut(BaseModel):
-    """원자재 상세 정보 출력 스키마"""
     id: int
     name: str
     code: str

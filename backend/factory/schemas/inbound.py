@@ -96,9 +96,6 @@ class FactoryEqUpdateIn(ModelSchema):
 
 # 거래처 관련 스키마
 class FactoryClientUpdateIn(ModelSchema):
-    client_id: int = Field(description="거래처 ID")
-    factory_id: int = Field(description="공장 ID")
-    
     class Meta:
         model = FactoryClient
         exclude = [
@@ -124,15 +121,13 @@ class FactoryClientFilter(FilterSchema):
         default=None, q="client_type", description="거래처 유형 (customer/supplier)"
     )
 
-# 거래처 상세 조회용 스키마
+# 거래처 상세 조회용 스키마 (URL 경로로 ID 받음)
 class FactoryClientDetailIn(Schema):
-    factory_id: int
-    client_id: int
+    pass
 
-# 거래처 삭제용 스키마
+# 거래처 삭제용 스키마 (URL 경로로 ID 받음)
 class FactoryClientDeleteIn(Schema):
-    factory_id: int
-    client_id: int
+    pass
 
 # 거래처 검색용 스키마
 class FactoryClientSearchIn(Schema):

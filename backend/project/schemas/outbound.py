@@ -66,3 +66,56 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     start_date: datetime.date
     end_date: datetime.date
     avg_production_time: int
+
+class ProjectLogDetailOut(Schema):
+    id: int
+    project_id: int
+    type: str
+    title: str
+    content: str
+
+# for project log create request
+class ProjectLogCreateIn(Schema):
+    project_id: int
+    type: str
+    title: str
+    content: str
+
+# for project log update request
+class ProjectLogUpdateIn(Schema):
+    type: Optional[str] = None
+    title: Optional[str] = None
+    content: Optional[str] = None
+
+# for project log create/update response
+class ProjectLogCreateOut(Schema):
+    message: str
+    log_id: int
+
+class ProjectLogUpdateOut(Schema):
+    message: str
+
+# for refund create request
+class RefundCreateIn(Schema):
+    project_id: int
+    product_id: int
+    refund_date: str  # YYYY-MM-DD 형식
+    current_stock: int
+    production_amount: int
+
+# for refund create response
+class RefundCreateOut(Schema):
+    message: str
+    refund_id: int
+    log_id: int
+
+# for refund update request
+class RefundUpdateIn(Schema):
+    refund_date: Optional[str] = None  # YYYY-MM-DD 형식
+    current_stock: Optional[int] = None
+    production_amount: Optional[int] = None
+
+# for refund update response
+class RefundUpdateOut(Schema):
+    message: str
+    refund_id: int
