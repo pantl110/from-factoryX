@@ -160,3 +160,7 @@ class MaterialProductConnectIn(BaseModel):
     type: str = Field(..., description="연결 타입 (material: 원자재 기준, product: 제품 기준)")
     target_id: int = Field(..., description="기준이 되는 ID (type이 material이면 Material ID, type이 product이면 Product ID)")
     connections: List[MaterialProductConnection] = Field(..., description="연결할 항목들")
+
+
+class MaterialProductUpdateIn(BaseModel):
+    quantity: float

@@ -2,7 +2,7 @@ from ninja import Router
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
-from stock.schemas.inbound import MaterialProductConnectIn
+from stock.schemas.inbound import MaterialProductConnectIn, MaterialProductUpdateIn
 from stock.schemas.outbound import MaterialProductConnectOut, MaterialProductConnectionOut
 from stock.models import Material, Product, MaterialProduct
 from factory.models import Factory
@@ -171,4 +171,25 @@ async def delete_material_product_connection(request, connection_id: int):
     return 200, {
         "message": "연결이 성공적으로 삭제되었습니다.",
         "deleted_connection_id": connection_id
+    }
+
+
+@router.patch(
+    "/connection/{connection_id}",
+    summary="[U] MaterialProduct 연결 수정",
+    description="특정 MaterialProduct 연결의 수량을 수정합니다.",
+    response={200: dict, 404: dict}
+)
+async def update_material_product_connection(request, connection_id: int, payload: MaterialProductUpdateIn):
+    try:
+        connection = await sync_to_async(MaterialProduct.objects.get)(id=connection_id)
+    except MaterialProduct.DoesNotExist:
+        raise HttpError(404, "해당 연결을 찾을 수 없습니다.")
+
+    connection.quantity = payload.quantity
+    await sync_to_async(connection.save)()
+    return 200, {
+        "message": "연결이 성공적으로 수정되었습니다.",
+        "updated_connection_id": connection_id,
+        "quantity": float(connection.quantity)
     }
