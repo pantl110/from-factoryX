@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from ninja import ModelSchema
-from stock.models import Product, ProductHistory, Material, MaterialHistory
+from stock.models import Product, ProductHistory, Material, MaterialHistory, MaterialProduct
 from typing import Optional, List
 
 
@@ -75,3 +75,20 @@ class ProductHistoryOut(ModelSchema):
     class Meta:
         model = ProductHistory
         fields = "__all__"
+
+
+class MaterialProductConnectionOut(BaseModel):
+    """MaterialProduct 연결 응답 스키마"""
+    id: int
+    product_id: int
+    material_id: int
+    quantity: float
+    product_name: str
+    material_name: str
+
+
+class MaterialProductConnectOut(BaseModel):
+    """MaterialProduct 연결 생성 응답 스키마"""
+    message: str
+    created_connections: List[MaterialProductConnectionOut]
+    total_count: int
