@@ -24,6 +24,7 @@ from user.api import router as user_router
 from stock.api import router as stock_router
 from stock.api_material import router as material_router
 from stock.api_material_history import router as materialHistory_router
+from stock.api_material_product import router as materialProduct_router
 from factory.api import router as factory_router
 from factory.api_eq import router as factoryEQ_router
 from stock.api_product import router as stockProduct_router
@@ -57,6 +58,7 @@ base_api.add_router("v1/aws", aws_router)
 base_api.add_router("v1/auth", user_router)
 base_api.add_router("v1/stock", stock_router)
 base_api.add_router("v1/stock/material/history", materialHistory_router)
+base_api.add_router("v1/stock/materialproduct", materialProduct_router)
 base_api.add_router("v1/stock/material", material_router)
 base_api.add_router("v1/factory", factory_router)
 base_api.add_router("v1/factory/equipment", factoryEQ_router)
