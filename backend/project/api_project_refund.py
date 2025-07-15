@@ -18,12 +18,12 @@ router = Router(tags=["ProjectRefund"], auth=jwt_auth)
 )
 async def create_refund(request, payload: RefundCreateIn):
     try:
-        project = await Project.objects.aget(id=payload.project_id)
+        project = await sync_to_async(Project.objects.get)(id=payload.project_id)
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
     
     try:
-        product = await Product.objects.aget(id=payload.product_id)
+        product = await sync_to_async(Product.objects.get)(id=payload.product_id)
     except Product.DoesNotExist:
         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
     
@@ -37,7 +37,7 @@ async def create_refund(request, payload: RefundCreateIn):
     except ValueError:
         raise HttpError(400, "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식으로 입력해주세요.")
     
-    log = await ProjectLog.objects.acreate(
+    log = await sync_to_async(ProjectLog.objects.create)(
         project=project,
         type=ProjectLog.LogType.refund,
         title="반품 접수 현황",
@@ -45,7 +45,7 @@ async def create_refund(request, payload: RefundCreateIn):
     )
     
     # Refund 생성
-    refund = await Refund.objects.acreate(
+    refund = await sync_to_async(Refund.objects.create)(
         project_log=log,
         product=product,
         amount=refund_amount,
@@ -69,7 +69,7 @@ async def create_refund(request, payload: RefundCreateIn):
 )
 async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
     try:
-        refund = await Refund.objects.aget(id=refund_id)
+        refund = await sync_to_async(Refund.objects.select_related('product', 'project_log').get)(id=refund_id)
     except Refund.DoesNotExist:
         raise HttpError(404, "해당 반품을 찾을 수 없습니다.")
     
@@ -90,6 +90,7 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
         update_fields['production_amount'] = payload.production_amount
     
     # current_stock과 production_amount가 모두 업데이트되는 경우 반품 수량 재계산
+    new_refund_amount = None
     if 'current_stock' in update_fields or 'production_amount' in update_fields:
         new_current_stock = update_fields.get('current_stock', refund.current_stock)
         new_production_amount = update_fields.get('production_amount', refund.production_amount)
@@ -105,13 +106,13 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
     for field, value in update_fields.items():
         setattr(refund, field, value)
     
-    await refund.asave()
+    await sync_to_async(refund.save)()
     
     # 프로젝트 로그 내용도 업데이트
-    if 'amount' in update_fields:
+    if new_refund_amount is not None:
         log_content = f"{refund.product.name} {new_refund_amount}개가 반품되었어요."
         refund.project_log.content = log_content
-        await refund.project_log.asave()
+        await sync_to_async(refund.project_log.save)()
     
     return 200, {
         "message": "반품이 성공적으로 수정되었습니다.",
