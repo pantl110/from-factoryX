@@ -198,11 +198,8 @@ class FactoryMember(BaseModel):
         User,
         related_name="factory_members",
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         help_text="팩토리 멤버 유저 (가입된 경우)",
     )
-    email = models.EmailField(max_length=100, help_text="멤버/초대 이메일 주소")
     role = models.CharField(
         max_length=10,
         choices=FactoryMemberType.choices,
@@ -226,7 +223,7 @@ class FactoryMember(BaseModel):
         unique=True,
         null=True,
         blank=True,
-        help_text="초대 토큰 (초대 상태일 때만)",
+        help_text="초대 토큰 (초대 상태일 때만) 필요하다면 사용",
     )
     invitation_message = models.TextField(
         null=True, blank=True, help_text="초대 메시지"
