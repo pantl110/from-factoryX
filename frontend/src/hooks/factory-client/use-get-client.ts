@@ -7,9 +7,7 @@ import useFactoryStore from '@/store/factory-store'
 function toQueryString(params: Record<string, any>) {
   return Object.entries(params)
     .filter(([, v]) => v !== undefined && v !== null && v !== '')
-    .map(
-      ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
-    )
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&')
 }
 
@@ -33,17 +31,24 @@ const useGetClient = () => {
   // 전체 목록 불러오기 (필터 포함)
   const getClientList = useCallback(
     async (customFilters?: typeof filters) => {
-      if (!factoryId || isNaN(factoryId)) return // factoryId 없으면 호출하지 않음
-      const params = {
-        factory_id: factoryId,
-        ...(customFilters || filters),
-      }
-      // page, page_size 방어
-      if (!params.page || isNaN(params.page) || params.page < 1) params.page = 1
-      if (!params.page_size || isNaN(params.page_size) || params.page_size < 1) params.page_size = 10
-      const queryString = toQueryString(params)
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client/clients?${queryString}`
+      const factoryIdNum = Number(factoryId)
+      if (!factoryIdNum || isNaN(factoryIdNum)) return // factoryId 없으면 호출하지 않음
+      const rawFilters = customFilters || filters;
+      const queryObject = {
+        name: rawFilters.name,
+        business_registration_number: rawFilters.business_registration_number,
+        representative_name: rawFilters.representative_name,
+        client_type: rawFilters.client_type,
+        page: Number(rawFilters.page) || 1,
+        page_size: Number(rawFilters.page_size) || 10,
+      };
+
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client/clients?factory_id=${factoryIdNum}&${toQueryString(queryObject)}`;
+      console.log('factoryId:', factoryId, typeof factoryId)
+      // console.log('params:', params)
+      console.log('페이지:', queryObject.page, typeof queryObject.page)
       console.log('fetch url:', url)
+
       setIsLoading(true)
       setError(null)
       try {
@@ -57,6 +62,7 @@ const useGetClient = () => {
           return { success: true, data: result }
         } else {
           const errorData = await response.json()
+          console.error('API 422 error detail:', errorData)
           setError(errorData.detail || '거래처 목록을 불러오지 못했습니다.')
           setClientList(null)
           return { success: false, error: errorData.detail }
@@ -69,14 +75,15 @@ const useGetClient = () => {
         setIsLoading(false)
       }
     },
-    [factoryId, filters]
+    [factoryId]
   )
 
   // 검색어로 검색
   const searchAllFields = useCallback(
     async (value: string) => {
-      if (!factoryId) return
-      const searchResult = await searchClients({ factory_id: factoryId, q: value })
+      const factoryIdNum = Number(factoryId)
+      if (!factoryIdNum || !value || isNaN(factoryIdNum)) return // 빈 문자열/잘못된 factoryId면 호출하지 않음
+      const searchResult = await searchClients({ factory_id: factoryIdNum, q: value })
       if (searchResult.success && searchResult.data) {
         setClientList(searchResult.data)
       } else {
@@ -95,7 +102,7 @@ const useGetClient = () => {
     } else {
       getClientList()
     }
-  }, [searchKeyword, searchAllFields, getClientList, factoryId])
+  }, [factoryId, searchKeyword])
 
   return {
     clientList,

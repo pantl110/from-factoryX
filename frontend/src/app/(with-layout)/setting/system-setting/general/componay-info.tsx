@@ -46,7 +46,8 @@ const CompanyInfo = () => {
     if (factoryId) {
       getFactory(factoryId)
     }
-  }, [factoryId, getFactory])
+    // getFactory는 의존성 배열에서 제거!
+  }, [factoryId])
 
   useEffect(() => {
     if (factory) {

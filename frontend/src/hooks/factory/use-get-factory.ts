@@ -45,7 +45,7 @@ export const useGetFactory = () => {
   const [factory, setFactory] = useState<FactoriesResponseModel | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const getFactory = async (factoryId: number) => {
+  const getFactory = useCallback(async (factoryId: number) => {
     setIsLoading(true)
     setError(null)
     try {
@@ -71,7 +71,7 @@ export const useGetFactory = () => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   return { getFactory, factory, isLoading, error }
 }

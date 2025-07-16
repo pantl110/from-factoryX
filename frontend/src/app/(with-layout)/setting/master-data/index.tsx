@@ -6,15 +6,8 @@ import SearchInput from '@/ui/search-input'
 import MiniBtn from '@/ui/mini-btn'
 import Facility from './facility'
 import Client from './client'
-import { useCheckAll } from '@/hooks/use-check-all'
 import DeleteModal from '@/ui/modal/delete-modal'
-import useGetEquipment from '@/hooks/factory-equipment/use-get-equipment'
-import useDeleteEquipment from '@/hooks/factory-equipment/use-delete-equipment'
-import {
-  EquipmentListResponseModel,
-  EquipmentResponseModel,
-} from '@/types/data-model'
-import { clientData } from '@/mocks/client-data'
+import { useGetClient, useGetEquipment, useCheckAll, useDeleteEquipment, useDeleteClient } from '@/hooks'
 
 const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore()
@@ -24,20 +17,25 @@ const MasterData = () => {
   const [searchKeyword, setSearchKeyword] = useState('')
   const {
     equipmentList,
-    isLoading: isEquipmentLoading,
-    error: equipmentError,
     setSearchKeyword: setEquipmentSearchKeyword,
     refetch: refetchEquipment,
   } = useGetEquipment()
 
-  // 설비 삭제 훅
-  const { deleteEquipment, isLoading: isDeleteLoading } = useDeleteEquipment()
+  // 거래처 목록 가져옴
+  const {
+    clientList,
+    setSearchKeyword: setClientSearchKeyword,
+    setFilters: setClientFilters,
+    refetch: refetchClient,
+  } = useGetClient()
 
-  // 설비 id 배열
-  const equipmentIds: number[] = equipmentList?.data?.map((item) => item.id) ?? []
+  // 삭제 훅
+  const { deleteEquipment, isLoading: isDeleteLoading } = useDeleteEquipment() // 설비 삭제 훅
+  const { deleteClient, isLoading: isDeleteClientLoading } = useDeleteClient() // 거래처 삭제 훅
 
-  // client id 배열 (목데이터 기반)
-  const clientIds: string[] = clientData.map((item) => item.id)
+  // id 배열
+  const equipmentIds: number[] = equipmentList?.data?.map((item) => item.id) ?? [] // 설비 id 배열
+  const clientIds: number[] = clientList?.data?.map((item) => item.id) ?? [] // 거래처 id 배열
 
   // 디바운싱 타이머 ref
   const debounceTimer = useRef<NodeJS.Timeout | null>(null)
@@ -49,15 +47,15 @@ const MasterData = () => {
       if (settingChip === 'equipment') {
         setEquipmentSearchKeyword(searchKeyword)
       } else if (settingChip === 'client') {
-        // setClientSearchKeyword(searchKeyword)
+        setClientSearchKeyword(searchKeyword)
       }
     }, 500)
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current)
     }
-  }, [searchKeyword, setEquipmentSearchKeyword, settingChip])
+  }, [searchKeyword, setEquipmentSearchKeyword, setClientSearchKeyword, settingChip])
 
-  // 체크박스 상태를 상위에서 관리
+  // 체크박스 상태 관리
   const {
     checkedCount: facilityCheckedCount,
     isAllChecked: isFacilityAllChecked,
@@ -66,8 +64,7 @@ const MasterData = () => {
     toggleOne: facilityToggleOne,
     getDeleteButtonText: getFacilityDeleteButtonText,
     setAllChecked: facilitySetAllChecked,
-  } = useCheckAll(equipmentIds)
-
+  } = useCheckAll(equipmentIds) // 설비 체크박스 상태 관리
   const {
     checkedCount: clientCheckedCount,
     isAllChecked: isClientAllChecked,
@@ -76,7 +73,7 @@ const MasterData = () => {
     toggleOne: clientToggleOne,
     getDeleteButtonText: getClientDeleteButtonText,
     setAllChecked: clientSetAllChecked,
-  } = useCheckAll(clientIds)
+  } = useCheckAll(clientIds) // 거래처 체크박스 상태 관리
 
   // 삭제 모달 상태 관리
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -87,12 +84,16 @@ const MasterData = () => {
     settingChip === 'equipment' ? getFacilityDeleteButtonText : getClientDeleteButtonText
   const setAllChecked = settingChip === 'equipment' ? facilitySetAllChecked : clientSetAllChecked
 
+  // 탭 선택 관련
   useEffect(() => {
     if (!settingChip || (settingChip !== 'equipment' && settingChip !== 'client')) {
       setSettingChip('equipment' as SettingChipType) // 설비관리 칩을 기본으로 설정
     }
-  }, [settingChip, setSettingChip])
-
+    // chip이 바뀔 때 검색어 초기화
+    setSearchKeyword('')
+    setEquipmentSearchKeyword('')
+    setClientSearchKeyword('')
+  }, [settingChip, setSettingChip, setEquipmentSearchKeyword, setClientSearchKeyword])
   const handleEquipmentChipClick = () => setSettingChip('equipment' as SettingChipType)
   const handleClientChipClick = () => setSettingChip('client' as SettingChipType)
 
@@ -115,20 +116,32 @@ const MasterData = () => {
     if (settingChip === 'equipment') {
       // 설비 삭제 로직
       const checkedEquipmentIds = equipmentIds.filter((id) => isFacilityChecked(id))
-
       if (checkedEquipmentIds.length === 0) {
         return
       }
-
       try {
         // 선택된 모든 설비 삭제
         const deletePromises = checkedEquipmentIds.map((id) => deleteEquipment(id))
         await Promise.all(deletePromises)
-
         // 설비 목록 새로고침
         await refetchEquipment()
       } catch {
         alert('설비 삭제 중 오류가 발생했습니다.')
+      }
+    } else if (settingChip === 'client') {
+      // 거래처 삭제 로직
+      const checkedClientIds = clientIds.filter((id) => isClientChecked(id))
+      if (checkedClientIds.length === 0) {
+        return
+      }
+      try {
+        // 선택된 모든 거래처 삭제
+        const deletePromises = checkedClientIds.map((id) => deleteClient(id))
+        await Promise.all(deletePromises)
+        // 거래처 목록 새로고침
+        await refetchClient()
+      } catch {
+        alert('거래처 삭제 중 오류가 발생했습니다.')
       }
     }
 
@@ -151,14 +164,17 @@ const MasterData = () => {
     previousPage: equipmentList?.previousPage || 1,
   }
 
+  // 페이지네이션 변경 핸들러 (Client용)
+  const handleClientPageChange = (page: number) => {
+    setClientFilters(prev => ({ ...prev, page }))
+  }
+
   const renderContent = () => {
     switch (settingChip) {
       case 'equipment':
         return (
           <Facility
             equipmentList={equipmentListForFacility}
-            isLoading={isEquipmentLoading}
-            error={equipmentError}
             isCreatePanelOpen={isEquipmentCreatePanelOpen}
             setIsCreatePanelOpen={setIsEquipmentCreatePanelOpen}
             isAllChecked={isFacilityAllChecked}
@@ -171,6 +187,8 @@ const MasterData = () => {
       case 'client':
         return (
           <Client
+            clientList={clientList}
+            onPageChange={handleClientPageChange}
             isAllChecked={isClientAllChecked}
             isChecked={isClientChecked}
             toggleAll={clientToggleAll}

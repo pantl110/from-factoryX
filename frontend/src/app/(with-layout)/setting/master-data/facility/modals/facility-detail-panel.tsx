@@ -15,6 +15,8 @@ interface FacilityDetailPanelProps {
   facility?: EquipmentResponseModel
   onClose: () => void
   onSuccess?: () => void
+  showWarningToast?: () => void
+  facilityList?: EquipmentResponseModel[] // 설비 목록 prop 추가
 }
 
 interface FacilityFormModel {
@@ -24,7 +26,7 @@ interface FacilityFormModel {
   note?: string
 }
 
-const FacilityDetailPanel = ({ facility, onClose, onSuccess }: FacilityDetailPanelProps) => {
+const FacilityDetailPanel = ({ facility, onClose, onSuccess, showWarningToast, facilityList }: FacilityDetailPanelProps) => {
   const { createEquipment } = useCreateEquipment()
   const { updateEquipment } = useUpdateEquipment()
   const factoryId = useFactoryStore((state) => state.factoryId)
@@ -34,6 +36,7 @@ const FacilityDetailPanel = ({ facility, onClose, onSuccess }: FacilityDetailPan
     formState: { isValid, isDirty },
     control,
     reset,
+    setValue,
   } = useForm<FacilityFormModel>({
     mode: 'onChange',
     defaultValues: {
@@ -53,8 +56,31 @@ const FacilityDetailPanel = ({ facility, onClose, onSuccess }: FacilityDetailPan
     })
   }, [facility, reset])
 
+  // priority 중복 체크 함수 (실제 구현)
+  const checkPriorityDuplicate = (value: string) => {
+    if (!value || !facilityList) return false;
+    const numValue = Number(value);
+    if (isNaN(numValue)) return false;
+    return facilityList.some(
+      (eq) => eq.priority === numValue && eq.id !== facility?.id
+    );
+  };
+
   // 저장 버튼 클릭 시 생성/수정 분기
   const onSubmit = async (data: FacilityFormModel) => {
+    // 저장 시 priority 중복 체크
+    if (checkPriorityDuplicate(data.priority)) {
+      showWarningToast?.();
+      if (facility) {
+        // 수정 모드: 원래 값으로 복원
+        setValue('priority', facility.priority?.toString() || '');
+      } else {
+        // 생성 모드: 빈 값으로 초기화
+        setValue('priority', '');
+      }
+      return; // 중복이면 저장 중단
+    }
+
     if (facility) {
       // 수정 (PATCH)
       const payload = {
@@ -98,18 +124,22 @@ const FacilityDetailPanel = ({ facility, onClose, onSuccess }: FacilityDetailPan
   }
 
   return (
-    <Panel title="설비 관리" onClose={onClose} headerButton={
-      ((!facility || isDirty) && (
-        <MiniBtn
-          text="저장"
-          textColor="text-primary"
-          bgColor="bg-primary-8"
-          hoverColor="hover:bg-secondary-hover"
-          onClick={handleSubmit(onSubmit as any)}
-          disabled={!isValid}
-        />
-      ))
-    }>
+    <Panel
+      title="설비 관리"
+      onClose={onClose}
+      headerButton={
+        (!facility || isDirty) && (
+          <MiniBtn
+            text="저장"
+            textColor="text-primary"
+            bgColor="bg-primary-8"
+            hoverColor="hover:bg-secondary-hover"
+            onClick={handleSubmit(onSubmit)}
+            disabled={!isValid}
+          />
+        )
+      }
+    >
       <div className="flex flex-col gap-10">
         {/* 설비 정보 */}
         <div className="flex flex-col gap-3 border-b border-lg">
@@ -143,8 +173,8 @@ const FacilityDetailPanel = ({ facility, onClose, onSuccess }: FacilityDetailPan
                 min: 1,
                 pattern: {
                   value: /^[1-9]\d*$/,
-                  message: '1 이상의 숫자를 입력해주세요.'
-                }
+                  message: '1 이상의 숫자를 입력해주세요.',
+                },
               }}
               render={({ field }) => (
                 <InfoLabelValue

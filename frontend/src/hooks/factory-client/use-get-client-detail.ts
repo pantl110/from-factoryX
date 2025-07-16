@@ -12,8 +12,8 @@ const useGetClientDetail = () => {
       !Number.isInteger(data.client_id) ||
       data.client_id <= 0
     ) {
-      setError('유효하지 않은 client_id');
-      return { success: false, error: '유효하지 않은 client_id' };
+      setError('유효하지 않은 client_id')
+      return { success: false, error: '유효하지 않은 client_id' }
     }
     setIsLoading(true)
     setError(null)

@@ -54,7 +54,7 @@ const InfoLabelValue = ({
         return (
           <TextareaAutosize
             minRows={1}
-            defaultValue={typeof value === 'string' ? value : ''}
+            value={typeof value === 'string' ? value : ''}
             placeholder={placeholder}
             onChange={onChange}
             className="w-full noDefaultStyle"
@@ -69,7 +69,7 @@ const InfoLabelValue = ({
         <div className="flex items-center w-full">
           <input
             type={inputType}
-            defaultValue={typeof value === 'string' ? value : ''}
+            value={typeof value === 'string' ? value : ''}
             placeholder={placeholder}
             onChange={onChange}
             className="w-full placeholder:text-gr"
