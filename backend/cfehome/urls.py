@@ -61,7 +61,11 @@ base_api.add_router("v1/stock", stock_router)
 base_api.add_router("v1/stock/material/history", materialHistory_router)
 base_api.add_router("v1/stock/materialproduct", materialProduct_router)
 base_api.add_router("v1/stock/material", material_router)
+<<<<<<< HEAD
+base_api.add_router("v1/factory", factory_router)
+=======
 base_api.add_router("v1/factory/member", factoryMember_router)
+>>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
 base_api.add_router("v1/factory/equipment", factoryEQ_router)
 base_api.add_router("v1/factory", factory_router)
 base_api.add_router("v1/stock/product", stockProduct_router)

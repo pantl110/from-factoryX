@@ -2,7 +2,11 @@ from ninja import Router
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
+<<<<<<< HEAD
+from stock.schemas.inbound import MaterialProductConnectIn
+=======
 from stock.schemas.inbound import MaterialProductConnectIn, MaterialProductUpdateIn
+>>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
 from stock.schemas.outbound import MaterialProductConnectOut, MaterialProductConnectionOut
 from stock.models import Material, Product, MaterialProduct
 from factory.models import Factory
@@ -172,6 +176,8 @@ async def delete_material_product_connection(request, connection_id: int):
         "message": "연결이 성공적으로 삭제되었습니다.",
         "deleted_connection_id": connection_id
     }
+<<<<<<< HEAD
+=======
 
 
 @router.patch(
@@ -193,3 +199,4 @@ async def update_material_product_connection(request, connection_id: int, payloa
         "updated_connection_id": connection_id,
         "quantity": float(connection.quantity)
     }
+>>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d

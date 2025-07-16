@@ -15,6 +15,7 @@ class ClientInfoIn(Schema):
     phone: Optional[str] = None
     fax: Optional[str] = None
 
+
 class ProductInfoIn(Schema):
     id: Optional[int] = None
     name: Optional[str] = None
@@ -27,12 +28,14 @@ class ProductInfoIn(Schema):
     is_delivery: Optional[bool] = False
     delivery_date: Optional[str] = None
 
+
 class QuotationProductCreateIn(Schema):
     quotation_id: int
     product_id: int
     quantity: Optional[int] = None
     unit_price: Optional[int] = None
     delivery_date: Optional[date] = None
+
 
 class QuotationSaveIn(Schema):
     quotation_id: int
@@ -41,3 +44,6 @@ class QuotationSaveIn(Schema):
     products: List[ProductInfoIn]
     action: Optional[str] = None
 
+
+class OcrIn(Schema):
+    data: str
