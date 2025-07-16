@@ -18,7 +18,7 @@ async def verify_factory_ownership(factory_id: int, user=None):
 
 async def get_product_by_id(product_id: int, user=None):
     try:
-        product = await Product.objects.aget(id=product_id, factory__owner=user)
+        product = await Product.objects.select_related('factory').aget(id=product_id, factory__owner=user)
         return product
     except Product.DoesNotExist:
         raise HttpError(404, "해당 제품이 존재하지 않습니다.")

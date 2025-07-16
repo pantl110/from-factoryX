@@ -1,38 +1,18 @@
-from ninja import ModelSchema, Field, FilterSchema
+from ninja import ModelSchema, Field, FilterSchema, Schema
 from pydantic import BaseModel
 from typing import Optional, List, Any
 from stock.models import Product, ProductHistory, Material
 
 
-class ProductMaterialConnectSchema(BaseModel):
+class ProductMaterialConnectIn(Schema):
     material_id: int
     quantity: float
 
 
-class ProductCreateSchema(BaseModel):
-    factory_id: int
-    name: str
-    code: str
-    spec: str
-    unit: str
-    current_stock: Optional[int] = 0
-    average_production_time: Optional[int] = None
-    location: Optional[str] = None
-    note: Optional[str] = None
 
 
-class ProductUpdateSchema(BaseModel):
-    name: Optional[str]
-    code: Optional[str]
-    spec: Optional[str]
-    unit: Optional[str]
-    current_stock: Optional[int]
-    average_production_time: Optional[int]
-    location: Optional[str]
-    note: Optional[str]
 
-
-class ProductExcelUploadResponseSchema(BaseModel):
+class ProductExcelUploadResponseIn(Schema):
     success: bool
     message: str
     data: Optional[List[Any]] = None
@@ -44,46 +24,33 @@ class ProductFilter(FilterSchema):
     )
 
 
-class ProductCreateIn(ModelSchema):
+class ProductCreateIn(Schema):
     """제품 생성 스키마"""
+    factory: int = Field(..., description="공장 ID")
+    name: str = Field(..., description="제품명")
+    code: str = Field(..., description="제품코드")
+    unit: str = Field(..., description="단위")
+    spec: str = Field(..., description="규격")
+    current_stock: Optional[int] = Field(default=0, description="현재 재고")
+    average_production_time: Optional[int] = Field(default=None, description="평균 생산 시간(초)")
+    buffer_rate: Optional[float] = Field(default=0.10, description="버퍼율")
+    note: Optional[str] = Field(default=None, description="특이사항")
 
-    factory: int
 
-    class Meta:
-        model = Product
-        exclude = [
-            "id",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class ProductUpdateIn(ModelSchema):
+class ProductUpdateIn(Schema):
     """제품 수정 스키마"""
-
     factory: Optional[int] = Field(default=None, description="공장 ID")
     name: Optional[str] = Field(default=None, description="제품명")
     code: Optional[str] = Field(default=None, description="제품코드")
     unit: Optional[str] = Field(default=None, description="단위")
     spec: Optional[str] = Field(default=None, description="규격")
     current_stock: Optional[int] = Field(default=None, description="현재 재고")
-    average_production_time: Optional[int] = Field(
-        default=None, description="평균 생산 시간(초)"
-    )
+    average_production_time: Optional[int] = Field(default=None, description="평균 생산 시간(초)")
     buffer_rate: Optional[float] = Field(default=None, description="버퍼율")
-    location: Optional[str] = Field(default=None, description="위치")
     note: Optional[str] = Field(default=None, description="특이사항")
 
-    class Meta:
-        model = Product
-        exclude = [
-            "id",
-            "created_at",
-            "updated_at",
-        ]
 
-
-class FactoryClientCreateIn(BaseModel):
+class FactoryClientCreateIn(Schema):
     name: str = Field(..., description="업체명")
     business_registration_number: Optional[str] = Field(default=None, description="사업자등록번호")
     representative_name: Optional[str] = Field(default=None, description="대표자명")
@@ -92,7 +59,7 @@ class FactoryClientCreateIn(BaseModel):
     address: Optional[str] = Field(default=None, description="사업장 주소")
 
 
-class MaterialItem(BaseModel):
+class MaterialItemIn(Schema):
     name: str = Field(..., description="자재명")
     code: str = Field(..., description="자재코드")
     spec: str = Field(..., description="규격")
@@ -101,13 +68,13 @@ class MaterialItem(BaseModel):
     price: int = Field(..., description="구매 단가")
 
 
-class MaterialHistoryCreateIn(BaseModel):
+class MaterialHistoryCreateIn(Schema):
     factory: int = Field(..., description="공장 ID")
     client_info: FactoryClientCreateIn = Field(..., description="거래처 정보")
-    materials: List[MaterialItem] = Field(..., description="원자재 목록")
+    materials: List[MaterialItemIn] = Field(..., description="원자재 목록")
 
 
-class MaterialUpdateIn(BaseModel):
+class MaterialUpdateIn(Schema):
     """원자재 수정 입력 스키마"""
     name: Optional[str] = Field(default=None, description="자재명")
     code: Optional[str] = Field(default=None, description="자재코드")
@@ -140,7 +107,7 @@ class ProductHistoryCreateIn(ModelSchema):
         ]
 
 
-class SingleMaterialHistoryCreateIn(BaseModel):
+class SingleMaterialHistoryCreateIn(Schema):
     """단일 원자재 히스토리 생성 입력 스키마"""
     material_id: int = Field(..., description="원자재 ID")
     type: str = Field(..., description="거래 타입 (purchase: 구매, consumption: 소모)")
@@ -149,18 +116,18 @@ class SingleMaterialHistoryCreateIn(BaseModel):
     client_id: int = Field(..., description="거래처 ID")
 
 
-class MaterialProductConnection(BaseModel):
+class MaterialProductConnectionIn(Schema):
     """MaterialProduct 연결 정보"""
     id: int = Field(..., description="연결할 ID (type이 material이면 Product ID, type이 product이면 Material ID)")
     quantity: float = Field(..., description="제품 1개 생산에 필요한 원자재 수량")
 
 
-class MaterialProductConnectIn(BaseModel):
+class MaterialProductConnectIn(Schema):
     """MaterialProduct 연결 생성 입력 스키마"""
     type: str = Field(..., description="연결 타입 (material: 원자재 기준, product: 제품 기준)")
     target_id: int = Field(..., description="기준이 되는 ID (type이 material이면 Material ID, type이 product이면 Product ID)")
-    connections: List[MaterialProductConnection] = Field(..., description="연결할 항목들")
+    connections: List[MaterialProductConnectionIn] = Field(..., description="연결할 항목들")
 
 
-class MaterialProductUpdateIn(BaseModel):
+class MaterialProductUpdateIn(Schema):
     quantity: float
