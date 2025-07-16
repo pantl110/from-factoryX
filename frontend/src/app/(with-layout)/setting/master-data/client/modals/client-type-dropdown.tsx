@@ -1,6 +1,6 @@
 import Dropdown from '@/ui/dropdown/dropdown'
 import DropdownItem from '@/ui/dropdown/dropdown-item'
-import { ClientType, ClientTypeColorMap } from '../types'
+import { ClientType, ClientTypeColorMap } from '@/types/status-type'
 import Chip from '@/ui/chip'
 
 interface ClientTypeDropdownProps {

@@ -5,6 +5,23 @@ export interface StatusColorModel {
   hover?: string
 }
 
+// 설비 상태 // 설정 페이지
+export type EquipmentStatusType = '가동 대기' | '가동 중'
+export const EquipmentStatusColorMap: Record<EquipmentStatusType, StatusColorModel> = {
+  '가동 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
+  '가동 중': { textColor: 'text-purple', bgColor: 'bg-purple-8' },
+}
+
+// 거래처 유형 // 설정 페이지
+export type ClientType = '발주처' | '수주처'
+export const ClientTypeColorMap: Record<ClientType, { bgColor: string; textColor: string }> = {
+  발주처: { bgColor: 'bg-red-8', textColor: 'text-red' },
+  수주처: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+}
+
+////////////////////
+// 수정 전, 확인 전, 삭제하기
+
 // 진행중인 프로젝트 상태
 export type ProjectStatusType =
   | '견적 협의'

@@ -1,63 +1,20 @@
 import Chip from '@/ui/chip'
-import { ClientType, ClientTypeColorMap } from './types'
 import Checkbox from '@/ui/checkbox'
-import React from 'react'
+import { ClientType, ClientTypeColorMap } from '@/types/status-type'
+import { ClientResponseModel } from '@/types/data-model'
 
 interface ClientTableItemProps {
-  clientType: ClientType
-  companyName: string
-  businessNumber: string
-  representativeName: string
-  businessType: string
-  businessCategory: string
-  contact: string
-  email: string
+  client: ClientResponseModel
   onClick?: () => void
   onClientTypeChange?: (clientType: ClientType) => void
   isChecked?: boolean
   onToggleCheck?: () => void
 }
 
-// const PortalDropdown = ({
-//   anchorRect,
-//   children,
-// }: {
-//   anchorRect: DOMRect | null;
-//   onClose: () => void;
-//   children: React.ReactNode;
-// }) => {
-//   if (!anchorRect) return null;
-//   const style: React.CSSProperties = {
-//     position: "absolute",
-//     top: anchorRect.bottom + 8,
-//     left: anchorRect.left,
-//     zIndex: 50,
-//   };
-//   return createPortal(<div style={style}>{children}</div>, document.body);
-// };
-
-const ClientTableItem = ({
-  clientType,
-  companyName,
-  businessNumber,
-  representativeName,
-  businessType,
-  businessCategory,
-  contact,
-  email,
-  onClick,
-  // onClientTypeChange,
-  isChecked,
-  onToggleCheck,
-}: ClientTableItemProps) => {
-  const clientTypeColor = ClientTypeColorMap[clientType]
-  // const { isOpen, openDropdown, closeDropdown, anchorRect } =
-  //   usePortalDropdown();
-
-  // const handleClientTypeSelect = (newClientType: ClientType) => {
-  //   onClientTypeChange?.(newClientType);
-  //   closeDropdown();
-  // };
+const ClientTableItem = ({ client, onClick, isChecked, onToggleCheck }: ClientTableItemProps) => {
+  // 기본값으로 '발주처' 사용 (API에서 type 필드가 없음) // 추후 수정하기
+  const clientType: ClientType = '발주처'
+  const clientTypeColor = ClientTypeColorMap[clientType as keyof typeof ClientTypeColorMap]
 
   return (
     <div
@@ -65,7 +22,7 @@ const ClientTableItem = ({
       onClick={onClick}
     >
       <Checkbox isChecked={isChecked || false} onToggle={onToggleCheck || (() => {})} />
-      <div className="px-3 w-[150px]">
+      <div className="px-3 flex-[0.8]">
         <div>
           <Chip
             text={clientType}
@@ -76,13 +33,13 @@ const ClientTableItem = ({
           />
         </div>
       </div>
-      <p className="px-3 flex-1">{companyName}</p>
-      <p className="px-3 flex-1">{businessNumber}</p>
-      <p className="px-3 w-[100px]">{representativeName}</p>
-      <p className="px-3 w-[200px]">{businessType}</p>
-      <p className="px-3 flex-1">{businessCategory}</p>
-      <p className="px-3 w-[150px]">{contact}</p>
-      <p className="px-3 flex-1">{email}</p>
+      <p className="px-3 flex-[2]">{client.name}</p>
+      <p className="px-3 flex-[1.5]">{client.business_registration_number || ''}</p>
+      <p className="px-3 flex-1">{client.representative_name || ''}</p>
+      <p className="px-3 flex-[1.5]">{client.business_type || ''}</p>
+      <p className="px-3 flex-[1.5]">{client.business_category || ''}</p>
+      <p className="px-3 flex-[1.5]">{client.phone || ''}</p>
+      <p className="px-3 flex-[2]">{client.email || ''}</p>
 
       {/* client type dropdown */}
       {/* {isOpen && anchorRect && (

@@ -8,6 +8,8 @@ interface PanelProps {
   title: string
   onClose: () => void
   hasSaveButton?: boolean
+  // 헤더 버튼
+  headerButton?: React.ReactNode
   // 세금계산서 생성 관련 props
   isCreateTax?: boolean
   // 발행 방식 드롭다운 관련 props
@@ -32,6 +34,7 @@ const Panel = ({
   onIssueTypeSelect,
   isDraft = false,
   onIssueClick,
+  headerButton,
 }: PanelProps) => {
   const [isVisible, setIsVisible] = useState(false)
   const [shouldRender, setShouldRender] = useState(true)
@@ -122,6 +125,10 @@ const Panel = ({
                 <CaretLineRightIcon size={16} className="text-sv" />
               </button>
             </div>
+
+            {headerButton}
+
+            {/* 나중에 정리하기 */}
             {hasSaveButton && (
               <MiniBtn
                 text="저장"

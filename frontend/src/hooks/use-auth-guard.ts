@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/store/auth-store'
+import useAuthStore from '@/store/auth-store'
 
 // 로그인되어있는지 확인 후 로그인 안되어있으면 로그인 페이지로 리다이렉트
 export const useAuthGuard = () => {

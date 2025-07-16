@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { FactoriesModel } from '@/types/data-model'
 import {
   useToast,
-  useGetFactoryList,
+  useGetFactory,
   useUpdateFactory,
   formatBusinessNumber,
   formatPhoneNumber,
@@ -13,9 +13,13 @@ import {
 import Toast from '@/ui/toast'
 import { CheckCircle } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
+import useFactoryStore from '@/store/factory-store'
 
 const CompanyInfo = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000)
+  const factoryId = useFactoryStore((state) => state.factoryId)
+  const { getFactory, factory, error: _factoryError } = useGetFactory()
+  const { updateFactory } = useUpdateFactory()
 
   const {
     register,
@@ -38,18 +42,14 @@ const CompanyInfo = () => {
     },
   })
 
-  const { getFactoryList, factoryList } = useGetFactoryList()
-  const { updateFactory } = useUpdateFactory()
+  useEffect(() => {
+    if (factoryId) {
+      getFactory(factoryId)
+    }
+  }, [factoryId, getFactory])
 
   useEffect(() => {
-    // user의 공장 리스트 가져오기
-    getFactoryList()
-  }, [getFactoryList])
-
-  useEffect(() => {
-    if (factoryList?.data && factoryList.data.length > 0) {
-      const factory = factoryList.data[0] // 첫번째 공장 정보 가져오기
-
+    if (factory) {
       setValue('name', factory.name || '')
       setValue('business_registration_number', factory.business_registration_number || '')
       setValue('representative_name', factory.representative_name || '')
@@ -60,12 +60,12 @@ const CompanyInfo = () => {
       setValue('business_category', factory.business_category || '')
       setValue('business_address', factory.business_address || '')
     }
-  }, [factoryList, setValue])
+  }, [factory, setValue])
 
   const [isProcessing, setIsProcessing] = useState(false)
 
   const onSubmit = async (data: FactoriesModel) => {
-    if (isProcessing) return // 중복 실행 방지
+    if (isProcessing || !factoryId || !factory) return
     setIsProcessing(true)
 
     try {
@@ -77,23 +77,9 @@ const CompanyInfo = () => {
         clearErrors('name')
       }
 
-      // 항상 최신 factoryList를 받아온다
-      const listResult = await getFactoryList()
-      const latestList =
-        listResult && listResult.success && Array.isArray(listResult.data) ? listResult.data : []
-
-      if (latestList.length === 0) {
-        // 공장이 없는 경우 (이론상 발생하지 않음, 회원가입 시 생성되게 함)
-        setError('name', {
-          type: 'manual',
-          message: '공장 정보를 찾을 수 없습니다. 관리자에게 문의해주세요.',
-        })
-        return
-      }
-
       // 기존 공장 수정
       const updateData = {
-        factory_id: latestList[0]?.id,
+        factory_id: factoryId,
         name: data.name || '',
         business_registration_number: data.business_registration_number || '',
         representative_name: data.representative_name || '',
@@ -103,27 +89,14 @@ const CompanyInfo = () => {
         business_type: data.business_type || '',
         business_category: data.business_category || '',
         business_address: data.business_address || '',
-        is_trial: latestList[0]?.is_trial,
-        billing_key: latestList[0]?.billing_key,
+        is_trial: factory.is_trial,
+        billing_key: factory.billing_key,
       }
-
       const result = await updateFactory(updateData)
       if (result && result.success) {
         showToast()
-        // 수정 후 최신 리스트로 폼 동기화
-        const refresh = await getFactoryList()
-        if (refresh && refresh.success && Array.isArray(refresh.data) && refresh.data.length > 0) {
-          const factory = refresh.data[0]
-          setValue('name', factory.name || '')
-          setValue('business_registration_number', factory.business_registration_number || '')
-          setValue('representative_name', factory.representative_name || '')
-          setValue('manager_email', factory.manager_email || '')
-          setValue('manager_phone', factory.manager_phone || '')
-          setValue('manager_fax', factory.manager_fax || '')
-          setValue('business_type', factory.business_type || '')
-          setValue('business_category', factory.business_category || '')
-          setValue('business_address', factory.business_address || '')
-        }
+        // 수정 후 최신 factory 정보로 폼 동기화
+        await getFactory(factoryId)
       } else if (result && result.error) {
         setError('name', { type: 'manual', message: result.error })
       }
@@ -149,10 +122,15 @@ const CompanyInfo = () => {
               label="사업자등록번호"
               placeholder="사업자등록번호를 입력하세요."
               required
+              showError={!!errors.business_registration_number}
               {...register('business_registration_number', {
                 onChange: (e) => {
                   const formatted = formatBusinessNumber(e.target.value)
                   e.target.value = formatted
+                },
+                pattern: {
+                  value: /^\d{3}-\d{2}-\d{5}$/,
+                  message: '',
                 },
               })}
             />
@@ -168,27 +146,43 @@ const CompanyInfo = () => {
               placeholder="이메일을 입력하세요."
               label="이메일"
               required
-              {...register('manager_email')}
+              showError={!!errors.manager_email}
+              {...register('manager_email', {
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  message: '',
+                },
+              })}
             />
           </div>
           <div className="flex gap-2">
             <Input
               placeholder="연락처를 입력하세요."
               label="연락처"
+              showError={!!errors.manager_phone}
               {...register('manager_phone', {
                 onChange: (e) => {
                   const formatted = formatPhoneNumber(e.target.value)
                   e.target.value = formatted
+                },
+                pattern: {
+                  value: /^(01[016789]-\d{3,4}-\d{4}|0\d{1,2}-\d{3,4}-\d{4})$/,
+                  message: '',
                 },
               })}
             />
             <Input
               placeholder="팩스 번호를 입력하세요."
               label="팩스 번호"
+              showError={!!errors.manager_fax}
               {...register('manager_fax', {
                 onChange: (e) => {
                   const formatted = formatFaxNumber(e.target.value)
                   e.target.value = formatted
+                },
+                pattern: {
+                  value: /^(0\d{1,3}-\d{3,4}-\d{4})$/,
+                  message: '',
                 },
               })}
             />

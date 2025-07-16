@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { LogoutResponseModel } from '@/types/data-model'
-import { useAuthStore } from '@/store/auth-store'
+import useAuthStore from '@/store/auth-store'
 
 interface UseLogoutReturnModel {
   logout: () => Promise<{
@@ -19,24 +19,11 @@ export const useLogout = (): UseLogoutReturnModel => {
     setIsLoading(true)
 
     try {
-      // 쿠키에서 access 토큰 추출
-      const cookies = document.cookie.split(';').reduce(
-        (acc, cookie) => {
-          const [key, value] = cookie.trim().split('=')
-          acc[key] = value
-          return acc
-        },
-        {} as Record<string, string>
-      )
-
-      const accessToken = cookies['access']
-
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/logout`, {
         method: 'POST',
         credentials: 'include', // 쿠키 자동 전송
         headers: {
           'Content-Type': 'application/json',
-          ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
         },
       })
 

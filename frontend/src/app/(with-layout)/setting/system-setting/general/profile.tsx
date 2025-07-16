@@ -27,7 +27,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
     reset,
   } = useForm<UpdateUserInfoModel>({
     defaultValues: {
@@ -35,6 +35,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
       phone_number: '',
       profile_image: '',
     },
+    mode: 'onSubmit',
   })
 
   // Update form when userInfo changes
@@ -152,10 +153,15 @@ const Profile = ({ userInfo }: ProfileProps) => {
                 placeholder="연락처를 입력하세요."
                 label="연락처"
                 type="tel"
+                showError={!!errors.phone_number}
                 {...register('phone_number', {
                   onChange: (e) => {
                     const formatted = formatPhoneNumber(e.target.value)
                     e.target.value = formatted
+                  },
+                  pattern: {
+                    value: /^(01[016789]-\d{3,4}-\d{4}|0\d{1,2}-\d{3,4}-\d{4})$/,
+                    message: '',
                   },
                 })}
               />

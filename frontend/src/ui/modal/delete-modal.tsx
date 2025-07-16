@@ -4,9 +4,10 @@ import Modal from '@/ui/modal/modal'
 interface DeleteModalProps {
   onClose: () => void
   onDelete?: () => void
+  isLoading?: boolean
 }
 
-const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
+const DeleteModal = ({ onClose, onDelete, isLoading = false }: DeleteModalProps) => {
   return (
     <Modal
       title="삭제하시겠습니까?"
@@ -22,6 +23,7 @@ const DeleteModal = ({ onClose, onDelete }: DeleteModalProps) => {
           bgColor="bg-red-8"
           onClick={onDelete}
           hoverColor="hover:bg-red-hover"
+          disabled={isLoading}
         />
       </div>
     </Modal>

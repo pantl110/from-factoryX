@@ -1,24 +1,13 @@
-import { useState } from 'react'
-import { FactoriesResponseModel } from '@/types/data-model'
-
-// 페이지네이션 응답 타입
-interface PaginatedResponseModel {
-  count: number
-  totalCnt: number
-  pageCnt: number
-  curPage: number
-  nextPage: number | null
-  previousPage: number | null
-  data: FactoriesResponseModel[]
-}
+import { useState, useCallback } from 'react'
+import { FactoriesListResponseModel, FactoriesResponseModel } from '@/types/data-model'
 
 // 공장 설비 목록 조회
 export const useGetFactoryList = () => {
   const [isLoading, setIsLoading] = useState(false)
-  const [factoryList, setFactoryList] = useState<PaginatedResponseModel | null>(null)
+  const [factoryList, setFactoryList] = useState<FactoriesListResponseModel | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const getFactoryList = async () => {
+  const getFactoryList = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
@@ -31,9 +20,9 @@ export const useGetFactoryList = () => {
       })
 
       if (response.ok) {
-        const result: PaginatedResponseModel = await response.json()
+        const result: FactoriesListResponseModel = await response.json()
         setFactoryList(result)
-        return { success: true, data: result.data }
+        return { success: true, data: result }
       } else {
         const errorData = await response.json()
         setError(errorData.detail || '공장 목록을 불러오지 못했습니다.')
@@ -45,7 +34,7 @@ export const useGetFactoryList = () => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   return { getFactoryList, factoryList, isLoading, error }
 }

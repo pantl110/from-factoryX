@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 // 공장 삭제
-export const useDeleteFactory = () => {
+const useDeleteFactory = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -9,24 +9,12 @@ export const useDeleteFactory = () => {
     setIsLoading(true)
     setError(null)
 
-    // 쿠키에서 access 토큰 추출
-    const cookies = document.cookie.split(';').reduce(
-      (acc, cookie) => {
-        const [key, value] = cookie.trim().split('=')
-        acc[key] = value
-        return acc
-      },
-      {} as Record<string, string>
-    )
-    const accessToken = cookies['access']
-
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/factory/factories`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
         },
         body: JSON.stringify({
           factory_id: factoryId,
@@ -49,3 +37,5 @@ export const useDeleteFactory = () => {
 
   return { deleteFactory, isLoading, error }
 }
+
+export default useDeleteFactory

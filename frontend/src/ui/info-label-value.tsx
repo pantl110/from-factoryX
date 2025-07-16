@@ -5,18 +5,16 @@ import {
   InventoryStatusColorMap,
   TaxDocumentType,
   TaxDocumentTypeColorMap,
+  EquipmentStatusType,
+  EquipmentStatusColorMap,
 } from '@/types/status-type'
-import {
-  FacilityStatusType,
-  FacilityStatusColorMap,
-} from '@/app/(with-layout)/setting/master-data/facility/types'
 import TextareaAutosize from 'react-textarea-autosize'
 
 interface InfoLabelValueProps {
   label: string
   value?: ReactNode
   chip?: {
-    status: InventoryStatusType | TaxDocumentType | FacilityStatusType
+    status: InventoryStatusType | TaxDocumentType | EquipmentStatusType
   }
   isEditing?: boolean
   placeholder?: string
@@ -44,8 +42,8 @@ const InfoLabelValue = ({
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
       ? TaxDocumentTypeColorMap[chip.status as TaxDocumentType]
-      : chip.status in FacilityStatusColorMap
-        ? FacilityStatusColorMap[chip.status as FacilityStatusType]
+      : chip.status in EquipmentStatusColorMap
+        ? EquipmentStatusColorMap[chip.status as EquipmentStatusType]
         : InventoryStatusColorMap[chip.status as InventoryStatusType]
     : null
 

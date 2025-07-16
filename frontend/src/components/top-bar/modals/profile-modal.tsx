@@ -3,7 +3,7 @@ import ProfileImage from '@/ui/profile-image'
 import { X } from '@phosphor-icons/react'
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/store/auth-store'
+import useAuthStore from '@/store/auth-store'
 import { useLogout } from '@/hooks'
 
 interface ProfileModalProps {

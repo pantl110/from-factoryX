@@ -8,6 +8,7 @@ interface SearchInputProps {
   onFocus?: () => void
   onBlur?: () => void
   showIcon?: boolean
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 const SearchInput = ({
@@ -18,6 +19,7 @@ const SearchInput = ({
   onFocus,
   onBlur,
   showIcon = true,
+  onKeyDown,
 }: SearchInputProps) => {
   return (
     <div
@@ -33,6 +35,7 @@ const SearchInput = ({
           onChange={(e) => onChange?.(e.target.value)}
           onFocus={onFocus}
           onBlur={onBlur}
+          onKeyDown={onKeyDown}
         />
       </div>
     </div>

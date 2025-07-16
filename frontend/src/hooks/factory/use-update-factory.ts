@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FactoriesResponseModel, FactoriesUpdateModel } from '@/types/data-model'
 
 // 공장 정보 수정
-export const useUpdateFactory = () => {
+const useUpdateFactory = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,3 +37,5 @@ export const useUpdateFactory = () => {
 
   return { updateFactory, isLoading, error }
 }
+
+export default useUpdateFactory

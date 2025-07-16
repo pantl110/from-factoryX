@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { LoginFormDataModel, LoginResponseModel } from '@/types/data-model'
-import { useAuthStore } from '@/store/auth-store'
+import useAuthStore from '@/store/auth-store'
+import useFactoryStore from '@/store/factory-store'
 
 interface UseLoginReturnModel {
   login: (data: LoginFormDataModel) => Promise<{
@@ -15,6 +16,7 @@ interface UseLoginReturnModel {
 export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false)
   const { setUserInfo, setAuthenticated } = useAuthStore()
+  const setFactoryId = useFactoryStore((state) => state.setFactoryId)
 
   const login = async (data: LoginFormDataModel) => {
     setIsLoading(true)
@@ -42,15 +44,46 @@ export const useLogin = (): UseLoginReturnModel => {
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${result.access_token}`,
             },
           })
+
+          if (!userResponse.ok) {
+            const errorText = await userResponse.text()
+            console.error('🛑 /auth/me 오류 내용:', errorText)
+          }
 
           if (userResponse.ok) {
             const userData = await userResponse.json()
             // 전역 상태에 사용자 정보 저장
             setUserInfo(userData)
             setAuthenticated(true)
+
+            // 성공 시
+            // 공장 리스트 받아와서 factoryId 전역 저장
+            try {
+              const factoryRes = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/factories`,
+                {
+                  method: 'GET',
+                  credentials: 'include',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                }
+              )
+              if (factoryRes.ok) {
+                const factoryList = await factoryRes.json()
+                if (
+                  factoryList?.data &&
+                  Array.isArray(factoryList.data) &&
+                  factoryList.data.length > 0
+                ) {
+                  setFactoryId(factoryList.data[0].id)
+                }
+              }
+            } catch {
+              // 공장 리스트 fetch 실패 시 무시
+            }
           }
         } catch {
           // 사용자 정보 fetch 실패 시 무시

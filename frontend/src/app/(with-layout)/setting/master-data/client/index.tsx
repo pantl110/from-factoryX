@@ -1,53 +1,57 @@
 import { useState } from 'react'
-import { clientData } from '@/mocks/client-data'
 import ClientTableHeader from './client-table-header'
 import ClientTableItem from './client-table-item'
 import ClientDetailPanel from './modals/client-detail-panel'
-import { ClientDataModel } from '@/types/data-model'
+import { ClientResponseModel, ClientListResponseModel } from '@/types/data-model'
+import useFactoryStore from '@/store/factory-store'
+import Pagination from '@/components/pagination'
 
 interface ClientProps {
   isAllChecked: boolean
-  isChecked: (id: string) => boolean
+  isChecked: (id: number) => boolean
   toggleAll: () => void
-  toggleOne: (id: string) => void
+  toggleOne: (id: number) => void
 }
 
-const Client = ({ isAllChecked, isChecked, toggleAll, toggleOne }: ClientProps) => {
-  const [selectedClient, setSelectedClient] = useState<ClientDataModel | null>(null)
+const Client = ({
+  isAllChecked,
+  isChecked,
+  toggleAll,
+  toggleOne,
+}: ClientProps) => {
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
+  const factoryId = useFactoryStore((state) => state.factoryId)
 
-  const handleTypeChange = (client: ClientDataModel) => {
-    setSelectedClient(client)
-  }
+  // (목록 데이터 없음)
+  const actualClientList: ClientResponseModel[] = []
 
   return (
     <>
-      <div className="w-full mx-10 overflow-x-auto flex flex-col flex-1 max-w-[1320px] mb-10">
+      <div className="w-full mx-10 overflow-x-auto flex flex-col flex-1 max-w-[1697px] mb-10">
         <ClientTableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
-        {clientData.map((client) => (
+        {actualClientList.map((client) => (
           <ClientTableItem
             key={client.id}
-            clientType={client.type}
-            companyName={client.companyName}
-            businessNumber={client.businessNumber}
-            representativeName={client.representativeName}
-            businessType={client.businessType ?? ''}
-            businessCategory={client.businessCategory ?? ''}
-            contact={client.contact ?? ''}
-            email={client.email ?? ''}
-            onClick={() => handleTypeChange(client)}
+            client={client}
+            onClick={() => setSelectedClientId(client.id)}
             isChecked={isChecked(client.id)}
             onToggleCheck={() => toggleOne(client.id)}
           />
         ))}
       </div>
 
+      {/* <Pagination
+        currentPage={curPage}
+        totalPages={pageCnt}
+        onPageChange={onPageChange || (() => { })}
+      /> */}
+
       {/* panel */}
-      {selectedClient && (
+      {selectedClientId && factoryId && (
         <ClientDetailPanel
-          onClose={() => {
-            setSelectedClient(null)
-          }}
-          client={selectedClient}
+          onClose={() => setSelectedClientId(null)}
+          clientId={selectedClientId}
+          factoryId={factoryId}
         />
       )}
     </>

@@ -1,5 +1,15 @@
 // 데이터 모델
 
+// 공통
+export interface PaginationModel {
+  count: number
+  totalCnt: number
+  pageCnt: number
+  curPage: number
+  nextPage: number
+  previousPage: number
+}
+
 // Users API
 // 이메일 인증 코드 발송
 export interface SendVerificationCodeModel {
@@ -110,6 +120,11 @@ export interface FactoriesResponseModel {
   billing_key: string
 }
 
+// 공장 목록 조회
+export interface FactoriesListResponseModel extends PaginationModel {
+  data: FactoriesResponseModel[]
+}
+
 // 공장 수정
 export interface FactoriesUpdateModel {
   factory_id: number
@@ -127,6 +142,125 @@ export interface FactoriesUpdateModel {
 }
 
 //////////////////////
+// Factory Equipment API
+// 설비 등록
+export interface EquipmentModel {
+  factory: number
+  name: string
+  status?: EquipmentStatusType
+  priority: number
+  location?: string
+  note?: string
+}
+
+export interface EquipmentResponseModel {
+  id: number
+  created_at: string
+  updated_at: string
+  factory: number
+  name: string
+  status?: EquipmentStatusType
+  priority: number
+  location?: string
+  note?: string
+}
+
+// 설비 목록 조회
+export interface EquipmentListResponseModel extends PaginationModel {
+  data: EquipmentResponseModel[]
+}
+
+//////////////////////
+// Factory Client API
+// 거래체 등록
+export interface ClientModel {
+  factory_id: number
+  name: string
+  business_registration_number?: string
+  representative_name?: string
+  email?: string
+  phone?: string
+  fax?: string
+  business_type?: string
+  business_category?: string
+  address?: string
+  manager?: string
+  note: string
+}
+
+export interface ClientResponseModel {
+  id: number
+  created_at: string
+  updated_at: string
+  factory: number
+  name: string
+  business_registration_number?: string
+  representative_name?: string
+  email?: string
+  phone?: string
+  fax?: string
+  business_type?: string
+  business_category?: string
+  address?: string
+  manager?: string
+  note?: string
+}
+
+// 거래처 목록 조회
+export interface ClientListResponseModel extends PaginationModel {
+  data: ClientResponseModel[]
+}
+
+// 거래체 수정
+export interface ClientUpdateModel {
+  client_id: number
+  factory_id: number
+  name: string
+  business_registration_number?: string
+  representative_name?: string
+  email?: string
+  phone?: string
+  fax?: string
+  business_type?: string
+  business_category?: string
+  address?: string
+  manager?: string
+  note?: string
+}
+
+// 거래처 삭제, 상세 조회
+export interface ClientDetailModel {
+  factory_id: number
+  client_id: number
+}
+
+// 거래처 검색
+export interface ClientSearchModel {
+  factory_id: number
+  q: string
+}
+
+// 거래처 상세 조회
+export interface ClientDetailResponseModel {
+  factory_name: string
+  created_at_formatted: string
+  updated_at_formatted: string
+  id: number
+  created_at: string
+  updated_at: string
+  factory: number
+  name: string
+  business_registration_number: string
+  representative_name: string
+  email: string
+  phone: string
+  fax: string
+  business_type: string
+  business_category: string
+  address: string
+  manager: string
+  note: string
+}
 
 //////////////////////
 // API 응답 모델
@@ -180,7 +314,8 @@ export interface MaterialDataModel {
   [key: string]: unknown
 }
 
-import { ClientType } from '@/app/(with-layout)/setting/master-data/client/types'
+import { ClientType } from './status-type'
+import { EquipmentStatusType } from './status-type'
 export interface ClientDataModel {
   id: string
   type: ClientType

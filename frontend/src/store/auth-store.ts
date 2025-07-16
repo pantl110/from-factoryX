@@ -12,7 +12,7 @@ interface AuthStateProps {
   fetchUserInfo: () => Promise<boolean>
 }
 
-export const useAuthStore = create<AuthStateProps>((set) => ({
+const useAuthStore = create<AuthStateProps>((set) => ({
   userInfo: null,
   isLoading: true,
   isAuthenticated: false,
@@ -89,3 +89,5 @@ export const useAuthStore = create<AuthStateProps>((set) => ({
     }
   },
 }))
+
+export default useAuthStore
