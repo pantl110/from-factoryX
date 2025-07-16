@@ -25,7 +25,23 @@ async def create_product(request, payload: ProductCreateIn):
     factory_id = data.pop("factory")
     factory = await get_factory_by_id(factory_id, user)
     product = await Product.objects.acreate(factory=factory,**data)
-    return 201, product
+    
+    # 응답 데이터 직렬화
+    response_data = {
+        "id": product.id,
+        "factory": product.factory_id,
+        "name": product.name,
+        "code": product.code,
+        "unit": product.unit,
+        "spec": product.spec,
+        "current_stock": product.current_stock,
+        "average_production_time": product.average_production_time,
+        "buffer_rate": float(product.buffer_rate),
+        "note": product.note,
+        "created_at": product.created_at.isoformat(),
+        "updated_at": product.updated_at.isoformat(),
+    }
+    return 201, response_data
 
 @router.get(
     "",
@@ -44,8 +60,26 @@ async def list_products(request, filters: ProductFilter = Query(...)):
         return list(queryset)
 
     products = await get_products()
+    
+    # 응답 데이터 직렬화
+    response_data = []
+    for product in products:
+        response_data.append({
+            "id": product.id,
+            "factory": product.factory_id,
+            "name": product.name,
+            "code": product.code,
+            "unit": product.unit,
+            "spec": product.spec,
+            "current_stock": product.current_stock,
+            "average_production_time": product.average_production_time,
+            "buffer_rate": float(product.buffer_rate),
+            "note": product.note,
+            "created_at": product.created_at.isoformat(),
+            "updated_at": product.updated_at.isoformat(),
+        })
 
-    return products
+    return response_data
 
 @router.get(
     "/{product_id}",
@@ -57,7 +91,23 @@ async def list_products(request, filters: ProductFilter = Query(...)):
 async def get_product(request, product_id: int):
     user = request.auth
     product = await get_product_by_id(product_id, user)
-    return product
+    
+    # 응답 데이터 직렬화
+    response_data = {
+        "id": product.id,
+        "factory": product.factory_id,
+        "name": product.name,
+        "code": product.code,
+        "unit": product.unit,
+        "spec": product.spec,
+        "current_stock": product.current_stock,
+        "average_production_time": product.average_production_time,
+        "buffer_rate": float(product.buffer_rate),
+        "note": product.note,
+        "created_at": product.created_at.isoformat(),
+        "updated_at": product.updated_at.isoformat(),
+    }
+    return response_data
 
 @router.patch(
     "/{product_id}",
@@ -73,7 +123,23 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
     for key, value in update_data.items():
         setattr(product, key, value)
     await product.asave()
-    return product
+    
+    # 응답 데이터 직렬화
+    response_data = {
+        "id": product.id,
+        "factory": product.factory_id,
+        "name": product.name,
+        "code": product.code,
+        "unit": product.unit,
+        "spec": product.spec,
+        "current_stock": product.current_stock,
+        "average_production_time": product.average_production_time,
+        "buffer_rate": float(product.buffer_rate),
+        "note": product.note,
+        "created_at": product.created_at.isoformat(),
+        "updated_at": product.updated_at.isoformat(),
+    }
+    return response_data
 
 @router.delete(
     "/{product_id}",

@@ -127,18 +127,32 @@ class FactoryClientFilter(FilterSchema):
         default=None, q="client_type", description="거래처 유형 (customer/supplier)"
     )
 
+<<<<<<< HEAD
 
 # 거래처 상세 조회용 스키마 (URL 경로로 ID 받음)
 class FactoryClientDetailIn(Schema):
     pass
 
+=======
+# 거래처 상세 조회용 스키마 (URL 경로로 ID 받음)
+class FactoryClientDetailIn(Schema):
+    pass
+>>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
 
 # 거래처 삭제용 스키마 (URL 경로로 ID 받음)
 class FactoryClientDeleteIn(Schema):
     pass
+<<<<<<< HEAD
 
+=======
+>>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
 
 # 거래처 검색용 스키마
 class FactoryClientSearchIn(Schema):
     factory_id: int
     q: Optional[str] = ""
+
+
+class FactoryMemberUpdateIn(Schema):
+    role: Optional[str] = None
+    status: Optional[str] = None
