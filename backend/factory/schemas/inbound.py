@@ -133,3 +133,8 @@ class FactoryClientDeleteIn(Schema):
 class FactoryClientSearchIn(Schema):
     factory_id: int
     q: Optional[str] = ""
+
+
+class FactoryMemberUpdateIn(Schema):
+    role: Optional[str] = None
+    status: Optional[str] = None

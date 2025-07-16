@@ -1,5 +1,5 @@
 from ninja import ModelSchema, Field
-from factory.models import Factory, FactoryEquipment, FactoryClient
+from factory.models import Factory, FactoryEquipment, FactoryClient, FactoryMember
 from typing import Optional
 
 
@@ -32,3 +32,9 @@ class FactoryClientDetailOut(ModelSchema):
     class Meta:
         model = FactoryClient
         fields = "__all__"
+
+
+class FactoryMemberOut(ModelSchema):
+    class Meta:
+        model = FactoryMember
+        fields = '__all__'
