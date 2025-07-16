@@ -1,5 +1,5 @@
+from ninja import ModelSchema, Schema
 from pydantic import BaseModel
-from ninja import ModelSchema
 from stock.models import Product, ProductHistory, Material, MaterialHistory, MaterialProduct
 from typing import Optional, List
 
@@ -10,7 +10,7 @@ class MaterialHistoryOut(ModelSchema):
         fields = "__all__"
 
 
-class MaterialHistoryDetailOut(BaseModel):
+class MaterialHistoryDetailOut(Schema):
     id: int
     type: str
     material_id: int
@@ -20,15 +20,15 @@ class MaterialHistoryDetailOut(BaseModel):
     total_stock: int
 
 
-class MaterialHistoryListOut(BaseModel):
+class MaterialHistoryListOut(Schema):
     materials: List[MaterialHistoryDetailOut]
 
 
-class MaterialListOut(BaseModel):
+class MaterialListOut(Schema):
     materials: List[dict]
 
 
-class MaterialSummaryOut(BaseModel):
+class MaterialSummaryOut(Schema):
     id: int
     name: str
     code: str
@@ -37,7 +37,7 @@ class MaterialSummaryOut(BaseModel):
     current_stock: int
 
 
-class MaterialDetailOut(BaseModel):
+class MaterialDetailOut(Schema):
     id: int
     name: str
     code: str
@@ -47,28 +47,37 @@ class MaterialDetailOut(BaseModel):
     standard_stock: int
 
 
-class ProductListResponseSchema(BaseModel):
+class ProductListResponseOut(Schema):
     # products: List[ProductResponseSchema]
     total_count: int
 
 
-class ProductHistorySchema(BaseModel):
+class ProductHistorySchemaOut(Schema):
     처리일자: str
     상태: str
     수량: int
     현재재고: int
 
 
-class ProductionTimeSchema(BaseModel):
+class ProductionTimeOut(Schema):
     품목명: str
     평균생산시간_초: int
     평균생산시간_분: float
 
 
-class ProductOut(ModelSchema):
-    class Meta:
-        model = Product
-        fields = "__all__"
+class ProductOut(Schema):
+    id: int
+    factory: int
+    name: str
+    code: str
+    unit: str
+    spec: str
+    current_stock: int
+    average_production_time: Optional[int]
+    buffer_rate: float
+    note: Optional[str]
+    created_at: str
+    updated_at: str
 
 
 class ProductHistoryOut(ModelSchema):
@@ -77,7 +86,7 @@ class ProductHistoryOut(ModelSchema):
         fields = "__all__"
 
 
-class MaterialProductConnectionOut(BaseModel):
+class MaterialProductConnectionOut(Schema):
     """MaterialProduct 연결 응답 스키마"""
     id: int
     product_id: int
@@ -87,7 +96,7 @@ class MaterialProductConnectionOut(BaseModel):
     material_name: str
 
 
-class MaterialProductConnectOut(BaseModel):
+class MaterialProductConnectOut(Schema):
     """MaterialProduct 연결 생성 응답 스키마"""
     message: str
     created_connections: List[MaterialProductConnectionOut]
