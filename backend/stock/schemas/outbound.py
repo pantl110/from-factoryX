@@ -1,10 +1,12 @@
 from ninja import ModelSchema, Schema
 from pydantic import BaseModel
-<<<<<<< HEAD
-from ninja import ModelSchema
-=======
->>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
-from stock.models import Product, ProductHistory, Material, MaterialHistory, MaterialProduct
+from stock.models import (
+    Product,
+    ProductHistory,
+    Material,
+    MaterialHistory,
+    MaterialProduct,
+)
 from typing import Optional, List
 
 
@@ -14,11 +16,7 @@ class MaterialHistoryOut(ModelSchema):
         fields = "__all__"
 
 
-<<<<<<< HEAD
-class MaterialHistoryDetailOut(BaseModel):
-=======
 class MaterialHistoryDetailOut(Schema):
->>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
     id: int
     type: str
     material_id: int
@@ -28,17 +26,6 @@ class MaterialHistoryDetailOut(Schema):
     total_stock: int
 
 
-<<<<<<< HEAD
-class MaterialHistoryListOut(BaseModel):
-    materials: List[MaterialHistoryDetailOut]
-
-
-class MaterialListOut(BaseModel):
-    materials: List[dict]
-
-
-class MaterialSummaryOut(BaseModel):
-=======
 class MaterialHistoryListOut(Schema):
     materials: List[MaterialHistoryDetailOut]
 
@@ -48,7 +35,6 @@ class MaterialListOut(Schema):
 
 
 class MaterialSummaryOut(Schema):
->>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
     id: int
     name: str
     code: str
@@ -57,11 +43,7 @@ class MaterialSummaryOut(Schema):
     current_stock: int
 
 
-<<<<<<< HEAD
-class MaterialDetailOut(BaseModel):
-=======
 class MaterialDetailOut(Schema):
->>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
     id: int
     name: str
     code: str
@@ -71,11 +53,7 @@ class MaterialDetailOut(Schema):
     standard_stock: int
 
 
-<<<<<<< HEAD
-class ProductListResponseSchema(BaseModel):
-=======
 class ProductListResponseOut(Schema):
->>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
     # products: List[ProductResponseSchema]
     total_count: int
 
@@ -114,12 +92,9 @@ class ProductHistoryOut(ModelSchema):
         fields = "__all__"
 
 
-<<<<<<< HEAD
-class MaterialProductConnectionOut(BaseModel):
-=======
 class MaterialProductConnectionOut(Schema):
->>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
     """MaterialProduct 연결 응답 스키마"""
+
     id: int
     product_id: int
     material_id: int
@@ -128,12 +103,9 @@ class MaterialProductConnectionOut(Schema):
     material_name: str
 
 
-<<<<<<< HEAD
-class MaterialProductConnectOut(BaseModel):
-=======
 class MaterialProductConnectOut(Schema):
->>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
     """MaterialProduct 연결 생성 응답 스키마"""
+
     message: str
     created_connections: List[MaterialProductConnectionOut]
     total_count: int
