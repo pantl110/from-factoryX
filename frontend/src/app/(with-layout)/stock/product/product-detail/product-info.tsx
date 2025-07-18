@@ -228,7 +228,11 @@ const ProductInfo = ({
           render={({ field }) => (
             <InfoLabelValue
               label="평균 생산 시간"
-              value={field.value ? `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}초` : ''}
+              value={
+                field.value
+                  ? `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}초`
+                  : ''
+              }
               isEditing={true}
               placeholder="-"
               inputType="text"
@@ -237,7 +241,9 @@ const ProductInfo = ({
                 // 큰 숫자는 문자열로 저장
                 field.onChange(numValue || undefined)
                 if (onValueChange) {
-                  onValueChange({ average_production_time: numValue ? Number(numValue) : undefined })
+                  onValueChange({
+                    average_production_time: numValue ? Number(numValue) : undefined,
+                  })
                 }
 
                 // 커서를 "초" 앞으로 이동 (콤마 포함 길이 고려)

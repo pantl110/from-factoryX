@@ -60,7 +60,6 @@ const ProductionLogTableItem = ({ product }: ProductionLogTableItemProps) => {
               note: Array.isArray(item.comment) ? item.comment.join(',') : '',
             }))}
             onClose={() => setIsProductDetailOpen(false)}
-            mode="view"
           />
         )}
       </div>

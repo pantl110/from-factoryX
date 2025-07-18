@@ -31,13 +31,15 @@ const StockPageContent = () => {
   const [isProductAddDropdownOpen, setIsProductAddDropdownOpen] = useState(false)
   const [isMaterialAddDropdownOpen, setIsMaterialAddDropdownOpen] = useState(false)
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false)
-  const [productSetSelectedProductId, setProductSetSelectedProductId] = useState<((id: number | null) => void) | null>(null)
+  const [productSetSelectedProductId, setProductSetSelectedProductId] = useState<
+    ((id: number | null) => void) | null
+  >(null)
   const [isClientInfoModalOpen, setIsClientInfoModalOpen] = useState(false)
   const [isMaterialEnrollmentModalOpen, setIsMaterialEnrollmentModalOpen] = useState(false)
   const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false)
   const [isCustomerInfoModalOpen, setIsCustomerInfoModalOpen] = useState(false)
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] = useState(false)
-  const [isProductDetailPanelOpen, setIsProductDetailPanelOpen] = useState(false);
+  const [isProductDetailPanelOpen, setIsProductDetailPanelOpen] = useState(false)
 
   const handleTabChange = (tab: StockTabType) => {
     setStockTab(tab)
@@ -49,9 +51,9 @@ const StockPageContent = () => {
   const handleOpenCreatePanel = () => {
     setIsProductAddDropdownOpen(false)
     if (productSetSelectedProductId) {
-      productSetSelectedProductId(null);
+      productSetSelectedProductId(null)
     }
-    setIsProductDetailPanelOpen(true);
+    setIsProductDetailPanelOpen(true)
   }
   const handleOpenClientInfoModal = () => {
     setIsMaterialAddDropdownOpen(false)
@@ -82,7 +84,11 @@ const StockPageContent = () => {
         />
         <div className="px-10 pb-10">
           {stockTab === 'product' ? (
-            <Product setSelectedProductIdToParent={setProductSetSelectedProductId} isProductDetailPanelOpen={isProductDetailPanelOpen} setIsProductDetailPanelOpen={setIsProductDetailPanelOpen} />
+            <Product
+              setSelectedProductIdToParent={setProductSetSelectedProductId}
+              isProductDetailPanelOpen={isProductDetailPanelOpen}
+              setIsProductDetailPanelOpen={setIsProductDetailPanelOpen}
+            />
           ) : (
             <Material setIsMaterialDetailOpen={setIsMaterialDetailOpen} />
           )}

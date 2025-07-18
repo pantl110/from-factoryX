@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Suspense } from 'react'
 import MainTitleSec from './main-title-sec'
 import TableHeader from './table-header'
@@ -68,7 +68,7 @@ const TaxPageContent = () => {
   useEffect(() => {
     setCurrentPage(1)
     setAllChecked(false)
-  }, [selectedTaxType]) // selectedTaxType만 의존성으로 설정
+  }, [selectedTaxType, setCurrentPage, setAllChecked]) // 의존성 추가
 
   const handleToggleHidden = () => {
     setShowHidden(!showHidden)
@@ -99,7 +99,7 @@ const TaxPageContent = () => {
           <div className="flex items-center justify-between pb-4">
             <SearchInput
               value=""
-              onChange={() => { }}
+              onChange={() => {}}
               placeholder="찾고 싶은 세금계산서의 거래처나 품목명을 입력하세요."
             />
             <div className="flex gap-1">

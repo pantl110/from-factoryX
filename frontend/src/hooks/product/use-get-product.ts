@@ -28,14 +28,11 @@ const useGetProduct = () => {
       const headers = {
         'Content-Type': 'application/json',
       }
-      const response = await fetch(
-        url,
-        {
-          method: 'GET',
-          credentials: 'include',
-          headers,
-        }
-      )
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        headers,
+      })
 
       if (response.ok) {
         const result: ProductListResponseModel = await response.json()
@@ -82,7 +79,7 @@ const useGetProduct = () => {
         setError(errorData.detail || '품목 상세 정보를 불러오지 못했습니다.')
         return { success: false, error: errorData.detail }
       }
-    } catch (error) {
+    } catch {
       setError('서버 연결에 실패했습니다.')
       return { success: false, error: '서버 연결에 실패했습니다.' }
     } finally {

@@ -196,7 +196,7 @@ const FacilityDetailPanel = ({
                     const numValue = e.target.value.replace(/[^0-9]/g, '')
                     field.onChange(numValue ? numValue : '')
                   }}
-                  onBlur={field.onBlur}
+                  onBlur={field.onBlur} // eslint-disable-line react/jsx-handler-names
                 />
               )}
             />

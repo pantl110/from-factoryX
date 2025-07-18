@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import ProductInfo from './product-info'
 import MiniBtn from '@/ui/mini-btn'
 import StockStatus from './stock-status'
@@ -17,7 +17,6 @@ import StockLocation from './stock-location'
 import StockLocationUploadModal from '../modals/stock-location-upload-modal'
 import useFactoryStore from '@/store/factory-store'
 
-
 interface ProductDetailProps {
   productId: number | null
   productList: ProductResponseModel[]
@@ -31,19 +30,8 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
   const { updateProduct } = useUpdateProduct()
   const factoryId = useFactoryStore((state) => state.factoryId)
 
-  // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
-  if (!factoryId) {
-    return (
-      <Panel title="품목 재고관리" onClose={onClose}>
-        <div className="flex flex-col items-center justify-center h-100 gap-3">
-          <Spinner />
-        </div>
-      </Panel>
-    )
-  }
-
   const [formData, setFormData] = useState<ProductModel>({
-    factory: factoryId,
+    factory: factoryId as number,
     name: '',
     code: '',
     unit: '',
@@ -52,7 +40,7 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
     average_production_time: undefined,
     buffer_rate: undefined,
     location: undefined,
-    note: ''
+    note: '',
   })
 
   // 폼 유효성 검사
@@ -66,14 +54,12 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
   // 각 StockLocationItem 별 모달 오픈 상태 관리
   const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false])
 
-
-
   // productId가 변경되면 상세 정보 로드
   useEffect(() => {
     if (productId) {
       getProductDetail(productId)
     }
-  }, [productId])
+  }, [productId, getProductDetail])
 
   // product가 로드되면 formData 업데이트
   useEffect(() => {
@@ -88,11 +74,11 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
         average_production_time: product.average_production_time,
         buffer_rate: product.buffer_rate,
         location: product.location?.toString() || '',
-        note: product.note
+        note: product.note,
       })
     } else if (!productId) {
       setFormData({
-        factory: factoryId,
+        factory: factoryId as number,
         name: '',
         code: '',
         unit: '',
@@ -101,10 +87,21 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
         average_production_time: undefined,
         buffer_rate: undefined,
         location: undefined,
-        note: ''
+        note: '',
       })
     }
   }, [productId, product, factoryId])
+
+  // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
+  if (!factoryId) {
+    return (
+      <Panel title="품목 재고관리" onClose={onClose}>
+        <div className="flex flex-col items-center justify-center h-100 gap-3">
+          <Spinner />
+        </div>
+      </Panel>
+    )
+  }
 
   // StockLocationItem 추가 함수
   const handleAddStockLocation = () => {
@@ -133,11 +130,13 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
       if (productId) {
         // 수정 모드
         // factory 필드는 수정 시 제외 (서버에서 Factory 인스턴스를 기대함)
-        const { factory, ...updateDataWithoutFactory } = formData
+        const { factory: _factory, ...updateDataWithoutFactory } = formData
         const updateData = {
           ...updateDataWithoutFactory,
           current_stock: formData.current_stock ? Number(formData.current_stock) : undefined,
-          average_production_time: formData.average_production_time ? Number(formData.average_production_time) : undefined,
+          average_production_time: formData.average_production_time
+            ? Number(formData.average_production_time)
+            : undefined,
           buffer_rate: formData.buffer_rate ? Number(formData.buffer_rate) : undefined,
         }
         const result = await updateProduct(productId, updateData)
@@ -153,7 +152,9 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
         const createData = {
           ...formData,
           current_stock: formData.current_stock ? Number(formData.current_stock) : undefined,
-          average_production_time: formData.average_production_time ? Number(formData.average_production_time) : undefined,
+          average_production_time: formData.average_production_time
+            ? Number(formData.average_production_time)
+            : undefined,
           buffer_rate: formData.buffer_rate ? Number(formData.buffer_rate) : undefined,
         }
         const result = await createProduct(createData)
@@ -191,7 +192,7 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
             <ProductInfo
               formData={formData}
               productList={productList}
-              onValueChange={value => setFormData(prev => ({ ...prev, ...value }))}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, ...value }))}
               productId={productId}
             />
           </div>
@@ -220,7 +221,8 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
                   text="[추가] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
                 />
               )
-            ) : ( // 상세 모드
+            ) : (
+              // 상세 모드
               <StockLocation
                 itemCount={stockLocationCount}
                 onItemDelete={handleDeleteStockLocation}
@@ -240,12 +242,13 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
                 onClick={() => setIsMaterialModalOpen(true)}
               />
             </div>
-            {productId === null ? ( // 원자재가 없을 때로 조건 바꿔야함 
+            {productId === null ? ( // 원자재가 없을 때로 조건 바꿔야함
               <NoHistoryBox
                 title="이 품목에 연결된 원자재가 아직 없어요."
                 text="원자재를 연결하면 이곳에서 재고 상태를 확인할 수 있어요."
               />
-            ) : ( // 상세 모드
+            ) : (
+              // 상세 모드
               <StockStatus setIsMaterialStockStatusModalOpen={setIsMaterialStockStatusModalOpen} />
             )}
           </div>
@@ -260,7 +263,8 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
                 title="아직 등록된 재고 이력이 없어요."
                 text="입고나 출고와 관련된 재고 이력이 등록되면 이곳에서 확인할 수 있어요."
               />
-            ) : ( // 상세 모드
+            ) : (
+              // 상세 모드
               <ProductStockLog setIsProductStockModalOpen={setIsProductStockModalOpen} />
             )}
           </div>

@@ -181,7 +181,6 @@ const TableItem = ({
             note: Array.isArray(item.comment) ? item.comment.join(',') : '',
           }))}
           onClose={() => setIsProductDetailOpen(false)}
-          mode="view"
         />
       )}
     </>
