@@ -1,6 +1,6 @@
 interface PlanChangeSectionProps {
-  title: string
-  content: string
+  title: string;
+  content: string;
 }
 
 const PlanChangeSection = ({ title, content }: PlanChangeSectionProps) => {
@@ -20,7 +20,7 @@ const PlanChangeSection = ({ title, content }: PlanChangeSectionProps) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PlanChangeSection
+export default PlanChangeSection;

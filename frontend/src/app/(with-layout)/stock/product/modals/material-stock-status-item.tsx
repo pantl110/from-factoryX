@@ -1,13 +1,16 @@
-import { InventoryStatusColorMap, InventoryStatusType } from '@/types/status-type'
-import Chip from '@/ui/chip'
+import {
+  InventoryStatusColorMap,
+  InventoryStatusType,
+} from '@/types/status-type';
+import Chip from '@/ui/chip';
 
 interface MaterialStockStatusItemProps {
-  materialName: string
-  materialCode: string
-  unit: string
-  unitQuantity: number
-  stockQuantity: number
-  inventoryStatus: InventoryStatusType
+  materialName: string;
+  materialCode: string;
+  unit: string;
+  unitQuantity: number;
+  stockQuantity: number;
+  inventoryStatus: InventoryStatusType;
 }
 const MaterialStockStatusItem = ({
   materialName,
@@ -17,7 +20,7 @@ const MaterialStockStatusItem = ({
   stockQuantity,
   inventoryStatus,
 }: MaterialStockStatusItemProps) => {
-  const colors = InventoryStatusColorMap[inventoryStatus]
+  const colors = InventoryStatusColorMap[inventoryStatus];
 
   return (
     <div className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1">
@@ -29,10 +32,14 @@ const MaterialStockStatusItem = ({
       <p className="flex-1 px-3 text-dg">{unitQuantity.toLocaleString()}</p>
       <p className="flex-1 px-3 text-dg">{stockQuantity.toLocaleString()}</p>
       <div className="flex-1 px-3">
-        <Chip text={inventoryStatus} textColor={colors.textColor} bgColor={colors.bgColor} />
+        <Chip
+          text={inventoryStatus}
+          textColor={colors.textColor}
+          bgColor={colors.bgColor}
+        />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MaterialStockStatusItem
+export default MaterialStockStatusItem;

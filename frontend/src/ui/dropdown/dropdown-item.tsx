@@ -1,14 +1,14 @@
-import { ReactNode } from 'react'
+import { ReactNode } from 'react';
 
 interface DropdownItemProps {
-  icon?: ReactNode
-  text?: string
-  textColor?: string
-  onClick?: (e?: React.MouseEvent) => void
-  children?: ReactNode
-  noHover?: boolean
-  chip?: boolean
-  search?: boolean
+  icon?: ReactNode;
+  text?: string;
+  textColor?: string;
+  onClick?: (e?: React.MouseEvent) => void;
+  children?: ReactNode;
+  noHover?: boolean;
+  chip?: boolean;
+  search?: boolean;
 }
 
 const DropdownItem = ({
@@ -27,8 +27,8 @@ const DropdownItem = ({
         noHover ? '' : 'hover:bg-bg'
       }`}
       onClick={(e) => {
-        e.stopPropagation()
-        onClick?.(e)
+        e.stopPropagation();
+        onClick?.(e);
       }}
     >
       {icon && (
@@ -45,7 +45,7 @@ const DropdownItem = ({
       )}
       {children}
     </div>
-  )
-}
+  );
+};
 
-export default DropdownItem
+export default DropdownItem;

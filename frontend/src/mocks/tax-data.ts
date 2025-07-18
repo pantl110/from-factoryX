@@ -1,15 +1,15 @@
-import { TaxDocumentType } from '@/types/status-type'
+import { TaxDocumentType } from '@/types/status-type';
 
 export interface TaxDataModel {
-  id: number
-  taxType: TaxDocumentType
-  date: string
-  company: string
-  productName: string
-  supplyAmount: string
-  taxAmount: string
-  totalAmount: string
-  isHidden?: boolean
+  id: number;
+  taxType: TaxDocumentType;
+  date: string;
+  company: string;
+  productName: string;
+  supplyAmount: string;
+  taxAmount: string;
+  totalAmount: string;
+  isHidden?: boolean;
 }
 
 export const taxData: TaxDataModel[] = [
@@ -233,4 +233,4 @@ export const taxData: TaxDataModel[] = [
     totalAmount: '2,310,000',
     isHidden: false,
   },
-]
+];

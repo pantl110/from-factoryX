@@ -11,4 +11,4 @@ export const chartData = [
   { month: 10, thisYear: 3200000, lastYear: 2100000 },
   { month: 11, thisYear: 3400000, lastYear: 2200000 },
   { month: 12, thisYear: 3700000, lastYear: 2300000 },
-]
+];

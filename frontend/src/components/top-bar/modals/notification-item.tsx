@@ -1,10 +1,10 @@
-import MiniBtn from '@/ui/mini-btn'
-import { NotificationModel } from '../types'
-import { ExclamationMark, CheckSquare, Siren } from '@phosphor-icons/react'
+import MiniBtn from '@/ui/mini-btn';
+import { NotificationModel } from '../types';
+import { ExclamationMark, CheckSquare, Siren } from '@phosphor-icons/react';
 
 interface NotificationItemProps {
-  item: NotificationModel
-  onRead: () => void
+  item: NotificationModel;
+  onRead: () => void;
 }
 
 const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
@@ -17,40 +17,46 @@ const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
       completed: { icon: CheckSquare, color: 'text-primary' },
       // 정보/알림 (회색)
       info: { icon: Siren, color: 'text-gr' },
-    }
+    };
 
     // 타입별 그룹 분류
-    const warningTypes = ['materialShortage', 'facilityIssue', 'productionIssue']
+    const warningTypes = [
+      'materialShortage',
+      'facilityIssue',
+      'productionIssue',
+    ];
     const completedTypes = [
       'productionComplete',
       'salesTaxIssued',
       'purchaseTaxReceived',
       'receiptReceived',
-    ]
-    const infoTypes = ['roleChanged', 'deliveryDate', 'productionPlanChanged']
+    ];
+    const infoTypes = ['roleChanged', 'deliveryDate', 'productionPlanChanged'];
 
-    let config
+    let config;
     if (warningTypes.includes(type)) {
-      config = iconConfig.warning
+      config = iconConfig.warning;
     } else if (completedTypes.includes(type)) {
-      config = iconConfig.completed
+      config = iconConfig.completed;
     } else if (infoTypes.includes(type)) {
-      config = iconConfig.info
+      config = iconConfig.info;
     } else {
-      config = iconConfig.info
+      config = iconConfig.info;
     }
 
-    const IconComponent = config.icon
-    return <IconComponent size={24} weight="fill" className={config.color} />
-  }
+    const IconComponent = config.icon;
+    return <IconComponent size={24} weight="fill" className={config.color} />;
+  };
 
-  const icon = getNotificationIcon(item.type)
+  const icon = getNotificationIcon(item.type);
 
   return (
     <div className="w-full my-3 rounded">
       <div className="flex gap-2 items-center">
         {icon}
-        <p className={`Me_Body-2 ${item.isRead ? 'text-sv' : 'text-dg'}`}>{item.message}</p>
+        <p className={`Me_Body-2 ${item.isRead ? 'text-sv' : 'text-dg'}`}>
+          {item.message}
+        </p>
       </div>
 
       <div className="flex justify-between pl-8 pr-3 h-8 items-end">
@@ -67,7 +73,7 @@ const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default NotificationItem
+export default NotificationItem;

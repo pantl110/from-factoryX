@@ -1,15 +1,15 @@
 import {
   InvitationStatusType,
   PermissionRoleType,
-} from '@/app/(with-layout)/setting/system-setting/permission/types'
+} from '@/app/(with-layout)/setting/system-setting/permission/types';
 
 export interface PermissionDataModel {
-  id: number
-  invitationStatus: InvitationStatusType
-  name?: string
-  email: string
-  permission: PermissionRoleType
-  date: string
+  id: number;
+  invitationStatus: InvitationStatusType;
+  name?: string;
+  email: string;
+  permission: PermissionRoleType;
+  date: string;
 }
 
 export const permissionData: PermissionDataModel[] = [
@@ -93,4 +93,4 @@ export const permissionData: PermissionDataModel[] = [
     permission: '조회자',
     date: '2025-06-21',
   },
-]
+];

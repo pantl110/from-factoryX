@@ -1,13 +1,13 @@
-import MiniBtn from '@/ui/mini-btn'
-import ProductItem from './product-item'
-import dummyProducts from '@/mocks/quotation-products'
-import { ProductModel } from './types'
-import { CaretDown } from '@phosphor-icons/react/dist/ssr'
+import MiniBtn from '@/ui/mini-btn';
+import ProductItem from './product-item';
+import dummyProducts from '@/mocks/quotation-products';
+import { ProductModel } from './types';
+import { CaretDown } from '@phosphor-icons/react/dist/ssr';
 
 interface RequestInfoProps {
-  onProductClick: (product: ProductModel) => void
-  setIsProductEnrollmentModalOpen: (isOpen: boolean) => void
-  clientDataParam: string | null
+  onProductClick: (product: ProductModel) => void;
+  setIsProductEnrollmentModalOpen: (isOpen: boolean) => void;
+  clientDataParam: string | null;
 }
 
 const RequestInfo = ({
@@ -46,7 +46,11 @@ const RequestInfo = ({
             </thead>
             <tbody>
               {dummyProducts.map((item, index) => (
-                <ProductItem key={index} {...item} onClick={() => onProductClick(item)} />
+                <ProductItem
+                  key={index}
+                  {...item}
+                  onClick={() => onProductClick(item)}
+                />
               ))}
             </tbody>
           </table>
@@ -54,11 +58,13 @@ const RequestInfo = ({
       ) : (
         <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-[#E4E4E7]">
           <h4 className="Heading-4 text-dg">요청 정보가 아직 없어요.</h4>
-          <p className="R_Body-1 text-gr">품목을 추가해서 단가를 측정해 보세요.</p>
+          <p className="R_Body-1 text-gr">
+            품목을 추가해서 단가를 측정해 보세요.
+          </p>
         </div>
       )}
     </>
-  )
-}
+  );
+};
 
-export default RequestInfo
+export default RequestInfo;

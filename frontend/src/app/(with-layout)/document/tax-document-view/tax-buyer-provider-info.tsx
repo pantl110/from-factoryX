@@ -1,8 +1,8 @@
-import { TaxDocumentType } from '@/types/status-type'
-import InfoLabelValue from '@/ui/info-label-value'
+import { TaxDocumentType } from '@/types/status-type';
+import InfoLabelValue from '@/ui/info-label-value';
 
 interface TaxBuyerProviderInfoProps {
-  taxType: TaxDocumentType
+  taxType: TaxDocumentType;
 }
 
 const TaxBuyerProviderInfo = ({ taxType }: TaxBuyerProviderInfoProps) => {
@@ -28,7 +28,7 @@ const TaxBuyerProviderInfo = ({ taxType }: TaxBuyerProviderInfoProps) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TaxBuyerProviderInfo
+export default TaxBuyerProviderInfo;

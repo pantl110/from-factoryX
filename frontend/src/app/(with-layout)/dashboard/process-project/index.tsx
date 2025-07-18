@@ -1,14 +1,16 @@
-'use client'
+'use client';
 
-import MiniBtn from '@/ui/mini-btn'
-import ProcessProjectItem from './process-project-item'
-import { useRouter } from 'next/navigation'
-import { projectData } from '@/mocks/project-data'
+import MiniBtn from '@/ui/mini-btn';
+import ProcessProjectItem from './process-project-item';
+import { useRouter } from 'next/navigation';
+import { projectData } from '@/mocks/project-data';
 
 const ProcessProject = () => {
-  const router = useRouter()
+  const router = useRouter();
 
-  const processProjects = projectData.filter((project) => project.status === '생산 중')
+  const processProjects = projectData.filter(
+    (project) => project.status === '생산 중'
+  );
 
   return (
     <div>
@@ -19,7 +21,7 @@ const ProcessProject = () => {
           textColor="text-dg"
           borderColor="border-lg"
           onClick={() => {
-            router.push('/project/process?tab=inProduction')
+            router.push('/project/process?tab=inProduction');
           }}
           hoverColor="hover:bg-bg"
         />
@@ -30,13 +32,13 @@ const ProcessProject = () => {
             project={project}
             key={project.id}
             onClick={() => {
-              router.push(`/production/${project.id}`)
+              router.push(`/production/${project.id}`);
             }}
           />
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProcessProject
+export default ProcessProject;

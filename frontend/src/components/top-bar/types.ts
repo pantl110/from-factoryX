@@ -8,14 +8,14 @@ export type NotificationType =
   | 'receiptReceived' // 현금영수증 들어옴 (API)
   | 'roleChanged' // 권한 변경
   | 'deliveryDate' // 납기일이 3일 남았을 때
-  | 'productionPlanChanged' // 생산 계획 변경
+  | 'productionPlanChanged'; // 생산 계획 변경
 
 export interface NotificationModel {
-  id: number
-  type: NotificationType
-  message: string
-  date: string
-  isRead?: boolean // 읽음 상태
+  id: number;
+  type: NotificationType;
+  message: string;
+  date: string;
+  isRead?: boolean; // 읽음 상태
 }
 
 // top-bar crumb 타입
@@ -27,10 +27,15 @@ export type ProductionTabType =
   | '생산 현황'
   | '생산 내역'
   | '생산 계획'
-  | '주문서'
+  | '주문서';
 
 // setting page tab 타입
-export type StockTabType = 'product' | 'material'
+export type StockTabType = 'product' | 'material';
 
-export type SettingTabType = 'system' | 'master'
-export type SettingChipType = 'general' | 'permission' | 'subscription' | 'equipment' | 'client'
+export type SettingTabType = 'system' | 'master';
+export type SettingChipType =
+  | 'general'
+  | 'permission'
+  | 'subscription'
+  | 'equipment'
+  | 'client';

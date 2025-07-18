@@ -1,21 +1,31 @@
-import MiniBtn from '@/ui/mini-btn'
-import Modal from '@/ui/modal/modal'
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
 
 interface DeleteTeamMemberModalProps {
-  onClose: () => void
-  onDelete: () => void
+  onClose: () => void;
+  onDelete: () => void;
 }
 
-const DeleteTeamMemberModal = ({ onClose, onDelete }: DeleteTeamMemberModalProps) => {
+const DeleteTeamMemberModal = ({
+  onClose,
+  onDelete,
+}: DeleteTeamMemberModalProps) => {
   return (
     <Modal
       title="해당 팀원을 삭제하시겠어요?"
-      subtitle={'삭제하시면 해당 팀원은 더 이상 팩토리엑스를 이용할 수 없게 돼요.'}
+      subtitle={
+        '삭제하시면 해당 팀원은 더 이상 팩토리엑스를 이용할 수 없게 돼요.'
+      }
       onClose={onClose}
       sm={true}
     >
       <div className="flex justify-end mt-4 gap-[5px]">
-        <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
+        <MiniBtn
+          text="취소"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
         <MiniBtn
           text="삭제"
           textColor="text-red"
@@ -25,7 +35,7 @@ const DeleteTeamMemberModal = ({ onClose, onDelete }: DeleteTeamMemberModalProps
         />
       </div>
     </Modal>
-  )
-}
+  );
+};
 
-export default DeleteTeamMemberModal
+export default DeleteTeamMemberModal;

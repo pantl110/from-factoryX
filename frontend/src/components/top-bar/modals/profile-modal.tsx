@@ -1,51 +1,54 @@
-import MiniBtn from '@/ui/mini-btn'
-import ProfileImage from '@/ui/profile-image'
-import { X } from '@phosphor-icons/react'
-import { useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import useAuthStore from '@/store/auth-store'
-import { useLogout } from '@/hooks'
+import MiniBtn from '@/ui/mini-btn';
+import ProfileImage from '@/ui/profile-image';
+import { X } from '@phosphor-icons/react';
+import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import useAuthStore from '@/store/auth-store';
+import { useLogout } from '@/hooks';
 
 interface ProfileModalProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 const ProfileModal = ({ onClose }: ProfileModalProps) => {
-  const profileModalRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
-  const { userInfo } = useAuthStore()
-  const { logout, isLoading: isLogoutLoading } = useLogout()
+  const profileModalRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const { userInfo } = useAuthStore();
+  const { logout, isLoading: isLogoutLoading } = useLogout();
 
   // 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileModalRef.current && !profileModalRef.current.contains(event.target as Node)) {
-        onClose()
+      if (
+        profileModalRef.current &&
+        !profileModalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside) // 이벤트 리스너 등록
+    document.addEventListener('mousedown', handleClickOutside); // 이벤트 리스너 등록
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside) // 언마운트 시 제거
-    }
-  }, [onClose])
+      document.removeEventListener('mousedown', handleClickOutside); // 언마운트 시 제거
+    };
+  }, [onClose]);
 
   // 권한 텍스트 매핑
   const getStatusText = (status: string) => {
     switch (status) {
       case '비활성유저':
-        return '조회자'
+        return '조회자';
       case '활성유저':
-        return '운영자'
+        return '운영자';
       case '관리자':
-        return '시스템 관리자'
+        return '시스템 관리자';
       case '탈퇴유저':
-        return '탈퇴 사용자'
+        return '탈퇴 사용자';
       default:
-        return status
+        return status;
     }
-  }
+  };
 
   return (
     <div
@@ -72,7 +75,9 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex gap-2 items-center">
-              <p className="Me_Body-1 text-sv">{getStatusText(userInfo?.status || '-')}</p>
+              <p className="Me_Body-1 text-sv">
+                {getStatusText(userInfo?.status || '-')}
+              </p>
               {/* {userInfo?.name && (
                 <>
                   <div className="w-[1px] bg-gr h-[56%]"></div>                  
@@ -94,8 +99,8 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
             hoverColor="bg-bg"
             width="w-full"
             onClick={() => {
-              router.push('/setting')
-              onClose()
+              router.push('/setting');
+              onClose();
             }}
           />
         </div>
@@ -107,10 +112,10 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
             hoverColor="bg-bg"
             width="w-full"
             onClick={async () => {
-              const result = await logout()
+              const result = await logout();
               if (result.success) {
-                onClose()
-                router.push('/login')
+                onClose();
+                router.push('/login');
               } else {
                 // showToast(result.error || '로그아웃에 실패했습니다.')
               }
@@ -120,7 +125,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProfileModal
+export default ProfileModal;

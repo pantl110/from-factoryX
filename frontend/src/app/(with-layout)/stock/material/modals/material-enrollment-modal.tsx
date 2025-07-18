@@ -1,40 +1,43 @@
-import SearchInput from '@/ui/search-input'
-import MiniBtn from '@/ui/mini-btn'
-import Modal from '@/ui/modal/modal'
-import { useDropdownFilter } from '@/hooks/use-dropdown-filter'
-import { materialData } from '@/mocks/material-data'
-import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown'
-import { useState } from 'react'
-import { X } from '@phosphor-icons/react/dist/ssr'
-import ManualAddMaterial from './manual-add-material'
+import SearchInput from '@/ui/search-input';
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
+import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
+import { materialData } from '@/mocks/material-data';
+import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
+import { useState } from 'react';
+import { X } from '@phosphor-icons/react/dist/ssr';
+import ManualAddMaterial from './manual-add-material';
 
 interface MaterialEnrollmentProps {
-  onClose?: () => void
-  onRegister?: () => void
+  onClose?: () => void;
+  onRegister?: () => void;
 }
 
-const MaterialEnrollmentModal = ({ onClose, onRegister }: MaterialEnrollmentProps) => {
-  const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } = useDropdownFilter(
-    materialData,
-    (item) => item.materialName
-  )
-  const [selectedMaterials, setSelectedMaterials] = useState<typeof materialData>([])
-  const [isManualAddMode, setIsManualAddMode] = useState(false)
+const MaterialEnrollmentModal = ({
+  onClose,
+  onRegister,
+}: MaterialEnrollmentProps) => {
+  const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } =
+    useDropdownFilter(materialData, (item) => item.materialName);
+  const [selectedMaterials, setSelectedMaterials] = useState<
+    typeof materialData
+  >([]);
+  const [isManualAddMode, setIsManualAddMode] = useState(false);
 
   const handleSelectMaterial = (item: (typeof materialData)[number]) => {
-    handleSelect(item)
-    setInput('')
+    handleSelect(item);
+    setInput('');
     setSelectedMaterials((prev) => {
       if (!prev.some((mat) => mat.id === item.id)) {
-        return [...prev, item]
+        return [...prev, item];
       }
-      return prev
-    })
-    setIsOpen(false)
-  }
+      return prev;
+    });
+    setIsOpen(false);
+  };
   const handleRemoveMaterial = (id: string) => {
-    setSelectedMaterials((prev) => prev.filter((mat) => mat.id !== id))
-  }
+    setSelectedMaterials((prev) => prev.filter((mat) => mat.id !== id));
+  };
 
   return (
     <Modal
@@ -98,11 +101,16 @@ const MaterialEnrollmentModal = ({ onClose, onRegister }: MaterialEnrollmentProp
                 key={mat.id}
                 className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 group"
               >
-                <p className="flex-1 px-3 text-dg truncate" title={mat.materialName}>
+                <p
+                  className="flex-1 px-3 text-dg truncate"
+                  title={mat.materialName}
+                >
                   {mat.materialName ?? '-'}
                 </p>
                 <p className="w-[80px] px-3 text-dg">{mat.unit ?? '-'}</p>
-                <p className="flex-1 px-3 text-dg">{mat.usageQuantity ?? '-'}</p>
+                <p className="flex-1 px-3 text-dg">
+                  {mat.usageQuantity ?? '-'}
+                </p>
                 <p className="w-[100px] px-3 text-dg">
                   {mat.unitPrice !== null && mat.unitPrice !== undefined
                     ? mat.unitPrice.toLocaleString()
@@ -131,7 +139,12 @@ const MaterialEnrollmentModal = ({ onClose, onRegister }: MaterialEnrollmentProp
       )}
 
       <div className="flex h-10 gap-2.5 justify-end mt-4">
-        <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
+        <MiniBtn
+          text="취소"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
         <MiniBtn
           text="등록"
           textColor="text-wh"
@@ -142,7 +155,7 @@ const MaterialEnrollmentModal = ({ onClose, onRegister }: MaterialEnrollmentProp
         />
       </div>
     </Modal>
-  )
-}
+  );
+};
 
-export default MaterialEnrollmentModal
+export default MaterialEnrollmentModal;

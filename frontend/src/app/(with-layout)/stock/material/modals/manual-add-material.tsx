@@ -1,11 +1,13 @@
-import Input from '@/ui/input'
-import MiniBtn from '@/ui/mini-btn'
-import { useForm } from 'react-hook-form'
-import { MaterialDataModel } from '@/types/data-model'
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
+import { useForm } from 'react-hook-form';
+import { MaterialDataModel } from '@/types/data-model';
 
 interface ManualAddMaterialProps {
-  setIsManualAddMode: (v: boolean) => void
-  setSelectedMaterials: (fn: (prev: MaterialDataModel[]) => MaterialDataModel[]) => void
+  setIsManualAddMode: (v: boolean) => void;
+  setSelectedMaterials: (
+    fn: (prev: MaterialDataModel[]) => MaterialDataModel[]
+  ) => void;
 }
 
 const ManualAddMaterial = ({
@@ -25,7 +27,7 @@ const ManualAddMaterial = ({
       usageQuantity: null,
     },
     mode: 'onBlur',
-  })
+  });
 
   const onSubmit = (data: MaterialDataModel) => {
     setSelectedMaterials((prev) => [
@@ -36,10 +38,10 @@ const ManualAddMaterial = ({
         size: data.size,
         usageQuantity: Number(data.usageQuantity),
       },
-    ])
-    reset()
-    window.setTimeout(() => setIsManualAddMode(false), 0)
-  }
+    ]);
+    reset();
+    window.setTimeout(() => setIsManualAddMode(false), 0);
+  };
 
   return (
     <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
@@ -117,7 +119,7 @@ const ManualAddMaterial = ({
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default ManualAddMaterial
+export default ManualAddMaterial;

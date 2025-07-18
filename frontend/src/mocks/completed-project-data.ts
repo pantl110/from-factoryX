@@ -1,11 +1,11 @@
-import { CompletedProjectStatusType } from '@/types/status-type'
+import { CompletedProjectStatusType } from '@/types/status-type';
 
 export interface CompletedProjectDataModel {
-  id: number
-  status: CompletedProjectStatusType // "완료" | "중단"
-  companyName: string
-  productName: string
-  date: string
+  id: number;
+  status: CompletedProjectStatusType; // "완료" | "중단"
+  companyName: string;
+  productName: string;
+  date: string;
 }
 
 const completedProjectData: CompletedProjectDataModel[] = [
@@ -37,6 +37,6 @@ const completedProjectData: CompletedProjectDataModel[] = [
     productName: 'M8 볼트 세트',
     date: '2025-06-31',
   },
-]
+];
 
-export default completedProjectData
+export default completedProjectData;

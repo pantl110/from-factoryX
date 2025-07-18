@@ -1,13 +1,17 @@
-import Checkbox from '@/ui/checkbox'
-import { CaretUpDown } from '@phosphor-icons/react/dist/ssr'
+import Checkbox from '@/ui/checkbox';
+import { CaretUpDown } from '@phosphor-icons/react/dist/ssr';
 
 interface TableHeaderProps {
-  checkedCount: number
-  onToggleAll: () => void
-  onSort?: (key: 'date') => void
+  checkedCount: number;
+  onToggleAll: () => void;
+  onSort?: (key: 'date') => void;
 }
 
-const TableHeader = ({ checkedCount, onToggleAll, onSort }: TableHeaderProps) => {
+const TableHeader = ({
+  checkedCount,
+  onToggleAll,
+  onSort,
+}: TableHeaderProps) => {
   return (
     <div className="flex items-center h-12 w-full min-w-[1146px] border-t border-b border-lg Me_Body-1">
       <div className="flex items-center py-3 px-2">
@@ -26,7 +30,7 @@ const TableHeader = ({ checkedCount, onToggleAll, onSort }: TableHeaderProps) =>
       </div>
       <div className="w-9"></div>
     </div>
-  )
-}
+  );
+};
 
-export default TableHeader
+export default TableHeader;

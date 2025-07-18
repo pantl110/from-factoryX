@@ -1,15 +1,20 @@
-import { TaxDataModel } from '@/mocks/tax-data'
-import Panel from '@/ui/panel'
-import TaxDocumentView from '@/app/(with-layout)/document/tax-document-view'
+import { TaxDataModel } from '@/mocks/tax-data';
+import Panel from '@/ui/panel';
+import TaxDocumentView from '@/app/(with-layout)/document/tax-document-view';
 
 interface TaxDetailPanelProps {
-  item: TaxDataModel
-  onClose: () => void
-  isDraft?: boolean
-  onIssueClick?: () => void
+  item: TaxDataModel;
+  onClose: () => void;
+  isDraft?: boolean;
+  onIssueClick?: () => void;
 }
 
-const TaxDetailPanel = ({ item, onClose, isDraft, onIssueClick }: TaxDetailPanelProps) => {
+const TaxDetailPanel = ({
+  item,
+  onClose,
+  isDraft,
+  onIssueClick,
+}: TaxDetailPanelProps) => {
   return (
     <Panel
       title={`${item.taxType} 세금계산서`}
@@ -19,7 +24,7 @@ const TaxDetailPanel = ({ item, onClose, isDraft, onIssueClick }: TaxDetailPanel
     >
       <TaxDocumentView taxType={item.taxType} />
     </Panel>
-  )
-}
+  );
+};
 
-export default TaxDetailPanel
+export default TaxDetailPanel;

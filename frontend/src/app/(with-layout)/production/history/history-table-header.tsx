@@ -8,7 +8,7 @@ const HistoryTableHeader = () => {
       <p className="flex-1 py-1 px-3">사용 수량</p>
       <p className="flex-1 py-1 px-3">잔여 수량</p>
     </div>
-  )
-}
+  );
+};
 
-export default HistoryTableHeader
+export default HistoryTableHeader;

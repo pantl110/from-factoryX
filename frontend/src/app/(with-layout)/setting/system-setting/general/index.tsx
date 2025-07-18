@@ -1,11 +1,11 @@
-import Profile from './profile'
-import CompanyInfo from './componay-info'
-import DeleteAccount from './delete-account'
-import useAuthStore from '@/store/auth-store'
-import Spinner from '@/ui/spinner'
+import Profile from './profile';
+import CompanyInfo from './componay-info';
+import DeleteAccount from './delete-account';
+import useAuthStore from '@/store/auth-store';
+import Spinner from '@/ui/spinner';
 
 const General = () => {
-  const { userInfo, isLoading } = useAuthStore()
+  const { userInfo, isLoading } = useAuthStore();
 
   // 로딩 중인 경우
   if (isLoading) {
@@ -13,7 +13,7 @@ const General = () => {
       <div className="flex justify-center items-center h-100">
         <Spinner />
       </div>
-    )
+    );
   }
 
   return (
@@ -29,7 +29,7 @@ const General = () => {
       {/* 계정 삭제 */}
       <DeleteAccount />
     </div>
-  )
-}
+  );
+};
 
-export default General
+export default General;

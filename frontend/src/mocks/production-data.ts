@@ -1,17 +1,17 @@
 export interface ProductionDataModel {
-  id: number
-  projectName: string
-  productName: string
-  productCode?: string
-  standard: string
-  unit: string
-  orderQuantity?: number
-  productionQuantity?: number
-  machine?: string
-  productionTime?: string
-  unitTime?: number
-  materialStatus?: '충분' | '부족'
-  endDate?: string
+  id: number;
+  projectName: string;
+  productName: string;
+  productCode?: string;
+  standard: string;
+  unit: string;
+  orderQuantity?: number;
+  productionQuantity?: number;
+  machine?: string;
+  productionTime?: string;
+  unitTime?: number;
+  materialStatus?: '충분' | '부족';
+  endDate?: string;
 }
 
 export const productionData: ProductionDataModel[] = [
@@ -90,4 +90,4 @@ export const productionData: ProductionDataModel[] = [
     materialStatus: '충분',
     endDate: '2025-06-20 16:30',
   },
-]
+];

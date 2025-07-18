@@ -1,20 +1,23 @@
-'use client'
+'use client';
 
-import Chip from '@/ui/chip'
+import Chip from '@/ui/chip';
 
-import { InventoryStatusType, InventoryStatusColorMap } from '@/types/status-type'
-import Checkbox from '@/ui/checkbox'
+import {
+  InventoryStatusType,
+  InventoryStatusColorMap,
+} from '@/types/status-type';
+import Checkbox from '@/ui/checkbox';
 
 interface TableItemProps {
-  materialName: string
-  materialCode: string
-  unit: string
-  currentStock: number
-  status: InventoryStatusType
-  _date: string
-  onClick?: () => void
-  checked: boolean
-  onToggle: () => void
+  materialName: string;
+  materialCode: string;
+  unit: string;
+  currentStock: number;
+  status: InventoryStatusType;
+  _date: string;
+  onClick?: () => void;
+  checked: boolean;
+  onToggle: () => void;
 }
 
 const TableItem = ({
@@ -27,7 +30,7 @@ const TableItem = ({
   checked,
   onToggle,
 }: TableItemProps) => {
-  const colors = InventoryStatusColorMap[status]
+  const colors = InventoryStatusColorMap[status];
 
   return (
     <>
@@ -43,11 +46,15 @@ const TableItem = ({
         <p className="w-[80px] px-3 text-dg">{unit}</p>
         <p className="flex-1 px-3 text-dg">{currentStock.toLocaleString()}</p>
         <div className="px-3 w-[150px]">
-          <Chip text={status} bgColor={colors.bgColor} textColor={colors.textColor} />
+          <Chip
+            text={status}
+            bgColor={colors.bgColor}
+            textColor={colors.textColor}
+          />
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default TableItem
+export default TableItem;

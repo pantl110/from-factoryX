@@ -1,28 +1,28 @@
-import Input from '@/ui/input'
-import MiniBtn from '@/ui/mini-btn'
-import { useForm } from 'react-hook-form'
-import { CameraIcon, Pencil } from '@phosphor-icons/react'
-import { useState, useEffect } from 'react'
-import PhotoUploadModal from './modals/photo-upload-modal'
-import ProfileImage from '@/ui/profile-image'
-import { formatPhoneNumber } from '@/hooks/format-number'
-import useToast from '@/hooks/use-toast'
-import Toast from '@/ui/toast'
-import { CheckCircle } from '@phosphor-icons/react'
-import { UserInfoModel, UpdateUserInfoModel } from '@/types/data-model'
-import { useMe } from '@/hooks/users/use-me'
-import EditPhotoDropdown from './modals/edit-photo-dropdown'
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
+import { useForm } from 'react-hook-form';
+import { CameraIcon, Pencil } from '@phosphor-icons/react';
+import { useState, useEffect } from 'react';
+import PhotoUploadModal from './modals/photo-upload-modal';
+import ProfileImage from '@/ui/profile-image';
+import { formatPhoneNumber } from '@/hooks/format-number';
+import useToast from '@/hooks/use-toast';
+import Toast from '@/ui/toast';
+import { CheckCircle } from '@phosphor-icons/react';
+import { UserInfoModel, UpdateUserInfoModel } from '@/types/data-model';
+import { useMe } from '@/hooks/users/use-me';
+import EditPhotoDropdown from './modals/edit-photo-dropdown';
 
 interface ProfileProps {
-  userInfo: UserInfoModel | null
+  userInfo: UserInfoModel | null;
 }
 
 const Profile = ({ userInfo }: ProfileProps) => {
-  const { isToastOpen, isVisible, showToast } = useToast(2000)
-  const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false)
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [isEditPhotoDropdownOpen, setIsEditPhotoDropdownOpen] = useState(false)
-  const { updateMe, isLoading } = useMe()
+  const { isToastOpen, isVisible, showToast } = useToast(2000);
+  const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isEditPhotoDropdownOpen, setIsEditPhotoDropdownOpen] = useState(false);
+  const { updateMe, isLoading } = useMe();
 
   const {
     register,
@@ -37,7 +37,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
     },
     mode: 'onSubmit',
     reValidateMode: 'onSubmit', // 모든 필드 유효성 검사를 동시에 실행
-  })
+  });
 
   // Update form when userInfo changes
   useEffect(() => {
@@ -46,14 +46,14 @@ const Profile = ({ userInfo }: ProfileProps) => {
         username: userInfo.username || '',
         phone_number: userInfo.phone_number || '',
         profile_image: userInfo.profile_image || '',
-      })
-      setSelectedImage(null) // 선택된 이미지 초기화
+      });
+      setSelectedImage(null); // 선택된 이미지 초기화
     }
-  }, [userInfo, reset])
+  }, [userInfo, reset]);
 
   const handleImageSelected = (base64Data: string) => {
-    setSelectedImage(base64Data)
-  }
+    setSelectedImage(base64Data);
+  };
 
   const onSubmit = async (data: UpdateUserInfoModel) => {
     try {
@@ -61,40 +61,42 @@ const Profile = ({ userInfo }: ProfileProps) => {
       const updateData = {
         ...data,
         ...(selectedImage && { profile_image: selectedImage }),
-      }
-      const result = await updateMe(updateData)
+      };
+      const result = await updateMe(updateData);
 
       if (result.success) {
-        showToast()
-        setSelectedImage(null) // 성공 후 선택된 이미지 초기화
+        showToast();
+        setSelectedImage(null); // 성공 후 선택된 이미지 초기화
       } else {
         const errorMessage =
-          typeof result.error === 'string' ? result.error : '프로필 정보 수정에 실패했습니다.'
-        throw new Error(errorMessage)
+          typeof result.error === 'string'
+            ? result.error
+            : '프로필 정보 수정에 실패했습니다.';
+        throw new Error(errorMessage);
       }
     } catch {
-      throw new Error('프로필 정보 수정 중 오류가 발생했습니다.')
+      throw new Error('프로필 정보 수정 중 오류가 발생했습니다.');
     }
-  }
+  };
 
   // 권한 텍스트 매핑
   const getStatusText = (status: string) => {
     switch (status) {
       case '비활성유저':
-        return '조회자'
+        return '조회자';
       case '활성유저':
-        return '운영자'
+        return '운영자';
       case '관리자':
-        return '시스템 관리자'
+        return '시스템 관리자';
       case '탈퇴유저':
-        return '탈퇴 사용자'
+        return '탈퇴 사용자';
       default:
-        return status
+        return status;
     }
-  }
+  };
 
   // 사진이 있는지 확인 (선택된 이미지 또는 기존 프로필 이미지)
-  const hasImage = selectedImage || userInfo?.profile_image
+  const hasImage = selectedImage || userInfo?.profile_image;
 
   return (
     <>
@@ -126,8 +128,8 @@ const Profile = ({ userInfo }: ProfileProps) => {
                   onClose={() => setIsEditPhotoDropdownOpen(false)}
                   onChangePhoto={() => setIsPhotoUploadModalOpen(true)}
                   onDeletePhoto={() => {
-                    setSelectedImage(null)
-                    setIsEditPhotoDropdownOpen(false)
+                    setSelectedImage(null);
+                    setIsEditPhotoDropdownOpen(false);
                   }}
                 />
               </div>
@@ -135,7 +137,11 @@ const Profile = ({ userInfo }: ProfileProps) => {
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex gap-2">
-              <Input placeholder="이름을 입력하세요." label="이름" {...register('username')} />
+              <Input
+                placeholder="이름을 입력하세요."
+                label="이름"
+                {...register('username')}
+              />
               <Input
                 label="권한"
                 value={userInfo ? getStatusText(userInfo.status) : '-'}
@@ -157,11 +163,12 @@ const Profile = ({ userInfo }: ProfileProps) => {
                 showError={!!errors.phone_number}
                 {...register('phone_number', {
                   onChange: (e) => {
-                    const formatted = formatPhoneNumber(e.target.value)
-                    e.target.value = formatted
+                    const formatted = formatPhoneNumber(e.target.value);
+                    e.target.value = formatted;
                   },
                   pattern: {
-                    value: /^(01[016789]-\d{3,4}-\d{4}|0\d{1,2}-\d{3,4}-\d{4})$/,
+                    value:
+                      /^(01[016789]-\d{3,4}-\d{4}|0\d{1,2}-\d{3,4}-\d{4})$/,
                     message: '',
                   },
                 })}
@@ -198,7 +205,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
         />
       )}
     </>
-  )
-}
+  );
+};
 
-export default Profile
+export default Profile;

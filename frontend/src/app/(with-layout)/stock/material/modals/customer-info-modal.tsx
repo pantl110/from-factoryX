@@ -1,8 +1,8 @@
-import Modal from '@/ui/modal/modal'
-import CustomerInfo from '../material-detail/customer-info'
+import Modal from '@/ui/modal/modal';
+import CustomerInfo from '../material-detail/customer-info';
 
 interface CustomerInfoModalProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 const CustomerInfoModal = ({ onClose }: CustomerInfoModalProps) => {
@@ -12,7 +12,7 @@ const CustomerInfoModal = ({ onClose }: CustomerInfoModalProps) => {
         <CustomerInfo />
       </div>
     </Modal>
-  )
-}
+  );
+};
 
-export default CustomerInfoModal
+export default CustomerInfoModal;

@@ -1,12 +1,15 @@
-import MiniBtn from '@/ui/mini-btn'
-import Modal from '@/ui/modal/modal'
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
 
 interface ProductionPlanSaveModalProps {
-  onClose: () => void
-  onSave: () => void
+  onClose: () => void;
+  onSave: () => void;
 }
 
-const ProductionPlanSaveModal = ({ onClose, onSave }: ProductionPlanSaveModalProps) => {
+const ProductionPlanSaveModal = ({
+  onClose,
+  onSave,
+}: ProductionPlanSaveModalProps) => {
   return (
     <Modal
       title="저장 후 계속 진행할까요?"
@@ -16,7 +19,12 @@ const ProductionPlanSaveModal = ({ onClose, onSave }: ProductionPlanSaveModalPro
       onClose={onClose}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} hoverColor="" />
+        <MiniBtn
+          text="취소하기"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
         <MiniBtn
           text="저장하기"
           textColor="text-wh"
@@ -26,7 +34,7 @@ const ProductionPlanSaveModal = ({ onClose, onSave }: ProductionPlanSaveModalPro
         />
       </div>
     </Modal>
-  )
-}
+  );
+};
 
-export default ProductionPlanSaveModal
+export default ProductionPlanSaveModal;

@@ -1,4 +1,4 @@
-import { DeliveryDataModel } from '@/app/(with-layout)/production/delivery/types'
+import { DeliveryDataModel } from '@/app/(with-layout)/production/delivery/types';
 
 export const deliveryData: DeliveryDataModel[] = [
   {
@@ -53,4 +53,4 @@ export const deliveryData: DeliveryDataModel[] = [
     companyName: '플라스틱이 좋아',
     deliveryStatus: '완료',
   },
-]
+];

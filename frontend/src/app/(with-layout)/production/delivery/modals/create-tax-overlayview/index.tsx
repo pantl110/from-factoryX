@@ -1,12 +1,12 @@
-import DocumentViewTitle from '@/app/(with-layout)/document/document-view-title'
-import OrderItemInfo from '@/app/(with-layout)/document/tax-document-view/order-item-info'
-import MiniBtn from '@/ui/mini-btn'
-import OverlayView from '@/ui/ovelay-view'
-import ProviderInfo from './provider-info'
-import BuyerInfo from './buyer-info'
+import DocumentViewTitle from '@/app/(with-layout)/document/document-view-title';
+import OrderItemInfo from '@/app/(with-layout)/document/tax-document-view/order-item-info';
+import MiniBtn from '@/ui/mini-btn';
+import OverlayView from '@/ui/ovelay-view';
+import ProviderInfo from './provider-info';
+import BuyerInfo from './buyer-info';
 
 interface CreateTaxOverlayviewProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
@@ -21,7 +21,12 @@ const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
             </div>
           </div>
           <div className="flex gap-2.5">
-            <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} hoverColor="" />
+            <MiniBtn
+              text="취소하기"
+              textColor="text-sv"
+              onClick={onClose}
+              hoverColor=""
+            />
             <MiniBtn
               text="발행하기 "
               textColor="text-wh"
@@ -44,7 +49,7 @@ const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
         </div>
       </div>
     </OverlayView>
-  )
-}
+  );
+};
 
-export default CreateTaxOverlayview
+export default CreateTaxOverlayview;

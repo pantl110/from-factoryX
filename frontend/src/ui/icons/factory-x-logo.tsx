@@ -1,8 +1,8 @@
 interface FactoryXLogoProps {
-  className?: string
-  width?: number
-  height?: number
-  color?: string
+  className?: string;
+  width?: number;
+  height?: number;
+  color?: string;
 }
 
 const FactoryXLogo = ({
@@ -25,7 +25,7 @@ const FactoryXLogo = ({
         fill={color}
       />
     </svg>
-  )
-}
+  );
+};
 
-export default FactoryXLogo
+export default FactoryXLogo;

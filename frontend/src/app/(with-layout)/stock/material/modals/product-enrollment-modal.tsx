@@ -1,26 +1,26 @@
-import SearchInput from '@/ui/search-input'
-import MiniBtn from '@/ui/mini-btn'
-import Modal from '@/ui/modal/modal'
-import { useDropdownFilter } from '@/hooks/use-dropdown-filter'
-import { productData } from '@/mocks/product-data'
-import { useState } from 'react'
-import { ProductDataModel, ProductResponseModel } from '@/types/data-model'
-import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown'
-import { X } from '@phosphor-icons/react/dist/ssr'
-import ManualAddProduct from './manual-add-product'
+import SearchInput from '@/ui/search-input';
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
+import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
+import { productData } from '@/mocks/product-data';
+import { useState } from 'react';
+import { ProductDataModel, ProductResponseModel } from '@/types/data-model';
+import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
+import { X } from '@phosphor-icons/react/dist/ssr';
+import ManualAddProduct from './manual-add-product';
 
 interface ProductEnrollmentModalProps {
-  onClose?: () => void
+  onClose?: () => void;
 }
 
 const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
-  const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } = useDropdownFilter(
-    productData,
-    (item) => item.productName
-  )
+  const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } =
+    useDropdownFilter(productData, (item) => item.productName);
 
-  const [selectedProducts, setSelectedProducts] = useState<ProductDataModel[]>([])
-  const [isManualAddMode, setIsManualAddMode] = useState(false)
+  const [selectedProducts, setSelectedProducts] = useState<ProductDataModel[]>(
+    []
+  );
+  const [isManualAddMode, setIsManualAddMode] = useState(false);
 
   // 품목 선택 시
   const handleSelectProduct = (item: ProductResponseModel) => {
@@ -34,24 +34,28 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
       stock: item.current_stock,
       productionTime: item.average_production_time?.toString(),
       comment: item.note ? item.note.split(',') : [],
-    }
-    handleSelect(dataModel)
-    setInput('')
+    };
+    handleSelect(dataModel);
+    setInput('');
     setSelectedProducts((prev) => {
       if (!prev.some((product) => product.id === dataModel.id)) {
-        return [...prev, dataModel]
+        return [...prev, dataModel];
       }
-      return prev
-    })
-    setIsOpen(false)
-  }
+      return prev;
+    });
+    setIsOpen(false);
+  };
 
   const handleRemoveProduct = (id: number) => {
-    setSelectedProducts((prev) => prev.filter((product) => product.id !== id))
-  }
+    setSelectedProducts((prev) => prev.filter((product) => product.id !== id));
+  };
 
   return (
-    <Modal title="해당 원자재와 연결할 품목을 등록해 주세요." width="w-[600px]" onClose={onClose}>
+    <Modal
+      title="해당 원자재와 연결할 품목을 등록해 주세요."
+      width="w-[600px]"
+      onClose={onClose}
+    >
       <div className="mt-4 flex gap-2.5 relative">
         <SearchInput
           placeholder="품목 검색"
@@ -83,7 +87,9 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
                 unit: item.unit || '',
                 spec: item.size || '',
                 current_stock: item.stock,
-                average_production_time: item.productionTime ? Number(item.productionTime) : 0,
+                average_production_time: item.productionTime
+                  ? Number(item.productionTime)
+                  : 0,
                 buffer_rate: 0,
                 location: 0,
                 note: Array.isArray(item.comment) ? item.comment.join(',') : '',
@@ -106,7 +112,10 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
         selectedProducts.length > 0 && (
           <div className="mt-4 flex flex-col">
             {selectedProducts.map((product) => (
-              <div key={product.id} className="flex justify-between items-center h-10">
+              <div
+                key={product.id}
+                className="flex justify-between items-center h-10"
+              >
                 <p className="Me_body-1 text-dg">{product.productName}</p>
                 {product.id !== null && product.id !== undefined && (
                   <div
@@ -123,7 +132,12 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
       )}
 
       <div className="mt-4 flex gap-2.5 justify-end">
-        <MiniBtn text="취소하기" textColor="text-sv" hoverColor="bg-bg" onClick={onClose} />
+        <MiniBtn
+          text="취소하기"
+          textColor="text-sv"
+          hoverColor="bg-bg"
+          onClick={onClose}
+        />
         <MiniBtn
           text="추가하기"
           textColor="text-wh"
@@ -134,7 +148,7 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
         />
       </div>
     </Modal>
-  )
-}
+  );
+};
 
-export default ProductEnrollmentModal
+export default ProductEnrollmentModal;

@@ -1,55 +1,59 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Suspense } from 'react'
-import MainTitleSec from './main-title-sec'
-import TableHeader from './table-header'
-import TableItem from './table-item'
-import TaxDetailPanel from '../tax-detail-panel'
-import { taxData, TaxDataModel } from '@/mocks/tax-data'
-import { TaxDocumentType } from '@/types/status-type'
-import Spinner from '@/ui/spinner'
-import { useCheckAll } from '@/hooks/use-check-all'
-import SearchInput from '@/ui/search-input'
-import MiniBtn from '@/ui/mini-btn'
-import usePagination from '@/hooks/use-pagination'
-import Pagination from '@/components/pagination'
-import EmptySpace from '@/ui/empty-space'
+import { useState, useEffect } from 'react';
+import { Suspense } from 'react';
+import MainTitleSec from './main-title-sec';
+import TableHeader from './table-header';
+import TableItem from './table-item';
+import TaxDetailPanel from '../tax-detail-panel';
+import { taxData, TaxDataModel } from '@/mocks/tax-data';
+import { TaxDocumentType } from '@/types/status-type';
+import Spinner from '@/ui/spinner';
+import { useCheckAll } from '@/hooks/use-check-all';
+import SearchInput from '@/ui/search-input';
+import MiniBtn from '@/ui/mini-btn';
+import usePagination from '@/hooks/use-pagination';
+import Pagination from '@/components/pagination';
+import EmptySpace from '@/ui/empty-space';
 
 const TaxPageContent = () => {
-  const [selectedTaxType, setSelectedTaxType] = useState<TaxDocumentType | '전체'>('전체')
-  const [selectedItem, setSelectedItem] = useState<TaxDataModel | null>(null)
-  const [isPanelOpen, setIsPanelOpen] = useState(false)
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
-  const [showHidden, setShowHidden] = useState(false)
+  const [selectedTaxType, setSelectedTaxType] = useState<
+    TaxDocumentType | '전체'
+  >('전체');
+  const [selectedItem, setSelectedItem] = useState<TaxDataModel | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [showHidden, setShowHidden] = useState(false);
 
   const handleOpenPanel = (item: TaxDataModel) => {
-    setSelectedItem(item)
-    setIsPanelOpen(true)
-  }
+    setSelectedItem(item);
+    setIsPanelOpen(true);
+  };
   const handleClosePanel = () => {
-    setSelectedItem(null)
-    setIsPanelOpen(false)
-  }
+    setSelectedItem(null);
+    setIsPanelOpen(false);
+  };
 
   const handleSortClick = () => {
-    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
-  }
+    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+  };
 
   const filteredData =
     selectedTaxType === '전체'
       ? taxData
-      : taxData.filter((item) => item.taxType === selectedTaxType)
+      : taxData.filter((item) => item.taxType === selectedTaxType);
 
-  const hiddenFilteredData = filteredData.filter((item) => item.isHidden === showHidden)
+  const hiddenFilteredData = filteredData.filter(
+    (item) => item.isHidden === showHidden
+  );
 
   const sortedData = [...hiddenFilteredData].sort((a, b) => {
     if (sortDirection === 'asc') {
-      return a.date.localeCompare(b.date)
+      return a.date.localeCompare(b.date);
     } else {
-      return b.date.localeCompare(a.date)
+      return b.date.localeCompare(a.date);
     }
-  })
+  });
 
   const {
     currentItems: pagedData,
@@ -59,42 +63,53 @@ const TaxPageContent = () => {
   } = usePagination<TaxDataModel>({
     items: sortedData,
     itemsPerPage: 10,
-  })
+  });
 
-  const { checkedCount, isChecked, toggleAll, toggleOne, setAllChecked, isAllChecked } =
-    useCheckAll(pagedData.map((item) => item.id))
+  const {
+    checkedCount,
+    isChecked,
+    toggleAll,
+    toggleOne,
+    setAllChecked,
+    isAllChecked,
+  } = useCheckAll(pagedData.map((item) => item.id));
 
   // 탭 변경 시 페이지와 체크박스 상태 리셋
   useEffect(() => {
-    setCurrentPage(1)
-    setAllChecked(false)
-  }, [selectedTaxType, setCurrentPage, setAllChecked]) // 의존성 추가
+    setCurrentPage(1);
+    setAllChecked(false);
+  }, [selectedTaxType, setCurrentPage, setAllChecked]); // 의존성 추가
 
   const handleToggleHidden = () => {
-    setShowHidden(!showHidden)
-    setCurrentPage(1) // 페이지를 1로 리셋
-    setAllChecked(false) // 체크박스 상태 리셋
-  }
+    setShowHidden(!showHidden);
+    setCurrentPage(1); // 페이지를 1로 리셋
+    setAllChecked(false); // 체크박스 상태 리셋
+  };
 
   const handleHideRestore = () => {
     // 체크된 아이템들의 isHidden 상태를 변경
-    const checkedIds = pagedData.filter((item) => isChecked(item.id)).map((item) => item.id)
+    const checkedIds = pagedData
+      .filter((item) => isChecked(item.id))
+      .map((item) => item.id);
 
     // 실제로는 API 호출을 통해 서버에서 상태를 변경해야 하지만,
     // 여기서는 로컬 상태를 업데이트하는 방식으로 구현
     taxData.forEach((item) => {
       if (checkedIds.includes(item.id)) {
-        item.isHidden = !showHidden // showHidden이 true면 false로, false면 true로
+        item.isHidden = !showHidden; // showHidden이 true면 false로, false면 true로
       }
-    })
+    });
 
-    setAllChecked(false) // 체크박스 상태 리셋
-  }
+    setAllChecked(false); // 체크박스 상태 리셋
+  };
 
   return (
     <>
       <div className="flex flex-col gap-8">
-        <MainTitleSec selectedTaxType={selectedTaxType} setSelectedTaxType={setSelectedTaxType} />
+        <MainTitleSec
+          selectedTaxType={selectedTaxType}
+          setSelectedTaxType={setSelectedTaxType}
+        />
         <div className="px-10 pb-10">
           <div className="flex items-center justify-between pb-4">
             <SearchInput
@@ -128,7 +143,9 @@ const TaxPageContent = () => {
                 textColor={checkedCount === 0 ? 'text-dg' : 'text-white'}
                 borderColor={checkedCount === 0 ? 'border-lg' : 'border-none'}
                 bgColor={checkedCount === 0 ? 'bg-white' : 'bg-primary'}
-                hoverColor={checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-primary-hover'}
+                hoverColor={
+                  checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-primary-hover'
+                }
                 onClick={handleHideRestore}
               />
             </div>
@@ -189,8 +206,8 @@ const TaxPageContent = () => {
         <TaxDetailPanel item={selectedItem} onClose={handleClosePanel} />
       )}
     </>
-  )
-}
+  );
+};
 
 const TaxPage = () => {
   return (
@@ -203,7 +220,7 @@ const TaxPage = () => {
     >
       <TaxPageContent />
     </Suspense>
-  )
-}
+  );
+};
 
-export default TaxPage
+export default TaxPage;

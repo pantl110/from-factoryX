@@ -79,6 +79,6 @@ const dummyProducts = [
     unitPrice: 3000,
     totalPrice: 9000,
   },
-]
+];
 
-export default dummyProducts
+export default dummyProducts;

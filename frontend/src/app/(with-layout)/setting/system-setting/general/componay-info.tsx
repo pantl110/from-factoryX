@@ -1,7 +1,7 @@
-import Input from '@/ui/input'
-import MiniBtn from '@/ui/mini-btn'
-import { useForm } from 'react-hook-form'
-import { FactoriesModel } from '@/types/data-model'
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
+import { useForm } from 'react-hook-form';
+import { FactoriesModel } from '@/types/data-model';
 import {
   useToast,
   useGetFactory,
@@ -9,17 +9,17 @@ import {
   formatBusinessNumber,
   formatPhoneNumber,
   formatFaxNumber,
-} from '@/hooks'
-import Toast from '@/ui/toast'
-import { CheckCircle } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
-import useFactoryStore from '@/store/factory-store'
+} from '@/hooks';
+import Toast from '@/ui/toast';
+import { CheckCircle } from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 const CompanyInfo = () => {
-  const { isToastOpen, isVisible, showToast } = useToast(2000)
-  const factoryId = useFactoryStore((state) => state.factoryId)
-  const { getFactory, factory, error: _factoryError } = useGetFactory()
-  const { updateFactory } = useUpdateFactory()
+  const { isToastOpen, isVisible, showToast } = useToast(2000);
+  const factoryId = useFactoryStore((state) => state.factoryId);
+  const { getFactory, factory, error: _factoryError } = useGetFactory();
+  const { updateFactory } = useUpdateFactory();
 
   const {
     register,
@@ -41,43 +41,46 @@ const CompanyInfo = () => {
       business_address: '',
     },
     reValidateMode: 'onSubmit', // 모든 필드 유효성 검사를 동시에 실행
-  })
+  });
 
   useEffect(() => {
     if (factoryId) {
-      getFactory(factoryId)
+      getFactory(factoryId);
     }
     // getFactory는 의존성 배열에서 제거!
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryId])
+  }, [factoryId]);
 
   useEffect(() => {
     if (factory) {
-      setValue('name', factory.name || '')
-      setValue('business_registration_number', factory.business_registration_number || '')
-      setValue('representative_name', factory.representative_name || '')
-      setValue('manager_email', factory.manager_email || '')
-      setValue('manager_phone', factory.manager_phone || '')
-      setValue('manager_fax', factory.manager_fax || '')
-      setValue('business_type', factory.business_type || '')
-      setValue('business_category', factory.business_category || '')
-      setValue('business_address', factory.business_address || '')
+      setValue('name', factory.name || '');
+      setValue(
+        'business_registration_number',
+        factory.business_registration_number || ''
+      );
+      setValue('representative_name', factory.representative_name || '');
+      setValue('manager_email', factory.manager_email || '');
+      setValue('manager_phone', factory.manager_phone || '');
+      setValue('manager_fax', factory.manager_fax || '');
+      setValue('business_type', factory.business_type || '');
+      setValue('business_category', factory.business_category || '');
+      setValue('business_address', factory.business_address || '');
     }
-  }, [factory, setValue])
+  }, [factory, setValue]);
 
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const onSubmit = async (data: FactoriesModel) => {
-    if (isProcessing || !factoryId || !factory) return
-    setIsProcessing(true)
+    if (isProcessing || !factoryId || !factory) return;
+    setIsProcessing(true);
 
     try {
       if (!data.name || data.name.trim() === '') {
-        setError('name', { type: 'manual', message: '회사명을 입력해주세요.' })
-        setIsProcessing(false)
-        return
+        setError('name', { type: 'manual', message: '회사명을 입력해주세요.' });
+        setIsProcessing(false);
+        return;
       } else {
-        clearErrors('name')
+        clearErrors('name');
       }
 
       // 기존 공장 수정
@@ -94,19 +97,19 @@ const CompanyInfo = () => {
         business_address: data.business_address || '',
         is_trial: factory.is_trial,
         billing_key: factory.billing_key,
-      }
-      const result = await updateFactory(updateData)
+      };
+      const result = await updateFactory(updateData);
       if (result && result.success) {
-        showToast()
+        showToast();
         // 수정 후 최신 factory 정보로 폼 동기화
-        await getFactory(factoryId)
+        await getFactory(factoryId);
       } else if (result && result.error) {
-        setError('name', { type: 'manual', message: result.error })
+        setError('name', { type: 'manual', message: result.error });
       }
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   return (
     <>
@@ -128,8 +131,8 @@ const CompanyInfo = () => {
               showError={!!errors.business_registration_number}
               {...register('business_registration_number', {
                 onChange: (e) => {
-                  const formatted = formatBusinessNumber(e.target.value)
-                  e.target.value = formatted
+                  const formatted = formatBusinessNumber(e.target.value);
+                  e.target.value = formatted;
                 },
                 pattern: {
                   value: /^\d{3}-\d{2}-\d{5}$/,
@@ -165,8 +168,8 @@ const CompanyInfo = () => {
               showError={!!errors.manager_phone}
               {...register('manager_phone', {
                 onChange: (e) => {
-                  const formatted = formatPhoneNumber(e.target.value)
-                  e.target.value = formatted
+                  const formatted = formatPhoneNumber(e.target.value);
+                  e.target.value = formatted;
                 },
                 pattern: {
                   value: /^(01[016789]-\d{3,4}-\d{4}|0\d{1,2}-\d{3,4}-\d{4})$/,
@@ -180,8 +183,8 @@ const CompanyInfo = () => {
               showError={!!errors.manager_fax}
               {...register('manager_fax', {
                 onChange: (e) => {
-                  const formatted = formatFaxNumber(e.target.value)
-                  e.target.value = formatted
+                  const formatted = formatFaxNumber(e.target.value);
+                  e.target.value = formatted;
                 },
                 pattern: {
                   value: /^(0\d{1,3}-\d{3,4}-\d{4})$/,
@@ -191,7 +194,11 @@ const CompanyInfo = () => {
             />
           </div>
           <div className="flex gap-2">
-            <Input placeholder="업태를 입력하세요." label="업태" {...register('business_type')} />
+            <Input
+              placeholder="업태를 입력하세요."
+              label="업태"
+              {...register('business_type')}
+            />
             <Input
               placeholder="종목을 입력하세요."
               label="종목"
@@ -227,7 +234,7 @@ const CompanyInfo = () => {
         />
       )}
     </>
-  )
-}
+  );
+};
 
-export default CompanyInfo
+export default CompanyInfo;

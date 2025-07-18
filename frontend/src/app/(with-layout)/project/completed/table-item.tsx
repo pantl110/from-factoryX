@@ -1,19 +1,22 @@
-'use client'
+'use client';
 
-import Chip from '@/ui/chip'
-import { useRouter } from 'next/navigation'
-import { CompletedProjectStatusType, CompletedProjectStatusColorMap } from '@/types/status-type'
-import Checkbox from '@/ui/checkbox'
-import { CopySimple } from '@phosphor-icons/react/dist/ssr'
+import Chip from '@/ui/chip';
+import { useRouter } from 'next/navigation';
+import {
+  CompletedProjectStatusType,
+  CompletedProjectStatusColorMap,
+} from '@/types/status-type';
+import Checkbox from '@/ui/checkbox';
+import { CopySimple } from '@phosphor-icons/react/dist/ssr';
 
 interface TableItemProps {
-  id: number
-  status: CompletedProjectStatusType
-  companyName: string
-  productName: string
-  date: string
-  checked: boolean
-  onToggle: () => void
+  id: number;
+  status: CompletedProjectStatusType;
+  companyName: string;
+  productName: string;
+  date: string;
+  checked: boolean;
+  onToggle: () => void;
 }
 
 const TableItem = ({
@@ -25,12 +28,12 @@ const TableItem = ({
   checked,
   onToggle,
 }: TableItemProps) => {
-  const router = useRouter()
-  const chipColors = CompletedProjectStatusColorMap[status]
+  const router = useRouter();
+  const chipColors = CompletedProjectStatusColorMap[status];
   const handleClick = () => {
-    if (status === '중단') return
-    router.push(`/production/${id}`)
-  }
+    if (status === '중단') return;
+    router.push(`/production/${id}`);
+  };
 
   return (
     <div
@@ -39,7 +42,7 @@ const TableItem = ({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') handleClick()
+        if (e.key === 'Enter' || e.key === ' ') handleClick();
       }}
     >
       <div
@@ -48,13 +51,17 @@ const TableItem = ({
         tabIndex={0}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') e.stopPropagation()
+          if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
         }}
       >
         <Checkbox isChecked={checked} onToggle={onToggle} />
       </div>
       <div className="py-1 px-3 w-[150px]">
-        <Chip text={status} bgColor={chipColors.bgColor} textColor={chipColors.textColor} />
+        <Chip
+          text={status}
+          bgColor={chipColors.bgColor}
+          textColor={chipColors.textColor}
+        />
       </div>
       <p className="flex-1 py-1 px-3 text-dg">{companyName}</p>
       <p className="flex-1 py-1 px-3 text-dg">{productName}</p>
@@ -62,7 +69,7 @@ const TableItem = ({
       <div
         className="w-9"
         onClick={(e) => {
-          e.stopPropagation()
+          e.stopPropagation();
         }}
       >
         {status === '완료' && (
@@ -73,7 +80,7 @@ const TableItem = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TableItem
+export default TableItem;

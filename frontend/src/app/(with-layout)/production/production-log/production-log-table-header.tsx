@@ -14,7 +14,7 @@ const ProductionLogTableHeader = () => {
       <p className="w-[150px] px-3">자재 상태</p>
       <p className="w-[200px] px-3">마감일자</p>
     </div>
-  )
-}
+  );
+};
 
-export default ProductionLogTableHeader
+export default ProductionLogTableHeader;

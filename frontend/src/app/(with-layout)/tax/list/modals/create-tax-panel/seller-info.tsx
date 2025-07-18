@@ -1,4 +1,4 @@
-import Input from '@/ui/input'
+import Input from '@/ui/input';
 
 const SellerInfo = () => {
   return (
@@ -7,7 +7,11 @@ const SellerInfo = () => {
       <form className="flex flex-col gap-4">
         <div className="flex gap-2">
           <Input label="업체명" required placeholder="업체명을 입력하세요." />
-          <Input label="사업자등록번호" required placeholder="사업자등록번호를 입력하세요." />
+          <Input
+            label="사업자등록번호"
+            required
+            placeholder="사업자등록번호를 입력하세요."
+          />
         </div>
         <Input label="대표자명" required placeholder="대표자명을 입력하세요." />
         <div className="flex gap-2">
@@ -18,7 +22,7 @@ const SellerInfo = () => {
         <Input label="작성일자" placeholder="-" />
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default SellerInfo
+export default SellerInfo;

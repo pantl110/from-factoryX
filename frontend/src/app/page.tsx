@@ -1,7 +1,7 @@
-import LoginPage from './(without-layout)/login/page'
+import LoginPage from './(without-layout)/login/page';
 
 const Home = () => {
-  return <LoginPage />
-}
+  return <LoginPage />;
+};
 
-export default Home
+export default Home;

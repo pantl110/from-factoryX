@@ -1,24 +1,29 @@
-import { TaxDraftStatusColorMap } from '@/types/status-type'
-import Checkbox from '@/ui/checkbox'
-import Chip from '@/ui/chip'
+import { TaxDraftStatusColorMap } from '@/types/status-type';
+import Checkbox from '@/ui/checkbox';
+import Chip from '@/ui/chip';
 
 interface TableItemProps {
   item: {
-    id: number
-    status: string
-    type: string
-    companyName: string
-    supplyPrice: number
-    taxPrice: number
-    totalPrice: number
-    date: string
-  }
-  isChecked: boolean
-  onToggle: () => void
-  onItemClick?: () => void
+    id: number;
+    status: string;
+    type: string;
+    companyName: string;
+    supplyPrice: number;
+    taxPrice: number;
+    totalPrice: number;
+    date: string;
+  };
+  isChecked: boolean;
+  onToggle: () => void;
+  onItemClick?: () => void;
 }
 
-const TableItem = ({ item, isChecked, onToggle, onItemClick }: TableItemProps) => {
+const TableItem = ({
+  item,
+  isChecked,
+  onToggle,
+  onItemClick,
+}: TableItemProps) => {
   return (
     <div
       className="flex items-center h-14 min-w-[1272px] border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
@@ -31,10 +36,14 @@ const TableItem = ({ item, isChecked, onToggle, onItemClick }: TableItemProps) =
         <Chip
           text={item.status}
           bgColor={
-            TaxDraftStatusColorMap[item.status as keyof typeof TaxDraftStatusColorMap].bgColor
+            TaxDraftStatusColorMap[
+              item.status as keyof typeof TaxDraftStatusColorMap
+            ].bgColor
           }
           textColor={
-            TaxDraftStatusColorMap[item.status as keyof typeof TaxDraftStatusColorMap].textColor
+            TaxDraftStatusColorMap[
+              item.status as keyof typeof TaxDraftStatusColorMap
+            ].textColor
           }
         />
       </div>
@@ -45,7 +54,7 @@ const TableItem = ({ item, isChecked, onToggle, onItemClick }: TableItemProps) =
       <p className="px-3 w-[200px]">{item.totalPrice.toLocaleString()}</p>
       <p className="px-3 w-[200px]">{item.date}</p>
     </div>
-  )
-}
+  );
+};
 
-export default TableItem
+export default TableItem;

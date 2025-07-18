@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { useVerification } from '@/hooks/users/use-verification'
-import { useSignup } from '@/hooks/users/use-signup'
-import FactoryXLogo from '@/ui/icons/factory-x-logo'
-import { SignupFormDataModel } from '@/types/data-model'
-import { useState } from 'react'
-import AgreeArea from './agree-area'
-import PasswordStep from './password-step'
-import EmailStep from './email-step'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { useVerification } from '@/hooks/users/use-verification';
+import { useSignup } from '@/hooks/users/use-signup';
+import FactoryXLogo from '@/ui/icons/factory-x-logo';
+import { SignupFormDataModel } from '@/types/data-model';
+import { useState } from 'react';
+import AgreeArea from './agree-area';
+import PasswordStep from './password-step';
+import EmailStep from './email-step';
+import { useRouter } from 'next/navigation';
 
 const SignupPage = () => {
-  const [verificationCode, setVerificationCode] = useState('')
-  const router = useRouter()
+  const [verificationCode, setVerificationCode] = useState('');
+  const router = useRouter();
 
   const {
     register,
@@ -33,34 +33,34 @@ const SignupPage = () => {
       privacy_policy_agreement: false,
       marketing_agreement: false,
     },
-  })
+  });
 
-  const verification = useVerification()
-  const signup = useSignup()
-  const watchedValues = watch()
+  const verification = useVerification();
+  const signup = useSignup();
+  const watchedValues = watch();
 
   const handleSignup = () => {
     if (watchedValues.email && !errors.email) {
-      verification.startVerification()
+      verification.startVerification();
     }
-  }
+  };
 
   const handleVerificationComplete = () => {
     if (verificationCode) {
-      verification.completeVerification()
+      verification.completeVerification();
     }
-  }
+  };
 
   const handleSignupComplete = async (data: SignupFormDataModel) => {
-    await signup.signup(data)
+    await signup.signup(data);
     if (signup.isSuccess) {
-      router.push('/login')
+      router.push('/login');
     }
-  }
+  };
 
   // 필수 약관 체크 여부 확인
   const isRequiredTermsChecked =
-    watchedValues.terms_of_service && watchedValues.privacy_policy_agreement
+    watchedValues.terms_of_service && watchedValues.privacy_policy_agreement;
 
   return (
     <div className="flex min-h-screen">
@@ -70,9 +70,10 @@ const SignupPage = () => {
       <div className="flex flex-col flex-1 gap-5 items-center justify-center w-full">
         <div className="flex flex-col items-center">
           <h2 className="Heading-2">회원가입</h2>
-          {verification.isVerificationSent && !verification.isVerificationComplete && (
-            <p className="text-sv Me_Body-1">이메일 인증</p>
-          )}
+          {verification.isVerificationSent &&
+            !verification.isVerificationComplete && (
+              <p className="text-sv Me_Body-1">이메일 인증</p>
+            )}
           {verification.isVerificationComplete && (
             <p className="text-sv Me_Body-1">비밀번호 설정</p>
           )}
@@ -121,7 +122,7 @@ const SignupPage = () => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SignupPage
+export default SignupPage;

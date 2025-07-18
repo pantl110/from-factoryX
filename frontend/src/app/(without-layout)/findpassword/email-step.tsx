@@ -6,31 +6,31 @@ import {
   UseFormSetError,
   UseFormClearErrors,
   UseFormSetValue,
-} from 'react-hook-form'
-import { ResetPasswordModel } from '@/types/data-model'
-import { validateEmail } from '@/utils/validation'
-import { useEmailVerification } from '@/hooks/users/use-email-verification'
-import Input from '@/ui/input'
-import MiniBtn from '@/ui/mini-btn'
-import { useState } from 'react'
+} from 'react-hook-form';
+import { ResetPasswordModel } from '@/types/data-model';
+import { validateEmail } from '@/utils/validation';
+import { useEmailVerification } from '@/hooks/users/use-email-verification';
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
+import { useState } from 'react';
 
 interface EmailStepProps {
-  register: UseFormRegister<ResetPasswordModel>
-  handleSubmit: UseFormHandleSubmit<ResetPasswordModel>
-  errors: FieldErrors<ResetPasswordModel>
-  watch: UseFormWatch<ResetPasswordModel>
+  register: UseFormRegister<ResetPasswordModel>;
+  handleSubmit: UseFormHandleSubmit<ResetPasswordModel>;
+  errors: FieldErrors<ResetPasswordModel>;
+  watch: UseFormWatch<ResetPasswordModel>;
   verification: {
-    isVerificationSent: boolean
-    timeLeft: number
-    formatTime: (time: number) => string
-    handleResetTimer: () => void
-    startVerification: () => void
-    completeVerification: () => void
-  }
-  setError: UseFormSetError<ResetPasswordModel>
-  clearErrors: UseFormClearErrors<ResetPasswordModel>
-  setValue: UseFormSetValue<ResetPasswordModel>
-  isChecking?: boolean
+    isVerificationSent: boolean;
+    timeLeft: number;
+    formatTime: (time: number) => string;
+    handleResetTimer: () => void;
+    startVerification: () => void;
+    completeVerification: () => void;
+  };
+  setError: UseFormSetError<ResetPasswordModel>;
+  clearErrors: UseFormClearErrors<ResetPasswordModel>;
+  setValue: UseFormSetValue<ResetPasswordModel>;
+  isChecking?: boolean;
 }
 
 const EmailStep = ({
@@ -44,26 +44,26 @@ const EmailStep = ({
   setValue,
   isChecking = false,
 }: EmailStepProps) => {
-  const watchedValues = watch()
-  const emailVerification = useEmailVerification()
-  const [verificationCode, setVerificationCode] = useState('')
+  const watchedValues = watch();
+  const emailVerification = useEmailVerification();
+  const [verificationCode, setVerificationCode] = useState('');
 
   const handleEmailCheck = async () => {
-    if (!watchedValues.email || errors.email) return
+    if (!watchedValues.email || errors.email) return;
 
     // 이메일 인증 코드 발송
     const result = await emailVerification.sendVerificationCode({
       email: watchedValues.email,
       verification_type: 'password_reset',
-    })
+    });
 
     if (result.success) {
-      verification.handleResetTimer()
-      clearErrors('email')
+      verification.handleResetTimer();
+      clearErrors('email');
     } else {
-      setError('email', { message: result.message })
+      setError('email', { message: result.message });
     }
-  }
+  };
 
   const handleEmailVerification = async (data: ResetPasswordModel) => {
     if (verification.isVerificationSent) {
@@ -71,8 +71,8 @@ const EmailStep = ({
       if (verificationCode) {
         // 시간이 만료된 경우 우선적으로 만료 메시지 표시
         if (verification.timeLeft <= 0) {
-          setError('code', { message: '인증 시간이 만료되었습니다.' })
-          return
+          setError('code', { message: '인증 시간이 만료되었습니다.' });
+          return;
         }
 
         // 인증 코드 검사
@@ -80,15 +80,15 @@ const EmailStep = ({
           email: watchedValues.email,
           code: verificationCode,
           verification_type: 'password_reset',
-        })
+        });
 
         if (verifyResult.success) {
           // 인증 완료 시 React Hook Form의 code 필드에 값 설정
-          setValue('code', verificationCode)
-          verification.completeVerification()
-          clearErrors('code')
+          setValue('code', verificationCode);
+          verification.completeVerification();
+          clearErrors('code');
         } else {
-          setError('code', { message: verifyResult.message })
+          setError('code', { message: verifyResult.message });
         }
       }
     } else {
@@ -98,17 +98,17 @@ const EmailStep = ({
         const sendResult = await emailVerification.sendVerificationCode({
           email: data.email,
           verification_type: 'password_reset',
-        })
+        });
 
         if (sendResult.success) {
-          verification.startVerification()
-          clearErrors('email')
+          verification.startVerification();
+          clearErrors('email');
         } else {
-          setError('email', { message: sendResult.message })
+          setError('email', { message: sendResult.message });
         }
       }
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit(handleEmailVerification)} className="w-100">
@@ -121,13 +121,15 @@ const EmailStep = ({
           {...register('email', {
             required: '이메일을 입력해주세요.',
             validate: (value) => {
-              const error = validateEmail(value)
-              return error || true
+              const error = validateEmail(value);
+              return error || true;
             },
           })}
         />
         <div className="mt-1 mb-2 h-5">
-          {errors.email && <span className="text-red Re_Body-1">{errors.email.message}</span>}
+          {errors.email && (
+            <span className="text-red Re_Body-1">{errors.email.message}</span>
+          )}
         </div>
       </div>
       {verification.isVerificationSent && (
@@ -138,8 +140,8 @@ const EmailStep = ({
             label="인증 코드"
             value={verificationCode}
             onChange={(e) => {
-              setVerificationCode(e.target.value.slice(0, 6))
-              clearErrors('code') // 입력 시 오류 메시지 초기화
+              setVerificationCode(e.target.value.slice(0, 6));
+              clearErrors('code'); // 입력 시 오류 메시지 초기화
             }}
           />
           <div className="mt-2 mb-6 h-5 flex justify-between items-center">
@@ -147,13 +149,19 @@ const EmailStep = ({
               <span className="text-dg Re_Body-1 w-8">
                 {verification.formatTime(verification.timeLeft)}
               </span>
-              {errors.code && <span className="text-red Re_Body-1">{errors.code.message}</span>}
+              {errors.code && (
+                <span className="text-red Re_Body-1">
+                  {errors.code.message}
+                </span>
+              )}
             </div>
             <button
               type="button"
               onClick={handleEmailCheck}
               className={`w-10.5 items-end Re_Body-1 underline ${
-                verification.timeLeft > 0 ? 'text-lg pointer-events-none' : 'text-sv'
+                verification.timeLeft > 0
+                  ? 'text-lg pointer-events-none'
+                  : 'text-sv'
               }`}
               disabled={verification.timeLeft > 0}
             >
@@ -177,7 +185,7 @@ const EmailStep = ({
         }
       />
     </form>
-  )
-}
+  );
+};
 
-export default EmailStep
+export default EmailStep;

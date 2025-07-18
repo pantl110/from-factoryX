@@ -1,12 +1,14 @@
-import TransactionDocumentView from '@/app/(with-layout)/document/transaction-document-view'
-import MiniBtn from '@/ui/mini-btn'
-import OverlayView from '@/ui/ovelay-view'
+import TransactionDocumentView from '@/app/(with-layout)/document/transaction-document-view';
+import MiniBtn from '@/ui/mini-btn';
+import OverlayView from '@/ui/ovelay-view';
 
 interface CreateTransactionOverlayviewProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
-const CreateTransactionOverlayview = ({ onClose }: CreateTransactionOverlayviewProps) => {
+const CreateTransactionOverlayview = ({
+  onClose,
+}: CreateTransactionOverlayviewProps) => {
   return (
     <OverlayView onClose={onClose}>
       <div className="w-full flex flex-col gap-6 px-8 pb-8">
@@ -18,7 +20,12 @@ const CreateTransactionOverlayview = ({ onClose }: CreateTransactionOverlayviewP
             </div>
           </div>
           <div className="flex gap-2.5">
-            <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} hoverColor="" />
+            <MiniBtn
+              text="취소하기"
+              textColor="text-sv"
+              onClick={onClose}
+              hoverColor=""
+            />
             <MiniBtn
               text="이메일 보내기"
               textColor="text-wh"
@@ -31,7 +38,7 @@ const CreateTransactionOverlayview = ({ onClose }: CreateTransactionOverlayviewP
         <TransactionDocumentView />
       </div>
     </OverlayView>
-  )
-}
+  );
+};
 
-export default CreateTransactionOverlayview
+export default CreateTransactionOverlayview;

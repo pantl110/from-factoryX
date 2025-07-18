@@ -1,5 +1,5 @@
 interface PriceInfoProps {
-  textColor?: string
+  textColor?: string;
 }
 
 const PriceInfo = ({ textColor = 'text-primary' }: PriceInfoProps) => {
@@ -24,7 +24,7 @@ const PriceInfo = ({ textColor = 'text-primary' }: PriceInfoProps) => {
         </span>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PriceInfo
+export default PriceInfo;

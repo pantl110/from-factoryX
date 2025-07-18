@@ -1,15 +1,16 @@
-'use client'
+'use client';
 
-import { projectData } from '@/mocks/project-data'
-import DeliveryTableItem from './delivery-table-item'
-import Pagination from '@/components/pagination'
-import usePagination from '@/hooks/use-pagination'
+import { projectData } from '@/mocks/project-data';
+import DeliveryTableItem from './delivery-table-item';
+import Pagination from '@/components/pagination';
+import usePagination from '@/hooks/use-pagination';
 
 const DeliveryTable = () => {
-  const { currentItems, currentPage, totalPages, setCurrentPage } = usePagination({
-    items: projectData,
-    itemsPerPage: 5,
-  })
+  const { currentItems, currentPage, totalPages, setCurrentPage } =
+    usePagination({
+      items: projectData,
+      itemsPerPage: 5,
+    });
 
   return (
     <div className="flex flex-col h-105 justify-between">
@@ -39,7 +40,7 @@ const DeliveryTable = () => {
         </div>
       )}{' '}
     </div>
-  )
-}
+  );
+};
 
-export default DeliveryTable
+export default DeliveryTable;

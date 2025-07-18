@@ -1,7 +1,7 @@
-import { TrendUpIcon, TrendDownIcon } from '@phosphor-icons/react/dist/ssr'
+import { TrendUpIcon, TrendDownIcon } from '@phosphor-icons/react/dist/ssr';
 
 interface ChartChipProps {
-  up: boolean
+  up: boolean;
 }
 
 const ChartChip = ({ up }: ChartChipProps) => {
@@ -14,7 +14,7 @@ const ChartChip = ({ up }: ChartChipProps) => {
         <p className={`Heading-5 ${up ? 'text-red' : 'text-primary'}`}>90%</p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ChartChip
+export default ChartChip;

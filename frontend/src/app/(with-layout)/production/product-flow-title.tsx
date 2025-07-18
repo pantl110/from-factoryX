@@ -1,16 +1,21 @@
-import Chip from '@/ui/chip'
-import Input from '@/ui/input'
-import { ProjectStatusType, ProjectStatusColorMap } from '@/types/status-type'
+import Chip from '@/ui/chip';
+import Input from '@/ui/input';
+import { ProjectStatusType, ProjectStatusColorMap } from '@/types/status-type';
 
 export interface ProductFlowTitleProps {
-  status: ProjectStatusType
-  tabs: string[]
-  selectedTab: number
-  setSelectedTab: (idx: number) => void
+  status: ProjectStatusType;
+  tabs: string[];
+  selectedTab: number;
+  setSelectedTab: (idx: number) => void;
 }
 
-const ProductFlowTitle = ({ status, tabs, selectedTab, setSelectedTab }: ProductFlowTitleProps) => {
-  const { bgColor, textColor } = ProjectStatusColorMap[status]
+const ProductFlowTitle = ({
+  status,
+  tabs,
+  selectedTab,
+  setSelectedTab,
+}: ProductFlowTitleProps) => {
+  const { bgColor, textColor } = ProjectStatusColorMap[status];
 
   return (
     <>
@@ -52,7 +57,7 @@ const ProductFlowTitle = ({ status, tabs, selectedTab, setSelectedTab }: Product
         {/* <div className="h-[1px] bg-lg w-full"></div> */}
       </div>
     </>
-  )
-}
+  );
+};
 
-export default ProductFlowTitle
+export default ProductFlowTitle;

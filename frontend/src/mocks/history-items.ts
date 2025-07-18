@@ -29,6 +29,6 @@ const dummyHistoryItems = [
     unitPrice: 1200,
     totalPrice: 8400,
   },
-]
+];
 
-export default dummyHistoryItems
+export default dummyHistoryItems;

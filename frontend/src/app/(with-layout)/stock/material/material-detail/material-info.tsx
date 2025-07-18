@@ -1,5 +1,5 @@
-import InfoLabelValue from '@/ui/info-label-value'
-import { useState } from 'react'
+import InfoLabelValue from '@/ui/info-label-value';
+import { useState } from 'react';
 
 const initialInfo = {
   materialName: '플라스틱',
@@ -11,15 +11,16 @@ const initialInfo = {
   status: '충분',
   date: '2025-05-26',
   location: 'A동 자재실 랙3번',
-}
+};
 
 const MaterialInfo = () => {
-  const [info, setInfo] = useState(initialInfo)
+  const [info, setInfo] = useState(initialInfo);
 
   const handleChange =
-    (key: keyof typeof info) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setInfo((prev) => ({ ...prev, [key]: e.target.value }))
-    }
+    (key: keyof typeof info) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setInfo((prev) => ({ ...prev, [key]: e.target.value }));
+    };
 
   return (
     <div className="flex flex-col">
@@ -90,7 +91,7 @@ const MaterialInfo = () => {
         onChange={handleChange('location')}
       />
     </div>
-  )
-}
+  );
+};
 
-export default MaterialInfo
+export default MaterialInfo;

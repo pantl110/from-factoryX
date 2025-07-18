@@ -1,14 +1,19 @@
-import Input from '@/ui/input'
-import MiniBtn from '@/ui/mini-btn'
-import { useForm } from 'react-hook-form'
-import { ProductDataModel } from '@/types/data-model'
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
+import { useForm } from 'react-hook-form';
+import { ProductDataModel } from '@/types/data-model';
 
 interface ManualAddProductProps {
-  setIsManualAddMode: (v: boolean) => void
-  setSelectedProducts?: (fn: (prev: ProductDataModel[]) => ProductDataModel[]) => void
+  setIsManualAddMode: (v: boolean) => void;
+  setSelectedProducts?: (
+    fn: (prev: ProductDataModel[]) => ProductDataModel[]
+  ) => void;
 }
 
-const ManualAddProduct = ({ setIsManualAddMode, setSelectedProducts }: ManualAddProductProps) => {
+const ManualAddProduct = ({
+  setIsManualAddMode,
+  setSelectedProducts,
+}: ManualAddProductProps) => {
   const {
     register,
     handleSubmit,
@@ -22,7 +27,7 @@ const ManualAddProduct = ({ setIsManualAddMode, setSelectedProducts }: ManualAdd
       unit: '',
     },
     mode: 'onBlur',
-  })
+  });
 
   const onSubmit = (data: ProductDataModel) => {
     setSelectedProducts?.((prev) => [
@@ -33,10 +38,10 @@ const ManualAddProduct = ({ setIsManualAddMode, setSelectedProducts }: ManualAdd
         size: data.size,
         unit: data.unit,
       },
-    ])
-    reset()
-    setIsManualAddMode(false)
-  }
+    ]);
+    reset();
+    setIsManualAddMode(false);
+  };
 
   return (
     <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
@@ -96,7 +101,7 @@ const ManualAddProduct = ({ setIsManualAddMode, setSelectedProducts }: ManualAdd
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default ManualAddProduct
+export default ManualAddProduct;

@@ -1,16 +1,19 @@
-import MiniBtn from '@/ui/mini-btn'
-import Input from '@/ui/input'
-import Modal from '@/ui/modal/modal'
-import { ClientDataModel } from '@/types/data-model'
-import { useDropdownFilter } from '@/hooks/use-dropdown-filter'
-import { clientData } from '@/mocks/client-data'
-import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown'
-import { useForm } from 'react-hook-form'
-import { formatBusinessNumber, handleNumberKeyDown } from '@/hooks/format-number'
+import MiniBtn from '@/ui/mini-btn';
+import Input from '@/ui/input';
+import Modal from '@/ui/modal/modal';
+import { ClientDataModel } from '@/types/data-model';
+import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
+import { clientData } from '@/mocks/client-data';
+import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
+import { useForm } from 'react-hook-form';
+import {
+  formatBusinessNumber,
+  handleNumberKeyDown,
+} from '@/hooks/format-number';
 
 interface ClientInfoModalProps {
-  onClose?: () => void
-  onNext?: () => void
+  onClose?: () => void;
+  onNext?: () => void;
 }
 
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
@@ -37,7 +40,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       dueDate: '',
       responsibleName: '',
     },
-  })
+  });
 
   const {
     input: companyNameInput,
@@ -46,15 +49,15 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     setIsOpen: setIsCompanyNameDropdownOpen,
     filtered: filteredClients,
     handleSelect: handleCompanyNameSelect,
-  } = useDropdownFilter(clientData, (item) => item.companyName)
+  } = useDropdownFilter(clientData, (item) => item.companyName);
 
   // 필수 필드들의 값 감시
-  const companyName = watch('companyName')
-  const businessNumber = watch('businessNumber')
-  const representativeName = watch('representativeName')
-  const businessType = watch('businessType')
-  const businessCategory = watch('businessCategory')
-  const companyAddress = watch('companyAddress')
+  const companyName = watch('companyName');
+  const businessNumber = watch('businessNumber');
+  const representativeName = watch('representativeName');
+  const businessType = watch('businessType');
+  const businessCategory = watch('businessCategory');
+  const companyAddress = watch('companyAddress');
 
   // 모든 필수 필드가 입력되었는지 확인
   const isFormValid =
@@ -63,25 +66,25 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     representativeName?.trim() &&
     businessType?.trim() &&
     businessCategory?.trim() &&
-    companyAddress?.trim()
+    companyAddress?.trim();
 
   const handleSelectClient = (item: ClientDataModel) => {
-    handleCompanyNameSelect(item)
-    setCompanyNameInput(item.companyName)
+    handleCompanyNameSelect(item);
+    setCompanyNameInput(item.companyName);
 
     // 선택한 거래처 정보로 폼 자동 채우기
-    setValue('companyName', item.companyName)
-    setValue('businessNumber', formatBusinessNumber(item.businessNumber))
-    setValue('representativeName', item.representativeName)
-    setValue('companyAddress', item.companyAddress)
-    setValue('email', item.email)
-    setValue('contact', item.contact || '')
-    setValue('fax', item.fax || '')
-    setValue('businessType', item.businessType || '')
-    setValue('businessCategory', item.businessCategory || '')
+    setValue('companyName', item.companyName);
+    setValue('businessNumber', formatBusinessNumber(item.businessNumber));
+    setValue('representativeName', item.representativeName);
+    setValue('companyAddress', item.companyAddress);
+    setValue('email', item.email);
+    setValue('contact', item.contact || '');
+    setValue('fax', item.fax || '');
+    setValue('businessType', item.businessType || '');
+    setValue('businessCategory', item.businessCategory || '');
 
-    setIsCompanyNameDropdownOpen(false)
-  }
+    setIsCompanyNameDropdownOpen(false);
+  };
 
   return (
     <Modal
@@ -90,7 +93,10 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       onClose={onClose}
       width="w-[600px]"
     >
-      <form className="flex flex-col gap-7 mt-4" onSubmit={handleSubmit(() => onNext && onNext())}>
+      <form
+        className="flex flex-col gap-7 mt-4"
+        onSubmit={handleSubmit(() => onNext && onNext())}
+      >
         <div className="flex flex-col gap-4">
           <div className="flex-1 relative">
             <Input
@@ -100,11 +106,13 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               {...register('companyName', { required: true })}
               value={companyNameInput}
               onChange={(e) => {
-                setCompanyNameInput(e.target.value)
-                setValue('companyName', e.target.value)
+                setCompanyNameInput(e.target.value);
+                setValue('companyName', e.target.value);
               }}
               onFocus={() => setIsCompanyNameDropdownOpen(true)}
-              onBlur={() => setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)}
+              onBlur={() =>
+                setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
+              }
               showError={!!errors.companyName}
             />
             {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
@@ -124,9 +132,9 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               required
               {...register('businessNumber', { required: true })}
               onChange={(e) => {
-                const formatted = formatBusinessNumber(e.target.value)
-                e.target.value = formatted
-                setValue('businessNumber', formatted)
+                const formatted = formatBusinessNumber(e.target.value);
+                e.target.value = formatted;
+                setValue('businessNumber', formatted);
               }}
               onKeyDown={handleNumberKeyDown}
               showError={!!errors.businessNumber}
@@ -174,7 +182,12 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
           </div>
         </div>
         <div className="flex justify-end gap-2.5">
-          <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
+          <MiniBtn
+            text="취소"
+            textColor="text-sv"
+            onClick={onClose}
+            hoverColor=""
+          />
           <MiniBtn
             text="다음"
             bgColor="bg-primary"
@@ -186,7 +199,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         </div>
       </form>
     </Modal>
-  )
-}
+  );
+};
 
-export default ClientInfoModal
+export default ClientInfoModal;

@@ -1,34 +1,36 @@
-import { useEffect } from 'react'
-import usePageStatusStore from '@/store/page-status-store'
-import Chip from '@/ui/chip'
-import General from './general'
-import Permission from './permission'
-import Subscription from './subscription'
+import { useEffect } from 'react';
+import usePageStatusStore from '@/store/page-status-store';
+import Chip from '@/ui/chip';
+import General from './general';
+import Permission from './permission';
+import Subscription from './subscription';
 
 const SystemSetting = () => {
-  const { settingChip, setSettingChip } = usePageStatusStore()
+  const { settingChip, setSettingChip } = usePageStatusStore();
 
   useEffect(() => {
     if (
       !settingChip ||
-      (settingChip !== 'general' && settingChip !== 'permission' && settingChip !== 'subscription')
+      (settingChip !== 'general' &&
+        settingChip !== 'permission' &&
+        settingChip !== 'subscription')
     ) {
-      setSettingChip('general') // 초기 칩을 일반으로 설정
+      setSettingChip('general'); // 초기 칩을 일반으로 설정
     }
-  }, [settingChip, setSettingChip])
+  }, [settingChip, setSettingChip]);
 
   const renderContent = () => {
     switch (settingChip) {
       case 'general':
-        return <General />
+        return <General />;
       case 'permission':
-        return <Permission />
+        return <Permission />;
       case 'subscription':
-        return <Subscription />
+        return <Subscription />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div>
@@ -69,7 +71,7 @@ const SystemSetting = () => {
       </div>
       {renderContent()}
     </div>
-  )
-}
+  );
+};
 
-export default SystemSetting
+export default SystemSetting;

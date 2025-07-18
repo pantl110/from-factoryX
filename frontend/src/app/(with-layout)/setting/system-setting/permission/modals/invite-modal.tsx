@@ -1,63 +1,65 @@
-import Input from '@/ui/input'
-import MiniBtn from '@/ui/mini-btn'
-import Modal from '@/ui/modal/modal'
-import { CaretDown, X } from '@phosphor-icons/react/dist/ssr'
-import { useState, useRef } from 'react'
-import AuthDropdown from './auth-dropdown'
-import { MemberFromDataModel } from '../../general/types'
-import ProfileImage from '@/ui/profile-image'
-import Chip from '@/ui/chip'
-import { PermissionRoleInfo, PermissionRoleType } from '../types'
-import { createPortal } from 'react-dom'
-import { usePortalDropdown } from '@/hooks/use-portal-dropdown'
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
+import { CaretDown, X } from '@phosphor-icons/react/dist/ssr';
+import { useState, useRef } from 'react';
+import AuthDropdown from './auth-dropdown';
+import { MemberFromDataModel } from '../../general/types';
+import ProfileImage from '@/ui/profile-image';
+import Chip from '@/ui/chip';
+import { PermissionRoleInfo, PermissionRoleType } from '../types';
+import { createPortal } from 'react-dom';
+import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 
 interface InviteModalProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 const InviteModal = ({ onClose }: InviteModalProps) => {
-  const [isSuccessOpen, setIsSuccessOpen] = useState(false)
-  const [changeAuthId, setChangeAuthId] = useState<string | null>(null)
-  const [members, setMembers] = useState<MemberFromDataModel[]>([])
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [changeAuthId, setChangeAuthId] = useState<string | null>(null);
+  const [members, setMembers] = useState<MemberFromDataModel[]>([]);
   const [memberInput, setMemberInput] = useState({
     email: '',
     auth: '',
-  })
+  });
 
-  const authBtnDivRef = useRef<HTMLDivElement>(null)
+  const authBtnDivRef = useRef<HTMLDivElement>(null);
   const {
     isOpen: isAuthBtnDropdownOpen,
     anchorRect: authBtnAnchorRect,
     openDropdown: openAuthBtnDropdown,
     closeDropdown: closeAuthBtnDropdown,
-  } = usePortalDropdown()
+  } = usePortalDropdown();
 
   const handleRemoveMember = (id: string) => {
-    setMembers((prev) => prev.filter((member) => member.id !== id))
-  }
+    setMembers((prev) => prev.filter((member) => member.id !== id));
+  };
   const handleAuthSelect = (auth: string, memberId?: string) => {
     if (memberId) {
       // 멤버 리스트에서 권한 변경 시
       setMembers((prev) =>
-        prev.map((member) => (member.id === memberId ? { ...member, auth } : member))
-      )
-      setChangeAuthId(null)
+        prev.map((member) =>
+          member.id === memberId ? { ...member, auth } : member
+        )
+      );
+      setChangeAuthId(null);
     } else if (memberInput.email) {
       // 이메일이 있는 상태에서 권한 선택 시 멤버 리스트에 추가
       const newMember: MemberFromDataModel = {
         email: memberInput.email,
         auth,
         id: crypto.randomUUID(),
-      }
-      setMembers((prev) => [...prev, newMember])
-      setMemberInput({ email: '', auth: '' })
-      closeAuthBtnDropdown()
+      };
+      setMembers((prev) => [...prev, newMember]);
+      setMemberInput({ email: '', auth: '' });
+      closeAuthBtnDropdown();
     }
-  }
+  };
   const handleSuccessClose = () => {
-    setIsSuccessOpen(false)
-    onClose()
-  }
+    setIsSuccessOpen(false);
+    onClose();
+  };
 
   return (
     <>
@@ -75,7 +77,9 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               <Input
                 placeholder="이메일을 입력하세요."
                 value={memberInput.email}
-                onChange={(e) => setMemberInput((prev) => ({ ...prev, email: e.target.value }))}
+                onChange={(e) =>
+                  setMemberInput((prev) => ({ ...prev, email: e.target.value }))
+                }
               />
             </div>
 
@@ -106,7 +110,10 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                   width: authBtnAnchorRect.width,
                 }}
               >
-                <AuthDropdown onClose={closeAuthBtnDropdown} onSelect={handleAuthSelect} />
+                <AuthDropdown
+                  onClose={closeAuthBtnDropdown}
+                  onSelect={handleAuthSelect}
+                />
               </div>,
               document.body
             )}
@@ -123,7 +130,10 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                       className="flex items-center justify-between p-3 border border-lg rounded-[4px]"
                     >
                       <div className="flex gap-3">
-                        <ProfileImage text={member.email.slice(0, 2).toUpperCase()} size="small" />
+                        <ProfileImage
+                          text={member.email.slice(0, 2).toUpperCase()}
+                          size="small"
+                        />
                         <p className="Me_Body-2">{member.email}</p>
                       </div>
                       <div className="flex items-center gap-1 relative">
@@ -131,13 +141,19 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                           text={member.auth}
                           state={true}
                           bgColor={
-                            PermissionRoleInfo[member.auth as PermissionRoleType].chipColor.bg
+                            PermissionRoleInfo[
+                              member.auth as PermissionRoleType
+                            ].chipColor.bg
                           }
                           textColor={
-                            PermissionRoleInfo[member.auth as PermissionRoleType].chipColor.text
+                            PermissionRoleInfo[
+                              member.auth as PermissionRoleType
+                            ].chipColor.text
                           }
                           hover={
-                            PermissionRoleInfo[member.auth as PermissionRoleType].chipColor.hover
+                            PermissionRoleInfo[
+                              member.auth as PermissionRoleType
+                            ].chipColor.hover
                           }
                           onClick={() => setChangeAuthId(member.id)}
                         />
@@ -145,7 +161,9 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                           <div className="absolute top-12 right-11 z-10">
                             <AuthDropdown
                               onClose={() => setChangeAuthId(null)}
-                              onSelect={(auth) => handleAuthSelect(auth, member.id)}
+                              onSelect={(auth) =>
+                                handleAuthSelect(auth, member.id)
+                              }
                             />
                           </div>
                         )}
@@ -162,7 +180,12 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               </div>
             )}
             <div className="flex justify-end gap-2.5 mb-6">
-              <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
+              <MiniBtn
+                text="취소"
+                textColor="text-sv"
+                onClick={onClose}
+                hoverColor=""
+              />
               <MiniBtn
                 text="초대"
                 textColor="text-wh"
@@ -184,7 +207,12 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
           sm={true}
         >
           <div className="flex justify-end mt-4 gap-[5px]">
-            <MiniBtn text="닫기" textColor="text-sv" onClick={handleSuccessClose} hoverColor="" />
+            <MiniBtn
+              text="닫기"
+              textColor="text-sv"
+              onClick={handleSuccessClose}
+              hoverColor=""
+            />
             <MiniBtn
               text="확인"
               textColor="text-wh"
@@ -196,7 +224,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
         </Modal>
       )}
     </>
-  )
-}
+  );
+};
 
-export default InviteModal
+export default InviteModal;

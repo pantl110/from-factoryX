@@ -1,5 +1,5 @@
-import localFont from 'next/font/local'
-import './globals.css'
+import localFont from 'next/font/local';
+import './globals.css';
 
 const pretendard = localFont({
   src: [
@@ -26,12 +26,12 @@ const pretendard = localFont({
   ],
   variable: '--font-pretendard',
   display: 'swap',
-})
+});
 
 export const metadata = {
   title: 'Factory_X',
   description: 'Factory_X',
-}
+};
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -43,7 +43,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         {children}
       </body>
     </html>
-  )
-}
+  );
+};
 
-export default RootLayout
+export default RootLayout;

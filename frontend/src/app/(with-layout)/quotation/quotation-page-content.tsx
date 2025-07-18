@@ -1,27 +1,30 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { ArrowLineLeftIcon, ArrowLineRightIcon } from '@phosphor-icons/react/dist/ssr'
-import RequestInfo from './request-info'
-import InputSection from './input-section'
-import PreviewImage from './image-preview'
-import History from './history'
-import EmailView from './modals/email-view'
-import OverlayView from '@/ui/ovelay-view'
-import PrintView from './modals/print-view'
-import { ProductModel } from './types'
-import StartProductionModal from './modals/start-production-modal'
-import ProductEnrollmentModal from './modals/product-enrollment-modal'
-import { ClientDataModel } from '@/types/data-model'
-import { useSearchParams } from 'next/navigation'
-import TabArea from './tab-area'
-import TitleSec from './title-sec'
-import { useForm } from 'react-hook-form'
+import { useState } from 'react';
+import {
+  ArrowLineLeftIcon,
+  ArrowLineRightIcon,
+} from '@phosphor-icons/react/dist/ssr';
+import RequestInfo from './request-info';
+import InputSection from './input-section';
+import PreviewImage from './image-preview';
+import History from './history';
+import EmailView from './modals/email-view';
+import OverlayView from '@/ui/ovelay-view';
+import PrintView from './modals/print-view';
+import { ProductModel } from './types';
+import StartProductionModal from './modals/start-production-modal';
+import ProductEnrollmentModal from './modals/product-enrollment-modal';
+import { ClientDataModel } from '@/types/data-model';
+import { useSearchParams } from 'next/navigation';
+import TabArea from './tab-area';
+import TitleSec from './title-sec';
+import { useForm } from 'react-hook-form';
 
 const QuotationPageContent = () => {
   // URL 파라미터에서 clientData 가져오기
-  const searchParams = useSearchParams()
-  const clientDataParam = searchParams.get('clientData')
+  const searchParams = useSearchParams();
+  const clientDataParam = searchParams.get('clientData');
 
   // 거래처 정보 폼
   const {
@@ -47,32 +50,36 @@ const QuotationPageContent = () => {
       comment: '',
       responsibleName: '',
     },
-  })
+  });
 
   // 탭 상태 - 데이터가 없으면 히스토리 탭 활성화
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
     clientDataParam ? 'quotation' : 'history'
-  )
+  );
   // 오른쪽 패널 확장 상태
-  const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false)
+  const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
   // 선택된 품목 상태 -> 히스토리 보여주기
-  const [selectedProduct, setSelectedProduct] = useState<ProductModel | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<ProductModel | null>(
+    null
+  );
   // 모달 상태
-  const [isEmailOpen, setIsEmailOpen] = useState(false)
-  const [isPrintOpen, setIsPrintOpen] = useState(false)
-  const [isStartProductionModalOpen, setIsStartProductionModalOpen] = useState(false)
-  const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] = useState(false)
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
+  const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
+    useState(false);
+  const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
+    useState(false);
 
   const handleProductClick = (product: ProductModel) => {
-    setSelectedProduct(product)
-    setActiveTab('history') // 품목 클릭 시 히스토리탭 활성화
-    setIsRightPanelExpanded(false) // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
-  }
+    setSelectedProduct(product);
+    setActiveTab('history'); // 품목 클릭 시 히스토리탭 활성화
+    setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
+  };
   const activateQuotationTab = () => {
-    setSelectedProduct(null)
-    setActiveTab('quotation') // 견적요청서탭 활성화
-    setIsRightPanelExpanded(false) // 견적요청서탭 활성화 시 오른쪽 패널 다시 축소
-  }
+    setSelectedProduct(null);
+    setActiveTab('quotation'); // 견적요청서탭 활성화
+    setIsRightPanelExpanded(false); // 견적요청서탭 활성화 시 오른쪽 패널 다시 축소
+  };
 
   return (
     <>
@@ -147,7 +154,9 @@ const QuotationPageContent = () => {
               >
                 <RequestInfo
                   onProductClick={handleProductClick}
-                  setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
+                  setIsProductEnrollmentModalOpen={
+                    setIsProductEnrollmentModalOpen
+                  }
                   clientDataParam={clientDataParam}
                 />
               </div>
@@ -170,15 +179,19 @@ const QuotationPageContent = () => {
       )}
       {/* 생산 시작하기 버튼 */}
       {isStartProductionModalOpen && (
-        <StartProductionModal onClose={() => setIsStartProductionModalOpen(false)} />
+        <StartProductionModal
+          onClose={() => setIsStartProductionModalOpen(false)}
+        />
       )}
 
       {/* 품목 등록 모달 */}
       {isProductEnrollmentModalOpen && (
-        <ProductEnrollmentModal onClose={() => setIsProductEnrollmentModalOpen(false)} />
+        <ProductEnrollmentModal
+          onClose={() => setIsProductEnrollmentModalOpen(false)}
+        />
       )}
     </>
-  )
-}
+  );
+};
 
-export default QuotationPageContent
+export default QuotationPageContent;

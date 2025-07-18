@@ -1,16 +1,16 @@
-import DatePicker from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
-import { useState } from 'react'
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { useState } from 'react';
 
 interface InputDatepickerProps {
-  label?: string
-  value?: string
-  onChange?: (value: string) => void
-  placeholder?: string
-  required?: boolean
-  showError?: boolean
-  inputRef?: React.RefObject<HTMLInputElement>
-  onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void
+  label?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  showError?: boolean;
+  inputRef?: React.RefObject<HTMLInputElement>;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void;
 }
 
 const InputDatepicker = ({
@@ -23,14 +23,16 @@ const InputDatepicker = ({
   inputRef,
   onKeyDown,
 }: InputDatepickerProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    value ? new Date(value) : null
+  );
 
   const handleChange = (date: Date | null) => {
-    setSelectedDate(date)
-    onChange?.(date ? date.toISOString().slice(0, 10) : '')
-  }
+    setSelectedDate(date);
+    onChange?.(date ? date.toISOString().slice(0, 10) : '');
+  };
 
-  const hasError = showError && required && (!value || value.trim() === '')
+  const hasError = showError && required && (!value || value.trim() === '');
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -86,7 +88,10 @@ const InputDatepicker = ({
           {required && <span className="text-primary">*</span>}
         </div>
       )}
-      <div className="relative w-full flex items-center justify-center" ref={inputRef}>
+      <div
+        className="relative w-full flex items-center justify-center"
+        ref={inputRef}
+      >
         <DatePicker
           value={value}
           selected={selectedDate}
@@ -107,7 +112,7 @@ const InputDatepicker = ({
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default InputDatepicker
+export default InputDatepicker;

@@ -1,21 +1,21 @@
-'use client'
+'use client';
 
-import { IconProps } from '@phosphor-icons/react'
-import { CaretDown } from '@phosphor-icons/react'
-import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { IconProps } from '@phosphor-icons/react';
+import { CaretDown } from '@phosphor-icons/react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface DropdownItemProps {
-  label: string
-  path: string
+  label: string;
+  path: string;
 }
 
 interface SideBarItemProps {
-  icon: React.ComponentType<IconProps>
-  label: string
-  path: string
-  hasDropdown?: boolean
-  dropdownItems?: DropdownItemProps[]
+  icon: React.ComponentType<IconProps>;
+  label: string;
+  path: string;
+  hasDropdown?: boolean;
+  dropdownItems?: DropdownItemProps[];
 }
 
 const SideBarItem = ({
@@ -25,25 +25,26 @@ const SideBarItem = ({
   hasDropdown = false,
   dropdownItems = [],
 }: SideBarItemProps) => {
-  const router = useRouter()
-  const pathname = usePathname()
+  const router = useRouter();
+  const pathname = usePathname();
 
   const isActive =
-    pathname === path || (hasDropdown && dropdownItems.some((item) => pathname === item.path))
+    pathname === path ||
+    (hasDropdown && dropdownItems.some((item) => pathname === item.path));
 
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleClick = () => {
     if (hasDropdown) {
-      setIsDropdownOpen(!isDropdownOpen)
+      setIsDropdownOpen(!isDropdownOpen);
     } else {
-      router.push(path)
+      router.push(path);
     }
-  }
+  };
 
   const handleDropdownItemClick = (itemPath: string) => {
-    router.push(itemPath)
-  }
+    router.push(itemPath);
+  };
 
   return (
     <div>
@@ -53,7 +54,9 @@ const SideBarItem = ({
       >
         <div className="flex items-center gap-2">
           <Icon size={20} className={isActive ? 'text-primary' : 'text-gr'} />
-          <p className={`Heading-4 ${isActive ? 'text-bl' : 'text-dg'}`}>{label}</p>
+          <p className={`Heading-4 ${isActive ? 'text-bl' : 'text-dg'}`}>
+            {label}
+          </p>
         </div>
         <div>
           {hasDropdown && (
@@ -83,7 +86,7 @@ const SideBarItem = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default SideBarItem
+export default SideBarItem;

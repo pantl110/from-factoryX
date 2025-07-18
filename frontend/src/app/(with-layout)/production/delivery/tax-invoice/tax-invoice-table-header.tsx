@@ -9,7 +9,7 @@ const TaxInvoiceTableHeader = () => {
       <p className="flex-1 py-1 px-3">공급가액</p>
       <p className="flex-1 py-1 px-3">수액</p>
     </div>
-  )
-}
+  );
+};
 
-export default TaxInvoiceTableHeader
+export default TaxInvoiceTableHeader;

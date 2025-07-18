@@ -1,10 +1,12 @@
-import QuotationHistoryItem from './quotation-history-item'
+import QuotationHistoryItem from './quotation-history-item';
 
 interface QuotationHistoryProps {
-  setIsCustomerInfoModalOpen: (isOpen: boolean) => void
+  setIsCustomerInfoModalOpen: (isOpen: boolean) => void;
 }
 
-const QuotationHistory = ({ setIsCustomerInfoModalOpen }: QuotationHistoryProps) => {
+const QuotationHistory = ({
+  setIsCustomerInfoModalOpen,
+}: QuotationHistoryProps) => {
   return (
     <div className="flex flex-col">
       <div className="flex items-center h-12 border-t border-b border-[#eeeeee] Me_Body-1">
@@ -21,7 +23,7 @@ const QuotationHistory = ({ setIsCustomerInfoModalOpen }: QuotationHistoryProps)
         unitPrice={1200}
       />
     </div>
-  )
-}
+  );
+};
 
-export default QuotationHistory
+export default QuotationHistory;

@@ -1,18 +1,18 @@
-import Chip from '@/ui/chip'
-import Dropdown from '@/ui/dropdown/dropdown'
-import DropdownItem from '@/ui/dropdown/dropdown-item'
-import { PermissionRoleInfo } from '../types'
+import Chip from '@/ui/chip';
+import Dropdown from '@/ui/dropdown/dropdown';
+import DropdownItem from '@/ui/dropdown/dropdown-item';
+import { PermissionRoleInfo } from '../types';
 
 interface AuthDropdownProps {
-  onClose: () => void
-  onSelect?: (auth: string) => void
+  onClose: () => void;
+  onSelect?: (auth: string) => void;
 }
 
 const AuthDropdown = ({ onClose, onSelect }: AuthDropdownProps) => {
   const handleAuthSelect = (auth: string) => {
-    onSelect?.(auth)
-    onClose()
-  }
+    onSelect?.(auth);
+    onClose();
+  };
 
   return (
     <Dropdown onClose={onClose} width="w-fit" className="gap-2.5">
@@ -35,7 +35,7 @@ const AuthDropdown = ({ onClose, onSelect }: AuthDropdownProps) => {
         />
       </DropdownItem>
     </Dropdown>
-  )
-}
+  );
+};
 
-export default AuthDropdown
+export default AuthDropdown;

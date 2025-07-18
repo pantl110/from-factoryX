@@ -1,17 +1,17 @@
-import { useEffect } from 'react'
-import InfoLabelValue from '@/ui/info-label-value'
-import MiniBtn from '@/ui/mini-btn'
-import { Plus } from '@phosphor-icons/react/dist/ssr'
-import MaterialInputItem from './material-input-item'
-import { useCallback } from 'react'
-import { useForm, useFieldArray, Resolver } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
-import { SecondStepFormDataModel } from '../types'
+import { useEffect } from 'react';
+import InfoLabelValue from '@/ui/info-label-value';
+import MiniBtn from '@/ui/mini-btn';
+import { Plus } from '@phosphor-icons/react/dist/ssr';
+import MaterialInputItem from './material-input-item';
+import { useCallback } from 'react';
+import { useForm, useFieldArray, Resolver } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { SecondStepFormDataModel } from '../types';
 
 interface SecondStepProps {
-  onNextStep: () => void
-  onPrevStep: () => void
+  onNextStep: () => void;
+  onPrevStep: () => void;
 }
 
 // Yup 스키마 정의
@@ -24,14 +24,16 @@ const validationSchema = yup.object({
         size: yup.string().required(),
         usageQuantity: yup
           .number()
-          .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+          .transform((value, originalValue) =>
+            originalValue === '' ? undefined : value
+          )
           .required()
           .positive(),
       })
     )
     .min(1)
     .required(),
-})
+});
 
 const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
   const {
@@ -42,7 +44,9 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
     control,
     reset,
   } = useForm<SecondStepFormDataModel>({
-    resolver: yupResolver(validationSchema) as unknown as Resolver<SecondStepFormDataModel>,
+    resolver: yupResolver(
+      validationSchema
+    ) as unknown as Resolver<SecondStepFormDataModel>,
     mode: 'onChange',
     defaultValues: {
       materials: [
@@ -53,52 +57,52 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
         },
       ],
     },
-  })
+  });
 
   // sessionStorage에서 데이터 복원
   useEffect(() => {
-    const savedData = sessionStorage.getItem('onboarding-step2-materials')
+    const savedData = sessionStorage.getItem('onboarding-step2-materials');
 
     if (savedData) {
       try {
-        const data = JSON.parse(savedData)
+        const data = JSON.parse(savedData);
 
         // 데이터 구조 확인
         if (data.materials !== undefined) {
-          reset(data)
+          reset(data);
         }
       } catch (error) {
-        console.error('SecondStep 데이터 파싱 오류:', error)
+        console.error('SecondStep 데이터 파싱 오류:', error);
       }
     }
-  }, [reset])
+  }, [reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'materials',
-  })
+  });
 
   const handleAddMaterial = useCallback(() => {
-    clearErrors()
+    clearErrors();
     append({
       materialName: '',
       size: '',
       usageQuantity: '',
-    })
-  }, [append, clearErrors])
+    });
+  }, [append, clearErrors]);
 
   const handleDeleteMaterial = useCallback(
     (index: number) => {
-      clearErrors()
-      remove(index)
+      clearErrors();
+      remove(index);
     },
     [remove, clearErrors]
-  )
+  );
 
   const onSubmit = (data: SecondStepFormDataModel) => {
-    sessionStorage.setItem('onboarding-step2-materials', JSON.stringify(data)) // sessionStorage에 저장
-    onNextStep()
-  }
+    sessionStorage.setItem('onboarding-step2-materials', JSON.stringify(data)); // sessionStorage에 저장
+    onNextStep();
+  };
 
   return (
     <div className="bg-wh z-1 w-[800px] pt-10 px-8 flex flex-col gap-7 items-center rounded-lg max-h-[85vh]">
@@ -138,7 +142,9 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
             <MaterialInputItem
               plusMode={index === 0 ? false : true}
               key={field.id}
-              onDelete={index === 0 ? undefined : () => handleDeleteMaterial(index)}
+              onDelete={
+                index === 0 ? undefined : () => handleDeleteMaterial(index)
+              }
               register={register}
               index={index}
             />
@@ -175,7 +181,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default SecondStep
+export default SecondStep;

@@ -1,18 +1,18 @@
-import { X } from '@phosphor-icons/react/dist/ssr'
-import { useEffect } from 'react'
+import { X } from '@phosphor-icons/react/dist/ssr';
+import { useEffect } from 'react';
 
 interface ModalProps {
-  children: React.ReactNode
-  title?: string
-  subtitle?: string
-  onClose?: () => void
-  sm?: boolean
-  width?: string
-  height?: string
-  button?: React.ReactNode
-  gap?: string
-  className?: string
-  scroll?: boolean
+  children: React.ReactNode;
+  title?: string;
+  subtitle?: string;
+  onClose?: () => void;
+  sm?: boolean;
+  width?: string;
+  height?: string;
+  button?: React.ReactNode;
+  gap?: string;
+  className?: string;
+  scroll?: boolean;
 }
 
 const Modal = ({
@@ -29,13 +29,13 @@ const Modal = ({
   scroll = false,
 }: ModalProps) => {
   useEffect(() => {
-    const originalStyle = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     return () => {
-      document.body.style.overflow = originalStyle
-    }
-  }, [])
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
 
   return (
     <div
@@ -43,14 +43,16 @@ const Modal = ({
       className="bg-black/50 w-full h-full fixed top-0 left-0 flex justify-center items-center z-50"
       onClick={onClose}
       onKeyDown={(e) => {
-        if (e.key === 'Escape') onClose?.()
+        if (e.key === 'Escape') onClose?.();
       }}
     >
       <div
         className={`bg-white ${width} ${height} ${scroll ? '' : 'p-6'} rounded-lg max-h-[85%] ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`flex justify-between items-center ${scroll ? 'px-6 pt-6' : ''}`}>
+        <div
+          className={`flex justify-between items-center ${scroll ? 'px-6 pt-6' : ''}`}
+        >
           <div className="flex gap-3 items-center">
             <h3 className="Heading-3">{title}</h3>
             {button}
@@ -79,7 +81,7 @@ const Modal = ({
         {children}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Modal
+export default Modal;

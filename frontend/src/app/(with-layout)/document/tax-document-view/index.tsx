@@ -1,9 +1,9 @@
-import OrderItemInfo from './order-item-info'
-import PurchaseItemInfo from './purchase-item-info'
-import TaxBuyerProviderInfo from './tax-buyer-provider-info'
+import OrderItemInfo from './order-item-info';
+import PurchaseItemInfo from './purchase-item-info';
+import TaxBuyerProviderInfo from './tax-buyer-provider-info';
 
 interface TaxDocumentViewProps {
-  taxType?: string
+  taxType?: string;
 }
 
 const TaxDocumentView = ({ taxType }: TaxDocumentViewProps) => {
@@ -14,7 +14,7 @@ const TaxDocumentView = ({ taxType }: TaxDocumentViewProps) => {
       {taxType === '매출' && <OrderItemInfo />}
       {taxType === '매입' && <PurchaseItemInfo />}
     </div>
-  )
-}
+  );
+};
 
-export default TaxDocumentView
+export default TaxDocumentView;

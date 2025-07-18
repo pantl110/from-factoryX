@@ -1,21 +1,21 @@
-'use client'
+'use client';
 
-import MiniBtn from '@/ui/mini-btn'
-import { StockTabType } from './types'
-import { CaretDown } from '@phosphor-icons/react'
-import ProductAddDropdown from './product/modals/product-add-dropdown'
-import MaterialAddDropdown from './material/modals/material-add-dropdown'
+import MiniBtn from '@/ui/mini-btn';
+import { StockTabType } from './types';
+import { CaretDown } from '@phosphor-icons/react';
+import ProductAddDropdown from './product/modals/product-add-dropdown';
+import MaterialAddDropdown from './material/modals/material-add-dropdown';
 
 interface MainTitleSecProps {
-  selectedTab: StockTabType
-  onTabChange: (tab: StockTabType) => void
-  onProductAddDropdownOpen: (isOpen: boolean) => void
-  isProductAddDropdownOpen: boolean
-  onMaterialAddDropdownOpen: (isOpen: boolean) => void
-  isMaterialAddDropdownOpen: boolean
-  onOpenExcelModal: () => void
-  onOpenCreatePanel: () => void
-  onOpenClientInfoModal: () => void
+  selectedTab: StockTabType;
+  onTabChange: (tab: StockTabType) => void;
+  onProductAddDropdownOpen: (isOpen: boolean) => void;
+  isProductAddDropdownOpen: boolean;
+  onMaterialAddDropdownOpen: (isOpen: boolean) => void;
+  isMaterialAddDropdownOpen: boolean;
+  onOpenExcelModal: () => void;
+  onOpenCreatePanel: () => void;
+  onOpenClientInfoModal: () => void;
 }
 
 const MainTitleSec = ({
@@ -30,8 +30,8 @@ const MainTitleSec = ({
   onOpenClientInfoModal,
 }: MainTitleSecProps) => {
   const handleTabClick = (tab: StockTabType) => {
-    onTabChange(tab)
-  }
+    onTabChange(tab);
+  };
 
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
@@ -48,7 +48,9 @@ const MainTitleSec = ({
             <MiniBtn
               bgColor="bg-primary"
               textColor="text-wh"
-              text={selectedTab === 'product' ? '품목 추가하기' : '자재 추가하기'}
+              text={
+                selectedTab === 'product' ? '품목 추가하기' : '자재 추가하기'
+              }
               icon={CaretDown}
               iconPosition="right"
               iconColor="text-white"
@@ -98,7 +100,7 @@ const MainTitleSec = ({
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MainTitleSec
+export default MainTitleSec;

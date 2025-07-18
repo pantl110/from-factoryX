@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import usePageStatusStore from '@/store/page-status-store'
-import SystemSetting from './system-setting'
-import MasterData from './master-data'
+import usePageStatusStore from '@/store/page-status-store';
+import SystemSetting from './system-setting';
+import MasterData from './master-data';
 
 const SettingPageContent = () => {
-  const { settingTab, setSettingTab } = usePageStatusStore()
+  const { settingTab, setSettingTab } = usePageStatusStore();
 
   return (
     <div className="max-w-[1400px] min-w-[1200px]">
@@ -34,7 +34,7 @@ const SettingPageContent = () => {
         {settingTab === 'master' && <MasterData />}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SettingPageContent
+export default SettingPageContent;

@@ -1,4 +1,4 @@
-import { CaretDownIcon } from '@phosphor-icons/react/dist/ssr'
+import { CaretDownIcon } from '@phosphor-icons/react/dist/ssr';
 
 const DailyProductionQuantity = () => {
   return (
@@ -24,7 +24,7 @@ const DailyProductionQuantity = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default DailyProductionQuantity
+export default DailyProductionQuantity;

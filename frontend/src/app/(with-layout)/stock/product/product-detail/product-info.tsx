@@ -1,17 +1,17 @@
-import { ProductModel } from '@/types/data-model'
-import InfoLabelValue from '@/ui/info-label-value'
-import { useEffect, forwardRef, useImperativeHandle } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { ProductModel } from '@/types/data-model';
+import InfoLabelValue from '@/ui/info-label-value';
+import { useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 
 interface ProductInfoProps {
-  formData: ProductModel
-  productId: number | null
-  onIsDirtyChange?: (isDirty: boolean) => void
-  onIsValidChange?: (isValid: boolean) => void
+  formData: ProductModel;
+  productId: number | null;
+  onIsDirtyChange?: (isDirty: boolean) => void;
+  onIsValidChange?: (isValid: boolean) => void;
 }
 
 export interface ProductInfoModel {
-  getValues: () => ProductModel
+  getValues: () => ProductModel;
 }
 
 const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
@@ -24,21 +24,21 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
     } = useForm<ProductModel>({
       defaultValues: formData,
       mode: 'onChange',
-    })
+    });
 
     // isDirty 상태가 변경될 때 부모에게 알림
     useEffect(() => {
       if (onIsDirtyChange) {
-        onIsDirtyChange(isDirty)
+        onIsDirtyChange(isDirty);
       }
-    }, [isDirty, onIsDirtyChange])
+    }, [isDirty, onIsDirtyChange]);
 
     // isValid 상태가 변경될 때 부모에게 알림
     useEffect(() => {
       if (onIsValidChange) {
-        onIsValidChange(isValid)
+        onIsValidChange(isValid);
       }
-    }, [isValid, onIsValidChange])
+    }, [isValid, onIsValidChange]);
 
     // 부모 컴포넌트에 getValues 메서드 노출
     useImperativeHandle(
@@ -47,16 +47,16 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
         getValues: () => getValues(),
       }),
       [getValues]
-    )
+    );
 
     // product prop이 바뀌면 폼 전체를 reset으로 초기화
     useEffect(() => {
-      reset(formData)
+      reset(formData);
       if (onIsDirtyChange) {
-        onIsDirtyChange(false)
+        onIsDirtyChange(false);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [productId, formData])
+    }, [productId, formData]);
 
     return (
       <div className="flex flex-col border-b border-lg">
@@ -73,7 +73,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 required
                 value={field.value}
                 onChange={(e) => {
-                  field.onChange(e)
+                  field.onChange(e);
                 }}
               />
             )}
@@ -90,7 +90,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 required
                 value={field.value}
                 onChange={(e) => {
-                  field.onChange(e)
+                  field.onChange(e);
                 }}
               />
             )}
@@ -109,7 +109,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 required
                 value={field.value}
                 onChange={(e) => {
-                  field.onChange(e)
+                  field.onChange(e);
                 }}
               />
             )}
@@ -126,7 +126,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 required
                 value={field.value}
                 onChange={(e) => {
-                  field.onChange(e)
+                  field.onChange(e);
                 }}
               />
             )}
@@ -142,15 +142,19 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 value={
                   field.value === undefined || field.value === null
                     ? ''
-                    : field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                    : field.value
+                        .toString()
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                 }
                 isEditing={true}
                 placeholder="현재 재고 수량을 입력하세요."
                 inputType="text"
                 onChange={(e) => {
-                  const numValue = e.target.value.replace(/[^0-9]/g, '')
+                  const numValue = e.target.value.replace(/[^0-9]/g, '');
                   // 빈 문자열이면 undefined, 아니면 문자열로 저장
-                  field.onChange(numValue === '' ? undefined : Number(numValue))
+                  field.onChange(
+                    numValue === '' ? undefined : Number(numValue)
+                  );
                 }}
               />
             )}
@@ -163,8 +167,8 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 label="평균 생산 시간"
                 value={
                   field.value === undefined ||
-                    field.value === null ||
-                    (typeof field.value === 'string' && field.value === '')
+                  field.value === null ||
+                  (typeof field.value === 'string' && field.value === '')
                     ? '-'
                     : `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}초`
                 }
@@ -185,15 +189,15 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               textarea={true}
               placeholder="특이사항을 입력하세요."
               onChange={(e) => {
-                field.onChange(e)
+                field.onChange(e);
               }}
             />
           )}
         />
       </div>
-    )
+    );
   }
-)
-ProductInfo.displayName = 'ProductInfo'
+);
+ProductInfo.displayName = 'ProductInfo';
 
-export default ProductInfo
+export default ProductInfo;

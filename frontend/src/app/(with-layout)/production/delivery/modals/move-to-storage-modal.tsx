@@ -1,7 +1,7 @@
-import MiniBtn from '@/ui/mini-btn'
-import Modal from '@/ui/modal/modal'
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
 interface MoveToStorageModalProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 const MoveToStorageModal = ({ onClose }: MoveToStorageModalProps) => {
@@ -13,7 +13,12 @@ const MoveToStorageModal = ({ onClose }: MoveToStorageModalProps) => {
       sm={true}
     >
       <div className="flex gap-2.5 mt-4 justify-end">
-        <MiniBtn text="닫기" textColor="text-sv" hoverColor="" onClick={onClose} />
+        <MiniBtn
+          text="닫기"
+          textColor="text-sv"
+          hoverColor=""
+          onClick={onClose}
+        />
         <MiniBtn
           text="보관함으로 이동"
           textColor="text-wh"
@@ -23,7 +28,7 @@ const MoveToStorageModal = ({ onClose }: MoveToStorageModalProps) => {
         />
       </div>
     </Modal>
-  )
-}
+  );
+};
 
-export default MoveToStorageModal
+export default MoveToStorageModal;

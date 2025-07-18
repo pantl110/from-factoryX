@@ -1,22 +1,22 @@
-'use client'
+'use client';
 
-import MiniBtn from '@/ui/mini-btn'
-import { BellSimple } from '@phosphor-icons/react'
-import { notificationData } from '@/mocks/notification-data'
-import { ProductionTabType } from './types'
-import ProfileImage from '@/ui/profile-image'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
-import ProfileModal from './modals/profile-modal'
+import MiniBtn from '@/ui/mini-btn';
+import { BellSimple } from '@phosphor-icons/react';
+import { notificationData } from '@/mocks/notification-data';
+import { ProductionTabType } from './types';
+import ProfileImage from '@/ui/profile-image';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import ProfileModal from './modals/profile-modal';
 
 interface TopBarContentProps {
-  productionTab: ProductionTabType | null
-  pageStatus: string | null
+  productionTab: ProductionTabType | null;
+  pageStatus: string | null;
 
-  onProductionPlanSaveClick?: () => void
-  onAddReturnClick?: () => void
-  onMoveToStorageClick?: () => void
-  onNotificationClick?: () => void
+  onProductionPlanSaveClick?: () => void;
+  onAddReturnClick?: () => void;
+  onMoveToStorageClick?: () => void;
+  onNotificationClick?: () => void;
 }
 
 const TopBarContent = ({
@@ -27,9 +27,10 @@ const TopBarContent = ({
   onMoveToStorageClick,
   onNotificationClick,
 }: TopBarContentProps) => {
-  const isProductionPlanSaveActive = productionTab === '생산 계획' && pageStatus === '생산 대기'
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
-  const pathname = usePathname()
+  const isProductionPlanSaveActive =
+    productionTab === '생산 계획' && pageStatus === '생산 대기';
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const pathname = usePathname();
 
   if (pageStatus === '프로젝트 완료') {
     return (
@@ -41,7 +42,7 @@ const TopBarContent = ({
           hoverColor="hover:bg-bg"
         />
       </div>
-    )
+    );
   }
 
   if (productionTab === '주문서' || productionTab === '생산 현황') {
@@ -52,7 +53,7 @@ const TopBarContent = ({
         borderColor="border-lg"
         hoverColor="hover:bg-bg"
       />
-    )
+    );
   }
 
   if (productionTab === '생산 계획') {
@@ -73,7 +74,7 @@ const TopBarContent = ({
           disabled={!isProductionPlanSaveActive}
         />
       </div>
-    )
+    );
   }
 
   if (productionTab === '생산 내역') {
@@ -93,7 +94,7 @@ const TopBarContent = ({
             hoverColor="hover:bg-secondary-hover"
           />
         </div>
-      )
+      );
     }
     return (
       <MiniBtn
@@ -102,7 +103,7 @@ const TopBarContent = ({
         borderColor="border-lg"
         hoverColor="hover:bg-bg"
       />
-    )
+    );
   }
 
   if (productionTab === '납품') {
@@ -129,7 +130,7 @@ const TopBarContent = ({
           onClick={onMoveToStorageClick}
         />
       </div>
-    )
+    );
   }
 
   // default
@@ -157,7 +158,7 @@ const TopBarContent = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TopBarContent
+export default TopBarContent;

@@ -1,17 +1,17 @@
 // 현금영수증 아이템 타입 정의
 interface ReceiptItemModel {
-  id: number
-  date: string
-  company: string
-  productName: string
-  supplyAmount: number
-  taxAmount: number
-  totalAmount: number
+  id: number;
+  date: string;
+  company: string;
+  productName: string;
+  supplyAmount: number;
+  taxAmount: number;
+  totalAmount: number;
 }
 
 interface TableItemProps {
-  item: ReceiptItemModel
-  onClick?: () => void
+  item: ReceiptItemModel;
+  onClick?: () => void;
 }
 
 const TableItem = ({ item, onClick }: TableItemProps) => {
@@ -27,7 +27,7 @@ const TableItem = ({ item, onClick }: TableItemProps) => {
       <p className="flex-1 px-3 text-dg">{item.taxAmount}</p>
       <p className="flex-1 px-3 text-dg">{item.totalAmount}</p>
     </div>
-  )
-}
+  );
+};
 
-export default TableItem
+export default TableItem;

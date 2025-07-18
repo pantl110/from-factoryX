@@ -1,10 +1,10 @@
 export interface ReturnDataModel {
-  id: number
-  productName: string
-  returnDate: string
-  returnQuantity: number
-  currentStock: number
-  productionQuantity: number | null
+  id: number;
+  productName: string;
+  returnDate: string;
+  returnQuantity: number;
+  currentStock: number;
+  productionQuantity: number | null;
 }
 
 export const returnData: ReturnDataModel[] = [
@@ -24,4 +24,4 @@ export const returnData: ReturnDataModel[] = [
     currentStock: 100,
     productionQuantity: null,
   },
-]
+];

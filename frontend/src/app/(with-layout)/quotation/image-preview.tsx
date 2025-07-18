@@ -1,15 +1,15 @@
-import { ArrowsOutIcon } from '@phosphor-icons/react/dist/ssr'
-import { useState } from 'react'
-import EnlargeImageOverlay from './modals/enlarge-image-overlay'
-import Image from 'next/image'
+import { ArrowsOutIcon } from '@phosphor-icons/react/dist/ssr';
+import { useState } from 'react';
+import EnlargeImageOverlay from './modals/enlarge-image-overlay';
+import Image from 'next/image';
 
 interface ImagePreviewProps {
-  className?: string
+  className?: string;
 }
 
 const ImagePreview = ({ className = '' }: ImagePreviewProps) => {
-  const [isEnlargeOpen, setIsEnlargeOpen] = useState(false)
-  const imageUrl = '/36097517.jpg'
+  const [isEnlargeOpen, setIsEnlargeOpen] = useState(false);
+  const imageUrl = '/36097517.jpg';
 
   return (
     <div
@@ -29,10 +29,13 @@ const ImagePreview = ({ className = '' }: ImagePreviewProps) => {
         <ArrowsOutIcon size={20} className="text-sv" />
       </button>
       {isEnlargeOpen && (
-        <EnlargeImageOverlay imageUrl={imageUrl} onClose={() => setIsEnlargeOpen(false)} />
+        <EnlargeImageOverlay
+          imageUrl={imageUrl}
+          onClose={() => setIsEnlargeOpen(false)}
+        />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ImagePreview
+export default ImagePreview;

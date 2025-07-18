@@ -1,29 +1,29 @@
-import Panel from '@/ui/panel'
-import InfoLabelValue from '@/ui/info-label-value'
-import FacilityHistoryItem from './facility-history-item'
-import EmptySpace from '@/ui/empty-space'
-import TextareaAutosize from 'react-textarea-autosize'
-import { EquipmentResponseModel } from '@/types/data-model'
-import { useCreateEquipment, useUpdateEquipment } from '@/hooks'
-import useFactoryStore from '@/store/factory-store'
-import { EquipmentStatusType } from '@/types/status-type'
-import { Controller, useForm } from 'react-hook-form'
-import MiniBtn from '@/ui/mini-btn'
-import { useEffect } from 'react'
+import Panel from '@/ui/panel';
+import InfoLabelValue from '@/ui/info-label-value';
+import FacilityHistoryItem from './facility-history-item';
+import EmptySpace from '@/ui/empty-space';
+import TextareaAutosize from 'react-textarea-autosize';
+import { EquipmentResponseModel } from '@/types/data-model';
+import { useCreateEquipment, useUpdateEquipment } from '@/hooks';
+import useFactoryStore from '@/store/factory-store';
+import { EquipmentStatusType } from '@/types/status-type';
+import { Controller, useForm } from 'react-hook-form';
+import MiniBtn from '@/ui/mini-btn';
+import { useEffect } from 'react';
 
 interface FacilityDetailPanelProps {
-  facility?: EquipmentResponseModel
-  onClose: () => void
-  onSuccess?: () => void
-  showWarningToast?: () => void
-  facilityList?: EquipmentResponseModel[] // 설비 목록 prop 추가
+  facility?: EquipmentResponseModel;
+  onClose: () => void;
+  onSuccess?: () => void;
+  showWarningToast?: () => void;
+  facilityList?: EquipmentResponseModel[]; // 설비 목록 prop 추가
 }
 
 interface FacilityFormModel {
-  name: string
-  priority: string
-  location?: string
-  note?: string
+  name: string;
+  priority: string;
+  location?: string;
+  note?: string;
 }
 
 const FacilityDetailPanel = ({
@@ -33,9 +33,9 @@ const FacilityDetailPanel = ({
   showWarningToast,
   facilityList,
 }: FacilityDetailPanelProps) => {
-  const { createEquipment } = useCreateEquipment()
-  const { updateEquipment } = useUpdateEquipment()
-  const factoryId = useFactoryStore((state) => state.factoryId)
+  const { createEquipment } = useCreateEquipment();
+  const { updateEquipment } = useUpdateEquipment();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const {
     handleSubmit,
@@ -51,7 +51,7 @@ const FacilityDetailPanel = ({
       location: facility?.location || '',
       note: facility?.note || '',
     },
-  })
+  });
 
   useEffect(() => {
     reset({
@@ -59,30 +59,32 @@ const FacilityDetailPanel = ({
       priority: facility?.priority?.toString() || '',
       location: facility?.location || '',
       note: facility?.note || '',
-    })
-  }, [facility, reset])
+    });
+  }, [facility, reset]);
 
   // priority 중복 체크 함수 (실제 구현)
   const checkPriorityDuplicate = (value: string) => {
-    if (!value || !facilityList) return false
-    const numValue = Number(value)
-    if (isNaN(numValue)) return false
-    return facilityList.some((eq) => eq.priority === numValue && eq.id !== facility?.id)
-  }
+    if (!value || !facilityList) return false;
+    const numValue = Number(value);
+    if (isNaN(numValue)) return false;
+    return facilityList.some(
+      (eq) => eq.priority === numValue && eq.id !== facility?.id
+    );
+  };
 
   // 저장 버튼 클릭 시 생성/수정 분기
   const onSubmit = async (data: FacilityFormModel) => {
     // 저장 시 priority 중복 체크
     if (checkPriorityDuplicate(data.priority)) {
-      showWarningToast?.()
+      showWarningToast?.();
       if (facility) {
         // 수정 모드: 원래 값으로 복원
-        setValue('priority', facility.priority?.toString() || '')
+        setValue('priority', facility.priority?.toString() || '');
       } else {
         // 생성 모드: 빈 값으로 초기화
-        setValue('priority', '')
+        setValue('priority', '');
       }
-      return // 중복이면 저장 중단
+      return; // 중복이면 저장 중단
     }
 
     if (facility) {
@@ -93,21 +95,24 @@ const FacilityDetailPanel = ({
         priority: Number(data.priority),
         location: data.location || '',
         note: data.note || '',
-      }
+      };
 
-      const result = await updateEquipment(facility.id, payload)
+      const result = await updateEquipment(facility.id, payload);
 
       if (result && result.success) {
-        onSuccess?.()
-        onClose()
+        onSuccess?.();
+        onClose();
       } else {
-        alert('설비 정보 수정에 실패하였습니다: ' + (result?.error || '알 수 없는 오류'))
+        alert(
+          '설비 정보 수정에 실패하였습니다: ' +
+            (result?.error || '알 수 없는 오류')
+        );
       }
     } else {
       // 생성 (POST)
       if (!factoryId) {
-        alert('공장 정보가 없습니다. 다시 로그인 해주세요.')
-        return
+        alert('공장 정보가 없습니다. 다시 로그인 해주세요.');
+        return;
       }
       const payload = {
         factory: factoryId,
@@ -116,16 +121,18 @@ const FacilityDetailPanel = ({
         priority: Number(data.priority),
         location: data.location || '',
         note: data.note || '',
-      }
-      const result = await createEquipment(payload)
+      };
+      const result = await createEquipment(payload);
       if (result && result.success) {
-        onSuccess?.()
-        onClose() // 생성 성공 후 판넬 닫기
+        onSuccess?.();
+        onClose(); // 생성 성공 후 판넬 닫기
       } else {
-        alert('설비 생성에 실패하였습니다: ' + (result?.error || '알 수 없는 오류'))
+        alert(
+          '설비 생성에 실패하였습니다: ' + (result?.error || '알 수 없는 오류')
+        );
       }
     }
-  }
+  };
 
   return (
     <Panel
@@ -166,7 +173,8 @@ const FacilityDetailPanel = ({
             <InfoLabelValue
               label="가동 상태"
               chip={{
-                status: (facility?.status ?? '가동 대기') as EquipmentStatusType,
+                status: (facility?.status ??
+                  '가동 대기') as EquipmentStatusType,
               }}
             />
             <Controller
@@ -188,13 +196,15 @@ const FacilityDetailPanel = ({
                   inputType="text"
                   required
                   value={
-                    field.value === undefined || field.value === null || field.value === ''
+                    field.value === undefined ||
+                    field.value === null ||
+                    field.value === ''
                       ? ''
                       : field.value.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                   }
                   onChange={(e) => {
-                    const numValue = e.target.value.replace(/[^0-9]/g, '')
-                    field.onChange(numValue ? numValue : '')
+                    const numValue = e.target.value.replace(/[^0-9]/g, '');
+                    field.onChange(numValue ? numValue : '');
                   }}
                   onBlur={field.onBlur} // eslint-disable-line react/jsx-handler-names
                 />
@@ -271,7 +281,7 @@ const FacilityDetailPanel = ({
         </div>
       </div>
     </Panel>
-  )
-}
+  );
+};
 
-export default FacilityDetailPanel
+export default FacilityDetailPanel;

@@ -1,23 +1,23 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
-import eslint from '@eslint/js'
-import globals from 'globals'
-import tseslint from '@typescript-eslint/eslint-plugin'
-import tsParser from '@typescript-eslint/parser'
-import reactPlugin from 'eslint-plugin-react'
-import jsxA11yPlugin from 'eslint-plugin-jsx-a11y'
-import importPlugin from 'eslint-plugin-import'
-import prettierPlugin from 'eslint-plugin-prettier'
-import unicornPlugin from 'eslint-plugin-unicorn'
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { FlatCompat } from '@eslint/eslintrc';
+import eslint from '@eslint/js';
+import globals from 'globals';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import reactPlugin from 'eslint-plugin-react';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+import importPlugin from 'eslint-plugin-import';
+import prettierPlugin from 'eslint-plugin-prettier';
+import unicornPlugin from 'eslint-plugin-unicorn';
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
   recommendedConfig: eslint.configs.recommended,
-})
+});
 
 const eslintConfig = [
   {
@@ -195,6 +195,6 @@ const eslintConfig = [
       'object-shorthand': 'error',
     },
   },
-]
+];
 
-export default eslintConfig
+export default eslintConfig;

@@ -1,4 +1,4 @@
-import InfoLabelValue from '@/ui/info-label-value'
+import InfoLabelValue from '@/ui/info-label-value';
 
 const ClientInfo = () => {
   return (
@@ -24,7 +24,7 @@ const ClientInfo = () => {
         <InfoLabelValue label="사업장 주소" value="경기도 남양주시" />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ClientInfo
+export default ClientInfo;

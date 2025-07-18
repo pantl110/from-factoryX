@@ -1,8 +1,8 @@
-import PriceInfo from '@/ui/price-info'
-import TaxInvoiceTableHeader from './tax-invoice-table-header'
-import TaxInvoiceTableItem from './tax-invoice-table-item'
-import TaxInvoiceTitle from './tax-invoice-title'
-import TaxInvoiceInfo from './tax-invoice-input'
+import PriceInfo from '@/ui/price-info';
+import TaxInvoiceTableHeader from './tax-invoice-table-header';
+import TaxInvoiceTableItem from './tax-invoice-table-item';
+import TaxInvoiceTitle from './tax-invoice-title';
+import TaxInvoiceInfo from './tax-invoice-input';
 
 const TaxInvoice = () => {
   return (
@@ -24,7 +24,7 @@ const TaxInvoice = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TaxInvoice
+export default TaxInvoice;

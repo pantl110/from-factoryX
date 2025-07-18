@@ -1,5 +1,5 @@
-import PriceInfo from '@/ui/price-info'
-import OrderTableItem from './order-table-item'
+import PriceInfo from '@/ui/price-info';
+import OrderTableItem from './order-table-item';
 
 const OrderItemInfo = () => {
   return (
@@ -25,7 +25,7 @@ const OrderItemInfo = () => {
 
       <PriceInfo />
     </div>
-  )
-}
+  );
+};
 
-export default OrderItemInfo
+export default OrderItemInfo;

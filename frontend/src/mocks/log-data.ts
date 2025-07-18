@@ -1,11 +1,11 @@
-export type LogType = 'memo' | 'return' | 'planChange'
+export type LogType = 'memo' | 'return' | 'planChange';
 
 export interface LogDataModel {
-  id: number
-  type: LogType
-  title: string
-  content: string
-  createdAt: string
+  id: number;
+  type: LogType;
+  title: string;
+  content: string;
+  createdAt: string;
 }
 
 export const logData: LogDataModel[] = [
@@ -51,4 +51,4 @@ export const logData: LogDataModel[] = [
     content: '설비가 이상하다. 한 번 확인 필요!',
     createdAt: '3시간 전',
   },
-]
+];

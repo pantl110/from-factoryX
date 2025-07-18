@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import { ClientUpdateModel, ClientResponseModel } from '@/types/data-model'
+import { useState } from 'react';
+import { ClientUpdateModel, ClientResponseModel } from '@/types/data-model';
 
 // 공장 거래처 정보 수정
 const useUpdateClient = () => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const updateClient = async (data: ClientUpdateModel) => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
       const response = await fetch(
@@ -21,24 +21,24 @@ const useUpdateClient = () => {
           },
           body: JSON.stringify(data),
         }
-      )
+      );
       if (response.ok) {
-        const result: ClientResponseModel = await response.json()
-        return { success: true, data: result }
+        const result: ClientResponseModel = await response.json();
+        return { success: true, data: result };
       } else {
-        const errorData = await response.json()
-        setError(errorData.detail || '거래처 정보 수정에 실패했습니다.')
-        return { success: false, error: errorData.detail }
+        const errorData = await response.json();
+        setError(errorData.detail || '거래처 정보 수정에 실패했습니다.');
+        return { success: false, error: errorData.detail };
       }
     } catch {
-      setError('서버 연결에 실패했습니다.')
-      return { success: false, error: '서버 연결에 실패했습니다.' }
+      setError('서버 연결에 실패했습니다.');
+      return { success: false, error: '서버 연결에 실패했습니다.' };
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  return { updateClient, isLoading, error }
-}
+  return { updateClient, isLoading, error };
+};
 
-export default useUpdateClient
+export default useUpdateClient;

@@ -1,8 +1,8 @@
-import MiniBtn from '@/ui/mini-btn'
-import Modal from '@/ui/modal/modal'
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
 
 interface StartProductionModalProps {
-  onClose?: () => void
+  onClose?: () => void;
 }
 
 const StartProductionModal = ({ onClose }: StartProductionModalProps) => {
@@ -14,7 +14,12 @@ const StartProductionModal = ({ onClose }: StartProductionModalProps) => {
       sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
+        <MiniBtn
+          text="취소"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
         <MiniBtn
           text="생산 시작"
           textColor="text-wh"
@@ -24,7 +29,7 @@ const StartProductionModal = ({ onClose }: StartProductionModalProps) => {
         />
       </div>
     </Modal>
-  )
-}
+  );
+};
 
-export default StartProductionModal
+export default StartProductionModal;

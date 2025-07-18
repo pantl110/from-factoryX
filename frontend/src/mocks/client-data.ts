@@ -1,4 +1,4 @@
-import { ClientDataModel } from '@/types/data-model'
+import { ClientDataModel } from '@/types/data-model';
 
 export const clientData: ClientDataModel[] = [
   {
@@ -106,4 +106,4 @@ export const clientData: ClientDataModel[] = [
     dueDate: '2025-04-10',
     responsibleName: '박플렉스',
   },
-]
+];

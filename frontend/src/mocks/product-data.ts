@@ -1,4 +1,4 @@
-import { ProductDataModel } from '@/types/data-model'
+import { ProductDataModel } from '@/types/data-model';
 
 export const productData: ProductDataModel[] = [
   {
@@ -85,4 +85,4 @@ export const productData: ProductDataModel[] = [
     location: 'A동 2층 랙3번',
     returnQuantity: 10,
   },
-]
+];

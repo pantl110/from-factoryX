@@ -1,18 +1,18 @@
-'use client'
+'use client';
 
-import Input from '@/ui/input'
-import MiniBtn from '@/ui/mini-btn'
-import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { validateEmail } from '@/utils/validation'
-import { useRouter } from 'next/navigation'
-import FactoryXLogo from '@/ui/icons/factory-x-logo'
-import { LoginFormDataModel } from '@/types/data-model'
-import { useLogin } from '@/hooks/users/use-login'
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { validateEmail } from '@/utils/validation';
+import { useRouter } from 'next/navigation';
+import FactoryXLogo from '@/ui/icons/factory-x-logo';
+import { LoginFormDataModel } from '@/types/data-model';
+import { useLogin } from '@/hooks/users/use-login';
 
 const LoginPage = () => {
-  const router = useRouter()
-  const { login, isLoading } = useLogin()
+  const router = useRouter();
+  const { login, isLoading } = useLogin();
 
   const {
     register,
@@ -26,28 +26,29 @@ const LoginPage = () => {
       email: '',
       password: '',
     },
-  })
+  });
 
-  const watchedValues = watch()
+  const watchedValues = watch();
 
   const onSubmit = async (data: LoginFormDataModel) => {
-    const result = await login(data)
+    const result = await login(data);
 
     if (result.success) {
       // 로그인 성공
-      router.push('/onboarding')
+      router.push('/onboarding');
     } else {
       // 로그인 실패
       if (result.field && result.error) {
         setError(result.field, {
           type: 'manual',
           message: result.error,
-        })
+        });
       }
     }
-  }
+  };
 
-  const isButtonEnabled = isValid && watchedValues.email && watchedValues.password && !isLoading
+  const isButtonEnabled =
+    isValid && watchedValues.email && watchedValues.password && !isLoading;
 
   return (
     <div className="flex min-h-screen">
@@ -65,13 +66,17 @@ const LoginPage = () => {
               {...register('email', {
                 required: '이메일을 입력해주세요.',
                 validate: (value) => {
-                  const error = validateEmail(value)
-                  return error || true
+                  const error = validateEmail(value);
+                  return error || true;
                 },
               })}
             />
             <div className="mt-1 mb-2 h-5">
-              {errors.email && <span className="text-red Re_Body-1">{errors.email.message}</span>}
+              {errors.email && (
+                <span className="text-red Re_Body-1">
+                  {errors.email.message}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex flex-col">
@@ -82,14 +87,16 @@ const LoginPage = () => {
               {...register('password', {
                 required: '비밀번호를 입력해주세요.',
                 validate: (value) => {
-                  if (!value) return '비밀번호를 입력해주세요.'
-                  return true
+                  if (!value) return '비밀번호를 입력해주세요.';
+                  return true;
                 },
               })}
             />
             <div className="mt-1 mb-2 h-5">
               {errors.password && (
-                <span className="text-red Re_Body-1">{errors.password.message}</span>
+                <span className="text-red Re_Body-1">
+                  {errors.password.message}
+                </span>
               )}
             </div>
           </div>
@@ -110,7 +117,7 @@ const LoginPage = () => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;

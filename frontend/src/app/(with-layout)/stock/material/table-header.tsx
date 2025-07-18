@@ -1,9 +1,9 @@
-import Checkbox from '@/ui/checkbox'
-import { CaretUpDown } from '@phosphor-icons/react/dist/ssr'
+import Checkbox from '@/ui/checkbox';
+import { CaretUpDown } from '@phosphor-icons/react/dist/ssr';
 
 interface TableHeaderProps {
-  isAllChecked: boolean
-  onToggleAll: () => void
+  isAllChecked: boolean;
+  onToggleAll: () => void;
 }
 
 const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
@@ -19,7 +19,7 @@ const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
       </div>
       <p className="w-[150px] text-sv px-3">자재 상태</p>
     </div>
-  )
-}
+  );
+};
 
-export default TableHeader
+export default TableHeader;

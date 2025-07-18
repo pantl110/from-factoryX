@@ -1,10 +1,10 @@
-export type PlanType = 'FREE' | 'BASIC' | 'PARTNERS'
+export type PlanType = 'FREE' | 'BASIC' | 'PARTNERS';
 
 export interface PlanInfoModel {
-  type: PlanType
-  title: string
-  price: number
-  description: string
+  type: PlanType;
+  title: string;
+  price: number;
+  description: string;
 }
 
 export const PLAN_INFO: Record<PlanType, PlanInfoModel> = {
@@ -26,4 +26,4 @@ export const PLAN_INFO: Record<PlanType, PlanInfoModel> = {
     price: 300000,
     description: `매달 반복되는 회계 업무, 이젠 자동으로 끝내세요.\n기장료 포함 세무 관리부터 세무대리인과의 실시간 협업까지 한 번에 처리할 수 있어요.`,
   },
-}
+};

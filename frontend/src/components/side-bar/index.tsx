@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   ChartBar,
@@ -7,29 +7,29 @@ import {
   MoneyWavy,
   Files,
   Gear,
-} from '@phosphor-icons/react/dist/ssr'
-import SideBarItem from '@/components/side-bar/side-bar-item'
-import FactoryXLogo from '@/ui/icons/factory-x-logo'
-import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
+} from '@phosphor-icons/react/dist/ssr';
+import SideBarItem from '@/components/side-bar/side-bar-item';
+import FactoryXLogo from '@/ui/icons/factory-x-logo';
+import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 interface SideBarProps {
-  onVisibilityChange?: (visible: boolean) => void
+  onVisibilityChange?: (visible: boolean) => void;
 }
 
 const SideBar = ({ onVisibilityChange }: SideBarProps) => {
-  const pathname = usePathname()
-  const [isHovered, setIsHovered] = useState(false)
+  const pathname = usePathname();
+  const [isHovered, setIsHovered] = useState(false);
 
-  const isProductionPage = pathname.startsWith('/production/') // production 페이지인지 확인
-  const shouldHide = isProductionPage && !isHovered // production 페이지이고 호버되지 않았으면 숨김
+  const isProductionPage = pathname.startsWith('/production/'); // production 페이지인지 확인
+  const shouldHide = isProductionPage && !isHovered; // production 페이지이고 호버되지 않았으면 숨김
 
   // 사이드바 상태가 변경될 때마다 부모 컴포넌트에 알림
   useEffect(() => {
     if (onVisibilityChange) {
-      onVisibilityChange(!shouldHide)
+      onVisibilityChange(!shouldHide);
     }
-  }, [shouldHide, onVisibilityChange])
+  }, [shouldHide, onVisibilityChange]);
 
   return (
     <>
@@ -81,7 +81,7 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
         </div>
       </aside>
     </>
-  )
-}
+  );
+};
 
-export default SideBar
+export default SideBar;

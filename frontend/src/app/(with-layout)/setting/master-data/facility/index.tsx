@@ -1,25 +1,28 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { EquipmentListResponseModel, EquipmentResponseModel } from '@/types/data-model'
-import FacilityTableHeader from './facility-table-header'
-import FacilityTableItem from './facility-table-item'
-import FacilityDetailPanel from './modals/facility-detail-panel'
-import Toast from '@/ui/toast'
-import { WarningCircle } from '@phosphor-icons/react'
-import useToast from '@/hooks/use-toast'
+import { useState } from 'react';
+import {
+  EquipmentListResponseModel,
+  EquipmentResponseModel,
+} from '@/types/data-model';
+import FacilityTableHeader from './facility-table-header';
+import FacilityTableItem from './facility-table-item';
+import FacilityDetailPanel from './modals/facility-detail-panel';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
+import useToast from '@/hooks/use-toast';
 
 interface FacilityProps {
-  equipmentList?: EquipmentListResponseModel
-  isLoading?: boolean
-  error?: string | null
-  isCreatePanelOpen?: boolean
-  setIsCreatePanelOpen?: (isOpen: boolean) => void
-  isAllChecked: boolean
-  isChecked: (id: number) => boolean
-  toggleAll: () => void
-  toggleOne: (id: number) => void
-  refetchEquipment?: () => void
+  equipmentList?: EquipmentListResponseModel;
+  isLoading?: boolean;
+  error?: string | null;
+  isCreatePanelOpen?: boolean;
+  setIsCreatePanelOpen?: (isOpen: boolean) => void;
+  isAllChecked: boolean;
+  isChecked: (id: number) => boolean;
+  toggleAll: () => void;
+  toggleOne: (id: number) => void;
+  refetchEquipment?: () => void;
 }
 
 const Facility = ({
@@ -32,28 +35,32 @@ const Facility = ({
   toggleOne,
   refetchEquipment,
 }: FacilityProps) => {
-  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentResponseModel | null>(null)
-  const { isToastOpen, isVisible, showToast } = useToast(2000)
+  const [selectedEquipment, setSelectedEquipment] =
+    useState<EquipmentResponseModel | null>(null);
+  const { isToastOpen, isVisible, showToast } = useToast(2000);
 
   const handleItemClick = (facility: EquipmentResponseModel) => {
-    setSelectedEquipment(facility)
-  }
+    setSelectedEquipment(facility);
+  };
 
   const handlePanelClose = () => {
-    setSelectedEquipment(null)
-  }
+    setSelectedEquipment(null);
+  };
 
   const handleCreatePanelClose = () => {
-    setIsCreatePanelOpen?.(false)
-  }
+    setIsCreatePanelOpen?.(false);
+  };
 
   // equipmentList에서 실제 배열 꺼내기
-  const facilityList: EquipmentResponseModel[] = equipmentList?.data || []
+  const facilityList: EquipmentResponseModel[] = equipmentList?.data || [];
 
   return (
     <>
       <div className="w-full px-10 pb-10">
-        <FacilityTableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
+        <FacilityTableHeader
+          isAllChecked={isAllChecked}
+          onToggleAll={toggleAll}
+        />
         {facilityList.map((item) => (
           <FacilityTableItem
             key={item.id}
@@ -96,7 +103,7 @@ const Facility = ({
         />
       )}
     </>
-  )
-}
+  );
+};
 
-export default Facility
+export default Facility;

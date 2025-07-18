@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import Chip from '@/ui/chip'
-import { ProjectDataModel } from '@/mocks/project-data'
+import Chip from '@/ui/chip';
+import { ProjectDataModel } from '@/mocks/project-data';
 
 interface ProcessProjectItemProps {
-  project: ProjectDataModel
-  onClick: () => void
+  project: ProjectDataModel;
+  onClick: () => void;
 }
 
 const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
@@ -27,7 +27,7 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
         <Chip text="생산 중" bgColor="bg-purple-8" textColor="text-purple" />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProcessProjectItem
+export default ProcessProjectItem;

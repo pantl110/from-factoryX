@@ -1,6 +1,6 @@
-import DocumentViewTitle from '../document-view-title'
-import ProductListInfo from '../product-list-info'
-import ClientInfo from './client-info'
+import DocumentViewTitle from '../document-view-title';
+import ProductListInfo from '../product-list-info';
+import ClientInfo from './client-info';
 
 const OrderDocumentView = () => {
   return (
@@ -13,7 +13,7 @@ const OrderDocumentView = () => {
       <ClientInfo />
       <ProductListInfo />
     </div>
-  )
-}
+  );
+};
 
-export default OrderDocumentView
+export default OrderDocumentView;

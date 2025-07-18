@@ -1,7 +1,7 @@
-import Spinner from '@/ui/spinner'
+import Spinner from '@/ui/spinner';
 
-import { Suspense } from 'react'
-import SettingPageContent from './setting-page-content'
+import { Suspense } from 'react';
+import SettingPageContent from './setting-page-content';
 
 const SettingPage = async () => {
   return (
@@ -14,7 +14,7 @@ const SettingPage = async () => {
     >
       <SettingPageContent />
     </Suspense>
-  )
-}
+  );
+};
 
-export default SettingPage
+export default SettingPage;

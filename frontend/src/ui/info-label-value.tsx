@@ -1,5 +1,5 @@
-import Chip from './chip'
-import React, { ChangeEvent, ReactNode } from 'react'
+import Chip from './chip';
+import React, { ChangeEvent, ReactNode } from 'react';
 import {
   InventoryStatusType,
   InventoryStatusColorMap,
@@ -7,25 +7,29 @@ import {
   TaxDocumentTypeColorMap,
   EquipmentStatusType,
   EquipmentStatusColorMap,
-} from '@/types/status-type'
-import TextareaAutosize from 'react-textarea-autosize'
-import { UseFormRegisterReturn } from 'react-hook-form'
+} from '@/types/status-type';
+import TextareaAutosize from 'react-textarea-autosize';
+import { UseFormRegisterReturn } from 'react-hook-form';
 
 interface InfoLabelValueProps {
-  label: string
-  value?: ReactNode
+  label: string;
+  value?: ReactNode;
   chip?: {
-    status: InventoryStatusType | TaxDocumentType | EquipmentStatusType
-  }
-  isEditing?: boolean
-  placeholder?: string
-  onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
-  onFocus?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
-  onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
-  inputType?: string
-  textarea?: boolean
-  required?: boolean
-  register?: UseFormRegisterReturn
+    status: InventoryStatusType | TaxDocumentType | EquipmentStatusType;
+  };
+  isEditing?: boolean;
+  placeholder?: string;
+  onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onFocus?: (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  onBlur?: (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  inputType?: string;
+  textarea?: boolean;
+  required?: boolean;
+  register?: UseFormRegisterReturn;
 }
 
 const InfoLabelValue = ({
@@ -48,7 +52,7 @@ const InfoLabelValue = ({
       : chip.status in EquipmentStatusColorMap
         ? EquipmentStatusColorMap[chip.status as EquipmentStatusType]
         : InventoryStatusColorMap[chip.status as InventoryStatusType]
-    : null
+    : null;
 
   const renderContent = () => {
     // 수정 모드인 경우
@@ -66,7 +70,7 @@ const InfoLabelValue = ({
             onBlur={onBlur}
             ref={register?.ref}
           />
-        )
+        );
       }
 
       return (
@@ -83,17 +87,23 @@ const InfoLabelValue = ({
             ref={register?.ref}
           />
         </div>
-      )
+      );
     }
 
     // chip이 있는 경우
     if (chip && colors) {
-      return <Chip text={chip.status} bgColor={colors.bgColor} textColor={colors.textColor} />
+      return (
+        <Chip
+          text={chip.status}
+          bgColor={colors.bgColor}
+          textColor={colors.textColor}
+        />
+      );
     }
 
     // value가 없거나 빈 문자열이면 placeholder 표시
     if (!value || (typeof value === 'string' && value.trim() === '')) {
-      return <span className="text-gr Me_Body-1">{placeholder || '-'}</span>
+      return <span className="text-gr Me_Body-1">{placeholder || '-'}</span>;
     }
 
     // 숫자 값이고 unit이 있는 경우 unit을 뒤에 표시
@@ -110,8 +120,8 @@ const InfoLabelValue = ({
     //   );
     // }
 
-    return value
-  }
+    return value;
+  };
 
   return (
     <div className="flex w-full Me_Body-1 border-t border-lg">
@@ -120,10 +130,12 @@ const InfoLabelValue = ({
         {required && isEditing && <div className="text-sv">*</div>}
       </div>
       <div className="flex-1 flex items-center">
-        <div className="text-dg px-3 flex-1 flex items-center">{renderContent()}</div>
+        <div className="text-dg px-3 flex-1 flex items-center">
+          {renderContent()}
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default InfoLabelValue
+export default InfoLabelValue;

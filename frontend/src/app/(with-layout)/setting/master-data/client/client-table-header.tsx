@@ -1,16 +1,22 @@
-import Checkbox from '@/ui/checkbox'
-import { CaretDown } from '@phosphor-icons/react'
-import React from 'react'
+import Checkbox from '@/ui/checkbox';
+import { CaretDown } from '@phosphor-icons/react';
+import React from 'react';
 
 interface ClientTableHeaderProps {
-  isAllChecked?: boolean
-  onToggleAll?: () => void
+  isAllChecked?: boolean;
+  onToggleAll?: () => void;
 }
 
-const ClientTableHeader = ({ isAllChecked, onToggleAll }: ClientTableHeaderProps) => {
+const ClientTableHeader = ({
+  isAllChecked,
+  onToggleAll,
+}: ClientTableHeaderProps) => {
   return (
     <div className="flex h-12 w-[1697px] items-center border-t border-b border-[#eeeeee] Me_Body-1 text-sv">
-      <Checkbox isChecked={isAllChecked || false} onToggle={onToggleAll || (() => {})} />
+      <Checkbox
+        isChecked={isAllChecked || false}
+        onToggle={onToggleAll || (() => {})}
+      />
       <div className="flex-[0.8] px-3 flex gap-1 items-center">
         <p className=" text-sv">거래처</p>
         <CaretDown size={16} className="text-sv" />
@@ -23,7 +29,7 @@ const ClientTableHeader = ({ isAllChecked, onToggleAll }: ClientTableHeaderProps
       <p className="px-3 flex-[1.5]">연락처</p>
       <p className="px-3 flex-[2]">이메일</p>
     </div>
-  )
-}
+  );
+};
 
-export default ClientTableHeader
+export default ClientTableHeader;

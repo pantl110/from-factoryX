@@ -1,13 +1,17 @@
-import { CaretUpDown } from '@phosphor-icons/react/dist/ssr'
-import Checkbox from '@/ui/checkbox'
+import { CaretUpDown } from '@phosphor-icons/react/dist/ssr';
+import Checkbox from '@/ui/checkbox';
 
 interface TableHeaderProps {
-  isAllChecked?: boolean
-  onToggleAll?: () => void
-  onSort?: (key: 'startDate' | 'endDate') => void
+  isAllChecked?: boolean;
+  onToggleAll?: () => void;
+  onSort?: (key: 'startDate' | 'endDate') => void;
 }
 
-const TableHeader = ({ isAllChecked = false, onToggleAll, onSort }: TableHeaderProps) => {
+const TableHeader = ({
+  isAllChecked = false,
+  onToggleAll,
+  onSort,
+}: TableHeaderProps) => {
   return (
     <div className="flex items-center h-12 w-[1448px] border-t border-b border-lg Me_Body-1">
       <Checkbox isChecked={isAllChecked} onToggle={onToggleAll || (() => {})} />
@@ -30,7 +34,7 @@ const TableHeader = ({ isAllChecked = false, onToggleAll, onSort }: TableHeaderP
       </div>
       <p className="w-[200px] px-3 text-sv">세금계산서</p>
     </div>
-  )
-}
+  );
+};
 
-export default TableHeader
+export default TableHeader;

@@ -1,9 +1,9 @@
-import { ProductDataModel } from '@/types/data-model'
-import { X } from '@phosphor-icons/react'
+import { ProductDataModel } from '@/types/data-model';
+import { X } from '@phosphor-icons/react';
 
 interface ProductItemProps extends ProductDataModel {
-  onClick?: () => void
-  transaction?: boolean
+  onClick?: () => void;
+  transaction?: boolean;
 }
 
 const ProductItem = ({
@@ -18,7 +18,10 @@ const ProductItem = ({
   transaction = false,
 }: ProductItemProps) => {
   return (
-    <tr className="h-14 flex items-center Me_Body-1 text-dg border-b border-lg" onClick={onClick}>
+    <tr
+      className="h-14 flex items-center Me_Body-1 text-dg border-b border-lg"
+      onClick={onClick}
+    >
       <td className="flex-1 px-3 truncate" title={productName}>
         {productName}
       </td>
@@ -34,7 +37,7 @@ const ProductItem = ({
         </td>
       )}
     </tr>
-  )
-}
+  );
+};
 
-export default ProductItem
+export default ProductItem;

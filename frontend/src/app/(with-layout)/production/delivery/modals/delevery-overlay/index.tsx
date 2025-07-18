@@ -1,22 +1,22 @@
-import DocumentViewTitle from '@/app/(with-layout)/document/document-view-title'
-import InfoLabelValue from '@/ui/info-label-value'
-import MiniBtn from '@/ui/mini-btn'
-import OverlayView from '@/ui/ovelay-view'
-import { DeliveryDataModel } from '../../types'
-import { useRef } from 'react'
-import { useReactToPrint } from 'react-to-print'
+import DocumentViewTitle from '@/app/(with-layout)/document/document-view-title';
+import InfoLabelValue from '@/ui/info-label-value';
+import MiniBtn from '@/ui/mini-btn';
+import OverlayView from '@/ui/ovelay-view';
+import { DeliveryDataModel } from '../../types';
+import { useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 
 interface DeliveryOverlayProps {
-  onClose: () => void
-  data: DeliveryDataModel
+  onClose: () => void;
+  data: DeliveryDataModel;
 }
 
 const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
-  const contentRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
     documentTitle: '납품표', // 문서 제목
-  })
+  });
 
   return (
     <OverlayView onClose={onClose}>
@@ -29,7 +29,12 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
             </div>
           </div>
           <div className="flex gap-2.5">
-            <MiniBtn text="취소하기" textColor="text-sv" hoverColor="" onClick={onClose} />
+            <MiniBtn
+              text="취소하기"
+              textColor="text-sv"
+              hoverColor=""
+              onClick={onClose}
+            />
             <MiniBtn
               text="발행하기"
               textColor="text-wh"
@@ -52,7 +57,7 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
         </div>
       </div>
     </OverlayView>
-  )
-}
+  );
+};
 
-export default DeliveryOverlay
+export default DeliveryOverlay;

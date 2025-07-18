@@ -1,8 +1,8 @@
-import MiniBtn from '@/ui/mini-btn'
+import MiniBtn from '@/ui/mini-btn';
 
 interface ThirdStepProps {
-  onNextStep: () => void
-  onPrevStep: () => void
+  onNextStep: () => void;
+  onPrevStep: () => void;
 }
 
 const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
@@ -11,7 +11,9 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
       {/* 컨텐츠 영역 */}
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-2 items-center">
-          <h3 className="Heading-3 text-primary">팩토리엑스에 오신 걸 환영합니다!</h3>
+          <h3 className="Heading-3 text-primary">
+            팩토리엑스에 오신 걸 환영합니다!
+          </h3>
           <div className="Me_Body-2 text-bl text-center">
             이제 생산부터 재고까지,
             <br />
@@ -20,7 +22,8 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
             지금 바로 공장 운영을 시작해보세요!
             <br />
             <br />
-            기존에 사용 중인 <span className="text-primary">품목과 원자재를 미리 등록</span>
+            기존에 사용 중인{' '}
+            <span className="text-primary">품목과 원자재를 미리 등록</span>
             해두면
             <br />
             팩토리엑스를 더욱 효율적으로 활용하실 수 있습니다.
@@ -46,7 +49,7 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ThirdStep
+export default ThirdStep;

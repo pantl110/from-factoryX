@@ -1,10 +1,10 @@
 interface ProductionTableItemProps {
-  productName: string
-  standard: string
-  unit: string
-  productionQuantity: number
-  machine: string
-  productionTime: string
+  productName: string;
+  standard: string;
+  unit: string;
+  productionQuantity: number;
+  machine: string;
+  productionTime: string;
 }
 
 const ProductionTableItem = ({
@@ -28,7 +28,7 @@ const ProductionTableItem = ({
       <p className="flex-[0.8] px-3">{machine}</p>
       <p className="flex-[0.8] px-3">{productionTime}</p>
     </div>
-  )
-}
+  );
+};
 
-export default ProductionTableItem
+export default ProductionTableItem;

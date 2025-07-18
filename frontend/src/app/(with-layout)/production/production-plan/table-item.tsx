@@ -1,20 +1,23 @@
-import Chip from '@/ui/chip'
-import { OperationStatusColorMap, InventoryStatusColorMap } from '@/types/status-type'
-import { ProductionPlanDataModel } from '@/mocks/production-plan-data'
-import { tableHeader } from './types'
-import { CaretDown } from '@phosphor-icons/react/dist/ssr'
-import { useState } from 'react'
-import ProductDetail from '../../stock/product/product-detail'
-import { productData } from '@/mocks/product-data'
-import { formatDateTime } from '@/hooks/format-number'
+import Chip from '@/ui/chip';
+import {
+  OperationStatusColorMap,
+  InventoryStatusColorMap,
+} from '@/types/status-type';
+import { ProductionPlanDataModel } from '@/mocks/production-plan-data';
+import { tableHeader } from './types';
+import { CaretDown } from '@phosphor-icons/react/dist/ssr';
+import { useState } from 'react';
+import ProductDetail from '../../stock/product/product-detail';
+import { productData } from '@/mocks/product-data';
+import { formatDateTime } from '@/hooks/format-number';
 
 interface TableItemProps {
-  item: ProductionPlanDataModel
-  onOperationStatusClick: (e: React.MouseEvent) => void
-  onFacilityClick: (e: React.MouseEvent) => void
-  onProductionQuantityChange?: (id: string, newQuantity: number) => void
-  onProductionTimeChange?: (id: string, newTime: string) => void
-  onEndDateChange?: (id: string, newDate: string) => void
+  item: ProductionPlanDataModel;
+  onOperationStatusClick: (e: React.MouseEvent) => void;
+  onFacilityClick: (e: React.MouseEvent) => void;
+  onProductionQuantityChange?: (id: string, newQuantity: number) => void;
+  onProductionTimeChange?: (id: string, newTime: string) => void;
+  onEndDateChange?: (id: string, newDate: string) => void;
 }
 
 const TableItem = ({
@@ -25,35 +28,41 @@ const TableItem = ({
   onProductionTimeChange,
   onEndDateChange,
 }: TableItemProps) => {
-  const { operationStatus, materialStatus } = item
-  const operationColor = OperationStatusColorMap[operationStatus]
-  const materialColor = InventoryStatusColorMap[materialStatus]
-  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false)
-  const [productionQuantity, setProductionQuantity] = useState(item.productionQuantity)
-  const [productionTime, setProductionTime] = useState(item.productionTime)
-  const [endDate, setEndDate] = useState(item.endDate)
+  const { operationStatus, materialStatus } = item;
+  const operationColor = OperationStatusColorMap[operationStatus];
+  const materialColor = InventoryStatusColorMap[materialStatus];
+  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
+  const [productionQuantity, setProductionQuantity] = useState(
+    item.productionQuantity
+  );
+  const [productionTime, setProductionTime] = useState(item.productionTime);
+  const [endDate, setEndDate] = useState(item.endDate);
 
-  const handleProductionQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleanValue = e.target.value.replace(/,/g, '')
-    const newQuantity = cleanValue === '' ? 0 : Number(cleanValue)
+  const handleProductionQuantityChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const cleanValue = e.target.value.replace(/,/g, '');
+    const newQuantity = cleanValue === '' ? 0 : Number(cleanValue);
 
     if (!isNaN(newQuantity)) {
-      setProductionQuantity(newQuantity)
-      onProductionQuantityChange?.(String(item.id), newQuantity)
+      setProductionQuantity(newQuantity);
+      onProductionQuantityChange?.(String(item.id), newQuantity);
     }
-  }
+  };
 
-  const handleProductionTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatDateTime(e.target.value)
-    setProductionTime(formatted)
-    onProductionTimeChange?.(String(item.id), formatted)
-  }
+  const handleProductionTimeChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const formatted = formatDateTime(e.target.value);
+    setProductionTime(formatted);
+    onProductionTimeChange?.(String(item.id), formatted);
+  };
 
   const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatDateTime(e.target.value)
-    setEndDate(formatted)
-    onEndDateChange?.(String(item.id), formatted)
-  }
+    const formatted = formatDateTime(e.target.value);
+    setEndDate(formatted);
+    onEndDateChange?.(String(item.id), formatted);
+  };
 
   const itemData = {
     '가동 상태': (
@@ -64,8 +73,8 @@ const TableItem = ({
         cursor="cursor-pointer"
         onClick={(e) => {
           if (e) {
-            e.stopPropagation()
-            onOperationStatusClick(e)
+            e.stopPropagation();
+            onOperationStatusClick(e);
           }
         }}
       />
@@ -78,7 +87,9 @@ const TableItem = ({
     '생산 수량': (
       <input
         type="text"
-        value={isNaN(productionQuantity) ? '0' : productionQuantity.toLocaleString()}
+        value={
+          isNaN(productionQuantity) ? '0' : productionQuantity.toLocaleString()
+        }
         onChange={handleProductionQuantityChange}
         className="w-full h-8 text-left border-none bg-transparent p-0"
         style={{ outline: 'none' }}
@@ -88,8 +99,14 @@ const TableItem = ({
       <div className="flex gap-[27px]">
         <Chip
           text={materialStatus}
-          textColor={operationStatus === '가동 완료' ? 'text-sv' : materialColor.textColor}
-          bgColor={operationStatus === '가동 완료' ? 'bg-bg' : materialColor.bgColor}
+          textColor={
+            operationStatus === '가동 완료'
+              ? 'text-sv'
+              : materialColor.textColor
+          }
+          bgColor={
+            operationStatus === '가동 완료' ? 'bg-bg' : materialColor.bgColor
+          }
         />
         <p
           className="cursor-pointer Re_Body-1 text-gr flex items-center opacity-0 hover:opacity-100 transition-opacity duration-200 ease-in-out"
@@ -106,8 +123,8 @@ const TableItem = ({
         }`}
         onClick={(e) => {
           if (e && operationStatus !== '가동 완료') {
-            e.stopPropagation()
-            onFacilityClick(e)
+            e.stopPropagation();
+            onFacilityClick(e);
           }
         }}
       >
@@ -140,7 +157,7 @@ const TableItem = ({
         placeholder="YYYY-MM-DD 00:00"
       />
     ),
-  }
+  };
 
   return (
     <>
@@ -165,26 +182,11 @@ const TableItem = ({
       {isProductDetailOpen && (
         <ProductDetail
           productId={item.id}
-          productList={productData.map((item) => ({
-            id: typeof item.id === 'number' ? item.id : 0,
-            created_at: '',
-            updated_at: '',
-            factory: 0,
-            name: item.productName || '',
-            code: item.productCode || '',
-            unit: item.unit || '',
-            spec: item.size || '',
-            current_stock: item.stock,
-            average_production_time: item.productionTime ? Number(item.productionTime) : 0,
-            buffer_rate: 0,
-            location: 0,
-            note: Array.isArray(item.comment) ? item.comment.join(',') : '',
-          }))}
           onClose={() => setIsProductDetailOpen(false)}
         />
       )}
     </>
-  )
-}
+  );
+};
 
-export default TableItem
+export default TableItem;

@@ -1,10 +1,14 @@
 interface TabAreaProps {
-  activeTab: 'quotation' | 'history'
-  activateQuotationTab: () => void
-  clientDataParam: string | null
+  activeTab: 'quotation' | 'history';
+  activateQuotationTab: () => void;
+  clientDataParam: string | null;
 }
 
-const TabArea = ({ activeTab, activateQuotationTab, clientDataParam }: TabAreaProps) => {
+const TabArea = ({
+  activeTab,
+  activateQuotationTab,
+  clientDataParam,
+}: TabAreaProps) => {
   return (
     <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-[#eeeeee]">
       {clientDataParam && (
@@ -29,7 +33,7 @@ const TabArea = ({ activeTab, activateQuotationTab, clientDataParam }: TabAreaPr
         히스토리
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TabArea
+export default TabArea;

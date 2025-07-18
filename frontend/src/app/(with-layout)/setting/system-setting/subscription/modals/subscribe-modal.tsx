@@ -1,9 +1,9 @@
-import MiniBtn from '@/ui/mini-btn'
-import Modal from '@/ui/modal/modal'
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
 
 interface SubscribeModalProps {
-  onClose: () => void
-  planTitle: string
+  onClose: () => void;
+  planTitle: string;
 }
 
 const SubscribeModal = ({ onClose, planTitle }: SubscribeModalProps) => {
@@ -16,7 +16,12 @@ const SubscribeModal = ({ onClose, planTitle }: SubscribeModalProps) => {
       sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text="취소" textColor="text-sv" onClick={onClose} hoverColor="" />
+        <MiniBtn
+          text="취소"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
         <MiniBtn
           text="결제 카드 등록"
           bgColor="bg-primary"
@@ -26,7 +31,7 @@ const SubscribeModal = ({ onClose, planTitle }: SubscribeModalProps) => {
         />
       </div>
     </Modal>
-  )
-}
+  );
+};
 
-export default SubscribeModal
+export default SubscribeModal;

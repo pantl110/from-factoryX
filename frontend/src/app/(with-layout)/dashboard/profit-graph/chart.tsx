@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { Bar } from 'react-chartjs-2'
+import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,19 +9,26 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js'
-import { chartData } from '@/mocks/dashboard-graph-data'
+} from 'chart.js';
+import { chartData } from '@/mocks/dashboard-graph-data';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-const currentMonth = new Date().getMonth() + 1 // 현재 월
-const endIdx = chartData.findIndex((d) => d.month === currentMonth) + 1 // 현재 월까지의 인덱스
-const startIdx = Math.max(0, endIdx - 5) // 5개월 전까지의 인덱스
-const recentData = chartData.slice(startIdx, endIdx) // 현재 월까지의 데이터
+const currentMonth = new Date().getMonth() + 1; // 현재 월
+const endIdx = chartData.findIndex((d) => d.month === currentMonth) + 1; // 현재 월까지의 인덱스
+const startIdx = Math.max(0, endIdx - 5); // 5개월 전까지의 인덱스
+const recentData = chartData.slice(startIdx, endIdx); // 현재 월까지의 데이터
 
-const months = recentData.map((d) => `${d.month}월`)
-const thisYearData = recentData.map((d) => d.thisYear)
-const lastYearData = recentData.map((d) => d.lastYear)
+const months = recentData.map((d) => `${d.month}월`);
+const thisYearData = recentData.map((d) => d.thisYear);
+const lastYearData = recentData.map((d) => d.lastYear);
 
 const data = {
   labels: months,
@@ -41,7 +48,7 @@ const data = {
       categoryPercentage: 0.5,
     },
   ],
-}
+};
 
 const options = {
   responsive: true,
@@ -77,10 +84,10 @@ const options = {
       },
     },
   },
-}
+};
 
 const Chart = () => {
-  return <Bar data={data} options={options} />
-}
+  return <Bar data={data} options={options} />;
+};
 
-export default Chart
+export default Chart;

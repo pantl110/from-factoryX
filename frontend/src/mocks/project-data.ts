@@ -1,14 +1,14 @@
-import { ProjectStatusType } from '@/types/status-type'
+import { ProjectStatusType } from '@/types/status-type';
 
 export interface ProjectDataModel {
-  id: number
-  status: ProjectStatusType
-  companyName: string
-  items: string
-  startDate: string
-  endDate: string
-  taxIssued: '보기' | '연결 필요' | '미발행'
-  productName?: string
+  id: number;
+  status: ProjectStatusType;
+  companyName: string;
+  items: string;
+  startDate: string;
+  endDate: string;
+  taxIssued: '보기' | '연결 필요' | '미발행';
+  productName?: string;
 }
 
 export const projectData: ProjectDataModel[] = [
@@ -102,4 +102,4 @@ export const projectData: ProjectDataModel[] = [
     taxIssued: '보기',
     productName: '정밀 부품',
   },
-]
+];

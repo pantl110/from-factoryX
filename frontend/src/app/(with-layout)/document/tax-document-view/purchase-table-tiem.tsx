@@ -9,7 +9,7 @@ const PurchaseTableTiem = () => {
       <p className="flex-1 px-3">1,000,000</p>
       <p className="flex-1 px-3">1,000,000</p>
     </div>
-  )
-}
+  );
+};
 
-export default PurchaseTableTiem
+export default PurchaseTableTiem;

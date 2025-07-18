@@ -1,7 +1,7 @@
-import { X } from '@phosphor-icons/react'
+import { X } from '@phosphor-icons/react';
 
 interface ItemProps {
-  material: string
+  material: string;
 }
 
 const Item = ({ material }: ItemProps) => {
@@ -12,7 +12,7 @@ const Item = ({ material }: ItemProps) => {
         <X size={16} className="text-dg" />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Item
+export default Item;

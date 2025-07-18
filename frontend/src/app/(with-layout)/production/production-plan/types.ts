@@ -11,4 +11,4 @@ export const tableHeader = [
   { name: '생산일자', width: 'w-[200px]' },
   { name: '단위당 소요 시간', width: 'w-[140px]' },
   { name: '마감 예정일자', width: 'w-[200px]' },
-]
+];

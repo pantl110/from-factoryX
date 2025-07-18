@@ -1,14 +1,14 @@
-import MiniBtn from '@/ui/mini-btn'
-import { useState } from 'react'
-import DeleteAccountModal from './modals/delete-account-modal'
+import MiniBtn from '@/ui/mini-btn';
+import { useState } from 'react';
+import DeleteAccountModal from './modals/delete-account-modal';
 
 const DeleteAccount = () => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const handleDeleteConfirm = () => {
     // 실제 계정 삭제 로직 추후 추가
-    setIsDeleteModalOpen(false)
-  }
+    setIsDeleteModalOpen(false);
+  };
 
   return (
     <>
@@ -16,8 +16,8 @@ const DeleteAccount = () => {
         <div className="flex flex-col gap-4">
           <h3 className="Heading-3">계정 삭제</h3>
           <p className="Me_Body-2 text-sv">
-            계정 삭제는 되돌릴 수 없습니다. 삭제 후에는 모든 개인 정보 및 사용 기록이 즉시 제거되며,
-            다시 복구할 수 없습니다. <br />
+            계정 삭제는 되돌릴 수 없습니다. 삭제 후에는 모든 개인 정보 및 사용
+            기록이 즉시 제거되며, 다시 복구할 수 없습니다. <br />
             계속하시겠습니까?
           </p>
         </div>
@@ -40,7 +40,7 @@ const DeleteAccount = () => {
         />
       )}
     </>
-  )
-}
+  );
+};
 
-export default DeleteAccount
+export default DeleteAccount;

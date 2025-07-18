@@ -1,4 +1,4 @@
-import { NotificationModel } from '@/components/top-bar/types'
+import { NotificationModel } from '@/components/top-bar/types';
 
 export const notificationData: NotificationModel[] = [
   {
@@ -141,4 +141,4 @@ export const notificationData: NotificationModel[] = [
     date: '2025-06-04',
     isRead: false,
   },
-]
+];

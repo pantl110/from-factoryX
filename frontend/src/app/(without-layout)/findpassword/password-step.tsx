@@ -1,18 +1,23 @@
-import { UseFormRegister, UseFormHandleSubmit, FieldErrors, UseFormWatch } from 'react-hook-form'
-import { ResetPasswordModel } from '@/types/data-model'
-import { validatePassword } from '@/utils/validation'
-import { UseResetPasswordReturnModel } from '@/hooks/users/use-reset-password'
-import Input from '@/ui/input'
-import MiniBtn from '@/ui/mini-btn'
+import {
+  UseFormRegister,
+  UseFormHandleSubmit,
+  FieldErrors,
+  UseFormWatch,
+} from 'react-hook-form';
+import { ResetPasswordModel } from '@/types/data-model';
+import { validatePassword } from '@/utils/validation';
+import { UseResetPasswordReturnModel } from '@/hooks/users/use-reset-password';
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
 
 interface PasswordStepProps {
-  register: UseFormRegister<ResetPasswordModel>
-  handleSubmit: UseFormHandleSubmit<ResetPasswordModel>
-  errors: FieldErrors<ResetPasswordModel>
-  watch: UseFormWatch<ResetPasswordModel>
-  isValid: boolean
-  onSubmit: (data: ResetPasswordModel) => void
-  resetPassword: UseResetPasswordReturnModel
+  register: UseFormRegister<ResetPasswordModel>;
+  handleSubmit: UseFormHandleSubmit<ResetPasswordModel>;
+  errors: FieldErrors<ResetPasswordModel>;
+  watch: UseFormWatch<ResetPasswordModel>;
+  isValid: boolean;
+  onSubmit: (data: ResetPasswordModel) => void;
+  resetPassword: UseResetPasswordReturnModel;
 }
 
 const PasswordStep = ({
@@ -24,7 +29,7 @@ const PasswordStep = ({
   onSubmit,
   resetPassword,
 }: PasswordStepProps) => {
-  const watchedValues = watch()
+  const watchedValues = watch();
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-100">
@@ -37,14 +42,16 @@ const PasswordStep = ({
           {...register('new_password', {
             required: '새 비밀번호를 입력해주세요.',
             validate: (value) => {
-              const error = validatePassword(value)
-              return error || true
+              const error = validatePassword(value);
+              return error || true;
             },
           })}
         />
         <div className="mt-1 mb-2 h-5">
           {errors.new_password && (
-            <span className="text-red Re_Body-1">{errors.new_password.message}</span>
+            <span className="text-red Re_Body-1">
+              {errors.new_password.message}
+            </span>
           )}
         </div>
       </div>
@@ -58,15 +65,17 @@ const PasswordStep = ({
             required: '새 비밀번호 확인을 입력해주세요.',
             validate: (value) => {
               if (value !== watchedValues.new_password) {
-                return '비밀번호가 일치하지 않습니다.'
+                return '비밀번호가 일치하지 않습니다.';
               }
-              return true
+              return true;
             },
           })}
         />
         <div className="mt-1 mb-2 h-5">
           {errors.new_password_confirm && (
-            <span className="text-red Re_Body-1">{errors.new_password_confirm.message}</span>
+            <span className="text-red Re_Body-1">
+              {errors.new_password_confirm.message}
+            </span>
           )}
           {!errors.new_password_confirm && resetPassword.error && (
             <span className="text-red Re_Body-1">{resetPassword.error}</span>
@@ -85,7 +94,7 @@ const PasswordStep = ({
         disabled={!isValid || resetPassword.isLoading}
       />
     </form>
-  )
-}
+  );
+};
 
-export default PasswordStep
+export default PasswordStep;

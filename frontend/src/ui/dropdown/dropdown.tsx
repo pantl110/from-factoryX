@@ -1,13 +1,13 @@
-import { ReactNode, useRef, useEffect } from 'react'
+import { ReactNode, useRef, useEffect } from 'react';
 
 interface DropdownProps {
-  children: ReactNode
-  onClose: () => void
-  width?: string
-  style?: React.CSSProperties
-  className?: string
-  padding?: string
-  borderColor?: string
+  children: ReactNode;
+  onClose: () => void;
+  width?: string;
+  style?: React.CSSProperties;
+  className?: string;
+  padding?: string;
+  borderColor?: string;
 }
 
 const Dropdown = ({
@@ -19,22 +19,25 @@ const Dropdown = ({
   padding = 'p-2',
   borderColor = '',
 }: DropdownProps) => {
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        onClose()
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside) // 이벤트 리스너 등록
+    document.addEventListener('mousedown', handleClickOutside); // 이벤트 리스너 등록
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside) // 언마운트 시 제거
-    }
-  }, [onClose])
+      document.removeEventListener('mousedown', handleClickOutside); // 언마운트 시 제거
+    };
+  }, [onClose]);
 
   return (
     <div
@@ -44,7 +47,7 @@ const Dropdown = ({
     >
       {children}
     </div>
-  )
-}
+  );
+};
 
-export default Dropdown
+export default Dropdown;

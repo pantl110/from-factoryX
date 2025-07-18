@@ -1,8 +1,8 @@
 interface QuotationHistoryItemProps {
-  onClick: () => void
-  clientName: string
-  quantity: number
-  unitPrice: number
+  onClick: () => void;
+  clientName: string;
+  quantity: number;
+  unitPrice: number;
 }
 
 const QuotationHistoryItem = ({
@@ -21,12 +21,14 @@ const QuotationHistoryItem = ({
       </p>
       <p className="flex-1 px-3 text-dg">{quantity.toLocaleString()}</p>
       <p className="flex-1 px-3 text-dg">{unitPrice.toLocaleString()}</p>
-      <p className="flex-1 px-3 text-dg">{(quantity * unitPrice).toLocaleString()}</p>
+      <p className="flex-1 px-3 text-dg">
+        {(quantity * unitPrice).toLocaleString()}
+      </p>
       <p className="Re_Body-1 text-gr px-3 group-hover:opacity-100 opacity-0 transition-opacity duration-200">
         상세보기
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default QuotationHistoryItem
+export default QuotationHistoryItem;

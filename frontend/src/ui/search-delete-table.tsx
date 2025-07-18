@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import SearchInput from '@/ui/search-input'
-import MiniBtn from '@/ui/mini-btn'
+import SearchInput from '@/ui/search-input';
+import MiniBtn from '@/ui/mini-btn';
 
 interface SearchDeleteTableProps {
-  placeholder?: string
-  checkedCount: number
-  deleteButtonText: string
-  onDelete: () => void
-  onCancel: () => void
+  placeholder?: string;
+  checkedCount: number;
+  deleteButtonText: string;
+  onDelete: () => void;
+  onCancel: () => void;
 }
 
 const SearchDeleteTable = ({
@@ -40,7 +40,7 @@ const SearchDeleteTable = ({
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SearchDeleteTable
+export default SearchDeleteTable;

@@ -1,7 +1,7 @@
-import Pagination from '@/components/pagination'
-import usePagination from '@/hooks/use-pagination'
-import ProductionTableHeader from './production-table-header'
-import ProductionTableItem from './production-table-item'
+import Pagination from '@/components/pagination';
+import usePagination from '@/hooks/use-pagination';
+import ProductionTableHeader from './production-table-header';
+import ProductionTableItem from './production-table-item';
 
 // 생산 일정 데이터
 const productionScheduleData = [
@@ -93,7 +93,7 @@ const productionScheduleData = [
     machine: '2호기',
     time: '13:00-17:00',
   },
-]
+];
 
 const ProductionTable = () => {
   // 페이지네이션 훅 사용
@@ -105,7 +105,7 @@ const ProductionTable = () => {
   } = usePagination({
     items: productionScheduleData,
     itemsPerPage: 5, // 페이지당 5개 항목
-  })
+  });
 
   return (
     <>
@@ -135,7 +135,7 @@ const ProductionTable = () => {
         </div>
       )}
     </>
-  )
-}
+  );
+};
 
-export default ProductionTable
+export default ProductionTable;

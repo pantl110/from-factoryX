@@ -1,4 +1,4 @@
-import ProductRequiringMaterialItem from './product-requiring-material-item'
+import ProductRequiringMaterialItem from './product-requiring-material-item';
 
 const ProductRequiringMaterial = () => {
   return (
@@ -28,7 +28,7 @@ const ProductRequiringMaterial = () => {
         unit="EA"
       />
     </div>
-  )
-}
+  );
+};
 
-export default ProductRequiringMaterial
+export default ProductRequiringMaterial;

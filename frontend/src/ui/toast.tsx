@@ -1,9 +1,9 @@
 interface ToastProps {
-  icon: React.ReactNode
-  text: string
-  subtext: string
-  type: 'red' | 'primary'
-  isVisible: boolean
+  icon: React.ReactNode;
+  text: string;
+  subtext: string;
+  type: 'red' | 'primary';
+  isVisible: boolean;
 }
 
 const Toast = ({ icon, text, subtext, type, isVisible = true }: ToastProps) => {
@@ -25,7 +25,7 @@ const Toast = ({ icon, text, subtext, type, isVisible = true }: ToastProps) => {
         <p className="Re_Body-1 text-[#363636]">{subtext}</p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Toast
+export default Toast;

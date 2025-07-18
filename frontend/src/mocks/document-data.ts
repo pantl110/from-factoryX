@@ -1,15 +1,15 @@
-import { DocumentType } from '@/app/(with-layout)/document/types'
+import { DocumentType } from '@/app/(with-layout)/document/types';
 
 export interface DocumentDataModel {
-  id: string
-  documentType: DocumentType
-  companyName: string
-  productName: string
-  date: string
-  supplyPrice?: number
-  taxPrice?: number
-  totalPrice?: number
-  writtenDate?: string
+  id: string;
+  documentType: DocumentType;
+  companyName: string;
+  productName: string;
+  date: string;
+  supplyPrice?: number;
+  taxPrice?: number;
+  totalPrice?: number;
+  writtenDate?: string;
 }
 
 const documentData: DocumentDataModel[] = [
@@ -183,6 +183,6 @@ const documentData: DocumentDataModel[] = [
     productName: '의료 기기 부품',
     date: '2025-02-14',
   },
-]
+];
 
-export default documentData
+export default documentData;

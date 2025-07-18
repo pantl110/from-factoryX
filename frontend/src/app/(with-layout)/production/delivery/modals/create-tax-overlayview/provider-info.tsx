@@ -1,4 +1,4 @@
-import Input from '@/ui/input'
+import Input from '@/ui/input';
 
 const ProviderInfo = () => {
   return (
@@ -17,7 +17,7 @@ const ProviderInfo = () => {
         <Input label="사업장 주소" placeholder="경기도 남양주시" />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProviderInfo
+export default ProviderInfo;

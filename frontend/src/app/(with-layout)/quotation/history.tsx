@@ -1,9 +1,9 @@
-import HistoryItem from './history-item'
-import dummyHistoryItems from '@/mocks/history-items'
-import { ProductModel } from './types'
+import HistoryItem from './history-item';
+import dummyHistoryItems from '@/mocks/history-items';
+import { ProductModel } from './types';
 
 interface HistoryProps {
-  selectedProduct: ProductModel | null
+  selectedProduct: ProductModel | null;
 }
 
 const History = ({ selectedProduct }: HistoryProps) => {
@@ -16,12 +16,12 @@ const History = ({ selectedProduct }: HistoryProps) => {
           처음 등록된 품목이라, 과거 단가나 수량 기록이 아직 없어요.
         </p>
       </div>
-    )
+    );
   }
 
   const filteredHistoryItems = dummyHistoryItems.filter(
     (item) => item.productName === selectedProduct.productName
-  )
+  );
 
   if (filteredHistoryItems.length > 0) {
     return (
@@ -36,7 +36,7 @@ const History = ({ selectedProduct }: HistoryProps) => {
           <HistoryItem key={idx} {...item} />
         ))}
       </div>
-    )
+    );
   } else {
     // 히스토리 데이터 없을 때
     return (
@@ -46,8 +46,8 @@ const History = ({ selectedProduct }: HistoryProps) => {
           처음 등록된 품목이라, 과거 단가나 수량 기록이 아직 없어요.
         </p>
       </div>
-    )
+    );
   }
-}
+};
 
-export default History
+export default History;

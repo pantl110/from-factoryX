@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import MiniBtn from '@/ui/mini-btn'
-import { ArrowRight } from '@phosphor-icons/react/dist/ssr'
+import MiniBtn from '@/ui/mini-btn';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 
 interface ButtonSectionProps {
-  onEmailClick?: () => void
-  onPrintClick?: () => void
-  onStartProductionClick?: () => void
-  isClientData: boolean
+  onEmailClick?: () => void;
+  onPrintClick?: () => void;
+  onStartProductionClick?: () => void;
+  isClientData: boolean;
 }
 
 const ButtonSection = ({
@@ -47,7 +47,7 @@ const ButtonSection = ({
         hoverColor="hover:bg-primary-hover"
       />
     </div>
-  )
-}
+  );
+};
 
-export default ButtonSection
+export default ButtonSection;

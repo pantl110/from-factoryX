@@ -1,4 +1,4 @@
-import InfoLabelValue from '@/ui/info-label-value'
+import InfoLabelValue from '@/ui/info-label-value';
 
 const CustomerInfo = () => {
   return (
@@ -20,11 +20,14 @@ const CustomerInfo = () => {
         <InfoLabelValue label="종목" value="사출성형" />
       </div>
       <div className="flex">
-        <InfoLabelValue label="사업장 주소" value="서울특별시 금천구 가산로123, 5층" />
+        <InfoLabelValue
+          label="사업장 주소"
+          value="서울특별시 금천구 가산로123, 5층"
+        />
         <InfoLabelValue label="거래 일자" value="2025-06-11" />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CustomerInfo
+export default CustomerInfo;

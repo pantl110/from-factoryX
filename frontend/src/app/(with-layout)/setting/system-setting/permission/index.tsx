@@ -1,30 +1,37 @@
-import PermissionInfoItem from './permission-info-item'
-import PermissionTableHeader from './permission-table-header'
-import PermissionTableItem from './permission-table-item'
-import MiniBtn from '@/ui/mini-btn'
-import { useCheckAll } from '@/hooks/use-check-all'
-import Pagination from '@/components/pagination'
-import usePagination from '@/hooks/use-pagination'
-import { PermissionRoleType } from './types'
-import { permissionData } from '@/mocks/permission-data'
-import { useState } from 'react'
-import InviteModal from './modals/invite-modal'
-import DeleteTeamMemberModal from './modals/delete-team-member-modal'
+import PermissionInfoItem from './permission-info-item';
+import PermissionTableHeader from './permission-table-header';
+import PermissionTableItem from './permission-table-item';
+import MiniBtn from '@/ui/mini-btn';
+import { useCheckAll } from '@/hooks/use-check-all';
+import Pagination from '@/components/pagination';
+import usePagination from '@/hooks/use-pagination';
+import { PermissionRoleType } from './types';
+import { permissionData } from '@/mocks/permission-data';
+import { useState } from 'react';
+import InviteModal from './modals/invite-modal';
+import DeleteTeamMemberModal from './modals/delete-team-member-modal';
 
 const Permission = () => {
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const permissionRoleTypes: PermissionRoleType[] = ['시스템 관리자', '운영자', '조회자']
+  const permissionRoleTypes: PermissionRoleType[] = [
+    '시스템 관리자',
+    '운영자',
+    '조회자',
+  ];
 
-  const sortedData = [...permissionData].sort((a, b) => b.date.localeCompare(a.date))
-  const { currentItems, currentPage, totalPages, setCurrentPage } = usePagination({
-    items: sortedData,
-    itemsPerPage: 8,
-  })
+  const sortedData = [...permissionData].sort((a, b) =>
+    b.date.localeCompare(a.date)
+  );
+  const { currentItems, currentPage, totalPages, setCurrentPage } =
+    usePagination({
+      items: sortedData,
+      itemsPerPage: 8,
+    });
 
   // 체크박스 관리
-  const itemIds = currentItems.map((item) => item.id)
+  const itemIds = currentItems.map((item) => item.id);
   const {
     // checkedIds,
     checkedCount,
@@ -34,16 +41,16 @@ const Permission = () => {
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(itemIds)
+  } = useCheckAll(itemIds);
 
   // 삭제 처리
   const handleDelete = () => {
     // console.log("삭제할 팀원 ID들:", checkedIds);
     // TODO: API 호출로 실제 삭제 처리
     // setIsDeleteModalOpen(false);
-    setAllChecked(false)
-    setIsDeleteModalOpen(false)
-  }
+    setAllChecked(false);
+    setIsDeleteModalOpen(false);
+  };
 
   return (
     <>
@@ -63,7 +70,7 @@ const Permission = () => {
                 textColor="text-primary"
                 bgColor="bg-primary-8"
                 onClick={() => {
-                  setIsInviteModalOpen(true)
+                  setIsInviteModalOpen(true);
                 }}
                 hoverColor="hover:bg-secondary-hover"
               />
@@ -72,7 +79,7 @@ const Permission = () => {
                 textColor="text-dg"
                 borderColor="border-lg"
                 onClick={() => {
-                  setAllChecked(false)
+                  setAllChecked(false);
                 }}
                 hoverColor="hover:bg-bg"
               />
@@ -81,10 +88,12 @@ const Permission = () => {
                 textColor={checkedCount === 0 ? 'text-dg' : 'text-red'}
                 bgColor={checkedCount === 0 ? '' : 'bg-red-8'}
                 borderColor={checkedCount === 0 ? 'border-lg' : ''}
-                hoverColor={checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-red-hover'}
+                hoverColor={
+                  checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-red-hover'
+                }
                 onClick={() => {
                   if (checkedCount > 0) {
-                    setIsDeleteModalOpen(true)
+                    setIsDeleteModalOpen(true);
                   }
                 }}
               />
@@ -93,7 +102,10 @@ const Permission = () => {
 
           <div>
             <div className="h-[496px]">
-              <PermissionTableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
+              <PermissionTableHeader
+                isAllChecked={isAllChecked}
+                onToggleAll={toggleAll}
+              />
               {currentItems.map((item) => (
                 <PermissionTableItem
                   key={item.id}
@@ -119,7 +131,9 @@ const Permission = () => {
       </div>
 
       {/* 초대하기 모달 */}
-      {isInviteModalOpen && <InviteModal onClose={() => setIsInviteModalOpen(false)} />}
+      {isInviteModalOpen && (
+        <InviteModal onClose={() => setIsInviteModalOpen(false)} />
+      )}
 
       {/* 삭제 확인 모달 */}
       {isDeleteModalOpen && (
@@ -129,7 +143,7 @@ const Permission = () => {
         />
       )}
     </>
-  )
-}
+  );
+};
 
-export default Permission
+export default Permission;

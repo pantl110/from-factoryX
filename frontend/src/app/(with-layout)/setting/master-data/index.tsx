@@ -1,31 +1,32 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
-import usePageStatusStore from '@/store/page-status-store'
-import { SettingChipType } from '@/components/top-bar/types'
-import Chip from '@/ui/chip'
-import SearchInput from '@/ui/search-input'
-import MiniBtn from '@/ui/mini-btn'
-import Facility from './facility'
-import Client from './client'
-import DeleteModal from '@/ui/modal/delete-modal'
+import { useState, useEffect, useRef, useMemo } from 'react';
+import usePageStatusStore from '@/store/page-status-store';
+import { SettingChipType } from '@/components/top-bar/types';
+import Chip from '@/ui/chip';
+import SearchInput from '@/ui/search-input';
+import MiniBtn from '@/ui/mini-btn';
+import Facility from './facility';
+import Client from './client';
+import DeleteModal from '@/ui/modal/delete-modal';
 import {
   useGetClient,
   useGetEquipment,
   useCheckAll,
   useDeleteEquipment,
   useDeleteClient,
-} from '@/hooks'
+} from '@/hooks';
 
 const MasterData = () => {
-  const { settingChip, setSettingChip } = usePageStatusStore()
-  const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] = useState(false)
+  const { settingChip, setSettingChip } = usePageStatusStore();
+  const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
+    useState(false);
 
   // 설비 목록 가져옴 (searchKeyword 상태를 useGetEquipment에 위임)
-  const [searchKeyword, setSearchKeyword] = useState('')
+  const [searchKeyword, setSearchKeyword] = useState('');
   const {
     equipmentList,
     setSearchKeyword: setEquipmentSearchKeyword,
     refetch: refetchEquipment,
-  } = useGetEquipment()
+  } = useGetEquipment();
 
   // 거래처 목록 가져옴
   const {
@@ -33,48 +34,49 @@ const MasterData = () => {
     setSearchKeyword: setClientSearchKeyword,
     setFilters: setClientFilters,
     refetch: refetchClient,
-  } = useGetClient()
+  } = useGetClient();
 
   // 삭제 훅
-  const { deleteEquipment, isLoading: isDeleteLoading } = useDeleteEquipment() // 설비 삭제 훅
-  const { deleteClient, isLoading: isDeleteClientLoading } = useDeleteClient() // 거래처 삭제 훅
+  const { deleteEquipment, isLoading: isDeleteLoading } = useDeleteEquipment(); // 설비 삭제 훅
+  const { deleteClient, isLoading: isDeleteClientLoading } = useDeleteClient(); // 거래처 삭제 훅
 
   // id 배열
-  const equipmentIds: number[] = equipmentList?.data?.map((item) => item.id) ?? [] // 설비 id 배열
-  const clientIds: number[] = clientList?.data?.map((item) => item.id) ?? [] // 거래처 id 배열
+  const equipmentIds: number[] =
+    equipmentList?.data?.map((item) => item.id) ?? []; // 설비 id 배열
+  const clientIds: number[] = clientList?.data?.map((item) => item.id) ?? []; // 거래처 id 배열
 
   // 디바운싱 타이머 ref
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null)
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // setter 함수들을 useMemo로 메모이제이션
   const memoizedSetEquipmentSearchKeyword = useMemo(
     () => setEquipmentSearchKeyword,
     [setEquipmentSearchKeyword]
-  )
+  );
   const memoizedSetClientSearchKeyword = useMemo(
     () => setClientSearchKeyword,
     [setClientSearchKeyword]
-  )
+  );
 
   // 검색어 상태 동기화 (디바운싱)
   useEffect(() => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       if (settingChip === 'equipment') {
-        memoizedSetEquipmentSearchKeyword(searchKeyword)
+        memoizedSetEquipmentSearchKeyword(searchKeyword);
       } else if (settingChip === 'client') {
-        memoizedSetClientSearchKeyword(searchKeyword)
+        memoizedSetClientSearchKeyword(searchKeyword);
       }
-    }, 500)
+    }, 500);
     return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current)
-    }
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
   }, [
     searchKeyword,
     memoizedSetEquipmentSearchKeyword,
     memoizedSetClientSearchKeyword,
     settingChip,
-  ])
+  ]);
 
   // 체크박스 상태 관리
   const {
@@ -85,7 +87,7 @@ const MasterData = () => {
     toggleOne: facilityToggleOne,
     getDeleteButtonText: getFacilityDeleteButtonText,
     setAllChecked: facilitySetAllChecked,
-  } = useCheckAll(equipmentIds) // 설비 체크박스 상태 관리
+  } = useCheckAll(equipmentIds); // 설비 체크박스 상태 관리
   const {
     checkedCount: clientCheckedCount,
     isAllChecked: isClientAllChecked,
@@ -94,92 +96,105 @@ const MasterData = () => {
     toggleOne: clientToggleOne,
     getDeleteButtonText: getClientDeleteButtonText,
     setAllChecked: clientSetAllChecked,
-  } = useCheckAll(clientIds) // 거래처 체크박스 상태 관리
+  } = useCheckAll(clientIds); // 거래처 체크박스 상태 관리
 
   // 삭제 모달 상태 관리
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // 현재 탭에 따라 상태/함수 선택
-  const checkedCount = settingChip === 'equipment' ? facilityCheckedCount : clientCheckedCount
+  const checkedCount =
+    settingChip === 'equipment' ? facilityCheckedCount : clientCheckedCount;
   const getDeleteButtonText =
-    settingChip === 'equipment' ? getFacilityDeleteButtonText : getClientDeleteButtonText
-  const setAllChecked = settingChip === 'equipment' ? facilitySetAllChecked : clientSetAllChecked
+    settingChip === 'equipment'
+      ? getFacilityDeleteButtonText
+      : getClientDeleteButtonText;
+  const setAllChecked =
+    settingChip === 'equipment' ? facilitySetAllChecked : clientSetAllChecked;
 
   // 탭 선택 관련
   useEffect(() => {
-    if (!settingChip || (settingChip !== 'equipment' && settingChip !== 'client')) {
-      setSettingChip('equipment' as SettingChipType) // 설비관리 칩을 기본으로 설정
+    if (
+      !settingChip ||
+      (settingChip !== 'equipment' && settingChip !== 'client')
+    ) {
+      setSettingChip('equipment' as SettingChipType); // 설비관리 칩을 기본으로 설정
     }
     // chip이 바뀔 때 검색어 초기화
-    setSearchKeyword('')
-    memoizedSetEquipmentSearchKeyword('')
-    memoizedSetClientSearchKeyword('')
+    setSearchKeyword('');
+    memoizedSetEquipmentSearchKeyword('');
+    memoizedSetClientSearchKeyword('');
   }, [
     settingChip,
     setSettingChip,
     memoizedSetEquipmentSearchKeyword,
     memoizedSetClientSearchKeyword,
-  ])
-  const handleEquipmentChipClick = () => setSettingChip('equipment' as SettingChipType)
-  const handleClientChipClick = () => setSettingChip('client' as SettingChipType)
+  ]);
+  const handleEquipmentChipClick = () =>
+    setSettingChip('equipment' as SettingChipType);
+  const handleClientChipClick = () =>
+    setSettingChip('client' as SettingChipType);
 
   // 설비 추가
   const handleAddBtnClick = () => {
     if (settingChip === 'equipment') {
-      setIsEquipmentCreatePanelOpen(true)
+      setIsEquipmentCreatePanelOpen(true);
     }
-  }
+  };
 
   // 삭제 버튼 클릭 시 모달 오픈
   const handleDeleteBtnClick = () => {
     if (checkedCount > 0) {
-      setIsDeleteModalOpen(true)
+      setIsDeleteModalOpen(true);
     }
-  }
+  };
 
   // 삭제 모달에서 확인 시 실제 삭제 로직 실행
   const handleDeleteConfirm = async () => {
     if (settingChip === 'equipment') {
       // 설비 삭제 로직
-      const checkedEquipmentIds = equipmentIds.filter((id) => isFacilityChecked(id))
+      const checkedEquipmentIds = equipmentIds.filter((id) =>
+        isFacilityChecked(id)
+      );
       if (checkedEquipmentIds.length === 0) {
-        return
+        return;
       }
       try {
         // 선택된 모든 설비 삭제
-        const deletePromises = checkedEquipmentIds.map((id) => deleteEquipment(id))
-        await Promise.all(deletePromises)
+        const deletePromises = checkedEquipmentIds.map((id) =>
+          deleteEquipment(id)
+        );
+        await Promise.all(deletePromises);
         // 설비 목록 새로고침
-        await refetchEquipment()
+        await refetchEquipment();
       } catch {
-        alert('설비 삭제 중 오류가 발생했습니다.')
+        alert('설비 삭제 중 오류가 발생했습니다.');
       }
     } else if (settingChip === 'client') {
       // 거래처 삭제 로직
-      const checkedClientIds = clientIds.filter((id) => isClientChecked(id))
+      const checkedClientIds = clientIds.filter((id) => isClientChecked(id));
       if (checkedClientIds.length === 0) {
-        return
+        return;
       }
       try {
         // 선택된 모든 거래처 삭제
         const deletePromises = checkedClientIds.map((id) =>
           deleteClient({ factory_id: 1, client_id: id })
-        )
-        await Promise.all(deletePromises)
+        );
+        await Promise.all(deletePromises);
         // 거래처 목록 새로고침
-        await refetchClient()
+        await refetchClient();
       } catch {
-        alert('거래처 삭제 중 오류가 발생했습니다.')
+        alert('거래처 삭제 중 오류가 발생했습니다.');
       }
     }
 
-    setAllChecked(false) // 삭제 확정 시에만 체크 해제
-    setIsDeleteModalOpen(false)
-  }
+    setAllChecked(false); // 삭제 확정 시에만 체크 해제
+    setIsDeleteModalOpen(false);
+  };
 
   const handleClearAllChecked = () => {
-    setAllChecked(false)
-  }
+    setAllChecked(false);
+  };
 
   // equipmentList를 Facility에 넘길 때 PaginationModel 형태로 래핑 - useMemo로 메모이제이션
   const equipmentListForFacility = useMemo(
@@ -193,12 +208,12 @@ const MasterData = () => {
       previousPage: equipmentList?.previousPage || 1,
     }),
     [equipmentList]
-  )
+  );
 
   // 페이지네이션 변경 핸들러 (Client용)
   const handleClientPageChange = (page: number) => {
-    setClientFilters((prev) => ({ ...prev, page }))
-  }
+    setClientFilters((prev) => ({ ...prev, page }));
+  };
 
   const renderContent = () => {
     switch (settingChip) {
@@ -214,7 +229,7 @@ const MasterData = () => {
             toggleOne={facilityToggleOne}
             refetchEquipment={refetchEquipment}
           />
-        )
+        );
       case 'client':
         return (
           <Client
@@ -225,11 +240,11 @@ const MasterData = () => {
             toggleAll={clientToggleAll}
             toggleOne={clientToggleOne}
           />
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div>
@@ -268,9 +283,9 @@ const MasterData = () => {
           onChange={setSearchKeyword}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              if (debounceTimer.current) clearTimeout(debounceTimer.current)
+              if (debounceTimer.current) clearTimeout(debounceTimer.current);
               if (settingChip === 'equipment') {
-                memoizedSetEquipmentSearchKeyword(searchKeyword)
+                memoizedSetEquipmentSearchKeyword(searchKeyword);
               } else if (settingChip === 'client') {
                 // memoizedSetClientSearchKeyword(searchKeyword)
               }
@@ -317,7 +332,7 @@ const MasterData = () => {
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default MasterData
+export default MasterData;

@@ -1,35 +1,38 @@
-'use client'
+'use client';
 
-import { useState, Suspense } from 'react'
-import SearchDeleteTable from '@/ui/search-delete-table'
-import MainTitleSec from './main-title-sec'
-import DocumentTable from './document-table'
-import Pagination from '@/components/pagination'
-import { DocumentType } from './types'
-import OrderDocumentView from './order-document-view'
-import documentData, { DocumentDataModel } from '@/mocks/document-data'
-import Panel from '@/ui/panel'
-import ProductionDocumentView from './production-document-view'
-import TransactionDocumentView from './transaction-document-view'
-import TaxDocumentView from './tax-document-view'
-import Spinner from '@/ui/spinner'
-import { useCheckAll } from '@/hooks/use-check-all'
-import DeleteModal from '@/ui/modal/delete-modal'
-import usePagination from '@/hooks/use-pagination'
+import { useState, Suspense } from 'react';
+import SearchDeleteTable from '@/ui/search-delete-table';
+import MainTitleSec from './main-title-sec';
+import DocumentTable from './document-table';
+import Pagination from '@/components/pagination';
+import { DocumentType } from './types';
+import OrderDocumentView from './order-document-view';
+import documentData, { DocumentDataModel } from '@/mocks/document-data';
+import Panel from '@/ui/panel';
+import ProductionDocumentView from './production-document-view';
+import TransactionDocumentView from './transaction-document-view';
+import TaxDocumentView from './tax-document-view';
+import Spinner from '@/ui/spinner';
+import { useCheckAll } from '@/hooks/use-check-all';
+import DeleteModal from '@/ui/modal/delete-modal';
+import usePagination from '@/hooks/use-pagination';
 
 const DocumentPageContent = () => {
-  const [selectedType, setSelectedType] = useState<DocumentType>('주문서')
-  const [selectedDocument, setSelectedDocument] = useState<DocumentDataModel | null>(null)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedType, setSelectedType] = useState<DocumentType>('주문서');
+  const [selectedDocument, setSelectedDocument] =
+    useState<DocumentDataModel | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const filteredData = documentData.filter((item) => item.documentType === selectedType)
+  const filteredData = documentData.filter(
+    (item) => item.documentType === selectedType
+  );
 
   const {
     currentItems: pagedData,
     currentPage,
     totalPages,
     setCurrentPage,
-  } = usePagination({ items: filteredData, itemsPerPage: 10 })
+  } = usePagination({ items: filteredData, itemsPerPage: 10 });
 
   const {
     checkedCount,
@@ -39,29 +42,32 @@ const DocumentPageContent = () => {
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(pagedData.map((item) => item.id))
+  } = useCheckAll(pagedData.map((item) => item.id));
 
   const handleDocumentClick = (document: DocumentDataModel) => {
-    setSelectedDocument(document)
-  }
+    setSelectedDocument(document);
+  };
 
   const handleDelete = () => {
-    setIsDeleteModalOpen(false)
-    setAllChecked(false)
-  }
+    setIsDeleteModalOpen(false);
+    setAllChecked(false);
+  };
 
   // 탭 변경 핸들러
   const handleTabChange = (type: DocumentType) => {
-    setSelectedType(type)
+    setSelectedType(type);
     // 탭 변경 시 첫 페이지로 이동하고 체크박스 초기화
-    setCurrentPage(1)
-    setAllChecked(false)
-  }
+    setCurrentPage(1);
+    setAllChecked(false);
+  };
 
   return (
     <>
       <div className="flex flex-col gap-8 w-full">
-        <MainTitleSec selectedType={selectedType} setSelectedType={handleTabChange} />
+        <MainTitleSec
+          selectedType={selectedType}
+          setSelectedType={handleTabChange}
+        />
 
         <div className="px-10 pb-10">
           <SearchDeleteTable
@@ -105,23 +111,34 @@ const DocumentPageContent = () => {
           <TransactionDocumentView />
         </Panel>
       )}
-      {selectedDocument && selectedDocument.documentType === '매출 세금계산서' && (
-        <Panel title="매출 세금계산서" onClose={() => setSelectedDocument(null)}>
-          <TaxDocumentView taxType="매출" />
-        </Panel>
-      )}
-      {selectedDocument && selectedDocument.documentType === '매입 세금계산서' && (
-        <Panel title="매입 세금계산서" onClose={() => setSelectedDocument(null)}>
-          <TaxDocumentView taxType="매입" />
-        </Panel>
-      )}
+      {selectedDocument &&
+        selectedDocument.documentType === '매출 세금계산서' && (
+          <Panel
+            title="매출 세금계산서"
+            onClose={() => setSelectedDocument(null)}
+          >
+            <TaxDocumentView taxType="매출" />
+          </Panel>
+        )}
+      {selectedDocument &&
+        selectedDocument.documentType === '매입 세금계산서' && (
+          <Panel
+            title="매입 세금계산서"
+            onClose={() => setSelectedDocument(null)}
+          >
+            <TaxDocumentView taxType="매입" />
+          </Panel>
+        )}
 
       {isDeleteModalOpen && (
-        <DeleteModal onClose={() => setIsDeleteModalOpen(false)} onDelete={handleDelete} />
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleDelete}
+        />
       )}
     </>
-  )
-}
+  );
+};
 
 const DocumentPage = () => {
   return (
@@ -134,7 +151,7 @@ const DocumentPage = () => {
     >
       <DocumentPageContent />
     </Suspense>
-  )
-}
+  );
+};
 
-export default DocumentPage
+export default DocumentPage;

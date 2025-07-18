@@ -1,11 +1,14 @@
-import { CompletedProjectStatusType } from '@/types/status-type'
+import { CompletedProjectStatusType } from '@/types/status-type';
 
 interface MainTitleSecProps {
-  selectedStatus: '전체' | CompletedProjectStatusType
-  onStatusChange: (status: '전체' | CompletedProjectStatusType) => void
+  selectedStatus: '전체' | CompletedProjectStatusType;
+  onStatusChange: (status: '전체' | CompletedProjectStatusType) => void;
 }
 
-const MainTitleSec = ({ selectedStatus, onStatusChange }: MainTitleSecProps) => {
+const MainTitleSec = ({
+  selectedStatus,
+  onStatusChange,
+}: MainTitleSecProps) => {
   return (
     <>
       <div className="flex flex-col gap-8 px-10 pt-10">
@@ -32,7 +35,7 @@ const MainTitleSec = ({ selectedStatus, onStatusChange }: MainTitleSecProps) => 
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default MainTitleSec
+export default MainTitleSec;

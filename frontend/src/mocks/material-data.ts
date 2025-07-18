@@ -1,4 +1,4 @@
-import { MaterialDataModel } from '@/types/data-model'
+import { MaterialDataModel } from '@/types/data-model';
 
 export const materialData: MaterialDataModel[] = [
   {
@@ -65,4 +65,4 @@ export const materialData: MaterialDataModel[] = [
     unitPrice: 25000,
     unit: 'EA',
   },
-]
+];

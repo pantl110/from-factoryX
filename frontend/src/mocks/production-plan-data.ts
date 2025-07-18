@@ -1,19 +1,19 @@
-import { OperationStatusType, InventoryStatusType } from '@/types/status-type'
+import { OperationStatusType, InventoryStatusType } from '@/types/status-type';
 
 export interface ProductionPlanDataModel {
-  id: number
-  operationStatus: OperationStatusType
-  productName: string
-  productCode: string
-  size: string
-  unit: string
-  orderQuantity: number
-  productionQuantity: number
-  materialStatus: InventoryStatusType
-  facility: string
-  productionTime: string
-  unitTime: string
-  endDate: string
+  id: number;
+  operationStatus: OperationStatusType;
+  productName: string;
+  productCode: string;
+  size: string;
+  unit: string;
+  orderQuantity: number;
+  productionQuantity: number;
+  materialStatus: InventoryStatusType;
+  facility: string;
+  productionTime: string;
+  unitTime: string;
+  endDate: string;
 }
 
 export const productionPlanData: ProductionPlanDataModel[] = [
@@ -77,4 +77,4 @@ export const productionPlanData: ProductionPlanDataModel[] = [
     unitTime: '2분',
     endDate: '2025-07-25 14:00',
   },
-]
+];

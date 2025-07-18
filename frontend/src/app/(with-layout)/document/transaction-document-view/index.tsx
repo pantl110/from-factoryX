@@ -1,7 +1,7 @@
-import DocumentViewTitle from '../document-view-title'
-import ProductListInfo from '../product-list-info'
-import BuyerInfo from './buyer-info'
-import SellerInfo from './seller-info'
+import DocumentViewTitle from '../document-view-title';
+import ProductListInfo from '../product-list-info';
+import BuyerInfo from './buyer-info';
+import SellerInfo from './seller-info';
 
 const TransactionDocumentView = () => {
   return (
@@ -15,7 +15,7 @@ const TransactionDocumentView = () => {
       <BuyerInfo />
       <ProductListInfo transaction />
     </div>
-  )
-}
+  );
+};
 
-export default TransactionDocumentView
+export default TransactionDocumentView;

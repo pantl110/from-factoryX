@@ -1,11 +1,11 @@
-import Checkbox from '@/ui/checkbox'
-import { ProductResponseModel } from '@/types/data-model'
+import Checkbox from '@/ui/checkbox';
+import { ProductResponseModel } from '@/types/data-model';
 
 interface TableItemProps {
-  product: ProductResponseModel
-  onClick: () => void
-  checked: boolean
-  onToggle: () => void
+  product: ProductResponseModel;
+  onClick: () => void;
+  checked: boolean;
+  onToggle: () => void;
 }
 
 const TableItem = ({ product, onClick, checked, onToggle }: TableItemProps) => {
@@ -25,7 +25,7 @@ const TableItem = ({ product, onClick, checked, onToggle }: TableItemProps) => {
           : product.current_stock.toLocaleString()}
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default TableItem
+export default TableItem;

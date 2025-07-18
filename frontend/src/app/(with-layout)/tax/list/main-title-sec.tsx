@@ -1,17 +1,20 @@
-import { TaxDocumentType } from '@/types/status-type'
-import MiniBtn from '@/ui/mini-btn'
-import { useState } from 'react'
-import CreatTaxPanel from './modals/create-tax-panel'
+import { TaxDocumentType } from '@/types/status-type';
+import MiniBtn from '@/ui/mini-btn';
+import { useState } from 'react';
+import CreatTaxPanel from './modals/create-tax-panel';
 
 interface MainTitleSecProps {
-  selectedTaxType: TaxDocumentType | '전체'
-  setSelectedTaxType: (type: TaxDocumentType | '전체') => void
+  selectedTaxType: TaxDocumentType | '전체';
+  setSelectedTaxType: (type: TaxDocumentType | '전체') => void;
 }
 
-const MainTitleSec = ({ selectedTaxType, setSelectedTaxType }: MainTitleSecProps) => {
-  const tabs: (TaxDocumentType | '전체')[] = ['전체', '매출', '매입']
+const MainTitleSec = ({
+  selectedTaxType,
+  setSelectedTaxType,
+}: MainTitleSecProps) => {
+  const tabs: (TaxDocumentType | '전체')[] = ['전체', '매출', '매입'];
 
-  const [isCreatTaxPanelOpen, setIsCreatTaxPanelOpen] = useState(false)
+  const [isCreatTaxPanelOpen, setIsCreatTaxPanelOpen] = useState(false);
 
   return (
     <>
@@ -24,7 +27,7 @@ const MainTitleSec = ({ selectedTaxType, setSelectedTaxType }: MainTitleSecProps
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"
             onClick={() => {
-              setIsCreatTaxPanelOpen(true)
+              setIsCreatTaxPanelOpen(true);
             }}
           />
         </div>
@@ -42,9 +45,11 @@ const MainTitleSec = ({ selectedTaxType, setSelectedTaxType }: MainTitleSecProps
         </div>
       </div>
 
-      {isCreatTaxPanelOpen && <CreatTaxPanel onClose={() => setIsCreatTaxPanelOpen(false)} />}
+      {isCreatTaxPanelOpen && (
+        <CreatTaxPanel onClose={() => setIsCreatTaxPanelOpen(false)} />
+      )}
     </>
-  )
-}
+  );
+};
 
-export default MainTitleSec
+export default MainTitleSec;

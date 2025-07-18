@@ -1,18 +1,23 @@
-import Chip from '@/ui/chip'
-import Dropdown from '@/ui/dropdown/dropdown'
-import DropdownItem from '@/ui/dropdown/dropdown-item'
+import Chip from '@/ui/chip';
+import Dropdown from '@/ui/dropdown/dropdown';
+import DropdownItem from '@/ui/dropdown/dropdown-item';
 
 interface QuotationStatusDropdownProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
   return (
-    <Dropdown width="w-full" onClose={onClose} padding="p-4" className="gap-2.5">
+    <Dropdown
+      width="w-full"
+      onClose={onClose}
+      padding="p-4"
+      className="gap-2.5"
+    >
       <DropdownItem
         onClick={(e) => {
-          e?.stopPropagation()
-          onClose()
+          e?.stopPropagation();
+          onClose();
         }}
         noHover={true}
         chip={true}
@@ -27,8 +32,8 @@ const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
       </DropdownItem>
       <DropdownItem
         onClick={(e) => {
-          e?.stopPropagation()
-          onClose()
+          e?.stopPropagation();
+          onClose();
         }}
         noHover={true}
         chip={true}
@@ -42,7 +47,7 @@ const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
         />
       </DropdownItem>
     </Dropdown>
-  )
-}
+  );
+};
 
-export default QuotationStatusDropdown
+export default QuotationStatusDropdown;
