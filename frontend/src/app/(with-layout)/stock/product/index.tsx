@@ -9,7 +9,7 @@ import MiniBtn from '@/ui/mini-btn'
 import DeleteModal from '@/ui/modal/delete-modal'
 import Pagination from '@/components/pagination'
 import { ProductResponseModel } from '@/types/data-model'
-import { useCheckAll, useGetProduct } from '@/hooks'
+import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks'
 
 interface ProductProps {
   setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void
@@ -23,6 +23,7 @@ const Product = ({
   setIsProductDetailPanelOpen,
 }: ProductProps) => {
   const { getProductList, productList, pagination } = useGetProduct()
+  const { deleteProduct } = useDeleteProduct()
 
   const [searchKeyword, setSearchKeyword] = useState('')
   const [_currentPage, setCurrentPage] = useState(1)
@@ -91,6 +92,17 @@ const Product = ({
     setSelectedProductId(null)
   }
 
+  // 삭제 처리 함수
+  const handleDelete = async () => {
+    const checkedIds = productList.filter((item) => isChecked(item.id)).map((item) => item.id)
+    if (checkedIds.length === 0) return
+    for (const id of checkedIds) {
+      await deleteProduct(id)
+    }
+    setIsDeleteModalOpen(false)
+    loadProducts(_currentPage, searchKeyword)
+  }
+
   return (
     <>
       <div className="flex items-center justify-between pb-4">
@@ -114,7 +126,7 @@ const Product = ({
             borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
             bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
             hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
-            onClick={checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}}
+            onClick={checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => { }}
           />
         </div>
       </div>
@@ -153,7 +165,9 @@ const Product = ({
           }}
         />
       )}
-      {isDeleteModalOpen && <DeleteModal onClose={() => setIsDeleteModalOpen(false)} />}
+      {isDeleteModalOpen && (
+        <DeleteModal onClose={() => setIsDeleteModalOpen(false)} onDelete={handleDelete} />
+      )}
     </>
   )
 }
