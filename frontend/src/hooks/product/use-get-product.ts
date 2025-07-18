@@ -14,7 +14,7 @@ const useGetProduct = () => {
   const [productList, setProductList] = useState<ProductResponseModel[]>([])
   const [pagination, setPagination] = useState<PaginationModel | null>(null)
 
-  const getProductList = async (filters: ProductFilterModel) => {
+  const getProductList = useCallback(async (filters: ProductFilterModel) => {
     setIsLoading(true)
     setError(null)
 
@@ -52,7 +52,7 @@ const useGetProduct = () => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   const getProductDetail = useCallback(async (productId: number) => {
     setIsLoading(true)
