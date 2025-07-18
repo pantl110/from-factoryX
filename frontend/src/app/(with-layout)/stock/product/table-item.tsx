@@ -19,7 +19,11 @@ const TableItem = ({ product, onClick, checked, onToggle }: TableItemProps) => {
       <p className="flex-1 px-3 text-dg">{product.code}</p>
       <p className="flex-1 px-3 text-dg">{product.spec}</p>
       <p className="w-[80px] px-3 text-dg">{product.unit}</p>
-      <p className="flex-1 px-3 text-dg">{(product.current_stock || '-').toLocaleString()}</p>
+      <p className="flex-1 px-3 text-dg">
+        {product.current_stock === undefined || product.current_stock === null
+          ? '-'
+          : product.current_stock.toLocaleString()}
+      </p>
     </div>
   )
 }

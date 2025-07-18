@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import ProductInfo from './product-info'
+import { useState, useEffect, useRef } from 'react'
+import ProductInfo, { ProductInfoModel } from './product-info'
 import MiniBtn from '@/ui/mini-btn'
 import StockStatus from './stock-status'
 import ProductStockLog from './product-stock-log'
@@ -44,10 +44,17 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
   })
 
   // 폼 유효성 검사
-  const isFormValid = formData.name && formData.code && formData.unit && formData.spec
+  const [isDirty, setIsDirty] = useState(false)
+  const [isValid, setIsValid] = useState(false)
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
   const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false) // 판넬의 연결하기 버튼 모달
   const [isMaterialStockStatusModalOpen, setIsMaterialStockStatusModalOpen] = useState(false) // 판넬의 원자재 재고 상태 모달
+  const productInfoRef = useRef<ProductInfoModel>(null)
+
+  // isDirty 상태 변경 디버깅
+  useEffect(() => {
+    // 디버깅용 로그 제거
+  }, [isDirty, productId])
 
   // StockLocationItem 개수를 관리하는 상태
   const [stockLocationCount, setStockLocationCount] = useState(1)
@@ -127,17 +134,17 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
   // 저장 함수
   const handleSave = async () => {
     try {
+      // ProductInfo에서 현재 폼 값 가져오기
+      const currentFormData = productInfoRef.current?.getValues() || formData
+
       if (productId) {
         // 수정 모드
         // factory 필드는 수정 시 제외 (서버에서 Factory 인스턴스를 기대함)
-        const { factory: _factory, ...updateDataWithoutFactory } = formData
+        const { factory: _factory, ...updateDataWithoutFactory } = currentFormData
         const updateData = {
           ...updateDataWithoutFactory,
-          current_stock: formData.current_stock ? Number(formData.current_stock) : undefined,
-          average_production_time: formData.average_production_time
-            ? Number(formData.average_production_time)
-            : undefined,
-          buffer_rate: formData.buffer_rate ? Number(formData.buffer_rate) : undefined,
+          current_stock: currentFormData.current_stock,
+          average_production_time: currentFormData.average_production_time,
         }
         const result = await updateProduct(productId, updateData)
         if (result && result.success) {
@@ -150,12 +157,9 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
         // 생성 모드
         // 데이터 변환
         const createData = {
-          ...formData,
-          current_stock: formData.current_stock ? Number(formData.current_stock) : undefined,
-          average_production_time: formData.average_production_time
-            ? Number(formData.average_production_time)
-            : undefined,
-          buffer_rate: formData.buffer_rate ? Number(formData.buffer_rate) : undefined,
+          ...currentFormData,
+          current_stock: currentFormData.current_stock,
+          average_production_time: currentFormData.average_production_time,
         }
         const result = await createProduct(createData)
         if (result && result.success) {
@@ -176,14 +180,16 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
         title="품목 재고관리"
         onClose={onClose}
         headerButton={
-          <MiniBtn
-            text="저장"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            hoverColor="hover:bg-secondary-hover"
-            onClick={handleSave}
-            disabled={!isFormValid}
-          />
+          (!productId || (productId && isDirty)) && (
+            <MiniBtn
+              text="저장"
+              textColor="text-primary"
+              bgColor="bg-primary-8"
+              hoverColor="hover:bg-secondary-hover"
+              onClick={handleSave}
+              disabled={!isValid}
+            />
+          )
         }
       >
         <div className="flex flex-col gap-10">
@@ -192,8 +198,10 @@ const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDe
             <ProductInfo
               formData={formData}
               productList={productList}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, ...value }))}
               productId={productId}
+              onIsDirtyChange={setIsDirty}
+              onIsValidChange={setIsValid}
+              ref={productInfoRef}
             />
           </div>
 
