@@ -1,17 +1,13 @@
-import { ProductResponseModel, ProductModel } from '@/types/data-model'
-import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown'
+import { ProductModel } from '@/types/data-model'
 import InfoLabelValue from '@/ui/info-label-value'
-import { useEffect, useState, forwardRef, useImperativeHandle } from 'react'
+import { useEffect, forwardRef, useImperativeHandle } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 
 interface ProductInfoProps {
   formData: ProductModel
   productId: number | null
-  productList: ProductResponseModel[]
-  onValueChange?: (value: Partial<ProductModel>) => void
   onIsDirtyChange?: (isDirty: boolean) => void
   onIsValidChange?: (isValid: boolean) => void
-  onClick?: () => void
 }
 
 export interface ProductInfoModel {
@@ -19,12 +15,9 @@ export interface ProductInfoModel {
 }
 
 const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
-  ({ formData, productId, productList, onValueChange, onIsDirtyChange, onIsValidChange }, ref) => {
-    // React Hook Form 사용
+  ({ formData, productId, onIsDirtyChange, onIsValidChange }, ref) => {
     const {
       control,
-      setValue,
-      watch,
       reset,
       formState: { isDirty, isValid },
       getValues,
@@ -56,62 +49,14 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
       [getValues]
     )
 
-    // 드롭다운 상태 관리
-    const [isProductNameDropdownOpen, setIsProductNameDropdownOpen] = useState(false)
-
     // product prop이 바뀌면 폼 전체를 reset으로 초기화
     useEffect(() => {
-      // 현재 폼 값과 새로운 formData를 비교해서 실제로 변경되었을 때만 reset
-      const currentValues = getValues()
-      const hasSignificantChange =
-        currentValues.name !== formData.name ||
-        currentValues.code !== formData.code ||
-        currentValues.unit !== formData.unit ||
-        currentValues.spec !== formData.spec ||
-        currentValues.factory !== formData.factory
-
-      if (hasSignificantChange) {
-        reset(formData)
-        // reset 후 isDirty를 false로 설정하고 부모에게 알림
-        if (onIsDirtyChange) {
-          onIsDirtyChange(false)
-        }
+      reset(formData)
+      if (onIsDirtyChange) {
+        onIsDirtyChange(false)
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [productId])
-
-    // 드롭다운 필터링 로직
-    const matchedItems = productList
-      .filter((item) => item.name.toLowerCase().includes(watch().name?.toLowerCase() || ''))
-      .slice(0, 6)
-
-    // 드롭다운에서 선택 시 setValue로 여러 필드 한번에 설정
-    const handleSelectProduct = (item: ProductResponseModel) => {
-      // React Hook Form의 setValue 사용
-      setValue('name', item.name)
-      setValue('code', item.code)
-      setValue('spec', item.spec)
-      setValue('unit', item.unit)
-      setValue('current_stock', item.current_stock)
-      setValue('average_production_time', item.average_production_time)
-      setValue('note', item.note)
-
-      // 드롭다운 닫기
-      setIsProductNameDropdownOpen(false)
-
-      // 부모 컴포넌트에도 알림
-      if (onValueChange) {
-        onValueChange({
-          name: item.name,
-          code: item.code,
-          spec: item.spec,
-          unit: item.unit,
-          current_stock: item.current_stock,
-          average_production_time: item.average_production_time,
-          note: item.note,
-        })
-      }
-    }
+    }, [productId, formData])
 
     return (
       <div className="flex flex-col border-b border-lg">
@@ -126,14 +71,6 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 placeholder="(필수) 품목명을 입력하세요."
                 isEditing={true}
                 required
-                onFocus={() => {
-                  if (watch().name && matchedItems.length > 0) {
-                    setIsProductNameDropdownOpen(true)
-                  }
-                }}
-                onBlur={() => {
-                  setTimeout(() => setIsProductNameDropdownOpen(false), 150)
-                }}
                 value={field.value}
                 onChange={(e) => {
                   field.onChange(e)
@@ -141,15 +78,6 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               />
             )}
           />
-          {isProductNameDropdownOpen && matchedItems.length > 0 && (
-            <div className="absolute left-[134px] top-12 z-10">
-              <ProductNameDropdown
-                items={matchedItems}
-                onSelect={handleSelectProduct}
-                width="w-[326px]"
-              />
-            </div>
-          )}
           <Controller
             name="code"
             control={control}
@@ -235,8 +163,8 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 label="평균 생산 시간"
                 value={
                   field.value === undefined ||
-                  field.value === null ||
-                  (typeof field.value === 'string' && field.value === '')
+                    field.value === null ||
+                    (typeof field.value === 'string' && field.value === '')
                     ? '-'
                     : `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}초`
                 }
