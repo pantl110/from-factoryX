@@ -36,13 +36,6 @@ const Product = ({ setSelectedProductIdToParent, isProductDetailPanelOpen, setIs
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setSelectedProductIdToParent]);
 
-  // productList 디버깅을 위한 콘솔 로그
-  useEffect(() => {
-    console.log('Product List Updated:', productList)
-    console.log('Product List Length:', productList.length)
-    console.log('Pagination:', pagination)
-  }, [productList, pagination])
-
   // 제품 목록 로드 함수
   const loadProducts = (page = 1, search = '') => {
     getProductList({
@@ -147,6 +140,10 @@ const Product = ({ setSelectedProductIdToParent, isProductDetailPanelOpen, setIs
           productId={selectedProductId}
           productList={productList}
           onClose={handlePanelClose}
+          onSuccess={() => {
+            // 저장 성공 후 목록 새로고침
+            loadProducts(_currentPage, searchKeyword)
+          }}
         />
       )}
       {isDeleteModalOpen && <DeleteModal onClose={() => setIsDeleteModalOpen(false)} />}

@@ -5,33 +5,33 @@ import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 
 interface ProductInfoProps {
-  product: ProductResponseModel
+  formData: ProductModel
+  productId: number | null
   productList: ProductResponseModel[]
-  isEditable?: boolean
   onValueChange?: (value: Partial<ProductModel>) => void
   onClick?: () => void
 }
 
 const ProductInfo = ({
-  product,
+  formData,
+  productId,
   productList,
-  isEditable = false,
   onValueChange,
   onClick,
 }: ProductInfoProps) => {
   // React Hook Form 사용
   const { control, setValue, watch, reset } = useForm<ProductModel>({
     defaultValues: {
-      factory: product.factory,
-      name: product.name,
-      code: product.code,
-      unit: product.unit,
-      spec: product.spec,
-      current_stock: product.current_stock || undefined,
-      average_production_time: product.average_production_time || undefined,
-      buffer_rate: product.buffer_rate || undefined,
-      location: product.location?.toString() || undefined,
-      note: product.note || undefined,
+      factory: formData.factory,
+      name: formData.name,
+      code: formData.code,
+      unit: formData.unit,
+      spec: formData.spec,
+      current_stock: formData.current_stock || undefined,
+      average_production_time: formData.average_production_time || undefined,
+      buffer_rate: formData.buffer_rate || undefined,
+      location: formData.location?.toString() || undefined,
+      note: formData.note || undefined,
     },
   })
 
@@ -40,23 +40,22 @@ const ProductInfo = ({
 
   // product prop이 바뀌면 폼 전체를 reset으로 초기화
   useEffect(() => {
-    if (product) {
+    if (formData) {
       reset({
-        factory: product.factory,
-        name: product.name,
-        code: product.code,
-        unit: product.unit,
-        spec: product.spec,
-        current_stock: product.current_stock || undefined,
-        average_production_time: product.average_production_time || undefined,
-        buffer_rate: product.buffer_rate || undefined,
-        location: product.location?.toString() || undefined,
-        note: product.note || undefined,
+        factory: formData.factory,
+        name: formData.name,
+        code: formData.code,
+        unit: formData.unit,
+        spec: formData.spec,
+        current_stock: formData.current_stock || undefined,
+        average_production_time: formData.average_production_time || undefined,
+        buffer_rate: formData.buffer_rate || undefined,
+        location: formData.location?.toString() || undefined,
+        note: formData.note || undefined,
       })
-
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product?.id]) // productId만 의존성으로 사용
+  }, [productId, formData]) // productId와 formData가 변경될 때 실행
 
   // 현재 폼 값들을 감시
   const watchedValues = watch()
@@ -116,7 +115,12 @@ const ProductInfo = ({
                 setTimeout(() => setIsProductNameDropdownOpen(false), 150)
               }}
               value={field.value}
-              onChange={field.onChange}
+              onChange={(e) => {
+                field.onChange(e)
+                if (onValueChange) {
+                  onValueChange({ name: e.target.value })
+                }
+              }}
             />
           )}
         />
@@ -140,7 +144,12 @@ const ProductInfo = ({
               isEditing={true}
               required
               value={field.value}
-              onChange={field.onChange}
+              onChange={(e) => {
+                field.onChange(e)
+                if (onValueChange) {
+                  onValueChange({ code: e.target.value })
+                }
+              }}
             />
           )}
         />
@@ -157,7 +166,12 @@ const ProductInfo = ({
               isEditing={true}
               required
               value={field.value}
-              onChange={field.onChange}
+              onChange={(e) => {
+                field.onChange(e)
+                if (onValueChange) {
+                  onValueChange({ spec: e.target.value })
+                }
+              }}
             />
           )}
         />
@@ -172,7 +186,12 @@ const ProductInfo = ({
               isEditing={true}
               required
               value={field.value}
-              onChange={field.onChange}
+              onChange={(e) => {
+                field.onChange(e)
+                if (onValueChange) {
+                  onValueChange({ unit: e.target.value })
+                }
+              }}
             />
           )}
         />
@@ -194,8 +213,11 @@ const ProductInfo = ({
               inputType="text"
               onChange={(e) => {
                 const numValue = e.target.value.replace(/[^0-9]/g, '')
-                // 큰 숫자는 문자열로 저장
-                field.onChange(numValue || 0)
+                // 빈 문자열이면 undefined, 아니면 문자열로 저장
+                field.onChange(numValue || undefined)
+                if (onValueChange) {
+                  onValueChange({ current_stock: numValue ? Number(numValue) : undefined })
+                }
               }}
             />
           )}
@@ -214,6 +236,9 @@ const ProductInfo = ({
                 const numValue = e.target.value.replace(/[^0-9]/g, '')
                 // 큰 숫자는 문자열로 저장
                 field.onChange(numValue || undefined)
+                if (onValueChange) {
+                  onValueChange({ average_production_time: numValue ? Number(numValue) : undefined })
+                }
 
                 // 커서를 "초" 앞으로 이동 (콤마 포함 길이 고려)
                 setTimeout(() => {
@@ -234,21 +259,16 @@ const ProductInfo = ({
         render={({ field }) => (
           <InfoLabelValue
             label="특이사항"
-            value={
-              field.value ? (
-                <ul>
-                  {field.value.split(',').map((item: string, index: number) => (
-                    <li key={index}>{item.trim()}</li>
-                  ))}
-                </ul>
-              ) : (
-                ''
-              )
-            }
+            value={field.value || ''}
             isEditing={true}
             textarea={true}
             placeholder="특이사항을 입력하세요."
-            onChange={field.onChange}
+            onChange={(e) => {
+              field.onChange(e)
+              if (onValueChange) {
+                onValueChange({ note: e.target.value })
+              }
+            }}
           />
         )}
       />

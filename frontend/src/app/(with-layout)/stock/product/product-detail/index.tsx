@@ -8,7 +8,7 @@ import ProductStockLog from './product-stock-log'
 import Panel from '@/ui/panel'
 import Spinner from '@/ui/spinner'
 import { ProductModel, ProductResponseModel } from '@/types/data-model'
-import { useGetProduct } from '@/hooks'
+import { useGetProduct, useCreateProduct, useUpdateProduct } from '@/hooks'
 import NoHistoryBox from '../no-history-box'
 import ConnectMaterialModal from '../modals/connect-material-modal'
 import ProductStockModal from '../modals/product-stock-modal'
@@ -22,10 +22,13 @@ interface ProductDetailProps {
   productId: number | null
   productList: ProductResponseModel[]
   onClose: () => void
+  onSuccess?: () => void
 }
 
-const ProductDetail = ({ productId, productList, onClose }: ProductDetailProps) => {
+const ProductDetail = ({ productId, productList, onClose, onSuccess }: ProductDetailProps) => {
   const { getProductDetail, product } = useGetProduct()
+  const { createProduct } = useCreateProduct()
+  const { updateProduct } = useUpdateProduct()
   const factoryId = useFactoryStore((state) => state.factoryId)
 
   // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
@@ -51,6 +54,9 @@ const ProductDetail = ({ productId, productList, onClose }: ProductDetailProps) 
     location: undefined,
     note: ''
   })
+
+  // 폼 유효성 검사
+  const isFormValid = formData.name && formData.code && formData.unit && formData.spec
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
   const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false) // 판넬의 연결하기 버튼 모달
   const [isMaterialStockStatusModalOpen, setIsMaterialStockStatusModalOpen] = useState(false) // 판넬의 원자재 재고 상태 모달
@@ -60,15 +66,14 @@ const ProductDetail = ({ productId, productList, onClose }: ProductDetailProps) 
   // 각 StockLocationItem 별 모달 오픈 상태 관리
   const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false])
 
-  // getProductDetail 함수를 useMemo로 메모이제이션
-  const memoizedGetProductDetail = useMemo(() => getProductDetail, [getProductDetail])
+
 
   // productId가 변경되면 상세 정보 로드
   useEffect(() => {
     if (productId) {
-      memoizedGetProductDetail(productId)
+      getProductDetail(productId)
     }
-  }, [productId, memoizedGetProductDetail])
+  }, [productId])
 
   // product가 로드되면 formData 업데이트
   useEffect(() => {
@@ -122,16 +127,72 @@ const ProductDetail = ({ productId, productList, onClose }: ProductDetailProps) 
     setOpenUploadModals((prev) => prev.map((open, i) => (i === index ? false : open)))
   }
 
+  // 저장 함수
+  const handleSave = async () => {
+    try {
+      if (productId) {
+        // 수정 모드
+        // factory 필드는 수정 시 제외 (서버에서 Factory 인스턴스를 기대함)
+        const { factory, ...updateDataWithoutFactory } = formData
+        const updateData = {
+          ...updateDataWithoutFactory,
+          current_stock: formData.current_stock ? Number(formData.current_stock) : undefined,
+          average_production_time: formData.average_production_time ? Number(formData.average_production_time) : undefined,
+          buffer_rate: formData.buffer_rate ? Number(formData.buffer_rate) : undefined,
+        }
+        const result = await updateProduct(productId, updateData)
+        if (result && result.success) {
+          onSuccess?.()
+          onClose()
+        } else {
+          alert('품목 수정에 실패하였습니다. ' + (result?.error || '알 수 없는 오류'))
+        }
+      } else {
+        // 생성 모드
+        // 데이터 변환
+        const createData = {
+          ...formData,
+          current_stock: formData.current_stock ? Number(formData.current_stock) : undefined,
+          average_production_time: formData.average_production_time ? Number(formData.average_production_time) : undefined,
+          buffer_rate: formData.buffer_rate ? Number(formData.buffer_rate) : undefined,
+        }
+        const result = await createProduct(createData)
+        if (result && result.success) {
+          onSuccess?.()
+          onClose()
+        } else {
+          alert('품목 생성에 실패하였습니다. ' + (result?.error || '알 수 없는 오류'))
+        }
+      }
+    } catch (error) {
+      alert('저장 중 오류가 발생했습니다. ' + error)
+    }
+  }
+
   return (
     <>
-      <Panel title="품목 재고관리" onClose={onClose} headerButton={<MiniBtn text="저장" textColor="text-primary" bgColor="bg-primary-8" hoverColor="hover:bg-secondary-hover" />}>
+      <Panel
+        title="품목 재고관리"
+        onClose={onClose}
+        headerButton={
+          <MiniBtn
+            text="저장"
+            textColor="text-primary"
+            bgColor="bg-primary-8"
+            hoverColor="hover:bg-secondary-hover"
+            onClick={handleSave}
+            disabled={!isFormValid}
+          />
+        }
+      >
         <div className="flex flex-col gap-10">
           <div className="flex flex-col gap-3">
             <h3 className="Heading-3 text-dg h-10 flex items-center">품목 정보</h3>
             <ProductInfo
-              product={formData}
+              formData={formData}
               productList={productList}
               onValueChange={value => setFormData(prev => ({ ...prev, ...value }))}
+              productId={productId}
             />
           </div>
 

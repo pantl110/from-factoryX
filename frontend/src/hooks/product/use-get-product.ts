@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { ProductResponseModel, ProductListResponseModel, PaginationModel } from '@/types/data-model'
 
 interface ProductFilterModel {
@@ -28,10 +28,6 @@ const useGetProduct = () => {
       const headers = {
         'Content-Type': 'application/json',
       }
-      console.log('GET ProductList URL:', url)
-      console.log('GET ProductList headers:', headers)
-      console.log('GET ProductList params:', params.toString())
-
       const response = await fetch(
         url,
         {
@@ -61,7 +57,7 @@ const useGetProduct = () => {
     }
   }
 
-  const getProductDetail = async (productId: number) => {
+  const getProductDetail = useCallback(async (productId: number) => {
     setIsLoading(true)
     setError(null)
 
@@ -86,13 +82,13 @@ const useGetProduct = () => {
         setError(errorData.detail || '품목 상세 정보를 불러오지 못했습니다.')
         return { success: false, error: errorData.detail }
       }
-    } catch {
+    } catch (error) {
       setError('서버 연결에 실패했습니다.')
       return { success: false, error: '서버 연결에 실패했습니다.' }
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   return {
     getProductList,

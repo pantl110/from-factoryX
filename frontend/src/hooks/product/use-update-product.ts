@@ -30,7 +30,7 @@ const useUpdateProduct = () => {
         setError(errorData.detail || '품목 수정에 실패했습니다.')
         return { success: false, error: errorData.detail }
       }
-    } catch {
+    } catch (error) {
       setError('서버 연결에 실패했습니다.')
       return { success: false, error: '서버 연결에 실패했습니다.' }
     } finally {
