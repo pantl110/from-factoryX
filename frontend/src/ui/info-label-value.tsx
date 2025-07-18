@@ -9,6 +9,7 @@ import {
   EquipmentStatusColorMap,
 } from '@/types/status-type'
 import TextareaAutosize from 'react-textarea-autosize'
+import { UseFormRegisterReturn } from 'react-hook-form'
 
 interface InfoLabelValueProps {
   label: string
@@ -24,6 +25,7 @@ interface InfoLabelValueProps {
   inputType?: string
   textarea?: boolean
   required?: boolean
+  register?: UseFormRegisterReturn
 }
 
 const InfoLabelValue = ({
@@ -38,6 +40,7 @@ const InfoLabelValue = ({
   inputType = 'text',
   textarea = false,
   required = false,
+  register,
 }: InfoLabelValueProps) => {
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
@@ -56,11 +59,12 @@ const InfoLabelValue = ({
             minRows={1}
             value={typeof value === 'string' ? value : ''}
             placeholder={placeholder}
-            onChange={onChange}
+            onChange={register?.onChange || onChange}
             className="w-full noDefaultStyle"
             style={{ outline: 'none' }}
             onFocus={onFocus}
             onBlur={onBlur}
+            ref={register?.ref}
           />
         )
       }
@@ -71,11 +75,12 @@ const InfoLabelValue = ({
             type={inputType}
             value={typeof value === 'string' ? value : ''}
             placeholder={placeholder}
-            onChange={onChange}
+            onChange={register?.onChange || onChange}
             className="w-full placeholder:text-gr"
             style={{ outline: 'none' }}
             onFocus={onFocus}
             onBlur={onBlur}
+            ref={register?.ref}
           />
         </div>
       )

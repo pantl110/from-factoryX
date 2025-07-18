@@ -164,7 +164,22 @@ const TableItem = ({
 
       {isProductDetailOpen && (
         <ProductDetail
-          product={productData[0]}
+          productId={item.id}
+          productList={productData.map((item) => ({
+            id: typeof item.id === 'number' ? item.id : 0,
+            created_at: '',
+            updated_at: '',
+            factory: 0,
+            name: item.productName || '',
+            code: item.productCode || '',
+            unit: item.unit || '',
+            spec: item.size || '',
+            current_stock: item.stock,
+            average_production_time: item.productionTime ? Number(item.productionTime) : 0,
+            buffer_rate: 0,
+            location: 0,
+            note: Array.isArray(item.comment) ? item.comment.join(',') : '',
+          }))}
           onClose={() => setIsProductDetailOpen(false)}
           mode="view"
         />

@@ -30,8 +30,6 @@ const SystemSetting = () => {
     }
   }
 
-
-
   return (
     <div>
       <div className="flex gap-1 px-10 pb-6">

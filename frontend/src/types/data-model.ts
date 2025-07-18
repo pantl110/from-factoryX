@@ -263,25 +263,77 @@ export interface ClientDetailResponseModel {
 }
 
 //////////////////////
-// API 응답 모델
-export interface ApiPaginationInfoModel {
-  current_page: number
-  total_pages: number
-  total_count: number
-  page_size: number
+// Product API
+// 제품 등록
+export interface ProductModel {
+  factory: number
+  name: string
+  code: string
+  unit: string
+  spec: string
+  current_stock?: number
+  average_production_time?: number
+  buffer_rate?: number // 기본값 10%
+  location?: string
+  note?: string
 }
 
-export interface ApiResponseModel<T> {
-  success: boolean
-  data: T
-  message?: string
-  pagination?: ApiPaginationInfoModel
+export interface ProductResponseModel {
+  id: number
+  created_at: string
+  updated_at: string
+  factory: number
+  name: string
+  code: string
+  unit: string
+  spec: string
+  current_stock?: number
+  average_production_time?: number
+  buffer_rate?: number
+  location?: number
+  note?: string
 }
 
-// 팩토리 API 응답 타입
-export type FactoryApiResponseType<T> = ApiResponseModel<T>
+// 제품 목록 조회
+export interface ProductListResponseModel extends PaginationModel {
+  data: ProductResponseModel[]
+}
+
 
 //////////////////////
+// Material API
+// 원자재 등록
+export interface MaterialModel {
+  factory_id: number
+  name: string
+  code: string
+  unit: string
+  spec: string
+  standard_stock?: number
+  location_id?: number
+}
+
+export interface MaterialResponseModel {
+  id: number
+  created_at: string
+  updated_at: string
+  factory: number
+  name: string
+  code: string
+  unit: string
+  spec: string
+  current_stock?: number
+  standard_stock?: number
+  location?: number
+}
+
+// 원자재 목록 조회
+export interface MaterialListResponseModel extends PaginationModel {
+  data: MaterialResponseModel[]
+}
+
+////////////////////////////
+
 
 // 여기는 목데이터 데이터 모델!!! 나중에 지우기!
 export interface MaterialModel {

@@ -2,21 +2,74 @@
 
 import TableHeader from './table-header'
 import TableItem from './table-item'
-import { productData } from '@/mocks/product-data'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ProductDetail from './product-detail'
 import SearchInput from '@/ui/search-input'
 import MiniBtn from '@/ui/mini-btn'
 import DeleteModal from '@/ui/modal/delete-modal'
-import { ProductDataModel } from '@/types/data-model'
-import { useCheckAll } from '@/hooks/use-check-all'
+import Pagination from '@/components/pagination'
+import { ProductResponseModel } from '@/types/data-model'
+import { useCheckAll, useGetProduct } from '@/hooks'
 
 interface ProductProps {
-  isCreatePanelOpen: boolean
-  setIsCreatePanelOpen: (isOpen: boolean) => void
+  setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
+  isProductDetailPanelOpen?: boolean;
+  setIsProductDetailPanelOpen?: (open: boolean) => void;
 }
 
-const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
+const Product = ({ setSelectedProductIdToParent, isProductDetailPanelOpen, setIsProductDetailPanelOpen }: ProductProps) => {
+  const { getProductList, productList, pagination } = useGetProduct()
+
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const [_currentPage, setCurrentPage] = useState(1)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  // 패널 오픈 상태를 부모에서 제어할 경우 prop을 우선 사용
+  const [internalPanelOpen, setInternalPanelOpen] = useState(false);
+  const panelOpen = typeof isProductDetailPanelOpen === 'boolean' ? isProductDetailPanelOpen : internalPanelOpen;
+  const setPanelOpen = setIsProductDetailPanelOpen || setInternalPanelOpen;
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (setSelectedProductIdToParent) {
+      setSelectedProductIdToParent(() => setSelectedProductId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setSelectedProductIdToParent]);
+
+  // productList 디버깅을 위한 콘솔 로그
+  useEffect(() => {
+    console.log('Product List Updated:', productList)
+    console.log('Product List Length:', productList.length)
+    console.log('Pagination:', pagination)
+  }, [productList, pagination])
+
+  // 제품 목록 로드 함수
+  const loadProducts = (page = 1, search = '') => {
+    getProductList({
+      name: search || undefined,
+      page,
+      page_size: 10,
+    })
+  }
+
+  // 초기 로드
+  useEffect(() => {
+    loadProducts()
+  }, []) // 빈 의존성 배열로 초기 로드만 실행
+
+  // 검색 처리
+  const handleSearch = (term: string) => {
+    setSearchKeyword(term)
+    setCurrentPage(1)
+    loadProducts(1, term)
+  }
+
+  // 페이지 변경
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    loadProducts(page, searchKeyword)
+  }
+
   const {
     checkedCount,
     isAllChecked,
@@ -25,26 +78,27 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(productData.map((item) => item.id ?? 0))
+  } = useCheckAll(productList.map((item) => item.id))
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<ProductDataModel | null>(null)
-
-  const handleItemClick = (product: ProductDataModel) => {
-    setSelectedProduct(product)
-  }
+  // 리스트 아이템 클릭 시
+  const handleItemClick = (product: ProductResponseModel) => {
+    setSelectedProductId(product.id);
+    setPanelOpen(true);
+  };
+  // 패널 닫기
   const handlePanelClose = () => {
-    setSelectedProduct(null)
-    setIsCreatePanelOpen(false)
-  }
-
-  const isPanelOpen = selectedProduct !== null || isCreatePanelOpen
-  const mode = isCreatePanelOpen ? 'create' : 'view'
+    setPanelOpen(false);
+    setSelectedProductId(null);
+  };
 
   return (
     <>
       <div className="flex items-center justify-between pb-4">
-        <SearchInput />
+        <SearchInput
+          value={searchKeyword}
+          onChange={handleSearch}
+          placeholder="품목명 또는 품목코드를 검색하세요."
+        />
         <div className="flex gap-1">
           <MiniBtn
             text="취소"
@@ -60,34 +114,39 @@ const Product = ({ isCreatePanelOpen, setIsCreatePanelOpen }: ProductProps) => {
             borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
             bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
             hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
-            onClick={checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}}
+            onClick={checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => { }}
           />
         </div>
       </div>
 
       <div>
         <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
-        {productData.map((item) => (
+        {productList.map((product) => (
           <TableItem
-            key={item.id}
-            productName={item.productName}
-            productCode={item.productCode ?? ''}
-            size={item.size ?? ''}
-            unit={item.unit ?? ''}
-            stock={item.stock ?? 0}
-            onClick={() => handleItemClick(item)}
-            checked={isChecked(item.id ?? 0)}
-            onToggle={() => toggleOne(item.id ?? 0)}
+            key={product.id}
+            product={product}
+            onClick={() => handleItemClick(product)}
+            checked={isChecked(product.id)}
+            onToggle={() => toggleOne(product.id)}
           />
         ))}
       </div>
 
-      {isPanelOpen && (
+      {/* 페이지네이션 */}
+      {pagination && pagination.pageCnt > 1 && (
+        <Pagination
+          currentPage={pagination.curPage}
+          totalPages={pagination.pageCnt}
+          onPageChange={handlePageChange}
+        />
+      )}
+
+      {panelOpen && (
         <ProductDetail
-          key={selectedProduct?.id || 'create'}
-          product={selectedProduct}
+          key={selectedProductId ?? 'create'}
+          productId={selectedProductId}
+          productList={productList}
           onClose={handlePanelClose}
-          mode={mode}
         />
       )}
       {isDeleteModalOpen && <DeleteModal onClose={() => setIsDeleteModalOpen(false)} />}

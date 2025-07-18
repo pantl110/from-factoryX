@@ -50,3 +50,9 @@ export { default as useGetClientDetail } from './factory-client/use-get-client-d
 export { default as useUpdateClient } from './factory-client/use-update-client'
 export { default as useDeleteClient } from './factory-client/use-delete-client'
 export { default as useSearchClient } from './factory-client/use-search-client'
+
+// Product related hooks
+export { default as useCreateProduct } from './product/use-create-product'
+export { default as useGetProduct } from './product/use-get-product'
+export { default as useUpdateProduct } from './product/use-update-product'
+export { default as useDeleteProduct } from './product/use-delete-product'

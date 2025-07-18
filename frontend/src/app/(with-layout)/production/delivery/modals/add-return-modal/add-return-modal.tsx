@@ -6,7 +6,7 @@ import Modal from '@/ui/modal/modal'
 import SearchInput from '@/ui/search-input'
 import { useState } from 'react'
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown'
-import { ProductDataModel } from '@/types/data-model'
+import { ProductDataModel, ProductResponseModel } from '@/types/data-model'
 import { productData } from '@/mocks/product-data'
 import { useDropdownFilter } from '@/hooks/use-dropdown-filter'
 import { useInput } from '@/hooks/use-input'
@@ -52,10 +52,21 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
   const [showSearchIcon, setShowSearchIcon] = useState(true)
 
   // 드롭다운에서 선택 시 두 상태를 각각 업데이트
-  const handleSelectProduct = (item: ProductDataModel) => {
-    setSelectedProductName(item)
-    handleSelect(item)
-    handleReturnQuantityChange(item.returnQuantity?.toString() || '')
+  const handleSelectProduct = (item: ProductResponseModel) => {
+    // ProductDataModel로 변환
+    const dataModel: ProductDataModel = {
+      id: item.id,
+      productName: item.name,
+      productCode: item.code,
+      size: item.spec,
+      unit: item.unit,
+      stock: item.current_stock,
+      productionTime: item.average_production_time?.toString(),
+      comment: item.note ? item.note.split(',') : [],
+    }
+    setSelectedProductName(dataModel)
+    handleSelect(dataModel)
+    handleReturnQuantityChange(item.current_stock?.toString() || '')
     setShowSearchIcon(false)
   }
 
@@ -86,7 +97,21 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
         {isProductNameDropdownOpen && matchedItems.length > 0 && (
           <div className="absolute left-0 top-[calc(100%+8px)] z-10">
             <ProductNameDropdown
-              items={matchedItems as ProductDataModel[]}
+              items={matchedItems.map((item) => ({
+                id: typeof item.id === 'number' ? item.id : 0,
+                created_at: '',
+                updated_at: '',
+                factory: 0,
+                name: item.productName || '',
+                code: item.productCode || '',
+                unit: item.unit || '',
+                spec: item.size || '',
+                current_stock: item.stock,
+                average_production_time: item.productionTime ? Number(item.productionTime) : 0,
+                buffer_rate: 0,
+                location: 0,
+                note: Array.isArray(item.comment) ? item.comment.join(',') : '',
+              }))}
               onSelect={handleSelectProduct}
               width="w-[551px]"
             />

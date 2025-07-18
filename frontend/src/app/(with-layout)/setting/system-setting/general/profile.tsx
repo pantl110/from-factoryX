@@ -36,6 +36,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
       profile_image: '',
     },
     mode: 'onSubmit',
+    reValidateMode: 'onSubmit', // 모든 필드 유효성 검사를 동시에 실행
   })
 
   // Update form when userInfo changes

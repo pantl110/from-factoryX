@@ -45,11 +45,7 @@ const Client = ({
         ))}
       </div>
 
-      <Pagination
-        currentPage={curPage}
-        totalPages={pageCnt}
-        onPageChange={onPageChange}
-      />
+      <Pagination currentPage={curPage} totalPages={pageCnt} onPageChange={onPageChange} />
 
       {/* panel */}
       {selectedClientId && factoryId && (

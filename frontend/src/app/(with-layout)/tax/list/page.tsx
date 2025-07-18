@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, Suspense } from 'react'
-import { useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { Suspense } from 'react'
 import MainTitleSec from './main-title-sec'
 import TableHeader from './table-header'
 import TableItem from './table-item'
@@ -68,9 +68,7 @@ const TaxPageContent = () => {
   useEffect(() => {
     setCurrentPage(1)
     setAllChecked(false)
-    // setCurrentPage와 setAllChecked는 매 렌더링마다 새로 생성되는 함수로 의존성 배열에 포함하면 useEffect가 계속 실행되어 무한 루프 발생
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTaxType])
+  }, [selectedTaxType]) // selectedTaxType만 의존성으로 설정
 
   const handleToggleHidden = () => {
     setShowHidden(!showHidden)
@@ -101,7 +99,7 @@ const TaxPageContent = () => {
           <div className="flex items-center justify-between pb-4">
             <SearchInput
               value=""
-              onChange={() => {}}
+              onChange={() => { }}
               placeholder="찾고 싶은 세금계산서의 거래처나 품목명을 입력하세요."
             />
             <div className="flex gap-1">

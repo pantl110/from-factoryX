@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import usePageStatusStore from '@/store/page-status-store'
 import { SettingChipType } from '@/components/top-bar/types'
 import Chip from '@/ui/chip'
@@ -7,7 +7,13 @@ import MiniBtn from '@/ui/mini-btn'
 import Facility from './facility'
 import Client from './client'
 import DeleteModal from '@/ui/modal/delete-modal'
-import { useGetClient, useGetEquipment, useCheckAll, useDeleteEquipment, useDeleteClient } from '@/hooks'
+import {
+  useGetClient,
+  useGetEquipment,
+  useCheckAll,
+  useDeleteEquipment,
+  useDeleteClient,
+} from '@/hooks'
 
 const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore()
@@ -40,20 +46,35 @@ const MasterData = () => {
   // 디바운싱 타이머 ref
   const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
+  // setter 함수들을 useMemo로 메모이제이션
+  const memoizedSetEquipmentSearchKeyword = useMemo(
+    () => setEquipmentSearchKeyword,
+    [setEquipmentSearchKeyword]
+  )
+  const memoizedSetClientSearchKeyword = useMemo(
+    () => setClientSearchKeyword,
+    [setClientSearchKeyword]
+  )
+
   // 검색어 상태 동기화 (디바운싱)
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
     debounceTimer.current = setTimeout(() => {
       if (settingChip === 'equipment') {
-        setEquipmentSearchKeyword(searchKeyword)
+        memoizedSetEquipmentSearchKeyword(searchKeyword)
       } else if (settingChip === 'client') {
-        setClientSearchKeyword(searchKeyword)
+        memoizedSetClientSearchKeyword(searchKeyword)
       }
     }, 500)
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current)
     }
-  }, [searchKeyword, setEquipmentSearchKeyword, setClientSearchKeyword, settingChip])
+  }, [
+    searchKeyword,
+    memoizedSetEquipmentSearchKeyword,
+    memoizedSetClientSearchKeyword,
+    settingChip,
+  ])
 
   // 체크박스 상태 관리
   const {
@@ -91,9 +112,14 @@ const MasterData = () => {
     }
     // chip이 바뀔 때 검색어 초기화
     setSearchKeyword('')
-    setEquipmentSearchKeyword('')
-    setClientSearchKeyword('')
-  }, [settingChip, setSettingChip, setEquipmentSearchKeyword, setClientSearchKeyword])
+    memoizedSetEquipmentSearchKeyword('')
+    memoizedSetClientSearchKeyword('')
+  }, [
+    settingChip,
+    setSettingChip,
+    memoizedSetEquipmentSearchKeyword,
+    memoizedSetClientSearchKeyword,
+  ])
   const handleEquipmentChipClick = () => setSettingChip('equipment' as SettingChipType)
   const handleClientChipClick = () => setSettingChip('client' as SettingChipType)
 
@@ -136,7 +162,9 @@ const MasterData = () => {
       }
       try {
         // 선택된 모든 거래처 삭제
-        const deletePromises = checkedClientIds.map((id) => deleteClient(id))
+        const deletePromises = checkedClientIds.map((id) =>
+          deleteClient({ factory_id: 1, client_id: id })
+        )
         await Promise.all(deletePromises)
         // 거래처 목록 새로고침
         await refetchClient()
@@ -153,20 +181,23 @@ const MasterData = () => {
     setAllChecked(false)
   }
 
-  // equipmentList를 Facility에 넘길 때 PaginationModel 형태로 래핑
-  const equipmentListForFacility = {
-    data: equipmentList?.data || [],
-    count: equipmentList?.count || 0,
-    totalCnt: equipmentList?.totalCnt || 0,
-    pageCnt: equipmentList?.pageCnt || 1,
-    curPage: equipmentList?.curPage || 1,
-    nextPage: equipmentList?.nextPage || 1,
-    previousPage: equipmentList?.previousPage || 1,
-  }
+  // equipmentList를 Facility에 넘길 때 PaginationModel 형태로 래핑 - useMemo로 메모이제이션
+  const equipmentListForFacility = useMemo(
+    () => ({
+      data: equipmentList?.data || [],
+      count: equipmentList?.count || 0,
+      totalCnt: equipmentList?.totalCnt || 0,
+      pageCnt: equipmentList?.pageCnt || 1,
+      curPage: equipmentList?.curPage || 1,
+      nextPage: equipmentList?.nextPage || 1,
+      previousPage: equipmentList?.previousPage || 1,
+    }),
+    [equipmentList]
+  )
 
   // 페이지네이션 변경 핸들러 (Client용)
   const handleClientPageChange = (page: number) => {
-    setClientFilters(prev => ({ ...prev, page }))
+    setClientFilters((prev) => ({ ...prev, page }))
   }
 
   const renderContent = () => {
@@ -239,9 +270,9 @@ const MasterData = () => {
             if (e.key === 'Enter') {
               if (debounceTimer.current) clearTimeout(debounceTimer.current)
               if (settingChip === 'equipment') {
-                setEquipmentSearchKeyword(searchKeyword)
+                memoizedSetEquipmentSearchKeyword(searchKeyword)
               } else if (settingChip === 'client') {
-                // setClientSearchKeyword(searchKeyword)
+                // memoizedSetClientSearchKeyword(searchKeyword)
               }
             }
           }}
@@ -272,7 +303,7 @@ const MasterData = () => {
             bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
             hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
             onClick={handleDeleteBtnClick}
-            disabled={isDeleteLoading}
+            disabled={isDeleteLoading || isDeleteClientLoading}
           />
         </div>
       </div>
@@ -282,7 +313,7 @@ const MasterData = () => {
         <DeleteModal
           onClose={() => setIsDeleteModalOpen(false)}
           onDelete={handleDeleteConfirm}
-          isLoading={isDeleteLoading}
+          isLoading={isDeleteLoading || isDeleteClientLoading}
         />
       )}
     </div>

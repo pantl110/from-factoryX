@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { ClientListResponseModel } from '@/types/data-model'
 import useSearchClient from './use-search-client'
 import useFactoryStore from '@/store/factory-store'
 
 // 쿼리 파라미터 객체를 쿼리스트링으로 변환하는 함수
-function toQueryString(params: Record<string, any>) {
+function toQueryString(params: Record<string, string | number | undefined>) {
   return Object.entries(params)
     .filter(([, v]) => v !== undefined && v !== null && v !== '')
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join('&')
 }
 
@@ -28,12 +28,15 @@ const useGetClient = () => {
   const { searchClients, isLoading: isSearchLoading, error: searchError } = useSearchClient()
   const factoryId = useFactoryStore((state) => state.factoryId)
 
+  // filters 객체를 useMemo로 메모이제이션
+  const memoizedFilters = useMemo(() => filters, [filters])
+
   // 전체 목록 불러오기 (필터 포함)
   const getClientList = useCallback(
     async (customFilters?: typeof filters) => {
       const factoryIdNum = Number(factoryId)
       if (!factoryIdNum || isNaN(factoryIdNum)) return // factoryId 없으면 호출하지 않음
-      const rawFilters = customFilters || filters;
+      const rawFilters = customFilters || memoizedFilters
       const queryObject = {
         name: rawFilters.name,
         business_registration_number: rawFilters.business_registration_number,
@@ -41,13 +44,14 @@ const useGetClient = () => {
         client_type: rawFilters.client_type,
         page: Number(rawFilters.page) || 1,
         page_size: Number(rawFilters.page_size) || 10,
-      };
+      }
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client/clients?factory_id=${factoryIdNum}&${toQueryString(queryObject)}`;
-      console.log('factoryId:', factoryId, typeof factoryId)
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client/clients?factory_id=${factoryIdNum}&${toQueryString(queryObject)}`
+      // 필요시 console.warn 또는 console.error만 사용
+      // console.log('factoryId:', factoryId, typeof factoryId)
       // console.log('params:', params)
-      console.log('페이지:', queryObject.page, typeof queryObject.page)
-      console.log('fetch url:', url)
+      // console.log('페이지:', queryObject.page, typeof queryObject.page)
+      // console.log('fetch url:', url)
 
       setIsLoading(true)
       setError(null)
@@ -75,7 +79,7 @@ const useGetClient = () => {
         setIsLoading(false)
       }
     },
-    [factoryId]
+    [factoryId, memoizedFilters]
   )
 
   // 검색어로 검색
@@ -102,7 +106,9 @@ const useGetClient = () => {
     } else {
       getClientList()
     }
-  }, [factoryId, searchKeyword])
+    // searchAllFields는 getClientList에 포함되어 있어 무한 루프 방지를 위해 제외
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId, searchKeyword, getClientList])
 
   return {
     clientList,

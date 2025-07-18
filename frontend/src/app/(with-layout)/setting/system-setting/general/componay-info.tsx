@@ -40,6 +40,7 @@ const CompanyInfo = () => {
       business_category: '',
       business_address: '',
     },
+    reValidateMode: 'onSubmit', // 모든 필드 유효성 검사를 동시에 실행
   })
 
   useEffect(() => {
@@ -47,6 +48,7 @@ const CompanyInfo = () => {
       getFactory(factoryId)
     }
     // getFactory는 의존성 배열에서 제거!
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId])
 
   useEffect(() => {

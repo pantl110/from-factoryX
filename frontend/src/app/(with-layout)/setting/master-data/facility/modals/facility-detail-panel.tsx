@@ -26,7 +26,13 @@ interface FacilityFormModel {
   note?: string
 }
 
-const FacilityDetailPanel = ({ facility, onClose, onSuccess, showWarningToast, facilityList }: FacilityDetailPanelProps) => {
+const FacilityDetailPanel = ({
+  facility,
+  onClose,
+  onSuccess,
+  showWarningToast,
+  facilityList,
+}: FacilityDetailPanelProps) => {
   const { createEquipment } = useCreateEquipment()
   const { updateEquipment } = useUpdateEquipment()
   const factoryId = useFactoryStore((state) => state.factoryId)
@@ -58,27 +64,25 @@ const FacilityDetailPanel = ({ facility, onClose, onSuccess, showWarningToast, f
 
   // priority 중복 체크 함수 (실제 구현)
   const checkPriorityDuplicate = (value: string) => {
-    if (!value || !facilityList) return false;
-    const numValue = Number(value);
-    if (isNaN(numValue)) return false;
-    return facilityList.some(
-      (eq) => eq.priority === numValue && eq.id !== facility?.id
-    );
-  };
+    if (!value || !facilityList) return false
+    const numValue = Number(value)
+    if (isNaN(numValue)) return false
+    return facilityList.some((eq) => eq.priority === numValue && eq.id !== facility?.id)
+  }
 
   // 저장 버튼 클릭 시 생성/수정 분기
   const onSubmit = async (data: FacilityFormModel) => {
     // 저장 시 priority 중복 체크
     if (checkPriorityDuplicate(data.priority)) {
-      showWarningToast?.();
+      showWarningToast?.()
       if (facility) {
         // 수정 모드: 원래 값으로 복원
-        setValue('priority', facility.priority?.toString() || '');
+        setValue('priority', facility.priority?.toString() || '')
       } else {
         // 생성 모드: 빈 값으로 초기화
-        setValue('priority', '');
+        setValue('priority', '')
       }
-      return; // 중복이면 저장 중단
+      return // 중복이면 저장 중단
     }
 
     if (facility) {
@@ -101,7 +105,7 @@ const FacilityDetailPanel = ({ facility, onClose, onSuccess, showWarningToast, f
       }
     } else {
       // 생성 (POST)
-      if (typeof factoryId !== 'number') {
+      if (!factoryId) {
         alert('공장 정보가 없습니다. 다시 로그인 해주세요.')
         return
       }
@@ -152,7 +156,7 @@ const FacilityDetailPanel = ({ facility, onClose, onSuccess, showWarningToast, f
               render={({ field }) => (
                 <InfoLabelValue
                   label="설비명"
-                  placeholder="설비명을 입력하세요."
+                  placeholder="(필수) 설비명을 입력하세요."
                   isEditing={true}
                   required
                   {...field}
@@ -179,11 +183,20 @@ const FacilityDetailPanel = ({ facility, onClose, onSuccess, showWarningToast, f
               render={({ field }) => (
                 <InfoLabelValue
                   label="자동 배정 순위"
-                  placeholder="자동 배정 순위를 입력하세요."
+                  placeholder="(필수) 자동 배정 순위를 입력하세요."
                   isEditing={true}
-                  inputType="number"
+                  inputType="text"
                   required
-                  {...field}
+                  value={
+                    field.value === undefined || field.value === null || field.value === ''
+                      ? ''
+                      : field.value.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                  }
+                  onChange={(e) => {
+                    const numValue = e.target.value.replace(/[^0-9]/g, '')
+                    field.onChange(numValue ? numValue : '')
+                  }}
+                  onBlur={field.onBlur}
                 />
               )}
             />

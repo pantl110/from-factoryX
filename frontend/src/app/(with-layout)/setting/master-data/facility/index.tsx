@@ -78,7 +78,12 @@ const Facility = ({
 
       {/* 설비 생성 판넬 (빈 데이터) */}
       {isCreatePanelOpen && (
-        <FacilityDetailPanel onClose={handleCreatePanelClose} onSuccess={refetchEquipment} showWarningToast={showToast} facilityList={facilityList} />
+        <FacilityDetailPanel
+          onClose={handleCreatePanelClose}
+          onSuccess={refetchEquipment}
+          showWarningToast={showToast}
+          facilityList={facilityList}
+        />
       )}
 
       {isToastOpen && (
