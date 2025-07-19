@@ -76,7 +76,7 @@ class TestOnboardingAPI(TestCase):
             "unit": "EA"
         }
         
-        response = await self.onboarding_client.post("/create-single-product", headers=headers, json=payload)
+        response = await self.onboarding_client.post("", headers=headers, json=payload)
         
         
         self.assertEqual(response.status_code, 201)
@@ -109,7 +109,7 @@ class TestOnboardingAPI(TestCase):
             "unit": "EA"
         }
         
-        response = await self.onboarding_client.post("/create-single-product", headers=headers, json=payload)
+        response = await self.onboarding_client.post("", headers=headers, json=payload)
         
         
         self.assertEqual(response.status_code, 404)
@@ -146,7 +146,7 @@ class TestOnboardingAPI(TestCase):
             ]
         }
         
-        response = await self.onboarding_client.post("/assign-material-product", headers=headers, json=payload)
+        response = await self.onboarding_client.post("/assign", headers=headers, json=payload)
         
         self.assertEqual(response.status_code, 201)
         
@@ -186,7 +186,7 @@ class TestOnboardingAPI(TestCase):
             ]
         }
         
-        response = await self.onboarding_client.post("/assign-material-product", headers=headers, json=payload)
+        response = await self.onboarding_client.post("/assign", headers=headers, json=payload)
         
         # 다른 사용자의 제품을 찾을 수 없으므로 404가 맞습니다
         self.assertEqual(response.status_code, 404)
@@ -204,7 +204,7 @@ class TestOnboardingAPI(TestCase):
             "unit": "EA"
         }
         
-        create_response = await self.onboarding_client.post("/create-single-product", headers=headers, json=create_payload)
+        create_response = await self.onboarding_client.post("", headers=headers, json=create_payload)
         
         self.assertEqual(create_response.status_code, 201)
         
@@ -225,7 +225,7 @@ class TestOnboardingAPI(TestCase):
             ]
         }
         
-        assign_response = await self.onboarding_client.post("/assign-material-product", headers=headers, json=assign_payload)
+        assign_response = await self.onboarding_client.post("/assign", headers=headers, json=assign_payload)
         
         self.assertEqual(assign_response.status_code, 201)
         

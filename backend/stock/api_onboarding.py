@@ -14,7 +14,7 @@ router = Router(tags=["Onboarding"])
 
 
 @router.post(
-    "/create-single-product",
+    "",
     summary="[C] 단일 품목 생성",
     description="공장에 연결된 단일 품목을 생성합니다.",
     response={201: SingleProductCreateOut},
@@ -57,7 +57,7 @@ async def create_single_product(request, payload: SingleProductCreateIn):
 
 
 @router.post(
-    "/assign-material-product",
+    "/assign",
     summary="[C] 원자재 생성 및 품목 연결",
     description="원자재를 생성하고 품목과 연결합니다.",
     response={201: None},
