@@ -43,3 +43,8 @@ class ProjectPlanListFilter(FilterSchema):
         if self.client_name:
             qs = qs.filter(quotations__client__name__icontains=self.client_name)
         return qs
+
+# list_progress_project
+class ListProgressProjectIn(Schema):
+    factory_id: int
+    status: str  # "progress" 또는 "complete"

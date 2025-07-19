@@ -1,10 +1,13 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
+from ninja.pagination import paginate
+from asgiref.sync import sync_to_async
 from api.security import jwt_auth
-from project.schemas.outbound import ProjectCreateOut, ProjectDetailOut, ProjectUpdateOut
-from project.schemas.inbound import ProjectStatusUpdateIn, ProjectTransactDateUpdateIn
+from project.schemas.outbound import ProjectCreateOut, ProjectDetailOut, ProjectUpdateOut, ListProgressProjectOut
+from project.schemas.inbound import ProjectStatusUpdateIn, ProjectTransactDateUpdateIn, ListProgressProjectIn
 from project.models import Project
 from document.models import Quotation
+from typing import List
 
 router = Router(tags=["Project"], auth=jwt_auth)
 
@@ -108,3 +111,109 @@ async def update_project_transact_date(request, project_id: int, payload: Projec
 
     except Exception as e:
         raise HttpError(500, "거래명세서 발급일 업데이트 중 내부 서버 오류가 발생했습니다.")
+
+
+# Progress, Completed Project Tab
+@router.get(
+    "/list-progress",
+    summary="[C] 진행 중인 프로젝트 조회",
+    description="진행 중인 프로젝트를 조회합니다.",
+    response={200: List[ListProgressProjectOut], 400: dict, 500: dict}
+)
+@paginate
+async def list_progress_project(request, factory_id: int = Query(...), status: str = Query(...)):
+    """
+    진행 중인 프로젝트 또는 완료된 프로젝트를 조회합니다.
+    
+    입력 필드:
+    - factory_id: 공장 ID (필수)
+    - status: 조회 상태 ("progress" 또는 "complete")
+        - "progress": 완료 상태를 제외한 모든 프로젝트 조회
+        - "complete": 완료된 프로젝트만 조회
+    
+    반환 필드:
+    - project_id: 프로젝트 ID
+    - client_name: 고객사명 (Quotation.FactoryClient.name)
+    - product_names: 제품명 목록 (Quotation.QuotationProduct.Product.name 배열)
+    - start_date: 생산 시작일 (ProjectPlan.start_date 중 가장 빠른 날짜)
+    - due_date: 납기일자 (Quotation.due_date)
+    - publish_status: 세금계산서 발행 상태 (Project.NationalTaxService.publish_status)
+        - null: 세금계산서 미연결 ("연결 필요"로 표시)
+        - "temporary": 임시 저장
+        - "pending": 발행 대기
+        - "published": 발행 완료
+    
+    예시:
+    - 진행 중인 프로젝트: status="progress"
+    - 완료된 프로젝트: status="complete"
+    """
+    try:
+        # status 값 검증
+        if status not in ["progress", "complete"]:
+            raise HttpError(400, "status는 'progress' 또는 'complete'여야 합니다.")
+        
+        @sync_to_async
+        def get_projects():
+            if status == "progress":
+                projects = Project.objects.filter(
+                    quotations__factory_id=factory_id
+                ).exclude(
+                    status=Project.ProjectStatus.completed
+                ).prefetch_related(
+                    'quotations__client',
+                    'quotations__products__product',
+                    'plans__product__product',
+                    'tax_invoice'
+                ).distinct()
+            else:
+                projects = Project.objects.filter(
+                    quotations__factory_id=factory_id,
+                    status=Project.ProjectStatus.completed
+                ).prefetch_related(
+                    'quotations__client',
+                    'quotations__products__product',
+                    'plans__product__product',
+                    'tax_invoice'
+                ).distinct()
+            
+            return list(projects)
+        
+        projects = await get_projects()
+        result = []
+        
+        for project in projects:
+            quotations = project.quotations.filter(factory_id=factory_id).prefetch_related(
+                'client', 'products__product'
+            )
+            
+            for quotation in quotations:
+                product_names = []
+                for quotation_product in quotation.products.all():
+                    product_names.append(quotation_product.product.name)
+                
+                start_date = None
+                plans = project.plans.all()
+                if plans:
+                    start_dates = [plan.start_date for plan in plans]
+                    start_date = min(start_dates)
+                
+                # 세금계산서 상태 처리
+                publish_status = None
+                if project.tax_invoice:
+                    publish_status = project.tax_invoice.publish_status
+                
+                result.append(ListProgressProjectOut(
+                    project_id=project.id,
+                    client_name=quotation.client.name if quotation.client else "",
+                    product_names=product_names,
+                    start_date=start_date or quotation.due_date,
+                    due_date=quotation.due_date,
+                    publish_status=publish_status
+                ))
+        
+        return result
+        
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, "프로젝트 조회 중 내부 서버 오류가 발생했습니다.")

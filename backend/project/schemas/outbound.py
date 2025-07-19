@@ -119,3 +119,13 @@ class RefundUpdateIn(Schema):
 class RefundUpdateOut(Schema):
     message: str
     refund_id: int
+
+
+# list_progress_project
+class ListProgressProjectOut(Schema):
+    project_id: int
+    client_name: str
+    product_names: List[str]
+    start_date: datetime.date
+    due_date: datetime.date
+    publish_status: Optional[str] = None
