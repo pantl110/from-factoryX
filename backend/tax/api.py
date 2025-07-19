@@ -3,6 +3,7 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from tax.schemas.outbound import NotLinkedTaxInvoiceOut
+from tax.schemas.inbound import LinkTaxInvoiceIn
 from api.security import jwt_auth
 from typing import List
 
@@ -85,3 +86,61 @@ async def list_not_link_tax(request):
         
     except Exception as e:
         raise HttpError(500, "연동되지 않은 세금계산서 조회 중 내부 서버 오류가 발생했습니다.")
+
+
+@router.post(
+    "/link",
+    summary="[C] 선택된 세금계산서 연결",
+    description="선택된 세금계산서를 프로젝트에 연결합니다.",
+    response={200: dict, 400: dict, 404: dict, 500: dict}
+)
+async def link_tax(request, payload: LinkTaxInvoiceIn):
+    """
+    선택된 세금계산서를 프로젝트에 연결합니다.
+    
+    입력 필드:
+    - project_id: 프로젝트 ID (int)
+    - tax_id: 세금계산서 ID (int)
+    
+    반환 필드: 없음 (성공 시 빈 응답)
+    """
+    try:
+        @sync_to_async
+        def link_tax_invoice():
+            from project.models import Project
+            from tax.models import NationalTaxService
+            
+            # 프로젝트 존재 확인
+            try:
+                project = Project.objects.get(id=payload.project_id)
+            except Project.DoesNotExist:
+                raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
+            
+            # 세금계산서 존재 확인
+            try:
+                tax_invoice = NationalTaxService.objects.get(id=payload.tax_id)
+            except NationalTaxService.DoesNotExist:
+                raise HttpError(404, f"세금계산서 ID {payload.tax_id}를 찾을 수 없습니다.")
+            
+            # 이미 다른 프로젝트에 연결되어 있는지 확인
+            if tax_invoice.projects.exists():
+                raise HttpError(400, f"세금계산서 ID {payload.tax_id}는 이미 다른 프로젝트에 연결되어 있습니다.")
+            
+            # 프로젝트의 기존 세금계산서가 있다면 제거
+            if project.tax_invoice:
+                project.tax_invoice = None
+                project.save()
+            
+            # 새로운 세금계산서 연결
+            project.tax_invoice = tax_invoice
+            project.save()
+            
+            return {}
+        
+        result = await link_tax_invoice()
+        return result
+        
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, "세금계산서 연결 중 내부 서버 오류가 발생했습니다.")

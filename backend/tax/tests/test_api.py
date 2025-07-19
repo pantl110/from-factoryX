@@ -370,3 +370,213 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(len(data['data']), 2)
         self.assertEqual(data['data'][0]['id'], new_invoice.id)  # 최신 날짜가 먼저
         self.assertEqual(data['data'][1]['id'], old_invoice.id)  # 오래된 날짜가 나중에
+
+    # 세금계산서 연결 API 테스트
+    def test_link_tax_success(self):
+        """세금계산서 연결 성공 테스트"""
+        # 프로젝트 생성
+        project = Project.objects.create()
+        
+        # 연동 안된 세금계산서 생성
+        tax_invoice = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=300000,
+            tax_amount=30000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        tax_invoice.product.add(self.product1)
+        
+        # API 호출
+        url = '/v1/tax/link'
+        payload = {
+            "project_id": project.id,
+            "tax_id": tax_invoice.id
+        }
+        
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 응답 확인 (빈 응답)
+        self.assertEqual(data, {})
+        
+        # 데이터베이스에서 연결 확인
+        project.refresh_from_db()
+        self.assertEqual(project.tax_invoice.id, tax_invoice.id)
+
+    def test_link_tax_project_not_found(self):
+        """존재하지 않는 프로젝트 연결 시도 테스트"""
+        # 존재하지 않는 프로젝트 ID
+        payload = {
+            "project_id": 999,
+            "tax_id": 1
+        }
+        
+        url = '/v1/tax/link'
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertIn('해당 프로젝트를 찾을 수 없습니다', data['detail'])
+
+    def test_link_tax_invoice_not_found(self):
+        """존재하지 않는 세금계산서 연결 시도 테스트"""
+        # 프로젝트 생성
+        project = Project.objects.create()
+        
+        payload = {
+            "project_id": project.id,
+            "tax_id": 999  # 존재하지 않는 세금계산서 ID
+        }
+        
+        url = '/v1/tax/link'
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertIn('세금계산서 ID 999를 찾을 수 없습니다', data['detail'])
+
+    def test_link_tax_already_connected(self):
+        """이미 연결된 세금계산서 연결 시도 테스트"""
+        # 프로젝트 생성
+        project = Project.objects.create()
+        
+        # 이미 연결된 세금계산서 생성
+        connected_invoice = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=300000,
+            tax_amount=30000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        connected_invoice.product.add(self.product1)
+        
+        # 다른 프로젝트에 연결
+        other_project = Project.objects.create()
+        other_project.tax_invoice = connected_invoice
+        other_project.save()
+        
+        # 이미 연결된 세금계산서를 다른 프로젝트에 연결 시도
+        payload = {
+            "project_id": project.id,
+            "tax_id": connected_invoice.id
+        }
+        
+        url = '/v1/tax/link'
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn('이미 다른 프로젝트에 연결되어 있습니다', data['detail'])
+
+    def test_link_tax_replace_existing(self):
+        """기존 세금계산서를 새로운 세금계산서로 교체 테스트"""
+        # 프로젝트 생성
+        project = Project.objects.create()
+        
+        # 기존 세금계산서 생성 및 연결
+        old_invoice = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=300000,
+            tax_amount=30000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        old_invoice.product.add(self.product1)
+        
+        project.tax_invoice = old_invoice
+        project.save()
+        
+        # 새로운 세금계산서 생성
+        new_invoice = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=400000,
+            tax_amount=40000,
+            tax_invoice_type='purchase',
+            publish_status='published'
+        )
+        new_invoice.product.add(self.product2)
+        
+        # 새로운 세금계산서로 교체
+        payload = {
+            "project_id": project.id,
+            "tax_id": new_invoice.id
+        }
+        
+        url = '/v1/tax/link'
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data, {})
+        
+        # 데이터베이스에서 교체 확인
+        project.refresh_from_db()
+        self.assertEqual(project.tax_invoice.id, new_invoice.id)
+        self.assertNotEqual(project.tax_invoice.id, old_invoice.id)
+
+    def test_link_tax_without_auth(self):
+        """인증 없이 API 호출 시도 테스트"""
+        payload = {
+            "project_id": 1,
+            "tax_id": 1
+        }
+        
+        url = '/v1/tax/link'
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        
+        # 인증이 필요하므로 401 또는 403이 반환되어야 함
+        self.assertIn(response.status_code, [401, 403])
+
+    def test_link_tax_invalid_token(self):
+        """잘못된 토큰으로 API 호출 시도 테스트"""
+        payload = {
+            "project_id": 1,
+            "tax_id": 1
+        }
+        
+        url = '/v1/tax/link'
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION='Bearer invalid_token'
+        )
+        
+        # 잘못된 토큰이므로 401이 반환되어야 함
+        self.assertEqual(response.status_code, 401)
