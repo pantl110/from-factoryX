@@ -30,6 +30,7 @@ from factory.api_member import router as factoryMember_router
 from factory.api_eq import router as factoryEQ_router
 from stock.api_product import router as stockProduct_router
 from stock.api_product_history import router as stockProductHistory_router
+from stock.api_onboarding import router as onboarding_router
 from factory.api_client import router as factoryClient_router
 from location.api import router as location_router
 from document.api_quotation import router as quotation_router
@@ -66,6 +67,7 @@ base_api.add_router("v1/factory/equipment", factoryEQ_router)
 base_api.add_router("v1/factory", factory_router)
 base_api.add_router("v1/stock/product", stockProduct_router)
 base_api.add_router("v1/stock/product/history", stockProductHistory_router)
+base_api.add_router("v1/stock/onboarding", onboarding_router)
 base_api.add_router("v1/factory/client", factoryClient_router)
 base_api.add_router("v1/location", location_router)
 base_api.add_router("v1/document/quotation", quotation_router)

@@ -131,3 +131,33 @@ class MaterialProductConnectIn(Schema):
 
 class MaterialProductUpdateIn(Schema):
     quantity: float
+
+
+# Onboarding Tab
+# create_single_product
+class SingleProductCreateIn(Schema):
+    """단일 품목 생성 스키마"""
+    factory_id: int = Field(..., description="공장 ID")
+    name: str = Field(..., description="품목명")
+    code: str = Field(..., description="품목 코드")
+    spec: str = Field(..., description="규격")
+    unit: str = Field(..., description="단위")
+
+
+# Onboarding Tab
+# assign_materialproduct
+class MaterialAssignmentIn(Schema):
+    """원자재 할당 입력 스키마"""
+    name: str = Field(..., description="자재명")
+    code: str = Field(..., description="자재 코드")
+    spec: str = Field(..., description="규격")
+    quantity: float = Field(..., description="사용 수량")
+
+
+# Onboarding Tab
+# assign_materialproduct
+class AssignMaterialProductIn(Schema):
+    """원자재 생성 및 품목 연결 입력 스키마"""
+    factory_id: int = Field(..., description="공장 ID")
+    product_id: int = Field(..., description="품목 ID")
+    materials: List[MaterialAssignmentIn] = Field(..., description="원자재 목록")
