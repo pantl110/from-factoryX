@@ -115,7 +115,7 @@ async def update_project_transact_date(request, project_id: int, payload: Projec
 
 # Progress, Completed Project Tab
 @router.get(
-    "/list-progress",
+    "",
     summary="[C] 진행 중인 프로젝트 조회",
     description="진행 중인 프로젝트를 조회합니다.",
     response={200: List[ListProgressProjectOut], 400: dict, 500: dict}
@@ -148,7 +148,6 @@ async def list_progress_project(request, factory_id: int = Query(...), status: s
     - 완료된 프로젝트: status="complete"
     """
     try:
-        # status 값 검증
         if status not in ["progress", "complete"]:
             raise HttpError(400, "status는 'progress' 또는 'complete'여야 합니다.")
         
