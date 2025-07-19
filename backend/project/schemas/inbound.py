@@ -48,3 +48,7 @@ class ProjectPlanListFilter(FilterSchema):
 class ListProgressProjectIn(Schema):
     factory_id: int
     status: str  # "progress" 또는 "complete"
+
+
+class ProjectCloneIn(Schema):
+    project_id: int

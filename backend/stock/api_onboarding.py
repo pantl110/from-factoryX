@@ -13,6 +13,8 @@ User = get_user_model()
 router = Router(tags=["Onboarding"])
 
 
+
+
 @router.post(
     "",
     summary="[C] 단일 품목 생성",

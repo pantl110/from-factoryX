@@ -728,3 +728,91 @@ class ProjectAPITestCase(TestCase):
         # 다른 공장의 프로젝트는 조회되지 않았는지 확인
         current_project_ids = [p.id for p in current_factory_projects]
         self.assertNotIn(other_project.id, current_project_ids)
+
+def test_clone_project_success(self):
+    """프로젝트 복제 성공 테스트"""
+    # 완료된 프로젝트 생성
+    project = Project.objects.create(status=Project.ProjectStatus.completed)
+    
+    # API 호출
+    url = '/v1/project/clone'
+    payload = {
+        "project_id": project.id
+    }
+    response = self.client.post(
+        url,
+        data=json.dumps(payload),
+        content_type='application/json',
+        HTTP_AUTHORIZATION=f'Bearer {self.token}'
+    )
+    
+    self.assertEqual(response.status_code, 200)
+    data = response.json()
+    self.assertEqual(data, {})
+    
+    # 복제된 프로젝트 확인
+    cloned_projects = Project.objects.filter(status=Project.ProjectStatus.pending)
+    self.assertEqual(cloned_projects.count(), 1)
+    
+    cloned_project = cloned_projects.first()
+    self.assertEqual(cloned_project.status, Project.ProjectStatus.pending)
+    self.assertIsNone(cloned_project.transact_date)
+    self.assertIsNone(cloned_project.tax_invoice)
+
+def test_clone_project_not_completed(self):
+    """완료되지 않은 프로젝트 복제 시도 테스트"""
+    # 생산 중인 프로젝트 생성
+    project = Project.objects.create(status=Project.ProjectStatus.production)
+    
+    # API 호출
+    url = '/v1/project/clone'
+    payload = {
+        "project_id": project.id
+    }
+    response = self.client.post(
+        url,
+        data=json.dumps(payload),
+        content_type='application/json',
+        HTTP_AUTHORIZATION=f'Bearer {self.token}'
+    )
+    
+    self.assertEqual(response.status_code, 400)
+    data = response.json()
+    self.assertIn('완료된 프로젝트만 복제할 수 있습니다', data['detail'])
+
+def test_clone_project_not_found(self):
+    """존재하지 않는 프로젝트 복제 시도 테스트"""
+    # API 호출
+    url = '/v1/project/clone'
+    payload = {
+        "project_id": 999
+    }
+    response = self.client.post(
+        url,
+        data=json.dumps(payload),
+        content_type='application/json',
+        HTTP_AUTHORIZATION=f'Bearer {self.token}'
+    )
+    
+    self.assertEqual(response.status_code, 404)
+    data = response.json()
+    self.assertIn('해당 프로젝트를 찾을 수 없습니다', data['detail'])
+
+def test_clone_project_without_auth(self):
+    """인증 없이 API 호출 시도 테스트"""
+    # 완료된 프로젝트 생성
+    project = Project.objects.create(status=Project.ProjectStatus.completed)
+    
+    # API 호출
+    url = '/v1/project/clone'
+    payload = {
+        "project_id": project.id
+    }
+    response = self.client.post(
+        url,
+        data=json.dumps(payload),
+        content_type='application/json'
+    )
+    
+    # 인증이 필요하므로 401 또는 403이 반환되어야 함
+    self.assertIn(response.status_code, [401, 403])
