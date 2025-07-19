@@ -16,12 +16,13 @@ from stock.utils import get_history_by_id, get_product_by_id
 
 router = Router(tags=["ProductHistory"], auth=jwt_auth)
 
+
 @router.post(
     "",
     summary="[C] 제품 입출고 이력 등록",
     description="제품 입출고 이력을 등록합니다.",
     response={201: ProductHistoryOut},
-    auth=jwt_auth
+    auth=jwt_auth,
 )
 async def create_product_history(request, payload: ProductHistoryCreateIn):
     user = request.auth
@@ -37,14 +38,19 @@ async def create_product_history(request, payload: ProductHistoryCreateIn):
     summary="[C] 제품 입출고 이력 목록 조회",
     description="사용자가 소유한 공장의 제품 입출고 이력을 조회합니다.",
     response={200: List[ProductHistoryOut]},
-    auth=jwt_auth
+    auth=jwt_auth,
 )
 @paginate
 async def list_product_histories(request, filters: ProductHistoryFilter = Query(...)):
     user = request.auth
+
     @sync_to_async
     def get_histories():
-        queryset = ProductHistory.objects.filter(product__factory__owner=user).select_related("product").order_by("-created_at")
+        queryset = (
+            ProductHistory.objects.filter(product__factory__owner=user)
+            .select_related("product")
+            .order_by("-created_at")
+        )
         queryset = filters.filter(queryset)
         return list(queryset)
 
@@ -57,7 +63,7 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
     summary="[C] 제품 입출고 이력 상세 조회",
     description="입출고 이력 ID로 상세 정보를 조회합니다.",
     response={200: ProductHistoryOut},
-    auth=jwt_auth
+    auth=jwt_auth,
 )
 async def get_product_history(request, history_id: int):
     user = request.auth

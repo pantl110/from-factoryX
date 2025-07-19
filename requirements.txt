@@ -33,3 +33,9 @@ yarl==1.18.3
 rav
 httpx 
 boto3
+langchain
+langchain-community
+langchain-openai
+upstage
+openai
+aiofiles

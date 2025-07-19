@@ -30,7 +30,9 @@ class FactoryUpdateIn(ModelSchema):
 
 class FactoryFilter(FilterSchema):
     name: Optional[str] = Field(default=None, q="name__icontains", description="공장명")
-    address: Optional[str] = Field(default=None, q="address__icontains", description="공장 주소")
+    address: Optional[str] = Field(
+        default=None, q="address__icontains", description="공장 주소"
+    )
 
 
 class FactoryDetailIn(Schema):
@@ -58,14 +60,16 @@ class FactoryEqCreateIn(ModelSchema):
 class FactoryEqFilter(FilterSchema):
     name: Optional[str] = Field(default=None, q="name__icontains", description="설비명")
     status: Optional[str] = Field(default=None, q="status", description="설비 상태")
-    location: Optional[str] = Field(default=None, q="location__icontains", description="설비 위치")
+    location: Optional[str] = Field(
+        default=None, q="location__icontains", description="설비 위치"
+    )
     priority: Optional[int] = Field(default=None, q="priority", description="우선순위")
 
 
 # 거래처 관련 스키마
 class FactoryClientCreateIn(ModelSchema):
     factory_id: int = Field(description="공장 ID")
-    
+
     class Meta:
         model = FactoryClient
         exclude = [
@@ -83,7 +87,7 @@ class FactoryEqUpdateIn(ModelSchema):
     note: Optional[str] = Field(default=None, description="설비 설명")
     status: Optional[str] = Field(default=None, description="설비 상태")
     location: Optional[str] = Field(default=None, description="설비 위치")
-    
+
     class Meta:
         model = FactoryEquipment
         exclude = [
@@ -112,7 +116,9 @@ class FactoryClientFilter(FilterSchema):
         default=None, q="name__icontains", description="거래처명"
     )
     business_registration_number: Optional[str] = Field(
-        default=None, q="business_registration_number__icontains", description="사업자등록번호"
+        default=None,
+        q="business_registration_number__icontains",
+        description="사업자등록번호",
     )
     representative_name: Optional[str] = Field(
         default=None, q="representative_name__icontains", description="대표자명"
@@ -121,13 +127,16 @@ class FactoryClientFilter(FilterSchema):
         default=None, q="client_type", description="거래처 유형 (customer/supplier)"
     )
 
+
 # 거래처 상세 조회용 스키마 (URL 경로로 ID 받음)
 class FactoryClientDetailIn(Schema):
     pass
 
+
 # 거래처 삭제용 스키마 (URL 경로로 ID 받음)
 class FactoryClientDeleteIn(Schema):
     pass
+
 
 # 거래처 검색용 스키마
 class FactoryClientSearchIn(Schema):

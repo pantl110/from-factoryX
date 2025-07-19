@@ -1,6 +1,12 @@
 from ninja import ModelSchema, Schema, Field
 from pydantic import BaseModel
-from stock.models import Product, ProductHistory, Material, MaterialHistory, MaterialProduct
+from stock.models import (
+    Product,
+    ProductHistory,
+    Material,
+    MaterialHistory,
+    MaterialProduct,
+)
 from typing import Optional, List
 
 

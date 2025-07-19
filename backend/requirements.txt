@@ -37,4 +37,10 @@ redis
 django-redis
 email-validator
 rav
-httpx 
+httpx
+langchain
+langchain-community
+langchain-openai
+upstage
+openai
+aiofiles
