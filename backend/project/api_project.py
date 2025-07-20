@@ -11,6 +11,9 @@ from typing import List
 
 router = Router(tags=["Project"], auth=jwt_auth)
 
+
+# Quotation Tab
+# 생산 시작 전 임시로 프로젝트에 빈 견적서 생성
 @router.post(
     "",
     summary="[C] 프로젝트 생성",

@@ -47,3 +47,30 @@ class QuotationSaveIn(Schema):
 
 class OcrIn(Schema):
     data: str
+
+
+class QuotationDraftIn(Schema):
+    """견적서 임시 저장 입력 스키마"""
+    quotation_id: int
+    client: Optional[dict] = None  # 선택적 클라이언트 정보
+    products: List[dict] = []  # 빈 리스트도 허용
+    due_date: Optional[str] = None  # 선택적 납기일자
+
+
+class ProjectPlanIn(Schema):
+    """생산 계획 입력 스키마"""
+    product_id: int
+    equipment_id: Optional[int] = None
+    quantity: Optional[int] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    avg_production_time: Optional[int] = None
+
+
+class QuotationProductionIn(Schema):
+    """견적서 생산 시작 입력 스키마"""
+    quotation_id: int
+    client: dict  # 필수 클라이언트 정보
+    products: List[dict]  # 필수 품목 정보
+    due_date: str  # 필수 납기일자
+    production_plans: List[ProjectPlanIn]  # 생산 계획 정보
