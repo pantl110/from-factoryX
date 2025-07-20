@@ -115,3 +115,56 @@ async def get_quotation_product_detail(request, id: int):
         "delivery_date": qp.delivery_date
     }
     
+
+@router.get(
+    "/history/list",
+    summary="[C] 견적서 품목 히스토리 조회",
+    description="이전에 생산하였던 Quotation Product 항목을 조회합니다.",
+    response={200: dict, 400: dict, 404: dict, 500: dict}
+)
+async def list_history_quotation_product(request):
+    """
+    입력 필드:
+    - product_ids: Product ID 리스트 (콤마로 구분된 문자열)
+    
+    반환 필드:
+    - product_name: 품목 정보 (제품명)
+    - quantity: 제작 수량
+    - unit_price: 단가
+    - total_amount: 금액 (수량 * 단가)
+    """ 
+    product_ids = request.GET.get('product_ids')
+    if not product_ids:
+        raise HttpError(400, "product_ids를 입력해야 합니다.")
+    
+    try:
+        # 콤마로 구분된 문자열을 정수 리스트로 변환
+        product_id_list = [int(pid.strip()) for pid in product_ids.split(',') if pid.strip()]
+        
+        if not product_id_list:
+            raise HttpError(400, "product_ids를 입력해야 합니다.")
+        
+        qps = await sync_to_async(list)(
+            QuotationProduct.objects.select_related('product')
+            .filter(product_id__in=product_id_list)
+            .order_by('-created_at')
+        )
+        
+        if not qps:
+            raise HttpError(404, "해당 제품의 견적 내역이 없습니다.")
+        
+        results = []
+        for qp in qps:
+            results.append({
+                "product_name": qp.product.name,
+                "quantity": qp.quantity,
+                "unit_price": qp.unit_price,
+                "total_amount": qp.quantity * qp.unit_price
+            })
+        
+        return 200, {"results": results}
+        
+    except ValueError:
+        raise HttpError(400, "product_ids는 콤마로 구분된 정수여야 합니다.")
+    except Exception as e:
+        raise HttpError(500, f"조회 중 오류: {str(e)}")

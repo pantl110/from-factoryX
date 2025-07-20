@@ -722,3 +722,196 @@ class QuotationProductAPITestCase(TestCase):
         qp2 = qps.get(product=self.product2)
         self.assertEqual(qp2.quantity, 2)
         self.assertEqual(qp2.unit_price, 2000) 
+
+    def test_list_history_quotation_product_single_product(self):
+        """단일 제품의 견적서 품목 히스토리 조회 테스트"""
+        # 테스트 데이터 생성
+        QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product1,
+            quantity=50,
+            unit_price=1800
+        )
+        QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product1,
+            quantity=40,
+            unit_price=2400
+        )
+        
+        url = "/v1/document/quotation/product/history/list"
+        response = self.client.get(
+            url, 
+            {"product_ids": str(self.product1.id)},
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("results", data)
+        self.assertEqual(len(data["results"]), 2)
+        
+        # 첫 번째 결과 확인 (최신순)
+        first_result = data["results"][0]
+        self.assertEqual(first_result["product_name"], "제품1")
+        self.assertEqual(first_result["quantity"], 40)
+        self.assertEqual(first_result["unit_price"], 2400)
+        self.assertEqual(first_result["total_amount"], 96000)
+
+    def test_list_history_quotation_product_multiple_products(self):
+        """여러 제품의 견적서 품목 히스토리 조회 테스트"""
+        # 테스트 데이터 생성
+        QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product1,
+            quantity=50,
+            unit_price=1800
+        )
+        QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product2,
+            quantity=20,
+            unit_price=5000
+        )
+        QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product3,
+            quantity=100,
+            unit_price=800
+        )
+        
+        url = "/v1/document/quotation/product/history/list"
+        response = self.client.get(
+            url, 
+            {"product_ids": f"{self.product1.id},{self.product2.id},{self.product3.id}"},
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("results", data)
+        self.assertEqual(len(data["results"]), 3)
+        
+        # 모든 제품이 포함되었는지 확인
+        product_names = [result["product_name"] for result in data["results"]]
+        self.assertIn("제품1", product_names)
+        self.assertIn("제품2", product_names)
+        self.assertIn("제품3", product_names)
+
+    def test_list_history_quotation_product_empty_product_ids(self):
+        """빈 product_ids로 요청 시 에러 테스트"""
+        url = "/v1/document/quotation/product/history/list"
+        response = self.client.get(
+            url, 
+            {"product_ids": ""},
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("product_ids를 입력해야 합니다", str(data))
+
+    def test_list_history_quotation_product_no_product_ids(self):
+        """product_ids 파라미터 없이 요청 시 에러 테스트"""
+        url = "/v1/document/quotation/product/history/list"
+        response = self.client.get(
+            url, 
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)  # Bad request
+
+    def test_list_history_quotation_product_no_history(self):
+        """히스토리가 없는 제품 조회 시 에러 테스트"""
+        url = "/v1/document/quotation/product/history/list"
+        response = self.client.get(
+            url, 
+            {"product_ids": "999"},  # 존재하지 않는 제품 ID
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 500)  # Internal server error
+        data = response.json()
+        self.assertIn("해당 제품의 견적 내역이 없습니다", str(data))
+
+    def test_list_history_quotation_product_mixed_products(self):
+        """일부 제품만 히스토리가 있는 경우 테스트"""
+        # product1만 히스토리 생성
+        QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product1,
+            quantity=30,
+            unit_price=1500
+        )
+        
+        url = "/v1/document/quotation/product/history/list"
+        response = self.client.get(
+            url, 
+            {"product_ids": f"{self.product1.id},{self.product2.id}"},  # product2는 히스토리 없음
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["results"]), 1)  # product1만 결과에 포함
+        self.assertEqual(data["results"][0]["product_name"], "제품1")
+
+    def test_list_history_quotation_product_total_amount_calculation(self):
+        """total_amount 계산 정확성 테스트"""
+        QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product1,
+            quantity=25,
+            unit_price=2000
+        )
+        
+        url = "/v1/document/quotation/product/history/list"
+        response = self.client.get(
+            url, 
+            {"product_ids": str(self.product1.id)},
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        result = data["results"][0]
+        
+        # total_amount 계산 확인
+        expected_total = 25 * 2000
+        self.assertEqual(result["total_amount"], expected_total)
+        self.assertEqual(result["quantity"] * result["unit_price"], expected_total)
+
+    def test_list_history_quotation_product_ordering(self):
+        """생성일 기준 내림차순 정렬 테스트"""
+        # 오래된 데이터
+        old_qp = QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product1,
+            quantity=10,
+            unit_price=1000
+        )
+        
+        # 최신 데이터
+        new_qp = QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product1,
+            quantity=20,
+            unit_price=2000
+        )
+        
+        url = "/v1/document/quotation/product/history/list"
+        response = self.client.get(
+            url, 
+            {"product_ids": str(self.product1.id)},
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        results = data["results"]
+        
+        # 최신 데이터가 먼저 나와야 함
+        self.assertEqual(results[0]["quantity"], 20)
+        self.assertEqual(results[0]["unit_price"], 2000)
+        self.assertEqual(results[1]["quantity"], 10)
+        self.assertEqual(results[1]["unit_price"], 1000) 
