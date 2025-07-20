@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { ProjectPlanListResponseModel } from '@/types/data-model';
 
-interface PaginationParams {
+interface PaginationParamsModel {
   page?: number;
   size?: number;
+}
+
+interface CompletedProjectPlansFiltersModel {
+  client_name?: string; // 회사명으로 검색
 }
 
 const useGetCompletedProjectPlans = () => {
@@ -11,15 +15,15 @@ const useGetCompletedProjectPlans = () => {
   const [error, setError] = useState<string | null>(null);
 
   const getCompletedProject = async (
-    pagination?: PaginationParams,
-    filters?: { client_name?: string; } // 회사명으로 검색
+    pagination?: PaginationParamsModel,
+    filters?: CompletedProjectPlansFiltersModel
   ) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams();
-      
+
       if (pagination?.page) {
         params.append('page', pagination.page.toString());
       }
@@ -45,7 +49,9 @@ const useGetCompletedProjectPlans = () => {
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '완료된 프로젝트 계획 조회에 실패했습니다.');
+        setError(
+          errorData.detail || '완료된 프로젝트 계획 조회에 실패했습니다.'
+        );
         return { success: false, error: errorData.detail };
       }
     } catch {
@@ -59,4 +65,4 @@ const useGetCompletedProjectPlans = () => {
   return { getCompletedProject, isLoading, error };
 };
 
-export default useGetCompletedProjectPlans; 
+export default useGetCompletedProjectPlans;

@@ -38,4 +38,4 @@ const useDeleteProject = () => {
   return { deleteProject, isLoading, error };
 };
 
-export default useDeleteProject; 
+export default useDeleteProject;

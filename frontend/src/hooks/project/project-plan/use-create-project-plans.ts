@@ -1,17 +1,20 @@
 import { useState } from 'react';
-import { ProjectPlanResponseModel, CreateProjectPlanModel } from '@/types/data-model';
+import {
+  ProjectPlanResponseModel,
+  CreateProjectPlanModel,
+} from '@/types/data-model';
 
-interface CreateProjectPlansResponse {
+interface CreateProjectPlansResponseModel {
   message: string;
   created_plans: ProjectPlanResponseModel[];
 }
 
 // 각 견적서 품목에 대해 최대 2개의 생산 계획을 생성
 // 첫 번째 계획: 사용자가 지정한 생산 수량
-// 두 번째 계획: 남은 수량 (있는 경우에만) 
-    // 설비: 기본값 첫번째계획과 동일 설비, 다른 설비로 설정 가능  
-    // 생산일정: 기본값 첫번째계획과 동일 일정, 일정 변경 불가
-    // => 설비는 분산하되, 일정은 동일하게 하여 병렬 생산
+// 두 번째 계획: 남은 수량 (있는 경우에만)
+// 설비: 기본값 첫번째계획과 동일 설비, 다른 설비로 설정 가능
+// 생산일정: 기본값 첫번째계획과 동일 일정, 일정 변경 불가
+// => 설비는 분산하되, 일정은 동일하게 하여 병렬 생산
 
 // 예시
 // {
@@ -53,7 +56,7 @@ const useCreateProjectPlans = () => {
         }
       );
       if (response.status === 200) {
-        const result: CreateProjectPlansResponse = await response.json();
+        const result: CreateProjectPlansResponseModel = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
@@ -71,4 +74,4 @@ const useCreateProjectPlans = () => {
   return { createProjectPlans, isLoading, error };
 };
 
-export default useCreateProjectPlans; 
+export default useCreateProjectPlans;

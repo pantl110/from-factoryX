@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ProjectLogResponseModel } from '@/types/data-model';
+import { ProjectLogListResponseModel } from '@/types/data-model';
 
-interface PaginationParams {
+interface PaginationParamsModel {
   page?: number;
   size?: number;
 }
@@ -10,19 +10,25 @@ const useGetProjectLogs = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getProjectLogs = async (projectId: number, pagination?: PaginationParams) => {
+  const getProjectLogs = async (
+    projectId: number,
+    pagination?: PaginationParamsModel
+  ) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const params = new URLSearchParams({
-        project_id: projectId.toString(),
-        ...(pagination?.page && { page: pagination.page.toString() }),
-        ...(pagination?.size && { size: pagination.size.toString() }),
-      });
+      const params = new URLSearchParams();
+
+      if (pagination?.page) {
+        params.append('page', pagination.page.toString());
+      }
+      if (pagination?.size) {
+        params.append('size', pagination.size.toString());
+      }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/log?${params}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/log?project_id=${projectId}&${params}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -32,7 +38,7 @@ const useGetProjectLogs = () => {
         }
       );
       if (response.status === 200) {
-        const result: ProjectLogResponseModel[] = await response.json();
+        const result: ProjectLogListResponseModel = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
@@ -50,4 +56,4 @@ const useGetProjectLogs = () => {
   return { getProjectLogs, isLoading, error };
 };
 
-export default useGetProjectLogs; 
+export default useGetProjectLogs;

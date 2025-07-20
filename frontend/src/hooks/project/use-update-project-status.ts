@@ -41,4 +41,4 @@ const useUpdateProjectStatus = () => {
   return { updateProjectStatus, isLoading, error };
 };
 
-export default useUpdateProjectStatus; 
+export default useUpdateProjectStatus;

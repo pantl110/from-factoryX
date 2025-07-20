@@ -5,7 +5,10 @@ const useUpdateProjectTransactDate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updateProjectTransactDate = async (projectId: number, transact_date: string) => {
+  const updateProjectTransactDate = async (
+    projectId: number,
+    transactDate: string
+  ) => {
     setIsLoading(true);
     setError(null);
 
@@ -18,7 +21,7 @@ const useUpdateProjectTransactDate = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ transact_date }),
+          body: JSON.stringify({ transact_date: transactDate }),
         }
       );
       if (response.status === 200) {
@@ -26,7 +29,9 @@ const useUpdateProjectTransactDate = () => {
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '거래명세서 발급일 업데이트에 실패했습니다.');
+        setError(
+          errorData.detail || '거래명세서 발급일 업데이트에 실패했습니다.'
+        );
         return { success: false, error: errorData.detail };
       }
     } catch {
@@ -40,4 +45,4 @@ const useUpdateProjectTransactDate = () => {
   return { updateProjectTransactDate, isLoading, error };
 };
 
-export default useUpdateProjectTransactDate; 
+export default useUpdateProjectTransactDate;

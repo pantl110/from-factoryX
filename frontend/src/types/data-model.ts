@@ -390,62 +390,60 @@ export interface ProjectLogListResponseModel extends PaginationModel {
 // Project Plan API
 // 생산 계획 생성
 export interface CreateProjectPlanModel {
-  project_id: number
-  quotation_product_ids: number[]
-  production_quantities: number[]
-  equipment_ids: number[]
-  start_dates: string[]
-  end_dates: string[]
-  avg_production_times: number[]
+  project_id: number;
+  quotation_product_ids: number[];
+  production_quantities: number[];
+  equipment_ids: number[];
+  start_dates: string[];
+  end_dates: string[];
+  avg_production_times: number[];
 }
 
-
 export interface ProjectPlanResponseModel {
-  id: number
-  project_id: number
-  quotation_product_id: number
-  equipment_id: number
-  status: string
-  quantity: number
-  start_date: string
-  end_date: string
-  avg_production_time: number
+  id: number;
+  project_id: number;
+  quotation_product_id: number;
+  equipment_id: number;
+  status: string;
+  quantity: number;
+  start_date: string;
+  end_date: string;
+  avg_production_time: number;
 }
 
 // 생산 계획 조회
 export interface ProductForPlanModel {
-    id: number
-    name: string
-    code: string
-    unit: string
-    spec: string
+  id: number;
+  name: string;
+  code: string;
+  unit: string;
+  spec: string;
 }
 
 export interface QuotationProductForPlanModel {
-    id: number
-    product: ProductForPlanModel
-    quantity: number
-    unit_price: number
+  id: number;
+  product: ProductForPlanModel;
+  quantity: number;
+  unit_price: number;
 }
 
 export interface EquipmentForPlanModel {
-    id: number
-    name: string
-    priority: number
-}
-    
-export interface ProjectPlanModel {
-    id: number
-    project_id: number
-    quotation_product: QuotationProductForPlanModel
-    equipment: EquipmentForPlanModel
-    status: string
-    quantity: number
-    start_date: string
-    end_date: string
-    avg_production_time: number
+  id: number;
+  name: string;
+  priority: number;
 }
 
+export interface ProjectPlanModel {
+  id: number;
+  project_id: number;
+  quotation_product: QuotationProductForPlanModel;
+  equipment: EquipmentForPlanModel;
+  status: string;
+  quantity: number;
+  start_date: string;
+  end_date: string;
+  avg_production_time: number;
+}
 
 export interface ProjectPlanListResponseModel extends PaginationModel {
   data: ProjectPlanModel[];

@@ -45,7 +45,7 @@ const StockPageContent = () => {
     useState(false);
   const [isProductDetailPanelOpen, setIsProductDetailPanelOpen] =
     useState(false);
-    
+
   const [stockLocationCount, setStockLocationCount] = useState(1);
   const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
 
@@ -59,10 +59,14 @@ const StockPageContent = () => {
     setOpenUploadModals((prev) => prev.filter((_, i) => i !== index));
   };
   const handleOpenUploadModal = (index: number) => {
-    setOpenUploadModals((prev) => prev.map((open, i) => (i === index ? true : open)));
+    setOpenUploadModals((prev) =>
+      prev.map((open, i) => (i === index ? true : open))
+    );
   };
   const handleCloseUploadModal = (index: number) => {
-    setOpenUploadModals((prev) => prev.map((open, i) => (i === index ? false : open)));
+    setOpenUploadModals((prev) =>
+      prev.map((open, i) => (i === index ? false : open))
+    );
   };
 
   // 탭 변경
@@ -144,17 +148,18 @@ const StockPageContent = () => {
             setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen}
             setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
             stockLocationCount={stockLocationCount}
-            openUploadModals={openUploadModals}
             handleAddStockLocation={handleAddStockLocation}
             handleDeleteStockLocation={handleDeleteStockLocation}
             handleOpenUploadModal={handleOpenUploadModal}
-            handleCloseUploadModal={handleCloseUploadModal}
           />
         </Panel>
       )}
       {openUploadModals.map((open, idx) =>
         open ? (
-          <StockLocationUploadModal key={idx} onClose={() => handleCloseUploadModal(idx)} />
+          <StockLocationUploadModal
+            key={idx}
+            onClose={() => handleCloseUploadModal(idx)}
+          />
         ) : null
       )}
       {/* MaterialDetail의 거래처 정보 상세보기 모달 */}

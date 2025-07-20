@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { ProjectLogModel } from '@/types/data-model';
 
+interface UpdateProjectLogResponseModel {
+  message: string;
+}
+
 const useUpdateProjectLog = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +26,7 @@ const useUpdateProjectLog = () => {
         }
       );
       if (response.status === 200) {
-        const result: {message: string} = await response.json();
+        const result: UpdateProjectLogResponseModel = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
@@ -40,4 +44,4 @@ const useUpdateProjectLog = () => {
   return { updateProjectLog, isLoading, error };
 };
 
-export default useUpdateProjectLog; 
+export default useUpdateProjectLog;

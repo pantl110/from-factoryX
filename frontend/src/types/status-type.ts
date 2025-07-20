@@ -48,8 +48,6 @@ export const ProjectStatusColorMap: Record<
 ////////////////////
 // 수정 전, 확인 전, 삭제하기
 
-
-
 // 거래명세서 발행 상태
 export type TransactionStatusType = '미작성' | '작성 완료';
 export const TransactionStatusColorMap: Record<TransactionStatusType, string> =

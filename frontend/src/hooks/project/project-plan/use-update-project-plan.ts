@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { UpdateProjectPlanModel } from '@/types/data-model';
 
+interface UpdateProjectPlanResponseModel {
+  message: string;
+}
 
 // 생산 계획의 기기, 수량, 상태, 일정 등을 수정
 // 만약 가동 중인 설비가 변경된다면 프로젝트 로그도 생성
@@ -8,7 +11,10 @@ const useUpdateProjectPlan = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updateProjectPlan = async (planId: number, data: UpdateProjectPlanModel) => {
+  const updateProjectPlan = async (
+    planId: number,
+    data: UpdateProjectPlanModel
+  ) => {
     setIsLoading(true);
     setError(null);
 
@@ -25,7 +31,7 @@ const useUpdateProjectPlan = () => {
         }
       );
       if (response.status === 200) {
-        const result: { message: string } = await response.json();
+        const result: UpdateProjectPlanResponseModel = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();

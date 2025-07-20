@@ -1,20 +1,19 @@
 import { useState } from 'react';
 import { ProjectLogModel } from '@/types/data-model';
 
-interface CreateProjectLogRequest extends ProjectLogModel {
+interface CreateProjectLogRequestModel extends ProjectLogModel {
   project_id: number;
 }
 
-interface CreateProjectLogResponse {
+interface CreateProjectLogResponseModel {
   message: string;
-  log_id: number;
 }
 
 const useCreateProjectLog = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createProjectLog = async (data: CreateProjectLogRequest) => {
+  const createProjectLog = async (data: CreateProjectLogRequestModel) => {
     setIsLoading(true);
     setError(null);
 
@@ -30,8 +29,8 @@ const useCreateProjectLog = () => {
           body: JSON.stringify(data),
         }
       );
-      if (response.status === 200) {
-        const result: CreateProjectLogResponse = await response.json();
+      if (response.status === 201) {
+        const result: CreateProjectLogResponseModel = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
@@ -49,4 +48,4 @@ const useCreateProjectLog = () => {
   return { createProjectLog, isLoading, error };
 };
 
-export default useCreateProjectLog; 
+export default useCreateProjectLog;

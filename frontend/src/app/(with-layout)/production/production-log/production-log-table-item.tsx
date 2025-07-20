@@ -2,7 +2,6 @@ import { ProductionDataModel } from '@/mocks/production-data';
 import Chip from '@/ui/chip';
 import { useState } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
-import { productData } from '@/mocks/product-data';
 
 interface ProductionLogTableItemProps {
   product: ProductionDataModel;

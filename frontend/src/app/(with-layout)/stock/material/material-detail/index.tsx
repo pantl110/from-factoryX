@@ -10,22 +10,18 @@ interface MaterialDetailProps {
   setIsCustomerInfoModalOpen: (v: boolean) => void;
   setIsProductEnrollmentModalOpen: (v: boolean) => void;
   stockLocationCount: number;
-  openUploadModals: boolean[];
   handleAddStockLocation: () => void;
   handleDeleteStockLocation: (index: number) => void;
   handleOpenUploadModal: (index: number) => void;
-  handleCloseUploadModal: (index: number) => void;
 }
 
 const MaterialDetail = ({
   setIsCustomerInfoModalOpen,
   setIsProductEnrollmentModalOpen,
   stockLocationCount,
-  openUploadModals,
   handleAddStockLocation,
   handleDeleteStockLocation,
   handleOpenUploadModal,
-  handleCloseUploadModal,
 }: MaterialDetailProps) => {
   return (
     <>
@@ -41,7 +37,9 @@ const MaterialDetail = ({
         {/* 원자재가 보관된 창고 위치 */}
         <div className="flex flex-col gap-3">
           <div className="h-10 flex items-center justify-between">
-            <h3 className="Heading-3 h-10 flex items-center text-dg ">원자재가 보관된 창고 위치</h3>
+            <h3 className="Heading-3 h-10 flex items-center text-dg">
+              원자재가 보관된 창고 위치
+            </h3>
             <MiniBtn
               text="추가"
               textColor="text-dg"

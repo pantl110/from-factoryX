@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { ProjectModel } from '@/types/data-model';
 
-interface CreateProjectResponse {
-  id: number;  // 견적서 ID
+interface CreateProjectResponseModel {
+  id: number; // 견적서 ID
+  message?: string;
 }
 
 const useCreateProject = () => {
@@ -26,7 +27,7 @@ const useCreateProject = () => {
         }
       );
       if (response.status === 201) {
-        const result: CreateProjectResponse = await response.json();
+        const result: CreateProjectResponseModel = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();

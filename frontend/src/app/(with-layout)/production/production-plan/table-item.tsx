@@ -8,7 +8,6 @@ import { tableHeader } from './types';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { useState } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
-import { productData } from '@/mocks/product-data';
 import { formatDateTime } from '@/hooks/format-number';
 
 interface TableItemProps {
