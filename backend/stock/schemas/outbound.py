@@ -1,4 +1,4 @@
-from ninja import ModelSchema, Schema
+from ninja import ModelSchema, Schema, Field
 from pydantic import BaseModel
 from stock.models import (
     Product,
@@ -92,20 +92,30 @@ class ProductHistoryOut(ModelSchema):
         fields = "__all__"
 
 
+# Onboarding Tab
+# create_single_product
+class SingleProductCreateOut(Schema):
+    """단일 품목 생성 응답 스키마"""
+    factory_id: int = Field(..., description="공장 ID")
+    product_id: int = Field(..., description="생성된 품목 ID")
+
+
+# Onboarding Tab
+# assign_materialproduct
 class MaterialProductConnectionOut(Schema):
     """MaterialProduct 연결 응답 스키마"""
+    id: int = Field(..., description="연결 ID")
+    product_id: int = Field(..., description="제품 ID")
+    material_id: int = Field(..., description="원자재 ID")
+    quantity: float = Field(..., description="제품 1개 생산에 필요한 원자재 수량")
+    product_name: str = Field(..., description="제품명")
+    material_name: str = Field(..., description="원자재명")
 
-    id: int
-    product_id: int
-    material_id: int
-    quantity: float
-    product_name: str
-    material_name: str
 
-
+# Onboarding Tab
+# assign_materialproduct
 class MaterialProductConnectOut(Schema):
     """MaterialProduct 연결 생성 응답 스키마"""
-
-    message: str
-    created_connections: List[MaterialProductConnectionOut]
-    total_count: int
+    message: str = Field(..., description="처리 결과 메시지")
+    created_connections: List[MaterialProductConnectionOut] = Field(..., description="생성된 연결 목록")
+    total_count: int = Field(..., description="총 연결 개수")

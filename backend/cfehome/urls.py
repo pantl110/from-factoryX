@@ -30,6 +30,7 @@ from factory.api_member import router as factoryMember_router
 from factory.api_eq import router as factoryEQ_router
 from stock.api_product import router as stockProduct_router
 from stock.api_product_history import router as stockProductHistory_router
+from stock.api_onboarding import router as onboarding_router
 from factory.api_client import router as factoryClient_router
 from location.api import router as location_router
 from document.api_quotation import router as quotation_router
@@ -38,6 +39,7 @@ from project.api_project import router as project_router
 from project.api_project_plan import router as projectPlan_router
 from project.api_project_log import router as projectLog_router
 from project.api_project_refund import router as projectRefund_router
+from tax.api import router as tax_router
 from django.contrib.admin.views.decorators import staff_member_required
 
 base_api = NinjaAPI(
@@ -66,6 +68,7 @@ base_api.add_router("v1/factory/equipment", factoryEQ_router)
 base_api.add_router("v1/factory", factory_router)
 base_api.add_router("v1/stock/product", stockProduct_router)
 base_api.add_router("v1/stock/product/history", stockProductHistory_router)
+base_api.add_router("v1/stock/onboarding", onboarding_router)
 base_api.add_router("v1/factory/client", factoryClient_router)
 base_api.add_router("v1/location", location_router)
 base_api.add_router("v1/document/quotation", quotation_router)
@@ -74,6 +77,7 @@ base_api.add_router("v1/project/plan", projectPlan_router)
 base_api.add_router("v1/project/log", projectLog_router)
 base_api.add_router("v1/project/refund", projectRefund_router)
 base_api.add_router("v1/project", project_router)
+base_api.add_router("v1/tax", tax_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

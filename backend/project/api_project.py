@@ -1,10 +1,13 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
+from ninja.pagination import paginate
+from asgiref.sync import sync_to_async
 from api.security import jwt_auth
-from project.schemas.outbound import ProjectCreateOut, ProjectDetailOut, ProjectUpdateOut
-from project.schemas.inbound import ProjectStatusUpdateIn, ProjectTransactDateUpdateIn
+from project.schemas.outbound import ProjectCreateOut, ProjectDetailOut, ProjectUpdateOut, ListProgressProjectOut
+from project.schemas.inbound import ProjectStatusUpdateIn, ProjectTransactDateUpdateIn, ProjectCloneIn
 from project.models import Project
 from document.models import Quotation
+from typing import List
 
 router = Router(tags=["Project"], auth=jwt_auth)
 
@@ -108,3 +111,207 @@ async def update_project_transact_date(request, project_id: int, payload: Projec
 
     except Exception as e:
         raise HttpError(500, "거래명세서 발급일 업데이트 중 내부 서버 오류가 발생했습니다.")
+
+
+# Progress, Completed Project Tab
+@router.get(
+    "",
+    summary="[C] 진행 중인 프로젝트 조회",
+    description="진행 중인 프로젝트를 조회합니다.",
+    response={200: List[ListProgressProjectOut], 400: dict, 500: dict}
+)
+@paginate
+async def list_progress_project(request, factory_id: int = Query(...), status: str = Query(...)):
+    """
+    진행 중인 프로젝트 또는 완료된 프로젝트를 조회합니다.
+    
+    입력 필드:
+    - factory_id: 공장 ID (필수)
+    - status: 조회 상태 ("progress" 또는 "complete")
+        - "progress": 완료 상태를 제외한 모든 프로젝트 조회
+        - "complete": 완료된 프로젝트만 조회
+    
+    반환 필드:
+    - project_id: 프로젝트 ID
+    - client_name: 고객사명 (Quotation.FactoryClient.name)
+    - product_names: 제품명 목록 (Quotation.QuotationProduct.Product.name 배열)
+    - start_date: 생산 시작일 (ProjectPlan.start_date 중 가장 빠른 날짜)
+    - due_date: 납기일자 (Quotation.due_date)
+    - publish_status: 세금계산서 발행 상태 (Project.NationalTaxService.publish_status)
+        - null: 세금계산서 미연결 ("연결 필요"로 표시)
+        - "temporary": 임시 저장
+        - "pending": 발행 대기
+        - "published": 발행 완료
+    
+    예시:
+    - 진행 중인 프로젝트: status="progress"
+    - 완료된 프로젝트: status="complete"
+    """
+    try:
+        if status not in ["progress", "complete"]:
+            raise HttpError(400, "status는 'progress' 또는 'complete'여야 합니다.")
+        
+        @sync_to_async
+        def get_projects():
+            if status == "progress":
+                projects = Project.objects.filter(
+                    quotations__factory_id=factory_id
+                ).exclude(
+                    status=Project.ProjectStatus.completed
+                ).prefetch_related(
+                    'quotations__client',
+                    'quotations__products__product',
+                    'plans__product__product',
+                    'tax_invoice'
+                ).distinct()
+            else:
+                projects = Project.objects.filter(
+                    quotations__factory_id=factory_id,
+                    status=Project.ProjectStatus.completed
+                ).prefetch_related(
+                    'quotations__client',
+                    'quotations__products__product',
+                    'plans__product__product',
+                    'tax_invoice'
+                ).distinct()
+            
+            return list(projects)
+        
+        projects = await get_projects()
+        result = []
+        
+        for project in projects:
+            quotations = project.quotations.filter(factory_id=factory_id).prefetch_related(
+                'client', 'products__product'
+            )
+            
+            for quotation in quotations:
+                product_names = []
+                for quotation_product in quotation.products.all():
+                    product_names.append(quotation_product.product.name)
+                
+                start_date = None
+                plans = project.plans.all()
+                if plans:
+                    start_dates = [plan.start_date for plan in plans]
+                    start_date = min(start_dates)
+                
+                # 세금계산서 상태 처리
+                publish_status = None
+                if project.tax_invoice:
+                    publish_status = project.tax_invoice.publish_status
+                
+                result.append(ListProgressProjectOut(
+                    project_id=project.id,
+                    client_name=quotation.client.name if quotation.client else "",
+                    product_names=product_names,
+                    start_date=start_date or quotation.due_date,
+                    due_date=quotation.due_date,
+                    publish_status=publish_status
+                ))
+        
+        return result
+        
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, "프로젝트 조회 중 내부 서버 오류가 발생했습니다.")
+
+
+# Completed Project Tab
+@router.post(
+    "/clone",
+    summary="[C] 프로젝트 복제",
+    description="완료된 프로젝트를 복제하여 생산 대기 상태로 새 프로젝트를 생성합니다.",
+    response={200: dict, 400: dict, 404: dict, 500: dict}
+)
+async def clone_project(request, payload: ProjectCloneIn):
+    """
+    완료된 프로젝트를 복제하여 생산 대기 상태로 새 프로젝트를 생성합니다.
+    
+    입력 필드:
+    - project_id: 복제할 프로젝트 ID (int)
+    
+    반환 필드: 없음 (성공 시 빈 응답)
+    """
+    try:
+        @sync_to_async
+        def clone_project_data():
+            from document.models import Quotation, QuotationProduct
+            from project.models import ProjectPlan, ProjectLog
+            
+            # 원본 프로젝트 존재 확인
+            try:
+                original_project = Project.objects.get(id=payload.project_id)
+            except Project.DoesNotExist:
+                raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
+            
+            # 완료된 프로젝트인지 확인
+            if original_project.status != Project.ProjectStatus.completed:
+                raise HttpError(400, "완료된 프로젝트만 복제할 수 있습니다.")
+            
+            # 새 프로젝트 생성 (생산 대기 상태)
+            new_project = Project.objects.create(
+                status=Project.ProjectStatus.pending,
+                transact_date=None,  # 거래명세서 발행일 초기화
+                tax_invoice=None     # 세금계산서 연결 초기화
+            )
+            
+            # 견적서 복제
+            original_quotations = original_project.quotations.all()
+            for original_quotation in original_quotations:
+                new_quotation = Quotation.objects.create(
+                    project=new_project,
+                    factory=original_quotation.factory,
+                    client=original_quotation.client,
+                    due_date=original_quotation.due_date,
+                    uploaded_file=original_quotation.uploaded_file
+                )
+                
+                # 견적서 제품 복제
+                original_products = original_quotation.products.all()
+                for original_product in original_products:
+                    QuotationProduct.objects.create(
+                        quotation=new_quotation,
+                        product=original_product.product,
+                        quantity=original_product.quantity,
+                        unit_price=original_product.unit_price,
+                        is_delivery=False,  # 납품 여부 초기화
+                        delivery_date=None  # 납품 일자 초기화
+                    )
+            
+            # 생산 계획 복제
+            original_plans = original_project.plans.all()
+            for original_plan in original_plans:
+                ProjectPlan.objects.create(
+                    project=new_project,
+                    status=ProjectPlan.ProductionStatus.pending,  # 가동 대기로 초기화
+                    product=original_plan.product,
+                    quantity=original_plan.quantity,
+                    equipment=original_plan.equipment,
+                    start_date=original_plan.start_date,
+                    end_date=original_plan.end_date,
+                    avg_production_time=original_plan.avg_production_time
+                )
+            
+            # 생산 로그 복제 (메모 타입만)
+            original_logs = original_project.logs.filter(type=ProjectLog.LogType.memo)
+            for original_log in original_logs:
+                ProjectLog.objects.create(
+                    project=new_project,
+                    type=original_log.type,
+                    title=original_log.title,
+                    content=original_log.content
+                )
+            
+            return {}
+        
+        result = await clone_project_data()
+        return result
+        
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, "프로젝트 복제 중 내부 서버 오류가 발생했습니다.")
+
+
