@@ -67,31 +67,3 @@ class TestDocumentOCR(TestCase):
             json=payload,
         )
         print(response.json())
-
-        # Assert response
-        # self.assertEqual(response.status_code, 200)
-        # data = response.json()
-        # self.assertEqual(data["status"], "success")
-        # self.assertEqual(data["filename"], "test1.pdf")
-        # self.assertEqual(data["content_type"], "application/pdf")
-        # self.assertGreater(data["size"], 0)
-
-    # async def test_ocr_jpg_upload(self):
-    #     """Test uploading a JPG file to the OCR endpoint"""
-    #     # Authenticate first
-    #     auth_headers = await self.authenticate()
-
-    #     # Prepare the file for upload
-    #     with open(self.jpg_file_path, "rb") as f:
-    #         # Upload the JPG file - consistent with the PDF test method
-    #         response = await self.quotation_client.post(
-    #             "/ocr", {"file": f}, HTTP_AUTHORIZATION=auth_headers["Authorization"]
-    #         )
-
-    #     # Assert response
-    #     self.assertEqual(response.status_code, 200)
-    #     data = response.json()
-    #     self.assertEqual(data["status"], "success")
-    #     self.assertEqual(data["filename"], "test1_01.jpg")
-    #     self.assertEqual(data["content_type"], "image/jpeg")
-    #     self.assertGreater(data["size"], 0)
