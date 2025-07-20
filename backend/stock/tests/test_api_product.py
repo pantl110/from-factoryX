@@ -60,18 +60,29 @@ class TestProductAPI(TestCase):
     async def test_create_product(self):
         """[C] 제품 생성 테스트"""
         headers = await self.authenticate()
-        payload = {
-            "factory": self.factory.id,
-            "name": "Created Product",
-            "code": "P002",
-            "unit": "EA",
-            "spec": "Spec B",
-        }
+        payload = [
+            {
+                "factory": self.factory.id,
+                "name": "Created Product1",
+                "code": "P002",
+                "unit": "개",
+                "spec": "Spec B",
+            },
+            {
+                "factory": self.factory.id,
+                "name": "Created Product2",
+                "code": "P003",
+                "unit": "EA",
+                "spec": "Spec C",
+            },
+        ]
         response = await self.client.post("", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
         data = response.json()
-        self.assertIn("id", data)
-        self.assertEqual(data["name"], payload["name"])
+        self.assertIn("id", data[0])
+        self.assertIn("id", data[1])
+        self.assertEqual(data[0]["name"], payload[0]["name"])
+        self.assertEqual(data[1]["name"], payload[1]["name"])
 
     async def test_list_products(self):
         """[R] 제품 목록 조회 테스트"""
@@ -95,7 +106,9 @@ class TestProductAPI(TestCase):
         """[U] 제품 수정 테스트"""
         headers = await self.authenticate()
         payload = {"name": "Updated Product Name"}
-        response = await self.client.patch(f"/{self.product.id}", headers=headers, json=payload)
+        response = await self.client.patch(
+            f"/{self.product.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], self.product.id)
