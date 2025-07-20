@@ -1,12 +1,14 @@
 from ninja import Schema, ModelSchema
 from user.models import User
+from typing import Optional
 
 
 class UserMeOut(Schema):
     email: str
     status: str
-    username: str
-    phone_number: str
+    username: Optional[str] = None
+    phone_number: Optional[str] = None
+    profile_image: Optional[str] = None
 
 
 class UserLoginOut(Schema):
