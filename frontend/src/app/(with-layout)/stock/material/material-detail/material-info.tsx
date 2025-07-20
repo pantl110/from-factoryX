@@ -84,12 +84,6 @@ const MaterialInfo = () => {
           inputType="date"
         />
       </div>
-      <InfoLabelValue
-        label="창고 위치"
-        value={info.location ?? ''}
-        isEditing={true}
-        onChange={handleChange('location')}
-      />
     </div>
   );
 };

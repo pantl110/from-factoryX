@@ -25,17 +25,14 @@ export const ClientTypeColorMap: Record<
   수주처: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
 };
 
-////////////////////
-// 수정 전, 확인 전, 삭제하기
-
-// 진행중인 프로젝트 상태
+// 프로젝트 상태
 export type ProjectStatusType =
-  | '견적 협의'
-  | '생산 대기'
-  | '생산 중'
-  | '생산 완료'
-  | '납품'
-  | '프로젝트 완료';
+  | '견적 협의' // quotation
+  | '생산 대기' // pending
+  | '생산 중' // production
+  | '생산 완료' // manufactured
+  | '납품' // delivery
+  | '프로젝트 완료'; // completed
 export const ProjectStatusColorMap: Record<
   ProjectStatusType,
   StatusColorModel
@@ -47,6 +44,11 @@ export const ProjectStatusColorMap: Record<
   납품: { bgColor: 'bg-green-8', textColor: 'text-green' },
   '프로젝트 완료': { bgColor: 'bg-primary-8', textColor: 'text-primary' },
 };
+
+////////////////////
+// 수정 전, 확인 전, 삭제하기
+
+
 
 // 거래명세서 발행 상태
 export type TransactionStatusType = '미작성' | '작성 완료';

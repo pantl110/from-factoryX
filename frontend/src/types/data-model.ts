@@ -309,7 +309,7 @@ export interface MaterialModel {
   unit: string;
   spec: string;
   standard_stock?: number;
-  location_id?: number;
+  location?: number;
 }
 
 export interface MaterialResponseModel {
@@ -332,7 +332,136 @@ export interface MaterialListResponseModel extends PaginationModel {
 }
 
 ////////////////////////////
+// Project API
+// 프로젝트 생성 + 견적서 생성
+export interface ProjectModel {
+  status?: string;
+  transact_date?: string;
+  factory_id: number;
+  client_id: number;
+  due_date: string;
+  uploaded_file?: string;
+  products?: ProductResponseModel[];
+}
 
+export interface ProjectResponseModel {
+  id: number;
+  status?: string;
+  transact_date?: string;
+  tax_invoice?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectListResponseModel extends PaginationModel {
+  data: ProjectResponseModel[];
+}
+
+// 프로젝트 정보 수정
+export interface ProjectUpdateModel {
+  status: string;
+  transact_date: string;
+  tax_invoice_id: number;
+}
+
+//////////////////////
+// Project Log API
+export interface ProjectLogModel {
+  type: string;
+  title: string;
+  content: string;
+}
+
+export interface ProjectLogResponseModel {
+  id: number;
+  project_id: number;
+  type: string;
+  title: string;
+  content: string;
+  // created_at?: string;
+  // updated_at?: string;
+}
+
+export interface ProjectLogListResponseModel extends PaginationModel {
+  data: ProjectLogResponseModel[];
+}
+
+//////////////////////
+// Project Plan API
+// 생산 계획 생성
+export interface CreateProjectPlanModel {
+  project_id: number
+  quotation_product_ids: number[]
+  production_quantities: number[]
+  equipment_ids: number[]
+  start_dates: string[]
+  end_dates: string[]
+  avg_production_times: number[]
+}
+
+
+export interface ProjectPlanResponseModel {
+  id: number
+  project_id: number
+  quotation_product_id: number
+  equipment_id: number
+  status: string
+  quantity: number
+  start_date: string
+  end_date: string
+  avg_production_time: number
+}
+
+// 생산 계획 조회
+export interface ProductForPlanModel {
+    id: number
+    name: string
+    code: string
+    unit: string
+    spec: string
+}
+
+export interface QuotationProductForPlanModel {
+    id: number
+    product: ProductForPlanModel
+    quantity: number
+    unit_price: number
+}
+
+export interface EquipmentForPlanModel {
+    id: number
+    name: string
+    priority: number
+}
+    
+export interface ProjectPlanModel {
+    id: number
+    project_id: number
+    quotation_product: QuotationProductForPlanModel
+    equipment: EquipmentForPlanModel
+    status: string
+    quantity: number
+    start_date: string
+    end_date: string
+    avg_production_time: number
+}
+
+
+export interface ProjectPlanListResponseModel extends PaginationModel {
+  data: ProjectPlanModel[];
+}
+
+// 생산 계획 정보 수정
+export interface UpdateProjectPlanModel {
+  equipment_id?: number;
+  quantity?: number;
+  status?: string;
+  start_date?: string;
+  end_date?: string;
+  avg_production_time?: number;
+}
+
+///////////////////////////////////////////
 // 여기는 목데이터 데이터 모델!!! 나중에 지우기!
 export interface MaterialModel {
   id: number;

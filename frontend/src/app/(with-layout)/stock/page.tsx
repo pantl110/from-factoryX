@@ -15,6 +15,7 @@ import MaterialDetail from './material/material-detail';
 import CustomerInfoModal from './material/modals/customer-info-modal';
 import ProductEnrollmentModal from './material/modals/product-enrollment-modal';
 import Spinner from '@/ui/spinner';
+import StockLocationUploadModal from './modals/stock-location-upload-modal';
 
 const StockPageContent = () => {
   const stockTab = usePageStatusStore((state) => state.stockTab);
@@ -44,7 +45,27 @@ const StockPageContent = () => {
     useState(false);
   const [isProductDetailPanelOpen, setIsProductDetailPanelOpen] =
     useState(false);
+    
+  const [stockLocationCount, setStockLocationCount] = useState(1);
+  const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
 
+  // 원자재 재고 위치 관련 상태
+  const handleAddStockLocation = () => {
+    setStockLocationCount((prev) => prev + 1);
+    setOpenUploadModals((prev) => [...prev, false]);
+  };
+  const handleDeleteStockLocation = (index: number) => {
+    setStockLocationCount((prev) => Math.max(1, prev - 1));
+    setOpenUploadModals((prev) => prev.filter((_, i) => i !== index));
+  };
+  const handleOpenUploadModal = (index: number) => {
+    setOpenUploadModals((prev) => prev.map((open, i) => (i === index ? true : open)));
+  };
+  const handleCloseUploadModal = (index: number) => {
+    setOpenUploadModals((prev) => prev.map((open, i) => (i === index ? false : open)));
+  };
+
+  // 탭 변경
   const handleTabChange = (tab: StockTabType) => {
     setStockTab(tab);
   };
@@ -122,8 +143,19 @@ const StockPageContent = () => {
           <MaterialDetail
             setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen}
             setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
+            stockLocationCount={stockLocationCount}
+            openUploadModals={openUploadModals}
+            handleAddStockLocation={handleAddStockLocation}
+            handleDeleteStockLocation={handleDeleteStockLocation}
+            handleOpenUploadModal={handleOpenUploadModal}
+            handleCloseUploadModal={handleCloseUploadModal}
           />
         </Panel>
+      )}
+      {openUploadModals.map((open, idx) =>
+        open ? (
+          <StockLocationUploadModal key={idx} onClose={() => handleCloseUploadModal(idx)} />
+        ) : null
       )}
       {/* MaterialDetail의 거래처 정보 상세보기 모달 */}
       {isCustomerInfoModalOpen && (

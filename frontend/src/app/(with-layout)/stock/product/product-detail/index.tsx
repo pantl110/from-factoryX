@@ -9,15 +9,15 @@ import Panel from '@/ui/panel';
 import Spinner from '@/ui/spinner';
 import { ProductModel } from '@/types/data-model';
 import { useGetProduct, useCreateProduct, useUpdateProduct } from '@/hooks';
-import NoHistoryBox from '../no-history-box';
+import NoHistoryBox from '../../../../../ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
 import ProductStockModal from '../modals/product-stock-modal';
 import MaterialStockStatusModal from '../modals/material-stock-status-modal';
-import StockLocation from './stock-location';
-import StockLocationUploadModal from '../modals/stock-location-upload-modal';
+import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import useFactoryStore from '@/store/factory-store';
 import { CalendarCheck, CaretDown } from '@phosphor-icons/react';
 import ProductStockLogDropdown from '../modals/product-stock-log-dropdown';
+import StockLocation from '../../stock-location';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -68,11 +68,6 @@ const ProductDetail = ({
     setSelectedPeriod(value);
     setIsProductStockLogDropdownOpen(false);
   };
-
-  // isDirty 상태 변경 디버깅
-  useEffect(() => {
-    // 디버깅용 로그 제거
-  }, [isDirty, productId]);
 
   // StockLocationItem 개수를 관리하는 상태
   const [stockLocationCount, setStockLocationCount] = useState(1);
