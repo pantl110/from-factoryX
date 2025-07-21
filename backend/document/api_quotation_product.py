@@ -52,7 +52,7 @@ async def list_quotation_products(request, quotation_id: int = Query(None), fact
             "quantity": qp.quantity,
             "unit_price": qp.unit_price,
             "is_delivery": qp.is_delivery,
-            "delivery_date": qp.delivery_date
+            "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None
         } for qp in qps
     ]
 
@@ -71,7 +71,7 @@ async def get_quotation_product_detail(request, id: int):
         "quantity": qp.quantity,
         "unit_price": qp.unit_price,
         "is_delivery": qp.is_delivery,
-        "delivery_date": qp.delivery_date
+        "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None
     }
     
 
@@ -105,7 +105,7 @@ async def list_history_quotation_product(request):
         
         qps = await sync_to_async(list)(
             QuotationProduct.objects.select_related('product')
-            .filter(product_id__in=product_id_list)
+            .filter(product__id__in=product_id_list)
             .order_by('-created_at')
         )
         
