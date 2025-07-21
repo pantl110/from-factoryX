@@ -137,47 +137,12 @@ async def create_single_material_history(request, payload: SingleMaterialHistory
 
 @router.get(
     "{material_id}",
-    summary="[C] 원자재 전체 히스토리 조회", 
-    description="특정 원자재의 모든 히스토리를 조회합니다.",
+    summary="[C] 원자재 히스토리 조회", 
+    description="특정 원자재의 히스토리를 조회합니다. 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회합니다.",
     response={ 200: list[MaterialHistoryDetailOut], 404: dict, 500: dict }
     )
 @paginate
-async def get_material_history(request, material_id: int):
-    try:
-        material = await Material.objects.aget(id=material_id)
-    except Material.DoesNotExist:
-        raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
-    
-    @sync_to_async
-    def get_histories():
-        queryset = MaterialHistory.objects.filter(material=material).order_by('-created_at')
-        return list(queryset)
-    
-    histories = await get_histories()
-    
-    history_list = []
-    for history in histories:
-        history_list.append(MaterialHistoryDetailOut(
-            id=history.id,
-            type=history.type,
-            material_id=history.material_id,
-            client_id=history.client_id,
-            quantity=history.quantity,
-            price=history.price,
-            total_stock=history.total_stock
-        ))
-    
-    return history_list
-
-
-@router.get(
-    "{material_id}/period",
-    summary="[C] 원자재 기간별 히스토리 조회", 
-    description="특정 원자재의 최근 N개월 또는 N일 히스토리를 조회합니다.",
-    response={ 200: list[MaterialHistoryDetailOut], 404: dict, 500: dict }
-    )
-@paginate
-async def get_material_history_by_period(request, material_id: int, months: int = None, days: int = None):
+async def get_material_history(request, material_id: int, months: int = None, days: int = None):
     try:
         material = await Material.objects.aget(id=material_id)
     except Material.DoesNotExist:
@@ -186,20 +151,20 @@ async def get_material_history_by_period(request, material_id: int, months: int 
     from django.utils import timezone
     from datetime import timedelta
     
-    if days is not None:
-        start_date = timezone.now() - timedelta(days=days)
-    elif months is not None:
-        start_date = timezone.now() - timedelta(days=months * 30)
-    else:
-        start_date = timezone.now() - timedelta(days=3 * 30)
-    
     @sync_to_async
     def get_histories():
-        queryset = MaterialHistory.objects.filter(
-            material=material,
-            created_at__gte=start_date
-        ).order_by('-created_at')
-        return list(queryset)
+        queryset = MaterialHistory.objects.filter(material=material)
+        
+        # 기간 설정이 있는 경우 필터링 적용
+        if days is not None or months is not None:
+            if days is not None:
+                start_date = timezone.now() - timedelta(days=days)
+            elif months is not None:
+                start_date = timezone.now() - timedelta(days=months * 30)
+            
+            queryset = queryset.filter(created_at__gte=start_date)
+        
+        return list(queryset.order_by('-created_at'))
     
     histories = await get_histories()
     

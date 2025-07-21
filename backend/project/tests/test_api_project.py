@@ -816,3 +816,49 @@ def test_clone_project_without_auth(self):
     
     # 인증이 필요하므로 401 또는 403이 반환되어야 함
     self.assertIn(response.status_code, [401, 403])
+
+    def test_list_progress_project_order_by_start_date_asc(self):
+        """생산일자 오름차순 정렬 테스트"""
+        p1 = self.create_test_project_with_quotation(status='생산 중')
+        p2 = self.create_test_project_with_quotation(status='생산 중')
+        ProjectPlan.objects.filter(project=p1).update(start_date=date(2025, 6, 1))
+        ProjectPlan.objects.filter(project=p2).update(start_date=date(2025, 6, 10))
+
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress&order_by=start_date&order_dir=asc'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        if len(data['data']) >= 2:
+            self.assertLessEqual(data['data'][0]['start_date'], data['data'][1]['start_date'])
+
+    def test_list_progress_project_order_by_due_date_desc(self):
+        """납기일자 내림차순 정렬 테스트"""
+        p1 = self.create_test_project_with_quotation(status='생산 중')
+        p2 = self.create_test_project_with_quotation(status='생산 중')
+        Quotation.objects.filter(project=p1).update(due_date=date(2025, 6, 1))
+        Quotation.objects.filter(project=p2).update(due_date=date(2025, 6, 10))
+
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress&order_by=due_date&order_dir=desc'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        if len(data['data']) >= 2:
+            self.assertGreaterEqual(data['data'][0]['due_date'], data['data'][1]['due_date'])
+
+    def test_list_progress_project_search_by_client(self):
+        """업체명 검색 테스트"""
+        self.create_test_project_with_quotation(status='생산 중')
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress&search=테스트 고객사'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(any('테스트 고객사' in p['client_name'] for p in data['data']))
+
+    def test_list_progress_project_search_by_product(self):
+        """품목명 검색 테스트"""
+        self.create_test_project_with_quotation(status='생산 중')
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress&search=테스트 제품 1'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(any('테스트 제품 1' in p['product_names'] for p in data['data']))

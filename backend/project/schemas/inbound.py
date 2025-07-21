@@ -52,3 +52,8 @@ class ListProgressProjectIn(Schema):
 
 class ProjectCloneIn(Schema):
     project_id: int
+
+class ProjectListFilter(FilterSchema):
+    search: Optional[str] = None  # 업체명 또는 품목명
+    order_by: Optional[str] = "start_date"  # "start_date" 또는 "due_date"
+    order_dir: Optional[str] = "asc"        # "asc" 또는 "desc"

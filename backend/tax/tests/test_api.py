@@ -83,6 +83,212 @@ class TaxAPITestCase(TestCase):
             algorithm="HS256"
         )
 
+    def test_list_all_tax_invoices_success(self):
+        """모든 세금계산서 조회 성공 테스트"""
+        # 연결되지 않은 세금계산서 생성 (매출)
+        unlinked_invoice1 = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=550000,
+            tax_amount=50000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        unlinked_invoice1.product.add(self.product1)
+        
+        # 연결되지 않은 세금계산서 생성 (매입)
+        unlinked_invoice2 = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 3),
+            transaction_amount=500000,
+            tax_amount=50000,
+            tax_invoice_type='purchase',
+            publish_status='published'
+        )
+        unlinked_invoice2.product.add(self.product2)
+        
+        # 연결된 세금계산서 생성
+        linked_invoice = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 2),
+            transaction_amount=300000,
+            tax_amount=30000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        linked_invoice.product.add(self.product3)
+        
+        # 프로젝트 생성 후 세금계산서 연결
+        project = Project.objects.create()
+        project.tax_invoice = linked_invoice
+        project.save()
+        
+        # API 호출
+        url = '/v1/tax/'
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 페이지네이션 정보 확인
+        self.assertIn('data', data)
+        self.assertIn('count', data)
+        self.assertIn('totalCnt', data)
+        self.assertIn('curPage', data)
+        
+        # 모든 세금계산서가 반환되는지 확인 (3개)
+        self.assertEqual(len(data['data']), 3)
+        self.assertEqual(data['count'], 3)
+        
+        # 날짜순 정렬 확인 (최신순)
+        self.assertEqual(data['data'][0]['transaction_date'], '2025-06-04')
+        self.assertEqual(data['data'][1]['transaction_date'], '2025-06-03')
+        self.assertEqual(data['data'][2]['transaction_date'], '2025-06-02')
+        
+        # 첫 번째 세금계산서 (매출, 연결 안됨)
+        first_invoice = data['data'][0]
+        self.assertEqual(first_invoice['id'], unlinked_invoice1.id)
+        self.assertEqual(first_invoice['tax_invoice_type'], '매출')
+        self.assertEqual(first_invoice['transaction_date'], '2025-06-04')
+        self.assertEqual(first_invoice['client_name'], '플라스틱이 좋아')
+        self.assertEqual(first_invoice['product_names'], ['M8 볼트 세트'])
+        self.assertEqual(first_invoice['transaction_amount'], 550000)
+        self.assertEqual(first_invoice['tax_amount'], 50000)
+        self.assertEqual(first_invoice['total_amount'], 600000)
+        
+        # 두 번째 세금계산서 (매입, 연결 안됨)
+        second_invoice = data['data'][1]
+        self.assertEqual(second_invoice['id'], unlinked_invoice2.id)
+        self.assertEqual(second_invoice['tax_invoice_type'], '매입')
+        self.assertEqual(second_invoice['client_name'], '플라스틱이 싫어')
+        self.assertEqual(second_invoice['product_names'], ['나사'])
+        self.assertEqual(second_invoice['transaction_amount'], 500000)
+        self.assertEqual(second_invoice['total_amount'], 550000)
+        
+        # 세 번째 세금계산서 (매출, 연결됨)
+        third_invoice = data['data'][2]
+        self.assertEqual(third_invoice['id'], linked_invoice.id)
+        self.assertEqual(third_invoice['tax_invoice_type'], '매출')
+        self.assertEqual(third_invoice['client_name'], '플라스틱이 좋아')
+        self.assertEqual(third_invoice['product_names'], ['와셔'])
+        self.assertEqual(third_invoice['transaction_amount'], 300000)
+        self.assertEqual(third_invoice['total_amount'], 330000)
+
+    def test_list_all_tax_invoices_multiple_products(self):
+        """여러 품목이 있는 세금계산서 테스트"""
+        # 여러 품목이 있는 세금계산서 생성
+        multi_product_invoice = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=1000000,
+            tax_amount=100000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        multi_product_invoice.product.add(self.product1, self.product2, self.product3)
+        
+        # API 호출
+        url = '/v1/tax/'
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 여러 품목이 올바르게 반환되는지 확인
+        self.assertEqual(len(data['data']), 1)
+        invoice = data['data'][0]
+        self.assertEqual(len(invoice['product_names']), 3)
+        self.assertIn('M8 볼트 세트', invoice['product_names'])
+        self.assertIn('나사', invoice['product_names'])
+        self.assertIn('와셔', invoice['product_names'])
+
+    def test_list_all_tax_invoices_empty_result(self):
+        """세금계산서가 없을 때 빈 결과 테스트"""
+        # API 호출
+        url = '/v1/tax/'
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 빈 결과 확인
+        self.assertEqual(len(data['data']), 0)
+        self.assertEqual(data['count'], 0)
+        self.assertEqual(data['totalCnt'], 0)
+
+    def test_list_all_tax_invoices_without_auth(self):
+        """인증 없이 모든 세금계산서 조회 테스트"""
+        url = '/v1/tax/'
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, 401)
+
+    def test_list_all_tax_invoices_invalid_token(self):
+        """잘못된 토큰으로 모든 세금계산서 조회 테스트"""
+        url = '/v1/tax/'
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION='Bearer invalid_token'
+        )
+        
+        self.assertEqual(response.status_code, 401)
+
+    def test_list_all_tax_invoices_different_statuses(self):
+        """다양한 상태의 세금계산서 테스트"""
+        # published 상태
+        published_invoice = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        published_invoice.product.add(self.product1)
+        
+        # draft 상태
+        draft_invoice = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 3),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='purchase',
+            publish_status='draft'
+        )
+        draft_invoice.product.add(self.product2)
+        
+        # API 호출
+        url = '/v1/tax/'
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 모든 상태의 세금계산서가 반환되는지 확인
+        self.assertEqual(len(data['data']), 2)
+        
+        # published 세금계산서 확인
+        published_data = next(item for item in data['data'] if item['id'] == published_invoice.id)
+        self.assertEqual(published_data['tax_invoice_type'], '매출')
+        self.assertEqual(published_data['client_name'], '플라스틱이 좋아')
+        
+        # draft 세금계산서 확인
+        draft_data = next(item for item in data['data'] if item['id'] == draft_invoice.id)
+        self.assertEqual(draft_data['tax_invoice_type'], '매입')
+        self.assertEqual(draft_data['client_name'], '플라스틱이 싫어')
+
     def test_list_not_link_tax_success(self):
         """연동되지 않은 세금계산서 조회 성공 테스트"""
         # 연동 안된 세금계산서 생성 (매출)
