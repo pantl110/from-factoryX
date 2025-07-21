@@ -50,7 +50,7 @@ async def create_factory_client(request, payload: FactoryClientCreateIn):
 async def list_or_search_factory_clients(
     request, 
     factory_id: int, 
-    filters: FactoryClientSearchFilter = Query(...)
+    filters: FactoryClientSearchFilter = Query(None)
 ):
     """
     입력 필드:
@@ -82,7 +82,7 @@ async def list_or_search_factory_clients(
     @sync_to_async
     def get_factory_clients():
         queryset = FactoryClient.objects.filter(factory_id=factory_id, factory__owner=user)
-        if filters.q:
+        if filters and filters.q:
             qs = queryset.filter(name__icontains=filters.q)
             qs = qs.union(queryset.filter(business_registration_number__icontains=filters.q))
             qs = qs.union(queryset.filter(representative_name__icontains=filters.q))
