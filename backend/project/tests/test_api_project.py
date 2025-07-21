@@ -862,3 +862,64 @@ def test_clone_project_without_auth(self):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(any('테스트 제품 1' in p['product_names'] for p in data['data']))
+
+    def test_list_progress_project_api(self):
+        """진행중 전체, 각 상태별, 완료, 중단 프로젝트 API 조회 통합 테스트"""
+        from django.urls import reverse
+        # 1. 진행중(생산 중), 진행중(생산 대기), 완료, 중단(견적 협의중+2개월 경과) 프로젝트 생성
+        # 진행중(생산 중)
+        project1, _ = self.create_test_project_with_quotation(status='생산 중')
+        # 진행중(생산 대기)
+        project2, _ = self.create_test_project_with_quotation(status='생산 대기')
+        # 완료
+        project3, _ = self.create_test_project_with_quotation(status='프로젝트 완료')
+        # 중단: 견적 협의중 + 2개월 경과 + 생산계획 없음
+        project4, quotation4 = self.create_test_project_with_quotation(status='견적 협의중')
+        project4.updated_at = datetime.now() - timedelta(days=61)
+        project4.save()
+        # 2. 진행중 전체 조회 (status=progress)
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        # 진행중(생산 중, 생산 대기)만 포함, 완료/중단 제외
+        project_ids = [item['project_id'] for item in data]
+        self.assertIn(project1.id, project_ids)
+        self.assertIn(project2.id, project_ids)
+        self.assertNotIn(project3.id, project_ids)
+        self.assertNotIn(project4.id, project_ids)
+        # 3. 각 상태별 조회 (status=생산 중, status=생산 대기, status=견적 협의중)
+        url = f'/v1/project?factory_id={self.factory.id}&status=production'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['project_id'] for item in data]
+        self.assertIn(project1.id, ids)
+        self.assertNotIn(project2.id, ids)
+        url = f'/v1/project?factory_id={self.factory.id}&status=pending'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['project_id'] for item in data]
+        self.assertIn(project2.id, ids)
+        self.assertNotIn(project1.id, ids)
+        # 견적 협의중(중단 아닌 것만)
+        project5, _ = self.create_test_project_with_quotation(status='견적 협의중')
+        url = f'/v1/project?factory_id={self.factory.id}&status=quotation'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['project_id'] for item in data]
+        self.assertIn(project5.id, ids)
+        self.assertNotIn(project4.id, ids)  # 중단은 제외
+        # 4. 완료/중단 포함 조회 (status=complete)
+        url = f'/v1/project?factory_id={self.factory.id}&status=complete'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['project_id'] for item in data]
+        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data}
+        self.assertIn(project3.id, ids)  # 완료
+        self.assertIn(project4.id, ids)  # 중단
+        self.assertTrue(is_abandoned_map[project4.id])
+        self.assertFalse(is_abandoned_map[project3.id])
