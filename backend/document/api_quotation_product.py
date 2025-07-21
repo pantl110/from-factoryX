@@ -7,16 +7,13 @@ from stock.models import Product
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from factory.models import FactoryClient
-from document.schemas.outbound import QuotationProductOut, QuotationDraftOut, QuotationProductionOut, QuotationProductHistoryListOut
+from document.schemas.outbound import QuotationProductOut
 from document.schemas.inbound import QuotationDraftIn, QuotationProductionIn
 from ninja import Query
 from django.shortcuts import get_object_or_404
-from ninja import Router, Schema
+from ninja import Router
 from ninja.errors import HttpError
-from django.db import transaction
-from django.db.models import Q
 from asgiref.sync import sync_to_async
-from typing import List, Optional
 from datetime import datetime, date, timedelta
 
 from document.models import Quotation, QuotationProduct
@@ -27,10 +24,6 @@ from project.models import Project, ProjectPlan
 router = Router(tags=["QuotationProduct"], auth=jwt_auth)
 
 # Quotation Tab
-# 생산 시작 또는 임시 저장 버튼을 누름과 함께 Quotation Product 업데이트
-
-    
-
 @router.get("/", summary="[C] 견적서 품목 목록 조회", response={200: list, 400: dict, 404: dict, 500: dict})
 async def list_quotation_products(request, quotation_id: int = Query(None), factory_id: int = Query(None)):
     if quotation_id is None and factory_id is None:

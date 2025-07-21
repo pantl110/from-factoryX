@@ -1,4 +1,4 @@
-from ninja import Router, Query
+from ninja import Router, Query, FilterSchema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
@@ -7,8 +7,9 @@ from project.schemas.outbound import ProjectCreateOut, ProjectDetailOut, Project
 from project.schemas.inbound import ProjectStatusUpdateIn, ProjectTransactDateUpdateIn, ProjectCloneIn, ProjectListFilter
 from project.models import Project
 from document.models import Quotation
-from datetime import date
-from typing import List
+from datetime import date, timedelta
+from typing import List, Optional
+from django.db.models import Exists, OuterRef
 
 router = Router(tags=["Project"], auth=jwt_auth)
 
@@ -118,6 +119,13 @@ async def update_project_transact_date(request, project_id: int, payload: Projec
 
 
 # Progress, Completed Project Tab
+class ProjectListFilter(FilterSchema):
+    status: Optional[str] = None
+    factory_id: Optional[int] = None
+    search: Optional[str] = None
+    order_by: Optional[str] = None
+    order_dir: Optional[str] = None
+
 @router.get(
     "",
     summary="[C] 진행 중인 프로젝트 조회",
@@ -127,8 +135,6 @@ async def update_project_transact_date(request, project_id: int, payload: Projec
 @paginate
 async def list_progress_project(
     request,
-    factory_id: int = Query(...),
-    status: str = Query(...),
     filters: ProjectListFilter = Query(...)
 ):
     """
@@ -168,18 +174,43 @@ async def list_progress_project(
         valid_statuses = [
             "progress", "complete", "quotation", "pending", "production", "manufactured", "delivery"
         ]
+        status = filters.status
+        factory_id = filters.factory_id
         if status not in valid_statuses:
             raise HttpError(400, f"status는 {valid_statuses} 중 하나여야 합니다.")
-        
+        if not factory_id:
+            raise HttpError(400, "factory_id는 필수입니다.")
+        now = date.today()
+        two_months_ago = now - timedelta(days=60)
+
         @sync_to_async
         def get_projects():
             base_qs = Project.objects.filter(quotations__factory_id=factory_id)
-            if status == "complete":
-                base_qs = base_qs.filter(status=Project.ProjectStatus.completed)
-            elif status == "progress":
+            # 중단 프로젝트 판별: 견적 협의중 + 2개월간 ProjectPlan 없음
+            abandoned_qs = base_qs.annotate(
+                has_plan=Exists(
+                    ProjectPlan.objects.filter(project=OuterRef('pk'))
+                )
+            ).filter(
+                status=Project.ProjectStatus.quotation,
+                has_plan=False,
+                updated_at__lte=two_months_ago
+            )
+            abandoned_ids = list(abandoned_qs.values_list('pk', flat=True))
+            # 진행중: 완료/중단 제외
+            if status == "progress":
                 base_qs = base_qs.exclude(status=Project.ProjectStatus.completed)
+                if abandoned_ids:
+                    base_qs = base_qs.exclude(pk__in=abandoned_ids)
+            elif status == "complete":
+                # 보관함: 완료 or 중단
+                base_qs = base_qs.filter(status=Project.ProjectStatus.completed)
+                if abandoned_ids:
+                    base_qs = base_qs.union(Project.objects.filter(pk__in=abandoned_ids))
             else:
                 base_qs = base_qs.filter(status=status)
+                if abandoned_ids:
+                    base_qs = base_qs.exclude(pk__in=abandoned_ids)
 
             if filters.search:
                 qs1 = base_qs.filter(quotations__client__name__icontains=filters.search)
@@ -192,32 +223,27 @@ async def list_progress_project(
                     'plans__product__product',
                     'tax_invoice'
                 ).distinct()
-            return list(projects)
+            return list(projects), abandoned_ids
         
-        projects = await get_projects()
+        projects, abandoned_ids = await get_projects()
         result = []
-        
         for project in projects:
             quotations = project.quotations.filter(factory_id=factory_id).prefetch_related(
                 'client', 'products__product'
             )
-            
             for quotation in quotations:
                 product_names = []
                 for quotation_product in quotation.products.all():
                     product_names.append(quotation_product.product.name)
-                
                 start_date = None
                 plans = project.plans.all()
                 if plans:
                     start_dates = [plan.start_date for plan in plans]
                     start_date = min(start_dates)
-                
-                # 세금계산서 상태 처리
                 publish_status = None
                 if project.tax_invoice:
                     publish_status = project.tax_invoice.publish_status
-                
+                is_abandoned = project.pk in abandoned_ids if status == "complete" else False
                 result.append(ListProgressProjectOut(
                     project_id=project.id,
                     client_name=quotation.client.name if quotation.client else "",
@@ -225,16 +251,15 @@ async def list_progress_project(
                     start_date=start_date or quotation.due_date,
                     due_date=quotation.due_date,
                     publish_status=publish_status,
-                    status=project.status  # 추가
+                    status=project.status,
+                    is_abandoned=is_abandoned
                 ))
-        
         order_field = filters.order_by if filters.order_by in ["start_date", "due_date"] else "start_date"
         reverse = filters.order_dir == "desc"
         def get_sort_key(item):
             return getattr(item, order_field) or date.min
         result.sort(key=get_sort_key, reverse=reverse)
         return result
-        
     except HttpError:
         raise
     except Exception as e:
