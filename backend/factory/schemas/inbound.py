@@ -99,15 +99,17 @@ class FactoryEqUpdateIn(ModelSchema):
 
 
 # 거래처 관련 스키마
-class FactoryClientUpdateIn(ModelSchema):
-    class Meta:
-        model = FactoryClient
-        exclude = [
-            "id",
-            "factory",
-            "created_at",
-            "updated_at",
-        ]
+class FactoryClientUpdateIn(Schema):
+    id: Optional[int] = None
+    client_type: Optional[str] = None
+    name: Optional[str] = None
+    business_registration_number: Optional[str] = None
+    representative_name: Optional[str] = None
+    business_type: Optional[str] = None
+    business_category: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    note: Optional[str] = None
 
 
 # Factory Client Filter Schema
@@ -127,17 +129,6 @@ class FactoryClientFilter(FilterSchema):
         default=None, q="client_type", description="거래처 유형 (customer/supplier)"
     )
 
-
-# 거래처 상세 조회용 스키마 (URL 경로로 ID 받음)
-class FactoryClientDetailIn(Schema):
-    pass
-
-
-# 거래처 삭제용 스키마 (URL 경로로 ID 받음)
-class FactoryClientDeleteIn(Schema):
-    pass
-
-
 # 거래처 검색용 스키마
 class FactoryClientSearchIn(Schema):
     factory_id: int
@@ -147,3 +138,7 @@ class FactoryClientSearchIn(Schema):
 class FactoryMemberUpdateIn(Schema):
     role: Optional[str] = None
     status: Optional[str] = None
+
+
+class FactoryClientSearchFilter(FilterSchema):
+    q: Optional[str] = None

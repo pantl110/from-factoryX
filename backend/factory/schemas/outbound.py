@@ -1,4 +1,4 @@
-from ninja import ModelSchema, Field
+from ninja import ModelSchema, Field, Schema
 from factory.models import Factory, FactoryEquipment, FactoryClient, FactoryMember
 from typing import Optional
 
@@ -16,22 +16,30 @@ class FactoryEqOut(ModelSchema):
 
 
 # 거래처 관련 스키마
-class FactoryClientOut(ModelSchema):
-    """거래처 출력 스키마 - 기본 정보"""
-    class Meta:
-        model = FactoryClient
-        fields = "__all__"
+class FactoryClientOut(Schema):
+    id: int
+    client_type: str
+    name: str
+    business_registration_number: Optional[str]
+    representative_name: Optional[str]
+    business_type: Optional[str]
+    business_category: Optional[str]
+    phone: Optional[str]
+    email: Optional[str]
+    note: Optional[str]
 
 
-class FactoryClientDetailOut(ModelSchema):
-    """거래처 출력 스키마 - 상세 정보"""
-    factory_name: Optional[str] = Field(default=None, description="공장명")
-    created_at_formatted: Optional[str] = Field(default=None, description="등록일시")
-    updated_at_formatted: Optional[str] = Field(default=None, description="수정일시")
-    
-    class Meta:
-        model = FactoryClient
-        fields = "__all__"
+class FactoryClientDetailOut(Schema):
+    id: int
+    client_type: str
+    name: str
+    business_registration_number: Optional[str]
+    representative_name: Optional[str]
+    business_type: Optional[str]
+    business_category: Optional[str]
+    phone: Optional[str]
+    email: Optional[str]
+    note: Optional[str]
 
 
 class FactoryMemberOut(ModelSchema):
