@@ -4,9 +4,10 @@ from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from project.schemas.outbound import ProjectCreateOut, ProjectDetailOut, ProjectUpdateOut, ListProgressProjectOut
-from project.schemas.inbound import ProjectStatusUpdateIn, ProjectTransactDateUpdateIn, ProjectCloneIn
+from project.schemas.inbound import ProjectStatusUpdateIn, ProjectTransactDateUpdateIn, ProjectCloneIn, ProjectListFilter
 from project.models import Project
 from document.models import Quotation
+from datetime import date
 from typing import List
 
 router = Router(tags=["Project"], auth=jwt_auth)
@@ -124,7 +125,12 @@ async def update_project_transact_date(request, project_id: int, payload: Projec
     response={200: List[ListProgressProjectOut], 400: dict, 500: dict}
 )
 @paginate
-async def list_progress_project(request, factory_id: int = Query(...), status: str = Query(...)):
+async def list_progress_project(
+    request,
+    factory_id: int = Query(...),
+    status: str = Query(...),
+    filters: ProjectListFilter = Query(...)
+):
     """
     진행 중인 프로젝트 또는 완료된 프로젝트를 조회합니다.
     
@@ -133,6 +139,9 @@ async def list_progress_project(request, factory_id: int = Query(...), status: s
     - status: 조회 상태 ("progress" 또는 "complete")
         - "progress": 완료 상태를 제외한 모든 프로젝트 조회
         - "complete": 완료된 프로젝트만 조회
+    - search: 업체명 또는 품목명(제품명) (선택, 미입력 시 전체)
+    - order_by: 정렬 기준 ("start_date" 또는 "due_date", 기본값: "start_date")
+    - order_dir: 정렬 방향 ("asc" 또는 "desc", 기본값: "asc")
     
     반환 필드:
     - project_id: 프로젝트 ID
@@ -142,9 +151,10 @@ async def list_progress_project(request, factory_id: int = Query(...), status: s
     - due_date: 납기일자 (Quotation.due_date)
     - publish_status: 세금계산서 발행 상태 (Project.NationalTaxService.publish_status)
         - null: 세금계산서 미연결 ("연결 필요"로 표시)
-        - "temporary": 임시 저장
-        - "pending": 발행 대기
-        - "published": 발행 완료
+        - "temporary": 임시 저장 ("미발행"으로 표시)
+        - "pending": 발행 대기 ("미발행"으로 표시)
+        - "published": 발행 완료 ("보기"로 표시)
+    - status: 프로젝트 상태 (Project.status)
     
     예시:
     - 진행 중인 프로젝트: status="progress"
@@ -153,33 +163,30 @@ async def list_progress_project(request, factory_id: int = Query(...), status: s
     try:
         if status not in ["progress", "complete"]:
             raise HttpError(400, "status는 'progress' 또는 'complete'여야 합니다.")
-        
+
         @sync_to_async
         def get_projects():
+            base_qs = Project.objects.filter(
+                quotations__factory_id=factory_id
+            )
             if status == "progress":
-                projects = Project.objects.filter(
-                    quotations__factory_id=factory_id
-                ).exclude(
-                    status=Project.ProjectStatus.completed
-                ).prefetch_related(
-                    'quotations__client',
-                    'quotations__products__product',
-                    'plans__product__product',
-                    'tax_invoice'
-                ).distinct()
+                base_qs = base_qs.exclude(status=Project.ProjectStatus.completed)
             else:
-                projects = Project.objects.filter(
-                    quotations__factory_id=factory_id,
-                    status=Project.ProjectStatus.completed
-                ).prefetch_related(
-                    'quotations__client',
-                    'quotations__products__product',
-                    'plans__product__product',
-                    'tax_invoice'
-                ).distinct()
-            
+                base_qs = base_qs.filter(status=Project.ProjectStatus.completed)
+
+            if filters.search:
+                qs1 = base_qs.filter(quotations__client__name__icontains=filters.search)
+                qs2 = base_qs.filter(quotations__products__product__name__icontains=filters.search)
+                base_qs = qs1.union(qs2)
+
+            projects = base_qs.prefetch_related(
+                'quotations__client',
+                'quotations__products__product',
+                'plans__product__product',
+                'tax_invoice'
+            ).distinct()
             return list(projects)
-        
+
         projects = await get_projects()
         result = []
         
@@ -210,9 +217,15 @@ async def list_progress_project(request, factory_id: int = Query(...), status: s
                     product_names=product_names,
                     start_date=start_date or quotation.due_date,
                     due_date=quotation.due_date,
-                    publish_status=publish_status
+                    publish_status=publish_status,
+                    status=project.status  # 추가
                 ))
         
+        order_field = filters.order_by if filters.order_by in ["start_date", "due_date"] else "start_date"
+        reverse = filters.order_dir == "desc"
+        def get_sort_key(item):
+            return getattr(item, order_field) or date.min
+        result.sort(key=get_sort_key, reverse=reverse)
         return result
         
     except HttpError:

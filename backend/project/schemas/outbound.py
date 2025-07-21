@@ -129,3 +129,4 @@ class ListProgressProjectOut(Schema):
     start_date: datetime.date
     due_date: datetime.date
     publish_status: Optional[str] = None
+    status: str
