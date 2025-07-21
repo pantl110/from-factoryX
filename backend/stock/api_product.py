@@ -27,6 +27,9 @@ async def create_product(request, payload: List[ProductCreateIn]):
         data = item.dict()
         factory_id = data.pop("factory")
         factory = await get_factory_by_id(factory_id, user)
+        # current_stock이 None이면 0으로 저장
+        if data.get("current_stock") is None:
+            data["current_stock"] = 0
         product = await Product.objects.acreate(factory=factory, **data)
 
         # 응답 데이터 직렬화
@@ -130,6 +133,8 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
     user = request.auth
     product = await get_product_by_id(product_id, user)
     update_data = payload.dict(exclude_unset=True)
+    if "current_stock" in update_data and update_data["current_stock"] is None:
+        update_data["current_stock"] = 0
     for key, value in update_data.items():
         setattr(product, key, value)
     await product.asave()

@@ -32,7 +32,7 @@ class ProductCreateIn(Schema):
     code: str = Field(..., description="제품코드")
     unit: str = Field(..., description="단위")
     spec: str = Field(..., description="규격")
-    current_stock: Optional[int] = Field(default=0, description="현재 재고")
+    current_stock: Optional[int] = Field(default=None, description="현재 재고")
     average_production_time: Optional[int] = Field(
         default=None, description="평균 생산 시간(초)"
     )

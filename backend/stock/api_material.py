@@ -10,6 +10,9 @@ from factory.models import Factory
 router = Router(tags=["Material"], auth=jwt_auth)
 
 
+
+
+
 @router.get(
     "/factory/{factory_id}", 
     summary="[C] 공장별 원자재 목록 조회", 
