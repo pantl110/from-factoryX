@@ -132,13 +132,12 @@ async def list_progress_project(
     filters: ProjectListFilter = Query(...)
 ):
     """
-    진행 중인 프로젝트 또는 완료된 프로젝트를 조회합니다.
-    
     입력 필드:
     - factory_id: 공장 ID (필수)
-    - status: 조회 상태 ("progress" 또는 "complete")
-        - "progress": 완료 상태를 제외한 모든 프로젝트 조회
-        - "complete": 완료된 프로젝트만 조회
+    - status: 조회 상태 ("progress", "complete", "quotation", "pending", "production", "manufactured", "delivery")
+        - "progress": 전체 진행 중 프로젝트(완료 제외)
+        - "complete": 완료된 프로젝트만
+        - "quotation", "pending", "production", "manufactured", "delivery": 해당 상태만 조회
     - search: 업체명 또는 품목명(제품명) (선택, 미입력 시 전체)
     - order_by: 정렬 기준 ("start_date" 또는 "due_date", 기본값: "start_date")
     - order_dir: 정렬 방향 ("asc" 또는 "desc", 기본값: "asc")
@@ -157,22 +156,30 @@ async def list_progress_project(
     - status: 프로젝트 상태 (Project.status)
     
     예시:
-    - 진행 중인 프로젝트: status="progress"
-    - 완료된 프로젝트: status="complete"
+    - 전체 진행 중: status="progress"
+    - 완료: status="complete"
+    - 견적 협의중만: status="quotation"
+    - 생산 대기만: status="pending"
+    - 생산 중만: status="production"
+    - 생산 완료만: status="manufactured"
+    - 납품만: status="delivery"
     """
     try:
-        if status not in ["progress", "complete"]:
-            raise HttpError(400, "status는 'progress' 또는 'complete'여야 합니다.")
-
+        valid_statuses = [
+            "progress", "complete", "quotation", "pending", "production", "manufactured", "delivery"
+        ]
+        if status not in valid_statuses:
+            raise HttpError(400, f"status는 {valid_statuses} 중 하나여야 합니다.")
+        
         @sync_to_async
         def get_projects():
-            base_qs = Project.objects.filter(
-                quotations__factory_id=factory_id
-            )
-            if status == "progress":
+            base_qs = Project.objects.filter(quotations__factory_id=factory_id)
+            if status == "complete":
+                base_qs = base_qs.filter(status=Project.ProjectStatus.completed)
+            elif status == "progress":
                 base_qs = base_qs.exclude(status=Project.ProjectStatus.completed)
             else:
-                base_qs = base_qs.filter(status=Project.ProjectStatus.completed)
+                base_qs = base_qs.filter(status=status)
 
             if filters.search:
                 qs1 = base_qs.filter(quotations__client__name__icontains=filters.search)
@@ -180,13 +187,13 @@ async def list_progress_project(
                 base_qs = qs1.union(qs2)
 
             projects = base_qs.prefetch_related(
-                'quotations__client',
-                'quotations__products__product',
-                'plans__product__product',
-                'tax_invoice'
-            ).distinct()
+                    'quotations__client',
+                    'quotations__products__product',
+                    'plans__product__product',
+                    'tax_invoice'
+                ).distinct()
             return list(projects)
-
+        
         projects = await get_projects()
         result = []
         

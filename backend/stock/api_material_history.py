@@ -161,7 +161,6 @@ async def get_material_history(request, material_id: int, months: int = None, da
                 start_date = timezone.now() - timedelta(days=days)
             elif months is not None:
                 start_date = timezone.now() - timedelta(days=months * 30)
-            
             queryset = queryset.filter(created_at__gte=start_date)
         
         return list(queryset.order_by('-created_at'))
