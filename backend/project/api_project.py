@@ -186,7 +186,7 @@ async def list_progress_project(
         @sync_to_async
         def get_projects():
             base_qs = Project.objects.filter(quotations__factory_id=factory_id)
-            # 중단 프로젝트 판별: 견적 협의중 + 2개월간 ProjectPlan 없음 (created_at 기준)
+            # 중단 프로젝트 판별: 견적 협의중 + 2개월간 ProjectPlan 없음 (updated_at 기준)
             abandoned_qs = base_qs.annotate(
                 has_plan=Exists(
                     ProjectPlan.objects.filter(project=OuterRef('pk'))
@@ -194,7 +194,7 @@ async def list_progress_project(
             ).filter(
                 status=Project.ProjectStatus.quotation,
                 has_plan=False,
-                created_at__lte=two_months_ago
+                updated_at__lte=two_months_ago
             )
             abandoned_ids = list(abandoned_qs.values_list('pk', flat=True))
             # 진행중: 완료/중단 제외
