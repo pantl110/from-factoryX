@@ -334,7 +334,7 @@ export interface MaterialListResponseModel extends PaginationModel {
 ////////////////////////////
 // Project API
 // 프로젝트 생성 + 견적서 생성
-export interface ProjectModel {
+export interface CreateProjectModel {
   status?: string;
   transact_date?: string;
   factory_id: number;
@@ -344,7 +344,7 @@ export interface ProjectModel {
   products?: ProductResponseModel[];
 }
 
-export interface ProjectResponseModel {
+export interface CreateProjectResponseModel {
   id: number;
   status?: string;
   transact_date?: string;
@@ -353,15 +353,28 @@ export interface ProjectResponseModel {
   updated_at: string;
 }
 
-export interface ProjectListResponseModel extends PaginationModel {
-  data: ProjectResponseModel[];
-}
-
 // 프로젝트 정보 수정
 export interface ProjectUpdateModel {
   status: string;
   transact_date: string;
   tax_invoice_id: number;
+}
+
+// 프로젝트 조회 요청
+// 진행 중인 프로젝트: status="progress"
+// 완료된 프로젝트: status="complete"
+export interface ProjectResponseModel {
+  project_id: number;
+  client_name: string;
+  product_names: string[];
+  start_date: string;
+  due_date: string;
+  publish_status: TaxStatusType; // 세금계산서 발행 상태
+  status: ProjectStatusType; // 프로젝트 상태
+}
+
+export interface ProjectListResponseModel extends PaginationModel {
+  data: ProjectResponseModel[];
 }
 
 //////////////////////
@@ -491,7 +504,7 @@ export interface MaterialDataModel {
   [key: string]: unknown;
 }
 
-import { ClientType } from './status-type';
+import { ClientType, ProjectStatusType, TaxStatusType } from './status-type';
 import { EquipmentStatusType } from './status-type';
 export interface ClientDataModel {
   id: string;

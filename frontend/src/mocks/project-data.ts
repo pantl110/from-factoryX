@@ -14,7 +14,7 @@ export interface ProjectDataModel {
 export const projectData: ProjectDataModel[] = [
   {
     id: 1,
-    status: '생산 중',
+    status: 'production',
     companyName: '테크파츠',
     items: 'M8 볼트 세트',
     startDate: '2025-06-06',
@@ -24,7 +24,7 @@ export const projectData: ProjectDataModel[] = [
   },
   {
     id: 2,
-    status: '생산 완료',
+    status: 'manufactured',
     companyName: '에이스정밀',
     items: '금형 케이스',
     startDate: '2025-06-04',
@@ -34,7 +34,7 @@ export const projectData: ProjectDataModel[] = [
   },
   {
     id: 3,
-    status: '생산 대기',
+    status: 'pending',
     companyName: '에이스정밀',
     items: '성일 부품 외 2개',
     startDate: '2025-06-12',
@@ -44,7 +44,7 @@ export const projectData: ProjectDataModel[] = [
   },
   {
     id: 4,
-    status: '납품',
+    status: 'delivery',
     companyName: '디이몰드',
     items: '테스크 키트 외 1개',
     startDate: '2025-06-04',
@@ -54,7 +54,7 @@ export const projectData: ProjectDataModel[] = [
   },
   {
     id: 5,
-    status: '견적 협의',
+    status: 'quotation',
     companyName: '다이몰드',
     items: '정밀 부품 외 2개',
     startDate: '-',
@@ -64,7 +64,7 @@ export const projectData: ProjectDataModel[] = [
   },
   {
     id: 6,
-    status: '생산 중',
+    status: 'production',
     companyName: '금형마스터',
     items: '금형 케이스',
     startDate: '2025-06-04',
@@ -74,7 +74,7 @@ export const projectData: ProjectDataModel[] = [
   },
   {
     id: 7,
-    status: '납품',
+    status: 'delivery',
     companyName: '플라스틱이 좋아',
     items: '플라스틱 컵 외 3개',
     startDate: '2025-06-08',
@@ -84,7 +84,7 @@ export const projectData: ProjectDataModel[] = [
   },
   {
     id: 8,
-    status: '프로젝트 완료',
+    status: 'completed',
     companyName: '플라스틱이 좋아',
     items: '플라스틱 컵 외 3개',
     startDate: '2025-06-08',
@@ -94,7 +94,7 @@ export const projectData: ProjectDataModel[] = [
   },
   {
     id: 9,
-    status: '견적 협의',
+    status: 'quotation',
     companyName: '메탈리카',
     items: '정밀 부품 외 2개',
     startDate: '-',

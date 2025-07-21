@@ -14,7 +14,7 @@ const useGetOngoingProjectPlans = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getOngoingProject = async (
+  const getOngoingProjectPlans = async (
     pagination?: PaginationParamsModel,
     filters?: OngoingProjectPlansFiltersModel
   ) => {
@@ -62,7 +62,7 @@ const useGetOngoingProjectPlans = () => {
     }
   };
 
-  return { getOngoingProject, isLoading, error };
+  return { getOngoingProjectPlans, isLoading, error };
 };
 
 export default useGetOngoingProjectPlans;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ProjectModel } from '@/types/data-model';
+import { CreateProjectModel } from '@/types/data-model';
 
 interface CreateProjectResponseModel {
   id: number; // 견적서 ID
@@ -10,7 +10,7 @@ const useCreateProject = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createProject = async (data: ProjectModel) => {
+  const createProject = async (data: CreateProjectModel) => {
     setIsLoading(true);
     setError(null);
 
@@ -26,6 +26,7 @@ const useCreateProject = () => {
           body: JSON.stringify(data),
         }
       );
+
       if (response.status === 201) {
         const result: CreateProjectResponseModel = await response.json();
         return { success: true, data: result };

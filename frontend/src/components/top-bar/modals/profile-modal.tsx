@@ -78,12 +78,12 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
               <p className="Me_Body-1 text-sv">
                 {getStatusText(userInfo?.status || '-')}
               </p>
-              {/* {userInfo?.name && (
+              {userInfo?.username && (
                 <>
-                  <div className="w-[1px] bg-gr h-[56%]"></div>                  
-                  <p className="Me_Body-1 text-sv">{userInfo?.name}</p>
+                  <div className="w-[1px] bg-gr h-[56%]"></div>
+                  <p className="Me_Body-1 text-sv">{userInfo?.username}</p>
                 </>
-              )} */}
+              )}
             </div>
           </div>
         </div>

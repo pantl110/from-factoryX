@@ -27,23 +27,37 @@ export const ClientTypeColorMap: Record<
 
 // 프로젝트 상태
 export type ProjectStatusType =
-  | '견적 협의' // quotation
-  | '생산 대기' // pending
-  | '생산 중' // production
-  | '생산 완료' // manufactured
-  | '납품' // delivery
-  | '프로젝트 완료'; // completed
+  | 'quotation'
+  | 'pending'
+  | 'production'
+  | 'manufactured'
+  | 'delivery'
+  | 'completed'
+  | 'stop';
+
+// | '견적 협의' // quotation
+// | '생산 대기' // pending
+// | '생산 중' // production
+// | '생산 완료' // manufactured
+// | '납품' // delivery
+// | '프로젝트 완료' // completed
+// | '중단';
 export const ProjectStatusColorMap: Record<
   ProjectStatusType,
   StatusColorModel
 > = {
-  '견적 협의': { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
-  '생산 대기': { bgColor: 'bg-bg', textColor: 'text-dg' },
-  '생산 중': { bgColor: 'bg-purple-8', textColor: 'text-purple' },
-  '생산 완료': { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  납품: { bgColor: 'bg-green-8', textColor: 'text-green' },
-  '프로젝트 완료': { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
+  pending: { bgColor: 'bg-bg', textColor: 'text-dg' },
+  production: { bgColor: 'bg-purple-8', textColor: 'text-purple' },
+  manufactured: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  delivery: { bgColor: 'bg-green-8', textColor: 'text-green' },
+  completed: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  stop: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
+
+// 세금계산서 발행 상태
+export type TaxStatusType = null | 'temporary' | 'pending' | 'published';
+// 세금계산서 미연결(미발행) // 임시 저장(미발행) // 발행 대기 (연결 필요) // 발행 완료(보기)
 
 ////////////////////
 // 수정 전, 확인 전, 삭제하기
@@ -55,14 +69,6 @@ export const TransactionStatusColorMap: Record<TransactionStatusType, string> =
     미작성: 'text-gr',
     '작성 완료': 'text-primary',
   };
-
-// 세금계산서 발행 상태
-export type TaxStatusType = '보기' | '연결 필요' | '미발행';
-// export const TaxStatusColorMap: Record<TaxStatusType, string> = {
-//   보기: "text-gr",
-//   "연결 필요": "text-yellow",
-//   미발행: "text-primary",
-// };
 
 // 완료된 프로젝트 상태
 export type CompletedProjectStatusType = '완료' | '중단';
@@ -142,7 +148,7 @@ export const TaxDocumentTypeColorMap: Record<
   매입: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
 
-// 세금계간서 임시보관함 상태
+// 세금계산서 임시보관함 상태
 export type TaxDraftStatusType = '임시 저장' | '발행 대기';
 export const TaxDraftStatusColorMap: Record<
   TaxDraftStatusType,

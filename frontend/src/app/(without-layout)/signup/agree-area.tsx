@@ -12,16 +12,13 @@ interface AgreeAreaProps {
 const AgreeArea = ({ watchedValues, setValue }: AgreeAreaProps) => {
   // 모두 동의 체크박스 상태
   const isAllChecked =
-    watchedValues.terms_of_service &&
-    watchedValues.privacy_policy_agreement &&
-    watchedValues.marketing_agreement;
+    watchedValues.terms_of_service && watchedValues.privacy_policy_agreement;
 
   // 체크박스 토글 함수
   const handleToggleAll = () => {
     const shouldCheckAll = !isAllChecked;
     setValue('terms_of_service', shouldCheckAll);
     setValue('privacy_policy_agreement', shouldCheckAll);
-    setValue('marketing_agreement', shouldCheckAll);
   };
 
   const handleToggleService = () => {
@@ -33,10 +30,6 @@ const AgreeArea = ({ watchedValues, setValue }: AgreeAreaProps) => {
       'privacy_policy_agreement',
       !watchedValues.privacy_policy_agreement
     );
-  };
-
-  const handleToggleMarketing = () => {
-    setValue('marketing_agreement', !watchedValues.marketing_agreement);
   };
 
   return (
@@ -64,13 +57,6 @@ const AgreeArea = ({ watchedValues, setValue }: AgreeAreaProps) => {
           <p className="text-sv Me_Body-1">개인정보 수집 및 이용 동의 (필수)</p>
         </div>
         <p className="text-sv Me_Body-1">약관 보기</p>
-      </div>
-      <div className="flex gap-2">
-        <Checkbox
-          isChecked={watchedValues.marketing_agreement}
-          onToggle={handleToggleMarketing}
-        />
-        <p className="text-sv Me_Body-1">마케팅 정보 수신 동의 (선택)</p>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ const ProcessProject = () => {
   const router = useRouter();
 
   const processProjects = projectData.filter(
-    (project) => project.status === '생산 중'
+    (project) => project.status === 'production'
   );
 
   return (

@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import MainTitleSec from './main-title-sec';
 import SearchDeleteTable from '@/ui/search-delete-table';
-import { projectData } from '@/mocks/project-data';
 import { ProjectStatusType } from '@/types/status-type';
 import TableHeader from './table-header';
 import TableItem from './table-item';
@@ -11,57 +10,119 @@ import SelectModal from './modals/select-modal';
 import ExcelUploadModal from './modals/excel-upload-modal';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Pagination from '@/components/pagination';
-import usePagination from '@/hooks/use-pagination';
-import { ClientDataModel } from '@/types/data-model';
+import { ClientDataModel, ProjectListResponseModel } from '@/types/data-model';
 import { useCheckAll } from '@/hooks/use-check-all';
 import DeleteModal from '@/ui/modal/delete-modal';
+import Spinner from '@/ui/spinner';
+import useGetProjects from '@/hooks/project/use-get-projects';
+import useFactoryStore from '@/store/factory-store';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
+  const { getProjects, isLoading } = useGetProjects();
+  const { factoryId } = useFactoryStore();
+
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab');
+
   // 탭 상태
   const [selectedStatus, setSelectedStatus] = useState<
-    ProjectStatusType | '전체'
+    ProjectStatusType | 'progress'
   >(
-    tab === 'quote' ? '견적 협의' : tab === 'inProduction' ? '생산 중' : '전체'
+    tab === 'quote'
+      ? 'quotation'
+      : tab === 'inProduction'
+        ? 'production'
+        : 'progress'
   );
+
   // 모달 상태
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // 데이터 상태
+  const [projectData, setProjectData] =
+    useState<ProjectListResponseModel | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [sortKey, setSortKey] = useState<'startDate' | 'endDate'>('startDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const filteredProjects =
-    selectedStatus === '전체'
-      ? projectData
-      : projectData.filter((project) => project.status === selectedStatus);
+  // 데이터 로드 함수
+  const loadProjects = useCallback(
+    async (
+      page: number = 1,
+      search: string = '',
+      orderBy: 'start_date' | 'due_date' = 'start_date',
+      orderDir: 'asc' | 'desc' = 'desc',
+      size: number = 10
+    ) => {
+      if (!factoryId) return;
 
-  // 정렬 적용
-  const sortedProjects = [...filteredProjects].sort((a, b) => {
-    const aValue = a[sortKey];
-    const bValue = b[sortKey];
-    if (sortOrder === 'asc') {
-      return aValue.localeCompare(bValue);
-    } else {
-      return bValue.localeCompare(aValue);
+      const result = await getProjects({
+        factory_id: factoryId,
+        status: selectedStatus as ProjectStatusType | 'progress',
+        search,
+        order_by: orderBy,
+        order_dir: orderDir,
+        page,
+        size,
+      });
+
+      if (result.success && result.data) {
+        setProjectData(result.data);
+      }
+    },
+    [factoryId, selectedStatus, getProjects]
+  );
+
+  // 초기 데이터 로드
+  useEffect(() => {
+    if (factoryId) {
+      loadProjects(
+        currentPage,
+        searchKeyword,
+        sortKey === 'startDate' ? 'start_date' : 'due_date',
+        sortOrder
+      );
     }
-  });
-
-  // 페이지네이션에 정렬된 데이터 사용
-  const {
-    currentItems: currentProjects,
+  }, [
     currentPage,
-    totalPages,
-    setCurrentPage,
-  } = usePagination({
-    items: sortedProjects,
-    itemsPerPage: 10,
-  });
+    searchKeyword,
+    sortKey,
+    sortOrder,
+    factoryId,
+    selectedStatus,
+    loadProjects,
+  ]);
 
-  const currentIds = currentProjects.map((project) => project.id);
+  // 검색 핸들러
+  const handleSearch = (keyword: string) => {
+    setSearchKeyword(keyword);
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // 정렬 핸들러
+  const handleSort = (key: 'startDate' | 'endDate') => {
+    if (sortKey === key) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortOrder('desc');
+    }
+    setCurrentPage(1); // 정렬 변경 시 첫 페이지로 이동
+  };
+
+  const sortedProjects = projectData?.data || [];
+
+  const currentIds = sortedProjects.map((project) => project.project_id);
   const {
     checkedCount,
     isAllChecked,
@@ -75,13 +136,15 @@ const ProcessProjectPageInner = () => {
   const handleNewQuotation = () => {
     setIsSelectModalOpen(true);
   };
+
   const handleOpenUploadModal = () => {
     setIsSelectModalOpen(false);
     setIsUploadModalOpen(true);
   };
-  const handleStatusChange = (status: ProjectStatusType | '전체') => {
+
+  const handleStatusChange = (status: ProjectStatusType | 'progress') => {
     setSelectedStatus(status);
-    setCurrentPage(1); // 상태 변경 시 표는 첫 페이지로 이동
+    setCurrentPage(1); // 탭 상태 변경 시 표는 첫 페이지로 이동
   };
 
   const handleDirectInputClick = (clientData?: ClientDataModel) => {
@@ -96,16 +159,14 @@ const ProcessProjectPageInner = () => {
     }
   };
 
-  // 정렬 핸들러
-  const handleSort = (key: 'startDate' | 'endDate') => {
-    if (sortKey === key) {
-      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortKey(key);
-      setSortOrder('asc');
-    }
-    setCurrentPage(1);
-  };
+  // 로딩 상태 표시 (factoryId가 없거나 데이터 로딩 중일 때)
+  if (!factoryId || (isLoading && !projectData)) {
+    return (
+      <div className="flex justify-center items-center h-100">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -122,6 +183,7 @@ const ProcessProjectPageInner = () => {
             deleteButtonText={getDeleteButtonText()}
             onDelete={() => setIsDeleteModalOpen(true)}
             onCancel={() => setAllChecked(false)}
+            onSearch={handleSearch}
           />
           <div className="overflow-y-auto w-full">
             <TableHeader
@@ -129,26 +191,22 @@ const ProcessProjectPageInner = () => {
               onToggleAll={toggleAll}
               onSort={handleSort}
             />
-            {currentProjects.map((project) => (
+            {sortedProjects.map((project) => (
               <TableItem
-                key={project.id}
-                id={project.id}
-                status={project.status}
-                companyName={project.companyName}
-                items={project.items}
-                startDate={project.startDate}
-                endDate={project.endDate}
-                taxIssued={project.taxIssued}
-                checked={isChecked(project.id)}
-                onToggle={() => toggleOne(project.id)}
+                key={project.project_id}
+                project={project}
+                checked={isChecked(project.project_id)}
+                onToggle={() => toggleOne(project.project_id)}
               />
             ))}
           </div>
-          {totalPages > 1 && (
+
+          {/* 페이지네이션 */}
+          {projectData && projectData.pageCnt > 1 && (
             <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              currentPage={projectData.curPage}
+              totalPages={projectData.pageCnt}
+              onPageChange={handlePageChange}
             />
           )}
         </div>

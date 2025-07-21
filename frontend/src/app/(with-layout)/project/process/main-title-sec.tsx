@@ -4,24 +4,24 @@ import { CaretDown } from '@phosphor-icons/react';
 
 interface MainTitleSecProps {
   onNewQuotation: () => void;
-  selectedStatus: ProjectStatusType | '전체';
-  onStatusChange: (status: ProjectStatusType | '전체') => void;
+  selectedStatus: ProjectStatusType | 'progress';
+  onStatusChange: (status: ProjectStatusType | 'progress') => void;
 }
+
+const statusTabMap = [
+  { label: '전체', value: 'progress' },
+  { label: '견적 협의', value: 'quotation' },
+  { label: '생산 대기', value: 'pending' },
+  { label: '생산 중', value: 'production' },
+  { label: '생산 완료', value: 'complete' },
+  { label: '납품', value: 'delivered' },
+];
 
 const MainTitleSec = ({
   onNewQuotation,
   selectedStatus,
   onStatusChange,
 }: MainTitleSecProps) => {
-  const statuses: (ProjectStatusType | '전체')[] = [
-    '전체',
-    '견적 협의',
-    '생산 대기',
-    '생산 중',
-    '생산 완료',
-    '납품',
-  ];
-
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
       <div className="flex items-center justify-between">
@@ -37,14 +37,16 @@ const MainTitleSec = ({
         />
       </div>
       <div className="flex gap-4 items-center Heading-3">
-        {statuses.map((status) => (
+        {statusTabMap.map((tab) => (
           <button
-            key={status}
+            key={tab.value}
             type="button"
-            className={`cursor-pointer ${selectedStatus === status ? 'text-dg' : 'text-gr'} Heading-3`}
-            onClick={() => onStatusChange(status)}
+            className={`cursor-pointer ${selectedStatus === tab.value ? 'text-dg' : 'text-gr'} Heading-3`}
+            onClick={() =>
+              onStatusChange(tab.value as ProjectStatusType | 'progress')
+            }
           >
-            {status}
+            {tab.label}
           </button>
         ))}
       </div>

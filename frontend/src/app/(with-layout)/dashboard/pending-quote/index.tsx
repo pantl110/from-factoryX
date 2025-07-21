@@ -9,7 +9,7 @@ const PendingQuote = () => {
   const router = useRouter();
 
   const pendingQuotes = projectData.filter(
-    (project) => project.status === '견적 협의'
+    (project) => project.status === 'quotation'
   );
 
   return (

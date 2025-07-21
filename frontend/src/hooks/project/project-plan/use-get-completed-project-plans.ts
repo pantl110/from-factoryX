@@ -14,7 +14,7 @@ const useGetCompletedProjectPlans = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getCompletedProject = async (
+  const getCompletedProjectPlans = async (
     pagination?: PaginationParamsModel,
     filters?: CompletedProjectPlansFiltersModel
   ) => {
@@ -62,7 +62,7 @@ const useGetCompletedProjectPlans = () => {
     }
   };
 
-  return { getCompletedProject, isLoading, error };
+  return { getCompletedProjectPlans, isLoading, error };
 };
 
 export default useGetCompletedProjectPlans;

@@ -149,7 +149,7 @@ const TopBarContent = ({
         className="flex items-center justify-center w-10 h-10 cursor-pointer relative"
         onClick={() => setIsProfileModalOpen(true)}
       >
-        <ProfileImage text="YO" size="small" />
+        <ProfileImage size="small" />
 
         {isProfileModalOpen && !pathname.includes('production') && (
           <div className="absolute top-14.5 right-0">
