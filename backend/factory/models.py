@@ -115,6 +115,12 @@ class FactoryClient(BaseModel):
     factory = models.ForeignKey(
         Factory, related_name="clients", on_delete=models.CASCADE
     )
+    type = models.CharField(
+        max_length=10,
+        choices=ClientType.choices,
+        default=ClientType.customer,
+        help_text="타입",
+    )
     name = models.CharField(
         max_length=100,
         help_text="회사명",
