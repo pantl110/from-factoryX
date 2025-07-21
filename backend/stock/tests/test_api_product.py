@@ -9,6 +9,7 @@ from factory.models import Factory
 from stock.models import Product
 
 from user.models import EmailVerification
+from asgiref.sync import sync_to_async
 
 
 class TestProductAPI(TestCase):
@@ -92,6 +93,45 @@ class TestProductAPI(TestCase):
         data = response.json()
         self.assertIn("data", data)
         self.assertTrue(len(data["data"]) >= 1)
+
+    async def test_list_products_all(self):
+        """검색값 없이 전체 품목이 조회되는지 테스트"""
+        headers = await self.authenticate()
+        # 여러 제품 추가
+        await sync_to_async(Product.objects.create)(factory=self.factory, name="제품A", code="A001", unit="EA", spec="SpecA")
+        await sync_to_async(Product.objects.create)(factory=self.factory, name="제품B", code="B001", unit="EA", spec="SpecB")
+        response = await self.client.get("", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        # 전체 품목이 모두 조회되는지 확인
+        names = [item["name"] for item in data["data"]]
+        self.assertIn("제품A", names)
+        self.assertIn("제품B", names)
+        self.assertIn("Pre-created Product", names)
+
+    async def test_list_products_search_by_name(self):
+        """품목명으로 검색 시 해당 품목만 조회되는지 테스트"""
+        headers = await self.authenticate()
+        await sync_to_async(Product.objects.create)(factory=self.factory, name="검색제품", code="SEARCH01", unit="EA", spec="SpecS")
+        response = await self.client.get("?name=검색제품", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        names = [item["name"] for item in data["data"]]
+        self.assertIn("검색제품", names)
+        # 다른 제품은 포함되지 않아야 함
+        self.assertNotIn("Pre-created Product", names)
+
+    async def test_list_products_search_by_code(self):
+        """품목코드로 검색 시 해당 품목만 조회되는지 테스트"""
+        headers = await self.authenticate()
+        await sync_to_async(Product.objects.create)(factory=self.factory, name="코드검색제품", code="CODE123", unit="EA", spec="SpecC")
+        response = await self.client.get("?code=CODE123", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        codes = [item["code"] for item in data["data"]]
+        self.assertIn("CODE123", codes)
+        # 다른 제품은 포함되지 않아야 함
+        self.assertNotIn("P001", codes)
 
     async def test_get_product(self):
         """[R] 제품 상세 조회 테스트"""

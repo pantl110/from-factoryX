@@ -19,6 +19,9 @@ class ProductFilter(FilterSchema):
     name: Optional[str] = Field(
         default=None, q="name__icontains", description="제품 이름"
     )
+    code: Optional[str] = Field(
+        default=None, q="code__icontains", description="제품 코드"
+    )
 
 
 class ProductCreateIn(Schema):

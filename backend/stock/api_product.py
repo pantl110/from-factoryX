@@ -56,7 +56,7 @@ async def create_product(request, payload: List[ProductCreateIn]):
     auth=jwt_auth,
 )
 @paginate
-async def list_products(request, filters: ProductFilter = Query(...)):
+async def list_products(request, filters: ProductFilter = Query(None)):
     user = request.auth
 
     @sync_to_async
