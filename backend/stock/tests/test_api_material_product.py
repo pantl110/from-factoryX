@@ -357,7 +357,7 @@ class MaterialProductAPITestCase(TestCase):
         )
         
         self.assertEqual(response.status_code, 404)
-        self.assertIn('해당 제품을 찾을 수 없습니다', response.json().get('detail', ''))
+        self.assertIn('해당 대상을 찾을 수 없습니다', response.json().get('detail', ''))
 
     def test_get_material_product_connections_no_connections(self):
         """연결이 없는 경우 조회 테스트"""
