@@ -280,7 +280,7 @@ async def list_project(
         raise HttpError(500, "프로젝트 조회 중 내부 서버 오류가 발생했습니다.")
 
 
-# Completed Project Tab
+# Archived Project Tab
 @router.post(
     "/clone",
     summary="[C] 프로젝트 복제",

@@ -142,3 +142,9 @@ class FactoryMemberUpdateIn(Schema):
 
 class FactoryClientSearchFilter(FilterSchema):
     q: Optional[str] = None
+
+
+class InviteMemberIn(Schema):
+    factory_id: int
+    email: str
+    role: str
