@@ -235,3 +235,43 @@ class TestUser(TestCase):
         self.assertEqual(response.status_code, 200)
         user = await User.objects.aget(email="noinvite@example.com")
         self.assertFalse(await FactoryMember.objects.filter(user=user).aexists())
+
+    async def test_signup_by_invite_manager_with_invited_at(self):
+        """
+        초대받은 이메일로 회원가입 시 invited_at이 FactoryMember에 잘 반영되는지 테스트
+        """
+        # owner가 공장 생성 및 초대
+        owner = await User.objects.acreate(email="owner2@example.com", password="pw")
+        factory = await Factory.objects.acreate(owner=owner, name="공장초대")
+        from datetime import datetime, timezone
+        invited_at = datetime.now(timezone.utc).isoformat()
+        factory.inviting = [{
+            "email": "invitee@example.com",
+            "role": "manager",
+            "invited_by": owner.id,
+            "invited_at": invited_at
+        }]
+        await sync_to_async(factory.save)()
+        await EmailVerification.objects.acreate(
+            email="invitee@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        # 회원가입
+        data = {
+            "email": "invitee@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+        }
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 200)
+        invitee = await User.objects.aget(email="invitee@example.com")
+        # FactoryMember 등록 확인 및 invited_at 체크
+        member = await FactoryMember.objects.aget(factory=factory, user=invitee)
+        self.assertEqual(member.role, "manager")
+        self.assertIsNotNone(member.invited_at)
+        # invited_at 값이 inviting에 있던 값과 같은지 확인 (초 단위까지 비교)
+        self.assertEqual(member.invited_at.replace(microsecond=0, tzinfo=timezone.utc), datetime.fromisoformat(invited_at).replace(microsecond=0, tzinfo=timezone.utc))

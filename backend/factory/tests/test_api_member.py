@@ -5,6 +5,7 @@ from ninja.testing import TestAsyncClient
 from user.models import User
 from factory.models import Factory, FactoryMember
 from asgiref.sync import sync_to_async
+from datetime import datetime, timezone
 
 
 class TestFactoryMember(TestCase):
@@ -59,38 +60,52 @@ class TestFactoryMember(TestCase):
         self.assertIn("message", data)
         self.assertIn("초대", data["message"])  # 초대 메일 발송 메시지 확인
 
-    async def test_list_factory_members(self):
+    async def test_invite_factory_member_already_registered(self):
         """
-        전체 멤버 조회 테스트
+        이미 가입된 이메일로 초대 시 400 에러와 명확한 메시지 반환 테스트
         """
         headers = await self.authenticate()
+        # 이미 가입된 유저(본인 또는 다른 유저)로 초대 시도
+        payload = {
+            "factory_id": self.factory.id,
+            "email": self.user.email,  # 이미 가입된 이메일
+            "role": "member",
+        }
+        response = await self.client.post("/invite", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("이미 해당 유저는 팩토리 멤버입니다.", data.get("detail", ""))
+
+    async def test_list_factory_members_with_inviting(self):
+        """
+        전체 멤버 조회 시 가입된 멤버와 미가입 초대자가 모두 반환되는지 테스트
+        """
+        headers = await self.authenticate()
+        # 미가입 초대자 추가
+        invited_email = "invitee2@example.com"
+        invited_at = datetime.now(timezone.utc).isoformat()
+        self.factory.inviting = [{
+            "email": invited_email,
+            "role": "member",
+            "invited_by": self.user.id,
+            "invited_at": invited_at
+        }]
+        await sync_to_async(self.factory.save)()
         response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        # 페이지네이션된 응답 확인
         self.assertIn("data", data)
-        self.assertIn("count", data)
-        self.assertGreaterEqual(len(data["data"]), 1)
-        # user 필드가 ID로 반환되는지 확인
-        self.assertEqual(data["data"][0]["user"], self.user.id)
-
-    async def test_list_inviting_members(self):
-        """
-        내가 초대한(미가입) 멤버 조회 테스트
-        """
-        headers = await self.authenticate()
-        # 초대 먼저 진행
-        payload = {
-            "factory_id": self.factory.id,
-            "email": "invitee2@example.com",
-            "role": "member",
-        }
-        await self.client.post("/invite", headers=headers, json=payload)
-        response = await self.client.get(f"/invited?factory_id={self.factory.id}", headers=headers)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("inviting", data)
-        self.assertTrue(any(item["email"] == "invitee2@example.com" for item in data["inviting"]))
+        # 가입된 멤버와 미가입 초대자가 모두 포함되어야 함
+        emails = [item["email"] for item in data["data"]]
+        self.assertIn(self.user.email, emails)  # 가입된 멤버
+        self.assertIn(invited_email, emails)    # 미가입 초대자
+        # 미가입 초대자 정보 검증
+        invited = next(item for item in data["data"] if item["email"] == invited_email)
+        self.assertIsNone(invited["user"])
+        self.assertEqual(invited["status"], "invited")
+        self.assertEqual(invited["invited_at"].replace("+00:00", "Z")[:19], invited_at.replace("+00:00", "Z")[:19])
+        self.assertLess(invited["id"], 0)  # 음수 id
+        self.assertEqual(invited["name"], "")
 
     async def test_update_factory_member(self):
         """

@@ -238,6 +238,7 @@ async def signup(request, data: UserSignupIn):
                         role=matched["role"],
                         status=FactoryMember.MemberStatus.active,
                         invited_by_id=matched["invited_by"],
+                        invited_at=matched.get("invited_at"),
                     )
                     # inviting에서 해당 항목 삭제
                     inviting = [item for item in inviting if item["email"] != user.email]
