@@ -406,3 +406,167 @@ class TestMaterialAPI(TestCase):
         response = await self.client.post("/assign", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
         self.assertIn("원자재 코드가 중복되거나 연결 정보에 오류가 있습니다.", response.json().get("detail", ""))
+
+    async def test_get_materials_by_factory_search_name(self):
+        """자재명(q)으로 검색 테스트"""
+        # 여러 자재 생성
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="알루미늄 판재",
+            code="ALU001",
+            spec="1T",
+            unit="EA",
+            current_stock=10,
+            standard_stock=5
+        )
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="스테인리스 강판",
+            code="STL001",
+            spec="2T",
+            unit="EA",
+            current_stock=20,
+            standard_stock=10
+        )
+        headers = await self.authenticate()
+        # 자재명 일부로 검색
+        response = await self.client.get(f"/factory/{self.factory.id}?q=알루미늄", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["materials"]), 1)
+        self.assertEqual(data["materials"][0]["name"], "알루미늄 판재")
+
+    async def test_get_materials_by_factory_search_code(self):
+        """자재코드(q)로 검색 테스트"""
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="동판",
+            code="COPPER123",
+            spec="0.5T",
+            unit="EA",
+            current_stock=5,
+            standard_stock=2
+        )
+        headers = await self.authenticate()
+        # 자재코드 일부로 검색
+        response = await self.client.get(f"/factory/{self.factory.id}?q=COPPER", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["materials"]), 1)
+        self.assertEqual(data["materials"][0]["code"], "COPPER123")
+
+    async def test_get_materials_by_factory_search_no_result(self):
+        """검색 결과가 없는 경우 테스트"""
+        headers = await self.authenticate()
+        response = await self.client.get(f"/factory/{self.factory.id}?q=없는자재", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["materials"]), 0)
+
+    async def test_get_materials_by_factory_order_asc(self):
+        """재고 오름차순 정렬 테스트(order=asc)"""
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="자재A",
+            code="A001",
+            spec="A",
+            unit="EA",
+            current_stock=10,
+            standard_stock=5
+        )
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="자재B",
+            code="B001",
+            spec="B",
+            unit="EA",
+            current_stock=200,
+            standard_stock=100
+        )
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="자재C",
+            code="C001",
+            spec="C",
+            unit="EA",
+            current_stock=50,
+            standard_stock=25
+        )
+        headers = await self.authenticate()
+        response = await self.client.get(f"/factory/{self.factory.id}?order=asc", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        stocks = [m["current_stock"] for m in data["materials"]]
+        self.assertEqual(stocks, sorted(stocks))
+
+    async def test_get_materials_by_factory_order_desc(self):
+        """재고 내림차순 정렬 테스트(order=desc, 기본값)"""
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="자재A",
+            code="A001",
+            spec="A",
+            unit="EA",
+            current_stock=10,
+            standard_stock=5
+        )
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="자재B",
+            code="B001",
+            spec="B",
+            unit="EA",
+            current_stock=200,
+            standard_stock=100
+        )
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="자재C",
+            code="C001",
+            spec="C",
+            unit="EA",
+            current_stock=50,
+            standard_stock=25
+        )
+        headers = await self.authenticate()
+        response = await self.client.get(f"/factory/{self.factory.id}?order=desc", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        stocks = [m["current_stock"] for m in data["materials"]]
+        self.assertEqual(stocks, sorted(stocks, reverse=True))
+
+    async def test_get_materials_by_factory_order_default(self):
+        """order 파라미터 미지정 시 내림차순 정렬(기본값) 테스트"""
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="자재A",
+            code="A001",
+            spec="A",
+            unit="EA",
+            current_stock=10,
+            standard_stock=5
+        )
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="자재B",
+            code="B001",
+            spec="B",
+            unit="EA",
+            current_stock=200,
+            standard_stock=100
+        )
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="자재C",
+            code="C001",
+            spec="C",
+            unit="EA",
+            current_stock=50,
+            standard_stock=25
+        )
+        headers = await self.authenticate()
+        response = await self.client.get(f"/factory/{self.factory.id}", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        stocks = [m["current_stock"] for m in data["materials"]]
+        self.assertEqual(stocks, sorted(stocks, reverse=True))

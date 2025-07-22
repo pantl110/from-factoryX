@@ -131,6 +131,7 @@ async def list_factory_members(request, factory_id: int):
     return member_outs + inviting_outs
 
 
+# Factory Member Tab
 @router.delete(
     "/{member_id}",
     summary="[C] 멤버 삭제"
@@ -173,6 +174,7 @@ async def delete_factory_member(request, member_id: int, factory_id: int = None)
         return {"message": "멤버가 삭제되었습니다.", "deleted_member_id": member_id}
 
 
+# Factory Member Tab
 @router.patch(
     "/{member_id}",
     summary="[C] 멤버 수정"

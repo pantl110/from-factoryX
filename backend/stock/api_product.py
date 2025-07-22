@@ -255,9 +255,7 @@ async def get_product(request, product_id: int):
         "current_stock": product.current_stock,
         "average_production_time": product.average_production_time,
         "buffer_rate": float(product.buffer_rate),
-        "note": product.note,
-        "created_at": product.created_at.isoformat(),
-        "updated_at": product.updated_at.isoformat(),
+        "note": product.note
     }
     return response_data
 
