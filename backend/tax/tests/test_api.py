@@ -124,7 +124,7 @@ class TaxAPITestCase(TestCase):
         project.save()
         
         # API 호출
-        url = '/v1/tax/'
+        url = f'/v1/tax?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -191,7 +191,7 @@ class TaxAPITestCase(TestCase):
         multi_product_invoice.product.add(self.product1, self.product2, self.product3)
         
         # API 호출
-        url = '/v1/tax/'
+        url = f'/v1/tax?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -211,7 +211,7 @@ class TaxAPITestCase(TestCase):
     def test_list_all_tax_invoices_empty_result(self):
         """세금계산서가 없을 때 빈 결과 테스트"""
         # API 호출
-        url = '/v1/tax/'
+        url = f'/v1/tax?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -227,14 +227,14 @@ class TaxAPITestCase(TestCase):
 
     def test_list_all_tax_invoices_without_auth(self):
         """인증 없이 모든 세금계산서 조회 테스트"""
-        url = '/v1/tax/'
+        url = f'/v1/tax?factory_id={self.factory.id}'
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, 401)
 
     def test_list_all_tax_invoices_invalid_token(self):
         """잘못된 토큰으로 모든 세금계산서 조회 테스트"""
-        url = '/v1/tax/'
+        url = f'/v1/tax?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION='Bearer invalid_token'
@@ -267,7 +267,7 @@ class TaxAPITestCase(TestCase):
         draft_invoice.product.add(self.product2)
         
         # API 호출
-        url = '/v1/tax/'
+        url = f'/v1/tax?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -314,7 +314,7 @@ class TaxAPITestCase(TestCase):
         unlinked_invoice2.product.add(self.product1)
         
         # API 호출
-        url = '/v1/tax/unlinked'
+        url = f'/v1/tax/unlinked?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -382,7 +382,7 @@ class TaxAPITestCase(TestCase):
         project.save()
         
         # API 호출
-        url = '/v1/tax/unlinked'
+        url = f'/v1/tax/unlinked?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -414,7 +414,7 @@ class TaxAPITestCase(TestCase):
         tax_invoice.product.add(self.product1, self.product2, self.product3)
         
         # API 호출
-        url = '/v1/tax/unlinked'
+        url = f'/v1/tax/unlinked?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -449,7 +449,7 @@ class TaxAPITestCase(TestCase):
         project.save()
         
         # API 호출
-        url = '/v1/tax/unlinked'
+        url = f'/v1/tax/unlinked?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -464,7 +464,7 @@ class TaxAPITestCase(TestCase):
 
     def test_list_not_link_tax_without_auth(self):
         """인증 없이 API 호출 시도 테스트"""
-        url = '/v1/tax/unlinked'
+        url = f'/v1/tax/unlinked?factory_id={self.factory.id}'
         
         response = self.client.get(url)
         
@@ -473,7 +473,7 @@ class TaxAPITestCase(TestCase):
 
     def test_list_not_link_tax_invalid_token(self):
         """잘못된 토큰으로 API 호출 시도 테스트"""
-        url = '/v1/tax/unlinked'
+        url = f'/v1/tax/unlinked?factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -519,7 +519,7 @@ class TaxAPITestCase(TestCase):
         published_invoice.product.add(self.product3)
         
         # API 호출
-        url = '/v1/tax/unlinked'
+        url = f'/v1/tax/unlinked?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -563,7 +563,7 @@ class TaxAPITestCase(TestCase):
         new_invoice.product.add(self.product2)
         
         # API 호출
-        url = '/v1/tax/unlinked'
+        url = f'/v1/tax/unlinked?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'

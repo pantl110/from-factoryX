@@ -863,8 +863,55 @@ def test_clone_project_without_auth(self):
         data = response.json()
         self.assertTrue(any('테스트 제품 1' in p['product_names'] for p in data['data']))
 
+    def test_list_archived_and_interruption_project_success(self):
+        """보관함(archived), 완료(complete), 중단(interruption) 프로젝트 조회 성공 테스트"""
+        from django.urls import reverse
+        # 1. 완료 프로젝트 생성
+        project_complete, _ = self.create_test_project_with_quotation(status='프로젝트 완료')
+        # 2. 중단 프로젝트 생성 (견적 협의중 + 2개월 경과 + 생산계획 없음)
+        project_abandoned, quotation_abandoned = self.create_test_project_with_quotation(status='견적 협의중')
+        project_abandoned.updated_at = datetime.now() - timedelta(days=61)
+        project_abandoned.save()
+        # 3. 진행중 프로젝트 생성 (생산 중)
+        project_progress, _ = self.create_test_project_with_quotation(status='생산 중')
+
+        # 4. 보관함(archived) 조회: 완료 + 중단
+        url = f'/v1/project?factory_id={self.factory.id}&status=archived'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['project_id'] for item in data]
+        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data}
+        self.assertIn(project_complete.id, ids)
+        self.assertIn(project_abandoned.id, ids)
+        self.assertTrue(is_abandoned_map[project_abandoned.id])
+        self.assertFalse(is_abandoned_map[project_complete.id])
+        self.assertNotIn(project_progress.id, ids)
+
+        # 5. 완료(complete)만 조회
+        url = f'/v1/project?factory_id={self.factory.id}&status=complete'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['project_id'] for item in data]
+        self.assertIn(project_complete.id, ids)
+        self.assertNotIn(project_abandoned.id, ids)
+        self.assertNotIn(project_progress.id, ids)
+
+        # 6. 중단(interruption)만 조회
+        url = f'/v1/project?factory_id={self.factory.id}&status=interruption'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['project_id'] for item in data]
+        self.assertIn(project_abandoned.id, ids)
+        self.assertNotIn(project_complete.id, ids)
+        self.assertNotIn(project_progress.id, ids)
+        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data}
+        self.assertTrue(is_abandoned_map[project_abandoned.id])
+
     def test_list_progress_project_api(self):
-        """진행중 전체, 각 상태별, 완료, 중단 프로젝트 API 조회 통합 테스트"""
+        """진행중 전체, 각 상태별, 완료, 중단, 보관함 프로젝트 API 조회 통합 테스트"""
         from django.urls import reverse
         # 1. 진행중(생산 중), 진행중(생산 대기), 완료, 중단(견적 협의중+2개월 경과) 프로젝트 생성
         # 진행중(생산 중)
@@ -912,8 +959,8 @@ def test_clone_project_without_auth(self):
         ids = [item['project_id'] for item in data]
         self.assertIn(project5.id, ids)
         self.assertNotIn(project4.id, ids)  # 중단은 제외
-        # 4. 완료/중단 포함 조회 (status=complete)
-        url = f'/v1/project?factory_id={self.factory.id}&status=complete'
+        # 4. 보관함(archived) 조회 (status=archived)
+        url = f'/v1/project?factory_id={self.factory.id}&status=archived'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -923,3 +970,22 @@ def test_clone_project_without_auth(self):
         self.assertIn(project4.id, ids)  # 중단
         self.assertTrue(is_abandoned_map[project4.id])
         self.assertFalse(is_abandoned_map[project3.id])
+        # 5. 완료/중단 포함 조회 (status=complete)
+        url = f'/v1/project?factory_id={self.factory.id}&status=complete'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['project_id'] for item in data]
+        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data}
+        self.assertIn(project3.id, ids)  # 완료
+        self.assertNotIn(project4.id, ids)  # 중단은 포함X
+        self.assertFalse(is_abandoned_map[project3.id])
+        # 6. 중단만 조회 (status=interruption)
+        url = f'/v1/project?factory_id={self.factory.id}&status=interruption'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['project_id'] for item in data]
+        self.assertIn(project4.id, ids)
+        self.assertNotIn(project3.id, ids)
+        self.assertTrue(is_abandoned_map.get(project4.id, True))

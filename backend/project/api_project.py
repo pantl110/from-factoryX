@@ -140,9 +140,11 @@ async def list_progress_project(
     """
     입력 필드:
     - factory_id: 공장 ID (필수)
-    - status: 조회 상태 ("progress", "complete", "quotation", "pending", "production", "manufactured", "delivery")
-        - "progress": 전체 진행 중 프로젝트(완료 제외)
+    - status: 조회 상태 ("progress", "archived", "complete", "interruption", "quotation", "pending", "production", "manufactured", "delivery")
+        - "progress": 전체 진행 중 프로젝트(완료/중단 제외)
+        - "archived": 완료 + 중단 프로젝트(보관함)
         - "complete": 완료된 프로젝트만
+        - "interruption": 중단된 프로젝트만 (견적 협의중 + 2개월간 ProjectPlan 없음)
         - "quotation", "pending", "production", "manufactured", "delivery": 해당 상태만 조회
     - search: 업체명 또는 품목명(제품명) (선택, 미입력 시 전체)
     - order_by: 정렬 기준 ("start_date" 또는 "due_date", 기본값: "start_date")
@@ -160,10 +162,13 @@ async def list_progress_project(
         - "pending": 발행 대기 ("미발행"으로 표시)
         - "published": 발행 완료 ("보기"로 표시)
     - status: 프로젝트 상태 (Project.status)
+    - is_abandoned: 중단 프로젝트 여부 (archived, interruption에서만 true)
     
     예시:
     - 전체 진행 중: status="progress"
+    - 보관함(완료+중단): status="archived"
     - 완료: status="complete"
+    - 중단: status="interruption"
     - 견적 협의중만: status="quotation"
     - 생산 대기만: status="pending"
     - 생산 중만: status="production"
@@ -172,7 +177,7 @@ async def list_progress_project(
     """
     try:
         valid_statuses = [
-            "progress", "complete", "quotation", "pending", "production", "manufactured", "delivery"
+            "progress", "archived", "complete", "interruption", "quotation", "pending", "production", "manufactured", "delivery"
         ]
         status = filters.status
         factory_id = filters.factory_id
@@ -197,16 +202,23 @@ async def list_progress_project(
                 updated_at__lte=two_months_ago
             )
             abandoned_ids = list(abandoned_qs.values_list('pk', flat=True))
-            # 진행중: 완료/중단 제외
+
+            # 상태별 분기
             if status == "progress":
+                # 완료/중단 제외
                 base_qs = base_qs.exclude(status=Project.ProjectStatus.completed)
                 if abandoned_ids:
                     base_qs = base_qs.exclude(pk__in=abandoned_ids)
-            elif status == "complete":
-                # 보관함: 완료 or 중단
+            elif status == "archived":
+                # 완료 + 중단
                 base_qs = base_qs.filter(status=Project.ProjectStatus.completed)
                 if abandoned_ids:
                     base_qs = base_qs.union(Project.objects.filter(pk__in=abandoned_ids))
+            elif status == "complete":
+                base_qs = base_qs.filter(status=Project.ProjectStatus.completed)
+            elif status == "interruption":
+                # 중단: abandoned_ids에 해당하는 프로젝트만
+                base_qs = Project.objects.filter(pk__in=abandoned_ids)
             else:
                 base_qs = base_qs.filter(status=status)
                 if abandoned_ids:
@@ -243,7 +255,9 @@ async def list_progress_project(
                 publish_status = None
                 if project.tax_invoice:
                     publish_status = project.tax_invoice.publish_status
-                is_abandoned = project.pk in abandoned_ids if status == "complete" else False
+                is_abandoned = False
+                if status in ["archived", "interruption"]:
+                    is_abandoned = project.pk in abandoned_ids
                 result.append(ListProgressProjectOut(
                     project_id=project.id,
                     client_name=quotation.client.name if quotation.client else "",
