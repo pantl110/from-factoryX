@@ -9,6 +9,8 @@ class Factory(BaseModel):
     owner = models.ForeignKey(User, related_name="factories", on_delete=models.CASCADE)
 
     name = models.CharField(
+        null=True,
+        blank=True,
         max_length=100,
         help_text="팩토리 이름",
     )
