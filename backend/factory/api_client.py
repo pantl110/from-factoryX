@@ -41,13 +41,13 @@ async def create_factory_client(request, payload: FactoryClientCreateIn):
 # Factory Client Information Tab
 @router.get(
     "",
-    summary="공장 거래처 통합 검색",
+    summary="[C] 공장 거래처 통합 검색",
     description="검색창 하나로 모든 주요 필드 부분검색, 미입력시 전체",
     response={200: List[FactoryClientOut]},
     auth=jwt_auth,
 )
 @paginate
-async def list_or_search_factory_clients(
+async def list_factory_clients(
     request, 
     factory_id: int, 
     filters: FactoryClientSearchFilter = Query(None)

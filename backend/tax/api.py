@@ -22,7 +22,7 @@ router = Router(tags=["Tax"], auth=jwt_auth)
     response={200: List[AllTaxInvoiceOut], 400: dict, 500: dict}
 )
 @paginate
-async def list_all_tax_invoices(
+async def list_published_tax_invoices(
     request,
     factory_id: int = Query(..., description="공장 ID"),
     q: str = Query(None, description="거래처명 또는 품목명 통합 검색어"),

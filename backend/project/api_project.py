@@ -128,12 +128,12 @@ class ProjectListFilter(FilterSchema):
 
 @router.get(
     "",
-    summary="[C] 진행 중인 프로젝트 조회",
-    description="진행 중인 프로젝트를 조회합니다.",
+    summary="[C] 진행, 보관된 프로젝트 조회",
+    description="진행 또는 보관 중인 프로젝트를 조회, 검색색합니다.",
     response={200: List[ListProgressProjectOut], 400: dict, 500: dict}
 )
 @paginate
-async def list_progress_project(
+async def list_project(
     request,
     filters: ProjectListFilter = Query(...)
 ):
