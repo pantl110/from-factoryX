@@ -131,73 +131,98 @@ async def list_factory_members(request, factory_id: int):
     return member_outs + inviting_outs
 
 
+# Factory Member Tab
 @router.delete(
     "/{member_id}",
     summary="[C] 멤버 삭제"
 )
-async def delete_factory_member(request, member_id: int):
+async def delete_factory_member(request, member_id: int, factory_id: int = None):
     """
     입력 필드:
     - member_id: 삭제할 멤버의 ID (필수)
+    - factory_id: (초대 대기자 삭제 시 필요, 쿼리 파라미터)
 
     반환 필드:
     - message: 처리 결과 메시지 (str)
     - deleted_member_id: 삭제된 멤버의 ID (int)
 
     동작:
-    - 해당 멤버가 존재하면 삭제, 없으면 404 에러 반환
+    - member_id가 양수면 기존 멤버 삭제
+    - member_id가 음수면 해당 factory의 inviting 리스트에서 초대 대기자 삭제
     """
-    try:
-        member = await sync_to_async(FactoryMember.objects.get)(id=member_id)
-    except FactoryMember.DoesNotExist:
-        raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
-    await sync_to_async(member.delete)()
-    return {"message": "멤버가 삭제되었습니다.", "deleted_member_id": member_id}
+    if member_id < 0:
+        if not factory_id:
+            raise HttpError(400, "초대 대기자 삭제 시 factory_id가 필요합니다.")
+        def _delete_inviting():
+            factory = Factory.objects.get(id=factory_id)
+            inviting = factory.inviting or []
+            idx = -member_id - 1
+            if 0 <= idx < len(inviting):
+                inviting.pop(idx)
+                factory.inviting = inviting
+                factory.save()
+                return {"message": "초대 대기자가 삭제되었습니다.", "deleted_member_id": member_id}
+            else:
+                raise HttpError(404, "해당 초대 대기자를 찾을 수 없습니다.")
+        return await sync_to_async(_delete_inviting)()
+    else:
+        try:
+            member = await sync_to_async(FactoryMember.objects.get)(id=member_id)
+        except FactoryMember.DoesNotExist:
+            raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
+        await sync_to_async(member.delete)()
+        return {"message": "멤버가 삭제되었습니다.", "deleted_member_id": member_id}
 
 
+# Factory Member Tab
 @router.patch(
     "/{member_id}",
     summary="[C] 멤버 수정"
 )
-async def update_factory_member(request, member_id: int, payload: FactoryMemberUpdateIn):
+async def update_factory_member(request, member_id: int, payload: FactoryMemberUpdateIn, factory_id: int = None):
     """
     입력 필드:
     - member_id: 수정할 멤버의 ID (필수)
-    - role: 변경할 역할 (선택)
-    - status: 변경할 상태 (선택)
+    - factory_id: (초대 대기자 수정 시 필요)
+    - role: 변경할 역할 (필수)
 
     반환 필드:
-    - id: 멤버 ID (int)
+    - id: 멤버 ID (int, 미가입 초대자는 음수 또는 0)
     - factory: 팩토리 ID (int)
-    - user: 유저 ID (int)
+    - user: 유저 ID (int, 미가입 초대자는 None)
     - role: 역할 (str)
-    - status: 상태 (str)
-    - invited_by: 초대한 사람의 user id (int)
-    - invitation_token: 초대 토큰 (str, nullable)
-    - invitation_message: 초대 메시지 (str, nullable)
-    - created_at: 생성일 (datetime)
-    - updated_at: 수정일 (datetime)
-
-    동작:
-    - 해당 멤버의 역할/상태를 수정
-    - 멤버가 없으면 404 에러 반환
     """
-    try:
-        member = await sync_to_async(FactoryMember.objects.get)(id=member_id)
-    except FactoryMember.DoesNotExist:
-        raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
-    if payload.role:
-        member.role = payload.role
-    if payload.status:
-        member.status = payload.status
-    await sync_to_async(member.save)()
-    return {
-        "id": member.id,
-        "factory_id": member.factory_id,
-        "user_id": member.user_id,
-        "role": member.role,
-        "status": member.status,
-        "invited_by_id": member.invited_by_id,
-        "created_at": member.created_at,
-        "updated_at": member.updated_at,
-    }
+    if member_id < 0:
+        if not factory_id:
+            raise HttpError(400, "초대 대기자 수정 시 factory_id가 필요합니다.")
+        def _update_inviting():
+            factory = Factory.objects.get(id=factory_id)
+            inviting = factory.inviting or []
+            idx = -member_id - 1
+            if 0 <= idx < len(inviting):
+                inviting[idx]['role'] = payload.role
+                factory.inviting = inviting
+                factory.save()
+                return {
+                    "id": member_id,
+                    "factory": factory.id,
+                    "user": None,
+                    "role": inviting[idx]['role'],
+                }
+            else:
+                raise HttpError(404, "해당 초대 대기자를 찾을 수 없습니다.")
+        return await sync_to_async(_update_inviting)()
+    else:
+        try:
+            member = await sync_to_async(FactoryMember.objects.get)(id=member_id)
+        except FactoryMember.DoesNotExist:
+            raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
+        if payload.role:
+            member.role = payload.role
+            await sync_to_async(member.save)()
+        return {
+            "id": member.id,
+            "factory": member.factory_id,
+            "user": member.user_id,
+            "role": member.role,
+        }

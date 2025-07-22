@@ -81,17 +81,19 @@ async def assign_materialproduct(request, payload: AssignMaterialProductIn):
         raise HttpError(400, "원자재 코드가 중복되거나 연결 정보에 오류가 있습니다.")
 
 
-
+# Material Tab
 @router.get(
     "/factory/{factory_id}", 
     summary="[C] 공장별 원자재 목록 조회", 
     description="특정 공장의 모든 원자재 정보를 조회합니다.",
     response={ 200: MaterialListOut, 404: dict, 500: dict }
     )
-async def get_materials_by_factory(request, factory_id: int):
+async def get_materials_by_factory(request, factory_id: int, q: str = None, order: str = "desc"):
     """
     입력 필드:
     - factory_id: 공장 ID (경로 파라미터, 필수)
+    - q: 검색어 (자재명 또는 자재코드, 선택)
+    - order: 재고 기준 정렬 (asc: 오름차순, desc: 내림차순, 기본값 desc)
 
     반환 필드 (MaterialListOut):
     - materials: 원자재 정보 리스트
@@ -107,9 +109,21 @@ async def get_materials_by_factory(request, factory_id: int):
     except Factory.DoesNotExist:
         raise HttpError(404, "공장 정보를 찾을 수 없습니다.")
     
-    materials = await sync_to_async(list)(
-        Material.objects.filter(factory=factory).order_by('-created_at')
-    )
+    @sync_to_async
+    def get_materials():
+        queryset = Material.objects.filter(factory=factory)
+        if q:
+            qs1 = queryset.filter(name__icontains=q)
+            qs2 = queryset.filter(code__icontains=q)
+            ids = set(list(qs1.values_list("id", flat=True)) + list(qs2.values_list("id", flat=True)))
+            queryset = queryset.filter(id__in=ids)
+        if order == "asc":
+            queryset = queryset.order_by("current_stock")
+        else:
+            queryset = queryset.order_by("-current_stock")
+        return list(queryset)
+
+    materials = await get_materials()
 
     material_list = []
     for material in materials:
@@ -125,6 +139,7 @@ async def get_materials_by_factory(request, factory_id: int):
     return 200, MaterialListOut(materials=material_list)
 
 
+# Material Tab
 @router.get(
     "{material_id}", 
     summary="[C] 원자재 상세 조회", 
