@@ -80,10 +80,7 @@ class ProductOut(Schema):
     spec: str
     current_stock: int
     average_production_time: Optional[int]
-    buffer_rate: float
     note: Optional[str]
-    created_at: str
-    updated_at: str
 
 
 class ProductHistoryOut(ModelSchema):
@@ -119,3 +116,13 @@ class MaterialProductConnectOut(Schema):
     message: str = Field(..., description="처리 결과 메시지")
     created_connections: List[MaterialProductConnectionOut] = Field(..., description="생성된 연결 목록")
     total_count: int = Field(..., description="총 연결 개수")
+
+
+class ProductListOut(Schema):
+    id: int
+    factory: int
+    name: str
+    code: str
+    unit: str
+    spec: str
+    current_stock: int

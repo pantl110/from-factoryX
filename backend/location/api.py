@@ -17,6 +17,19 @@ router = Router(tags=["Location"], auth=jwt_auth)
     response={ 200: LocationDetailOut, 400: dict, 404: dict, 500: dict }
     )
 async def create_location(request, payload: LocationCreateIn):
+    """
+    입력 필드:
+    - type: 타입 ("material" 또는 "product", 필수)
+    - id: 대상 아이템 ID (material 또는 product의 id, 필수)
+    - location: 창고 위치명 (str, 필수)
+    - images: 이미지 리스트 (list, 선택)
+
+    반환 필드 (LocationDetailOut):
+    - id: 위치 ID (int)
+    - type: 타입 (str)
+    - location: 창고 위치명 (str)
+    - images: 이미지 리스트 (list)
+    """
 
     if payload.type == "material":
         target_model = Material
@@ -46,6 +59,7 @@ async def create_location(request, payload: LocationCreateIn):
     )
 
 
+# Product/Material Tab
 @router.get(
     "", 
     summary="[C] 모든 창고 위치 목록 조회",
@@ -53,6 +67,18 @@ async def create_location(request, payload: LocationCreateIn):
     response={ 200: ItemLocationsListOut, 400: dict, 404: dict, 500: dict }
     )
 async def list_locations(request, type: str, id: int):
+    """
+    입력 필드:
+    - type: 타입 ("material" 또는 "product", 필수, 쿼리 파라미터)
+    - id: 대상 아이템 ID (material 또는 product의 id, 필수, 쿼리 파라미터)
+
+    반환 필드 (ItemLocationsListOut):
+    - locations: 위치 정보 리스트 (LocationDetailOut의 리스트)
+        - id: 위치 ID (int)
+        - type: 타입 (str)
+        - location: 창고 위치명 (str)
+        - images: 이미지 리스트 (list)
+    """
 
     if type == "material":
         target_model = Material

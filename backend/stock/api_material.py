@@ -89,6 +89,19 @@ async def assign_materialproduct(request, payload: AssignMaterialProductIn):
     response={ 200: MaterialListOut, 404: dict, 500: dict }
     )
 async def get_materials_by_factory(request, factory_id: int):
+    """
+    입력 필드:
+    - factory_id: 공장 ID (경로 파라미터, 필수)
+
+    반환 필드 (MaterialListOut):
+    - materials: 원자재 정보 리스트
+        - id: 원자재 ID (int)
+        - name: 원자재명 (str)
+        - code: 원자재 코드 (str)
+        - spec: 규격 (str)
+        - unit: 단위 (str)
+        - current_stock: 현재 재고 (int)
+    """
     try:
         factory = await Factory.objects.aget(id=factory_id)
     except Factory.DoesNotExist:

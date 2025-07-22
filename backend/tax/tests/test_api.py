@@ -83,6 +83,141 @@ class TaxAPITestCase(TestCase):
             algorithm="HS256"
         )
 
+    def test_list_all_tax_invoices_all_type(self):
+        """전체 유형 세금계산서 조회 테스트"""
+        # published 매출
+        invoice_sales = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice_sales.product.add(self.product1)
+        # published 매입
+        invoice_purchase = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='purchase',
+            publish_status='published'
+        )
+        invoice_purchase.product.add(self.product2)
+        # draft(미포함)
+        draft_invoice = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 6),
+            transaction_amount=300000,
+            tax_amount=30000,
+            tax_invoice_type='sales',
+            publish_status='draft'
+        )
+        draft_invoice.product.add(self.product2)
+        url = f'/v1/tax/published?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['id'] for item in data['data']]
+        self.assertIn(invoice_sales.id, ids)
+        self.assertIn(invoice_purchase.id, ids)
+        self.assertNotIn(draft_invoice.id, ids)
+        self.assertEqual(len(data['data']), 2)
+
+    def test_list_all_tax_invoices_sales_type(self):
+        """매출 유형 세금계산서 조회 테스트"""
+        invoice_sales = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice_sales.product.add(self.product1)
+        invoice_purchase = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='purchase',
+            publish_status='published'
+        )
+        invoice_purchase.product.add(self.product2)
+        url = f'/v1/tax/published?factory_id={self.factory.id}&tax_invoice_type=sales'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['id'] for item in data['data']]
+        self.assertIn(invoice_sales.id, ids)
+        self.assertNotIn(invoice_purchase.id, ids)
+        self.assertEqual(len(data['data']), 1)
+
+    def test_list_all_tax_invoices_purchase_type(self):
+        """매입 유형 세금계산서 조회 테스트"""
+        invoice_sales = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice_sales.product.add(self.product1)
+        invoice_purchase = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='purchase',
+            publish_status='published'
+        )
+        invoice_purchase.product.add(self.product2)
+        url = f'/v1/tax/published?factory_id={self.factory.id}&tax_invoice_type=purchase'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['id'] for item in data['data']]
+        self.assertIn(invoice_purchase.id, ids)
+        self.assertNotIn(invoice_sales.id, ids)
+        self.assertEqual(len(data['data']), 1)
+
+    def test_list_all_tax_invoices_search_by_q(self):
+        """q로 거래처명/품목명 통합 검색 테스트"""
+        invoice1 = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice1.product.add(self.product1)
+        invoice2 = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice2.product.add(self.product2)
+        # 거래처명 검색
+        url = f'/v1/tax/published?factory_id={self.factory.id}&q=플라스틱이 좋아'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data['data']), 1)
+        self.assertEqual(data['data'][0]['client_name'], '플라스틱이 좋아')
+        # 품목명 검색
+        url = f'/v1/tax/published?factory_id={self.factory.id}&q={self.product2.name}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data['data']), 1)
+        self.assertIn(self.product2.name, data['data'][0]['product_names'])
+
     def test_list_all_tax_invoices_success(self):
         """모든 세금계산서 조회 성공 테스트"""
         # 연결되지 않은 세금계산서 생성 (매출)
@@ -124,7 +259,7 @@ class TaxAPITestCase(TestCase):
         project.save()
         
         # API 호출
-        url = f'/v1/tax?factory_id={self.factory.id}'
+        url = f'/v1/tax/published?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -191,7 +326,7 @@ class TaxAPITestCase(TestCase):
         multi_product_invoice.product.add(self.product1, self.product2, self.product3)
         
         # API 호출
-        url = f'/v1/tax?factory_id={self.factory.id}'
+        url = f'/v1/tax/published?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -211,7 +346,7 @@ class TaxAPITestCase(TestCase):
     def test_list_all_tax_invoices_empty_result(self):
         """세금계산서가 없을 때 빈 결과 테스트"""
         # API 호출
-        url = f'/v1/tax?factory_id={self.factory.id}'
+        url = f'/v1/tax/published?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -227,14 +362,14 @@ class TaxAPITestCase(TestCase):
 
     def test_list_all_tax_invoices_without_auth(self):
         """인증 없이 모든 세금계산서 조회 테스트"""
-        url = f'/v1/tax?factory_id={self.factory.id}'
+        url = f'/v1/tax/published?factory_id={self.factory.id}'
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, 401)
 
     def test_list_all_tax_invoices_invalid_token(self):
         """잘못된 토큰으로 모든 세금계산서 조회 테스트"""
-        url = f'/v1/tax?factory_id={self.factory.id}'
+        url = f'/v1/tax/published?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION='Bearer invalid_token'
@@ -267,7 +402,7 @@ class TaxAPITestCase(TestCase):
         draft_invoice.product.add(self.product2)
         
         # API 호출
-        url = f'/v1/tax?factory_id={self.factory.id}'
+        url = f'/v1/tax/published?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -277,17 +412,16 @@ class TaxAPITestCase(TestCase):
         data = response.json()
         
         # 모든 상태의 세금계산서가 반환되는지 확인
-        self.assertEqual(len(data['data']), 2)
+        self.assertEqual(len(data['data']), 1)
         
         # published 세금계산서 확인
         published_data = next(item for item in data['data'] if item['id'] == published_invoice.id)
         self.assertEqual(published_data['tax_invoice_type'], '매출')
         self.assertEqual(published_data['client_name'], '플라스틱이 좋아')
         
-        # draft 세금계산서 확인
-        draft_data = next(item for item in data['data'] if item['id'] == draft_invoice.id)
-        self.assertEqual(draft_data['tax_invoice_type'], '매입')
-        self.assertEqual(draft_data['client_name'], '플라스틱이 싫어')
+        # draft 세금계산서가 결과에 포함되지 않는지 확인
+        returned_ids = [item['id'] for item in data['data']]
+        self.assertNotIn(draft_invoice.id, returned_ids)
 
     def test_list_not_link_tax_success(self):
         """연동되지 않은 세금계산서 조회 성공 테스트"""
@@ -786,3 +920,196 @@ class TaxAPITestCase(TestCase):
         
         # 잘못된 토큰이므로 401이 반환되어야 함
         self.assertEqual(response.status_code, 401)
+
+    def test_list_all_tax_invoices_search_by_client_name(self):
+        """q로 거래처명 검색이 잘 동작하는지 테스트"""
+        # 데이터 생성
+        invoice1 = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice1.product.add(self.product1)
+        invoice2 = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice2.product.add(self.product2)
+        # API 호출 (거래처명으로 검색)
+        url = f'/v1/tax/published?factory_id={self.factory.id}&q=플라스틱이 좋아'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data['data']), 1)
+        self.assertEqual(data['data'][0]['client_name'], '플라스틱이 좋아')
+
+    def test_list_all_tax_invoices_search_by_product_name(self):
+        """q로 품목명 검색이 잘 동작하는지 테스트"""
+        # 데이터 생성
+        invoice1 = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice1.product.add(self.product1)
+        invoice2 = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice2.product.add(self.product2)
+        # API 호출 (품목명으로 검색)
+        url = f'/v1/tax/published?factory_id={self.factory.id}&q={self.product2.name}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data['data']), 1)
+        self.assertIn(self.product2.name, data['data'][0]['product_names'])
+
+    def test_list_pending_tax_invoices_all_status(self):
+        """발행대기+임시저장 전체 조회 테스트"""
+        # pending
+        invoice_pending = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='pending'
+        )
+        invoice_pending.product.add(self.product1)
+        # temporary
+        invoice_temporary = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='purchase',
+            publish_status='temporary'
+        )
+        invoice_temporary.product.add(self.product2)
+        # published(미포함)
+        invoice_published = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 6),
+            transaction_amount=300000,
+            tax_amount=30000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice_published.product.add(self.product2)
+        url = f'/v1/tax/pending?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['id'] for item in data['data']]
+        self.assertIn(invoice_pending.id, ids)
+        self.assertIn(invoice_temporary.id, ids)
+        self.assertNotIn(invoice_published.id, ids)
+        self.assertEqual(len(data['data']), 2)
+
+    def test_list_pending_tax_invoices_pending_only(self):
+        """발행대기만 조회 테스트"""
+        invoice_pending = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='pending'
+        )
+        invoice_pending.product.add(self.product1)
+        invoice_temporary = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='purchase',
+            publish_status='temporary'
+        )
+        invoice_temporary.product.add(self.product2)
+        url = f'/v1/tax/pending?factory_id={self.factory.id}&publish_status=pending'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['id'] for item in data['data']]
+        self.assertIn(invoice_pending.id, ids)
+        self.assertNotIn(invoice_temporary.id, ids)
+        self.assertEqual(len(data['data']), 1)
+
+    def test_list_pending_tax_invoices_temporary_only(self):
+        """임시저장만 조회 테스트"""
+        invoice_pending = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='pending'
+        )
+        invoice_pending.product.add(self.product1)
+        invoice_temporary = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='purchase',
+            publish_status='temporary'
+        )
+        invoice_temporary.product.add(self.product2)
+        url = f'/v1/tax/pending?factory_id={self.factory.id}&publish_status=temporary'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [item['id'] for item in data['data']]
+        self.assertIn(invoice_temporary.id, ids)
+        self.assertNotIn(invoice_pending.id, ids)
+        self.assertEqual(len(data['data']), 1)
+
+    def test_list_pending_tax_invoices_search_by_q(self):
+        """q로 거래처명/품목명 통합 검색 테스트 (pending/temporary)"""
+        invoice1 = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='pending'
+        )
+        invoice1.product.add(self.product1)
+        invoice2 = NationalTaxService.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 5),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='sales',
+            publish_status='temporary'
+        )
+        invoice2.product.add(self.product2)
+        # 거래처명 검색
+        url = f'/v1/tax/pending?factory_id={self.factory.id}&q=플라스틱이 좋아'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data['data']), 1)
+        self.assertEqual(data['data'][0]['client_name'], '플라스틱이 좋아')
+        # 품목명 검색
+        url = f'/v1/tax/pending?factory_id={self.factory.id}&q={self.product2.name}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data['data']), 1)
+        self.assertIn(self.product2.name, data['data'][0]['product_names'])

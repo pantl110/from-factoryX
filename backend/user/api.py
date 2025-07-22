@@ -220,6 +220,31 @@ async def signup(request, data: UserSignupIn):
 
             user = await User.objects.aget(id=user.id)
 
+            # 회원가입 시 Factory의 inviting에 해당 이메일이 있으면 FactoryMember로 등록
+            from factory.models import Factory, FactoryMember
+            factories = await sync_to_async(list)(Factory.objects.filter(inviting__isnull=False))
+            for factory in factories:
+                inviting = factory.inviting or []
+                matched = None
+                for item in inviting:
+                    if item["email"] == user.email:
+                        matched = item
+                        break
+                if matched:
+                    # FactoryMember 생성
+                    await FactoryMember.objects.acreate(
+                        factory=factory,
+                        user=user,
+                        role=matched["role"],
+                        status=FactoryMember.MemberStatus.active,
+                        invited_by_id=matched["invited_by"],
+                        invited_at=matched.get("invited_at"),
+                    )
+                    # inviting에서 해당 항목 삭제
+                    inviting = [item for item in inviting if item["email"] != user.email]
+                    factory.inviting = inviting
+                    await sync_to_async(factory.save)()
+
             return user
         except Exception as e:
             raise HttpError(

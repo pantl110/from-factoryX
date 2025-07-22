@@ -2,6 +2,8 @@ from django.test import TestCase
 from user.api import router
 from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification, Jwt
+from factory.models import Factory, FactoryMember
+from asgiref.sync import sync_to_async
 
 
 class TestUser(TestCase):
@@ -140,3 +142,136 @@ class TestUser(TestCase):
         headers = await self.authenticate()
         response = await self.client.post("/withdraw", headers=headers)
         self.assertEqual(response.status_code, 200)
+
+    async def test_signup_by_invite_manager(self):
+        """
+        초대받은 이메일로 회원가입 시 manager로 등록 및 inviting에서 삭제
+        """
+        # owner가 공장 생성 및 초대
+        owner = await User.objects.acreate(email="owner2@example.com", password="pw")
+        factory = await Factory.objects.acreate(owner=owner, name="공장초대")
+        factory.inviting = [{
+            "email": "invitee@example.com",
+            "role": "manager",
+            "invited_by": owner.id
+        }]
+        await sync_to_async(factory.save)()
+        await EmailVerification.objects.acreate(
+            email="invitee@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        # 회원가입
+        data = {
+            "email": "invitee@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+        }
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 200)
+        invitee = await User.objects.aget(email="invitee@example.com")
+        # FactoryMember 등록 확인
+        member = await FactoryMember.objects.aget(factory=factory, user=invitee)
+        self.assertEqual(member.role, "manager")
+        # inviting에서 사라졌는지 확인
+        await sync_to_async(factory.refresh_from_db)()
+        self.assertFalse(any(item["email"] == "invitee@example.com" for item in factory.inviting))
+
+    async def test_signup_by_invite_and_create_factory(self):
+        """
+        초대받은 사용자가 직접 공장 생성 시 기존 공장에서는 초대받은 권한
+        """
+        # owner가 공장 생성 및 초대
+        owner = await User.objects.acreate(email="owner3@example.com", password="pw")
+        factory = await Factory.objects.acreate(owner=owner, name="공장초대2")
+        factory.inviting = [{
+            "email": "invitee2@example.com",
+            "role": "viewer",
+            "invited_by": owner.id
+        }]
+        await sync_to_async(factory.save)()
+        await EmailVerification.objects.acreate(
+            email="invitee2@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        # 회원가입
+        data = {
+            "email": "invitee2@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+        }
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 200)
+        invitee = await User.objects.aget(email="invitee2@example.com")
+        # 기존 공장에서는 viewer
+        member = await FactoryMember.objects.aget(factory=factory, user=invitee)
+        self.assertEqual(member.role, "viewer")
+
+    async def test_signup_without_invite(self):
+        """
+        초대받지 않은 이메일로 회원가입 시 어떤 공장에도 멤버로 등록되지 않음
+        """
+        await EmailVerification.objects.acreate(
+            email="noinvite@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        data = {
+            "email": "noinvite@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+        }
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 200)
+        user = await User.objects.aget(email="noinvite@example.com")
+        self.assertFalse(await FactoryMember.objects.filter(user=user).aexists())
+
+    async def test_signup_by_invite_manager_with_invited_at(self):
+        """
+        초대받은 이메일로 회원가입 시 invited_at이 FactoryMember에 잘 반영되는지 테스트
+        """
+        # owner가 공장 생성 및 초대
+        owner = await User.objects.acreate(email="owner2@example.com", password="pw")
+        factory = await Factory.objects.acreate(owner=owner, name="공장초대")
+        from datetime import datetime, timezone
+        invited_at = datetime.now(timezone.utc).isoformat()
+        factory.inviting = [{
+            "email": "invitee@example.com",
+            "role": "manager",
+            "invited_by": owner.id,
+            "invited_at": invited_at
+        }]
+        await sync_to_async(factory.save)()
+        await EmailVerification.objects.acreate(
+            email="invitee@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        # 회원가입
+        data = {
+            "email": "invitee@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+        }
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 200)
+        invitee = await User.objects.aget(email="invitee@example.com")
+        # FactoryMember 등록 확인 및 invited_at 체크
+        member = await FactoryMember.objects.aget(factory=factory, user=invitee)
+        self.assertEqual(member.role, "manager")
+        self.assertIsNotNone(member.invited_at)
+        # invited_at 값이 inviting에 있던 값과 같은지 확인 (초 단위까지 비교)
+        self.assertEqual(member.invited_at.replace(microsecond=0, tzinfo=timezone.utc), datetime.fromisoformat(invited_at).replace(microsecond=0, tzinfo=timezone.utc))

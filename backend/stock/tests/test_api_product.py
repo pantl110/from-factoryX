@@ -68,6 +68,10 @@ class TestProductAPI(TestCase):
                 "code": "P002",
                 "unit": "개",
                 "spec": "Spec B",
+                "current_stock": 10,
+                "average_production_time": 100,
+                "buffer_rate": 0.2,
+                "note": "비고1"
             },
             {
                 "factory": self.factory.id,
@@ -75,6 +79,10 @@ class TestProductAPI(TestCase):
                 "code": "P003",
                 "unit": "EA",
                 "spec": "Spec C",
+                "current_stock": 5,
+                "average_production_time": 200,
+                "buffer_rate": 0.15,
+                "note": "비고2"
             },
         ]
         response = await self.client.post("", headers=headers, json=payload)
@@ -84,6 +92,7 @@ class TestProductAPI(TestCase):
         self.assertIn("id", data[1])
         self.assertEqual(data[0]["name"], payload[0]["name"])
         self.assertEqual(data[1]["name"], payload[1]["name"])
+        # 생성 응답에는 buffer_rate, note 등이 없을 수 있으므로 체크하지 않음
 
     async def test_create_single_product_success(self):
         """단일 품목 생성 성공 테스트"""
@@ -130,9 +139,9 @@ class TestProductAPI(TestCase):
         headers = await self.authenticate()
         response = await self.client.get("", headers=headers)
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("data", data)
-        self.assertTrue(len(data["data"]) >= 1)
+        data = response.json()["data"]
+        self.assertIsInstance(data, list)
+        self.assertTrue(len(data) >= 1)
 
     async def test_list_products_all(self):
         """검색값 없이 전체 품목이 조회되는지 테스트"""
@@ -142,9 +151,8 @@ class TestProductAPI(TestCase):
         await sync_to_async(Product.objects.create)(factory=self.factory, name="제품B", code="B001", unit="EA", spec="SpecB")
         response = await self.client.get("", headers=headers)
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        # 전체 품목이 모두 조회되는지 확인
-        names = [item["name"] for item in data["data"]]
+        data = response.json()["data"]
+        names = [item["name"] for item in data]
         self.assertIn("제품A", names)
         self.assertIn("제품B", names)
         self.assertIn("Pre-created Product", names)
@@ -153,24 +161,22 @@ class TestProductAPI(TestCase):
         """품목명으로 검색 시 해당 품목만 조회되는지 테스트"""
         headers = await self.authenticate()
         await sync_to_async(Product.objects.create)(factory=self.factory, name="검색제품", code="SEARCH01", unit="EA", spec="SpecS")
-        response = await self.client.get("?name=검색제품", headers=headers)
+        response = await self.client.get("?q=검색제품", headers=headers)
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        names = [item["name"] for item in data["data"]]
+        data = response.json()["data"]
+        names = [item["name"] for item in data]
         self.assertIn("검색제품", names)
-        # 다른 제품은 포함되지 않아야 함
         self.assertNotIn("Pre-created Product", names)
 
     async def test_list_products_search_by_code(self):
         """품목코드로 검색 시 해당 품목만 조회되는지 테스트"""
         headers = await self.authenticate()
         await sync_to_async(Product.objects.create)(factory=self.factory, name="코드검색제품", code="CODE123", unit="EA", spec="SpecC")
-        response = await self.client.get("?code=CODE123", headers=headers)
+        response = await self.client.get("?q=CODE123", headers=headers)
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        codes = [item["code"] for item in data["data"]]
+        data = response.json()["data"]
+        codes = [item["code"] for item in data]
         self.assertIn("CODE123", codes)
-        # 다른 제품은 포함되지 않아야 함
         self.assertNotIn("P001", codes)
 
     async def test_get_product(self):

@@ -8,12 +8,8 @@ from stock.schemas.outbound import (
     MaterialProductConnectionOut,
 )
 from stock.models import Material, Product, MaterialProduct
-from factory.models import Factory
 from typing import List
-from stock.schemas.inbound import AssignMaterialProductIn
 from stock.models import Material
-from django.db import IntegrityError
-from stock.utils import get_factory_by_id, get_product_by_id
 
 router = Router(tags=["MaterialProduct"], auth=jwt_auth)
 
@@ -120,54 +116,64 @@ async def create_material_product_connections(
     )
 
 
+# Material/Product Tab
 @router.get(
     "/{target_id}",
     summary="[C] MaterialProduct 연결 조회",
     description="type과 target_id를 기반으로 연결된 항목들을 조회합니다. type이 'material'이면 해당 원자재가 사용되는 제품들을, 'product'이면 해당 제품에 필요한 원자재들을 조회합니다.",
-    response={200: List[MaterialProductConnectionOut], 400: dict, 404: dict},
+    response={200: list, 400: dict, 404: dict},
 )
 async def get_material_product_connections(request, target_id: int, type: str):
-    # 타입 검증
+    """
+    입력 필드:
+    - target_id: 기준이 되는 대상 ID (경로 파라미터, 필수)
+    - type: 기준 타입 ('material' 또는 'product', 쿼리 파라미터, 필수)
+
+    반환 필드:
+    - type이 'product'면: material_id, material_name, material_code, material_spec, material_unit, quantity
+    - type이 'material'면: product_id, product_name, product_code, product_spec, product_unit
+    """
     if type == "material":
         target_model = Material
-        target_name = "원자재"
         filter_field = "material_id"
     elif type == "product":
         target_model = Product
-        target_name = "제품"
         filter_field = "product_id"
     else:
-        raise HttpError(
-            400, "올바르지 않은 타입입니다. 'material' 또는 'product'를 입력해주세요."
-        )
+        raise HttpError(400, "올바르지 않은 타입입니다. 'material' 또는 'product'를 입력해주세요.")
 
-    # 대상 존재 여부 확인
     try:
         target = await sync_to_async(target_model.objects.get)(id=target_id)
     except target_model.DoesNotExist:
-        raise HttpError(404, f"해당 {target_name}을 찾을 수 없습니다.")
+        raise HttpError(404, "해당 대상을 찾을 수 없습니다.")
 
-    # 연결된 항목들 조회
     filter_kwargs = {filter_field: target_id}
     material_products = await sync_to_async(list)(
-        MaterialProduct.objects.filter(**filter_kwargs).select_related(
-            "product", "material"
-        )
+        MaterialProduct.objects.filter(**filter_kwargs).select_related("product", "material")
     )
 
-    connections = []
-    for mp in material_products:
-        connection = MaterialProductConnectionOut(
-            id=mp.id,
-            product_id=mp.product.id,
-            material_id=mp.material.id,
-            quantity=float(mp.quantity),
-            product_name=mp.product.name,
-            material_name=mp.material.name,
-        )
-        connections.append(connection)
+    results = []
+    if type == "product":
+        for mp in material_products:
+            results.append({
+                "material_id": mp.material.id,
+                "material_name": mp.material.name,
+                "material_code": mp.material.code,
+                "material_spec": mp.material.spec,
+                "material_unit": mp.material.unit,
+                "quantity": float(mp.quantity),
+            })
+    else:  # type == "material"
+        for mp in material_products:
+            results.append({
+                "product_id": mp.product.id,
+                "product_name": mp.product.name,
+                "product_code": mp.product.code,
+                "product_spec": mp.product.spec,
+                "product_unit": mp.product.unit,
+            })
 
-    return connections
+    return results
 
 
 @router.delete(
@@ -193,7 +199,7 @@ async def delete_material_product_connection(request, connection_id: int):
 
 @router.patch(
     "/connection/{connection_id}",
-    summary="[U] MaterialProduct 연결 수정",
+    summary="[C] MaterialProduct 연결 수정",
     description="특정 MaterialProduct 연결의 수량을 수정합니다.",
     response={200: dict, 404: dict},
 )
