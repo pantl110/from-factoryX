@@ -10,6 +10,10 @@ from stock.schemas.outbound import (
 from stock.models import Material, Product, MaterialProduct
 from factory.models import Factory
 from typing import List
+from stock.schemas.inbound import AssignMaterialProductIn
+from stock.models import Material
+from django.db import IntegrityError
+from stock.utils import get_factory_by_id, get_product_by_id
 
 router = Router(tags=["MaterialProduct"], auth=jwt_auth)
 

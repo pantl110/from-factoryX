@@ -413,30 +413,6 @@ class MaterialProductAPITestCase(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertIn('해당 연결을 찾을 수 없습니다', response.json().get('detail', ''))
 
-<<<<<<< HEAD
-=======
-    def test_patch_material_product_connection(self):
-        # 연결 생성
-        connection = MaterialProduct.objects.create(
-            product=self.product1,
-            material=self.material1,
-            quantity=100.0
-        )
-        url = f'/v1/stock/materialproduct/connection/{connection.id}'
-        payload = {'quantity': 777.0}
-        response = self.client.patch(
-            url,
-            data=json.dumps(payload),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=f'Bearer {self.token}'
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data['quantity'], 777.0)
-        connection.refresh_from_db()
-        self.assertEqual(float(connection.quantity), 777.0)
-
->>>>>>> fb70c120b1ed6d3b6149272fc7561cd66c18b44d
     def test_create_material_product_connections_without_auth(self):
         """인증 없이 연결 생성 시도 테스트"""
         url = '/v1/stock/materialproduct'

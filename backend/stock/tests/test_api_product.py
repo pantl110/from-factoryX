@@ -85,6 +85,46 @@ class TestProductAPI(TestCase):
         self.assertEqual(data[0]["name"], payload[0]["name"])
         self.assertEqual(data[1]["name"], payload[1]["name"])
 
+    async def test_create_single_product_success(self):
+        """단일 품목 생성 성공 테스트"""
+        headers = await self.authenticate()
+        payload = {
+            "factory_id": self.factory.id,
+            "name": "테스트 품목",
+            "code": "PROD001",
+            "spec": "규격1",
+            "unit": "EA"
+        }
+        response = await self.client.post("/single", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data["factory_id"], self.factory.id)
+        self.assertIn("product_id", data)
+
+        # DB에 실제로 생성되었는지 확인
+        from stock.models import Product
+        product_exists = await sync_to_async(Product.objects.filter(id=data["product_id"]).exists)()
+        self.assertTrue(product_exists)
+
+    async def test_create_single_product_duplicate_code(self):
+        """중복된 품목 코드로 생성 시도시 실패 테스트"""
+        # 먼저 하나 생성
+        headers = await self.authenticate()
+        payload = {
+            "factory_id": self.factory.id,
+            "name": "테스트 품목",
+            "code": "PROD001",
+            "spec": "규격1",
+            "unit": "EA"
+        }
+        await self.client.post("/single", headers=headers, json=payload)
+
+        # 같은 코드로 다시 생성 시도
+        response = await self.client.post("/single", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("해당 공장에 이미 존재하는 품목 코드입니다.", data.get("message") or data.get("detail", ""))
+
     async def test_list_products(self):
         """[R] 제품 목록 조회 테스트"""
         headers = await self.authenticate()

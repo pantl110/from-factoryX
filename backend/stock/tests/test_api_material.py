@@ -330,3 +330,79 @@ class TestMaterialAPI(TestCase):
         data = response.json()
         self.assertEqual(data["name"], "")  # 빈 문자열로 변경됨
         self.assertEqual(data["spec"], "")  # 빈 문자열로 변경됨
+
+    async def test_assign_materialproduct_success(self):
+        """원자재 생성 및 품목 연결 성공 테스트"""
+        headers = await self.authenticate()
+        # 테스트용 Product 생성
+        from stock.models import Product
+        product = await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            name="테스트 제품",
+            code="PROD100",
+            unit="EA",
+            spec="테스트 스펙"
+        )
+        payload = {
+            "factory_id": self.factory.id,
+            "product_id": product.id,
+            "materials": [
+                {"name": "신규원자재1", "code": "NEWMAT001", "spec": "규격A", "quantity": 10},
+                {"name": "신규원자재2", "code": "NEWMAT002", "spec": "규격B", "quantity": 20},
+                {"name": self.material.name, "code": self.material.code, "spec": self.material.spec, "quantity": 30},  # 기존 원자재
+            ]
+        }
+        response = await self.client.post("/assign", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 201)
+
+        # DB에 신규 원자재가 생성되었는지, 연결이 되었는지 확인
+        from stock.models import Material, MaterialProduct
+        mat1 = await sync_to_async(Material.objects.get)(code="NEWMAT001", factory=self.factory)
+        mat2 = await sync_to_async(Material.objects.get)(code="NEWMAT002", factory=self.factory)
+        # 연결 확인
+        self.assertTrue(await sync_to_async(MaterialProduct.objects.filter(product=product, material=mat1, quantity=10).exists)())
+        self.assertTrue(await sync_to_async(MaterialProduct.objects.filter(product=product, material=mat2, quantity=20).exists)())
+        self.assertTrue(await sync_to_async(MaterialProduct.objects.filter(product=product, material=self.material, quantity=30).exists)())
+
+    async def test_assign_materialproduct_wrong_factory(self):
+        """품목이 공장에 속하지 않을 때 실패 테스트"""
+        headers = await self.authenticate()
+        from stock.models import Product
+        # 다른 공장, 다른 품목 생성
+        other_factory = await sync_to_async(Factory.objects.create)(name='다른공장', owner=self.user)
+        other_product = await sync_to_async(Product.objects.create)(
+            factory=other_factory, name='다른제품', code='OTHERPROD', unit='EA', spec='스펙'
+        )
+        payload = {
+            "factory_id": self.factory.id,
+            "product_id": other_product.id,
+            "materials": [
+                {"name": "신규원자재", "code": "NEWCODE", "spec": "규격", "quantity": 5}
+            ]
+        }
+        response = await self.client.post("/assign", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("품목이 해당 공장에 속하지 않습니다.", response.json().get("detail", ""))
+
+    async def test_assign_materialproduct_duplicate_code(self):
+        """원자재 코드 중복 등으로 실패 테스트"""
+        headers = await self.authenticate()
+        from stock.models import Product
+        product = await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            name="테스트 제품",
+            code="PROD200",
+            unit="EA",
+            spec="테스트 스펙"
+        )
+        payload = {
+            "factory_id": self.factory.id,
+            "product_id": product.id,
+            "materials": [
+                {"name": "철판", "code": self.material.code, "spec": "3mm 두께", "quantity": 10},  # 이미 존재하는 원자재
+                {"name": "철판", "code": self.material.code, "spec": "3mm 두께", "quantity": 20},  # 중복 입력
+            ]
+        }
+        response = await self.client.post("/assign", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("원자재 코드가 중복되거나 연결 정보에 오류가 있습니다.", response.json().get("detail", ""))

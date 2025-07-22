@@ -15,14 +15,15 @@ router = Router(tags=["Tax"], auth=jwt_auth)
     "",
     summary="[C] 모든 세금계산서 조회",
     description="모든 세금계산서를 조회합니다. 연결 여부와 관계없이 전체 세금계산서를 반환합니다.",
-    response={200: List[AllTaxInvoiceOut], 500: dict}
+    response={200: List[AllTaxInvoiceOut], 400: dict, 500: dict}
 )
 @paginate
 async def list_all_tax_invoices(request):
     """
     모든 세금계산서를 조회합니다.
     
-    입력 필드: 없음
+    입력 필드:
+    - factory_id: 공장 ID (필수)
     
     반환 필드:
     - id: 세금계산서 ID (NationalTaxService.id)
@@ -35,31 +36,24 @@ async def list_all_tax_invoices(request):
     - total_amount: 합계금액 (transaction_amount + tax_amount)
     """
     try:
+        factory_id = request.GET.get("factory_id")
+        if not factory_id:
+            raise HttpError(400, "factory_id는 필수 입력값입니다.")
         @sync_to_async
         def get_all_tax_invoices():
             from tax.models import NationalTaxService
-            
-            # 모든 세금계산서 조회
-            all_invoices = NationalTaxService.objects.prefetch_related(
-                'client',  # 거래처 정보
-                'product'   # 품목 정보 (ManyToMany)
-            ).order_by('-transaction_date')  # 최신 날짜순 정렬
-            
+            all_invoices = NationalTaxService.objects.filter(
+                client__factory_id=factory_id
+            ).prefetch_related(
+                'client',
+                'product'
+            ).order_by('-transaction_date')
             return list(all_invoices)
-        
         invoices = await get_all_tax_invoices()
         result = []
-        
         for invoice in invoices:
-            # 품목명 목록 생성 (ManyToMany 관계)
-            product_names = []
-            for product in invoice.product.all():
-                product_names.append(product.name)
-            
-            # 합계금액 계산
+            product_names = [product.name for product in invoice.product.all()]
             total_amount = invoice.transaction_amount + invoice.tax_amount
-            
-            # 세금계산서 유형 한글화
             tax_invoice_type_map = {
                 'sales': '매출',
                 'purchase': '매입'
@@ -68,7 +62,6 @@ async def list_all_tax_invoices(request):
                 invoice.tax_invoice_type, 
                 invoice.tax_invoice_type
             )
-            
             result.append(AllTaxInvoiceOut(
                 id=invoice.id,
                 tax_invoice_type=tax_invoice_type_kr,
@@ -79,9 +72,7 @@ async def list_all_tax_invoices(request):
                 tax_amount=invoice.tax_amount,
                 total_amount=total_amount
             ))
-        
         return result
-        
     except Exception as e:
         raise HttpError(500, "세금계산서 조회 중 내부 서버 오류가 발생했습니다.")
 
@@ -90,14 +81,16 @@ async def list_all_tax_invoices(request):
     "/unlinked",
     summary="[C] 연동되지 않은 세금계산서 조회",
     description="연동되지 않은 세금계산서를 모두 조회합니다.",
-    response={200: List[NotLinkedTaxInvoiceOut], 500: dict}
+    response={200: List[NotLinkedTaxInvoiceOut], 400: dict, 500: dict}
 )
 @paginate
 async def list_not_link_tax(request):
     """
     연동되지 않은 세금계산서를 모두 조회합니다.
     
-    입력 필드: 없음
+    입력 필드:
+    - factory_id: 공장 ID (필수)
+    - q: 거래처명 검색어 (선택)
     
     반환 필드:
     - id: 세금계산서 ID (NationalTaxService.id)
@@ -110,33 +103,28 @@ async def list_not_link_tax(request):
     - total_amount: 합계금액 (transaction_amount + tax_amount)
     """
     try:
+        q = request.GET.get("q")
+        factory_id = request.GET.get("factory_id")
+        if not factory_id:
+            raise HttpError(400, "factory_id는 필수 입력값입니다.")
         @sync_to_async
         def get_unlinked_tax_invoices():
             from tax.models import NationalTaxService
-            
-            # 프로젝트에 연결되지 않은 세금계산서만 조회
-            unlinked_invoices = NationalTaxService.objects.filter(
-                projects__isnull=True  # 연결된 프로젝트가 없는 것
+            qs = NationalTaxService.objects.filter(
+                projects__isnull=True,
+                client__factory_id=factory_id
             ).prefetch_related(
-                'client',  # 거래처 정보
-                'product'   # 품목 정보 (ManyToMany)
-            ).order_by('-transaction_date')  # 최신 날짜순 정렬
-            
-            return list(unlinked_invoices)
-        
+                'client',
+                'product'
+            ).order_by('-transaction_date')
+            if q:
+                qs = qs.filter(client__name__icontains=q)
+            return list(qs)
         invoices = await get_unlinked_tax_invoices()
         result = []
-        
         for invoice in invoices:
-            # 품목명 목록 생성 (ManyToMany 관계)
-            product_names = []
-            for product in invoice.product.all():
-                product_names.append(product.name)
-            
-            # 합계금액 계산
+            product_names = [product.name for product in invoice.product.all()]
             total_amount = invoice.transaction_amount + invoice.tax_amount
-            
-            # 세금계산서 유형 한글화
             tax_invoice_type_map = {
                 'sales': '매출',
                 'purchase': '매입'
@@ -145,7 +133,6 @@ async def list_not_link_tax(request):
                 invoice.tax_invoice_type, 
                 invoice.tax_invoice_type
             )
-            
             result.append(NotLinkedTaxInvoiceOut(
                 id=invoice.id,
                 tax_invoice_type=tax_invoice_type_kr,
@@ -156,9 +143,7 @@ async def list_not_link_tax(request):
                 tax_amount=invoice.tax_amount,
                 total_amount=total_amount
             ))
-        
         return result
-        
     except Exception as e:
         raise HttpError(500, "연동되지 않은 세금계산서 조회 중 내부 서버 오류가 발생했습니다.")
 
