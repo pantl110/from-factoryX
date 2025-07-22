@@ -11,20 +11,34 @@ from factory.utils import get_factory_by_id
 router = Router(tags=["Factory"])
 
 
+# Onboarding Tab
 @router.post(
-    "/factories",
+    "",
     summary="[C] 공장 등록",
-    description="공장을 등록합니다.",
-    response={201: FactoryOut},
+    description="공장을 등록하고 권한을 관리자로 설정합니다.",
+    response={201: dict},
     auth=jwt_auth,
 )
-async def create_factory(request, payload: FactoryCreateIn):
+async def create_factory(request):
+    """
+    입력 필드:
+    - 없음 (user id는 인증에서 자동 추출)
+
+    반환 필드:
+    - factory_id: 생성된 공장 ID (int)
+    """
     user = request.auth
-    factory = await Factory.objects.acreate(
-        owner=user,
-        **payload.dict(),
+    factory = await Factory.objects.acreate(owner=user)
+    # owner를 admin 권한으로 FactoryMember에 자동 등록
+    from factory.models import FactoryMember
+    await FactoryMember.objects.acreate(
+        factory=factory,
+        user=user,
+        role=FactoryMember.FactoryMemberType.admin,
+        status=FactoryMember.MemberStatus.active,
+        invited_by=user,
     )
-    return 201, factory
+    return 201, {"factory_id": factory.id}
 
 
 @router.get(
