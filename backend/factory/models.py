@@ -226,6 +226,11 @@ class FactoryMember(BaseModel):
         related_name="invited_factory_members",
         help_text="초대한 사용자",
     )
+    invited_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="초대 일시",
+    )
     invitation_token = models.CharField(
         max_length=100,
         unique=True,
