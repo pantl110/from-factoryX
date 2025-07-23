@@ -34,7 +34,7 @@ const PermissionTableItem = ({
   const { invitationStatus, name, email, permission, date } = item;
   const textColor = InvitationStatusColorMap[invitationStatus];
   const authColors = PermissionRoleInfo[permission as PermissionRoleType];
-  
+
   const { updateMember } = useUpdateMember();
 
   // 권한 드롭다운 관리
@@ -82,7 +82,7 @@ const PermissionTableItem = ({
       } else {
         throw new Error(result.error || '권한 변경 실패');
       }
-    } catch (error) {
+    } catch {
       closeAuthDropdown();
       // 에러 발생 시에도 드롭다운은 닫음
     }

@@ -139,9 +139,9 @@ const ClientDetailPanel = ({
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-            <InfoLabelValue
-              label="거래처명"
-              isEditing={true}
+                <InfoLabelValue
+                  label="거래처명"
+                  isEditing={true}
                   placeholder="(필수) 거래처명을 입력하세요."
                   required
                   {...field}
@@ -156,8 +156,8 @@ const ClientDetailPanel = ({
                 pattern: /^\d{3}-\d{2}-\d{5}$/,
               }}
               render={({ field }) => (
-            <InfoLabelValue
-              label="사업자등록번호"
+                <InfoLabelValue
+                  label="사업자등록번호"
                   isEditing={true}
                   placeholder="(필수) 사업자등록번호를 입력하세요."
                   required
@@ -177,9 +177,9 @@ const ClientDetailPanel = ({
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-            <InfoLabelValue
-              label="대표자명"
-              isEditing={true}
+                <InfoLabelValue
+                  label="대표자명"
+                  isEditing={true}
                   placeholder="(필수) 대표자명을 입력하세요."
                   required
                   {...field}
@@ -193,9 +193,9 @@ const ClientDetailPanel = ({
                 pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
               }}
               render={({ field }) => (
-            <InfoLabelValue
-              label="이메일"
-              isEditing={true}
+                <InfoLabelValue
+                  label="이메일"
+                  isEditing={true}
                   placeholder="-"
                   {...field}
                 />
@@ -210,10 +210,10 @@ const ClientDetailPanel = ({
                 pattern: /^(01[016789]-\d{3,4}-\d{4}|0\d{1,2}-\d{3,4}-\d{4})$/,
               }}
               render={({ field }) => (
-            <InfoLabelValue
-              label="연락처"
-              isEditing={true}
-              placeholder="-"
+                <InfoLabelValue
+                  label="연락처"
+                  isEditing={true}
+                  placeholder="-"
                   value={field.value}
                   onChange={(e) => {
                     const formatted = formatPhoneNumber(e.target.value);
@@ -228,10 +228,10 @@ const ClientDetailPanel = ({
               control={control}
               rules={{ pattern: /^(0\d{1,3}-\d{3,4}-\d{4})$/ }}
               render={({ field }) => (
-            <InfoLabelValue
-              label="팩스 번호"
-              isEditing={true}
-              placeholder="-"
+                <InfoLabelValue
+                  label="팩스 번호"
+                  isEditing={true}
+                  placeholder="-"
                   value={field.value}
                   onChange={(e) => {
                     const formatted = formatFaxNumber(e.target.value);
@@ -248,9 +248,9 @@ const ClientDetailPanel = ({
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-            <InfoLabelValue
-              label="업태"
-              isEditing={true}
+                <InfoLabelValue
+                  label="업태"
+                  isEditing={true}
                   placeholder="(필수) 업태를 입력하세요."
                   required
                   {...field}
@@ -262,9 +262,9 @@ const ClientDetailPanel = ({
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-            <InfoLabelValue
-              label="종목"
-              isEditing={true}
+                <InfoLabelValue
+                  label="종목"
+                  isEditing={true}
                   placeholder="(필수) 종목을 입력하세요."
                   required
                   {...field}
@@ -278,9 +278,9 @@ const ClientDetailPanel = ({
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-            <InfoLabelValue
-              label="사업장 주소"
-              isEditing={true}
+                <InfoLabelValue
+                  label="사업장 주소"
+                  isEditing={true}
                   placeholder="(필수) 사업장 주소를 입력하세요."
                   required
                   {...field}
@@ -305,11 +305,11 @@ const ClientDetailPanel = ({
               name="note"
               control={control}
               render={({ field }) => (
-            <InfoLabelValue
-              label="비고"
-              isEditing={true}
-              placeholder="-"
-              textarea={true}
+                <InfoLabelValue
+                  label="비고"
+                  isEditing={true}
+                  placeholder="-"
+                  textarea={true}
                   {...field}
                 />
               )}

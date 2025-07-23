@@ -12,7 +12,8 @@ const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
       <Checkbox isChecked={isAllChecked} onToggle={onToggleAll || (() => {})} />
       <p className="flex-1 px-3 text-sv">자재명</p>
       <p className="flex-1 px-3 text-sv">자재 코드</p>
-      <p className="w-[80px] px-3 text-sv">단위</p>
+      <p className="flex-1 px-3 text-sv">규격</p>
+      <p className="flex-[0.5] px-3 text-sv">단위</p>
       <div className="px-3 flex-1 flex items-center gap-1">
         <p className="text-sv">현재 재고</p>
         <CaretUpDown size={21} className="text-sv" />

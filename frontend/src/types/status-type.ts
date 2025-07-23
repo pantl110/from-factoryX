@@ -39,13 +39,13 @@ export type ProjectStatusType =
   | 'completed'
   | 'interruption';
 
-  // | '견적 협의' // quotation
-  // | '생산 대기' // pending
-  // | '생산 중' // production
-  // | '생산 완료' // manufactured
-  // | '납품' // delivery
-  // | '프로젝트 완료' // completed
-  // | '중단'; // interruption
+// | '견적 협의' // quotation
+// | '생산 대기' // pending
+// | '생산 중' // production
+// | '생산 완료' // manufactured
+// | '납품' // delivery
+// | '프로젝트 완료' // completed
+// | '중단'; // interruption
 export const ProjectStatusColorMap: Record<
   ProjectStatusType,
   StatusColorModel
@@ -56,7 +56,7 @@ export const ProjectStatusColorMap: Record<
   manufactured: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
   delivery: { bgColor: 'bg-green-8', textColor: 'text-green' },
   completed: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  stop: { bgColor: 'bg-red-8', textColor: 'text-red' },
+  interruption: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
 
 // 세금계산서 발행 상태

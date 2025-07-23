@@ -23,7 +23,7 @@ const Permission = () => {
   const factoryId = useFactoryStore((state) => state.factoryId);
   const { getInvitingMembers, invitingMembers, isLoading, error } =
     useGetInvitingMembers();
-  const { deleteMember, isLoading: isDeleteLoading } = useDeleteMember();
+  const { deleteMember } = useDeleteMember();
   const { getFactory, factory } = useGetFactory();
 
   // 초대 중인 팀원 목록 불러오기

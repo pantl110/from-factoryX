@@ -30,7 +30,7 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
   return (
     <>
       <div className="flex items-center justify-between pb-4">
-        <SearchInput />
+        <SearchInput placeholder="자재명 또는 자재코드를 검색하세요." />
         <div className="flex gap-1">
           <MiniBtn
             text="취소"

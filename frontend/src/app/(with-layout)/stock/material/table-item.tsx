@@ -43,7 +43,8 @@ const TableItem = ({
           {materialName}
         </p>
         <p className="flex-1 px-3 text-dg">{materialCode}</p>
-        <p className="w-[80px] px-3 text-dg">{unit}</p>
+        {/* <p className="flex-1 px-3 text-dg">{spec}</p> */}
+        <p className="flex-[0.5] px-3 text-dg">{unit}</p>
         <p className="flex-1 px-3 text-dg">{currentStock.toLocaleString()}</p>
         <div className="px-3 w-[150px]">
           <Chip

@@ -298,6 +298,37 @@ export interface MaterialListResponseModel extends PaginationModel {
   data: MaterialResponseModel[];
 }
 
+// Material History API
+export interface MaterialItemModel {
+  name: string;
+  code: string;
+  spec: string;
+  unit: string;
+  quantity: number;
+  price: number;
+}
+
+export interface MaterialHistoryModel {
+  factory: number;
+  client_info: ClientModel;
+  materials: MaterialItemModel[];
+}
+
+export interface MaterialHistoryResponseModel {
+  id: number;
+  type: string;
+  material_id: number;
+  client_id: number;
+  quantity: number;
+  price: number;
+  total_stock: number;
+}
+
+// 원자재 히스토리 조회
+export interface MaterialHistoryListResponseModel extends PaginationModel {
+  data: MaterialHistoryResponseModel[];
+}
+
 ////////////////////////////
 // Project API
 // 프로젝트 생성 + 견적서 생성
@@ -483,11 +514,11 @@ export interface UpdateMemberResponseModel {
 
 ///////////////////////////////////////////
 // 여기는 목데이터 데이터 모델!!! 나중에 지우기!
-export interface MaterialModel {
-  id: number;
-  materialName: string;
-  usageQuantity: string;
-}
+// export interface MaterialModel {
+//   id: number;
+//   materialName: string;
+//   usageQuantity: string;
+// }
 
 export interface ProductDataModel {
   id: number | null;

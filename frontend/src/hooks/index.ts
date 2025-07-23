@@ -50,12 +50,6 @@ export { default as useGetClientDetail } from './factory-client/use-get-client-d
 export { default as useUpdateClient } from './factory-client/use-update-client';
 export { default as useDeleteClient } from './factory-client/use-delete-client';
 
-// Product related hooks
-export { default as useCreateProduct } from './product/use-create-product';
-export { default as useGetProduct } from './product/use-get-product';
-export { default as useUpdateProduct } from './product/use-update-product';
-export { default as useDeleteProduct } from './product/use-delete-product';
-
 // Project related hooks
 export { default as useCreateProject } from './project/use-create-project';
 export { default as useDeleteProject } from './project/use-delete-project';
@@ -87,3 +81,20 @@ export { default as useGetMembers } from './factory-member/use-get-members';
 export { default as useGetInvitingMembers } from './factory-member/use-get-inviting-members';
 export { default as useDeleteMember } from './factory-member/use-delete-member';
 export { default as useUpdateMember } from './factory-member/use-update-member';
+
+// Product related hooks
+export { default as useCreateProduct } from './product/use-create-product';
+export { default as useGetProduct } from './product/use-get-product';
+export { default as useUpdateProduct } from './product/use-update-product';
+export { default as useDeleteProduct } from './product/use-delete-product';
+
+// Material related hooks
+export { default as useGetMaterial } from './material/use-get-material';
+export { default as useUpdateMaterial } from './material/use-update-material';
+export { default as useDeleteMaterial } from './material/use-delete-material';
+
+// Material history related hooks
+export { default as useCreateMaterialHistory } from './material-history/use-create-material-history';
+export { default as useCreateBulkMaterialHistory } from './material-history/use-create-bulk-material-history';
+export { default as useCreateSingleMaterialHistory } from './material-history/use-create-single-material-history';
+export { default as useGetMaterialHistory } from './material-history/use-get-material-history';
