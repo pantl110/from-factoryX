@@ -3,7 +3,7 @@ import { ClientDataModel } from '@/types/data-model';
 export const clientData: ClientDataModel[] = [
   {
     id: 'b3e1c2d4-5f6a-7b8c-9d0e-1f2a3b4c5d6e',
-    type: '수주처',
+    type: 'customer',
     companyName: '(주)한솔케미칼',
     businessNumber: '2208112345',
     representativeName: '김한솔',
@@ -19,7 +19,7 @@ export const clientData: ClientDataModel[] = [
   },
   {
     id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-    type: '발주처',
+    type: 'supplier',
     companyName: '(주)에코플라스틱',
     businessNumber: '1234567890',
     representativeName: '박환경',
@@ -34,7 +34,7 @@ export const clientData: ClientDataModel[] = [
   },
   {
     id: 'c0ffee00-1234-5678-9abc-def012345678',
-    type: '수주처',
+    type: 'customer',
     companyName: '미래자동차',
     businessNumber: '3332211111',
     representativeName: '최미래',
@@ -48,7 +48,7 @@ export const clientData: ClientDataModel[] = [
   },
   {
     id: 'deadbeef-0000-1111-2222-333344445555',
-    type: '발주처',
+    type: 'supplier',
     companyName: '강철산업',
     businessNumber: '4567890123',
     representativeName: '이강철',
@@ -62,7 +62,7 @@ export const clientData: ClientDataModel[] = [
   },
   {
     id: '123e4567-e89b-12d3-a456-426614174000',
-    type: '발주처',
+    type: 'supplier',
     companyName: '플라스틱월드',
     businessNumber: '7891234567',
     representativeName: '정플라스틱',
@@ -78,7 +78,7 @@ export const clientData: ClientDataModel[] = [
   },
   {
     id: 'abcdefab-cdef-1234-5678-abcdefabcdef',
-    type: '수주처',
+    type: 'customer',
     companyName: '플러스케미칼',
     businessNumber: '9876543210',
     representativeName: '김플러스',
@@ -93,7 +93,7 @@ export const clientData: ClientDataModel[] = [
   },
   {
     id: 'feedface-1234-5678-9abc-def012345678',
-    type: '발주처',
+    type: 'supplier',
     companyName: '플렉스산업',
     businessNumber: '1112233333',
     representativeName: '박플렉스',

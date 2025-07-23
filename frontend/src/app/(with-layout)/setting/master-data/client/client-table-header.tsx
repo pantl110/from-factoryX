@@ -12,7 +12,7 @@ const ClientTableHeader = ({
   onToggleAll,
 }: ClientTableHeaderProps) => {
   return (
-    <div className="flex h-12 w-[1697px] items-center border-t border-b border-[#eeeeee] Me_Body-1 text-sv">
+    <div className="flex h-12 min-w-[1697px] items-center border-t border-b border-[#eeeeee] Me_Body-1 text-sv">
       <Checkbox
         isChecked={isAllChecked || false}
         onToggle={onToggleAll || (() => {})}

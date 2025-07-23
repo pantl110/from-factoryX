@@ -15,7 +15,7 @@ import PrintView from './modals/print-view';
 import { ProductModel } from './types';
 import StartProductionModal from './modals/start-production-modal';
 import ProductEnrollmentModal from './modals/product-enrollment-modal';
-import { ClientDataModel } from '@/types/data-model';
+import { ClientDataModel, ClientType } from '@/types/data-model';
 import { useSearchParams } from 'next/navigation';
 import TabArea from './tab-area';
 import TitleSec from './title-sec';
@@ -35,7 +35,7 @@ const QuotationPageContent = () => {
   } = useForm<ClientDataModel>({
     defaultValues: {
       id: crypto.randomUUID(),
-      type: '발주처',
+      type: 'supplier' as ClientType,
       companyName: '',
       businessNumber: '',
       representativeName: '',

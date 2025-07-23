@@ -1,17 +1,21 @@
 import { useState } from 'react';
-import { ClientDetailModel } from '@/types/data-model';
+
+interface DeleteClientParamsModel {
+  factory_id: number;
+  client_id: number;
+}
 
 const useDeleteClient = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const deleteClient = async (data: ClientDetailModel) => {
+  const deleteClient = async (data: DeleteClientParamsModel) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client/clients/${data.client_id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client/${data.client_id}?factory_id=${data.factory_id}`,
         {
           method: 'DELETE',
           credentials: 'include',

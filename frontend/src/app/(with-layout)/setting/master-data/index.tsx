@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
+import useFactoryStore from '@/store/factory-store';
 import { SettingChipType } from '@/components/top-bar/types';
 import Chip from '@/ui/chip';
 import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
+import Spinner from '@/ui/spinner';
 import Facility from './facility';
 import Client from './client';
 import DeleteModal from '@/ui/modal/delete-modal';
@@ -17,6 +19,7 @@ import {
 
 const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();
+  const factoryId = useFactoryStore((state) => state.factoryId);
   const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
     useState(false);
 
@@ -24,6 +27,7 @@ const MasterData = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const {
     equipmentList,
+    isLoading: isEquipmentLoading,
     setSearchKeyword: setEquipmentSearchKeyword,
     refetch: refetchEquipment,
   } = useGetEquipment();
@@ -31,9 +35,13 @@ const MasterData = () => {
   // 거래처 목록 가져옴
   const {
     clientList,
-    setSearchKeyword: setClientSearchKeyword,
-    setFilters: setClientFilters,
-    refetch: refetchClient,
+    isLoading: isClientLoading,
+    searchKeyword: clientSearchKeyword,
+    currentPage: clientCurrentPage,
+    pageSize: clientPageSize,
+    searchClients,
+    getClients,
+    setCurrentPage: setClientCurrentPage,
   } = useGetClient();
 
   // 삭제 훅
@@ -53,9 +61,13 @@ const MasterData = () => {
     () => setEquipmentSearchKeyword,
     [setEquipmentSearchKeyword]
   );
-  const memoizedSetClientSearchKeyword = useMemo(
-    () => setClientSearchKeyword,
-    [setClientSearchKeyword]
+
+  // 거래처 검색 함수
+  const handleClientSearch = useMemo(
+    () => (keyword: string) => {
+      searchClients(keyword);
+    },
+    [searchClients]
   );
 
   // 검색어 상태 동기화 (디바운싱)
@@ -65,7 +77,7 @@ const MasterData = () => {
       if (settingChip === 'equipment') {
         memoizedSetEquipmentSearchKeyword(searchKeyword);
       } else if (settingChip === 'client') {
-        memoizedSetClientSearchKeyword(searchKeyword);
+        handleClientSearch(searchKeyword);
       }
     }, 500);
     return () => {
@@ -74,7 +86,7 @@ const MasterData = () => {
   }, [
     searchKeyword,
     memoizedSetEquipmentSearchKeyword,
-    memoizedSetClientSearchKeyword,
+    handleClientSearch,
     settingChip,
   ]);
 
@@ -118,17 +130,20 @@ const MasterData = () => {
       (settingChip !== 'equipment' && settingChip !== 'client')
     ) {
       setSettingChip('equipment' as SettingChipType); // 설비관리 칩을 기본으로 설정
+      return;
     }
-    // chip이 바뀔 때 검색어 초기화
-    setSearchKeyword('');
-    memoizedSetEquipmentSearchKeyword('');
-    memoizedSetClientSearchKeyword('');
-  }, [
-    settingChip,
-    setSettingChip,
-    memoizedSetEquipmentSearchKeyword,
-    memoizedSetClientSearchKeyword,
-  ]);
+  }, [settingChip, setSettingChip]);
+
+  // 탭이 변경될 때만 검색어 초기화 (별도 useEffect)
+  const [previousChip, setPreviousChip] = useState<string | null>(null);
+  useEffect(() => {
+    if (previousChip !== null && previousChip !== settingChip) {
+      setSearchKeyword('');
+    }
+    setPreviousChip(settingChip);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settingChip]);
+
   const handleEquipmentChipClick = () =>
     setSettingChip('equipment' as SettingChipType);
   const handleClientChipClick = () =>
@@ -178,11 +193,21 @@ const MasterData = () => {
       try {
         // 선택된 모든 거래처 삭제
         const deletePromises = checkedClientIds.map((id) =>
-          deleteClient({ factory_id: 1, client_id: id })
+          deleteClient({
+            factory_id: factoryId || 0,
+            client_id: id,
+          })
         );
         await Promise.all(deletePromises);
         // 거래처 목록 새로고침
-        await refetchClient();
+        if (factoryId) {
+          await getClients({
+            factory_id: factoryId,
+            q: clientSearchKeyword,
+            page: clientCurrentPage,
+            page_size: clientPageSize,
+          });
+        }
       } catch {
         alert('거래처 삭제 중 오류가 발생했습니다.');
       }
@@ -211,11 +236,31 @@ const MasterData = () => {
   );
 
   // 페이지네이션 변경 핸들러 (Client용)
-  const handleClientPageChange = (page: number) => {
-    setClientFilters((prev) => ({ ...prev, page }));
+  const handleClientPageChange = async (page: number) => {
+    setClientCurrentPage(page);
+    if (factoryId) {
+      await getClients({
+        factory_id: factoryId,
+        q: clientSearchKeyword,
+        page,
+        page_size: clientPageSize,
+      });
+    }
   };
 
   const renderContent = () => {
+    // 로딩 중일 때 스피너 표시
+    if (
+      (settingChip === 'equipment' && isEquipmentLoading) ||
+      (settingChip === 'client' && isClientLoading)
+    ) {
+      return (
+        <div className="flex justify-center items-center py-20">
+          <Spinner />
+        </div>
+      );
+    }
+
     switch (settingChip) {
       case 'equipment':
         return (
@@ -233,12 +278,12 @@ const MasterData = () => {
       case 'client':
         return (
           <Client
-            clientList={clientList}
-            onPageChange={handleClientPageChange}
             isAllChecked={isClientAllChecked}
             isChecked={isClientChecked}
             toggleAll={clientToggleAll}
             toggleOne={clientToggleOne}
+            clientList={clientList}
+            onPageChange={handleClientPageChange}
           />
         );
       default:
@@ -247,7 +292,7 @@ const MasterData = () => {
   };
 
   return (
-    <div>
+    <div className="w-full">
       <div className="flex gap-1 px-10 pb-5">
         <Chip
           text="설비 관리"
@@ -287,7 +332,7 @@ const MasterData = () => {
               if (settingChip === 'equipment') {
                 memoizedSetEquipmentSearchKeyword(searchKeyword);
               } else if (settingChip === 'client') {
-                // memoizedSetClientSearchKeyword(searchKeyword)
+                handleClientSearch(searchKeyword);
               }
             }
           }}

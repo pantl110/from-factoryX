@@ -1,7 +1,7 @@
 import MiniBtn from '@/ui/mini-btn';
 import Input from '@/ui/input';
 import Modal from '@/ui/modal/modal';
-import { ClientDataModel } from '@/types/data-model';
+import { ClientDataModel, ClientType } from '@/types/data-model';
 import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
 import { clientData } from '@/mocks/client-data';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
@@ -27,7 +27,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     mode: 'onChange',
     defaultValues: {
       id: crypto.randomUUID(),
-      type: '발주처',
+      type: 'supplier' as ClientType,
       companyName: '',
       businessNumber: '',
       representativeName: '',

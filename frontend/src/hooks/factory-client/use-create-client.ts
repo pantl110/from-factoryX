@@ -11,7 +11,7 @@ const useCreateClient = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client/clients`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client`,
         {
           method: 'POST',
           credentials: 'include',

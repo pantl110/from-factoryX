@@ -175,6 +175,7 @@ export interface EquipmentListResponseModel extends PaginationModel {
 // 거래체 등록
 export interface ClientModel {
   factory_id: number;
+  type: ClientType;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -190,20 +191,20 @@ export interface ClientModel {
 
 export interface ClientResponseModel {
   id: number;
-  created_at: string;
-  updated_at: string;
-  factory: number;
+  client_type: ClientType;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
-  email?: string;
-  phone?: string;
-  fax?: string;
   business_type?: string;
   business_category?: string;
+  phone?: string;
+  email?: string;
+  note?: string;
   address?: string;
   manager?: string;
-  note?: string;
+  fax?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // 거래처 목록 조회
@@ -215,6 +216,7 @@ export interface ClientListResponseModel extends PaginationModel {
 export interface ClientUpdateModel {
   client_id: number;
   factory_id: number;
+  client_type: ClientType;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -224,42 +226,7 @@ export interface ClientUpdateModel {
   business_type?: string;
   business_category?: string;
   address?: string;
-  manager?: string;
   note?: string;
-}
-
-// 거래처 삭제, 상세 조회
-export interface ClientDetailModel {
-  factory_id: number;
-  client_id: number;
-}
-
-// 거래처 검색
-export interface ClientSearchModel {
-  factory_id: number;
-  q: string;
-}
-
-// 거래처 상세 조회
-export interface ClientDetailResponseModel {
-  factory_name: string;
-  created_at_formatted: string;
-  updated_at_formatted: string;
-  id: number;
-  created_at: string;
-  updated_at: string;
-  factory: number;
-  name: string;
-  business_registration_number: string;
-  representative_name: string;
-  email: string;
-  phone: string;
-  fax: string;
-  business_type: string;
-  business_category: string;
-  address: string;
-  manager: string;
-  note: string;
 }
 
 //////////////////////
@@ -472,6 +439,48 @@ export interface UpdateProjectPlanModel {
   avg_production_time?: number;
 }
 
+//////////////////////
+// Factory Member API
+export interface InviteMemberModel {
+  factory_id: number;
+  email: string;
+  role: string;
+}
+
+export interface InviteMemberResponseModel {
+  email: string;
+  role: string;
+  invited_by: number;
+}
+
+export interface MemberResponseModel {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  factory: number;
+  user: number;
+  role: MemberRoleType;
+  status: MemberStatusType;
+  invited_by: number;
+  invitation_token: string;
+  invitation_message: string;
+}
+
+export interface MemberListResponseModel extends PaginationModel {
+  data: MemberResponseModel[];
+}
+
+export interface UpdateMemberResponseModel {
+  id: number;
+  factory_id: number;
+  user_id: number;
+  role: MemberRoleType;
+  status: MemberStatusType;
+  invited_by_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
 ///////////////////////////////////////////
 // 여기는 목데이터 데이터 모델!!! 나중에 지우기!
 export interface MaterialModel {
@@ -504,8 +513,23 @@ export interface MaterialDataModel {
   [key: string]: unknown;
 }
 
-import { ClientType, ProjectStatusType, TaxStatusType } from './status-type';
-import { EquipmentStatusType } from './status-type';
+import {
+  ClientType,
+  MemberRoleType,
+  MemberStatusType,
+  ProjectStatusType,
+  TaxStatusType,
+  EquipmentStatusType,
+} from './status-type';
+
+export type {
+  ClientType,
+  MemberRoleType,
+  MemberStatusType,
+  ProjectStatusType,
+  TaxStatusType,
+} from './status-type';
+
 export interface ClientDataModel {
   id: string;
   type: ClientType;

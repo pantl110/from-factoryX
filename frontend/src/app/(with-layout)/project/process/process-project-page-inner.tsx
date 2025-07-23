@@ -63,7 +63,7 @@ const ProcessProjectPageInner = () => {
 
       const result = await getProjects({
         factory_id: factoryId,
-        status: selectedStatus as ProjectStatusType | 'progress',
+        status: selectedStatus,
         search,
         order_by: orderBy,
         order_dir: orderDir,
@@ -75,7 +75,8 @@ const ProcessProjectPageInner = () => {
         setProjectData(result.data);
       }
     },
-    [factoryId, selectedStatus, getProjects]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [factoryId, selectedStatus] // getProjects 제거
   );
 
   // 초기 데이터 로드
@@ -89,12 +90,12 @@ const ProcessProjectPageInner = () => {
       );
     }
   }, [
+    selectedStatus,
     currentPage,
     searchKeyword,
     sortKey,
     sortOrder,
     factoryId,
-    selectedStatus,
     loadProjects,
   ]);
 
@@ -111,8 +112,11 @@ const ProcessProjectPageInner = () => {
 
   // 정렬 핸들러
   const handleSort = (key: 'startDate' | 'endDate') => {
+    const newSortOrder =
+      sortKey === key ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'desc';
+
     if (sortKey === key) {
-      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      setSortOrder(newSortOrder);
     } else {
       setSortKey(key);
       setSortOrder('desc');
@@ -145,6 +149,7 @@ const ProcessProjectPageInner = () => {
   const handleStatusChange = (status: ProjectStatusType | 'progress') => {
     setSelectedStatus(status);
     setCurrentPage(1); // 탭 상태 변경 시 표는 첫 페이지로 이동
+    setSearchKeyword(''); // 탭 변경시 검색어도 초기화
   };
 
   const handleDirectInputClick = (clientData?: ClientDataModel) => {

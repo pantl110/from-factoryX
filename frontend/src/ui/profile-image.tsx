@@ -41,7 +41,7 @@ const ProfileImage = ({
   if (imageToShow) {
     return (
       <Image
-        src={`data:image/jpeg;base64,${imageToShow}`}
+        src={imageToShow}
         alt="Profile"
         width={size === 'small' ? 32 : 72}
         height={size === 'small' ? 32 : 72}

@@ -10,8 +10,8 @@ import useToast from '@/hooks/use-toast';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
 import { UserInfoModel, UpdateUserInfoModel } from '@/types/data-model';
-import { useMe } from '@/hooks/users/use-me';
 import EditPhotoDropdown from './modals/edit-photo-dropdown';
+import { useMe, useUploadFile } from '@/hooks';
 
 interface ProfileProps {
   userInfo: UserInfoModel | null;
@@ -20,9 +20,11 @@ interface ProfileProps {
 const Profile = ({ userInfo }: ProfileProps) => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
   const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isEditPhotoDropdownOpen, setIsEditPhotoDropdownOpen] = useState(false);
   const { updateMe, isLoading } = useMe();
+  const { uploadFile } = useUploadFile();
 
   const {
     register,
@@ -48,34 +50,83 @@ const Profile = ({ userInfo }: ProfileProps) => {
         profile_image: userInfo.profile_image || '',
       });
       setSelectedImage(null); // 선택된 이미지 초기화
+      setSelectedImageUrl(null); // 선택된 이미지 URL 초기화
     }
   }, [userInfo, reset]);
 
-  const handleImageSelected = (base64Data: string) => {
-    setSelectedImage(base64Data);
+  const handleImageSelected = (file: File) => {
+    console.warn('📷 이미지 파일 선택됨:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    });
+    setSelectedImage(file);
+    // 파일을 미리보기용 URL로 변환
+    const previewUrl = URL.createObjectURL(file);
+    setSelectedImageUrl(previewUrl);
+    console.warn('📷 미리보기 URL 생성:', previewUrl);
   };
 
   const onSubmit = async (data: UpdateUserInfoModel) => {
+    console.warn('🚀 프로필 업데이트 시작:', {
+      formData: data,
+      hasSelectedImage: !!selectedImage,
+      selectedImageName: selectedImage?.name,
+      selectedImageSize: selectedImage?.size,
+    });
+
     try {
-      // 선택된 이미지가 있으면 데이터에 추가
+      let profileImageUrl = null;
+
+      // 선택된 이미지 파일이 있으면 S3에 업로드
+      if (selectedImage) {
+        console.warn('📤 S3 이미지 업로드 시작:', selectedImage.name);
+        const uploadResult = await uploadFile(selectedImage);
+        console.warn('📤 S3 업로드 결과:', uploadResult);
+
+        if (uploadResult.success) {
+          profileImageUrl = uploadResult.object_url;
+          console.warn('✅ 업로드 성공! S3 URL:', profileImageUrl);
+        } else {
+          console.error('❌ S3 업로드 실패:', uploadResult.error);
+          throw new Error(
+            uploadResult.error || '이미지 업로드에 실패했습니다.'
+          );
+        }
+      } else {
+        console.warn('📷 선택된 이미지 없음 - S3 업로드 건너뜀');
+      }
+
+      // 업로드된 이미지 URL을 데이터에 추가
       const updateData = {
         ...data,
-        ...(selectedImage && { profile_image: selectedImage }),
+        ...(profileImageUrl && { profile_image: profileImageUrl }),
       };
+
+      console.warn('📋 사용자 정보 업데이트 데이터:', updateData);
       const result = await updateMe(updateData);
+      console.warn('📋 사용자 정보 업데이트 결과:', result);
 
       if (result.success) {
+        console.warn('✅ 프로필 업데이트 성공!');
         showToast();
         setSelectedImage(null); // 성공 후 선택된 이미지 초기화
+        setSelectedImageUrl(null); // 성공 후 선택된 이미지 URL 초기화
       } else {
+        console.error('❌ 프로필 업데이트 실패:', result.error);
         const errorMessage =
           typeof result.error === 'string'
             ? result.error
             : '프로필 정보 수정에 실패했습니다.';
         throw new Error(errorMessage);
       }
-    } catch {
-      throw new Error('프로필 정보 수정 중 오류가 발생했습니다.');
+    } catch (error) {
+      console.error('💥 onSubmit 전체 에러:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '프로필 정보 수정 중 오류가 발생했습니다.';
+      throw new Error(errorMessage);
     }
   };
 
@@ -96,7 +147,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
   };
 
   // 사진이 있는지 확인 (선택된 이미지 또는 기존 프로필 이미지)
-  const hasImage = selectedImage || userInfo?.profile_image;
+  const hasImage = selectedImageUrl || userInfo?.profile_image;
 
   return (
     <>
@@ -107,7 +158,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
         <h3 className="Heading-3">프로필 정보</h3>
         <div className="flex flex-col gap-8">
           <div className="relative">
-            <ProfileImage selectedImage={selectedImage} />
+            <ProfileImage selectedImage={selectedImageUrl} />
             <div
               onClick={
                 hasImage
@@ -129,6 +180,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
                   onChangePhoto={() => setIsPhotoUploadModalOpen(true)}
                   onDeletePhoto={() => {
                     setSelectedImage(null);
+                    setSelectedImageUrl(null);
                     setIsEditPhotoDropdownOpen(false);
                   }}
                 />

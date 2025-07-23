@@ -16,8 +16,8 @@ const ClientTypeDropdown = ({ onClose, onSelect }: ClientTypeDropdownProps) => {
   };
 
   const clientTypeOptions: { type: ClientType; label: string }[] = [
-    { type: '수주처', label: '수주처' },
-    { type: '발주처', label: '발주처' },
+    { type: 'customer', label: '수주처' },
+    { type: 'supplier', label: '발주처' },
   ];
 
   return (

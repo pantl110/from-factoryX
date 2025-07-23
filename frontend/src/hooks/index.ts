@@ -49,7 +49,6 @@ export { default as useGetClient } from './factory-client/use-get-client';
 export { default as useGetClientDetail } from './factory-client/use-get-client-detail';
 export { default as useUpdateClient } from './factory-client/use-update-client';
 export { default as useDeleteClient } from './factory-client/use-delete-client';
-export { default as useSearchClient } from './factory-client/use-search-client';
 
 // Product related hooks
 export { default as useCreateProduct } from './product/use-create-product';
@@ -78,3 +77,13 @@ export { default as useGetCompletedProjectPlans } from './project/project-plan/u
 export { default as useUpdateProjectPlan } from './project/project-plan/use-update-project-plan';
 
 // Project refund related hooks
+
+// AWS related hooks
+export { default as useUploadFile } from './aws/use-upload-file';
+
+// Factory member related hooks
+export { default as useInviteMember } from './factory-member/use-invite-member';
+export { default as useGetMembers } from './factory-member/use-get-members';
+export { default as useGetInvitingMembers } from './factory-member/use-get-inviting-members';
+export { default as useDeleteMember } from './factory-member/use-delete-member';
+export { default as useUpdateMember } from './factory-member/use-update-member';

@@ -34,8 +34,12 @@ const LoginPage = () => {
     const result = await login(data);
 
     if (result.success) {
-      // 로그인 성공
-      router.push('/onboarding');
+      // 로그인 성공 - 바로 대시보드로 이동
+      router.push('/dashboard');
+      // 시스템관리자이면서 품목과 원자재가 없으면 온보딩 페이지로 이동
+      // if (result.data?.role === 'system_admin' && result.data?.products.length === 0 && result.data?.materials.length === 0) {
+      //   router.push('/onboarding');
+      // }
     } else {
       // 로그인 실패
       if (result.field && result.error) {

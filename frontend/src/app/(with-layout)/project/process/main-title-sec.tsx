@@ -13,8 +13,8 @@ const statusTabMap = [
   { label: '견적 협의', value: 'quotation' },
   { label: '생산 대기', value: 'pending' },
   { label: '생산 중', value: 'production' },
-  { label: '생산 완료', value: 'complete' },
-  { label: '납품', value: 'delivered' },
+  { label: '생산 완료', value: 'manufactured' },
+  { label: '납품', value: 'delivery' },
 ];
 
 const MainTitleSec = ({
@@ -41,7 +41,9 @@ const MainTitleSec = ({
           <button
             key={tab.value}
             type="button"
-            className={`cursor-pointer ${selectedStatus === tab.value ? 'text-dg' : 'text-gr'} Heading-3`}
+            className={`cursor-pointer ${
+              selectedStatus === tab.value ? 'text-dg' : 'text-gr'
+            } Heading-3`}
             onClick={() =>
               onStatusChange(tab.value as ProjectStatusType | 'progress')
             }

@@ -1,6 +1,6 @@
-import Chip from '@/ui/chip';
+// import Chip from '@/ui/chip';
 import Checkbox from '@/ui/checkbox';
-import { ClientType, ClientTypeColorMap } from '@/types/status-type';
+import { ClientType } from '@/types/status-type';
 import { ClientResponseModel } from '@/types/data-model';
 
 interface ClientTableItemProps {
@@ -11,20 +11,28 @@ interface ClientTableItemProps {
   onToggleCheck?: () => void;
 }
 
+// 영어 타입을 한국어로 매핑하는 함수
+// const getClientTypeText = (clientType: ClientType): string => {
+//   const typeMap = {
+//     supplier: '발주처',
+//     customer: '수주처',
+//   };
+//   return typeMap[clientType] || clientType;
+// };
+
 const ClientTableItem = ({
   client,
   onClick,
   isChecked,
   onToggleCheck,
 }: ClientTableItemProps) => {
-  // 기본값으로 '발주처' 사용 (API에서 type 필드가 없음) // 추후 수정하기
-  const clientType: ClientType = '발주처';
-  const clientTypeColor =
-    ClientTypeColorMap[clientType as keyof typeof ClientTypeColorMap];
+  // const clientType = client.client_type;
+  // const clientTypeText = getClientTypeText(clientType);
+  // const clientTypeColor = ClientTypeColorMap[clientType];
 
   return (
     <div
-      className="flex h-14 items-center w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
+      className="flex h-14 items-center min-w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
       <Checkbox
@@ -33,13 +41,13 @@ const ClientTableItem = ({
       />
       <div className="px-3 flex-[0.8]">
         <div>
-          <Chip
-            text={clientType}
+          {/* <Chip
+            text={clientTypeText}
             bgColor={clientTypeColor.bgColor}
             textColor={clientTypeColor.textColor}
             radius="rounded-sm"
             cursor="cursor-pointer"
-          />
+          /> */}
         </div>
       </div>
       <p className="px-3 flex-[2]">{client.name}</p>

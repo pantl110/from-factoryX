@@ -4,11 +4,16 @@ import {
   formatPhoneNumber,
 } from '@/hooks';
 import useGetClientDetail from '@/hooks/factory-client/use-get-client-detail';
-import { ClientTypeColorMap } from '@/types/status-type';
-import Chip from '@/ui/chip';
+import { useUpdateClient } from '@/hooks';
+import { ClientType, ClientUpdateModel } from '@/types/data-model';
+// import Chip from '@/ui/chip';
 import InfoLabelValue from '@/ui/info-label-value';
 import Panel from '@/ui/panel';
+// import Spinner from '@/ui/spinner';
 import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import MiniBtn from '@/ui/mini-btn';
+// import { ClientTypeColorMap } from '@/types/status-type';
 
 interface ClientDetailPanelProps {
   clientId: number;
@@ -21,11 +26,30 @@ const ClientDetailPanel = ({
   factoryId,
   onClose,
 }: ClientDetailPanelProps) => {
-  const { getClientDetail, clientDetail, isLoading, error } =
-    useGetClientDetail();
-  const clientDetailType = '발주처';
-  const clientTypeColor =
-    ClientTypeColorMap[clientDetailType as keyof typeof ClientTypeColorMap];
+  const { getClientDetail, clientDetail } = useGetClientDetail();
+  const { updateClient, isLoading: isUpdateLoading } = useUpdateClient();
+
+  const {
+    handleSubmit,
+    reset,
+    control,
+    formState: { isDirty, isValid },
+  } = useForm<ClientUpdateModel>({
+    mode: 'onChange',
+    defaultValues: {
+      name: '',
+      business_registration_number: '',
+      representative_name: '',
+      email: '',
+      phone: '',
+      fax: '',
+      business_type: '',
+      business_category: '',
+      address: '',
+      client_type: 'customer',
+      note: '',
+    },
+  });
 
   useEffect(() => {
     if (clientId && factoryId) {
@@ -34,99 +58,265 @@ const ClientDetailPanel = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, factoryId]);
 
-  if (isLoading) return <div>상세 정보 불러오는 중...</div>;
-  if (error) return <div>오류: {error}</div>;
-  if (!clientDetail) return null;
+  // clientDetail이 로드되면 폼에 기본값 설정
+  useEffect(() => {
+    if (clientDetail) {
+      reset({
+        client_id: clientId,
+        factory_id: factoryId,
+        name: clientDetail.name || '',
+        business_registration_number:
+          clientDetail.business_registration_number || '',
+        representative_name: clientDetail.representative_name || '',
+        email: clientDetail.email || '',
+        phone: clientDetail.phone || '',
+        fax: clientDetail.fax || '',
+        business_type: clientDetail.business_type || '',
+        business_category: clientDetail.business_category || '',
+        address: clientDetail.address || '',
+        client_type: clientDetail.client_type as ClientType,
+        note: clientDetail.note || '',
+      });
+    }
+  }, [clientDetail, reset, clientId, factoryId]);
 
-  // 기존 상세 정보 UI를 clientDetail로 렌더링
+  const onSubmit = async (data: ClientUpdateModel) => {
+    try {
+      const result = await updateClient({
+        ...data,
+        client_id: clientId,
+        factory_id: factoryId,
+      });
+
+      if (result.success) {
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error updating client:', error);
+    }
+  };
+
+  // if (isLoading || error || !clientDetail) return (
+  //   <div className="flex justify-center items-center h-full">
+  //     <Spinner />
+  //   </div>
+  // );
+
+  // const clientType = clientDetail?.client_type;
+  // const clientTypeText =
+  //   clientType === 'supplier'
+  //     ? '발주처'
+  //     : clientType === 'customer'
+  //       ? '수주처'
+  //       : clientType;
+  // const clientTypeColor =
+  //   ClientTypeColorMap[clientType as keyof typeof ClientTypeColorMap];
+
   return (
-    <Panel title="거래처" onClose={onClose} hasSaveButton={true}>
-      <div className="flex flex-col gap-3">
+    <Panel
+      title="거래처"
+      onClose={onClose}
+      headerButton={
+        (!clientDetail || isDirty) && (
+          <MiniBtn
+            text="저장"
+            textColor="text-primary"
+            bgColor="bg-primary-8"
+            hoverColor="hover:bg-secondary-hover"
+            disabled={!isDirty || !isValid || isUpdateLoading}
+            onClick={handleSubmit(onSubmit)}
+          />
+        )
+      }
+    >
+      <form className="flex flex-col gap-3">
         <h3 className="Heading-3">거래처 정보</h3>
 
         <div>
           <div className="flex">
+            <Controller
+              name="name"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
             <InfoLabelValue
               label="거래처명"
-              value={clientDetail.name}
               isEditing={true}
+                  placeholder="(필수) 거래처명을 입력하세요."
+                  required
+                  {...field}
+                />
+              )}
             />
+            <Controller
+              name="business_registration_number"
+              control={control}
+              rules={{
+                required: true,
+                pattern: /^\d{3}-\d{2}-\d{5}$/,
+              }}
+              render={({ field }) => (
             <InfoLabelValue
               label="사업자등록번호"
-              value={formatBusinessNumber(
-                clientDetail.business_registration_number
+                  isEditing={true}
+                  placeholder="(필수) 사업자등록번호를 입력하세요."
+                  required
+                  value={field.value}
+                  onChange={(e) => {
+                    const formatted = formatBusinessNumber(e.target.value);
+                    field.onChange(formatted);
+                  }}
+                  onBlur={() => field.onBlur()}
+                />
               )}
-              isEditing={true}
             />
           </div>
           <div className="flex">
+            <Controller
+              name="representative_name"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
             <InfoLabelValue
               label="대표자명"
-              value={clientDetail.representative_name}
               isEditing={true}
+                  placeholder="(필수) 대표자명을 입력하세요."
+                  required
+                  {...field}
+                />
+              )}
             />
+            <Controller
+              name="email"
+              control={control}
+              rules={{
+                pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+              }}
+              render={({ field }) => (
             <InfoLabelValue
               label="이메일"
-              value={clientDetail.email}
               isEditing={true}
+                  placeholder="-"
+                  {...field}
+                />
+              )}
             />
           </div>
           <div className="flex">
+            <Controller
+              name="phone"
+              control={control}
+              rules={{
+                pattern: /^(01[016789]-\d{3,4}-\d{4}|0\d{1,2}-\d{3,4}-\d{4})$/,
+              }}
+              render={({ field }) => (
             <InfoLabelValue
               label="연락처"
-              value={formatPhoneNumber(clientDetail.phone || '')}
               isEditing={true}
               placeholder="-"
+                  value={field.value}
+                  onChange={(e) => {
+                    const formatted = formatPhoneNumber(e.target.value);
+                    field.onChange(formatted);
+                  }}
+                  onBlur={() => field.onBlur()}
+                />
+              )}
             />
+            <Controller
+              name="fax"
+              control={control}
+              rules={{ pattern: /^(0\d{1,3}-\d{3,4}-\d{4})$/ }}
+              render={({ field }) => (
             <InfoLabelValue
               label="팩스 번호"
-              value={formatFaxNumber(clientDetail.fax || '')}
               isEditing={true}
               placeholder="-"
+                  value={field.value}
+                  onChange={(e) => {
+                    const formatted = formatFaxNumber(e.target.value);
+                    field.onChange(formatted);
+                  }}
+                  onBlur={() => field.onBlur()}
+                />
+              )}
             />
           </div>
           <div className="flex">
+            <Controller
+              name="business_type"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
             <InfoLabelValue
               label="업태"
-              value={clientDetail.business_type}
               isEditing={true}
+                  placeholder="(필수) 업태를 입력하세요."
+                  required
+                  {...field}
+                />
+              )}
             />
+            <Controller
+              name="business_category"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
             <InfoLabelValue
               label="종목"
-              value={clientDetail.business_category}
               isEditing={true}
+                  placeholder="(필수) 종목을 입력하세요."
+                  required
+                  {...field}
+                />
+              )}
             />
           </div>
           <div className="flex">
+            <Controller
+              name="address"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
             <InfoLabelValue
               label="사업장 주소"
-              value={clientDetail.address}
               isEditing={true}
+                  placeholder="(필수) 사업장 주소를 입력하세요."
+                  required
+                  {...field}
+                />
+              )}
             />
           </div>
           <div className="flex">
             <InfoLabelValue
               label="거래처"
-              value={
-                <Chip
-                  text={clientDetailType}
-                  bgColor={clientTypeColor.bgColor}
-                  textColor={clientTypeColor.textColor}
-                />
-              }
+              // value={
+              //   <Chip
+              //     text={getClientTypeText(clientType)}
+              //     bgColor={clientTypeColor.bgColor}
+              //     textColor={clientTypeColor.textColor}
+              //   />
+              // }
             />
           </div>
           <div className="flex border-b border-lg w-full">
+            <Controller
+              name="note"
+              control={control}
+              render={({ field }) => (
             <InfoLabelValue
               label="비고"
-              value=""
               isEditing={true}
               placeholder="-"
               textarea={true}
+                  {...field}
+                />
+              )}
             />
           </div>
         </div>
-      </div>
+      </form>
     </Panel>
   );
 };

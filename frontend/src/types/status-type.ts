@@ -5,6 +5,10 @@ export interface StatusColorModel {
   hover?: string;
 }
 
+// 팩토리 멤버 type
+export type MemberRoleType = 'admin' | 'manager' | 'viewer'; // 시스템 관리자, 운영자, 조회자
+export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
+
 // 설비 상태 // 설정 페이지
 export type EquipmentStatusType = '가동 대기' | '가동 중';
 export const EquipmentStatusColorMap: Record<
@@ -16,13 +20,13 @@ export const EquipmentStatusColorMap: Record<
 };
 
 // 거래처 유형 // 설정 페이지
-export type ClientType = '발주처' | '수주처';
+export type ClientType = 'supplier' | 'customer'; // 발주처 | 수주처
 export const ClientTypeColorMap: Record<
   ClientType,
   { bgColor: string; textColor: string }
 > = {
-  발주처: { bgColor: 'bg-red-8', textColor: 'text-red' },
-  수주처: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  supplier: { bgColor: 'bg-red-8', textColor: 'text-red' },
+  customer: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
 };
 
 // 프로젝트 상태
@@ -33,15 +37,15 @@ export type ProjectStatusType =
   | 'manufactured'
   | 'delivery'
   | 'completed'
-  | 'stop';
+  | 'interruption';
 
-// | '견적 협의' // quotation
-// | '생산 대기' // pending
-// | '생산 중' // production
-// | '생산 완료' // manufactured
-// | '납품' // delivery
-// | '프로젝트 완료' // completed
-// | '중단';
+  // | '견적 협의' // quotation
+  // | '생산 대기' // pending
+  // | '생산 중' // production
+  // | '생산 완료' // manufactured
+  // | '납품' // delivery
+  // | '프로젝트 완료' // completed
+  // | '중단'; // interruption
 export const ProjectStatusColorMap: Record<
   ProjectStatusType,
   StatusColorModel
