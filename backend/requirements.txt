@@ -44,3 +44,4 @@ langchain-openai
 upstage
 openai
 aiofiles
+zeep
