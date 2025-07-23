@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MaterialHistoryListResponseModel, MaterialHistoryResponseModel } from '@/types/data-model';
+import { MaterialHistoryListResponseModel } from '@/types/data-model';
 
 interface GetMaterialHistoryModel {
   months?: number;
@@ -13,18 +13,19 @@ interface GetMaterialHistoryModel {
 const useGetMaterialHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [histories, setHistories] = useState<MaterialHistoryListResponseModel | null>(null);
+  const [histories, setHistories] =
+    useState<MaterialHistoryListResponseModel | null>(null);
 
   const getMaterialHistory = async (
-    materialId: number, 
+    materialId: number,
     options?: GetMaterialHistoryModel
   ) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const params = new URLSearchParams();
-      
+
       // 기간 필터 파라미터
       if (options?.months !== undefined) {
         params.append('months', options.months.toString());
@@ -32,7 +33,7 @@ const useGetMaterialHistory = () => {
       if (options?.days !== undefined) {
         params.append('days', options.days.toString());
       }
-      
+
       // 페이지네이션 파라미터
       if (options?.page !== undefined) {
         params.append('page', options.page.toString());
@@ -60,7 +61,8 @@ const useGetMaterialHistory = () => {
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        const errorMessage = errorData.detail || '원자재 히스토리 조회에 실패했습니다.';
+        const errorMessage =
+          errorData.detail || '원자재 히스토리 조회에 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }
@@ -81,4 +83,4 @@ const useGetMaterialHistory = () => {
   };
 };
 
-export default useGetMaterialHistory; 
+export default useGetMaterialHistory;

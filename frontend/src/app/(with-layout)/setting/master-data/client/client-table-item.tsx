@@ -1,7 +1,8 @@
 // import Chip from '@/ui/chip';
 import Checkbox from '@/ui/checkbox';
-import { ClientType } from '@/types/status-type';
+import { ClientType, ClientTypeColorMap } from '@/types/status-type';
 import { ClientResponseModel } from '@/types/data-model';
+import Chip from '@/ui/chip';
 
 interface ClientTableItemProps {
   client: ClientResponseModel;
@@ -12,13 +13,13 @@ interface ClientTableItemProps {
 }
 
 // 영어 타입을 한국어로 매핑하는 함수
-// const getClientTypeText = (clientType: ClientType): string => {
-//   const typeMap = {
-//     supplier: '발주처',
-//     customer: '수주처',
-//   };
-//   return typeMap[clientType] || clientType;
-// };
+const getClientTypeText = (clientType: ClientType): string => {
+  const typeMap = {
+    supplier: '발주처',
+    customer: '수주처',
+  };
+  return typeMap[clientType] || clientType;
+};
 
 const ClientTableItem = ({
   client,
@@ -26,9 +27,9 @@ const ClientTableItem = ({
   isChecked,
   onToggleCheck,
 }: ClientTableItemProps) => {
-  // const clientType = client.client_type;
-  // const clientTypeText = getClientTypeText(clientType);
-  // const clientTypeColor = ClientTypeColorMap[clientType];
+  const clientType = client.client_type;
+  const clientTypeText = getClientTypeText(clientType);
+  const clientTypeColor = ClientTypeColorMap[clientType];
 
   return (
     <div
@@ -41,13 +42,13 @@ const ClientTableItem = ({
       />
       <div className="px-3 flex-[0.8]">
         <div>
-          {/* <Chip
+          <Chip
             text={clientTypeText}
             bgColor={clientTypeColor.bgColor}
             textColor={clientTypeColor.textColor}
             radius="rounded-sm"
             cursor="cursor-pointer"
-          /> */}
+          />
         </div>
       </div>
       <p className="px-3 flex-[2]">{client.name}</p>

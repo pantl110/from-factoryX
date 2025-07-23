@@ -95,6 +95,5 @@ export { default as useDeleteMaterial } from './material/use-delete-material';
 
 // Material history related hooks
 export { default as useCreateMaterialHistory } from './material-history/use-create-material-history';
-export { default as useCreateBulkMaterialHistory } from './material-history/use-create-bulk-material-history';
 export { default as useCreateSingleMaterialHistory } from './material-history/use-create-single-material-history';
 export { default as useGetMaterialHistory } from './material-history/use-get-material-history';

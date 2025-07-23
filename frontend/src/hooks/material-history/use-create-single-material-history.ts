@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 
-interface SingleMaterialHistoryCreateIn {
+interface SingleMaterialHistoryCreateModel {
   material_id: number;
   client_id: number;
   type: 'purchase' | 'consumption'; // 구매 또는 소모
@@ -14,13 +14,16 @@ const useCreateSingleMaterialHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [createdHistory, setCreatedHistory] = useState<MaterialHistoryResponseModel | null>(null);
+  const [createdHistory, setCreatedHistory] =
+    useState<MaterialHistoryResponseModel | null>(null);
 
-  const createSingleMaterialHistory = async (data: SingleMaterialHistoryCreateIn) => {
+  const createSingleMaterialHistory = async (
+    data: SingleMaterialHistoryCreateModel
+  ) => {
     setIsLoading(true);
     setError(null);
     setIsSuccess(false);
-    
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/history/single`,
@@ -41,7 +44,8 @@ const useCreateSingleMaterialHistory = () => {
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        const errorMessage = errorData.detail || '원자재 이력 생성에 실패했습니다.';
+        const errorMessage =
+          errorData.detail || '원자재 이력 생성에 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }
@@ -63,4 +67,4 @@ const useCreateSingleMaterialHistory = () => {
   };
 };
 
-export default useCreateSingleMaterialHistory; 
+export default useCreateSingleMaterialHistory;
