@@ -275,3 +275,40 @@ class TestUser(TestCase):
         self.assertIsNotNone(member.invited_at)
         # invited_at 값이 inviting에 있던 값과 같은지 확인 (초 단위까지 비교)
         self.assertEqual(member.invited_at.replace(microsecond=0, tzinfo=timezone.utc), datetime.fromisoformat(invited_at).replace(microsecond=0, tzinfo=timezone.utc))
+
+    async def test_signup_by_invite_with_invited_by_field(self):
+        """
+        초대받은 이메일로 회원가입 시 invited_by 필드가 올바르게 설정되는지 테스트
+        """
+        # owner가 공장 생성 및 초대
+        owner = await User.objects.acreate(email="owner4@example.com", password="pw")
+        factory = await Factory.objects.acreate(owner=owner, name="공장초대3")
+        factory.inviting = [{
+            "email": "invitee3@example.com",
+            "role": "member",
+            "invited_by": owner.id
+        }]
+        await sync_to_async(factory.save)()
+        await EmailVerification.objects.acreate(
+            email="invitee3@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        # 회원가입
+        data = {
+            "email": "invitee3@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+        }
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 200)
+        invitee = await User.objects.aget(email="invitee3@example.com")
+        # FactoryMember 등록 확인 및 invited_by 체크
+        member = await FactoryMember.objects.aget(factory=factory, user=invitee)
+        self.assertEqual(member.role, "member")
+        # invited_by 필드 확인 (async 컨텍스트에서 안전하게 접근)
+        invited_by_id = await sync_to_async(lambda: member.invited_by.id if member.invited_by else None)()
+        self.assertEqual(invited_by_id, owner.id)  # ID가 일치하는지 확인

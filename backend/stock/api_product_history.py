@@ -58,6 +58,7 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
     return histories
 
 
+# Product Tab
 @router.get(
     "/{history_id}",
     summary="[C] 제품 입출고 이력 상세 조회",

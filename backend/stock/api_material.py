@@ -11,6 +11,9 @@ from stock.schemas.inbound import AssignMaterialProductIn
 from stock.models import MaterialProduct
 from factory.utils import get_factory_by_id
 from stock.utils import get_product_by_id
+from ninja.pagination import paginate
+from typing import List
+from stock.schemas.outbound import MaterialSummaryOut
 
 
 router = Router(tags=["Material"], auth=jwt_auth)
@@ -86,23 +89,25 @@ async def assign_materialproduct(request, payload: AssignMaterialProductIn):
     "/factory/{factory_id}", 
     summary="[C] 공장별 원자재 목록 조회", 
     description="특정 공장의 모든 원자재 정보를 조회합니다.",
-    response={ 200: MaterialListOut, 404: dict, 500: dict }
+    response={ 200: List[MaterialSummaryOut], 404: dict, 500: dict }
     )
+@paginate
 async def get_materials_by_factory(request, factory_id: int, q: str = None, order: str = "desc"):
     """
     입력 필드:
     - factory_id: 공장 ID (경로 파라미터, 필수)
     - q: 검색어 (자재명 또는 자재코드, 선택)
     - order: 재고 기준 정렬 (asc: 오름차순, desc: 내림차순, 기본값 desc)
+    - page: 페이지 번호 (기본값: 1)
+    - limit: 페이지당 항목 수 (기본값: 20)
 
-    반환 필드 (MaterialListOut):
-    - materials: 원자재 정보 리스트
-        - id: 원자재 ID (int)
-        - name: 원자재명 (str)
-        - code: 원자재 코드 (str)
-        - spec: 규격 (str)
-        - unit: 단위 (str)
-        - current_stock: 현재 재고 (int)
+    반환 필드 (List[MaterialOut]):
+    - id: 원자재 ID (int)
+    - name: 원자재명 (str)
+    - code: 원자재 코드 (str)
+    - spec: 규격 (str)
+    - unit: 단위 (str)
+    - current_stock: 현재 재고 (int)
     """
     try:
         factory = await Factory.objects.aget(id=factory_id)
@@ -136,7 +141,7 @@ async def get_materials_by_factory(request, factory_id: int, q: str = None, orde
             "current_stock": material.current_stock
         })
     
-    return 200, MaterialListOut(materials=material_list)
+    return material_list
 
 
 # Material Tab

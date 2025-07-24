@@ -199,6 +199,19 @@ class TestProductAPI(TestCase):
         data = response.json()
         self.assertEqual(data["id"], self.product.id)
         self.assertEqual(data["name"], payload["name"])
+        # created_at, updated_at 필드는 응답에서 제외되었으므로 더 이상 검증하지 않음
+
+    async def test_update_product_required_field_blank(self):
+        """[U] 필수 입력값 누락 또는 공란일 때 422 에러 테스트"""
+        headers = await self.authenticate()
+        # 필수값 누락
+        payload = {"name": "", "code": "", "unit": "", "spec": "", "factory": "", "current_stock": "", "buffer_rate": ""}
+        response = await self.client.patch(
+            f"/{self.product.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 422)
+        data = response.json()
+        self.assertIn("detail", data)
 
     async def test_delete_product(self):
         """[D] 제품 삭제 테스트"""

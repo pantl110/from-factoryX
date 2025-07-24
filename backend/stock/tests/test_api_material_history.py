@@ -501,3 +501,51 @@ class TestMaterialHistoryAPI(TestCase):
         self.assertEqual(history["client_id"], self.client_obj.id)
         self.assertEqual(history["quantity"], 50)
         self.assertEqual(history["price"], 2000)
+
+    async def test_create_material_history_update_existing_client(self):
+        """기존 거래처 명으로 이력 생성 시 거래처 정보가 업데이트되는지 테스트"""
+        headers = await self.authenticate()
+        # 기존 거래처 생성
+        old_client = await sync_to_async(FactoryClient.objects.create)(
+            factory=self.factory,
+            name="업데이트 거래처",
+            business_registration_number="111-11-11111",
+            representative_name="이전대표",
+            business_type="도소매",
+            business_category="기타",
+            address="구주소"
+        )
+        # 기존 거래처와 같은 이름, 다른 정보로 요청
+        payload = {
+            "factory": self.factory.id,
+            "client_info": {
+                "name": "업데이트 거래처",
+                "business_registration_number": "222-22-22222",
+                "representative_name": "새대표",
+                "business_type": "제조업",
+                "business_category": "전자부품",
+                "address": "신주소"
+            },
+            "materials": [
+                {
+                    "name": "업데이트 원자재",
+                    "code": "UPD001",
+                    "spec": "규격U",
+                    "unit": "EA",
+                    "quantity": 10,
+                    "price": 5000
+                }
+            ]
+        }
+        response = await self.client.post("", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 200)
+        # 거래처 정보가 업데이트 되었는지 확인
+        await sync_to_async(old_client.refresh_from_db)()
+        self.assertEqual(old_client.business_registration_number, "222-22-22222")
+        self.assertEqual(old_client.representative_name, "새대표")
+        self.assertEqual(old_client.business_type, "제조업")
+        self.assertEqual(old_client.business_category, "전자부품")
+        self.assertEqual(old_client.address, "신주소")
+        # 생성된 이력의 client_id가 기존 거래처와 같은지 확인
+        data = response.json()
+        self.assertEqual(data["materials"][0]["client_id"], old_client.id)

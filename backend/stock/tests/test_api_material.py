@@ -66,16 +66,26 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
-        self.assertIn("materials", data)
-        self.assertEqual(len(data["materials"]), 1)
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        self.assertIn("totalCnt", data)
+        self.assertIn("pageCnt", data)
+        self.assertIn("curPage", data)
+        self.assertEqual(len(data["data"]), 1)
         
-        material_data = data["materials"][0]
+        material_data = data["data"][0]
         self.assertEqual(material_data["id"], self.material.id)
         self.assertEqual(material_data["name"], "테스트 원자재")
         self.assertEqual(material_data["code"], "TEST001")
         self.assertEqual(material_data["spec"], "테스트 규격")
         self.assertEqual(material_data["unit"], "EA")
         self.assertEqual(material_data["current_stock"], 100)
+        
+        # 페이지네이션 정보 확인
+        self.assertEqual(data["count"], 1)
+        self.assertEqual(data["totalCnt"], 1)
+        self.assertEqual(data["pageCnt"], 1)
+        self.assertEqual(data["curPage"], 1)
 
     async def test_get_materials_by_factory_not_found(self):
         """존재하지 않는 공장 조회 테스트"""
@@ -248,39 +258,37 @@ class TestMaterialAPI(TestCase):
     async def test_multiple_materials_in_factory(self):
         """한 공장에 여러 원자재가 있는 경우 테스트"""
         # 추가 원자재 생성
-        material2 = await sync_to_async(Material.objects.create)(
+        await sync_to_async(Material.objects.create)(
             factory=self.factory,
-            name="테스트 원자재 2",
-            code="TEST002",
-            spec="테스트 규격 2",
+            name="추가 원자재1",
+            code="ADD001",
+            spec="추가 규격1",
             unit="KG",
-            current_stock=200,
-            standard_stock=100
+            current_stock=50,
+            standard_stock=25
         )
-        
-        material3 = await sync_to_async(Material.objects.create)(
+        await sync_to_async(Material.objects.create)(
             factory=self.factory,
-            name="테스트 원자재 3",
-            code="TEST003",
-            spec="테스트 규격 3",
-            unit="M",
-            current_stock=300,
-            standard_stock=150
+            name="추가 원자재2",
+            code="ADD002",
+            spec="추가 규격2",
+            unit="EA",
+            current_stock=75,
+            standard_stock=40
         )
         
         headers = await self.authenticate()
-        
         response = await self.client.get(f"/factory/{self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
-        self.assertEqual(len(data["materials"]), 3)
+        self.assertEqual(len(data["data"]), 3)  # 기존 1개 + 새로 생성한 2개
         
-        # 생성 시간 역순으로 정렬되어 있는지 확인 (최신이 먼저)
-        material_ids = [m["id"] for m in data["materials"]]
-        self.assertEqual(material_ids[0], material3.id)  # 가장 최근 생성
-        self.assertEqual(material_ids[1], material2.id)
-        self.assertEqual(material_ids[2], self.material.id)  # 가장 오래된 것
+        # 모든 원자재가 포함되어 있는지 확인
+        material_names = [m["name"] for m in data["data"]]
+        self.assertIn("테스트 원자재", material_names)
+        self.assertIn("추가 원자재1", material_names)
+        self.assertIn("추가 원자재2", material_names)
 
     async def test_material_update_with_same_code(self):
         """같은 자재코드로 수정하는 경우 테스트 (성공해야 함)"""
@@ -433,8 +441,8 @@ class TestMaterialAPI(TestCase):
         response = await self.client.get(f"/factory/{self.factory.id}?q=알루미늄", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["materials"]), 1)
-        self.assertEqual(data["materials"][0]["name"], "알루미늄 판재")
+        self.assertEqual(len(data["data"]), 1)
+        self.assertEqual(data["data"][0]["name"], "알루미늄 판재")
 
     async def test_get_materials_by_factory_search_code(self):
         """자재코드(q)로 검색 테스트"""
@@ -452,8 +460,8 @@ class TestMaterialAPI(TestCase):
         response = await self.client.get(f"/factory/{self.factory.id}?q=COPPER", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["materials"]), 1)
-        self.assertEqual(data["materials"][0]["code"], "COPPER123")
+        self.assertEqual(len(data["data"]), 1)
+        self.assertEqual(data["data"][0]["code"], "COPPER123")
 
     async def test_get_materials_by_factory_search_no_result(self):
         """검색 결과가 없는 경우 테스트"""
@@ -461,7 +469,7 @@ class TestMaterialAPI(TestCase):
         response = await self.client.get(f"/factory/{self.factory.id}?q=없는자재", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["materials"]), 0)
+        self.assertEqual(len(data["data"]), 0)
 
     async def test_get_materials_by_factory_order_asc(self):
         """재고 오름차순 정렬 테스트(order=asc)"""
@@ -496,7 +504,7 @@ class TestMaterialAPI(TestCase):
         response = await self.client.get(f"/factory/{self.factory.id}?order=asc", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        stocks = [m["current_stock"] for m in data["materials"]]
+        stocks = [m["current_stock"] for m in data["data"]]
         self.assertEqual(stocks, sorted(stocks))
 
     async def test_get_materials_by_factory_order_desc(self):
@@ -532,11 +540,11 @@ class TestMaterialAPI(TestCase):
         response = await self.client.get(f"/factory/{self.factory.id}?order=desc", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        stocks = [m["current_stock"] for m in data["materials"]]
+        stocks = [m["current_stock"] for m in data["data"]]
         self.assertEqual(stocks, sorted(stocks, reverse=True))
 
     async def test_get_materials_by_factory_order_default(self):
-        """order 파라미터 미지정 시 내림차순 정렬(기본값) 테스트"""
+        """기본 정렬 테스트(order 파라미터 없음)"""
         await sync_to_async(Material.objects.create)(
             factory=self.factory,
             name="자재A",
@@ -568,5 +576,60 @@ class TestMaterialAPI(TestCase):
         response = await self.client.get(f"/factory/{self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        stocks = [m["current_stock"] for m in data["materials"]]
-        self.assertEqual(stocks, sorted(stocks, reverse=True))
+        stocks = [m["current_stock"] for m in data["data"]]
+        self.assertEqual(stocks, sorted(stocks, reverse=True))  # 기본값은 desc
+
+    async def test_get_materials_by_factory_pagination(self):
+        """페이지네이션 테스트"""
+        # 여러 원자재 생성 (페이지네이션 테스트용)
+        for i in range(25):  # 25개 생성 (기본 limit 20보다 많게)
+            await sync_to_async(Material.objects.create)(
+                factory=self.factory,
+                name=f"페이지네이션 테스트 원자재 {i+1}",
+                code=f"PAGETEST{i+1:03d}",
+                spec=f"페이지테스트규격{i+1}",
+                unit="EA",
+                current_stock=100 + i,
+                standard_stock=50
+            )
+        
+        headers = await self.authenticate()
+        
+        # 첫 번째 페이지 테스트
+        response = await self.client.get(f"/factory/{self.factory.id}?page=1&limit=10", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        self.assertIn("totalCnt", data)
+        self.assertIn("pageCnt", data)
+        self.assertIn("curPage", data)
+        self.assertEqual(len(data["data"]), 10)  # limit=10
+        
+        self.assertEqual(data["count"], 10)
+        self.assertEqual(data["totalCnt"], 26)  # 기존 1개 + 새로 생성한 25개
+        self.assertEqual(data["pageCnt"], 3)  # 26개를 10개씩 = 3페이지
+        self.assertEqual(data["curPage"], 1)
+        
+        # 두 번째 페이지 테스트
+        response = await self.client.get(f"/factory/{self.factory.id}?page=2&limit=10", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertEqual(len(data["data"]), 10)
+        self.assertEqual(data["count"], 10)
+        self.assertEqual(data["totalCnt"], 26)
+        self.assertEqual(data["pageCnt"], 3)
+        self.assertEqual(data["curPage"], 2)
+        
+        # 마지막 페이지 테스트
+        response = await self.client.get(f"/factory/{self.factory.id}?page=3&limit=10", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertEqual(len(data["data"]), 6)  # 마지막 페이지는 6개
+        self.assertEqual(data["count"], 6)
+        self.assertEqual(data["totalCnt"], 26)
+        self.assertEqual(data["pageCnt"], 3)
+        self.assertEqual(data["curPage"], 3)
