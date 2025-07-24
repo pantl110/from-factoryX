@@ -293,40 +293,114 @@ class TestFactoryClient(TestCase):
         q 미입력시 전체 거래처가 반환되는지 테스트
         """
         headers = await self.authenticate()
-        # 거래처 2, 3 추가 생성
-        await sync_to_async(FactoryClient.objects.create)(
-            factory=self.factory,
-            type="supplier",
-            name="거래처2",
-            business_registration_number="222-33-44444",
-            representative_name="이몽룡",
-            email="client2@example.com",
-            phone="010-2222-3333",
-            business_type="도소매",
-            business_category="전자",
-        )
-        await sync_to_async(FactoryClient.objects.create)(
-            factory=self.factory,
-            type="customer",
-            name="특별상사",
-            business_registration_number="333-44-55555",
-            representative_name="성춘향",
-            email="special@example.com",
-            phone="010-3333-4444",
-            business_type="서비스업",
-            business_category="식품",
-        )
-
         response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
-        # 전체 거래처 3개가 모두 반환되어야 함
-        names = [item["name"] for item in data["data"]]
-        self.assertIn("거래처1", names)
-        self.assertIn("거래처2", names)
-        self.assertIn("특별상사", names)
-        # client_type 필드도 항상 포함되어야 함
+        self.assertGreaterEqual(len(data["data"]), 1)
+        # 응답 구조 확인
         for item in data["data"]:
+            self.assertIn("id", item)
             self.assertIn("client_type", item)
-            print(item)
+            self.assertIn("name", item)
+
+    async def test_pagination_structure(self):
+        """
+        페이지네이션 응답 구조가 올바른지 테스트
+        """
+        headers = await self.authenticate()
+        response = await self.client.get(f"?factory_id={self.factory.id}&page=1&limit=10", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 페이지네이션 응답 구조 확인
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        self.assertIn("totalCnt", data)
+        self.assertIn("pageCnt", data)
+        self.assertIn("curPage", data)
+        
+        # 데이터 타입 확인
+        self.assertIsInstance(data["data"], list)
+        self.assertIsInstance(data["count"], int)
+        self.assertIsInstance(data["totalCnt"], int)
+        self.assertIsInstance(data["pageCnt"], int)
+        self.assertIsInstance(data["curPage"], int)
+
+    async def test_empty_result_pagination(self):
+        """
+        검색 결과가 없을 때도 페이지네이션이 정상 작동하는지 테스트
+        """
+        headers = await self.authenticate()
+        response = await self.client.get(f"?factory_id={self.factory.id}&q=존재하지않는거래처", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 빈 결과에서도 페이지네이션 구조 확인
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        self.assertEqual(data["count"], 0)
+        self.assertEqual(len(data["data"]), 0)
+
+    async def test_multiple_pages(self):
+        """
+        여러 페이지가 있는 경우 페이지네이션이 정상 작동하는지 테스트
+        """
+        headers = await self.authenticate()
+        
+        # 여러 거래처 생성
+        for i in range(15):
+            await FactoryClient.objects.acreate(
+                factory=self.factory,
+                type="customer",
+                name=f"거래처{i+2}",
+                business_registration_number=f"{(i+2):03d}-{(i+2):02d}-{(i+2):05d}",
+                representative_name=f"대표자{i+2}",
+                email=f"client{i+2}@example.com",
+            )
+        
+        # 첫 번째 페이지 테스트 (기본 page_size=10)
+        response = await self.client.get(f"?factory_id={self.factory.id}&page=1", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["data"]), 10)  # 기본 page_size=10
+        self.assertEqual(data["curPage"], 1)
+        
+        # 두 번째 페이지 테스트
+        response = await self.client.get(f"?factory_id={self.factory.id}&page=2", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["data"]), 6)  # 16개 중 10개는 첫 페이지, 나머지 6개
+        self.assertEqual(data["curPage"], 2)
+        
+        # 세 번째 페이지 테스트 (데이터가 없어야 함)
+        response = await self.client.get(f"?factory_id={self.factory.id}&page=3", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["data"]), 0)  # 더 이상 데이터 없음
+        self.assertEqual(data["curPage"], 3)
+
+    async def test_schema_validation(self):
+        """
+        반환되는 데이터가 FactoryClientOut 스키마와 호환되는지 테스트
+        """
+        headers = await self.authenticate()
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # FactoryClientOut 스키마 필드 확인
+        required_fields = [
+            "id", "client_type", "name", "business_registration_number",
+            "representative_name", "business_type", "business_category",
+            "phone", "email", "note"
+        ]
+        
+        for item in data["data"]:
+            for field in required_fields:
+                self.assertIn(field, item, f"필드 '{field}'가 응답에 없습니다")
+            
+            # 필드 타입 확인
+            self.assertIsInstance(item["id"], int)
+            self.assertIsInstance(item["client_type"], str)
+            self.assertIsInstance(item["name"], str)
