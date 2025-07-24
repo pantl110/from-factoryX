@@ -989,3 +989,31 @@ def test_clone_project_without_auth(self):
         self.assertIn(project4.id, ids)
         self.assertNotIn(project3.id, ids)
         self.assertTrue(is_abandoned_map.get(project4.id, True))
+
+    def test_create_projects_by_status_test_endpoint(self):
+        """
+        [TEST] 상태별 프로젝트 일괄 생성 API 테스트
+        """
+        url = "/api/project/test"
+        data = {"factory_id": self.factory.id}
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        resp_json = response.json()
+        self.assertIn("projects", resp_json)
+        projects = resp_json["projects"]
+        # ProjectStatus 개수만큼 생성됐는지 확인
+        from project.models import Project
+        status_choices = [s[0] for s in Project.ProjectStatus.choices]
+        self.assertEqual(len(projects), len(status_choices))
+        for p in projects:
+            self.assertIn("id", p)
+            self.assertIn("status", p)
+            self.assertIn("client_name", p)
+            # DB에 실제로 존재하는지 확인
+            proj = Project.objects.get(id=p["id"])
+            self.assertEqual(proj.status, p["status"])
+            # Quotation, FactoryClient 연결 확인
+            from document.models import Quotation
+            q = Quotation.objects.get(project=proj)
+            self.assertEqual(q.client.name, p["client_name"])
+            self.assertEqual(q.factory, self.factory)
