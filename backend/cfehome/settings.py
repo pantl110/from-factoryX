@@ -10,9 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-from pathlib import Path
 from decouple import config
 from pathlib import Path
+from zeep import Client
 import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "stock",
     "tax",
     "location",
+    "barobill",
 ]
 
 MIDDLEWARE = [
@@ -259,3 +260,7 @@ AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default=None)
 AWS_REGION = config("AWS_REGION", default="ap-northeast-2")
 AWS_CLOUDFRONT_URL = config("AWS_CLOUDFRONT_URL", default=None)
 AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default=None)
+
+# Barobill settings
+BAROBILL_CERT_KEY = config("BAROBILL_CERT_KEY", default=None)
+BAROBILL_CLIENT = Client("https://testws.baroservice.com/TI.asmx?WSDL")  # 테스트서버
