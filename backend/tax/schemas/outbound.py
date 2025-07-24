@@ -55,3 +55,24 @@ class TaxInvoiceByMaterialOut(Schema):
     tax_invoice_type: str
     transaction_type: str
     materials: List[TaxInvoiceMaterialInfoOut]
+
+
+class CashReceiptMaterialInfoOut(Schema):
+    material_name: str
+    unit: str
+    quantity: int
+    price: int
+    transaction_amount: int
+    tax_amount: int
+    total_amount: int
+
+class CashReceiptByMaterialOut(Schema):
+    transaction_date: date
+    approval_number: str
+    transaction_classification: str
+    transaction_purpose: str
+    client_name: str
+    business_registration_number: str
+    representative_name: Optional[str] = None
+    address: Optional[str] = None
+    materials: List[CashReceiptMaterialInfoOut]

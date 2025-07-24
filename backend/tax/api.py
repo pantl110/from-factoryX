@@ -2,7 +2,7 @@ from ninja import Router
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
-from tax.schemas.outbound import NotLinkedTaxInvoiceOut, AllTaxInvoiceOut, AllCashReceiptOut, TaxInvoiceByMaterialOut, TaxInvoiceMaterialInfoOut
+from tax.schemas.outbound import NotLinkedTaxInvoiceOut, AllTaxInvoiceOut, AllCashReceiptOut, TaxInvoiceByMaterialOut, CashReceiptByMaterialOut, CashReceiptMaterialInfoOut
 from tax.schemas.inbound import LinkTaxInvoiceIn
 from api.security import jwt_auth
 from typing import List
@@ -392,28 +392,29 @@ async def list_cash_receipts(
         raise HttpError(500, f"현금영수증 검색 중 오류: {e}")
 
 
+# Material Tab
 @router.get(
-    "/invoice-by-material",
-    summary="[C] 자재별 세금계산서 및 구매정보 조회",
-    description="material_id로 세금계산서(구매) 및 자재정보를 조회",
-    response={200: list[TaxInvoiceByMaterialOut], 404: dict, 500: dict}
+    "/invoice-by-material-history",
+    summary="[C] 자재 이력별 세금계산서 및 구매정보 조회",
+    description="material_history_id로 세금계산서(구매) 및 자재정보를 조회",
+    response={200: TaxInvoiceByMaterialOut, 404: dict, 500: dict}
 )
-async def get_tax_invoice_by_material(request, material_id: int):
+async def get_tax_invoice_by_material_history(request, material_history_id: int):
     """
     입력 필드(쿼리 파라미터):
-    - material_id: 자재 ID (필수)
+    - material_history_id: 원자재 이력 ID (필수)
 
-    반환 필드(세금계산서별 dict):
+    반환 필드(dict):
     - client_name: 업체명 (str)
     - business_registration_number: 사업자등록번호 (str)
-    - representative_name: 대표자명 (str)
-    - business_type: 업태 (str)
-    - business_category: 종목 (str)
-    - address: 사업장 주소 (str)
+    - representative_name: 대표자명 (str/null)
+    - business_type: 업태 (str/null)
+    - business_category: 종목 (str/null)
+    - address: 사업장 주소 (str/null)
     - transaction_date: 작성일자 (date)
     - tax_invoice_type: 문서상태(매입/매출) (str)
     - transaction_type: 구분 (str)
-    - materials: 구매 자재 정보 리스트(List[dict])
+    - materials: 구매 자재 정보 리스트(List[dict], 1건)
       - material_name: 자재명 (str)
       - spec: 규격 (str)
       - quantity: 수량 (int)
@@ -423,31 +424,27 @@ async def get_tax_invoice_by_material(request, material_id: int):
       - tax_amount: 세액 (int)
     """
     from stock.models import MaterialHistory
-    from tax.models import NationalTaxService
     try:
-        def get_invoice_data(material_id):
-            invoice_map = {}
-            histories = MaterialHistory.objects.filter(
-                material_id=material_id,
-                purchase_tax_invoice__isnull=False
-            ).select_related('purchase_tax_invoice', 'material', 'client')
-            for h in histories:
-                invoice = h.purchase_tax_invoice
-                if invoice.id not in invoice_map:
-                    client = invoice.client
-                    invoice_map[invoice.id] = {
-                        "client_name": client.name,
-                        "business_registration_number": client.business_registration_number,
-                        "representative_name": client.representative_name,
-                        "business_type": client.business_type,
-                        "business_category": client.business_category,
-                        "address": client.address,
-                        "transaction_date": invoice.transaction_date,
-                        "tax_invoice_type": "매입" if invoice.tax_invoice_type == "purchase" else "매출",
-                        "transaction_type": "영수" if invoice.transaction_type == "receipt" else "청구",
-                        "materials": []
-                    }
-                invoice_map[invoice.id]["materials"].append(dict(
+        def get_invoice_data(material_history_id):
+            try:
+                h = MaterialHistory.objects.select_related('purchase_tax_invoice', 'material', 'client').get(id=material_history_id)
+            except MaterialHistory.DoesNotExist:
+                return None
+            invoice = h.purchase_tax_invoice
+            if not invoice:
+                return None
+            client = invoice.client
+            return dict(
+                client_name=client.name,
+                business_registration_number=client.business_registration_number,
+                representative_name=client.representative_name,
+                business_type=client.business_type,
+                business_category=client.business_category,
+                address=client.address,
+                transaction_date=invoice.transaction_date,
+                tax_invoice_type="매입" if invoice.tax_invoice_type == "purchase" else "매출",
+                transaction_type="영수" if invoice.transaction_type == "receipt" else "청구",
+                materials=[dict(
                     material_name=h.material.name,
                     spec=h.material.spec,
                     quantity=h.quantity,
@@ -455,9 +452,78 @@ async def get_tax_invoice_by_material(request, material_id: int):
                     price=h.price or 0,
                     transaction_amount=invoice.transaction_amount,
                     tax_amount=invoice.tax_amount
-                ))
-            return list(invoice_map.values())
-        raw_data = await sync_to_async(get_invoice_data)(material_id)
-        return [TaxInvoiceByMaterialOut(**v) for v in raw_data]
+                )]
+            )
+        raw_data = await sync_to_async(get_invoice_data)(material_history_id)
+        if not raw_data:
+            raise HttpError(404, "해당 이력에 연결된 세금계산서가 없습니다.")
+        return TaxInvoiceByMaterialOut(**raw_data)
     except Exception as e:
-        raise HttpError(500, f"자재별 세금계산서 조회 중 오류: {e}")
+        raise HttpError(500, f"자재 이력별 세금계산서 조회 중 오류: {e}")
+
+@router.get(
+    "/receipt-by-material-history",
+    summary="[C] 자재 이력별 현금영수증 및 구매정보 조회",
+    description="material_history_id로 현금영수증 및 자재정보를 조회",
+    response={200: CashReceiptByMaterialOut, 404: dict, 500: dict}
+)
+async def get_cash_receipt_by_material_history(request, material_history_id: int):
+    """
+    입력 필드(쿼리 파라미터):
+    - material_history_id: 원자재 이력 ID (필수)
+
+    반환 필드(dict):
+    - transaction_date: 거래일자 (date)
+    - approval_number: 승인번호 (str)
+    - transaction_classification: 거래구분 (str)
+    - transaction_purpose: 거래용도 (str)
+    - client_name: 업체명 (str)
+    - business_registration_number: 사업자등록번호 (str)
+    - representative_name: 대표자명 (str/null)
+    - address: 사업장 주소 (str/null)
+    - materials: 구매 자재 정보 리스트(List[dict], 1건)
+      - material_name: 자재명 (str)
+      - unit: 단위 (str)
+      - quantity: 수량 (int)
+      - price: 단가 (int)
+      - transaction_amount: 공급가액 (int)
+      - tax_amount: 세액 (int)
+      - total_amount: 합계금액 (int)
+    """
+    from stock.models import MaterialHistory
+    try:
+        def get_receipt_data(material_history_id):
+            try:
+                h = MaterialHistory.objects.select_related('cash_receipt', 'material', 'client').get(id=material_history_id)
+            except MaterialHistory.DoesNotExist:
+                return None
+            receipt = h.cash_receipt
+            if not receipt:
+                return None
+            client = receipt.client
+            total_amount = receipt.transaction_amount + receipt.tax_amount
+            return dict(
+                transaction_date=receipt.transaction_date,
+                approval_number=receipt.approval_number,
+                transaction_classification=receipt.transaction_classification,
+                transaction_purpose=receipt.transaction_purpose,
+                client_name=client.name,
+                business_registration_number=client.business_registration_number,
+                representative_name=client.representative_name,
+                address=client.address,
+                materials=[dict(
+                    material_name=h.material.name,
+                    unit=h.material.unit,
+                    quantity=h.quantity,
+                    price=h.price or 0,
+                    transaction_amount=receipt.transaction_amount,
+                    tax_amount=receipt.tax_amount,
+                    total_amount=total_amount
+                )]
+            )
+        raw_data = await sync_to_async(get_receipt_data)(material_history_id)
+        if not raw_data:
+            raise HttpError(404, "해당 이력에 연결된 현금영수증이 없습니다.")
+        return CashReceiptByMaterialOut(**raw_data)
+    except Exception as e:
+        raise HttpError(500, f"자재 이력별 현금영수증 조회 중 오류: {e}")
