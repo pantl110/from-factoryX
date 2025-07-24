@@ -95,18 +95,18 @@ async def list_factory_clients(
 
     clients = await get_factory_clients()
     result = [
-        {
-            "id": c.id,
-            "client_type": c.type,
-            "name": c.name,
-            "business_registration_number": c.business_registration_number,
-            "representative_name": c.representative_name,
-            "business_type": c.business_type,
-            "business_category": c.business_category,
-            "phone": c.phone,
-            "email": c.email,
-            "note": c.note,
-        }
+        FactoryClientOut(
+            id=c.id,
+            client_type=c.type,
+            name=c.name,
+            business_registration_number=c.business_registration_number,
+            representative_name=c.representative_name,
+            business_type=c.business_type,
+            business_category=c.business_category,
+            phone=c.phone,
+            email=c.email,
+            note=c.note,
+        )
         for c in clients
     ]
     return result
