@@ -127,3 +127,13 @@ class ProductListOut(Schema):
     unit: str
     spec: str
     current_stock: int
+
+
+class MaterialHistoryDetailResponseOut(Schema):
+    id: int
+    date: str
+    type: str
+    quantity: int
+    total_stock: int
+    purchase_tax_invoice_id: Optional[int]
+    cash_receipt_id: Optional[int]
