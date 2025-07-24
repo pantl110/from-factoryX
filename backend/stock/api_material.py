@@ -137,7 +137,8 @@ async def get_materials_by_factory(request, factory_id: int, q: str = None, orde
             "code": material.code,
             "spec": material.spec,
             "unit": material.unit,
-            "current_stock": material.current_stock
+            "current_stock": material.current_stock,
+            "standard_stock": material.standard_stock
         })
     
     return material_list
