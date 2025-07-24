@@ -17,9 +17,14 @@ from project.schemas.inbound import (
 )
 from project.models import Project, ProjectPlan
 from document.models import Quotation
+from factory.models import Factory
 from datetime import date, timedelta
 from typing import List, Optional
 from django.db.models import Exists, OuterRef
+
+import random
+import string
+from factory.models import FactoryClient
 
 router = Router(tags=["Project"], auth=jwt_auth)
 
@@ -414,3 +419,39 @@ async def clone_project(request, payload: ProjectCloneIn):
         raise
     except Exception as e:
         raise HttpError(500, "프로젝트 복제 중 내부 서버 오류가 발생했습니다.")
+
+
+@router.post(
+    "/test",
+    summary="[TEST] 상태별 프로젝트 일괄 생성",
+    description="테스트용: factory_id로 모든 상태별 프로젝트+견적서를 생성합니다.",
+    response={200: dict},
+    auth=None,  # 인증 없이 테스트용으로 사용
+)
+async def test_create_projects_by_status(request, factory_id: int):
+    """
+    입력 필드:
+    - factory_id: 공장 ID (int)
+    반환 필드:
+    - projects: [{id, status, client_name} ...]
+    """
+    try:
+        factory = await Factory.objects.aget(id=factory_id)
+    except Factory.DoesNotExist:
+        raise HttpError(404, "공장 정보를 찾을 수 없습니다.")
+
+    created = []
+    for status, _ in Project.ProjectStatus.choices:
+        # 랜덤 거래처명 생성
+        rand_name = "테스트거래처_" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        client = await FactoryClient.objects.acreate(
+            factory=factory,
+            name=rand_name,
+            business_registration_number=''.join(random.choices(string.digits, k=10)),
+            representative_name="홍길동",
+            type=FactoryClient.ClientType.customer
+        )
+        project = await Project.objects.acreate(status=status)
+        quotation = await Quotation.objects.acreate(project=project, factory=factory, client=client)
+        created.append({"id": project.id, "status": status, "client_name": client.name})
+    return {"projects": created}
