@@ -14,7 +14,7 @@ router = Router(tags=["MaterialHistory"], auth=jwt_auth)
 @router.post(
     "", 
     summary="[C] 원자재 이력 생성 (구매)", 
-    description="거래처를 생성하고 여러 원자재 구매 이력을 생성합니다. 원자재가 없으면 새로 생성하고, 있으면 재고를 업데이트합니다.",
+    description="거래처 명으로 기존 거래처가 있으면 정보를 업데이트 후 사용하고, 없으면 새로 생성합니다. 여러 원자재 구매 이력을 생성하며, 원자재가 없으면 새로 생성하고, 있으면 재고를 업데이트합니다.",
     response={ 200: MaterialHistoryListOut, 400: dict, 404: dict, 500: dict }
     )
 async def create_material_history(request, payload: MaterialHistoryCreateIn):
@@ -23,15 +23,31 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     except Factory.DoesNotExist:
         raise HttpError(404, "공장 정보를 찾을 수 없습니다.")
     
-    client = await FactoryClient.objects.acreate(
-        factory=factory,
-        name=payload.client_info.name,
-        business_registration_number=payload.client_info.business_registration_number,
-        representative_name=payload.client_info.representative_name,
-        business_type=payload.client_info.business_type,
-        business_category=payload.client_info.business_category,
-        address=payload.client_info.address
-    )
+    # 거래처 명으로 기존 거래처 조회 및 업데이트
+    try:
+        client = await FactoryClient.objects.aget(
+            factory=factory,
+            name=payload.client_info.name
+        )
+        # 입력값과 기존 거래처 정보가 다르면 업데이트
+        updated = False
+        for field in ["business_registration_number", "representative_name", "business_type", "business_category", "address"]:
+            new_value = getattr(payload.client_info, field)
+            if getattr(client, field) != new_value:
+                setattr(client, field, new_value)
+                updated = True
+        if updated:
+            await sync_to_async(client.save)()
+    except FactoryClient.DoesNotExist:
+        client = await FactoryClient.objects.acreate(
+            factory=factory,
+            name=payload.client_info.name,
+            business_registration_number=payload.client_info.business_registration_number,
+            representative_name=payload.client_info.representative_name,
+            business_type=payload.client_info.business_type,
+            business_category=payload.client_info.business_category,
+            address=payload.client_info.address
+        )
     
     material_histories = []
     

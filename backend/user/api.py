@@ -231,13 +231,18 @@ async def signup(request, data: UserSignupIn):
                         matched = item
                         break
                 if matched:
+                    # invited_by User 인스턴스 찾기
+                    invited_by_user = None
+                    if matched.get("invited_by"):
+                        invited_by_user = await User.objects.aget(id=matched["invited_by"])
+                    
                     # FactoryMember 생성
                     await FactoryMember.objects.acreate(
                         factory=factory,
                         user=user,
                         role=matched["role"],
                         status=FactoryMember.MemberStatus.active,
-                        invited_by_id=matched["invited_by"],
+                        invited_by=invited_by_user,
                         invited_at=matched.get("invited_at"),
                     )
                     # inviting에서 해당 항목 삭제

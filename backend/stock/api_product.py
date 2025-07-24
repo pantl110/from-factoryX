@@ -15,6 +15,7 @@ from ninja.errors import HttpError
 from stock.schemas.inbound import SingleProductCreateIn
 from stock.schemas.outbound import SingleProductCreateOut
 from stock.schemas.outbound import ProductListOut
+from django.http import JsonResponse
 
 
 router = Router(tags=["Product"])
@@ -260,6 +261,7 @@ async def get_product(request, product_id: int):
     return response_data
 
 
+# Product Tab
 @router.patch(
     "/{product_id}",
     summary="[C] 제품 수정",
@@ -271,8 +273,19 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
     user = request.auth
     product = await get_product_by_id(product_id, user)
     update_data = payload.dict(exclude_unset=True)
-    if "current_stock" in update_data and update_data["current_stock"] is None:
-        update_data["current_stock"] = 0
+
+    # null, blank가가 허용되는 필드 목록
+    nullable_fields = ["average_production_time", "location", "note"]
+    blank_fields = [
+        field for field, value in update_data.items()
+        if (
+            (field not in nullable_fields and value in [None, ""]) or
+            (field in nullable_fields and value is None)
+        )
+    ]
+    if blank_fields:
+        return JsonResponse({"detail": f"공란 또는 null 불가: {', '.join(blank_fields)}"}, status=400)
+
     for key, value in update_data.items():
         setattr(product, key, value)
     await product.asave()
@@ -288,9 +301,7 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
         "current_stock": product.current_stock,
         "average_production_time": product.average_production_time,
         "buffer_rate": float(product.buffer_rate),
-        "note": product.note,
-        "created_at": product.created_at.isoformat(),
-        "updated_at": product.updated_at.isoformat(),
+        "note": product.note
     }
     return response_data
 

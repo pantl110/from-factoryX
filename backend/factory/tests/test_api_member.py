@@ -104,7 +104,7 @@ class TestFactoryMember(TestCase):
         self.assertIsNone(invited["user"])
         self.assertEqual(invited["status"], "invited")
         self.assertEqual(invited["invited_at"].replace("+00:00", "Z")[:19], invited_at.replace("+00:00", "Z")[:19])
-        self.assertLess(invited["id"], 0)  # 음수 id
+        self.assertEqual(invited["id"], 0)  # 초대 대기자는 0부터 시작
         self.assertEqual(invited["name"], "")
 
     async def test_update_factory_member(self):
@@ -112,13 +112,23 @@ class TestFactoryMember(TestCase):
         멤버 정보 수정 테스트
         """
         headers = await self.authenticate()
+        
+        # 먼저 멤버 목록을 조회하여 올바른 ID를 확인
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 기존 멤버의 ID 찾기 (1000+)
+        existing_member = next(item for item in data["data"] if item["user"] == self.user.id)
+        member_api_id = existing_member["id"]
+        
         payload = {
             "role": "member"
         }
-        response = await self.client.patch(f"/{self.member.id}", headers=headers, json=payload)
+        response = await self.client.patch(f"/{member_api_id}?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["id"], self.member.id)
+        self.assertEqual(data["id"], member_api_id)
         self.assertEqual(data["role"], "member")
         self.assertEqual(data["factory"], self.factory.id)
         self.assertEqual(data["user"], self.user.id)
@@ -137,12 +147,12 @@ class TestFactoryMember(TestCase):
             "invited_at": datetime.now(timezone.utc).isoformat()
         }]
         await sync_to_async(self.factory.save)()
-        # inviting[0]의 id는 -1
+        # inviting[0]의 id는 0
         payload = {"role": "manager"}
-        response = await self.client.patch(f"/-1?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.patch(f"/0?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["id"], -1)
+        self.assertEqual(data["id"], 0)
         self.assertEqual(data["factory"], self.factory.id)
         self.assertIsNone(data["user"])
         self.assertEqual(data["role"], "manager")
@@ -156,11 +166,66 @@ class TestFactoryMember(TestCase):
         멤버 삭제 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.delete(f"/{self.member.id}", headers=headers)
+        
+        # 먼저 멤버 목록을 조회하여 올바른 ID를 확인
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 기존 멤버의 ID 찾기 (1000+)
+        existing_member = next(item for item in data["data"] if item["user"] == self.user.id)
+        member_api_id = existing_member["id"]
+        
+        response = await self.client.delete(f"/{member_api_id}?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("deleted_member_id", data)
-        self.assertEqual(data["deleted_member_id"], self.member.id)
+        self.assertEqual(data["deleted_member_id"], member_api_id)
+
+    async def test_multiple_inviting_members(self):
+        """
+        여러 초대 대기자가 있는 경우 ID 할당 테스트
+        """
+        headers = await self.authenticate()
+        # 여러 미가입 초대자 추가
+        self.factory.inviting = [
+            {
+                "email": "invitee5@example.com",
+                "role": "member",
+                "invited_by": self.user.id,
+                "invited_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "email": "invitee6@example.com",
+                "role": "viewer",
+                "invited_by": self.user.id,
+                "invited_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "email": "invitee7@example.com",
+                "role": "manager",
+                "invited_by": self.user.id,
+                "invited_at": datetime.now(timezone.utc).isoformat()
+            }
+        ]
+        await sync_to_async(self.factory.save)()
+        
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 초대 대기자들의 ID가 0, 1, 2로 할당되었는지 확인
+        inviting_members = [item for item in data["data"] if item["user"] is None]
+        self.assertEqual(len(inviting_members), 3)
+        
+        inviting_ids = [item["id"] for item in inviting_members]
+        self.assertEqual(inviting_ids, [0, 1, 2])
+        
+        # 기존 멤버의 ID는 실제 DB ID (보통 1, 2, 3...)
+        existing_members = [item for item in data["data"] if item["user"] is not None]
+        for member in existing_members:
+            self.assertIsNotNone(member["user"])
+            self.assertNotEqual(member["name"], "")
 
     async def test_delete_inviting_member(self):
         """
@@ -175,12 +240,62 @@ class TestFactoryMember(TestCase):
             "invited_at": datetime.now(timezone.utc).isoformat()
         }]
         await sync_to_async(self.factory.save)()
-        # inviting[0]의 id는 -1
-        response = await self.client.delete(f"/-1?factory_id={self.factory.id}", headers=headers)
+        # inviting[0]의 id는 0
+        response = await self.client.delete(f"/0?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("deleted_member_id", data)
-        self.assertEqual(data["deleted_member_id"], -1)
+        self.assertEqual(data["deleted_member_id"], 0)
         # 실제 inviting 배열도 변경되었는지 확인
         await sync_to_async(self.factory.refresh_from_db)()
         self.assertEqual(len(self.factory.inviting), 0)
+
+    async def test_id_distinction_between_members_and_inviting(self):
+        """
+        기존 멤버와 초대 대기자의 ID 구분 테스트
+        """
+        headers = await self.authenticate()
+        
+        # 기존 멤버 추가
+        new_user = await sync_to_async(User.objects.create_user)(
+            username="newuser",
+            password="password1234!",
+            email="newuser@example.com",
+        )
+        new_member = await sync_to_async(FactoryMember.objects.create)(
+            factory=self.factory,
+            user=new_user,
+            role="member",
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
+        )
+        
+        # 초대 대기자 추가
+        self.factory.inviting = [
+            {
+                "email": "invitee8@example.com",
+                "role": "viewer",
+                "invited_by": self.user.id,
+                "invited_at": datetime.now(timezone.utc).isoformat()
+            }
+        ]
+        await sync_to_async(self.factory.save)()
+        
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 기존 멤버들의 ID는 실제 DB ID (보통 1, 2, 3...)
+        existing_members = [item for item in data["data"] if item["user"] is not None]
+        for member in existing_members:
+            self.assertIsNotNone(member["user"])
+            self.assertNotEqual(member["name"], "")
+        
+        # 초대 대기자들의 ID는 0~999
+        inviting_members = [item for item in data["data"] if item["user"] is None]
+        for member in inviting_members:
+            self.assertLess(member["id"], 1000)
+            self.assertGreaterEqual(member["id"], 0)
+            self.assertIsNone(member["user"])
+            self.assertEqual(member["name"], "")
+            self.assertEqual(member["status"], "invited")
