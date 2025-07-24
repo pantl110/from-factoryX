@@ -7,6 +7,7 @@ from stock.api_product import router as product_router
 from user.models import User
 from factory.models import Factory
 from stock.models import Product
+from stock.models import Material, MaterialProduct
 
 from user.models import EmailVerification
 from asgiref.sync import sync_to_async
@@ -220,3 +221,65 @@ class TestProductAPI(TestCase):
         self.assertEqual(response.status_code, 204)
         # Verify deletion
         self.assertFalse(await Product.objects.filter(id=self.product.id).aexists())
+
+    async def test_assign_products_to_material(self):
+        """[C] 원자재에 품목 연결(존재/신규) 테스트"""
+        headers = await self.authenticate()
+
+        # 원자재 생성
+        material = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="테스트 원자재",
+            code="MAT001",
+            spec="3T",
+            unit="EA"
+        )
+
+        # 기존 품목 생성
+        existing_product = await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            name="기존 품목",
+            code="PROD_EXIST",
+            spec="EXIST_SPEC",
+            unit="EA"
+        )
+
+        payload = {
+            "factory_id": self.factory.id,
+            "material_id": material.id,
+            "products": [
+                {
+                    "name": "기존 품목",  # 기존 품목(코드로 연결)
+                    "code": "PROD_EXIST",
+                    "spec": "EXIST_SPEC",
+                    "unit": "EA",
+                    "quantity": 5
+                },
+                {
+                    "name": "신규 품목",
+                    "code": "PROD_NEW",
+                    "spec": "NEW_SPEC",
+                    "unit": "EA",
+                    "quantity": 10
+                }
+            ]
+        }
+
+        response = await self.client.post("/assign", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 201)
+
+        # DB에서 연결 확인
+        # 기존 품목 연결 확인
+        exists = await sync_to_async(MaterialProduct.objects.filter(
+            product=existing_product, material=material, quantity=5
+        ).exists)()
+        self.assertTrue(exists)
+
+        # 신규 품목 생성 및 연결 확인
+        new_product = await sync_to_async(Product.objects.get)(
+            factory=self.factory, code="PROD_NEW"
+        )
+        new_exists = await sync_to_async(MaterialProduct.objects.filter(
+            product=new_product, material=material, quantity=10
+        ).exists)()
+        self.assertTrue(new_exists)

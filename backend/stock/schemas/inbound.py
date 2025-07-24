@@ -190,9 +190,21 @@ class MaterialAssignmentIn(Schema):
 
 
 # Onboarding Tab
-# assign_materialproduct
-class AssignMaterialProductIn(Schema):
+class AssignMaterialIn(Schema):
     """원자재 생성 및 품목 연결 입력 스키마"""
     factory_id: int = Field(..., description="공장 ID")
     product_id: int = Field(..., description="품목 ID")
     materials: List[MaterialAssignmentIn] = Field(..., description="원자재 목록")
+
+
+class ProductAssignmentIn(Schema):
+    name: str = Field(..., description="품목명")
+    code: str = Field(..., description="품목코드")
+    spec: str = Field(..., description="규격")
+    unit: str = Field(..., description="단위")
+    quantity: float = Field(..., description="제품 1개 생산에 필요한 원자재 수량")
+
+class AssignProductIn(Schema):
+    factory_id: int = Field(..., description="공장 ID")
+    material_id: int = Field(..., description="원자재 ID")
+    products: List[ProductAssignmentIn] = Field(..., description="연결할 품목 목록")

@@ -14,7 +14,7 @@ from django.db.models import Exists, OuterRef
 router = Router(tags=["Project"], auth=jwt_auth)
 
 
-# Quotation Tab
+# Project Tab
 # 생산 시작 전 임시로 프로젝트에 빈 견적서 생성
 @router.post(
     "",
@@ -23,6 +23,13 @@ router = Router(tags=["Project"], auth=jwt_auth)
     response={201: ProjectCreateOut, 500: dict}
 )
 async def create_project(request):
+    """
+    입력 필드:
+    - (body 없음)  # 별도의 입력값 없이 프로젝트와 견적서를 생성
+
+    반환 필드:
+    - id: 생성된 견적서(Quotation)의 ID (int)
+    """
     try:
         new_project = await Project.objects.acreate()
 
@@ -38,6 +45,7 @@ async def create_project(request):
         raise HttpError(500, "프로젝트 및 견적서 생성 중 내부 서버 오류가 발생했습니다.")
 
 
+# Project Tab
 @router.delete(
     "/{project_id}",
     summary="[C] 프로젝트 삭제",

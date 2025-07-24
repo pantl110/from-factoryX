@@ -151,49 +151,67 @@ async def create_single_material_history(request, payload: SingleMaterialHistory
     )
 
 
+# Material Tab
 @router.get(
-    "{material_id}",
+    "",
     summary="[C] 원자재 히스토리 조회", 
     description="특정 원자재의 히스토리를 조회합니다. 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회합니다.",
-    response={ 200: list[MaterialHistoryDetailOut], 404: dict, 500: dict }
+    response={ 200: list[dict], 404: dict, 500: dict }
     )
 @paginate
 async def get_material_history(request, material_id: int, months: int = None, days: int = None):
+    """
+    입력 필드:
+    - material_id: 원자재 ID (쿼리 파라미터, 필수)
+    - months: 최근 N개월 이력만 조회 (선택)
+    - days: 최근 N일 이력만 조회 (선택)
+
+    반환 필드 (dict 리스트):
+    - id: 이력 ID (int)
+    - type: 입고/출고 타입 (str)
+    - client_name: 거래처명 (str)
+    - quantity: 수량 (int)
+    - unit_price: 단가 (int)
+    - amount: 금액(수량x단가) (int)
+    - date: 거래일자 (str, ISO8601)
+    """
     try:
         material = await Material.objects.aget(id=material_id)
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
-    
+
+    factory_owner = await sync_to_async(lambda m: m.factory.owner)(material)
+    if factory_owner != request.auth:
+        raise HttpError(403, "권한이 없습니다.")
+
     from django.utils import timezone
     from datetime import timedelta
     
     @sync_to_async
     def get_histories():
         queryset = MaterialHistory.objects.filter(material=material)
-        
-        # 기간 설정이 있는 경우 필터링 적용
         if days is not None or months is not None:
             if days is not None:
                 start_date = timezone.now() - timedelta(days=days)
             elif months is not None:
                 start_date = timezone.now() - timedelta(days=months * 30)
             queryset = queryset.filter(created_at__gte=start_date)
-        
         return list(queryset.order_by('-created_at'))
     
     histories = await get_histories()
     
     history_list = []
     for history in histories:
-        history_list.append(MaterialHistoryDetailOut(
-            id=history.id,
-            type=history.type,
-            material_id=history.material_id,
-            client_id=history.client_id,
-            quantity=history.quantity,
-            price=history.price,
-            total_stock=history.total_stock
-        ))
+        client_name = await sync_to_async(lambda h: h.client.name if h.client else None)(history)
+        history_list.append({
+            "id": history.id,
+            "type": history.type,
+            "client_name": client_name,
+            "quantity": history.quantity,
+            "unit_price": history.price,
+            "amount": (history.quantity or 0) * (history.price or 0),
+            "date": history.created_at.isoformat() if history.created_at else None
+        })
     
     return history_list
 
