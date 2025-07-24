@@ -9,6 +9,9 @@ import useFactoryStore from '@/store/factory-store';
 interface MaterialFilterModel {
   page?: number;
   page_size?: number;
+  q?: string;
+  order?: 'asc' | 'desc';
+  limit?: number;
 }
 
 const useGetMaterial = () => {
@@ -35,6 +38,9 @@ const useGetMaterial = () => {
       if (filters.page) params.append('page', filters.page.toString());
       if (filters.page_size)
         params.append('page_size', filters.page_size.toString());
+      if (filters.q) params.append('q', filters.q);
+      if (filters.order) params.append('order', filters.order);
+      if (filters.limit) params.append('limit', filters.limit.toString());
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/factory/${factoryId}?${params}`,
         {
@@ -44,7 +50,7 @@ const useGetMaterial = () => {
       );
       if (response.ok) {
         const result: MaterialListResponseModel = await response.json();
-        setMaterialList(result.data || []);
+        setMaterialList(result.materials || []);
         setPagination(result);
         return { success: true, data: result };
       } else {

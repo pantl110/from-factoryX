@@ -4,12 +4,11 @@ import PermissionTableItem from './permission-table-item';
 import MiniBtn from '@/ui/mini-btn';
 import { useCheckAll } from '@/hooks/use-check-all';
 import Pagination from '@/components/pagination';
-import usePagination from '@/hooks/use-pagination';
 import { PermissionRoleType } from './types';
 import { useState, useEffect } from 'react';
 import InviteModal from './modals/invite-modal';
 import DeleteTeamMemberModal from './modals/delete-team-member-modal';
-import useGetInvitingMembers from '@/hooks/factory-member/use-get-inviting-members';
+import useGetMembers from '@/hooks/factory-member/use-get-members';
 import useDeleteMember from '@/hooks/factory-member/use-delete-member';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
 import useFactoryStore from '@/store/factory-store';
@@ -21,19 +20,21 @@ const Permission = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const factoryId = useFactoryStore((state) => state.factoryId);
-  const { getInvitingMembers, invitingMembers, isLoading, error } =
-    useGetInvitingMembers();
+  const { getMembers, members, isLoading, error } = useGetMembers();
   const { deleteMember } = useDeleteMember();
   const { getFactory, factory } = useGetFactory();
+
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   // 초대 중인 팀원 목록 불러오기
   useEffect(() => {
     if (factoryId) {
-      getInvitingMembers(factoryId);
+      getMembers({ factory_id: factoryId, page, page_size: pageSize });
       getFactory(factoryId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryId]);
+  }, [factoryId, page]);
 
   const permissionRoleTypes: PermissionRoleType[] = [
     '시스템 관리자',
@@ -49,38 +50,8 @@ const Permission = () => {
       factory.manager_email
     : false;
 
-  // API에서 받은 데이터를 UI 형식에 맞게 변환
-  const transformedData =
-    invitingMembers?.map((invitingMember, index) => {
-      const permission =
-        invitingMember.role === 'admin'
-          ? '시스템 관리자'
-          : invitingMember.role === 'manager'
-            ? '운영자'
-            : '조회자';
-
-      return {
-        id: index + 1, // 순서대로 ID 부여
-        invitationStatus: '대기 중' as const,
-        name: '초대됨',
-        email: invitingMember.email,
-        permission,
-        date: new Date().toLocaleDateString('ko-KR'),
-      };
-    }) || [];
-
-  const sortedData = [...transformedData].sort((a, b) =>
-    b.date.localeCompare(a.date)
-  );
-
-  const { currentItems, currentPage, totalPages, setCurrentPage } =
-    usePagination({
-      items: sortedData,
-      itemsPerPage: 8,
-    });
-
   // 체크박스 관리
-  const itemIds = currentItems.map((item) => item.id);
+  const itemIds = members?.data?.map((item) => item.id) || [];
   const {
     checkedIds,
     checkedCount,
@@ -118,7 +89,7 @@ const Permission = () => {
       if (successfulDeletions.length > 0) {
         // 목록 새로고침
         if (factoryId) {
-          getInvitingMembers(factoryId);
+          getMembers({ factory_id: factoryId });
         }
       }
     } catch (error) {
@@ -134,7 +105,7 @@ const Permission = () => {
     setIsInviteModalOpen(false);
     // 초대 중인 멤버 목록 다시 불러오기
     if (factoryId) {
-      getInvitingMembers(factoryId);
+      getMembers({ factory_id: factoryId });
     }
   };
 
@@ -163,7 +134,7 @@ const Permission = () => {
                   disabled={!isFactoryInfoComplete}
                 />
                 {!isFactoryInfoComplete && (
-                  <div className="absolute top-10 right-0 w-fit opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                  <div className="absolute top-12 right-0 w-fit opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                     <Tooltip
                       color="red"
                       text="팀원을 초대 전, 회사정보(필수 항목)를 먼저 입력해주세요."
@@ -208,12 +179,8 @@ const Permission = () => {
                 <div className="flex justify-center items-center h-100">
                   <Spinner />
                 </div>
-              ) : currentItems.length === 0 ? (
-                <div className="flex justify-center py-8 text-dg">
-                  <span>초대된 팀원이 없습니다.</span>
-                </div>
               ) : (
-                currentItems.map((item) => (
+                [...(members?.data || [])].reverse().map((item) => (
                   <PermissionTableItem
                     key={item.id}
                     item={item}
@@ -222,18 +189,22 @@ const Permission = () => {
                     onUpdate={() => {
                       // 권한 변경 후 초대 중인 멤버 목록 새로고침
                       if (factoryId) {
-                        getInvitingMembers(factoryId);
+                        getMembers({
+                          factory_id: factoryId,
+                          page: 1,
+                          page_size: pageSize,
+                        });
                       }
                     }}
                   />
                 ))
               )}
             </div>
-            {totalPages >= 2 && (
+            {members?.pageCnt && members.pageCnt > 1 && (
               <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                currentPage={members.curPage}
+                totalPages={members.pageCnt}
+                onPageChange={setPage}
               />
             )}
           </div>

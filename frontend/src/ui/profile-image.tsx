@@ -16,7 +16,7 @@ const ProfileImage = ({
 
   // 이메일의 앞 2글자 추출
   const getInitials = (email: string | null | undefined) => {
-    if (!email) return 'U';
+    if (!email) return 'UN';
     return email.substring(0, 2).toUpperCase();
   };
 
@@ -34,7 +34,20 @@ const ProfileImage = ({
     const colorIndex = hash % colors.length;
     return colors[colorIndex];
   };
-  const color = getColorClass(userInfo?.email);
+  const color = text ? getColorClass(text) : getColorClass(userInfo?.email);
+
+  // text props가 있으면
+  if (text) {
+    return (
+      <div
+        className={`flex items-center justify-center rounded-full bg-${color}-8 border border-${color} text-${color} ${
+          size === 'small' ? 'w-8 h-8 text-[12px]' : 'w-18 h-18 Me_Body-3'
+        }`}
+      >
+        {text.slice(0, 2).toUpperCase()}
+      </div>
+    );
+  }
 
   // 선택된 이미지가 있으면 미리보기, 없으면 저장된 이미지 또는 이니셜 표시
   const imageToShow = selectedImage || userInfo?.profile_image;
@@ -58,7 +71,7 @@ const ProfileImage = ({
         size === 'small' ? 'w-8 h-8 text-[12px]' : 'w-18 h-18 Me_Body-3'
       }`}
     >
-      {text || getInitials(userInfo?.email)}
+      {getInitials(userInfo?.email)}
     </div>
   );
 };

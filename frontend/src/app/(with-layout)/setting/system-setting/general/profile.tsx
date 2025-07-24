@@ -55,46 +55,27 @@ const Profile = ({ userInfo }: ProfileProps) => {
   }, [userInfo, reset]);
 
   const handleImageSelected = (file: File) => {
-    console.warn('📷 이미지 파일 선택됨:', {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    });
     setSelectedImage(file);
     // 파일을 미리보기용 URL로 변환
     const previewUrl = URL.createObjectURL(file);
     setSelectedImageUrl(previewUrl);
-    console.warn('📷 미리보기 URL 생성:', previewUrl);
   };
 
   const onSubmit = async (data: UpdateUserInfoModel) => {
-    console.warn('🚀 프로필 업데이트 시작:', {
-      formData: data,
-      hasSelectedImage: !!selectedImage,
-      selectedImageName: selectedImage?.name,
-      selectedImageSize: selectedImage?.size,
-    });
-
     try {
       let profileImageUrl = null;
 
       // 선택된 이미지 파일이 있으면 S3에 업로드
       if (selectedImage) {
-        console.warn('📤 S3 이미지 업로드 시작:', selectedImage.name);
         const uploadResult = await uploadFile(selectedImage);
-        console.warn('📤 S3 업로드 결과:', uploadResult);
 
         if (uploadResult.success) {
           profileImageUrl = uploadResult.object_url;
-          console.warn('✅ 업로드 성공! S3 URL:', profileImageUrl);
         } else {
-          console.error('❌ S3 업로드 실패:', uploadResult.error);
           throw new Error(
             uploadResult.error || '이미지 업로드에 실패했습니다.'
           );
         }
-      } else {
-        console.warn('📷 선택된 이미지 없음 - S3 업로드 건너뜀');
       }
 
       // 업로드된 이미지 URL을 데이터에 추가
@@ -103,17 +84,13 @@ const Profile = ({ userInfo }: ProfileProps) => {
         ...(profileImageUrl && { profile_image: profileImageUrl }),
       };
 
-      console.warn('📋 사용자 정보 업데이트 데이터:', updateData);
       const result = await updateMe(updateData);
-      console.warn('📋 사용자 정보 업데이트 결과:', result);
 
       if (result.success) {
-        console.warn('✅ 프로필 업데이트 성공!');
         showToast();
         setSelectedImage(null); // 성공 후 선택된 이미지 초기화
         setSelectedImageUrl(null); // 성공 후 선택된 이미지 URL 초기화
       } else {
-        console.error('❌ 프로필 업데이트 실패:', result.error);
         const errorMessage =
           typeof result.error === 'string'
             ? result.error
@@ -121,7 +98,6 @@ const Profile = ({ userInfo }: ProfileProps) => {
         throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('💥 onSubmit 전체 에러:', error);
       const errorMessage =
         error instanceof Error
           ? error.message

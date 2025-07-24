@@ -34,9 +34,11 @@ const ManualAddMaterial = ({
       ...prev,
       {
         id: crypto.randomUUID(),
-        materialName: data.materialName,
-        size: data.size,
-        usageQuantity: Number(data.usageQuantity),
+        materialName: String(data.name),
+        size: String(data.spec),
+        usageQuantity: Number(data.quantity),
+        unitPrice: Number(data.price),
+        unit: data.unit,
       },
     ]);
     reset();
@@ -44,60 +46,98 @@ const ManualAddMaterial = ({
   };
 
   return (
-    <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
+    <div className="flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2.5">
           <div className="flex w-full gap-2.5">
             <div className="flex-1">
               <Input
-                placeholder="자재명을 입력하세요."
+                placeholder="EX) 투명 필름지"
                 label="자재명"
                 required
-                {...register('materialName', {
+                {...register('name', {
                   required: true,
-                  validate: (v) => !!v.trim(),
+                  validate: (v: unknown) => typeof v === 'string' && !!v.trim(),
                 })}
-                showError={!!errors.materialName}
+                showError={!!errors.name}
               />
             </div>
             <div className="flex-1">
               <Input
-                placeholder="자재코드를 입력하세요."
+                placeholder="EX) 123456"
                 label="자재코드"
                 required
-                {...register('materialCode', {
+                {...register('code', {
                   required: true,
                   validate: (v: unknown) => typeof v === 'string' && !!v.trim(),
                 })}
-                showError={!!errors.materialCode}
+                showError={!!errors.code}
               />
             </div>
           </div>
           <div className="flex w-full gap-2.5">
             <div className="flex-1">
               <Input
-                placeholder="규격을 입력하세요."
+                placeholder="EX) 500mm × 100m"
                 label="규격"
                 required
-                {...register('size', {
+                {...register('spec', {
                   required: true,
-                  validate: (v) => !!v.trim(),
+                  validate: (v: unknown) => typeof v === 'string' && !!v.trim(),
                 })}
-                showError={!!errors.size}
+                showError={!!errors.spec}
               />
             </div>
             <div className="flex-1">
               <Input
-                placeholder="사용 수량을 입력하세요."
-                label="사용 수량"
-                type="number"
+                placeholder="EX) EA"
+                label="단위"
                 required
-                {...register('usageQuantity', {
+                {...register('unit', {
                   required: true,
-                  validate: (v) => v !== null && Number(v) > 0,
-                  setValueAs: (v) => (v === '' ? null : Number(v)),
+                  validate: (v: unknown) => typeof v === 'string' && !!v.trim(),
                 })}
-                showError={!!errors.usageQuantity}
+                showError={!!errors.unit}
+              />
+            </div>
+          </div>
+          <div className="flex w-full gap-2.5">
+            <div className="flex-1">
+              <Input
+                placeholder="EX) 100"
+                label="수량"
+                required
+                type="text"
+                {...register('quantity', {
+                  required: true,
+                  validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
+                  setValueAs: (v) =>
+                    v === '' ? null : Number(v.replace(/[^0-9]/g, '')),
+                })}
+                onChange={(e) => {
+                  const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                  e.target.value = onlyNums;
+                }}
+                showError={!!errors.quantity}
+              />
+            </div>
+            <div className="flex-1">
+              <Input
+                placeholder="EX) 1,000"
+                label="단가"
+                type="text"
+                required
+                {...register('price', {
+                  required: true,
+                  validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
+                  setValueAs: (v) =>
+                    v === '' ? null : Number(v.replace(/[^0-9]/g, '')),
+                })}
+                onChange={(e) => {
+                  const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                  e.target.value = onlyNums;
+                }}
+                showError={!!errors.price}
               />
             </div>
           </div>

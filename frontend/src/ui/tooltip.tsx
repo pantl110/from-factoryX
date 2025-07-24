@@ -29,7 +29,7 @@ const Tooltip = ({ text, color, position }: TooltipProps) => {
     >
       {text}
       <div
-        className={`w-2.5 h-2.5 rounded-[2px] rotate-[-45deg] ${colorMap[color]} absolute ${positionMap[position]}`}
+        className={`border-t border-r border-lg w-2.5 h-2.5 rounded-[2px] rotate-[-45deg] ${colorMap[color]} absolute ${positionMap[position]}`}
       ></div>
     </div>
   );

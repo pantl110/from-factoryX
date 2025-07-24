@@ -5,8 +5,9 @@ import {
   PaginationModel,
 } from '@/types/data-model';
 
-interface ProductFilterModel {
-  name?: string | null;
+interface GetProductListModel {
+  factory_id: number;
+  q?: string;
   page?: number;
   page_size?: number;
 }
@@ -18,18 +19,19 @@ const useGetProduct = () => {
   const [productList, setProductList] = useState<ProductResponseModel[]>([]);
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
 
-  const getProductList = useCallback(async (filters: ProductFilterModel) => {
+  // 제품 목록 조회 (factory_id, q, page, page_size)
+  const getProductList = useCallback(async (params: GetProductListModel) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const params = new URLSearchParams();
-      if (filters.name) params.append('name', filters.name);
-      if (filters.page) params.append('page', filters.page.toString());
-      if (filters.page_size)
-        params.append('page_size', filters.page_size.toString());
-
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?${params}`;
+      const queryParams = new URLSearchParams();
+      queryParams.append('factory_id', params.factory_id.toString());
+      if (params.q) queryParams.append('q', params.q);
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.page_size)
+        queryParams.append('page_size', params.page_size.toString());
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?${queryParams}`;
       const headers = {
         'Content-Type': 'application/json',
       };
@@ -59,6 +61,7 @@ const useGetProduct = () => {
     }
   }, []);
 
+  // 제품 상세 조회 (product_id)
   const getProductDetail = useCallback(async (productId: number) => {
     setIsLoading(true);
     setError(null);

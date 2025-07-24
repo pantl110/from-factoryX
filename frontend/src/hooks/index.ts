@@ -78,7 +78,6 @@ export { default as useUploadFile } from './aws/use-upload-file';
 // Factory member related hooks
 export { default as useInviteMember } from './factory-member/use-invite-member';
 export { default as useGetMembers } from './factory-member/use-get-members';
-export { default as useGetInvitingMembers } from './factory-member/use-get-inviting-members';
 export { default as useDeleteMember } from './factory-member/use-delete-member';
 export { default as useUpdateMember } from './factory-member/use-update-member';
 
@@ -87,6 +86,7 @@ export { default as useCreateProduct } from './product/use-create-product';
 export { default as useGetProduct } from './product/use-get-product';
 export { default as useUpdateProduct } from './product/use-update-product';
 export { default as useDeleteProduct } from './product/use-delete-product';
+export { default as useCreateSingleProduct } from './product/use-create-single-product';
 
 // Material related hooks
 export { default as useGetMaterial } from './material/use-get-material';
@@ -97,3 +97,6 @@ export { default as useDeleteMaterial } from './material/use-delete-material';
 export { default as useCreateMaterialHistory } from './material-history/use-create-material-history';
 export { default as useCreateSingleMaterialHistory } from './material-history/use-create-single-material-history';
 export { default as useGetMaterialHistory } from './material-history/use-get-material-history';
+
+// Onboarding related hooks
+export { default as useAssignMaterialProduct } from './onboarding/use-assign-material-product';

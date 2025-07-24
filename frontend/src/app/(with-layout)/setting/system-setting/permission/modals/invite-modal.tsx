@@ -225,10 +225,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                       className="flex items-center justify-between p-3 border border-lg rounded-[4px]"
                     >
                       <div className="flex gap-3">
-                        <ProfileImage
-                          text={member.email.slice(0, 2).toUpperCase()}
-                          size="small"
-                        />
+                        <ProfileImage text={member.email} size="small" />
                         <p className="Me_Body-2">{member.email}</p>
                       </div>
                       <div className="flex items-center gap-1 relative">

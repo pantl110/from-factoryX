@@ -20,6 +20,9 @@ interface InfoLabelValueProps {
   isEditing?: boolean;
   placeholder?: string;
   onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleChange?: (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
   onFocus?: (
     e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
@@ -39,6 +42,7 @@ const InfoLabelValue = ({
   isEditing = false,
   placeholder,
   onChange,
+  handleChange,
   onFocus,
   onBlur,
   inputType = 'text',
@@ -63,7 +67,7 @@ const InfoLabelValue = ({
             minRows={1}
             value={typeof value === 'string' ? value : ''}
             placeholder={placeholder}
-            onChange={register?.onChange || onChange}
+            onChange={register?.onChange || handleChange || onChange}
             className="w-full noDefaultStyle"
             style={{ outline: 'none' }}
             onFocus={onFocus}
@@ -79,7 +83,7 @@ const InfoLabelValue = ({
             type={inputType}
             value={typeof value === 'string' ? value : ''}
             placeholder={placeholder}
-            onChange={register?.onChange || onChange}
+            onChange={register?.onChange || handleChange || onChange}
             className="w-full placeholder:text-gr"
             style={{ outline: 'none' }}
             onFocus={onFocus}
@@ -105,20 +109,6 @@ const InfoLabelValue = ({
     if (!value || (typeof value === 'string' && value.trim() === '')) {
       return <span className="text-gr Me_Body-1">{placeholder || '-'}</span>;
     }
-
-    // 숫자 값이고 unit이 있는 경우 unit을 뒤에 표시
-    // if (
-    //   unit &&
-    //   (typeof value === "number" ||
-    //     (typeof value === "string" && !isNaN(Number(value))))
-    // ) {
-    //   return (
-    //     <div className="flex items-center">
-    //       <span>{value}</span>
-    //       <span className="ml-1 text-dg">{unit}</span>
-    //     </div>
-    //   );
-    // }
 
     return value;
   };

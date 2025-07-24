@@ -49,7 +49,7 @@ const useCreateSingleMaterialHistory = () => {
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }
-    } catch (err) {
+    } catch {
       const errorMessage = '서버 연결에 실패했습니다.';
       setError(errorMessage);
       return { success: false, error: errorMessage };

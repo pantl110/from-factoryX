@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import MainTitleSec from './main-title-sec';
 import SearchDeleteTable from '@/ui/search-delete-table';
 import { ProjectStatusType } from '@/types/status-type';
@@ -10,7 +10,7 @@ import SelectModal from './modals/select-modal';
 import ExcelUploadModal from './modals/excel-upload-modal';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Pagination from '@/components/pagination';
-import { ClientDataModel, ProjectListResponseModel } from '@/types/data-model';
+import { ClientModel, ProjectListResponseModel } from '@/types/data-model';
 import { useCheckAll } from '@/hooks/use-check-all';
 import DeleteModal from '@/ui/modal/delete-modal';
 import Spinner from '@/ui/spinner';
@@ -50,45 +50,29 @@ const ProcessProjectPageInner = () => {
   const [sortKey, setSortKey] = useState<'startDate' | 'endDate'>('startDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // 데이터 로드 함수
-  const loadProjects = useCallback(
-    async (
-      page: number = 1,
-      search: string = '',
-      orderBy: 'start_date' | 'due_date' = 'start_date',
-      orderDir: 'asc' | 'desc' = 'desc',
-      size: number = 10
-    ) => {
+  // 초기 데이터 로드
+  useEffect(() => {
+    const loadProjects = async () => {
       if (!factoryId) return;
 
       const result = await getProjects({
         factory_id: factoryId,
         status: selectedStatus,
-        search,
-        order_by: orderBy,
-        order_dir: orderDir,
-        page,
-        size,
+        search: searchKeyword,
+        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
+        order_dir: sortOrder,
+        page: currentPage,
+        size: 10,
       });
 
       if (result.success && result.data) {
         setProjectData(result.data);
       }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [factoryId, selectedStatus] // getProjects 제거
-  );
+    };
 
-  // 초기 데이터 로드
-  useEffect(() => {
-    if (factoryId) {
-      loadProjects(
-        currentPage,
-        searchKeyword,
-        sortKey === 'startDate' ? 'start_date' : 'due_date',
-        sortOrder
-      );
-    }
+    loadProjects();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedStatus,
     currentPage,
@@ -96,7 +80,7 @@ const ProcessProjectPageInner = () => {
     sortKey,
     sortOrder,
     factoryId,
-    loadProjects,
+    // getProjects,
   ]);
 
   // 검색 핸들러
@@ -152,7 +136,7 @@ const ProcessProjectPageInner = () => {
     setSearchKeyword(''); // 탭 변경시 검색어도 초기화
   };
 
-  const handleDirectInputClick = (clientData?: ClientDataModel) => {
+  const handleDirectInputClick = (clientData?: ClientModel) => {
     if (clientData) {
       // clientData가 있으면 URL 파라미터로 전달
       const params = new URLSearchParams();

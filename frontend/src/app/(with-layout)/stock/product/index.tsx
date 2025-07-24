@@ -10,6 +10,8 @@ import DeleteModal from '@/ui/modal/delete-modal';
 import Pagination from '@/components/pagination';
 import { ProductResponseModel } from '@/types/data-model';
 import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks';
+import useFactoryStore from '@/store/factory-store';
+import Spinner from '@/ui/spinner';
 
 interface ProductProps {
   setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
@@ -22,8 +24,10 @@ const Product = ({
   isProductDetailPanelOpen,
   setIsProductDetailPanelOpen,
 }: ProductProps) => {
-  const { getProductList, productList, pagination } = useGetProduct();
+  const { getProductList, productList, pagination, isLoading } =
+    useGetProduct();
   const { deleteProduct } = useDeleteProduct();
+  const { factoryId } = useFactoryStore();
 
   const [searchKeyword, setSearchKeyword] = useState('');
   const [_currentPage, setCurrentPage] = useState(1);
@@ -48,13 +52,15 @@ const Product = ({
   // 제품 목록 로드 함수
   const loadProducts = useCallback(
     (page = 1, search = '') => {
+      if (!factoryId) return;
       getProductList({
-        name: search || undefined,
+        factory_id: factoryId,
+        q: search || undefined,
         page,
         page_size: 10,
       });
     },
-    [getProductList]
+    [getProductList, factoryId]
   );
 
   // 초기 로드
@@ -139,26 +145,34 @@ const Product = ({
         </div>
       </div>
 
-      <div>
-        <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
-        {productList.map((product) => (
-          <TableItem
-            key={product.id}
-            product={product}
-            onClick={() => handleItemClick(product)}
-            checked={isChecked(product.id)}
-            onToggle={() => toggleOne(product.id)}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-100">
+          <Spinner />
+        </div>
+      ) : (
+        <>
+          <div>
+            <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
+            {productList.map((product) => (
+              <TableItem
+                key={product.id}
+                product={product}
+                onClick={() => handleItemClick(product)}
+                checked={isChecked(product.id)}
+                onToggle={() => toggleOne(product.id)}
+              />
+            ))}
+          </div>
 
-      {/* 페이지네이션 */}
-      {pagination && pagination.pageCnt > 1 && (
-        <Pagination
-          currentPage={pagination.curPage}
-          totalPages={pagination.pageCnt}
-          onPageChange={handlePageChange}
-        />
+          {/* 페이지네이션 */}
+          {pagination && pagination.pageCnt > 1 && (
+            <Pagination
+              currentPage={pagination.curPage}
+              totalPages={pagination.pageCnt}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
       )}
 
       {isPanelOpen && (

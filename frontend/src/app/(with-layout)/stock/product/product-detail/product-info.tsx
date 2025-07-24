@@ -142,9 +142,11 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 value={
                   field.value === undefined || field.value === null
                     ? ''
-                    : field.value
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                    : field.value === 0
+                      ? '0'
+                      : field.value
+                          .toString()
+                          .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                 }
                 isEditing={true}
                 placeholder="현재 재고 수량을 입력하세요."

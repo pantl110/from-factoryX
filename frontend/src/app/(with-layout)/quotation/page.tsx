@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import QuotationPageContent from './quotation-page-content';
+// import QuotationPageContent from './quotation-page-content';
 import Spinner from '@/ui/spinner';
 
 const QuotationPage = () => {
@@ -11,7 +11,7 @@ const QuotationPage = () => {
         </div>
       }
     >
-      <QuotationPageContent />
+      {/* <QuotationPageContent /> */}
     </Suspense>
   );
 };

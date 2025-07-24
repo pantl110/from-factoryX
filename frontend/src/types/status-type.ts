@@ -63,7 +63,23 @@ export const ProjectStatusColorMap: Record<
 export type TaxStatusType = null | 'temporary' | 'pending' | 'published';
 // 세금계산서 미연결(미발행) // 임시 저장(미발행) // 발행 대기 (연결 필요) // 발행 완료(보기)
 
+// 재고 상태
+export type InventoryStatusType = '충분' | '부족';
+export const InventoryStatusColorMap: Record<
+  InventoryStatusType,
+  StatusColorModel
+> = {
+  충분: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
+  부족: { textColor: 'text-red', bgColor: 'bg-red-8' },
+};
+
 ////////////////////
+////////////////////
+////////////////////
+////////////////////
+////////////////////
+////////////////////
+//////////////////s//
 // 수정 전, 확인 전, 삭제하기
 
 // 거래명세서 발행 상태
@@ -114,16 +130,6 @@ export const OperationStatusColorMap: Record<
     bgColor: 'bg-red-8',
     hover: 'hover:bg-red-hover',
   },
-};
-
-// 재고 상태
-export type InventoryStatusType = '충분' | '부족';
-export const InventoryStatusColorMap: Record<
-  InventoryStatusType,
-  StatusColorModel
-> = {
-  충분: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
-  부족: { textColor: 'text-red', bgColor: 'bg-red-8' },
 };
 
 // 납품 상태

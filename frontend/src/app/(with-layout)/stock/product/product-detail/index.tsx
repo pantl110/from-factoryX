@@ -8,7 +8,11 @@ import ProductStockLog from './product-stock-log';
 import Panel from '@/ui/panel';
 import Spinner from '@/ui/spinner';
 import { ProductModel } from '@/types/data-model';
-import { useGetProduct, useCreateProduct, useUpdateProduct } from '@/hooks';
+import {
+  useGetProduct,
+  useUpdateProduct,
+  useCreateSingleProduct,
+} from '@/hooks';
 import NoHistoryBox from '../../../../../ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
 import ProductStockModal from '../modals/product-stock-modal';
@@ -31,7 +35,7 @@ const ProductDetail = ({
   onSuccess,
 }: ProductDetailProps) => {
   const { getProductDetail, product } = useGetProduct();
-  const { createProduct } = useCreateProduct();
+  const { createSingleProduct } = useCreateSingleProduct();
   const { updateProduct } = useUpdateProduct();
   const factoryId = useFactoryStore((state) => state.factoryId);
 
@@ -161,10 +165,24 @@ const ProductDetail = ({
           currentFormData;
         const updateData = {
           ...updateDataWithoutFactory,
-          current_stock: currentFormData.current_stock,
+          current_stock:
+            currentFormData.current_stock === undefined ||
+            currentFormData.current_stock === null
+              ? undefined
+              : currentFormData.current_stock,
           average_production_time: currentFormData.average_production_time,
         };
-        const result = await updateProduct(productId, updateData);
+        // undefined를 null로 변환해서 보냄 (수정 시에는 null 명시)
+        const payload: Partial<ProductModel> & {
+          current_stock: number | null;
+        } = {
+          ...updateData,
+          current_stock:
+            updateData.current_stock === undefined
+              ? null
+              : updateData.current_stock,
+        };
+        const result = await updateProduct(productId, payload);
         if (result && result.success) {
           onSuccess?.();
           onClose();
@@ -178,11 +196,23 @@ const ProductDetail = ({
         // 생성 모드
         // 데이터 변환
         const createData = {
-          ...currentFormData,
-          current_stock: currentFormData.current_stock,
-          average_production_time: currentFormData.average_production_time,
+          factory_id: currentFormData.factory,
+          name: currentFormData.name,
+          code: currentFormData.code,
+          spec: currentFormData.spec,
+          unit: currentFormData.unit,
+          current_stock:
+            currentFormData.current_stock === undefined ||
+            currentFormData.current_stock === null
+              ? undefined
+              : currentFormData.current_stock,
         };
-        const result = await createProduct(createData);
+        // undefined를 null로 변환해서 보냄
+        const payload = { ...createData };
+        if (payload.current_stock === undefined) {
+          delete payload.current_stock;
+        }
+        const result = await createSingleProduct(payload);
         if (result && result.success) {
           onSuccess?.();
           onClose();

@@ -1,8 +1,8 @@
 // 설정의 권한 초대 상태
-export type InvitationStatusType = '완료' | '대기 중';
+export type InvitationStatusType = 'invited' | 'active';
 export const InvitationStatusColorMap: Record<InvitationStatusType, string> = {
-  완료: 'text-primary',
-  '대기 중': 'text-yellow',
+  active: 'text-primary',
+  invited: 'text-yellow',
 };
 
 // 설정의 권한 종류

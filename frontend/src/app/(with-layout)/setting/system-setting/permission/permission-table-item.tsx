@@ -10,19 +10,24 @@ import AuthDropdown from './modals/auth-dropdown';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import useUpdateMember from '@/hooks/factory-member/use-update-member';
 import { MemberRoleType } from '@/types/status-type';
+import { MemberResponseModel } from '@/types/data-model';
 
 interface PermissionTableItemProps {
-  item: {
-    id: number;
-    invitationStatus: InvitationStatusType;
-    name: string;
-    email: string;
-    permission: string;
-    date: string;
-  };
+  item: MemberResponseModel;
   isChecked?: boolean;
   onToggle?: () => void;
   onUpdate?: () => void; // 업데이트 후 목록 새로고침
+}
+
+// 날짜 포맷 함수
+function formatDate(dateString?: string): string {
+  if (!dateString) return '-';
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return '-';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 const PermissionTableItem = ({
@@ -31,9 +36,9 @@ const PermissionTableItem = ({
   onToggle,
   onUpdate,
 }: PermissionTableItemProps) => {
-  const { invitationStatus, name, email, permission, date } = item;
-  const textColor = InvitationStatusColorMap[invitationStatus];
-  const authColors = PermissionRoleInfo[permission as PermissionRoleType];
+  const { status, name, email, role, invited_at: invitedAt } = item;
+  const textColor = InvitationStatusColorMap[status];
+  const authColors = PermissionRoleInfo[role as PermissionRoleType];
 
   const { updateMember } = useUpdateMember();
 
@@ -59,9 +64,20 @@ const PermissionTableItem = ({
     }
   };
 
+  const getInvitationStatus = (
+    invitationStatus: InvitationStatusType
+  ): string => {
+    switch (invitationStatus) {
+      case 'invited':
+        return '대기 중';
+      case 'active':
+        return '완료';
+    }
+  };
+
   const handleAuthChange = async (newAuth: string) => {
     // 이전과 같으면 return
-    if (newAuth === permission) {
+    if (newAuth === role) {
       closeAuthDropdown();
       return;
     }
@@ -92,12 +108,14 @@ const PermissionTableItem = ({
     <>
       <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-[#eeeeee] group">
         <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
-        <p className={`px-3 flex-1 ${textColor}`}>{invitationStatus}</p>
-        <p className="px-3 flex-1">{name ?? '-'}</p>
+        <p className={`px-3 flex-1 ${textColor}`}>
+          {getInvitationStatus(status)}
+        </p>
+        <p className="px-3 flex-1">{name || '-'}</p>
         <p className="px-3 flex-2">{email}</p>
         <div className="px-3 flex-1">
           <Chip
-            text={permission}
+            text={role}
             textColor={authColors.chipColor.text}
             bgColor={authColors.chipColor.bg}
             hover={authColors.chipColor.hover}
@@ -106,7 +124,7 @@ const PermissionTableItem = ({
             onClick={(e) => openAuthDropdown(e as React.MouseEvent)}
           />
         </div>
-        <p className="px-3 flex-1">{date}</p>
+        <p className="px-3 flex-1">{formatDate(invitedAt)}</p>
       </div>
 
       {/* 권한 드롭다운 */}

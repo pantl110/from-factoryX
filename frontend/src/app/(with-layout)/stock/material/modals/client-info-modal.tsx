@@ -1,7 +1,7 @@
 import MiniBtn from '@/ui/mini-btn';
 import Input from '@/ui/input';
 import Modal from '@/ui/modal/modal';
-import { ClientDataModel, ClientType } from '@/types/data-model';
+import { ClientModel, ClientType } from '@/types/data-model';
 import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
 import { clientData } from '@/mocks/client-data';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
@@ -10,10 +10,11 @@ import {
   formatBusinessNumber,
   handleNumberKeyDown,
 } from '@/hooks/format-number';
+import { ClientResponseModel } from '@/types/data-model';
 
 interface ClientInfoModalProps {
   onClose?: () => void;
-  onNext?: () => void;
+  onNext?: (data: ClientModel) => void;
 }
 
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
@@ -23,22 +24,23 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     formState: { errors },
     setValue,
     watch,
-  } = useForm<ClientDataModel>({
+  } = useForm<
+    ClientModel & {
+      businessRegistrationNumber: string;
+      representativeName: string;
+      businessType: string;
+      businessCategory: string;
+    }
+  >({
     mode: 'onChange',
     defaultValues: {
-      id: crypto.randomUUID(),
       type: 'supplier' as ClientType,
-      companyName: '',
-      businessNumber: '',
+      name: '',
+      businessRegistrationNumber: '',
       representativeName: '',
       businessType: '',
       businessCategory: '',
-      contact: '',
-      fax: '',
-      email: '',
-      companyAddress: '',
-      dueDate: '',
-      responsibleName: '',
+      address: '',
     },
   });
 
@@ -49,39 +51,39 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     setIsOpen: setIsCompanyNameDropdownOpen,
     filtered: filteredClients,
     handleSelect: handleCompanyNameSelect,
-  } = useDropdownFilter(clientData, (item) => item.companyName);
+  } = useDropdownFilter(clientData, (item) => item.name);
 
   // 필수 필드들의 값 감시
-  const companyName = watch('companyName');
-  const businessNumber = watch('businessNumber');
+  const name = watch('name');
+  const businessRegistrationNumber = watch('businessRegistrationNumber');
   const representativeName = watch('representativeName');
   const businessType = watch('businessType');
   const businessCategory = watch('businessCategory');
-  const companyAddress = watch('companyAddress');
+  const address = watch('address');
 
   // 모든 필수 필드가 입력되었는지 확인
   const isFormValid =
-    companyName?.trim() &&
-    businessNumber?.trim() &&
+    name?.trim() &&
+    businessRegistrationNumber?.trim() &&
     representativeName?.trim() &&
     businessType?.trim() &&
     businessCategory?.trim() &&
-    companyAddress?.trim();
+    address?.trim();
 
-  const handleSelectClient = (item: ClientDataModel) => {
-    handleCompanyNameSelect(item);
-    setCompanyNameInput(item.companyName);
+  const handleSelectClient = (item: ClientModel | ClientResponseModel) => {
+    handleCompanyNameSelect(item as ClientResponseModel);
+    setCompanyNameInput(item.name ?? '');
 
     // 선택한 거래처 정보로 폼 자동 채우기
-    setValue('companyName', item.companyName);
-    setValue('businessNumber', formatBusinessNumber(item.businessNumber));
-    setValue('representativeName', item.representativeName);
-    setValue('companyAddress', item.companyAddress);
-    setValue('email', item.email);
-    setValue('contact', item.contact || '');
-    setValue('fax', item.fax || '');
-    setValue('businessType', item.businessType || '');
-    setValue('businessCategory', item.businessCategory || '');
+    setValue('name', item.name ?? '');
+    setValue(
+      'businessRegistrationNumber',
+      formatBusinessNumber(item.business_registration_number || '')
+    );
+    setValue('representativeName', item.representative_name ?? '');
+    setValue('address', item.address ?? '');
+    setValue('businessType', item.business_type || '');
+    setValue('businessCategory', item.business_category || '');
 
     setIsCompanyNameDropdownOpen(false);
   };
@@ -92,10 +94,12 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       subtitle="등록된 정보는 이후 문서 작성 시 자동으로 불러와져요."
       onClose={onClose}
       width="w-[600px]"
+      scroll={true}
+      // className="overflow-hidden"
     >
       <form
-        className="flex flex-col gap-7 mt-4"
-        onSubmit={handleSubmit(() => onNext && onNext())}
+        className="flex flex-col gap-7 mt-4 px-6 pb-6 max-h-[calc(85vh-123px)] overflow-y-auto scrollbar-hide"
+        onSubmit={handleSubmit((data) => onNext && onNext(data))}
       >
         <div className="flex flex-col gap-4">
           <div className="flex-1 relative">
@@ -103,17 +107,17 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="업체명"
               placeholder="업체명을 입력하세요."
               required
-              {...register('companyName', { required: true })}
-              value={companyNameInput}
+              {...register('name', { required: true })}
+              value={companyNameInput ?? ''}
               onChange={(e) => {
-                setCompanyNameInput(e.target.value);
-                setValue('companyName', e.target.value);
+                setCompanyNameInput(e.target.value ?? '');
+                setValue('name', e.target.value ?? '');
               }}
               onFocus={() => setIsCompanyNameDropdownOpen(true)}
               onBlur={() =>
                 setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
               }
-              showError={!!errors.companyName}
+              showError={!!errors.name}
             />
             {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
               <div className="absolute left-0 top-21 z-10 w-full">
@@ -130,14 +134,20 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="사업자등록번호"
               placeholder="사업자등록번호를 입력하세요."
               required
-              {...register('businessNumber', { required: true })}
+              {...register('businessRegistrationNumber', {
+                required: true,
+                validate: (v) =>
+                  /^\d{3}-\d{2}-\d{5}$/.test(v ?? '') ||
+                  '사업자등록번호 형식이 올바르지 않습니다.',
+              })}
+              value={watch('businessRegistrationNumber') ?? ''}
               onChange={(e) => {
                 const formatted = formatBusinessNumber(e.target.value);
                 e.target.value = formatted;
-                setValue('businessNumber', formatted);
+                setValue('businessRegistrationNumber', formatted);
               }}
               onKeyDown={handleNumberKeyDown}
-              showError={!!errors.businessNumber}
+              showError={!!errors.businessRegistrationNumber}
             />
           </div>
           <Input
@@ -147,6 +157,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
             {...register('representativeName', {
               required: true,
             })}
+            value={watch('representativeName') ?? ''}
             showError={!!errors.representativeName}
           />
           <div className="flex gap-2.5">
@@ -157,6 +168,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               {...register('businessType', {
                 required: true,
               })}
+              value={watch('businessType') ?? ''}
               showError={!!errors.businessType}
             />
             <Input
@@ -166,6 +178,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               {...register('businessCategory', {
                 required: true,
               })}
+              value={watch('businessCategory') ?? ''}
               showError={!!errors.businessCategory}
             />
           </div>
@@ -174,10 +187,11 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="사업장 주소"
               required
               placeholder="사업장 주소를 입력하세요."
-              {...register('companyAddress', {
+              {...register('address', {
                 required: true,
               })}
-              showError={!!errors.companyAddress}
+              value={watch('address') ?? ''}
+              showError={!!errors.address}
             />
           </div>
         </div>

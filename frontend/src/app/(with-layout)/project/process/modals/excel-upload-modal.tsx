@@ -1,19 +1,19 @@
 import Modal from '@/ui/modal/modal';
 import { clientData } from '@/mocks/client-data';
-import { ClientDataModel } from '@/types/data-model';
+import { ClientModel } from '@/types/data-model';
 import DropzoneArea from '@/ui/dropzone-area';
 import { useState } from 'react';
 
 interface UploadModalProps {
   onClose: () => void;
-  onComplete: (clientData?: ClientDataModel) => void;
+  onComplete: (clientData?: ClientModel) => void;
 }
 
 const ExcelUploadModal = ({ onClose, onComplete }: UploadModalProps) => {
   const [hasFiles, setHasFiles] = useState(false);
 
   const handleComplete = () => {
-    onComplete(clientData[0]);
+    onComplete(clientData[0] as unknown as ClientModel);
   };
 
   const onFileUpload = (hasFiles: boolean) => {

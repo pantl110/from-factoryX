@@ -238,7 +238,7 @@ export interface ProductModel {
   code: string;
   unit: string;
   spec: string;
-  current_stock?: number;
+  current_stock?: number | null;
   average_production_time?: number;
   buffer_rate?: number; // 기본값 10%
   location?: string;
@@ -295,15 +295,15 @@ export interface MaterialResponseModel {
 
 // 원자재 목록 조회
 export interface MaterialListResponseModel extends PaginationModel {
-  data: MaterialResponseModel[];
+  materials: MaterialResponseModel[];
 }
 
 // Material History API
 export interface MaterialItemModel {
   name: string;
   code: string;
-  spec: string;
-  unit: string;
+  spec: string; // 규격
+  unit: string; // 단위
   quantity: number;
   price: number;
 }
@@ -472,6 +472,7 @@ export interface UpdateProjectPlanModel {
 
 //////////////////////
 // Factory Member API
+// 멤버 초대
 export interface InviteMemberModel {
   factory_id: number;
   email: string;
@@ -482,25 +483,26 @@ export interface InviteMemberResponseModel {
   email: string;
   role: string;
   invited_by: number;
+  invited_at: string;
 }
 
+// 멤버 조회
 export interface MemberResponseModel {
   id: number;
-  created_at: string;
-  updated_at: string;
   factory: number;
-  user: number;
+  user?: number; // 가입된 초대자의 user_id, 미가입 초대자는 none
+  name?: string; // 사용자의 이름, 미가입 초대자는 ""
+  email: string;
   role: MemberRoleType;
   status: MemberStatusType;
-  invited_by: number;
-  invitation_token: string;
-  invitation_message: string;
+  invited_at: string;
 }
 
 export interface MemberListResponseModel extends PaginationModel {
   data: MemberResponseModel[];
 }
 
+// 멤버 수정
 export interface UpdateMemberResponseModel {
   id: number;
   factory_id: number;
@@ -560,22 +562,3 @@ export type {
   ProjectStatusType,
   TaxStatusType,
 } from './status-type';
-
-export interface ClientDataModel {
-  id: string;
-  type: ClientType;
-  companyName: string;
-  businessNumber: string;
-  representativeName: string;
-  dueDate: string;
-  businessType?: string; // 업태
-  businessCategory?: string; // 종목
-  companyAddress: string;
-  responsibleName: string;
-  email: string;
-  contact?: string;
-  fax?: string;
-  deliveryAddress?: string;
-  comment?: string;
-  [key: string]: unknown;
-}

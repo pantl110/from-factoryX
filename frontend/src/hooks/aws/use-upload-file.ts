@@ -29,12 +29,6 @@ const useUploadFile = () => {
     setError(null);
 
     try {
-      console.warn('🔗 Presigned URL 요청 시작:', {
-        fileName: file.name,
-        fileSize: file.size,
-        apiUrl: `${process.env.NEXT_PUBLIC_API_URL}/v1/aws/upload`,
-      });
-
       // 1. presigned URL 요청
       const presignedResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/aws/upload`,
@@ -50,20 +44,12 @@ const useUploadFile = () => {
         }
       );
 
-      console.warn('🔗 Presigned URL 응답:', {
-        ok: presignedResponse.ok,
-        status: presignedResponse.status,
-        statusText: presignedResponse.statusText,
-      });
-
       if (!presignedResponse.ok) {
         const errorData = await presignedResponse.json();
-        console.error('🔗 Presigned URL 요청 실패:', errorData);
         throw new Error(errorData.detail || 'presigned URL 요청 실패');
       }
 
       const presignedData: UploadFileUrlModel = await presignedResponse.json();
-      console.warn('🔗 Presigned URL 데이터:', presignedData);
 
       // 2. S3에 파일 업로드
       const formData = new FormData();
@@ -78,40 +64,21 @@ const useUploadFile = () => {
       // 파일을 마지막에 추가
       formData.append('file', file);
 
-      console.warn('🚀 S3 업로드 시작:', {
-        url: presignedData.upload_url.url,
-        formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
-          key,
-          value: value instanceof File ? `File: ${value.name}` : value,
-        })),
-      });
-
       const uploadResponse = await fetch(presignedData.upload_url.url, {
         method: 'POST',
         body: formData,
       });
 
-      console.warn('🚀 S3 업로드 응답:', {
-        ok: uploadResponse.ok,
-        status: uploadResponse.status,
-        statusText: uploadResponse.statusText,
-      });
-
       if (!uploadResponse.ok) {
-        const responseText = await uploadResponse.text();
-        console.error('🚀 S3 업로드 실패 응답:', responseText);
         throw new Error('S3 파일 업로드 실패');
       }
 
       setUploadProgress(100);
-
-      console.warn('✅ 파일 업로드 성공:', presignedData.object_url);
       return {
         success: true,
         object_url: presignedData.object_url,
       };
     } catch (err) {
-      console.error('💥 uploadFile 에러:', err);
       const errorMessage =
         err instanceof Error
           ? err.message
