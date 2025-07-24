@@ -80,6 +80,7 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(material_data["spec"], "테스트 규격")
         self.assertEqual(material_data["unit"], "EA")
         self.assertEqual(material_data["current_stock"], 100)
+        self.assertEqual(material_data["standard_stock"], 50)
         
         # 페이지네이션 정보 확인
         self.assertEqual(data["count"], 1)
@@ -316,12 +317,9 @@ class TestMaterialAPI(TestCase):
         }
         
         response = await self.client.patch(f"/{self.material.id}", headers=headers, json=payload)
-        self.assertEqual(response.status_code, 200)
-        
-        # None 값은 무시되어야 함
-        data = response.json()
-        self.assertEqual(data["name"], "테스트 원자재")  # 변경되지 않음
-        self.assertEqual(data["current_stock"], 100)  # 변경되지 않음
+        self.assertEqual(response.status_code, 400)
+        # 400 에러 메시지 확인
+        self.assertIn("공란 또는 null 불가", response.json().get("detail", ""))
 
     async def test_material_update_with_empty_string(self):
         """빈 문자열로 수정하는 경우 테스트"""
@@ -333,11 +331,9 @@ class TestMaterialAPI(TestCase):
         }
         
         response = await self.client.patch(f"/{self.material.id}", headers=headers, json=payload)
-        self.assertEqual(response.status_code, 200)
-        
-        data = response.json()
-        self.assertEqual(data["name"], "")  # 빈 문자열로 변경됨
-        self.assertEqual(data["spec"], "")  # 빈 문자열로 변경됨
+        self.assertEqual(response.status_code, 400)
+        # 400 에러 메시지 확인
+        self.assertIn("공란 또는 null 불가", response.json().get("detail", ""))
 
     async def test_assign_materialproduct_success(self):
         """원자재 생성 및 품목 연결 성공 테스트"""

@@ -41,6 +41,7 @@ class MaterialSummaryOut(Schema):
     spec: str
     unit: str
     current_stock: int
+    standard_stock: int
 
 
 class MaterialDetailOut(Schema):

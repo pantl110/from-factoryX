@@ -9,13 +9,14 @@ from stock.schemas.outbound import ProductOut
 from stock.utils import get_product_by_id
 from factory.utils import get_factory_by_id
 from django.db import IntegrityError
-from stock.schemas.inbound import AssignMaterialProductIn
-from stock.models import Material, MaterialProduct
+from stock.models import MaterialProduct
 from ninja.errors import HttpError
 from stock.schemas.inbound import SingleProductCreateIn
 from stock.schemas.outbound import SingleProductCreateOut
 from stock.schemas.outbound import ProductListOut
 from django.http import JsonResponse
+from stock.utils import get_material_by_id
+from stock.schemas.inbound import AssignProductIn
 
 
 router = Router(tags=["Product"])
@@ -63,69 +64,7 @@ async def create_single_product(request, payload: SingleProductCreateIn):
     return 201, response_data
 
 
-# Onboarding Tab
-@router.post(
-    "/assign",
-    summary="[C] 원자재 생성 및 품목 연결",
-    description="원자재를 생성하고 품목과 연결합니다.",
-    response={201: None},
-    auth=jwt_auth,
-)
-async def assign_materialproduct(request, payload: AssignMaterialProductIn):
-    """
-    입력 필드:
-    - factory_id: 공장 ID
-    - product_id: 품목 ID
-    - materials: 원자재 목록 (name, code, spec, quantity)
-    
-    반환 필드: 없음
-    """
-    user = request.auth
-    data = payload.dict()
-    factory_id = data.pop("factory_id")
-    product_id = data.pop("product_id")
-    materials_data = data.pop("materials")
 
-    # code 중복 체크
-    codes = [m["code"] for m in materials_data]
-    if len(codes) != len(set(codes)):
-        raise HttpError(400, "원자재 코드가 중복되거나 연결 정보에 오류가 있습니다.")
-    
-    factory = await get_factory_by_id(factory_id, user)
-    
-    product = await get_product_by_id(product_id, user)
-    
-    if product.factory_id != factory_id:
-        raise HttpError(400, "품목이 해당 공장에 속하지 않습니다.")
-    
-    try:
-        for material_data in materials_data:
-            material, created = await Material.objects.aget_or_create(
-                factory=factory,
-                code=material_data["code"],
-                defaults={
-                    "name": material_data["name"],
-                    "spec": material_data["spec"],
-                    "unit": "EA",
-                    "current_stock": 0,
-                    "standard_stock": 0
-                }
-            )
-            
-            material_product, created = await MaterialProduct.objects.aget_or_create(
-                product=product,
-                material=material,
-                defaults={"quantity": material_data["quantity"]}
-            )
-            
-            if not created:
-                material_product.quantity = material_data["quantity"]
-                await material_product.asave()
-        
-        return 201, None
-        
-    except IntegrityError:
-        raise HttpError(400, "원자재 코드가 중복되거나 연결 정보에 오류가 있습니다.")
 
 
 @router.post(
@@ -164,6 +103,57 @@ async def create_product(request, payload: List[ProductCreateIn]):
         }
         result.append(response_data)
     return 201, result
+
+
+@router.post(
+    "/assign",
+    summary="[C] 원자재에 품목 연결",
+    description="원자재 하나에 여러 품목을 연결합니다.",
+    response={201: None},
+    auth=jwt_auth,
+)
+async def assign_product(request, payload: AssignProductIn):
+    """
+    입력 필드:
+    - factory_id: 공장 ID
+    - material_id: 원자재 ID
+    - products: 품목 목록 (name, code, spec, unit, quantity)
+    반환 필드: 없음
+    """
+    user = request.auth
+    data = payload.dict()
+    factory_id = data["factory_id"]
+    material_id = data["material_id"]
+    products_data = data["products"]
+
+    factory = await get_factory_by_id(factory_id, user)
+    material = await get_material_by_id(material_id, factory_id, user)
+
+    try:
+        for product_info in products_data:
+            product, created = await Product.objects.aget_or_create(
+                factory=factory,
+                code=product_info["code"],
+                defaults={
+                    "name": product_info["name"],
+                    "spec": product_info["spec"],
+                    "unit": product_info["unit"],
+                    "current_stock": 0,
+                }
+            )
+            material_product, created = await MaterialProduct.objects.aget_or_create(
+                product=product,
+                material=material,
+                defaults={"quantity": product_info["quantity"]}
+            )
+            if not created:
+                material_product.quantity = product_info["quantity"]
+                await material_product.asave()
+        return 201, None
+    except IntegrityError:
+        raise HttpError(400, "품목 연결 정보에 오류가 있습니다.")
+
+
 
 
 # Product Tab
@@ -270,6 +260,31 @@ async def get_product(request, product_id: int):
     auth=jwt_auth,
 )
 async def update_product(request, product_id: int, payload: ProductUpdateIn):
+    """
+    입력 필드:
+    - product_id: 수정할 제품 ID (필수, 경로 파라미터)
+    - name: 제품명 (선택)
+    - code: 제품 코드 (선택)
+    - unit: 단위 (선택)
+    - spec: 규격 (선택)
+    - current_stock: 현재 재고 (선택)
+    - average_production_time: 평균 생산 시간 (선택, null 허용)
+    - buffer_rate: 버퍼율 (선택)
+    - location: 위치 (선택, null 허용)
+    - note: 비고 (선택, null 허용)
+
+    반환 필드:
+    - id: 제품 ID (int)
+    - factory: 팩토리 ID (int)
+    - name: 제품명 (str)
+    - code: 제품 코드 (str)
+    - unit: 단위 (str)
+    - spec: 규격 (str)
+    - current_stock: 현재 재고 (int)
+    - average_production_time: 평균 생산 시간 (int, null 허용)
+    - buffer_rate: 버퍼율 (float)
+    - note: 비고 (str, null 허용)
+    """
     user = request.auth
     product = await get_product_by_id(product_id, user)
     update_data = payload.dict(exclude_unset=True)

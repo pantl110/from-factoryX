@@ -112,7 +112,7 @@ async def list_factory_clients(
     return result
 
 
-# Factory Client Information Tab
+# Material, Factory Client Information Tab
 @router.get(
     "/{client_id}",
     summary="[C] 공장 거래처 상세 조회",

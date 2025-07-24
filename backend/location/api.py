@@ -10,6 +10,7 @@ from stock.models import Material, Product
 router = Router(tags=["Location"], auth=jwt_auth)
 
 
+# Material/Product Tab
 @router.post(
     "", 
     summary="[C] 창고 위치 생성", 
