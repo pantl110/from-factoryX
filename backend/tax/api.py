@@ -2,19 +2,20 @@ from ninja import Router
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
-from tax.schemas.outbound import NotLinkedTaxInvoiceOut, AllTaxInvoiceOut
+from tax.schemas.outbound import NotLinkedTaxInvoiceOut, AllTaxInvoiceOut, AllCashReceiptOut, TaxInvoiceByMaterialOut, TaxInvoiceMaterialInfoOut
 from tax.schemas.inbound import LinkTaxInvoiceIn
 from api.security import jwt_auth
 from typing import List
 from ninja import Query
-from tax.models import NationalTaxService
-from django.db import models
+from tax.models import NationalTaxService, CashReceipt
+from datetime import date
+from project.models import Project
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
 
 
-# Tax Tab
+# Material, Tax Tab
 @router.get(
     "/published",
     summary="[C] 발행된 모든 세금계산서 조회",
@@ -27,6 +28,9 @@ async def list_published_tax_invoices(
     factory_id: int = Query(..., description="공장 ID"),
     q: str = Query(None, description="거래처명 또는 품목명 통합 검색어"),
     tax_invoice_type: str = Query("all", description="세금계산서 유형: all(전체), sales(매출), purchase(매입)"),
+    start_date: date = Query(None, description="시작일"),
+    end_date: date = Query(None, description="종료일"),
+    order: str = Query("desc", description="작성일자 정렬: desc(최신순), asc(오래된순)"),
 ):
     """
     조건에 따라 세금계산서를 조회합니다.
@@ -49,11 +53,10 @@ async def list_published_tax_invoices(
     try:
         @sync_to_async
         def get_all_tax_invoices():
-            from tax.models import NationalTaxService
             qs = NationalTaxService.objects.filter(
                 client__factory_id=factory_id,
                 publish_status="published"
-            ).prefetch_related('client', 'product').order_by('-transaction_date')
+            ).prefetch_related('client', 'product')
 
             if tax_invoice_type == "sales":
                 qs = qs.filter(tax_invoice_type="sales")
@@ -66,6 +69,15 @@ async def list_published_tax_invoices(
                 ids_product = list(qs.filter(product__name__icontains=q).values_list('id', flat=True))
                 ids = set(ids_client) | set(ids_product)
                 qs = qs.filter(id__in=ids)
+
+            if start_date:
+                qs = qs.filter(transaction_date__gte=start_date)
+            if end_date:
+                qs = qs.filter(transaction_date__lte=end_date)
+            if order == "asc":
+                qs = qs.order_by("transaction_date")
+            else:
+                qs = qs.order_by("-transaction_date")
 
             return list(qs.distinct())
 
@@ -132,7 +144,6 @@ async def list_pending_tax_invoices(
     try:
         @sync_to_async
         def get_pending_tax_invoices():
-            from tax.models import NationalTaxService
             qs = NationalTaxService.objects.filter(
                 client__factory_id=factory_id
             ).prefetch_related('client', 'product').order_by('-transaction_date')
@@ -273,8 +284,6 @@ async def link_tax(request, payload: LinkTaxInvoiceIn):
     try:
         @sync_to_async
         def link_tax_invoice():
-            from project.models import Project
-            from tax.models import NationalTaxService
             
             # 프로젝트 존재 확인
             try:
@@ -310,3 +319,145 @@ async def link_tax(request, payload: LinkTaxInvoiceIn):
         raise
     except Exception as e:
         raise HttpError(500, "세금계산서 연결 중 내부 서버 오류가 발생했습니다.")
+
+
+@router.get(
+    "/receipt",
+    summary="[C] 현금영수증 검색/조회",
+    description="공장, 거래처명(q), 기간, 정렬로 현금영수증 검색",
+    response={200: list[AllCashReceiptOut], 400: dict, 500: dict}
+)
+@paginate
+async def list_cash_receipts(
+    request,
+    factory_id: int = Query(..., description="공장 ID"),
+    q: str = Query(None, description="거래처명 또는 품목명 통합 검색어"),
+    start_date: date = Query(None, description="시작일"),
+    end_date: date = Query(None, description="종료일"),
+    order: str = Query("desc", description="작성일자 정렬: desc(최신순), asc(오래된순)"),
+):
+    """
+    입력 필드(쿼리 파라미터):
+    - factory_id: 공장 ID (필수)
+    - q: 거래처명 또는 품목명 통합 검색어 (선택)
+    - start_date: 조회 시작일 (YYYY-MM-DD, 선택)
+    - end_date: 조회 종료일 (YYYY-MM-DD, 선택)
+    - order: 작성일자 정렬(desc: 최신순, asc: 오래된순, 기본값 desc)
+
+    반환 필드(각 영수증별 dict):
+    - id: 영수증 ID (int)
+    - transaction_date: 거래일자 (str, ISO8601)
+    - client_name: 업체명 (str)
+    - product_names: 품목명 리스트 (List[str])
+    - transaction_amount: 공급가액 (int)
+    - tax_amount: 세액 (int)
+    - total_amount: 합계금액 (int)
+    """
+    try:
+        @sync_to_async
+        def get_filtered_receipts():
+            qs = CashReceipt.objects.filter(
+                client__factory_id=factory_id
+            ).prefetch_related('client', 'product')
+            if q:
+                ids_client = list(qs.filter(client__name__icontains=q).values_list('id', flat=True))
+                ids_product = list(qs.filter(product__name__icontains=q).values_list('id', flat=True))
+                ids = set(ids_client) | set(ids_product)
+                qs = qs.filter(id__in=ids)
+            if start_date:
+                qs = qs.filter(transaction_date__gte=start_date)
+            if end_date:
+                qs = qs.filter(transaction_date__lte=end_date)
+            if order == "asc":
+                qs = qs.order_by("transaction_date")
+            else:
+                qs = qs.order_by("-transaction_date")
+            return list(qs.distinct())
+        receipts = await get_filtered_receipts()
+        result = []
+        for receipt in receipts:
+            product_names = [product.name for product in receipt.product.all()]
+            total_amount = receipt.transaction_amount + receipt.tax_amount
+            result.append(AllCashReceiptOut(
+                id=receipt.id,
+                transaction_date=receipt.transaction_date,
+                client_name=receipt.client.name,
+                product_names=product_names,
+                transaction_amount=receipt.transaction_amount,
+                tax_amount=receipt.tax_amount,
+                total_amount=total_amount
+            ))
+        return result
+    except Exception as e:
+        raise HttpError(500, f"현금영수증 검색 중 오류: {e}")
+
+
+@router.get(
+    "/invoice-by-material",
+    summary="[C] 자재별 세금계산서 및 구매정보 조회",
+    description="material_id로 세금계산서(구매) 및 자재정보를 조회",
+    response={200: list[TaxInvoiceByMaterialOut], 404: dict, 500: dict}
+)
+async def get_tax_invoice_by_material(request, material_id: int):
+    """
+    입력 필드(쿼리 파라미터):
+    - material_id: 자재 ID (필수)
+
+    반환 필드(세금계산서별 dict):
+    - client_name: 업체명 (str)
+    - business_registration_number: 사업자등록번호 (str)
+    - representative_name: 대표자명 (str)
+    - business_type: 업태 (str)
+    - business_category: 종목 (str)
+    - address: 사업장 주소 (str)
+    - transaction_date: 작성일자 (date)
+    - tax_invoice_type: 문서상태(매입/매출) (str)
+    - transaction_type: 구분 (str)
+    - materials: 구매 자재 정보 리스트(List[dict])
+      - material_name: 자재명 (str)
+      - spec: 규격 (str)
+      - quantity: 수량 (int)
+      - unit: 단위 (str)
+      - price: 단가 (int)
+      - transaction_amount: 공급가액 (int)
+      - tax_amount: 세액 (int)
+    """
+    from stock.models import MaterialHistory
+    from tax.models import NationalTaxService
+    try:
+        def get_invoice_data(material_id):
+            invoice_map = {}
+            histories = MaterialHistory.objects.filter(
+                material_id=material_id,
+                purchase_tax_invoice__isnull=False
+            ).select_related('purchase_tax_invoice', 'material', 'client')
+            for h in histories:
+                invoice = h.purchase_tax_invoice
+                if invoice.id not in invoice_map:
+                    client = invoice.client
+                    invoice_map[invoice.id] = {
+                        "client_name": client.name,
+                        "business_registration_number": client.business_registration_number,
+                        "representative_name": client.representative_name,
+                        "business_type": client.business_type,
+                        "business_category": client.business_category,
+                        "address": client.address,
+                        "transaction_date": invoice.transaction_date,
+                        "tax_invoice_type": "매입" if invoice.tax_invoice_type == "purchase" else "매출",
+                        "transaction_type": "영수" if invoice.transaction_type == "receipt" else "청구",
+                        "materials": []
+                    }
+                invoice_map[invoice.id]["materials"].append(dict(
+                    material_name=h.material.name,
+                    spec=h.material.spec,
+                    quantity=h.quantity,
+                    unit=h.material.unit,
+                    price=h.price or 0,
+                    transaction_amount=invoice.transaction_amount,
+                    tax_amount=invoice.tax_amount
+                ))
+            return list(invoice_map.values())
+        raw_data = await sync_to_async(get_invoice_data)(material_id)
+        return [TaxInvoiceByMaterialOut(**v) for v in raw_data]
+    except Exception as e:
+        raise HttpError(500, f"자재별 세금계산서 조회 중 오류: {e}")

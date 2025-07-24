@@ -1113,3 +1113,182 @@ class TaxAPITestCase(TestCase):
         data = response.json()
         self.assertEqual(len(data['data']), 1)
         self.assertIn(self.product2.name, data['data'][0]['product_names'])
+
+    def test_list_all_tax_invoices_period_and_order(self):
+        """
+        기간 필터(start_date, end_date)와 정렬(order) 파라미터 동작 테스트
+        """
+        # 데이터 생성
+        invoice1 = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 1),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice1.product.add(self.product1)
+        invoice2 = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 2),
+            transaction_amount=200000,
+            tax_amount=20000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice2.product.add(self.product2)
+        invoice3 = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 3),
+            transaction_amount=300000,
+            tax_amount=30000,
+            tax_invoice_type='sales',
+            publish_status='published'
+        )
+        invoice3.product.add(self.product3)
+        # 전체 조회(최신순)
+        url = f'/v1/tax/published?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual([d['id'] for d in data[:3]], [invoice3.id, invoice2.id, invoice1.id])
+        # 기간 필터 (2025-06-02 ~ 2025-06-03)
+        url = f'/v1/tax/published?factory_id={self.factory.id}&start_date=2025-06-02&end_date=2025-06-03'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual(set([d['id'] for d in data]), set([invoice2.id, invoice3.id]))
+        # 정렬 asc(오래된순)
+        url = f'/v1/tax/published?factory_id={self.factory.id}&order=asc'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual([d['id'] for d in data[:3]], [invoice1.id, invoice2.id, invoice3.id])
+
+    def test_list_all_cash_receipts_period_and_order(self):
+        """
+        현금영수증 /receipt API 기간, 검색, 정렬 파라미터 동작 테스트
+        """
+        from tax.models import CashReceipt
+        # 데이터 생성
+        receipt1 = CashReceipt.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 1),
+            approval_number="A1",
+            transaction_classification="일반",
+            transaction_purpose="구매",
+            transaction_amount=10000,
+            tax_amount=1000
+        )
+        receipt1.product.add(self.product1)
+        receipt2 = CashReceipt.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 2),
+            approval_number="A2",
+            transaction_classification="일반",
+            transaction_purpose="구매",
+            transaction_amount=20000,
+            tax_amount=2000
+        )
+        receipt2.product.add(self.product2)
+        receipt3 = CashReceipt.objects.create(
+            client=self.client_company2,
+            transaction_date=date(2025, 6, 3),
+            approval_number="A3",
+            transaction_classification="일반",
+            transaction_purpose="구매",
+            transaction_amount=30000,
+            tax_amount=3000
+        )
+        receipt3.product.add(self.product3)
+        # 전체 조회(최신순)
+        url = f'/v1/tax/receipt?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual([d['id'] for d in data[:3]], [receipt3.id, receipt2.id, receipt1.id])
+        # 기간 필터 (2025-06-02 ~ 2025-06-03)
+        url = f'/v1/tax/receipt?factory_id={self.factory.id}&start_date=2025-06-02&end_date=2025-06-03'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual(set([d['id'] for d in data]), set([receipt2.id, receipt3.id]))
+        # 정렬 asc(오래된순)
+        url = f'/v1/tax/receipt?factory_id={self.factory.id}&order=asc'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual([d['id'] for d in data[:3]], [receipt1.id, receipt2.id, receipt3.id])
+        # 거래처명 검색
+        url = f'/v1/tax/receipt?factory_id={self.factory.id}&q=싫어'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['client_name'], '플라스틱이 싫어')
+
+    def test_get_tax_invoice_by_material(self):
+        """
+        /invoice-by-material API 자재별 세금계산서 및 구매정보 조회 테스트
+        """
+        from stock.models import Material, MaterialHistory
+        from tax.models import NationalTaxService
+        # 자재 생성
+        material = Material.objects.create(
+            factory=self.factory,
+            name='테스트자재',
+            code='MAT001',
+            unit='EA',
+            spec='10T',
+            current_stock=100,
+            standard_stock=10
+        )
+        # 세금계산서(매입) 생성
+        invoice = NationalTaxService.objects.create(
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 10),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type='purchase',
+            transaction_type='receipt',
+            publish_status='published'
+        )
+        # 자재 구매 이력 생성(세금계산서 연결)
+        history = MaterialHistory.objects.create(
+            material=material,
+            client=self.client_company1,
+            type='purchase',
+            quantity=50,
+            price=2000,
+            total_stock=150,
+            purchase_tax_invoice=invoice
+        )
+        # API 호출
+        url = f'/v1/tax/invoice-by-material?material_id={material.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        if response.status_code != 200:
+            print("응답:", response.json())
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(isinstance(data, list))
+        self.assertEqual(len(data), 1)
+        invoice_data = data[0]
+        self.assertEqual(invoice_data['client_name'], self.client_company1.name)
+        self.assertEqual(invoice_data['business_registration_number'], self.client_company1.business_registration_number)
+        self.assertEqual(invoice_data['representative_name'], self.client_company1.representative_name)
+        self.assertEqual(invoice_data['business_type'], self.client_company1.business_type)
+        self.assertEqual(invoice_data['business_category'], self.client_company1.business_category)
+        self.assertEqual(invoice_data['address'], self.client_company1.address)
+        self.assertEqual(invoice_data['transaction_date'], '2025-06-10')
+        self.assertEqual(invoice_data['tax_invoice_type'], '매입')
+        self.assertEqual(invoice_data['transaction_type'], '영수')
+        self.assertIn('materials', invoice_data)
+        self.assertEqual(len(invoice_data['materials']), 1)
+        mat = invoice_data['materials'][0]
+        self.assertEqual(mat['material_name'], material.name)
+        self.assertEqual(mat['spec'], material.spec)
+        self.assertEqual(mat['quantity'], 50)
+        self.assertEqual(mat['unit'], material.unit)
+        self.assertEqual(mat['price'], 2000)
+        self.assertEqual(mat['transaction_amount'], 100000)
+        self.assertEqual(mat['tax_amount'], 10000)

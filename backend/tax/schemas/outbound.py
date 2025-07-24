@@ -23,3 +23,35 @@ class AllTaxInvoiceOut(Schema):
     transaction_amount: int
     tax_amount: int
     total_amount: int
+
+
+class AllCashReceiptOut(Schema):
+    id: int
+    transaction_date: date
+    client_name: str
+    product_names: List[str]
+    transaction_amount: int
+    tax_amount: int
+    total_amount: int
+
+
+class TaxInvoiceMaterialInfoOut(Schema):
+    material_name: str
+    spec: str
+    quantity: int
+    unit: str
+    price: int
+    transaction_amount: int
+    tax_amount: int
+
+class TaxInvoiceByMaterialOut(Schema):
+    client_name: str
+    business_registration_number: str
+    representative_name: Optional[str] = None
+    business_type: Optional[str] = None
+    business_category: Optional[str] = None
+    address: Optional[str] = None
+    transaction_date: date
+    tax_invoice_type: str
+    transaction_type: str
+    materials: List[TaxInvoiceMaterialInfoOut]

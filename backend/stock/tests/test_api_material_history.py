@@ -511,3 +511,69 @@ class TestMaterialHistoryAPI(TestCase):
         # 생성된 이력의 client_id가 기존 거래처와 같은지 확인
         data = response.json()
         self.assertEqual(data["materials"][0]["client_id"], old_client.id)
+
+    async def test_get_material_history_detail_success(self):
+        """
+        [C] 원자재 이력 상세 조회 API 정상 동작 테스트
+        """
+        headers = await self.authenticate()
+        # 이력 생성
+        history = await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=self.client_obj,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=10,
+            price=1000,
+            total_stock=110,
+        )
+        # 매입 세금계산서/현금영수증 연결 테스트용 생성
+        from tax.models import NationalTaxService, CashReceipt
+        tax_invoice = await sync_to_async(NationalTaxService.objects.create)(
+            transaction_date="2024-06-01",
+            client=self.client_obj,
+            transaction_amount=10000,
+            tax_amount=1000
+        )
+        cash_receipt = await sync_to_async(CashReceipt.objects.create)(
+            transaction_date="2024-06-01",
+            approval_number="A1234",
+            transaction_classification="일반",
+            transaction_purpose="구매",
+            client=self.client_obj,
+            transaction_amount=10000,
+            tax_amount=1000
+        )
+        # 연결된 이력 생성
+        history2 = await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=self.client_obj,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=5,
+            price=2000,
+            total_stock=115,
+            purchase_tax_invoice=tax_invoice,
+            cash_receipt=cash_receipt
+        )
+        # 상세 조회
+        url = f"/detail?material_id={self.material.id}&page_size=100"
+        response = await self.client.get(url, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()["data"]
+        self.assertTrue(len(data) >= 2)
+        # 필드 검증
+        found = False
+        for item in data:
+            if not isinstance(item, dict) or "id" not in item:
+                continue  # count, page 등은 무시
+            self.assertIn("id", item)
+            self.assertIn("date", item)
+            self.assertIn("type", item)
+            self.assertIn("quantity", item)
+            self.assertIn("total_stock", item)
+            self.assertIn("purchase_tax_invoice_id", item)
+            self.assertIn("cash_receipt_id", item)
+            if item["id"] == history2.id:
+                self.assertEqual(item["purchase_tax_invoice_id"], tax_invoice.id)
+                self.assertEqual(item["cash_receipt_id"], cash_receipt.id)
+                found = True
+        self.assertTrue(found)
