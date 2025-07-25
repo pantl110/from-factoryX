@@ -1,6 +1,6 @@
 from django.db import models
 from common.models import BaseModel
-from factory.models import FactoryClient
+from factory.models import FactoryClient, Factory
 
 
 class TransactionType(models.TextChoices):
@@ -21,6 +21,22 @@ class PublishStatus(models.TextChoices):
 
 # 국세청 API 세금계산서 데이터 저장
 class NationalTaxService(BaseModel):
+    # factory? 공장 = 회사
+    user = models.ForeignKey(
+        "user.User",
+        related_name="national_tax_services",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="사용자",
+    )
+    factory = models.ForeignKey(
+        "factory.Factory",
+        related_name="national_tax_services",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     publish_status = models.CharField(
         max_length=10,
         choices=PublishStatus.choices,
@@ -51,6 +67,12 @@ class NationalTaxService(BaseModel):
     transaction_amount = models.IntegerField(help_text="공급 가액")
     tax_amount = models.IntegerField(help_text="세액")
     is_hidden = models.BooleanField(default=False, help_text="숨김 여부")
+    # 세금계산서 발행할 필요한 정보들...
+    line_items = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="세금계산서 품목 리스트",
+    )
 
 
 # 국세청 API 현금 영수증 데이터 저장

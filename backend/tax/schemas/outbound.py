@@ -1,6 +1,13 @@
 from datetime import date
 from typing import List, Optional
-from ninja import Schema
+from ninja import Schema, ModelSchema
+from tax.models import NationalTaxService
+
+
+class NationalTaxServiceOut(ModelSchema):
+    class Meta:
+        model = NationalTaxService
+        fields = "__all__"
 
 
 class NotLinkedTaxInvoiceOut(Schema):

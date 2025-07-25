@@ -102,6 +102,12 @@ class User(AbstractUser):
         max_length=150,
         editable=False,
     )
+    name = models.CharField(
+        max_length=150,
+        null=True,
+        blank=True,
+        help_text="이름",
+    )
     username = models.CharField(
         max_length=150,
         editable=False,
@@ -154,6 +160,12 @@ class User(AbstractUser):
     marketing_agreement = models.BooleanField(
         default=False,
         help_text="마케팅 정보 수신 동의 여부",
+    )
+    barobill_user_id = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="바로빌 사용자 ID",
     )
 
 

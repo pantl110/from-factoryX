@@ -2,16 +2,92 @@ from ninja import Router
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
-from tax.schemas.outbound import NotLinkedTaxInvoiceOut, AllTaxInvoiceOut
-from tax.schemas.inbound import LinkTaxInvoiceIn
+from tax.schemas.inbound import LinkTaxInvoiceIn, NationalTaxServiceCreateIn
+from tax.schemas.outbound import (
+    NotLinkedTaxInvoiceOut,
+    AllTaxInvoiceOut,
+    NationalTaxServiceOut,
+)
 from api.security import jwt_auth
 from typing import List
 from ninja import Query
 from tax.models import NationalTaxService
 from django.db import models
+from factory.utils import get_factory_by_id, is_factory_member, get_factory_client_by_id
+from stock.utils import get_product_list_by_ids
+from django.db import transaction
+from tax.utils import get_tax_service_by_id
+from tax.barobill_utils import issue_barobill_tax_invoice
+from barobill.schemas.inbound import BarobillTaxInvoiceIssueIn
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
+
+
+@router.post(
+    "",
+    summary="[C] 세금계산서 생성",
+    description="국세청 API 세금계산서를 생성합니다.",
+    response={201: NationalTaxServiceOut, 400: dict, 500: dict},
+)
+async def create_tax_invoice(request, payload: NationalTaxServiceCreateIn):
+    user = request.auth
+    data = payload.dict()
+    factory_id = data.pop("factory")
+    # 공장 소유권 검증
+    member = await is_factory_member(factory_id, user)
+    # member.role에 따라 권한 추가 검증
+    factory = await get_factory_by_id(factory_id)
+    client_id = data.pop("client")
+    # 거래처 ID로 거래처 조회
+    client = await get_factory_client_by_id(client_id, factory_id)
+    product_ids = data.pop("product", [])
+
+    # NationalTaxService 모델 인스턴스 생성
+    @sync_to_async
+    @transaction.atomic
+    def create_tax_service():
+        tax_service = NationalTaxService.objects.create(
+            user=user,
+            factory=factory,
+            client=client,
+            **data,
+        )
+        products = get_product_list_by_ids(product_ids, factory_id)
+        tax_service.product.set(products)
+        return tax_service
+
+    tax_service = await create_tax_service()
+
+    tax_service = await NationalTaxService.objects.prefetch_related("product").aget(
+        id=tax_service.id,
+    )
+
+    return 201, tax_service
+
+
+@router.post(
+    "{tax_id}/publish",
+    summary="[C] 세금계산서 발행",
+    description="국세청 API 세금계산서를 발행합니다.",
+    response={200: NationalTaxServiceOut, 400: dict, 500: dict},
+)
+async def publish_tax_invoice(request, tax_id: int):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    member = await is_factory_member(tax_service.factory.id, user)
+    # 멤버 권한 검증 추가해야함
+
+    # 바로빌 API
+    issue_barobill_tax_invoice(
+        tax_service, tax_service.factory, tax_service.client, user
+    )
+
+    # 발행 상태 업데이트
+    tax_service.publish_status = "published"
+    await tax_service.asave()
+
+    return {"message": "세금계산서가 발행되었습니다."}
 
 
 # Tax Tab
@@ -19,14 +95,16 @@ router = Router(tags=["Tax"], auth=jwt_auth)
     "/published",
     summary="[C] 발행된 모든 세금계산서 조회",
     description="조건에 따라 세금계산서를 조회합니다.",
-    response={200: List[AllTaxInvoiceOut], 400: dict, 500: dict}
+    response={200: List[AllTaxInvoiceOut], 400: dict, 500: dict},
 )
 @paginate
 async def list_published_tax_invoices(
     request,
     factory_id: int = Query(..., description="공장 ID"),
     q: str = Query(None, description="거래처명 또는 품목명 통합 검색어"),
-    tax_invoice_type: str = Query("all", description="세금계산서 유형: all(전체), sales(매출), purchase(매입)"),
+    tax_invoice_type: str = Query(
+        "all", description="세금계산서 유형: all(전체), sales(매출), purchase(매입)"
+    ),
 ):
     """
     조건에 따라 세금계산서를 조회합니다.
@@ -47,13 +125,18 @@ async def list_published_tax_invoices(
     - total_amount: 합계금액 (transaction_amount + tax_amount)
     """
     try:
+
         @sync_to_async
         def get_all_tax_invoices():
             from tax.models import NationalTaxService
-            qs = NationalTaxService.objects.filter(
-                client__factory_id=factory_id,
-                publish_status="published"
-            ).prefetch_related('client', 'product').order_by('-transaction_date')
+
+            qs = (
+                NationalTaxService.objects.filter(
+                    client__factory_id=factory_id, publish_status="published"
+                )
+                .prefetch_related("client", "product")
+                .order_by("-transaction_date")
+            )
 
             if tax_invoice_type == "sales":
                 qs = qs.filter(tax_invoice_type="sales")
@@ -62,8 +145,12 @@ async def list_published_tax_invoices(
             # "all"이면 필터 없음
 
             if q:
-                ids_client = list(qs.filter(client__name__icontains=q).values_list('id', flat=True))
-                ids_product = list(qs.filter(product__name__icontains=q).values_list('id', flat=True))
+                ids_client = list(
+                    qs.filter(client__name__icontains=q).values_list("id", flat=True)
+                )
+                ids_product = list(
+                    qs.filter(product__name__icontains=q).values_list("id", flat=True)
+                )
                 ids = set(ids_client) | set(ids_product)
                 qs = qs.filter(id__in=ids)
 
@@ -74,24 +161,22 @@ async def list_published_tax_invoices(
         for invoice in invoices:
             product_names = [product.name for product in invoice.product.all()]
             total_amount = invoice.transaction_amount + invoice.tax_amount
-            tax_invoice_type_map = {
-                'sales': '매출',
-                'purchase': '매입'
-            }
+            tax_invoice_type_map = {"sales": "매출", "purchase": "매입"}
             tax_invoice_type_kr = tax_invoice_type_map.get(
-                invoice.tax_invoice_type, 
-                invoice.tax_invoice_type
+                invoice.tax_invoice_type, invoice.tax_invoice_type
             )
-            result.append(AllTaxInvoiceOut(
-                id=invoice.id,
-                tax_invoice_type=tax_invoice_type_kr,
-                transaction_date=invoice.transaction_date,
-                client_name=invoice.client.name,
-                product_names=product_names,
-                transaction_amount=invoice.transaction_amount,
-                tax_amount=invoice.tax_amount,
-                total_amount=total_amount
-            ))
+            result.append(
+                AllTaxInvoiceOut(
+                    id=invoice.id,
+                    tax_invoice_type=tax_invoice_type_kr,
+                    transaction_date=invoice.transaction_date,
+                    client_name=invoice.client.name,
+                    product_names=product_names,
+                    transaction_amount=invoice.transaction_amount,
+                    tax_amount=invoice.tax_amount,
+                    total_amount=total_amount,
+                )
+            )
         return result
     except Exception as e:
         raise HttpError(500, f"세금계산서 조회 중 내부 서버 오류가 발생했습니다: {e}")
@@ -102,14 +187,17 @@ async def list_published_tax_invoices(
     "/pending",
     summary="[C] 발행대기/임시저장 세금계산서 조회",
     description="발행대기 또는 임시저장 상태의 세금계산서를 조회합니다.",
-    response={200: List[AllTaxInvoiceOut], 400: dict, 500: dict}
+    response={200: List[AllTaxInvoiceOut], 400: dict, 500: dict},
 )
 @paginate
 async def list_pending_tax_invoices(
     request,
     factory_id: int = Query(..., description="공장 ID"),
     q: str = Query(None, description="거래처명 또는 품목명 통합 검색어"),
-    publish_status: str = Query("all", description="세금계산서 상태: all(전체), pending(발행대기), temporary(임시저장)"),
+    publish_status: str = Query(
+        "all",
+        description="세금계산서 상태: all(전체), pending(발행대기), temporary(임시저장)",
+    ),
 ):
     """
     발행대기/임시저장 상태의 세금계산서를 조회합니다.
@@ -130,12 +218,16 @@ async def list_pending_tax_invoices(
     - total_amount: 합계금액 (transaction_amount + tax_amount)
     """
     try:
+
         @sync_to_async
         def get_pending_tax_invoices():
             from tax.models import NationalTaxService
-            qs = NationalTaxService.objects.filter(
-                client__factory_id=factory_id
-            ).prefetch_related('client', 'product').order_by('-transaction_date')
+
+            qs = (
+                NationalTaxService.objects.filter(client__factory_id=factory_id)
+                .prefetch_related("client", "product")
+                .order_by("-transaction_date")
+            )
 
             # 상태 필터
             if publish_status == "pending":
@@ -147,8 +239,12 @@ async def list_pending_tax_invoices(
 
             # 통합 검색
             if q:
-                ids_client = list(qs.filter(client__name__icontains=q).values_list('id', flat=True))
-                ids_product = list(qs.filter(product__name__icontains=q).values_list('id', flat=True))
+                ids_client = list(
+                    qs.filter(client__name__icontains=q).values_list("id", flat=True)
+                )
+                ids_product = list(
+                    qs.filter(product__name__icontains=q).values_list("id", flat=True)
+                )
                 ids = set(ids_client) | set(ids_product)
                 qs = qs.filter(id__in=ids)
 
@@ -159,24 +255,22 @@ async def list_pending_tax_invoices(
         for invoice in invoices:
             product_names = [product.name for product in invoice.product.all()]
             total_amount = invoice.transaction_amount + invoice.tax_amount
-            tax_invoice_type_map = {
-                'sales': '매출',
-                'purchase': '매입'
-            }
+            tax_invoice_type_map = {"sales": "매출", "purchase": "매입"}
             tax_invoice_type_kr = tax_invoice_type_map.get(
-                invoice.tax_invoice_type, 
-                invoice.tax_invoice_type
+                invoice.tax_invoice_type, invoice.tax_invoice_type
             )
-            result.append(AllTaxInvoiceOut(
-                id=invoice.id,
-                tax_invoice_type=tax_invoice_type_kr,
-                transaction_date=invoice.transaction_date,
-                client_name=invoice.client.name,
-                product_names=product_names,
-                transaction_amount=invoice.transaction_amount,
-                tax_amount=invoice.tax_amount,
-                total_amount=total_amount
-            ))
+            result.append(
+                AllTaxInvoiceOut(
+                    id=invoice.id,
+                    tax_invoice_type=tax_invoice_type_kr,
+                    transaction_date=invoice.transaction_date,
+                    client_name=invoice.client.name,
+                    product_names=product_names,
+                    transaction_amount=invoice.transaction_amount,
+                    tax_amount=invoice.tax_amount,
+                    total_amount=total_amount,
+                )
+            )
         return result
     except Exception as e:
         raise HttpError(500, f"세금계산서 조회 중 내부 서버 오류가 발생했습니다: {e}")
@@ -187,17 +281,17 @@ async def list_pending_tax_invoices(
     "/unlinked",
     summary="[C] 연동되지 않은 세금계산서 조회",
     description="연동되지 않은 세금계산서를 모두 조회합니다.",
-    response={200: List[NotLinkedTaxInvoiceOut], 400: dict, 500: dict}
+    response={200: List[NotLinkedTaxInvoiceOut], 400: dict, 500: dict},
 )
 @paginate
 async def list_not_link_tax(request):
     """
     연동되지 않은 세금계산서를 모두 조회합니다.
-    
+
     입력 필드:
     - factory_id: 공장 ID (필수)
     - q: 거래처명 검색어 (선택)
-    
+
     반환 필드:
     - id: 세금계산서 ID (NationalTaxService.id)
     - tax_invoice_type: 세금계산서 유형 (NationalTaxService.tax_invoice_type)
@@ -213,44 +307,46 @@ async def list_not_link_tax(request):
         factory_id = request.GET.get("factory_id")
         if not factory_id:
             raise HttpError(400, "factory_id는 필수 입력값입니다.")
+
         @sync_to_async
         def get_unlinked_tax_invoices():
-            qs = NationalTaxService.objects.filter(
-                projects__isnull=True,
-                client__factory_id=factory_id
-            ).prefetch_related(
-                'client',
-                'product'
-            ).order_by('-transaction_date')
+            qs = (
+                NationalTaxService.objects.filter(
+                    projects__isnull=True, client__factory_id=factory_id
+                )
+                .prefetch_related("client", "product")
+                .order_by("-transaction_date")
+            )
             if q:
                 qs = qs.filter(client__name__icontains=q)
             return list(qs)
+
         invoices = await get_unlinked_tax_invoices()
         result = []
         for invoice in invoices:
             product_names = [product.name for product in invoice.product.all()]
             total_amount = invoice.transaction_amount + invoice.tax_amount
-            tax_invoice_type_map = {
-                'sales': '매출',
-                'purchase': '매입'
-            }
+            tax_invoice_type_map = {"sales": "매출", "purchase": "매입"}
             tax_invoice_type_kr = tax_invoice_type_map.get(
-                invoice.tax_invoice_type, 
-                invoice.tax_invoice_type
+                invoice.tax_invoice_type, invoice.tax_invoice_type
             )
-            result.append(NotLinkedTaxInvoiceOut(
-                id=invoice.id,
-                tax_invoice_type=tax_invoice_type_kr,
-                transaction_date=invoice.transaction_date,
-                client_name=invoice.client.name,
-                product_names=product_names,
-                transaction_amount=invoice.transaction_amount,
-                tax_amount=invoice.tax_amount,
-                total_amount=total_amount
-            ))
+            result.append(
+                NotLinkedTaxInvoiceOut(
+                    id=invoice.id,
+                    tax_invoice_type=tax_invoice_type_kr,
+                    transaction_date=invoice.transaction_date,
+                    client_name=invoice.client.name,
+                    product_names=product_names,
+                    transaction_amount=invoice.transaction_amount,
+                    tax_amount=invoice.tax_amount,
+                    total_amount=total_amount,
+                )
+            )
         return result
     except Exception as e:
-        raise HttpError(500, "연동되지 않은 세금계산서 조회 중 내부 서버 오류가 발생했습니다.")
+        raise HttpError(
+            500, "연동되지 않은 세금계산서 조회 중 내부 서버 오류가 발생했습니다."
+        )
 
 
 # Project Tab
@@ -258,54 +354,60 @@ async def list_not_link_tax(request):
     "/link",
     summary="[C] 선택된 세금계산서 연결",
     description="선택된 세금계산서를 프로젝트에 연결합니다.",
-    response={200: dict, 400: dict, 404: dict, 500: dict}
+    response={200: dict, 400: dict, 404: dict, 500: dict},
 )
 async def link_tax(request, payload: LinkTaxInvoiceIn):
     """
     선택된 세금계산서를 프로젝트에 연결합니다.
-    
+
     입력 필드:
     - project_id: 프로젝트 ID (int)
     - tax_id: 세금계산서 ID (int)
-    
+
     반환 필드: 없음 (성공 시 빈 응답)
     """
     try:
+
         @sync_to_async
         def link_tax_invoice():
             from project.models import Project
             from tax.models import NationalTaxService
-            
+
             # 프로젝트 존재 확인
             try:
                 project = Project.objects.get(id=payload.project_id)
             except Project.DoesNotExist:
                 raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
-            
+
             # 세금계산서 존재 확인
             try:
                 tax_invoice = NationalTaxService.objects.get(id=payload.tax_id)
             except NationalTaxService.DoesNotExist:
-                raise HttpError(404, f"세금계산서 ID {payload.tax_id}를 찾을 수 없습니다.")
-            
+                raise HttpError(
+                    404, f"세금계산서 ID {payload.tax_id}를 찾을 수 없습니다."
+                )
+
             # 이미 다른 프로젝트에 연결되어 있는지 확인
             if tax_invoice.projects.exists():
-                raise HttpError(400, f"세금계산서 ID {payload.tax_id}는 이미 다른 프로젝트에 연결되어 있습니다.")
-            
+                raise HttpError(
+                    400,
+                    f"세금계산서 ID {payload.tax_id}는 이미 다른 프로젝트에 연결되어 있습니다.",
+                )
+
             # 프로젝트의 기존 세금계산서가 있다면 제거
             if project.tax_invoice:
                 project.tax_invoice = None
                 project.save()
-            
+
             # 새로운 세금계산서 연결
             project.tax_invoice = tax_invoice
             project.save()
-            
+
             return {}
-        
+
         result = await link_tax_invoice()
         return result
-        
+
     except HttpError:
         raise
     except Exception as e:
