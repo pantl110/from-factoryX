@@ -11,7 +11,7 @@ from stock.utils import get_product_list_by_ids
 from django.db import transaction
 from tax.utils import get_tax_service_by_id
 from tax.barobill_utils import issue_barobill_tax_invoice
-from tax.schemas.inbound import NationalTaxServiceCreateIn
+from tax.schemas.inbound import NationalTaxServiceCreateIn, NationalTaxServiceUpdateIn
 from tax.schemas.outbound import NationalTaxServiceOut, AllTaxInvoiceOut
 from tax.schemas.outbound import (
     NotLinkedTaxInvoiceOut,
@@ -75,17 +75,99 @@ async def create_tax_invoice(request, payload: NationalTaxServiceCreateIn):
     return 201, tax_service
 
 
+@router.get(
+    "/{tax_id}",
+    summary="[C] 세금계산서 상세 조회",
+    description="세금계산서 상세 정보를 조회합니다.",
+    response={200: NationalTaxServiceOut, 404: dict, 500: dict},
+)
+async def get_tax_invoice(request, tax_id: int):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    member = await is_factory_member(tax_service.factory.id, user)
+    # 멤버 권한 검증 추가해야함
+    return tax_service
+
+
+@router.patch(
+    "/{tax_id}",
+    summary="[C] 세금계산서 수정",
+    description="국세청 API 세금계산서를 수정합니다.",
+    response={200: NationalTaxServiceOut, 400: dict, 404: dict, 500: dict},
+)
+async def update_tax_invoice(request, tax_id: int, payload: NationalTaxServiceUpdateIn):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    member = await is_factory_member(tax_service.factory.id, user)
+    # 멤버 권한 검증 추가해야함
+
+    # 세금계산서가 발행 상태가 아니면 오류
+    if tax_service.publish_status == "published":
+        raise HttpError(400, "발행된 세금계산서는 수정할 수 없습니다.")
+
+    data = payload.dict(exclude_unset=True)
+    factory_id = data.pop("factory")
+    # 공장 소유권 검증
+    if factory_id != tax_service.factory.id:
+        raise HttpError(400, "세금계산서의 공장과 요청한 공장이 일치하지 않습니다.")
+
+    client_id = data.pop("client", None)
+    if client_id is not None:
+        client = await get_factory_client_by_id(client_id, factory_id)
+        tax_service.client = client
+
+    product_ids = data.pop("product", None)
+    if product_ids is not None:
+        products = get_product_list_by_ids(product_ids, factory_id)
+        await tax_service.product.aset(products)
+
+    # line_items는 수정 시에만 업데이트
+    line_items = data.pop("line_items", None)
+    if line_items is not None:
+        tax_service.line_items = line_items
+
+    for attr, value in data.items():
+        setattr(tax_service, attr, value)
+
+    await tax_service.asave()
+
+    tax_service = await NationalTaxService.objects.prefetch_related("product").aget(
+        id=tax_service.id,
+    )
+
+    return tax_service
+
+
+@router.delete(
+    "/{tax_id}",
+    summary="[C] 세금계산서 삭제",
+    description="국세청 API 세금계산서를 삭제합니다.",
+    response={204: None, 404: dict, 500: dict},
+)
+async def delete_tax_invoice(request, tax_id: int):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    member = await is_factory_member(tax_service.factory.id, user)
+    # 멤버 권한 검증 추가해야함
+
+    await tax_service.adelete()
+    return 204, None
+
+
 @router.post(
     "{tax_id}/publish",
     summary="[C] 세금계산서 발행",
     description="국세청 API 세금계산서를 발행합니다.",
-    response={200: NationalTaxServiceOut, 400: dict, 500: dict},
+    response={200: dict, 400: dict, 500: dict},
 )
 async def publish_tax_invoice(request, tax_id: int):
     user = request.auth
     tax_service = await get_tax_service_by_id(tax_id)
     member = await is_factory_member(tax_service.factory.id, user)
     # 멤버 권한 검증 추가해야함
+    # 세금계산서가 발행 상태가 아니면 오류
+    if tax_service.publish_status != "temporary":
+        raise HttpError(400, "세금계산서를 발행할 수 있는 상태가 아닙니다.")
 
     # 바로빌 API
     issue_barobill_tax_invoice(
