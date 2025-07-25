@@ -1,6 +1,13 @@
 from datetime import date
 from typing import List, Optional
-from ninja import Schema
+from ninja import Schema, ModelSchema
+from tax.models import NationalTaxService
+
+
+class NationalTaxServiceOut(ModelSchema):
+    class Meta:
+        model = NationalTaxService
+        fields = "__all__"
 
 
 class NotLinkedTaxInvoiceOut(Schema):
@@ -44,6 +51,7 @@ class TaxInvoiceMaterialInfoOut(Schema):
     transaction_amount: int
     tax_amount: int
 
+
 class TaxInvoiceByMaterialOut(Schema):
     client_name: str
     business_registration_number: str
@@ -65,6 +73,7 @@ class CashReceiptMaterialInfoOut(Schema):
     transaction_amount: int
     tax_amount: int
     total_amount: int
+
 
 class CashReceiptByMaterialOut(Schema):
     transaction_date: date
