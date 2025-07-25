@@ -1,5 +1,5 @@
 from ninja import Schema
-from typing import Optional
+from typing import Optional, List
 
 class LocationCreateIn(Schema):
     id: int
@@ -9,5 +9,6 @@ class LocationCreateIn(Schema):
 
 class LocationUpdateIn(Schema):
     type: str
+    location_id: int
     location: str
-    images: Optional[list] = None
+    images: Optional[List[str]] = None
