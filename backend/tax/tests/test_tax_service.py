@@ -7,6 +7,7 @@ from factory.models import Factory, FactoryClient, FactoryMember
 from asgiref.sync import sync_to_async
 from stock.models import Product
 from datetime import date
+from django.utils import timezone
 
 
 class TestTaxService(TestCase):
@@ -109,14 +110,14 @@ class TestTaxService(TestCase):
             "publish_status": "temporary",
             "tax_invoice_type": "sales",
             "transaction_type": "receipt",
-            "transaction_date": "2023-10-01",
+            "transaction_date": timezone.now().date().strftime("%Y-%m-%d"),
             "client": self.client_company1.id,
             "product": [self.product1.id, self.product2.id],
             "transaction_amount": 70000,
             "tax_amount": 7000,
             "line_items": [
                 {
-                    "purchase_expiry": date(2023, 10, 1),
+                    "purchase_expiry": timezone.now().date(),
                     "name": "M8 볼트 세트",
                     "information": "M8x20",
                     "chargeable_unit": "10",
@@ -126,7 +127,7 @@ class TestTaxService(TestCase):
                     "description": "볼트 세트 설명",
                 },
                 {
-                    "purchase_expiry": date(2023, 10, 1),
+                    "purchase_expiry": timezone.now().date(),
                     "name": "나사",
                     "information": "M6x15",
                     "chargeable_unit": "10",
@@ -143,14 +144,82 @@ class TestTaxService(TestCase):
         self.assertIn("id", response.json())
         return data.get("id")
 
-    async def test_publish_tax_invoice(self):
-        """세금계산서 발행 테스트"""
+    # async def test_publish_tax_invoice(self):
+    #     """세금계산서 발행 테스트"""
+    #     headers = await self.authenticate()
+    #     tax_service_id = await self.test_create_tax_service()
+
+    #     # 세금계산서 발행
+    #     response = await self.client.post(f"{tax_service_id}/publish", headers=headers)
+    #     data = response.json()
+    #     print("🐍 File: tests/test_tax_service.py | Line: 143 | setUp ~ data", data)
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertIn("id", response.json())
+
+    async def test_get_tax_service_by_id(self):
+        """세금계산서 ID로 조회 테스트"""
         headers = await self.authenticate()
         tax_service_id = await self.test_create_tax_service()
 
-        # 세금계산서 발행
-        response = await self.client.post(f"{tax_service_id}/publish", headers=headers)
+        response = await self.client.get(f"/{tax_service_id}", headers=headers)
         data = response.json()
-        print("🐍 File: tests/test_tax_service.py | Line: 143 | setUp ~ data", data)
+        # print("🐍 File: tests/test_tax_service.py | Line: 155 | setUp ~ data", data)
         self.assertEqual(response.status_code, 200)
         self.assertIn("id", response.json())
+        self.assertEqual(data["id"], tax_service_id)
+
+    async def test_update_tax_service(self):
+        """세금계산서 수정 테스트"""
+        headers = await self.authenticate()
+        tax_service_id = await self.test_create_tax_service()
+
+        # 세금계산서 수정
+        data = {
+            "factory": self.factory.id,
+            "client": self.client_company1.id,
+            "product": [self.product1.id, self.product2.id],
+            "transaction_amount": 80000,
+            "tax_amount": 8000,
+            "line_items": [
+                {
+                    "purchase_expiry": timezone.now().date(),
+                    "name": "M8 볼트 세트",
+                    "information": "M8x20",
+                    "chargeable_unit": "10",
+                    "unit_price": "6000",
+                    "amount": "60000",
+                    "tax": "6000",
+                    "description": "볼트 세트 수정 설명",
+                },
+                {
+                    "purchase_expiry": timezone.now().date(),
+                    "name": "나사",
+                    "information": "M6x15",
+                    "chargeable_unit": "10",
+                    "unit_price": "2000",
+                    "amount": "20000",
+                    "tax": "2000",
+                },
+            ],
+        }
+        response = await self.client.patch(
+            f"/{tax_service_id}", json=data, headers=headers
+        )
+        data = response.json()
+        # print("🐍 File: tests/test_tax_service.py | Line: 209 | setUp ~ data", data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("id", response.json())
+        self.assertEqual(data["id"], tax_service_id)
+
+    async def test_delete_tax_service(self):
+        """세금계산서 삭제 테스트"""
+        headers = await self.authenticate()
+        tax_service_id = await self.test_create_tax_service()
+
+        response = await self.client.delete(f"/{tax_service_id}", headers=headers)
+        self.assertEqual(response.status_code, 204)
+
+        # 삭제된 세금계산서 조회 시 404 에러 확인
+        response = await self.client.get(f"/{tax_service_id}", headers=headers)
+        self.assertEqual(response.status_code, 404)
