@@ -164,6 +164,11 @@ class ProductHistoryFilter(FilterSchema):
     )
 
 
+class MaterialHistoryDetailFilter(FilterSchema):
+    start_date: Optional[str] = Field(default=None, description="조회 시작일 (YYYY-MM-DD)")
+    end_date: Optional[str] = Field(default=None, description="조회 종료일 (YYYY-MM-DD)")
+
+
 class MaterialProductUpdateIn(Schema):
     quantity: float
 
