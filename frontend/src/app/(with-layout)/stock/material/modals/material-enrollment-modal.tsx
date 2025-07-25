@@ -7,7 +7,7 @@ import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState } from 'react';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from './manual-add-material';
-import useCreateMaterialHistory from '@/hooks/material-history/use-create-material-history';
+import useCreateMaterialHistory from '@/hooks/stock/material-history/use-create-material-history';
 import { ClientModel } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 import { useMaterialReloadStore } from '@/store/material-reload-store';

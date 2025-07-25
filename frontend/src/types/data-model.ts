@@ -175,7 +175,7 @@ export interface EquipmentListResponseModel extends PaginationModel {
 // 거래체 등록
 export interface ClientModel {
   factory_id: number;
-  type: ClientType;
+  // type?: ClientType;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -186,12 +186,12 @@ export interface ClientModel {
   business_category?: string;
   address?: string;
   manager?: string;
-  note: string;
+  note?: string;
 }
 
 export interface ClientResponseModel {
   id: number;
-  client_type: ClientType;
+  // client_type?: ClientType;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -216,7 +216,7 @@ export interface ClientListResponseModel extends PaginationModel {
 export interface ClientUpdateModel {
   client_id: number;
   factory_id: number;
-  client_type: ClientType;
+  // client_type?: ClientType;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -264,6 +264,28 @@ export interface ProductResponseModel {
 // 제품 목록 조회
 export interface ProductListResponseModel extends PaginationModel {
   data: ProductResponseModel[];
+}
+//////////////////////
+// Product History API
+export interface ProductHistoryModel {
+  product: number;
+  type: 'in' | 'out'; // 입고 또는 출고
+  quantity: number; // 재고 변동 수량
+  total_stock?: number; // 재고 변동 후 재고 수량
+}
+
+export interface ProductHistoryResponseModel {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  type: 'in' | 'out'; // 입고 또는 출고
+  product: number;
+  quantity: number;
+  total_stock?: number; // 재고 변동 후 재고 수량
+}
+
+export interface ProductHistoryListResponseModel extends PaginationModel {
+  data: ProductHistoryResponseModel[];
 }
 
 //////////////////////
@@ -327,6 +349,31 @@ export interface MaterialHistoryResponseModel {
 // 원자재 히스토리 조회
 export interface MaterialHistoryListResponseModel extends PaginationModel {
   data: MaterialHistoryResponseModel[];
+}
+
+//////////////////////
+// Material Product API
+export interface CreateMaterialProductModel {
+  type: 'material' | 'product'; // 연결 타입 (material: 원자재 기준, product: 제품 기준)
+  target_id: number; // 기준이 되는 ID (type이 material이면 Material ID, type이 product이면 Product ID)
+  connections: Array<{ id: number; quantity: number }>;
+  // - id: 연결할 ID (type이 material이면 Product ID, type이 product이면 Material ID)
+  // - quantity: 제품 1개 생산에 필요한 원자재 수량
+}
+
+export interface MaterialProductConnectionModel {
+  id: number;
+  product_id: number;
+  material_id: number;
+  quantity: number; // 제품 1개 생산에 필요한 원자재 수량
+  product_name: string;
+  material_name: string;
+}
+
+export interface MaterialProductConnectionResponseModel {
+  message: string;
+  created_connections: MaterialProductConnectionModel[]; // 생성된 연결 목록
+  total_count: number; // 생성된 총 연결 수
 }
 
 ////////////////////////////
@@ -547,7 +594,6 @@ export interface MaterialDataModel {
 }
 
 import {
-  ClientType,
   MemberRoleType,
   MemberStatusType,
   ProjectStatusType,
@@ -556,7 +602,6 @@ import {
 } from './status-type';
 
 export type {
-  ClientType,
   MemberRoleType,
   MemberStatusType,
   ProjectStatusType,

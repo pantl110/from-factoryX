@@ -20,14 +20,14 @@ export const EquipmentStatusColorMap: Record<
 };
 
 // 거래처 유형 // 설정 페이지
-export type ClientType = 'supplier' | 'customer'; // 발주처 | 수주처
-export const ClientTypeColorMap: Record<
-  ClientType,
-  { bgColor: string; textColor: string }
-> = {
-  supplier: { bgColor: 'bg-red-8', textColor: 'text-red' },
-  customer: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-};
+// export type ClientType = 'supplier' | 'customer'; // 발주처 | 수주처
+// export const ClientTypeColorMap: Record<
+//   ClientType,
+//   { bgColor: string; textColor: string }
+// > = {
+//   supplier: { bgColor: 'bg-red-8', textColor: 'text-red' },
+//   customer: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+// };
 
 // 프로젝트 상태
 export type ProjectStatusType =

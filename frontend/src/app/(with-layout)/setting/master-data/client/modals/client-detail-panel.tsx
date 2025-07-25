@@ -3,28 +3,27 @@ import {
   formatFaxNumber,
   formatPhoneNumber,
 } from '@/hooks';
-import useGetClientDetail from '@/hooks/factory-client/use-get-client-detail';
+import useGetClientDetail from '@/hooks/factory/factory-client/use-get-client-detail';
 import { useUpdateClient } from '@/hooks';
-import { ClientType, ClientUpdateModel } from '@/types/data-model';
-// import Chip from '@/ui/chip';
+import { ClientUpdateModel } from '@/types/data-model';
 import InfoLabelValue from '@/ui/info-label-value';
 import Panel from '@/ui/panel';
-// import Spinner from '@/ui/spinner';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
-// import { ClientTypeColorMap } from '@/types/status-type';
 
 interface ClientDetailPanelProps {
   clientId: number;
   factoryId: number;
   onClose: () => void;
+  refetchClient: () => void;
 }
 
 const ClientDetailPanel = ({
   clientId,
   factoryId,
   onClose,
+  refetchClient,
 }: ClientDetailPanelProps) => {
   const { getClientDetail, clientDetail } = useGetClientDetail();
   const { updateClient, isLoading: isUpdateLoading } = useUpdateClient();
@@ -46,7 +45,7 @@ const ClientDetailPanel = ({
       business_type: '',
       business_category: '',
       address: '',
-      client_type: 'customer',
+      // client_type: 'customer',
       note: '',
     },
   });
@@ -74,7 +73,7 @@ const ClientDetailPanel = ({
         business_type: clientDetail.business_type || '',
         business_category: clientDetail.business_category || '',
         address: clientDetail.address || '',
-        client_type: clientDetail.client_type as ClientType,
+        // client_type: clientDetail.client_type as ClientType,
         note: clientDetail.note || '',
       });
     }
@@ -89,28 +88,13 @@ const ClientDetailPanel = ({
       });
 
       if (result.success) {
+        refetchClient();
         onClose();
       }
     } catch (error) {
       console.error('Error updating client:', error);
     }
   };
-
-  // if (isLoading || error || !clientDetail) return (
-  //   <div className="flex justify-center items-center h-full">
-  //     <Spinner />
-  //   </div>
-  // );
-
-  // const clientType = clientDetail?.client_type;
-  // const clientTypeText =
-  //   clientType === 'supplier'
-  //     ? '발주처'
-  //     : clientType === 'customer'
-  //       ? '수주처'
-  //       : clientType;
-  // const clientTypeColor =
-  //   ClientTypeColorMap[clientType as keyof typeof ClientTypeColorMap];
 
   return (
     <Panel
@@ -288,7 +272,7 @@ const ClientDetailPanel = ({
               )}
             />
           </div>
-          <div className="flex">
+          {/* <div className="flex">
             <InfoLabelValue
               label="거래처"
               // value={
@@ -299,7 +283,7 @@ const ClientDetailPanel = ({
               //   />
               // }
             />
-          </div>
+          </div> */}
           <div className="flex border-b border-lg w-full">
             <Controller
               name="note"

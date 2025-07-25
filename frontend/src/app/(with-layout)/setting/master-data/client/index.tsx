@@ -13,6 +13,7 @@ interface ClientProps {
   isChecked: (id: number) => boolean;
   toggleAll: () => void;
   toggleOne: (id: number) => void;
+  refetchClient: () => void;
 }
 
 const Client = ({
@@ -22,6 +23,7 @@ const Client = ({
   isChecked,
   toggleAll,
   toggleOne,
+  refetchClient,
 }: ClientProps) => {
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const factoryId = useFactoryStore((state) => state.factoryId);
@@ -57,6 +59,7 @@ const Client = ({
       {selectedClientId && factoryId && (
         <ClientDetailPanel
           onClose={() => setSelectedClientId(null)}
+          refetchClient={refetchClient}
           clientId={selectedClientId}
           factoryId={factoryId}
         />

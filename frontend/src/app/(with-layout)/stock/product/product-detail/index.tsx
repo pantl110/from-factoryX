@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import ProductInfo, { ProductInfoModel } from './product-info';
 import MiniBtn from '@/ui/mini-btn';
 import StockStatus from './stock-status';
-import ProductStockLog from './product-stock-log';
+import ProductHistory from './product-history';
 import Panel from '@/ui/panel';
 import Spinner from '@/ui/spinner';
 import { ProductModel } from '@/types/data-model';
@@ -15,12 +15,9 @@ import {
 } from '@/hooks';
 import NoHistoryBox from '../../../../../ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
-import ProductStockModal from '../modals/product-stock-modal';
 import MaterialStockStatusModal from '../modals/material-stock-status-modal';
 import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import useFactoryStore from '@/store/factory-store';
-import { CalendarCheck, CaretDown } from '@phosphor-icons/react';
-import ProductStockLogDropdown from '../modals/product-stock-log-dropdown';
 import StockLocation from '../../stock-location';
 
 interface ProductDetailProps {
@@ -59,19 +56,9 @@ const ProductDetail = ({
 
   // 모달 오픈 상태
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-  const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false);
+  // const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false);
   const [isMaterialStockStatusModalOpen, setIsMaterialStockStatusModalOpen] =
     useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState('1개월');
-  const [customStartDate, setCustomStartDate] = useState('');
-  const [customEndDate, setCustomEndDate] = useState('');
-  const [isProductStockLogDropdownOpen, setIsProductStockLogDropdownOpen] =
-    useState(false); // 판넬의 품목 입·출고 내역 드롭다운
-
-  const handleDropdownSelect = (value: string) => {
-    setSelectedPeriod(value);
-    setIsProductStockLogDropdownOpen(false);
-  };
 
   // StockLocationItem 개수를 관리하는 상태
   const [stockLocationCount, setStockLocationCount] = useState(1);
@@ -228,16 +215,6 @@ const ProductDetail = ({
     }
   };
 
-  const handleDateAutoHyphen = (value: string, setter: (v: string) => void) => {
-    const digits = value.replace(/[^0-9]/g, '').slice(0, 8);
-    let formatted = digits;
-    if (digits.length > 4)
-      formatted = digits.slice(0, 4) + '-' + digits.slice(4);
-    if (digits.length > 6)
-      formatted = formatted.slice(0, 7) + '-' + formatted.slice(7);
-    setter(formatted);
-  };
-
   return (
     <>
       <Panel
@@ -338,74 +315,7 @@ const ProductDetail = ({
           </div>
 
           {/* 품목 입·출고 내역 */}
-          <div className="flex flex-col gap-3">
-            <div className="h-10 flex items-center gap-2">
-              <h3 className="Heading-3 text-dg h-10 flex items-center">
-                품목 입·출고 내역
-              </h3>
-              <div className="relative">
-                <MiniBtn
-                  text={selectedPeriod}
-                  textColor="text-dg"
-                  borderColor="border-lg"
-                  hoverColor="hover:bg-bg"
-                  icon={CaretDown}
-                  iconPosition="right"
-                  onClick={() => setIsProductStockLogDropdownOpen(true)}
-                  height="h-9"
-                />
-                {isProductStockLogDropdownOpen && (
-                  <div className="absolute top-12 right-0 z-10 pb-5">
-                    <ProductStockLogDropdown
-                      onClose={() => setIsProductStockLogDropdownOpen(false)}
-                      onSelect={handleDropdownSelect}
-                    />
-                  </div>
-                )}
-              </div>
-              {selectedPeriod === '직접 설정' && (
-                <div className="flex items-center px-3 h-9 gap-2 border border-lg rounded-lg">
-                  <CalendarCheck size={20} className="text-dg" />
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="YYYY-MM-DD"
-                    className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
-                    value={customStartDate}
-                    onChange={(e) =>
-                      handleDateAutoHyphen(e.target.value, setCustomStartDate)
-                    }
-                    maxLength={10}
-                    size={(customStartDate || 'YYYY-MM-DDDD').length}
-                  />
-                  <span className="mx-0">~</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="YYYY-MM-DD"
-                    className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
-                    value={customEndDate}
-                    onChange={(e) =>
-                      handleDateAutoHyphen(e.target.value, setCustomEndDate)
-                    }
-                    maxLength={10}
-                    size={(customEndDate || 'YYYY-MM-DDDD').length}
-                  />
-                </div>
-              )}
-            </div>
-            {productId === null ? ( // 재고가 없을 때로 조건을 바꿔야 함
-              <NoHistoryBox
-                title="아직 등록된 재고 이력이 없어요."
-                text="입고나 출고와 관련된 재고 이력이 등록되면 이곳에서 확인할 수 있어요."
-              />
-            ) : (
-              // 상세 모드
-              <ProductStockLog
-                setIsProductStockModalOpen={setIsProductStockModalOpen}
-              />
-            )}
-          </div>
+          <ProductHistory productId={productId} />
         </div>
       </Panel>
 
@@ -413,9 +323,9 @@ const ProductDetail = ({
       {isMaterialModalOpen && (
         <ConnectMaterialModal onClose={() => setIsMaterialModalOpen(false)} />
       )}
-      {isProductStockModalOpen && (
+      {/* {isProductStockModalOpen && (
         <ProductStockModal onClose={() => setIsProductStockModalOpen(false)} />
-      )}
+      )} */}
       {isMaterialStockStatusModalOpen && (
         <MaterialStockStatusModal
           onClose={() => setIsMaterialStockStatusModalOpen(false)}

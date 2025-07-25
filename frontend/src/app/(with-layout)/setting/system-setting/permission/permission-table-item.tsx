@@ -8,7 +8,7 @@ import Checkbox from '@/ui/checkbox';
 import Chip from '@/ui/chip';
 import AuthDropdown from './modals/auth-dropdown';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
-import useUpdateMember from '@/hooks/factory-member/use-update-member';
+import useUpdateMember from '@/hooks/factory/factory-member/use-update-member';
 import { MemberRoleType } from '@/types/status-type';
 import { MemberResponseModel } from '@/types/data-model';
 

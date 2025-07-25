@@ -3,7 +3,7 @@ import { ClientResponseModel } from '@/types/data-model';
 export const clientData: ClientResponseModel[] = [
   {
     id: 1,
-    client_type: 'customer',
+    // client_type: 'customer',
     name: '(주)한솔케미칼',
     business_registration_number: '2208112345',
     representative_name: '김한솔',
@@ -18,7 +18,7 @@ export const clientData: ClientResponseModel[] = [
   },
   {
     id: 2,
-    client_type: 'supplier',
+    // client_type: 'supplier',
     name: '(주)에코플라스틱',
     business_registration_number: '1234567890',
     representative_name: '박환경',
@@ -32,7 +32,7 @@ export const clientData: ClientResponseModel[] = [
   },
   {
     id: 3,
-    client_type: 'customer',
+    // client_type: 'customer',
     name: '미래자동차',
     business_registration_number: '3332211111',
     representative_name: '최미래',
@@ -45,7 +45,7 @@ export const clientData: ClientResponseModel[] = [
   },
   {
     id: 4,
-    client_type: 'supplier',
+    // client_type: 'supplier',
     name: '강철산업',
     business_registration_number: '4567890123',
     representative_name: '이강철',
@@ -58,7 +58,7 @@ export const clientData: ClientResponseModel[] = [
   },
   {
     id: 5,
-    client_type: 'supplier',
+    // client_type: 'supplier',
     name: '플라스틱월드',
     business_registration_number: '7891234567',
     representative_name: '정플라스틱',
@@ -73,7 +73,7 @@ export const clientData: ClientResponseModel[] = [
   },
   {
     id: 6,
-    client_type: 'customer',
+    // client_type: 'customer',
     name: '플러스케미칼',
     business_registration_number: '9876543210',
     representative_name: '김플러스',
@@ -87,7 +87,7 @@ export const clientData: ClientResponseModel[] = [
   },
   {
     id: 7,
-    client_type: 'supplier',
+    //  client_type: 'supplier',
     name: '플렉스산업',
     business_registration_number: '1112233333',
     representative_name: '박플렉스',

@@ -1,6 +1,4 @@
 import Checkbox from '@/ui/checkbox';
-import { CaretDown } from '@phosphor-icons/react';
-import React from 'react';
 
 interface ClientTableHeaderProps {
   isAllChecked?: boolean;
@@ -17,10 +15,10 @@ const ClientTableHeader = ({
         isChecked={isAllChecked || false}
         onToggle={onToggleAll || (() => {})}
       />
-      <div className="flex-[0.8] px-3 flex gap-1 items-center">
+      {/* <div className="flex-[0.8] px-3 flex gap-1 items-center">
         <p className=" text-sv">거래처</p>
         <CaretDown size={16} className="text-sv" />
-      </div>
+      </div> */}
       <p className="px-3 flex-2">회사명</p>
       <p className="px-3 flex-[1.5]">사업자등록번호</p>
       <p className="px-3 flex-1">대표자명</p>

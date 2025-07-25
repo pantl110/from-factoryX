@@ -42,6 +42,7 @@ const MasterData = () => {
     searchClients,
     getClients,
     setCurrentPage: setClientCurrentPage,
+    refetch: refetchClient,
   } = useGetClient();
 
   // 삭제 훅
@@ -284,6 +285,9 @@ const MasterData = () => {
             toggleOne={clientToggleOne}
             clientList={clientList}
             onPageChange={handleClientPageChange}
+            refetchClient={() => {
+              if (factoryId) refetchClient({ factory_id: factoryId });
+            }}
           />
         );
       default:

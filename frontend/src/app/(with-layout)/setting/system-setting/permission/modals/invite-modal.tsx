@@ -11,7 +11,7 @@ import Chip from '@/ui/chip';
 import { PermissionRoleInfo, PermissionRoleType } from '../types';
 import { createPortal } from 'react-dom';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
-import useInviteMember from '@/hooks/factory-member/use-invite-member';
+import useInviteMember from '@/hooks/factory/factory-member/use-invite-member';
 import useFactoryStore from '@/store/factory-store';
 
 interface InviteModalProps {

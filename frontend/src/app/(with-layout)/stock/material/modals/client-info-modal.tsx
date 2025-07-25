@@ -1,9 +1,10 @@
 import MiniBtn from '@/ui/mini-btn';
 import Input from '@/ui/input';
 import Modal from '@/ui/modal/modal';
-import { ClientModel, ClientType } from '@/types/data-model';
+import { ClientModel } from '@/types/data-model';
 import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
-import { clientData } from '@/mocks/client-data';
+import { useEffect } from 'react';
+import useGetClient from '@/hooks/factory/factory-client/use-get-client';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { useForm } from 'react-hook-form';
 import {
@@ -11,10 +12,20 @@ import {
   handleNumberKeyDown,
 } from '@/hooks/format-number';
 import { ClientResponseModel } from '@/types/data-model';
+import useFactoryStore from '@/store/factory-store';
 
 interface ClientInfoModalProps {
-  onClose?: () => void;
-  onNext?: (data: ClientModel) => void;
+  onClose: () => void;
+  onNext: (data: ClientModel) => void;
+}
+
+interface ClientFormModel {
+  name: string;
+  businessRegistrationNumber: string;
+  representativeName: string;
+  businessType: string;
+  businessCategory: string;
+  address: string;
 }
 
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
@@ -24,17 +35,9 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     formState: { errors },
     setValue,
     watch,
-  } = useForm<
-    ClientModel & {
-      businessRegistrationNumber: string;
-      representativeName: string;
-      businessType: string;
-      businessCategory: string;
-    }
-  >({
+  } = useForm<ClientFormModel>({
     mode: 'onChange',
     defaultValues: {
-      type: 'supplier' as ClientType,
       name: '',
       businessRegistrationNumber: '',
       representativeName: '',
@@ -44,6 +47,12 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     },
   });
 
+  const factoryId = useFactoryStore((state) => state.factoryId);
+  const { clientList, getClients } = useGetClient();
+  useEffect(() => {
+    if (factoryId) getClients({ factory_id: factoryId });
+  }, [factoryId, getClients]);
+  const clientItems = clientList?.data || [];
   const {
     input: companyNameInput,
     setInput: setCompanyNameInput,
@@ -51,7 +60,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     setIsOpen: setIsCompanyNameDropdownOpen,
     filtered: filteredClients,
     handleSelect: handleCompanyNameSelect,
-  } = useDropdownFilter(clientData, (item) => item.name);
+  } = useDropdownFilter(clientItems, (item) => item.name);
+  if (!factoryId) return null;
 
   // 필수 필드들의 값 감시
   const name = watch('name');
@@ -99,7 +109,18 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     >
       <form
         className="flex flex-col gap-7 mt-4 px-6 pb-6 max-h-[calc(85vh-123px)] overflow-y-auto scrollbar-hide"
-        onSubmit={handleSubmit((data) => onNext && onNext(data))}
+        onSubmit={handleSubmit((data) => {
+          const client: ClientModel = {
+            factory_id: factoryId,
+            name: data.name,
+            business_registration_number: data.businessRegistrationNumber,
+            representative_name: data.representativeName,
+            business_type: data.businessType,
+            business_category: data.businessCategory,
+            address: data.address,
+          };
+          onNext(client);
+        })}
       >
         <div className="flex flex-col gap-4">
           <div className="flex-1 relative">
@@ -112,6 +133,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               onChange={(e) => {
                 setCompanyNameInput(e.target.value ?? '');
                 setValue('name', e.target.value ?? '');
+                setIsCompanyNameDropdownOpen(true); // 입력 시 항상 드롭다운 열기
               }}
               onFocus={() => setIsCompanyNameDropdownOpen(true)}
               onBlur={() =>

@@ -148,6 +148,32 @@ const ProcessProjectPageInner = () => {
     }
   };
 
+  // 테스트 프로젝트 생성 핸들러
+  const handleCreateTestProjects = async () => {
+    if (!factoryId) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/test`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ factory_id: factoryId }),
+        }
+      );
+      if (res.ok) {
+        alert('테스트 프로젝트가 생성되었습니다.');
+        // 새로고침
+        window.location.reload();
+      } else {
+        const data = await res.json();
+        alert(data.detail || '테스트 프로젝트 생성에 실패했습니다.');
+      }
+    } catch {
+      alert('테스트 프로젝트 생성 중 오류가 발생했습니다.');
+    }
+  };
+
   // 로딩 상태 표시 (factoryId가 없거나 데이터 로딩 중일 때)
   if (!factoryId || (isLoading && !projectData)) {
     return (
@@ -165,6 +191,18 @@ const ProcessProjectPageInner = () => {
           selectedStatus={selectedStatus}
           onStatusChange={handleStatusChange}
         />
+
+        {/* 테스트 프로젝트 생성 버튼 */}
+        <div className="px-10 pb-2">
+          <button
+            className="bg-primary-8 text-white px-4 py-2 rounded hover:bg-primary"
+            onClick={handleCreateTestProjects}
+            type="button"
+          >
+            테스트 프로젝트 일괄 생성
+          </button>
+        </div>
+
         <div className="px-10 pb-10">
           <SearchDeleteTable
             placeholder="업체명이나 품목명을 검색하세요."

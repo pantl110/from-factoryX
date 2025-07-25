@@ -37,18 +37,18 @@ export { default as useUpdateFactory } from './factory/use-update-factory';
 export { default as useDeleteFactory } from './factory/use-delete-factory';
 
 // Factory equipment related hooks
-export { default as useCreateEquipment } from './factory-equipment/use-create-equipment';
-export { default as useUpdateEquipment } from './factory-equipment/use-update-equipment';
-export { default as useGetEquipment } from './factory-equipment/use-get-equipment';
-export { default as useDeleteEquipment } from './factory-equipment/use-delete-equipment';
-export { default as useGetEquipmentDetail } from './factory-equipment/use-get-equipment-detail';
+export { default as useCreateEquipment } from './factory/factory-equipment/use-create-equipment';
+export { default as useUpdateEquipment } from './factory/factory-equipment/use-update-equipment';
+export { default as useGetEquipment } from './factory/factory-equipment/use-get-equipment';
+export { default as useDeleteEquipment } from './factory/factory-equipment/use-delete-equipment';
+export { default as useGetEquipmentDetail } from './factory/factory-equipment/use-get-equipment-detail';
 
 // Factory client related hooks
-export { default as useCreateClient } from './factory-client/use-create-client';
-export { default as useGetClient } from './factory-client/use-get-client';
-export { default as useGetClientDetail } from './factory-client/use-get-client-detail';
-export { default as useUpdateClient } from './factory-client/use-update-client';
-export { default as useDeleteClient } from './factory-client/use-delete-client';
+export { default as useCreateClient } from './factory/factory-client/use-create-client';
+export { default as useGetClient } from './factory/factory-client/use-get-client';
+export { default as useGetClientDetail } from './factory/factory-client/use-get-client-detail';
+export { default as useUpdateClient } from './factory/factory-client/use-update-client';
+export { default as useDeleteClient } from './factory/factory-client/use-delete-client';
 
 // Project related hooks
 export { default as useCreateProject } from './project/use-create-project';
@@ -76,27 +76,31 @@ export { default as useUpdateProjectPlan } from './project/project-plan/use-upda
 export { default as useUploadFile } from './aws/use-upload-file';
 
 // Factory member related hooks
-export { default as useInviteMember } from './factory-member/use-invite-member';
-export { default as useGetMembers } from './factory-member/use-get-members';
-export { default as useDeleteMember } from './factory-member/use-delete-member';
-export { default as useUpdateMember } from './factory-member/use-update-member';
+export { default as useInviteMember } from './factory/factory-member/use-invite-member';
+export { default as useGetMembers } from './factory/factory-member/use-get-members';
+export { default as useDeleteMember } from './factory/factory-member/use-delete-member';
+export { default as useUpdateMember } from './factory/factory-member/use-update-member';
 
 // Product related hooks
-export { default as useCreateProduct } from './product/use-create-product';
-export { default as useGetProduct } from './product/use-get-product';
-export { default as useUpdateProduct } from './product/use-update-product';
-export { default as useDeleteProduct } from './product/use-delete-product';
-export { default as useCreateSingleProduct } from './product/use-create-single-product';
+export { default as useCreateProduct } from './stock/product/use-create-product';
+export { default as useGetProduct } from './stock/product/use-get-product';
+export { default as useUpdateProduct } from './stock/product/use-update-product';
+export { default as useDeleteProduct } from './stock/product/use-delete-product';
+export { default as useCreateSingleProduct } from './stock/product/use-create-single-product';
+
+// Product history related hooks
+export { default as useProductHistory } from './stock/use-product-history';
 
 // Material related hooks
-export { default as useGetMaterial } from './material/use-get-material';
-export { default as useUpdateMaterial } from './material/use-update-material';
-export { default as useDeleteMaterial } from './material/use-delete-material';
+export { default as useGetMaterial } from './stock/material/use-get-material';
+export { default as useUpdateMaterial } from './stock/material/use-update-material';
+export { default as useDeleteMaterial } from './stock/material/use-delete-material';
+export { default as useAssignSingleMaterial } from './stock/material/use-assign-material-product';
 
 // Material history related hooks
-export { default as useCreateMaterialHistory } from './material-history/use-create-material-history';
-export { default as useCreateSingleMaterialHistory } from './material-history/use-create-single-material-history';
-export { default as useGetMaterialHistory } from './material-history/use-get-material-history';
+export { default as useCreateMaterialHistory } from './stock/material-history/use-create-material-history';
+export { default as useCreateSingleMaterialHistory } from './stock/material-history/use-create-single-material-history';
+export { default as useGetMaterialHistory } from './stock/material-history/use-get-material-history';
 
-// Onboarding related hooks
-export { default as useAssignMaterialProduct } from './onboarding/use-assign-material-product';
+// Material product related hooks
+export { default as useMaterialProduct } from './stock/use-material-product';
