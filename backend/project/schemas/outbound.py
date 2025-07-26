@@ -100,8 +100,7 @@ class RefundCreateIn(Schema):
     project_id: int
     product_id: int
     refund_date: str  # YYYY-MM-DD 형식
-    current_stock: int
-    production_amount: int
+    production_amount: Optional[int] = None
 
 # for refund create response
 class RefundCreateOut(Schema):
