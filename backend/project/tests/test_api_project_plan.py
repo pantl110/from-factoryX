@@ -225,7 +225,7 @@ class ProjectPlanAPITestCase(TestCase):
         # 생산 계획 수정
         update_url = f'/v1/project/plan/{plan_id}'
         update_payload = {
-            'quantity': 15,
+            'quantity': 10,
             'status': '가동 중',
             'avg_production_time': 7200
         }
