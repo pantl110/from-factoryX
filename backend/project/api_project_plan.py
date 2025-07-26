@@ -24,6 +24,29 @@ router = Router(tags=["ProjectPlan"], auth=jwt_auth)
     response={ 200: ProjectPlansCreateOut, 400: dict, 404: dict, 500: dict }
 )
 async def create_project_plans(request, payload: ProjectPlanCreateIn):
+    """
+    입력 필드:
+    - project_id: int - 프로젝트 ID (필수)
+    - quotation_product_ids: List[int] - 견적서 품목 ID 목록 (필수)
+    - production_quantities: List[int] - 각 품목별 생산 수량 (필수)
+    - equipment_ids: List[int] - 각 품목별 설비 ID (필수)
+    - start_dates: List[str] - 각 품목별 시작일 (필수, YYYY-MM-DD 형식)
+    - end_dates: List[str] - 각 품목별 종료일 (필수, YYYY-MM-DD 형식)
+    - avg_production_times: List[int] - 각 품목별 평균 생산 시간 (필수, 초 단위)
+
+    반환 필드:
+    - message: str - 생성 완료 메시지
+    - created_plans: List[ProjectPlanDetailOut] - 생성된 생산 계획 목록
+        - id: int - 생산 계획 ID
+        - project_id: int - 프로젝트 ID
+        - quotation_product_id: int - 견적서 품목 ID
+        - equipment_id: int - 설비 ID
+        - status: str - 생산 상태
+        - quantity: int - 생산 수량
+        - start_date: date - 시작일
+        - end_date: date - 종료일
+        - avg_production_time: int - 평균 생산 시간
+    """
     try:
         project = await Project.objects.aget(id=payload.project_id)
     except Project.DoesNotExist:
@@ -371,10 +394,23 @@ async def list_project_plans(request, project_id: int):
 @router.patch(
     "/{plan_id}",
     summary="[C] 프로젝트 생산 계획 수정",
-    description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다. 만약 가동 중인 설비가 변경된다면 프로젝트 로그도 생성됩니다.",
+    description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다. 수량 수정 시 견적서 수량과 일치하도록 자동으로 분할됩니다.",
     response={200: dict, 400: dict, 404: dict, 500: dict}
 )
 async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn):
+    """
+    입력 필드:
+    - plan_id: int - 수정할 생산 계획 ID (URL 경로 파라미터, 필수)
+    - equipment_id: int - 설비 ID (선택)
+    - quantity: int - 생산 수량 (선택, 견적서 수량을 초과할 수 없음)
+    - status: str - 생산 상태 (선택, "가동 대기", "가동 중", "가동 완료", "가동 불가")
+    - start_date: str - 시작일 (선택, YYYY-MM-DD 형식)
+    - end_date: str - 종료일 (선택, YYYY-MM-DD 형식)
+    - avg_production_time: int - 평균 생산 시간 (선택, 초 단위)
+
+    반환 필드:
+    - message: str - 수정 완료 메시지
+    """
     try:
         plan = await ProjectPlan.objects.aget(id=plan_id)
     except ProjectPlan.DoesNotExist:
@@ -382,6 +418,10 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
     
     old_equipment = await FactoryEquipment.objects.aget(id=plan.equipment_id) if plan.equipment_id else None
     
+    # 미리 project, product를 비동기 안전하게 가져옴
+    project = await sync_to_async(lambda: plan.project)()
+    product = await sync_to_async(lambda: plan.product)()
+
     if payload.equipment_id is not None:
         try:
             equipment = await FactoryEquipment.objects.aget(id=payload.equipment_id)
@@ -392,8 +432,38 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
     if payload.quantity is not None:
         if payload.quantity <= 0:
             raise HttpError(400, "수량은 0보다 커야 합니다.")
-        plan.quantity = payload.quantity
-    
+        
+        # 견적서 수량을 안전하게 가져오기
+        quotation_quantity = await sync_to_async(lambda: plan.product.quantity)()
+        new_quantity = payload.quantity
+        
+        if new_quantity > quotation_quantity:
+            raise HttpError(400, "생산 수량은 견적서 수량을 초과할 수 없습니다.")
+        
+        # 기존 계획 수정
+        plan.quantity = new_quantity
+        
+        # 기존에 남은 수량 계획이 있다면 삭제
+        await ProjectPlan.objects.filter(
+            project=project,
+            product=product,
+            id__gt=plan.id  # 현재 계획보다 나중에 생성된 계획들
+        ).adelete()
+        
+        # 남은 수량이 있으면 새 계획 생성
+        remaining = quotation_quantity - new_quantity
+        if remaining > 0:
+            await ProjectPlan.objects.acreate(
+                project=project,
+                product=product,
+                quantity=remaining,
+                equipment=plan.equipment,  # 같은 설비 사용
+                start_date=plan.start_date,
+                end_date=plan.end_date,
+                avg_production_time=plan.avg_production_time
+            )
+
+    # 이후에도 plan.project, plan.product 대신 project, product 사용
     if payload.status is not None:
         valid_statuses = [choice[0] for choice in ProjectPlan.ProductionStatus.choices]
         if payload.status not in valid_statuses:
@@ -419,7 +489,6 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         plan.equipment and 
         old_equipment.id != plan.equipment.id and
         plan.status == "가동 중"):  # 가동 중 상태 확인
-        project = await Project.objects.aget(id=plan.project_id)
         await ProjectLog.objects.acreate(
             project=project,
             type=ProjectLog.LogType.plan,
