@@ -106,6 +106,396 @@ class QuotationProductAPITestCase(TestCase):
         """인증 헤더 반환"""
         return {"HTTP_AUTHORIZATION": f"Bearer {self.token}"}
 
+    # 새로운 API 엔드포인트 테스트들
+    def test_save_draft_quotation_success(self):
+        """견적서 임시 저장 성공 테스트"""
+        draft_data = {
+            "quotation_id": self.quotation.id,
+            "client": {
+                "name": "새로운 고객사",
+                "business_registration_number": "987-65-43210",
+                "email": "new@example.com",
+                "phone": "010-1234-5678"
+            },
+            "products": [
+                {
+                    "id": self.product1.id,
+                    "quantity": 15,
+                    "unit_price": 1500
+                },
+                {
+                    "id": self.product2.id,
+                    "quantity": 8,
+                    "unit_price": 2500
+                }
+            ],
+            "due_date": "2025-07-30"
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/draft",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["quotation_id"], self.quotation.id)
+        self.assertEqual(data["status"], "draft_saved")
+        
+        # 데이터베이스에서 변경사항 확인
+        self.quotation.refresh_from_db()
+        self.assertEqual(self.quotation.due_date, date(2025, 7, 30))
+        self.assertEqual(self.quotation.client.name, "새로운 고객사")
+        
+        # 기존 품목들이 삭제되고 새로운 품목들이 생성되었는지 확인
+        quotation_products = QuotationProduct.objects.filter(quotation=self.quotation)
+        self.assertEqual(quotation_products.count(), 2)
+        
+        # 프로젝트 상태가 "견적 협의중"으로 설정되었는지 확인
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.status, "견적 협의중")
+
+    def test_save_draft_quotation_partial_data(self):
+        """부분 데이터로 견적서 임시 저장 테스트"""
+        draft_data = {
+            "quotation_id": self.quotation.id,
+            "client": {
+                "name": "부분 고객사"
+            }
+            # products와 due_date는 생략
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/draft",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "draft_saved")
+        
+        # 클라이언트만 업데이트되었는지 확인
+        self.quotation.refresh_from_db()
+        self.assertEqual(self.quotation.client.name, "부분 고객사")
+        
+        # 프로젝트 상태가 "견적 협의중"으로 설정되었는지 확인
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.status, "견적 협의중")
+
+    def test_save_draft_quotation_quotation_not_found(self):
+        """존재하지 않는 견적서로 임시 저장 실패 테스트"""
+        draft_data = {
+            "quotation_id": 99999,
+            "client": {"name": "테스트"}
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/draft",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_save_draft_quotation_product_not_found(self):
+        """존재하지 않는 제품으로 임시 저장 실패 테스트"""
+        draft_data = {
+            "quotation_id": self.quotation.id,
+            "products": [
+                {
+                    "id": 99999,
+                    "quantity": 10,
+                    "unit_price": 1000
+                }
+            ]
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/draft",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_start_production_success(self):
+        """생산 시작 성공 테스트"""
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "client": {
+                "name": "테스트 고객사",
+                "business_registration_number": "123-45-67890",
+                "representative_name": "홍길동",
+                "business_type": "제조업",
+                "business_category": "전자제품",
+                "address": "서울시 강남구",
+                "email": "test@example.com",
+                "phone": "02-1234-5678",
+                "fax": "02-1234-5679"
+            },
+            "products": [
+                {
+                    "id": self.product1.id,
+                    "quantity": 100,
+                    "unit_price": 1000
+                }
+            ],
+            "due_date": "2025-08-15"
+            # production_plans 제거 - 자동 생성됨
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["quotation_id"], self.quotation.id)
+        self.assertEqual(data["project_id"], self.project.id)
+        self.assertEqual(data["status"], "production_started")
+        
+        # 프로젝트 상태가 변경되었는지 확인
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.status, "생산 대기")
+        
+        # 생산 계획이 생성되었는지 확인
+        project_plans = ProjectPlan.objects.filter(project=self.project)
+        self.assertEqual(project_plans.count(), 1)
+
+    def test_start_production_missing_client(self):
+        """클라이언트 정보 없이 생산 시작 실패 테스트"""
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "products": [
+                {
+                    "id": self.product1.id,
+                    "quantity": 20,
+                    "unit_price": 2000
+                }
+            ],
+            "due_date": "2025-08-15",
+            "production_plans": [
+                {
+                    "product_id": self.product1.id,
+                    "quantity": 20
+                }
+            ]
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertIn(response.status_code, [400, 422])
+        data = response.json()
+        if response.status_code == 400:
+            self.assertIn("클라이언트 정보는 필수입니다", str(data))
+
+    def test_start_production_missing_products(self):
+        """품목 정보 없이 생산 시작 실패 테스트"""
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "client": {
+                "name": "테스트 고객사"
+            },
+            "due_date": "2025-08-15",
+            "production_plans": []
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertIn(response.status_code, [400, 422])
+        data = response.json()
+        if response.status_code == 400:
+            self.assertIn("품목 정보는 필수입니다", str(data))
+
+    def test_start_production_missing_due_date(self):
+        """납기일자 누락 시 생산 시작 실패 테스트"""
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "client": {"name": "테스트"},
+            "products": [{"id": self.product1.id, "quantity": 10, "unit_price": 1000}]
+            # due_date 제거
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("납기일자는 필수입니다", data["detail"])
+
+    def test_start_production_with_default_values(self):
+        """기본값으로 생산 시작 테스트"""
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "client": {
+                "name": "기본값 고객사"
+            },
+            "products": [
+                {
+                    "id": self.product1.id,
+                    "quantity": 10,
+                    "unit_price": 1000
+                }
+            ],
+            "due_date": "2025-08-15"
+            # production_plans 제거 - 자동 생성됨
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "production_started")
+        
+        # 기본값으로 생성된 생산 계획 확인
+        project_plans = ProjectPlan.objects.filter(project=self.project)
+        self.assertEqual(project_plans.count(), 1)
+        
+        plan = project_plans.first()
+        self.assertEqual(plan.quantity, 10)  # quotation_product의 quantity
+        
+        # equipment_id가 없었으므로 공장의 첫 번째 설비가 자동 할당됨
+        self.assertIsNotNone(plan.equipment)
+        self.assertEqual(plan.equipment.factory, self.factory)
+        self.assertEqual(plan.equipment.status, "가동 대기")  # 가동 대기 상태인 설비만 할당됨
+        
+        # 기본값 확인
+        today = datetime.now().date()
+        self.assertEqual(plan.start_date, today)  # 기본값: 오늘
+        self.assertEqual(plan.end_date, today + timedelta(days=7))  # 기본값: 7일 후
+        self.assertEqual(plan.avg_production_time, 3600)  # 기본값: 3600초 (1시간)
+        
+        # 프로젝트 상태 확인
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.status, "생산 대기")
+
+    def test_start_production_quotation_not_found(self):
+        """존재하지 않는 견적서로 생산 시작 실패 테스트"""
+        production_data = {
+            "quotation_id": 99999,
+            "client": {"name": "테스트"},
+            "products": [{"id": self.product1.id, "quantity": 10, "unit_price": 1000}],
+            "due_date": "2025-08-15",
+            "production_plans": [{"product_id": self.product1.id}]
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_start_production_product_not_found(self):
+        """존재하지 않는 제품으로 생산 시작 실패 테스트"""
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "client": {"name": "테스트"},
+            "products": [{"id": 99999, "quantity": 10, "unit_price": 1000}],
+            "due_date": "2025-08-15"
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_save_draft_quotation_empty_products(self):
+        """빈 품목 리스트로 임시 저장 테스트"""
+        draft_data = {
+            "quotation_id": self.quotation.id,
+            "client": {"name": "빈 품목 고객사"},
+            "products": []  # 빈 리스트
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/draft",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "draft_saved")
+        
+        # 기존 품목들이 삭제되었는지 확인
+        quotation_products = QuotationProduct.objects.filter(quotation=self.quotation)
+        self.assertEqual(quotation_products.count(), 0)
+
+    def test_start_production_multiple_products(self):
+        """여러 제품으로 생산 시작 테스트"""
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "client": {
+                "name": "다중 제품 고객사"
+            },
+            "products": [
+                {
+                    "id": self.product1.id,
+                    "quantity": 50,
+                    "unit_price": 1000
+                },
+                {
+                    "id": self.product2.id,
+                    "quantity": 30,
+                    "unit_price": 2000
+                }
+            ],
+            "due_date": "2025-08-15"
+            # production_plans 제거 - 자동 생성됨
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "production_started")
+        
+        # 두 개의 생산 계획이 생성되었는지 확인
+        project_plans = ProjectPlan.objects.filter(project=self.project)
+        self.assertEqual(project_plans.count(), 2)
+
+    # 기존 테스트들...
     def test_list_quotation_products_by_quotation_id_success(self):
         """견적서 ID로 견적서 품목 목록 조회 성공 테스트"""
         response = self.client.get(
