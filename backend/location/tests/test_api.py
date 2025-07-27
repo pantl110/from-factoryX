@@ -308,7 +308,7 @@ class LocationAPITestCase(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_update_material_location_specific(self):
-        """원자재에 연결된 특정 위치 정보 수정 테스트 (location_id 지정)"""
+        """원자재에 연결된 특정 위치 정보 수정 테스트 (location_id 직접 지정)"""
         # 위치 2개 생성 및 연결
         location1 = Location.objects.create(
             type='material',
@@ -321,11 +321,9 @@ class LocationAPITestCase(TestCase):
             images=['old2.jpg']
         )
         self.material.location.add(location1, location2)
-        # location2의 정보만 수정
-        url = f'/v1/location/{self.material.id}'
+        # location2의 정보만 수정 (새로운 API 구조)
+        url = f'/v1/location/{location2.id}'
         data = {
-            'type': 'material',
-            'location_id': location2.id,
             'location': 'B-2-2',
             'images': ['new_image.jpg']
         }
@@ -346,17 +344,15 @@ class LocationAPITestCase(TestCase):
         self.assertEqual(location1.images, ['old1.jpg'])
 
     def test_update_location_not_connected(self):
-        """자재에 연결되지 않은 location_id로 수정 시도 시 404 반환"""
+        """자재에 연결되지 않은 location_id로 수정 시도 시 200 반환 (새로운 API는 연결 여부와 무관)"""
         location = Location.objects.create(
             type='material',
             location='A-1-1',
             images=[]
         )
-        # 연결하지 않음
-        url = f'/v1/location/{self.material.id}'
+        # 연결하지 않음 (새로운 API는 연결 여부와 무관하게 수정 가능)
+        url = f'/v1/location/{location.id}'
         data = {
-            'type': 'material',
-            'location_id': location.id,
             'location': 'B-2-2',
             'images': ['new_image.jpg']
         }
@@ -366,22 +362,22 @@ class LocationAPITestCase(TestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
-        self.assertEqual(response.status_code, 404)
-        msg = response.json().get('message') or response.json().get('detail') or str(response.content)
-        self.assertIn('해당 위치가 연결되어 있지 않습니다', msg)
+        self.assertEqual(response.status_code, 200)
+        # 수정 확인
+        location.refresh_from_db()
+        self.assertEqual(location.location, 'B-2-2')
+        self.assertEqual(location.images, ['new_image.jpg'])
 
     def test_update_location_invalid_type(self):
-        """잘못된 타입으로 위치 수정 시도 테스트 (type 필드)"""
+        """새로운 API에서는 type 필드가 제거되어 타입 검증이 없음"""
         location = Location.objects.create(
             type='material',
             location='A-1-1',
             images=[]
         )
         self.material.location.add(location)
-        url = f'/v1/location/{self.material.id}'
+        url = f'/v1/location/{location.id}'
         data = {
-            'type': 'invalid_type',
-            'location_id': location.id,
             'location': 'B-2-2',
             'images': ['new_image.jpg']
         }
@@ -391,23 +387,16 @@ class LocationAPITestCase(TestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
-        self.assertEqual(response.status_code, 400)
-        msg = response.json().get('message') or response.json().get('detail') or str(response.content)
-        self.assertIn('올바르지 않은 타입입니다', msg)
+        self.assertEqual(response.status_code, 200)
+        # 수정 확인
+        location.refresh_from_db()
+        self.assertEqual(location.location, 'B-2-2')
+        self.assertEqual(location.images, ['new_image.jpg'])
 
     def test_update_location_nonexistent_location(self):
         """존재하지 않는 location_id로 수정 시도 시 404 반환"""
-        # 위치 생성 및 연결
-        location = Location.objects.create(
-            type='material',
-            location='A-1-1',
-            images=[]
-        )
-        self.material.location.add(location)
-        url = f'/v1/location/{self.material.id}'
+        url = '/v1/location/99999'  # 존재하지 않는 id
         data = {
-            'type': 'material',
-            'location_id': 99999,  # 존재하지 않는 id
             'location': 'B-2-2',
             'images': ['new_image.jpg']
         }
@@ -419,10 +408,10 @@ class LocationAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 404)
         msg = response.json().get('message') or response.json().get('detail') or str(response.content)
-        self.assertIn('해당 위치가 연결되어 있지 않습니다', msg)
+        self.assertIn('해당 위치를 찾을 수 없습니다', msg)
 
     def test_delete_material_locations(self):
-        """원자재 위치 삭제 테스트 (특정 위치만 삭제)"""
+        """원자재 위치 삭제 테스트 (새로운 API 구조)"""
         # 위치 2개 생성 및 연결
         location1 = Location.objects.create(
             type='material',
@@ -435,60 +424,55 @@ class LocationAPITestCase(TestCase):
             images=['image1.jpg']
         )
         self.material.location.add(location1, location2)
-        # location2만 삭제
-        url = f'/v1/location/{self.material.id}/location?location_id={location2.id}&type=material'
+        # location2만 삭제 (새로운 API 구조)
+        url = f'/v1/location/{location2.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         self.assertEqual(response.status_code, 200)
-        # location2만 해제되었는지 확인
-        self.material.refresh_from_db()
-        locations = self.material.location.all()
-        self.assertEqual(locations.count(), 1)
-        self.assertEqual(locations.first().id, location1.id)
+        # location2가 실제로 삭제되었는지 확인
+        self.assertFalse(Location.objects.filter(id=location2.id).exists())
+        # location1은 그대로 존재
+        self.assertTrue(Location.objects.filter(id=location1.id).exists())
 
     def test_delete_product_locations(self):
-        """품목 위치 삭제 테스트 (특정 위치만 삭제)"""
+        """품목 위치 삭제 테스트 (새로운 API 구조)"""
         location = Location.objects.create(
             type='product',
             location='B-2-1',
             images=['image1.jpg']
         )
         self.product.location.add(location)
-        url = f'/v1/location/{self.product.id}/location?location_id={location.id}&type=product'
+        url = f'/v1/location/{location.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         self.assertEqual(response.status_code, 200)
-        self.product.refresh_from_db()
-        locations = self.product.location.all()
-        self.assertEqual(locations.count(), 0)
+        # location이 실제로 삭제되었는지 확인
+        self.assertFalse(Location.objects.filter(id=location.id).exists())
 
     def test_delete_location_invalid_type(self):
-        """잘못된 타입으로 위치 삭제 시도 테스트"""
+        """새로운 API에서는 type 파라미터가 제거되어 타입 검증이 없음"""
         location = Location.objects.create(
             type='material',
             location='A-1-1',
             images=[]
         )
         self.material.location.add(location)
-        url = f'/v1/location/{self.material.id}/location?location_id={location.id}&type=invalid_type'
+        url = f'/v1/location/{location.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
+        # location이 삭제되었는지 확인
+        self.assertFalse(Location.objects.filter(id=location.id).exists())
 
     def test_delete_location_nonexistent_material(self):
-        """존재하지 않는 원자재 ID로 위치 삭제 시도 테스트"""
-        location = Location.objects.create(
-            type='material',
-            location='A-1-1',
-            images=[]
-        )
-        url = f'/v1/location/99999/location?location_id={location.id}&type=material'
+        """존재하지 않는 Location ID로 삭제 시도 테스트"""
+        url = '/v1/location/99999'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -496,13 +480,8 @@ class LocationAPITestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_delete_location_nonexistent_product(self):
-        """존재하지 않는 품목 ID로 위치 삭제 시도 테스트"""
-        location = Location.objects.create(
-            type='product',
-            location='B-2-1',
-            images=[]
-        )
-        url = f'/v1/location/99999/location?location_id={location.id}&type=product'
+        """존재하지 않는 Location ID로 삭제 시도 테스트 (product 타입)"""
+        url = '/v1/location/99999'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -510,16 +489,187 @@ class LocationAPITestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_delete_location_without_location(self):
-        """위치가 연결되지 않은 원자재/품목 삭제 시도 테스트"""
+        """새로운 API에서는 연결 여부와 무관하게 Location을 삭제할 수 있음"""
         location = Location.objects.create(
             type='material',
             location='A-1-1',
             images=[]
         )
-        # 연결하지 않음
-        url = f'/v1/location/{self.material.id}/location?location_id={location.id}&type=material'
+        # 연결하지 않음 (새로운 API는 연결 여부와 무관)
+        url = f'/v1/location/{location.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
+        self.assertEqual(response.status_code, 200)
+        # location이 삭제되었는지 확인
+        self.assertFalse(Location.objects.filter(id=location.id).exists())
+
+    def test_update_location_direct_by_id(self):
+        """Location ID로 직접 위치 수정 테스트 (새로운 API 구조)"""
+        # 위치 생성
+        location = Location.objects.create(
+            type='material',
+            location='A-1-1',
+            images=['old_image.jpg']
+        )
+        
+        # 새로운 API 구조로 수정
+        url = f'/v1/location/{location.id}'
+        data = {
+            'location': 'B-2-2',
+            'images': ['new_image.jpg', 'new_image2.jpg']
+        }
+        
+        response = self.client.patch(
+            url,
+            data,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 수정 확인
+        location.refresh_from_db()
+        self.assertEqual(location.location, 'B-2-2')
+        self.assertEqual(location.images, ['new_image.jpg', 'new_image2.jpg'])
+
+    def test_update_location_direct_by_id_not_found(self):
+        """존재하지 않는 Location ID로 수정 시도 시 404 반환"""
+        url = '/v1/location/99999'
+        data = {
+            'location': 'B-2-2',
+            'images': ['new_image.jpg']
+        }
+        
+        response = self.client.patch(
+            url,
+            data,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
         self.assertEqual(response.status_code, 404)
+
+    def test_update_location_direct_by_id_partial(self):
+        """Location ID로 부분 수정 테스트 (images만 수정)"""
+        # 위치 생성
+        location = Location.objects.create(
+            type='product',
+            location='C-3-1',
+            images=['old_image.jpg']
+        )
+        
+        # images만 수정
+        url = f'/v1/location/{location.id}'
+        data = {
+            'images': ['new_image.jpg']
+        }
+        
+        response = self.client.patch(
+            url,
+            data,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # location은 그대로, images만 수정됨
+        location.refresh_from_db()
+        self.assertEqual(location.location, 'C-3-1')  # 기존 값 유지
+        self.assertEqual(location.images, ['new_image.jpg'])  # 수정됨
+
+    def test_delete_location_direct_by_id(self):
+        """Location ID로 직접 위치 삭제 테스트 (새로운 API 구조)"""
+        # 위치 생성
+        location = Location.objects.create(
+            type='material',
+            location='A-1-1',
+            images=['image.jpg']
+        )
+        
+        # 새로운 API 구조로 삭제
+        url = f'/v1/location/{location.id}'
+        
+        response = self.client.delete(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 삭제 확인
+        self.assertFalse(Location.objects.filter(id=location.id).exists())
+
+    def test_delete_location_direct_by_id_not_found(self):
+        """존재하지 않는 Location ID로 삭제 시도 시 404 반환"""
+        url = '/v1/location/99999'
+        
+        response = self.client.delete(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_location_direct_by_id_material_type(self):
+        """Material 타입 Location 수정 테스트"""
+        # material 타입 위치 생성
+        location = Location.objects.create(
+            type='material',
+            location='Material-A-1',
+            images=[]
+        )
+        
+        url = f'/v1/location/{location.id}'
+        data = {
+            'location': 'Material-B-2',
+            'images': ['material_image.jpg']
+        }
+        
+        response = self.client.patch(
+            url,
+            data,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 수정 확인
+        location.refresh_from_db()
+        self.assertEqual(location.type, 'material')  # 타입은 그대로
+        self.assertEqual(location.location, 'Material-B-2')  # 위치 수정됨
+        self.assertEqual(location.images, ['material_image.jpg'])  # 이미지 수정됨
+
+    def test_update_location_direct_by_id_product_type(self):
+        """Product 타입 Location 수정 테스트"""
+        # product 타입 위치 생성
+        location = Location.objects.create(
+            type='product',
+            location='Product-A-1',
+            images=[]
+        )
+        
+        url = f'/v1/location/{location.id}'
+        data = {
+            'location': 'Product-B-2',
+            'images': ['product_image.jpg']
+        }
+        
+        response = self.client.patch(
+            url,
+            data,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 수정 확인
+        location.refresh_from_db()
+        self.assertEqual(location.type, 'product')  # 타입은 그대로
+        self.assertEqual(location.location, 'Product-B-2')  # 위치 수정됨
+        self.assertEqual(location.images, ['product_image.jpg'])  # 이미지 수정됨

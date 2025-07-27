@@ -79,7 +79,7 @@ class ProjectAPITestCase(TestCase):
             algorithm="HS256"
         )
 
-    def create_test_project_with_quotation(self, status='견적 협의중', has_tax_invoice=False):
+    def create_test_project_with_quotation(self, status='견적 협의중', has_tax_invoice=False, create_plan=True):
         """테스트용 프로젝트와 견적서 생성 헬퍼 메서드"""
         # 프로젝트 생성
         project = Project.objects.create(status=status)
@@ -107,16 +107,17 @@ class ProjectAPITestCase(TestCase):
             unit_price=2000
         )
         
-        # 생산 계획 생성
-        plan = ProjectPlan.objects.create(
-            project=project,
-            product=quotation_product1,
-            quantity=10,
-            equipment=self.equipment,
-            start_date=date(2025, 6, 4),
-            end_date=date(2025, 6, 10),
-            avg_production_time=3600
-        )
+        # 생산 계획 생성 (옵션)
+        if create_plan:
+            plan = ProjectPlan.objects.create(
+                project=project,
+                product=quotation_product1,
+                quantity=10,
+                equipment=self.equipment,
+                start_date=date(2025, 6, 4),
+                end_date=date(2025, 6, 10),
+                avg_production_time=3600
+            )
         
         # 세금계산서 연결 (옵션)
         if has_tax_invoice:
@@ -729,98 +730,98 @@ class ProjectAPITestCase(TestCase):
         current_project_ids = [p.id for p in current_factory_projects]
         self.assertNotIn(other_project.id, current_project_ids)
 
-def test_clone_project_success(self):
-    """프로젝트 복제 성공 테스트"""
-    # 완료된 프로젝트 생성
-    project = Project.objects.create(status=Project.ProjectStatus.completed)
-    
-    # API 호출
-    url = '/v1/project/clone'
-    payload = {
-        "project_id": project.id
-    }
-    response = self.client.post(
-        url,
-        data=json.dumps(payload),
-        content_type='application/json',
-        HTTP_AUTHORIZATION=f'Bearer {self.token}'
-    )
-    
-    self.assertEqual(response.status_code, 200)
-    data = response.json()
-    self.assertEqual(data, {})
-    
-    # 복제된 프로젝트 확인
-    cloned_projects = Project.objects.filter(status=Project.ProjectStatus.pending)
-    self.assertEqual(cloned_projects.count(), 1)
-    
-    cloned_project = cloned_projects.first()
-    self.assertEqual(cloned_project.status, Project.ProjectStatus.pending)
-    self.assertIsNone(cloned_project.transact_date)
-    self.assertIsNone(cloned_project.tax_invoice)
+    def test_clone_project_success(self):
+        """프로젝트 복제 성공 테스트"""
+        # 완료된 프로젝트 생성
+        project = Project.objects.create(status=Project.ProjectStatus.completed)
+        
+        # API 호출
+        url = '/v1/project/clone'
+        payload = {
+            "project_id": project.id
+        }
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data, {})
+        
+        # 복제된 프로젝트 확인
+        cloned_projects = Project.objects.filter(status=Project.ProjectStatus.pending)
+        self.assertEqual(cloned_projects.count(), 1)
+        
+        cloned_project = cloned_projects.first()
+        self.assertEqual(cloned_project.status, Project.ProjectStatus.pending)
+        self.assertIsNone(cloned_project.transact_date)
+        self.assertIsNone(cloned_project.tax_invoice)
 
-def test_clone_project_not_completed(self):
-    """완료되지 않은 프로젝트 복제 시도 테스트"""
-    # 생산 중인 프로젝트 생성
-    project = Project.objects.create(status=Project.ProjectStatus.production)
-    
-    # API 호출
-    url = '/v1/project/clone'
-    payload = {
-        "project_id": project.id
-    }
-    response = self.client.post(
-        url,
-        data=json.dumps(payload),
-        content_type='application/json',
-        HTTP_AUTHORIZATION=f'Bearer {self.token}'
-    )
-    
-    self.assertEqual(response.status_code, 400)
-    data = response.json()
-    self.assertIn('완료된 프로젝트만 복제할 수 있습니다', data['detail'])
+    def test_clone_project_not_completed(self):
+        """완료되지 않은 프로젝트 복제 시도 테스트"""
+        # 생산 중인 프로젝트 생성
+        project = Project.objects.create(status=Project.ProjectStatus.production)
+        
+        # API 호출
+        url = '/v1/project/clone'
+        payload = {
+            "project_id": project.id
+        }
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn('완료된 프로젝트만 복제할 수 있습니다', data['detail'])
 
-def test_clone_project_not_found(self):
-    """존재하지 않는 프로젝트 복제 시도 테스트"""
-    # API 호출
-    url = '/v1/project/clone'
-    payload = {
-        "project_id": 999
-    }
-    response = self.client.post(
-        url,
-        data=json.dumps(payload),
-        content_type='application/json',
-        HTTP_AUTHORIZATION=f'Bearer {self.token}'
-    )
-    
-    self.assertEqual(response.status_code, 404)
-    data = response.json()
-    self.assertIn('해당 프로젝트를 찾을 수 없습니다', data['detail'])
+    def test_clone_project_not_found(self):
+        """존재하지 않는 프로젝트 복제 시도 테스트"""
+        # API 호출
+        url = '/v1/project/clone'
+        payload = {
+            "project_id": 999
+        }
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertIn('해당 프로젝트를 찾을 수 없습니다', data['detail'])
 
-def test_clone_project_without_auth(self):
-    """인증 없이 API 호출 시도 테스트"""
-    # 완료된 프로젝트 생성
-    project = Project.objects.create(status=Project.ProjectStatus.completed)
-    
-    # API 호출
-    url = '/v1/project/clone'
-    payload = {
-        "project_id": project.id
-    }
-    response = self.client.post(
-        url,
-        data=json.dumps(payload),
-        content_type='application/json'
-    )
-    
-    # 인증이 필요하므로 401 또는 403이 반환되어야 함
-    self.assertIn(response.status_code, [401, 403])
+    def test_clone_project_without_auth(self):
+        """인증 없이 API 호출 시도 테스트"""
+        # 완료된 프로젝트 생성
+        project = Project.objects.create(status=Project.ProjectStatus.completed)
+        
+        # API 호출
+        url = '/v1/project/clone'
+        payload = {
+            "project_id": project.id
+        }
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        
+        # 인증이 필요하므로 401 또는 403이 반환되어야 함
+        self.assertIn(response.status_code, [401, 403])
 
     def test_list_progress_project_order_by_start_date_asc(self):
         """생산일자 오름차순 정렬 테스트"""
-        p1 = self.create_test_project_with_quotation(status='생산 중')
-        p2 = self.create_test_project_with_quotation(status='생산 중')
+        p1, _ = self.create_test_project_with_quotation(status='생산 중')
+        p2, _ = self.create_test_project_with_quotation(status='생산 중')
         ProjectPlan.objects.filter(project=p1).update(start_date=date(2025, 6, 1))
         ProjectPlan.objects.filter(project=p2).update(start_date=date(2025, 6, 10))
 
@@ -833,8 +834,8 @@ def test_clone_project_without_auth(self):
 
     def test_list_progress_project_order_by_due_date_desc(self):
         """납기일자 내림차순 정렬 테스트"""
-        p1 = self.create_test_project_with_quotation(status='생산 중')
-        p2 = self.create_test_project_with_quotation(status='생산 중')
+        p1, _ = self.create_test_project_with_quotation(status='생산 중')
+        p2, _ = self.create_test_project_with_quotation(status='생산 중')
         Quotation.objects.filter(project=p1).update(due_date=date(2025, 6, 1))
         Quotation.objects.filter(project=p2).update(due_date=date(2025, 6, 10))
 
@@ -866,12 +867,15 @@ def test_clone_project_without_auth(self):
     def test_list_archived_and_interruption_project_success(self):
         """보관함(archived), 완료(complete), 중단(interruption) 프로젝트 조회 성공 테스트"""
         from django.urls import reverse
+        from project.models import Project
         # 1. 완료 프로젝트 생성
         project_complete, _ = self.create_test_project_with_quotation(status='프로젝트 완료')
         # 2. 중단 프로젝트 생성 (견적 협의중 + 2개월 경과 + 생산계획 없음)
-        project_abandoned, quotation_abandoned = self.create_test_project_with_quotation(status='견적 협의중')
-        project_abandoned.updated_at = datetime.now() - timedelta(days=61)
-        project_abandoned.save()
+        project_abandoned, quotation_abandoned = self.create_test_project_with_quotation(status='견적 협의중', create_plan=False)
+        # auto_now 필드 문제를 해결하기 위해 update() 사용
+        Project.objects.filter(id=project_abandoned.id).update(updated_at=datetime(2025, 3, 1))
+        project_abandoned.refresh_from_db()
+
         # 3. 진행중 프로젝트 생성 (생산 중)
         project_progress, _ = self.create_test_project_with_quotation(status='생산 중')
 
@@ -880,8 +884,8 @@ def test_clone_project_without_auth(self):
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item['project_id'] for item in data]
-        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data}
+        ids = [item['project_id'] for item in data['data']]
+        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data['data']}
         self.assertIn(project_complete.id, ids)
         self.assertIn(project_abandoned.id, ids)
         self.assertTrue(is_abandoned_map[project_abandoned.id])
@@ -893,7 +897,7 @@ def test_clone_project_without_auth(self):
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item['project_id'] for item in data]
+        ids = [item['project_id'] for item in data['data']]
         self.assertIn(project_complete.id, ids)
         self.assertNotIn(project_abandoned.id, ids)
         self.assertNotIn(project_progress.id, ids)
@@ -903,16 +907,17 @@ def test_clone_project_without_auth(self):
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item['project_id'] for item in data]
+        ids = [item['project_id'] for item in data['data']]
         self.assertIn(project_abandoned.id, ids)
         self.assertNotIn(project_complete.id, ids)
         self.assertNotIn(project_progress.id, ids)
-        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data}
+        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data['data']}
         self.assertTrue(is_abandoned_map[project_abandoned.id])
 
     def test_list_progress_project_api(self):
         """진행중 전체, 각 상태별, 완료, 중단, 보관함 프로젝트 API 조회 통합 테스트"""
         from django.urls import reverse
+        from project.models import Project
         # 1. 진행중(생산 중), 진행중(생산 대기), 완료, 중단(견적 협의중+2개월 경과) 프로젝트 생성
         # 진행중(생산 중)
         project1, _ = self.create_test_project_with_quotation(status='생산 중')
@@ -921,16 +926,16 @@ def test_clone_project_without_auth(self):
         # 완료
         project3, _ = self.create_test_project_with_quotation(status='프로젝트 완료')
         # 중단: 견적 협의중 + 2개월 경과 + 생산계획 없음
-        project4, quotation4 = self.create_test_project_with_quotation(status='견적 협의중')
-        project4.updated_at = datetime.now() - timedelta(days=61)
-        project4.save()
+        project4, quotation4 = self.create_test_project_with_quotation(status='견적 협의중', create_plan=False)
+        Project.objects.filter(id=project4.id).update(updated_at=datetime(2025, 3, 1))
+        project4.refresh_from_db()
         # 2. 진행중 전체 조회 (status=progress)
         url = f'/v1/project?factory_id={self.factory.id}&status=progress'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
         # 진행중(생산 중, 생산 대기)만 포함, 완료/중단 제외
-        project_ids = [item['project_id'] for item in data]
+        project_ids = [item['project_id'] for item in data['data']]
         self.assertIn(project1.id, project_ids)
         self.assertIn(project2.id, project_ids)
         self.assertNotIn(project3.id, project_ids)
@@ -940,14 +945,14 @@ def test_clone_project_without_auth(self):
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item['project_id'] for item in data]
+        ids = [item['project_id'] for item in data['data']]
         self.assertIn(project1.id, ids)
         self.assertNotIn(project2.id, ids)
         url = f'/v1/project?factory_id={self.factory.id}&status=pending'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item['project_id'] for item in data]
+        ids = [item['project_id'] for item in data['data']]
         self.assertIn(project2.id, ids)
         self.assertNotIn(project1.id, ids)
         # 견적 협의중(중단 아닌 것만)
@@ -956,7 +961,7 @@ def test_clone_project_without_auth(self):
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item['project_id'] for item in data]
+        ids = [item['project_id'] for item in data['data']]
         self.assertIn(project5.id, ids)
         self.assertNotIn(project4.id, ids)  # 중단은 제외
         # 4. 보관함(archived) 조회 (status=archived)
@@ -964,8 +969,8 @@ def test_clone_project_without_auth(self):
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item['project_id'] for item in data]
-        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data}
+        ids = [item['project_id'] for item in data['data']]
+        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data['data']}
         self.assertIn(project3.id, ids)  # 완료
         self.assertIn(project4.id, ids)  # 중단
         self.assertTrue(is_abandoned_map[project4.id])
@@ -975,8 +980,8 @@ def test_clone_project_without_auth(self):
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item['project_id'] for item in data]
-        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data}
+        ids = [item['project_id'] for item in data['data']]
+        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data['data']}
         self.assertIn(project3.id, ids)  # 완료
         self.assertNotIn(project4.id, ids)  # 중단은 포함X
         self.assertFalse(is_abandoned_map[project3.id])
@@ -985,16 +990,17 @@ def test_clone_project_without_auth(self):
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item['project_id'] for item in data]
+        ids = [item['project_id'] for item in data['data']]
         self.assertIn(project4.id, ids)
         self.assertNotIn(project3.id, ids)
+        is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data['data']}
         self.assertTrue(is_abandoned_map.get(project4.id, True))
 
     def test_create_projects_by_status_test_endpoint(self):
         """
         [TEST] 상태별 프로젝트 일괄 생성 API 테스트
         """
-        url = "/api/project/test"
+        url = "/v1/project/test"
         data = {"factory_id": self.factory.id}
         response = self.client.post(url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
@@ -1017,3 +1023,181 @@ def test_clone_project_without_auth(self):
             q = Quotation.objects.get(project=proj)
             self.assertEqual(q.client.name, p["client_name"])
             self.assertEqual(q.factory, self.factory)
+
+    def test_create_projects_by_status_detailed_validation(self):
+        """
+        상태별 프로젝트 일괄 생성 API 상세 검증 테스트
+        """
+        url = "/v1/project/test"
+        data = {"factory_id": self.factory.id}
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        
+        resp_json = response.json()
+        projects = resp_json["projects"]
+        
+        # 1. 모든 상태가 생성되었는지 확인
+        from project.models import Project
+        expected_statuses = [choice[0] for choice in Project.ProjectStatus.choices]
+        created_statuses = [p["status"] for p in projects]
+        
+        for status in expected_statuses:
+            self.assertIn(status, created_statuses, f"상태 '{status}'가 생성되지 않았습니다.")
+        
+        # 2. 각 프로젝트의 상세 검증
+        for project_data in projects:
+            project_id = project_data["id"]
+            status = project_data["status"]
+            client_name = project_data["client_name"]
+            
+            # DB에서 프로젝트 조회
+            project = Project.objects.get(id=project_id)
+            self.assertEqual(project.status, status)
+            
+            # 견적서 연결 확인
+            quotation = Quotation.objects.get(project=project)
+            self.assertEqual(quotation.factory, self.factory)
+            self.assertEqual(quotation.client.name, client_name)
+            
+            # 거래처 정보 확인
+            client = quotation.client
+            self.assertEqual(client.factory, self.factory)
+            self.assertEqual(client.type, FactoryClient.ClientType.customer)
+            self.assertIsNotNone(client.business_registration_number)
+            self.assertEqual(client.representative_name, "홍길동")
+
+    def test_create_projects_by_status_invalid_factory_id(self):
+        """
+        존재하지 않는 factory_id로 상태별 프로젝트 생성 시도
+        """
+        url = "/v1/project/test"
+        data = {"factory_id": 99999}  # 존재하지 않는 factory_id
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 404)
+        
+        # 404 에러의 경우 JSON이 아닐 수 있으므로 안전하게 처리
+        try:
+            error_message = response.json().get("detail", "")
+        except:
+            error_message = str(response.content)
+        self.assertIn("공장 정보를 찾을 수 없습니다", error_message)
+
+    def test_create_projects_by_status_unique_client_names(self):
+        """
+        생성된 거래처명이 모두 고유한지 확인
+        """
+        url = "/v1/project/test"
+        data = {"factory_id": self.factory.id}
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        
+        resp_json = response.json()
+        projects = resp_json["projects"]
+        
+        # 거래처명 추출
+        client_names = [p["client_name"] for p in projects]
+        
+        # 중복 확인
+        unique_names = set(client_names)
+        self.assertEqual(len(client_names), len(unique_names), "거래처명이 중복되었습니다.")
+        
+        # 모든 거래처명이 "테스트거래처_"로 시작하는지 확인
+        for name in client_names:
+            self.assertTrue(name.startswith("테스트거래처_"), f"거래처명 '{name}'이 예상 형식과 다릅니다.")
+
+    def test_create_projects_by_status_multiple_calls(self):
+        """
+        여러 번 호출해도 정상적으로 작동하는지 확인
+        """
+        url = "/v1/project/test"
+        data = {"factory_id": self.factory.id}
+        
+        # 첫 번째 호출
+        response1 = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response1.status_code, 200)
+        
+        # 두 번째 호출
+        response2 = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response2.status_code, 200)
+        
+        # 각각 다른 프로젝트들이 생성되었는지 확인
+        projects1 = response1.json()["projects"]
+        projects2 = response2.json()["projects"]
+        
+        # 프로젝트 ID가 모두 다르다
+        ids1 = {p["id"] for p in projects1}
+        ids2 = {p["id"] for p in projects2}
+        self.assertTrue(ids1.isdisjoint(ids2), "중복된 프로젝트 ID가 생성되었습니다.")
+
+    def test_create_projects_by_status_database_consistency(self):
+        """
+        데이터베이스 일관성 검증
+        """
+        from project.models import Project
+        
+        # 초기 상태 확인
+        initial_project_count = Project.objects.count()
+        initial_quotation_count = Quotation.objects.count()
+        initial_client_count = FactoryClient.objects.filter(factory=self.factory).count()
+        
+        url = "/v1/project/test"
+        data = {"factory_id": self.factory.id}
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        
+        # 생성 후 상태 확인
+        final_project_count = Project.objects.count()
+        final_quotation_count = Quotation.objects.count()
+        final_client_count = FactoryClient.objects.filter(factory=self.factory).count()
+        
+        # ProjectStatus 개수만큼 증가했는지 확인
+        status_count = len(Project.ProjectStatus.choices)
+        
+        self.assertEqual(final_project_count - initial_project_count, status_count)
+        self.assertEqual(final_quotation_count - initial_quotation_count, status_count)
+        self.assertEqual(final_client_count - initial_client_count, status_count)
+
+    def test_create_projects_by_status_without_auth(self):
+        """
+        인증 없이도 테스트 API가 작동하는지 확인 (auth=None이므로)
+        """
+        url = "/v1/project/test"
+        data = {"factory_id": self.factory.id}
+        
+        # Authorization 헤더 없이 요청
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        
+        # 정상적으로 프로젝트가 생성되었는지 확인
+        resp_json = response.json()
+        self.assertIn("projects", resp_json)
+        projects = resp_json["projects"]
+        self.assertGreater(len(projects), 0)
+
+    def test_create_projects_by_status_status_enumeration(self):
+        """
+        모든 ProjectStatus가 정확히 생성되었는지 확인
+        """
+        url = "/v1/project/test"
+        data = {"factory_id": self.factory.id}
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        
+        resp_json = response.json()
+        projects = resp_json["projects"]
+        
+        # ProjectStatus enum의 모든 값 확인
+        from project.models import Project
+        expected_statuses = set(choice[0] for choice in Project.ProjectStatus.choices)
+        created_statuses = set(p["status"] for p in projects)
+        
+        self.assertEqual(expected_statuses, created_statuses, 
+                        f"예상 상태: {expected_statuses}, 생성된 상태: {created_statuses}")
+        
+        # 각 상태별로 정확히 하나씩 생성되었는지 확인
+        status_counts = {}
+        for p in projects:
+            status_counts[p["status"]] = status_counts.get(p["status"], 0) + 1
+        
+        for status, count in status_counts.items():
+            self.assertEqual(count, 1, f"상태 '{status}'가 {count}번 생성되었습니다. (예상: 1번)")
