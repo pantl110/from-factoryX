@@ -8,7 +8,5 @@ class LocationCreateIn(Schema):
     images: Optional[list] = None
 
 class LocationUpdateIn(Schema):
-    type: str
-    location_id: int
-    location: str
+    location: Optional[str] = None
     images: Optional[List[str]] = None
