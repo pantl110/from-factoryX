@@ -4,7 +4,8 @@ from api.security import jwt_auth
 from stock.models import ProductHistory, Product
 from asgiref.sync import sync_to_async
 from typing import List
-
+from django.utils import timezone
+from datetime import timedelta
 from ninja.errors import HttpError
 
 from stock.schemas.inbound import (

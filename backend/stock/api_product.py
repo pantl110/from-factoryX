@@ -268,7 +268,7 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
     - unit: 단위 (선택)
     - spec: 규격 (선택)
     - current_stock: 현재 재고 (선택)
-    - average_production_time: 평균 생산 시간 (선택, null 허용)
+    - average_production_time: 평균 생산 시간 (선택)
     - buffer_rate: 버퍼율 (선택)
     - location: 위치 (선택, null 허용)
     - note: 비고 (선택, null 허용)
@@ -291,17 +291,26 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
 
     # null, blank가가 허용되는 필드 목록
     nullable_fields = ["average_production_time", "location", "note"]
+    # current_stock도 null 허용으로 추가
+    nullable_fields.append("current_stock")
+    
+    # null 허용 필드 목록 (None 값이어도 허용)
+    null_allowed_fields = ["current_stock", "average_production_time", "location", "note"]
+    
     blank_fields = [
         field for field, value in update_data.items()
         if (
-            (field not in nullable_fields and value in [None, ""]) or
-            (field in nullable_fields and value is None)
+            (field not in null_allowed_fields and value in [None, ""]) or
+            (field in null_allowed_fields and value == "")
         )
     ]
     if blank_fields:
         return JsonResponse({"detail": f"공란 또는 null 불가: {', '.join(blank_fields)}"}, status=400)
 
     for key, value in update_data.items():
+        # current_stock과 average_production_time이 null이면 수정하지 않음
+        if key in ["current_stock", "average_production_time"] and value is None:
+            continue
         setattr(product, key, value)
     await product.asave()
 
