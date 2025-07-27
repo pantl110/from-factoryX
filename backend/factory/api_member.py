@@ -137,52 +137,6 @@ async def list_factory_members(request, factory_id: int):
 
 
 # Factory Member Tab
-@router.delete(
-    "/{member_id}",
-    summary="[C] 멤버 삭제"
-)
-async def delete_factory_member(request, member_id: int, factory_id: int):
-    """
-    입력 필드:
-    - member_id: 삭제할 멤버의 ID (필수)
-    - factory_id: 팩토리 ID (필수)
-
-    반환 필드:
-    - message: 처리 결과 메시지 (str)
-    - deleted_member_id: 삭제된 멤버의 ID (int)
-
-    동작:
-    - member_id가 0~999면 초대 대기자 삭제
-    - member_id가 1000+면 기존 멤버 삭제
-    """
-    if member_id < 1000:  # 초대 대기자 (0~999)
-        def _delete_inviting():
-            factory = Factory.objects.get(id=factory_id)
-            inviting = factory.inviting or []
-            if 0 <= member_id < len(inviting):
-                inviting.pop(member_id)
-                factory.inviting = inviting
-                factory.save()
-                return {"message": "초대 대기자가 삭제되었습니다.", "deleted_member_id": member_id}
-            else:
-                raise HttpError(404, "해당 초대 대기자를 찾을 수 없습니다.")
-        return await sync_to_async(_delete_inviting)()
-    else:  # 기존 멤버 (1000+)
-        # 1000+ ID를 실제 DB ID로 변환
-        actual_member_id = member_id - 1000
-        try:
-            members = await sync_to_async(lambda: list(FactoryMember.objects.filter(factory_id=factory_id)))()
-            if 0 <= actual_member_id < len(members):
-                member = members[actual_member_id]
-                await sync_to_async(member.delete)()
-                return {"message": "멤버가 삭제되었습니다.", "deleted_member_id": member_id}
-            else:
-                raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
-        except Exception as e:
-            raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
-
-
-# Factory Member Tab
 @router.patch(
     "/{member_id}",
     summary="[C] 멤버 수정"
@@ -233,6 +187,51 @@ async def update_factory_member(request, member_id: int, payload: FactoryMemberU
                     "user": member.user_id,
                     "role": member.role,
                 }
+            else:
+                raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
+        except Exception as e:
+            raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
+
+# Factory Member Tab
+@router.delete(
+    "/{member_id}",
+    summary="[C] 멤버 삭제"
+)
+async def delete_factory_member(request, member_id: int, factory_id: int):
+    """
+    입력 필드:
+    - member_id: 삭제할 멤버의 ID (필수)
+    - factory_id: 팩토리 ID (필수)
+
+    반환 필드:
+    - message: 처리 결과 메시지 (str)
+    - deleted_member_id: 삭제된 멤버의 ID (int)
+
+    동작:
+    - member_id가 0~999면 초대 대기자 삭제
+    - member_id가 1000+면 기존 멤버 삭제
+    """
+    if member_id < 1000:  # 초대 대기자 (0~999)
+        def _delete_inviting():
+            factory = Factory.objects.get(id=factory_id)
+            inviting = factory.inviting or []
+            if 0 <= member_id < len(inviting):
+                inviting.pop(member_id)
+                factory.inviting = inviting
+                factory.save()
+                return {"message": "초대 대기자가 삭제되었습니다.", "deleted_member_id": member_id}
+            else:
+                raise HttpError(404, "해당 초대 대기자를 찾을 수 없습니다.")
+        return await sync_to_async(_delete_inviting)()
+    else:  # 기존 멤버 (1000+)
+        # 1000+ ID를 실제 DB ID로 변환
+        actual_member_id = member_id - 1000
+        try:
+            members = await sync_to_async(lambda: list(FactoryMember.objects.filter(factory_id=factory_id)))()
+            if 0 <= actual_member_id < len(members):
+                member = members[actual_member_id]
+                await sync_to_async(member.delete)()
+                return {"message": "멤버가 삭제되었습니다.", "deleted_member_id": member_id}
             else:
                 raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
         except Exception as e:

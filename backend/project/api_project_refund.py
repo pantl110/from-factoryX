@@ -13,7 +13,7 @@ router = Router(tags=["ProjectRefund"], auth=jwt_auth)
 @router.post(
     "",
     summary="[C] 반품 생성",
-    description="반품을 생성하고 관련 로그를 기록합니다.",
+    description="반품을 생성하고 관련 로그를 기록합니다. 현재 재고는 Product의 실제 재고량에서 자동으로 가져옵니다.",
     response={200: RefundCreateOut, 400: dict, 404: dict, 500: dict}
 )
 async def create_refund(request, payload: RefundCreateIn):
@@ -27,7 +27,10 @@ async def create_refund(request, payload: RefundCreateIn):
     except Product.DoesNotExist:
         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
     
-    refund_amount = payload.current_stock + payload.production_amount
+    # Product의 실제 현재 재고를 사용
+    current_stock = product.current_stock
+    production_amount = payload.production_amount if payload.production_amount is not None else 0
+    refund_amount = current_stock + production_amount
     
     if refund_amount <= 0:
         raise HttpError(400, "반품 수량은 0보다 커야 합니다.")
@@ -50,8 +53,8 @@ async def create_refund(request, payload: RefundCreateIn):
         product=product,
         amount=refund_amount,
         refund_date=refund_date,
-        current_stock=payload.current_stock,
-        production_amount=payload.production_amount
+        current_stock=current_stock,
+        production_amount=production_amount
     )
     
     return 200, {
@@ -83,36 +86,26 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
         except ValueError:
             raise HttpError(400, "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식으로 입력해주세요.")
     
-    if payload.current_stock is not None:
-        update_fields['current_stock'] = payload.current_stock
+    # current_stock은 수정 불가, 기존 값 사용
+    current_stock = refund.current_stock
+    production_amount = payload.production_amount if payload.production_amount is not None else refund.production_amount
     
-    if payload.production_amount is not None:
-        update_fields['production_amount'] = payload.production_amount
-    
-    # current_stock과 production_amount가 모두 업데이트되는 경우 반품 수량 재계산
-    new_refund_amount = None
-    if 'current_stock' in update_fields or 'production_amount' in update_fields:
-        new_current_stock = update_fields.get('current_stock', refund.current_stock)
-        new_production_amount = update_fields.get('production_amount', refund.production_amount)
-        
-        new_refund_amount = new_current_stock + new_production_amount
-        
-        if new_refund_amount <= 0:
-            raise HttpError(400, "반품 수량은 0보다 커야 합니다.")
-        
-        update_fields['amount'] = new_refund_amount
+    # 반품 수량 재계산
+    new_refund_amount = current_stock + production_amount
+    if new_refund_amount <= 0:
+        raise HttpError(400, "반품 수량은 0보다 커야 합니다.")
+    update_fields['amount'] = new_refund_amount
+    update_fields['production_amount'] = production_amount
     
     # 반품 정보 업데이트
     for field, value in update_fields.items():
         setattr(refund, field, value)
-    
     await sync_to_async(refund.save)()
     
     # 프로젝트 로그 내용도 업데이트
-    if new_refund_amount is not None:
-        log_content = f"{refund.product.name} {new_refund_amount}개가 반품되었어요."
-        refund.project_log.content = log_content
-        await sync_to_async(refund.project_log.save)()
+    log_content = f"{refund.product.name} {new_refund_amount}개가 반품되었어요."
+    refund.project_log.content = log_content
+    await sync_to_async(refund.project_log.save)()
     
     return 200, {
         "message": "반품이 성공적으로 수정되었습니다.",

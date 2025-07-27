@@ -3,8 +3,14 @@ from ninja.responses import Response
 from api.security import jwt_auth
 from document.utils import content_ocr
 from document.schemas.inbound import OcrIn
+from document.schemas.outbound import QuotationDetailOut
+from document.models import Quotation, QuotationProduct
+from stock.models import Product
+from factory.models import FactoryClient
 from typing import Dict, Any
 import base64
+from ninja.errors import HttpError
+from asgiref.sync import sync_to_async
 
 router = Router(tags=["Quotation"], auth=jwt_auth)
 
@@ -37,3 +43,57 @@ async def upload_file(request, payload: OcrIn):
         return {"status": "success"}
     except Exception as e:
         return Response({"status": "error", "message": str(e)}, status=400)
+
+
+@router.get(
+    "/{quotation_id}",
+    summary="[C] 견적서 조회",
+    description="견적서 ID로 견적서 상세 정보를 조회합니다.",
+    response={200: QuotationDetailOut, 404: dict, 403: dict, 500: dict},
+    auth=jwt_auth,
+)
+async def get_quotation_detail(request, quotation_id: int):
+    try:
+        # 견적서 조회 (비동기)
+        try:
+            quotation = await Quotation.objects.select_related("client", "factory").aget(id=quotation_id)
+        except Quotation.DoesNotExist:
+            raise HttpError(404, "견적서를 찾을 수 없습니다.")
+
+
+        # 판매처 정보 (본인 공장)
+        factory = quotation.factory
+        factory_info = {
+            "factory_name": factory.name if factory else "",
+            "business_registration_number": getattr(factory, "business_registration_number", None),
+            "representative_name": getattr(factory, "representative_name", None),
+            "email": getattr(factory, "manager_email", None),
+            "phone": getattr(factory, "manager_phone", None),
+            "fax": getattr(factory, "manager_fax", None),
+            "business_type": getattr(factory, "business_type", None),
+            "business_category": getattr(factory, "business_category", None),
+            "address": getattr(factory, "business_address", None),
+        }
+
+        # 품목 정보 (비동기)
+        products = []
+        async for qp in QuotationProduct.objects.select_related("product").filter(quotation=quotation):
+            product = qp.product
+            supply_amount = (qp.quantity or 0) * (qp.unit_price or 0)
+            tax_amount = int(supply_amount * 0.1)
+            products.append({
+                "product_name": product.name,
+                "spec": product.spec,
+                "unit": product.unit,
+                "quantity": qp.quantity,
+                "unit_price": qp.unit_price,
+                "supply_amount": supply_amount,
+                "tax_amount": tax_amount,
+            })
+
+        return {**factory_info, "products": products}
+
+    except HttpError as e:
+        return Response({"status": "error", "message": str(e)}, status=e.status_code)
+    except Exception as e:
+        return Response({"status": "error", "message": str(e)}, status=500)

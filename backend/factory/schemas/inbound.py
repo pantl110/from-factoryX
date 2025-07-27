@@ -109,6 +109,9 @@ class FactoryClientUpdateIn(Schema):
     business_category: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    fax: Optional[str] = None  # 팩스번호 필드 추가
+    address: Optional[str] = None  # 주소 필드 추가
+    manager: Optional[str] = None  # 담당자 필드 추가
     note: Optional[str] = None
 
 

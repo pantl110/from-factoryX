@@ -70,7 +70,6 @@ class ProjectPlanIn(Schema):
 class QuotationProductionIn(Schema):
     """견적서 생산 시작 입력 스키마"""
     quotation_id: int
-    client: dict  # 필수 클라이언트 정보
-    products: List[dict]  # 필수 품목 정보
-    due_date: str  # 필수 납기일자
-    production_plans: List[ProjectPlanIn]  # 생산 계획 정보
+    client: Optional[dict] = None  # 선택적 클라이언트 정보 (API에서 검증)
+    products: Optional[List[dict]] = None  # 선택적 품목 정보 (API에서 검증)
+    due_date: Optional[str] = None  # 선택적 납기일자 (API에서 검증)

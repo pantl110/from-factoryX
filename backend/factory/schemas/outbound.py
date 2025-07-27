@@ -27,6 +27,9 @@ class FactoryClientOut(Schema):
     business_category: Optional[str]
     phone: Optional[str]
     email: Optional[str]
+    fax: Optional[str]  # 팩스번호 필드 추가
+    address: Optional[str]  # 주소 필드 추가
+    manager: Optional[str]  # 담당자 필드 추가
     note: Optional[str]
 
 
@@ -40,6 +43,9 @@ class FactoryClientDetailOut(Schema):
     business_category: Optional[str]
     phone: Optional[str]
     email: Optional[str]
+    fax: Optional[str]  # 팩스번호 필드 추가
+    address: Optional[str]  # 주소 필드 추가
+    manager: Optional[str]  # 담당자 필드 추가
     note: Optional[str]
 
 

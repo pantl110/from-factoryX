@@ -214,6 +214,153 @@ class TestProductAPI(TestCase):
         data = response.json()
         self.assertIn("detail", data)
 
+    async def test_update_product_with_null_current_stock(self):
+        """[U] current_stock이 null일 때 기존 값 유지 테스트"""
+        headers = await self.authenticate()
+        
+        # 제품에 초기 current_stock 설정
+        self.product.current_stock = 100
+        await sync_to_async(self.product.save)()
+        
+        # null current_stock으로 수정 시도
+        payload = {
+            "name": "Updated Product Name",
+            "current_stock": None
+        }
+        response = await self.client.patch(
+            f"/{self.product.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # name은 수정되었지만 current_stock은 기존 값 유지
+        self.assertEqual(data["name"], "Updated Product Name")
+        self.assertEqual(data["current_stock"], 100)  # 기존 값 유지
+        
+        # DB에서도 확인
+        await sync_to_async(self.product.refresh_from_db)()
+        self.assertEqual(self.product.current_stock, 100)
+
+    async def test_update_product_with_null_average_production_time(self):
+        """[U] average_production_time이 null일 때 기존 값 유지 테스트"""
+        headers = await self.authenticate()
+        
+        # 제품에 초기 average_production_time 설정
+        self.product.average_production_time = 300
+        await sync_to_async(self.product.save)()
+        
+        # null average_production_time으로 수정 시도
+        payload = {
+            "name": "Updated Product Name",
+            "average_production_time": None
+        }
+        response = await self.client.patch(
+            f"/{self.product.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # name은 수정되었지만 average_production_time은 기존 값 유지
+        self.assertEqual(data["name"], "Updated Product Name")
+        self.assertEqual(data["average_production_time"], 300)  # 기존 값 유지
+        
+        # DB에서도 확인
+        await sync_to_async(self.product.refresh_from_db)()
+        self.assertEqual(self.product.average_production_time, 300)
+
+    async def test_update_product_with_both_null_values(self):
+        """[U] current_stock과 average_production_time이 모두 null일 때 테스트"""
+        headers = await self.authenticate()
+        
+        # 제품에 초기 값 설정
+        self.product.current_stock = 50
+        self.product.average_production_time = 200
+        await sync_to_async(self.product.save)()
+        
+        # 두 필드 모두 null로 수정 시도
+        payload = {
+            "name": "Updated Product Name",
+            "current_stock": None,
+            "average_production_time": None
+        }
+        response = await self.client.patch(
+            f"/{self.product.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # name은 수정되었지만 두 필드는 기존 값 유지
+        self.assertEqual(data["name"], "Updated Product Name")
+        self.assertEqual(data["current_stock"], 50)  # 기존 값 유지
+        self.assertEqual(data["average_production_time"], 200)  # 기존 값 유지
+        
+        # DB에서도 확인
+        await sync_to_async(self.product.refresh_from_db)()
+        self.assertEqual(self.product.current_stock, 50)
+        self.assertEqual(self.product.average_production_time, 200)
+
+    async def test_update_product_with_valid_and_null_values(self):
+        """[U] 유효한 값과 null 값이 섞여있을 때 테스트"""
+        headers = await self.authenticate()
+        
+        # 제품에 초기 값 설정
+        self.product.current_stock = 25
+        self.product.average_production_time = 150
+        await sync_to_async(self.product.save)()
+        
+        # 유효한 값과 null 값 섞어서 수정
+        payload = {
+            "name": "Updated Product Name",
+            "current_stock": 75,  # 유효한 값
+            "average_production_time": None  # null 값
+        }
+        response = await self.client.patch(
+            f"/{self.product.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # name과 current_stock은 수정되었지만 average_production_time은 기존 값 유지
+        self.assertEqual(data["name"], "Updated Product Name")
+        self.assertEqual(data["current_stock"], 75)  # 수정됨
+        self.assertEqual(data["average_production_time"], 150)  # 기존 값 유지
+        
+        # DB에서도 확인
+        await sync_to_async(self.product.refresh_from_db)()
+        self.assertEqual(self.product.current_stock, 75)
+        self.assertEqual(self.product.average_production_time, 150)
+
+    async def test_update_product_with_zero_values(self):
+        """[U] 0 값은 정상적으로 수정되는지 테스트"""
+        headers = await self.authenticate()
+        
+        # 제품에 초기 값 설정
+        self.product.current_stock = 100
+        self.product.average_production_time = 300
+        await sync_to_async(self.product.save)()
+        
+        # 0 값으로 수정
+        payload = {
+            "name": "Updated Product Name",
+            "current_stock": 0,  # 0은 유효한 값
+            "average_production_time": 0  # 0은 유효한 값
+        }
+        response = await self.client.patch(
+            f"/{self.product.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 모든 값이 정상적으로 수정됨
+        self.assertEqual(data["name"], "Updated Product Name")
+        self.assertEqual(data["current_stock"], 0)  # 수정됨
+        self.assertEqual(data["average_production_time"], 0)  # 수정됨
+        
+        # DB에서도 확인
+        await sync_to_async(self.product.refresh_from_db)()
+        self.assertEqual(self.product.current_stock, 0)
+        self.assertEqual(self.product.average_production_time, 0)
+
     async def test_delete_product(self):
         """[D] 제품 삭제 테스트"""
         headers = await self.authenticate()

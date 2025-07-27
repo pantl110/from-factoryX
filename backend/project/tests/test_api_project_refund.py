@@ -71,7 +71,6 @@ class ProjectRefundAPITestCase(TestCase):
             'project_id': self.project.id,
             'product_id': self.product.id,
             'refund_date': '2024-01-15',
-            'current_stock': 10,
             'production_amount': 5
         }
         
@@ -95,8 +94,8 @@ class ProjectRefundAPITestCase(TestCase):
         refund = Refund.objects.get(id=data['refund_id'])
         self.assertEqual(refund.project_log.project.id, self.project.id)
         self.assertEqual(refund.product.id, self.product.id)
-        self.assertEqual(refund.amount, 15)  # current_stock + production_amount
-        self.assertEqual(refund.current_stock, 10)
+        self.assertEqual(refund.amount, 5)  # product.current_stock(0) + production_amount(5)
+        self.assertEqual(refund.current_stock, 0)
         self.assertEqual(refund.production_amount, 5)
         self.assertEqual(refund.refund_date, datetime.strptime('2024-01-15', '%Y-%m-%d').date())
         
@@ -105,7 +104,7 @@ class ProjectRefundAPITestCase(TestCase):
         self.assertEqual(log.project.id, self.project.id)
         self.assertEqual(log.type, '반품')
         self.assertEqual(log.title, '반품 접수 현황')
-        self.assertEqual(log.content, f'{self.product.name} 15개가 반품되었어요.')
+        self.assertEqual(log.content, f'{self.product.name} 5개가 반품되었어요.')
 
     def test_create_refund_nonexistent_project(self):
         """존재하지 않는 프로젝트로 반품 생성 시도 테스트"""
@@ -115,7 +114,6 @@ class ProjectRefundAPITestCase(TestCase):
             'project_id': 999,
             'product_id': self.product.id,
             'refund_date': '2024-01-15',
-            'current_stock': 10,
             'production_amount': 5
         }
         
@@ -137,7 +135,6 @@ class ProjectRefundAPITestCase(TestCase):
             'project_id': self.project.id,
             'product_id': 999,
             'refund_date': '2024-01-15',
-            'current_stock': 10,
             'production_amount': 5
         }
         
@@ -159,7 +156,6 @@ class ProjectRefundAPITestCase(TestCase):
             'project_id': self.project.id,
             'product_id': self.product.id,
             'refund_date': '2024-01-15',
-            'current_stock': 0,
             'production_amount': 0
         }
         
@@ -181,8 +177,7 @@ class ProjectRefundAPITestCase(TestCase):
             'project_id': self.project.id,
             'product_id': self.product.id,
             'refund_date': '2024-01-15',
-            'current_stock': -5,
-            'production_amount': 3
+            'production_amount': -5
         }
         
         response = self.client.post(
@@ -203,7 +198,6 @@ class ProjectRefundAPITestCase(TestCase):
             'project_id': self.project.id,
             'product_id': self.product.id,
             'refund_date': '2024/01/15',  # 잘못된 형식
-            'current_stock': 10,
             'production_amount': 5
         }
         
@@ -225,7 +219,6 @@ class ProjectRefundAPITestCase(TestCase):
             'project_id': self.project.id,
             'product_id': self.product.id,
             'refund_date': '2024-01-15',
-            'current_stock': 10,
             'production_amount': 5
         }
         
@@ -261,7 +254,6 @@ class ProjectRefundAPITestCase(TestCase):
         
         payload = {
             'refund_date': '2024-01-20',
-            'current_stock': 12,
             'production_amount': 8
         }
         
@@ -282,14 +274,14 @@ class ProjectRefundAPITestCase(TestCase):
         
         # 데이터베이스에 반품이 수정되었는지 확인
         refund.refresh_from_db()
-        self.assertEqual(refund.amount, 20)  # 12 + 8
-        self.assertEqual(refund.current_stock, 12)
+        self.assertEqual(refund.amount, 18)  # current_stock(10) + production_amount(8)
+        self.assertEqual(refund.current_stock, 10)
         self.assertEqual(refund.production_amount, 8)
         self.assertEqual(refund.refund_date, datetime.strptime('2024-01-20', '%Y-%m-%d').date())
         
         # 프로젝트 로그 내용도 업데이트되었는지 확인
         log.refresh_from_db()
-        self.assertEqual(log.content, f'{self.product.name} 20개가 반품되었어요.')
+        self.assertEqual(log.content, f'{self.product.name} 18개가 반품되었어요.')
 
     def test_update_refund_partial_fields(self):
         """일부 필드만 수정하는 테스트"""
@@ -339,7 +331,6 @@ class ProjectRefundAPITestCase(TestCase):
         
         payload = {
             'refund_date': '2024-01-20',
-            'current_stock': 12,
             'production_amount': 8
         }
         
@@ -408,12 +399,11 @@ class ProjectRefundAPITestCase(TestCase):
             production_amount=5
         )
         
-        # 수량을 0으로 수정
+        # 반품 수정
         url = f'/v1/project/refund/{refund.id}'
         
         payload = {
-            'current_stock': 0,
-            'production_amount': 0
+            'production_amount': -10
         }
         
         response = self.client.patch(
@@ -445,12 +435,11 @@ class ProjectRefundAPITestCase(TestCase):
             production_amount=5
         )
         
-        # 수량을 음수로 수정
+        # 반품 수정
         url = f'/v1/project/refund/{refund.id}'
         
         payload = {
-            'current_stock': -5,
-            'production_amount': 3
+            'production_amount': -20
         }
         
         response = self.client.patch(
@@ -487,7 +476,6 @@ class ProjectRefundAPITestCase(TestCase):
         
         payload = {
             'refund_date': '2024-01-20',
-            'current_stock': 12,
             'production_amount': 8
         }
         
@@ -507,8 +495,7 @@ class ProjectRefundAPITestCase(TestCase):
             'project_id': self.project.id,
             'product_id': self.product.id,
             'refund_date': '2024-01-15',
-            'current_stock': 10,
-            'production_amount': 0  # 0으로 설정
+            'production_amount': 1
         }
         
         response = self.client.post(
@@ -523,8 +510,8 @@ class ProjectRefundAPITestCase(TestCase):
         # 데이터베이스 확인
         data = response.json()
         refund = Refund.objects.get(id=data['refund_id'])
-        self.assertEqual(refund.amount, 10)  # current_stock만
-        self.assertEqual(refund.production_amount, 0)
+        self.assertEqual(refund.amount, 1)  # product.current_stock(0) + production_amount(1)
+        self.assertEqual(refund.production_amount, 1)
 
     def test_update_refund_only_current_stock(self):
         """current_stock만 수정하는 테스트"""
@@ -545,7 +532,7 @@ class ProjectRefundAPITestCase(TestCase):
             production_amount=5
         )
         
-        # current_stock만 수정
+        # current_stock만 수정 (실제로는 수정되지 않음)
         url = f'/v1/project/refund/{refund.id}'
         
         payload = {
@@ -563,13 +550,13 @@ class ProjectRefundAPITestCase(TestCase):
         
         # 데이터베이스 확인
         refund.refresh_from_db()
-        self.assertEqual(refund.amount, 25)  # 20 + 5
-        self.assertEqual(refund.current_stock, 20)
+        self.assertEqual(refund.amount, 15)  # current_stock은 수정되지 않음
+        self.assertEqual(refund.current_stock, 10)  # 수정되지 않음
         self.assertEqual(refund.production_amount, 5)  # 변경되지 않음
         
-        # 로그 내용도 업데이트되었는지 확인
+        # 로그 내용도 업데이트되지 않음
         log.refresh_from_db()
-        self.assertEqual(log.content, f'{self.product.name} 25개가 반품되었어요.')
+        self.assertEqual(log.content, f'{self.product.name} 15개가 반품되었어요.')
 
     def test_update_refund_only_production_amount(self):
         """production_amount만 수정하는 테스트"""

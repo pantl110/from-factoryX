@@ -33,6 +33,9 @@ async def create_factory_client(request, payload: FactoryClientCreateIn):
         "business_category": client.business_category,
         "phone": client.phone,
         "email": client.email,
+        "fax": client.fax,  # 팩스번호 필드 추가
+        "address": client.address,  # 주소 필드 추가
+        "manager": client.manager,  # 담당자 필드 추가
         "note": client.note,
     }
 
@@ -75,6 +78,9 @@ async def list_factory_clients(
     - business_category: 종목
     - phone: 연락처
     - email: 이메일
+    - fax: 팩스번호
+    - address: 주소
+    - manager: 담당자
     """
     user = request.auth
     await get_factory_by_id(factory_id, user)
@@ -105,6 +111,9 @@ async def list_factory_clients(
             business_category=c.business_category,
             phone=c.phone,
             email=c.email,
+            fax=c.fax,  # 팩스번호 필드 추가
+            address=c.address,  # 주소 필드 추가
+            manager=c.manager,  # 담당자 필드 추가
             note=c.note,
         )
         for c in clients
@@ -139,6 +148,9 @@ async def get_factory_client(
     - business_category: 종목
     - phone: 연락처
     - email: 이메일
+    - fax: 팩스번호
+    - address: 주소
+    - manager: 담당자
     - note: 비고
     """
     user = request.auth
@@ -153,6 +165,9 @@ async def get_factory_client(
         "business_category": client.business_category,
         "phone": client.phone,
         "email": client.email,
+        "fax": client.fax,  # 팩스번호 필드 추가
+        "address": client.address,  # 주소 필드 추가
+        "manager": client.manager,  # 담당자 필드 추가
         "note": client.note,
     }
 
@@ -183,6 +198,9 @@ async def update_factory_client(
     - business_category: 종목
     - phone: 연락처
     - email: 이메일
+    - fax: 팩스번호
+    - address: 주소
+    - manager: 담당자
     - note: 비고
 
     반환 필드:
@@ -194,13 +212,16 @@ async def update_factory_client(
     - business_category: 종목
     - phone: 연락처
     - email: 이메일
+    - fax: 팩스번호
+    - address: 주소
+    - manager: 담당자
     - note: 비고
     """
     user = request.auth
     client = await get_factory_client_by_id(client_id, factory_id, user)
     for field in [
         "type", "name", "business_registration_number", "representative_name",
-        "business_type", "business_category", "phone", "email", "note"
+        "business_type", "business_category", "phone", "email", "fax", "address", "manager", "note"
     ]:
         value = getattr(payload, field, None)
         if value is not None:
@@ -216,6 +237,9 @@ async def update_factory_client(
         "business_category": client.business_category,
         "phone": client.phone,
         "email": client.email,
+        "fax": client.fax,  # 팩스번호 필드 추가
+        "address": client.address,  # 주소 필드 추가
+        "manager": client.manager,  # 담당자 필드 추가
         "note": client.note,
     }
 
