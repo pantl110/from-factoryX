@@ -77,6 +77,21 @@ class NationalTaxService(BaseModel):
 
 # 국세청 API 현금 영수증 데이터 저장
 class CashReceipt(BaseModel):
+    # user = models.ForeignKey(
+    #     "user.User",
+    #     related_name="cash_receipts",
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     help_text="사용자",
+    # )
+    # factory = models.ForeignKey(
+    #     "factory.Factory",
+    #     related_name="cash_receipts",
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    # )
     transaction_date = models.DateField(help_text="거래 일자")
     approval_number = models.CharField(max_length=100, help_text="승인번호")
     transaction_classification = models.CharField(

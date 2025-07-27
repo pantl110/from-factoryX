@@ -1,6 +1,4 @@
 from django.test import TestCase
-from tax.api import router
-from ninja.testing import TestAsyncClient
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient
 from tax.models import NationalTaxService
@@ -11,13 +9,13 @@ import jwt
 from django.conf import settings
 from datetime import datetime, timedelta, date
 
+
 User = get_user_model()
 
 
 class TaxAPITestCase(TestCase):
     def setUp(self):
         """테스트 설정"""
-        self.client = TestAsyncClient(router)
         # 사용자 생성
         self.user = User.objects.create_user(
             username="testuser", email="test@example.com", password="testpass123"
@@ -1145,7 +1143,7 @@ class TaxAPITestCase(TestCase):
         )
         receipt3.product.add(self.product3)
         # 전체 조회(최신순)
-        url = f"/v1/tax/receipt?factory_id={self.factory.id}"
+        url = f"/v1/receipt?factory_id={self.factory.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()["data"]
@@ -1153,13 +1151,13 @@ class TaxAPITestCase(TestCase):
             [d["id"] for d in data[:3]], [receipt3.id, receipt2.id, receipt1.id]
         )
         # 기간 필터 (2025-06-02 ~ 2025-06-03)
-        url = f"/v1/tax/receipt?factory_id={self.factory.id}&start_date=2025-06-02&end_date=2025-06-03"
+        url = f"/v1/receipt?factory_id={self.factory.id}&start_date=2025-06-02&end_date=2025-06-03"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()["data"]
         self.assertEqual(set([d["id"] for d in data]), set([receipt2.id, receipt3.id]))
         # 정렬 asc(오래된순)
-        url = f"/v1/tax/receipt?factory_id={self.factory.id}&order=asc"
+        url = f"/v1/receipt?factory_id={self.factory.id}&order=asc"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()["data"]
@@ -1167,7 +1165,7 @@ class TaxAPITestCase(TestCase):
             [d["id"] for d in data[:3]], [receipt1.id, receipt2.id, receipt3.id]
         )
         # 거래처명 검색
-        url = f"/v1/tax/receipt?factory_id={self.factory.id}&q=싫어"
+        url = f"/v1/receipt?factory_id={self.factory.id}&q=싫어"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()["data"]
@@ -1242,7 +1240,7 @@ class TaxAPITestCase(TestCase):
 
     def test_get_cash_receipt_by_material_history(self):
         """
-        /receipt-by-material-history API 자재 이력별 현금영수증 및 구매정보 단건 조회 테스트
+        /receipt/material-history API 자재 이력별 현금영수증 및 구매정보 단건 조회 테스트
         """
         from stock.models import Material, MaterialHistory
         from tax.models import CashReceipt
@@ -1278,7 +1276,7 @@ class TaxAPITestCase(TestCase):
             cash_receipt=receipt,
         )
         # API 호출
-        url = f"/v1/tax/receipt-by-material-history?material_history_id={history.id}"
+        url = f"/v1/receipt/material-history?material_history_id={history.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         if response.status_code != 200:
             print("응답:", response.json())

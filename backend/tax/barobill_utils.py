@@ -1,6 +1,7 @@
 from django.conf import settings
 from ninja.errors import HttpError
 from tax.models import NationalTaxService, TransactionType
+from barobill.barobill_error_code import barobill_error_codes
 
 
 def issue_barobill_tax_invoice(tax_service, factory, client, user):
@@ -95,6 +96,9 @@ def issue_barobill_tax_invoice(tax_service, factory, client, user):
     )
 
     if result < 0:  # 호출 실패
-        raise HttpError(400, f"바로빌 세금계산서 발행 실패: {result}")
+        raise HttpError(
+            400,
+            f"바로빌 세금계산서 발행 실패: {barobill_error_codes.get(result, 'Unknown error')}",
+        )
 
     return result

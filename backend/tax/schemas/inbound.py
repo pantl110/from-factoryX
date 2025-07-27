@@ -20,6 +20,8 @@ class TaxServiceItem(Schema):
     def convert_date_to_string(cls, v):
         if isinstance(v, date):
             return v.strftime("%Y%m%d")
+        if isinstance(v, str):
+            return v.replace("-", "")
         return v
 
 
