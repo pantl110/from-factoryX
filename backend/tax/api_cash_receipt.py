@@ -3,31 +3,15 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
-from typing import List
 from ninja import Query
-from tax.models import NationalTaxService
-from factory.utils import get_factory_by_id, is_factory_member, get_factory_client_by_id
-from stock.utils import get_product_list_by_ids
-from django.db import transaction
-from tax.utils import get_tax_service_by_id
-from tax.barobill_utils import issue_barobill_tax_invoice
-from tax.schemas.inbound import NationalTaxServiceCreateIn, NationalTaxServiceUpdateIn
-from tax.schemas.outbound import NationalTaxServiceOut, AllTaxInvoiceOut
 from tax.schemas.outbound import (
-    NotLinkedTaxInvoiceOut,
-    AllTaxInvoiceOut,
     AllCashReceiptOut,
-    TaxInvoiceByMaterialOut,
     CashReceiptByMaterialOut,
-    CashReceiptMaterialInfoOut,
 )
-from tax.schemas.inbound import LinkTaxInvoiceIn
 from api.security import jwt_auth
-from typing import List
 from ninja import Query
-from tax.models import NationalTaxService, CashReceipt
+from tax.models import CashReceipt
 from datetime import date
-from project.models import Project
 
 
 router = Router(tags=["CashReceipts"], auth=jwt_auth)
