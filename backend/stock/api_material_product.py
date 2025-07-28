@@ -127,11 +127,28 @@ async def get_material_product_connections(request, target_id: int, type: str):
     """
     입력 필드:
     - target_id: 기준이 되는 대상 ID (경로 파라미터, 필수)
-    - type: 기준 타입 ('material' 또는 'product', 쿼리 파라미터, 필수)
+      - material 타입: 원자재 ID
+      - product 타입: 제품 ID
+    - type: 기준 타입 (쿼리 파라미터, 필수)
+      - 'material': 해당 원자재가 사용되는 제품들을 조회
+      - 'product': 해당 제품에 필요한 원자재들을 조회
 
     반환 필드:
-    - type이 'product'면: material_id, material_name, material_code, material_spec, material_unit, quantity
-    - type이 'material'면: product_id, product_name, product_code, product_spec, product_unit
+    - type이 'product'인 경우:
+      - connection_id: MaterialProduct 연결 ID
+      - material_id: 원자재 ID
+      - material_name: 원자재명
+      - material_code: 원자재 코드
+      - material_spec: 원자재 사양
+      - material_unit: 원자재 단위
+      - quantity: 필요 수량
+    - type이 'material'인 경우:
+      - connection_id: MaterialProduct 연결 ID
+      - product_id: 제품 ID
+      - product_name: 제품명
+      - product_code: 제품 코드
+      - product_spec: 제품 사양
+      - product_unit: 제품 단위
     """
     if type == "material":
         target_model = Material
@@ -156,6 +173,7 @@ async def get_material_product_connections(request, target_id: int, type: str):
     if type == "product":
         for mp in material_products:
             results.append({
+                "connection_id": mp.id,
                 "material_id": mp.material.id,
                 "material_name": mp.material.name,
                 "material_code": mp.material.code,
@@ -166,6 +184,7 @@ async def get_material_product_connections(request, target_id: int, type: str):
     else:  # type == "material"
         for mp in material_products:
             results.append({
+                "connection_id": mp.id,
                 "product_id": mp.product.id,
                 "product_name": mp.product.name,
                 "product_code": mp.product.code,
@@ -174,27 +193,6 @@ async def get_material_product_connections(request, target_id: int, type: str):
             })
 
     return results
-
-
-@router.delete(
-    "/connection/{connection_id}",
-    summary="[C] MaterialProduct 연결 삭제",
-    description="특정 MaterialProduct 연결을 삭제합니다.",
-    response={200: dict, 404: dict},
-)
-async def delete_material_product_connection(request, connection_id: int):
-    """MaterialProduct 연결 삭제"""
-    try:
-        connection = await sync_to_async(MaterialProduct.objects.get)(id=connection_id)
-    except MaterialProduct.DoesNotExist:
-        raise HttpError(404, "해당 연결을 찾을 수 없습니다.")
-
-    await sync_to_async(connection.delete)()
-
-    return 200, {
-        "message": "연결이 성공적으로 삭제되었습니다.",
-        "deleted_connection_id": connection_id,
-    }
 
 
 @router.patch(
@@ -217,4 +215,25 @@ async def update_material_product_connection(
         "message": "연결이 성공적으로 수정되었습니다.",
         "updated_connection_id": connection_id,
         "quantity": float(connection.quantity),
+    }
+
+
+@router.delete(
+    "/connection/{connection_id}",
+    summary="[C] MaterialProduct 연결 삭제",
+    description="특정 MaterialProduct 연결을 삭제합니다.",
+    response={200: dict, 404: dict},
+)
+async def delete_material_product_connection(request, connection_id: int):
+    """MaterialProduct 연결 삭제"""
+    try:
+        connection = await sync_to_async(MaterialProduct.objects.get)(id=connection_id)
+    except MaterialProduct.DoesNotExist:
+        raise HttpError(404, "해당 연결을 찾을 수 없습니다.")
+
+    await sync_to_async(connection.delete)()
+
+    return 200, {
+        "message": "연결이 성공적으로 삭제되었습니다.",
+        "deleted_connection_id": connection_id,
     }

@@ -9,6 +9,8 @@ from stock.models import Material, MaterialHistory
 from factory.models import Factory, FactoryClient
 from ninja import FilterSchema, Query
 from stock.schemas.inbound import MaterialHistoryDetailFilter
+from django.utils import timezone
+from datetime import timedelta
 
 router = Router(tags=["MaterialHistory"], auth=jwt_auth)
 
@@ -185,9 +187,6 @@ async def get_material_history(request, material_id: int, months: int = None, da
     factory_owner = await sync_to_async(lambda m: m.factory.owner)(material)
     if factory_owner != request.auth:
         raise HttpError(403, "권한이 없습니다.")
-
-    from django.utils import timezone
-    from datetime import timedelta
     
     @sync_to_async
     def get_histories():
