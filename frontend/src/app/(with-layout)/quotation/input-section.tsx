@@ -86,8 +86,8 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
     setValue('business_type', item.business_type || '');
     setValue('business_category', item.business_category || '');
     setValue('address', item.address || '');
-    setValue('manager', item.manager);
-    setValue('email', item.email);
+    setValue('manager', item.manager || '');
+    setValue('email', item.email || '');
     setValue('phone', formatPhoneNumber(String(item.phone ?? '')));
     setValue('fax', formatFaxNumber(String(item.fax ?? '')));
 
@@ -139,7 +139,13 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
           <Controller
             name="business_registration_number"
             control={control}
-            rules={{ required: true }}
+            rules={{
+              required: true,
+              pattern: {
+                value: /^\d{3}-\d{2}-\d{5}$/,
+                message: '올바른 사업자등록번호 형식이 아닙니다.',
+              },
+            }}
             render={({ field }) => {
               return (
                 <Input
@@ -230,11 +236,13 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
         <Controller
           name="address"
           control={control}
+          rules={{ required: true }}
           render={({ field }) => (
             <Input
               label="사업장 주소"
               placeholder="사업장 주소를 입력하세요."
               required
+              showError={!!errors.address}
               {...field}
             />
           )}
@@ -244,12 +252,10 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
         <Controller
           name="manager"
           control={control}
-          rules={{ required: true }}
           render={({ field }) => (
             <Input
               label="담당자명"
               placeholder="담당자명을 입력하세요."
-              showError={!!errors.manager}
               {...field}
             />
           )}
@@ -257,7 +263,12 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
         <Controller
           name="email"
           control={control}
-          rules={{ required: true }}
+          rules={{
+            pattern: {
+              value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+              message: '올바른 이메일 형식이 아닙니다.',
+            },
+          }}
           render={({ field }) => (
             <Input
               label="이메일"
@@ -272,11 +283,18 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
         <Controller
           name="phone"
           control={control}
+          rules={{
+            pattern: {
+              value: /^(01[016789]-\d{3,4}-\d{4}|0\d{1,2}-\d{3,4}-\d{4})$/,
+              message: '올바른 전화번호 형식이 아닙니다.',
+            },
+          }}
           render={({ field }) => {
             return (
               <Input
                 placeholder="연락처를 입력하세요."
                 label="연락처"
+                showError={!!errors.phone}
                 value={field.value ?? ''}
                 onChange={(e) => {
                   const formatted = formatPhoneNumber(e.target.value);
@@ -291,11 +309,18 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
         <Controller
           name="fax"
           control={control}
+          rules={{
+            pattern: {
+              value: /^(0\d{1,3}-\d{3,4}-\d{4})$/,
+              message: '올바른 팩스번호 형식이 아닙니다.',
+            },
+          }}
           render={({ field }) => {
             return (
               <Input
                 label="팩스 번호"
                 placeholder="팩스 번호를 입력하세요."
+                showError={!!errors.fax}
                 value={field.value ?? ''}
                 onChange={(e) => {
                   const formatted = formatFaxNumber(e.target.value);

@@ -43,8 +43,6 @@ const TitleSec = ({
       'business_type',
       'business_category',
       'address',
-      'manager',
-      'email',
     ];
 
     return requiredFields.every((field) => {
@@ -92,8 +90,18 @@ const TitleSec = ({
         </p>
       </div>
       <ButtonSection
-        onEmailClick={() => setIsEmailOpen(true)}
-        onPrintClick={() => setIsPrintOpen(true)}
+        onEmailClick={async () => {
+          const isValid = await trigger();
+          if (isValid) {
+            setIsEmailOpen(true);
+          }
+        }}
+        onPrintClick={async () => {
+          const isValid = await trigger();
+          if (isValid) {
+            setIsPrintOpen(true);
+          }
+        }}
         onStartProductionClick={async () => {
           const isValid = await trigger();
           if (isValid) {
@@ -101,7 +109,12 @@ const TitleSec = ({
           }
         }}
         isOrderStatus={isOrderStatus}
-        setIsOrderStatus={setIsOrderStatus}
+        setIsOrderStatus={async (status: boolean) => {
+          const isValid = await trigger();
+          if (isValid) {
+            setIsOrderStatus(status);
+          }
+        }}
         isFormValid={isFormValid}
       />
     </div>

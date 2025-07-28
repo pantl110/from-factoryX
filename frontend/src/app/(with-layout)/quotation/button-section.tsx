@@ -8,7 +8,7 @@ interface ButtonSectionProps {
   onPrintClick?: () => void;
   onStartProductionClick?: () => void;
   isOrderStatus: boolean;
-  setIsOrderStatus: (status: boolean) => void;
+  setIsOrderStatus: (status: boolean) => void | Promise<void>;
   isFormValid: boolean;
 }
 
@@ -46,15 +46,27 @@ const ButtonSection = ({
         disabled={!isFormValid}
       />
       {isOrderStatus ? (
-        <MiniBtn
-          text="생산 시작"
-          textColor="text-wh"
-          bgColor="bg-primary"
-          icon={ArrowRight}
-          iconPosition="right"
-          onClick={onStartProductionClick}
-          hoverColor="hover:bg-primary-hover"
-        />
+        <>
+          <MiniBtn
+            text="수정"
+            textColor="text-primary"
+            bgColor="bg-primary-8"
+            onClick={() => {
+              setIsOrderStatus(false);
+            }}
+            hoverColor="hover:bg-secondary-hover"
+            disabled={!isFormValid}
+          />
+          <MiniBtn
+            text="생산 시작"
+            textColor="text-wh"
+            bgColor="bg-primary"
+            icon={ArrowRight}
+            iconPosition="right"
+            onClick={onStartProductionClick}
+            hoverColor="hover:bg-primary-hover"
+          />
+        </>
       ) : (
         <>
           <MiniBtn
@@ -62,7 +74,7 @@ const ButtonSection = ({
             textColor="text-primary"
             bgColor="bg-primary-8"
             onClick={() => {}}
-            hoverColor="hover:bg-primary-hover"
+            hoverColor="hover:bg-secondary-hover"
             disabled={!isFormValid}
           />
           <MiniBtn
