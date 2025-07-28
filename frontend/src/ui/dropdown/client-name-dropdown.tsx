@@ -14,8 +14,8 @@ export const ClientNameDropdown = ({
   style?: React.CSSProperties;
 }) => {
   return (
-    <Dropdown onClose={() => {}} width={width} style={style}>
-      {items.slice(0, 6).map((item) => (
+    <Dropdown onClose={() => {}} width={width} style={style} maxHeight={true}>
+      {items.map((item) => (
         <DropdownItem
           key={item.id}
           text={item.name}

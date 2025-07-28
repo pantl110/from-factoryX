@@ -9,13 +9,13 @@ const useDeleteMember = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const deleteMember = async (memberId: number) => {
+  const deleteMember = async (memberId: number, factoryId: number) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/member/${memberId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/member/${memberId}?factory_id=${factoryId}`,
         {
           method: 'DELETE',
           credentials: 'include',

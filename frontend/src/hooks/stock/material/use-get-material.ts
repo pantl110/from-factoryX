@@ -50,7 +50,7 @@ const useGetMaterial = () => {
       );
       if (response.ok) {
         const result: MaterialListResponseModel = await response.json();
-        setMaterialList(result.materials || []);
+        setMaterialList(result.data || []);
         setPagination(result);
         return { success: true, data: result };
       } else {

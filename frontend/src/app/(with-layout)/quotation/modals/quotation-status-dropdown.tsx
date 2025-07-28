@@ -23,7 +23,7 @@ const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
         chip={true}
       >
         <Chip
-          text="견적 협의"
+          text="견적 요청"
           bgColor="bg-yellow-8"
           textColor="text-yellow"
           hover="hover:bg-yellow-hover"

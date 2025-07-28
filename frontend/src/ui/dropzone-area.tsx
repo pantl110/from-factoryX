@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import MiniBtn from './mini-btn';
 import {
@@ -10,7 +10,7 @@ import {
 } from '@phosphor-icons/react';
 
 interface DropzoneProps {
-  isMultiple?: boolean;
+  fileCount?: number;
   onClose?: () => void;
   onComplete?: (files: File[]) => void;
   accept?: Record<string, string[]>;
@@ -18,24 +18,32 @@ interface DropzoneProps {
 }
 
 const DropzoneArea = ({
-  isMultiple = false,
+  fileCount = 1,
   onClose,
   onComplete,
   accept,
   onFileUpload,
 }: DropzoneProps) => {
   const [files, setFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const newFiles = acceptedFiles.filter(
+      const currentCount = files.length;
+      const availableSlots = fileCount - currentCount;
+      let filesToAdd = acceptedFiles;
+      if (acceptedFiles.length > availableSlots) {
+        alert(`파일은 최대 9개까지만 업로드할 수 있습니다.`);
+        filesToAdd = acceptedFiles.slice(0, availableSlots);
+      }
+      const newFiles = filesToAdd.filter(
         (file) => !files.some((f) => f.name === file.name)
       ); // 중복된 파일은 제외하고 새로운 파일만 추가
       const updatedFiles = [...files, ...newFiles];
       setFiles(updatedFiles);
       onFileUpload?.(updatedFiles.length > 0);
     },
-    [files, onFileUpload]
+    [files, fileCount, onFileUpload]
   );
 
   const handleRemoveFile = (indexToRemove: number) => {
@@ -44,16 +52,27 @@ const DropzoneArea = ({
     onFileUpload?.(updatedFiles.length > 0);
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = Array.from(event.target.files || []);
+    const currentCount = files.length;
+    const availableSlots = fileCount - currentCount;
+    let filesToAdd = newFiles;
+    if (newFiles.length > availableSlots) {
+      alert(`파일은 최대 9개까지만 업로드할 수 있습니다.`);
+      filesToAdd = newFiles.slice(0, availableSlots);
+    }
+    const uniqueNewFiles = filesToAdd.filter(
+      (file) => !files.some((f) => f.name === file.name)
+    );
+    const updatedFiles = [...files, ...uniqueNewFiles];
+    setFiles(updatedFiles);
+    onFileUpload?.(updatedFiles.length > 0);
+  };
+
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     noClick: true,
     onDrop,
-    multiple: isMultiple,
     accept,
-    // accept: {
-    //   "image/*": [], // 이미지 허용
-    //   "application/pdf": [], // PDF 허용
-    //   "application/excel": [], // excel 허용
-    // },
   });
 
   // 파일 유형별 아이콘, 텍스트 반환 함수
@@ -132,7 +151,7 @@ const DropzoneArea = ({
       {/* 파일 목록 렌더링 */}
       {files.length > 0 && (
         <>
-          <ul className="mt-4 list-disc gap-2.5 flex flex-col">
+          <ul className="list-disc gap-2.5 flex flex-col">
             {files.map((file, index) => (
               <li
                 key={index}
@@ -160,7 +179,20 @@ const DropzoneArea = ({
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-end gap-[5px]">
+            {fileCount > files.length && (
+              <MiniBtn
+                text="추가"
+                textColor="text-sv"
+                hoverColor=""
+                onClick={() => {
+                  if (fileInputRef.current && files.length < fileCount) {
+                    fileInputRef.current.click();
+                  }
+                }}
+                disabled={files.length >= fileCount}
+              />
+            )}
             <MiniBtn
               text="업로드"
               textColor="text-wh"
@@ -171,6 +203,16 @@ const DropzoneArea = ({
           </div>
         </>
       )}
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        multiple
+        accept="image/jpeg,image/png,image/gif,image/webp"
+        onChange={handleFileChange}
+        // Prevent selecting more files if already 9
+        disabled={files.length >= fileCount}
+      />
     </>
   );
 };

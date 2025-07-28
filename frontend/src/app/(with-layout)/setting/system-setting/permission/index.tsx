@@ -70,7 +70,7 @@ const Permission = () => {
     try {
       // 체크된 멤버들을 순차적으로 삭제
       const deletePromises = checkedIds.map(async (id) => {
-        const result = await deleteMember(id);
+        const result = await deleteMember(id, factoryId || 0);
         if (!result.success) {
           return { id, success: false, error: result.error };
         }
@@ -171,33 +171,39 @@ const Permission = () => {
 
           <div>
             <div>
-              <PermissionTableHeader
-                isAllChecked={isAllChecked}
-                onToggleAll={toggleAll}
-              />
               {isLoading || error ? (
                 <div className="flex justify-center items-center h-100">
                   <Spinner />
                 </div>
               ) : (
-                [...(members?.data || [])].reverse().map((item) => (
-                  <PermissionTableItem
-                    key={item.id}
-                    item={item}
-                    isChecked={isChecked(item.id)}
-                    onToggle={() => toggleOne(item.id)}
-                    onUpdate={() => {
-                      // 권한 변경 후 초대 중인 멤버 목록 새로고침
-                      if (factoryId) {
-                        getMembers({
-                          factory_id: factoryId,
-                          page: 1,
-                          page_size: pageSize,
-                        });
-                      }
-                    }}
+                <>
+                  <PermissionTableHeader
+                    isAllChecked={isAllChecked}
+                    onToggleAll={toggleAll}
                   />
-                ))
+                  {members?.data &&
+                    members.data.length > 0 &&
+                    [...members.data].map((item) =>
+                      item ? (
+                        <PermissionTableItem
+                          key={item.id}
+                          item={item}
+                          isChecked={isChecked(item.id)}
+                          onToggle={() => toggleOne(item.id)}
+                          onUpdate={() => {
+                            // 권한 변경 후 초대 중인 멤버 목록 새로고침
+                            if (factoryId) {
+                              getMembers({
+                                factory_id: factoryId,
+                                page,
+                                page_size: pageSize,
+                              });
+                            }
+                          }}
+                        />
+                      ) : null
+                    )}
+                </>
               )}
             </div>
             {members?.pageCnt && members.pageCnt > 1 && (

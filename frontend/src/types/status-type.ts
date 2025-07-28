@@ -32,6 +32,7 @@ export const EquipmentStatusColorMap: Record<
 // 프로젝트 상태
 export type ProjectStatusType =
   | 'quotation'
+  | 'order'
   | 'pending'
   | 'production'
   | 'manufactured'
@@ -51,6 +52,7 @@ export const ProjectStatusColorMap: Record<
   StatusColorModel
 > = {
   quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
+  order: { bgColor: 'bg-[#FF6C17]/8', textColor: 'text-[#FF6C17]' },
   pending: { bgColor: 'bg-bg', textColor: 'text-dg' },
   production: { bgColor: 'bg-purple-8', textColor: 'text-purple' },
   manufactured: { bgColor: 'bg-primary-8', textColor: 'text-primary' },

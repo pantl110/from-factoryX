@@ -7,6 +7,7 @@ export { default as usePagination } from './use-pagination';
 export { useInput } from './use-input';
 export { useDropdownFilter } from './use-dropdown-filter';
 export { useCheckAll } from './use-check-all';
+export { usePeriodSelector } from './use-period-selector';
 
 // Utility hooks
 export { getToday } from './get-today';
@@ -87,6 +88,7 @@ export { default as useGetProduct } from './stock/product/use-get-product';
 export { default as useUpdateProduct } from './stock/product/use-update-product';
 export { default as useDeleteProduct } from './stock/product/use-delete-product';
 export { default as useCreateSingleProduct } from './stock/product/use-create-single-product';
+export { default as useAssignProduct } from './stock/product/use-assign-product';
 
 // Product history related hooks
 export { default as useProductHistory } from './stock/use-product-history';
@@ -95,7 +97,7 @@ export { default as useProductHistory } from './stock/use-product-history';
 export { default as useGetMaterial } from './stock/material/use-get-material';
 export { default as useUpdateMaterial } from './stock/material/use-update-material';
 export { default as useDeleteMaterial } from './stock/material/use-delete-material';
-export { default as useAssignSingleMaterial } from './stock/material/use-assign-material-product';
+export { default as useAssignMaterialProduct } from './stock/material/use-assign-material-product';
 
 // Material history related hooks
 export { default as useCreateMaterialHistory } from './stock/material-history/use-create-material-history';
@@ -104,3 +106,9 @@ export { default as useGetMaterialHistory } from './stock/material-history/use-g
 
 // Material product related hooks
 export { default as useMaterialProduct } from './stock/use-material-product';
+
+// Location related hooks
+export { default as useLocation } from './stock/use-location';
+
+// Document related hooks
+export { default as useOcrUpload } from './document/quotation/use-ocr-upload';

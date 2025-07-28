@@ -9,7 +9,6 @@ import Chip from '@/ui/chip';
 import AuthDropdown from './modals/auth-dropdown';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import useUpdateMember from '@/hooks/factory/factory-member/use-update-member';
-import { MemberRoleType } from '@/types/status-type';
 import { MemberResponseModel } from '@/types/data-model';
 
 interface PermissionTableItemProps {
@@ -36,10 +35,15 @@ const PermissionTableItem = ({
   onToggle,
   onUpdate,
 }: PermissionTableItemProps) => {
-  const { status, name, email, role, invited_at: invitedAt } = item;
+  const { status, name, email, role, invited_at: invitedAt, factory } = item;
   const textColor = InvitationStatusColorMap[status];
-  const authColors = PermissionRoleInfo[role as PermissionRoleType];
-
+  const roleText =
+    role === 'admin'
+      ? '시스템 관리자'
+      : role === 'manager'
+        ? '운영자'
+        : '조회자';
+  const authColors = PermissionRoleInfo[roleText as PermissionRoleType];
   const { updateMember } = useUpdateMember();
 
   // 권한 드롭다운 관리
@@ -49,20 +53,6 @@ const PermissionTableItem = ({
     openDropdown: openAuthDropdown,
     closeDropdown: closeAuthDropdown,
   } = usePortalDropdown();
-
-  // 권한 텍스트를 API 역할로 변환
-  const getApiRole = (permissionText: string): MemberRoleType => {
-    switch (permissionText) {
-      case '시스템 관리자':
-        return 'admin';
-      case '운영자':
-        return 'manager';
-      case '조회자':
-        return 'viewer';
-      default:
-        return 'viewer';
-    }
-  };
 
   const getInvitationStatus = (
     invitationStatus: InvitationStatusType
@@ -83,9 +73,15 @@ const PermissionTableItem = ({
     }
 
     try {
-      const apiRole = getApiRole(newAuth);
+      const apiRole =
+        newAuth === '시스템 관리자'
+          ? 'admin'
+          : newAuth === '운영자'
+            ? 'manager'
+            : 'viewer';
       const result = await updateMember({
         memberId: item.id,
+        factoryId: factory,
         role: apiRole,
       });
 
@@ -115,7 +111,7 @@ const PermissionTableItem = ({
         <p className="px-3 flex-2">{email}</p>
         <div className="px-3 flex-1">
           <Chip
-            text={role}
+            text={roleText}
             textColor={authColors.chipColor.text}
             bgColor={authColors.chipColor.bg}
             hover={authColors.chipColor.hover}

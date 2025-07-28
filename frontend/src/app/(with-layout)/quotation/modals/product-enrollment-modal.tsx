@@ -1,6 +1,6 @@
 import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
 import { productData } from '@/mocks/product-data';
-import { ProductDataModel, ProductResponseModel } from '@/types/data-model';
+import { ProductModel, ProductResponseModel } from '@/types/data-model';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
@@ -17,28 +17,27 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
   const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } =
     useDropdownFilter(productData, (item) => item.productName);
 
-  const [selectedProducts, setSelectedProducts] = useState<ProductDataModel[]>(
-    []
-  );
+  const [selectedProducts, setSelectedProducts] = useState<ProductModel[]>([]);
   const [isManualAddMode, setIsManualAddMode] = useState(false);
 
   // 품목 선택 시
   const handleSelectProduct = (item: ProductResponseModel) => {
     // ProductDataModel로 변환
-    const dataModel: ProductDataModel = {
-      id: item.id,
-      productName: item.name,
-      productCode: item.code,
-      size: item.spec,
+    const dataModel: ProductModel = {
+      factory: item.factory,
+      name: item.name,
+      code: item.code,
+      spec: item.spec,
       unit: item.unit,
-      stock: item.current_stock,
-      productionTime: item.average_production_time?.toString(),
-      comment: item.note ? item.note.split(',') : [],
+      current_stock: item.current_stock,
+      average_production_time: item.average_production_time,
+      buffer_rate: item.buffer_rate,
+      note: item.note || '',
     };
     handleSelect(dataModel);
     setInput('');
     setSelectedProducts((prev) => {
-      if (!prev.some((product) => product.id === dataModel.id)) {
+      if (!prev.some((product) => product.name === dataModel.name)) {
         return [...prev, dataModel];
       }
       return prev;

@@ -3,15 +3,15 @@ import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
 import React from 'react';
 
-interface ProductStockLogDropdownProps {
+interface SelectPeriodDropdownProps {
   onClose: () => void;
   onSelect: (value: string) => void;
 }
 
-const ProductStockLogDropdown = ({
+const SelectPeriodDropdown = ({
   onClose,
   onSelect,
-}: ProductStockLogDropdownProps) => {
+}: SelectPeriodDropdownProps) => {
   return (
     <Dropdown onClose={onClose} width="w-fit">
       <DropdownItem noHover={true} onClick={() => onSelect('1개월')}>
@@ -83,4 +83,4 @@ const ProductStockLogDropdown = ({
   );
 };
 
-export default ProductStockLogDropdown;
+export default SelectPeriodDropdown;

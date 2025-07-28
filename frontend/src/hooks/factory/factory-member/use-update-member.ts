@@ -4,6 +4,7 @@ import { UpdateMemberResponseModel } from '@/types/data-model';
 
 interface UpdateMemberParamsModel {
   memberId: number;
+  factoryId: number;
   role?: MemberRoleType;
   status?: MemberStatusType;
 }
@@ -18,7 +19,7 @@ const useUpdateMember = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/member/${params.memberId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/member/${params.memberId}?factory_id=${params.factoryId}`,
         {
           method: 'PATCH',
           credentials: 'include',

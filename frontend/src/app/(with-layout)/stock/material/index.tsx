@@ -10,16 +10,21 @@ import { useDeleteMaterial, useCheckAll, useGetMaterial } from '@/hooks';
 import Spinner from '@/ui/spinner';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import Pagination from '@/components/pagination';
+import MaterialDetailPanel from './material-detail';
 
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
-  setSelectedMaterialId: (id: number) => void;
+  isMaterialDetailOpen: boolean;
 }
 
 const Material = ({
   setIsMaterialDetailOpen,
-  setSelectedMaterialId,
+  isMaterialDetailOpen,
 }: MaterialProps) => {
+  const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(
+    null
+  ); // 선택한 자재 정보를 판넬에서 보여주기
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -138,6 +143,14 @@ const Material = ({
 
       {isDeleteModalOpen && (
         <DeleteModal onClose={handleDelete} isLoading={isDeleting} />
+      )}
+
+      {/* 자재 디테일 판넬 */}
+      {isMaterialDetailOpen && selectedMaterialId && (
+        <MaterialDetailPanel
+          setIsMaterialDetailOpen={setIsMaterialDetailOpen}
+          selectedMaterialId={selectedMaterialId}
+        />
       )}
     </>
   );

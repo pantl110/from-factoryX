@@ -39,6 +39,8 @@ const EnlargeImageOverlay = ({
           width={800}
           height={600}
           className="h-full w-fit object-contain rounded-lg"
+          quality={100}
+          unoptimized={true}
         />
         <button
           className="absolute top-0 right-0 z-1 w-10 h-10 flex items-center justify-center bg-[#cfcfcf] rounded-bl-lg rounded-tr-lg hover:bg-gr transition-colors duration-200 z-1"

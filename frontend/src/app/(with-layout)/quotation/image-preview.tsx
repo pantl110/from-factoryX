@@ -21,6 +21,8 @@ const ImagePreview = ({ className = '' }: ImagePreviewProps) => {
         width={500}
         height={300}
         className="w-[95%] max-h-[95%] object-contain rounded-lg"
+        quality={100}
+        unoptimized={true}
       />
       <button
         className="absolute top-0 right-0 w-10 h-10 flex items-center justify-center bg-[#cfcfcf] rounded-bl-lg rounded-tr-lg hover:bg-gr transition-colors duration-200 z-1"

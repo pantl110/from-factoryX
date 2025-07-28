@@ -6,7 +6,7 @@ import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
 import { useState } from 'react';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
-import { ProductDataModel, ProductResponseModel } from '@/types/data-model';
+import { ProductModel, ProductResponseModel } from '@/types/data-model';
 import { productData } from '@/mocks/product-data';
 import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
 import { useInput } from '@/hooks/use-input';
@@ -48,22 +48,23 @@ const AddReturnModal = ({ onClose }: AddReturnModalProps) => {
   });
 
   const [_selectedProductName, setSelectedProductName] =
-    useState<ProductDataModel | null>(null);
+    useState<ProductModel | null>(null);
 
   const [showSearchIcon, setShowSearchIcon] = useState(true);
 
   // 드롭다운에서 선택 시 두 상태를 각각 업데이트
   const handleSelectProduct = (item: ProductResponseModel) => {
-    // ProductDataModel로 변환
-    const dataModel: ProductDataModel = {
-      id: item.id,
-      productName: item.name,
-      productCode: item.code,
-      size: item.spec,
+    // ProductModel로 변환
+    const dataModel: ProductModel = {
+      factory: item.factory,
+      name: item.name,
+      code: item.code,
+      spec: item.spec,
       unit: item.unit,
-      stock: item.current_stock,
-      productionTime: item.average_production_time?.toString(),
-      comment: item.note ? item.note.split(',') : [],
+      current_stock: item.current_stock,
+      average_production_time: item.average_production_time,
+      buffer_rate: item.buffer_rate,
+      note: item.note || '',
     };
     setSelectedProductName(dataModel);
     handleSelect(dataModel);

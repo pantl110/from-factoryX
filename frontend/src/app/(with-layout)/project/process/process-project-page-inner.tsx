@@ -6,20 +6,20 @@ import SearchDeleteTable from '@/ui/search-delete-table';
 import { ProjectStatusType } from '@/types/status-type';
 import TableHeader from './table-header';
 import TableItem from './table-item';
-import SelectModal from './modals/select-modal';
 import ExcelUploadModal from './modals/excel-upload-modal';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Pagination from '@/components/pagination';
-import { ClientModel, ProjectListResponseModel } from '@/types/data-model';
-import { useCheckAll } from '@/hooks/use-check-all';
+import { OcrDataModel, ProjectListResponseModel } from '@/types/data-model';
 import DeleteModal from '@/ui/modal/delete-modal';
 import Spinner from '@/ui/spinner';
-import useGetProjects from '@/hooks/project/use-get-projects';
+import { useCreateProject, useGetProjects, useCheckAll } from '@/hooks';
 import useFactoryStore from '@/store/factory-store';
+import SearchOrderModal from './modals/search-order-modal';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
   const { getProjects, isLoading } = useGetProjects();
+  const { createProject } = useCreateProject();
   const { factoryId } = useFactoryStore();
 
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
@@ -37,9 +37,10 @@ const ProcessProjectPageInner = () => {
         : 'progress'
   );
 
-  // 모달 상태
-  const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
+  // 드랍다운, 모달 상태
+  const [isSelectDropdownOpen, setIsSelectDropdownOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isSearchOrderModalOpen, setIsSearchOrderModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // 데이터 상태
@@ -122,11 +123,11 @@ const ProcessProjectPageInner = () => {
   } = useCheckAll(currentIds);
 
   const handleNewQuotation = () => {
-    setIsSelectModalOpen(true);
+    setIsSelectDropdownOpen(true);
   };
 
   const handleOpenUploadModal = () => {
-    setIsSelectModalOpen(false);
+    setIsSelectDropdownOpen(false);
     setIsUploadModalOpen(true);
   };
 
@@ -136,15 +137,24 @@ const ProcessProjectPageInner = () => {
     setSearchKeyword(''); // 탭 변경시 검색어도 초기화
   };
 
-  const handleDirectInputClick = (clientData?: ClientModel) => {
-    if (clientData) {
-      // clientData가 있으면 URL 파라미터로 전달
-      const params = new URLSearchParams();
-      params.set('clientData', JSON.stringify(clientData));
-      router.push(`/quotation?${params.toString()}`);
+  const handleDirectInputClick = async (ocrData?: OcrDataModel) => {
+    if (ocrData) {
+      // OCR data로 프로젝트와 견적서 생성 후 이동 필요 ‼️‼️‼️‼️
     } else {
-      // clientData가 없으면 빈 값으로 이동
-      router.push('/quotation');
+      // 빈 값으로 프로젝트와 견적서 생성 후 견적서 아이디 기억하고 이동
+      try {
+        // 프로젝트와 견적서 생성
+        const result = await createProject();
+
+        if (result.success && result.data) {
+          // 생성된 견적서 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
+          router.push(`/quotation?id=${result.data.id}`);
+        } else {
+          alert('프로젝트 생성에 실패했습니다.');
+        }
+      } catch (error) {
+        alert('프로젝트 생성 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -158,7 +168,9 @@ const ProcessProjectPageInner = () => {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ factory_id: factoryId }),
+          body: JSON.stringify({
+            factory_id: factoryId,
+          }),
         }
       );
       if (res.ok) {
@@ -190,6 +202,11 @@ const ProcessProjectPageInner = () => {
           onNewQuotation={handleNewQuotation}
           selectedStatus={selectedStatus}
           onStatusChange={handleStatusChange}
+          isSelectDropdownOpen={isSelectDropdownOpen}
+          onSelectDropdownClose={() => setIsSelectDropdownOpen(false)}
+          onUploadClick={handleOpenUploadModal}
+          onDirectInputClick={handleDirectInputClick}
+          onSearchOrderClick={() => setIsSearchOrderModalOpen(true)}
         />
 
         {/* 테스트 프로젝트 생성 버튼 */}
@@ -239,20 +256,18 @@ const ProcessProjectPageInner = () => {
         </div>
       </div>
 
-      {/* 모달 */}
-      {isSelectModalOpen && (
-        <SelectModal
-          onClose={() => setIsSelectModalOpen(false)}
-          onUploadClick={handleOpenUploadModal}
-          onDirectInputClick={handleDirectInputClick}
-        />
-      )}
+      {/* 견적요청서 파일 업로드 모달 */}
       {isUploadModalOpen && (
         <ExcelUploadModal
           onClose={() => setIsUploadModalOpen(false)}
           onComplete={handleDirectInputClick}
         />
       )}
+      {/* 주문서 검색 모달 */}
+      {isSearchOrderModalOpen && (
+        <SearchOrderModal onClose={() => setIsSearchOrderModalOpen(false)} />
+      )}
+      {/* 프로젝트 삭제 모달 */}
       {isDeleteModalOpen && (
         <DeleteModal
           onClose={() => setIsDeleteModalOpen(false)}

@@ -292,7 +292,7 @@ export interface ProductHistoryListResponseModel extends PaginationModel {
 // Material API
 // 원자재 등록
 export interface MaterialModel {
-  factory_id: number;
+  factory_id?: number;
   name: string;
   code: string;
   unit: string;
@@ -317,7 +317,7 @@ export interface MaterialResponseModel {
 
 // 원자재 목록 조회
 export interface MaterialListResponseModel extends PaginationModel {
-  materials: MaterialResponseModel[];
+  data: MaterialResponseModel[];
 }
 
 // Material History API
@@ -376,27 +376,47 @@ export interface MaterialProductConnectionResponseModel {
   total_count: number; // 생성된 총 연결 수
 }
 
+//////////////////////
+// Location API
+export interface LocationModel {
+  id: number; // product id/material id
+  // response 일때는 location_id
+  type: 'material' | 'product';
+  location?: string;
+  images?: string[];
+}
+
+export interface LocationListResponseModel {
+  locations: LocationModel[];
+}
+
+export interface UpdateLocationModel {
+  type: 'material' | 'product';
+  location?: string;
+  images?: string[];
+}
+
 ////////////////////////////
 // Project API
 // 프로젝트 생성 + 견적서 생성
-export interface CreateProjectModel {
-  status?: string;
-  transact_date?: string;
-  factory_id: number;
-  client_id: number;
-  due_date: string;
-  uploaded_file?: string;
-  products?: ProductResponseModel[];
-}
+// export interface CreateProjectModel {
+//   status?: string;
+//   transact_date?: string;
+//   factory_id: number;
+//   client_id: number;
+//   due_date: string;
+//   uploaded_file?: string;
+//   products?: ProductResponseModel[];
+// }
 
-export interface CreateProjectResponseModel {
-  id: number;
-  status?: string;
-  transact_date?: string;
-  tax_invoice?: number;
-  created_at: string;
-  updated_at: string;
-}
+// export interface CreateProjectResponseModel {
+//   id: number;
+//   status?: string;
+//   transact_date?: string;
+//   tax_invoice?: number;
+//   created_at: string;
+//   updated_at: string;
+// }
 
 // 프로젝트 정보 수정
 export interface ProjectUpdateModel {
@@ -420,6 +440,13 @@ export interface ProjectResponseModel {
 
 export interface ProjectListResponseModel extends PaginationModel {
   data: ProjectResponseModel[];
+}
+
+//////////////////////
+//// Quotation API
+//// OCR API
+export interface OcrDataModel {
+  client_data: ClientModel;
 }
 
 //////////////////////
@@ -569,29 +596,29 @@ export interface UpdateMemberResponseModel {
 //   usageQuantity: string;
 // }
 
-export interface ProductDataModel {
-  id: number | null;
-  productName: string;
-  productCode?: string;
-  size: string;
-  unit: string;
-  stock?: number;
-  productionTime?: string;
-  location?: string;
-  comment?: string[];
-  returnQuantity?: number;
-  [key: string]: unknown;
-}
+// export interface ProductDataModel {
+//   id: number | null;
+//   productName: string;
+//   productCode?: string;
+//   size: string;
+//   unit: string;
+//   stock?: number;
+//   productionTime?: string;
+//   location?: string;
+//   comment?: string[];
+//   returnQuantity?: number;
+//   [key: string]: unknown;
+// }
 
-export interface MaterialDataModel {
-  id: string;
-  materialName: string;
-  size: string;
-  usageQuantity?: number | null;
-  unitPrice?: number | null;
-  unit?: string;
-  [key: string]: unknown;
-}
+// export interface MaterialDataModel {
+//   id: string;
+//   materialName: string;
+//   size: string;
+//   usageQuantity?: number | null;
+//   unitPrice?: number | null;
+//   unit?: string;
+//   [key: string]: unknown;
+// }
 
 import {
   MemberRoleType,

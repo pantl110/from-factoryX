@@ -1,22 +1,23 @@
 import { useState } from 'react';
 
-interface AssignMaterialProductModel {
+interface AssignProductModel {
   factory_id: number;
-  product_id: number;
-  materials: Array<{
+  material_id: number;
+  products: Array<{
     name: string;
     code: string;
     spec: string;
+    unit: string;
     quantity: number;
   }>;
 }
 
-// 온보딩 // 원자재 생성 및 품목 연결
-const useAssignMaterialProduct = () => {
+// 원자재 하나에 여러 품목을 연결
+const useAssignProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const assignMaterialProduct = async (data: AssignMaterialProductModel) => {
+  const assignProduct = async (data: AssignProductModel) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -35,7 +36,7 @@ const useAssignMaterialProduct = () => {
         return { success: true };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '원자재 연결에 실패했습니다.');
+        setError(errorData.detail || '품목 연결에 실패했습니다.');
         return { success: false, error: errorData.detail };
       }
     } catch {
@@ -46,7 +47,7 @@ const useAssignMaterialProduct = () => {
     }
   };
 
-  return { assignMaterialProduct, isLoading, error };
+  return { assignProduct, isLoading, error };
 };
 
-export default useAssignMaterialProduct;
+export default useAssignProduct;

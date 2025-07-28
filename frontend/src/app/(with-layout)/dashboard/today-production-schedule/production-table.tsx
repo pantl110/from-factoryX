@@ -109,7 +109,7 @@ const ProductionTable = () => {
 
   return (
     <>
-      <div className="mt-3 overflow-x-auto h-[328px]">
+      <div className="mt-3 overflow-x-auto h-[328px] scrollbar-hide">
         <ProductionTableHeader />
         {currentProductions.map((item) => (
           <ProductionTableItem

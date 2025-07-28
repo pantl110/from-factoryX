@@ -1,16 +1,24 @@
 import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
-import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
-import { materialData } from '@/mocks/material-data';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from './manual-add-material';
-import useCreateMaterialHistory from '@/hooks/stock/material-history/use-create-material-history';
-import { ClientModel } from '@/types/data-model';
+import { ClientModel, MaterialResponseModel } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
+import { useGetMaterial, useCreateMaterialHistory } from '@/hooks';
+
+interface MaterialFormModel {
+  id: string;
+  name: string;
+  code: string;
+  spec: string;
+  unit: string;
+  quantity: number | null;
+  price: number | null;
+}
 
 interface MaterialEnrollmentProps {
   onClose?: () => void;
@@ -21,20 +29,44 @@ const MaterialEnrollmentModal = ({
   onClose,
   clientInfo, // 추가: 상위에서 전달받는 거래처 정보
 }: MaterialEnrollmentProps) => {
-  const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } =
-    useDropdownFilter(materialData, (item) => item.materialName);
+  // 원자재 검색 드랍다운 관련
+  const [input, setInput] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [filteredMaterials, setFilteredMaterials] = useState<
+    MaterialResponseModel[]
+  >([]);
+
   const factoryId = useFactoryStore((state) => state.factoryId);
   const [selectedMaterials, setSelectedMaterials] = useState<
-    typeof materialData
+    MaterialResponseModel[]
   >([]);
+  const [_newMaterials, setNewMaterials] = useState<MaterialFormModel[]>([]);
   const [isManualAddMode, setIsManualAddMode] = useState(false);
   const { createMaterialHistory, isLoading: isCreating } =
     useCreateMaterialHistory();
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const { setShouldReload } = useMaterialReloadStore();
 
-  const handleSelectMaterial = (item: (typeof materialData)[number]) => {
-    handleSelect(item);
+  const { getMaterialList } = useGetMaterial();
+
+  // 검색어가 변경될 때 서버에서 검색
+  useEffect(() => {
+    const searchMaterials = async () => {
+      if (input.trim()) {
+        const result = await getMaterialList({ q: input });
+        if (result.success && result.data) {
+          setFilteredMaterials(result.data.data);
+        }
+      } else {
+        setFilteredMaterials([]);
+      }
+    };
+
+    const timeoutId = setTimeout(searchMaterials, 150); // 디바운스
+    return () => clearTimeout(timeoutId);
+  }, [input, getMaterialList]);
+
+  const handleSelectMaterial = (item: MaterialResponseModel) => {
     setInput('');
     setSelectedMaterials((prev) => {
       if (!prev.some((mat) => mat.id === item.id)) {
@@ -44,7 +76,8 @@ const MaterialEnrollmentModal = ({
     });
     setIsOpen(false);
   };
-  const handleRemoveMaterial = (id: string) => {
+
+  const handleRemoveMaterial = (id: number) => {
     setSelectedMaterials((prev) => prev.filter((mat) => mat.id !== id));
   };
 
@@ -57,12 +90,12 @@ const MaterialEnrollmentModal = ({
       factory: factoryId,
       client_info: clientInfo,
       materials: selectedMaterials.map((mat) => ({
-        name: mat.materialName,
+        name: mat.name,
         code: String(mat.code ?? ''),
-        spec: mat.size,
+        spec: mat.spec,
         unit: String(mat.unit ?? ''),
-        quantity: Number(mat.usageQuantity ?? 0),
-        price: Number(mat.unitPrice ?? 0),
+        quantity: Number(mat.current_stock ?? 0),
+        price: 0, // MaterialResponseModel에는 price 필드가 없으므로 기본값 0
       })),
     };
     const result = await createMaterialHistory(payload);
@@ -103,10 +136,10 @@ const MaterialEnrollmentModal = ({
             onFocus={() => setIsOpen(true)}
             onBlur={() => setTimeout(() => setIsOpen(false), 150)}
           />
-          {isOpen && filtered.length > 0 && (
+          {isOpen && filteredMaterials.length > 0 && (
             <div className="absolute left-0 top-12 z-10 w-full">
               <MaterialNameDropdown
-                items={filtered}
+                items={filteredMaterials}
                 onSelect={handleSelectMaterial}
                 width="w-full"
               />
@@ -128,7 +161,7 @@ const MaterialEnrollmentModal = ({
         {isManualAddMode && (
           <ManualAddMaterial
             setIsManualAddMode={setIsManualAddMode}
-            setSelectedMaterials={setSelectedMaterials}
+            setNewMaterials={setNewMaterials}
           />
         )}
 
@@ -149,14 +182,11 @@ const MaterialEnrollmentModal = ({
                   key={mat.id}
                   className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 group"
                 >
-                  <p
-                    className="flex-1 px-3 text-dg truncate"
-                    title={mat.materialName}
-                  >
-                    {mat.materialName ?? '-'}
+                  <p className="flex-1 px-3 text-dg truncate" title={mat.name}>
+                    {mat.name ?? '-'}
                   </p>
                   <p className="w-[80px] px-3 text-dg">{mat.unit ?? '-'}</p>
-                  <p className="flex-1 px-3 text-dg">
+                  {/* <p className="flex-1 px-3 text-dg">
                     {mat.usageQuantity ?? '-'}
                   </p>
                   <p className="w-[100px] px-3 text-dg">
@@ -171,11 +201,11 @@ const MaterialEnrollmentModal = ({
                     mat.usageQuantity !== undefined
                       ? (mat.unitPrice * mat.usageQuantity).toLocaleString()
                       : '-'}
-                  </p>
+                  </p> */}
                   {mat.id !== null && mat.id !== undefined && (
                     <div
                       className="w-[40px] flex items-center justify-center h-full"
-                      onClick={() => handleRemoveMaterial(mat.id as string)}
+                      onClick={() => handleRemoveMaterial(mat.id)}
                     >
                       <div className="flex items-center justify-center w-9 h-9 cursor-pointer hover:bg-bg rounded-[8px]">
                         <X size={16} className="text-gr" />

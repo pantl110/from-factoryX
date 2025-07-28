@@ -4,14 +4,19 @@ import { useState } from 'react';
 
 interface StockLocationUploadModalProps {
   onClose: () => void;
+  fileCount: number;
+  onComplete: (uploadedFiles: File[]) => void;
 }
 
 const StockLocationUploadModal = ({
   onClose,
+  fileCount,
+  onComplete,
 }: StockLocationUploadModalProps) => {
   const [hasFiles, setHasFiles] = useState(false);
 
-  const handleComplete = () => {
+  const handleComplete = (uploadedFiles: File[]) => {
+    onComplete(uploadedFiles);
     onClose();
   };
 
@@ -33,8 +38,9 @@ const StockLocationUploadModal = ({
       subtitle={subtitle}
       onClose={onClose}
       width="w-[600px]"
+      scroll={true}
     >
-      <div className="mt-3">
+      <div className="mt-4 px-6 pb-6 max-h-[calc(85vh-133px)] overflow-y-auto scrollbar-hide">
         <DropzoneArea
           onClose={onClose}
           onComplete={handleComplete}
@@ -45,6 +51,7 @@ const StockLocationUploadModal = ({
             'image/gif': ['.gif'],
             'image/webp': ['.webp'],
           }}
+          fileCount={fileCount}
         />
       </div>
     </Modal>

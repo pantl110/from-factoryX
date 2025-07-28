@@ -1,20 +1,21 @@
 import { ProductResponseModel } from '@/types/data-model';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
-import React from 'react';
+
+interface ProductNameDropdownProps {
+  items: ProductResponseModel[];
+  onSelect: (item: ProductResponseModel) => void;
+  width?: string;
+}
 
 export const ProductNameDropdown = ({
   items,
   onSelect,
   width,
-}: {
-  items: ProductResponseModel[];
-  onSelect: (item: ProductResponseModel) => void;
-  width?: string;
-}) => {
+}: ProductNameDropdownProps) => {
   return (
-    <Dropdown onClose={() => {}} width={width}>
-      {items.slice(0, 6).map((item) => (
+    <Dropdown onClose={() => {}} width={width} maxHeight={true}>
+      {items.map((item) => (
         <DropdownItem
           key={item.id}
           text={item.name}

@@ -1,53 +1,102 @@
 import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
-import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
-import { productData } from '@/mocks/product-data';
-import { useState } from 'react';
-import { ProductDataModel, ProductResponseModel } from '@/types/data-model';
+import { useState, useEffect } from 'react';
+import { ProductResponseModel, MaterialModel } from '@/types/data-model';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddProduct from './manual-add-product';
+import { useGetProduct, useAssignProduct } from '@/hooks';
+import useFactoryStore from '@/store/factory-store';
 
 interface ProductEnrollmentModalProps {
   onClose?: () => void;
+  materialId: number;
+  onSuccess?: () => void;
 }
 
-const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
-  const { input, setInput, isOpen, setIsOpen, filtered, handleSelect } =
-    useDropdownFilter(productData, (item) => item.productName);
+const ProductEnrollmentModal = ({
+  onClose,
+  materialId,
+  onSuccess,
+}: ProductEnrollmentModalProps) => {
+  const [input, setInput] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [filteredProducts, setFilteredProducts] = useState<
+    ProductResponseModel[]
+  >([]);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
-  const [selectedProducts, setSelectedProducts] = useState<ProductDataModel[]>(
-    []
-  );
+  const { getProductList } = useGetProduct();
+  const { assignProduct, isLoading } = useAssignProduct();
+
+  const [selectedProducts, setSelectedProducts] = useState<MaterialModel[]>([]);
   const [isManualAddMode, setIsManualAddMode] = useState(false);
 
-  // 품목 선택 시
-  const handleSelectProduct = (item: ProductResponseModel) => {
-    // ProductDataModel로 변환
-    const dataModel: ProductDataModel = {
-      id: item.id,
-      productName: item.name,
-      productCode: item.code,
-      size: item.spec,
-      unit: item.unit,
-      stock: item.current_stock,
-      productionTime: item.average_production_time?.toString(),
-      comment: item.note ? item.note.split(',') : [],
+  // 검색어가 변경될 때 서버에서 검색
+  useEffect(() => {
+    const searchProducts = async () => {
+      if (input.trim() && factoryId) {
+        const result = await getProductList({
+          factory_id: factoryId,
+          q: input,
+          page_size: 100,
+        });
+        if (result.success && result.data) {
+          setFilteredProducts(result.data.data);
+        }
+      } else {
+        setFilteredProducts([]);
+      }
     };
-    handleSelect(dataModel);
+
+    const timeoutId = setTimeout(searchProducts, 150); // 디바운스
+    return () => clearTimeout(timeoutId);
+  }, [input, factoryId, getProductList]);
+
+  // 품목 선택 시 - ProductResponseModel을 MaterialModel로 변환
+  const handleSelectProduct = (item: ProductResponseModel) => {
     setInput('');
+    const materialItem: MaterialModel = {
+      name: item.name,
+      code: item.code,
+      spec: item.spec,
+      unit: item.unit,
+    };
     setSelectedProducts((prev) => {
-      if (!prev.some((product) => product.id === dataModel.id)) {
-        return [...prev, dataModel];
+      if (!prev.some((product) => product.name === materialItem.name)) {
+        return [...prev, materialItem];
       }
       return prev;
     });
     setIsOpen(false);
   };
 
-  const handleRemoveProduct = (id: number) => {
-    setSelectedProducts((prev) => prev.filter((product) => product.id !== id));
+  const handleRemoveProduct = (name: string) => {
+    setSelectedProducts((prev) =>
+      prev.filter((product) => product.name !== name)
+    );
+  };
+
+  const handleAddProducts = async () => {
+    if (!factoryId || selectedProducts.length === 0) return;
+
+    const result = await assignProduct({
+      factory_id: factoryId,
+      material_id: materialId,
+      products: selectedProducts.map((product) => ({
+        name: product.name,
+        code: product.code,
+        spec: product.spec,
+        unit: product.unit,
+        quantity: 10, // ‼️‼️‼️‼️‼️‼️‼️ 수정 필요 ‼️‼️‼️‼️ 기본 수량 10으로 설정 ‼️
+      })),
+    });
+
+    if (result.success) {
+      onSuccess?.();
+      onClose?.();
+    }
   };
 
   return (
@@ -74,26 +123,10 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
           onClick={() => setIsManualAddMode(true)}
         />
 
-        {isOpen && filtered.length > 0 && (
+        {isOpen && filteredProducts.length > 0 && (
           <div className="absolute left-0 top-12 z-10 w-[437px]">
             <ProductNameDropdown
-              items={filtered.map((item) => ({
-                id: typeof item.id === 'number' ? item.id : 0,
-                created_at: '',
-                updated_at: '',
-                factory: 0,
-                name: item.productName || '',
-                code: item.productCode || '',
-                unit: item.unit || '',
-                spec: item.size || '',
-                current_stock: item.stock,
-                average_production_time: item.productionTime
-                  ? Number(item.productionTime)
-                  : 0,
-                buffer_rate: 0,
-                location: 0,
-                note: Array.isArray(item.comment) ? item.comment.join(',') : '',
-              }))}
+              items={filteredProducts}
               onSelect={handleSelectProduct}
               width="w-full"
             />
@@ -111,20 +144,18 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
         // 선택한 품목 list
         selectedProducts.length > 0 && (
           <div className="mt-4 flex flex-col">
-            {selectedProducts.map((product) => (
+            {selectedProducts.map((product, index) => (
               <div
-                key={product.id}
+                key={`${product.name}-${index}`}
                 className="flex justify-between items-center h-10"
               >
-                <p className="Me_body-1 text-dg">{product.productName}</p>
-                {product.id !== null && product.id !== undefined && (
-                  <div
-                    className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                    onClick={() => handleRemoveProduct(product.id as number)}
-                  >
-                    <X size={16} className="text-gr" />
-                  </div>
-                )}
+                <p className="Me_body-1 text-dg">{product.name}</p>
+                <div
+                  className="cursor-pointer w-10 h-10 flex justify-center items-center"
+                  onClick={() => handleRemoveProduct(product.name)}
+                >
+                  <X size={16} className="text-gr" />
+                </div>
               </div>
             ))}
           </div>
@@ -133,18 +164,20 @@ const ProductEnrollmentModal = ({ onClose }: ProductEnrollmentModalProps) => {
 
       <div className="mt-4 flex gap-2.5 justify-end">
         <MiniBtn
-          text="취소하기"
+          text="취소"
           textColor="text-sv"
           hoverColor="bg-bg"
           onClick={onClose}
         />
         <MiniBtn
-          text="추가하기"
+          text="추가"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"
-          disabled={selectedProducts.length === 0 || isManualAddMode}
-          onClick={onClose}
+          disabled={
+            selectedProducts.length === 0 || isManualAddMode || isLoading
+          }
+          onClick={handleAddProducts}
         />
       </div>
     </Modal>

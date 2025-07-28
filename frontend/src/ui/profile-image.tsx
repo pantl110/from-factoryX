@@ -5,12 +5,14 @@ interface ProfileImageProps {
   size?: 'small' | 'large';
   text?: string;
   selectedImage?: string | null;
+  isDeleted?: boolean;
 }
 
 const ProfileImage = ({
   size = 'large',
   selectedImage,
   text,
+  isDeleted = false,
 }: ProfileImageProps) => {
   const { userInfo } = useAuthStore();
 
@@ -50,7 +52,9 @@ const ProfileImage = ({
   }
 
   // 선택된 이미지가 있으면 미리보기, 없으면 저장된 이미지 또는 이니셜 표시
-  const imageToShow = selectedImage || userInfo?.profile_image;
+  const imageToShow = isDeleted
+    ? null
+    : selectedImage || userInfo?.profile_image;
   if (imageToShow) {
     return (
       <Image
@@ -61,6 +65,8 @@ const ProfileImage = ({
         className={`rounded-full object-cover border border-lg ${
           size === 'small' ? 'w-8 h-8' : 'w-18 h-18'
         }`}
+        quality={100}
+        unoptimized={true}
       />
     );
   }

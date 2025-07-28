@@ -6,6 +6,7 @@ import {
 import { useState, useCallback } from 'react';
 
 export interface ProductHistoryFilterModel {
+  product?: number; // 제품 ID
   start_date?: string; // 조회 시작일 (YYYY-MM-DD)
   end_date?: string; // 조회 종료일 (YYYY-MM-DD)
   page?: number; // 페이지 번호

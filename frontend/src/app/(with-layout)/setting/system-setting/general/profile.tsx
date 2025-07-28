@@ -23,6 +23,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isEditPhotoDropdownOpen, setIsEditPhotoDropdownOpen] = useState(false);
+  const [isImageDeleted, setIsImageDeleted] = useState(false);
   const { updateMe, isLoading } = useMe();
   const { uploadFile } = useUploadFile();
 
@@ -51,6 +52,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
       });
       setSelectedImage(null); // 선택된 이미지 초기화
       setSelectedImageUrl(null); // 선택된 이미지 URL 초기화
+      setIsImageDeleted(false); // 이미지 삭제 상태 초기화
     }
   }, [userInfo, reset]);
 
@@ -59,6 +61,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
     // 파일을 미리보기용 URL로 변환
     const previewUrl = URL.createObjectURL(file);
     setSelectedImageUrl(previewUrl);
+    setIsImageDeleted(false); // 새 이미지 선택 시 삭제 상태 해제
   };
 
   const onSubmit = async (data: UpdateUserInfoModel) => {
@@ -78,10 +81,12 @@ const Profile = ({ userInfo }: ProfileProps) => {
         }
       }
 
-      // 업로드된 이미지 URL을 데이터에 추가
+      // 업로드된 이미지 URL을 데이터에 추가 (삭제된 경우 null로 설정)
       const updateData = {
         ...data,
-        ...(profileImageUrl && { profile_image: profileImageUrl }),
+        profile_image: isImageDeleted
+          ? null
+          : profileImageUrl || data.profile_image,
       };
 
       const result = await updateMe(updateData);
@@ -90,6 +95,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
         showToast();
         setSelectedImage(null); // 성공 후 선택된 이미지 초기화
         setSelectedImageUrl(null); // 성공 후 선택된 이미지 URL 초기화
+        setIsImageDeleted(false); // 성공 후 삭제 상태 초기화
       } else {
         const errorMessage =
           typeof result.error === 'string'
@@ -122,8 +128,9 @@ const Profile = ({ userInfo }: ProfileProps) => {
     }
   };
 
-  // 사진이 있는지 확인 (선택된 이미지 또는 기존 프로필 이미지)
-  const hasImage = selectedImageUrl || userInfo?.profile_image;
+  // 사진이 있는지 확인 (선택된 이미지 또는 기존 프로필 이미지, 삭제되지 않은 경우)
+  const hasImage =
+    (selectedImageUrl || userInfo?.profile_image) && !isImageDeleted;
 
   return (
     <>
@@ -134,7 +141,10 @@ const Profile = ({ userInfo }: ProfileProps) => {
         <h3 className="Heading-3">프로필 정보</h3>
         <div className="flex flex-col gap-8">
           <div className="relative">
-            <ProfileImage selectedImage={selectedImageUrl} />
+            <ProfileImage
+              selectedImage={selectedImageUrl || userInfo?.profile_image}
+              isDeleted={isImageDeleted}
+            />
             <div
               onClick={
                 hasImage
@@ -157,6 +167,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
                   onDeletePhoto={() => {
                     setSelectedImage(null);
                     setSelectedImageUrl(null);
+                    setIsImageDeleted(true);
                     setIsEditPhotoDropdownOpen(false);
                   }}
                 />

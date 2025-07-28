@@ -1,44 +1,54 @@
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
-import { MaterialDataModel } from '@/types/data-model';
+
+interface MaterialFormModel {
+  id: string;
+  name: string;
+  code: string;
+  spec: string;
+  unit: string;
+  quantity: number | null;
+}
 
 interface ManualAddMaterialProps {
   setIsManualAddMode: (v: boolean) => void;
-  setSelectedMaterials: (
-    fn: (prev: MaterialDataModel[]) => MaterialDataModel[]
+  setNewMaterials: (
+    fn: (prev: MaterialFormModel[]) => MaterialFormModel[]
   ) => void;
 }
 
 const ManualAddMaterial = ({
   setIsManualAddMode,
-  setSelectedMaterials,
+  setNewMaterials,
 }: ManualAddMaterialProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<MaterialDataModel>({
+  } = useForm<MaterialFormModel>({
     defaultValues: {
       id: crypto.randomUUID(),
-      materialName: '',
-      size: '',
-      usageQuantity: null,
+      name: '',
+      code: '',
+      spec: '',
+      unit: '',
+      quantity: null,
     },
     mode: 'onBlur',
   });
 
-  const onSubmit = (data: MaterialDataModel) => {
-    setSelectedMaterials((prev) => [
+  const onSubmit = (data: MaterialFormModel) => {
+    setNewMaterials((prev) => [
       ...prev,
       {
-        id: crypto.randomUUID(),
-        materialName: String(data.name),
-        size: String(data.spec),
-        usageQuantity: Number(data.quantity),
-        unitPrice: Number(data.price),
-        unit: data.unit,
+        id: data.id,
+        name: String(data.name),
+        code: String(data.code),
+        spec: String(data.spec),
+        unit: String(data.unit),
+        quantity: data.quantity,
       },
     ]);
     reset();
@@ -46,7 +56,7 @@ const ManualAddMaterial = ({
   };
 
   return (
-    <div className="flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
+    <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2.5">
           <div className="flex w-full gap-2.5">
@@ -105,39 +115,22 @@ const ManualAddMaterial = ({
             <div className="flex-1">
               <Input
                 placeholder="EX) 100"
-                label="수량"
+                label="사용 수량"
                 required
                 type="text"
                 {...register('quantity', {
                   required: true,
                   validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
-                  setValueAs: (v) =>
-                    v === '' ? null : Number(v.replace(/[^0-9]/g, '')),
+                  setValueAs: (v) => {
+                    if (v === '' || v === null || v === undefined) return null;
+                    return Number(String(v).replace(/[^0-9]/g, ''));
+                  },
                 })}
                 onChange={(e) => {
                   const onlyNums = e.target.value.replace(/[^0-9]/g, '');
                   e.target.value = onlyNums;
                 }}
                 showError={!!errors.quantity}
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                placeholder="EX) 1,000"
-                label="단가"
-                type="text"
-                required
-                {...register('price', {
-                  required: true,
-                  validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
-                  setValueAs: (v) =>
-                    v === '' ? null : Number(v.replace(/[^0-9]/g, '')),
-                })}
-                onChange={(e) => {
-                  const onlyNums = e.target.value.replace(/[^0-9]/g, '');
-                  e.target.value = onlyNums;
-                }}
-                showError={!!errors.price}
               />
             </div>
           </div>

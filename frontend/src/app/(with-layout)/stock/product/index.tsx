@@ -24,7 +24,7 @@ const Product = ({
   isProductDetailPanelOpen,
   setIsProductDetailPanelOpen,
 }: ProductProps) => {
-  const { getProductList, productList, pagination, isLoading } =
+  const { getProductList, productList, pagination, isLoading, error } =
     useGetProduct();
   const { deleteProduct } = useDeleteProduct();
   const { factoryId } = useFactoryStore();
@@ -145,7 +145,7 @@ const Product = ({
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading || error ? (
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>

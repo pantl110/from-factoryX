@@ -8,6 +8,7 @@ interface DropdownProps {
   className?: string;
   padding?: string;
   borderColor?: string;
+  maxHeight?: boolean;
 }
 
 const Dropdown = ({
@@ -18,6 +19,7 @@ const Dropdown = ({
   className = '',
   padding = 'p-2',
   borderColor = '',
+  maxHeight = false,
 }: DropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +44,7 @@ const Dropdown = ({
   return (
     <div
       ref={dropdownRef}
-      className={`${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} rounded-lg ${padding} shadow-lg bg-white z-30 ${className}`}
+      className={`${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} ${maxHeight ? 'max-h-[256px]' : ''} rounded-lg ${padding} shadow-lg bg-white z-30 ${className}`}
       style={style}
     >
       {children}
