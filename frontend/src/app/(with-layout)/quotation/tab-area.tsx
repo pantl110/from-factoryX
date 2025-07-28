@@ -1,17 +1,19 @@
+import { OcrDataModel } from '@/types/data-model';
+
 interface TabAreaProps {
   activeTab: 'quotation' | 'history';
   activateQuotationTab: () => void;
-  clientDataParam: string | null;
+  ocrData: OcrDataModel | null;
 }
 
 const TabArea = ({
   activeTab,
   activateQuotationTab,
-  clientDataParam,
+  ocrData,
 }: TabAreaProps) => {
   return (
     <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-[#eeeeee]">
-      {clientDataParam && (
+      {ocrData && (
         <button
           className={`${
             activeTab === 'quotation'

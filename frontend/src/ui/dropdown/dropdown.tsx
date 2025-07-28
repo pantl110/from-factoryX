@@ -44,10 +44,12 @@ const Dropdown = ({
   return (
     <div
       ref={dropdownRef}
-      className={`${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} ${maxHeight ? 'max-h-[256px]' : ''} rounded-lg ${padding} shadow-lg bg-white z-30 ${className}`}
+      className={`${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} rounded-lg ${padding} shadow-lg bg-white z-30 ${className} ${
+        maxHeight ? 'max-h-[256px] overflow-y-auto scrollbar-hide' : ''
+      }`}
       style={style}
     >
-      {children}
+      <div className={maxHeight ? 'min-h-0' : ''}>{children}</div>
     </div>
   );
 };

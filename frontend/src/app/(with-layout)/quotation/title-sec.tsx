@@ -2,8 +2,9 @@ import Chip from '@/ui/chip';
 import ButtonSection from './button-section';
 import QuotationStatusDropdown from './modals/quotation-status-dropdown';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
-import { UseFormTrigger } from 'react-hook-form';
+import { UseFormTrigger, UseFormWatch } from 'react-hook-form';
 import { ClientModel } from '@/types/data-model';
+import { useMemo } from 'react';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -15,8 +16,10 @@ interface TitleSecProps {
   setIsEmailOpen: (open: boolean) => void;
   setIsPrintOpen: (open: boolean) => void;
   setIsStartProductionModalOpen: (open: boolean) => void;
-  isClientData: boolean;
   trigger: UseFormTrigger<QuotationFormModel>;
+  watch: UseFormWatch<QuotationFormModel>;
+  isOrderStatus: boolean;
+  setIsOrderStatus: (status: boolean) => void;
 }
 
 const TitleSec = ({
@@ -24,9 +27,32 @@ const TitleSec = ({
   setIsEmailOpen,
   setIsPrintOpen,
   setIsStartProductionModalOpen,
-  isClientData,
   trigger,
+  watch,
+  isOrderStatus,
+  setIsOrderStatus,
 }: TitleSecProps) => {
+  // 폼 유효성 검사
+  const formValues = watch();
+  const isFormValid = useMemo(() => {
+    const requiredFields = [
+      'name',
+      'business_registration_number',
+      'representative_name',
+      'due_date',
+      'business_type',
+      'business_category',
+      'address',
+      'manager',
+      'email',
+    ];
+
+    return requiredFields.every((field) => {
+      const value = formValues[field as keyof QuotationFormModel];
+      return value && value.toString().trim() !== '';
+    });
+  }, [formValues]);
+
   // 드랍다운 상태
   const {
     isOpen: isQuotationStatusDropdownOpen,
@@ -74,7 +100,9 @@ const TitleSec = ({
             setIsStartProductionModalOpen(true);
           }
         }}
-        isClientData={isClientData}
+        isOrderStatus={isOrderStatus}
+        setIsOrderStatus={setIsOrderStatus}
+        isFormValid={isFormValid}
       />
     </div>
   );

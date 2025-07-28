@@ -14,7 +14,7 @@ import PrintView from './modals/print-view';
 import { ProductModel } from './types';
 import StartProductionModal from './modals/start-production-modal';
 import ProductEnrollmentModal from './modals/product-enrollment-modal';
-import { ClientModel } from '@/types/data-model';
+import { ClientModel, OcrDataModel } from '@/types/data-model';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -36,6 +36,7 @@ const QuotationPageContent = () => {
     setValue,
     control,
     trigger,
+    watch,
     formState: { errors },
   } = useForm<QuotationFormModel>({
     defaultValues: {
@@ -54,6 +55,11 @@ const QuotationPageContent = () => {
       due_date: '',
     },
   });
+
+  // 견적서 주문서 상태 관리
+  const [isOrderStatus, setIsOrderStatus] = useState(false);
+  // OCR 데이터 상태 관리
+  const [ocrData, setOcrData] = useState<OcrDataModel | null>(null);
 
   // 탭 상태 - 데이터가 없으면 히스토리 탭 활성화
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
@@ -91,15 +97,18 @@ const QuotationPageContent = () => {
           setIsEmailOpen={setIsEmailOpen}
           setIsPrintOpen={setIsPrintOpen}
           setIsStartProductionModalOpen={setIsStartProductionModalOpen}
-          isClientData={!!clientDataParam}
           trigger={trigger}
+          watch={watch}
+          isOrderStatus={isOrderStatus}
+          setIsOrderStatus={setIsOrderStatus}
         />
         <TabArea
           activeTab={activeTab}
           activateQuotationTab={activateQuotationTab}
-          clientDataParam={clientDataParam}
+          ocrData={ocrData}
         />
 
+        {/* 왼쪽 사진미리보기/히스토리 부분 */}
         <div className="flex flex-1 overflow-y-hidden">
           <div
             className={`
@@ -116,6 +125,7 @@ const QuotationPageContent = () => {
             )}
           </div>
 
+          {/* 오른쪽 견적서 부분 */}
           <div
             className={`
                 ${isRightPanelExpanded ? 'w-full' : 'w-1/2'}`}
@@ -124,7 +134,7 @@ const QuotationPageContent = () => {
               className={`flex flex-col flex-1 pt-8 gap-11 pr-10
                 ${isRightPanelExpanded ? 'pl-0' : 'pl-10'}`}
             >
-              <div className="flex items-center gap-2 pb-3 border-b border-[#eeeeee]">
+              <div className="flex items-center gap-2 pb-3 border-b border-lg">
                 <button
                   className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-bg transition-colors rounded-lg duration-200"
                   onClick={() => setIsRightPanelExpanded(!isRightPanelExpanded)}
