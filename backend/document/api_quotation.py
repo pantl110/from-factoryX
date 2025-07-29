@@ -82,6 +82,8 @@ async def get_quotation_detail(request, quotation_id: int):
             supply_amount = (qp.quantity or 0) * (qp.unit_price or 0)
             tax_amount = int(supply_amount * 0.1)
             products.append({
+                "productId": product.id,
+                "product_code": product.code if hasattr(product, 'code') and product.code else None,
                 "product_name": product.name,
                 "spec": product.spec,
                 "unit": product.unit,
