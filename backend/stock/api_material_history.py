@@ -22,6 +22,34 @@ router = Router(tags=["MaterialHistory"], auth=jwt_auth)
     response={ 200: MaterialHistoryListOut, 400: dict, 404: dict, 500: dict }
     )
 async def create_material_history(request, payload: MaterialHistoryCreateIn):
+    """
+    입력 필드:
+    - factory: int - 공장 ID
+    - client_info: FactoryClientCreateIn - 거래처 정보
+      - name: str - 업체명 (필수)
+      - business_registration_number: str - 사업자등록번호 (선택)
+      - representative_name: str - 대표자명 (선택)
+      - business_type: str - 업태 (선택)
+      - business_category: str - 종목 (선택)
+      - address: str - 사업장 주소 (선택)
+    - materials: List[MaterialItemIn] - 원자재 목록
+      - name: str - 자재명 (필수)
+      - code: str - 자재코드 (필수)
+      - spec: str - 규격 (필수)
+      - unit: str - 단위 (필수)
+      - quantity: int - 재고 변동 수량 (필수)
+      - price: int - 구매 단가 (필수)
+    
+    반환 필드:
+    - materials: List[MaterialHistoryDetailOut] - 생성된 원자재 히스토리 목록
+      - id: int - 히스토리 ID
+      - type: str - 거래 타입 ("구매")
+      - material_id: int - 원자재 ID
+      - client_id: int - 거래처 ID
+      - quantity: int - 거래 수량
+      - price: int - 구매 단가
+      - total_stock: int - 거래 후 총 재고
+    """
     try:
         factory = await Factory.objects.aget(id=payload.factory)
     except Factory.DoesNotExist:
@@ -108,6 +136,25 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     response={ 200: MaterialHistoryDetailOut, 400: dict, 404: dict, 500: dict }
     )
 async def create_single_material_history(request, payload: SingleMaterialHistoryCreateIn):
+    """
+    입력 필드:
+    - material_id: int - 원자재 ID (필수)
+    - type: str - 거래 타입 (필수)
+      - "purchase": 구매
+      - "consumption": 소모
+    - quantity: int - 재고 변동 수량 (필수)
+    - price: int - 구매 단가 (구매 시에만 필수, 소모 시에는 null)
+    - client_id: int - 거래처 ID (필수)
+    
+    반환 필드:
+    - id: int - 히스토리 ID
+    - type: str - 거래 타입 ("구매" 또는 "소모")
+    - material_id: int - 원자재 ID
+    - client_id: int - 거래처 ID
+    - quantity: int - 거래 수량
+    - price: int - 구매 단가 (소모 시에는 null)
+    - total_stock: int - 거래 후 총 재고
+    """
     try:
         material = await Material.objects.aget(id=payload.material_id)
     except Material.DoesNotExist:
@@ -165,19 +212,26 @@ async def create_single_material_history(request, payload: SingleMaterialHistory
 @paginate
 async def get_material_history(request, material_id: int, months: int = None, days: int = None):
     """
-    입력 필드:
-    - material_id: 원자재 ID (쿼리 파라미터, 필수)
-    - months: 최근 N개월 이력만 조회 (선택)
-    - days: 최근 N일 이력만 조회 (선택)
-
+    입력 필드 (쿼리 파라미터):
+    - material_id: int - 원자재 ID (필수)
+    - months: int - 최근 N개월 이력만 조회 (선택)
+    - days: int - 최근 N일 이력만 조회 (선택)
+    
     반환 필드 (dict 리스트):
-    - id: 이력 ID (int)
-    - type: 입고/출고 타입 (str)
-    - client_name: 거래처명 (str)
-    - quantity: 수량 (int)
-    - unit_price: 단가 (int)
-    - amount: 금액(수량x단가) (int)
-    - date: 거래일자 (str, ISO8601)
+    - id: int - 이력 ID
+    - type: str - 거래 타입 ("구매" 또는 "소모")
+    - material_id: int - 원자재 ID
+    - client_id: int - 거래처 ID
+    - quantity: int - 거래 수량
+    - price: int - 구매 단가 (소모 시에는 null)
+    - total_stock: int - 거래 후 총 재고
+    - created_at: str - 생성일시
+    - updated_at: str - 수정일시
+    - client_name: str - 거래처명
+    - quantity: int - 수량
+    - unit_price: int - 단가
+    - amount: int - 금액(수량x단가)
+    - date: str - 거래일자 (ISO8601)
     """
     try:
         material = await Material.objects.aget(id=material_id)
@@ -226,19 +280,19 @@ async def get_material_history(request, material_id: int, months: int = None, da
 @paginate
 async def get_material_history_detail(request, material_id: int, filters: MaterialHistoryDetailFilter = Query(...)):
     """
-    입력 필드(쿼리 파라미터):
-    - material_id: 원자재 ID (필수)
-    - start_date: 조회 시작일 (YYYY-MM-DD, 선택)
-    - end_date: 조회 종료일 (YYYY-MM-DD, 선택)
+    입력 필드 (쿼리 파라미터):
+    - material_id: int - 원자재 ID (필수)
+    - start_date: str - 조회 시작일 (YYYY-MM-DD, 선택)
+    - end_date: str - 조회 종료일 (YYYY-MM-DD, 선택)
 
-    반환 필드(각 이력별 dict):
-    - id: 이력 ID (int)
-    - date: 처리일자 (str, ISO8601)
-    - type: 상태 (str, purchase=구매, consumption=소모)
-    - quantity: 수량 (int)
-    - total_stock: 이력 반영 후 현재 재고 (int)
-    - purchase_tax_invoice_id: 매입 세금계산서 연결 ID (int/null)
-    - cash_receipt_id: 현금영수증 연결 ID (int/null)
+    반환 필드 (각 이력별 dict):
+    - id: int - 이력 ID
+    - date: str - 처리일자 (ISO8601)
+    - type: str - 상태 ("purchase": 구매, "consumption": 소모)
+    - quantity: int - 수량
+    - total_stock: int - 이력 반영 후 현재 재고
+    - purchase_tax_invoice_id: int - 매입 세금계산서 연결 ID (null 가능)
+    - cash_receipt_id: int - 현금영수증 연결 ID (null 가능)
     """
     try:
         material = await Material.objects.aget(id=material_id)

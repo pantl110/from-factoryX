@@ -59,6 +59,10 @@ class TestMaterialHistoryAPI(TestCase):
 
     async def test_create_material_history_new_materials(self):
         """새로운 원자재들로 이력 생성 테스트"""
+        # 원자재 생성 전 개수 확인
+        initial_material_count = await sync_to_async(Material.objects.filter(factory=self.factory).count)()
+        self.assertEqual(initial_material_count, 1)  # setUp에서 생성된 1개
+        
         headers = await self.authenticate()
         payload = {
             "factory": self.factory.id,
@@ -106,6 +110,32 @@ class TestMaterialHistoryAPI(TestCase):
         self.assertEqual(data["materials"][1]["quantity"], 50)
         self.assertEqual(data["materials"][1]["price"], 2000)
         self.assertEqual(data["materials"][1]["total_stock"], 50)
+        
+        # 실제로 원자재가 데이터베이스에 생성되었는지 확인
+        material1 = await sync_to_async(Material.objects.get)(
+            factory=self.factory,
+            code="NEW001"
+        )
+        self.assertEqual(material1.name, "새로운 원자재1")
+        self.assertEqual(material1.current_stock, 100)
+        self.assertEqual(material1.spec, "규격1")
+        self.assertEqual(material1.unit, "EA")
+        
+        material2 = await sync_to_async(Material.objects.get)(
+            factory=self.factory,
+            code="NEW002"
+        )
+        self.assertEqual(material2.name, "새로운 원자재2")
+        self.assertEqual(material2.current_stock, 50)
+        self.assertEqual(material2.spec, "규격2")
+        self.assertEqual(material2.unit, "KG")
+        
+        # 총 원자재 개수 확인 (기존 1개 + 새로 생성된 2개 = 3개)
+        total_materials = await sync_to_async(Material.objects.filter(factory=self.factory).count)()
+        self.assertEqual(total_materials, 3)
+        
+        # 원자재 생성 전후 개수 비교
+        self.assertEqual(total_materials, initial_material_count + 2)  # 2개가 새로 생성됨
 
     async def test_create_material_history_mixed_materials(self):
         """기존 원자재와 새로운 원자재 혼합 테스트"""
@@ -161,6 +191,73 @@ class TestMaterialHistoryAPI(TestCase):
         
         # 새로운 원자재 확인
         self.assertEqual(data["materials"][1]["total_stock"], 25)
+        
+        # 새로운 원자재가 실제로 데이터베이스에 생성되었는지 확인
+        new_material = await sync_to_async(Material.objects.get)(
+            factory=self.factory,
+            code="NEW003"
+        )
+        self.assertEqual(new_material.name, "새로운 원자재")
+        self.assertEqual(new_material.current_stock, 25)
+        self.assertEqual(new_material.spec, "규격3")
+        self.assertEqual(new_material.unit, "EA")
+        
+        # 총 원자재 개수 확인 (기존 2개 + 새로 생성된 1개 = 3개)
+        total_materials = await sync_to_async(Material.objects.filter(factory=self.factory).count)()
+        self.assertEqual(total_materials, 3)
+        
+        # 원자재 생성 전후 개수 비교 (기존 1개 + 테스트에서 생성된 1개 + 새로 생성된 1개 = 3개)
+        self.assertEqual(total_materials, 3)
+
+    async def test_material_creation_with_history(self):
+        """원자재 히스토리 생성 시 원자재도 함께 생성되는지 확인"""
+        # 원자재 생성 전 개수 확인
+        initial_count = await sync_to_async(Material.objects.filter(factory=self.factory).count)()
+        self.assertEqual(initial_count, 1)  # setUp에서 생성된 1개
+        
+        headers = await self.authenticate()
+        payload = {
+            "factory": self.factory.id,
+            "client_info": {
+                "name": "신규 거래처",
+                "business_registration_number": "111-22-33333",
+                "representative_name": "박영희",
+                "business_type": "제조업",
+                "business_category": "전자부품",
+                "address": "대전시 유성구"
+            },
+            "materials": [
+                {
+                    "name": "테스트 원자재",
+                    "code": "TEST_MATERIAL",
+                    "spec": "테스트 규격",
+                    "unit": "개",
+                    "quantity": 75,
+                    "price": 1500
+                }
+            ]
+        }
+        
+        response = await self.client.post("", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 200)
+        
+        # 원자재 생성 후 개수 확인
+        final_count = await sync_to_async(Material.objects.filter(factory=self.factory).count)()
+        self.assertEqual(final_count, initial_count + 1)  # 1개가 새로 생성됨
+        
+        # 생성된 원자재 확인
+        new_material = await sync_to_async(Material.objects.get)(
+            factory=self.factory,
+            code="TEST_MATERIAL"
+        )
+        self.assertEqual(new_material.name, "테스트 원자재")
+        self.assertEqual(new_material.current_stock, 75)
+        self.assertEqual(new_material.spec, "테스트 규격")
+        self.assertEqual(new_material.unit, "개")
+        
+        # 히스토리도 생성되었는지 확인
+        history_count = await sync_to_async(MaterialHistory.objects.filter(material=new_material).count)()
+        self.assertEqual(history_count, 1)
 
     async def test_create_single_material_history_purchase_success(self):
         """단일 원자재 구매 이력 생성 성공 테스트"""
