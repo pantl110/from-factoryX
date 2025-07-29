@@ -7,7 +7,6 @@ import {
   FieldErrors,
   Control,
 } from 'react-hook-form';
-import { useEffect } from 'react';
 import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { ClientModel, ClientResponseModel } from '@/types/data-model';
@@ -41,36 +40,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
     handleSelect: handleCompanyNameSelect,
   } = useDropdownFilter(clientList?.data || [], (item) => item.name);
 
-  // 초기 클라이언트 데이터 로드
-  useEffect(() => {
-    searchClients('');
-  }, [searchClients]);
-
-  //   useEffect(() => {
-  //     if (clientDataParam) {
-  //       try {
-  //         const data = JSON.parse(decodeURIComponent(clientDataParam));
-  //         Object.entries(data).forEach(([key, value]) => {
-  //           if (key === 'businessNumber') {
-  //             setValue(
-  //               'business_registration_number',
-  //               formatBusinessNumber(String(value ?? ''))
-  //             );
-  //           } else if (key === 'contact') {
-  //             setValue('phone', formatPhoneNumber(String(value ?? '')));
-  //           } else if (key === 'fax') {
-  //             setValue('fax', formatFaxNumber(String(value ?? '')));
-  //           } else if (key === 'companyName') {
-  //             setValue('name', String(value ?? ''));
-  //           } else {
-  //             setValue(key as keyof ClientModel, value as string);
-  //           }
-  //         });
-  //       } catch {
-  //         // 파싱 에러 무시
-  //       }
-  //     }
-  //   }, [clientDataParam, setValue]);
+  // 초기 ocr 데이터 로드 필요
 
   const handleSelectClient = (item: ClientResponseModel) => {
     handleCompanyNameSelect(item);
@@ -184,7 +154,13 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
         <Controller
           name="due_date"
           control={control}
-          rules={{ required: true }}
+          rules={{
+            required: true,
+            pattern: {
+              value: /^\d{4}-\d{2}-\d{2}$/,
+              message: 'YYYY-MM-DD 형식으로 입력해주세요',
+            },
+          }}
           render={({ field }) => (
             <Input
               label="납기일자"

@@ -1,5 +1,5 @@
 import DocumentViewTitle from '../document-view-title';
-import ProductListInfo from '../product-list-info';
+// import ProductListInfo from '../product-list-info';
 import BuyerInfo from './buyer-info';
 import SellerInfo from './seller-info';
 
@@ -13,7 +13,7 @@ const TransactionDocumentView = () => {
       />
       <SellerInfo />
       <BuyerInfo />
-      <ProductListInfo transaction />
+      {/* <ProductListInfo transaction /> */}
     </div>
   );
 };

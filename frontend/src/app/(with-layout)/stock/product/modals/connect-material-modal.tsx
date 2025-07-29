@@ -17,6 +17,7 @@ interface MaterialFormModel {
   spec: string;
   unit: string;
   quantity: number | null;
+  price: number | null;
 }
 
 interface ConnectMaterialModalProps {

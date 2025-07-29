@@ -1,5 +1,5 @@
 import DocumentViewTitle from '../document-view-title';
-import ProductListInfo from '../product-list-info';
+// import ProductListInfo from '../product-list-info';
 import ClientInfo from './client-info';
 
 const OrderDocumentView = () => {
@@ -11,7 +11,7 @@ const OrderDocumentView = () => {
         date="2025-07-31"
       />
       <ClientInfo />
-      <ProductListInfo />
+      {/* <ProductListInfo /> */}
     </div>
   );
 };

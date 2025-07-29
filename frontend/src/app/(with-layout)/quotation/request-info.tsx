@@ -1,20 +1,68 @@
 import MiniBtn from '@/ui/mini-btn';
 import ProductItem from './product-item';
-import dummyProducts from '@/mocks/quotation-products';
-import { ProductModel } from './types';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
+import { useGetQuotationProducts, useGetProduct } from '@/hooks';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
+import { ProductResponseModel } from '@/types/data-model';
 
 interface RequestInfoProps {
-  onProductClick: (product: ProductModel) => void;
-  setIsProductEnrollmentModalOpen: (isOpen: boolean) => void;
-  clientDataParam: string | null;
+  onProductClick: (productId: number) => void;
+  // setIsProductEnrollmentModalOpen: (isOpen: boolean) => void;
 }
 
 const RequestInfo = ({
   onProductClick,
-  setIsProductEnrollmentModalOpen,
-  clientDataParam,
+  // setIsProductEnrollmentModalOpen,
 }: RequestInfoProps) => {
+  const searchParams = useSearchParams();
+  const quotationId = searchParams.get('id')
+    ? parseInt(searchParams.get('id') || '0')
+    : undefined;
+
+  const {
+    data: quotationProducts,
+    isLoading,
+    error,
+  } = useGetQuotationProducts(quotationId);
+  const [productDetails, setProductDetails] = useState<
+    Record<number, ProductResponseModel>
+  >({});
+
+  const { getProductDetail } = useGetProduct();
+
+  // 제품 상세 정보 가져오기
+  const fetchProductDetails = useCallback(
+    async (productIds: number[]) => {
+      const uniqueProductIds = [...new Set(productIds)];
+
+      for (const productId of uniqueProductIds) {
+        if (!productDetails[productId]) {
+          try {
+            const result = await getProductDetail(productId);
+            if (result.success && result.data) {
+              setProductDetails((prev) => ({
+                ...prev,
+                [productId]: result.data,
+              }));
+            }
+          } catch (err) {
+            throw new Error(`제품 ${productId} 정보 가져오기 실패: ${err}`);
+          }
+        }
+      }
+    },
+    [productDetails, getProductDetail]
+  );
+
+  // quotationProducts가 변경될 때마다 제품 상세 정보 가져오기
+  useEffect(() => {
+    if (quotationProducts && quotationProducts.length > 0) {
+      const productIds = quotationProducts.map((item) => item.product);
+      fetchProductDetails(productIds);
+    }
+  }, [quotationProducts, fetchProductDetails]);
+
   return (
     <>
       <div className="flex justify-between items-center">
@@ -26,11 +74,14 @@ const RequestInfo = ({
           icon={CaretDown}
           iconPosition="right"
           hoverColor="hover:bg-bg"
-          onClick={() => setIsProductEnrollmentModalOpen(true)}
+          // onClick={() => setIsProductEnrollmentModalOpen(true)}
         />
       </div>
 
-      {clientDataParam ? (
+      {!isLoading &&
+      !error &&
+      quotationProducts &&
+      quotationProducts.length > 0 ? (
         <div className="w-full overflow-x-auto mb-30 ">
           <table className="w-full min-w-[938px]">
             <thead>
@@ -45,13 +96,26 @@ const RequestInfo = ({
               </tr>
             </thead>
             <tbody>
-              {dummyProducts.map((item, index) => (
-                <ProductItem
-                  key={index}
-                  {...item}
-                  onClick={() => onProductClick(item)}
-                />
-              ))}
+              {quotationProducts.map((item, index) => {
+                const productDetail = productDetails[item.product];
+
+                // 제품 상세 정보를 포함한 데이터 생성
+                const displayData = {
+                  ...item,
+                  productName: productDetail?.name || '-',
+                  productCode: productDetail?.code || '-',
+                  size: productDetail?.spec || '-',
+                  unit: productDetail?.unit || '-',
+                };
+
+                return (
+                  <ProductItem
+                    key={item.id || index}
+                    data={displayData}
+                    onClick={() => onProductClick(item.product)}
+                  />
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -50,7 +50,6 @@ const PhotoUploadModal = ({
           }}
           onFileUpload={onFileUpload}
           onComplete={handleUpload}
-          isMultiple={false}
         />
       </div>
     </Modal>

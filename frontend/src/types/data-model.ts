@@ -174,8 +174,7 @@ export interface EquipmentListResponseModel extends PaginationModel {
 // Factory Client API
 // 거래체 등록
 export interface ClientModel {
-  factory_id: number;
-  // type?: ClientType;
+  factory_id?: number;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -216,7 +215,6 @@ export interface ClientListResponseModel extends PaginationModel {
 export interface ClientUpdateModel {
   client_id: number;
   factory_id: number;
-  // client_type?: ClientType;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -409,14 +407,14 @@ export interface UpdateLocationModel {
 //   products?: ProductResponseModel[];
 // }
 
-// export interface CreateProjectResponseModel {
-//   id: number;
-//   status?: string;
-//   transact_date?: string;
-//   tax_invoice?: number;
-//   created_at: string;
-//   updated_at: string;
-// }
+export interface CreateProjectResponseModel {
+  id: number;
+  status?: string;
+  transact_date?: string;
+  tax_invoice?: number;
+  created_at: string;
+  updated_at: string;
+}
 
 // 프로젝트 정보 수정
 export interface ProjectUpdateModel {
@@ -447,8 +445,63 @@ export interface ProjectListResponseModel extends PaginationModel {
 //// OCR API
 export interface OcrDataModel {
   client_data: ClientModel;
+} // 수정 필요
+
+// 견적서 상세 조회
+export interface QuotationProductResponseModel {
+  product_name: string;
+  spec: string;
+  unit: string;
+  quantity: number;
+  unit_price: number;
+  supply_amount: number; // 공급가액
+  tax_amount: number; // 세액
+}
+export interface QuotationResponseModel {
+  // 판매처 정보 (본인 공장)
+  factory_name: string;
+  business_registration_number?: string;
+  representative_name?: string;
+  email?: string;
+  phone?: string;
+  fax?: string;
+  business_type?: string;
+  business_category?: string;
+  address?: string;
+  // 주문 품목 정보
+  products: QuotationProductResponseModel[];
 }
 
+// 견적서 임시 저장 // 생산 시작
+export interface SaveDraftQuotationModel {
+  quotation_id: number;
+  client?: ClientModel;
+  products?: {
+    id: number;
+    quantity?: number;
+    unit_price?: number;
+  }[];
+  due_date?: string;
+}
+
+// 견적서 품목 목록 조회
+export interface QuotationProductResponseModel {
+  id: number; // quotation_product_id
+  quotation: number;
+  product: number;
+  quantity: number;
+  unit_price: number;
+  is_delivery: boolean;
+  delivery_date: string | null;
+}
+
+// 견적서 품목 히스토리 조회 // 이전에 생산했던 Quotation Product 항목을 조회
+export interface QuotationProductHistoryItemResponseModel {
+  product_name: string; // 제품 명
+  quantity: number; // 제작 수량
+  unit_price: number; // 단가
+  total_amount: number; // 금액 (수량*단가)
+}
 //////////////////////
 // Project Log API
 export interface ProjectLogModel {

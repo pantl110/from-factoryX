@@ -9,6 +9,7 @@ interface MaterialFormModel {
   spec: string;
   unit: string;
   quantity: number | null;
+  price: number | null;
 }
 
 interface ManualAddMaterialProps {
@@ -35,6 +36,7 @@ const ManualAddMaterial = ({
       spec: '',
       unit: '',
       quantity: null,
+      price: null,
     },
     mode: 'onBlur',
   });
@@ -49,6 +51,7 @@ const ManualAddMaterial = ({
         spec: String(data.spec),
         unit: String(data.unit),
         quantity: data.quantity,
+        price: data.price,
       },
     ]);
     reset();

@@ -11,9 +11,8 @@ import History from './history';
 import EmailView from './modals/email-view';
 import OverlayView from '@/ui/ovelay-view';
 import PrintView from './modals/print-view';
-import { ProductModel } from './types';
 import StartProductionModal from './modals/start-production-modal';
-import ProductEnrollmentModal from './modals/product-enrollment-modal';
+// import ProductEnrollmentModal from './modals/product-enrollment-modal';
 import { ClientModel, OcrDataModel } from '@/types/data-model';
 
 // Extend ClientModel for quotation form to include due_date
@@ -32,34 +31,29 @@ const QuotationPageContent = () => {
   const clientDataParam = searchParams.get('clientData');
 
   // 거래처 정보 폼
-  const {
-    setValue,
-    control,
-    trigger,
-    watch,
-    formState: { errors },
-  } = useForm<QuotationFormModel>({
-    defaultValues: {
-      factory_id: 0,
-      name: '',
-      business_registration_number: '',
-      representative_name: '',
-      business_type: '',
-      business_category: '',
-      phone: '',
-      fax: '',
-      email: '',
-      address: '',
-      manager: '',
-      note: '',
-      due_date: '',
-    },
-  });
+  const { setValue, control, trigger, watch, formState } =
+    useForm<QuotationFormModel>({
+      defaultValues: {
+        factory_id: 0,
+        name: '',
+        business_registration_number: '',
+        representative_name: '',
+        business_type: '',
+        business_category: '',
+        phone: '',
+        fax: '',
+        email: '',
+        address: '',
+        manager: '',
+        note: '',
+        due_date: '',
+      },
+    });
 
   // 견적서 주문서 상태 관리
   const [isOrderStatus, setIsOrderStatus] = useState(false);
   // OCR 데이터 상태 관리
-  const [ocrData, setOcrData] = useState<OcrDataModel | null>(null);
+  const [ocrData, _setOcrData] = useState<OcrDataModel | null>(null);
 
   // 탭 상태 - 데이터가 없으면 히스토리 탭 활성화
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
@@ -68,19 +62,17 @@ const QuotationPageContent = () => {
   // 오른쪽 패널 확장 상태
   const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
   // 선택된 품목 상태 -> 히스토리 보여주기
-  const [selectedProduct, setSelectedProduct] = useState<ProductModel | null>(
-    null
-  );
+  const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   // 모달 상태
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
-  const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
-    useState(false);
+  // const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
+  //   useState(false);
 
-  const handleProductClick = (product: ProductModel) => {
-    setSelectedProduct(product);
+  const handleProductClick = (productId: number) => {
+    setSelectedProduct(productId);
     setActiveTab('history'); // 품목 클릭 시 히스토리탭 활성화
     setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
   };
@@ -99,6 +91,7 @@ const QuotationPageContent = () => {
           setIsStartProductionModalOpen={setIsStartProductionModalOpen}
           trigger={trigger}
           watch={watch}
+          formState={formState}
           isOrderStatus={isOrderStatus}
           setIsOrderStatus={setIsOrderStatus}
         />
@@ -150,12 +143,16 @@ const QuotationPageContent = () => {
             </div>
 
             <div className="overflow-y-auto scrollbar-hide h-full pt-8">
-              <div className="flex flex-col flex-1 gap-5 px-10 pb-11">
+              <div
+                className={`flex flex-col flex-1 gap-5 pr-10 pb-11 ${
+                  isRightPanelExpanded ? 'pl-0' : 'pl-10'
+                }`}
+              >
                 <h3 className="Heading-3">거래처 정보</h3>
                 <InputSection
                   control={control}
                   setValue={setValue}
-                  errors={errors}
+                  errors={formState.errors}
                 />
               </div>
 
@@ -166,10 +163,9 @@ const QuotationPageContent = () => {
               >
                 <RequestInfo
                   onProductClick={handleProductClick}
-                  setIsProductEnrollmentModalOpen={
-                    setIsProductEnrollmentModalOpen
-                  }
-                  clientDataParam={clientDataParam}
+                  // setIsProductEnrollmentModalOpen={
+                  //   setIsProductEnrollmentModalOpen
+                  // }
                 />
               </div>
             </div>
@@ -197,11 +193,11 @@ const QuotationPageContent = () => {
       )}
 
       {/* 품목 등록 모달 */}
-      {isProductEnrollmentModalOpen && (
+      {/* {isProductEnrollmentModalOpen && (
         <ProductEnrollmentModal
           onClose={() => setIsProductEnrollmentModalOpen(false)}
         />
-      )}
+      )} */}
     </>
   );
 };

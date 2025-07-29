@@ -1,5 +1,5 @@
 import DocumentViewTitle from '../document-view-title';
-import ProductListInfo from '../product-list-info';
+// import ProductListInfo from '../product-list-info';
 import SupplierInfo from '../supplier-info';
 
 const QuotationDocumentView = () => {
@@ -11,7 +11,7 @@ const QuotationDocumentView = () => {
         date="2025-07-31"
       />
       <SupplierInfo dateLabel="견적일자" />
-      <ProductListInfo />
+      {/* <ProductListInfo /> */}
     </div>
   );
 };

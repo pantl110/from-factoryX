@@ -105,10 +105,45 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     });
 
     // watch와 setValue 함수를 메모이제이션
-    const memoizedWatch = useCallback((name: string) => watch(name), [watch]);
+    const memoizedWatch = useCallback(
+      (
+        name:
+          | keyof LocationFormModel
+          | `locations.${number}`
+          | `locations.${number}.id`
+          | `locations.${number}.location`
+          | `locations.${number}.images`
+          | `locations.${number}.images.${number}`
+      ) => watch(name),
+      [watch]
+    );
     const memoizedSetValue = useCallback(
-      (name: string, value: unknown, options?: { shouldDirty?: boolean }) =>
-        setValue(name, value, options),
+      (
+        name:
+          | keyof LocationFormModel
+          | `locations.${number}`
+          | `locations.${number}.id`
+          | `locations.${number}.location`
+          | `locations.${number}.images`
+          | `locations.${number}.images.${number}`,
+        value:
+          | string
+          | number
+          | {
+              id?: number | undefined;
+              location: string;
+              images: (string | File)[];
+            }
+          | {
+              id?: number | undefined;
+              location: string;
+              images: (string | File)[];
+            }[]
+          | File
+          | (string | File)[]
+          | undefined,
+        options?: { shouldDirty?: boolean }
+      ) => setValue(name, value, options),
       [setValue]
     );
 
@@ -126,7 +161,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           },
         isDirty: isDirtyMaterialInfo,
         // 추가: 위치 정보 관련 메서드도 함께 노출
-        getLocationValues: () => getLocationValues('locations'),
+        getLocationValues: () =>
+          getLocationValues('locations' as keyof LocationFormModel),
         isLocationDirty: isRhfDirty,
         resetLocations: (locations: LocationFormModel['locations']) =>
           reset({ locations }),

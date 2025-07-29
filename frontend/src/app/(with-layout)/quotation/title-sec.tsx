@@ -2,7 +2,7 @@ import Chip from '@/ui/chip';
 import ButtonSection from './button-section';
 import QuotationStatusDropdown from './modals/quotation-status-dropdown';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
-import { UseFormTrigger, UseFormWatch } from 'react-hook-form';
+import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
 import { ClientModel } from '@/types/data-model';
 import { useMemo } from 'react';
 
@@ -18,6 +18,7 @@ interface TitleSecProps {
   setIsStartProductionModalOpen: (open: boolean) => void;
   trigger: UseFormTrigger<QuotationFormModel>;
   watch: UseFormWatch<QuotationFormModel>;
+  formState: FormState<QuotationFormModel>;
   isOrderStatus: boolean;
   setIsOrderStatus: (status: boolean) => void;
 }
@@ -28,28 +29,14 @@ const TitleSec = ({
   setIsPrintOpen,
   setIsStartProductionModalOpen,
   trigger,
-  watch,
+  formState,
   isOrderStatus,
   setIsOrderStatus,
 }: TitleSecProps) => {
-  // 폼 유효성 검사
-  const formValues = watch();
+  // 폼 유효성 검사 - 실제 필드 값과 에러 상태 확인
   const isFormValid = useMemo(() => {
-    const requiredFields = [
-      'name',
-      'business_registration_number',
-      'representative_name',
-      'due_date',
-      'business_type',
-      'business_category',
-      'address',
-    ];
-
-    return requiredFields.every((field) => {
-      const value = formValues[field as keyof QuotationFormModel];
-      return value && value.toString().trim() !== '';
-    });
-  }, [formValues]);
+    return formState.isValid && !Object.keys(formState.errors).length;
+  }, [formState.isValid, formState.errors]);
 
   // 드랍다운 상태
   const {
