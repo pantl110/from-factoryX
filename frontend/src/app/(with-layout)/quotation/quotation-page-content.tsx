@@ -273,7 +273,34 @@ const QuotationPageContent = () => {
       {/* 이메일 보내기 버튼 */}
       {isEmailOpen && (
         <OverlayView onClose={() => setIsEmailOpen(false)}>
-          <EmailView onClose={() => setIsEmailOpen(false)} />
+          <EmailView
+            documentTitle="견적서"
+            clientData={{
+              factory_id: watch().factory_id,
+              name: watch().name,
+              business_registration_number:
+                watch().business_registration_number,
+              representative_name: watch().representative_name,
+              email: watch().email,
+              phone: watch().phone,
+              fax: watch().fax,
+              business_type: watch().business_type,
+              business_category: watch().business_category,
+              address: watch().address,
+              manager: watch().manager,
+              note: watch().note,
+            }}
+            dueDate={watch().due_date}
+            productListInfoTitle="견적 품목 정보"
+            productItems={quotationProducts}
+            supplyAmount={quotationProducts.reduce((total, product) => {
+              if (product.quantity && product.unit_price) {
+                return total + product.quantity * product.unit_price;
+              }
+              return total;
+            }, 0)}
+            onClose={() => setIsEmailOpen(false)}
+          />
         </OverlayView>
       )}
       {/* 생산 시작하기 버튼 */}

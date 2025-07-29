@@ -34,7 +34,7 @@ const ProductListInfo = ({
         </thead>
         <tbody>
           {productItems.map((item, index) => (
-            <ProductItem key={index} data={item} />
+            <ProductItem key={index} data={item} onlyRead={true} />
           ))}
         </tbody>
       </table>

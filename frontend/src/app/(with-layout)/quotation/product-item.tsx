@@ -18,6 +18,7 @@ interface ProductItemProps {
   onDropdownShow?: (products: ProductResponseModel[], rect?: DOMRect) => void;
   onDropdownHide?: () => void;
   onProductDetailClick?: (productId: number | null) => void;
+  onlyRead?: boolean;
 }
 
 const ProductItem = ({
@@ -29,6 +30,7 @@ const ProductItem = ({
   onDropdownShow,
   onDropdownHide,
   onProductDetailClick,
+  onlyRead = false,
 }: ProductItemProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { getProductList } = useGetProduct();
@@ -64,29 +66,41 @@ const ProductItem = ({
   return (
     <>
       <tr
-        className="group h-14 flex items-center Me_Body-1 text-dg border-b border-lg hover:border hover:border-primary cursor-pointer transition-all duration-200 ease-in-out"
-        onClick={onClick}
+        className={`h-14 flex items-center Me_Body-1 text-dg border-b border-lg transition-all duration-200 ease-in-out ${
+          !onlyRead
+            ? 'group hover:border hover:border-primary cursor-pointer'
+            : ''
+        }`}
+        onClick={!onlyRead ? onClick : undefined}
       >
         <td
-          className="flex-1 px-3 truncate flex items-center gap-1 relative"
+          className={`flex-1 px-3 flex items-center gap-1 relative ${onlyRead ? 'break-words' : 'truncate'}`}
           title={data?.product_name}
-          onClick={(e) => {
-            e.stopPropagation();
-            openDropdown(e);
-          }}
+          onClick={
+            !onlyRead
+              ? (e) => {
+                  e.stopPropagation();
+                  openDropdown(e);
+                }
+              : undefined
+          }
         >
           {data?.product_name ? (
             <>
-              <p className="w-full truncate">{data.product_name}</p>
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onProductDetailClick?.(data?.product_id || null);
-                }}
-                className="opacity-0 group-hover:opacity-100 w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg cursor-pointer transition-all duration-200 ease-in-out"
-              >
-                <ArrowLineUpRight size={16} />
-              </div>
+              <p className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}>
+                {data.product_name}
+              </p>
+              {!onlyRead && (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onProductDetailClick?.(data?.product_id || null);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg cursor-pointer transition-all duration-200 ease-in-out"
+                >
+                  <ArrowLineUpRight size={16} />
+                </div>
+              )}
             </>
           ) : (
             <input
@@ -101,48 +115,74 @@ const ProductItem = ({
           )}
         </td>
         <td className="flex-1 px-3">
-          <p className="w-full truncate">{data?.product_code || ''}</p>
+          <p className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}>
+            {data?.product_code || ''}
+          </p>
         </td>
         <td className="flex-1 px-3">
-          <p className="w-full truncate">{data?.spec || ''}</p>
+          <p className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}>
+            {data?.spec || ''}
+          </p>
         </td>
         <td className="w-[80px] px-3">
-          <p className="w-full truncate">{data?.unit || ''}</p>
+          <p className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}>
+            {data?.unit || ''}
+          </p>
         </td>
-        <td className="flex-1 px-3" onClick={(e) => e.stopPropagation()}>
-          <input
-            type="text"
-            value={data?.quantity?.toLocaleString() || ''}
-            className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
-            style={{ width: '100%', maxWidth: '100%' }}
-            onChange={(e) => {
-              const value = e.target.value;
-              const numericValue = value.replace(/[^0-9]/g, '');
-              onChange?.('quantity', numericValue);
-            }}
-          />
+        <td
+          className="flex-1 px-3"
+          onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
+        >
+          {onlyRead ? (
+            <p className="w-full break-words">
+              {data?.quantity?.toLocaleString() || ''}
+            </p>
+          ) : (
+            <input
+              type="text"
+              value={data?.quantity?.toLocaleString() || ''}
+              className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
+              style={{ width: '100%', maxWidth: '100%' }}
+              onChange={(e) => {
+                const value = e.target.value;
+                const numericValue = value.replace(/[^0-9]/g, '');
+                onChange?.('quantity', numericValue);
+              }}
+            />
+          )}
         </td>
-        <td className="w-[100px] px-3" onClick={(e) => e.stopPropagation()}>
-          <input
-            type="text"
-            value={data?.unit_price?.toLocaleString() || ''}
-            className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
-            style={{ width: '100%', maxWidth: '100%' }}
-            onChange={(e) => {
-              const value = e.target.value;
-              const numericValue = value.replace(/[^0-9]/g, '');
-              onChange?.('unit_price', numericValue);
-            }}
-          />
+        <td
+          className="w-[100px] px-3"
+          onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
+        >
+          {onlyRead ? (
+            <p className="w-full break-words">
+              {data?.unit_price?.toLocaleString() || ''}
+            </p>
+          ) : (
+            <input
+              type="text"
+              value={data?.unit_price?.toLocaleString() || ''}
+              className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
+              style={{ width: '100%', maxWidth: '100%' }}
+              onChange={(e) => {
+                const value = e.target.value;
+                const numericValue = value.replace(/[^0-9]/g, '');
+                onChange?.('unit_price', numericValue);
+              }}
+            />
+          )}
         </td>
         <td className="flex-1 px-3 min-w-0">
-          <p className="w-full min-w-0 max-w-full overflow-hidden text-ellipsis truncate whitespace-nowrap">
+          <p
+            className={`w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap ${onlyRead ? 'break-words' : 'truncate'}`}
+          >
             {data?.quantity && data?.unit_price
               ? (data.quantity * data.unit_price).toLocaleString()
               : ''}
           </p>
         </td>
-        {canDelete && (
+        {canDelete && !onlyRead && (
           <td className="w-8 h-full flex justify-center items-center">
             <button
               className="flex items-center justify-center w-full h-8 rounded-[8px] hover:bg-bg cursor-pointer"

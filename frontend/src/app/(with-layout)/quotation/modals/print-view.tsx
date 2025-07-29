@@ -54,12 +54,10 @@ const PrintView = ({
             </div>
           </div>
           <MiniBtn
-            text={`${documentTitle} 출력하기`}
+            text={`${documentTitle} 출력`}
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"
-            icon={PrinterIcon}
-            iconColor="text-wh"
             onClick={reactToPrintFn}
           />
         </div>
