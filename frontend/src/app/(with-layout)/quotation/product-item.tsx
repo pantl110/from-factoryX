@@ -144,7 +144,7 @@ const ProductItem = ({
               className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
               style={{ width: '100%', maxWidth: '100%' }}
               onChange={(e) => {
-                const value = e.target.value;
+                const { value } = e.target;
                 const numericValue = value.replace(/[^0-9]/g, '');
                 onChange?.('quantity', numericValue);
               }}
@@ -166,7 +166,7 @@ const ProductItem = ({
               className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
               style={{ width: '100%', maxWidth: '100%' }}
               onChange={(e) => {
-                const value = e.target.value;
+                const { value } = e.target;
                 const numericValue = value.replace(/[^0-9]/g, '');
                 onChange?.('unit_price', numericValue);
               }}

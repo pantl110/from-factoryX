@@ -3,7 +3,7 @@ import ProductItem from './product-item';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { useGetDetailQuotation, useGetProduct } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import {
   QuotationProductDetailResponseModel,
@@ -42,7 +42,7 @@ const RequestInfo = ({
   const { getProductDetail } = useGetProduct();
 
   // React Hook Form 설정
-  const { control, watch, setValue } = useForm({
+  const { control, setValue } = useForm({
     defaultValues: {
       products: [] as QuotationProductDetailResponseModel[],
     },

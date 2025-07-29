@@ -28,12 +28,6 @@ const Delivery = () => {
   const setMoveToStorageModalOpen = usePageStatusStore(
     (state) => state.setMoveToStorageModalOpen
   );
-  const isAddReturnModalOpen = usePageStatusStore(
-    (state) => state.isAddReturnModalOpen
-  );
-  const setAddReturnModalOpen = usePageStatusStore(
-    (state) => state.setAddReturnModalOpen
-  );
 
   return (
     <>

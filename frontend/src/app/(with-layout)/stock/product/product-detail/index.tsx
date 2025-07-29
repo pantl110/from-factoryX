@@ -291,6 +291,7 @@ const ProductDetail = ({
         };
         const result = await updateProduct(productId, payload);
         if (result && result.success) {
+          // 성공 시 처리
         } else {
           alert(
             '품목 수정에 실패하였습니다. ' +

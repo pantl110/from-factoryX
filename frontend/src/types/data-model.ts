@@ -499,7 +499,7 @@ export interface QuotationProductResponseModel {
   delivery_date?: string | null;
 }
 
-// 견적서 요청정보 데이터 보여줄 때 
+// 견적서 요청정보 데이터 보여줄 때
 // export interface QuotationProductItemModel {
 //   id: number; // product_id
 //   product_name: string;

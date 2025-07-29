@@ -13,9 +13,7 @@ const useGetQuotationProducts = (
   quotationId?: number,
   factoryId?: number
 ): UseGetQuotationProductsReturnModel => {
-  const [data, setData] = useState<QuotationResponseModel | null>(
-    null
-  );
+  const [data, setData] = useState<QuotationResponseModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,8 +46,9 @@ const useGetQuotationProducts = (
         setData(result);
       } else {
         const errorData = await response.json();
-        const errorMessage = errorData.message || '견적서 품목 조회에 실패했습니다.';
-        
+        const errorMessage =
+          errorData.message || '견적서 품목 조회에 실패했습니다.';
+
         // 품목이 없는 경우는 정상적인 상태로 처리
         if (errorMessage.includes('품목이 없습니다')) {
           setData(null);

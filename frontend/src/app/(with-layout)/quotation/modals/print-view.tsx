@@ -1,5 +1,5 @@
 import MiniBtn from '@/ui/mini-btn';
-import { PrinterIcon, X } from '@phosphor-icons/react/dist/ssr';
+import { X } from '@phosphor-icons/react/dist/ssr';
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import QuotationDocumentView from '../../document/quotation-document-view/quotation-document-view';

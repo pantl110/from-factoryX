@@ -131,17 +131,18 @@ const QuotationPageContent = () => {
               product.product_id && product.quantity && product.unit_price
           )
           .map((product) => ({
-            id: product.product_id!,
-            quantity: product.quantity!,
-            unit_price: product.unit_price!,
+            id: product.product_id as number,
+            quantity: product.quantity as number,
+            unit_price: product.unit_price as number,
           })),
       };
 
       await saveDraft(draftData);
       // 성공 시 토스트 메시지나 다른 피드백 제공
-    } catch (error) {
+    } catch {
       throw new Error('Failed to save draft');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saveDraft, watch, quotationId]);
 
   return (

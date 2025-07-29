@@ -25,7 +25,7 @@ const History = ({ selectedProduct }: HistoryProps) => {
       try {
         const result = await getHistory([selectedProduct]);
         setHistoryData(result.results || []);
-      } catch (err) {
+      } catch {
         setHistoryData([]);
       }
     };
