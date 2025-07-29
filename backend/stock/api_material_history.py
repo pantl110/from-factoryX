@@ -16,6 +16,79 @@ router = Router(tags=["MaterialHistory"], auth=jwt_auth)
 
 
 @router.post(
+    "single", 
+    summary="[C] 단일 원자재 이력 생성", 
+    description="특정 원자재의 구매 또는 소모 이력을 생성합니다. 재고가 자동으로 업데이트됩니다.",
+    response={ 200: MaterialHistoryDetailOut, 400: dict, 404: dict, 500: dict }
+    )
+async def create_single_material_history(request, payload: SingleMaterialHistoryCreateIn):
+    """
+    입력 필드:
+    - material_id: int - 원자재 ID (필수)
+    - type: str - 거래 타입 (필수)
+      - "purchase": 구매
+      - "consumption": 소모
+    - quantity: int - 재고 변동 수량 (필수)
+    - price: int - 구매 단가 (구매 시에만 필수, 소모 시에는 null)
+    - client_id: int - 거래처 ID (필수)
+    
+    반환 필드:
+    - id: int - 히스토리 ID
+    - type: str - 거래 타입 ("구매" 또는 "소모")
+    - material_id: int - 원자재 ID
+    - client_id: int - 거래처 ID
+    - quantity: int - 거래 수량
+    - price: int - 구매 단가 (소모 시에는 null)
+    - total_stock: int - 거래 후 총 재고
+    """
+    try:
+        material = await Material.objects.aget(id=payload.material_id)
+    except Material.DoesNotExist:
+        raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
+    
+    try:
+        client = await FactoryClient.objects.aget(id=payload.client_id)
+    except FactoryClient.DoesNotExist:
+        raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
+    
+    if payload.type not in [MaterialHistory.MaterialHistoryType.purchase, MaterialHistory.MaterialHistoryType.consumption]:
+        raise HttpError(400, "잘못된 거래 타입입니다. 'purchase' 또는 'consumption'을 입력해주세요.")
+    
+    if payload.type == MaterialHistory.MaterialHistoryType.purchase and payload.price is None:
+        raise HttpError(400, "구매 시에는 가격을 입력해주세요.")
+    
+    current_stock = material.current_stock
+    if payload.type == MaterialHistory.MaterialHistoryType.purchase:
+        new_stock = current_stock + payload.quantity
+    else:
+        new_stock = current_stock - payload.quantity
+        if new_stock < 0:
+            raise HttpError(400, "재고가 부족합니다.")
+    
+    material.current_stock = new_stock
+    await sync_to_async(material.save)()
+    
+    material_history = await MaterialHistory.objects.acreate(
+        type=payload.type,
+        material=material,
+        client=client,
+        quantity=payload.quantity,
+        price=payload.price,
+        total_stock=new_stock
+    )
+    
+    return 200, MaterialHistoryDetailOut(
+        id=material_history.id,
+        type=material_history.type,
+        material_id=material_history.material_id,
+        client_id=material_history.client_id,
+        quantity=material_history.quantity,
+        price=material_history.price,
+        total_stock=material_history.total_stock
+    )
+
+
+@router.post(
     "", 
     summary="[C] 원자재 이력 생성 (구매)", 
     description="거래처 명으로 기존 거래처가 있으면 정보를 업데이트 후 사용하고, 없으면 새로 생성합니다. 여러 원자재 구매 이력을 생성하며, 원자재가 없으면 새로 생성하고, 있으면 재고를 업데이트합니다.",
@@ -127,79 +200,6 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
         ))
     
     return 200, MaterialHistoryListOut(materials=material_histories)
-
-
-@router.post(
-    "single", 
-    summary="[C] 단일 원자재 이력 생성", 
-    description="특정 원자재의 구매 또는 소모 이력을 생성합니다. 재고가 자동으로 업데이트됩니다.",
-    response={ 200: MaterialHistoryDetailOut, 400: dict, 404: dict, 500: dict }
-    )
-async def create_single_material_history(request, payload: SingleMaterialHistoryCreateIn):
-    """
-    입력 필드:
-    - material_id: int - 원자재 ID (필수)
-    - type: str - 거래 타입 (필수)
-      - "purchase": 구매
-      - "consumption": 소모
-    - quantity: int - 재고 변동 수량 (필수)
-    - price: int - 구매 단가 (구매 시에만 필수, 소모 시에는 null)
-    - client_id: int - 거래처 ID (필수)
-    
-    반환 필드:
-    - id: int - 히스토리 ID
-    - type: str - 거래 타입 ("구매" 또는 "소모")
-    - material_id: int - 원자재 ID
-    - client_id: int - 거래처 ID
-    - quantity: int - 거래 수량
-    - price: int - 구매 단가 (소모 시에는 null)
-    - total_stock: int - 거래 후 총 재고
-    """
-    try:
-        material = await Material.objects.aget(id=payload.material_id)
-    except Material.DoesNotExist:
-        raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
-    
-    try:
-        client = await FactoryClient.objects.aget(id=payload.client_id)
-    except FactoryClient.DoesNotExist:
-        raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
-    
-    if payload.type not in [MaterialHistory.MaterialHistoryType.purchase, MaterialHistory.MaterialHistoryType.consumption]:
-        raise HttpError(400, "잘못된 거래 타입입니다. 'purchase' 또는 'consumption'을 입력해주세요.")
-    
-    if payload.type == MaterialHistory.MaterialHistoryType.purchase and payload.price is None:
-        raise HttpError(400, "구매 시에는 가격을 입력해주세요.")
-    
-    current_stock = material.current_stock
-    if payload.type == MaterialHistory.MaterialHistoryType.purchase:
-        new_stock = current_stock + payload.quantity
-    else:
-        new_stock = current_stock - payload.quantity
-        if new_stock < 0:
-            raise HttpError(400, "재고가 부족합니다.")
-    
-    material.current_stock = new_stock
-    await sync_to_async(material.save)()
-    
-    material_history = await MaterialHistory.objects.acreate(
-        type=payload.type,
-        material=material,
-        client=client,
-        quantity=payload.quantity,
-        price=payload.price,
-        total_stock=new_stock
-    )
-    
-    return 200, MaterialHistoryDetailOut(
-        id=material_history.id,
-        type=material_history.type,
-        material_id=material_history.material_id,
-        client_id=material_history.client_id,
-        quantity=material_history.quantity,
-        price=material_history.price,
-        total_stock=material_history.total_stock
-    )
 
 
 # Material Tab
