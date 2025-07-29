@@ -41,7 +41,7 @@ const RequestInfo = ({
     },
   });
 
-  const { fields, update, append } = useFieldArray({
+  const { fields, update, append, remove } = useFieldArray({
     control,
     name: 'products',
   });
@@ -75,6 +75,15 @@ const RequestInfo = ({
       ...currentField,
       [field]: numericValue,
     });
+  };
+
+  // 품목 삭제
+  const handleDeleteProduct = (index: number) => {
+    remove(index);
+    // 삭제 후 남은 항목이 없으면 hasQuotationProducts를 false로 설정
+    if (fields.length <= 1) {
+      setHasQuotationProducts(false);
+    }
   };
 
   // 새로운 품목 추가 시 품목 디테일 판넬에서 저장버튼 누르면
@@ -157,6 +166,7 @@ const RequestInfo = ({
                     onChange={(field, value) => {
                       handleQuantityOrPriceChange(index, field, value);
                     }}
+                    onDelete={() => handleDeleteProduct(index)}
                   />
                 );
               })}

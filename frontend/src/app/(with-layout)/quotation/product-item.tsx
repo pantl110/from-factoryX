@@ -6,6 +6,7 @@ interface ProductItemProps {
   onClick?: () => void;
   canDelete?: boolean;
   onChange?: (field: 'quantity' | 'unit_price', value: string) => void;
+  onDelete?: () => void;
 }
 
 const ProductItem = ({
@@ -13,6 +14,7 @@ const ProductItem = ({
   onClick,
   canDelete = false,
   onChange,
+  onDelete,
 }: ProductItemProps) => {
   return (
     <tr
@@ -67,8 +69,16 @@ const ProductItem = ({
         </p>
       </td>
       {canDelete && (
-        <td className="w-8 h-full flex justify-center items-center cursor-pointer">
-          <X size={16} className="text-sv" />
+        <td className="w-8 h-full flex justify-center items-center">
+          <button
+            className="flex items-center justify-center w-full h-8 rounded-[8px] hover:bg-bg cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.();
+            }}
+          >
+            <X size={16} className="text-sv" />
+          </button>
         </td>
       )}
     </tr>
