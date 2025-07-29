@@ -15,7 +15,6 @@ class FactoryCreateIn(ModelSchema):
 
 
 class FactoryUpdateIn(ModelSchema):
-    factory_id: int = Field(description="공장 ID")
     name: Optional[str] = Field(default=None, description="공장 이름")
 
     class Meta:
@@ -131,6 +130,7 @@ class FactoryClientFilter(FilterSchema):
     client_type: Optional[str] = Field(
         default=None, q="client_type", description="거래처 유형 (customer/supplier)"
     )
+
 
 # 거래처 검색용 스키마
 class FactoryClientSearchIn(Schema):
