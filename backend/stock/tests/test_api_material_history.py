@@ -8,6 +8,7 @@ from stock.api_material_history import router as material_history_router
 from user.models import User
 from factory.models import Factory, FactoryClient
 from stock.models import Material, MaterialHistory
+from tax.models import NationalTaxService, CashReceipt
 from user.models import EmailVerification
 
 
@@ -509,8 +510,85 @@ class TestMaterialHistoryAPI(TestCase):
         
         data = response.json()["data"]
         for history in data:
-            for field in ["id", "type", "client_name", "quantity", "unit_price", "amount", "date"]:
+            for field in ["id", "type", "client_name", "quantity", "unit_price", "amount", "date", "total_stock", "purchase_tax_invoice_id", "cash_receipt_id"]:
                 self.assertIn(field, history)
+            
+            # 필드 값 검증
+            self.assertIsInstance(history["total_stock"], int)
+            self.assertIsInstance(history["purchase_tax_invoice_id"], (int, type(None)))
+            self.assertIsInstance(history["cash_receipt_id"], (int, type(None)))
+
+    async def test_get_material_history_with_tax_invoice_and_cash_receipt(self):
+        """세금계산서와 현금영수증이 연결된 원자재 히스토리 조회 테스트"""
+        headers = await self.authenticate()
+        
+        # 세금계산서 생성
+        tax_invoice = await sync_to_async(NationalTaxService.objects.create)(
+            user=self.user,
+            factory=self.factory,
+            client=self.client_obj,
+            publish_status="발행 완료",
+            tax_invoice_type="매입",
+            transaction_type="영수",
+            transaction_date="2025-01-15",
+            transaction_amount=100000,
+            tax_amount=10000,
+            is_hidden=False
+        )
+        
+        # 현금영수증 생성
+        cash_receipt = await sync_to_async(CashReceipt.objects.create)(
+            transaction_date="2025-01-15",
+            approval_number="TEST001",
+            transaction_classification="매입",
+            transaction_purpose="원자재 구매",
+            client=self.client_obj,
+            transaction_amount=50000,
+            tax_amount=5000
+        )
+        
+        # 세금계산서가 연결된 히스토리 생성
+        tax_history = await sync_to_async(MaterialHistory.objects.create)(
+            type="구매",
+            material=self.material,
+            client=self.client_obj,
+            quantity=10,
+            price=10000,
+            total_stock=110,  # 기존 100 + 새로 10
+            purchase_tax_invoice=tax_invoice,
+            cash_receipt=None
+        )
+        
+        # 현금영수증이 연결된 히스토리 생성
+        cash_history = await sync_to_async(MaterialHistory.objects.create)(
+            type="구매",
+            material=self.material,
+            client=self.client_obj,
+            quantity=5,
+            price=10000,
+            total_stock=115,  # 기존 110 + 새로 5
+            purchase_tax_invoice=None,
+            cash_receipt=cash_receipt
+        )
+        
+        # 히스토리 조회
+        response = await self.client.get(f"/?material_id={self.material.id}", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()["data"]
+        self.assertGreaterEqual(len(data), 2)
+        
+        # 세금계산서 연결 히스토리 확인
+        tax_history_data = next((h for h in data if h["id"] == tax_history.id), None)
+        self.assertIsNotNone(tax_history_data)
+        self.assertEqual(tax_history_data["purchase_tax_invoice_id"], tax_invoice.id)
+        self.assertIsNone(tax_history_data["cash_receipt_id"])
+        
+        # 현금영수증 연결 히스토리 확인
+        cash_history_data = next((h for h in data if h["id"] == cash_history.id), None)
+        self.assertIsNotNone(cash_history_data)
+        self.assertEqual(cash_history_data["cash_receipt_id"], cash_receipt.id)
+        self.assertIsNone(cash_history_data["purchase_tax_invoice_id"])
 
     async def test_create_material_history_update_existing_client(self):
         """기존 거래처 명으로 이력 생성 시 거래처 정보가 업데이트되는지 테스트"""

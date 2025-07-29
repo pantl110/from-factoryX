@@ -260,7 +260,10 @@ async def get_material_history(request, material_id: int, filters: MaterialHisto
             "quantity": history.quantity,
             "unit_price": history.price,
             "amount": (history.quantity or 0) * (history.price or 0),
-            "date": history.created_at.isoformat() if history.created_at else None
+            "date": history.created_at.isoformat() if history.created_at else None,
+            "total_stock": history.total_stock,  # 거래 후 총 재고
+            "purchase_tax_invoice_id": history.purchase_tax_invoice_id,  # 세금계산서 연결 ID
+            "cash_receipt_id": history.cash_receipt_id,  # 현금영수증 연결 ID
         })
     
     return history_list
