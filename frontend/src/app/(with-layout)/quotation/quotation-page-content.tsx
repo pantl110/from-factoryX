@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   ArrowLineLeftIcon,
   ArrowLineRightIcon,
@@ -49,12 +49,13 @@ const QuotationPageContent = () => {
   // OCR 데이터 상태 관리
   const [ocrData, _setOcrData] = useState<OcrDataModel | null>(null);
 
-  // 탭 상태 - ocr데이터가 없으면 히스토리 탭 활성화
+  // 탭 상태 - ocr데이터가 없으면 히스토리 탭이 활성화
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
     ocrData ? 'quotation' : 'history'
   );
   // 오른쪽 패널 확장 상태
   const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
+
   // 선택된 품목 상태 -> 히스토리 보여주기
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   // 모달 상태
@@ -66,15 +67,24 @@ const QuotationPageContent = () => {
   // 요청 사항 목록에 따라 버튼 활성화 여부
   const [hasQuotationProducts, setHasQuotationProducts] = useState(false);
 
-  const handleProductClick = (productId: number) => {
-    setSelectedProduct(productId);
-    setActiveTab('history'); // 품목 클릭 시 히스토리탭 활성화
-    setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
-  };
-  const activateQuotationTab = () => {
+  const handleProductClick = useCallback(
+    (productId: number) => {
+      setSelectedProduct(productId);
+      setActiveTab('history'); // 품목 클릭 시 히스토리탭 활성화
+      setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
+    },
+    [setIsRightPanelExpanded]
+  );
+
+  const activateQuotationTab = useCallback(() => {
     setSelectedProduct(null);
     setActiveTab('quotation'); // 견적요청서탭 활성화
     setIsRightPanelExpanded(false); // 견적요청서탭 활성화 시 오른쪽 패널 다시 축소
+  }, [setIsRightPanelExpanded]);
+
+  // 패널 토글 함수
+  const toggleRightPanel = () => {
+    setIsRightPanelExpanded((prev) => !prev);
   };
 
   return (
@@ -126,7 +136,7 @@ const QuotationPageContent = () => {
               <div className="flex items-center gap-2 pb-3 border-b border-lg">
                 <button
                   className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-bg transition-colors rounded-lg duration-200"
-                  onClick={() => setIsRightPanelExpanded(!isRightPanelExpanded)}
+                  onClick={toggleRightPanel}
                 >
                   {isRightPanelExpanded ? (
                     <ArrowLineRightIcon size={20} className="text-dg" />

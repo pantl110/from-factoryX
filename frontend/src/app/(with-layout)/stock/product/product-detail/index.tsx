@@ -33,7 +33,7 @@ import MaterialDetailPanel from '../../material/material-detail';
 interface ProductDetailProps {
   productId: number | null;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (productId?: number) => void;
 }
 
 // type for locations form
@@ -291,7 +291,6 @@ const ProductDetail = ({
         };
         const result = await updateProduct(productId, payload);
         if (result && result.success) {
-          onSuccess?.();
         } else {
           alert(
             '품목 수정에 실패하였습니다. ' +
@@ -320,7 +319,10 @@ const ProductDetail = ({
         }
         const result = await createSingleProduct(payload);
         if (result && result.success) {
-          onSuccess?.();
+          // 새로운 제품이 생성되었을 때 product_id를 onSuccess로 전달
+          if (result.data && result.data.product_id) {
+            onSuccess?.(result.data.product_id);
+          }
         } else {
           alert(
             '품목 생성에 실패하였습니다. ' +
@@ -419,9 +421,11 @@ const ProductDetail = ({
         prevLocations,
         productId
       );
+      onSuccess?.();
       onClose();
     } else if (isProductInfoChanged) {
       await handleSaveProductInfo();
+      onSuccess?.();
       onClose();
     } else if (isLocationsChanged) {
       await handleSaveLocations(
@@ -429,9 +433,11 @@ const ProductDetail = ({
         prevLocations,
         productId
       );
+      onSuccess?.();
       onClose();
     } else if (isQuantitiesChanged) {
       // 자재 수량만 변경된 경우
+      onSuccess?.();
       onClose();
     }
   };
@@ -530,18 +536,16 @@ const ProductDetail = ({
                 onClick={() => setIsMaterialModalOpen(true)}
               />
             </div>
-            {productId !== null && (
-              <StockStatus
-                connections={
-                  connections && Array.isArray(connections) ? connections : []
-                }
-                materialDetails={materialDetails}
-                setIsMaterialDetailPanelOpen={setIsMaterialDetailPanelOpen}
-                setMaterialId={setMaterialId}
-                setIsQuantityDirty={setIsQuantityDirty}
-                handleQuantityChange={handleQuantityChange}
-              />
-            )}
+            <StockStatus
+              connections={
+                connections && Array.isArray(connections) ? connections : []
+              }
+              materialDetails={materialDetails}
+              setIsMaterialDetailPanelOpen={setIsMaterialDetailPanelOpen}
+              setMaterialId={setMaterialId}
+              setIsQuantityDirty={setIsQuantityDirty}
+              handleQuantityChange={handleQuantityChange}
+            />
           </div>
 
           {/* 품목 입·출고 내역 */}

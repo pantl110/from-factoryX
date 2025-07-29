@@ -1,57 +1,72 @@
-import { QuotationProductResponseModel } from '@/types/data-model';
+import { QuotationProductDetailResponseModel } from '@/types/data-model';
 import { X } from '@phosphor-icons/react';
 
 interface ProductItemProps {
-  data: QuotationProductResponseModel & {
-    productName: string;
-    productCode: string;
-    size: string;
-    unit: string;
-  };
+  data?: QuotationProductDetailResponseModel;
   onClick?: () => void;
-  transaction?: boolean;
+  canDelete?: boolean;
+  onChange?: (field: 'quantity' | 'unit_price', value: string) => void;
 }
 
 const ProductItem = ({
   data,
   onClick,
-  transaction = false,
+  canDelete = false,
+  onChange,
 }: ProductItemProps) => {
-  const {
-    productName,
-    productCode,
-    size,
-    unit,
-    quantity,
-    unit_price: unitPrice,
-  } = data;
-
   return (
     <tr
       className="h-14 flex items-center Me_Body-1 text-dg border-b border-lg"
       onClick={onClick}
     >
-      <td className="flex-1 px-3 truncate" title={productName}>
-        <input type="text" value={productName} className="w-full" readOnly />
+      <td className="flex-1 px-3 truncate" title={data?.product_name}>
+        <p className="w-full">{data?.product_name || '-'}</p>
       </td>
       <td className="flex-1 px-3">
-        <input type="text" value={productCode} className="w-full" readOnly />
+        <p className="w-full">{data?.product_code || '-'}</p>
       </td>
       <td className="flex-1 px-3">
-        <input type="text" value={size} className="w-full" readOnly />
+        <p className="w-full">{data?.spec || '-'}</p>
       </td>
       <td className="w-[80px] px-3">
-        <input type="text" value={unit} className="w-full" readOnly />
+        <p className="w-full">{data?.unit || '-'}</p>
       </td>
       <td className="flex-1 px-3">
         <input
           type="text"
-          value={(quantity * unitPrice)?.toLocaleString()}
-          className="w-full"
-          readOnly
+          value={data?.quantity?.toLocaleString() || ''}
+          className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
+          style={{ width: '100%', maxWidth: '100%' }}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            const value = e.target.value;
+            const numericValue = value.replace(/[^0-9]/g, '');
+            onChange?.('quantity', numericValue);
+          }}
         />
       </td>
-      {!transaction && (
+      <td className="w-[100px] px-3">
+        <input
+          type="text"
+          value={data?.unit_price?.toLocaleString() || ''}
+          className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
+          style={{ width: '100%', maxWidth: '100%' }}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            const value = e.target.value;
+            const numericValue = value.replace(/[^0-9]/g, '');
+            onChange?.('unit_price', numericValue);
+          }}
+        />
+      </td>
+      <td className="flex-1 px-3 min-w-0">
+        <p className="w-full min-w-0 max-w-full overflow-hidden text-ellipsis truncate whitespace-nowrap">
+          {data?.quantity && data?.unit_price
+            ? (data.quantity * data.unit_price).toLocaleString()
+            : '-'}
+        </p>
+      </td>
+      {canDelete && (
         <td className="w-8 h-full flex justify-center items-center cursor-pointer">
           <X size={16} className="text-sv" />
         </td>

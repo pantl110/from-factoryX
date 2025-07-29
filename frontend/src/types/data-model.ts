@@ -448,14 +448,16 @@ export interface OcrDataModel {
 } // 수정 필요
 
 // 견적서 상세 조회
-export interface QuotationProductResponseModel {
+export interface QuotationProductDetailResponseModel {
+  product_id?: number;
   product_name: string;
+  product_code?: string;
   spec: string;
   unit: string;
-  quantity: number;
-  unit_price: number;
-  supply_amount: number; // 공급가액
-  tax_amount: number; // 세액
+  quantity: number | null;
+  unit_price: number | null;
+  supply_amount: number | null; // 공급가액
+  tax_amount?: number | null; // 세액
 }
 export interface QuotationResponseModel {
   // 판매처 정보 (본인 공장)
@@ -469,18 +471,20 @@ export interface QuotationResponseModel {
   business_category?: string;
   address?: string;
   // 주문 품목 정보
-  products: QuotationProductResponseModel[];
+  products: QuotationProductDetailResponseModel[];
 }
 
 // 견적서 임시 저장 // 생산 시작
+export interface QuotationProductModel {
+  id: number; // product_id
+  quantity: number;
+  unit_price: number;
+}
+
 export interface SaveDraftQuotationModel {
   quotation_id: number;
   client?: ClientModel;
-  products?: {
-    id: number;
-    quantity?: number;
-    unit_price?: number;
-  }[];
+  products?: QuotationProductModel[];
   due_date?: string;
 }
 
@@ -491,9 +495,21 @@ export interface QuotationProductResponseModel {
   product: number;
   quantity: number;
   unit_price: number;
-  is_delivery: boolean;
-  delivery_date: string | null;
+  is_delivery?: boolean;
+  delivery_date?: string | null;
 }
+
+// 견적서 요청정보 데이터 보여줄 때 
+// export interface QuotationProductItemModel {
+//   id: number; // product_id
+//   product_name: string;
+//   spec: string;
+//   unit: string;
+//   quantity: number;
+//   unit_price: number;
+//   supply_amount: number;
+
+// }
 
 // 견적서 품목 히스토리 조회 // 이전에 생산했던 Quotation Product 항목을 조회
 export interface QuotationProductHistoryItemResponseModel {

@@ -3,15 +3,19 @@ import DropdownItem from '@/ui/dropdown/dropdown-item';
 
 interface ProductEnrollmentDropdownProps {
   onClose: () => void;
+  onAddOldProductClick: () => void;
+  onAddNewProductClick: () => void;
 }
 
 const ProductEnrollmentDropdown = ({
   onClose,
+  onAddOldProductClick,
+  onAddNewProductClick,
 }: ProductEnrollmentDropdownProps) => {
   return (
     <Dropdown onClose={onClose} width="w-[180px]">
-      <DropdownItem text="기존 품목 추가" onClick={() => {}} />
-      <DropdownItem text="새로운 품목 추가" onClick={() => {}} />
+      <DropdownItem text="기존 품목 추가" onClick={onAddOldProductClick} />
+      <DropdownItem text="새로운 품목 추가" onClick={onAddNewProductClick} />
     </Dropdown>
   );
 };
