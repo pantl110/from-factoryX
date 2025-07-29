@@ -112,7 +112,7 @@ export const usePeriodSelector = ({
     const filters = createFilters(selectedPeriod);
     onPeriodChange(filters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId, page, selectedPeriod, onPeriodChange]);
+  }, [productId, page, selectedPeriod]);
 
   // 직접 설정: 입력 후 0.5초 디바운스
   useEffect(() => {

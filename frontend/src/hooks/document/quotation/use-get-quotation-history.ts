@@ -1,5 +1,5 @@
 import { QuotationProductHistoryItemResponseModel } from '@/types/data-model';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 interface QuotationHistoryResponseModel {
   results: QuotationProductHistoryItemResponseModel[];
@@ -16,7 +16,7 @@ const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getHistory = async (
+  const getHistory = useCallback(async (
     productIds: number[]
   ): Promise<QuotationHistoryResponseModel> => {
     setIsLoading(true);
@@ -25,7 +25,7 @@ const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
     try {
       const productIdsString = productIds.join(',');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/history/list?product_ids=${productIdsString}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/history/list?product_ids=${productIdsString}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -40,9 +40,14 @@ const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
         return result;
       } else {
         const errorData = await response.json();
-        throw new Error(
-          errorData.message || '견적서 히스토리 조회에 실패했습니다.'
-        );
+        const errorMessage = errorData.message || errorData.detail || '견적서 히스토리 조회에 실패했습니다.';
+        
+        // 404 오류나 "해당 제품의 견적 내역이 없습니다" 오류는 빈 배열로 처리
+        if (response.status === 404 || errorMessage.includes('견적 내역이 없습니다')) {
+          return { results: [] };
+        }
+        
+        throw new Error(errorMessage);
       }
     } catch (err) {
       const errorMessage =
@@ -54,7 +59,7 @@ const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return { getHistory, isLoading, error };
 };

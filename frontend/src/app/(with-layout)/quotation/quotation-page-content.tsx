@@ -12,7 +12,13 @@ import EmailView from './modals/email-view';
 import OverlayView from '@/ui/ovelay-view';
 import PrintView from './modals/print-view';
 import StartProductionModal from './modals/start-production-modal';
-import { ClientModel, OcrDataModel } from '@/types/data-model';
+import {
+  ClientModel,
+  OcrDataModel,
+  QuotationProductDetailResponseModel,
+} from '@/types/data-model';
+import useSaveDraftQuotation from '@/hooks/document/quotation/use-save-draft-quotation';
+import { useSearchParams } from 'next/navigation';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -24,6 +30,13 @@ import TitleSec from './title-sec';
 import InputSection from './input-section';
 
 const QuotationPageContent = () => {
+  const searchParams = useSearchParams();
+  const quotationId = searchParams.get('id')
+    ? parseInt(searchParams.get('id') || '0')
+    : undefined;
+
+  const { saveDraft, isLoading: isSavingDraft } = useSaveDraftQuotation();
+
   // 거래처 정보 폼
   const { setValue, control, trigger, watch, formState } =
     useForm<QuotationFormModel>({
@@ -66,6 +79,10 @@ const QuotationPageContent = () => {
 
   // 요청 사항 목록에 따라 버튼 활성화 여부
   const [hasQuotationProducts, setHasQuotationProducts] = useState(false);
+  // RequestInfo에서 받은 products 데이터
+  const [quotationProducts, setQuotationProducts] = useState<
+    QuotationProductDetailResponseModel[]
+  >([]);
 
   const handleProductClick = useCallback(
     (productId: number) => {
@@ -87,6 +104,48 @@ const QuotationPageContent = () => {
     setIsRightPanelExpanded((prev) => !prev);
   };
 
+  // 임시 저장 핸들러
+  const handleSaveDraft = useCallback(async () => {
+    try {
+      const formData = watch();
+      // TODO: 여기에 실제 저장할 데이터 구조를 만들어야 합니다
+      // 현재는 기본 구조만 제공
+      const draftData = {
+        quotation_id: quotationId || 0,
+        client: {
+          factory_id: formData.factory_id,
+          name: formData.name,
+          business_registration_number: formData.business_registration_number,
+          representative_name: formData.representative_name,
+          email: formData.email,
+          phone: formData.phone,
+          fax: formData.fax,
+          business_type: formData.business_type,
+          business_category: formData.business_category,
+          address: formData.address,
+          manager: formData.manager,
+          note: formData.note,
+        },
+        due_date: formData.due_date,
+        products: quotationProducts
+          .filter(
+            (product) =>
+              product.product_id && product.quantity && product.unit_price
+          )
+          .map((product) => ({
+            id: product.product_id!,
+            quantity: product.quantity!,
+            unit_price: product.unit_price!,
+          })),
+      };
+
+      await saveDraft(draftData);
+      // 성공 시 토스트 메시지나 다른 피드백 제공
+    } catch (error) {
+      throw new Error('Failed to save draft');
+    }
+  }, [saveDraft, watch, quotationId]);
+
   return (
     <>
       <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
@@ -100,6 +159,7 @@ const QuotationPageContent = () => {
           isOrderStatus={isOrderStatus}
           setIsOrderStatus={setIsOrderStatus}
           hasQuotationProducts={hasQuotationProducts}
+          onSaveDraft={handleSaveDraft}
         />
         <TabArea
           activeTab={activeTab}
@@ -170,6 +230,7 @@ const QuotationPageContent = () => {
                 <RequestInfo
                   onProductClick={handleProductClick}
                   setHasQuotationProducts={setHasQuotationProducts}
+                  onProductsChange={setQuotationProducts}
                 />
               </div>
             </div>

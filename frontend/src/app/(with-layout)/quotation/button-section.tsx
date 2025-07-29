@@ -7,6 +7,7 @@ interface ButtonSectionProps {
   onEmailClick?: () => void;
   onPrintClick?: () => void;
   onStartProductionClick?: () => void;
+  onSaveDraft?: () => void | Promise<void>;
   isOrderStatus: boolean;
   setIsOrderStatus: (status: boolean) => void | Promise<void>;
   isFormValid: boolean;
@@ -17,6 +18,7 @@ const ButtonSection = ({
   onEmailClick,
   onPrintClick,
   onStartProductionClick,
+  onSaveDraft,
   isOrderStatus,
   setIsOrderStatus,
   isFormValid,
@@ -76,7 +78,7 @@ const ButtonSection = ({
             text="임시 저장"
             textColor="text-primary"
             bgColor="bg-primary-8"
-            onClick={() => {}}
+            onClick={onSaveDraft}
             hoverColor="hover:bg-secondary-hover"
             disabled={!isFormValid || !hasQuotationProducts}
           />

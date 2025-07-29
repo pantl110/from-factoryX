@@ -12,7 +12,6 @@ interface QuotationFormModel extends ClientModel {
 }
 
 interface TitleSecProps {
-  clientName?: string;
   setIsEmailOpen: (open: boolean) => void;
   setIsPrintOpen: (open: boolean) => void;
   setIsStartProductionModalOpen: (open: boolean) => void;
@@ -22,19 +21,24 @@ interface TitleSecProps {
   isOrderStatus: boolean;
   setIsOrderStatus: (status: boolean) => void;
   hasQuotationProducts: boolean;
+  onSaveDraft?: () => void | Promise<void>;
 }
 
 const TitleSec = ({
-  clientName,
   setIsEmailOpen,
   setIsPrintOpen,
   setIsStartProductionModalOpen,
   trigger,
+  watch,
   formState,
   isOrderStatus,
   setIsOrderStatus,
   hasQuotationProducts,
+  onSaveDraft,
 }: TitleSecProps) => {
+  // 실시간으로 업체명 가져오기
+  const clientName = watch('name');
+
   // 폼 유효성 검사 - 실제 필드 값과 에러 상태 확인
   const isFormValid = useMemo(() => {
     return formState.isValid && !Object.keys(formState.errors).length;
@@ -96,6 +100,12 @@ const TitleSec = ({
           const isValid = await trigger();
           if (isValid) {
             setIsStartProductionModalOpen(true);
+          }
+        }}
+        onSaveDraft={async () => {
+          const isValid = await trigger();
+          if (isValid && onSaveDraft) {
+            await onSaveDraft();
           }
         }}
         isOrderStatus={isOrderStatus}
