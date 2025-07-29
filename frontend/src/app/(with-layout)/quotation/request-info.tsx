@@ -5,9 +5,13 @@ import { useGetDetailQuotation, useGetProduct } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { QuotationProductDetailResponseModel } from '@/types/data-model';
+import {
+  QuotationProductDetailResponseModel,
+  ProductResponseModel,
+} from '@/types/data-model';
 import ProductEnrollmentDropdown from './modals/product-enrollment-dropdown';
 import ProductDetail from '../stock/product/product-detail';
+import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 
 interface RequestInfoProps {
   onProductClick: (productId: number) => void;
@@ -20,7 +24,6 @@ const RequestInfo = ({
 }: RequestInfoProps) => {
   const [isProductEnrollmentDropdownOpen, setIsProductEnrollmentDropdownOpen] =
     useState(false);
-  const [isAddOldProductClicked, setIsAddOldProductClicked] = useState(false);
   const [isAddNewProductClicked, setIsAddNewProductClicked] = useState(false);
 
   const searchParams = useSearchParams();
@@ -40,6 +43,15 @@ const RequestInfo = ({
       products: [] as QuotationProductDetailResponseModel[],
     },
   });
+
+  // 드롭다운 상태를 상위에서 관리
+  const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(
+    null
+  );
+  const [dropdownProducts, setDropdownProducts] = useState<
+    ProductResponseModel[]
+  >([]);
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
 
   const { fields, update, append, remove } = useFieldArray({
     control,
@@ -86,6 +98,22 @@ const RequestInfo = ({
     }
   };
 
+  // 기존 품목 추가 시 빈 품목 추가
+  const handleAddEmptyProduct = () => {
+    const emptyProduct: QuotationProductDetailResponseModel = {
+      product_id: undefined,
+      product_name: '',
+      product_code: '',
+      spec: '',
+      unit: '',
+      quantity: null,
+      unit_price: null,
+      supply_amount: null,
+    };
+    append(emptyProduct);
+    setHasQuotationProducts(true);
+  };
+
   // 새로운 품목 추가 시 품목 디테일 판넬에서 저장버튼 누르면
   const handleNewProductAdded = async (productId?: number) => {
     if (productId) {
@@ -127,7 +155,7 @@ const RequestInfo = ({
             <ProductEnrollmentDropdown
               onClose={() => setIsProductEnrollmentDropdownOpen(false)}
               onAddOldProductClick={() => {
-                setIsAddOldProductClicked(true);
+                handleAddEmptyProduct();
                 setIsProductEnrollmentDropdownOpen(false);
               }}
               onAddNewProductClick={() => {
@@ -167,6 +195,17 @@ const RequestInfo = ({
                       handleQuantityOrPriceChange(index, field, value);
                     }}
                     onDelete={() => handleDeleteProduct(index)}
+                    onDropdownShow={(products, rect) => {
+                      setActiveDropdownIndex(index);
+                      setDropdownProducts(products);
+                      setDropdownRect(rect || null);
+                    }}
+                    onDropdownHide={() => {
+                      setActiveDropdownIndex(null);
+                      setDropdownProducts([]);
+                      setDropdownRect(null);
+                    }}
+                    isDropdownActive={activeDropdownIndex === index}
                   />
                 );
               })}
@@ -181,6 +220,35 @@ const RequestInfo = ({
           </p>
         </div>
       )}
+
+      {/* 포털 드롭다운 */}
+      {activeDropdownIndex !== null &&
+        dropdownProducts.length > 0 &&
+        dropdownRect && (
+          <div
+            className="fixed z-10 scrollbar-hide"
+            style={{
+              top: `${dropdownRect.bottom + 16}px`,
+              left: `${dropdownRect.left - 12}px`,
+              width: `${dropdownRect.width + 24}px`,
+              overflow: 'auto',
+            }}
+          >
+            <ProductNameDropdown
+              items={dropdownProducts}
+              onSelect={(product: ProductResponseModel) => {
+                setActiveDropdownIndex(null);
+                setDropdownProducts([]);
+              }}
+              onClose={() => {
+                setActiveDropdownIndex(null);
+                setDropdownProducts([]);
+                setDropdownRect(null);
+              }}
+              width="100%"
+            />
+          </div>
+        )}
 
       {isAddNewProductClicked && (
         <ProductDetail

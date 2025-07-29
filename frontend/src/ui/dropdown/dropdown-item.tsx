@@ -23,7 +23,7 @@ const DropdownItem = ({
 }: DropdownItemProps) => {
   return (
     <div
-      className={`bg-wh flex gap-3 w-full ${chip ? 'h-fit' : search ? 'h-10' : 'h-12'} items-center cursor-pointer rounded-[4px] p-0 transition-all duration-200 ease-in-out ${
+      className={`truncate bg-wh flex gap-3 w-full ${chip ? 'h-fit' : search ? 'h-10' : 'h-12'} items-center cursor-pointer rounded-[4px] p-0 transition-all duration-200 ease-in-out ${
         noHover ? '' : 'hover:bg-bg'
       }`}
       onClick={(e) => {

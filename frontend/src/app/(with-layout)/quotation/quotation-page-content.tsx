@@ -112,7 +112,7 @@ const QuotationPageContent = () => {
           <div
             className={`
                 ${isRightPanelExpanded ? 'hidden' : 'w-1/2 min-w-[50%]'}
-                overflow-hidden border-r border-[#eeeeee] py-8 pr-10
+                overflow-hidden border-r border-lg py-8 pr-10
               `}
           >
             {selectedProduct ? (

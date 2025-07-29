@@ -41,10 +41,21 @@ const Dropdown = ({
     };
   }, [onClose]);
 
+  // 뷰포트 크기 변경 시 닫기
+  useEffect(() => {
+    const handleResize = () => {
+      onClose();
+    };
+    window.addEventListener('resize', handleResize); // 리사이즈 이벤트 리스너 등록
+    return () => {
+      window.removeEventListener('resize', handleResize); // 언마운트 시 제거
+    };
+  }, [onClose]);
+
   return (
     <div
       ref={dropdownRef}
-      className={`${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} rounded-lg ${padding} shadow-lg bg-white z-30 ${className} ${
+      className={`shadow-[0px_0px_8px_0px_rgba(0,0,0,0.12)] ${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} rounded-lg ${padding} bg-white z-30 ${className} ${
         maxHeight ? 'max-h-[256px] overflow-y-auto scrollbar-hide' : ''
       }`}
       style={style}

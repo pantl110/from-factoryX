@@ -5,16 +5,18 @@ import DropdownItem from '@/ui/dropdown/dropdown-item';
 interface ProductNameDropdownProps {
   items: ProductResponseModel[];
   onSelect: (item: ProductResponseModel) => void;
+  onClose: () => void;
   width?: string;
 }
 
 export const ProductNameDropdown = ({
   items,
   onSelect,
+  onClose,
   width,
 }: ProductNameDropdownProps) => {
   return (
-    <Dropdown onClose={() => {}} width={width} maxHeight={true}>
+    <Dropdown onClose={onClose} width={width} maxHeight={true}>
       {items.map((item) => (
         <DropdownItem
           key={item.id}
