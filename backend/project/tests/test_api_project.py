@@ -1201,3 +1201,117 @@ class ProjectAPITestCase(TestCase):
         
         for status, count in status_counts.items():
             self.assertEqual(count, 1, f"상태 '{status}'가 {count}번 생성되었습니다. (예상: 1번)")
+
+    def test_list_project_500_error_scenarios(self):
+        """프로젝트 목록 조회 API 500 에러 시나리오 테스트"""
+        
+        # 1. 잘못된 factory_id로 조회 (존재하지 않는 공장)
+        url = '/v1/project?factory_id=99999&status=progress'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        # 500 에러가 아닌 빈 결과가 반환되어야 함
+        self.assertNotEqual(response.status_code, 500)
+        
+        # 2. 복잡한 검색 조건으로 조회 (긴 검색어)
+        long_search = "a" * 1000  # 매우 긴 검색어
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress&search={long_search}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+        
+        # 3. 특수문자가 포함된 검색어
+        special_search = "!@#$%^&*()_+-=[]{}|;':\",./<>?"
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress&search={special_search}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+        
+        # 4. SQL 인젝션 시도
+        sql_injection = "'; DROP TABLE project_project; --"
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress&search={sql_injection}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+        
+        # 5. 매우 큰 factory_id 값
+        url = f'/v1/project?factory_id={2**31-1}&status=progress'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+        
+        # 6. 음수 factory_id 값
+        url = f'/v1/project?factory_id=-1&status=progress'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+
+    def test_list_project_edge_cases(self):
+        """프로젝트 목록 조회 API 엣지 케이스 테스트"""
+        
+        # 1. 빈 문자열 검색어
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress&search='
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+        
+        # 2. 공백만 있는 검색어
+        url = f'/v1/project?factory_id={self.factory.id}&status=progress&search=   '
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+        
+        # 3. 모든 상태에 대해 테스트
+        statuses = ["progress", "archived", "complete", "interruption", "quotation", "pending", "production", "manufactured", "delivery"]
+        for status in statuses:
+            url = f'/v1/project?factory_id={self.factory.id}&status={status}'
+            response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+            self.assertNotEqual(response.status_code, 500, f"Status {status}에서 500 에러 발생")
+        
+        # 4. 정렬 옵션 테스트
+        order_options = ["start_date", "due_date"]
+        order_dirs = ["asc", "desc"]
+        for order_by in order_options:
+            for order_dir in order_dirs:
+                url = f'/v1/project?factory_id={self.factory.id}&status=progress&order_by={order_by}&order_dir={order_dir}'
+                response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+                self.assertNotEqual(response.status_code, 500, f"Order {order_by} {order_dir}에서 500 에러 발생")
+
+    def test_list_project_with_corrupted_data(self):
+        """손상된 데이터가 있는 상황에서 프로젝트 목록 조회 테스트"""
+        
+        # 1. client가 None인 견적서가 있는 프로젝트 생성
+        project = Project.objects.create(status='생산 중')
+        quotation = Quotation.objects.create(
+            factory=self.factory,
+            client=None,  # client가 None인 경우
+            project=project,
+            due_date=date(2025, 6, 15)
+        )
+        
+        url = f'/v1/project?factory_id={self.factory.id}&status=production'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+        
+        # 2. client가 None인 견적서가 있는 프로젝트 생성 (이미 위에서 생성됨)
+        # product가 None인 경우는 NOT NULL 제약조건으로 인해 테스트할 수 없으므로 제거
+        
+        url = f'/v1/project?factory_id={self.factory.id}&status=production'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+        
+        # 3. tax_invoice가 None인 프로젝트
+        project_no_tax = Project.objects.create(status='생산 완료')
+        quotation_no_tax = Quotation.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            project=project_no_tax,
+            due_date=date(2025, 6, 15)
+        )
+        
+        url = f'/v1/project?factory_id={self.factory.id}&status=complete'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertNotEqual(response.status_code, 500)
+
+    def test_list_project_concurrent_access(self):
+        """동시 접근 상황에서 프로젝트 목록 조회 테스트"""
+        # SQLite에서는 동시 접근 시 테이블 락이 발생할 수 있으므로
+        # 단순히 연속적인 요청으로 테스트
+        project, _ = self.create_test_project_with_quotation(status='생산 중')
+        
+        # 연속적으로 여러 번 요청
+        for i in range(5):
+            url = f'/v1/project?factory_id={self.factory.id}&status=production'
+            response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+            self.assertNotEqual(response.status_code, 500, f"연속 요청 {i+1}에서 500 에러 발생")

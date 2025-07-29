@@ -41,6 +41,8 @@ class QuotationProductHistoryListOut(Schema):
 
 class QuotationDetailProductOut(Schema):
     """견적서 조회 - 품목 상세 정보"""
+    productId: int
+    product_code: Optional[str] = None
     product_name: str
     spec: str
     unit: str

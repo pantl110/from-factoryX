@@ -386,3 +386,99 @@ class QuotationDetailAPITestCase(TestCase):
         
         self.assertEqual(large_product_data["supply_amount"], expected_supply_amount)
         self.assertEqual(large_product_data["tax_amount"], expected_tax_amount)
+
+    async def test_get_quotation_detail_product_fields(self):
+        """견적서 품목 조회 시 productId와 product_code 필드 테스트"""
+        response = await self.client.get(
+            f"/v1/document/quotation/{self.quotation.id}",
+            headers=self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # products 필드가 존재하는지 확인
+        self.assertIn("products", data)
+        self.assertIsInstance(data["products"], list)
+        self.assertGreater(len(data["products"]), 0)
+        
+        # 각 제품에 대해 필수 필드들이 존재하는지 확인
+        for product in data["products"]:
+            # 새로 추가된 필드들 확인
+            self.assertIn("productId", product)
+            self.assertIn("product_code", product)
+            self.assertIn("product_name", product)
+            self.assertIn("spec", product)
+            self.assertIn("unit", product)
+            self.assertIn("quantity", product)
+            self.assertIn("unit_price", product)
+            self.assertIn("supply_amount", product)
+            self.assertIn("tax_amount", product)
+            
+            # productId가 올바른 값인지 확인
+            self.assertIsInstance(product["productId"], int)
+            self.assertGreater(product["productId"], 0)
+            
+            # product_code가 올바른 값인지 확인 (Product 모델에 code 필드가 있는 경우)
+            if product["product_code"] is not None:
+                self.assertIsInstance(product["product_code"], str)
+                self.assertGreater(len(product["product_code"]), 0)
+
+    async def test_get_quotation_detail_product_calculation_accuracy(self):
+        """견적서 품목 금액 계산 정확성 테스트"""
+        response = await self.client.get(
+            f"/v1/document/quotation/{self.quotation.id}",
+            headers=self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        for product in data["products"]:
+            # 공급가액 계산 확인
+            expected_supply_amount = product["quantity"] * product["unit_price"]
+            self.assertEqual(product["supply_amount"], expected_supply_amount)
+            
+            # 부가세 계산 확인 (10%)
+            expected_tax_amount = int(expected_supply_amount * 0.1)
+            self.assertEqual(product["tax_amount"], expected_tax_amount)
+            
+            # 합계 금액 확인
+            total_amount = product["supply_amount"] + product["tax_amount"]
+            expected_total = expected_supply_amount + expected_tax_amount
+            self.assertEqual(total_amount, expected_total)
+
+    async def test_get_quotation_detail_product_without_code(self):
+        """product_code가 없는 제품 테스트"""
+        # code 필드가 없는 제품 생성
+        product_without_code = await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            name='코드 없는 제품',
+            unit='개',
+            spec='테스트 스펙'
+        )
+        
+        quotation_product = await sync_to_async(QuotationProduct.objects.create)(
+            quotation=self.quotation,
+            product=product_without_code,
+            quantity=5,
+            unit_price=20000
+        )
+        
+        response = await self.client.get(
+            f"/v1/document/quotation/{self.quotation.id}",
+            headers=self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # code가 없는 제품 찾기
+        product_without_code_data = next(
+            (p for p in data["products"] if p["product_name"] == "코드 없는 제품"), None
+        )
+        self.assertIsNotNone(product_without_code_data)
+        
+        # productId는 있어야 하고, product_code는 None이어야 함
+        self.assertIsInstance(product_without_code_data["productId"], int)
+        self.assertIsNone(product_without_code_data["product_code"])
