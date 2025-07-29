@@ -444,8 +444,8 @@ class TestMaterialHistoryAPI(TestCase):
         data = response.json()["data"]
         self.assertTrue(len(data) >= 1)
 
-    async def test_get_material_history_by_days_success(self):
-        """원자재 히스토리 조회 성공 테스트 (일별 기간)"""
+    async def test_get_material_history_by_date_range_success(self):
+        """원자재 히스토리 조회 성공 테스트 (날짜 범위)"""
         headers = await self.authenticate()
         
         # 히스토리 데이터 생성
@@ -467,63 +467,14 @@ class TestMaterialHistoryAPI(TestCase):
         }
         await self.client.post("/single", headers=headers, json=consumption_payload)
         
-        # 최근 7일 히스토리 조회
-        response = await self.client.get(f"/?material_id={self.material.id}&days=7", headers=headers)
+        # 2025년 히스토리 조회
+        response = await self.client.get(f"/?material_id={self.material.id}&start_date=2025-01-01&end_date=2025-12-31", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()["data"]
         self.assertTrue(len(data) >= 1)
 
-    async def test_get_material_history_by_months_success(self):
-        """원자재 히스토리 조회 성공 테스트 (월별 기간)"""
-        headers = await self.authenticate()
-        
-        # 히스토리 데이터 생성
-        purchase_payload = {
-            "material_id": self.material.id,
-            "type": "구매",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id
-        }
-        await self.client.post("/single", headers=headers, json=purchase_payload)
-        
-        consumption_payload = {
-            "material_id": self.material.id,
-            "type": "소모",
-            "quantity": 20,
-            "price": None,
-            "client_id": self.client_obj.id
-        }
-        await self.client.post("/single", headers=headers, json=consumption_payload)
-        
-        # 최근 1개월 히스토리 조회
-        response = await self.client.get(f"/?material_id={self.material.id}&months=1", headers=headers)
-        self.assertEqual(response.status_code, 200)
-        
-        data = response.json()["data"]
-        self.assertTrue(len(data) >= 1)
 
-    async def test_get_material_history_priority_validation(self):
-        """원자재 히스토리 조회 우선순위 검증 테스트 (days와 months 동시 사용)"""
-        headers = await self.authenticate()
-        
-        # 히스토리 데이터 생성
-        purchase_payload = {
-            "material_id": self.material.id,
-            "type": "구매",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id
-        }
-        await self.client.post("/single", headers=headers, json=purchase_payload)
-        
-        # days와 months를 동시에 사용하는 경우 days가 우선
-        response = await self.client.get(f"/?material_id={self.material.id}&days=7&months=3", headers=headers)
-        self.assertEqual(response.status_code, 200)
-        
-        data = response.json()["data"]
-        self.assertTrue(len(data) >= 1)
 
     async def test_get_material_history_material_not_found(self):
         """존재하지 않는 원자재 히스토리 조회 테스트"""

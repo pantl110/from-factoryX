@@ -210,12 +210,12 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     response={ 200: list[dict], 404: dict, 500: dict }
     )
 @paginate
-async def get_material_history(request, material_id: int, months: int = None, days: int = None):
+async def get_material_history(request, material_id: int, filters: MaterialHistoryDetailFilter = Query(...)):
     """
     입력 필드 (쿼리 파라미터):
     - material_id: int - 원자재 ID (필수)
-    - months: int - 최근 N개월 이력만 조회 (선택)
-    - days: int - 최근 N일 이력만 조회 (선택)
+    - start_date: str - 조회 시작일 (YYYY-MM-DD, 선택)
+    - end_date: str - 조회 종료일 (YYYY-MM-DD, 선택)
     
     반환 필드 (dict 리스트):
     - id: int - 이력 ID
@@ -245,12 +245,7 @@ async def get_material_history(request, material_id: int, months: int = None, da
     @sync_to_async
     def get_histories():
         queryset = MaterialHistory.objects.filter(material=material)
-        if days is not None or months is not None:
-            if days is not None:
-                start_date = timezone.now() - timedelta(days=days)
-            elif months is not None:
-                start_date = timezone.now() - timedelta(days=months * 30)
-            queryset = queryset.filter(created_at__gte=start_date)
+        queryset = filters.filter(queryset)
         return list(queryset.order_by('-created_at'))
     
     histories = await get_histories()
