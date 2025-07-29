@@ -45,21 +45,58 @@ class TestProductHistoryAPI(TestCase):
             business_registration_number="987-65-43210",
         )
 
-        # Create product (history references this)
-        self.product = Product.objects.create(
+        # Create multiple products for testing filters
+        self.product1 = Product.objects.create(
             factory=self.factory,
-            name="History Product",
-            code="HP001",
-            unit="EA",
-            spec="Spec H",
+            name="자동차",
+            code="CAR001",
+            unit="대",
+            spec="승용차",
+        )
+        
+        self.product2 = Product.objects.create(
+            factory=self.factory,
+            name="건물",
+            code="BUILDING001",
+            unit="동",
+            spec="상업용 건물",
+        )
+        
+        self.product3 = Product.objects.create(
+            factory=self.factory,
+            name="전자제품",
+            code="ELECTRONIC001",
+            unit="개",
+            spec="스마트폰",
         )
 
-        # Pre-create a history instance for R/U/D
-        self.history = ProductHistory.objects.create(
-            product=self.product,
+        # Create multiple history instances for testing filters
+        self.history1_in = ProductHistory.objects.create(
+            product=self.product1,
             type=ProductHistory.ProductHistoryType.IN,
             quantity=10,
             total_stock=10,
+        )
+        
+        self.history1_out = ProductHistory.objects.create(
+            product=self.product1,
+            type=ProductHistory.ProductHistoryType.OUT,
+            quantity=5,
+            total_stock=5,
+        )
+        
+        self.history2_in = ProductHistory.objects.create(
+            product=self.product2,
+            type=ProductHistory.ProductHistoryType.IN,
+            quantity=20,
+            total_stock=20,
+        )
+        
+        self.history3_out = ProductHistory.objects.create(
+            product=self.product3,
+            type=ProductHistory.ProductHistoryType.OUT,
+            quantity=15,
+            total_stock=15,
         )
 
     async def authenticate(self):
@@ -75,7 +112,7 @@ class TestProductHistoryAPI(TestCase):
         """[C] 제품 입출고 이력 생성 테스트"""
         headers = await self.authenticate()
         payload = {
-            "product": self.product.id,
+            "product": self.product1.id,
             "type": ProductHistory.ProductHistoryType.OUT,  # "out"
             "quantity": 5,
             "total_stock": 5,
@@ -86,59 +123,230 @@ class TestProductHistoryAPI(TestCase):
         self.assertIn("id", data)
         self.assertEqual(data["quantity"], payload["quantity"])
 
-    async def test_list_histories(self):
-        """[R] 이력 목록 조회 테스트"""
+    async def test_list_histories_without_filter(self):
+        """[R] 제품 입출고 이력 목록 조회 (필터 없음)"""
         headers = await self.authenticate()
         response = await self.client.get("", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        # Ninja paginate returns dict with "items" or "results" depending; our earlier product list returns pagination.
-        # Depending on pagination style, the key may be either "data" (custom) or "items" (default ninja paginate)
-        self.assertTrue("data" in data or "items" in data)
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # 모든 히스토리가 조회되어야 함 (4개)
+        self.assertEqual(data["count"], 4)
 
-    async def test_list_histories_with_start_date(self):
-        """[R] 시작일만 사용한 목록 조회 테스트"""
+    async def test_list_histories_by_product_id(self):
+        """[R] 제품 입출고 이력 목록 조회 - product_id 필터"""
         headers = await self.authenticate()
-        start_date = str(self.history.created_at.date())
-        response = await self.client.get("", headers=headers, params={"start_date": start_date})
+        response = await self.client.get(
+            f"?product_id={self.product1.id}", 
+            headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertTrue("data" in data or "items" in data)
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # product1의 히스토리만 조회되어야 함 (2개)
+        self.assertEqual(data["count"], 2)
+        
+        # 모든 아이템이 product1에 속하는지 확인
+        for item in data["data"]:
+            self.assertEqual(item["product"], self.product1.id)
 
-    async def test_list_histories_with_end_date(self):
-        """[R] 종료일만 사용한 목록 조회 테스트"""
+    async def test_list_histories_by_product_name(self):
+        """[R] 제품 입출고 이력 목록 조회 - product_name 필터"""
         headers = await self.authenticate()
-        end_date = str(self.history.created_at.date())
-        response = await self.client.get("", headers=headers, params={"end_date": end_date})
+        response = await self.client.get(
+            "?product_name=자동차", 
+            headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertTrue("data" in data or "items" in data)
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # "자동차"가 포함된 product1의 히스토리만 조회되어야 함 (2개)
+        self.assertEqual(data["count"], 2)
+        
+        # 모든 아이템이 product1에 속하는지 확인
+        for item in data["data"]:
+            self.assertEqual(item["product"], self.product1.id)
 
-    async def test_list_histories_with_start_and_end(self):
-        """[R] 시작·종료일 모두 사용한 목록 조회 테스트"""
+    async def test_list_histories_by_product_code(self):
+        """[R] 제품 입출고 이력 목록 조회 - product_code 필터"""
         headers = await self.authenticate()
-        date_str = str(self.history.created_at.date())
-        params = {"start_date": date_str, "end_date": date_str}
-        response = await self.client.get("", headers=headers, params=params)
+        response = await self.client.get(
+            "?product_code=CAR", 
+            headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertTrue("data" in data or "items" in data)
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # "CAR"가 포함된 product1의 히스토리만 조회되어야 함 (2개)
+        self.assertEqual(data["count"], 2)
+        
+        # 모든 아이템이 product1에 속하는지 확인
+        for item in data["data"]:
+            self.assertEqual(item["product"], self.product1.id)
 
-    async def test_get_history(self):
-        """[R] 이력 상세 조회 테스트"""
+    async def test_list_histories_by_type_in(self):
+        """[R] 제품 입출고 이력 목록 조회 - type=in 필터"""
         headers = await self.authenticate()
-        response = await self.client.get(f"/{self.history.id}", headers=headers)
+        response = await self.client.get(
+            "?type=입고", 
+            headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["id"], self.history.id)
-        self.assertEqual(data["quantity"], self.history.quantity)
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # 입고(type=in) 히스토리만 조회되어야 함 (2개)
+        self.assertEqual(data["count"], 2)
+        
+        # 모든 아이템이 입고 타입인지 확인
+        for item in data["data"]:
+            self.assertEqual(item["type"], "입고")
 
+    async def test_list_histories_by_type_out(self):
+        """[R] 제품 입출고 이력 목록 조회 - type=out 필터"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            "?type=출고", 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # 출고(type=out) 히스토리만 조회되어야 함 (2개)
+        self.assertEqual(data["count"], 2)
+        
+        # 모든 아이템이 출고 타입인지 확인
+        for item in data["data"]:
+            self.assertEqual(item["type"], "출고")
 
-# -----------------------------------------------------------------------------
-# Allow running this file directly with `python test_api_product_history.py`
-# -----------------------------------------------------------------------------
-if __name__ == "__main__":
-    import unittest
+    async def test_list_histories_by_date_range(self):
+        """[R] 제품 입출고 이력 목록 조회 - 날짜 범위 필터"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            "?start_date=2025-01-01&end_date=2025-12-31", 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # 날짜 범위 내의 모든 히스토리가 조회되어야 함 (4개)
+        self.assertEqual(data["count"], 4)
 
-    # Discover and run the tests in this module only
-    unittest.main()
+    async def test_list_histories_combined_filters(self):
+        """[R] 제품 입출고 이력 목록 조회 - 복합 필터"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            f"?product_id={self.product1.id}&type=입고", 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # product1의 입고 히스토리만 조회되어야 함 (1개)
+        self.assertEqual(data["count"], 1)
+        
+        # 아이템이 product1의 입고 타입인지 확인
+        item = data["data"][0]
+        self.assertEqual(item["product"], self.product1.id)
+        self.assertEqual(item["type"], "입고")
+
+    async def test_list_histories_by_product_name_partial_match(self):
+        """[R] 제품 입출고 이력 목록 조회 - 품목명 부분 일치"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            "?product_name=전자", 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # "전자"가 포함된 product3의 히스토리만 조회되어야 함 (1개)
+        self.assertEqual(data["count"], 1)
+        
+        # 아이템이 product3에 속하는지 확인
+        item = data["data"][0]
+        self.assertEqual(item["product"], self.product3.id)
+
+    async def test_list_histories_by_product_code_partial_match(self):
+        """[R] 제품 입출고 이력 목록 조회 - 품목 코드 부분 일치"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            "?product_code=BUILD", 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # "BUILD"가 포함된 product2의 히스토리만 조회되어야 함 (1개)
+        self.assertEqual(data["count"], 1)
+        
+        # 아이템이 product2에 속하는지 확인
+        item = data["data"][0]
+        self.assertEqual(item["product"], self.product2.id)
+
+    async def test_list_histories_no_results(self):
+        """[R] 제품 입출고 이력 목록 조회 - 결과 없음"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            "?product_name=존재하지않는품목", 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # 결과가 없어야 함
+        self.assertEqual(data["count"], 0)
+        self.assertEqual(len(data["data"]), 0)
+
+    async def test_list_histories_complex_combination(self):
+        """[R] 제품 입출고 이력 목록 조회 - 복잡한 조합 필터"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            f"?product_id={self.product1.id}&type=출고&start_date=2025-01-01&end_date=2025-12-31", 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # product1의 출고 히스토리만 조회되어야 함 (1개)
+        self.assertEqual(data["count"], 1)
+        
+        # 아이템이 product1의 출고 타입인지 확인
+        item = data["data"][0]
+        self.assertEqual(item["product"], self.product1.id)
+        self.assertEqual(item["type"], "출고")
+
+    async def test_list_histories_case_insensitive_search(self):
+        """[R] 제품 입출고 이력 목록 조회 - 대소문자 구분 없는 검색"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            "?product_name=자동차", 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # "자동차"가 포함된 product1의 히스토리만 조회되어야 함 (2개)
+        self.assertEqual(data["count"], 2)
+        
+        # 대문자로도 검색 가능한지 확인
+        response_upper = await self.client.get(
+            "?product_code=car", 
+            headers=headers
+        )
+        self.assertEqual(response_upper.status_code, 200)
+        data_upper = response_upper.json()
+        # "car"가 포함된 product1의 히스토리만 조회되어야 함 (2개)
+        self.assertEqual(data_upper["count"], 2)

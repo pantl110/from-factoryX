@@ -162,6 +162,18 @@ class ProductHistoryFilter(FilterSchema):
     end_date: Optional[str] = Field(
         default=None, q="created_at__date__lte", description="조회 종료일 (YYYY-MM-DD)"
     )
+    product_id: Optional[int] = Field(
+        default=None, q="product_id", description="품목 ID"
+    )
+    product_name: Optional[str] = Field(
+        default=None, q="product__name__icontains", description="품목명"
+    )
+    product_code: Optional[str] = Field(
+        default=None, q="product__code__icontains", description="품목 코드"
+    )
+    type: Optional[str] = Field(
+        default=None, q="type", description="입출고 타입 (입고: 입고, 출고: 출고)"
+    )
 
 
 class MaterialHistoryDetailFilter(FilterSchema):
