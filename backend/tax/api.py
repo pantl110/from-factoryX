@@ -26,7 +26,11 @@ from tax.models import NationalTaxService
 from datetime import date, timedelta
 from project.models import Project
 from django.conf import settings
-from barobill.barobill_error_code import barobill_error_codes
+from barobill.barobill_error_code import (
+    barobill_error_codes,
+    barobill_tax_service_states,
+    nts_tax_service_states,
+)
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
@@ -560,6 +564,7 @@ async def create_tax_invoice(request, payload: NationalTaxServiceCreateIn):
             user=user,
             factory=factory,
             client=client,
+            barobill_state="임시저장",
             **data,
         )
         products = get_product_list_by_ids(product_ids, factory_id)
@@ -666,8 +671,8 @@ async def publish_tax_invoice(request, tax_id: int):
     member = await is_factory_member(tax_service.factory.id, user)
     # 멤버 권한 검증 추가해야함
     # 세금계산서가 발행 상태가 아니면 오류
-    if tax_service.publish_status != "temporary":
-        raise HttpError(400, "세금계산서를 발행할 수 있는 상태가 아닙니다.")
+    # if tax_service.publish_status != "temporary":
+    #     raise HttpError(400, "세금계산서를 발행할 수 있는 상태가 아닙니다.")
 
     # 바로빌 API
     issue_barobill_tax_invoice(
@@ -678,6 +683,43 @@ async def publish_tax_invoice(request, tax_id: int):
 
     # 발행 상태 업데이트
     tax_service.publish_status = "published"
+    tax_service.barobill_state = "발급완료"  # 3014
+    tax_service.nts_send_state = "전송전"  # 1
     await tax_service.asave()
 
     return {"message": "세금계산서가 발행되었습니다."}
+
+
+@router.get(
+    "{tax_id}/state",
+    summary="[C] 세금계산서 발행 상태 조회",
+    description="국세청 API 세금계산서 발행 상태를 조회합니다.",
+    response={200: dict, 400: dict, 500: dict},
+)
+async def get_tax_invoice_state_from_barobill(request, tax_id: int):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    member = await is_factory_member(tax_service.factory.id, user)
+    certKey = settings.BAROBILL_CERT_KEY
+    corpNum = tax_service.factory.business_registration_number
+    mgtKey = tax_service.mgt_key
+
+    result = settings.BAROBILL_CLIENT.service.GetTaxInvoiceStateEX(
+        CERTKEY=certKey,
+        CorpNum=corpNum,
+        MgtKey=mgtKey,
+    )
+
+    if result.BarobillState < 0:  # 호출 실패
+        raise HttpError(
+            400,
+            f"바로빌 API 오류 - 세금계산서 상태 조회: {barobill_error_codes.get(result.BarobillState, 'Unknown Error')}",
+        )
+
+    # TODO : 상태조회를 CronJob으로 주기적으로 실행
+
+    return {
+        "state": barobill_tax_service_states.get(result.BarobillState)
+        or "Unknown State",
+        "nts_state": nts_tax_service_states.get(result.NTSSendState) or "Unknown State",
+    }

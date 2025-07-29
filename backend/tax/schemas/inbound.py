@@ -43,6 +43,10 @@ class NationalTaxServiceCreateIn(ModelSchema):
             "client",
             "product",
             "publish_status",
+            "mgt_key",
+            "nts_send_key",
+            "barobill_state",
+            "nts_send_state",
             "created_at",
             "updated_at",
         ]

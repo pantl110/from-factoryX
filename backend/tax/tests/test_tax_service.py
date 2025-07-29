@@ -8,6 +8,7 @@ from asgiref.sync import sync_to_async
 from stock.models import Product
 from datetime import date
 from django.utils import timezone
+from tax.models import NationalTaxService
 
 
 class TestTaxService(TestCase):
@@ -142,6 +143,14 @@ class TestTaxService(TestCase):
         # print("🐍 File: tests/test_tax_service.py | Line: 103 | setUp ~ data", data)
         self.assertEqual(response.status_code, 201)
         self.assertIn("id", response.json())
+        tax_service_id = data.get("id")
+        tax_service = await NationalTaxService.objects.aget(
+            id=tax_service_id
+        )  # Ensure the object is created
+        print(
+            "🐍 File: tests/test_tax_service.py | Line: 148 | setUp ~ tax_service",
+            tax_service.mgt_key,
+        )
         return data.get("id")
 
     # async def test_publish_tax_invoice(self):
@@ -235,3 +244,21 @@ class TestTaxService(TestCase):
         print("🐍 File: tests/test_tax_service.py | Line: 240 | setUp ~ data", data)
 
         self.assertEqual(response.status_code, 200)
+
+    async def test_get_tax_service_state(self):
+        """세금계산서 상태 조회 테스트"""
+        headers = await self.authenticate()
+        tax_service_id = await self.test_create_tax_service()
+
+        response = await self.client.post(f"{tax_service_id}/publish", headers=headers)
+
+        data = response.json()
+        print("🐍 File: tests/test_tax_service.py | Line: 256 | setUp ~ data", data)
+
+        response = await self.client.get(f"/{tax_service_id}/state", headers=headers)
+        data = response.json()
+        print("🐍 File: tests/test_tax_service.py | Line: 250 | setUp ~ data", data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("publish_status", data)
+        self.assertIn("mgt_key", data)

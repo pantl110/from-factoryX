@@ -29,9 +29,7 @@ def issue_barobill_tax_invoice(tax_service, factory, client, user):
         SerialNum="",
         # 발행자 정보
         InvoicerParty=settings.BAROBILL_CLIENT.get_type("ns0:InvoiceParty")(
-            MgtNum=str(tax_service.id).zfill(
-                15
-            ),  # 관리 키(세금계산서 모델 id 활용, 앞을 0으로 채움)
+            MgtNum=tax_service.mgt_key,
             CorpNum=factory.business_registration_number,
             TaxRegID="",
             CorpName=factory.name,
@@ -48,7 +46,7 @@ def issue_barobill_tax_invoice(tax_service, factory, client, user):
         ),
         # 공급자 정보
         InvoiceeParty=settings.BAROBILL_CLIENT.get_type("ns0:InvoiceParty")(
-            MgtNum="",  # 관리번호
+            MgtNum=tax_service.mgt_key,
             CorpNum=client.business_registration_number,
             TaxRegID="",  # 종사업장식별번호
             CorpName=client.name,
