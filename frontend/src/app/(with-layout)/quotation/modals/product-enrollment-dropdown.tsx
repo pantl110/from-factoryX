@@ -1,13 +1,22 @@
-// import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
-// import { productData } from '@/mocks/product-data';
-// import { ProductModel, ProductResponseModel } from '@/types/data-model';
-// import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
-// import MiniBtn from '@/ui/mini-btn';
-// import Modal from '@/ui/modal/modal';
-// import SearchInput from '@/ui/search-input';
-// import { X } from '@phosphor-icons/react/dist/ssr';
-// import { useState } from 'react';
-// import ManualAddProduct from '@/app/(with-layout)/stock/material/modals/manual-add-product';
+import Dropdown from '@/ui/dropdown/dropdown';
+import DropdownItem from '@/ui/dropdown/dropdown-item';
+
+interface ProductEnrollmentDropdownProps {
+  onClose: () => void;
+}
+
+const ProductEnrollmentDropdown = ({
+  onClose,
+}: ProductEnrollmentDropdownProps) => {
+  return (
+    <Dropdown onClose={onClose} width="w-[180px]">
+      <DropdownItem text="기존 품목 추가" onClick={() => {}} />
+      <DropdownItem text="새로운 품목 추가" onClick={() => {}} />
+    </Dropdown>
+  );
+};
+
+export default ProductEnrollmentDropdown;
 
 // interface ProductEnrollmentModalProps {
 //   onClose?: () => void;

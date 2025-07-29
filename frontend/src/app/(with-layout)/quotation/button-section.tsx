@@ -10,6 +10,7 @@ interface ButtonSectionProps {
   isOrderStatus: boolean;
   setIsOrderStatus: (status: boolean) => void | Promise<void>;
   isFormValid: boolean;
+  hasQuotationProducts: boolean;
 }
 
 const ButtonSection = ({
@@ -19,6 +20,7 @@ const ButtonSection = ({
   isOrderStatus,
   setIsOrderStatus,
   isFormValid,
+  hasQuotationProducts,
 }: ButtonSectionProps) => {
   return (
     <div className="flex gap-1">
@@ -35,7 +37,7 @@ const ButtonSection = ({
         borderColor="border-lg"
         onClick={onPrintClick}
         hoverColor="hover:bg-bg"
-        disabled={!isFormValid}
+        disabled={!isFormValid || !hasQuotationProducts}
       />
       <MiniBtn
         text="이메일 전송"
@@ -43,11 +45,11 @@ const ButtonSection = ({
         borderColor="border-lg"
         onClick={onEmailClick}
         hoverColor="hover:bg-bg"
-        disabled={!isFormValid}
+        disabled={!isFormValid || !hasQuotationProducts}
       />
       {isOrderStatus ? (
         <>
-          <MiniBtn
+          {/* <MiniBtn
             text="수정"
             textColor="text-primary"
             bgColor="bg-primary-8"
@@ -56,7 +58,7 @@ const ButtonSection = ({
             }}
             hoverColor="hover:bg-secondary-hover"
             disabled={!isFormValid}
-          />
+          /> */}
           <MiniBtn
             text="생산 시작"
             textColor="text-wh"
@@ -65,6 +67,7 @@ const ButtonSection = ({
             iconPosition="right"
             onClick={onStartProductionClick}
             hoverColor="hover:bg-primary-hover"
+            disabled={!isFormValid || !hasQuotationProducts}
           />
         </>
       ) : (
@@ -75,7 +78,7 @@ const ButtonSection = ({
             bgColor="bg-primary-8"
             onClick={() => {}}
             hoverColor="hover:bg-secondary-hover"
-            disabled={!isFormValid}
+            disabled={!isFormValid || !hasQuotationProducts}
           />
           <MiniBtn
             text="주문 확정"
@@ -85,7 +88,7 @@ const ButtonSection = ({
               setIsOrderStatus(true);
             }}
             hoverColor="hover:bg-primary-hover"
-            disabled={!isFormValid}
+            disabled={!isFormValid || !hasQuotationProducts}
           />
         </>
       )}

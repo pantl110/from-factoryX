@@ -21,6 +21,7 @@ interface TitleSecProps {
   formState: FormState<QuotationFormModel>;
   isOrderStatus: boolean;
   setIsOrderStatus: (status: boolean) => void;
+  hasQuotationProducts: boolean;
 }
 
 const TitleSec = ({
@@ -32,6 +33,7 @@ const TitleSec = ({
   formState,
   isOrderStatus,
   setIsOrderStatus,
+  hasQuotationProducts,
 }: TitleSecProps) => {
   // 폼 유효성 검사 - 실제 필드 값과 에러 상태 확인
   const isFormValid = useMemo(() => {
@@ -77,6 +79,7 @@ const TitleSec = ({
         </p>
       </div>
       <ButtonSection
+        hasQuotationProducts={hasQuotationProducts}
         onEmailClick={async () => {
           const isValid = await trigger();
           if (isValid) {

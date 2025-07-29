@@ -12,24 +12,18 @@ import EmailView from './modals/email-view';
 import OverlayView from '@/ui/ovelay-view';
 import PrintView from './modals/print-view';
 import StartProductionModal from './modals/start-production-modal';
-// import ProductEnrollmentModal from './modals/product-enrollment-modal';
 import { ClientModel, OcrDataModel } from '@/types/data-model';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
   due_date: string;
 }
-import { useSearchParams } from 'next/navigation';
 import TabArea from './tab-area';
 import { useForm } from 'react-hook-form';
 import TitleSec from './title-sec';
 import InputSection from './input-section';
 
 const QuotationPageContent = () => {
-  // URL 파라미터에서 clientData 가져오기
-  const searchParams = useSearchParams();
-  const clientDataParam = searchParams.get('clientData');
-
   // 거래처 정보 폼
   const { setValue, control, trigger, watch, formState } =
     useForm<QuotationFormModel>({
@@ -55,9 +49,9 @@ const QuotationPageContent = () => {
   // OCR 데이터 상태 관리
   const [ocrData, _setOcrData] = useState<OcrDataModel | null>(null);
 
-  // 탭 상태 - 데이터가 없으면 히스토리 탭 활성화
+  // 탭 상태 - ocr데이터가 없으면 히스토리 탭 활성화
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
-    clientDataParam ? 'quotation' : 'history'
+    ocrData ? 'quotation' : 'history'
   );
   // 오른쪽 패널 확장 상태
   const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
@@ -68,8 +62,9 @@ const QuotationPageContent = () => {
   const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
-  // const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
-  //   useState(false);
+
+  // 요청 사항 목록에 따라 버튼 활성화 여부
+  const [hasQuotationProducts, setHasQuotationProducts] = useState(false);
 
   const handleProductClick = (productId: number) => {
     setSelectedProduct(productId);
@@ -94,6 +89,7 @@ const QuotationPageContent = () => {
           formState={formState}
           isOrderStatus={isOrderStatus}
           setIsOrderStatus={setIsOrderStatus}
+          hasQuotationProducts={hasQuotationProducts}
         />
         <TabArea
           activeTab={activeTab}
@@ -111,7 +107,7 @@ const QuotationPageContent = () => {
           >
             {selectedProduct ? (
               <History selectedProduct={selectedProduct} />
-            ) : clientDataParam ? (
+            ) : ocrData ? (
               <PreviewImage />
             ) : (
               <History selectedProduct={null} />
@@ -163,9 +159,7 @@ const QuotationPageContent = () => {
               >
                 <RequestInfo
                   onProductClick={handleProductClick}
-                  // setIsProductEnrollmentModalOpen={
-                  //   setIsProductEnrollmentModalOpen
-                  // }
+                  setHasQuotationProducts={setHasQuotationProducts}
                 />
               </div>
             </div>
@@ -191,13 +185,6 @@ const QuotationPageContent = () => {
           onClose={() => setIsStartProductionModalOpen(false)}
         />
       )}
-
-      {/* 품목 등록 모달 */}
-      {/* {isProductEnrollmentModalOpen && (
-        <ProductEnrollmentModal
-          onClose={() => setIsProductEnrollmentModalOpen(false)}
-        />
-      )} */}
     </>
   );
 };

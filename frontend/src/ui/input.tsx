@@ -110,7 +110,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                   : 'password'
                 : type
             }
-            value={value ?? ''}
+            value={value}
             onChange={handleChange}
             onKeyDown={onKeyDown}
             onFocus={onFocus}

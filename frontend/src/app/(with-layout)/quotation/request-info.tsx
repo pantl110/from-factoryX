@@ -5,16 +5,20 @@ import { useGetQuotationProducts, useGetProduct } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { ProductResponseModel } from '@/types/data-model';
+import ProductEnrollmentDropdown from './modals/product-enrollment-dropdown';
 
 interface RequestInfoProps {
   onProductClick: (productId: number) => void;
-  // setIsProductEnrollmentModalOpen: (isOpen: boolean) => void;
+  setHasQuotationProducts: (hasQuotationProducts: boolean) => void;
 }
 
 const RequestInfo = ({
   onProductClick,
-  // setIsProductEnrollmentModalOpen,
+  setHasQuotationProducts,
 }: RequestInfoProps) => {
+  const [isProductEnrollmentDropdownOpen, setIsProductEnrollmentDropdownOpen] =
+    useState(false);
+
   const searchParams = useSearchParams();
   const quotationId = searchParams.get('id')
     ? parseInt(searchParams.get('id') || '0')
@@ -37,22 +41,21 @@ const RequestInfo = ({
       const uniqueProductIds = [...new Set(productIds)];
 
       for (const productId of uniqueProductIds) {
-        if (!productDetails[productId]) {
-          try {
-            const result = await getProductDetail(productId);
-            if (result.success && result.data) {
-              setProductDetails((prev) => ({
-                ...prev,
-                [productId]: result.data,
-              }));
-            }
-          } catch (err) {
-            throw new Error(`제품 ${productId} 정보 가져오기 실패: ${err}`);
+        try {
+          const result = await getProductDetail(productId);
+          if (result.success && result.data) {
+            setProductDetails((prev) => ({
+              ...prev,
+              [productId]: result.data,
+            }));
           }
+        } catch (err) {
+          throw new Error(`제품 ${productId} 정보 가져오기 실패: ${err}`);
         }
       }
     },
-    [productDetails, getProductDetail]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [getProductDetail]
   );
 
   // quotationProducts가 변경될 때마다 제품 상세 정보 가져오기
@@ -60,12 +63,15 @@ const RequestInfo = ({
     if (quotationProducts && quotationProducts.length > 0) {
       const productIds = quotationProducts.map((item) => item.product);
       fetchProductDetails(productIds);
+      setHasQuotationProducts(true);
+    } else {
+      setHasQuotationProducts(false);
     }
-  }, [quotationProducts, fetchProductDetails]);
+  }, [quotationProducts, fetchProductDetails, setHasQuotationProducts]);
 
   return (
     <>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center relative">
         <h3 className="Heading-3">요청정보</h3>
         <MiniBtn
           text="품목 추가하기"
@@ -74,8 +80,16 @@ const RequestInfo = ({
           icon={CaretDown}
           iconPosition="right"
           hoverColor="hover:bg-bg"
-          // onClick={() => setIsProductEnrollmentModalOpen(true)}
+          onClick={() => setIsProductEnrollmentDropdownOpen(true)}
         />
+        {/* 품목 추가하기 드롭다운 */}
+        {isProductEnrollmentDropdownOpen && (
+          <div className="absolute top-12 right-0">
+            <ProductEnrollmentDropdown
+              onClose={() => setIsProductEnrollmentDropdownOpen(false)}
+            />
+          </div>
+        )}
       </div>
 
       {!isLoading &&
