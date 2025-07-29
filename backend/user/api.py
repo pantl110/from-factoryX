@@ -222,7 +222,10 @@ async def signup(request, data: UserSignupIn):
 
             # 회원가입 시 Factory의 inviting에 해당 이메일이 있으면 FactoryMember로 등록
             from factory.models import Factory, FactoryMember
-            factories = await sync_to_async(list)(Factory.objects.filter(inviting__isnull=False))
+
+            factories = await sync_to_async(list)(
+                Factory.objects.filter(inviting__isnull=False)
+            )
             for factory in factories:
                 inviting = factory.inviting or []
                 matched = None
@@ -234,8 +237,10 @@ async def signup(request, data: UserSignupIn):
                     # invited_by User 인스턴스 찾기
                     invited_by_user = None
                     if matched.get("invited_by"):
-                        invited_by_user = await User.objects.aget(id=matched["invited_by"])
-                    
+                        invited_by_user = await User.objects.aget(
+                            id=matched["invited_by"]
+                        )
+
                     # FactoryMember 생성
                     await FactoryMember.objects.acreate(
                         factory=factory,
@@ -246,7 +251,9 @@ async def signup(request, data: UserSignupIn):
                         invited_at=matched.get("invited_at"),
                     )
                     # inviting에서 해당 항목 삭제
-                    inviting = [item for item in inviting if item["email"] != user.email]
+                    inviting = [
+                        item for item in inviting if item["email"] != user.email
+                    ]
                     factory.inviting = inviting
                     await sync_to_async(factory.save)()
 

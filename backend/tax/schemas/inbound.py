@@ -42,6 +42,7 @@ class NationalTaxServiceCreateIn(ModelSchema):
             "factory",
             "client",
             "product",
+            "publish_status",
             "created_at",
             "updated_at",
         ]

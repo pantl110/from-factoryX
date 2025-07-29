@@ -1,6 +1,6 @@
 from django.conf import settings
 from ninja.errors import HttpError
-from tax.models import NationalTaxService, TransactionType
+from tax.models import TransactionType
 from barobill.barobill_error_code import barobill_error_codes
 
 

@@ -12,9 +12,61 @@ from api.security import jwt_auth
 from ninja import Query
 from tax.models import CashReceipt
 from datetime import date
+from factory.utils import get_factory_by_id
+from django.conf import settings
+from datetime import timedelta, date
+from barobill.barobill_error_code import barobill_error_codes
 
 
 router = Router(tags=["CashReceipts"], auth=jwt_auth)
+
+
+@router.post(
+    "/{factory_id}/sync",
+    summary="[C] 현금영수증 동기화",
+    description="바로빌 API를 통해 현금영수증을 동기화합니다.",
+    response={200: dict, 400: dict, 500: dict},
+)
+async def sync_cash_receipts(request, factory_id: int):
+    user = request.auth
+    factory = await get_factory_by_id(factory_id)
+
+    today = date.today()
+    past_date = today - timedelta(days=200)
+
+    certKey = settings.BAROBILL_CERT_KEY
+    corpNum = factory.business_registration_number
+    userId = user.barobill_user_id
+    today = date.today()
+    past_date = today - timedelta(days=200)  # 200일 전 날짜
+    startDate = past_date.strftime("%Y%m%d")  # 200일 전 날짜
+    endDate = today.strftime("%Y%m%d")  # 현재 날짜로 설정
+    countPerPage = 100  # 최대 100건
+    currentPage = 1
+    orderDirection = 1
+
+    result = settings.BAROBILL_CLIENT.service.GetPeriodCashBillSalesListEx(
+        CERTKEY=certKey,
+        CorpNum=corpNum,
+        UserID=userId,
+        StartDate=startDate,
+        EndDate=endDate,
+        CountPerPage=countPerPage,
+        CurrentPage=currentPage,
+        OrderDirection=orderDirection,
+    )
+
+    if result.CurrentPage < 0:
+        error_msg = barobill_error_codes.get(result.CurrentPage, "Unknown Error")
+        raise HttpError(400, f"바로빌 API 오류 - 매출 세금계산서 조회: {error_msg}")
+
+    if result.SimpleCashBillExList is not None:
+        # 매출 현금영수증이 존재하는 경우 sync 처리
+        for cash_receipt in result.SimpleCashBillExList.SimpleCashBillEx:
+            print(
+                "🐍 File: tax/api.py | Line: 507 | undefined ~ cash_receipt",
+                cash_receipt,
+            )
 
 
 @router.get(

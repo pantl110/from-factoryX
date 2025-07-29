@@ -23,8 +23,10 @@ from api.security import jwt_auth
 from typing import List
 from ninja import Query
 from tax.models import NationalTaxService
-from datetime import date
+from datetime import date, timedelta
 from project.models import Project
+from django.conf import settings
+from barobill.barobill_error_code import barobill_error_codes
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
@@ -441,6 +443,97 @@ async def get_tax_invoice_by_material_history(request, material_history_id: int)
 
 
 @router.post(
+    "/{factory_id}/sync",
+    summary="[C] 세금계산서 동기화",
+    description="국세청 API에서 세금계산서를 동기화합니다.",
+    response={200: dict, 400: dict, 500: dict},
+)
+async def sync_tax_invoices(request, factory_id: int):
+    user = request.auth
+    factory = await get_factory_by_id(factory_id)
+
+    today = date.today()
+    past_date = today - timedelta(days=200)
+
+    certKey = settings.BAROBILL_CERT_KEY
+    corpNum = factory.business_registration_number
+    userId = user.barobill_user_id
+    taxType = 1
+    dateType = 1
+    today = date.today()
+    past_date = today - timedelta(days=200)  # 200일 전 날짜
+    startDate = past_date.strftime("%Y%m%d")  # 200일 전 날짜
+    endDate = today.strftime("%Y%m%d")  # 현재 날짜로 설정
+    countPerPage = 100  # 최대 100건
+    currentPage = 1
+
+    # 매출 세금계산서 조회
+    sale_result = settings.BAROBILL_CLIENT.service.GetPeriodTaxInvoiceSalesList(
+        CERTKEY=certKey,
+        CorpNum=corpNum,
+        UserID=userId,
+        TaxType=taxType,
+        DateType=dateType,
+        StartDate=startDate,
+        EndDate=endDate,
+        CountPerPage=countPerPage,
+        CurrentPage=currentPage,
+    )
+
+    if sale_result.CurrentPage < 0:
+        error_msg = barobill_error_codes.get(sale_result.CurrentPage, "Unknown Error")
+        raise HttpError(400, f"바로빌 API 오류 - 매출 세금계산서 조회: {error_msg}")
+
+    # 매입 세금계산서 조회
+    purchase_result = settings.BAROBILL_CLIENT.service.GetPeriodTaxInvoicePurchaseList(
+        CERTKEY=certKey,
+        CorpNum=corpNum,
+        UserID=userId,
+        TaxType=taxType,
+        DateType=dateType,
+        StartDate=startDate,
+        EndDate=endDate,
+        CountPerPage=countPerPage,
+        CurrentPage=currentPage,
+    )
+
+    if purchase_result.CurrentPage < 0:
+        error_code = barobill_error_codes.get(purchase_result, "Unknown Error")
+        raise HttpError(400, f"바로빌 API 오류 - 매입 세금계산서 조회: {error_code}")
+
+    # 매출, 매입 세금계산서 DB에서 조회
+    existing_sales = await sync_to_async(list)(
+        NationalTaxService.objects.filter(
+            factory=factory,
+            tax_invoice_type="sales",
+        ).values_list("id", flat=True)
+    )
+    existing_sales = [str(sale_id).zfill(15) for sale_id in existing_sales]
+
+    existing_purchases = await sync_to_async(list)(
+        NationalTaxService.objects.filter(
+            factory=factory,
+            tax_invoice_type="purchase",
+        ).values_list("id", flat=True)
+    )
+    existing_purchases = [
+        str(purchase_id).zfill(15) for purchase_id in existing_purchases
+    ]
+
+    if sale_result.SimpleTaxInvoiceExList is not None:
+        # 매출 세금계산서가 존재하는 경우 sync 처리
+        for sale in sale_result.SimpleTaxInvoiceExList.SimpleTaxInvoiceEx:
+            print("🐍 File: tax/api.py | Line: 507 | undefined ~ sale", sale)
+
+    if purchase_result.SimpleTaxInvoiceExList is not None:
+        # 매입 세금계산서가 존재하는 경우 sync 처리
+        for purchase in purchase_result.SimpleTaxInvoiceExList.SimpleTaxInvoiceEx:
+            print("🐍 File: tax/api.py | Line: 513 | undefined ~ purchase", purchase)
+
+    return {}
+
+
+@router.post(
     "",
     summary="[C] 세금계산서 생성",
     description="국세청 API 세금계산서를 생성합니다.",
@@ -580,6 +673,8 @@ async def publish_tax_invoice(request, tax_id: int):
     issue_barobill_tax_invoice(
         tax_service, tax_service.factory, tax_service.client, user
     )
+
+    # 바로빌 API 호출 후 세금계산서 상태 업데이트, 국세청 발급번호 업데이트 필요?!
 
     # 발행 상태 업데이트
     tax_service.publish_status = "published"

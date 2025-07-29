@@ -223,3 +223,15 @@ class TestTaxService(TestCase):
         # 삭제된 세금계산서 조회 시 404 에러 확인
         response = await self.client.get(f"/{tax_service_id}", headers=headers)
         self.assertEqual(response.status_code, 404)
+
+    async def test_sync_tax_service(self):
+        """바로빌과 세금계산서 동기화 테스트"""
+        headers = await self.authenticate()
+        tax_service_id = await self.test_create_tax_service()
+
+        # 세금계산서 동기화
+        response = await self.client.post(f"/{tax_service_id}/sync", headers=headers)
+        data = response.json()
+        print("🐍 File: tests/test_tax_service.py | Line: 240 | setUp ~ data", data)
+
+        self.assertEqual(response.status_code, 200)
