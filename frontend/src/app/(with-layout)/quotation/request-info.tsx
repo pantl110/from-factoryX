@@ -37,11 +37,8 @@ const RequestInfo = ({
   const quotationId = searchParams.get('id')
     ? parseInt(searchParams.get('id') || '0')
     : undefined;
-  const {
-    data: quotationDetail,
-    isLoading: isLoadingQuotation,
-    error: quotationError,
-  } = useGetDetailQuotation(quotationId || 0);
+  const { data: quotationDetail, isLoading: isLoadingQuotation } =
+    useGetDetailQuotation(quotationId || 0);
   const { getProductDetail } = useGetProduct();
 
   // React Hook Form 설정
@@ -50,9 +47,6 @@ const RequestInfo = ({
       products: [] as QuotationProductDetailResponseModel[],
     },
   });
-
-  // 현재 form의 products 값을 watch
-  const currentProducts = watch('products');
 
   // 드롭다운 상태를 상위에서 관리
   const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(

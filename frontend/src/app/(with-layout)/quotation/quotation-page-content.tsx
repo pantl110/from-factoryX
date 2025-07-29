@@ -35,7 +35,7 @@ const QuotationPageContent = () => {
     ? parseInt(searchParams.get('id') || '0')
     : undefined;
 
-  const { saveDraft, isLoading: isSavingDraft } = useSaveDraftQuotation();
+  const { saveDraft } = useSaveDraftQuotation();
 
   // 거래처 정보 폼
   const { setValue, control, trigger, watch, formState } =
@@ -108,8 +108,6 @@ const QuotationPageContent = () => {
   const handleSaveDraft = useCallback(async () => {
     try {
       const formData = watch();
-      // TODO: 여기에 실제 저장할 데이터 구조를 만들어야 합니다
-      // 현재는 기본 구조만 제공
       const draftData = {
         quotation_id: quotationId || 0,
         client: {
@@ -160,6 +158,7 @@ const QuotationPageContent = () => {
           setIsOrderStatus={setIsOrderStatus}
           hasQuotationProducts={hasQuotationProducts}
           onSaveDraft={handleSaveDraft}
+          isDirty={formState.isDirty}
         />
         <TabArea
           activeTab={activeTab}
@@ -241,7 +240,34 @@ const QuotationPageContent = () => {
       {/* 출력하기 버튼 */}
       {isPrintOpen && (
         <OverlayView onClose={() => setIsPrintOpen(false)}>
-          <PrintView onClose={() => setIsPrintOpen(false)} />
+          <PrintView
+            documentTitle="견적서"
+            clientData={{
+              factory_id: watch().factory_id,
+              name: watch().name,
+              business_registration_number:
+                watch().business_registration_number,
+              representative_name: watch().representative_name,
+              email: watch().email,
+              phone: watch().phone,
+              fax: watch().fax,
+              business_type: watch().business_type,
+              business_category: watch().business_category,
+              address: watch().address,
+              manager: watch().manager,
+              note: watch().note,
+            }}
+            dueDate={watch().due_date}
+            productListInfoTitle="견적 품목 정보"
+            productItems={quotationProducts}
+            supplyAmount={quotationProducts.reduce((total, product) => {
+              if (product.quantity && product.unit_price) {
+                return total + product.quantity * product.unit_price;
+              }
+              return total;
+            }, 0)}
+            onClose={() => setIsPrintOpen(false)}
+          />
         </OverlayView>
       )}
       {/* 이메일 보내기 버튼 */}

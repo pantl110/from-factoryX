@@ -1,10 +1,12 @@
 import Chip from '@/ui/chip';
 import ButtonSection from './button-section';
 import QuotationStatusDropdown from './modals/quotation-status-dropdown';
-import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
+import { usePortalDropdown, useToast } from '@/hooks';
+import Toast from '@/ui/toast';
 import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
 import { ClientModel } from '@/types/data-model';
 import { useMemo } from 'react';
+import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -22,6 +24,7 @@ interface TitleSecProps {
   setIsOrderStatus: (status: boolean) => void;
   hasQuotationProducts: boolean;
   onSaveDraft?: () => void | Promise<void>;
+  isDirty: boolean;
 }
 
 const TitleSec = ({
@@ -35,9 +38,13 @@ const TitleSec = ({
   setIsOrderStatus,
   hasQuotationProducts,
   onSaveDraft,
+  isDirty,
 }: TitleSecProps) => {
   // 실시간으로 업체명 가져오기
   const clientName = watch('name');
+
+  // 토스트 훅
+  const { isToastOpen, isVisible, showToast } = useToast();
 
   // 폼 유효성 검사 - 실제 필드 값과 에러 상태 확인
   const isFormValid = useMemo(() => {
@@ -85,16 +92,10 @@ const TitleSec = ({
       <ButtonSection
         hasQuotationProducts={hasQuotationProducts}
         onEmailClick={async () => {
-          const isValid = await trigger();
-          if (isValid) {
-            setIsEmailOpen(true);
-          }
+          setIsEmailOpen(true);
         }}
         onPrintClick={async () => {
-          const isValid = await trigger();
-          if (isValid) {
-            setIsPrintOpen(true);
-          }
+          setIsPrintOpen(true);
         }}
         onStartProductionClick={async () => {
           const isValid = await trigger();
@@ -103,8 +104,12 @@ const TitleSec = ({
           }
         }}
         onSaveDraft={async () => {
-          const isValid = await trigger();
-          if (isValid && onSaveDraft) {
+          // 업체명이 입력되지 않았으면 토스트 표시하고 함수 종료
+          if (!clientName || clientName.trim() === '') {
+            showToast();
+            return;
+          }
+          if (onSaveDraft) {
             await onSaveDraft();
           }
         }}
@@ -116,7 +121,19 @@ const TitleSec = ({
           }
         }}
         isFormValid={isFormValid}
+        isDirty={isDirty}
       />
+
+      {/* 임지저장 눌렀을 때 토스트 메시지 */}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text="임시저장을 할 수 없어요."
+          subtext="임시저장을 하기 위해선 업체명은 꼭 입력해야 해요."
+          type="red"
+          isVisible={isVisible}
+        />
+      )}
     </div>
   );
 };

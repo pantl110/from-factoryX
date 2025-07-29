@@ -12,6 +12,7 @@ interface ButtonSectionProps {
   setIsOrderStatus: (status: boolean) => void | Promise<void>;
   isFormValid: boolean;
   hasQuotationProducts: boolean;
+  isDirty: boolean;
 }
 
 const ButtonSection = ({
@@ -23,35 +24,35 @@ const ButtonSection = ({
   setIsOrderStatus,
   isFormValid,
   hasQuotationProducts,
+  isDirty,
 }: ButtonSectionProps) => {
   return (
-    <div className="flex gap-1">
-      <MiniBtn
-        text="세금계산서 생성"
-        textColor="text-dg"
-        borderColor="border-lg"
-        hoverColor="hover:bg-bg"
-        disabled={!isFormValid}
-      />
-      <MiniBtn
-        text="출력"
-        textColor="text-dg"
-        borderColor="border-lg"
-        onClick={onPrintClick}
-        hoverColor="hover:bg-bg"
-        disabled={!isFormValid || !hasQuotationProducts}
-      />
-      <MiniBtn
-        text="이메일 전송"
-        textColor="text-dg"
-        borderColor="border-lg"
-        onClick={onEmailClick}
-        hoverColor="hover:bg-bg"
-        disabled={!isFormValid || !hasQuotationProducts}
-      />
-      {isOrderStatus ? (
-        <>
-          {/* <MiniBtn
+    <>
+      <div className="flex gap-1">
+        <MiniBtn
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+          disabled={!isFormValid}
+        />
+        <MiniBtn
+          text="출력"
+          textColor="text-dg"
+          borderColor="border-lg"
+          onClick={onPrintClick}
+          hoverColor="hover:bg-bg"
+        />
+        <MiniBtn
+          text="이메일 전송"
+          textColor="text-dg"
+          borderColor="border-lg"
+          onClick={onEmailClick}
+          hoverColor="hover:bg-bg"
+        />
+        {isOrderStatus ? (
+          <>
+            {/* <MiniBtn
             text="수정"
             textColor="text-primary"
             bgColor="bg-primary-8"
@@ -61,40 +62,41 @@ const ButtonSection = ({
             hoverColor="hover:bg-secondary-hover"
             disabled={!isFormValid}
           /> */}
-          <MiniBtn
-            text="생산 시작"
-            textColor="text-wh"
-            bgColor="bg-primary"
-            icon={ArrowRight}
-            iconPosition="right"
-            onClick={onStartProductionClick}
-            hoverColor="hover:bg-primary-hover"
-            disabled={!isFormValid || !hasQuotationProducts}
-          />
-        </>
-      ) : (
-        <>
-          <MiniBtn
-            text="임시 저장"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            onClick={onSaveDraft}
-            hoverColor="hover:bg-secondary-hover"
-            disabled={!isFormValid || !hasQuotationProducts}
-          />
-          <MiniBtn
-            text="주문 확정"
-            textColor="text-wh"
-            bgColor="bg-primary"
-            onClick={() => {
-              setIsOrderStatus(true);
-            }}
-            hoverColor="hover:bg-primary-hover"
-            disabled={!isFormValid || !hasQuotationProducts}
-          />
-        </>
-      )}
-    </div>
+            <MiniBtn
+              text="생산 시작"
+              textColor="text-wh"
+              bgColor="bg-primary"
+              icon={ArrowRight}
+              iconPosition="right"
+              onClick={onStartProductionClick}
+              hoverColor="hover:bg-primary-hover"
+              disabled={!isFormValid || !hasQuotationProducts}
+            />
+          </>
+        ) : (
+          <>
+            <MiniBtn
+              text="임시 저장"
+              textColor="text-primary"
+              bgColor="bg-primary-8"
+              onClick={onSaveDraft}
+              hoverColor="hover:bg-secondary-hover"
+              disabled={!isDirty}
+            />
+            <MiniBtn
+              text="주문 확정"
+              textColor="text-wh"
+              bgColor="bg-primary"
+              onClick={() => {
+                setIsOrderStatus(true);
+              }}
+              hoverColor="hover:bg-primary-hover"
+              disabled={!isFormValid || !hasQuotationProducts}
+            />
+          </>
+        )}
+      </div>
+    </>
   );
 };
 
