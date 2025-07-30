@@ -1,10 +1,10 @@
-import { MaterialResponseModel } from '@/types/data-model';
+import { MaterialItemModel } from '@/types/data-model';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
 
 interface MaterialNameDropdownProps {
-  items: MaterialResponseModel[];
-  onSelect: (item: MaterialResponseModel) => void;
+  items: MaterialItemModel[];
+  onSelect: (item: MaterialItemModel) => void;
   width?: string;
 }
 
@@ -18,7 +18,7 @@ export const MaterialNameDropdown = ({
       <div className="flex flex-col">
         {items.map((item) => (
           <DropdownItem
-            key={item.id}
+            key={item.code}
             text={item.name}
             onClick={() => onSelect(item)}
             search={true}

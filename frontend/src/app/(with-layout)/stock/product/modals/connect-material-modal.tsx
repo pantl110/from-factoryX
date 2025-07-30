@@ -23,11 +23,13 @@ interface MaterialFormModel {
 interface ConnectMaterialModalProps {
   onClose: () => void;
   productId: number | null;
+  onSuccess?: () => void | Promise<void>;
 }
 
 const ConnectMaterialModal = ({
   onClose,
   productId,
+  onSuccess,
 }: ConnectMaterialModalProps) => {
   const factoryId = useFactoryStore((state) => state.factoryId);
   const { getMaterialList, materialList } = useGetMaterial();
@@ -125,8 +127,10 @@ const ConnectMaterialModal = ({
         }
       }
 
-      alert('원자재 연결 성공');
       onClose();
+      if (onSuccess) {
+        await onSuccess();
+      }
     } catch (error) {
       alert('원자재 연결 중 오류가 발생했습니다. ' + error);
     }

@@ -5,20 +5,10 @@ import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from './manual-add-material';
-import { ClientModel, MaterialResponseModel } from '@/types/data-model';
+import { ClientModel, MaterialItemModel } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import { useGetMaterial, useCreateMaterialHistory } from '@/hooks';
-
-interface MaterialFormModel {
-  id: string;
-  name: string;
-  code: string;
-  spec: string;
-  unit: string;
-  quantity: number | null;
-  price: number | null;
-}
 
 interface MaterialEnrollmentProps {
   onClose?: () => void;
@@ -33,14 +23,14 @@ const MaterialEnrollmentModal = ({
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [filteredMaterials, setFilteredMaterials] = useState<
-    MaterialResponseModel[]
+    MaterialItemModel[]
   >([]);
 
   const factoryId = useFactoryStore((state) => state.factoryId);
   const [selectedMaterials, setSelectedMaterials] = useState<
-    MaterialResponseModel[]
+    MaterialItemModel[]
   >([]);
-  const [_newMaterials, setNewMaterials] = useState<MaterialFormModel[]>([]);
+  const [_newMaterials, setNewMaterials] = useState<MaterialItemModel[]>([]);
   const [isManualAddMode, setIsManualAddMode] = useState(false);
   const { createMaterialHistory, isLoading: isCreating } =
     useCreateMaterialHistory();
@@ -50,26 +40,46 @@ const MaterialEnrollmentModal = ({
   const { getMaterialList } = useGetMaterial();
 
   // 검색어가 변경될 때 서버에서 검색
+  const [previousSearchKeyword, setPreviousSearchKeyword] = useState('');
+
   useEffect(() => {
     const searchMaterials = async () => {
-      if (input.trim()) {
-        const result = await getMaterialList({ q: input });
-        if (result.success && result.data) {
-          setFilteredMaterials(result.data.data);
-        }
-      } else {
+      // 검색어가 없으면 드롭다운 비우기
+      if (!input.trim()) {
         setFilteredMaterials([]);
+        setPreviousSearchKeyword('');
+        return;
+      }
+
+      // 이전 검색어와 같으면 요청하지 않음
+      if (input.trim() === previousSearchKeyword) {
+        return;
+      }
+
+      const result = await getMaterialList({ q: input.trim() });
+      if (result.success && result.data) {
+        setFilteredMaterials(
+          (result.data.data || []).map((mat) => ({
+            name: mat.name,
+            code: mat.code,
+            spec: mat.spec,
+            unit: mat.unit,
+            quantity: 0,
+            price: 0,
+          }))
+        );
+        setPreviousSearchKeyword(input.trim());
       }
     };
 
-    const timeoutId = setTimeout(searchMaterials, 150); // 디바운스
+    const timeoutId = setTimeout(searchMaterials, 300);
     return () => clearTimeout(timeoutId);
-  }, [input, getMaterialList]);
+  }, [input, getMaterialList, previousSearchKeyword]);
 
-  const handleSelectMaterial = (item: MaterialResponseModel) => {
+  const handleSelectMaterial = (item: MaterialItemModel) => {
     setInput('');
     setSelectedMaterials((prev) => {
-      if (!prev.some((mat) => mat.id === item.id)) {
+      if (!prev.some((mat) => mat.code === item.code)) {
         return [...prev, item];
       }
       return prev;
@@ -77,8 +87,8 @@ const MaterialEnrollmentModal = ({
     setIsOpen(false);
   };
 
-  const handleRemoveMaterial = (id: number) => {
-    setSelectedMaterials((prev) => prev.filter((mat) => mat.id !== id));
+  const handleRemoveMaterial = (code: string) => {
+    setSelectedMaterials((prev) => prev.filter((mat) => mat.code !== code));
   };
 
   const handleRegister = async () => {
@@ -91,11 +101,11 @@ const MaterialEnrollmentModal = ({
       client_info: clientInfo,
       materials: selectedMaterials.map((mat) => ({
         name: mat.name,
-        code: String(mat.code ?? ''),
+        code: mat.code,
         spec: mat.spec,
-        unit: String(mat.unit ?? ''),
-        quantity: Number(mat.current_stock ?? 0),
-        price: 0, // MaterialResponseModel에는 price 필드가 없으므로 기본값 0
+        unit: mat.unit,
+        quantity: mat.quantity,
+        price: mat.price,
       })),
     };
     const result = await createMaterialHistory(payload);
@@ -161,7 +171,10 @@ const MaterialEnrollmentModal = ({
         {isManualAddMode && (
           <ManualAddMaterial
             setIsManualAddMode={setIsManualAddMode}
-            setNewMaterials={setNewMaterials}
+            setNewMaterials={(fn) => {
+              const newMaterials = fn([]);
+              setSelectedMaterials((prev) => [...prev, ...newMaterials]);
+            }}
           />
         )}
 
@@ -179,33 +192,31 @@ const MaterialEnrollmentModal = ({
             <div className="flex flex-col">
               {selectedMaterials.map((mat) => (
                 <div
-                  key={mat.id}
+                  key={mat.code}
                   className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 group"
                 >
                   <p className="flex-1 px-3 text-dg truncate" title={mat.name}>
                     {mat.name ?? '-'}
                   </p>
                   <p className="w-[80px] px-3 text-dg">{mat.unit ?? '-'}</p>
-                  {/* <p className="flex-1 px-3 text-dg">
-                    {mat.usageQuantity ?? '-'}
-                  </p>
+                  <p className="flex-1 px-3 text-dg">{mat.quantity ?? '-'}</p>
                   <p className="w-[100px] px-3 text-dg">
-                    {mat.unitPrice !== null && mat.unitPrice !== undefined
-                      ? mat.unitPrice.toLocaleString()
+                    {mat.price !== null && mat.price !== undefined
+                      ? mat.price.toLocaleString()
                       : '-'}
                   </p>
                   <p className="flex-1 px-3 text-dg">
-                    {mat.unitPrice !== null &&
-                    mat.unitPrice !== undefined &&
-                    mat.usageQuantity !== null &&
-                    mat.usageQuantity !== undefined
-                      ? (mat.unitPrice * mat.usageQuantity).toLocaleString()
+                    {mat.price !== null &&
+                    mat.price !== undefined &&
+                    mat.quantity !== null &&
+                    mat.quantity !== undefined
+                      ? (mat.price * mat.quantity).toLocaleString()
                       : '-'}
-                  </p> */}
-                  {mat.id !== null && mat.id !== undefined && (
+                  </p>
+                  {mat.code !== null && mat.code !== undefined && (
                     <div
                       className="w-[40px] flex items-center justify-center h-full"
-                      onClick={() => handleRemoveMaterial(mat.id)}
+                      onClick={() => handleRemoveMaterial(mat.code)}
                     >
                       <div className="flex items-center justify-center w-9 h-9 cursor-pointer hover:bg-bg rounded-[8px]">
                         <X size={16} className="text-gr" />

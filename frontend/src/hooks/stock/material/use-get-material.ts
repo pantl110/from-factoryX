@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   MaterialListResponseModel,
   MaterialResponseModel,
@@ -25,7 +25,7 @@ const useGetMaterial = () => {
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
 
   // 원자재 목록 조회
-  const getMaterialList = async (filters: MaterialFilterModel = {}) => {
+  const getMaterialList = useCallback(async (filters: MaterialFilterModel = {}) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -64,10 +64,10 @@ const useGetMaterial = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [factoryId]);
 
   // 원자재 상세 조회
-  const getMaterialDetail = async (materialId: number) => {
+  const getMaterialDetail = useCallback(async (materialId: number) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -93,7 +93,7 @@ const useGetMaterial = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return {
     getMaterialList,

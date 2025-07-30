@@ -53,7 +53,7 @@ export const usePeriodSelector = ({
     };
 
     if (productId) {
-      filters.product = productId;
+      filters.product_id = productId; // product -> product_id로 변경
     }
 
     if (period === '직접 설정' && customStartDate && customEndDate) {

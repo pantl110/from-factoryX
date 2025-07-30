@@ -5,7 +5,7 @@ import { useState } from 'react';
 interface GetProjectModel {
   factory_id: number;
   status: ProjectStatusType | 'progress';
-  search?: string; // 업체명 또는 품목명
+  // search?: string; // 업체명 또는 품목명
   order_by?: 'start_date' | 'due_date';
   order_dir?: 'asc' | 'desc';
   page?: number;

@@ -266,20 +266,20 @@ export interface ProductListResponseModel extends PaginationModel {
 //////////////////////
 // Product History API
 export interface ProductHistoryModel {
-  product: number;
+  product: number; // product_id
   type: 'in' | 'out'; // 입고 또는 출고
   quantity: number; // 재고 변동 수량
-  total_stock?: number; // 재고 변동 후 재고 수량
+  total_stock: number; // 재고 변동 후 재고 수량
 }
 
 export interface ProductHistoryResponseModel {
-  id: number;
-  created_at: string;
-  updated_at: string;
+  id: number; // product_history_id
+  product: number; // product_id
   type: 'in' | 'out'; // 입고 또는 출고
-  product: number;
   quantity: number;
   total_stock?: number; // 재고 변동 후 재고 수량
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ProductHistoryListResponseModel extends PaginationModel {
@@ -324,8 +324,8 @@ export interface MaterialItemModel {
   code: string;
   spec: string; // 규격
   unit: string; // 단위
-  quantity: number;
-  price: number;
+  quantity: number | null;
+  price: number | null; // 구매 단가
 }
 
 export interface MaterialHistoryModel {
@@ -335,8 +335,8 @@ export interface MaterialHistoryModel {
 }
 
 export interface MaterialHistoryResponseModel {
-  id: number;
-  type: string;
+  id: number; // material_history_id
+  type: 'purchase' | 'consumption'; // 구매 또는 소비
   material_id: number;
   client_id: number;
   quantity: number;
@@ -360,12 +360,23 @@ export interface CreateMaterialProductModel {
 }
 
 export interface MaterialProductConnectionModel {
-  id: number;
-  product_id: number;
+  connection_id: number;
   material_id: number;
-  quantity: number; // 제품 1개 생산에 필요한 원자재 수량
-  product_name: string;
   material_name: string;
+  material_code: string;
+  material_spec: string;
+  material_unit: string;
+  quantity: number; // // 제품 1개 생산에 필요한 원자재 수량
+}
+
+export interface ProductMaterialConnectionModel {
+  connection_id: number;
+  product_id: number;
+  product_name: string;
+  product_code: string;
+  product_spec: string;
+  product_unit: string;
+  quantity: number; // 제품 1개 생산에 필요한 원자재 수량
 }
 
 export interface MaterialProductConnectionResponseModel {

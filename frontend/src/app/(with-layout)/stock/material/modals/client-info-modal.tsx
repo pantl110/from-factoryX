@@ -2,8 +2,7 @@ import MiniBtn from '@/ui/mini-btn';
 import Input from '@/ui/input';
 import Modal from '@/ui/modal/modal';
 import { ClientModel } from '@/types/data-model';
-import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import useGetClient from '@/hooks/factory/factory-client/use-get-client';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { useForm } from 'react-hook-form';
@@ -48,19 +47,58 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
   });
 
   const factoryId = useFactoryStore((state) => state.factoryId);
-  const { clientList, getClients } = useGetClient();
+  const { clientList, getClients, searchClients, isLoading } = useGetClient();
+
+  // 드롭다운 상태 관리
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(
+    null
+  );
+
+  // 초기 거래처 목록 로드
   useEffect(() => {
-    if (factoryId) getClients({ factory_id: factoryId });
+    if (factoryId) {
+      getClients({ factory_id: factoryId });
+    }
   }, [factoryId, getClients]);
+
+  // 검색어 변경 시 debounce 적용
+  const handleSearchChange = useCallback(
+    (keyword: string) => {
+      setSearchKeyword(keyword);
+
+      // 이전 타이머 클리어
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+
+      // 새 타이머 설정 (300ms debounce)
+      const timer = setTimeout(() => {
+        if (keyword.trim()) {
+          searchClients(keyword);
+        } else {
+          // 검색어가 없으면 전체 목록 로드
+          getClients({ factory_id: factoryId! });
+        }
+      }, 300);
+
+      setDebounceTimer(timer);
+    },
+    [debounceTimer, searchClients, getClients, factoryId]
+  );
+
+  // 컴포넌트 언마운트 시 타이머 클리어
+  useEffect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+    };
+  }, [debounceTimer]);
+
   const clientItems = clientList?.data || [];
-  const {
-    input: companyNameInput,
-    setInput: setCompanyNameInput,
-    isOpen: isCompanyNameDropdownOpen,
-    setIsOpen: setIsCompanyNameDropdownOpen,
-    filtered: filteredClients,
-    handleSelect: handleCompanyNameSelect,
-  } = useDropdownFilter(clientItems, (item) => item.name);
+
   if (!factoryId) return null;
 
   // 필수 필드들의 값 감시
@@ -81,8 +119,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     address?.trim();
 
   const handleSelectClient = (item: ClientModel | ClientResponseModel) => {
-    handleCompanyNameSelect(item as ClientResponseModel);
-    setCompanyNameInput(item.name ?? '');
+    setSearchKeyword(item.name ?? '');
 
     // 선택한 거래처 정보로 폼 자동 채우기
     setValue('name', item.name ?? '');
@@ -95,7 +132,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     setValue('businessType', item.business_type || '');
     setValue('businessCategory', item.business_category || '');
 
-    setIsCompanyNameDropdownOpen(false);
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -129,22 +166,21 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               placeholder="업체명을 입력하세요."
               required
               {...register('name', { required: true })}
-              value={companyNameInput ?? ''}
+              value={searchKeyword}
               onChange={(e) => {
-                setCompanyNameInput(e.target.value ?? '');
-                setValue('name', e.target.value ?? '');
-                setIsCompanyNameDropdownOpen(true); // 입력 시 항상 드롭다운 열기
+                const value = e.target.value;
+                setValue('name', value);
+                handleSearchChange(value);
+                setIsDropdownOpen(true);
               }}
-              onFocus={() => setIsCompanyNameDropdownOpen(true)}
-              onBlur={() =>
-                setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
-              }
+              onFocus={() => setIsDropdownOpen(true)}
+              onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
               showError={!!errors.name}
             />
-            {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
+            {isDropdownOpen && clientItems.length > 0 && (
               <div className="absolute left-0 top-21 z-10 w-full">
                 <ClientNameDropdown
-                  items={filteredClients}
+                  items={clientItems}
                   onSelect={handleSelectClient}
                   width="w-full"
                 />

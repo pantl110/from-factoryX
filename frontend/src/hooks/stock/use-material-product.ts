@@ -109,6 +109,13 @@ const useMaterialProduct = () => {
     }
   };
 
+  // 데이터 초기화
+  const resetData = useCallback(() => {
+    setData(null);
+    setError(null);
+    setIsSuccess(false);
+  }, []);
+
   // 연결 수정
   const updateMaterialProductConnection = async (
     connectionId: number,
@@ -145,14 +152,15 @@ const useMaterialProduct = () => {
   };
 
   return {
-    createMaterialProduct,
-    getMaterialProductConnections,
-    deleteMaterialProductConnection,
-    updateMaterialProductConnection,
     isLoading,
     error,
     isSuccess,
     data,
+    createMaterialProduct,
+    getMaterialProductConnections,
+    deleteMaterialProductConnection,
+    updateMaterialProductConnection,
+    resetData,
   };
 };
 

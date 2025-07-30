@@ -27,8 +27,11 @@ import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import useFactoryStore from '@/store/factory-store';
 import { useForm, useFieldArray } from 'react-hook-form';
 import StockLocationItem from '../../stock-location-item';
-import useUploadFile from '@/hooks/aws/use-upload-file';
+import { useUploadFile, useToast } from '@/hooks';
 import MaterialDetailPanel from '../../material/material-detail';
+import DeleteModal from '@/ui/modal/delete-modal';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -57,6 +60,8 @@ const ProductDetail = ({
     getMaterialProductConnections,
     data: connections,
     updateMaterialProductConnection,
+    deleteMaterialProductConnection,
+    resetData,
   } = useMaterialProduct();
   const { getMaterialDetail } = useGetMaterial();
   const factoryId = useFactoryStore((state) => state.factoryId);
@@ -133,6 +138,63 @@ const ProductDetail = ({
 
   // 각 StockLocationItem 별 모달 오픈 상태 관리
   const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
+
+  // 연결된 자재 정보 삭제 확인 모달
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConnectionId, setDeleteConnectionId] = useState<number | null>(
+    null
+  );
+
+  // 토스트 상태
+  const { isToastOpen, isVisible, showToast } = useToast();
+  const [toastMessage, setToastMessage] = useState('');
+
+  // 토스트 메시지 표시 함수
+  const showToastMessage = (message: string) => {
+    setToastMessage(message);
+    showToast();
+  };
+
+  // 연결 삭제 핸들러
+  const handleDeleteConnection = (connectionId: number) => {
+    setDeleteConnectionId(connectionId);
+    setIsDeleteModalOpen(true);
+  };
+
+  // 연결 삭제 실행
+  const handleConfirmDelete = async (connectionId: number) => {
+    if (!connectionId) return;
+
+    setIsDeleting(true);
+    try {
+      const result = await deleteMaterialProductConnection(connectionId);
+      if (result.success) {
+        // 삭제 성공 시 연결된 자재 정보 새로고침
+        if (productId) {
+          // 연결된 자재 목록 초기화
+          resetData();
+          // 연결된 자재 목록 다시 로드
+          await getMaterialProductConnections(productId, 'product');
+        }
+      } else {
+        alert('연결 삭제에 실패했습니다: ' + result.error);
+      }
+    } catch {
+      alert('연결 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+      setDeleteConnectionId(null);
+    }
+  };
+
+  // 모달에서 삭제 확인 시 호출되는 함수
+  const handleModalConfirmDelete = () => {
+    if (deleteConnectionId) {
+      handleConfirmDelete(deleteConnectionId);
+    }
+  };
 
   // productId가 변경되면 상세 정보 로드
   useEffect(() => {
@@ -546,6 +608,8 @@ const ProductDetail = ({
               setMaterialId={setMaterialId}
               setIsQuantityDirty={setIsQuantityDirty}
               handleQuantityChange={handleQuantityChange}
+              onDeleteConnection={handleDeleteConnection}
+              onInvalidQuantity={showToastMessage}
             />
           </div>
 
@@ -559,6 +623,12 @@ const ProductDetail = ({
         <ConnectMaterialModal
           productId={productId}
           onClose={() => setIsMaterialModalOpen(false)}
+          onSuccess={async () => {
+            // 자재 연결 성공 시 연결된 자재 정보 새로고침
+            if (productId) {
+              await getMaterialProductConnections(productId, 'product');
+            }
+          }}
         />
       )}
 
@@ -586,6 +656,26 @@ const ProductDetail = ({
             }}
           />
         ) : null
+      )}
+
+      {/* 연결된 자재 정보 삭제 확인 모달 */}
+      {isDeleteModalOpen && deleteConnectionId && (
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleModalConfirmDelete}
+          isLoading={isDeleting}
+        />
+      )}
+
+      {/* 유효하지 않은 자재 수량 토스트 메시지 */}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text={toastMessage}
+          subtext=""
+          type="red"
+          isVisible={isVisible}
+        />
       )}
 
       {/* {isProductStockModalOpen && (

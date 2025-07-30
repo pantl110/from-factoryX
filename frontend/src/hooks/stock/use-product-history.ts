@@ -6,7 +6,7 @@ import {
 import { useState, useCallback } from 'react';
 
 export interface ProductHistoryFilterModel {
-  product?: number; // 제품 ID
+  product_id?: number; // 제품 ID (product -> product_id로 변경)
   start_date?: string; // 조회 시작일 (YYYY-MM-DD)
   end_date?: string; // 조회 종료일 (YYYY-MM-DD)
   page?: number; // 페이지 번호
@@ -59,19 +59,27 @@ const useProductHistory = () => {
       setIsLoading(true);
       setError(null);
       try {
+        const { product_id, ...otherFilters } = filters;
         const params = new URLSearchParams();
-        Object.entries(filters).forEach(([key, value]) => {
+        Object.entries(otherFilters).forEach(([key, value]) => {
           if (value !== undefined && value !== null)
             params.append(key, String(value));
         });
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`,
-          {
-            method: 'GET',
-            credentials: 'include',
-          }
-        );
+        
+        // product_id가 있으면 path parameter로, 없으면 query parameter로
+        let url: string;
+        if (product_id) {
+          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${product_id}/history?${params.toString()}`;
+        } else {
+          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
+        }
+        
+        const res = await fetch(url, {
+          method: 'GET',
+          credentials: 'include',
+        });
         const result = await res.json();
+        
         if (res.ok) {
           setData(result);
           return { success: true, data: result };

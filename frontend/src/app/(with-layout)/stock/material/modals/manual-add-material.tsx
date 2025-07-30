@@ -1,21 +1,12 @@
+import { MaterialItemModel } from '@/types/data-model';
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
 
-interface MaterialFormModel {
-  id: string;
-  name: string;
-  code: string;
-  spec: string;
-  unit: string;
-  quantity: number | null;
-  price: number | null;
-}
-
 interface ManualAddMaterialProps {
   setIsManualAddMode: (v: boolean) => void;
   setNewMaterials: (
-    fn: (prev: MaterialFormModel[]) => MaterialFormModel[]
+    fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
   ) => void;
 }
 
@@ -26,11 +17,10 @@ const ManualAddMaterial = ({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { isValid },
     reset,
-  } = useForm<MaterialFormModel>({
+  } = useForm<MaterialItemModel>({
     defaultValues: {
-      id: crypto.randomUUID(),
       name: '',
       code: '',
       spec: '',
@@ -38,18 +28,17 @@ const ManualAddMaterial = ({
       quantity: null,
       price: null,
     },
-    mode: 'onBlur',
+    mode: 'onChange',
   });
 
-  const onSubmit = (data: MaterialFormModel) => {
+  const onSubmit = (data: MaterialItemModel) => {
     setNewMaterials((prev) => [
       ...prev,
       {
-        id: data.id,
-        name: String(data.name),
-        code: String(data.code),
-        spec: String(data.spec),
-        unit: String(data.unit),
+        name: data.name,
+        code: data.code,
+        spec: data.spec,
+        unit: data.unit,
         quantity: data.quantity,
         price: data.price,
       },
@@ -59,7 +48,7 @@ const ManualAddMaterial = ({
   };
 
   return (
-    <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
+    <div className="flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2.5">
           <div className="flex w-full gap-2.5">
@@ -70,9 +59,11 @@ const ManualAddMaterial = ({
                 required
                 {...register('name', {
                   required: true,
-                  validate: (v: unknown) => typeof v === 'string' && !!v.trim(),
+                  validate: (v: unknown) => {
+                    const str = String(v || '');
+                    return !!str.trim();
+                  },
                 })}
-                showError={!!errors.name}
               />
             </div>
             <div className="flex-1">
@@ -82,9 +73,11 @@ const ManualAddMaterial = ({
                 required
                 {...register('code', {
                   required: true,
-                  validate: (v: unknown) => typeof v === 'string' && !!v.trim(),
+                  validate: (v: unknown) => {
+                    const str = String(v || '');
+                    return !!str.trim();
+                  },
                 })}
-                showError={!!errors.code}
               />
             </div>
           </div>
@@ -96,9 +89,11 @@ const ManualAddMaterial = ({
                 required
                 {...register('spec', {
                   required: true,
-                  validate: (v: unknown) => typeof v === 'string' && !!v.trim(),
+                  validate: (v: unknown) => {
+                    const str = String(v || '');
+                    return !!str.trim();
+                  },
                 })}
-                showError={!!errors.spec}
               />
             </div>
             <div className="flex-1">
@@ -108,9 +103,11 @@ const ManualAddMaterial = ({
                 required
                 {...register('unit', {
                   required: true,
-                  validate: (v: unknown) => typeof v === 'string' && !!v.trim(),
+                  validate: (v: unknown) => {
+                    const str = String(v || '');
+                    return !!str.trim();
+                  },
                 })}
-                showError={!!errors.unit}
               />
             </div>
           </div>
@@ -126,14 +123,41 @@ const ManualAddMaterial = ({
                   validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
                   setValueAs: (v) => {
                     if (v === '' || v === null || v === undefined) return null;
-                    return Number(String(v).replace(/[^0-9]/g, ''));
+                    const num = Number(String(v).replace(/[^0-9]/g, ''));
+                    return num === 0 ? null : num;
                   },
                 })}
                 onChange={(e) => {
                   const onlyNums = e.target.value.replace(/[^0-9]/g, '');
-                  e.target.value = onlyNums;
+                  const formatted = onlyNums
+                    ? parseInt(onlyNums).toLocaleString()
+                    : '';
+                  e.target.value = formatted;
                 }}
-                showError={!!errors.quantity}
+              />
+            </div>
+            <div className="flex-1">
+              <Input
+                placeholder="EX) 1,000"
+                label="단가"
+                required
+                type="text"
+                {...register('price', {
+                  required: true,
+                  validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
+                  setValueAs: (v) => {
+                    if (v === '' || v === null || v === undefined) return null;
+                    const num = Number(String(v).replace(/[^0-9]/g, ''));
+                    return num === 0 ? null : num;
+                  },
+                })}
+                onChange={(e) => {
+                  const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                  const formatted = onlyNums
+                    ? parseInt(onlyNums).toLocaleString()
+                    : '';
+                  e.target.value = formatted;
+                }}
               />
             </div>
           </div>
@@ -151,6 +175,7 @@ const ManualAddMaterial = ({
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
             type="submit"
+            disabled={!isValid}
           />
         </div>
       </form>

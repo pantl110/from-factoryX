@@ -12,15 +12,19 @@ interface StockStatusProps {
   materialDetails: Record<number, MaterialResponseModel>;
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
+  onDeleteConnection: (connectionId: number) => void;
+  onInvalidQuantity: (message: string) => void;
 }
 
 const StockStatus = ({
-  connections,
-  materialDetails,
   setIsMaterialDetailPanelOpen,
   setMaterialId,
+  connections,
+  materialDetails,
   setIsQuantityDirty,
   handleQuantityChange,
+  onDeleteConnection,
+  onInvalidQuantity,
 }: StockStatusProps) => {
   return (
     <>
@@ -33,6 +37,7 @@ const StockStatus = ({
             <p className="flex-[0.5] px-3 text-sv">단위</p>
             <p className="flex-[0.5] px-3 text-sv">사용 수량</p>
             <p className="flex-[0.8] px-3 text-sv">자재 재고 상태</p>
+            <div className="w-8" />
           </div>
 
           {connections.map(
@@ -48,6 +53,8 @@ const StockStatus = ({
                   setMaterialId={setMaterialId}
                   setIsQuantityDirty={setIsQuantityDirty}
                   handleQuantityChange={handleQuantityChange}
+                  onDeleteConnection={onDeleteConnection}
+                  onInvalidQuantity={onInvalidQuantity}
                 />
               );
             }
