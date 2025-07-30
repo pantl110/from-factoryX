@@ -6,10 +6,10 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react';
-import { useMaterialProduct, useGetProduct } from '@/hooks';
+import { useMaterialProduct } from '@/hooks';
 import {
   MaterialProductConnectionModel,
-  ProductResponseModel,
+  ProductMaterialConnectionModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
@@ -21,6 +21,10 @@ export interface ProductRequiringMaterialRefModel {
   refresh: () => void;
 }
 
+type ConnectionModelType =
+  | MaterialProductConnectionModel
+  | ProductMaterialConnectionModel;
+
 const ProductRequiringMaterial = forwardRef<
   ProductRequiringMaterialRefModel,
   ProductRequiringMaterialProps
@@ -28,13 +32,9 @@ const ProductRequiringMaterial = forwardRef<
   const { getMaterialProductConnections, data: connections } =
     useMaterialProduct();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const { getProductDetail } = useGetProduct();
   const [productConnections, setProductConnections] = useState<
-    MaterialProductConnectionModel[]
+    ConnectionModelType[]
   >([]);
-  const [productDetails, setProductDetails] = useState<
-    Record<number, ProductResponseModel>
-  >({});
 
   // materialId나 refreshTrigger가 변경될 때마다 연결된 제품들을 가져오기
   useEffect(() => {
@@ -53,27 +53,6 @@ const ProductRequiringMaterial = forwardRef<
     }
   }, [connections]);
 
-  // 제품 상세 정보 가져오기
-  useEffect(() => {
-    if (productConnections.length > 0) {
-      productConnections.forEach(async (connection) => {
-        if (connection.product_id && !productDetails[connection.product_id]) {
-          try {
-            const result = await getProductDetail(connection.product_id);
-            if (result.success && result.data) {
-              setProductDetails((prev) => ({
-                ...prev,
-                [connection.product_id]: result.data,
-              }));
-            }
-          } catch {
-            throw new Error('제품 상세 정보 조회 실패');
-          }
-        }
-      });
-    }
-  }, [productConnections, getProductDetail, productDetails]);
-
   // 외부에서 호출할 수 있는 refresh 함수
   const refresh = useCallback(() => {
     setRefreshTrigger((prev) => prev + 1);
@@ -88,6 +67,29 @@ const ProductRequiringMaterial = forwardRef<
     [refresh]
   );
 
+  // 연결 모델에서 제품 정보를 추출하는 헬퍼 함수
+  const getProductInfo = (connection: ConnectionModelType) => {
+    // MaterialProductConnectionModel인지 확인
+    if ('material_name' in connection) {
+      return {
+        name: connection.material_name,
+        code: connection.material_code,
+        spec: connection.material_spec,
+        unit: connection.material_unit,
+      };
+    }
+    // ProductMaterialConnectionModel인지 확인
+    if ('product_name' in connection) {
+      return {
+        name: connection.product_name,
+        code: connection.product_code,
+        spec: connection.product_spec,
+        unit: connection.product_unit,
+      };
+    }
+    return { name: '-', code: '-', spec: '-', unit: '-' };
+  };
+
   return (
     <div className="flex flex-col">
       {productConnections.length > 0 ? (
@@ -98,15 +100,15 @@ const ProductRequiringMaterial = forwardRef<
             <p className="flex-1 py-1 px-3 text-sv">규격</p>
             <p className="w-[80px] py-1 px-3 text-sv">단위</p>
           </div>
-          {productConnections.map((connection, index) => {
-            const productDetail = productDetails[connection.product_id];
+          {productConnections.map((connection) => {
+            const productInfo = getProductInfo(connection);
             return (
               <ProductRequiringMaterialItem
-                key={connection.id || index}
-                productName={productDetail?.name || '-'}
-                productCode={productDetail?.code || '-'}
-                size={productDetail?.spec || '-'}
-                unit={productDetail?.unit || '-'}
+                key={connection.connection_id}
+                productName={productInfo.name}
+                productCode={productInfo.code}
+                size={productInfo.spec}
+                unit={productInfo.unit}
               />
             );
           })}

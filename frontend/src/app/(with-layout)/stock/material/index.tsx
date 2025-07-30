@@ -162,7 +162,11 @@ const Material = ({
       )}
 
       {isDeleteModalOpen && (
-        <DeleteModal onClose={handleDelete} isLoading={isDeleting} />
+        <DeleteModal
+          onDelete={handleDelete}
+          isLoading={isDeleting}
+          onClose={() => setIsDeleteModalOpen(false)}
+        />
       )}
 
       {/* 자재 디테일 판넬 */}

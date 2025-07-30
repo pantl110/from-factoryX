@@ -9,11 +9,17 @@ import { ClientModel, MaterialItemModel } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import { useGetMaterial, useCreateMaterialHistory } from '@/hooks';
+import { useForm } from 'react-hook-form';
 
 interface MaterialEnrollmentProps {
   onClose?: () => void;
   clientInfo: ClientModel;
   showToast: () => void;
+}
+
+interface MaterialFormModel {
+  quantity: { [key: string]: number | null };
+  price: { [key: string]: number | null };
 }
 
 const MaterialEnrollmentModal = ({
@@ -32,7 +38,6 @@ const MaterialEnrollmentModal = ({
   const [selectedMaterials, setSelectedMaterials] = useState<
     MaterialItemModel[]
   >([]);
-  const [_newMaterials, setNewMaterials] = useState<MaterialItemModel[]>([]);
   const [isManualAddMode, setIsManualAddMode] = useState(false);
   const { createMaterialHistory, isLoading: isCreating } =
     useCreateMaterialHistory();
@@ -40,6 +45,15 @@ const MaterialEnrollmentModal = ({
   const { setShouldReload } = useMaterialReloadStore();
 
   const { getMaterialList } = useGetMaterial();
+
+  // React Hook Form
+  const {
+    register,
+    setValue,
+    formState: { isValid },
+  } = useForm<MaterialFormModel>({
+    mode: 'onChange',
+  });
 
   // 검색어가 변경될 때 서버에서 검색
   const [previousSearchKeyword, setPreviousSearchKeyword] = useState('');
@@ -95,6 +109,9 @@ const MaterialEnrollmentModal = ({
     setInput('');
     setSelectedMaterials((prev) => {
       if (!prev.some((mat) => mat.code === item.code)) {
+        // React Hook Form에 기본값 설정
+        setValue(`quantity.${item.code}`, null);
+        setValue(`price.${item.code}`, null);
         return [...prev, item];
       }
       return prev;
@@ -202,7 +219,30 @@ const MaterialEnrollmentModal = ({
                 setIsManualAddMode={setIsManualAddMode}
                 setNewMaterials={(fn) => {
                   const newMaterials = fn([]);
-                  setSelectedMaterials((prev) => [...prev, ...newMaterials]);
+                  setSelectedMaterials((prev) => {
+                    const updatedMaterials = [...prev, ...newMaterials];
+
+                    // React Hook Form에 새로 추가된 material의 수량과 단가 설정
+                    newMaterials.forEach((material) => {
+                      if (
+                        material.quantity !== null &&
+                        material.quantity !== undefined
+                      ) {
+                        setValue(
+                          `quantity.${material.code}`,
+                          material.quantity
+                        );
+                      }
+                      if (
+                        material.price !== null &&
+                        material.price !== undefined
+                      ) {
+                        setValue(`price.${material.code}`, material.price);
+                      }
+                    });
+
+                    return updatedMaterials;
+                  });
                 }}
                 existingMaterials={allMaterials}
                 showToast={showToast}
@@ -224,7 +264,7 @@ const MaterialEnrollmentModal = ({
                   {selectedMaterials.map((mat) => (
                     <div
                       key={mat.code}
-                      className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 group"
+                      className="flex items-center h-14 border-b border-lg Me_Body-1 group"
                     >
                       <p
                         className="flex-1 px-3 text-dg truncate"
@@ -238,45 +278,103 @@ const MaterialEnrollmentModal = ({
                       >
                         {mat.unit ?? '-'}
                       </p>
-                      <div className="flex-1 px-3 min-w-0">
+                      <div
+                        className="flex-1 px-3 min-w-0 truncate"
+                        title={`${mat.quantity}`}
+                      >
                         <input
-                          type="number"
+                          type="text"
                           className="text-dg focus:outline-none w-full min-w-0"
-                          value={mat.quantity === 0 ? '' : mat.quantity || ''}
+                          {...register(`quantity.${mat.code}`, {
+                            required: true,
+                            validate: (value) => value !== null && value > 0,
+                          })}
                           onChange={(e) => {
-                            const value = e.target.value;
-                            const quantity =
-                              value === '' ? 0 : parseInt(value) || 0;
+                            const onlyNums = e.target.value.replace(
+                              /[^0-9]/g,
+                              ''
+                            );
+                            const quantity = onlyNums ? parseInt(onlyNums) : 0;
                             handleQuantityChange(mat.code, quantity);
+                            setValue(
+                              `quantity.${mat.code}`,
+                              quantity === 0 ? null : quantity
+                            );
+
+                            // 실시간 콤마 포맷팅
+                            if (onlyNums) {
+                              e.target.value =
+                                parseInt(onlyNums).toLocaleString();
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            if (value) {
+                              e.target.value = parseInt(value).toLocaleString();
+                            }
                           }}
                           placeholder="(필수)"
-                          min="0"
                         />
                       </div>
-                      <div className="w-[100px] px-3 min-w-0">
+                      <div
+                        className="w-[100px] px-3 min-w-0 truncate"
+                        title={`${mat.price}`}
+                      >
                         <input
-                          type="number"
+                          type="text"
                           className="text-dg focus:outline-none w-full min-w-0"
-                          value={mat.price === 0 ? '' : mat.price || ''}
+                          {...register(`price.${mat.code}`, {
+                            required: true,
+                            validate: (value) => value !== null && value > 0,
+                          })}
                           onChange={(e) => {
-                            const value = e.target.value;
-                            const price =
-                              value === '' ? 0 : parseInt(value) || 0;
+                            const onlyNums = e.target.value.replace(
+                              /[^0-9]/g,
+                              ''
+                            );
+                            const price = onlyNums ? parseInt(onlyNums) : 0;
                             handlePriceChange(mat.code, price);
+                            setValue(
+                              `price.${mat.code}`,
+                              price === 0 ? null : price
+                            );
+
+                            // 실시간 콤마 포맷팅
+                            if (onlyNums) {
+                              e.target.value =
+                                parseInt(onlyNums).toLocaleString();
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            if (value) {
+                              e.target.value = parseInt(value).toLocaleString();
+                            }
                           }}
                           placeholder="(필수)"
-                          min="0"
                         />
                       </div>
-                      <p className="flex-1 px-3 text-dg truncate">
-                        {mat.price !== null &&
-                        mat.price !== undefined &&
-                        mat.quantity !== null &&
-                        mat.quantity !== undefined &&
-                        mat.price > 0 &&
-                        mat.quantity > 0
-                          ? (mat.price * mat.quantity).toLocaleString()
-                          : '-'}
+                      <p
+                        className="flex-1 px-3 text-dg truncate min-w-0"
+                        title={`${mat.quantity} * ${mat.price}`}
+                      >
+                        {(() => {
+                          const material = selectedMaterials.find(
+                            (m) => m.code === mat.code
+                          );
+                          if (
+                            material &&
+                            material.quantity &&
+                            material.price &&
+                            material.quantity > 0 &&
+                            material.price > 0
+                          ) {
+                            return (
+                              material.quantity * material.price
+                            ).toLocaleString();
+                          }
+                          return '-';
+                        })()}
                       </p>
                       {mat.code !== null && mat.code !== undefined && (
                         <div
@@ -312,7 +410,7 @@ const MaterialEnrollmentModal = ({
           disabled={
             isSuccessModalOpen
               ? false
-              : selectedMaterials.length === 0 || isCreating
+              : selectedMaterials.length === 0 || isCreating || !isValid
           }
           onClick={isSuccessModalOpen ? handleSuccessClose : handleRegister}
         />

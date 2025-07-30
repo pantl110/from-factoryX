@@ -1,14 +1,19 @@
 import StockStatusItem from './stock-status-item';
 import {
   MaterialProductConnectionModel,
+  ProductMaterialConnectionModel,
   MaterialResponseModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
+type ConnectionModelType =
+  | MaterialProductConnectionModel
+  | ProductMaterialConnectionModel;
+
 interface StockStatusProps {
   setIsMaterialDetailPanelOpen: (isOpen: boolean) => void;
   setMaterialId: (id: number) => void;
-  connections: MaterialProductConnectionModel[];
+  connections: ConnectionModelType[];
   materialDetails: Record<number, MaterialResponseModel>;
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
@@ -40,14 +45,15 @@ const StockStatus = ({
             <div className="w-8" />
           </div>
 
-          {connections.map(
-            (connection: MaterialProductConnectionModel, index: number) => {
+          {connections.map((connection: ConnectionModelType, index: number) => {
+            // MaterialProductConnectionModel인지 확인
+            if ('material_id' in connection) {
               const materialDetail = materialDetails[connection.material_id];
 
               return (
                 <StockStatusItem
                   key={index}
-                  connection={connection}
+                  connection={connection as MaterialProductConnectionModel}
                   materialDetail={materialDetail}
                   setIsMaterialDetailPanelOpen={setIsMaterialDetailPanelOpen}
                   setMaterialId={setMaterialId}
@@ -58,7 +64,8 @@ const StockStatus = ({
                 />
               );
             }
-          )}
+            return null; // ProductMaterialConnectionModel은 표시하지 않음
+          })}
         </div>
       ) : (
         <NoHistoryBox

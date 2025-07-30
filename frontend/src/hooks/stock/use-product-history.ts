@@ -59,27 +59,30 @@ const useProductHistory = () => {
       setIsLoading(true);
       setError(null);
       try {
+        // eslint-disable-next-line camelcase
         const { product_id, ...otherFilters } = filters;
         const params = new URLSearchParams();
         Object.entries(otherFilters).forEach(([key, value]) => {
           if (value !== undefined && value !== null)
             params.append(key, String(value));
         });
-        
+
         // product_id가 있으면 path parameter로, 없으면 query parameter로
         let url: string;
+        // eslint-disable-next-line camelcase
         if (product_id) {
+          // eslint-disable-next-line camelcase
           url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${product_id}/history?${params.toString()}`;
         } else {
           url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
         }
-        
+
         const res = await fetch(url, {
           method: 'GET',
           credentials: 'include',
         });
         const result = await res.json();
-        
+
         if (res.ok) {
           setData(result);
           return { success: true, data: result };
@@ -100,34 +103,51 @@ const useProductHistory = () => {
   );
 
   // Get single product history // 제품 입출고 이력 상세 조회
-  const getProductHistory = useCallback(async (historyId: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history/${historyId}`,
-        {
+  const getProductHistory = useCallback(
+    async (filters: ProductHistoryFilterModel = {}) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // eslint-disable-next-line camelcase
+        const { product_id, ...otherFilters } = filters;
+        const params = new URLSearchParams();
+        Object.entries(otherFilters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null)
+            params.append(key, String(value));
+        });
+
+        let url: string;
+        // eslint-disable-next-line camelcase
+        if (product_id) {
+          // eslint-disable-next-line camelcase
+          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${product_id}/history?${params.toString()}`;
+        } else {
+          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
+        }
+
+        const res = await fetch(url, {
           method: 'GET',
           credentials: 'include',
+        });
+        const result = await res.json();
+        if (res.ok) {
+          setData(result);
+          return { success: true, data: result };
+        } else {
+          setError(
+            result.message || '제품 입출고 이력 상세 조회에 실패했습니다.'
+          );
+          return { success: false, error: result.message };
         }
-      );
-      const result = await res.json();
-      if (res.ok) {
-        setData(result);
-        return { success: true, data: result };
-      } else {
-        setError(
-          result.message || '제품 입출고 이력 상세 조회에 실패했습니다.'
-        );
-        return { success: false, error: result.message };
+      } catch {
+        setError('서버 연결에 실패했습니다.');
+        return { success: false, error: '서버 연결에 실패했습니다.' };
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   return {
     isLoading,

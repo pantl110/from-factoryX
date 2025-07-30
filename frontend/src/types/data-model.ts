@@ -381,7 +381,9 @@ export interface ProductMaterialConnectionModel {
 
 export interface MaterialProductConnectionResponseModel {
   message: string;
-  created_connections: MaterialProductConnectionModel[]; // 생성된 연결 목록
+  created_connections:
+    | MaterialProductConnectionModel[]
+    | ProductMaterialConnectionModel[]; // 생성된 연결 목록
   total_count: number; // 생성된 총 연결 수
 }
 

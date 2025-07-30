@@ -5,20 +5,10 @@ import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from '../../material/modals/manual-add-material';
-import { MaterialResponseModel } from '@/types/data-model';
+import { MaterialItemModel } from '@/types/data-model';
 import { useGetMaterial } from '@/hooks';
 import useFactoryStore from '@/store/factory-store';
 import { useMaterialProduct, useAssignMaterialProduct } from '@/hooks';
-
-interface MaterialFormModel {
-  id: string;
-  name: string;
-  code: string;
-  spec: string;
-  unit: string;
-  quantity: number | null;
-  price: number | null;
-}
 
 interface ConnectMaterialModalProps {
   onClose: () => void;
@@ -41,9 +31,9 @@ const ConnectMaterialModal = ({
   const [input, setInput] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedMaterials, setSelectedMaterials] = useState<
-    MaterialResponseModel[]
+    MaterialItemModel[]
   >([]); // 기존 원자재 검색으로 추가
-  const [newMaterials, setNewMaterials] = useState<MaterialFormModel[]>([]); // 수동 추가한 새로운 원자재
+  const [newMaterials, setNewMaterials] = useState<MaterialItemModel[]>([]); // 수동 추가한 새로운 원자재
   const [isManualAddMode, setIsManualAddMode] = useState(false);
 
   // 검색어가 변경될 때마다 서버에서 검색
@@ -59,10 +49,10 @@ const ConnectMaterialModal = ({
   }, [factoryId, input]);
 
   // 원자재 선택 시
-  const handleSelectMaterial = (item: MaterialResponseModel) => {
+  const handleSelectMaterial = (item: MaterialItemModel) => {
     setInput('');
     setSelectedMaterials((prev) => {
-      if (!prev.some((mat) => 'id' in mat && mat.id === item.id)) {
+      if (!prev.some((mat) => mat.code === item.code)) {
         return [...prev, item];
       }
       return prev;
@@ -70,14 +60,12 @@ const ConnectMaterialModal = ({
     setIsDropdownOpen(false);
   };
 
-  const handleRemoveMaterial = (id: number) => {
-    setSelectedMaterials((prev) =>
-      prev.filter((mat) => 'id' in mat && mat.id !== id)
-    );
+  const handleRemoveMaterial = (code: string) => {
+    setSelectedMaterials((prev) => prev.filter((mat) => mat.code !== code));
   };
 
-  const handleRemoveNewMaterial = (id: string) => {
-    setNewMaterials((prev) => prev.filter((mat) => mat.id !== id));
+  const handleRemoveNewMaterial = (code: string) => {
+    setNewMaterials((prev) => prev.filter((mat) => mat.code !== code));
   };
 
   // 선택한 원자재들을 제품과 연결
@@ -114,10 +102,15 @@ const ConnectMaterialModal = ({
         const connectPayload = {
           type: 'product' as const,
           target_id: productId,
-          connections: selectedMaterials.map((material) => ({
-            id: material.id,
-            quantity: 100,
-          })),
+          connections: selectedMaterials.map((material) => {
+            const originalMaterial = materialList.find(
+              (mat) => mat.code === material.code
+            );
+            return {
+              id: originalMaterial?.id || 0,
+              quantity: 100,
+            };
+          }),
         };
 
         const connectResult = await createMaterialProduct(connectPayload);
@@ -163,7 +156,14 @@ const ConnectMaterialModal = ({
         {isDropdownOpen && input.trim() && materialList.length > 0 && (
           <div className="absolute left-0 top-14 z-10 w-[451px] h-[256px] overflow-y-auto">
             <MaterialNameDropdown
-              items={materialList}
+              items={materialList.map((mat) => ({
+                name: mat.name,
+                code: mat.code,
+                spec: mat.spec,
+                unit: mat.unit,
+                quantity: 0,
+                price: 0,
+              }))}
               onSelect={handleSelectMaterial}
               width="w-full"
             />
@@ -184,13 +184,13 @@ const ConnectMaterialModal = ({
             {/* 기존 원자재 */}
             {selectedMaterials.map((mat) => (
               <div
-                key={mat.id}
+                key={mat.code}
                 className="flex justify-between items-center h-10"
               >
                 <p className="Me_body-1 text-dg">{mat.name}</p>
                 <div
                   className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                  onClick={() => handleRemoveMaterial(mat.id)}
+                  onClick={() => handleRemoveMaterial(mat.code)}
                 >
                   <X size={16} className="text-gr" />
                 </div>
@@ -199,13 +199,13 @@ const ConnectMaterialModal = ({
             {/* 새로운 원자재 */}
             {newMaterials.map((mat) => (
               <div
-                key={mat.id}
+                key={mat.code}
                 className="flex justify-between items-center h-10"
               >
                 <p className="Me_body-1 text-dg">{mat.name}</p>
                 <div
                   className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                  onClick={() => handleRemoveNewMaterial(mat.id)}
+                  onClick={() => handleRemoveNewMaterial(mat.code)}
                 >
                   <X size={16} className="text-gr" />
                 </div>

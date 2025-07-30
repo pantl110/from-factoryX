@@ -14,17 +14,17 @@ import { ClientResponseModel } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 
 interface ClientInfoModalProps {
-  onClose: () => void;
-  onNext: (data: ClientModel) => void;
+  onClose?: () => void;
+  onNext: (client: ClientModel) => void;
 }
 
 interface ClientFormModel {
   name: string;
   businessRegistrationNumber: string;
   representativeName: string;
+  address: string;
   businessType: string;
   businessCategory: string;
-  address: string;
 }
 
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
@@ -32,22 +32,21 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
     watch,
+    setValue,
   } = useForm<ClientFormModel>({
-    mode: 'onChange',
     defaultValues: {
       name: '',
       businessRegistrationNumber: '',
       representativeName: '',
+      address: '',
       businessType: '',
       businessCategory: '',
-      address: '',
     },
   });
 
   const factoryId = useFactoryStore((state) => state.factoryId);
-  const { clientList, getClients, searchClients, isLoading } = useGetClient();
+  const { clientList, getClients, searchClients } = useGetClient();
 
   // 드롭다운 상태 관리
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -78,8 +77,9 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         if (keyword.trim()) {
           searchClients(keyword);
         } else {
-          // 검색어가 없으면 전체 목록 로드
-          getClients({ factory_id: factoryId! });
+          if (factoryId) {
+            getClients({ factory_id: factoryId });
+          }
         }
       }, 300);
 
@@ -97,8 +97,21 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     };
   }, [debounceTimer]);
 
-  const clientItems = clientList?.data || [];
+  const handleSelectClient = (item: ClientModel | ClientResponseModel) => {
+    setSearchKeyword(item.name ?? '');
+    setValue('name', item.name ?? '');
+    setValue(
+      'businessRegistrationNumber',
+      formatBusinessNumber(item.business_registration_number || '')
+    );
+    setValue('representativeName', item.representative_name ?? '');
+    setValue('address', item.address ?? '');
+    setValue('businessType', item.business_type || '');
+    setValue('businessCategory', item.business_category || '');
+    setIsDropdownOpen(false);
+  };
 
+  const clientItems = clientList?.data || [];
   if (!factoryId) return null;
 
   // 필수 필드들의 값 감시
@@ -118,21 +131,23 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     businessCategory?.trim() &&
     address?.trim();
 
-  const handleSelectClient = (item: ClientModel | ClientResponseModel) => {
-    setSearchKeyword(item.name ?? '');
-
-    // 선택한 거래처 정보로 폼 자동 채우기
-    setValue('name', item.name ?? '');
-    setValue(
-      'businessRegistrationNumber',
-      formatBusinessNumber(item.business_registration_number || '')
-    );
-    setValue('representativeName', item.representative_name ?? '');
-    setValue('address', item.address ?? '');
-    setValue('businessType', item.business_type || '');
-    setValue('businessCategory', item.business_category || '');
-
-    setIsDropdownOpen(false);
+  const onSubmit = (data: ClientFormModel) => {
+    const {
+      name,
+      businessRegistrationNumber,
+      representativeName,
+      address,
+      businessType,
+      businessCategory,
+    } = data;
+    onNext({
+      name,
+      business_registration_number: businessRegistrationNumber,
+      representative_name: representativeName,
+      address,
+      business_type: businessType,
+      business_category: businessCategory,
+    });
   };
 
   return (
@@ -146,18 +161,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     >
       <form
         className="flex flex-col gap-7 mt-4 px-6 pb-6 max-h-[calc(85vh-123px)] overflow-y-auto scrollbar-hide"
-        onSubmit={handleSubmit((data) => {
-          const client: ClientModel = {
-            factory_id: factoryId,
-            name: data.name,
-            business_registration_number: data.businessRegistrationNumber,
-            representative_name: data.representativeName,
-            business_type: data.businessType,
-            business_category: data.businessCategory,
-            address: data.address,
-          };
-          onNext(client);
-        })}
+        onSubmit={handleSubmit(onSubmit)}
       >
         <div className="flex flex-col gap-4">
           <div className="flex-1 relative">
@@ -168,7 +172,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               {...register('name', { required: true })}
               value={searchKeyword}
               onChange={(e) => {
-                const value = e.target.value;
+                const { value } = e.target;
                 setValue('name', value);
                 handleSearchChange(value);
                 setIsDropdownOpen(true);

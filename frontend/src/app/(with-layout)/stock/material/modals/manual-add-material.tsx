@@ -8,8 +8,8 @@ interface ManualAddMaterialProps {
   setNewMaterials: (
     fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
   ) => void;
-  existingMaterials: string[]; // 원자재 코드만 저장
-  showToast: () => void;
+  existingMaterials?: string[]; // 원자재 코드만 저장
+  showToast?: () => void;
 }
 
 const ManualAddMaterial = ({
@@ -38,11 +38,11 @@ const ManualAddMaterial = ({
 
   const onSubmit = (data: MaterialItemModel) => {
     // 중복 검사 - 코드만 비교
-    const isDuplicate = existingMaterials.includes(data.code);
+    const isDuplicate = existingMaterials?.includes(data.code);
 
     if (isDuplicate) {
       // 토스트 메시지 표시 (토스트 시스템이 있다면)
-      showToast();
+      showToast?.();
       // 자재코드 필드에 에러 표시를 위해 form 에러 설정
       setError('code', {
         type: 'manual',

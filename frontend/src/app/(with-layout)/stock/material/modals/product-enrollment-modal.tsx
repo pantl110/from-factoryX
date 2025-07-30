@@ -55,27 +55,8 @@ const ProductEnrollmentModal = ({
   }, [input, factoryId, getProductList]);
 
   // 품목 선택 시 - ProductResponseModel을 MaterialModel로 변환
-  const handleSelectProduct = (item: ProductResponseModel) => {
-    setInput('');
-    const materialItem: MaterialModel = {
-      name: item.name,
-      code: item.code,
-      spec: item.spec,
-      unit: item.unit,
-    };
-    setSelectedProducts((prev) => {
-      if (!prev.some((product) => product.name === materialItem.name)) {
-        return [...prev, materialItem];
-      }
-      return prev;
-    });
-    setIsOpen(false);
-  };
-
-  const handleRemoveProduct = (name: string) => {
-    setSelectedProducts((prev) =>
-      prev.filter((product) => product.name !== name)
-    );
+  const handleRemoveProduct = (code: string) => {
+    setSelectedProducts((prev) => prev.filter((prod) => prod.code !== code));
   };
 
   const handleAddProducts = async () => {
@@ -152,7 +133,7 @@ const ProductEnrollmentModal = ({
                 <p className="Me_body-1 text-dg">{product.name}</p>
                 <div
                   className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                  onClick={() => handleRemoveProduct(product.name)}
+                  onClick={() => handleRemoveProduct(product.code)}
                 >
                   <X size={16} className="text-gr" />
                 </div>

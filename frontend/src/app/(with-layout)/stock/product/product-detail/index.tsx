@@ -12,7 +12,13 @@ import {
   LocationModel,
   MaterialResponseModel,
   MaterialProductConnectionModel,
+  ProductMaterialConnectionModel,
 } from '@/types/data-model';
+
+type ConnectionModelType =
+  | MaterialProductConnectionModel
+  | ProductMaterialConnectionModel;
+
 import {
   useGetProduct,
   useUpdateProduct,
@@ -264,12 +270,10 @@ const ProductDetail = ({
   useEffect(() => {
     if (connections && Array.isArray(connections) && connections.length > 0) {
       // 연결된 자재의 상세 정보를 가져오기
-      connections.forEach(
-        async (connection: MaterialProductConnectionModel) => {
-          if (
-            connection.material_id &&
-            !materialDetails[connection.material_id]
-          ) {
+      connections.forEach(async (connection: ConnectionModelType) => {
+        // MaterialProductConnectionModel인지 확인
+        if ('material_id' in connection && connection.material_id) {
+          if (!materialDetails[connection.material_id]) {
             try {
               const result = await getMaterialDetail(connection.material_id);
               if (result.success && result.data) {
@@ -283,7 +287,7 @@ const ProductDetail = ({
             }
           }
         }
-      );
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connections, getMaterialDetail]);
@@ -601,7 +605,9 @@ const ProductDetail = ({
             </div>
             <StockStatus
               connections={
-                connections && Array.isArray(connections) ? connections : []
+                connections && Array.isArray(connections)
+                  ? (connections as ConnectionModelType[])
+                  : []
               }
               materialDetails={materialDetails}
               setIsMaterialDetailPanelOpen={setIsMaterialDetailPanelOpen}

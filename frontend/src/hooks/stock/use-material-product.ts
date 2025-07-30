@@ -2,7 +2,13 @@ import { useState, useCallback } from 'react';
 import {
   CreateMaterialProductModel,
   MaterialProductConnectionResponseModel,
+  MaterialProductConnectionModel,
+  ProductMaterialConnectionModel,
 } from '@/types/data-model';
+
+type ConnectionModelType =
+  | MaterialProductConnectionModel
+  | ProductMaterialConnectionModel;
 
 // 원자재와 제품을 연결하여 BOM(Bill of Materials)을 생성합니다.
 // type에 따라 원자재 기준 또는 제품 기준으로 연결할 수 있습니다.
@@ -10,8 +16,9 @@ const useMaterialProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [data, setData] =
-    useState<MaterialProductConnectionResponseModel | null>(null);
+  const [data, setData] = useState<
+    MaterialProductConnectionResponseModel | ConnectionModelType[] | null
+  >(null);
 
   // 연결 생성
   const createMaterialProduct = async (payload: CreateMaterialProductModel) => {
