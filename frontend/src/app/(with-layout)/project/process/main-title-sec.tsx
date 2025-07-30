@@ -12,7 +12,7 @@ interface MainTitleSecProps {
   onSelectDropdownClose?: () => void;
   onUploadClick?: () => void;
   onDirectInputClick?: (ocrData?: OcrDataModel) => void;
-  onSearchOrderClick?: () => void;
+  onOrderUploadClick?: () => void;
 }
 
 const statusTabMap = [
@@ -33,7 +33,7 @@ const MainTitleSec = ({
   onSelectDropdownClose,
   onUploadClick,
   onDirectInputClick,
-  onSearchOrderClick,
+  onOrderUploadClick,
 }: MainTitleSecProps) => {
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
@@ -58,7 +58,7 @@ const MainTitleSec = ({
                   onClose={onSelectDropdownClose}
                   onUploadClick={onUploadClick}
                   onDirectInputClick={onDirectInputClick || (() => {})}
-                  onSearchOrderClick={onSearchOrderClick || (() => {})}
+                  onOrderUploadClick={onOrderUploadClick || (() => {})}
                 />
               </div>
             )}

@@ -7,14 +7,14 @@ interface SelectDropdownProps {
   onClose: () => void;
   onUploadClick: () => void;
   onDirectInputClick: (ocrData?: OcrDataModel) => void;
-  onSearchOrderClick: () => void;
+  onOrderUploadClick: () => void;
 }
 
 const SelectDropdown = ({
   onClose,
   onUploadClick,
   onDirectInputClick,
-  onSearchOrderClick,
+  onOrderUploadClick,
 }: SelectDropdownProps) => {
   const router = useRouter();
 
@@ -28,14 +28,14 @@ const SelectDropdown = ({
   };
 
   const handleGoToOrder = () => {
-    onSearchOrderClick();
+    onOrderUploadClick();
   };
 
   return (
     <Dropdown onClose={onClose}>
       <DropdownItem text="견적요청서 업로드" onClick={handleUploadClick} />
-      <DropdownItem text="견적서 직접 입력" onClick={handleGoToQuotation} />
-      <DropdownItem text="주문서 불러오기" onClick={handleGoToOrder} />
+      <DropdownItem text="주문서 업로드" onClick={handleGoToOrder} />
+      <DropdownItem text="직접 입력" onClick={handleGoToQuotation} />
     </Dropdown>
   );
 };

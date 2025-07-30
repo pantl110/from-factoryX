@@ -14,7 +14,6 @@ import DeleteModal from '@/ui/modal/delete-modal';
 import Spinner from '@/ui/spinner';
 import { useCreateProject, useGetProjects, useCheckAll } from '@/hooks';
 import useFactoryStore from '@/store/factory-store';
-import SearchOrderModal from './modals/search-order-modal';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
@@ -40,7 +39,7 @@ const ProcessProjectPageInner = () => {
   // 드랍다운, 모달 상태
   const [isSelectDropdownOpen, setIsSelectDropdownOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isSearchOrderModalOpen, setIsSearchOrderModalOpen] = useState(false);
+  const [isOrderUploadModalOpen, setIsOrderUploadModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // 데이터 상태
@@ -130,8 +129,12 @@ const ProcessProjectPageInner = () => {
     setIsSelectDropdownOpen(false);
     setIsUploadModalOpen(true);
   };
+  const handleOpenOrderUploadModal = () => {
+    setIsSelectDropdownOpen(false);
+    setIsOrderUploadModalOpen(true);
+  };
 
-  const handleStatusChange = (status: ProjectStatusType | 'progress') => {
+  const handleTabChange = (status: ProjectStatusType | 'progress') => {
     setSelectedStatus(status);
     setCurrentPage(1); // 탭 상태 변경 시 표는 첫 페이지로 이동
     setSearchKeyword(''); // 탭 변경시 검색어도 초기화
@@ -201,12 +204,12 @@ const ProcessProjectPageInner = () => {
         <MainTitleSec
           onNewQuotation={handleNewQuotation}
           selectedStatus={selectedStatus}
-          onStatusChange={handleStatusChange}
+          onStatusChange={handleTabChange}
           isSelectDropdownOpen={isSelectDropdownOpen}
           onSelectDropdownClose={() => setIsSelectDropdownOpen(false)}
           onUploadClick={handleOpenUploadModal}
           onDirectInputClick={handleDirectInputClick}
-          onSearchOrderClick={() => setIsSearchOrderModalOpen(true)}
+          onOrderUploadClick={handleOpenOrderUploadModal}
         />
 
         {/* 테스트 프로젝트 생성 버튼 */}
@@ -256,18 +259,15 @@ const ProcessProjectPageInner = () => {
         </div>
       </div>
 
-      {/* 견적요청서 파일 업로드 모달 */}
-      {isUploadModalOpen && (
+      {/* 견적요청서/주문서 파일 업로드 모달 */}
+      {(isUploadModalOpen || isOrderUploadModalOpen) && (
         <ExcelUploadModal
-          documentTitle="견적 요청서"
+          documentTitle={isUploadModalOpen ? '견적 요청서' : '주문서'}
           onClose={() => setIsUploadModalOpen(false)}
           onComplete={handleDirectInputClick}
         />
       )}
-      {/* 주문서 검색 모달 */}
-      {isSearchOrderModalOpen && (
-        <SearchOrderModal onClose={() => setIsSearchOrderModalOpen(false)} />
-      )}
+
       {/* 프로젝트 삭제 모달 */}
       {isDeleteModalOpen && (
         <DeleteModal

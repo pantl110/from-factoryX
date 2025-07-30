@@ -3,7 +3,7 @@ import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { useState, useEffect } from 'react';
 import { ProductResponseModel, MaterialModel } from '@/types/data-model';
-import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
+// import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddProduct from './manual-add-product';
 import { useGetProduct, useAssignProduct } from '@/hooks';
@@ -125,11 +125,11 @@ const ProductEnrollmentModal = ({
 
         {isOpen && filteredProducts.length > 0 && (
           <div className="absolute left-0 top-12 z-10 w-[437px]">
-            <ProductNameDropdown
+            {/* <ProductNameDropdown
               items={filteredProducts}
               onSelect={handleSelectProduct}
               width="w-full"
-            />
+            /> */}
           </div>
         )}
       </div>

@@ -14,7 +14,7 @@ import ProductionLog from '../production-log';
 import Delivery from '../delivery';
 import TaxDocumentView from '../../document/tax-document-view';
 import TransactionDocumentView from '../../document/transaction-document-view';
-import OrderDocumentView from '../../document/order-document-view';
+// import OrderDocumentView from '../../document/order-document-view';
 import { ProjectStatusType } from '@/types/status-type';
 import { ProductionTabType } from '@/components/top-bar/types';
 import Spinner from '@/ui/spinner';
@@ -102,9 +102,7 @@ const ProductionPageContent = () => {
       {tabs[selectedTab] === '생산 내역' && <ProductionLog />}
       {tabs[selectedTab] === '생산 계획' && <ProductionPlan />}
       {tabs[selectedTab] === '주문서' && (
-        <div className="px-10 pt-5 pb-10">
-          <OrderDocumentView />
-        </div>
+        <div className="px-10 pt-5 pb-10">{/* <OrderDocumentView /> */}</div>
       )}
     </div>
   );

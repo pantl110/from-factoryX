@@ -36,11 +36,7 @@ const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
           </div>
         </div>
         <div className="flex flex-col gap-6">
-          <DocumentViewTitle
-            title="[플라스틱이 좋아]건 세금계산서"
-            dateLabel="작성일자"
-            date="2025-07-31"
-          />
+          <DocumentViewTitle title="[플라스틱이 좋아]건 세금계산서" />
           <div className="flex gap-5">
             <ProviderInfo />
             <BuyerInfo />

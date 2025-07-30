@@ -6,7 +6,7 @@ import MainTitleSec from './main-title-sec';
 import DocumentTable from './document-table';
 import Pagination from '@/components/pagination';
 import { DocumentType } from './types';
-import OrderDocumentView from './order-document-view';
+// import OrderDocumentView from './order-document-view';
 import documentData, { DocumentDataModel } from '@/mocks/document-data';
 import Panel from '@/ui/panel';
 import ProductionDocumentView from './production-document-view';
@@ -96,11 +96,11 @@ const DocumentPageContent = () => {
       </div>
 
       {/* 판넬 */}
-      {selectedDocument && selectedDocument.documentType === '주문서' && (
+      {/* {selectedDocument && selectedDocument.documentType === '주문서' && (
         <Panel title="주문서" onClose={() => setSelectedDocument(null)}>
           <OrderDocumentView />
         </Panel>
-      )}
+      )} */}
       {selectedDocument && selectedDocument.documentType === '생산지시서' && (
         <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
           <ProductionDocumentView />
