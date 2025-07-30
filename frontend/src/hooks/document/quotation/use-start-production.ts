@@ -42,7 +42,7 @@ const useStartProduction = (): UseStartProductionReturnModel => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/production`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/production`,
         {
           method: 'POST',
           credentials: 'include',

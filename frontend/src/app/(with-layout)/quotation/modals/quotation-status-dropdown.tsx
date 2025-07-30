@@ -4,16 +4,17 @@ import DropdownItem from '@/ui/dropdown/dropdown-item';
 
 interface QuotationStatusDropdownProps {
   onClose: () => void;
+  onQuotationClick: () => void;
+  onInterruptionClick: () => void;
 }
 
-const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
+const QuotationStatusDropdown = ({
+  onClose,
+  onQuotationClick,
+  onInterruptionClick,
+}: QuotationStatusDropdownProps) => {
   return (
-    <Dropdown
-      width="w-full"
-      onClose={onClose}
-      padding="p-4"
-      className="gap-2.5"
-    >
+    <Dropdown width="w-full" onClose={onClose} padding="p-4" gap="gap-2.5">
       <DropdownItem
         onClick={(e) => {
           e?.stopPropagation();
@@ -27,7 +28,7 @@ const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
           bgColor="bg-yellow-8"
           textColor="text-yellow"
           hover="hover:bg-yellow-hover"
-          onClick={onClose}
+          onClick={onQuotationClick}
         />
       </DropdownItem>
       <DropdownItem
@@ -43,7 +44,7 @@ const QuotationStatusDropdown = ({ onClose }: QuotationStatusDropdownProps) => {
           bgColor="bg-red-8"
           textColor="text-red"
           hover="hover:bg-red-hover"
-          onClick={onClose}
+          onClick={onInterruptionClick}
         />
       </DropdownItem>
     </Dropdown>

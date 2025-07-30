@@ -7,6 +7,7 @@ import {
 } from '@/types/data-model';
 
 interface QuotationDocumentViewProps {
+  documentTitle: string;
   clientData: ClientModel;
   dueDate: string;
   productListInfoTitle: string;
@@ -15,6 +16,7 @@ interface QuotationDocumentViewProps {
 }
 
 const QuotationDocumentView = ({
+  documentTitle,
   clientData,
   dueDate,
   productListInfoTitle,
@@ -23,7 +25,7 @@ const QuotationDocumentView = ({
 }: QuotationDocumentViewProps) => {
   return (
     <div className="flex flex-col gap-6">
-      <DocumentViewTitle title={`[${clientData.name}]건 견적서`} />
+      <DocumentViewTitle title={`[${clientData.name}]건 ${documentTitle}`} />
       <SupplierInfo clientData={clientData} dueDate={dueDate} />
       <ProductListInfo
         productListInfoTitle={productListInfoTitle}

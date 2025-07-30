@@ -259,6 +259,7 @@ const ProcessProjectPageInner = () => {
       {/* 견적요청서 파일 업로드 모달 */}
       {isUploadModalOpen && (
         <ExcelUploadModal
+          documentTitle="견적 요청서"
           onClose={() => setIsUploadModalOpen(false)}
           onComplete={handleDirectInputClick}
         />

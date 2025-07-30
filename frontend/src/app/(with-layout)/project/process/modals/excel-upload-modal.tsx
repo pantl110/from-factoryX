@@ -8,9 +8,14 @@ import Spinner from '@/ui/spinner';
 interface UploadModalProps {
   onClose: () => void;
   onComplete: (ocrData?: OcrDataModel) => void;
+  documentTitle: string;
 }
 
-const ExcelUploadModal = ({ onClose, onComplete }: UploadModalProps) => {
+const ExcelUploadModal = ({
+  onClose,
+  onComplete,
+  documentTitle,
+}: UploadModalProps) => {
   const [hasFiles, setHasFiles] = useState(false);
   const { uploadOcr, isLoading } = useOcrUpload();
 
@@ -44,7 +49,7 @@ const ExcelUploadModal = ({ onClose, onComplete }: UploadModalProps) => {
 
   const title = hasFiles
     ? '업로드된 파일을 확인해 주세요.'
-    : '견적 요청서 파일을 업로드해 주세요.';
+    : `${documentTitle} 파일을 업로드해 주세요.`;
 
   const subtitle = hasFiles
     ? '파일이 맞는지 확인 후, 업로드를 눌러주세요.'

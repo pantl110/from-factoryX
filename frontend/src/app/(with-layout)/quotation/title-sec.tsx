@@ -25,6 +25,8 @@ interface TitleSecProps {
   hasQuotationProducts: boolean;
   onSaveDraft?: () => void | Promise<void>;
   isDirty: boolean;
+  isInterruptionStatus: boolean;
+  setIsInterruptionStatus: (status: boolean) => void;
 }
 
 const TitleSec = ({
@@ -39,6 +41,8 @@ const TitleSec = ({
   hasQuotationProducts,
   onSaveDraft,
   isDirty,
+  isInterruptionStatus,
+  setIsInterruptionStatus,
 }: TitleSecProps) => {
   // 실시간으로 업체명 가져오기
   const clientName = watch('name');
@@ -62,28 +66,62 @@ const TitleSec = ({
   return (
     <div className="flex gap-1 mb-4 pr-10">
       <div className="flex-1 gap-1">
-        <div className="cursor-pointer relative w-fit">
+        <div
+          className={`${isOrderStatus ? 'cursor-default' : 'cursor-pointer'} relative w-fit`}
+        >
           <Chip
-            text="견적 요청"
-            bgColor="bg-yellow-8"
-            textColor="text-yellow"
-            state={true}
+            text={
+              isOrderStatus
+                ? '주문 확정'
+                : isInterruptionStatus
+                  ? '중단'
+                  : '견적 요청'
+            }
+            bgColor={
+              isOrderStatus
+                ? 'bg-orange-8'
+                : isInterruptionStatus
+                  ? 'bg-red-8'
+                  : 'bg-yellow-8'
+            }
+            textColor={
+              isOrderStatus
+                ? 'text-orange'
+                : isInterruptionStatus
+                  ? 'text-red'
+                  : 'text-yellow'
+            }
+            state={!isOrderStatus}
             onClick={(e) => {
+              if (isOrderStatus) return;
               if (e) openQuotationStatusDropdown(e);
             }}
+            cursor={isOrderStatus ? 'cursor-default' : 'cursor-pointer'}
           />
-          {isQuotationStatusDropdownOpen && quotationStatusAnchorRect && (
-            <div
-              style={{
-                position: 'fixed',
-                left: quotationStatusAnchorRect.left,
-                top: quotationStatusAnchorRect.bottom + 8,
-                zIndex: 10,
-              }}
-            >
-              <QuotationStatusDropdown onClose={closeQuotationStatusDropdown} />
-            </div>
-          )}
+          {isQuotationStatusDropdownOpen &&
+            quotationStatusAnchorRect &&
+            !isOrderStatus && (
+              <div
+                style={{
+                  position: 'fixed',
+                  left: quotationStatusAnchorRect.left,
+                  top: quotationStatusAnchorRect.bottom + 8,
+                  zIndex: 10,
+                }}
+              >
+                <QuotationStatusDropdown
+                  onClose={closeQuotationStatusDropdown}
+                  onQuotationClick={() => {
+                    setIsInterruptionStatus(false);
+                    closeQuotationStatusDropdown();
+                  }}
+                  onInterruptionClick={() => {
+                    setIsInterruptionStatus(true);
+                    closeQuotationStatusDropdown();
+                  }}
+                />
+              </div>
+            )}
         </div>
         <p className="Heading-1 mt-2">
           {clientName || '업체명을 입력해 주세요.'}

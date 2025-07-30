@@ -9,6 +9,7 @@ interface DropdownProps {
   padding?: string;
   borderColor?: string;
   maxHeight?: boolean;
+  gap?: string;
 }
 
 const Dropdown = ({
@@ -20,6 +21,7 @@ const Dropdown = ({
   padding = 'p-2',
   borderColor = '',
   maxHeight = false,
+  gap = '',
 }: DropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +62,13 @@ const Dropdown = ({
       }`}
       style={style}
     >
-      <div className={maxHeight ? 'min-h-0' : ''}>{children}</div>
+      <div
+        className={`${gap ? 'flex flex-col' : ''} ${gap} ${
+          maxHeight ? 'min-h-0' : ''
+        }`}
+      >
+        {children}
+      </div>
     </div>
   );
 };

@@ -65,6 +65,7 @@ const PrintView = ({
 
       <div ref={contentRef}>
         <QuotationDocumentView
+          documentTitle={documentTitle}
           clientData={clientData}
           dueDate={dueDate}
           productListInfoTitle={productListInfoTitle}

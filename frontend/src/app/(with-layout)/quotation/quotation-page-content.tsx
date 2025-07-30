@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLineLeftIcon,
   ArrowLineRightIcon,
@@ -18,6 +19,7 @@ import {
   QuotationProductDetailResponseModel,
 } from '@/types/data-model';
 import useSaveDraftQuotation from '@/hooks/document/quotation/use-save-draft-quotation';
+import useStartProduction from '@/hooks/document/quotation/use-start-production';
 import { useSearchParams } from 'next/navigation';
 
 // Extend ClientModel for quotation form to include due_date
@@ -30,12 +32,14 @@ import TitleSec from './title-sec';
 import InputSection from './input-section';
 
 const QuotationPageContent = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const quotationId = searchParams.get('id')
     ? parseInt(searchParams.get('id') || '0')
     : undefined;
 
   const { saveDraft } = useSaveDraftQuotation();
+  const { startProduction } = useStartProduction();
 
   // 거래처 정보 폼
   const { setValue, control, trigger, watch, formState } =
@@ -57,8 +61,10 @@ const QuotationPageContent = () => {
       },
     });
 
-  // 견적서 주문서 상태 관리
+  // 견적서 & 주문서 상태 관리
   const [isOrderStatus, setIsOrderStatus] = useState(false);
+  // 견적 요청 & 중단 상태 관리
+  const [isInterruptionStatus, setIsInterruptionStatus] = useState(false);
   // OCR 데이터 상태 관리
   const [ocrData, _setOcrData] = useState<OcrDataModel | null>(null);
 
@@ -104,7 +110,7 @@ const QuotationPageContent = () => {
     setIsRightPanelExpanded((prev) => !prev);
   };
 
-  // 임시 저장 핸들러
+  // 임시 저장 버튼 핸들러
   const handleSaveDraft = useCallback(async () => {
     try {
       const formData = watch();
@@ -145,6 +151,52 @@ const QuotationPageContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saveDraft, watch, quotationId]);
 
+  // 생산 시작 버튼 핸들러
+  const handleStartProduction = useCallback(async () => {
+    try {
+      const formData = watch();
+      const productionData = {
+        quotation_id: quotationId || 0,
+        client: {
+          factory_id: formData.factory_id,
+          name: formData.name,
+          business_registration_number: formData.business_registration_number,
+          representative_name: formData.representative_name,
+          email: formData.email,
+          phone: formData.phone,
+          fax: formData.fax,
+          business_type: formData.business_type,
+          business_category: formData.business_category,
+          address: formData.address,
+          manager: formData.manager,
+          note: formData.note,
+        },
+        due_date: formData.due_date,
+        products: quotationProducts
+          .filter(
+            (product) =>
+              product.product_id && product.quantity && product.unit_price
+          )
+          .map((product) => ({
+            id: product.product_id as number,
+            quantity: product.quantity as number,
+            unit_price: product.unit_price as number,
+          })),
+      };
+
+      const result = await startProduction(productionData);
+      // 성공 시 모달 닫고
+      setIsStartProductionModalOpen(false);
+      //프로젝트 페이지로 이동
+      if (result && result.project_id) {
+        router.push(`/production/${result.project_id}`);
+      }
+    } catch {
+      throw new Error('Failed to start production');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startProduction, watch, quotationId]);
+
   return (
     <>
       <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
@@ -160,8 +212,11 @@ const QuotationPageContent = () => {
           hasQuotationProducts={hasQuotationProducts}
           onSaveDraft={handleSaveDraft}
           isDirty={formState.isDirty}
+          isInterruptionStatus={isInterruptionStatus}
+          setIsInterruptionStatus={setIsInterruptionStatus}
         />
         <TabArea
+          isOrderStatus={isOrderStatus}
           activeTab={activeTab}
           activateQuotationTab={activateQuotationTab}
           ocrData={ocrData}
@@ -178,9 +233,10 @@ const QuotationPageContent = () => {
             {selectedProduct ? (
               <History selectedProduct={selectedProduct} />
             ) : ocrData ? (
-              <PreviewImage />
+              <PreviewImage isOrderStatus={isOrderStatus} />
             ) : (
-              <History selectedProduct={null} />
+              // <History selectedProduct={null} />
+              <PreviewImage isOrderStatus={isOrderStatus} />
             )}
           </div>
 
@@ -204,7 +260,9 @@ const QuotationPageContent = () => {
                     <ArrowLineLeftIcon size={20} className="text-dg" />
                   )}
                 </button>
-                <h2 className="flex-1 Heading-2">견적서</h2>
+                <h2 className="flex-1 Heading-2">
+                  {isOrderStatus ? '주문서' : '견적서'}
+                </h2>
               </div>
             </div>
 
@@ -242,7 +300,7 @@ const QuotationPageContent = () => {
       {isPrintOpen && (
         <OverlayView onClose={() => setIsPrintOpen(false)}>
           <PrintView
-            documentTitle="견적서"
+            documentTitle={isOrderStatus ? '주문서' : '견적서'}
             clientData={{
               factory_id: watch().factory_id,
               name: watch().name,
@@ -259,7 +317,9 @@ const QuotationPageContent = () => {
               note: watch().note,
             }}
             dueDate={watch().due_date}
-            productListInfoTitle="견적 품목 정보"
+            productListInfoTitle={
+              isOrderStatus ? '주문 품목 정보' : '견적 품목 정보'
+            }
             productItems={quotationProducts}
             supplyAmount={quotationProducts.reduce((total, product) => {
               if (product.quantity && product.unit_price) {
@@ -275,7 +335,7 @@ const QuotationPageContent = () => {
       {isEmailOpen && (
         <OverlayView onClose={() => setIsEmailOpen(false)}>
           <EmailView
-            documentTitle="견적서"
+            documentTitle={isOrderStatus ? '주문서' : '견적서'}
             clientData={{
               factory_id: watch().factory_id,
               name: watch().name,
@@ -292,7 +352,9 @@ const QuotationPageContent = () => {
               note: watch().note,
             }}
             dueDate={watch().due_date}
-            productListInfoTitle="견적 품목 정보"
+            productListInfoTitle={
+              isOrderStatus ? '주문 품목 정보' : '견적 품목 정보'
+            }
             productItems={quotationProducts}
             supplyAmount={quotationProducts.reduce((total, product) => {
               if (product.quantity && product.unit_price) {
@@ -308,6 +370,7 @@ const QuotationPageContent = () => {
       {isStartProductionModalOpen && (
         <StartProductionModal
           onClose={() => setIsStartProductionModalOpen(false)}
+          onClick={handleStartProduction}
         />
       )}
     </>
