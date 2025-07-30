@@ -8,17 +8,23 @@ interface ManualAddMaterialProps {
   setNewMaterials: (
     fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
   ) => void;
+  existingMaterials: string[]; // 원자재 코드만 저장
+  showToast: () => void;
 }
 
 const ManualAddMaterial = ({
   setIsManualAddMode,
   setNewMaterials,
+  existingMaterials, // 원자재 코드 목록 받기
+  showToast,
 }: ManualAddMaterialProps) => {
   const {
     register,
     handleSubmit,
-    formState: { isValid },
+    formState: { isValid, errors },
     reset,
+    setError,
+    watch,
   } = useForm<MaterialItemModel>({
     defaultValues: {
       name: '',
@@ -32,6 +38,20 @@ const ManualAddMaterial = ({
   });
 
   const onSubmit = (data: MaterialItemModel) => {
+    // 중복 검사 - 코드만 비교
+    const isDuplicate = existingMaterials.includes(data.code);
+
+    if (isDuplicate) {
+      // 토스트 메시지 표시 (토스트 시스템이 있다면)
+      showToast();
+      // 자재코드 필드에 에러 표시를 위해 form 에러 설정
+      setError('code', {
+        type: 'manual',
+        message: '이미 존재하는 자재코드입니다.',
+      });
+      return;
+    }
+
     setNewMaterials((prev) => [
       ...prev,
       {
@@ -68,6 +88,7 @@ const ManualAddMaterial = ({
             </div>
             <div className="flex-1">
               <Input
+                showError={!!errors.code}
                 placeholder="EX) 123456"
                 label="자재코드"
                 required
@@ -115,7 +136,7 @@ const ManualAddMaterial = ({
             <div className="flex-1">
               <Input
                 placeholder="EX) 100"
-                label="사용 수량"
+                label="수량"
                 required
                 type="text"
                 {...register('quantity', {

@@ -12,6 +12,9 @@ import usePageStatusStore from '@/store/page-status-store';
 import MaterialEnrollmentModal from './material/modals/material-enrollment-modal';
 import Spinner from '@/ui/spinner';
 import { ClientModel } from '@/types/data-model';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
+import useToast from '@/hooks/use-toast';
 
 const StockPageContent = () => {
   const stockTab = usePageStatusStore((state) => state.stockTab);
@@ -42,6 +45,9 @@ const StockPageContent = () => {
   const [clientInfo, setClientInfo] = useState<ClientModel | null>(null); // 자재 추가 시 저장해 둘 거래처 정보
   const [isMaterialEnrollmentModalOpen, setIsMaterialEnrollmentModalOpen] =
     useState(false);
+
+  // 토스트 훅 사용
+  const { isToastOpen, isVisible, showToast } = useToast();
 
   // 디테일 판넬 상태
   const [isProductDetailPanelOpen, setIsProductDetailPanelOpen] =
@@ -119,6 +125,18 @@ const StockPageContent = () => {
         <MaterialEnrollmentModal
           clientInfo={clientInfo}
           onClose={() => setIsMaterialEnrollmentModalOpen(false)}
+          showToast={showToast}
+        />
+      )}
+
+      {/* 자재 코드 겹치면 토스트 */}
+      {isToastOpen && (
+        <Toast
+          text="이미 존재하는 자재코드에요."
+          subtext="다른 자재코드로 수정해주세요."
+          type="red"
+          isVisible={isVisible}
+          icon={<WarningCircle size={20} />}
         />
       )}
     </>
