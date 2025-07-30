@@ -24,7 +24,6 @@ const ManualAddMaterial = ({
     formState: { isValid, errors },
     reset,
     setError,
-    watch,
   } = useForm<MaterialItemModel>({
     defaultValues: {
       name: '',

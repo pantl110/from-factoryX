@@ -28,6 +28,7 @@ const Material = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const pageSize = 10;
 
   const { getMaterialList, materialList, isLoading, error, pagination } =
@@ -46,6 +47,12 @@ const Material = ({
 
   const { deleteMaterial, isLoading: isDeleting } = useDeleteMaterial();
 
+  // 정렬 핸들러
+  const handleSortChange = (newOrder: 'asc' | 'desc') => {
+    setOrder(newOrder);
+    setPage(1); // 정렬 변경 시 첫 페이지로 이동
+  };
+
   const handleDelete = async () => {
     // 체크된 자재 id 목록
     const idsToDelete = materialList
@@ -61,23 +68,31 @@ const Material = ({
 
   // 마운트 시 데이터 불러오기
   useEffect(() => {
-    getMaterialList({ order: 'desc', page, page_size: pageSize });
+    getMaterialList({ order, page, page_size: pageSize });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize]);
+  }, [page, pageSize, order]);
 
   // shouldReload가 true일 때 목록 새로고침
   useEffect(() => {
     if (shouldReload) {
-      getMaterialList({ order: 'desc', q: search, page, page_size: pageSize });
+      getMaterialList({ order, q: search, page, page_size: pageSize });
       setShouldReload(false);
     }
-  }, [shouldReload, getMaterialList, setShouldReload, search, page, pageSize]);
+  }, [
+    shouldReload,
+    getMaterialList,
+    setShouldReload,
+    search,
+    page,
+    pageSize,
+    order,
+  ]);
 
   // 검색 핸들러
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1); // 검색 시 첫 페이지로 이동
-    getMaterialList({ order: 'desc', q: value, page: 1, page_size: pageSize });
+    getMaterialList({ order, q: value, page: 1, page_size: pageSize });
   };
 
   return (
@@ -116,7 +131,12 @@ const Material = ({
         </div>
       ) : (
         <div>
-          <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
+          <TableHeader
+            isAllChecked={isAllChecked}
+            onToggleAll={toggleAll}
+            currentOrder={order}
+            onSortChange={handleSortChange}
+          />
           {materialList.map((material) => {
             return (
               <TableItem
