@@ -1,6 +1,6 @@
-import MiniBtn from "@/ui/mini-btn";
-import { useState } from "react";
-import DeleteAccountModal from "./modals/delete-account-modal";
+import MiniBtn from '@/ui/mini-btn';
+import { useState } from 'react';
+import DeleteAccountModal from './modals/delete-account-modal';
 
 const DeleteAccount = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

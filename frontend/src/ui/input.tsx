@@ -1,5 +1,5 @@
-import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react/dist/ssr";
-import { useState, forwardRef } from "react";
+import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react/dist/ssr';
+import { useState, forwardRef } from 'react';
 
 interface InputProps {
   label?: string;
@@ -7,7 +7,7 @@ interface InputProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   required?: boolean;
-  type?: HTMLInputElement["type"];
+  type?: HTMLInputElement['type'];
   disabled?: boolean;
   isShowPasswordToggle?: boolean;
   showError?: boolean;
@@ -26,9 +26,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       label,
       value,
       onChange,
-      placeholder = "검색어를 입력하세요.",
+      placeholder = '검색어를 입력하세요.',
       required,
-      type = "text",
+      type = 'text',
       disabled = false,
       isShowPasswordToggle = false,
       showError = false,
@@ -40,7 +40,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       name,
       disabledSetting = false,
     },
-    ref,
+    ref
   ) => {
     const [isShowPassword, setisShowPassword] = useState(false);
 
@@ -50,35 +50,35 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const getInputClassName = () => {
       let className =
-        "w-full h-12 min-h-9 rounded px-3 Re_Body-1 placeholder:text-sv outline-none border transition-colors duration-300";
+        'w-full h-12 min-h-9 rounded px-3 Re_Body-1 placeholder:text-sv outline-none border transition-colors duration-300';
 
-      if (type === "number") {
+      if (type === 'number') {
         className +=
-          " appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+          ' appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none';
       }
 
       if (disabled) {
-        className += " bg-lg text-dg cursor-not-allowed border-[#e4e4e7]";
+        className += ' bg-lg text-dg cursor-not-allowed border-[#e4e4e7]';
       } else if (disabledSetting) {
-        className += " text-bl cursor-not-allowed border-[#e4e4e7] ";
+        className += ' text-bl cursor-not-allowed border-[#e4e4e7] ';
       } else if (showError) {
         className +=
-          " border-red hover:border-primary focus:border-primary focus:text-bl";
+          ' border-red hover:border-primary focus:border-primary focus:text-bl';
       } else {
         className +=
-          " border-[#e4e4e7] hover:border-primary focus:border-primary focus:text-bl";
+          ' border-[#e4e4e7] hover:border-primary focus:border-primary focus:text-bl';
       }
 
-      if (type === "date") {
-        className += !value ? " text-sv" : " text-bl";
+      if (type === 'date') {
+        className += !value ? ' text-sv' : ' text-bl';
       }
 
       return className;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (type === "number") {
-        e.target.value = e.target.value.replace(/[^0-9]/g, "");
+      if (type === 'number') {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
       }
       if (onChange) {
         onChange(e);
@@ -106,8 +106,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             type={
               isShowPasswordToggle
                 ? isShowPassword
-                  ? "text"
-                  : "password"
+                  ? 'text'
+                  : 'password'
                 : type
             }
             value={value}
@@ -118,8 +118,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             placeholder={placeholder}
             disabled={disabled || disabledSetting}
             className={getInputClassName()}
-            onWheel={type === "number" ? (e) => e.preventDefault() : undefined}
-            pattern={type === "number" ? "[0-9]*" : undefined}
+            onWheel={type === 'number' ? (e) => e.preventDefault() : undefined}
+            pattern={type === 'number' ? '[0-9]*' : undefined}
           />
 
           {isShowPasswordToggle && (
@@ -140,9 +140,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {errorMessage && <p className="text-red Re_Body-1">{errorMessage}</p>}
       </div>
     );
-  },
+  }
 );
 
-Input.displayName = "Input";
+Input.displayName = 'Input';
 
 export default Input;

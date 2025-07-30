@@ -1,5 +1,5 @@
-import Dropdown from "@/ui/dropdown/dropdown";
-import DropdownItem from "@/ui/dropdown/dropdown-item";
+import Dropdown from '@/ui/dropdown/dropdown';
+import DropdownItem from '@/ui/dropdown/dropdown-item';
 
 interface MaterialAddDropdownProps {
   onClose: () => void;
@@ -14,7 +14,7 @@ const MaterialAddDropdown = ({
 }: MaterialAddDropdownProps) => {
   return (
     <Dropdown onClose={onClose}>
-      <DropdownItem text="개별 자재 추가" onClick={onOpenClientInfoModal} />{" "}
+      <DropdownItem text="개별 자재 추가" onClick={onOpenClientInfoModal} />{' '}
       <DropdownItem text="엑셀로 한 번에 등록" onClick={onOpenExcelModal} />
     </Dropdown>
   );

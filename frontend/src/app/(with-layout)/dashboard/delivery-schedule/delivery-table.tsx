@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { projectData } from "@/mocks/project-data";
-import DeliveryTableItem from "./delivery-table-item";
-import Pagination from "@/components/pagination";
-import usePagination from "@/hooks/use-pagination";
+import { projectData } from '@/mocks/project-data';
+import DeliveryTableItem from './delivery-table-item';
+import Pagination from '@/components/pagination';
+import usePagination from '@/hooks/use-pagination';
 
 const DeliveryTable = () => {
   const { currentItems, currentPage, totalPages, setCurrentPage } =
@@ -25,7 +25,7 @@ const DeliveryTable = () => {
           <DeliveryTableItem
             key={project.id}
             projectName={project.companyName}
-            productName={project.productName || ""}
+            productName={project.productName || ''}
             date={project.endDate}
           />
         ))}
@@ -38,7 +38,7 @@ const DeliveryTable = () => {
             onPageChange={setCurrentPage}
           />
         </div>
-      )}{" "}
+      )}{' '}
     </div>
   );
 };

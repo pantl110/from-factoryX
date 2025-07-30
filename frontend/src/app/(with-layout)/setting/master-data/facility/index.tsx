@@ -1,52 +1,58 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { facilityData, FacilityDataModel } from "@/mocks/facility-data";
-import FacilityTableHeader from "./facility-table-header";
-import FacilityTableItem from "./facility-table-item";
-import FacilityDetailPanel from "./modals/facility-detail-panel";
-import { FacilityStatusType } from "./types";
+import { useState } from 'react';
+import {
+  EquipmentListResponseModel,
+  EquipmentResponseModel,
+} from '@/types/data-model';
+import FacilityTableHeader from './facility-table-header';
+import FacilityTableItem from './facility-table-item';
+import FacilityDetailPanel from './modals/facility-detail-panel';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
+import useToast from '@/hooks/use-toast';
 
 interface FacilityProps {
+  equipmentList?: EquipmentListResponseModel;
+  isLoading?: boolean;
+  error?: string | null;
   isCreatePanelOpen?: boolean;
   setIsCreatePanelOpen?: (isOpen: boolean) => void;
   isAllChecked: boolean;
   isChecked: (id: number) => boolean;
   toggleAll: () => void;
   toggleOne: (id: number) => void;
+  refetchEquipment?: () => void;
 }
 
 const Facility = ({
+  equipmentList,
   isCreatePanelOpen = false,
   setIsCreatePanelOpen,
   isAllChecked,
   isChecked,
   toggleAll,
   toggleOne,
+  refetchEquipment,
 }: FacilityProps) => {
-  const [selectedFacility, setSelectedFacility] =
-    useState<FacilityDataModel | null>(null);
+  const [selectedEquipment, setSelectedEquipment] =
+    useState<EquipmentResponseModel | null>(null);
+  const { isToastOpen, isVisible, showToast } = useToast(2000);
 
-  const handleItemClick = (facility: FacilityDataModel) => {
-    setSelectedFacility(facility);
+  const handleItemClick = (facility: EquipmentResponseModel) => {
+    setSelectedEquipment(facility);
   };
 
   const handlePanelClose = () => {
-    setSelectedFacility(null);
+    setSelectedEquipment(null);
   };
 
   const handleCreatePanelClose = () => {
     setIsCreatePanelOpen?.(false);
   };
 
-  // 빈 설비 데이터 (새 설비 생성용)
-  const emptyFacility: FacilityDataModel = {
-    id: 0,
-    name: "",
-    status: "가동 대기" as FacilityStatusType,
-    priority: null,
-    location: "",
-  };
+  // equipmentList에서 실제 배열 꺼내기
+  const facilityList: EquipmentResponseModel[] = equipmentList?.data || [];
 
   return (
     <>
@@ -55,7 +61,7 @@ const Facility = ({
           isAllChecked={isAllChecked}
           onToggleAll={toggleAll}
         />
-        {facilityData.map((item) => (
+        {facilityList.map((item) => (
           <FacilityTableItem
             key={item.id}
             facility={item}
@@ -67,18 +73,33 @@ const Facility = ({
       </div>
 
       {/* 설비 상세 판넬 (기존 설비 조회) */}
-      {selectedFacility && (
+      {selectedEquipment && (
         <FacilityDetailPanel
-          facility={selectedFacility}
+          facility={selectedEquipment}
           onClose={handlePanelClose}
+          onSuccess={refetchEquipment}
+          showWarningToast={showToast}
+          facilityList={facilityList}
         />
       )}
 
       {/* 설비 생성 판넬 (빈 데이터) */}
       {isCreatePanelOpen && (
         <FacilityDetailPanel
-          facility={emptyFacility}
           onClose={handleCreatePanelClose}
+          onSuccess={refetchEquipment}
+          showWarningToast={showToast}
+          facilityList={facilityList}
+        />
+      )}
+
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle />}
+          text="다른 설비와 자동 배정 순서가 겹쳐요."
+          subtext="배정 순서를 수정해주세요."
+          type="red"
+          isVisible={isVisible}
         />
       )}
     </>

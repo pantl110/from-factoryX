@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { ProjectDataModel } from "@/mocks/project-data";
-import Chip from "@/ui/chip";
+import { ProjectDataModel } from '@/mocks/project-data';
+import Chip from '@/ui/chip';
 
 interface PendingQuoteItemProps {
   project: ProjectDataModel;

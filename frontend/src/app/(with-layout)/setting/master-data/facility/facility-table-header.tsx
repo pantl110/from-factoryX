@@ -1,5 +1,5 @@
-import Checkbox from "@/ui/checkbox";
-import React from "react";
+import Checkbox from '@/ui/checkbox';
+import React from 'react';
 
 interface FacilityTableHeaderProps {
   isAllChecked?: boolean;

@@ -1,5 +1,5 @@
-import Dropdown from "@/ui/dropdown/dropdown";
-import DropdownItem from "@/ui/dropdown/dropdown-item";
+import Dropdown from '@/ui/dropdown/dropdown';
+import DropdownItem from '@/ui/dropdown/dropdown-item';
 
 interface ProductAddDropdownProps {
   onClose: () => void;

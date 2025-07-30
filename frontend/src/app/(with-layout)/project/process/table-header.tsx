@@ -1,10 +1,10 @@
-import { CaretUpDown } from "@phosphor-icons/react/dist/ssr";
-import Checkbox from "@/ui/checkbox";
+import { CaretUpDown } from '@phosphor-icons/react/dist/ssr';
+import Checkbox from '@/ui/checkbox';
 
 interface TableHeaderProps {
   isAllChecked?: boolean;
   onToggleAll?: () => void;
-  onSort?: (key: "startDate" | "endDate") => void;
+  onSort?: (key: 'startDate' | 'endDate') => void;
 }
 
 const TableHeader = ({
@@ -20,14 +20,14 @@ const TableHeader = ({
       <p className="flex-2 px-3 text-sv">품목명</p>
       <div
         className="w-[200px] px-3 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
-        onClick={() => onSort && onSort("startDate")}
+        onClick={() => onSort && onSort('startDate')}
       >
         <p className=" text-sv">생산일자</p>
         <CaretUpDown size={21} className="text-sv" />
       </div>
       <div
         className="w-[200px] px-3 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
-        onClick={() => onSort && onSort("endDate")}
+        onClick={() => onSort && onSort('endDate')}
       >
         <p className=" text-sv">납기일자</p>
         <CaretUpDown size={21} className="text-sv" />

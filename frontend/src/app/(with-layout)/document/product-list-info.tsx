@@ -1,16 +1,23 @@
-import ProductItem from "../quotation/product-item";
-import PriceInfo from "@/ui/price-info";
-import dummyProducts from "@/mocks/quotation-products";
+import ProductItem from '../quotation/product-item';
+import PriceInfo from '@/ui/price-info';
+import { QuotationProductDetailResponseModel } from '@/types/data-model';
 
 interface ProductListInfoProps {
-  transaction?: boolean;
+  productListInfoTitle: string;
+  productItems: QuotationProductDetailResponseModel[];
+  supplyAmount: number;
 }
 
-const ProductListInfo = ({ transaction = false }: ProductListInfoProps) => {
-  const title = transaction ? "거래 품목 정보" : "주문 품목 정보";
+const ProductListInfo = ({
+  productListInfoTitle,
+  supplyAmount,
+  productItems,
+}: ProductListInfoProps) => {
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3 h-10 items-center flex">{title}</h3>
+      <h3 className="Heading-3 h-10 items-center flex">
+        {productListInfoTitle}
+      </h3>
 
       <table>
         <thead>
@@ -22,17 +29,17 @@ const ProductListInfo = ({ transaction = false }: ProductListInfoProps) => {
             <th className="text-left px-3 flex-1">제작 수량</th>
             <th className="text-left px-3 w-[100px]">단가</th>
             <th className="text-left px-3 flex-1">금액</th>
-            {!transaction && <th className="text-left px-3 w-8"></th>}
+            {/* {!transaction && <th className="text-left px-3 w-8"></th>} */}
           </tr>
         </thead>
         <tbody>
-          {dummyProducts.map((item, index) => (
-            <ProductItem key={index} {...item} transaction={transaction} />
+          {productItems.map((item, index) => (
+            <ProductItem key={index} data={item} onlyRead={true} />
           ))}
         </tbody>
       </table>
 
-      <PriceInfo />
+      <PriceInfo supplyAmount={supplyAmount} />
     </div>
   );
 };

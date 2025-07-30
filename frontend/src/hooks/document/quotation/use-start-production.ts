@@ -1,0 +1,76 @@
+import { SaveDraftQuotationModel } from '@/types/data-model';
+import { useState } from 'react';
+
+interface StartProductionResponseModel {
+  quotation_id: number;
+  project_id: number;
+  status: string; // ("production_started")
+}
+
+interface UseStartProductionReturnModel {
+  startProduction: (
+    data: SaveDraftQuotationModel
+  ) => Promise<StartProductionResponseModel>;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// 생산 시작 // 완성된 견적서로 생산을 시작
+// - 거래처 정보 업데이트
+// - 납기 일자 설정
+// - 품목 정보 업데이트
+// - 프로젝트 상태 변경 (pending)으로
+// - 생산계획 자동 생성: 각 products의 제품에 대해
+//   - 해당 제품의 QuotationProduct 찾고
+//   - 설비 자동 할당: 가동 대기 상태, priority 순서
+//   - 해당 제품의 생산계획 생성
+// - 기본 값 설정
+//   - quantity: products의 quantity 사용
+//   - start_date 오늘
+//   - end_date 7일 후
+//   - avg_production_time 기본 1시간
+// - 생산 계획 생성
+const useStartProduction = (): UseStartProductionReturnModel => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const startProduction = async (
+    data: SaveDraftQuotationModel
+  ): Promise<StartProductionResponseModel> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/production`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        return result;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '생산 시작에 실패했습니다.');
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : '생산 시작에 실패했습니다.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { startProduction, isLoading, error };
+};
+
+export default useStartProduction;

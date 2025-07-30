@@ -1,63 +1,67 @@
-import { useState } from "react";
-import { clientData } from "@/mocks/client-data";
-import ClientTableHeader from "./client-table-header";
-import ClientTableItem from "./client-table-item";
-import ClientDetailPanel from "./modals/client-detail-panel";
-import { ClientDataModel } from "@/types/data-model";
+import { useState } from 'react';
+import ClientTableHeader from './client-table-header';
+import ClientTableItem from './client-table-item';
+import ClientDetailPanel from './modals/client-detail-panel';
+import { ClientListResponseModel } from '@/types/data-model';
+import useFactoryStore from '@/store/factory-store';
+import Pagination from '@/components/pagination';
 
 interface ClientProps {
+  clientList: ClientListResponseModel | null;
+  onPageChange: (page: number) => void;
   isAllChecked: boolean;
-  isChecked: (id: string) => boolean;
+  isChecked: (id: number) => boolean;
   toggleAll: () => void;
-  toggleOne: (id: string) => void;
+  toggleOne: (id: number) => void;
+  refetchClient: () => void;
 }
 
 const Client = ({
+  clientList,
+  onPageChange,
   isAllChecked,
   isChecked,
   toggleAll,
   toggleOne,
+  refetchClient,
 }: ClientProps) => {
-  const [selectedClient, setSelectedClient] = useState<ClientDataModel | null>(
-    null,
-  );
-
-  const handleTypeChange = (client: ClientDataModel) => {
-    setSelectedClient(client);
-  };
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   return (
     <>
-      <div className="w-full mx-10 overflow-x-auto flex flex-col flex-1 max-w-[1320px] mb-10">
-        <ClientTableHeader
-          isAllChecked={isAllChecked}
-          onToggleAll={toggleAll}
-        />
-        {clientData.map((client) => (
-          <ClientTableItem
-            key={client.id}
-            clientType={client.type}
-            companyName={client.companyName}
-            businessNumber={client.businessNumber}
-            representativeName={client.representativeName}
-            businessType={client.businessType ?? ""}
-            businessCategory={client.businessCategory ?? ""}
-            contact={client.contact ?? ""}
-            email={client.email ?? ""}
-            onClick={() => handleTypeChange(client)}
-            isChecked={isChecked(client.id)}
-            onToggleCheck={() => toggleOne(client.id)}
+      <div className="w-full px-10 mb-10">
+        <div className="w-full overflow-x-auto flex flex-col flex-1">
+          <ClientTableHeader
+            isAllChecked={isAllChecked}
+            onToggleAll={toggleAll}
           />
-        ))}
+          {(clientList?.data || []).map((client) => (
+            <ClientTableItem
+              key={client.id}
+              client={client}
+              onClick={() => setSelectedClientId(client.id)}
+              isChecked={isChecked(client.id)}
+              onToggleCheck={() => toggleOne(client.id)}
+            />
+          ))}
+        </div>
+        {(clientList?.pageCnt || 1) > 1 && (
+          <Pagination
+            currentPage={clientList?.curPage || 1}
+            totalPages={clientList?.pageCnt || 1}
+            onPageChange={onPageChange}
+          />
+        )}
       </div>
 
       {/* panel */}
-      {selectedClient && (
+      {selectedClientId && factoryId && (
         <ClientDetailPanel
-          onClose={() => {
-            setSelectedClient(null);
-          }}
-          client={selectedClient}
+          onClose={() => setSelectedClientId(null)}
+          refetchClient={refetchClient}
+          clientId={selectedClientId}
+          factoryId={factoryId}
         />
       )}
     </>

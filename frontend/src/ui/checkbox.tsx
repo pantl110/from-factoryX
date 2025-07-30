@@ -1,4 +1,4 @@
-import { Square, Check } from "@phosphor-icons/react";
+import { Square, Check } from '@phosphor-icons/react';
 
 interface CheckboxProps {
   isChecked: boolean;
@@ -16,7 +16,7 @@ const Checkbox = ({ isChecked, onToggle }: CheckboxProps) => {
       <div className="w-5 h-5 relative">
         <Square
           size={20}
-          className={`cursor-pointer ${isChecked ? "text-primary" : "text-sv"}`}
+          className={`cursor-pointer ${isChecked ? 'text-primary' : 'text-sv'}`}
           onClick={onToggle}
         />
         {isChecked && (

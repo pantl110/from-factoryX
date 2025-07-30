@@ -1,42 +1,65 @@
-import Input from "@/ui/input";
-import MiniBtn from "@/ui/mini-btn";
-import { useForm } from "react-hook-form";
-import { MaterialDataModel } from "@/types/data-model";
+import { MaterialItemModel } from '@/types/data-model';
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
+import { useForm } from 'react-hook-form';
 
 interface ManualAddMaterialProps {
   setIsManualAddMode: (v: boolean) => void;
-  setSelectedMaterials: (
-    fn: (prev: MaterialDataModel[]) => MaterialDataModel[],
+  setNewMaterials: (
+    fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
   ) => void;
+  existingMaterials?: string[]; // 원자재 코드만 저장
+  showToast?: () => void;
 }
 
 const ManualAddMaterial = ({
   setIsManualAddMode,
-  setSelectedMaterials,
+  setNewMaterials,
+  existingMaterials, // 원자재 코드 목록 받기
+  showToast,
 }: ManualAddMaterialProps) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { isValid, errors },
     reset,
-  } = useForm<MaterialDataModel>({
+    setError,
+  } = useForm<MaterialItemModel>({
     defaultValues: {
-      id: crypto.randomUUID(),
-      materialName: "",
-      size: "",
-      usageQuantity: null,
+      name: '',
+      code: '',
+      spec: '',
+      unit: '',
+      quantity: null,
+      price: null,
     },
-    mode: "onBlur",
+    mode: 'onChange',
   });
 
-  const onSubmit = (data: MaterialDataModel) => {
-    setSelectedMaterials((prev) => [
+  const onSubmit = (data: MaterialItemModel) => {
+    // 중복 검사 - 코드만 비교
+    const isDuplicate = existingMaterials?.includes(data.code);
+
+    if (isDuplicate) {
+      // 토스트 메시지 표시 (토스트 시스템이 있다면)
+      showToast?.();
+      // 자재코드 필드에 에러 표시를 위해 form 에러 설정
+      setError('code', {
+        type: 'manual',
+        message: '이미 존재하는 자재코드입니다.',
+      });
+      return;
+    }
+
+    setNewMaterials((prev) => [
       ...prev,
       {
-        id: crypto.randomUUID(),
-        materialName: data.materialName,
-        size: data.size,
-        usageQuantity: Number(data.usageQuantity),
+        name: data.name,
+        code: data.code,
+        spec: data.spec,
+        unit: data.unit,
+        quantity: data.quantity,
+        price: data.price,
       },
     ]);
     reset();
@@ -44,60 +67,117 @@ const ManualAddMaterial = ({
   };
 
   return (
-    <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
+    <div className="flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2.5">
           <div className="flex w-full gap-2.5">
             <div className="flex-1">
               <Input
-                placeholder="자재명을 입력하세요."
+                placeholder="EX) 투명 필름지"
                 label="자재명"
                 required
-                {...register("materialName", {
+                {...register('name', {
                   required: true,
-                  validate: (v) => !!v.trim(),
+                  validate: (v: unknown) => {
+                    const str = String(v || '');
+                    return !!str.trim();
+                  },
                 })}
-                showError={!!errors.materialName}
               />
             </div>
             <div className="flex-1">
               <Input
-                placeholder="자재코드를 입력하세요."
+                showError={!!errors.code}
+                placeholder="EX) 123456"
                 label="자재코드"
                 required
-                {...register("materialCode", {
+                {...register('code', {
                   required: true,
-                  validate: (v: unknown) => typeof v === "string" && !!v.trim(),
+                  validate: (v: unknown) => {
+                    const str = String(v || '');
+                    return !!str.trim();
+                  },
                 })}
-                showError={!!errors.materialCode}
               />
             </div>
           </div>
           <div className="flex w-full gap-2.5">
             <div className="flex-1">
               <Input
-                placeholder="규격을 입력하세요."
+                placeholder="EX) 500mm × 100m"
                 label="규격"
                 required
-                {...register("size", {
+                {...register('spec', {
                   required: true,
-                  validate: (v) => !!v.trim(),
+                  validate: (v: unknown) => {
+                    const str = String(v || '');
+                    return !!str.trim();
+                  },
                 })}
-                showError={!!errors.size}
               />
             </div>
             <div className="flex-1">
               <Input
-                placeholder="사용 수량을 입력하세요."
-                label="사용 수량"
-                type="number"
+                placeholder="EX) EA"
+                label="단위"
                 required
-                {...register("usageQuantity", {
+                {...register('unit', {
                   required: true,
-                  validate: (v) => v !== null && Number(v) > 0,
-                  setValueAs: (v) => (v === "" ? null : Number(v)),
+                  validate: (v: unknown) => {
+                    const str = String(v || '');
+                    return !!str.trim();
+                  },
                 })}
-                showError={!!errors.usageQuantity}
+              />
+            </div>
+          </div>
+          <div className="flex w-full gap-2.5">
+            <div className="flex-1">
+              <Input
+                placeholder="EX) 100"
+                label="수량"
+                required
+                type="text"
+                {...register('quantity', {
+                  required: true,
+                  validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
+                  setValueAs: (v) => {
+                    if (v === '' || v === null || v === undefined) return null;
+                    const num = Number(String(v).replace(/[^0-9]/g, ''));
+                    return num === 0 ? null : num;
+                  },
+                })}
+                onChange={(e) => {
+                  const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                  const formatted = onlyNums
+                    ? parseInt(onlyNums).toLocaleString()
+                    : '';
+                  e.target.value = formatted;
+                }}
+              />
+            </div>
+            <div className="flex-1">
+              <Input
+                placeholder="EX) 1,000"
+                label="단가"
+                required
+                type="text"
+                {...register('price', {
+                  required: true,
+                  validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
+                  setValueAs: (v) => {
+                    if (v === '' || v === null || v === undefined) return null;
+                    const num = Number(String(v).replace(/[^0-9]/g, ''));
+                    return num === 0 ? null : num;
+                  },
+                })}
+                onChange={(e) => {
+                  const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                  const formatted = onlyNums
+                    ? parseInt(onlyNums).toLocaleString()
+                    : '';
+                  e.target.value = formatted;
+                }}
               />
             </div>
           </div>
@@ -115,6 +195,7 @@ const ManualAddMaterial = ({
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
             type="submit"
+            disabled={!isValid}
           />
         </div>
       </form>

@@ -1,7 +1,7 @@
-import Chip from "@/ui/chip";
-import Dropdown from "@/ui/dropdown/dropdown";
-import DropdownItem from "@/ui/dropdown/dropdown-item";
-import { OperationStatusColorMap } from "@/types/status-type";
+import Chip from '@/ui/chip';
+import Dropdown from '@/ui/dropdown/dropdown';
+import DropdownItem from '@/ui/dropdown/dropdown-item';
+import { OperationStatusColorMap } from '@/types/status-type';
 
 interface OperationStatusDropdownProps {
   onClose: () => void;
@@ -19,49 +19,49 @@ const OperationStatusDropdown = ({
       <DropdownItem noHover={true}>
         <Chip
           text="가동 대기"
-          bgColor={color["가동 대기"].bgColor}
-          textColor={color["가동 대기"].textColor}
+          bgColor={color['가동 대기'].bgColor}
+          textColor={color['가동 대기'].textColor}
           onClick={(e) => {
             e?.stopPropagation();
             onClose();
           }}
-          hover={color["가동 대기"].hover}
+          hover={color['가동 대기'].hover}
         />
       </DropdownItem>
       <DropdownItem noHover={true}>
         <Chip
           text="가동 중"
-          bgColor={color["가동 중"].bgColor}
-          textColor={color["가동 중"].textColor}
+          bgColor={color['가동 중'].bgColor}
+          textColor={color['가동 중'].textColor}
           onClick={(e) => {
             e?.stopPropagation();
             onClose();
           }}
-          hover={color["가동 중"].hover}
+          hover={color['가동 중'].hover}
         />
       </DropdownItem>
       <DropdownItem noHover={true}>
         <Chip
           text="가동 완료"
-          bgColor={color["가동 완료"].bgColor}
-          textColor={color["가동 완료"].textColor}
+          bgColor={color['가동 완료'].bgColor}
+          textColor={color['가동 완료'].textColor}
           onClick={(e) => {
             e?.stopPropagation();
             onClose();
           }}
-          hover={color["가동 완료"].hover}
+          hover={color['가동 완료'].hover}
         />
       </DropdownItem>
       <DropdownItem noHover={true}>
         <Chip
           text="가동 중지"
-          bgColor={color["가동 중지"].bgColor}
-          textColor={color["가동 중지"].textColor}
+          bgColor={color['가동 중지'].bgColor}
+          textColor={color['가동 중지'].textColor}
           onClick={(e) => {
             e?.stopPropagation();
             onClose();
           }}
-          hover={color["가동 중지"].hover}
+          hover={color['가동 중지'].hover}
         />
       </DropdownItem>
     </Dropdown>

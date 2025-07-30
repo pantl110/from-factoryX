@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import MainTitleSec from "./main-title-sec";
-import SearchDeleteTable from "@/ui/search-delete-table";
-import TableHeader from "./table-header";
-import TableItem from "./table-item";
-import completedProjectData from "@/mocks/completed-project-data";
-import { CompletedProjectStatusType } from "@/types/status-type";
-import usePagination from "@/hooks/use-pagination";
-import Pagination from "@/components/pagination";
-import { useCheckAll } from "@/hooks/use-check-all";
-import DeleteModal from "@/ui/modal/delete-modal";
+import { useState } from 'react';
+import MainTitleSec from './main-title-sec';
+import SearchDeleteTable from '@/ui/search-delete-table';
+import TableHeader from './table-header';
+import TableItem from './table-item';
+import completedProjectData from '@/mocks/completed-project-data';
+import { CompletedProjectStatusType } from '@/types/status-type';
+import usePagination from '@/hooks/use-pagination';
+import Pagination from '@/components/pagination';
+import { useCheckAll } from '@/hooks/use-check-all';
+import DeleteModal from '@/ui/modal/delete-modal';
 
 const CompletedProjectPage = () => {
   const [selectedStatus, setSelectedStatus] = useState<
-    "전체" | CompletedProjectStatusType
-  >("전체");
+    '전체' | CompletedProjectStatusType
+  >('전체');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [sortKey, setSortKey] = useState<"date">("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortKey, setSortKey] = useState<'date'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const filteredProjects =
-    selectedStatus === "전체"
+    selectedStatus === '전체'
       ? completedProjectData
       : completedProjectData.filter((item) => item.status === selectedStatus);
 
@@ -29,7 +29,7 @@ const CompletedProjectPage = () => {
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     const aValue = a[sortKey];
     const bValue = b[sortKey];
-    if (sortOrder === "asc") {
+    if (sortOrder === 'asc') {
       return aValue.localeCompare(bValue);
     } else {
       return bValue.localeCompare(aValue);
@@ -55,18 +55,18 @@ const CompletedProjectPage = () => {
     getDeleteButtonText,
   } = useCheckAll(filteredProjects.map((item) => item.id));
 
-  const handleStatusChange = (status: "전체" | CompletedProjectStatusType) => {
+  const handleStatusChange = (status: '전체' | CompletedProjectStatusType) => {
     setSelectedStatus(status);
     setCurrentPage(1); // 상태 변경 시 첫 페이지로 이동
   };
 
   // 정렬 핸들러
-  const handleSort = (key: "date") => {
+  const handleSort = (key: 'date') => {
     if (sortKey === key) {
-      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortKey(key);
-      setSortOrder("asc");
+      setSortOrder('asc');
     }
     setCurrentPage(1);
   };

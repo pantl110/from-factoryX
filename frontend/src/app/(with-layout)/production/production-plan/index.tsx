@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import ProductionPlanSaveModal from "./modals/production-plan-save-modal";
-import TableHeader from "./table-header";
-import TableItem from "./table-item";
-import { productionPlanData } from "@/mocks/production-plan-data";
-import usePageStatusStore from "@/store/page-status-store";
-import OperationStatusDropdown from "./modals/operation-status-dropdown";
-import { createPortal } from "react-dom";
-import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
-import FacilityDropdown from "./modals/facility-dropdown";
+import { useState } from 'react';
+import ProductionPlanSaveModal from './modals/production-plan-save-modal';
+import TableHeader from './table-header';
+import TableItem from './table-item';
+import { productionPlanData } from '@/mocks/production-plan-data';
+import usePageStatusStore from '@/store/page-status-store';
+import OperationStatusDropdown from './modals/operation-status-dropdown';
+import { createPortal } from 'react-dom';
+import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
+import FacilityDropdown from './modals/facility-dropdown';
 
 const ProductionPlan = () => {
   // production의 "생산 대기" 상태의 "생산 계획" 탭에서 저장 버튼 클릭 시 모달 오픈
   const isProductionPlanSaveModalOpen = usePageStatusStore(
-    (state) => state.isProductionPlanSaveModalOpen,
+    (state) => state.isProductionPlanSaveModalOpen
   );
   const setProductionPlanSaveModalOpen = usePageStatusStore(
-    (state) => state.setProductionPlanSaveModalOpen,
+    (state) => state.setProductionPlanSaveModalOpen
   );
   // 가동상태 드랍다운운을 row별로 관리
   const {
@@ -86,13 +86,13 @@ const ProductionPlan = () => {
           <OperationStatusDropdown
             onClose={handleCloseOperationStatusModal}
             style={{
-              position: "fixed",
+              position: 'fixed',
               left: operationStatusAnchorRect.left,
               top: operationStatusAnchorRect.bottom,
               zIndex: 10,
             }}
           />,
-          document.body,
+          document.body
         )}
 
       {facilityDropdownRowId !== null &&
@@ -102,13 +102,13 @@ const ProductionPlan = () => {
           <FacilityDropdown
             onClose={handleCloseFacilityModal}
             style={{
-              position: "fixed",
+              position: 'fixed',
               left: facilityAnchorRect.left,
               top: facilityAnchorRect.bottom,
               zIndex: 10,
             }}
           />,
-          document.body,
+          document.body
         )}
 
       {isProductionPlanSaveModalOpen && (

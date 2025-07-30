@@ -1,14 +1,14 @@
-import { useState } from "react";
-import MiniBtn from "@/ui/mini-btn";
-import LogItem from "./log-item";
-import ReturnSection from "./return";
-import { logData, LogDataModel } from "@/mocks/log-data";
-import NoSelectedLog from "./no-selected-log";
-import MemoSection from "./memo";
-import PlanChangeSection from "./plan-change";
-import DeleteMemoModal from "./modals/delete-memo-modal";
-import CreateMemoModal from "./modals/create-memo-modal";
-import EmptyLog from "./empty-log";
+import { useState } from 'react';
+import MiniBtn from '@/ui/mini-btn';
+import LogItem from './log-item';
+import ReturnSection from './return';
+import { logData, LogDataModel } from '@/mocks/log-data';
+import NoSelectedLog from './no-selected-log';
+import MemoSection from './memo';
+import PlanChangeSection from './plan-change';
+import DeleteMemoModal from './modals/delete-memo-modal';
+import CreateMemoModal from './modals/create-memo-modal';
+import EmptyLog from './empty-log';
 
 const ProductionMonitor = () => {
   const [selectedLog, setSelectedLog] = useState<LogDataModel | null>(null);
@@ -18,7 +18,7 @@ const ProductionMonitor = () => {
   return (
     <div
       className="flex gap-3 px-10 w-full overflow-y-hidden"
-      style={{ height: "calc(100vh - 253px)" }}
+      style={{ height: 'calc(100vh - 253px)' }}
     >
       {/* 왼쪽 영역 */}
       <div className={`w-[50%] flex flex-col gap-4 flex-1 pt-5`}>
@@ -58,15 +58,15 @@ const ProductionMonitor = () => {
       {/* 오른쪽 영역: 선택된 로그에 따라 렌더링 */}
       <div className="w-[50%] flex-1 pt-5">
         {selectedLog ? (
-          selectedLog.type === "memo" ? (
+          selectedLog.type === 'memo' ? (
             <MemoSection
               title={selectedLog.title}
               content={selectedLog.content}
               setIsDeleteModalOpen={setIsDeleteMemoModalOpen}
             />
-          ) : selectedLog.type === "return" ? (
+          ) : selectedLog.type === 'return' ? (
             <ReturnSection />
-          ) : selectedLog.type === "planChange" ? (
+          ) : selectedLog.type === 'planChange' ? (
             <PlanChangeSection
               title={selectedLog.title}
               content={selectedLog.content}

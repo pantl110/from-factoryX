@@ -15,17 +15,17 @@ const MaterialStockLogItem = ({
 }: MaterialStockLogItemProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "생산 투입":
-        return "text-red";
-      case "원자재 입고":
-        return "text-primary";
+      case '출고':
+        return 'text-red';
+      case '입고':
+        return 'text-primary';
       default:
-        return "text-dg";
+        return 'text-dg';
     }
   };
 
   const getQuantityDisplay = (status: string, quantity: number) => {
-    const sign = status === "생산 투입" ? "-" : "+";
+    const sign = status === '출고' ? '-' : '+';
     return `${sign}${quantity.toLocaleString()}`;
   };
 

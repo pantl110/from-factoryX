@@ -1,9 +1,9 @@
-import Modal from "@/ui/modal/modal";
-import NotificationItem from "./notification-item";
-import { notificationData } from "@/mocks/notification-data";
-import MiniBtn from "@/ui/mini-btn";
-import { useState } from "react";
-import { NotificationModel } from "../types";
+import Modal from '@/ui/modal/modal';
+import NotificationItem from './notification-item';
+import { notificationData } from '@/mocks/notification-data';
+import MiniBtn from '@/ui/mini-btn';
+import { useState } from 'react';
+import { NotificationModel } from '../types';
 
 interface NotificationModalProps {
   onClose: () => void;
@@ -19,15 +19,15 @@ const NotificationModal = ({ onClose }: NotificationModalProps) => {
       prev.map((notification) =>
         notification.id === id
           ? { ...notification, isRead: true }
-          : notification,
-      ),
+          : notification
+      )
     );
   };
 
   // 모든 알림 읽음 처리
   const handleReadAll = () => {
     setNotifications((prev) =>
-      prev.map((notification) => ({ ...notification, isRead: true })),
+      prev.map((notification) => ({ ...notification, isRead: true }))
     );
   };
 

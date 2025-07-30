@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import MiniBtn from "@/ui/mini-btn";
-import { useRouter } from "next/navigation";
-import PendingQuoteItem from "./pending-quote-item";
-import { projectData } from "@/mocks/project-data";
+import MiniBtn from '@/ui/mini-btn';
+import { useRouter } from 'next/navigation';
+import PendingQuoteItem from './pending-quote-item';
+import { projectData } from '@/mocks/project-data';
 
 const PendingQuote = () => {
   const router = useRouter();
 
   const pendingQuotes = projectData.filter(
-    (project) => project.status === "견적 협의",
+    (project) => project.status === 'quotation'
   );
 
   return (
@@ -21,7 +21,7 @@ const PendingQuote = () => {
           textColor="text-dg"
           borderColor="border-lg"
           onClick={() => {
-            router.push("/project/process?tab=quote");
+            router.push('/project/process?tab=quote');
           }}
           hoverColor="hover:bg-bg"
         />

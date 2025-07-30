@@ -1,13 +1,13 @@
-import { useEffect } from "react";
-import InfoLabelValue from "@/ui/info-label-value";
-import MiniBtn from "@/ui/mini-btn";
-import { Plus } from "@phosphor-icons/react/dist/ssr";
-import MaterialInputItem from "./material-input-item";
-import { useCallback } from "react";
-import { useForm, useFieldArray, Resolver } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { SecondStepFormDataModel } from "../types";
+import { useEffect } from 'react';
+import InfoLabelValue from '@/ui/info-label-value';
+import MiniBtn from '@/ui/mini-btn';
+import { Plus } from '@phosphor-icons/react/dist/ssr';
+import MaterialInputItem from './material-input-item';
+import { useCallback } from 'react';
+import { useForm, useFieldArray, Resolver } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { SecondStepFormDataModel } from '../types';
 
 interface SecondStepProps {
   onNextStep: () => void;
@@ -25,11 +25,11 @@ const validationSchema = yup.object({
         usageQuantity: yup
           .number()
           .transform((value, originalValue) =>
-            originalValue === "" ? undefined : value,
+            originalValue === '' ? undefined : value
           )
           .required()
           .positive(),
-      }),
+      })
     )
     .min(1)
     .required(),
@@ -45,15 +45,15 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
     reset,
   } = useForm<SecondStepFormDataModel>({
     resolver: yupResolver(
-      validationSchema,
+      validationSchema
     ) as unknown as Resolver<SecondStepFormDataModel>,
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
       materials: [
         {
-          materialName: "",
-          size: "",
-          usageQuantity: "",
+          materialName: '',
+          size: '',
+          usageQuantity: '',
         },
       ],
     },
@@ -61,7 +61,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
 
   // sessionStorage에서 데이터 복원
   useEffect(() => {
-    const savedData = sessionStorage.getItem("onboarding-step2-materials");
+    const savedData = sessionStorage.getItem('onboarding-step2-materials');
 
     if (savedData) {
       try {
@@ -72,22 +72,22 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
           reset(data);
         }
       } catch (error) {
-        console.error("SecondStep 데이터 파싱 오류:", error);
+        console.error('SecondStep 데이터 파싱 오류:', error);
       }
     }
   }, [reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "materials",
+    name: 'materials',
   });
 
   const handleAddMaterial = useCallback(() => {
     clearErrors();
     append({
-      materialName: "",
-      size: "",
-      usageQuantity: "",
+      materialName: '',
+      size: '',
+      usageQuantity: '',
     });
   }, [append, clearErrors]);
 
@@ -96,11 +96,11 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
       clearErrors();
       remove(index);
     },
-    [remove, clearErrors],
+    [remove, clearErrors]
   );
 
   const onSubmit = (data: SecondStepFormDataModel) => {
-    sessionStorage.setItem("onboarding-step2-materials", JSON.stringify(data)); // sessionStorage에 저장
+    sessionStorage.setItem('onboarding-step2-materials', JSON.stringify(data)); // sessionStorage에 저장
     onNextStep();
   };
 

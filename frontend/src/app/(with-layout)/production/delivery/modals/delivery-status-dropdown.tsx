@@ -1,6 +1,6 @@
-import Chip from "@/ui/chip";
-import Dropdown from "@/ui/dropdown/dropdown";
-import DropdownItem from "@/ui/dropdown/dropdown-item";
+import Chip from '@/ui/chip';
+import Dropdown from '@/ui/dropdown/dropdown';
+import DropdownItem from '@/ui/dropdown/dropdown-item';
 
 interface DeliveryStatusDropdownProps {
   onClose: () => void;

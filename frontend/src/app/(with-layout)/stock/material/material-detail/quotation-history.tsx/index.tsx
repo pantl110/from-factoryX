@@ -1,4 +1,4 @@
-import QuotationHistoryItem from "./quotation-history-item";
+import QuotationHistoryItem from './quotation-history-item';
 
 interface QuotationHistoryProps {
   setIsCustomerInfoModalOpen: (isOpen: boolean) => void;

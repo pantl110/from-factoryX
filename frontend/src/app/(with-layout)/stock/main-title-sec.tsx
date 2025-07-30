@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import MiniBtn from "@/ui/mini-btn";
-import { StockTabType } from "./types";
-import { CaretDown } from "@phosphor-icons/react";
-import ProductAddDropdown from "./product/modals/product-add-dropdown";
-import MaterialAddDropdown from "./material/modals/material-add-dropdown";
+import MiniBtn from '@/ui/mini-btn';
+import { StockTabType } from './types';
+import { CaretDown } from '@phosphor-icons/react';
+import ProductAddDropdown from './product/modals/product-add-dropdown';
+import MaterialAddDropdown from './material/modals/material-add-dropdown';
 
 interface MainTitleSecProps {
   selectedTab: StockTabType;
@@ -49,14 +49,14 @@ const MainTitleSec = ({
               bgColor="bg-primary"
               textColor="text-wh"
               text={
-                selectedTab === "product" ? "품목 추가하기" : "자재 추가하기"
+                selectedTab === 'product' ? '품목 추가하기' : '자재 추가하기'
               }
               icon={CaretDown}
               iconPosition="right"
               iconColor="text-white"
               hoverColor="hover:bg-primary-hover"
               onClick={() =>
-                selectedTab === "product"
+                selectedTab === 'product'
                   ? onProductAddDropdownOpen(true)
                   : onMaterialAddDropdownOpen(true)
               }
@@ -86,15 +86,15 @@ const MainTitleSec = ({
       <div className="flex gap-4 Heading-3">
         <button
           type="button"
-          className={`${selectedTab === "product" ? "text-bl" : "text-gr"} cursor-pointer`}
-          onClick={() => handleTabClick("product")}
+          className={`${selectedTab === 'product' ? 'text-bl' : 'text-gr'} cursor-pointer`}
+          onClick={() => handleTabClick('product')}
         >
           품목
         </button>
         <button
           type="button"
-          className={`${selectedTab === "material" ? "text-bl" : "text-gr"} cursor-pointer`}
-          onClick={() => handleTabClick("material")}
+          className={`${selectedTab === 'material' ? 'text-bl' : 'text-gr'} cursor-pointer`}
+          onClick={() => handleTabClick('material')}
         >
           원자재
         </button>

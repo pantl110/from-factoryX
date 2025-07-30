@@ -1,6 +1,6 @@
-import Chip from "@/ui/chip";
-import Input from "@/ui/input";
-import { ProjectStatusType, ProjectStatusColorMap } from "@/types/status-type";
+import Chip from '@/ui/chip';
+import Input from '@/ui/input';
+import { ProjectStatusType, ProjectStatusColorMap } from '@/types/status-type';
 
 export interface ProductFlowTitleProps {
   status: ProjectStatusType;
@@ -46,8 +46,8 @@ const ProductFlowTitle = ({
               onClick={() => setSelectedTab(idx)}
               className={`Heading-3 pb-3 transition-colors duration-150 cursor-pointer ${
                 selectedTab === idx
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gr border-b-2 border-transparent"
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-gr border-b-2 border-transparent'
               }`}
             >
               {tab}

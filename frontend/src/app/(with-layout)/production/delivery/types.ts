@@ -1,4 +1,4 @@
-import { DeliveryStatusType } from "@/types/status-type";
+import { DeliveryStatusType } from '@/types/status-type';
 
 export interface DeliveryDataModel {
   id: number;

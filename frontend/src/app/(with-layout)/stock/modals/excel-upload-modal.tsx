@@ -1,15 +1,15 @@
-import Modal from "@/ui/modal/modal";
-import DropzoneArea from "@/ui/dropzone-area";
-import { useState } from "react";
+import Modal from '@/ui/modal/modal';
+import DropzoneArea from '@/ui/dropzone-area';
+import { useState } from 'react';
 
 interface ExcelUploadModalProps {
   onClose: () => void;
-  type?: "product" | "material";
+  type?: 'product' | 'material';
 }
 
 const ExcelUploadModal = ({
   onClose,
-  type = "product",
+  type = 'product',
 }: ExcelUploadModalProps) => {
   const [hasFiles, setHasFiles] = useState(false);
 
@@ -23,20 +23,20 @@ const ExcelUploadModal = ({
 
   const getTitle = () => {
     if (hasFiles) {
-      return "업로드된 파일을 확인해 주세요.";
+      return '업로드된 파일을 확인해 주세요.';
     }
-    return type === "product"
-      ? "엑셀 파일을 업로드하여 재고를 등록해주세요."
-      : "엑셀 파일로 자재 목록을 한번에 등록하세요.";
+    return type === 'product'
+      ? '엑셀 파일을 업로드하여 재고를 등록해주세요.'
+      : '엑셀 파일로 자재 목록을 한번에 등록하세요.';
   };
 
   const getSubtitle = () => {
     if (hasFiles) {
-      return "파일이 맞는지 확인 후, 업로드를 눌러주세요.";
+      return '파일이 맞는지 확인 후, 업로드를 눌러주세요.';
     }
-    return type === "product"
-      ? "샘플 파일 양식에 맞춰 작성한 후 업로드해 주세요."
-      : "샘플 파일 양식에 맞춰 작성한 후 업로드해 주세요.";
+    return type === 'product'
+      ? '샘플 파일 양식에 맞춰 작성한 후 업로드해 주세요.'
+      : '샘플 파일 양식에 맞춰 작성한 후 업로드해 주세요.';
   };
 
   return (
@@ -52,10 +52,10 @@ const ExcelUploadModal = ({
           onComplete={handleComplete}
           onFileUpload={onFileUpload}
           accept={{
-            "application/vnd.ms-excel": [".xls"],
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-              [".xlsx"],
-            "application/excel": [".xls", ".xlsx"],
+            'application/vnd.ms-excel': ['.xls'],
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              ['.xlsx'],
+            'application/excel': ['.xls', '.xlsx'],
           }}
         />
       </div>

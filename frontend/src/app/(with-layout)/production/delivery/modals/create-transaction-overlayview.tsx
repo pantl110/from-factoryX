@@ -1,6 +1,6 @@
-import TransactionDocumentView from "@/app/(with-layout)/document/transaction-document-view";
-import MiniBtn from "@/ui/mini-btn";
-import OverlayView from "@/ui/ovelay-view";
+import TransactionDocumentView from '@/app/(with-layout)/document/transaction-document-view';
+import MiniBtn from '@/ui/mini-btn';
+import OverlayView from '@/ui/ovelay-view';
 
 interface CreateTransactionOverlayviewProps {
   onClose: () => void;

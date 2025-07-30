@@ -1,4 +1,4 @@
-import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
+import { CaretDownIcon } from '@phosphor-icons/react/dist/ssr';
 
 const DailyProductionQuantity = () => {
   return (

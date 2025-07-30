@@ -1,5 +1,5 @@
-import Chip from "@/ui/chip";
-import { PermissionRoleType, PermissionRoleInfo } from "./types";
+import Chip from '@/ui/chip';
+import { PermissionRoleType, PermissionRoleInfo } from './types';
 
 interface PermissionInfoItemProps {
   type: PermissionRoleType;

@@ -1,10 +1,10 @@
 interface MainTitleSecProps {
-  selectedTab: "전체" | "임시 저장" | "발행 대기";
-  setSelectedTab: (tab: "전체" | "임시 저장" | "발행 대기") => void;
+  selectedTab: '전체' | '임시 저장' | '발행 대기';
+  setSelectedTab: (tab: '전체' | '임시 저장' | '발행 대기') => void;
 }
 
 const MainTitleSec = ({ selectedTab, setSelectedTab }: MainTitleSecProps) => {
-  const tabs = ["전체", "임시 저장", "발행 대기"];
+  const tabs = ['전체', '임시 저장', '발행 대기'];
 
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
@@ -16,11 +16,9 @@ const MainTitleSec = ({ selectedTab, setSelectedTab }: MainTitleSecProps) => {
         {tabs.map((tab) => (
           <button
             key={tab}
-            className={`${
-              selectedTab === tab ? "text-dg" : "text-gr"
-            } cursor-pointer`}
+            className={`${selectedTab === tab ? 'text-dg' : 'text-gr'} cursor-pointer`}
             onClick={() =>
-              setSelectedTab(tab as "전체" | "임시 저장" | "발행 대기")
+              setSelectedTab(tab as '전체' | '임시 저장' | '발행 대기')
             }
           >
             {tab}

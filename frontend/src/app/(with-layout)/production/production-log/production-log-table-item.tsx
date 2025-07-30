@@ -1,8 +1,7 @@
-import { ProductionDataModel } from "@/mocks/production-data";
-import Chip from "@/ui/chip";
-import { useState } from "react";
-import ProductDetail from "../../stock/product/product-detail";
-import { productData } from "@/mocks/product-data";
+import { ProductionDataModel } from '@/mocks/production-data';
+import Chip from '@/ui/chip';
+import { useState } from 'react';
+import ProductDetail from '../../stock/product/product-detail';
 
 interface ProductionLogTableItemProps {
   product: ProductionDataModel;
@@ -17,31 +16,31 @@ const ProductionLogTableItem = ({ product }: ProductionLogTableItemProps) => {
         <p className="flex-1 px-3">{product.standard}</p>
         <p className="w-[80px] px-3">{product.unit}</p>
         <p className="flex-1 px-3">
-          {product.orderQuantity?.toLocaleString() || "-"}
+          {product.orderQuantity?.toLocaleString() || '-'}
         </p>
         <p className="flex-1 px-3">
-          {product.productionQuantity?.toLocaleString() || "-"}
+          {product.productionQuantity?.toLocaleString() || '-'}
         </p>
-        <p className="flex-1 px-3">{product.machine || "-"}</p>
-        <p className="w-[200px] px-3">{product.productionTime || "-"}</p>
-        <p className="w-[140px] px-3">{product.unitTime || "-"}</p>
+        <p className="flex-1 px-3">{product.machine || '-'}</p>
+        <p className="w-[200px] px-3">{product.productionTime || '-'}</p>
+        <p className="w-[140px] px-3">{product.unitTime || '-'}</p>
         <div className="w-[150px] px-3">
           {product.materialStatus && (
             <div className="flex justify-between">
               <Chip
                 text={product.materialStatus}
                 textColor={
-                  product.materialStatus === "충분"
-                    ? "text-primary"
-                    : "text-red"
+                  product.materialStatus === '충분'
+                    ? 'text-primary'
+                    : 'text-red'
                 }
                 bgColor={
-                  product.materialStatus === "충분"
-                    ? "bg-primary-8"
-                    : "bg-red-8"
+                  product.materialStatus === '충분'
+                    ? 'bg-primary-8'
+                    : 'bg-red-8'
                 }
               />
-              {product.materialStatus === "부족" && (
+              {product.materialStatus === '부족' && (
                 <p
                   className="cursor-pointer Re_Body-1 text-gr flex items-center opacity-0 hover:opacity-100 transition-opacity duration-200 ease-in-out"
                   onClick={() => setIsProductDetailOpen(true)}
@@ -52,12 +51,11 @@ const ProductionLogTableItem = ({ product }: ProductionLogTableItemProps) => {
             </div>
           )}
         </div>
-        <p className="w-[200px] px-3">{product.endDate || "-"}</p>
+        <p className="w-[200px] px-3">{product.endDate || '-'}</p>
         {isProductDetailOpen && (
           <ProductDetail
-            product={productData[0]}
+            productId={product.id}
             onClose={() => setIsProductDetailOpen(false)}
-            mode="view"
           />
         )}
       </div>

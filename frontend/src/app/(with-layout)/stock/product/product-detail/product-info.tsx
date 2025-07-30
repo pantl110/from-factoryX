@@ -1,173 +1,205 @@
-import { productData } from "@/mocks/product-data";
-import { ProductDataModel } from "@/types/data-model";
-import { ProductNameDropdown } from "@/ui/dropdown/product-name-dropdown";
-import InfoLabelValue from "@/ui/info-label-value";
-import { useEffect } from "react";
-import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
+import { ProductModel } from '@/types/data-model';
+import InfoLabelValue from '@/ui/info-label-value';
+import { useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 
 interface ProductInfoProps {
-  product: ProductDataModel;
-  isEditable?: boolean;
-  onValueChange?: (value: Partial<ProductDataModel>) => void;
-  onClick?: () => void;
+  formData: ProductModel;
+  productId: number | null;
+  onIsDirtyChange?: (isDirty: boolean) => void;
+  onIsValidChange?: (isValid: boolean) => void;
 }
 
-const ProductInfo = ({
-  product,
-  isEditable = false,
-  onValueChange,
-  onClick,
-}: ProductInfoProps) => {
-  // useDropdownFilter 훅 사용
-  const {
-    input: productName,
-    setInput: setProductName,
-    isOpen: isProductNameDropdownOpen,
-    setIsOpen: setIsProductNameDropdownOpen,
-    filtered: matchedItems,
-    handleInputChange,
-    handleSelect,
-  } = useDropdownFilter(productData, (item) => item.productName);
+export interface ProductInfoModel {
+  getValues: () => ProductModel;
+}
 
-  // product prop이 바뀌면 productName도 동기화
-  useEffect(() => {
-    setProductName(product.productName || "");
-  }, [product.productName, setProductName]);
+const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
+  ({ formData, productId, onIsDirtyChange, onIsValidChange }, ref) => {
+    const {
+      control,
+      reset,
+      formState: { isDirty, isValid },
+      getValues,
+    } = useForm<ProductModel>({
+      defaultValues: formData,
+      mode: 'onChange',
+    });
 
-  // 드롭다운에서 선택 시 onValueChange도 호출
-  const handleSelectProduct = (item: ProductDataModel) => {
-    handleSelect(item);
-    if (onValueChange) {
-      onValueChange({
-        productName: item.productName,
-        productCode: item.productCode,
-        size: item.size,
-        unit: item.unit,
-        stock: item.stock,
-        productionTime: item.productionTime,
-        location: item.location,
-        comment: item.comment,
-      });
-    }
-  };
+    // isDirty 상태가 변경될 때 부모에게 알림
+    useEffect(() => {
+      if (onIsDirtyChange) {
+        onIsDirtyChange(isDirty);
+      }
+    }, [isDirty, onIsDirtyChange]);
 
-  return (
-    <div className="flex flex-col border-b border-lg">
-      <div className="flex relative">
-        <InfoLabelValue
-          label="품목명"
-          value={productName}
-          isEditing={isEditable}
-          placeholder="(필수) 품목명을 입력하세요."
-          onChange={(e) => {
-            handleInputChange(e as React.ChangeEvent<HTMLInputElement>);
-            if (onValueChange) onValueChange({ productName: e.target.value });
-          }}
-          onFocus={(
-            e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
-          ) => {
-            if (e.target.value && matchedItems.length > 0)
-              setIsProductNameDropdownOpen(true);
-          }}
-          onBlur={() =>
-            setTimeout(() => setIsProductNameDropdownOpen(false), 150)
-          }
-          required
-        />
-        {isProductNameDropdownOpen && matchedItems.length > 0 && (
-          <div className="absolute left-[134px] top-12 z-10">
-            <ProductNameDropdown
-              items={matchedItems}
-              onSelect={handleSelectProduct}
-              width="w-[326px]"
+    // isValid 상태가 변경될 때 부모에게 알림
+    useEffect(() => {
+      if (onIsValidChange) {
+        onIsValidChange(isValid);
+      }
+    }, [isValid, onIsValidChange]);
+
+    // 부모 컴포넌트에 getValues 메서드 노출
+    useImperativeHandle(
+      ref,
+      () => ({
+        getValues: () => getValues(),
+      }),
+      [getValues]
+    );
+
+    // product prop이 바뀌면 폼 전체를 reset으로 초기화
+    useEffect(() => {
+      reset(formData);
+      if (onIsDirtyChange) {
+        onIsDirtyChange(false);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [productId, formData]);
+
+    return (
+      <div className="flex flex-col border-b border-lg">
+        <div className="flex relative">
+          <Controller
+            name="name"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="품목명"
+                placeholder="(필수) 품목명을 입력하세요."
+                isEditing={true}
+                required
+                value={field.value}
+                onChange={(e) => {
+                  field.onChange(e);
+                }}
+              />
+            )}
+          />
+          <Controller
+            name="code"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="품목 코드"
+                placeholder="(필수) 품목 코드를 입력하세요."
+                isEditing={true}
+                required
+                value={field.value}
+                onChange={(e) => {
+                  field.onChange(e);
+                }}
+              />
+            )}
+          />
+        </div>
+        <div className="flex">
+          <Controller
+            name="spec"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="규격"
+                placeholder="(필수) 규격을 입력하세요."
+                isEditing={true}
+                required
+                value={field.value}
+                onChange={(e) => {
+                  field.onChange(e);
+                }}
+              />
+            )}
+          />
+          <Controller
+            name="unit"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="단위"
+                placeholder="(필수) 단위를 입력하세요."
+                isEditing={true}
+                required
+                value={field.value}
+                onChange={(e) => {
+                  field.onChange(e);
+                }}
+              />
+            )}
+          />
+        </div>
+        <div className="flex">
+          <Controller
+            name="current_stock"
+            control={control}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="현재 재고"
+                value={
+                  field.value === undefined || field.value === null
+                    ? ''
+                    : field.value === 0
+                      ? '0'
+                      : field.value
+                          .toString()
+                          .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                isEditing={true}
+                placeholder="현재 재고 수량을 입력하세요."
+                inputType="text"
+                onChange={(e) => {
+                  const numValue = e.target.value.replace(/[^0-9]/g, '');
+                  // 빈 문자열이면 undefined, 아니면 문자열로 저장
+                  field.onChange(
+                    numValue === '' ? undefined : Number(numValue)
+                  );
+                }}
+              />
+            )}
+          />
+          <Controller
+            name="average_production_time"
+            control={control}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="평균 생산 시간"
+                value={
+                  field.value === undefined ||
+                  field.value === null ||
+                  (typeof field.value === 'string' && field.value === '')
+                    ? '-'
+                    : `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}초`
+                }
+                isEditing={false}
+                inputType="text"
+              />
+            )}
+          />
+        </div>
+        <Controller
+          name="note"
+          control={control}
+          render={({ field }) => (
+            <InfoLabelValue
+              label="특이사항"
+              value={field.value || ''}
+              isEditing={true}
+              textarea={true}
+              placeholder="특이사항을 입력하세요."
+              onChange={(e) => {
+                field.onChange(e);
+              }}
             />
-          </div>
-        )}
-        <InfoLabelValue
-          label="품목 코드"
-          required
-          value={product.productCode}
-          isEditing={isEditable}
-          placeholder="(필수) 품목 코드를 입력하세요."
+          )}
         />
       </div>
-      <div className="flex">
-        <InfoLabelValue
-          label="규격"
-          required
-          value={product.size}
-          isEditing={isEditable}
-          placeholder="(필수) 규격을 입력하세요."
-        />
-        <InfoLabelValue
-          label="단위"
-          required
-          value={product.unit}
-          isEditing={isEditable}
-          placeholder="(필수) 단위를 입력하세요."
-        />
-      </div>
-      <div className="flex">
-        <InfoLabelValue
-          label="현재 재고"
-          value={
-            product.stock === -1 || product.stock === undefined
-              ? ""
-              : product.stock.toLocaleString()
-          }
-          isEditing={isEditable}
-          placeholder="현재 재고 수량을 입력하세요."
-          inputType="number"
-          onChange={(e) => {
-            const value = e.target.value.replace(/[^0-9]/g, "");
-            if (onValueChange) onValueChange({ stock: Number(value) });
-          }}
-        />
-        <InfoLabelValue
-          label="평균 생산 시간"
-          value={
-            isEditable
-              ? product.productionTime
-              : product.productionTime
-                ? `${product.productionTime}`
-                : "-"
-          }
-          isEditing={isEditable}
-          placeholder="-"
-          inputType="number"
-          onChange={(e) => {
-            // 숫자만 허용
-            const value = e.target.value.replace(/[^0-9]/g, "");
-            if (onValueChange) onValueChange({ productionTime: value });
-          }}
-        />
-      </div>
-      <InfoLabelValue
-        label="특이사항"
-        value={
-          product.comment && product.comment.length > 0 ? (
-            <ul>
-              {product.comment.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          ) : isEditable ? ( // 편집 중이면 빈 값, 아니면 "-"
-            ""
-          ) : (
-            "-"
-          )
-        }
-        isEditing={isEditable}
-        textarea={true}
-        placeholder="특이사항 입력"
-      />
-
-      {/* lint 오류 해결 위한 임시 버튼 */}
-      <button onClick={onClick} className="hidden">
-        품목 수정
-      </button>
-    </div>
-  );
-};
+    );
+  }
+);
+ProductInfo.displayName = 'ProductInfo';
 
 export default ProductInfo;

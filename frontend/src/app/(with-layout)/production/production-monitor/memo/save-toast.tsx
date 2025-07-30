@@ -1,5 +1,5 @@
-import Toast from "@/ui/toast";
-import { WarningCircle } from "@phosphor-icons/react/dist/ssr";
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 
 interface SaveToastProps {
   isVisible: boolean;

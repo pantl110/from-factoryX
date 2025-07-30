@@ -1,13 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo } from 'react';
 
 // items: 전체 리스트
 // getLabel: 아이템에서 비교할 문자열 추출 함수 (예: item => item.productName)
 
 export function useDropdownFilter<T>(
   items: T[],
-  getLabel: (item: T) => string,
+  getLabel: (item: T) => string
 ) {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
   // 입력값으로 필터링된 리스트
@@ -15,11 +15,10 @@ export function useDropdownFilter<T>(
     () =>
       input
         ? items.filter(
-            (item) =>
-              item && getLabel(item) && getLabel(item).startsWith(input),
+            (item) => item && getLabel(item) && getLabel(item).startsWith(input)
           )
         : [],
-    [input, items, getLabel],
+    [input, items, getLabel]
   );
 
   // 입력값 변경 핸들러
@@ -28,7 +27,7 @@ export function useDropdownFilter<T>(
     setInput(value);
     const nextFiltered = value
       ? items.filter(
-          (item) => item && getLabel(item) && getLabel(item).startsWith(value),
+          (item) => item && getLabel(item) && getLabel(item).startsWith(value)
         )
       : [];
     setIsOpen(!!value && nextFiltered.length > 0);

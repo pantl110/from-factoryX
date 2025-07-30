@@ -1,12 +1,12 @@
-import Panel from "@/ui/panel";
-import SellerInfo from "./seller-info";
-import ClientInfo from "./client-info";
-import MiniBtn from "@/ui/mini-btn";
-import { CaretDown } from "@phosphor-icons/react/dist/ssr";
-import EmptySpace from "@/ui/empty-space";
-import { useState } from "react";
-import AddItemDropdown from "./add-item-dropdown";
-import ClaimReceiptTaxModal from "./claim-receipt-tax-modal";
+import Panel from '@/ui/panel';
+import SellerInfo from './seller-info';
+import ClientInfo from './client-info';
+import MiniBtn from '@/ui/mini-btn';
+import { CaretDown } from '@phosphor-icons/react/dist/ssr';
+import EmptySpace from '@/ui/empty-space';
+import { useState } from 'react';
+import AddItemDropdown from './add-item-dropdown';
+import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
 
 interface CreatTaxPanelProps {
   onClose: () => void;
@@ -18,22 +18,22 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
   const [isIssueTypeDropdownOpen, setIsIssueTypeDropdownOpen] = useState(false);
   const [isClaimTaxModalOpen, setIsClaimTaxModalOpen] = useState(false);
   const [selectedIssueType, setSelectedIssueType] = useState<
-    "청구" | "영수" | null
+    '청구' | '영수' | null
   >(null);
 
   const handleIssueTypeDropdownOpen = () => {
     setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);
   };
 
-  const handleIssueTypeSelect = (issueType: "청구" | "영수") => {
+  const handleIssueTypeSelect = (issueType: '청구' | '영수') => {
     // console.log("선택된 발행 방식:", issueType);
     setIsIssueTypeDropdownOpen(false);
     setSelectedIssueType(issueType);
 
     // 여기서 다른 모달을 띄우는 로직 추가
-    if (issueType === "청구") {
+    if (issueType === '청구') {
       setIsClaimTaxModalOpen(true);
-    } else if (issueType === "영수") {
+    } else if (issueType === '영수') {
       setIsClaimTaxModalOpen(true);
     }
   };

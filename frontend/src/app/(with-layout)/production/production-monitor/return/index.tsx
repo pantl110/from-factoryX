@@ -1,7 +1,7 @@
-import ReturnTableHeader from "./return-table-header";
-import ReturnTableItem from "./return-table-item";
-import ReturnInfo from "./return-info";
-import { returnData } from "@/mocks/return-data";
+import ReturnTableHeader from './return-table-header';
+import ReturnTableItem from './return-table-item';
+import ReturnInfo from './return-info';
+import { returnData } from '@/mocks/return-data';
 
 const ReturnSection = () => {
   return (

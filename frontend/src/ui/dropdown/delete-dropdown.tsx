@@ -1,6 +1,6 @@
-import Dropdown from "./dropdown";
-import DropdownItem from "./dropdown-item";
-import { Trash } from "@phosphor-icons/react";
+import Dropdown from './dropdown';
+import DropdownItem from './dropdown-item';
+import { Trash } from '@phosphor-icons/react';
 
 interface DeleteDropdownProps {
   onClose: () => void;

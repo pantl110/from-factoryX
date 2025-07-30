@@ -1,45 +1,41 @@
-"use client";
+'use client';
 
-import Chip from "@/ui/chip";
-import { useRouter } from "next/navigation";
+import Chip from '@/ui/chip';
+import { useRouter } from 'next/navigation';
 import {
   ProjectStatusType,
   ProjectStatusColorMap,
   TaxStatusType,
-} from "@/types/status-type";
-import Checkbox from "@/ui/checkbox";
-import MiniBtn from "@/ui/mini-btn";
+} from '@/types/status-type';
+import Checkbox from '@/ui/checkbox';
+import MiniBtn from '@/ui/mini-btn';
+import { ProjectResponseModel } from '@/types/data-model';
 
 interface TableItemProps {
-  id: number;
-  status: ProjectStatusType;
-  companyName: string;
-  items: string;
-  startDate: string;
-  endDate: string;
-  taxIssued: TaxStatusType;
+  project: ProjectResponseModel;
   checked?: boolean;
   onToggle?: () => void;
 }
 
-const TableItem = ({
-  id,
-  status,
-  companyName,
-  items,
-  startDate,
-  endDate,
-  taxIssued,
-  checked = false,
-  onToggle,
-}: TableItemProps) => {
+const TableItem = ({ project, checked = false, onToggle }: TableItemProps) => {
   const router = useRouter();
-  const chipColors = ProjectStatusColorMap[status];
 
+  const chipColors = ProjectStatusColorMap[project.status as ProjectStatusType];
+
+  // production 페이지로 이동
   const handleClick = () => {
-    if (status === "견적 협의") router.push(`/quotation`);
-    else router.push(`/production/${id}`);
+    if (project.status === 'quotation') router.push(`/quotation`);
+    else router.push(`/production/${project.project_id}`);
   };
+
+  // 세금계산서 발행 상태 표시 텍스트 변환
+  const getPublishStatusText = (status: TaxStatusType | undefined) => {
+    if (status === null || status === undefined) return '연결 필요';
+    if (status === 'pending' || status === 'temporary') return '미발행';
+    if (status === 'published') return '보기';
+    return '';
+  };
+  const taxButtonText = getPublishStatusText(project.publish_status);
 
   return (
     <div
@@ -48,28 +44,37 @@ const TableItem = ({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") handleClick();
+        if (e.key === 'Enter' || e.key === ' ') handleClick();
       }}
     >
       <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
-      <div className="py-1 px-3 w-[150px]">
+      <div className="px-3 w-[150px]">
         <Chip
-          text={status}
+          text={project.status}
           bgColor={chipColors.bgColor}
           textColor={chipColors.textColor}
         />
       </div>
-      <p className="flex-2 py-1 px-3 text-dg truncate" title={companyName}>
-        {companyName}
+      <p className="flex-2 px-3 text-dg truncate" title={project.client_name}>
+        {project.client_name}
       </p>
-      <p className="flex-2 py-1 px-3 text-dg truncate" title={items}>
-        {items}
+      <p
+        className="flex-2 px-3 text-dg truncate"
+        title={
+          project.product_names.length > 1
+            ? `${project.product_names[0]} 외 ${project.product_names.length - 1}개`
+            : project.product_names[0]
+        }
+      >
+        {project.product_names.length > 1
+          ? `${project.product_names[0]} 외 ${project.product_names.length - 1}개`
+          : project.product_names[0]}
       </p>
-      <p className="w-[200px] py-1 px-3 text-dg truncate" title={startDate}>
-        {startDate}
+      <p className="w-[200px] px-3 text-dg truncate" title={project.start_date}>
+        {project.start_date}
       </p>
-      <p className="w-[200px] py-1 px-3 text-dg truncate" title={endDate}>
-        {endDate}
+      <p className="w-[200px] px-3 text-dg truncate" title={project.due_date}>
+        {project.due_date}
       </p>
       <div
         className="w-[200px] px-3"
@@ -77,9 +82,9 @@ const TableItem = ({
           e.stopPropagation();
         }}
       >
-        {taxIssued === "보기" ? (
+        {taxButtonText === '보기' ? (
           <MiniBtn
-            text={taxIssued}
+            text={taxButtonText}
             bgColor="bg-wh"
             textColor="text-dg"
             borderColor="border-lg"
@@ -89,7 +94,7 @@ const TableItem = ({
               router.push(`/tax/list`);
             }}
           />
-        ) : taxIssued === "연결 필요" ? (
+        ) : taxButtonText === '연결 필요' ? (
           <MiniBtn
             text="연결 필요"
             bgColor="bg-bg"

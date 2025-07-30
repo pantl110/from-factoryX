@@ -1,21 +1,39 @@
-"use client";
+'use client';
 
-import TableHeader from "./table-header";
-import TableItem from "./table-item";
-import SearchInput from "@/ui/search-input";
-import MiniBtn from "@/ui/mini-btn";
-import DeleteModal from "@/ui/modal/delete-modal";
-import { useState } from "react";
-import { useCheckAll } from "@/hooks/use-check-all";
+import TableHeader from './table-header';
+import TableItem from './table-item';
+import SearchInput from '@/ui/search-input';
+import MiniBtn from '@/ui/mini-btn';
+import DeleteModal from '@/ui/modal/delete-modal';
+import { useState, useEffect } from 'react';
+import { useDeleteMaterial, useCheckAll, useGetMaterial } from '@/hooks';
+import Spinner from '@/ui/spinner';
+import { useMaterialReloadStore } from '@/store/material-reload-store';
+import Pagination from '@/components/pagination';
+import MaterialDetailPanel from './material-detail';
 
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
+  isMaterialDetailOpen: boolean;
 }
 
-const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+const Material = ({
+  setIsMaterialDetailOpen,
+  isMaterialDetailOpen,
+}: MaterialProps) => {
+  const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(
+    null
+  ); // 선택한 자재 정보를 판넬에서 보여주기
 
-  const currentIds = [1, 2, 3, 4, 5];
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const pageSize = 10;
+
+  const { getMaterialList, materialList, isLoading, error, pagination } =
+    useGetMaterial();
+  const { shouldReload, setShouldReload } = useMaterialReloadStore();
 
   const {
     checkedCount,
@@ -25,12 +43,66 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(currentIds);
+  } = useCheckAll(materialList.map((m) => m.id));
+
+  const { deleteMaterial, isLoading: isDeleting } = useDeleteMaterial();
+
+  // 정렬 핸들러
+  const handleSortChange = (newOrder: 'asc' | 'desc') => {
+    setOrder(newOrder);
+    setPage(1); // 정렬 변경 시 첫 페이지로 이동
+  };
+
+  const handleDelete = async () => {
+    // 체크된 자재 id 목록
+    const idsToDelete = materialList
+      .filter((m) => isChecked(m.id))
+      .map((m) => m.id);
+    for (const id of idsToDelete) {
+      await deleteMaterial(id);
+    }
+    setIsDeleteModalOpen(false);
+    getMaterialList(); // 삭제 후 목록 새로고침
+    setAllChecked(false); // 체크 해제
+  };
+
+  // 마운트 시 데이터 불러오기
+  useEffect(() => {
+    getMaterialList({ order, page, page_size: pageSize });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize, order]);
+
+  // shouldReload가 true일 때 목록 새로고침
+  useEffect(() => {
+    if (shouldReload) {
+      getMaterialList({ order, q: search, page, page_size: pageSize });
+      setShouldReload(false);
+    }
+  }, [
+    shouldReload,
+    getMaterialList,
+    setShouldReload,
+    search,
+    page,
+    pageSize,
+    order,
+  ]);
+
+  // 검색 핸들러
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1); // 검색 시 첫 페이지로 이동
+    getMaterialList({ order, q: value, page: 1, page_size: pageSize });
+  };
 
   return (
     <>
       <div className="flex items-center justify-between pb-4">
-        <SearchInput />
+        <SearchInput
+          placeholder="자재명 또는 자재코드를 검색하세요."
+          value={search}
+          onChange={handleSearch}
+        />
         <div className="flex gap-1">
           <MiniBtn
             text="취소"
@@ -42,10 +114,10 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
           />
           <MiniBtn
             text={getDeleteButtonText()}
-            textColor={checkedCount > 0 ? "text-red" : "text-dg"}
-            borderColor={checkedCount > 0 ? "border-none" : "border-lg"}
-            bgColor={checkedCount > 0 ? "bg-red-8" : "bg-wh"}
-            hoverColor={checkedCount > 0 ? "hover:bg-red-hover" : "hover:bg-bg"}
+            textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+            borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
+            bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
+            hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
             onClick={
               checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
             }
@@ -53,56 +125,56 @@ const Material = ({ setIsMaterialDetailOpen }: MaterialProps) => {
         </div>
       </div>
 
-      <div>
-        <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
-        <TableItem
-          materialName="알루미늄 시트"
-          materialCode="RM-001"
-          unit="EA"
-          currentStock={5000}
-          status="충분"
-          _date="2025-06-04"
-          onClick={() => setIsMaterialDetailOpen(true)}
-          checked={isChecked(1)}
-          onToggle={() => toggleOne(1)}
-        />
-        <TableItem
-          materialName="투명 필름지"
-          materialCode="RM-002"
-          unit="m"
-          currentStock={1200}
-          status="부족"
-          _date="2025-06-04"
-          onClick={() => setIsMaterialDetailOpen(true)}
-          checked={isChecked(2)}
-          onToggle={() => toggleOne(2)}
-        />
-        <TableItem
-          materialName="실리콘 고무 패킹"
-          materialCode="RM-018"
-          unit="EA"
-          currentStock={3500}
-          status="충분"
-          _date="2025-06-04"
-          onClick={() => setIsMaterialDetailOpen(true)}
-          checked={isChecked(3)}
-          onToggle={() => toggleOne(3)}
-        />
-        <TableItem
-          materialName="절연 테이프"
-          materialCode="RM-027"
-          unit="롤"
-          currentStock={80}
-          status="부족"
-          _date="2025-06-04"
-          onClick={() => setIsMaterialDetailOpen(true)}
-          checked={isChecked(4)}
-          onToggle={() => toggleOne(4)}
-        />
-      </div>
+      {isLoading || error ? (
+        <div className="flex justify-center items-center h-100">
+          <Spinner />
+        </div>
+      ) : (
+        <div>
+          <TableHeader
+            isAllChecked={isAllChecked}
+            onToggleAll={toggleAll}
+            currentOrder={order}
+            onSortChange={handleSortChange}
+          />
+          {materialList.map((material) => {
+            return (
+              <TableItem
+                key={material.id}
+                material={material}
+                onClick={() => {
+                  setSelectedMaterialId(material.id);
+                  setIsMaterialDetailOpen(true);
+                }}
+                checked={isChecked(material.id)}
+                onToggle={() => toggleOne(material.id)}
+              />
+            );
+          })}
+          {pagination && pagination.pageCnt > 1 && (
+            <Pagination
+              currentPage={pagination.curPage}
+              totalPages={pagination.pageCnt}
+              onPageChange={setPage}
+            />
+          )}
+        </div>
+      )}
 
       {isDeleteModalOpen && (
-        <DeleteModal onClose={() => setIsDeleteModalOpen(false)} />
+        <DeleteModal
+          onDelete={handleDelete}
+          isLoading={isDeleting}
+          onClose={() => setIsDeleteModalOpen(false)}
+        />
+      )}
+
+      {/* 자재 디테일 판넬 */}
+      {isMaterialDetailOpen && selectedMaterialId && (
+        <MaterialDetailPanel
+          setIsMaterialDetailOpen={setIsMaterialDetailOpen}
+          selectedMaterialId={selectedMaterialId}
+        />
       )}
     </>
   );

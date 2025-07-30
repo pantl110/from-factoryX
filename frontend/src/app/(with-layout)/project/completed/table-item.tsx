@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import Chip from "@/ui/chip";
-import { useRouter } from "next/navigation";
+import Chip from '@/ui/chip';
+import { useRouter } from 'next/navigation';
 import {
   CompletedProjectStatusType,
   CompletedProjectStatusColorMap,
-} from "@/types/status-type";
-import Checkbox from "@/ui/checkbox";
-import { CopySimple } from "@phosphor-icons/react/dist/ssr";
+} from '@/types/status-type';
+import Checkbox from '@/ui/checkbox';
+import { CopySimple } from '@phosphor-icons/react/dist/ssr';
 
 interface TableItemProps {
   id: number;
@@ -31,7 +31,7 @@ const TableItem = ({
   const router = useRouter();
   const chipColors = CompletedProjectStatusColorMap[status];
   const handleClick = () => {
-    if (status === "중단") return;
+    if (status === '중단') return;
     router.push(`/production/${id}`);
   };
 
@@ -42,7 +42,7 @@ const TableItem = ({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") handleClick();
+        if (e.key === 'Enter' || e.key === ' ') handleClick();
       }}
     >
       <div
@@ -51,7 +51,7 @@ const TableItem = ({
         tabIndex={0}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") e.stopPropagation();
+          if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
         }}
       >
         <Checkbox isChecked={checked} onToggle={onToggle} />
@@ -72,7 +72,7 @@ const TableItem = ({
           e.stopPropagation();
         }}
       >
-        {status === "완료" && (
+        {status === '완료' && (
           <CopySimple
             size={20}
             className="text-sv opacity-0 group-hover:opacity-100 transition-opacity duration-200"

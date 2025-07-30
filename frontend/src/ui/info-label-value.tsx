@@ -1,35 +1,38 @@
-import Chip from "./chip";
-import React, { ChangeEvent, ReactNode } from "react";
+import Chip from './chip';
+import React, { ChangeEvent, ReactNode } from 'react';
 import {
   InventoryStatusType,
   InventoryStatusColorMap,
   TaxDocumentType,
   TaxDocumentTypeColorMap,
-} from "@/types/status-type";
-import {
-  FacilityStatusType,
-  FacilityStatusColorMap,
-} from "@/app/(with-layout)/setting/master-data/facility/types";
-import TextareaAutosize from "react-textarea-autosize";
+  EquipmentStatusType,
+  EquipmentStatusColorMap,
+} from '@/types/status-type';
+import TextareaAutosize from 'react-textarea-autosize';
+import { UseFormRegisterReturn } from 'react-hook-form';
 
 interface InfoLabelValueProps {
   label: string;
   value?: ReactNode;
   chip?: {
-    status: InventoryStatusType | TaxDocumentType | FacilityStatusType;
+    status: InventoryStatusType | TaxDocumentType | EquipmentStatusType;
   };
   isEditing?: boolean;
   placeholder?: string;
   onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleChange?: (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
   onFocus?: (
-    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   onBlur?: (
-    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   inputType?: string;
   textarea?: boolean;
   required?: boolean;
+  register?: UseFormRegisterReturn;
 }
 
 const InfoLabelValue = ({
@@ -39,17 +42,19 @@ const InfoLabelValue = ({
   isEditing = false,
   placeholder,
   onChange,
+  handleChange,
   onFocus,
   onBlur,
-  inputType = "text",
+  inputType = 'text',
   textarea = false,
   required = false,
+  register,
 }: InfoLabelValueProps) => {
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
       ? TaxDocumentTypeColorMap[chip.status as TaxDocumentType]
-      : chip.status in FacilityStatusColorMap
-        ? FacilityStatusColorMap[chip.status as FacilityStatusType]
+      : chip.status in EquipmentStatusColorMap
+        ? EquipmentStatusColorMap[chip.status as EquipmentStatusType]
         : InventoryStatusColorMap[chip.status as InventoryStatusType]
     : null;
 
@@ -60,13 +65,14 @@ const InfoLabelValue = ({
         return (
           <TextareaAutosize
             minRows={1}
-            defaultValue={typeof value === "string" ? value : ""}
+            value={typeof value === 'string' ? value : ''}
             placeholder={placeholder}
-            onChange={onChange}
+            onChange={register?.onChange || handleChange || onChange}
             className="w-full noDefaultStyle"
-            style={{ outline: "none" }}
+            style={{ outline: 'none' }}
             onFocus={onFocus}
             onBlur={onBlur}
+            ref={register?.ref}
           />
         );
       }
@@ -75,13 +81,14 @@ const InfoLabelValue = ({
         <div className="flex items-center w-full">
           <input
             type={inputType}
-            defaultValue={typeof value === "string" ? value : ""}
+            value={typeof value === 'string' ? value : ''}
             placeholder={placeholder}
-            onChange={onChange}
+            onChange={register?.onChange || handleChange || onChange}
             className="w-full placeholder:text-gr"
-            style={{ outline: "none" }}
+            style={{ outline: 'none' }}
             onFocus={onFocus}
             onBlur={onBlur}
+            ref={register?.ref}
           />
         </div>
       );
@@ -99,30 +106,16 @@ const InfoLabelValue = ({
     }
 
     // value가 없거나 빈 문자열이면 placeholder 표시
-    if (!value || (typeof value === "string" && value.trim() === "")) {
-      return <span className="text-gr Me_Body-1">{placeholder || "-"}</span>;
+    if (!value || (typeof value === 'string' && value.trim() === '')) {
+      return <span className="text-gr Me_Body-1">{placeholder || '-'}</span>;
     }
-
-    // 숫자 값이고 unit이 있는 경우 unit을 뒤에 표시
-    // if (
-    //   unit &&
-    //   (typeof value === "number" ||
-    //     (typeof value === "string" && !isNaN(Number(value))))
-    // ) {
-    //   return (
-    //     <div className="flex items-center">
-    //       <span>{value}</span>
-    //       <span className="ml-1 text-dg">{unit}</span>
-    //     </div>
-    //   );
-    // }
 
     return value;
   };
 
   return (
     <div className="flex w-full Me_Body-1 border-t border-lg">
-      <div className="w-[134px] bg-lg-table flex gap-2 p-3">
+      <div className="w-[137px] bg-lg-table flex gap-2 p-3">
         <div className="text-sv">{label}</div>
         {required && isEditing && <div className="text-sv">*</div>}
       </div>

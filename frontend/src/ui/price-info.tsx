@@ -1,26 +1,36 @@
 interface PriceInfoProps {
+  supplyAmount?: number;
   textColor?: string;
 }
 
-const PriceInfo = ({ textColor = "text-primary" }: PriceInfoProps) => {
+const PriceInfo = ({
+  supplyAmount,
+  textColor = 'text-primary',
+}: PriceInfoProps) => {
   return (
-    <div className="flex flex-col gap-4 bg-lg-table px-4 py-4 rounded-lg">
+    <div className="flex flex-col gap-4 bg-lg-table px-4 py-4 rounded-lg w-full">
       <div className="flex w-full justify-between items-center">
         <span className="w-[150px] Me_Body-1 text-sv">공급가액</span>
         <span className={`${textColor} Me_Body-3`}>
-          5,525,000<span className="text-sv Me_Body-2">원</span>
+          {supplyAmount?.toLocaleString() || 0}
+          <span className="text-sv Me_Body-2">원</span>
         </span>
       </div>
       <div className="flex w-full justify-between items-center">
         <span className="w-[150px] Me_Body-1 text-sv">세액(VAT 10%)</span>
         <span className={`${textColor} Me_Body-3`}>
-          552,500<span className="text-sv Me_Body-2">원</span>
+          {(supplyAmount && Math.floor(supplyAmount / 10))?.toLocaleString() ||
+            0}
+          <span className="text-sv Me_Body-2">원</span>
         </span>
       </div>
       <div className="flex w-full justify-between items-center">
-        <span className="w-[150px] Me_Body-1 text-sv">총액</span>
+        <span className="w-[150px] Me_Body-1 text-sv">합계금액</span>
         <span className={`${textColor} Me_Body-3`}>
-          6,077,500<span className="text-sv Me_Body-2">원</span>
+          {(
+            supplyAmount && Math.floor(supplyAmount / 10) + supplyAmount
+          )?.toLocaleString() || 0}
+          <span className="text-sv Me_Body-2">원</span>
         </span>
       </div>
     </div>

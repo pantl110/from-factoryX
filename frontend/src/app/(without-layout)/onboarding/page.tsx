@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { OnboardingStepType } from "./types";
-import Welcome from "./welcome";
-import FirstStep from "./first-step";
-import SecondStep from "./second-step";
-import ThirdStep from "./third-step";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { OnboardingStepType } from './types';
+import Welcome from './welcome';
+import FirstStep from './first-step';
+import SecondStep from './second-step';
+import ThirdStep from './third-step';
+import { useRouter } from 'next/navigation';
 
 const OnboardingPage = () => {
-  const [currentStep, setCurrentStep] = useState<OnboardingStepType>("welcome");
+  const [currentStep, setCurrentStep] = useState<OnboardingStepType>('welcome');
 
   const router = useRouter();
-  const steps = ["welcome", "first-step", "second-step", "third-step"] as const;
+  const steps = ['welcome', 'first-step', 'second-step', 'third-step'] as const;
   type StepType = (typeof steps)[number];
 
   const handleNextStep = () => {
@@ -20,7 +20,7 @@ const OnboardingPage = () => {
     if (currentIdx < steps.length - 1) {
       setCurrentStep(steps[currentIdx + 1]);
     } else {
-      router.push("/dashboard?from=onboarding"); // 마지막 단계
+      router.push('/dashboard?from=onboarding'); // 마지막 단계
     }
   };
   const handlePrevStep = () => {
@@ -32,17 +32,17 @@ const OnboardingPage = () => {
 
   const renderCurrentStep = () => {
     switch (currentStep) {
-      case "welcome":
+      case 'welcome':
         return <Welcome onNextStep={handleNextStep} />;
-      case "first-step":
+      case 'first-step':
         return (
           <FirstStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
         );
-      case "second-step":
+      case 'second-step':
         return (
           <SecondStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
         );
-      case "third-step":
+      case 'third-step':
         return (
           <ThirdStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
         );

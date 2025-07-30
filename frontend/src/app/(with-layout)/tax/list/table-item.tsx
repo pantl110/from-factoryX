@@ -1,7 +1,7 @@
-import Chip from "@/ui/chip";
-import { TaxDocumentTypeColorMap } from "@/types/status-type";
-import Checkbox from "@/ui/checkbox";
-import { TaxDataModel } from "@/mocks/tax-data";
+import Chip from '@/ui/chip';
+import { TaxDocumentTypeColorMap } from '@/types/status-type';
+import Checkbox from '@/ui/checkbox';
+import { TaxDataModel } from '@/mocks/tax-data';
 
 interface TableItemProps {
   onItemClick?: () => void;
@@ -24,7 +24,7 @@ const TableItem = ({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onItemClick?.();
+        if (e.key === 'Enter' || e.key === ' ') onItemClick?.();
       }}
     >
       <Checkbox isChecked={isChecked} onToggle={onToggle} />

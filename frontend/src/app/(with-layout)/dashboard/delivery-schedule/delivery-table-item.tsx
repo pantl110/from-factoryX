@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { ArrowSquareOut } from "@phosphor-icons/react/dist/ssr";
+import { ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
 
 interface DeliveryTableItemProps {
   projectName: string;
@@ -18,7 +18,7 @@ const DeliveryTableItem = ({
       <p className="px-3 w-[150px] truncate" title={projectName}>
         {projectName}
       </p>
-      <p className="px-3 flex-1 truncate" title={productName || ""}>
+      <p className="px-3 flex-1 truncate" title={productName || ''}>
         {productName}
       </p>
       <p className="px-3 flex-1">{date}</p>

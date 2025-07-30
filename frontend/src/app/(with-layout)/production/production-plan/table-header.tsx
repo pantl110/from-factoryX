@@ -1,4 +1,4 @@
-import { tableHeader } from "./types";
+import { tableHeader } from './types';
 
 const TableHeader = () => {
   return (

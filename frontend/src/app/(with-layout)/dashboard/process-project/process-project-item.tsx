@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Chip from "@/ui/chip";
-import { ProjectDataModel } from "@/mocks/project-data";
+import Chip from '@/ui/chip';
+import { ProjectDataModel } from '@/mocks/project-data';
 
 interface ProcessProjectItemProps {
   project: ProjectDataModel;

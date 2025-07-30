@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { useState, Suspense } from "react";
-import SearchDeleteTable from "@/ui/search-delete-table";
-import MainTitleSec from "./main-title-sec";
-import DocumentTable from "./document-table";
-import Pagination from "@/components/pagination";
-import { DocumentType } from "./types";
-import OrderDocumentView from "./order-document-view";
-import documentData, { DocumentDataModel } from "@/mocks/document-data";
-import Panel from "@/ui/panel";
-import ProductionDocumentView from "./production-document-view";
-import TransactionDocumentView from "./transaction-document-view";
-import TaxDocumentView from "./tax-document-view";
-import Spinner from "@/ui/spinner";
-import { useCheckAll } from "@/hooks/use-check-all";
-import DeleteModal from "@/ui/modal/delete-modal";
-import usePagination from "@/hooks/use-pagination";
+import { useState, Suspense } from 'react';
+import SearchDeleteTable from '@/ui/search-delete-table';
+import MainTitleSec from './main-title-sec';
+import DocumentTable from './document-table';
+import Pagination from '@/components/pagination';
+import { DocumentType } from './types';
+// import OrderDocumentView from './order-document-view';
+import documentData, { DocumentDataModel } from '@/mocks/document-data';
+import Panel from '@/ui/panel';
+import ProductionDocumentView from './production-document-view';
+import TransactionDocumentView from './transaction-document-view';
+import TaxDocumentView from './tax-document-view';
+import Spinner from '@/ui/spinner';
+import { useCheckAll } from '@/hooks/use-check-all';
+import DeleteModal from '@/ui/modal/delete-modal';
+import usePagination from '@/hooks/use-pagination';
 
 const DocumentPageContent = () => {
-  const [selectedType, setSelectedType] = useState<DocumentType>("주문서");
+  const [selectedType, setSelectedType] = useState<DocumentType>('주문서');
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentDataModel | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const filteredData = documentData.filter(
-    (item) => item.documentType === selectedType,
+    (item) => item.documentType === selectedType
   );
 
   const {
@@ -96,23 +96,23 @@ const DocumentPageContent = () => {
       </div>
 
       {/* 판넬 */}
-      {selectedDocument && selectedDocument.documentType === "주문서" && (
+      {/* {selectedDocument && selectedDocument.documentType === '주문서' && (
         <Panel title="주문서" onClose={() => setSelectedDocument(null)}>
           <OrderDocumentView />
         </Panel>
-      )}
-      {selectedDocument && selectedDocument.documentType === "생산지시서" && (
+      )} */}
+      {selectedDocument && selectedDocument.documentType === '생산지시서' && (
         <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
           <ProductionDocumentView />
         </Panel>
       )}
-      {selectedDocument && selectedDocument.documentType === "거래명세서" && (
+      {selectedDocument && selectedDocument.documentType === '거래명세서' && (
         <Panel title="거래명세서" onClose={() => setSelectedDocument(null)}>
           <TransactionDocumentView />
         </Panel>
       )}
       {selectedDocument &&
-        selectedDocument.documentType === "매출 세금계산서" && (
+        selectedDocument.documentType === '매출 세금계산서' && (
           <Panel
             title="매출 세금계산서"
             onClose={() => setSelectedDocument(null)}
@@ -121,7 +121,7 @@ const DocumentPageContent = () => {
           </Panel>
         )}
       {selectedDocument &&
-        selectedDocument.documentType === "매입 세금계산서" && (
+        selectedDocument.documentType === '매입 세금계산서' && (
           <Panel
             title="매입 세금계산서"
             onClose={() => setSelectedDocument(null)}

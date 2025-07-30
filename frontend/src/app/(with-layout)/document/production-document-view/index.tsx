@@ -1,9 +1,9 @@
-import { productionData } from "@/mocks/production-data";
-import DocumentViewTitle from "../document-view-title";
-import CommentItem from "./comment-item";
-import ProductionTableItem from "./production-table-item";
-import { useState } from "react";
-import TextareaAutosize from "react-textarea-autosize";
+import { productionData } from '@/mocks/production-data';
+import DocumentViewTitle from '../document-view-title';
+import CommentItem from './comment-item';
+import ProductionTableItem from './production-table-item';
+import { useState } from 'react';
+import TextareaAutosize from 'react-textarea-autosize';
 
 // 프로젝트명별로 그룹핑 함수
 const groupByProject = (data: typeof productionData) => {
@@ -13,12 +13,12 @@ const groupByProject = (data: typeof productionData) => {
       acc[item.projectName].push(item);
       return acc;
     },
-    {} as Record<string, typeof productionData>,
+    {} as Record<string, typeof productionData>
   );
 };
 
 const ProductionDocumentView = () => {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState('');
   const grouped = groupByProject(productionData);
 
   return (
@@ -46,8 +46,8 @@ const ProductionDocumentView = () => {
                   standard={item.standard}
                   unit={item.unit}
                   productionQuantity={item.productionQuantity || 0}
-                  machine={item.machine || "-"}
-                  productionTime={item.productionTime || "-"}
+                  machine={item.machine || '-'}
+                  productionTime={item.productionTime || '-'}
                 />
               ))}
             </div>

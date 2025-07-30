@@ -1,6 +1,6 @@
-import { TaxDraftStatusColorMap } from "@/types/status-type";
-import Checkbox from "@/ui/checkbox";
-import Chip from "@/ui/chip";
+import { TaxDraftStatusColorMap } from '@/types/status-type';
+import Checkbox from '@/ui/checkbox';
+import Chip from '@/ui/chip';
 
 interface TableItemProps {
   item: {

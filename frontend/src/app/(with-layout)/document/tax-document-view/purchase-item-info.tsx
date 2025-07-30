@@ -1,5 +1,5 @@
-import PriceInfo from "@/ui/price-info";
-import PurchaseTableTiem from "./purchase-table-tiem";
+import PriceInfo from '@/ui/price-info';
+import PurchaseTableTiem from './purchase-table-tiem';
 
 const PurchaseItemInfo = () => {
   return (

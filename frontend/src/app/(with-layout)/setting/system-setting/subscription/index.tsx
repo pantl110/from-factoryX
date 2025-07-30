@@ -1,20 +1,20 @@
-import { useState } from "react";
-import FreePlan from "./free-plan";
-import PlanItem from "./plan-item";
-import SubscriptionTableHeader from "./subscription-table-header";
-import SubscriptionTableItem from "./subscription-table-item";
-import { PlanType } from "./types";
-import MiniBtn from "@/ui/mini-btn";
-import CardChangeModal from "./modals/card-change-modal";
-import CardDeleteModal from "./modals/card-delete-modal";
+import { useState } from 'react';
+import FreePlan from './free-plan';
+import PlanItem from './plan-item';
+import SubscriptionTableHeader from './subscription-table-header';
+import SubscriptionTableItem from './subscription-table-item';
+import { PlanType } from './types';
+import MiniBtn from '@/ui/mini-btn';
+import CardChangeModal from './modals/card-change-modal';
+import CardDeleteModal from './modals/card-delete-modal';
 
 const Subscription = () => {
-  const planTypes: PlanType[] = ["BASIC", "PARTNERS"];
+  const planTypes: PlanType[] = ['BASIC', 'PARTNERS'];
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   // const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
   const [isCardDeleteModalOpen, setIsCardDeleteModalOpen] = useState(false);
 
-  const btnText = "카드 변경"; // 카드 변경, 카드 추가 // 사용자 상황에 따라 변경 필요
+  const btnText = '카드 변경'; // 카드 변경, 카드 추가 // 사용자 상황에 따라 변경 필요
 
   return (
     <div className="px-10 pb-10 flex flex-col gap-8">
@@ -35,7 +35,7 @@ const Subscription = () => {
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
             onClick={
-              btnText === "카드 변경"
+              btnText === '카드 변경'
                 ? () => setIsChangeModalOpen(true)
                 : // : () => setIsEnrollModalOpen(true) 카드 등록으로 넘어가도록
                   () => {}

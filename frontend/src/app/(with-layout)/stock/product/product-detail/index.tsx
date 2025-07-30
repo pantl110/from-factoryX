@@ -1,98 +1,560 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import ProductInfo from "./product-info";
-import MiniBtn from "@/ui/mini-btn";
-import StockStatus from "./stock-status";
-import ProductStockLog from "./product-stock-log";
-import Panel from "@/ui/panel";
-import { ProductDataModel } from "@/types/data-model";
-import NoHistoryBox from "../no-history-box";
-import ConnectMaterialModal from "../modals/connect-material-modal";
-import ProductStockModal from "../modals/product-stock-modal";
-import MaterialStockStatusModal from "../modals/material-stock-status-modal";
-import StockLocation from "./stock-location";
-import StockLocationUploadModal from "../modals/stock-location-upload-modal";
+import { useState, useEffect, useRef } from 'react';
+import ProductInfo, { ProductInfoModel } from './product-info';
+import MiniBtn from '@/ui/mini-btn';
+import StockStatus from './stock-status';
+import ProductHistory from './product-history';
+import Panel from '@/ui/panel';
+import Spinner from '@/ui/spinner';
+import {
+  ProductModel,
+  LocationModel,
+  MaterialResponseModel,
+  MaterialProductConnectionModel,
+  ProductMaterialConnectionModel,
+} from '@/types/data-model';
 
-// '생성' 모드일 때 사용할 비어있는 품목 객체의 초기값
-const EMPTY_PRODUCT: ProductDataModel = {
-  id: 0,
-  productName: "",
-  productCode: "",
-  size: "",
-  unit: "",
-  stock: -1,
-  productionTime: "",
-  location: "",
-  comment: [],
-};
+type ConnectionModelType =
+  | MaterialProductConnectionModel
+  | ProductMaterialConnectionModel;
+
+import {
+  useGetProduct,
+  useUpdateProduct,
+  useCreateSingleProduct,
+  useLocation,
+  useMaterialProduct,
+  useGetMaterial,
+} from '@/hooks';
+import NoHistoryBox from '@/ui/no-history-box';
+import ConnectMaterialModal from '../modals/connect-material-modal';
+import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
+import useFactoryStore from '@/store/factory-store';
+import { useForm, useFieldArray } from 'react-hook-form';
+import StockLocationItem from '../../stock-location-item';
+import { useUploadFile, useToast } from '@/hooks';
+import MaterialDetailPanel from '../../material/material-detail';
+import DeleteModal from '@/ui/modal/delete-modal';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
 
 interface ProductDetailProps {
-  product: ProductDataModel | null;
+  productId: number | null;
   onClose: () => void;
-  mode: "create" | "view";
+  onSuccess?: (productId?: number) => void;
 }
 
-const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
-  const isCreateMode = mode === "create";
+// type for locations form
+interface LocationFormModel {
+  locations: {
+    id?: number; // location의 id (기존 데이터만), 새로 추가된 location은 id 없음
+    location: string;
+    images: (string | File)[];
+  }[];
+}
 
-  // 생성모드: 빈 객체, 보기모드: 전달받은 product
-  const [formData, setFormData] = useState<ProductDataModel>(
-    product || EMPTY_PRODUCT,
-  );
+const ProductDetail = ({
+  productId,
+  onClose,
+  onSuccess,
+}: ProductDetailProps) => {
+  const { getProductDetail, product } = useGetProduct();
+  const { createSingleProduct } = useCreateSingleProduct();
+  const { updateProduct } = useUpdateProduct();
+  const {
+    getMaterialProductConnections,
+    data: connections,
+    updateMaterialProductConnection,
+    deleteMaterialProductConnection,
+    resetData,
+  } = useMaterialProduct();
+  const { getMaterialDetail } = useGetMaterial();
+  const factoryId = useFactoryStore((state) => state.factoryId);
+  const {
+    createLocation,
+    updateLocation,
+    deleteLocation,
+    data: locationListData,
+    listLocations,
+  } = useLocation();
+  const { uploadMultipleFiles } = useUploadFile();
+
+  // 여러 자재의 상세 정보를 저장할 상태
+  const [materialDetails, setMaterialDetails] = useState<
+    Record<number, MaterialResponseModel>
+  >({});
+
+  // 폼데이터
+  // - 품목 정보 저장
+  const [formData, setFormData] = useState<ProductModel>({
+    factory: factoryId as number,
+    name: '',
+    code: '',
+    unit: '',
+    spec: '',
+    current_stock: undefined,
+    average_production_time: undefined,
+    buffer_rate: undefined,
+    location: undefined,
+    note: '',
+  });
+  // - 품목이 보관된 창고 위치 관련 RHF for locations
+  const {
+    control,
+    watch,
+    setValue,
+    getValues,
+    formState: { isDirty: isLocationDirty },
+    reset,
+  } = useForm<LocationFormModel>({
+    defaultValues: { locations: [] },
+  });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'locations',
+  });
+  // - 자재 수량 변경 추적
+  const [quantityChanges, setQuantityChanges] = useState<
+    Record<number, number>
+  >({});
+  // 폼 유효성 검사
+  const [isDirty, setIsDirty] = useState(false);
+  const [isValid, setIsValid] = useState(false);
+  const productInfoRef = useRef<ProductInfoModel>(null);
+  const [isQuantityDirty, setIsQuantityDirty] = useState(false); // 자재 수량 변경 감지를 위한 상태
+
+  // 수량 변경 추적 함수
+  const handleQuantityChange = (connectionId: number, newQuantity: number) => {
+    setQuantityChanges((prev) => ({
+      ...prev,
+      [connectionId]: newQuantity,
+    }));
+    setIsQuantityDirty(true);
+  };
+
+  // 모달 오픈 상태
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-  const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false); // 판넬의 연결하기 버튼 모달
-  const [isMaterialStockStatusModalOpen, setIsMaterialStockStatusModalOpen] =
-    useState(false); // 판넬의 원자재 재고 상태 모달
+  // const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false);
 
-  // StockLocationItem 개수를 관리하는 상태
-  const [stockLocationCount, setStockLocationCount] = useState(1);
+  // 해당 원자재 클릭 시 보여줄 원자재 id와 해당 디테일 판넬
+  const [materialId, setMaterialId] = useState<number | null>(null);
+  const [isMaterialDetailPanelOpen, setIsMaterialDetailPanelOpen] =
+    useState(false);
+
   // 각 StockLocationItem 별 모달 오픈 상태 관리
   const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
 
+  // 연결된 자재 정보 삭제 확인 모달
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConnectionId, setDeleteConnectionId] = useState<number | null>(
+    null
+  );
+
+  // 토스트 상태
+  const { isToastOpen, isVisible, showToast } = useToast();
+  const [toastMessage, setToastMessage] = useState('');
+
+  // 토스트 메시지 표시 함수
+  const showToastMessage = (message: string) => {
+    setToastMessage(message);
+    showToast();
+  };
+
+  // 연결 삭제 핸들러
+  const handleDeleteConnection = (connectionId: number) => {
+    setDeleteConnectionId(connectionId);
+    setIsDeleteModalOpen(true);
+  };
+
+  // 연결 삭제 실행
+  const handleConfirmDelete = async (connectionId: number) => {
+    if (!connectionId) return;
+
+    setIsDeleting(true);
+    try {
+      const result = await deleteMaterialProductConnection(connectionId);
+      if (result.success) {
+        // 삭제 성공 시 연결된 자재 정보 새로고침
+        if (productId) {
+          // 연결된 자재 목록 초기화
+          resetData();
+          // 연결된 자재 목록 다시 로드
+          await getMaterialProductConnections(productId, 'product');
+        }
+      } else {
+        alert('연결 삭제에 실패했습니다: ' + result.error);
+      }
+    } catch {
+      alert('연결 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+      setDeleteConnectionId(null);
+    }
+  };
+
+  // 모달에서 삭제 확인 시 호출되는 함수
+  const handleModalConfirmDelete = () => {
+    if (deleteConnectionId) {
+      handleConfirmDelete(deleteConnectionId);
+    }
+  };
+
+  // productId가 변경되면 상세 정보 로드
+  useEffect(() => {
+    if (productId) {
+      getProductDetail(productId);
+    }
+  }, [productId, getProductDetail]);
+
+  // product가 로드되면 formData 업데이트
+  useEffect(() => {
+    if (productId && product) {
+      setFormData({
+        factory: product.factory,
+        name: product.name,
+        code: product.code,
+        unit: product.unit,
+        spec: product.spec,
+        current_stock: product.current_stock,
+        average_production_time: product.average_production_time,
+        buffer_rate: product.buffer_rate,
+        location: product.location?.toString() || '',
+        note: product.note,
+      });
+    } else if (!productId) {
+      setFormData({
+        factory: factoryId as number,
+        name: '',
+        code: '',
+        unit: '',
+        spec: '',
+        current_stock: undefined,
+        average_production_time: undefined,
+        buffer_rate: undefined,
+        location: undefined,
+        note: '',
+      });
+    }
+  }, [productId, product, factoryId]);
+
+  // 서버 location 데이터를 RHF locations 배열에 세팅
+  useEffect(() => {
+    if (locationListData && 'locations' in locationListData) {
+      const serverLocations = locationListData.locations.map((loc) => ({
+        id: loc.id,
+        location: loc.location ?? '',
+        images: loc.images ?? [],
+      }));
+      reset({ locations: serverLocations });
+    }
+  }, [locationListData, reset]);
+
+  useEffect(() => {
+    if (productId) {
+      listLocations('product', productId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
+
+  // 연결된 자재의 id를 가져오기
+  useEffect(() => {
+    if (productId) {
+      getMaterialProductConnections(productId, 'product');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
+
+  useEffect(() => {
+    if (connections && Array.isArray(connections) && connections.length > 0) {
+      // 연결된 자재의 상세 정보를 가져오기
+      connections.forEach(async (connection: ConnectionModelType) => {
+        // MaterialProductConnectionModel인지 확인
+        if ('material_id' in connection && connection.material_id) {
+          if (!materialDetails[connection.material_id]) {
+            try {
+              const result = await getMaterialDetail(connection.material_id);
+              if (result.success && result.data) {
+                setMaterialDetails((prev) => ({
+                  ...prev,
+                  [connection.material_id]: result.data,
+                }));
+              }
+            } catch {
+              throw new Error('원자재 상세 정보 조회 실패');
+            }
+          }
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connections, getMaterialDetail]);
+
+  ////////////////////////////////
+  // 함수
   // StockLocationItem 추가 함수
   const handleAddStockLocation = () => {
-    setStockLocationCount((prev) => prev + 1);
+    append({ location: '', images: [] });
     setOpenUploadModals((prev) => [...prev, false]);
   };
 
-  // StockLocationItem 삭제 함수
-  const handleDeleteStockLocation = (index: number) => {
-    setStockLocationCount((prev) => Math.max(1, prev - 1));
-    setOpenUploadModals((prev) => prev.filter((_, i) => i !== index));
+  // Plus 버튼 클릭 시 사진 추가 모달 오픈
+  const handleOpenUploadModal = (index: number) => {
+    setOpenUploadModals((prev) => {
+      const newModals = [...prev];
+      // 배열 크기가 부족하면 확장
+      while (newModals.length <= index) {
+        newModals.push(false);
+      }
+      newModals[index] = true;
+      return newModals;
+    });
+  };
+  // 사진 추가 모달 닫기
+  const handleCloseUploadModal = (index: number) => {
+    setOpenUploadModals((prev) => {
+      const newModals = [...prev];
+      // 배열 크기가 부족하면 확장
+      while (newModals.length <= index) {
+        newModals.push(false);
+      }
+      newModals[index] = false;
+      return newModals;
+    });
   };
 
-  // Plus 버튼 클릭 시 모달 오픈
-  const handleOpenUploadModal = (index: number) => {
-    // console.log("Plus button clicked, index:", index);
-    setOpenUploadModals((prev) =>
-      prev.map((open, i) => (i === index ? true : open)),
-    );
+  // ProductInfo 저장 함수
+  const handleSaveProductInfo = async () => {
+    try {
+      // ProductInfo에서 현재 폼 값 가져오기
+      const currentFormData = productInfoRef.current?.getValues() || formData;
+
+      if (productId) {
+        // 수정 모드
+        // factory 필드는 수정 시 제외 (서버에서 Factory 인스턴스를 기대함)
+        const { factory: _factory, ...updateDataWithoutFactory } =
+          currentFormData;
+        const updateData = {
+          ...updateDataWithoutFactory,
+          current_stock:
+            currentFormData.current_stock === undefined ||
+            currentFormData.current_stock === null
+              ? undefined
+              : currentFormData.current_stock,
+          average_production_time: currentFormData.average_production_time,
+        };
+        // undefined를 null로 변환해서 보냄 (수정 시에는 null 명시)
+        const payload: Partial<ProductModel> & {
+          current_stock: number | null;
+        } = {
+          ...updateData,
+          current_stock:
+            updateData.current_stock === undefined
+              ? null
+              : updateData.current_stock,
+        };
+        const result = await updateProduct(productId, payload);
+        if (result && result.success) {
+          // 성공 시 처리
+        } else {
+          alert(
+            '품목 수정에 실패하였습니다. ' +
+              (result?.error || '알 수 없는 오류')
+          );
+        }
+      } else {
+        // 생성 모드
+        // 데이터 변환
+        const createData = {
+          factory_id: currentFormData.factory,
+          name: currentFormData.name,
+          code: currentFormData.code,
+          spec: currentFormData.spec,
+          unit: currentFormData.unit,
+          current_stock:
+            currentFormData.current_stock === undefined ||
+            currentFormData.current_stock === null
+              ? undefined
+              : currentFormData.current_stock,
+        };
+        // undefined를 null로 변환해서 보냄
+        const payload = { ...createData };
+        if (payload.current_stock === undefined) {
+          delete payload.current_stock;
+        }
+        const result = await createSingleProduct(payload);
+        if (result && result.success) {
+          // 새로운 제품이 생성되었을 때 product_id를 onSuccess로 전달
+          if (result.data && result.data.product_id) {
+            onSuccess?.(result.data.product_id);
+          }
+        } else {
+          alert(
+            '품목 생성에 실패하였습니다. ' +
+              (result?.error || '알 수 없는 오류')
+          );
+        }
+      }
+    } catch (error) {
+      alert('저장 중 오류가 발생했습니다. ' + error);
+    }
   };
-  // 모달 닫기
-  const handleCloseUploadModal = (index: number) => {
-    setOpenUploadModals((prev) =>
-      prev.map((open, i) => (i === index ? false : open)),
-    );
+
+  // locations 저장 함수
+  const handleSaveLocations = async (
+    locations: LocationFormModel['locations'],
+    prevLocations: LocationModel[],
+    productId: number | null
+  ) => {
+    if (!productId) return;
+    // 1. 삭제: prevLocations에만 있고, locations에는 없는 location은 삭제
+    for (const prevLoc of prevLocations) {
+      // prevLoc.id는 location의 id임
+      if (!locations.some((loc) => loc.id === prevLoc.id)) {
+        await deleteLocation(prevLoc.id, 'product');
+      }
+    }
+    // 2. 생성/수정
+    for (const loc of locations) {
+      // File 객체와 string URL 분리
+      const fileImages = (loc.images ?? []).filter(
+        (img) => img instanceof File
+      ) as File[];
+      const urlImages = (loc.images ?? []).filter(
+        (img) => typeof img === 'string'
+      ) as string[];
+      // File 객체가 있으면 S3에 업로드
+      let uploadedUrls: string[] = [];
+      if (fileImages.length > 0) {
+        const uploadResults = await uploadMultipleFiles(fileImages);
+        uploadedUrls = uploadResults
+          .filter((res) => res.success && res.object_url)
+          .map((res) => res.object_url || '');
+      }
+      // 최종 images 배열: 기존 string URL + 새로 업로드된 URL
+      const images = [...urlImages, ...uploadedUrls];
+      if (loc.id) {
+        // 2-1. id가 있으면 PATCH (location의 id)
+        await updateLocation(loc.id, {
+          type: 'product',
+          location: loc.location,
+          images,
+        });
+      } else {
+        // 2-2. id가 없으면 POST (product의 id)
+        await createLocation({
+          type: 'product',
+          id: productId, // product의 id
+          location: loc.location,
+          images,
+        });
+      }
+    }
   };
+
+  // 통합 저장 함수
+  const handleSave = async () => {
+    const isProductInfoChanged = isDirty;
+    const isLocationsChanged = isLocationDirty;
+    const isQuantitiesChanged = isQuantityDirty;
+    const prevLocations =
+      locationListData && 'locations' in locationListData
+        ? locationListData.locations
+        : [];
+
+    // 수량 변경사항 저장
+    if (isQuantitiesChanged && Object.keys(quantityChanges).length > 0) {
+      try {
+        const updatePromises = Object.entries(quantityChanges).map(
+          ([connectionId, newQuantity]) =>
+            updateMaterialProductConnection(parseInt(connectionId), newQuantity)
+        );
+        await Promise.all(updatePromises);
+        setQuantityChanges({}); // 변경사항 초기화
+        setIsQuantityDirty(false);
+      } catch {
+        alert('수량 변경사항 저장에 실패했습니다.');
+        return;
+      }
+    }
+
+    // 품목 정보와 위치 정보 저장
+    if (isProductInfoChanged && isLocationsChanged) {
+      await handleSaveProductInfo();
+      await handleSaveLocations(
+        getValues('locations'),
+        prevLocations,
+        productId
+      );
+      onSuccess?.();
+      onClose();
+    } else if (isProductInfoChanged) {
+      await handleSaveProductInfo();
+      onSuccess?.();
+      onClose();
+    } else if (isLocationsChanged) {
+      await handleSaveLocations(
+        getValues('locations'),
+        prevLocations,
+        productId
+      );
+      onSuccess?.();
+      onClose();
+    } else if (isQuantitiesChanged) {
+      // 자재 수량만 변경된 경우
+      onSuccess?.();
+      onClose();
+    }
+  };
+
+  // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
+  if (!factoryId) {
+    return (
+      <Panel title="품목 재고관리" onClose={onClose}>
+        <div className="flex flex-col items-center justify-center h-100 gap-3">
+          <Spinner />
+        </div>
+      </Panel>
+    );
+  }
 
   return (
     <>
-      <Panel title="품목 재고관리" onClose={onClose}>
+      <Panel
+        title="품목 재고관리"
+        onClose={onClose}
+        headerButton={
+          (!productId ||
+            (productId && (isDirty || isLocationDirty || isQuantityDirty))) && (
+            <MiniBtn
+              text="저장"
+              textColor="text-primary"
+              bgColor="bg-primary-8"
+              hoverColor="hover:bg-secondary-hover"
+              onClick={handleSave}
+              disabled={!isValid}
+            />
+          )
+        }
+      >
         <div className="flex flex-col gap-10">
           <div className="flex flex-col gap-3">
+            {/* 품목 정보 */}
             <h3 className="Heading-3 text-dg h-10 flex items-center">
               품목 정보
             </h3>
             <ProductInfo
-              product={formData}
-              isEditable={isCreateMode} // 생성모드일 때만 수정 가능
-              onValueChange={(value) =>
-                setFormData((prev: ProductDataModel) => ({ ...prev, ...value }))
-              }
+              formData={formData}
+              productId={productId}
+              onIsDirtyChange={setIsDirty}
+              onIsValidChange={setIsValid}
+              ref={productInfoRef}
             />
           </div>
 
+          {/* 품목이 보관된 창고 위치 */}
           <div className="flex flex-col gap-3">
             <div className="h-10 flex items-center justify-between">
               <h3 className="Heading-3 h-10 flex items-center text-dg ">
@@ -106,97 +568,130 @@ const ProductDetail = ({ product, onClose, mode }: ProductDetailProps) => {
                 onClick={handleAddStockLocation}
               />
             </div>
-            {isCreateMode ? (
-              stockLocationCount > 0 ? (
-                <StockLocation
-                  itemCount={stockLocationCount}
-                  onItemDelete={handleDeleteStockLocation}
-                  onPlusClick={handleOpenUploadModal}
-                />
-              ) : (
-                <NoHistoryBox
-                  title="등록된 창고 위치가 아직 없어요."
-                  text="[추가] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
-                />
-              )
-            ) : (
-              <StockLocation
-                itemCount={stockLocationCount}
-                onItemDelete={handleDeleteStockLocation}
-                onPlusClick={handleOpenUploadModal}
+            {/* locations가 없을 때 */}
+            {fields.length === 0 ? (
+              <NoHistoryBox
+                title="등록된 창고 위치가 아직 없어요."
+                text="[추가] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
               />
+            ) : (
+              fields.map((field, index) => (
+                <StockLocationItem
+                  key={field.id}
+                  index={index}
+                  control={control}
+                  remove={remove}
+                  openUploadModal={() => handleOpenUploadModal(index)}
+                  images={watch(`locations.${index}.images`)}
+                  setValue={setValue}
+                />
+              ))
             )}
           </div>
 
+          {/* 품목과 연결된 자재 정보 */}
           <div className="flex flex-col gap-3">
             <div className="h-10 flex items-center justify-between">
               <h3 className="Heading-3 h-10 flex items-center text-dg ">
                 품목과 연결된 자재 정보
               </h3>
               <MiniBtn
-                text="연결"
+                text="자재 연결"
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsMaterialModalOpen(true)}
               />
             </div>
-            {isCreateMode ? (
-              <NoHistoryBox
-                title="이 품목에 연결된 원자재가 아직 없어요."
-                text="원자재를 연결하면 이곳에서 재고 상태를 확인할 수 있어요."
-              />
-            ) : (
-              <StockStatus
-                setIsMaterialStockStatusModalOpen={
-                  setIsMaterialStockStatusModalOpen
-                }
-              />
-            )}
+            <StockStatus
+              connections={
+                connections && Array.isArray(connections)
+                  ? (connections as ConnectionModelType[])
+                  : []
+              }
+              materialDetails={materialDetails}
+              setIsMaterialDetailPanelOpen={setIsMaterialDetailPanelOpen}
+              setMaterialId={setMaterialId}
+              setIsQuantityDirty={setIsQuantityDirty}
+              handleQuantityChange={handleQuantityChange}
+              onDeleteConnection={handleDeleteConnection}
+              onInvalidQuantity={showToastMessage}
+            />
           </div>
 
-          <div className="flex flex-col gap-3">
-            <div className="h-10 flex items-center justify-between">
-              <h3 className="Heading-3 text-dg h-10 flex items-center">
-                품목 입·출고 내역
-              </h3>
-              <p className="Me_Body-1 text-gr">최근 3개월 기준</p>
-            </div>
-            {isCreateMode ? (
-              <NoHistoryBox
-                title="아직 등록된 재고 이력이 없어요."
-                text="입고나 출고와 관련된 재고 이력이 등록되면 이곳에서 확인할 수 있어요."
-              />
-            ) : (
-              <ProductStockLog
-                setIsProductStockModalOpen={setIsProductStockModalOpen}
-              />
-            )}
-          </div>
+          {/* 품목 입·출고 내역 */}
+          <ProductHistory productId={productId} />
         </div>
       </Panel>
 
-      {/* 모달 */}
+      {/* 자재 연결 모달 */}
       {isMaterialModalOpen && (
-        <ConnectMaterialModal onClose={() => setIsMaterialModalOpen(false)} />
-      )}
-      {isProductStockModalOpen && (
-        <ProductStockModal onClose={() => setIsProductStockModalOpen(false)} />
-      )}
-      {isMaterialStockStatusModalOpen && (
-        <MaterialStockStatusModal
-          onClose={() => setIsMaterialStockStatusModalOpen(false)}
+        <ConnectMaterialModal
+          productId={productId}
+          onClose={() => setIsMaterialModalOpen(false)}
+          onSuccess={async () => {
+            // 자재 연결 성공 시 연결된 자재 정보 새로고침
+            if (productId) {
+              await getMaterialProductConnections(productId, 'product');
+            }
+          }}
         />
       )}
-      {/* 각 StockLocationItem 별 모달 렌더 */}
+
+      {/* 자재 디테일 판넬 */}
+      {isMaterialDetailPanelOpen && materialId && (
+        <MaterialDetailPanel
+          setIsMaterialDetailOpen={setIsMaterialDetailPanelOpen}
+          selectedMaterialId={materialId}
+        />
+      )}
+
+      {/* 각 StockLocationItem 별 모달 렌더링 */}
       {openUploadModals.map((open, idx) =>
         open ? (
           <StockLocationUploadModal
             key={idx}
             onClose={() => handleCloseUploadModal(idx)}
+            fileCount={9 - (watch(`locations.${idx}.images`)?.length ?? 0)}
+            onComplete={(uploadedFiles) => {
+              const prevImages = watch(`locations.${idx}.images`) ?? [];
+              const newImages = [...prevImages, ...uploadedFiles];
+              setValue(`locations.${idx}.images`, newImages, {
+                shouldDirty: true,
+              });
+            }}
           />
-        ) : null,
+        ) : null
       )}
+
+      {/* 연결된 자재 정보 삭제 확인 모달 */}
+      {isDeleteModalOpen && deleteConnectionId && (
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleModalConfirmDelete}
+          isLoading={isDeleting}
+        />
+      )}
+
+      {/* 유효하지 않은 자재 수량 토스트 메시지 */}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text={toastMessage}
+          subtext=""
+          type="red"
+          isVisible={isVisible}
+        />
+      )}
+
+      {/* {isProductStockModalOpen && (
+        <ProductStockModal onClose={() => setIsProductStockModalOpen(false)} />
+      )} */}
+      {/* {isMaterialStockStatusModalOpen && (
+        <MaterialStockStatusModal
+          onClose={() => setIsMaterialStockStatusModalOpen(false)}
+        />
+      )} */}
     </>
   );
 };

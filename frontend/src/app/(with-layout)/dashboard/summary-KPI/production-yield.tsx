@@ -1,4 +1,4 @@
-import { CaretUpIcon } from "@phosphor-icons/react/dist/ssr";
+import { CaretUpIcon } from '@phosphor-icons/react/dist/ssr';
 
 const ProductionYield = () => {
   return (

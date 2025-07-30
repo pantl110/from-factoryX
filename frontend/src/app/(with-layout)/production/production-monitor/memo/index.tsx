@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import MiniBtn from "@/ui/mini-btn";
-import SaveToast from "./save-toast";
-import useToast from "@/hooks/use-toast";
-import { useState } from "react";
+import MiniBtn from '@/ui/mini-btn';
+import SaveToast from './save-toast';
+import useToast from '@/hooks/use-toast';
+import { useState } from 'react';
 
 interface MemoSectionProps {
   title: string;

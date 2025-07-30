@@ -1,6 +1,6 @@
-import Image from "next/image";
-import onboardingImage from "@/assets/onboarding.png";
-import MiniBtn from "@/ui/mini-btn";
+import Image from 'next/image';
+import onboardingImage from '@/assets/onboarding.png';
+import MiniBtn from '@/ui/mini-btn';
 
 interface WelcomeProps {
   onNextStep: () => void;

@@ -1,6 +1,6 @@
-import MiniBtn from "@/ui/mini-btn";
-import { NotificationModel } from "../types";
-import { ExclamationMark, CheckSquare, Siren } from "@phosphor-icons/react";
+import MiniBtn from '@/ui/mini-btn';
+import { NotificationModel } from '../types';
+import { ExclamationMark, CheckSquare, Siren } from '@phosphor-icons/react';
 
 interface NotificationItemProps {
   item: NotificationModel;
@@ -12,26 +12,26 @@ const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
   const getNotificationIcon = (type: string) => {
     const iconConfig = {
       // 경고/오류 (빨간색)
-      warning: { icon: ExclamationMark, color: "text-red" },
+      warning: { icon: ExclamationMark, color: 'text-red' },
       // 성공/완료 (파란색)
-      completed: { icon: CheckSquare, color: "text-primary" },
+      completed: { icon: CheckSquare, color: 'text-primary' },
       // 정보/알림 (회색)
-      info: { icon: Siren, color: "text-gr" },
+      info: { icon: Siren, color: 'text-gr' },
     };
 
     // 타입별 그룹 분류
     const warningTypes = [
-      "materialShortage",
-      "facilityIssue",
-      "productionIssue",
+      'materialShortage',
+      'facilityIssue',
+      'productionIssue',
     ];
     const completedTypes = [
-      "productionComplete",
-      "salesTaxIssued",
-      "purchaseTaxReceived",
-      "receiptReceived",
+      'productionComplete',
+      'salesTaxIssued',
+      'purchaseTaxReceived',
+      'receiptReceived',
     ];
-    const infoTypes = ["roleChanged", "deliveryDate", "productionPlanChanged"];
+    const infoTypes = ['roleChanged', 'deliveryDate', 'productionPlanChanged'];
 
     let config;
     if (warningTypes.includes(type)) {
@@ -54,7 +54,7 @@ const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
     <div className="w-full my-3 rounded">
       <div className="flex gap-2 items-center">
         {icon}
-        <p className={`Me_Body-2 ${item.isRead ? "text-sv" : "text-dg"}`}>
+        <p className={`Me_Body-2 ${item.isRead ? 'text-sv' : 'text-dg'}`}>
           {item.message}
         </p>
       </div>

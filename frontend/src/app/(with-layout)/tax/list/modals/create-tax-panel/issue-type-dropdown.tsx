@@ -1,11 +1,11 @@
-import Dropdown from "@/ui/dropdown/dropdown";
-import DropdownItem from "@/ui/dropdown/dropdown-item";
-import React from "react";
-import { createPortal } from "react-dom";
+import Dropdown from '@/ui/dropdown/dropdown';
+import DropdownItem from '@/ui/dropdown/dropdown-item';
+import React from 'react';
+import { createPortal } from 'react-dom';
 
 interface IssueTypeDropdownProps {
   onClose: () => void;
-  onSelect: (issueType: "청구" | "영수") => void;
+  onSelect: (issueType: '청구' | '영수') => void;
   position?: { top: number; left: number };
 }
 
@@ -23,13 +23,13 @@ const IssueTypeDropdown = ({
       }}
     >
       <Dropdown onClose={onClose} width="w-[123px]">
-        <DropdownItem text="청구" onClick={() => onSelect("청구")} />
-        <DropdownItem text="영수" onClick={() => onSelect("영수")} />
+        <DropdownItem text="청구" onClick={() => onSelect('청구')} />
+        <DropdownItem text="영수" onClick={() => onSelect('영수')} />
       </Dropdown>
     </div>
   );
 
-  return typeof window !== "undefined"
+  return typeof window !== 'undefined'
     ? createPortal(dropdownContent, document.body)
     : null;
 };

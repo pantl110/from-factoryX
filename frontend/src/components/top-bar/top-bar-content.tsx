@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import MiniBtn from "@/ui/mini-btn";
-import { BellSimple } from "@phosphor-icons/react";
-import { notificationData } from "@/mocks/notification-data";
-import { ProductionTabType } from "./types";
-import ProfileImage from "@/ui/profile-image";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import ProfileModal from "./modals/profile-modal";
+import MiniBtn from '@/ui/mini-btn';
+import { BellSimple } from '@phosphor-icons/react';
+import { notificationData } from '@/mocks/notification-data';
+import { ProductionTabType } from './types';
+import ProfileImage from '@/ui/profile-image';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import ProfileModal from './modals/profile-modal';
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
@@ -28,11 +28,11 @@ const TopBarContent = ({
   onNotificationClick,
 }: TopBarContentProps) => {
   const isProductionPlanSaveActive =
-    productionTab === "생산 계획" && pageStatus === "생산 대기";
+    productionTab === '생산 계획' && pageStatus === '생산 대기';
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pageStatus === "프로젝트 완료") {
+  if (pageStatus === '프로젝트 완료') {
     return (
       <div className="flex gap-2">
         <MiniBtn
@@ -45,7 +45,7 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === "주문서" || productionTab === "생산 현황") {
+  if (productionTab === '주문서' || productionTab === '생산 현황') {
     return (
       <MiniBtn
         text="세금계산서 생성"
@@ -56,7 +56,7 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === "생산 계획") {
+  if (productionTab === '생산 계획') {
     return (
       <div className="flex gap-2">
         <MiniBtn
@@ -77,8 +77,8 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === "생산 내역") {
-    if (pageStatus === "생산 완료") {
+  if (productionTab === '생산 내역') {
+    if (pageStatus === '생산 완료') {
       return (
         <div className="flex gap-2">
           <MiniBtn
@@ -106,7 +106,7 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === "납품") {
+  if (productionTab === '납품') {
     return (
       <div className="flex gap-2">
         <MiniBtn
@@ -149,9 +149,9 @@ const TopBarContent = ({
         className="flex items-center justify-center w-10 h-10 cursor-pointer relative"
         onClick={() => setIsProfileModalOpen(true)}
       >
-        <ProfileImage text="YO" size="small" />
+        <ProfileImage size="small" />
 
-        {isProfileModalOpen && !pathname.includes("production") && (
+        {isProfileModalOpen && !pathname.includes('production') && (
           <div className="absolute top-14.5 right-0">
             <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
           </div>

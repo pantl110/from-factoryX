@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 interface OverlayViewProps {
   children: React.ReactNode;
@@ -8,7 +8,7 @@ interface OverlayViewProps {
 const OverlayView = ({ children, onClose }: OverlayViewProps) => {
   useEffect(() => {
     const originalStyle = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
 
     return () => {
       document.body.style.overflow = originalStyle;
@@ -21,7 +21,7 @@ const OverlayView = ({ children, onClose }: OverlayViewProps) => {
       className="bg-black/50 w-full min-w-[1000px] h-full fixed top-0 left-0 z-50 flex justify-center items-center"
       onClick={onClose}
       onKeyDown={(e) => {
-        if (e.key === "Escape") onClose?.();
+        if (e.key === 'Escape') onClose?.();
       }}
     >
       <div

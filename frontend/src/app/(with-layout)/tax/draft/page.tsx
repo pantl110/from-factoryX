@@ -1,66 +1,66 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import MainTitleSec from "./main-title-sec";
-import Checkbox from "@/ui/checkbox";
-import { CaretUpDownIcon } from "@phosphor-icons/react";
-import { useCheckAll } from "@/hooks/use-check-all";
-import usePagination from "@/hooks/use-pagination";
-import TableItem from "./table-item";
-import SearchDeleteTable from "@/ui/search-delete-table";
-import DeleteModal from "@/ui/modal/delete-modal";
-import TaxDetailPanel from "../tax-detail-panel";
-import { taxData } from "@/mocks/tax-data";
-import useToast from "@/hooks/use-toast";
-import Toast from "@/ui/toast";
-import { CheckCircle } from "@phosphor-icons/react";
-import Pagination from "@/components/pagination";
+import { useState } from 'react';
+import MainTitleSec from './main-title-sec';
+import Checkbox from '@/ui/checkbox';
+import { CaretUpDownIcon } from '@phosphor-icons/react';
+import { useCheckAll } from '@/hooks/use-check-all';
+import usePagination from '@/hooks/use-pagination';
+import TableItem from './table-item';
+import SearchDeleteTable from '@/ui/search-delete-table';
+import DeleteModal from '@/ui/modal/delete-modal';
+import TaxDetailPanel from '../tax-detail-panel';
+import { taxData } from '@/mocks/tax-data';
+import useToast from '@/hooks/use-toast';
+import Toast from '@/ui/toast';
+import { CheckCircle } from '@phosphor-icons/react';
+import Pagination from '@/components/pagination';
 
 const TaxDraftPage = () => {
   const [selectedTab, setSelectedTab] = useState<
-    "전체" | "임시 저장" | "발행 대기"
-  >("전체");
+    '전체' | '임시 저장' | '발행 대기'
+  >('전체');
 
   const [isTaxDetailPanelOpen, setIsTaxDetailPanelOpen] = useState(false);
 
   // 정렬 상태 관리
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // 임시데이터
   const tempData = [
     {
       id: 1,
-      status: "임시 저장",
-      type: "-",
-      companyName: "플라스틱이 좋아",
+      status: '임시 저장',
+      type: '-',
+      companyName: '플라스틱이 좋아',
       supplyPrice: 100000,
       taxPrice: 10000,
       totalPrice: 110000,
-      date: "2025-01-02",
+      date: '2025-01-02',
     },
     {
       id: 2,
-      status: "발행 대기",
-      type: "-",
-      companyName: "플라스틱이 싫어",
+      status: '발행 대기',
+      type: '-',
+      companyName: '플라스틱이 싫어',
       supplyPrice: 100000,
       taxPrice: 10000,
       totalPrice: 110000,
-      date: "2025-01-01",
+      date: '2025-01-01',
     },
   ];
 
   // 탭에 따른 필터링된 데이터
   const filteredData =
-    selectedTab === "전체"
+    selectedTab === '전체'
       ? tempData
       : tempData.filter((item) => item.status === selectedTab);
 
   // 정렬된 데이터
   const sortedData = [...filteredData].sort((a, b) => {
-    if (sortOrder === "asc") {
+    if (sortOrder === 'asc') {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
-    } else if (sortOrder === "desc") {
+    } else if (sortOrder === 'desc') {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     }
     return 0;
@@ -101,10 +101,10 @@ const TaxDraftPage = () => {
 
   // 발행일자 정렬 핸들러
   const handleDateSort = () => {
-    if (sortOrder === "desc") {
-      setSortOrder("asc");
+    if (sortOrder === 'desc') {
+      setSortOrder('asc');
     } else {
-      setSortOrder("desc");
+      setSortOrder('desc');
     }
     // 정렬 변경 시 첫 페이지로 이동
     setCurrentPage(1);
@@ -118,7 +118,7 @@ const TaxDraftPage = () => {
   };
 
   // 탭 변경 핸들러
-  const handleTabChange = (tab: "전체" | "임시 저장" | "발행 대기") => {
+  const handleTabChange = (tab: '전체' | '임시 저장' | '발행 대기') => {
     setSelectedTab(tab);
     // 탭 변경 시 첫 페이지로 이동하고 체크박스 초기화
     setCurrentPage(1);

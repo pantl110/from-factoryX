@@ -1,32 +1,58 @@
-"use client";
+'use client';
 
-import Input from "@/ui/input";
-import MiniBtn from "@/ui/mini-btn";
-import Link from "next/link";
-import { useInput } from "@/hooks/use-input";
-import { validateEmail, validatePassword } from "@/utils/validation";
-import { useRouter } from "next/navigation";
-import FactoryXLogo from "@/ui/icons/factory-x-logo";
+import Input from '@/ui/input';
+import MiniBtn from '@/ui/mini-btn';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { validateEmail } from '@/utils/validation';
+import { useRouter } from 'next/navigation';
+import FactoryXLogo from '@/ui/icons/factory-x-logo';
+import { LoginFormDataModel } from '@/types/data-model';
+import { useLogin } from '@/hooks/users/use-login';
 
 const LoginPage = () => {
   const router = useRouter();
-  const email = useInput({
-    validate: validateEmail,
+  const { login, isLoading } = useLogin();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    watch,
+    setError,
+  } = useForm<LoginFormDataModel>({
+    mode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   });
 
-  const password = useInput({
-    validate: validatePassword,
-  });
+  const watchedValues = watch();
 
-  const handleLogin = () => {
-    if (email.value && password.value && !email.error && !password.error) {
-      // 로그인 처리
-      router.push("/onboarding");
+  const onSubmit = async (data: LoginFormDataModel) => {
+    const result = await login(data);
+
+    if (result.success) {
+      // 로그인 성공 - 바로 대시보드로 이동
+      router.push('/dashboard');
+      // 시스템관리자이면서 품목과 원자재가 없으면 온보딩 페이지로 이동
+      // if (result.data?.role === 'system_admin' && result.data?.products.length === 0 && result.data?.materials.length === 0) {
+      //   router.push('/onboarding');
+      // }
+    } else {
+      // 로그인 실패
+      if (result.field && result.error) {
+        setError(result.field, {
+          type: 'manual',
+          message: result.error,
+        });
+      }
     }
   };
 
   const isButtonEnabled =
-    email.value && password.value && !email.error && !password.error;
+    isValid && watchedValues.email && watchedValues.password && !isLoading;
 
   return (
     <div className="flex min-h-screen">
@@ -35,18 +61,25 @@ const LoginPage = () => {
       </div>
       <div className="flex flex-col flex-1 gap-5 items-center justify-center w-full">
         <h2 className="Heading-2">로그인</h2>
-        <div className="flex flex-col w-full px-[100px]">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col w-100">
           <div className="flex flex-col">
             <Input
               type="email"
               placeholder="이메일을 입력해주세요."
               label="이메일"
-              value={email.value}
-              onChange={(e) => email.handleChange(e.target.value)}
+              {...register('email', {
+                required: '이메일을 입력해주세요.',
+                validate: (value) => {
+                  const error = validateEmail(value);
+                  return error || true;
+                },
+              })}
             />
             <div className="mt-1 mb-2 h-5">
-              {email.error && (
-                <span className="text-red Re_Body-1">{email.error}</span>
+              {errors.email && (
+                <span className="text-red Re_Body-1">
+                  {errors.email.message}
+                </span>
               )}
             </div>
           </div>
@@ -55,12 +88,19 @@ const LoginPage = () => {
               type="password"
               placeholder="비밀번호를 입력해주세요."
               label="비밀번호"
-              value={password.value}
-              onChange={(e) => password.handleChange(e.target.value)}
+              {...register('password', {
+                required: '비밀번호를 입력해주세요.',
+                validate: (value) => {
+                  if (!value) return '비밀번호를 입력해주세요.';
+                  return true;
+                },
+              })}
             />
             <div className="mt-1 mb-2 h-5">
-              {password.error && (
-                <span className="text-red Re_Body-1">{password.error}</span>
+              {errors.password && (
+                <span className="text-red Re_Body-1">
+                  {errors.password.message}
+                </span>
               )}
             </div>
           </div>
@@ -70,7 +110,7 @@ const LoginPage = () => {
             textColor="text-wh"
             hoverColor="hover:bg-primary-hover"
             height="h-12"
-            onClick={handleLogin}
+            type="submit"
             disabled={!isButtonEnabled}
             width="w-full"
           />
@@ -78,7 +118,7 @@ const LoginPage = () => {
             <Link href="/signup">회원가입</Link>
             <Link href="/findpassword">비밀번호 찾기</Link>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

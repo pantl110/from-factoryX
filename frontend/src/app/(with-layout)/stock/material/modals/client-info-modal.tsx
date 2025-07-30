@@ -1,19 +1,30 @@
-import MiniBtn from "@/ui/mini-btn";
-import Input from "@/ui/input";
-import Modal from "@/ui/modal/modal";
-import { ClientDataModel } from "@/types/data-model";
-import { useDropdownFilter } from "@/hooks/use-dropdown-filter";
-import { clientData } from "@/mocks/client-data";
-import { ClientNameDropdown } from "@/ui/dropdown/client-name-dropdown";
-import { useForm } from "react-hook-form";
+import MiniBtn from '@/ui/mini-btn';
+import Input from '@/ui/input';
+import Modal from '@/ui/modal/modal';
+import { ClientModel } from '@/types/data-model';
+import { useEffect, useState, useCallback } from 'react';
+import useGetClient from '@/hooks/factory/factory-client/use-get-client';
+import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
+import { useForm } from 'react-hook-form';
 import {
   formatBusinessNumber,
   handleNumberKeyDown,
-} from "@/hooks/format-number";
+} from '@/hooks/format-number';
+import { ClientResponseModel } from '@/types/data-model';
+import useFactoryStore from '@/store/factory-store';
 
 interface ClientInfoModalProps {
   onClose?: () => void;
-  onNext?: () => void;
+  onNext: (client: ClientModel) => void;
+}
+
+interface ClientFormModel {
+  name: string;
+  businessRegistrationNumber: string;
+  representativeName: string;
+  address: string;
+  businessType: string;
+  businessCategory: string;
 }
 
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
@@ -21,69 +32,122 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
     watch,
-  } = useForm<ClientDataModel>({
-    mode: "onChange",
+    setValue,
+  } = useForm<ClientFormModel>({
     defaultValues: {
-      id: crypto.randomUUID(),
-      type: "발주처",
-      companyName: "",
-      businessNumber: "",
-      representativeName: "",
-      businessType: "",
-      businessCategory: "",
-      contact: "",
-      fax: "",
-      email: "",
-      companyAddress: "",
-      dueDate: "",
-      responsibleName: "",
+      name: '',
+      businessRegistrationNumber: '',
+      representativeName: '',
+      address: '',
+      businessType: '',
+      businessCategory: '',
     },
   });
 
-  const {
-    input: companyNameInput,
-    setInput: setCompanyNameInput,
-    isOpen: isCompanyNameDropdownOpen,
-    setIsOpen: setIsCompanyNameDropdownOpen,
-    filtered: filteredClients,
-    handleSelect: handleCompanyNameSelect,
-  } = useDropdownFilter(clientData, (item) => item.companyName);
+  const factoryId = useFactoryStore((state) => state.factoryId);
+  const { clientList, getClients, searchClients } = useGetClient();
+
+  // 드롭다운 상태 관리
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(
+    null
+  );
+
+  // 초기 거래처 목록 로드
+  useEffect(() => {
+    if (factoryId) {
+      getClients({ factory_id: factoryId });
+    }
+  }, [factoryId, getClients]);
+
+  // 검색어 변경 시 debounce 적용
+  const handleSearchChange = useCallback(
+    (keyword: string) => {
+      setSearchKeyword(keyword);
+
+      // 이전 타이머 클리어
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+
+      // 새 타이머 설정 (300ms debounce)
+      const timer = setTimeout(() => {
+        if (keyword.trim()) {
+          searchClients(keyword);
+        } else {
+          if (factoryId) {
+            getClients({ factory_id: factoryId });
+          }
+        }
+      }, 300);
+
+      setDebounceTimer(timer);
+    },
+    [debounceTimer, searchClients, getClients, factoryId]
+  );
+
+  // 컴포넌트 언마운트 시 타이머 클리어
+  useEffect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+    };
+  }, [debounceTimer]);
+
+  const handleSelectClient = (item: ClientModel | ClientResponseModel) => {
+    setSearchKeyword(item.name ?? '');
+    setValue('name', item.name ?? '');
+    setValue(
+      'businessRegistrationNumber',
+      formatBusinessNumber(item.business_registration_number || '')
+    );
+    setValue('representativeName', item.representative_name ?? '');
+    setValue('address', item.address ?? '');
+    setValue('businessType', item.business_type || '');
+    setValue('businessCategory', item.business_category || '');
+    setIsDropdownOpen(false);
+  };
+
+  const clientItems = clientList?.data || [];
+  if (!factoryId) return null;
 
   // 필수 필드들의 값 감시
-  const companyName = watch("companyName");
-  const businessNumber = watch("businessNumber");
-  const representativeName = watch("representativeName");
-  const businessType = watch("businessType");
-  const businessCategory = watch("businessCategory");
-  const companyAddress = watch("companyAddress");
+  const name = watch('name');
+  const businessRegistrationNumber = watch('businessRegistrationNumber');
+  const representativeName = watch('representativeName');
+  const businessType = watch('businessType');
+  const businessCategory = watch('businessCategory');
+  const address = watch('address');
 
   // 모든 필수 필드가 입력되었는지 확인
   const isFormValid =
-    companyName?.trim() &&
-    businessNumber?.trim() &&
+    name?.trim() &&
+    businessRegistrationNumber?.trim() &&
     representativeName?.trim() &&
     businessType?.trim() &&
     businessCategory?.trim() &&
-    companyAddress?.trim();
+    address?.trim();
 
-  const handleSelectClient = (item: ClientDataModel) => {
-    handleCompanyNameSelect(item);
-    setCompanyNameInput(item.companyName);
-
-    // 선택한 거래처 정보로 폼 자동 채우기
-    setValue("companyName", item.companyName);
-    setValue("businessNumber", formatBusinessNumber(item.businessNumber));
-    setValue("representativeName", item.representativeName);
-    setValue("companyAddress", item.companyAddress);
-    setValue("email", item.email);
-    setValue("contact", item.contact || "");
-    setValue("fax", item.fax || "");
-    setValue("businessType", item.businessType || "");
-    setValue("businessCategory", item.businessCategory || "");
-
-    setIsCompanyNameDropdownOpen(false);
+  const onSubmit = (data: ClientFormModel) => {
+    const {
+      name,
+      businessRegistrationNumber,
+      representativeName,
+      address,
+      businessType,
+      businessCategory,
+    } = data;
+    onNext({
+      name,
+      business_registration_number: businessRegistrationNumber,
+      representative_name: representativeName,
+      address,
+      business_type: businessType,
+      business_category: businessCategory,
+    });
   };
 
   return (
@@ -92,10 +156,12 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       subtitle="등록된 정보는 이후 문서 작성 시 자동으로 불러와져요."
       onClose={onClose}
       width="w-[600px]"
+      scroll={true}
+      // className="overflow-hidden"
     >
       <form
-        className="flex flex-col gap-7 mt-4"
-        onSubmit={handleSubmit(() => onNext && onNext())}
+        className="flex flex-col gap-7 mt-4 px-6 pb-6 max-h-[calc(85vh-123px)] overflow-y-auto scrollbar-hide"
+        onSubmit={handleSubmit(onSubmit)}
       >
         <div className="flex flex-col gap-4">
           <div className="flex-1 relative">
@@ -103,22 +169,22 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="업체명"
               placeholder="업체명을 입력하세요."
               required
-              {...register("companyName", { required: true })}
-              value={companyNameInput}
+              {...register('name', { required: true })}
+              value={searchKeyword}
               onChange={(e) => {
-                setCompanyNameInput(e.target.value);
-                setValue("companyName", e.target.value);
+                const { value } = e.target;
+                setValue('name', value);
+                handleSearchChange(value);
+                setIsDropdownOpen(true);
               }}
-              onFocus={() => setIsCompanyNameDropdownOpen(true)}
-              onBlur={() =>
-                setTimeout(() => setIsCompanyNameDropdownOpen(false), 150)
-              }
-              showError={!!errors.companyName}
+              onFocus={() => setIsDropdownOpen(true)}
+              onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
+              showError={!!errors.name}
             />
-            {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
+            {isDropdownOpen && clientItems.length > 0 && (
               <div className="absolute left-0 top-21 z-10 w-full">
                 <ClientNameDropdown
-                  items={filteredClients}
+                  items={clientItems}
                   onSelect={handleSelectClient}
                   width="w-full"
                 />
@@ -130,23 +196,30 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="사업자등록번호"
               placeholder="사업자등록번호를 입력하세요."
               required
-              {...register("businessNumber", { required: true })}
+              {...register('businessRegistrationNumber', {
+                required: true,
+                validate: (v) =>
+                  /^\d{3}-\d{2}-\d{5}$/.test(v ?? '') ||
+                  '사업자등록번호 형식이 올바르지 않습니다.',
+              })}
+              value={watch('businessRegistrationNumber') ?? ''}
               onChange={(e) => {
                 const formatted = formatBusinessNumber(e.target.value);
                 e.target.value = formatted;
-                setValue("businessNumber", formatted);
+                setValue('businessRegistrationNumber', formatted);
               }}
               onKeyDown={handleNumberKeyDown}
-              showError={!!errors.businessNumber}
+              showError={!!errors.businessRegistrationNumber}
             />
           </div>
           <Input
             label="대표자명"
             placeholder="대표자명을 입력하세요."
             required
-            {...register("representativeName", {
+            {...register('representativeName', {
               required: true,
             })}
+            value={watch('representativeName') ?? ''}
             showError={!!errors.representativeName}
           />
           <div className="flex gap-2.5">
@@ -154,18 +227,20 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="업태"
               placeholder="업태를 입력하세요."
               required
-              {...register("businessType", {
+              {...register('businessType', {
                 required: true,
               })}
+              value={watch('businessType') ?? ''}
               showError={!!errors.businessType}
             />
             <Input
               label="종목"
               placeholder="종목을 입력하세요."
               required
-              {...register("businessCategory", {
+              {...register('businessCategory', {
                 required: true,
               })}
+              value={watch('businessCategory') ?? ''}
               showError={!!errors.businessCategory}
             />
           </div>
@@ -174,10 +249,11 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               label="사업장 주소"
               required
               placeholder="사업장 주소를 입력하세요."
-              {...register("companyAddress", {
+              {...register('address', {
                 required: true,
               })}
-              showError={!!errors.companyAddress}
+              value={watch('address') ?? ''}
+              showError={!!errors.address}
             />
           </div>
         </div>

@@ -1,5 +1,5 @@
-import Modal from "@/ui/modal/modal";
-import CustomerInfo from "../material-detail/customer-info";
+import Modal from '@/ui/modal/modal';
+import CustomerInfo from '../material-detail/customer-info';
 
 interface CustomerInfoModalProps {
   onClose: () => void;

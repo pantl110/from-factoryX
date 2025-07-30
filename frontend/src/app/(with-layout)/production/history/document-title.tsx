@@ -1,4 +1,4 @@
-import { XIcon } from "@phosphor-icons/react/dist/ssr";
+import { XIcon } from '@phosphor-icons/react/dist/ssr';
 
 const DocumentTitle = () => {
   return (

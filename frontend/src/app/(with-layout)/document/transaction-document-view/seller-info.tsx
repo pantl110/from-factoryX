@@ -1,4 +1,4 @@
-import InfoLabelValue from "@/ui/info-label-value";
+import InfoLabelValue from '@/ui/info-label-value';
 
 const SellerInfo = () => {
   return (

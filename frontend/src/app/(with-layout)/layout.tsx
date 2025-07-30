@@ -1,15 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import SideBar from "@/components/side-bar";
-import TopBar from "@/components/top-bar";
-import { usePathname } from "next/navigation";
+import { useState } from 'react';
+import SideBar from '@/components/side-bar';
+import TopBar from '@/components/top-bar';
+import { usePathname } from 'next/navigation';
+// import { useAuthGuard } from '@/hooks/use-auth-guard'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const pathname = usePathname();
 
-  const isProductionPage = pathname.startsWith("/production/"); // production 페이지인지 확인
+  // useAuthGuard() // 로그인 안되어있으면 로그인 페이지로 리다이렉트
+
+  const isProductionPage = pathname.startsWith('/production/'); // production 페이지인지 확인
 
   // 사이드바 상태를 업데이트하는 함수
   const handleSidebarVisibilityChange = (visible: boolean) => {
@@ -21,7 +24,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <SideBar onVisibilityChange={handleSidebarVisibilityChange} />
       <div
         className={`flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-          isProductionPage && !isSidebarVisible ? "ml-0" : "ml-64"
+          isProductionPage && !isSidebarVisible ? 'ml-0' : 'ml-64'
         }`}
       >
         <div className="w-full relative">

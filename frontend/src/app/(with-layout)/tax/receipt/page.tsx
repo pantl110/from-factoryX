@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import SearchInput from "@/ui/search-input";
-import TableItem from "./table-item";
-import { CaretUpDownIcon } from "@phosphor-icons/react";
-import Pagination from "@/components/pagination";
-import usePagination from "@/hooks/use-pagination";
-import ReceiptDetailPanel from "./modals/receipt-detail-panel";
+import { useState } from 'react';
+import SearchInput from '@/ui/search-input';
+import TableItem from './table-item';
+import { CaretUpDownIcon } from '@phosphor-icons/react';
+import Pagination from '@/components/pagination';
+import usePagination from '@/hooks/use-pagination';
+import ReceiptDetailPanel from './modals/receipt-detail-panel';
 
 // 현금영수증 아이템 타입 정의
 interface ReceiptItemModel {
@@ -21,28 +21,28 @@ interface ReceiptItemModel {
 
 const TaxReceiptPage = () => {
   // 정렬 상태 관리
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   // 패널 열기/닫기 상태 관리
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ReceiptItemModel | null>(
-    null,
+    null
   );
 
   const mockData: ReceiptItemModel[] = [
     {
       id: 1,
-      date: "2025-01-01",
-      company: "플라스틱이 좋아",
-      productName: "플라스틱",
+      date: '2025-01-01',
+      company: '플라스틱이 좋아',
+      productName: '플라스틱',
       supplyAmount: 100000,
       taxAmount: 10000,
       totalAmount: 110000,
     },
     {
       id: 2,
-      date: "2025-01-02",
-      company: "플라스틱이 싫어",
-      productName: "플라스틱",
+      date: '2025-01-02',
+      company: '플라스틱이 싫어',
+      productName: '플라스틱',
       supplyAmount: 100000,
       taxAmount: 10000,
       totalAmount: 110000,
@@ -51,9 +51,9 @@ const TaxReceiptPage = () => {
 
   // 정렬된 데이터
   const sortedData = [...mockData].sort((a, b) => {
-    if (sortOrder === "asc") {
+    if (sortOrder === 'asc') {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
-    } else if (sortOrder === "desc") {
+    } else if (sortOrder === 'desc') {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     }
     return 0;
@@ -68,10 +68,10 @@ const TaxReceiptPage = () => {
 
   // 거래일자 정렬 핸들러
   const handleDateSort = () => {
-    if (sortOrder === "desc") {
-      setSortOrder("asc");
+    if (sortOrder === 'desc') {
+      setSortOrder('asc');
     } else {
-      setSortOrder("desc");
+      setSortOrder('desc');
     }
     // 정렬 변경 시 첫 페이지로 이동
     setCurrentPage(1);

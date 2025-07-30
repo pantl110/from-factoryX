@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 const ShortageCount = () => {
   const router = useRouter();
@@ -14,7 +14,7 @@ const ShortageCount = () => {
           <div className="flex justify-end">
             <button
               onClick={() => {
-                router.push("/stock?tab=material");
+                router.push('/stock?tab=material');
               }}
               className="px-4 rounded-md Me_Body-1 text-dg border border-lg opacity-0 hover:bg-bg group-hover:opacity-100 transition-opacity duration-200"
             >

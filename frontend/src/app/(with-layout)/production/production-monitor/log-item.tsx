@@ -1,5 +1,5 @@
-import { CubeFocus, NoteBlankIcon, Swap } from "@phosphor-icons/react/dist/ssr";
-import { LogType } from "@/mocks/log-data";
+import { CubeFocus, NoteBlankIcon, Swap } from '@phosphor-icons/react/dist/ssr';
+import { LogType } from '@/mocks/log-data';
 
 interface LogItemProps {
   type: LogType;
@@ -22,31 +22,31 @@ const LogItem = ({
     memo: (
       <NoteBlankIcon
         size={24}
-        className={`${isSelected ? "text-primary" : "text-sv"}`}
-        weight={isSelected ? "fill" : "regular"}
+        className={`${isSelected ? 'text-primary' : 'text-sv'}`}
+        weight={isSelected ? 'fill' : 'regular'}
       />
     ),
     return: (
       <Swap
         size={24}
-        className={`${isSelected ? "text-primary" : "text-sv"}`}
-        weight={isSelected ? "fill" : "regular"}
+        className={`${isSelected ? 'text-primary' : 'text-sv'}`}
+        weight={isSelected ? 'fill' : 'regular'}
       />
     ),
     planChange: (
       <CubeFocus
         size={24}
-        className={`${isSelected ? "text-primary" : "text-sv"}`}
-        weight={isSelected ? "fill" : "regular"}
+        className={`${isSelected ? 'text-primary' : 'text-sv'}`}
+        weight={isSelected ? 'fill' : 'regular'}
       />
     ),
   };
 
   return (
     <div
-      className={`border rounded-lg p-3 ${isSelected ? "bg-primary-8 border-primary" : "border-lg"} hover:border-primary`}
+      className={`border rounded-lg p-3 ${isSelected ? 'bg-primary-8 border-primary' : 'border-lg'} hover:border-primary`}
       onClick={onClick}
-      style={{ cursor: onClick ? "pointer" : undefined }}
+      style={{ cursor: onClick ? 'pointer' : undefined }}
     >
       <div className="flex flex-col gap-5 px-1">
         <div className="flex gap-2">
@@ -54,7 +54,7 @@ const LogItem = ({
           <h4 className="Heading-4 text-dg">{title}</h4>
         </div>
         <div className="flex w-full items-center justify-between">
-          <p className={`Me_Body-2 ${isSelected ? "text-dg" : "text-sv"}`}>
+          <p className={`Me_Body-2 ${isSelected ? 'text-dg' : 'text-sv'}`}>
             {content}
           </p>
           <p className="flex items-end Re_Body-1 text-sv">{createdAt}</p>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback } from 'react';
 
 /**
  * 테이블 전체 선택/해제 및 개별 선택을 관리하는 커스텀 훅
@@ -14,8 +14,8 @@ export function useCheckAll<T extends string | number>(itemIds: T[]) {
 
   // 삭제 버튼 텍스트 생성
   const getDeleteButtonText = () => {
-    if (checkedCount === 0) return "삭제";
-    if (isAllChecked) return "전체 삭제";
+    if (checkedCount === 0) return '삭제';
+    if (isAllChecked) return '전체 삭제';
     return `${checkedCount}개 항목 삭제`;
   };
 
@@ -31,7 +31,7 @@ export function useCheckAll<T extends string | number>(itemIds: T[]) {
   // 개별 토글
   const toggleOne = useCallback((id: T) => {
     setCheckedIds((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
     );
   }, []);
 

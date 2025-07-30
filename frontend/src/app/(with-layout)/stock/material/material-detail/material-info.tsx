@@ -1,97 +1,260 @@
-import InfoLabelValue from "@/ui/info-label-value";
-import { useState } from "react";
+import { useGetMaterial } from '@/hooks';
+import InfoLabelValue from '@/ui/info-label-value';
+import { useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 
-const initialInfo = {
-  materialName: "플라스틱",
-  materialCode: "123456",
-  size: "500ml",
-  unit: "EA",
-  currentStock: "5,000",
-  minStock: "2,000",
-  status: "충분",
-  date: "2025-05-26",
-  location: "A동 자재실 랙3번",
-};
+interface MaterialInfoProps {
+  materialId: number;
+  onIsDirtyChange?: (isDirty: boolean) => void;
+}
 
-const MaterialInfo = () => {
-  const [info, setInfo] = useState(initialInfo);
+export interface MaterialInfoModel {
+  getValues: () => MaterialInfoFormModel;
+  isDirty: boolean;
+}
 
-  const handleChange =
-    (key: keyof typeof info) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setInfo((prev) => ({ ...prev, [key]: e.target.value }));
-    };
+interface MaterialInfoFormModel {
+  materialName: string;
+  materialCode: string;
+  size: string;
+  unit: string;
+  currentStock: string;
+  minStock: string;
+}
 
-  return (
-    <div className="flex flex-col">
-      <div className="flex">
-        <InfoLabelValue
-          label="자재명"
-          value={info.materialName ?? ""}
-          isEditing={true}
-          onChange={handleChange("materialName")}
-        />
-        <InfoLabelValue
-          label="자재 코드"
-          value={info.materialCode ?? ""}
-          isEditing={true}
-          onChange={handleChange("materialCode")}
-        />
+// Helper to remove commas
+function uncomma(str: string) {
+  return str.replace(/,/g, '');
+}
+// Helper to add commas (string only, safe for big numbers)
+function addComma(num: string | number) {
+  if (num === '' || num === undefined || num === null) return '';
+  const str = String(num).replace(/,/g, '');
+  // 소수점 이하도 지원하려면 아래 정규식 사용
+  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
+  ({ materialId, onIsDirtyChange }, ref) => {
+    const { getMaterialDetail } = useGetMaterial();
+    const {
+      control,
+      reset,
+      getValues,
+      formState: { isDirty },
+    } = useForm<MaterialInfoFormModel>({
+      defaultValues: {
+        materialName: '',
+        materialCode: '',
+        size: '',
+        unit: '',
+        currentStock: '',
+        minStock: '',
+      },
+    });
+
+    useEffect(() => {
+      if (onIsDirtyChange) {
+        onIsDirtyChange(isDirty);
+      }
+    }, [isDirty, onIsDirtyChange]);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        getValues,
+        isDirty,
+      }),
+      [getValues, isDirty]
+    );
+
+    useEffect(() => {
+      const fetchDetail = async () => {
+        const result = await getMaterialDetail(materialId);
+        if (result && result.success && result.data) {
+          const mat = result.data;
+          reset({
+            materialName: mat.name ?? '',
+            materialCode: mat.code ?? '',
+            size: mat.spec ?? '',
+            unit: mat.unit ?? '',
+            currentStock:
+              mat.current_stock !== undefined && mat.current_stock !== null
+                ? mat.current_stock.toString()
+                : '',
+            minStock:
+              mat.standard_stock !== undefined && mat.standard_stock !== null
+                ? mat.standard_stock.toString()
+                : '',
+          });
+        }
+      };
+      fetchDetail();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [materialId]);
+
+    return (
+      <div className="flex flex-col">
+        <div className="flex">
+          <Controller
+            name="materialName"
+            control={control}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="자재명"
+                value={field.value ?? '-'}
+                handleChange={field.onChange}
+              />
+            )}
+          />
+          <Controller
+            name="materialCode"
+            control={control}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="자재 코드"
+                value={field.value ?? '-'}
+                handleChange={field.onChange}
+              />
+            )}
+          />
+        </div>
+        <div className="flex">
+          <Controller
+            name="size"
+            control={control}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="규격"
+                value={field.value ?? '-'}
+                handleChange={field.onChange}
+              />
+            )}
+          />
+          <Controller
+            name="unit"
+            control={control}
+            render={({ field }) => (
+              <InfoLabelValue
+                label="단위"
+                value={field.value ?? '-'}
+                handleChange={field.onChange}
+              />
+            )}
+          />
+        </div>
+        <div className="flex">
+          <Controller
+            name="currentStock"
+            control={control}
+            render={({
+              field,
+            }: {
+              field: ControllerRenderProps<
+                MaterialInfoFormModel,
+                'currentStock'
+              >;
+            }) => {
+              const handleChangeCurrentStock = (
+                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+              ) => {
+                const numValue = e.target.value.replace(/[^0-9]/g, '');
+                field.onChange(numValue === '' ? '' : numValue);
+              };
+              return (
+                <InfoLabelValue
+                  label="현재 재고"
+                  value={
+                    field.value === undefined || field.value === null
+                      ? ''
+                      : field.value === '0'
+                        ? '0'
+                        : addComma(field.value)
+                  }
+                  isEditing={true}
+                  placeholder="현재 재고를 입력하세요."
+                  inputType="text"
+                  handleChange={handleChangeCurrentStock}
+                />
+              );
+            }}
+          />
+          <Controller
+            name="minStock"
+            control={control}
+            render={({
+              field,
+            }: {
+              field: ControllerRenderProps<MaterialInfoFormModel, 'minStock'>;
+            }) => {
+              const handleChangeMinStock = (
+                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+              ) => {
+                const numValue = e.target.value.replace(/[^0-9]/g, '');
+                field.onChange(numValue === '' ? '' : numValue);
+              };
+              return (
+                <InfoLabelValue
+                  label="최소 재고"
+                  value={
+                    field.value === undefined || field.value === null
+                      ? ''
+                      : field.value === '0'
+                        ? '0'
+                        : addComma(field.value)
+                  }
+                  isEditing={true}
+                  placeholder="최소 재고를 입력하세요."
+                  inputType="text"
+                  handleChange={handleChangeMinStock}
+                />
+              );
+            }}
+          />
+        </div>
+        <div className="flex">
+          <Controller
+            name="currentStock"
+            control={control}
+            render={({ field: { value: currentStock } }) => (
+              <Controller
+                name="minStock"
+                control={control}
+                render={({ field: { value: minStock } }) => {
+                  const isValid =
+                    currentStock !== '' &&
+                    minStock !== '' &&
+                    minStock !== undefined &&
+                    minStock !== null &&
+                    !isNaN(Number(uncomma(currentStock))) &&
+                    !isNaN(Number(uncomma(minStock)));
+                  const status = isValid
+                    ? Number(uncomma(currentStock)) >= Number(uncomma(minStock))
+                      ? '충분'
+                      : '부족'
+                    : '-';
+                  return (
+                    <InfoLabelValue
+                      label="재고 상태"
+                      value={status}
+                      chip={
+                        status === '충분' || status === '부족'
+                          ? { status }
+                          : undefined
+                      }
+                      isEditing={false}
+                    />
+                  );
+                }}
+              />
+            )}
+          />
+        </div>
       </div>
-      <div className="flex">
-        <InfoLabelValue
-          label="규격"
-          value={info.size ?? ""}
-          isEditing={true}
-          onChange={handleChange("size")}
-        />
-        <InfoLabelValue
-          label="단위"
-          value={info.unit ?? ""}
-          isEditing={true}
-          onChange={handleChange("unit")}
-        />
-      </div>
-      <div className="flex">
-        <InfoLabelValue
-          label="현재 재고"
-          value={info.currentStock ?? ""}
-          isEditing={true}
-          onChange={handleChange("currentStock")}
-        />
-        <InfoLabelValue
-          label="최소 재고"
-          value={info.minStock ?? ""}
-          isEditing={true}
-          onChange={handleChange("minStock")}
-        />
-      </div>
-      <div className="flex">
-        <InfoLabelValue
-          label="재고 상태"
-          value={info.status ?? ""}
-          chip={{
-            status: "충분",
-          }}
-          isEditing={true}
-          onChange={handleChange("status")}
-        />
-        <InfoLabelValue
-          label="입고 일자"
-          value={info.date ?? ""}
-          isEditing={true}
-          onChange={handleChange("date")}
-          inputType="date"
-        />
-      </div>
-      <InfoLabelValue
-        label="창고 위치"
-        value={info.location ?? ""}
-        isEditing={true}
-        onChange={handleChange("location")}
-      />
-    </div>
-  );
-};
+    );
+  }
+);
+
+MaterialInfo.displayName = 'MaterialInfo';
 
 export default MaterialInfo;

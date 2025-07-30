@@ -1,5 +1,5 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
 
 interface ProductionPlanSaveModalProps {
   onClose: () => void;

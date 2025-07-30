@@ -1,11 +1,11 @@
-import { CaretUpDownIcon } from "@phosphor-icons/react/dist/ssr";
-import Checkbox from "@/ui/checkbox";
+import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr';
+import Checkbox from '@/ui/checkbox';
 
 interface TableHeaderProps {
   checkedCount: number;
   onToggleAll: () => void;
   onSortClick: () => void;
-  sortDirection: "asc" | "desc";
+  sortDirection: 'asc' | 'desc';
   isAllChecked: boolean;
 }
 

@@ -1,4 +1,4 @@
-import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
+import { MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr';
 
 interface SearchInputProps {
   width?: string;
@@ -8,16 +8,18 @@ interface SearchInputProps {
   onFocus?: () => void;
   onBlur?: () => void;
   showIcon?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const SearchInput = ({
-  width = "w-[420px]",
-  placeholder = "검색어를 입력하세요.",
+  width = 'w-[420px]',
+  placeholder = '검색어를 입력하세요.',
   value,
   onChange,
   onFocus,
   onBlur,
   showIcon = true,
+  onKeyDown,
 }: SearchInputProps) => {
   return (
     <div
@@ -38,6 +40,7 @@ const SearchInput = ({
           onChange={(e) => onChange?.(e.target.value)}
           onFocus={onFocus}
           onBlur={onBlur}
+          onKeyDown={onKeyDown}
         />
       </div>
     </div>

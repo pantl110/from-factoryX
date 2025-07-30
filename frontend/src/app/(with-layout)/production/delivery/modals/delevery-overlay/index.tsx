@@ -1,10 +1,10 @@
-import DocumentViewTitle from "@/app/(with-layout)/document/document-view-title";
-import InfoLabelValue from "@/ui/info-label-value";
-import MiniBtn from "@/ui/mini-btn";
-import OverlayView from "@/ui/ovelay-view";
-import { DeliveryDataModel } from "../../types";
-import { useRef } from "react";
-import { useReactToPrint } from "react-to-print";
+import DocumentViewTitle from '@/app/(with-layout)/document/document-view-title';
+import InfoLabelValue from '@/ui/info-label-value';
+import MiniBtn from '@/ui/mini-btn';
+import OverlayView from '@/ui/ovelay-view';
+import { DeliveryDataModel } from '../../types';
+import { useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 
 interface DeliveryOverlayProps {
   onClose: () => void;
@@ -15,7 +15,7 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
-    documentTitle: "납품표", // 문서 제목
+    documentTitle: '납품표', // 문서 제목
   });
 
   return (

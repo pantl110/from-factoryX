@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Bar } from "react-chartjs-2";
+import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,8 +9,8 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
-import { chartData } from "@/mocks/dashboard-graph-data";
+} from 'chart.js';
+import { chartData } from '@/mocks/dashboard-graph-data';
 
 ChartJS.register(
   CategoryScale,
@@ -18,7 +18,7 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 );
 
 const currentMonth = new Date().getMonth() + 1; // 현재 월
@@ -34,16 +34,16 @@ const data = {
   labels: months,
   datasets: [
     {
-      label: "올해",
+      label: '올해',
       data: thisYearData,
-      backgroundColor: "#016fee",
+      backgroundColor: '#016fee',
       barPercentage: 0.8, // 막대 너비(0~1, 기본값 0.9)
       categoryPercentage: 0.5, // 카테고리 내 막대 비율(0~1, 기본값 0.8)
     },
     {
-      label: "작년",
+      label: '작년',
       data: lastYearData,
-      backgroundColor: "#E3E3E3",
+      backgroundColor: '#E3E3E3',
       barPercentage: 0.8,
       categoryPercentage: 0.5,
     },
@@ -67,7 +67,7 @@ const options = {
   scales: {
     x: {
       ticks: {
-        color: "#949494",
+        color: '#949494',
         padding: 8,
         font: {
           size: 18,
@@ -76,7 +76,7 @@ const options = {
     },
     y: {
       ticks: {
-        color: "#949494",
+        color: '#949494',
         padding: 8,
         font: {
           size: 18,

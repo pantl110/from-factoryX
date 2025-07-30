@@ -1,10 +1,10 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal/modal";
-import { useState } from "react";
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
+import { useState } from 'react';
 
 interface ClaimReceiptTaxModalProps {
   onClose: () => void;
-  issueType: "청구" | "영수";
+  issueType: '청구' | '영수';
   onConfirm?: () => void;
 }
 

@@ -1,7 +1,7 @@
-import PurchaseItemInfo from "@/app/(with-layout)/document/tax-document-view/purchase-item-info";
-import InfoLabelValue from "@/ui/info-label-value";
-import Panel from "@/ui/panel";
-import React from "react";
+import PurchaseItemInfo from '@/app/(with-layout)/document/tax-document-view/purchase-item-info';
+import InfoLabelValue from '@/ui/info-label-value';
+import Panel from '@/ui/panel';
+import React from 'react';
 
 // 현금영수증 아이템 타입 정의
 interface ReceiptItemModel {

@@ -1,7 +1,7 @@
 // 숫자만 추출하는 함수
 export const extractNumbers = (value: string): string => {
-  if (!value) return "";
-  return value.replace(/[^0-9]/g, "");
+  if (!value) return '';
+  return value.replace(/[^0-9]/g, '');
 };
 
 // 날짜 포맷팅 함수 (YYYY-MM-DD)
@@ -39,7 +39,7 @@ export const formatPhoneNumber = (value: string): string => {
   }
 
   // 2자리 국번 (서울: 02)
-  if (numbers.startsWith("02")) {
+  if (numbers.startsWith('02')) {
     if (numbers.length <= 2) {
       return numbers;
     } else if (numbers.length <= 5) {
@@ -78,29 +78,29 @@ export const formatFaxNumber = (value: string): string => {
 
 // 숫자와 하이픈만 허용하는 키 이벤트 핸들러
 export const handleNumberKeyDown = (
-  e: React.KeyboardEvent<HTMLInputElement>,
+  e: React.KeyboardEvent<HTMLInputElement>
 ) => {
   const allowedKeys = [
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "Backspace",
-    "Delete",
-    "Tab",
-    "Enter",
-    "ArrowLeft",
-    "ArrowRight",
-    "ArrowUp",
-    "ArrowDown",
-    "Home",
-    "End",
+    '0',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    'Backspace',
+    'Delete',
+    'Tab',
+    'Enter',
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowUp',
+    'ArrowDown',
+    'Home',
+    'End',
   ];
 
   if (!allowedKeys.includes(e.key)) {

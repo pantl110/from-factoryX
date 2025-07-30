@@ -1,17 +1,37 @@
-import DocumentViewTitle from "../document-view-title";
-import ProductListInfo from "../product-list-info";
-import SupplierInfo from "../supplier-info";
+import DocumentViewTitle from '../document-view-title';
+import ProductListInfo from '../product-list-info';
+import SupplierInfo from '../supplier-info';
+import {
+  QuotationProductDetailResponseModel,
+  ClientModel,
+} from '@/types/data-model';
 
-const QuotationDocumentView = () => {
+interface QuotationDocumentViewProps {
+  documentTitle: string;
+  clientData: ClientModel;
+  dueDate: string;
+  productListInfoTitle: string;
+  productItems: QuotationProductDetailResponseModel[];
+  supplyAmount: number;
+}
+
+const QuotationDocumentView = ({
+  documentTitle,
+  clientData,
+  dueDate,
+  productListInfoTitle,
+  productItems,
+  supplyAmount,
+}: QuotationDocumentViewProps) => {
   return (
     <div className="flex flex-col gap-6">
-      <DocumentViewTitle
-        title="[플라스틱이 좋아]건 견적서"
-        dateLabel="발송일자"
-        date="2025-07-31"
+      <DocumentViewTitle title={`[${clientData.name}]건 ${documentTitle}`} />
+      <SupplierInfo clientData={clientData} dueDate={dueDate} />
+      <ProductListInfo
+        productListInfoTitle={productListInfoTitle}
+        productItems={productItems}
+        supplyAmount={supplyAmount}
       />
-      <SupplierInfo dateLabel="견적일자" />
-      <ProductListInfo />
     </div>
   );
 };

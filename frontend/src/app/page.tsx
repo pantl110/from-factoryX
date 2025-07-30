@@ -1,4 +1,4 @@
-import LoginPage from "./(without-layout)/login/page";
+import LoginPage from './(without-layout)/login/page';
 
 const Home = () => {
   return <LoginPage />;

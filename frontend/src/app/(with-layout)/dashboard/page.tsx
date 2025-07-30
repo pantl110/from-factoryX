@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import { useEffect, Suspense } from "react";
-import MainTitleSec from "./main-title-sec";
-import DailyProductionQuantity from "./summary-KPI/daily-production-quantity";
-import ShortageCount from "./summary-KPI/shortage-count";
-import ProductionYield from "./summary-KPI/production-yield";
-import DeliveryTable from "./delivery-schedule/delivery-table";
-import PendingQuote from "./pending-quote";
-import ProcessProject from "./process-project";
-import Tax from "./tax";
-import TodayProductionSchedule from "./today-production-schedule";
-import ProfitGraph from "./profit-graph";
-import useToast from "@/hooks/use-toast";
-import Toast from "@/ui/toast";
-import { useSearchParams } from "next/navigation";
-import { CheckCircle } from "@phosphor-icons/react";
-import Spinner from "@/ui/spinner";
+import { useEffect, Suspense } from 'react';
+import MainTitleSec from './main-title-sec';
+import DailyProductionQuantity from './summary-KPI/daily-production-quantity';
+import ShortageCount from './summary-KPI/shortage-count';
+import ProductionYield from './summary-KPI/production-yield';
+import DeliveryTable from './delivery-schedule/delivery-table';
+import PendingQuote from './pending-quote';
+import ProcessProject from './process-project';
+import Tax from './tax';
+import TodayProductionSchedule from './today-production-schedule';
+import ProfitGraph from './profit-graph';
+import useToast from '@/hooks/use-toast';
+import Toast from '@/ui/toast';
+import { useSearchParams } from 'next/navigation';
+import { CheckCircle } from '@phosphor-icons/react';
+import Spinner from '@/ui/spinner';
 
 const DashboardPageContent = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const from = searchParams.get("from");
-    if (from === "onboarding") {
+    const from = searchParams.get('from');
+    if (from === 'onboarding') {
       showToast();
     }
   }, [searchParams, showToast]);

@@ -4,14 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:https": "next dev --turbopack --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
-  },
-  "prettier": {
-    "endOfLine": "auto"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -46,11 +44,11 @@
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-prettier": "^5.4.1",
+    "eslint-plugin-prettier": "^5.5.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-unicorn": "^59.0.1",
     "globals": "^16.2.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8.33.1"

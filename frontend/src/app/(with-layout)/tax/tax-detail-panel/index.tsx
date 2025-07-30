@@ -1,6 +1,6 @@
-import { TaxDataModel } from "@/mocks/tax-data";
-import Panel from "@/ui/panel";
-import TaxDocumentView from "@/app/(with-layout)/document/tax-document-view";
+import { TaxDataModel } from '@/mocks/tax-data';
+import Panel from '@/ui/panel';
+import TaxDocumentView from '@/app/(with-layout)/document/tax-document-view';
 
 interface TaxDetailPanelProps {
   item: TaxDataModel;

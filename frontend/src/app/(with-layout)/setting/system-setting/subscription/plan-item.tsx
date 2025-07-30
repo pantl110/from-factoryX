@@ -1,7 +1,7 @@
-import MiniBtn from "@/ui/mini-btn";
-import { PlanType, PLAN_INFO } from "./types";
-import { useState } from "react";
-import SubscribeModal from "./modals/subscribe-modal";
+import MiniBtn from '@/ui/mini-btn';
+import { PlanType, PLAN_INFO } from './types';
+import { useState } from 'react';
+import SubscribeModal from './modals/subscribe-modal';
 
 interface PlanItemProps {
   type: PlanType;

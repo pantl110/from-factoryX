@@ -1,6 +1,6 @@
-import { Suspense } from "react";
-import ProcessProjectPageInner from "./process-project-page-inner";
-import Spinner from "@/ui/spinner";
+import { Suspense } from 'react';
+import ProcessProjectPageInner from './process-project-page-inner';
+import Spinner from '@/ui/spinner';
 
 const ProcessProjectPage = () => {
   return (

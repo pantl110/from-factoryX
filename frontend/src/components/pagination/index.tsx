@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
 
 interface PaginationProps {
   currentPage: number;
@@ -55,18 +55,18 @@ const Pagination = ({
     <div className="flex items-center justify-center py-3 px-6 gap-1 Me_Body-1">
       <div
         className={`flex items-center justify-center w-9 h-9 ${
-          currentPage === 1 ? "cursor-default" : "cursor-pointer"
+          currentPage === 1 ? 'cursor-default' : 'cursor-pointer'
         }`}
         role="button"
         tabIndex={0}
         onClick={handlePrevPage}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") handlePrevPage();
+          if (e.key === 'Enter' || e.key === ' ') handlePrevPage();
         }}
       >
         <CaretLeftIcon
           size={20}
-          className={currentPage === 1 ? "text-lg" : "text-sv"}
+          className={currentPage === 1 ? 'text-lg' : 'text-sv'}
         />
       </div>
       {getPageNumbers().map((page) => (
@@ -74,14 +74,14 @@ const Pagination = ({
           key={page}
           className={`flex items-center justify-center w-9 h-9 rounded-[8px] Me_Body-1 transition-colors duration-200 ${
             currentPage === page
-              ? "text-primary"
-              : "text-dg hover:bg-[#F5F5F5] cursor-pointer"
+              ? 'text-primary'
+              : 'text-dg hover:bg-[#F5F5F5] cursor-pointer'
           }`}
           role="button"
           tabIndex={0}
           onClick={() => onPageChange(page)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") onPageChange(page);
+            if (e.key === 'Enter' || e.key === ' ') onPageChange(page);
           }}
         >
           {page}
@@ -89,18 +89,18 @@ const Pagination = ({
       ))}
       <div
         className={`flex items-center justify-center w-9 h-9 ${
-          currentPage === totalPages ? "cursor-default" : "cursor-pointer"
+          currentPage === totalPages ? 'cursor-default' : 'cursor-pointer'
         }`}
         role="button"
         tabIndex={0}
         onClick={handleNextPage}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") handleNextPage();
+          if (e.key === 'Enter' || e.key === ' ') handleNextPage();
         }}
       >
         <CaretRightIcon
           size={20}
-          className={currentPage === totalPages ? "text-lg" : "text-sv"}
+          className={currentPage === totalPages ? 'text-lg' : 'text-sv'}
         />
       </div>
     </div>
