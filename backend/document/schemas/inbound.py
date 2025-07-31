@@ -3,6 +3,7 @@ from typing import List, Optional
 from datetime import date
 
 
+# Factory Client Field
 class FactoryClientInfoIn(Schema):
     type: str = "customer"
     name: str
@@ -17,6 +18,7 @@ class FactoryClientInfoIn(Schema):
     fax: Optional[str] = None
 
 
+# Quotation Product Field
 class QuotationProductInfoIn(Schema):
     product_id: int
     quantity: int
@@ -36,10 +38,10 @@ class QuotationDraftIn(Schema):
 
 # (POST) Quotation Production
 class QuotationProductionIn(Schema):
-    factory_id: Optional[int] = None
+    factory_id: int
     quotation_id: int
-    client: Optional[dict] = None
-    products: Optional[List[dict]] = None
+    client: FactoryClientInfoIn
+    products: List[QuotationProductInfoIn]
     due_date: Optional[str] = None
 
 

@@ -581,8 +581,7 @@ class QuotationProductAPITestCase(TestCase):
                     "quantity": 30,
                     "unit_price": 2000
                 }
-            ],
-            "due_date": "2025-08-15"
+            ]
         }
         
         response = self.client.post(
@@ -611,8 +610,7 @@ class QuotationProductAPITestCase(TestCase):
                     "quantity": 20,
                     "unit_price": 2000
                 }
-            ],
-            "due_date": "2025-08-15"
+            ]
         }
         
         response = self.client.post(
@@ -634,8 +632,7 @@ class QuotationProductAPITestCase(TestCase):
             "factory_id": self.factory.id,
             "client": {
                 "name": "테스트 고객사"
-            },
-            "due_date": "2025-08-15"
+            }
         }
         
         response = self.client.post(
@@ -650,8 +647,8 @@ class QuotationProductAPITestCase(TestCase):
         if response.status_code == 400:
             self.assertIn("품목 정보는 필수입니다", str(data))
 
-    def test_start_production_missing_due_date(self):
-        """납기일자 누락 시 생산 시작 실패 테스트"""
+    def test_start_production_without_due_date(self):
+        """납기일자 없이 생산 시작 성공 테스트"""
         production_data = {
             "quotation_id": self.quotation.id,
             "factory_id": self.factory.id,
@@ -667,9 +664,31 @@ class QuotationProductAPITestCase(TestCase):
             **self.get_auth_headers()
         )
         
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIn("납기일자는 필수입니다", data["detail"])
+        self.assertEqual(data["status"], "production_started")
+
+    def test_start_production_missing_factory_id(self):
+        """factory_id 누락 시 생산 시작 실패 테스트"""
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "client": {"name": "테스트"},
+            "products": [{"product_id": self.product1.id, "quantity": 10, "unit_price": 1000}]
+            # factory_id 제거
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        # factory_id가 누락되면 400 또는 404 오류가 발생할 수 있음
+        self.assertIn(response.status_code, [400, 404])
+        data = response.json()
+        if response.status_code == 400:
+            self.assertIn("공장 ID는 필수입니다", str(data))
 
     def test_start_production_with_default_values(self):
         """기본값으로 생산 시작 테스트"""
@@ -741,6 +760,26 @@ class QuotationProductAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 404)
 
+    def test_start_production_with_id_field(self):
+        """id 필드를 사용한 생산 시작 테스트"""
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "factory_id": self.factory.id,
+            "client": {"name": "테스트"},
+            "products": [{"id": self.product1.id, "quantity": 10, "unit_price": 1000}]
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "production_started")
+
     def test_start_production_product_not_found(self):
         """존재하지 않는 제품으로 생산 시작 실패 테스트"""
         production_data = {
@@ -759,6 +798,31 @@ class QuotationProductAPITestCase(TestCase):
         )
         
         self.assertEqual(response.status_code, 404)
+
+    def test_start_production_unauthorized_factory(self):
+        """권한이 없는 공장으로 생산 시작 실패 테스트"""
+        # 다른 공장 생성
+        other_factory = Factory.objects.create(
+            name='다른 공장',
+            owner=self.user
+        )
+        
+        production_data = {
+            "quotation_id": self.quotation.id,
+            "factory_id": other_factory.id,  # 다른 공장 ID
+            "client": {"name": "테스트"},
+            "products": [{"product_id": self.product1.id, "quantity": 10, "unit_price": 1000}]
+        }
+        
+        response = self.client.post(
+            "/v1/document/quotation/product/production",
+            data=json.dumps(production_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        # 권한이 없는 공장의 경우 403 또는 404 오류가 발생할 수 있음
+        self.assertIn(response.status_code, [403, 404])
 
     def test_list_quotation_products_by_quotation_id_success(self):
         """견적서 ID로 견적서 품목 목록 조회 성공 테스트"""

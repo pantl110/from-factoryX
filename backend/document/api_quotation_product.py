@@ -86,53 +86,24 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
 
 @router.post("/production", summary="생산 시작", description="완성된 견적서로 생산을 시작합니다. 모든 필수 정보가 필요합니다.")
 async def start_production(request, payload: QuotationProductionIn):
-    """
-    생산 시작 API
+    user = request.auth
+    await is_factory_member(payload.factory_id, user)
     
-    입력 필드:
-    - quotation_id: int - 견적서 ID (필수)
-    - client: dict - 클라이언트 정보 (필수)
-        - name: str - 회사명 (필수)
-        - business_registration_number: str - 사업자등록번호 (선택)
-        - representative_name: str - 대표자명 (선택)
-        - business_type: str - 업태 (선택)
-        - business_category: str - 종목 (선택)
-        - address: str - 주소 (선택)
-        - email: str - 이메일 (선택)
-        - phone: str - 전화번호 (선택)
-        - fax: str - 팩스번호 (선택)
-    - products: List[dict] - 품목 정보 (필수)
-        - id: int - 제품 ID (필수)
-        - quantity: int - 수량 (필수)
-        - unit_price: int - 단가 (필수)
-    - due_date: str - 납기일자 (YYYY-MM-DD 형식, 필수)
-
-
-    반환 필드:
-    - quotation_id: int - 견적서 ID
-    - project_id: int - 프로젝트 ID
-    - status: str - 상태 ("production_started")
-    """
     try:
-        # 견적서 존재 확인
         try:
             quotation = await sync_to_async(get_object_or_404)(Quotation, id=payload.quotation_id)
         except Http404:
             raise HttpError(404, "해당 견적서를 찾을 수 없습니다.")
         
-        # 필수 정보 검증
+        if not payload.quotation_id:
+            raise HttpError(400, "견적서 ID는 필수입니다.")
+        
         if not payload.client:
             raise HttpError(400, "클라이언트 정보는 필수입니다.")
         
         if not payload.products:
             raise HttpError(400, "품목 정보는 필수입니다.")
         
-        if not payload.due_date:
-            raise HttpError(400, "납기일자는 필수입니다.")
-        
-        # production_plans는 자동 생성되므로 검증 제거
-        
-        # 1. 클라이언트 정보 업데이트
         client_data = payload.client
         factory = await sync_to_async(lambda: quotation.factory)()
         client, created = await FactoryClient.objects.aget_or_create(
@@ -151,59 +122,58 @@ async def start_production(request, payload: QuotationProductionIn):
         )
         quotation.client = client
         
-        # 2. 납기일자 설정
-        quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d").date()
-        await sync_to_async(quotation.save)()
+        if payload.due_date:
+            quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d").date()
+            await sync_to_async(quotation.save)()
         
-        # 3. 품목 정보 업데이트
         await QuotationProduct.objects.filter(quotation=quotation).adelete()
         
         for prod in payload.products:
-            try:
-                product = await sync_to_async(get_object_or_404)(Product, id=prod["product_id"])
-            except Http404:
-                raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
-            quotation_product = await QuotationProduct.objects.acreate(
-                quotation=quotation,
-                product=product,
-                quantity=prod["quantity"],
-                unit_price=prod["unit_price"]
-            )
+                try:
+                    product_id = prod.get("product_id") or prod.get("id")
+                    if not product_id:
+                        raise HttpError(400, "제품 ID는 필수입니다.")
+                    
+                    product = await sync_to_async(get_object_or_404)(Product, id=product_id)
+                except Http404:
+                    raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
+                quotation_product = await QuotationProduct.objects.acreate(
+                    quotation=quotation,
+                    product=product,
+                    quantity=prod["quantity"],
+                    unit_price=prod["unit_price"]
+                )
         
-        # 4. 프로젝트 상태 변경
         project = await sync_to_async(lambda: quotation.project)()
-        project.status = Project.ProjectStatus.pending  # enum 값 사용
+        project.status = Project.ProjectStatus.pending
         await sync_to_async(project.save)()
         
-        # 5. 생산 계획 자동 생성 (products의 각 제품에 대해)
         for prod in payload.products:
-            # 해당 제품의 QuotationProduct 찾기
             try:
+                product_id = prod.get("product_id") or prod.get("id")
                 quotation_product = await QuotationProduct.objects.aget(
                     quotation=quotation,
-                    product_id=prod["product_id"]
+                    product_id=product_id
                 )
             except QuotationProduct.DoesNotExist:
-                raise HttpError(404, f"제품 ID {prod['product_id']}에 해당하는 견적 품목을 찾을 수 없습니다.")
+                raise HttpError(404, f"제품 ID {product_id}에 해당하는 견적 품목을 찾을 수 없습니다.")
             
-            # 설비 자동 할당 (가동 대기 상태, priority 순서)
             try:
                 equipment = await FactoryEquipment.objects.filter(
                     factory=factory,
-                    status="가동 대기"  # 가동 대기 상태인 설비만
-                ).order_by('priority').afirst()  # priority 순서로 정렬
+                    status="가동 대기"
+                ).order_by('priority').afirst()
                 if not equipment:
                     raise HttpError(400, "해당 공장에 가동 가능한 설비가 없습니다.")
             except Exception as e:
                 raise HttpError(400, f"설비 조회 중 오류가 발생했습니다: {str(e)}")
             
             # 기본값 설정
-            quantity = prod["quantity"]  # products의 quantity 사용
-            start_date = datetime.now().strftime("%Y-%m-%d")  # 오늘
-            end_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")  # 7일 후
-            avg_production_time = 3600  # 기본 1시간
+            quantity = prod["quantity"]
+            start_date = datetime.now().strftime("%Y-%m-%d") 
+            end_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
+            avg_production_time = 3600
             
-            # 생산 계획 생성
             await ProjectPlan.objects.acreate(
                 project=project,
                 product=quotation_product,
