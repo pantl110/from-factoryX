@@ -16,6 +16,7 @@ from factory.utils import get_factory_by_id
 from django.conf import settings
 from datetime import timedelta, date
 from barobill.barobill_error_code import barobill_error_codes
+from datetime import datetime
 
 
 router = Router(tags=["CashReceipts"], auth=jwt_auth)
@@ -45,28 +46,163 @@ async def sync_cash_receipts(request, factory_id: int):
     currentPage = 1
     orderDirection = 1
 
-    result = settings.BAROBILL_CLIENT.service.GetPeriodCashBillSalesListEx(
-        CERTKEY=certKey,
-        CorpNum=corpNum,
-        UserID=userId,
-        StartDate=startDate,
-        EndDate=endDate,
-        CountPerPage=countPerPage,
-        CurrentPage=currentPage,
-        OrderDirection=orderDirection,
+    # 매출 현금영수증 조회
+    sale_result = (
+        settings.BAROBILL_CASHBILL_CLIENT.service.GetPeriodCashBillSalesListEx(
+            CERTKEY=certKey,
+            CorpNum=corpNum,
+            UserID=userId,
+            StartDate=startDate,
+            EndDate=endDate,
+            CountPerPage=countPerPage,
+            CurrentPage=currentPage,
+            OrderDirection=orderDirection,
+        )
     )
 
-    if result.CurrentPage < 0:
-        error_msg = barobill_error_codes.get(result.CurrentPage, "Unknown Error")
+    if sale_result.CurrentPage < 0:
+        error_msg = barobill_error_codes.get(sale_result.CurrentPage, "Unknown Error")
         raise HttpError(400, f"바로빌 API 오류 - 매출 세금계산서 조회: {error_msg}")
 
-    if result.SimpleCashBillExList is not None:
+    # 매입 현금영수증 조회
+    purchase_result = (
+        settings.BAROBILL_CASHBILL_CLIENT.service.GetPeriodCashBillPurchaseListEx(
+            CERTKEY=certKey,
+            CorpNum=corpNum,
+            UserID=userId,
+            StartDate=startDate,
+            EndDate=endDate,
+            CountPerPage=countPerPage,
+            CurrentPage=currentPage,
+            OrderDirection=orderDirection,
+        )
+    )
+
+    if purchase_result.CurrentPage < 0:
+        error_msg = barobill_error_codes.get(
+            purchase_result.CurrentPage, "Unknown Error"
+        )
+        raise HttpError(400, f"바로빌 API 오류 - 매출 세금계산서 조회: {error_msg}")
+
+    # 기존 현금영수증 조회
+    existing_sales = await sync_to_async(list)(
+        CashReceipt.objects.filter(
+            factory=factory,
+            cash_receipt_type="sales",
+        ).values_list("nts_confirm_num", flat=True)
+    )
+    existing_purchases = await sync_to_async(list)(
+        CashReceipt.objects.filter(
+            factory=factory,
+            cash_receipt_type="purchase",
+        ).values_list("nts_confirm_num", flat=True)
+    )
+
+    sale_cash_receipts = []
+
+    if sale_result.SimpleCashBillExList is not None:
         # 매출 현금영수증이 존재하는 경우 sync 처리
-        for cash_receipt in result.SimpleCashBillExList.SimpleCashBillEx:
-            print(
-                "🐍 File: tax/api.py | Line: 507 | undefined ~ cash_receipt",
-                cash_receipt,
+        for cash_receipt in sale_result.SimpleCashBillExList.SimpleCashBillEx:
+            if cash_receipt.NTSConfirmNum in existing_sales:
+                continue
+
+            # 현금영수증 상세 조회
+            cash_receipt_detail = (
+                settings.BAROBILL_CASHBILL_CLIENT.service.GetCashBillExNK(
+                    CERTKEY=certKey,
+                    CorpNum=corpNum,
+                    UserID=userId,
+                    TradeDate=cash_receipt.TradeDate,
+                    NTSConfirmNum=cash_receipt.NTSConfirmNum,
+                )
             )
+
+            sale_cash_receipts.append(
+                CashReceipt(
+                    user=user,
+                    factory=factory,
+                    cash_receipt_type="sales",
+                    transaction_date=datetime.strptime(
+                        cash_receipt.TradeDate, "%Y%m%d"
+                    ).date(),
+                    transaction_amount=int(cash_receipt.Amount),
+                    tax_amount=int(cash_receipt.Tax),
+                    service_charge=int(cash_receipt.ServiceCharge),
+                    nts_confirm_num=cash_receipt.NTSConfirmNum,
+                    franchise_corp_num=cash_receipt_detail.FranchiseCorpNum,
+                    franchise_corp_name=cash_receipt_detail.FranchiseCorpName,
+                    franchise_ceo_name=cash_receipt_detail.FranchiseCEOName,
+                    franchise_addr=cash_receipt_detail.FranchiseAddr,
+                    franchise_tel=cash_receipt_detail.FranchiseTel,
+                    identity_num=cash_receipt_detail.IdentityNum,
+                    trade_type=cash_receipt_detail.TradeType,
+                    trade_usage=cash_receipt_detail.TradeUsage,
+                    trade_method=cash_receipt_detail.TradeMethod,
+                    item_name=cash_receipt_detail.ItemName,
+                    cancel_type=cash_receipt_detail.CancelType,
+                    cancel_nts_confirm_num=cash_receipt_detail.CancelNTSConfirmNum,
+                    cancel_nts_confirm_date=cash_receipt_detail.CancelNTSConfirmDate,
+                )
+            )
+        # 매출 현금영수증 저장
+        sale_cash_receipts = await CashReceipt.objects.abulk_create(sale_cash_receipts)
+
+    purchase_cash_receipts = []
+
+    if purchase_result.SimpleCashBillExList is not None:
+        # 매입 현금영수증이 존재하는 경우 sync 처리
+        for cash_receipt in purchase_result.SimpleCashBillExList.SimpleCashBillEx:
+            if cash_receipt.NTSConfirmNum in existing_purchases:
+                continue
+
+            # 현금영수증 상세 조회
+            cash_receipt_detail = (
+                settings.BAROBILL_CASHBILL_CLIENT.service.GetCashBillExNK(
+                    CERTKEY=certKey,
+                    CorpNum=corpNum,
+                    UserID=userId,
+                    TradeDate=cash_receipt.TradeDate,
+                    NTSConfirmNum=cash_receipt.NTSConfirmNum,
+                )
+            )
+
+            purchase_cash_receipts.append(
+                CashReceipt(
+                    user=user,
+                    factory=factory,
+                    cash_receipt_type="sales",
+                    transaction_date=datetime.strptime(
+                        cash_receipt.TradeDate, "%Y%m%d"
+                    ).date(),
+                    transaction_amount=int(cash_receipt.Amount),
+                    tax_amount=int(cash_receipt.Tax),
+                    service_charge=int(cash_receipt.ServiceCharge),
+                    nts_confirm_num=cash_receipt.NTSConfirmNum,
+                    franchise_corp_num=cash_receipt_detail.FranchiseCorpNum,
+                    franchise_corp_name=cash_receipt_detail.FranchiseCorpName,
+                    franchise_ceo_name=cash_receipt_detail.FranchiseCEOName,
+                    franchise_addr=cash_receipt_detail.FranchiseAddr,
+                    franchise_tel=cash_receipt_detail.FranchiseTel,
+                    identity_num=cash_receipt_detail.IdentityNum,
+                    trade_type=cash_receipt_detail.TradeType,
+                    trade_usage=cash_receipt_detail.TradeUsage,
+                    trade_method=cash_receipt_detail.TradeMethod,
+                    item_name=cash_receipt_detail.ItemName,
+                    cancel_type=cash_receipt_detail.CancelType,
+                    cancel_nts_confirm_num=cash_receipt_detail.CancelNTSConfirmNum,
+                    cancel_nts_confirm_date=cash_receipt_detail.CancelNTSConfirmDate,
+                )
+            )
+        # 매입 현금영수증 저장
+        purchase_cash_receipts = await CashReceipt.objects.abulk_create(
+            purchase_cash_receipts
+        )
+
+    return {
+        "message": "현금영수증 동기화가 완료되었습니다.",
+        "sales_count": len(sale_cash_receipts),
+        "purchase_count": len(purchase_cash_receipts),
+    }
 
 
 @router.get(

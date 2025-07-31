@@ -524,7 +524,7 @@ async def sync_tax_invoices(request, factory_id: int):
         ).values_list("nts_send_key", flat=True)
     )
 
-    tax_service_objects = []
+    sale_tax_service_objects = []
 
     if sale_result.SimpleTaxInvoiceExList is not None:
         # 매출 세금계산서가 존재하는 경우 sync 처리
@@ -565,7 +565,7 @@ async def sync_tax_invoices(request, factory_id: int):
                 )
 
             # 매출 세금계산서가 DB에 없으면 새로운 세금계산서 생성
-            tax_service_objects.append(
+            sale_tax_service_objects.append(
                 NationalTaxService(
                     user=user,
                     factory=factory,
@@ -587,15 +587,83 @@ async def sync_tax_invoices(request, factory_id: int):
                 )
             )
 
-    tax_services = await NationalTaxService.objects.abulk_create(tax_service_objects)
-    print("🐍 File: tax/api.py | Line: 591 | undefined ~ tax_services", tax_services)
+    sale_tax_services = await NationalTaxService.objects.abulk_create(
+        sale_tax_service_objects
+    )
+    print(
+        "🐍 File: tax/api.py | Line: 591 | undefined ~ sale_tax_services",
+        sale_tax_services,
+    )
+
+    purchase_tax_service_objects = []
 
     if purchase_result.SimpleTaxInvoiceExList is not None:
         # 매입 세금계산서가 존재하는 경우 sync 처리
         for purchase in purchase_result.SimpleTaxInvoiceExList.SimpleTaxInvoiceEx:
             if purchase.NTSSendKey in existing_purchases:
                 continue
-            # 매입 세금계산서가 DB에 없으면 새로운 세금계산서 생성
+            # GetTaxInvoiceNK(국세청 승인번호로 세금계산서 조회) API 호출
+            certKey = settings.BAROBILL_CERT_KEY
+            corpNum = factory.business_registration_number
+            ntsConfirmNum = purchase.NTSSendKey
+
+            invoice_detail = settings.BAROBILL_CLIENT.service.GetTaxInvoiceNK(
+                CERTKEY=certKey,
+                CorpNum=corpNum,
+                NTSConfirmNum=ntsConfirmNum,
+            )
+
+            if invoice_detail.TaxInvoiceType < 0:  # 호출 실패
+                raise HttpError(
+                    400,
+                    f"바로빌 API 오류 - 세금계산서 상세 조회: {barobill_error_codes.get(invoice_detail.TaxInvoiceType, 'Unknown Error')}",
+                )
+
+            line_items = []
+            for item in invoice_detail.TaxInvoiceTradeLineItems.TaxInvoiceTradeLineItem:
+                line_items.append(
+                    {
+                        "purchase_expiry": item.PurchaseExpiry,
+                        "name": item.Name,
+                        "information": item.Information,
+                        "chargeable_unit": item.ChargeableUnit,
+                        "unit_price": item.UnitPrice,
+                        "amount": item.Amount,
+                        "tax": item.Tax,
+                        "description": item.Description,
+                    }
+                )
+
+            # 매출 세금계산서가 DB에 없으면 새로운 세금계산서 생성
+            purchase_tax_service_objects.append(
+                NationalTaxService(
+                    user=user,
+                    factory=factory,
+                    publish_status="발행 완료",
+                    tax_invoice_type="매입",
+                    transaction_type=barobill_purpose_types.get(
+                        invoice_detail.PurposeType
+                    ),
+                    transaction_date=datetime.strptime(
+                        invoice_detail.WriteDate, "%Y%m%d"
+                    ).date(),
+                    client=None,  # 거래처는 추후에 설정
+                    transaction_amount=invoice_detail.AmountTotal,
+                    tax_amount=invoice_detail.TaxTotal,
+                    nts_send_key=sale.NTSSendKey,
+                    barobill_state="발급완료",
+                    nts_send_state="전송완료",
+                    line_items=line_items,
+                )
+            )
+
+    purchase_tax_services = await NationalTaxService.objects.abulk_create(
+        purchase_tax_service_objects
+    )
+    print(
+        "🐍 File: tax/api.py | Line: 656 | undefined ~ purchase_tax_services",
+        purchase_tax_services,
+    )
 
     return {"message": "세금계산서 동기화가 완료되었습니다."}
 

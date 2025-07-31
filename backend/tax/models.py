@@ -116,34 +116,43 @@ class NationalTaxService(BaseModel):
 
 
 # 국세청 API 현금 영수증 데이터 저장
+
+
+class CashReceiptType(models.TextChoices):
+    sales = ("매출", "sales")
+    purchase = ("매입", "purchase")
+
+
 class CashReceipt(BaseModel):
-    # user = models.ForeignKey(
-    #     "user.User",
-    #     related_name="cash_receipts",
-    #     on_delete=models.SET_NULL,
-    #     null=True,
-    #     blank=True,
-    #     help_text="사용자",
-    # )
-    # factory = models.ForeignKey(
-    #     "factory.Factory",
-    #     related_name="cash_receipts",
-    #     on_delete=models.SET_NULL,
-    #     null=True,
-    #     blank=True,
-    # )
+    user = models.ForeignKey(
+        "user.User",
+        related_name="cash_receipts",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="사용자",
+    )
+    factory = models.ForeignKey(
+        "factory.Factory",
+        related_name="cash_receipts",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    cash_receipt_type = models.CharField(
+        max_length=10,
+        choices=CashReceiptType.choices,
+        default=CashReceiptType.sales,
+        help_text="현금 영수증 유형",
+    )
     transaction_date = models.DateField(help_text="거래 일자")
-    approval_number = models.CharField(max_length=100, help_text="승인번호")
-    transaction_classification = models.CharField(
-        max_length=100,
-        help_text="거래 구분",
-    )
-    transaction_purpose = models.CharField(
-        max_length=100,
-        help_text="거래 용도",
-    )
     client = models.ForeignKey(
-        FactoryClient, related_name="cash_receipts", on_delete=models.CASCADE
+        FactoryClient,
+        related_name="cash_receipts",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="거래처",
     )
     product = models.ManyToManyField(
         "stock.Product",
@@ -152,3 +161,90 @@ class CashReceipt(BaseModel):
     )
     transaction_amount = models.IntegerField(help_text="공급 가액")
     tax_amount = models.IntegerField(help_text="세액")
+    service_charge = models.IntegerField(
+        default=0,
+        help_text="봉사료",
+    )
+    nts_confirm_num = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="국세청 승인번호",
+    )
+    franchise_corp_num = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="가맹점 사업자 등록번호",
+    )
+    franchise_corp_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="가맹점 상호명",
+    )
+    franchise_ceo_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="가맹점 대표자명",
+    )
+    franchise_addr = models.CharField(
+        max_length=300,
+        null=True,
+        blank=True,
+        help_text="가맹점 주소",
+    )
+    franchise_tel = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        help_text="가맹점 전화번호",
+    )
+    identity_num = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="소비자 신분확인번호(사업자번호/주민등록번호/등)",
+    )
+    trade_type = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        help_text="거래구분(승인거래/취소거래)",
+    )
+    trade_usage = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        help_text="거래용도(소득공제/지출증빙)",
+    )
+    trade_method = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        help_text="거래방법(카드번호, 주민등록번호, 사업자번호, 휴대폰번호)",
+    )
+    item_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="품목명",
+    )
+    cancel_type = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        help_text="취소사유(거래취소/오류발급/기타)",
+    )
+    cancel_nts_confirm_num = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="취소시 국세청 승인번호",
+    )
+    cancel_nts_confirm_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="취소시 국세청 승인일자",
+    )
