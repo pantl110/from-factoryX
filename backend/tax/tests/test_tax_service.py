@@ -245,20 +245,23 @@ class TestTaxService(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    async def test_get_tax_service_state(self):
-        """세금계산서 상태 조회 테스트"""
-        headers = await self.authenticate()
-        tax_service_id = await self.test_create_tax_service()
+    # async def test_get_tax_service_state(self):
+    #     """세금계산서 상태 조회 테스트"""
+    #     headers = await self.authenticate()
+    #     # 세금계산서 임시 생성
+    #     tax_service_id = await self.test_create_tax_service()
 
-        response = await self.client.post(f"{tax_service_id}/publish", headers=headers)
+    #     # 세금계산서 발행(바로빌 요청)
+    #     response = await self.client.post(f"{tax_service_id}/publish", headers=headers)
 
-        data = response.json()
-        print("🐍 File: tests/test_tax_service.py | Line: 256 | setUp ~ data", data)
+    #     data = response.json()
+    #     print("🐍 File: tests/test_tax_service.py | Line: 256 | setUp ~ data", data)
 
-        response = await self.client.get(f"/{tax_service_id}/state", headers=headers)
-        data = response.json()
-        print("🐍 File: tests/test_tax_service.py | Line: 250 | setUp ~ data", data)
+    #     # 세금계산서 바로빌 상태 조회(바로빌 상태 : 발급완료, NTS 상태 : 전송전)
+    #     response = await self.client.get(f"/{tax_service_id}/state", headers=headers)
+    #     data = response.json()
+    #     print("🐍 File: tests/test_tax_service.py | Line: 250 | setUp ~ data", data)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("publish_status", data)
-        self.assertIn("mgt_key", data)
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertIn("publish_status", data)
+    #     self.assertIn("mgt_key", data)

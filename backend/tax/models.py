@@ -59,7 +59,12 @@ class NationalTaxService(BaseModel):
     )
     transaction_date = models.DateField(help_text="거래 일자")
     client = models.ForeignKey(
-        FactoryClient, related_name="tax_invoices", on_delete=models.CASCADE
+        FactoryClient,
+        related_name="tax_invoices",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="거래처",
     )
     product = models.ManyToManyField(
         "stock.Product",

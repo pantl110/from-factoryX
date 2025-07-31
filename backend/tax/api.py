@@ -28,9 +28,13 @@ from project.models import Project
 from django.conf import settings
 from barobill.barobill_error_code import (
     barobill_error_codes,
+)
+from barobill.barobill_state import (
     barobill_tax_service_states,
     nts_tax_service_states,
+    barobill_purpose_types,
 )
+from datetime import datetime
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
@@ -510,31 +514,90 @@ async def sync_tax_invoices(request, factory_id: int):
         NationalTaxService.objects.filter(
             factory=factory,
             tax_invoice_type="sales",
-        ).values_list("id", flat=True)
+        ).values_list("nts_send_key", flat=True)
     )
-    existing_sales = [str(sale_id).zfill(15) for sale_id in existing_sales]
 
     existing_purchases = await sync_to_async(list)(
         NationalTaxService.objects.filter(
             factory=factory,
             tax_invoice_type="purchase",
-        ).values_list("id", flat=True)
+        ).values_list("nts_send_key", flat=True)
     )
-    existing_purchases = [
-        str(purchase_id).zfill(15) for purchase_id in existing_purchases
-    ]
+
+    tax_service_objects = []
 
     if sale_result.SimpleTaxInvoiceExList is not None:
         # 매출 세금계산서가 존재하는 경우 sync 처리
         for sale in sale_result.SimpleTaxInvoiceExList.SimpleTaxInvoiceEx:
-            print("🐍 File: tax/api.py | Line: 507 | undefined ~ sale", sale)
+            if sale.NTSSendKey in existing_sales:
+                continue
+
+            # GetTaxInvoiceNK(국세청 승인번호로 세금계산서 조회) API 호출
+            certKey = settings.BAROBILL_CERT_KEY
+            corpNum = factory.business_registration_number
+            ntsConfirmNum = sale.NTSSendKey
+
+            invoice_detail = settings.BAROBILL_CLIENT.service.GetTaxInvoiceNK(
+                CERTKEY=certKey,
+                CorpNum=corpNum,
+                NTSConfirmNum=ntsConfirmNum,
+            )
+
+            if invoice_detail.TaxInvoiceType < 0:  # 호출 실패
+                raise HttpError(
+                    400,
+                    f"바로빌 API 오류 - 세금계산서 상세 조회: {barobill_error_codes.get(invoice_detail.TaxInvoiceType, 'Unknown Error')}",
+                )
+
+            line_items = []
+            for item in invoice_detail.TaxInvoiceTradeLineItems.TaxInvoiceTradeLineItem:
+                line_items.append(
+                    {
+                        "purchase_expiry": item.PurchaseExpiry,
+                        "name": item.Name,
+                        "information": item.Information,
+                        "chargeable_unit": item.ChargeableUnit,
+                        "unit_price": item.UnitPrice,
+                        "amount": item.Amount,
+                        "tax": item.Tax,
+                        "description": item.Description,
+                    }
+                )
+
+            # 매출 세금계산서가 DB에 없으면 새로운 세금계산서 생성
+            tax_service_objects.append(
+                NationalTaxService(
+                    user=user,
+                    factory=factory,
+                    publish_status="발행 완료",
+                    tax_invoice_type="매출",
+                    transaction_type=barobill_purpose_types.get(
+                        invoice_detail.PurposeType
+                    ),
+                    transaction_date=datetime.strptime(
+                        invoice_detail.WriteDate, "%Y%m%d"
+                    ).date(),
+                    client=None,  # 거래처는 추후에 설정
+                    transaction_amount=invoice_detail.AmountTotal,
+                    tax_amount=invoice_detail.TaxTotal,
+                    nts_send_key=sale.NTSSendKey,
+                    barobill_state="발급완료",
+                    nts_send_state="전송완료",
+                    line_items=line_items,
+                )
+            )
+
+    tax_services = await NationalTaxService.objects.abulk_create(tax_service_objects)
+    print("🐍 File: tax/api.py | Line: 591 | undefined ~ tax_services", tax_services)
 
     if purchase_result.SimpleTaxInvoiceExList is not None:
         # 매입 세금계산서가 존재하는 경우 sync 처리
         for purchase in purchase_result.SimpleTaxInvoiceExList.SimpleTaxInvoiceEx:
-            print("🐍 File: tax/api.py | Line: 513 | undefined ~ purchase", purchase)
+            if purchase.NTSSendKey in existing_purchases:
+                continue
+            # 매입 세금계산서가 DB에 없으면 새로운 세금계산서 생성
 
-    return {}
+    return {"message": "세금계산서 동기화가 완료되었습니다."}
 
 
 @router.post(
