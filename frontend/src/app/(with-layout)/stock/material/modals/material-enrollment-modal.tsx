@@ -55,6 +55,17 @@ const MaterialEnrollmentModal = ({
     mode: 'onChange',
   });
 
+  // 수동으로 유효성 검사 수행
+  const isFormValid = () => {
+    return selectedMaterials.every(
+      (mat) =>
+        mat.quantity !== null &&
+        mat.quantity > 0 &&
+        mat.price !== null &&
+        mat.price > 0
+    );
+  };
+
   // 검색어가 변경될 때 서버에서 검색
   const [previousSearchKeyword, setPreviousSearchKeyword] = useState('');
 
@@ -182,7 +193,6 @@ const MaterialEnrollmentModal = ({
     >
       {!isSuccessModalOpen && (
         <>
-          {' '}
           <div className="flex justify-end h-12 gap-2.5 mt-4 items-center">
             <div className="flex-1 relative">
               <SearchInput
@@ -410,7 +420,7 @@ const MaterialEnrollmentModal = ({
           disabled={
             isSuccessModalOpen
               ? false
-              : selectedMaterials.length === 0 || isCreating || !isValid
+              : selectedMaterials.length === 0 || isCreating || !isFormValid()
           }
           onClick={isSuccessModalOpen ? handleSuccessClose : handleRegister}
         />

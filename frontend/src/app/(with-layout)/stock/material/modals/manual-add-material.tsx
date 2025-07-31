@@ -2,6 +2,7 @@ import { MaterialItemModel } from '@/types/data-model';
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 
 interface ManualAddMaterialProps {
   setIsManualAddMode: (v: boolean) => void;
@@ -18,10 +19,20 @@ const ManualAddMaterial = ({
   existingMaterials, // 원자재 코드 목록 받기
   showToast,
 }: ManualAddMaterialProps) => {
+  // 각 필드의 값을 직접 관리
+  const [formValues, setFormValues] = useState({
+    name: '',
+    code: '',
+    spec: '',
+    unit: '',
+    quantity: null as number | null,
+    price: null as number | null,
+  });
+
   const {
     register,
     handleSubmit,
-    formState: { isValid, errors },
+    formState: { errors },
     reset,
     setError,
   } = useForm<MaterialItemModel>({
@@ -35,6 +46,21 @@ const ManualAddMaterial = ({
     },
     mode: 'onChange',
   });
+
+  // 수동으로 유효성 검사
+  const isFormValid = () => {
+    const { name, code, spec, unit, quantity, price } = formValues;
+    return (
+      name.trim() &&
+      code.trim() &&
+      spec.trim() &&
+      unit.trim() &&
+      quantity !== null &&
+      quantity > 0 &&
+      price !== null &&
+      price > 0
+    );
+  };
 
   const onSubmit = (data: MaterialItemModel) => {
     // 중복 검사 - 코드만 비교
@@ -83,6 +109,9 @@ const ManualAddMaterial = ({
                     return !!str.trim();
                   },
                 })}
+                onChange={(e) =>
+                  setFormValues((prev) => ({ ...prev, name: e.target.value }))
+                }
               />
             </div>
             <div className="flex-1">
@@ -98,6 +127,9 @@ const ManualAddMaterial = ({
                     return !!str.trim();
                   },
                 })}
+                onChange={(e) =>
+                  setFormValues((prev) => ({ ...prev, code: e.target.value }))
+                }
               />
             </div>
           </div>
@@ -114,6 +146,9 @@ const ManualAddMaterial = ({
                     return !!str.trim();
                   },
                 })}
+                onChange={(e) =>
+                  setFormValues((prev) => ({ ...prev, spec: e.target.value }))
+                }
               />
             </div>
             <div className="flex-1">
@@ -128,6 +163,9 @@ const ManualAddMaterial = ({
                     return !!str.trim();
                   },
                 })}
+                onChange={(e) =>
+                  setFormValues((prev) => ({ ...prev, unit: e.target.value }))
+                }
               />
             </div>
           </div>
@@ -140,7 +178,10 @@ const ManualAddMaterial = ({
                 type="text"
                 {...register('quantity', {
                   required: true,
-                  validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
+                  validate: (v) => {
+                    const num = Number(String(v).replace(/[^0-9]/g, ''));
+                    return !isNaN(num) && num > 0;
+                  },
                   setValueAs: (v) => {
                     if (v === '' || v === null || v === undefined) return null;
                     const num = Number(String(v).replace(/[^0-9]/g, ''));
@@ -153,6 +194,9 @@ const ManualAddMaterial = ({
                     ? parseInt(onlyNums).toLocaleString()
                     : '';
                   e.target.value = formatted;
+
+                  const num = onlyNums ? parseInt(onlyNums) : null;
+                  setFormValues((prev) => ({ ...prev, quantity: num }));
                 }}
               />
             </div>
@@ -164,7 +208,10 @@ const ManualAddMaterial = ({
                 type="text"
                 {...register('price', {
                   required: true,
-                  validate: (v) => !isNaN(Number(v)) && Number(v) > 0,
+                  validate: (v) => {
+                    const num = Number(String(v).replace(/[^0-9]/g, ''));
+                    return !isNaN(num) && num > 0;
+                  },
                   setValueAs: (v) => {
                     if (v === '' || v === null || v === undefined) return null;
                     const num = Number(String(v).replace(/[^0-9]/g, ''));
@@ -177,6 +224,9 @@ const ManualAddMaterial = ({
                     ? parseInt(onlyNums).toLocaleString()
                     : '';
                   e.target.value = formatted;
+
+                  const num = onlyNums ? parseInt(onlyNums) : null;
+                  setFormValues((prev) => ({ ...prev, price: num }));
                 }}
               />
             </div>
@@ -195,7 +245,7 @@ const ManualAddMaterial = ({
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
             type="submit"
-            disabled={!isValid}
+            disabled={!isFormValid()}
           />
         </div>
       </form>
