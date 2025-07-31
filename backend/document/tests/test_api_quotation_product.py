@@ -706,7 +706,7 @@ class QuotationProductAPITestCase(TestCase):
         # equipment_id가 없었으므로 공장의 첫 번째 설비가 자동 할당됨
         self.assertIsNotNone(plan.equipment)
         self.assertEqual(plan.equipment.factory, self.factory)
-        self.assertEqual(plan.equipment.status, "가동 대기")  # 가동 대기 상태인 설비만 할당됨
+        self.assertEqual(plan.equipment.status, FactoryEquipment.EquipmentStatus.standby)  # 가동 대기 상태인 설비만 할당됨
         
         # 기본값 확인
         today = datetime.now().date()

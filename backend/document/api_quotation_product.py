@@ -169,7 +169,7 @@ async def start_production(request, payload: QuotationProductionIn):
             try:
                 equipment = await FactoryEquipment.objects.filter(
                     factory=factory,
-                    status="가동 대기"
+                    status=FactoryEquipment.EquipmentStatus.standby
                 ).order_by('priority').afirst()
                 if not equipment:
                     raise HttpError(400, "해당 공장에 가동 가능한 설비가 없습니다.")
