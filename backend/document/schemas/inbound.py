@@ -29,7 +29,6 @@ class QuotationProductInfoIn(Schema):
 
 # (POST) Quotation Draft
 class QuotationDraftIn(Schema):   
-    factory_id: int
     quotation_id: int
     client: Optional[FactoryClientInfoIn] = None
     products: Optional[List[QuotationProductInfoIn]] = None
@@ -38,7 +37,6 @@ class QuotationDraftIn(Schema):
 
 # (POST) Quotation Production
 class QuotationProductionIn(Schema):
-    factory_id: int
     quotation_id: int
     client: FactoryClientInfoIn
     products: List[QuotationProductInfoIn]

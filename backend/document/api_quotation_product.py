@@ -1,4 +1,4 @@
-from api.security import jwt_auth, jwt_manager_auth
+from api.security import jwt_auth
 from ninja import Router, Query
 from ninja.errors import HttpError
 from django.http import Http404
@@ -20,8 +20,12 @@ router = Router(tags=["QuotationProduct"], auth=jwt_auth)
 
 @router.post("/draft", summary="견적서 임시 저장", description="견적서를 임시로 저장합니다. 필수 필드가 비어있어도 저장됩니다.")
 async def save_draft_quotation(request, payload: QuotationDraftIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    await is_factory_member(payload.factory_id, user)
+    await is_factory_member(int(factory_id), user)
 
     try:
         try:
@@ -86,8 +90,12 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
 
 @router.post("/production", summary="생산 시작", description="완성된 견적서로 생산을 시작합니다. 모든 필수 정보가 필요합니다.")
 async def start_production(request, payload: QuotationProductionIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    await is_factory_member(payload.factory_id, user)
+    await is_factory_member(int(factory_id), user)
     
     try:
         try:
@@ -108,16 +116,16 @@ async def start_production(request, payload: QuotationProductionIn):
         factory = await sync_to_async(lambda: quotation.factory)()
         client, created = await FactoryClient.objects.aget_or_create(
             factory=factory,
-            name=client_data["name"],
+            name=client_data.name,
             defaults={
-                "business_registration_number": client_data.get("business_registration_number"),
-                "representative_name": client_data.get("representative_name"),
-                "business_type": client_data.get("business_type"),
-                "business_category": client_data.get("business_category"),
-                "address": client_data.get("address"),
-                "email": client_data.get("email"),
-                "phone": client_data.get("phone"),
-                "fax": client_data.get("fax"),
+                "business_registration_number": client_data.business_registration_number,
+                "representative_name": client_data.representative_name,
+                "business_type": client_data.business_type,
+                "business_category": client_data.business_category,
+                "address": client_data.address,
+                "email": client_data.email,
+                "phone": client_data.phone,
+                "fax": client_data.fax,
             }
         )
         quotation.client = client
@@ -130,7 +138,7 @@ async def start_production(request, payload: QuotationProductionIn):
         
         for prod in payload.products:
                 try:
-                    product_id = prod.get("product_id") or prod.get("id")
+                    product_id = prod.product_id
                     if not product_id:
                         raise HttpError(400, "제품 ID는 필수입니다.")
                     
@@ -140,8 +148,8 @@ async def start_production(request, payload: QuotationProductionIn):
                 quotation_product = await QuotationProduct.objects.acreate(
                     quotation=quotation,
                     product=product,
-                    quantity=prod["quantity"],
-                    unit_price=prod["unit_price"]
+                    quantity=prod.quantity,
+                    unit_price=prod.unit_price
                 )
         
         project = await sync_to_async(lambda: quotation.project)()
@@ -150,7 +158,7 @@ async def start_production(request, payload: QuotationProductionIn):
         
         for prod in payload.products:
             try:
-                product_id = prod.get("product_id") or prod.get("id")
+                product_id = prod.product_id
                 quotation_product = await QuotationProduct.objects.aget(
                     quotation=quotation,
                     product_id=product_id
@@ -168,8 +176,7 @@ async def start_production(request, payload: QuotationProductionIn):
             except Exception as e:
                 raise HttpError(400, f"설비 조회 중 오류가 발생했습니다: {str(e)}")
             
-            # 기본값 설정
-            quantity = prod["quantity"]
+            quantity = prod.quantity
             start_date = datetime.now().strftime("%Y-%m-%d") 
             end_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
             avg_production_time = 3600
@@ -199,14 +206,19 @@ async def start_production(request, payload: QuotationProductionIn):
 
 # Quotation Tab
 @router.get("/", summary="[C] 견적서 품목 목록 조회", response={200: list, 400: dict, 404: dict, 500: dict})
-async def list_quotation_products(request, quotation_id: int = Query(None), factory_id: int = Query(None)):
-    if quotation_id is None and factory_id is None:
-        raise HttpError(400, "quotation_id 또는 factory_id를 입력해야 합니다.")
+async def list_quotation_products(request, quotation_id: int = Query(None)):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     try:
         if quotation_id:
             qps = await sync_to_async(list)(QuotationProduct.objects.filter(quotation_id=quotation_id))
-        elif factory_id:
-            qps = await sync_to_async(list)(QuotationProduct.objects.filter(quotation__factory_id=factory_id))
+        else:
+            qps = await sync_to_async(list)(QuotationProduct.objects.filter(quotation__factory_id=int(factory_id)))
     except Exception as e:
         raise HttpError(500, f"조회 중 오류: {str(e)}")
     if not qps:
@@ -223,10 +235,17 @@ async def list_quotation_products(request, quotation_id: int = Query(None), fact
         } for qp in qps
     ]
 
-@router.get("/{id}", summary="[C] 견적서 품목 상세 조회", response={200: QuotationProductOut, 404: dict, 500: dict})
-async def get_quotation_product_detail(request, id: int):
+@router.get("/{quotation_product_id}", summary="[C] 견적서 품목 상세 조회", response={200: QuotationProductOut, 404: dict, 500: dict})
+async def get_quotation_product_detail(request, quotation_product_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     try:
-        qp = await QuotationProduct.objects.aget(id=id)
+        qp = await QuotationProduct.objects.aget(id=quotation_product_id)
     except QuotationProduct.DoesNotExist:
         raise HttpError(404, "해당 품목을 찾을 수 없습니다.")
     except Exception as e:
@@ -244,22 +263,19 @@ async def get_quotation_product_detail(request, id: int):
 
 # Quotation Tab
 @router.get(
-    "/history/list",
+    "/history",
     summary="[C] 견적서 품목 히스토리 조회",
     description="이전에 생산하였던 Quotation Product 항목을 조회합니다.",
     response={200: dict, 400: dict, 404: dict, 500: dict}
 )
 async def list_history_quotation_product(request):
-    """
-    입력 필드:
-    - product_ids: Product ID 리스트 (콤마로 구분된 문자열)
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
     
-    반환 필드:
-    - product_name: 품목 정보 (제품명)
-    - quantity: 제작 수량
-    - unit_price: 단가
-    - total_amount: 금액 (수량 * 단가)
-    """ 
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     product_ids = request.GET.get('product_ids')
     if not product_ids:
         raise HttpError(400, "product_ids를 입력해야 합니다.")
