@@ -5,12 +5,9 @@ from document.utils import content_ocr
 from document.schemas.inbound import OcrIn
 from document.schemas.outbound import QuotationDetailOut
 from document.models import Quotation, QuotationProduct
-from stock.models import Product
-from factory.models import FactoryClient
 from typing import Dict, Any
 import base64
 from ninja.errors import HttpError
-from asgiref.sync import sync_to_async
 
 router = Router(tags=["Quotation"], auth=jwt_auth)
 
