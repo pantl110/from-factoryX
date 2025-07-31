@@ -3,7 +3,8 @@ from typing import List, Optional
 from datetime import date
 
 
-class ClientInfoIn(Schema):
+class FactoryClientInfoIn(Schema):
+    type: str = "customer"
     name: str
     business_registration_number: Optional[str] = None
     representative_name: Optional[str] = None
@@ -16,17 +17,30 @@ class ClientInfoIn(Schema):
     fax: Optional[str] = None
 
 
-class ProductInfoIn(Schema):
-    id: Optional[int] = None
-    name: Optional[str] = None
-    code: Optional[str] = None
-    spec: Optional[str] = None
-    unit: Optional[str] = None
-    quantity: Optional[int] = None
-    unit_price: Optional[int] = None
-    amount: Optional[int] = None
-    is_delivery: Optional[bool] = False
+class QuotationProductInfoIn(Schema):
+    product_id: int
+    quantity: int
+    unit_price: int
+    is_delivery: bool = False
     delivery_date: Optional[str] = None
+
+
+# (POST) Quotation Draft
+class QuotationDraftIn(Schema):   
+    factory_id: int
+    quotation_id: int
+    client: Optional[FactoryClientInfoIn] = None
+    products: Optional[List[QuotationProductInfoIn]] = None
+    due_date: Optional[str] = None
+
+
+# (POST) Quotation Production
+class QuotationProductionIn(Schema):
+    factory_id: Optional[int] = None
+    quotation_id: int
+    client: Optional[dict] = None
+    products: Optional[List[dict]] = None
+    due_date: Optional[str] = None
 
 
 class QuotationProductCreateIn(Schema):
@@ -39,22 +53,15 @@ class QuotationProductCreateIn(Schema):
 
 class QuotationSaveIn(Schema):
     quotation_id: int
-    client: ClientInfoIn
+    client: FactoryClientInfoIn
     due_date: Optional[str] = None
-    products: List[ProductInfoIn]
+    products: List[QuotationProductInfoIn]
     action: Optional[str] = None
 
 
 class OcrIn(Schema):
     data: str
 
-
-class QuotationDraftIn(Schema):
-    """견적서 임시 저장 입력 스키마"""
-    quotation_id: int
-    client: Optional[dict] = None  # 선택적 클라이언트 정보
-    products: List[dict] = []  # 빈 리스트도 허용
-    due_date: Optional[str] = None  # 선택적 납기일자
 
 
 class ProjectPlanIn(Schema):
@@ -65,11 +72,3 @@ class ProjectPlanIn(Schema):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     avg_production_time: Optional[int] = None
-
-
-class QuotationProductionIn(Schema):
-    """견적서 생산 시작 입력 스키마"""
-    quotation_id: int
-    client: Optional[dict] = None  # 선택적 클라이언트 정보 (API에서 검증)
-    products: Optional[List[dict]] = None  # 선택적 품목 정보 (API에서 검증)
-    due_date: Optional[str] = None  # 선택적 납기일자 (API에서 검증)

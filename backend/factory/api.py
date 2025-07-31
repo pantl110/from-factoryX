@@ -26,13 +26,6 @@ router = Router(tags=["Factory"])
     auth=jwt_auth,
 )
 async def create_factory(request):
-    """
-    입력 필드:
-    - 없음 (user id는 인증에서 자동 추출)
-
-    반환 필드:
-    - factory_id: 생성된 공장 ID (int)
-    """
     user = request.auth
     factory = await Factory.objects.acreate(owner=user)
     # owner를 admin 권한으로 FactoryMember에 자동 등록

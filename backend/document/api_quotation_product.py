@@ -1,112 +1,79 @@
-from ninja import Router
-from ninja.pagination import paginate
-from api.security import jwt_auth
-from document.models import Quotation, QuotationProduct
-from stock.models import Product
-
+from api.security import jwt_auth, jwt_manager_auth
+from ninja import Router, Query
 from ninja.errors import HttpError
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
-from factory.models import FactoryClient
+from datetime import datetime, timedelta
+
+from document.models import Quotation, QuotationProduct
 from document.schemas.outbound import QuotationProductOut
 from document.schemas.inbound import QuotationDraftIn, QuotationProductionIn
-from ninja import Query
-from django.shortcuts import get_object_or_404
-from ninja import Router
-from ninja.errors import HttpError
-from asgiref.sync import sync_to_async
-from datetime import datetime, date, timedelta
-
-from document.models import Quotation, QuotationProduct
-from factory.models import Factory, FactoryClient, FactoryEquipment
 from stock.models import Product
 from project.models import Project, ProjectPlan
-from django.http import Http404
+from factory.models import FactoryClient, FactoryEquipment
+from factory.utils import is_factory_member
+
 
 router = Router(tags=["QuotationProduct"], auth=jwt_auth)
 
 
 @router.post("/draft", summary="견적서 임시 저장", description="견적서를 임시로 저장합니다. 필수 필드가 비어있어도 저장됩니다.")
 async def save_draft_quotation(request, payload: QuotationDraftIn):
-    """
-    견적서 임시 저장 API
-    
-    입력 필드:
-    - quotation_id: int - 견적서 ID (필수)
-    - client: dict - 클라이언트 정보 (선택)
-        - name: str - 회사명 (선택)
-        - business_registration_number: str - 사업자등록번호 (선택)
-        - representative_name: str - 대표자명 (선택)
-        - business_type: str - 업태 (선택)
-        - business_category: str - 종목 (선택)
-        - address: str - 주소 (선택)
-        - email: str - 이메일 (선택)
-        - phone: str - 전화번호 (선택)
-        - fax: str - 팩스번호 (선택)
-    - products: List[dict] - 품목 정보 (선택, None이면 기존 품목 삭제)
-        - id: int - 제품 ID (필수)
-        - quantity: int - 수량 (필수)
-        - unit_price: int - 단가 (필수)
-    - due_date: str - 납기일자 (YYYY-MM-DD 형식, 선택)
-    
-    반환 필드:
-    - quotation_id: int - 견적서 ID
-    - status: str - 상태 ("draft_saved")
-    """
+    user = request.auth
+    await is_factory_member(payload.factory_id, user)
+
     try:
-        # 견적서 존재 확인
         try:
             quotation = await sync_to_async(get_object_or_404)(Quotation, id=payload.quotation_id)
         except Http404:
             raise HttpError(404, "해당 견적서를 찾을 수 없습니다.")
         
-        # 클라이언트 정보 업데이트 (있는 경우에만)
         if payload.client:
             client_data = payload.client
             factory = await sync_to_async(lambda: quotation.factory)()
             client, created = await FactoryClient.objects.aget_or_create(
                 factory=factory,
-                name=client_data.get("name", ""),
+                name=client_data.name,
                 defaults={
-                    "business_registration_number": client_data.get("business_registration_number"),
-                    "representative_name": client_data.get("representative_name"),
-                    "business_type": client_data.get("business_type"),
-                    "business_category": client_data.get("business_category"),
-                    "address": client_data.get("address"),
-                    "email": client_data.get("email"),
-                    "phone": client_data.get("phone"),
-                    "fax": client_data.get("fax"),
+                    "business_registration_number": client_data.business_registration_number,
+                    "representative_name": client_data.representative_name,
+                    "business_type": client_data.business_type,
+                    "business_category": client_data.business_category,
+                    "address": client_data.address,
+                    "manager": client_data.manager,
+                    "email": client_data.email,
+                    "phone": client_data.phone,
+                    "fax": client_data.fax,
                 }
             )
             quotation.client = client
         
-        # 납기일자 업데이트 (있는 경우에만)
         if payload.due_date:
             quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d").date()
         
         await sync_to_async(quotation.save)()
         
-        # 프로젝트 상태를 "견적 협의중"으로 설정
         project = await sync_to_async(lambda: quotation.project)()
-        project.status = Project.ProjectStatus.quotation  # "견적 협의중" 상태
+        project.status = Project.ProjectStatus.quotation
         await sync_to_async(project.save)()
         
-        # 품목 정보 업데이트 (있는 경우에만)
-        if payload.products is not None:  # None이 아닌 경우 (빈 리스트 포함)
-            # 기존 품목들 삭제
+        if payload.products is not None:
             await QuotationProduct.objects.filter(quotation=quotation).adelete()
             
-            # 새 품목들 생성 (빈 리스트가 아닌 경우에만)
             if payload.products:
                 for prod in payload.products:
                     try:
-                        product = await sync_to_async(get_object_or_404)(Product, id=prod["id"])
+                        product = await sync_to_async(get_object_or_404)(Product, id=prod.product_id)
                     except Http404:
                         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
                     await QuotationProduct.objects.acreate(
                         quotation=quotation,
                         product=product,
-                        quantity=prod["quantity"],
-                        unit_price=prod["unit_price"]
+                        quantity=prod.quantity,
+                        unit_price=prod.unit_price,
+                        is_delivery=prod.is_delivery,
+                        delivery_date=datetime.strptime(prod.delivery_date, "%Y-%m-%d").date() if prod.delivery_date else None
                     )
         
         return 200, {"quotation_id": quotation.id, "status": "draft_saved"}
@@ -193,7 +160,7 @@ async def start_production(request, payload: QuotationProductionIn):
         
         for prod in payload.products:
             try:
-                product = await sync_to_async(get_object_or_404)(Product, id=prod["id"])
+                product = await sync_to_async(get_object_or_404)(Product, id=prod["product_id"])
             except Http404:
                 raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
             quotation_product = await QuotationProduct.objects.acreate(
@@ -214,10 +181,10 @@ async def start_production(request, payload: QuotationProductionIn):
             try:
                 quotation_product = await QuotationProduct.objects.aget(
                     quotation=quotation,
-                    product_id=prod["id"]
+                    product_id=prod["product_id"]
                 )
             except QuotationProduct.DoesNotExist:
-                raise HttpError(404, f"제품 ID {prod['id']}에 해당하는 견적 품목을 찾을 수 없습니다.")
+                raise HttpError(404, f"제품 ID {prod['product_id']}에 해당하는 견적 품목을 찾을 수 없습니다.")
             
             # 설비 자동 할당 (가동 대기 상태, priority 순서)
             try:
