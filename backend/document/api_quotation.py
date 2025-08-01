@@ -21,6 +21,13 @@ router = Router(tags=["Quotation"], auth=jwt_auth)
     auth=jwt_auth,
 )
 async def upload_file(request, payload: OcrIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     """
     Endpoint to upload a file and read it as binary data.
 

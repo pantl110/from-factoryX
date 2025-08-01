@@ -9,6 +9,7 @@ from document.api_quotation import router as quotation_router
 
 from user.models import User
 from user.models import EmailVerification
+from factory.models import Factory, FactoryMember
 
 
 class TestDocumentOCR(TestCase):
@@ -24,6 +25,22 @@ class TestDocumentOCR(TestCase):
             email="test@example.com",
             password="password1234!",
         )
+        
+        # Create factory
+        self.factory = Factory.objects.create(
+            name='테스트 공장',
+            owner=self.user
+        )
+        
+        # Create factory member
+        self.factory_member = FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role='admin',
+            status='active',
+            invited_by=self.user
+        )
+        
         self.verification = EmailVerification.objects.create(
             email=self.user.email,
             code="123456",
@@ -62,7 +79,7 @@ class TestDocumentOCR(TestCase):
         }
         # Upload the PDF file - Django client handles file uploads differently
         response = await self.quotation_client.post(
-            "/ocr",
+            f"/ocr?factory_id={self.factory.id}",
             headers=headers,
             json=payload,
         )
