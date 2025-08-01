@@ -7,7 +7,7 @@ from asgiref.sync import sync_to_async
 from datetime import datetime, timedelta
 
 from document.models import Quotation, QuotationProduct
-from document.schemas.inbound import QuotationDraftIn, QuotationProductionIn
+from document.schemas.inbound import QuotationDraftIn, QuotationConfirmedIn
 from document.schemas.outbound import QuotationProductOut
 from stock.models import Product
 from project.models import Project, ProjectPlan
@@ -88,8 +88,8 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         raise HttpError(500, f"임시 저장 중 오류가 발생했습니다: {str(e)}")
 
 
-@router.post("/production", summary="생산 시작", description="완성된 견적서로 생산을 시작합니다. 모든 필수 정보가 필요합니다.")
-async def start_production(request, payload: QuotationProductionIn):
+@router.post("/confirmed", summary="주문 확정", description="완성된 견적서로 주문을 확정합니다. 모든 필수 정보가 필요합니다.")
+async def confirm_order(request, payload: QuotationConfirmedIn):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -153,7 +153,7 @@ async def start_production(request, payload: QuotationProductionIn):
                 )
         
         project = await sync_to_async(lambda: quotation.project)()
-        project.status = Project.ProjectStatus.pending
+        project.status = Project.ProjectStatus.confirmed
         await sync_to_async(project.save)()
         
         for prod in payload.products:

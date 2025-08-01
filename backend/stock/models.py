@@ -26,6 +26,7 @@ class Material(BaseModel):
     )
     current_stock = models.IntegerField(
         default=0,
+        null=True,
         help_text="현재 재고",
     )
     standard_stock = models.IntegerField(
@@ -114,6 +115,7 @@ class Product(BaseModel):
     )
     current_stock = models.IntegerField(
         default=0,
+        null=True,
         help_text="현재 재고",
     )
     average_production_time = models.IntegerField(
