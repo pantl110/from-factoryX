@@ -8,6 +8,7 @@ from document.models import Quotation, QuotationProduct
 from typing import Dict, Any
 import base64
 from ninja.errors import HttpError
+from factory.utils import is_factory_member
 
 router = Router(tags=["Quotation"], auth=jwt_auth)
 
@@ -50,15 +51,19 @@ async def upload_file(request, payload: OcrIn):
     auth=jwt_auth,
 )
 async def get_quotation_detail(request, quotation_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     try:
-        # 견적서 조회 (비동기)
         try:
             quotation = await Quotation.objects.select_related("client", "factory").aget(id=quotation_id)
         except Quotation.DoesNotExist:
             raise HttpError(404, "견적서를 찾을 수 없습니다.")
 
-
-        # 판매처 정보 (본인 공장)
         factory = quotation.factory
         factory_info = {
             "factory_name": factory.name if factory else "",
@@ -72,7 +77,6 @@ async def get_quotation_detail(request, quotation_id: int):
             "address": getattr(factory, "business_address", None),
         }
 
-        # 품목 정보 (비동기)
         products = []
         async for qp in QuotationProduct.objects.select_related("product").filter(quotation=quotation):
             product = qp.product
@@ -80,7 +84,7 @@ async def get_quotation_detail(request, quotation_id: int):
             tax_amount = int(supply_amount * 0.1)
             products.append({
                 "productId": product.id,
-                "product_code": product.code if hasattr(product, 'code') and product.code else None,
+                "product_code": product.code,
                 "product_name": product.name,
                 "spec": product.spec,
                 "unit": product.unit,

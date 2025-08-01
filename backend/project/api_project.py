@@ -20,12 +20,13 @@ from project.models import Project, ProjectPlan
 from document.models import Quotation
 from factory.models import Factory
 from datetime import date, timedelta
-from typing import List, Optional
+from typing import List
 from django.db.models import Exists, OuterRef
 
 import random
 import string
 from factory.models import FactoryClient
+from factory.utils import is_factory_member
 
 router = Router(tags=["Project"], auth=jwt_auth)
 
@@ -67,7 +68,6 @@ async def test_create_projects_by_status(request, payload: TestCreateProjectsIn)
 
 
 # Project Tab
-# 생산 시작 전 임시로 프로젝트에 빈 견적서 생성
 @router.post(
     "",
     summary="[C] 프로젝트 생성",
@@ -75,19 +75,19 @@ async def test_create_projects_by_status(request, payload: TestCreateProjectsIn)
     response={201: ProjectCreateOut, 500: dict},
 )
 async def create_project(request):
-    """
-    입력 필드:
-    - (body 없음)  # 별도의 입력값 없이 프로젝트와 견적서를 생성
-
-    반환 필드:
-    - id: 생성된 견적서(Quotation)의 ID (int)
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     try:
         new_project = await Project.objects.acreate()
 
         new_quotation = await Quotation.objects.acreate(project=new_project)
 
-        return 201, {"id": new_quotation.id}
+        return 201, {"quotation_id": new_quotation.id, "project_id": new_project.id}
 
     except Exception as e:
         raise HttpError(

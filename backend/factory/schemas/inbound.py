@@ -29,9 +29,6 @@ class FactoryUpdateIn(ModelSchema):
 
 class FactoryFilter(FilterSchema):
     name: Optional[str] = Field(default=None, q="name__icontains", description="공장명")
-    address: Optional[str] = Field(
-        default=None, q="address__icontains", description="공장 주소"
-    )
 
 
 class FactoryDetailIn(Schema):
