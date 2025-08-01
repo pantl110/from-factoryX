@@ -4,7 +4,6 @@ from api.security import jwt_auth
 from factory.schemas.inbound import (
     FactoryCreateIn,
     FactoryUpdateIn,
-    FactoryFilter,
     FactoryDetailIn,
     FactoryDeleteIn,
 )
@@ -51,7 +50,7 @@ async def create_factory(request):
     auth=jwt_auth,
 )
 @paginate
-async def list_factories(request, filters: FactoryFilter = Query(None)):
+async def list_factories(request):
     user = request.auth
 
     @sync_to_async
@@ -63,7 +62,6 @@ async def list_factories(request, filters: FactoryFilter = Query(None)):
         ).values_list('factory_id', flat=True)
         
         queryset = Factory.objects.filter(id__in=member_factories).order_by("-created_at")
-        queryset = filters.filter(queryset)
         return list(queryset)
 
     factories = await get_factories()
