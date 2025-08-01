@@ -76,7 +76,6 @@ class TestMaterialHistoryAPI(TestCase):
         
         headers = await self.authenticate()
         payload = {
-            "factory": self.factory.id,
             "client_info": {
                 "name": "테스트 거래처",
                 "business_registration_number": "123-45-67890",
@@ -104,7 +103,7 @@ class TestMaterialHistoryAPI(TestCase):
                 }
             ]
         }
-        response = await self.client.post("", headers=headers, json=payload)
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("materials", data)
@@ -162,7 +161,6 @@ class TestMaterialHistoryAPI(TestCase):
         
         headers = await self.authenticate()
         payload = {
-            "factory": self.factory.id,
             "client_info": {
                 "name": "테스트 거래처2",
                 "business_registration_number": "987-65-43210",
@@ -190,7 +188,7 @@ class TestMaterialHistoryAPI(TestCase):
                 }
             ]
         }
-        response = await self.client.post("", headers=headers, json=payload)
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["materials"]), 2)
@@ -228,7 +226,6 @@ class TestMaterialHistoryAPI(TestCase):
         
         headers = await self.authenticate()
         payload = {
-            "factory": self.factory.id,
             "client_info": {
                 "name": "신규 거래처",
                 "business_registration_number": "111-22-33333",
@@ -249,7 +246,7 @@ class TestMaterialHistoryAPI(TestCase):
             ]
         }
         
-        response = await self.client.post("", headers=headers, json=payload)
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         
         # 원자재 생성 후 개수 확인
@@ -282,7 +279,7 @@ class TestMaterialHistoryAPI(TestCase):
             "client_id": self.client_obj.id
         }
         
-        response = await self.client.post("/single", headers=headers, json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
@@ -307,7 +304,7 @@ class TestMaterialHistoryAPI(TestCase):
             "client_id": self.client_obj.id
         }
         
-        response = await self.client.post("/single", headers=headers, json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
@@ -332,7 +329,7 @@ class TestMaterialHistoryAPI(TestCase):
             "client_id": self.client_obj.id
         }
         
-        response = await self.client.post("/single", headers=headers, json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 404)
         
         data = response.json()
@@ -350,7 +347,7 @@ class TestMaterialHistoryAPI(TestCase):
             "client_id": 99999
         }
         
-        response = await self.client.post("/single", headers=headers, json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 404)
         
         data = response.json()
@@ -368,7 +365,7 @@ class TestMaterialHistoryAPI(TestCase):
             "client_id": self.client_obj.id
         }
         
-        response = await self.client.post("/single", headers=headers, json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
         
         data = response.json()
@@ -386,7 +383,7 @@ class TestMaterialHistoryAPI(TestCase):
             "client_id": self.client_obj.id
         }
         
-        response = await self.client.post("/single", headers=headers, json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
         
         data = response.json()
@@ -404,7 +401,7 @@ class TestMaterialHistoryAPI(TestCase):
             "client_id": self.client_obj.id
         }
         
-        response = await self.client.post("/single", headers=headers, json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
         
         data = response.json()
@@ -420,7 +417,7 @@ class TestMaterialHistoryAPI(TestCase):
             "client_id": self.client_obj.id
         }
         
-        response = await self.client.post("/single", json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", json=payload)
         self.assertEqual(response.status_code, 401)
 
     async def test_get_material_history_success(self):
@@ -436,7 +433,7 @@ class TestMaterialHistoryAPI(TestCase):
             "price": 2000,
             "client_id": self.client_obj.id
         }
-        await self.client.post("/single", headers=headers, json=purchase_payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=purchase_payload)
         
         # 소모 히스토리 생성
         consumption_payload = {
@@ -446,7 +443,7 @@ class TestMaterialHistoryAPI(TestCase):
             "price": None,
             "client_id": self.client_obj.id
         }
-        await self.client.post("/single", headers=headers, json=consumption_payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=consumption_payload)
         
         # 전체 히스토리 조회 (기간 파라미터 없음)
         response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}", headers=headers)
@@ -467,7 +464,7 @@ class TestMaterialHistoryAPI(TestCase):
             "price": 2000,
             "client_id": self.client_obj.id
         }
-        await self.client.post("/single", headers=headers, json=purchase_payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=purchase_payload)
         
         consumption_payload = {
             "material_id": self.material.id,
@@ -476,7 +473,7 @@ class TestMaterialHistoryAPI(TestCase):
             "price": None,
             "client_id": self.client_obj.id
         }
-        await self.client.post("/single", headers=headers, json=consumption_payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=consumption_payload)
         
         # 2025년 히스토리 조회
         response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31", headers=headers)
@@ -512,7 +509,7 @@ class TestMaterialHistoryAPI(TestCase):
             "price": 2000,
             "client_id": self.client_obj.id
         }
-        await self.client.post("/single", headers=headers, json=purchase_payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=purchase_payload)
         
         # 히스토리 조회
         response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}", headers=headers)
@@ -520,13 +517,16 @@ class TestMaterialHistoryAPI(TestCase):
         
         data = response.json()["data"]
         for history in data:
-            for field in ["id", "type", "client_name", "quantity", "unit_price", "amount", "date", "total_stock", "purchase_tax_invoice_id", "cash_receipt_id"]:
+            for field in ["id", "type", "client_id", "client_name", "quantity", "unit_price", "amount", "date", "total_stock", "purchase_tax_invoice_id", "cash_receipt_id"]:
                 self.assertIn(field, history)
             
             # 필드 값 검증
             self.assertIsInstance(history["total_stock"], int)
             self.assertIsInstance(history["purchase_tax_invoice_id"], (int, type(None)))
             self.assertIsInstance(history["cash_receipt_id"], (int, type(None)))
+            
+            # client_id 검증
+            self.assertIsInstance(history["client_id"], (int, type(None)))
 
     async def test_get_material_history_by_type_filter(self):
         """원자재 히스토리 타입별 필터링 테스트"""
@@ -540,7 +540,7 @@ class TestMaterialHistoryAPI(TestCase):
             "price": 2000,
             "client_id": self.client_obj.id
         }
-        await self.client.post("/single", headers=headers, json=purchase_payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=purchase_payload)
         
         # 소모 히스토리 생성
         consumption_payload = {
@@ -550,7 +550,7 @@ class TestMaterialHistoryAPI(TestCase):
             "price": None,
             "client_id": self.client_obj.id
         }
-        await self.client.post("/single", headers=headers, json=consumption_payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=consumption_payload)
         
         # 구매 타입만 조회
         response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=구매", headers=headers)
@@ -582,7 +582,7 @@ class TestMaterialHistoryAPI(TestCase):
             "price": 2000,
             "client_id": self.client_obj.id
         }
-        await self.client.post("/single", headers=headers, json=purchase_payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=purchase_payload)
         
         # 소모 히스토리 생성
         consumption_payload = {
@@ -592,7 +592,7 @@ class TestMaterialHistoryAPI(TestCase):
             "price": None,
             "client_id": self.client_obj.id
         }
-        await self.client.post("/single", headers=headers, json=consumption_payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=consumption_payload)
         
         # 구매 타입 + 날짜 범위 조회
         response = await self.client.get(
@@ -616,6 +616,46 @@ class TestMaterialHistoryAPI(TestCase):
         
         data = response.json()["data"]
         self.assertEqual(len(data), 0)  # 잘못된 타입이므로 결과가 없어야 함
+
+    async def test_get_material_history_pagination(self):
+        """원자재 히스토리 페이지네이션 테스트"""
+        headers = await self.authenticate()
+        
+        # 기존 히스토리 삭제 (테스트를 위해 깨끗하게 시작)
+        await sync_to_async(MaterialHistory.objects.filter(material=self.material).delete)()
+        
+        # 여러 개의 히스토리 생성 (6개)
+        for i in range(6):
+            purchase_payload = {
+                "material_id": self.material.id,
+                "type": "구매",
+                "quantity": 10 + i,
+                "price": 1000 + i * 100,
+                "client_id": self.client_obj.id
+            }
+            await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=purchase_payload)
+        
+        # 첫 번째 페이지 조회 (기본 5개)
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        self.assertIn("curPage", data)
+        
+        # 페이지네이션 정보 확인
+        self.assertEqual(data["totalCnt"], 6)  # 총 6개
+        self.assertEqual(data["curPage"], 1)  # 첫 번째 페이지
+        self.assertEqual(data["count"], 5)  # 첫 페이지는 5개
+        
+        # 두 번째 페이지 조회
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}&page=2", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertEqual(data["curPage"], 2)  # 두 번째 페이지
 
     async def test_get_material_history_with_tax_invoice_and_cash_receipt(self):
         """세금계산서와 현금영수증이 연결된 원자재 히스토리 조회 테스트"""
@@ -704,7 +744,6 @@ class TestMaterialHistoryAPI(TestCase):
         )
         # 기존 거래처와 같은 이름, 다른 정보로 요청
         payload = {
-            "factory": self.factory.id,
             "client_info": {
                 "name": "업데이트 거래처",
                 "business_registration_number": "222-22-22222",
@@ -724,7 +763,7 @@ class TestMaterialHistoryAPI(TestCase):
                 }
             ]
         }
-        response = await self.client.post("", headers=headers, json=payload)
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         # 거래처 정보가 업데이트 되었는지 확인
         await sync_to_async(old_client.refresh_from_db)()

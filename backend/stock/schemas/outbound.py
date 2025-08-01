@@ -16,20 +16,6 @@ class MaterialHistoryOut(ModelSchema):
         fields = "__all__"
 
 
-class MaterialHistoryDetailOut(Schema):
-    id: int
-    type: str
-    material_id: int
-    client_id: int
-    quantity: int
-    price: Optional[int]
-    total_stock: int
-
-
-class MaterialHistoryListOut(Schema):
-    materials: List[MaterialHistoryDetailOut]
-
-
 class MaterialListOut(Schema):
     materials: List[dict]
 
@@ -137,3 +123,23 @@ class MaterialHistoryDetailResponseOut(Schema):
     total_stock: int
     purchase_tax_invoice_id: Optional[int]
     cash_receipt_id: Optional[int]
+
+
+# ------------------------------------------------------------
+# Material History API
+# ------------------------------------------------------------
+
+# (POST) Create Single Material History
+class MaterialHistoryDetailOut(Schema):
+    id: int
+    type: str
+    material_id: int
+    client_id: int
+    quantity: int
+    price: Optional[int]
+    total_stock: int
+
+
+# (POST) Create Material History
+class MaterialHistoryListOut(Schema):
+    materials: List[MaterialHistoryDetailOut]

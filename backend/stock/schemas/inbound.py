@@ -23,21 +23,16 @@ class ProductFilter(FilterSchema):
         default=None, q="code__icontains", description="제품 코드"
     )
 
-
+# (POST) Create Product History
 class ProductCreateIn(Schema):
-    """제품 생성 스키마"""
-
-    factory: int = Field(..., description="공장 ID")
-    name: str = Field(..., description="제품명")
-    code: str = Field(..., description="제품코드")
-    unit: str = Field(..., description="단위")
-    spec: str = Field(..., description="규격")
-    current_stock: Optional[int] = Field(default=None, description="현재 재고")
-    average_production_time: Optional[int] = Field(
-        default=None, description="평균 생산 시간(초)"
-    )
-    buffer_rate: Optional[float] = Field(default=0.10, description="버퍼율")
-    note: Optional[str] = Field(default=None, description="특이사항")
+    name: str
+    code: str
+    unit: str
+    spec: str
+    current_stock: Optional[int]
+    average_production_time: Optional[int]
+    buffer_rate: Optional[float]
+    note: Optional[str]
 
 
 class ProductUpdateIn(Schema):
@@ -67,21 +62,6 @@ class FactoryClientCreateIn(Schema):
     address: Optional[str] = Field(default=None, description="사업장 주소")
 
 
-class MaterialItemIn(Schema):
-    name: str = Field(..., description="자재명")
-    code: str = Field(..., description="자재코드")
-    spec: str = Field(..., description="규격")
-    unit: str = Field(..., description="단위")
-    quantity: int = Field(..., description="재고 변동 수량")
-    price: int = Field(..., description="구매 단가")
-
-
-class MaterialHistoryCreateIn(Schema):
-    factory: int = Field(..., description="공장 ID")
-    client_info: FactoryClientCreateIn = Field(..., description="거래처 정보")
-    materials: List[MaterialItemIn] = Field(..., description="원자재 목록")
-
-
 class MaterialUpdateIn(Schema):
     """원자재 수정 입력 스키마"""
 
@@ -91,29 +71,6 @@ class MaterialUpdateIn(Schema):
     unit: Optional[str] = Field(default=None, description="단위")
     current_stock: Optional[int] = Field(default=None, description="현재 재고")
     standard_stock: Optional[int] = Field(default=None, description="안전 재고")
-
-
-class FactoryClientCreateIn(BaseModel):
-    name: str = Field(..., description="업체명")
-    business_registration_number: Optional[str] = Field(
-        default=None, description="사업자등록번호"
-    )
-    representative_name: Optional[str] = Field(default=None, description="대표자명")
-    business_type: Optional[str] = Field(default=None, description="업태")
-    business_category: Optional[str] = Field(default=None, description="종목")
-    address: Optional[str] = Field(default=None, description="사업장 주소")
-
-
-class SingleMaterialHistoryCreateIn(Schema):
-    """단일 원자재 히스토리 생성 입력 스키마"""
-
-    material_id: int = Field(..., description="원자재 ID")
-    type: str = Field(..., description="거래 타입 (purchase: 구매, consumption: 소모)")
-    quantity: int = Field(..., description="재고 변동 수량")
-    price: Optional[int] = Field(
-        default=None, description="구매 단가 (구매 시에만 입력)"
-    )
-    client_id: int = Field(..., description="거래처 ID")
 
 
 class MaterialProductConnectionIn(Schema):
@@ -167,19 +124,6 @@ class ProductHistoryFilter(FilterSchema):
     )
 
 
-# (GET) Material History
-class MaterialHistoryDetailFilter(FilterSchema):
-    start_date: Optional[str] = Field(
-        default=None, q="created_at__date__gte", description="조회 시작일 (YYYY-MM-DD)"
-    )
-    end_date: Optional[str] = Field(
-        default=None, q="created_at__date__lte", description="조회 종료일 (YYYY-MM-DD)"
-    )
-    type: Optional[str] = Field(
-        default=None, q="type", description="거래 타입 (purchase: 구매, consumption: 소모)"
-    )
-
-
 class MaterialProductUpdateIn(Schema):
     quantity: float
 
@@ -224,3 +168,49 @@ class AssignProductIn(Schema):
     factory_id: int = Field(..., description="공장 ID")
     material_id: int = Field(..., description="원자재 ID")
     products: List[ProductAssignmentIn] = Field(..., description="연결할 품목 목록")
+
+
+# ------------------------------------------------------------
+# Material History API
+# ------------------------------------------------------------
+
+# Material Item Info
+class MaterialItemIn(Schema):
+    name: str
+    code: str
+    spec: str
+    unit: str
+    quantity: int
+    price: int
+
+
+# Factory Client Info
+class FactoryClientCreateIn(BaseModel):
+    name: str
+    business_registration_number: Optional[str]
+    representative_name: Optional[str]
+    business_type: Optional[str]
+    business_category: Optional[str]
+    address: Optional[str]
+
+
+# (POST) Create Single Material History
+class SingleMaterialHistoryCreateIn(Schema):
+    material_id: int
+    type: str
+    quantity: int
+    price: Optional[int]
+    client_id: int
+
+
+# (POST) Create Material History
+class MaterialHistoryCreateIn(Schema):
+    client_info: FactoryClientCreateIn
+    materials: List[MaterialItemIn]
+
+
+# (GET) Material History
+class MaterialHistoryDetailFilter(FilterSchema):
+    start_date: Optional[str] = Field(default=None, q="created_at__date__gte")
+    end_date: Optional[str] = Field(default=None, q="created_at__date__lte")
+    type: Optional[str] = Field(default=None, q="type")
