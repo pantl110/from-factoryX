@@ -28,8 +28,8 @@ class FactoryCreateAPITestCase(TestCase):
         self.factory_member = FactoryMember.objects.create(
             factory=self.factory,
             user=self.user,
-            role='admin',
-            status='active',
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
             invited_by=self.user
         )
         
@@ -97,8 +97,8 @@ class FactoryCreateAPITestCase(TestCase):
         additional_member = FactoryMember.objects.create(
             factory=additional_factory,
             user=self.user,
-            role='admin',
-            status='active',
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
             invited_by=self.user
         )
         
@@ -139,8 +139,8 @@ class FactoryCreateAPITestCase(TestCase):
         viewer_member = FactoryMember.objects.create(
             factory=other_factory,
             user=self.user,
-            role='viewer',
-            status='active',
+            role=FactoryMember.FactoryMemberType.viewer,
+            status=FactoryMember.MemberStatus.active,
             invited_by=other_user
         )
         
@@ -182,8 +182,8 @@ class FactoryCreateAPITestCase(TestCase):
         member = FactoryMember.objects.create(
             factory=other_factory,
             user=self.user,
-            role='manager',
-            status='active',
+            role=FactoryMember.FactoryMemberType.manager,
+            status=FactoryMember.MemberStatus.active,
             invited_by=other_user
         )
         
@@ -225,8 +225,8 @@ class FactoryCreateAPITestCase(TestCase):
         inactive_member = FactoryMember.objects.create(
             factory=other_factory,
             user=self.user,
-            role='viewer',
-            status='invited',  # 비활성 상태
+            role=FactoryMember.FactoryMemberType.viewer,
+            status=FactoryMember.MemberStatus.invited,  # 비활성 상태
             invited_by=other_user
         )
         
@@ -277,15 +277,15 @@ class FactoryCreateAPITestCase(TestCase):
         admin_member = FactoryMember.objects.create(
             factory=factory1,
             user=self.user,
-            role='admin',
-            status='active',
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
             invited_by=user1
         )
         manager_member = FactoryMember.objects.create(
             factory=factory2,
             user=self.user,
-            role='manager',
-            status='active',
+            role=FactoryMember.FactoryMemberType.manager,
+            status=FactoryMember.MemberStatus.active,
             invited_by=user2
         )
         
@@ -352,8 +352,8 @@ class FactoryCreateAPITestCase(TestCase):
         active_member = FactoryMember.objects.create(
             factory=other_factory,
             user=self.user,
-            role='viewer',
-            status='active',
+            role=FactoryMember.FactoryMemberType.viewer,
+            status=FactoryMember.MemberStatus.active,
             invited_by=other_user
         )
         
@@ -361,8 +361,8 @@ class FactoryCreateAPITestCase(TestCase):
         inactive_member = FactoryMember.objects.create(
             factory=other_factory,
             user=self.user,
-            role='manager',
-            status='invited',  # 비활성 상태
+            role=FactoryMember.FactoryMemberType.manager,
+            status=FactoryMember.MemberStatus.invited,  # 비활성 상태
             invited_by=other_user
         )
         
@@ -397,8 +397,8 @@ class FactoryCreateAPITestCase(TestCase):
         owner_member = FactoryMember.objects.create(
             factory=new_factory,
             user=self.user,
-            role='admin',
-            status='active',
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
             invited_by=self.user
         )
         
@@ -458,22 +458,22 @@ class FactoryCreateAPITestCase(TestCase):
         admin_member = FactoryMember.objects.create(
             factory=factory1,
             user=self.user,
-            role='admin',
-            status='active',
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
             invited_by=user1
         )
         manager_member = FactoryMember.objects.create(
             factory=factory2,
             user=self.user,
-            role='manager',
-            status='active',
+            role=FactoryMember.FactoryMemberType.manager,
+            status=FactoryMember.MemberStatus.active,
             invited_by=user2
         )
         viewer_member = FactoryMember.objects.create(
             factory=factory3,
             user=self.user,
-            role='viewer',
-            status='active',
+            role=FactoryMember.FactoryMemberType.viewer,
+            status=FactoryMember.MemberStatus.active,
             invited_by=user3
         )
         
@@ -532,22 +532,22 @@ class FactoryCreateAPITestCase(TestCase):
         member1 = FactoryMember.objects.create(
             factory=factory1,
             user=self.user,
-            role='admin',
-            status='active',
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
             invited_by=self.user
         )
         member2 = FactoryMember.objects.create(
             factory=factory2,
             user=self.user,
-            role='admin',
-            status='active',
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
             invited_by=self.user
         )
         member3 = FactoryMember.objects.create(
             factory=factory3,
             user=self.user,
-            role='admin',
-            status='active',
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
             invited_by=self.user
         )
         
@@ -570,3 +570,149 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertEqual(factory_names[0], '세 번째 공장')  # 가장 최근
         self.assertEqual(factory_names[1], '두 번째 공장')
         self.assertEqual(factory_names[2], '첫 번째 공장')  # 가장 오래됨
+
+    def test_create_factory_success(self):
+        """공장 등록 성공 테스트"""
+        # 기존 공장과 멤버 삭제
+        FactoryMember.objects.filter(user=self.user).delete()
+        Factory.objects.filter(owner=self.user).delete()
+        
+        url = '/v1/factory'
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        
+        # 응답 형식 확인
+        self.assertIn('factory_id', data)
+        self.assertIsInstance(data['factory_id'], int)
+        
+        # 데이터베이스에 공장이 생성되었는지 확인
+        factory = Factory.objects.get(id=data['factory_id'])
+        self.assertEqual(factory.owner, self.user)
+        self.assertIsNotNone(factory.created_at)
+        self.assertIsNotNone(factory.updated_at)
+        
+        # FactoryMember가 자동으로 생성되었는지 확인
+        member = FactoryMember.objects.get(factory=factory, user=self.user)
+        self.assertEqual(member.role, FactoryMember.FactoryMemberType.admin)
+        self.assertEqual(member.status, FactoryMember.MemberStatus.active)
+        self.assertEqual(member.invited_by, self.user)
+
+    def test_create_factory_multiple_factories(self):
+        """여러 공장 등록 테스트"""
+        # 기존 공장과 멤버 삭제
+        FactoryMember.objects.filter(user=self.user).delete()
+        Factory.objects.filter(owner=self.user).delete()
+        
+        url = '/v1/factory'
+        
+        # 첫 번째 공장 등록
+        response1 = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response1.status_code, 201)
+        data1 = response1.json()
+        factory_id1 = data1['factory_id']
+        
+        # 두 번째 공장 등록
+        response2 = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response2.status_code, 201)
+        data2 = response2.json()
+        factory_id2 = data2['factory_id']
+        
+        # 두 공장이 다른 ID를 가지는지 확인
+        self.assertNotEqual(factory_id1, factory_id2)
+        
+        # 두 공장 모두 데이터베이스에 존재하는지 확인
+        factory1 = Factory.objects.get(id=factory_id1)
+        factory2 = Factory.objects.get(id=factory_id2)
+        self.assertEqual(factory1.owner, self.user)
+        self.assertEqual(factory2.owner, self.user)
+        
+        # 두 공장 모두 멤버로 등록되었는지 확인
+        member1 = FactoryMember.objects.get(factory=factory1, user=self.user)
+        member2 = FactoryMember.objects.get(factory=factory2, user=self.user)
+        self.assertEqual(member1.role, FactoryMember.FactoryMemberType.admin)
+        self.assertEqual(member2.role, FactoryMember.FactoryMemberType.admin)
+
+    def test_create_factory_and_list_verification(self):
+        """공장 등록 후 목록 조회로 검증 테스트"""
+        # 기존 공장과 멤버 삭제
+        FactoryMember.objects.filter(user=self.user).delete()
+        Factory.objects.filter(owner=self.user).delete()
+        
+        # 공장 등록
+        create_url = '/v1/factory'
+        create_response = self.client.post(
+            create_url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(create_response.status_code, 201)
+        factory_id = create_response.json()['factory_id']
+        
+        # 데이터베이스에서 직접 확인
+        factory = Factory.objects.get(id=factory_id)
+        self.assertEqual(factory.owner, self.user)
+        
+        # FactoryMember가 생성되었는지 확인
+        member = FactoryMember.objects.get(factory=factory, user=self.user)
+        self.assertEqual(member.role, FactoryMember.FactoryMemberType.admin)
+        self.assertEqual(member.status, FactoryMember.MemberStatus.active)
+        
+        # 공장 목록 조회
+        list_url = '/v1/factory'
+        list_response = self.client.get(
+            list_url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(list_response.status_code, 200)
+        list_data = list_response.json()
+        
+        # 목록에 새로 생성된 공장이 포함되어 있는지 확인
+        self.assertIn('data', list_data)
+        self.assertIsInstance(list_data['data'], list)
+        self.assertEqual(len(list_data['data']), 1)
+        
+        # 공장 정보 확인
+        factory_data = list_data['data'][0]
+        self.assertEqual(factory_data['id'], factory_id)
+        self.assertEqual(factory_data['owner'], self.user.id)
+
+    def test_create_factory_without_auth(self):
+        """인증 없이 공장 등록 시도 테스트"""
+        url = '/v1/factory'
+        response = self.client.post(
+            url,
+            content_type='application/json'
+        )
+        
+        # 인증 없이는 401 에러가 발생해야 함
+        self.assertEqual(response.status_code, 401)
+
+    def test_create_factory_invalid_token(self):
+        """잘못된 토큰으로 공장 등록 시도 테스트"""
+        url = '/v1/factory'
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION='Bearer invalid_token'
+        )
+        
+        # 잘못된 토큰으로는 401 에러가 발생해야 함
+        self.assertEqual(response.status_code, 401)
