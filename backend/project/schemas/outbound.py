@@ -2,9 +2,10 @@ from ninja import Schema
 import datetime
 from typing import Optional, List
 
-# for create_project method
+# (POST) Project Create
 class ProjectCreateOut(Schema):
-    id:int
+    quotation_id: int
+    project_id: int
 
 # for project detail response
 class ProjectDetailOut(Schema):

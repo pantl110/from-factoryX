@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from factory.models import Factory, FactoryClient
+from factory.models import Factory, FactoryClient, FactoryMember
 from project.models import Project
 from document.models import Quotation, QuotationProduct
 from stock.models import Product
@@ -60,6 +60,15 @@ class ProjectAPITestCase(TestCase):
             factory=self.factory,
             name='테스트 설비',
             priority=1
+        )
+        
+        # FactoryMember 생성 (사용자를 공장 멤버로 등록)
+        self.factory_member = FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role='admin',
+            status='active',
+            invited_by=self.user
         )
         
         # JWT 토큰 생성
@@ -135,7 +144,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_create_project_success(self):
         """프로젝트 생성 성공 테스트"""
-        url = '/v1/project'
+        url = f'/v1/project?factory_id={self.factory.id}'
         
         response = self.client.post(
             url,
@@ -147,8 +156,10 @@ class ProjectAPITestCase(TestCase):
         
         # 응답 데이터 확인
         data = response.json()
-        self.assertIn('id', data)
-        self.assertIsInstance(data['id'], int)
+        self.assertIn('quotation_id', data)
+        self.assertIn('project_id', data)
+        self.assertIsInstance(data['quotation_id'], int)
+        self.assertIsInstance(data['project_id'], int)
         
         # 데이터베이스에 프로젝트와 견적서가 생성되었는지 확인
         project_count = Project.objects.count()
@@ -162,14 +173,15 @@ class ProjectAPITestCase(TestCase):
         quotation = Quotation.objects.first()
         
         self.assertEqual(quotation.project, project)
-        self.assertEqual(quotation.id, data['id'])
+        self.assertEqual(quotation.id, data['quotation_id'])
+        self.assertEqual(project.id, data['project_id'])
         
         # 프로젝트의 기본 상태 확인
         self.assertEqual(project.status, Project.ProjectStatus.quotation)
 
     def test_create_project_without_auth(self):
         """인증 없이 프로젝트 생성 시도 테스트"""
-        url = '/v1/project'
+        url = f'/v1/project?factory_id={self.factory.id}'
         
         response = self.client.post(
             url,
@@ -181,7 +193,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_create_project_invalid_token(self):
         """잘못된 토큰으로 프로젝트 생성 시도 테스트"""
-        url = '/v1/project'
+        url = f'/v1/project?factory_id={self.factory.id}'
         
         response = self.client.post(
             url,
@@ -192,9 +204,22 @@ class ProjectAPITestCase(TestCase):
         # 잘못된 토큰이므로 401이 반환되어야 함
         self.assertEqual(response.status_code, 401)
 
+    def test_create_project_missing_factory_id(self):
+        """factory_id 파라미터 누락 테스트"""
+        url = '/v1/project'
+        
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        # factory_id가 필수이므로 400이 반환되어야 함
+        self.assertEqual(response.status_code, 400)
+
     def test_create_multiple_projects(self):
         """여러 프로젝트 생성 테스트"""
-        url = '/v1/project'
+        url = f'/v1/project?factory_id={self.factory.id}'
         
         # 첫 번째 프로젝트 생성
         response1 = self.client.post(

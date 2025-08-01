@@ -13,6 +13,8 @@ from factory.models import Factory
 from asgiref.sync import sync_to_async
 from typing import List
 from factory.utils import get_factory_by_id
+from ninja.errors import HttpError
+from factory.utils import is_factory_member
 
 router = Router(tags=["Factory"])
 
@@ -44,17 +46,23 @@ async def create_factory(request):
 @router.get(
     "",
     summary="[C] 본인의 공장 목록 조회",
-    description="등록된 공장 목록을 조회합니다.",
+    description="사용자가 멤버로 등록된 공장 목록을 조회합니다.",
     response={200: List[FactoryOut]},
     auth=jwt_auth,
 )
 @paginate
-async def list_factories(request, filters: FactoryFilter = Query(...)):
+async def list_factories(request, filters: FactoryFilter = Query(None)):
     user = request.auth
 
     @sync_to_async
     def get_factories():
-        queryset = Factory.objects.filter(owner=user).order_by("-created_at")
+        from factory.models import FactoryMember
+        member_factories = FactoryMember.objects.filter(
+            user=user, 
+            status='active'
+        ).values_list('factory_id', flat=True)
+        
+        queryset = Factory.objects.filter(id__in=member_factories).order_by("-created_at")
         queryset = filters.filter(queryset)
         return list(queryset)
 
