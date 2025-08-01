@@ -83,21 +83,6 @@ class MaterialProductConnectionIn(Schema):
     quantity: float = Field(..., description="제품 1개 생산에 필요한 원자재 수량")
 
 
-class MaterialProductConnectIn(Schema):
-    """MaterialProduct 연결 생성 입력 스키마"""
-
-    type: str = Field(
-        ..., description="연결 타입 (material: 원자재 기준, product: 제품 기준)"
-    )
-    target_id: int = Field(
-        ...,
-        description="기준이 되는 ID (type이 material이면 Material ID, type이 product이면 Product ID)",
-    )
-    connections: List[MaterialProductConnectionIn] = Field(
-        ..., description="연결할 항목들"
-    )
-
-
 class ProductHistoryCreateIn(ModelSchema):
     """제품 입출고 이력 생성 입력 스키마"""
 
@@ -122,10 +107,6 @@ class ProductHistoryFilter(FilterSchema):
     product_id: Optional[int] = Field(
         default=None, q="product_id", description="품목 ID"
     )
-
-
-class MaterialProductUpdateIn(Schema):
-    quantity: float
 
 
 # Onboarding Tab
@@ -169,6 +150,21 @@ class AssignProductIn(Schema):
     material_id: int = Field(..., description="원자재 ID")
     products: List[ProductAssignmentIn] = Field(..., description="연결할 품목 목록")
 
+
+# ------------------------------------------------------------
+# Material Product API
+# ------------------------------------------------------------
+
+# (POST) Create Material Product Connection
+class MaterialProductConnectIn(Schema):
+    type: str
+    target_id: int
+    connections: List[MaterialProductConnectionIn]
+
+
+# (PATCH) Update Material Product Connection
+class MaterialProductUpdateIn(Schema):
+    quantity: float
 
 # ------------------------------------------------------------
 # Material History API
