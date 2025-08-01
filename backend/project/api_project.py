@@ -199,6 +199,7 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
             "complete",
             "interruption",
             "quotation",
+            "confirmed",
             "pending",
             "production",
             "manufactured",
@@ -253,6 +254,7 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
                 # 개별 상태별 매핑
                 status_mapping = {
                     "quotation": Project.ProjectStatus.quotation,
+                    "confirmed": Project.ProjectStatus.confirmed,
                     "pending": Project.ProjectStatus.pending,
                     "production": Project.ProjectStatus.production,
                     "manufactured": Project.ProjectStatus.manufactured,

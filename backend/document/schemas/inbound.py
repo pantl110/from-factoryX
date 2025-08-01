@@ -39,8 +39,8 @@ class QuotationDraftIn(Schema):
     due_date: Optional[str] = None
 
 
-# (POST) Quotation Production
-class QuotationProductionIn(Schema):
+# (POST) Quotation Confirmed
+class QuotationConfirmedIn(Schema):
     quotation_id: int
     client: FactoryClientInfoIn
     products: List[QuotationProductInfoIn]

@@ -500,9 +500,9 @@ class QuotationProductAPITestCase(TestCase):
         self.assertNotEqual(self.client_company.email, "updated@client.com")
         self.assertNotEqual(self.client_company.phone, "010-1111-2222")
 
-    def test_start_production_success(self):
-        """생산 시작 성공 테스트"""
-        production_data = {
+    def test_confirm_order_success(self):
+        """주문 확정 성공 테스트"""
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "client": {
                 "name": "테스트 고객사",
@@ -526,8 +526,8 @@ class QuotationProductAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={self.factory.id}",
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
@@ -538,17 +538,17 @@ class QuotationProductAPITestCase(TestCase):
         self.assertEqual(data["project_id"], self.project.id)
         self.assertEqual(data["status"], "production_started")
         
-        # 프로젝트 상태가 변경되었는지 확인
+        # 프로젝트 상태가 변경되었는지 확인 (주문 확정으로 변경됨)
         self.project.refresh_from_db()
-        self.assertEqual(self.project.status, "생산 대기")
+        self.assertEqual(self.project.status, "주문 확정")
         
         # 생산 계획이 생성되었는지 확인
         project_plans = ProjectPlan.objects.filter(project=self.project)
         self.assertEqual(project_plans.count(), 1)
 
-    def test_start_production_multiple_products(self):
-        """여러 제품으로 생산 시작 테스트"""
-        production_data = {
+    def test_confirm_order_multiple_products(self):
+        """여러 제품으로 주문 확정 테스트"""
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "client": {
                 "name": "다중 제품 고객사"
@@ -568,8 +568,8 @@ class QuotationProductAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={self.factory.id}",
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
@@ -582,9 +582,9 @@ class QuotationProductAPITestCase(TestCase):
         project_plans = ProjectPlan.objects.filter(project=self.project)
         self.assertEqual(project_plans.count(), 2)
 
-    def test_start_production_missing_client(self):
-        """클라이언트 정보 없이 생산 시작 실패 테스트"""
-        production_data = {
+    def test_confirm_order_missing_client(self):
+        """클라이언트 정보 없이 주문 확정 실패 테스트"""
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "products": [
                 {
@@ -596,8 +596,8 @@ class QuotationProductAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={self.factory.id}",
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
@@ -607,9 +607,9 @@ class QuotationProductAPITestCase(TestCase):
         if response.status_code == 400:
             self.assertIn("클라이언트 정보는 필수입니다", str(data))
 
-    def test_start_production_missing_products(self):
-        """품목 정보 없이 생산 시작 실패 테스트"""
-        production_data = {
+    def test_confirm_order_missing_products(self):
+        """품목 정보 없이 주문 확정 실패 테스트"""
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "client": {
                 "name": "테스트 고객사"
@@ -617,8 +617,8 @@ class QuotationProductAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={self.factory.id}",
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
@@ -628,9 +628,9 @@ class QuotationProductAPITestCase(TestCase):
         if response.status_code == 400:
             self.assertIn("품목 정보는 필수입니다", str(data))
 
-    def test_start_production_without_due_date(self):
-        """납기일자 없이 생산 시작 성공 테스트"""
-        production_data = {
+    def test_confirm_order_without_due_date(self):
+        """납기일자 없이 주문 확정 성공 테스트"""
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "client": {"name": "테스트"},
             "products": [{"product_id": self.product1.id, "quantity": 10, "unit_price": 1000}]
@@ -638,8 +638,8 @@ class QuotationProductAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={self.factory.id}",
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
@@ -648,17 +648,17 @@ class QuotationProductAPITestCase(TestCase):
         data = response.json()
         self.assertEqual(data["status"], "production_started")
 
-    def test_start_production_missing_factory_id(self):
-        """factory_id 누락 시 생산 시작 실패 테스트"""
-        production_data = {
+    def test_confirm_order_missing_factory_id(self):
+        """factory_id 누락 시 주문 확정 실패 테스트"""
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "client": {"name": "테스트"},
             "products": [{"product_id": self.product1.id, "quantity": 10, "unit_price": 1000}]
         }
         
         response = self.client.post(
-            "/v1/document/quotation/product/production",  # factory_id 쿼리 파라미터 누락
-            data=json.dumps(production_data),
+            "/v1/document/quotation/product/confirmed",  # factory_id 쿼리 파라미터 누락
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
@@ -668,9 +668,9 @@ class QuotationProductAPITestCase(TestCase):
         data = response.json()
         self.assertIn("factory_id를 입력해야 합니다", str(data))
 
-    def test_start_production_with_default_values(self):
-        """기본값으로 생산 시작 테스트"""
-        production_data = {
+    def test_confirm_order_with_default_values(self):
+        """기본값으로 주문 확정 테스트"""
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "client": {
                 "name": "기본값 고객사"
@@ -686,8 +686,8 @@ class QuotationProductAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={self.factory.id}",
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
@@ -716,11 +716,11 @@ class QuotationProductAPITestCase(TestCase):
         
         # 프로젝트 상태 확인
         self.project.refresh_from_db()
-        self.assertEqual(self.project.status, "생산 대기")
+        self.assertEqual(self.project.status, "주문 확정")
 
-    def test_start_production_quotation_not_found(self):
-        """존재하지 않는 견적서로 생산 시작 실패 테스트"""
-        production_data = {
+    def test_confirm_order_quotation_not_found(self):
+        """존재하지 않는 견적서로 주문 확정 실패 테스트"""
+        confirmed_data = {
             "quotation_id": 99999,
             "client": {"name": "테스트"},
             "products": [{"product_id": self.product1.id, "quantity": 10, "unit_price": 1000}],
@@ -728,24 +728,24 @@ class QuotationProductAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={self.factory.id}",
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
         
         self.assertEqual(response.status_code, 404)
-    def test_start_production_with_id_field(self):
-        """id 필드를 사용한 생산 시작 테스트"""
-        production_data = {
+    def test_confirm_order_with_id_field(self):
+        """id 필드를 사용한 주문 확정 테스트"""
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "client": {"name": "테스트"},
             "products": [{"product_id": self.product1.id, "quantity": 10, "unit_price": 1000}]
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={self.factory.id}",
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
@@ -754,9 +754,9 @@ class QuotationProductAPITestCase(TestCase):
         data = response.json()
         self.assertEqual(data["status"], "production_started")
 
-    def test_start_production_product_not_found(self):
-        """존재하지 않는 제품으로 생산 시작 실패 테스트"""
-        production_data = {
+    def test_confirm_order_product_not_found(self):
+        """존재하지 않는 제품으로 주문 확정 실패 테스트"""
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "client": {"name": "테스트"},
             "products": [{"product_id": 99999, "quantity": 10, "unit_price": 1000}],
@@ -764,31 +764,31 @@ class QuotationProductAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={self.factory.id}",
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )
         
         self.assertEqual(response.status_code, 404)
 
-    def test_start_production_unauthorized_factory(self):
-        """권한이 없는 공장으로 생산 시작 실패 테스트"""
+    def test_confirm_order_unauthorized_factory(self):
+        """권한이 없는 공장으로 주문 확정 실패 테스트"""
         # 다른 공장 생성
         other_factory = Factory.objects.create(
             name='다른 공장',
             owner=self.user
         )
         
-        production_data = {
+        confirmed_data = {
             "quotation_id": self.quotation.id,
             "client": {"name": "테스트"},
             "products": [{"product_id": self.product1.id, "quantity": 10, "unit_price": 1000}]
         }
         
         response = self.client.post(
-            f"/v1/document/quotation/product/production?factory_id={other_factory.id}",  # 다른 공장 ID
-            data=json.dumps(production_data),
+            f"/v1/document/quotation/product/confirmed?factory_id={other_factory.id}",  # 다른 공장 ID
+            data=json.dumps(confirmed_data),
             content_type="application/json",
             **self.get_auth_headers()
         )

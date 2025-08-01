@@ -8,6 +8,7 @@ from factory.models import FactoryEquipment
 class Project(BaseModel):
     class ProjectStatus(models.TextChoices):
         quotation = ("견적 협의중", "quotation")
+        confirmed = ("주문 확정", "confirmed")
         pending = ("생산 대기", "pending")
         production = ("생산 중", "production")
         manufactured = ("생산 완료", "manufactured")
