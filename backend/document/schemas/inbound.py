@@ -1,6 +1,5 @@
 from ninja import Schema
 from typing import List, Optional
-from datetime import date
 
 
 # Factory Client Field
@@ -27,6 +26,11 @@ class QuotationProductInfoIn(Schema):
     delivery_date: Optional[str] = None
 
 
+# (POST) OCR
+class OcrIn(Schema):
+    data: str
+    
+
 # (POST) Quotation Draft
 class QuotationDraftIn(Schema):   
     quotation_id: int
@@ -41,34 +45,3 @@ class QuotationProductionIn(Schema):
     client: FactoryClientInfoIn
     products: List[QuotationProductInfoIn]
     due_date: Optional[str] = None
-
-
-class QuotationProductCreateIn(Schema):
-    quotation_id: int
-    product_id: int
-    quantity: Optional[int] = None
-    unit_price: Optional[int] = None
-    delivery_date: Optional[date] = None
-
-
-class QuotationSaveIn(Schema):
-    quotation_id: int
-    client: FactoryClientInfoIn
-    due_date: Optional[str] = None
-    products: List[QuotationProductInfoIn]
-    action: Optional[str] = None
-
-
-class OcrIn(Schema):
-    data: str
-
-
-
-class ProjectPlanIn(Schema):
-    """생산 계획 입력 스키마"""
-    product_id: int
-    equipment_id: Optional[int] = None
-    quantity: Optional[int] = None
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
-    avg_production_time: Optional[int] = None
