@@ -46,6 +46,16 @@ class TestMaterialHistoryAPI(TestCase):
             current_stock=100,
             standard_stock=50
         )
+        
+        # FactoryMember 생성 (사용자를 공장 멤버로 추가)
+        from factory.models import FactoryMember
+        self.factory_member = FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.manager,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user
+        )
 
     async def authenticate(self):
         data = {
@@ -439,7 +449,7 @@ class TestMaterialHistoryAPI(TestCase):
         await self.client.post("/single", headers=headers, json=consumption_payload)
         
         # 전체 히스토리 조회 (기간 파라미터 없음)
-        response = await self.client.get(f"/?material_id={self.material.id}", headers=headers)
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()["data"]
@@ -469,7 +479,7 @@ class TestMaterialHistoryAPI(TestCase):
         await self.client.post("/single", headers=headers, json=consumption_payload)
         
         # 2025년 히스토리 조회
-        response = await self.client.get(f"/?material_id={self.material.id}&start_date=2025-01-01&end_date=2025-12-31", headers=headers)
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()["data"]
@@ -480,14 +490,14 @@ class TestMaterialHistoryAPI(TestCase):
     async def test_get_material_history_material_not_found(self):
         """존재하지 않는 원자재 히스토리 조회 테스트"""
         headers = await self.authenticate()
-        response = await self.client.get(f"/?material_id=99999", headers=headers)
+        response = await self.client.get(f"/?material_id=99999&factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 404)
         data = response.json()
         self.assertEqual(data.get("message") or data.get("detail"), "원자재 정보를 찾을 수 없습니다.")
 
     async def test_get_material_history_unauthorized(self):
         """인증되지 않은 사용자 히스토리 조회 테스트"""
-        response = await self.client.get(f"/?material_id={self.material.id}")
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}")
         self.assertEqual(response.status_code, 401)
 
     async def test_get_material_history_data_validation(self):
@@ -505,7 +515,7 @@ class TestMaterialHistoryAPI(TestCase):
         await self.client.post("/single", headers=headers, json=purchase_payload)
         
         # 히스토리 조회
-        response = await self.client.get(f"/?material_id={self.material.id}", headers=headers)
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()["data"]
@@ -517,6 +527,95 @@ class TestMaterialHistoryAPI(TestCase):
             self.assertIsInstance(history["total_stock"], int)
             self.assertIsInstance(history["purchase_tax_invoice_id"], (int, type(None)))
             self.assertIsInstance(history["cash_receipt_id"], (int, type(None)))
+
+    async def test_get_material_history_by_type_filter(self):
+        """원자재 히스토리 타입별 필터링 테스트"""
+        headers = await self.authenticate()
+        
+        # 구매 히스토리 생성
+        purchase_payload = {
+            "material_id": self.material.id,
+            "type": "구매",
+            "quantity": 50,
+            "price": 2000,
+            "client_id": self.client_obj.id
+        }
+        await self.client.post("/single", headers=headers, json=purchase_payload)
+        
+        # 소모 히스토리 생성
+        consumption_payload = {
+            "material_id": self.material.id,
+            "type": "소모",
+            "quantity": 20,
+            "price": None,
+            "client_id": self.client_obj.id
+        }
+        await self.client.post("/single", headers=headers, json=consumption_payload)
+        
+        # 구매 타입만 조회
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=구매", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()["data"]
+        
+        # 모든 결과가 구매 타입인지 확인
+        for history in data:
+            self.assertEqual(history["type"], "구매")
+        
+        # 소모 타입만 조회
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=소모", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()["data"]
+        
+        # 모든 결과가 소모 타입인지 확인
+        for history in data:
+            self.assertEqual(history["type"], "소모")
+
+    async def test_get_material_history_by_type_and_date_filter(self):
+        """원자재 히스토리 타입과 날짜 필터 조합 테스트"""
+        headers = await self.authenticate()
+        
+        # 구매 히스토리 생성
+        purchase_payload = {
+            "material_id": self.material.id,
+            "type": "구매",
+            "quantity": 50,
+            "price": 2000,
+            "client_id": self.client_obj.id
+        }
+        await self.client.post("/single", headers=headers, json=purchase_payload)
+        
+        # 소모 히스토리 생성
+        consumption_payload = {
+            "material_id": self.material.id,
+            "type": "소모",
+            "quantity": 20,
+            "price": None,
+            "client_id": self.client_obj.id
+        }
+        await self.client.post("/single", headers=headers, json=consumption_payload)
+        
+        # 구매 타입 + 날짜 범위 조회
+        response = await self.client.get(
+            f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=구매&start_date=2025-01-01&end_date=2025-12-31", 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()["data"]
+        
+        # 모든 결과가 구매 타입인지 확인
+        for history in data:
+            self.assertEqual(history["type"], "구매")
+
+    async def test_get_material_history_invalid_type_filter(self):
+        """잘못된 타입 필터 테스트"""
+        headers = await self.authenticate()
+        
+        # 잘못된 타입으로 조회
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=잘못된타입", headers=headers)
+        self.assertEqual(response.status_code, 200)  # 필터가 적용되어 빈 결과 반환
+        
+        data = response.json()["data"]
+        self.assertEqual(len(data), 0)  # 잘못된 타입이므로 결과가 없어야 함
 
     async def test_get_material_history_with_tax_invoice_and_cash_receipt(self):
         """세금계산서와 현금영수증이 연결된 원자재 히스토리 조회 테스트"""
@@ -572,7 +671,7 @@ class TestMaterialHistoryAPI(TestCase):
         )
         
         # 히스토리 조회
-        response = await self.client.get(f"/?material_id={self.material.id}", headers=headers)
+        response = await self.client.get(f"/?material_id={self.material.id}&factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()["data"]
@@ -637,69 +736,3 @@ class TestMaterialHistoryAPI(TestCase):
         # 생성된 이력의 client_id가 기존 거래처와 같은지 확인
         data = response.json()
         self.assertEqual(data["materials"][0]["client_id"], old_client.id)
-
-    async def test_get_material_history_detail_success(self):
-        """
-        [C] 원자재 이력 상세 조회 API 정상 동작 테스트
-        """
-        headers = await self.authenticate()
-        # 이력 생성
-        history = await sync_to_async(MaterialHistory.objects.create)(
-            material=self.material,
-            client=self.client_obj,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=10,
-            price=1000,
-            total_stock=110,
-        )
-        # 매입 세금계산서/현금영수증 연결 테스트용 생성
-        from tax.models import NationalTaxService, CashReceipt
-        tax_invoice = await sync_to_async(NationalTaxService.objects.create)(
-            transaction_date="2024-06-01",
-            client=self.client_obj,
-            transaction_amount=10000,
-            tax_amount=1000
-        )
-        cash_receipt = await sync_to_async(CashReceipt.objects.create)(
-            transaction_date="2024-06-01",
-            approval_number="A1234",
-            transaction_classification="일반",
-            transaction_purpose="구매",
-            client=self.client_obj,
-            transaction_amount=10000,
-            tax_amount=1000
-        )
-        # 연결된 이력 생성
-        history2 = await sync_to_async(MaterialHistory.objects.create)(
-            material=self.material,
-            client=self.client_obj,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=5,
-            price=2000,
-            total_stock=115,
-            purchase_tax_invoice=tax_invoice,
-            cash_receipt=cash_receipt
-        )
-        # 상세 조회
-        url = f"/detail?material_id={self.material.id}&page_size=100"
-        response = await self.client.get(url, headers=headers)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()["data"]
-        self.assertTrue(len(data) >= 2)
-        # 필드 검증
-        found = False
-        for item in data:
-            if not isinstance(item, dict) or "id" not in item:
-                continue  # count, page 등은 무시
-            self.assertIn("id", item)
-            self.assertIn("date", item)
-            self.assertIn("type", item)
-            self.assertIn("quantity", item)
-            self.assertIn("total_stock", item)
-            self.assertIn("purchase_tax_invoice_id", item)
-            self.assertIn("cash_receipt_id", item)
-            if item["id"] == history2.id:
-                self.assertEqual(item["purchase_tax_invoice_id"], tax_invoice.id)
-                self.assertEqual(item["cash_receipt_id"], cash_receipt.id)
-                found = True
-        self.assertTrue(found)

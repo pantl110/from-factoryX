@@ -167,12 +167,16 @@ class ProductHistoryFilter(FilterSchema):
     )
 
 
+# (GET) Material History
 class MaterialHistoryDetailFilter(FilterSchema):
     start_date: Optional[str] = Field(
         default=None, q="created_at__date__gte", description="조회 시작일 (YYYY-MM-DD)"
     )
     end_date: Optional[str] = Field(
         default=None, q="created_at__date__lte", description="조회 종료일 (YYYY-MM-DD)"
+    )
+    type: Optional[str] = Field(
+        default=None, q="type", description="거래 타입 (purchase: 구매, consumption: 소모)"
     )
 
 

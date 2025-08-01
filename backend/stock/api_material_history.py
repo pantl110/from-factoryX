@@ -7,10 +7,10 @@ from stock.schemas.inbound import MaterialHistoryCreateIn, SingleMaterialHistory
 from stock.schemas.outbound import MaterialHistoryDetailOut, MaterialHistoryListOut, MaterialHistoryDetailResponseOut
 from stock.models import Material, MaterialHistory
 from factory.models import Factory, FactoryClient
-from ninja import FilterSchema, Query
+from ninja import Query
 from stock.schemas.inbound import MaterialHistoryDetailFilter
-from django.utils import timezone
-from datetime import timedelta
+from factory.utils import is_factory_member
+
 
 router = Router(tags=["MaterialHistory"], auth=jwt_auth)
 
@@ -211,36 +211,17 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     )
 @paginate
 async def get_material_history(request, material_id: int, filters: MaterialHistoryDetailFilter = Query(...)):
-    """
-    입력 필드 (쿼리 파라미터):
-    - material_id: int - 원자재 ID (필수)
-    - start_date: str - 조회 시작일 (YYYY-MM-DD, 선택)
-    - end_date: str - 조회 종료일 (YYYY-MM-DD, 선택)
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
     
-    반환 필드 (dict 리스트):
-    - id: int - 이력 ID
-    - type: str - 거래 타입 ("구매" 또는 "소모")
-    - material_id: int - 원자재 ID
-    - client_id: int - 거래처 ID
-    - quantity: int - 거래 수량
-    - price: int - 구매 단가 (소모 시에는 null)
-    - total_stock: int - 거래 후 총 재고
-    - created_at: str - 생성일시
-    - updated_at: str - 수정일시
-    - client_name: str - 거래처명
-    - quantity: int - 수량
-    - unit_price: int - 단가
-    - amount: int - 금액(수량x단가)
-    - date: str - 거래일자 (ISO8601)
-    """
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     try:
         material = await Material.objects.aget(id=material_id)
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
-
-    factory_owner = await sync_to_async(lambda m: m.factory.owner)(material)
-    if factory_owner != request.auth:
-        raise HttpError(403, "권한이 없습니다.")
     
     @sync_to_async
     def get_histories():
@@ -261,59 +242,9 @@ async def get_material_history(request, material_id: int, filters: MaterialHisto
             "unit_price": history.price,
             "amount": (history.quantity or 0) * (history.price or 0),
             "date": history.created_at.isoformat() if history.created_at else None,
-            "total_stock": history.total_stock,  # 거래 후 총 재고
-            "purchase_tax_invoice_id": history.purchase_tax_invoice_id,  # 세금계산서 연결 ID
-            "cash_receipt_id": history.cash_receipt_id,  # 현금영수증 연결 ID
+            "total_stock": history.total_stock,
+            "purchase_tax_invoice_id": history.purchase_tax_invoice_id,
+            "cash_receipt_id": history.cash_receipt_id,
         })
     
     return history_list
-
-
-@router.get(
-    "/detail",
-    summary="[C] 원자재 이력 상세 조회",
-    description="material_id, 기간 필터로 처리일자, 상태, 수량, 현재 재고, 매입계산서/현금영수증 연결 유무(id/null) 반환",
-    response={200: list[MaterialHistoryDetailResponseOut], 404: dict}
-)
-@paginate
-async def get_material_history_detail(request, material_id: int, filters: MaterialHistoryDetailFilter = Query(...)):
-    """
-    입력 필드 (쿼리 파라미터):
-    - material_id: int - 원자재 ID (필수)
-    - start_date: str - 조회 시작일 (YYYY-MM-DD, 선택)
-    - end_date: str - 조회 종료일 (YYYY-MM-DD, 선택)
-
-    반환 필드 (각 이력별 dict):
-    - id: int - 이력 ID
-    - date: str - 처리일자 (ISO8601)
-    - type: str - 상태 ("purchase": 구매, "consumption": 소모)
-    - quantity: int - 수량
-    - total_stock: int - 이력 반영 후 현재 재고
-    - purchase_tax_invoice_id: int - 매입 세금계산서 연결 ID (null 가능)
-    - cash_receipt_id: int - 현금영수증 연결 ID (null 가능)
-    """
-    try:
-        material = await Material.objects.aget(id=material_id)
-    except Material.DoesNotExist:
-        raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
-    queryset = MaterialHistory.objects.filter(material=material)
-    if filters.start_date:
-        queryset = queryset.filter(created_at__gte=filters.start_date)
-    if filters.end_date:
-        queryset = queryset.filter(created_at__lte=filters.end_date)
-    queryset = queryset.order_by("-created_at")
-    from asgiref.sync import sync_to_async
-    result = []
-    for h in await sync_to_async(list)(queryset):
-        result.append(MaterialHistoryDetailResponseOut(
-            id=h.id,
-            date=h.created_at.isoformat() if h.created_at else None,
-            type=h.type,
-            quantity=h.quantity,
-            total_stock=h.total_stock,
-            purchase_tax_invoice_id=h.purchase_tax_invoice_id,
-            cash_receipt_id=h.cash_receipt_id,
-        ))
-    return result
-
-
