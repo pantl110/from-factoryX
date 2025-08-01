@@ -58,7 +58,7 @@ async def list_factories(request):
         from factory.models import FactoryMember
         member_factories = FactoryMember.objects.filter(
             user=user, 
-            status='active'
+            status=FactoryMember.MemberStatus.active
         ).values_list('factory_id', flat=True)
         
         queryset = Factory.objects.filter(id__in=member_factories).order_by("-created_at")
