@@ -1,4 +1,4 @@
-from ninja import Router, Query, FilterSchema
+from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
@@ -36,15 +36,9 @@ router = Router(tags=["Project"], auth=jwt_auth)
     summary="[TEST] 상태별 프로젝트 일괄 생성",
     description="테스트용: factory_id로 모든 상태별 프로젝트+견적서를 생성합니다.",
     response={200: dict},
-    auth=None,  # 인증 없이 테스트용으로 사용
+    auth=None,
 )
 async def test_create_projects_by_status(request, payload: TestCreateProjectsIn):
-    """
-    입력 필드:
-    - factory_id: 공장 ID (int)
-    반환 필드:
-    - projects: [{id, status, client_name} ...]
-    """
     try:
         factory = await Factory.objects.aget(id=payload.factory_id)
     except Factory.DoesNotExist:
@@ -52,7 +46,6 @@ async def test_create_projects_by_status(request, payload: TestCreateProjectsIn)
 
     created = []
     for status, _ in Project.ProjectStatus.choices:
-        # 랜덤 거래처명 생성
         rand_name = "테스트거래처_" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         client = await FactoryClient.objects.acreate(
             factory=factory,
@@ -103,39 +96,33 @@ async def create_project(request):
     response={200: dict, 400: dict, 404: dict, 500: dict},
 )
 async def clone_project(request, payload: ProjectCloneIn):
-    """
-    완료된 프로젝트를 복제하여 생산 대기 상태로 새 프로젝트를 생성합니다.
-
-    입력 필드:
-    - project_id: 복제할 프로젝트 ID (int)
-
-    반환 필드: 없음 (성공 시 빈 응답)
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     try:
-
         @sync_to_async
         def clone_project_data():
             from document.models import Quotation, QuotationProduct
             from project.models import ProjectPlan, ProjectLog
 
-            # 원본 프로젝트 존재 확인
             try:
                 original_project = Project.objects.get(id=payload.project_id)
             except Project.DoesNotExist:
                 raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
 
-            # 완료된 프로젝트인지 확인
             if original_project.status != Project.ProjectStatus.completed:
                 raise HttpError(400, "완료된 프로젝트만 복제할 수 있습니다.")
 
-            # 새 프로젝트 생성 (생산 대기 상태)
             new_project = Project.objects.create(
                 status=Project.ProjectStatus.pending,
-                transact_date=None,  # 거래명세서 발행일 초기화
-                tax_invoice=None,  # 세금계산서 연결 초기화
+                transact_date=None,
+                tax_invoice=None,
             )
 
-            # 견적서 복제
             original_quotations = original_project.quotations.all()
             for original_quotation in original_quotations:
                 new_quotation = Quotation.objects.create(
@@ -146,7 +133,6 @@ async def clone_project(request, payload: ProjectCloneIn):
                     uploaded_file=original_quotation.uploaded_file,
                 )
 
-                # 견적서 제품 복제
                 original_products = original_quotation.products.all()
                 for original_product in original_products:
                     QuotationProduct.objects.create(
@@ -154,16 +140,15 @@ async def clone_project(request, payload: ProjectCloneIn):
                         product=original_product.product,
                         quantity=original_product.quantity,
                         unit_price=original_product.unit_price,
-                        is_delivery=False,  # 납품 여부 초기화
-                        delivery_date=None,  # 납품 일자 초기화
+                        is_delivery=False,
+                        delivery_date=None,
                     )
 
-            # 생산 계획 복제
             original_plans = original_project.plans.all()
             for original_plan in original_plans:
                 ProjectPlan.objects.create(
                     project=new_project,
-                    status=ProjectPlan.ProductionStatus.pending,  # 가동 대기로 초기화
+                    status=ProjectPlan.ProductionStatus.pending,
                     product=original_plan.product,
                     quantity=original_plan.quantity,
                     equipment=original_plan.equipment,
@@ -172,7 +157,6 @@ async def clone_project(request, payload: ProjectCloneIn):
                     avg_production_time=original_plan.avg_production_time,
                 )
 
-            # 생산 로그 복제 (메모 타입만)
             original_logs = original_project.logs.filter(type=ProjectLog.LogType.memo)
             for original_log in original_logs:
                 ProjectLog.objects.create(
@@ -201,44 +185,13 @@ async def clone_project(request, payload: ProjectCloneIn):
 )
 @paginate
 async def list_project(request, filters: ProjectListFilter = Query(...)):
-    """
-    입력 필드:
-    - factory_id: 공장 ID (필수)
-    - status: 조회 상태 ("progress", "archived", "complete", "interruption", "quotation", "pending", "production", "manufactured", "delivery")
-        - "progress": 전체 진행 중 프로젝트(완료/중단 제외)
-        - "archived": 완료 + 중단 프로젝트(보관함)
-        - "complete": 완료된 프로젝트만
-        - "interruption": 중단된 프로젝트만 (견적 협의중 + 2개월간 ProjectPlan 없음)
-        - "quotation", "pending", "production", "manufactured", "delivery": 해당 상태만 조회
-    - search: 업체명 또는 품목명(제품명) (선택, 미입력 시 전체)
-    - order_by: 정렬 기준 ("start_date" 또는 "due_date", 기본값: "start_date")
-    - order_dir: 정렬 방향 ("asc" 또는 "desc", 기본값: "asc")
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
 
-    반환 필드:
-    - project_id: 프로젝트 ID
-    - client_name: 고객사명 (Quotation.FactoryClient.name)
-    - product_names: 제품명 목록 (Quotation.QuotationProduct.Product.name 배열)
-    - start_date: 생산 시작일 (ProjectPlan.start_date 중 가장 빠른 날짜)
-    - due_date: 납기일자 (Quotation.due_date)
-    - publish_status: 세금계산서 발행 상태 (Project.NationalTaxService.publish_status)
-        - null: 세금계산서 미연결 ("연결 필요"로 표시)
-        - "temporary": 임시 저장 ("미발행"으로 표시)
-        - "pending": 발행 대기 ("미발행"으로 표시)
-        - "published": 발행 완료 ("보기"로 표시)
-    - status: 프로젝트 상태 (Project.status)
-    - is_abandoned: 중단 프로젝트 여부 (archived, interruption에서만 true)
-
-    예시:
-    - 전체 진행 중: status="progress"
-    - 보관함(완료+중단): status="archived"
-    - 완료: status="complete"
-    - 중단: status="interruption"
-    - 견적 협의중만: status="quotation"
-    - 생산 대기만: status="pending"
-    - 생산 중만: status="production"
-    - 생산 완료만: status="manufactured"
-    - 납품만: status="delivery"
-    """
     try:
         valid_statuses = [
             "progress",
@@ -395,9 +348,14 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
     description="프로젝트의 상태를 업데이트합니다.",
     response={200: ProjectDetailOut, 400: dict, 404: dict, 500: dict},
 )
-async def update_project_status(
-    request, project_id: int, payload: ProjectStatusUpdateIn
-):
+async def update_project_status(request, project_id: int, payload: ProjectStatusUpdateIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     valid_statuses = [choice[0] for choice in Project.ProjectStatus.choices]
     if payload.status not in valid_statuses:
         raise HttpError(400, "올바르지 않은 상태값입니다.")
@@ -429,9 +387,14 @@ async def update_project_status(
     description="프로젝트의 거래명세서 발급일을 업데이트합니다.",
     response={200: ProjectDetailOut, 404: dict, 500: dict},
 )
-async def update_project_transact_date(
-    request, project_id: int, payload: ProjectTransactDateUpdateIn
-):
+async def update_project_transact_date(request, project_id: int, payload: ProjectTransactDateUpdateIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     try:
         project = await Project.objects.aget(id=project_id)
         project.transact_date = payload.transact_date
@@ -463,6 +426,13 @@ async def update_project_transact_date(
     response={200: ProjectUpdateOut, 404: dict, 500: dict},
 )
 async def delete_project(request, project_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     try:
         project = await Project.objects.aget(id=project_id)
         await project.adelete()

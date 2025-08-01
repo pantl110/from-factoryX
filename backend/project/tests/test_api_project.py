@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from factory.models import Factory, FactoryClient, FactoryMember
 from project.models import Project
 from document.models import Quotation, QuotationProduct
@@ -309,7 +310,7 @@ class ProjectAPITestCase(TestCase):
         """프로젝트 삭제 성공 테스트"""
         project = Project.objects.create()
         
-        url = f'/v1/project/{project.id}'
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
         
         response = self.client.delete(
             url,
@@ -328,7 +329,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_delete_project_nonexistent(self):
         """존재하지 않는 프로젝트 삭제 시도 테스트"""
-        url = '/v1/project/999'
+        url = f'/v1/project/999?factory_id={self.factory.id}'
         
         response = self.client.delete(
             url,
@@ -350,7 +351,7 @@ class ProjectAPITestCase(TestCase):
         """프로젝트 상태 업데이트 성공 테스트"""
         project = Project.objects.create()
         
-        url = f'/v1/project/{project.id}/status'
+        url = f'/v1/project/{project.id}/status?factory_id={self.factory.id}'
         payload = {
             'status': '생산 대기'
         }
@@ -377,7 +378,7 @@ class ProjectAPITestCase(TestCase):
         """잘못된 상태값으로 프로젝트 상태 업데이트 시도 테스트"""
         project = Project.objects.create()
         
-        url = f'/v1/project/{project.id}/status'
+        url = f'/v1/project/{project.id}/status?factory_id={self.factory.id}'
         payload = {
             'status': 'invalid_status'
         }
@@ -393,7 +394,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_update_project_status_nonexistent(self):
         """존재하지 않는 프로젝트 상태 업데이트 시도 테스트"""
-        url = '/v1/project/999/status'
+        url = f'/v1/project/999/status?factory_id={self.factory.id}'
         payload = {
             'status': '생산 대기'
         }
@@ -414,7 +415,7 @@ class ProjectAPITestCase(TestCase):
         valid_statuses = ['견적 협의중', '생산 대기', '생산 중', '생산 완료', '납품', '프로젝트 완료']
         
         for status in valid_statuses:
-            url = f'/v1/project/{project.id}/status'
+            url = f'/v1/project/{project.id}/status?factory_id={self.factory.id}'
             payload = {'status': status}
             
             response = self.client.patch(
@@ -435,7 +436,7 @@ class ProjectAPITestCase(TestCase):
         project = Project.objects.create()
         test_date = date(2024, 1, 15)
         
-        url = f'/v1/project/{project.id}/transact-date'
+        url = f'/v1/project/{project.id}/transact-date?factory_id={self.factory.id}'
         payload = {
             'transact_date': test_date.isoformat()
         }
@@ -462,7 +463,7 @@ class ProjectAPITestCase(TestCase):
         """거래명세서 발급일을 None으로 업데이트 테스트"""
         project = Project.objects.create(transact_date=date(2024, 1, 15))
         
-        url = f'/v1/project/{project.id}/transact-date'
+        url = f'/v1/project/{project.id}/transact-date?factory_id={self.factory.id}'
         payload = {
             'transact_date': None
         }
@@ -482,7 +483,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_update_project_transact_date_nonexistent(self):
         """존재하지 않는 프로젝트 거래명세서 발급일 업데이트 시도 테스트"""
-        url = '/v1/project/999/transact-date'
+        url = f'/v1/project/999/transact-date?factory_id={self.factory.id}'
         payload = {
             'transact_date': date(2024, 1, 15).isoformat()
         }
@@ -761,7 +762,7 @@ class ProjectAPITestCase(TestCase):
         project = Project.objects.create(status=Project.ProjectStatus.completed)
         
         # API 호출
-        url = '/v1/project/clone'
+        url = f'/v1/project/clone?factory_id={self.factory.id}'
         payload = {
             "project_id": project.id
         }
@@ -791,7 +792,7 @@ class ProjectAPITestCase(TestCase):
         project = Project.objects.create(status=Project.ProjectStatus.production)
         
         # API 호출
-        url = '/v1/project/clone'
+        url = f'/v1/project/clone?factory_id={self.factory.id}'
         payload = {
             "project_id": project.id
         }
@@ -809,7 +810,7 @@ class ProjectAPITestCase(TestCase):
     def test_clone_project_not_found(self):
         """존재하지 않는 프로젝트 복제 시도 테스트"""
         # API 호출
-        url = '/v1/project/clone'
+        url = f'/v1/project/clone?factory_id={self.factory.id}'
         payload = {
             "project_id": 999
         }
@@ -830,7 +831,7 @@ class ProjectAPITestCase(TestCase):
         project = Project.objects.create(status=Project.ProjectStatus.completed)
         
         # API 호출
-        url = '/v1/project/clone'
+        url = f'/v1/project/clone?factory_id={self.factory.id}'
         payload = {
             "project_id": project.id
         }
@@ -898,7 +899,7 @@ class ProjectAPITestCase(TestCase):
         # 2. 중단 프로젝트 생성 (견적 협의중 + 2개월 경과 + 생산계획 없음)
         project_abandoned, quotation_abandoned = self.create_test_project_with_quotation(status='견적 협의중', create_plan=False)
         # auto_now 필드 문제를 해결하기 위해 update() 사용
-        Project.objects.filter(id=project_abandoned.id).update(updated_at=datetime(2025, 3, 1))
+        Project.objects.filter(id=project_abandoned.id).update(updated_at=timezone.make_aware(datetime(2025, 3, 1)))
         project_abandoned.refresh_from_db()
 
         # 3. 진행중 프로젝트 생성 (생산 중)
@@ -952,7 +953,7 @@ class ProjectAPITestCase(TestCase):
         project3, _ = self.create_test_project_with_quotation(status='프로젝트 완료')
         # 중단: 견적 협의중 + 2개월 경과 + 생산계획 없음
         project4, quotation4 = self.create_test_project_with_quotation(status='견적 협의중', create_plan=False)
-        Project.objects.filter(id=project4.id).update(updated_at=datetime(2025, 3, 1))
+        Project.objects.filter(id=project4.id).update(updated_at=timezone.make_aware(datetime(2025, 3, 1)))
         project4.refresh_from_db()
         # 2. 진행중 전체 조회 (status=progress)
         url = f'/v1/project?factory_id={self.factory.id}&status=progress'

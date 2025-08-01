@@ -2,17 +2,43 @@ from ninja import Schema, FilterSchema
 from datetime import date
 from typing import Optional, List
 
-# for create_project method
-class ProjectCreateIn(Schema):
-    id:int
 
-# for update_project_status method
+# ------------------------------------------------------------
+# Project API
+# ------------------------------------------------------------
+
+# (POST) Test Create Projects
+class TestCreateProjectsIn(Schema):
+    factory_id: int
+
+
+# (POST) Project Clone
+class ProjectCloneIn(Schema):
+    project_id: int
+
+
+# (GET) List Project
+class ProjectListFilter(FilterSchema):
+    factory_id: int
+    status: str
+    search: Optional[str] = None
+    order_by: Optional[str] = "start_date"
+    order_dir: Optional[str] = "asc"
+
+    
+# (PATCH) Project Status Update
 class ProjectStatusUpdateIn(Schema):
     status: str
+    
 
-# for update_project_transact_date method
+# (PATCH) Project Transact Date Update
 class ProjectTransactDateUpdateIn(Schema):
     transact_date: Optional[date] = None
+
+
+# ------------------------------------------------------------
+# Project Refund API
+# ------------------------------------------------------------
 
 # for create_project_plans method
 class ProjectPlanCreateIn(Schema):
@@ -48,18 +74,3 @@ class ProjectPlanListFilter(FilterSchema):
 class ListProgressProjectIn(Schema):
     factory_id: int
     status: str  # "progress" 또는 "complete"
-
-
-class ProjectCloneIn(Schema):
-    project_id: int
-
-class ProjectListFilter(FilterSchema):
-    status: Optional[str] = None
-    factory_id: Optional[int] = None
-    search: Optional[str] = None  # 업체명 또는 품목명
-    order_by: Optional[str] = "start_date"  # "start_date" 또는 "due_date"
-    order_dir: Optional[str] = "asc"        # "asc" 또는 "desc"
-
-
-class TestCreateProjectsIn(Schema):
-    factory_id: int
