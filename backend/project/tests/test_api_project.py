@@ -257,7 +257,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_project_quotation_relationship(self):
         """프로젝트와 견적서의 관계 확인 테스트"""
-        url = '/v1/project'
+        url = f'/v1/project?factory_id={self.factory.id}'
         
         response = self.client.post(
             url,
@@ -285,7 +285,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_project_default_status(self):
         """프로젝트 생성 시 기본 상태 확인 테스트"""
-        url = '/v1/project'
+        url = f'/v1/project?factory_id={self.factory.id}'
         
         response = self.client.post(
             url,
