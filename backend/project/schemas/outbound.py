@@ -2,12 +2,29 @@ from ninja import Schema
 import datetime
 from typing import Optional, List
 
+# ------------------------------------------------------------
+# Project API
+# ------------------------------------------------------------
+
 # (POST) Project Create
 class ProjectCreateOut(Schema):
     quotation_id: int
     project_id: int
 
-# for project detail response
+
+# (GET) List Progress Project
+class ListProgressProjectOut(Schema):
+    project_id: int
+    client_name: str
+    product_names: List[str]
+    start_date: datetime.date
+    due_date: datetime.date
+    publish_status: Optional[str] = None
+    status: str
+    is_abandoned: bool = False
+
+
+# (PATCH) Project Status Update
 class ProjectDetailOut(Schema):
     id: int
     status: str
@@ -16,9 +33,15 @@ class ProjectDetailOut(Schema):
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
-# for update response
+
+# (DELETE) Project Delete
 class ProjectUpdateOut(Schema):
     message: str
+
+
+# ------------------------------------------------------------
+# Project Refund API
+# ------------------------------------------------------------
 
 # for project plan response
 class ProjectPlanDetailOut(Schema):
@@ -119,15 +142,3 @@ class RefundUpdateIn(Schema):
 class RefundUpdateOut(Schema):
     message: str
     refund_id: int
-
-
-# list_progress_project
-class ListProgressProjectOut(Schema):
-    project_id: int
-    client_name: str
-    product_names: List[str]
-    start_date: datetime.date
-    due_date: datetime.date
-    publish_status: Optional[str] = None
-    status: str
-    is_abandoned: bool = False
