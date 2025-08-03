@@ -536,7 +536,7 @@ class QuotationProductAPITestCase(TestCase):
         data = response.json()
         self.assertEqual(data["quotation_id"], self.quotation.id)
         self.assertEqual(data["project_id"], self.project.id)
-        self.assertEqual(data["status"], "production_started")
+        self.assertEqual(data["status"], "confirmed")
         
         # 프로젝트 상태가 변경되었는지 확인 (주문 확정으로 변경됨)
         self.project.refresh_from_db()
@@ -576,7 +576,7 @@ class QuotationProductAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "production_started")
+        self.assertEqual(data["status"], "confirmed")
         
         # 두 개의 생산 계획이 생성되었는지 확인
         project_plans = ProjectPlan.objects.filter(project=self.project)
@@ -646,7 +646,7 @@ class QuotationProductAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "production_started")
+        self.assertEqual(data["status"], "confirmed")
 
     def test_confirm_order_missing_factory_id(self):
         """factory_id 누락 시 주문 확정 실패 테스트"""
@@ -694,7 +694,7 @@ class QuotationProductAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "production_started")
+        self.assertEqual(data["status"], "confirmed")
         
         # 기본값으로 생성된 생산 계획 확인
         project_plans = ProjectPlan.objects.filter(project=self.project)
@@ -752,7 +752,7 @@ class QuotationProductAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "production_started")
+        self.assertEqual(data["status"], "confirmed")
 
     def test_confirm_order_product_not_found(self):
         """존재하지 않는 제품으로 주문 확정 실패 테스트"""

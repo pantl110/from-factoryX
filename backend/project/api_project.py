@@ -272,11 +272,8 @@ async def list_project(request, status: str = Query(...), search: str = Query(No
                 )
                 base_qs = qs1.union(qs2)
 
-            # union 연산 후에는 prefetch_related를 사용할 수 없으므로, 
-            # 먼저 프로젝트 ID 목록을 가져온 후 다시 조회
             project_ids = list(base_qs.values_list("pk", flat=True))
             
-            # 프로젝트 ID로 다시 조회하여 prefetch_related 적용
             projects = Project.objects.filter(pk__in=project_ids).prefetch_related(
                 "quotations__client",
                 "quotations__products__product",
