@@ -61,7 +61,7 @@ const useStartProduction = (): UseStartProductionReturnModel => {
     }
 
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/production?factory_id=${factoryId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/confirmed?factory_id=${factoryId}`;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -78,7 +78,7 @@ const useStartProduction = (): UseStartProductionReturnModel => {
       } else {
         const errorData = await response.json();
         throw new Error(
-          errorData.message || errorData.detail || '생산 시작에 실패했습니다.'
+          errorData.detail || errorData.message || '주문 확정에 실패했습니다.'
         );
       }
     } catch (err) {

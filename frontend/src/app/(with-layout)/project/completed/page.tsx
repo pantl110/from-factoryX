@@ -1,74 +1,151 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MainTitleSec from './main-title-sec';
 import SearchDeleteTable from '@/ui/search-delete-table';
-import TableHeader from './table-header';
-import TableItem from './table-item';
-import completedProjectData from '@/mocks/completed-project-data';
-import { CompletedProjectStatusType } from '@/types/status-type';
-import usePagination from '@/hooks/use-pagination';
+import TableHeader from '../process/table-header';
+import TableItem from '../process/table-item';
+import {
+  CompletedProjectStatusType,
+  ProjectStatusType,
+} from '@/types/status-type';
 import Pagination from '@/components/pagination';
-import { useCheckAll } from '@/hooks/use-check-all';
+import { useCheckAll, useGetProjects, useDeleteProject } from '@/hooks';
 import DeleteModal from '@/ui/modal/delete-modal';
+import { ProjectListResponseModel } from '@/types/data-model';
+import Spinner from '@/ui/spinner';
 
 const CompletedProjectPage = () => {
+  const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
+  const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
+
   const [selectedStatus, setSelectedStatus] = useState<
     '전체' | CompletedProjectStatusType
   >('전체');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [sortKey, setSortKey] = useState<'date'>('date');
+  const [sortKey, setSortKey] = useState<'startDate' | 'endDate'>('startDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [projectData, setProjectData] =
+    useState<ProjectListResponseModel | null>(null);
 
-  const filteredProjects =
-    selectedStatus === '전체'
-      ? completedProjectData
-      : completedProjectData.filter((item) => item.status === selectedStatus);
+  // 초기 데이터 로드
+  useEffect(() => {
+    const loadArchivedProjects = async () => {
+      let status = 'archived'; // 전체 보관된 프로젝트
 
-  // 정렬 적용
-  const sortedProjects = [...filteredProjects].sort((a, b) => {
-    const aValue = a[sortKey];
-    const bValue = b[sortKey];
-    if (sortOrder === 'asc') {
-      return aValue.localeCompare(bValue);
-    } else {
-      return bValue.localeCompare(aValue);
-    }
-  });
+      // 개별 상태 선택 시
+      if (selectedStatus === '완료') {
+        status = 'complete';
+      } else if (selectedStatus === '중단') {
+        status = 'interruption';
+      }
 
-  const {
-    currentItems: currentProjects,
-    currentPage,
-    totalPages,
-    setCurrentPage,
-  } = usePagination({
-    items: sortedProjects,
-    itemsPerPage: 10,
-  }); // pagination hook
+      const result = await getProjects({
+        status: status as ProjectStatusType,
+        search: searchKeyword,
+        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
+        order_dir: sortOrder,
+        page: currentPage,
+        size: 10,
+      });
+
+      if (result.success && result.data) {
+        setProjectData(result.data);
+      }
+    };
+
+    loadArchivedProjects();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatus, searchKeyword, sortKey, sortOrder, currentPage]);
+
+  const sortedProjects = projectData?.data || [];
+  const currentIds = sortedProjects.map((project) => project.project_id);
 
   const {
     checkedCount,
+    isAllChecked,
     isChecked,
     toggleAll,
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(filteredProjects.map((item) => item.id));
+  } = useCheckAll(currentIds);
 
   const handleStatusChange = (status: '전체' | CompletedProjectStatusType) => {
     setSelectedStatus(status);
     setCurrentPage(1); // 상태 변경 시 첫 페이지로 이동
+    setSearchKeyword(''); // 탭 변경시 검색어도 초기화
+  };
+
+  // 검색 핸들러
+  const handleSearch = (keyword: string) => {
+    setSearchKeyword(keyword);
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   // 정렬 핸들러
-  const handleSort = (key: 'date') => {
+  const handleSort = (key: 'startDate' | 'endDate') => {
+    const newSortOrder =
+      sortKey === key ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'desc';
+
     if (sortKey === key) {
-      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      setSortOrder(newSortOrder);
     } else {
       setSortKey(key);
-      setSortOrder('asc');
+      setSortOrder('desc');
     }
-    setCurrentPage(1);
+    setCurrentPage(1); // 정렬 변경 시 첫 페이지로 이동
+  };
+
+  // 선택된 프로젝트 삭제 핸들러
+  const handleDeleteProjects = async () => {
+    if (checkedCount === 0) {
+      alert('삭제할 프로젝트를 선택해주세요.');
+      return;
+    }
+
+    try {
+      const checkedIds = currentIds.filter((id) => isChecked(id));
+
+      // 선택된 프로젝트들을 순차적으로 삭제
+      for (const projectId of checkedIds) {
+        await deleteProject(projectId);
+      }
+
+      alert('프로젝트가 삭제되었습니다.');
+      setAllChecked(false); // 선택 해제
+      setIsDeleteModalOpen(false);
+
+      // 프로젝트 목록 새로고침
+      const result = await getProjects({
+        status:
+          selectedStatus === '전체'
+            ? 'archived'
+            : selectedStatus === '완료'
+              ? 'completed'
+              : ('interruption' as ProjectStatusType),
+        search: searchKeyword,
+        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
+        order_dir: sortOrder,
+        page: currentPage,
+        size: 10,
+      });
+
+      if (result.success && result.data) {
+        setProjectData(result.data);
+      }
+    } catch {
+      alert('프로젝트 삭제 중 오류가 발생했습니다.');
+      setIsDeleteModalOpen(false);
+    }
   };
 
   return (
@@ -80,42 +157,55 @@ const CompletedProjectPage = () => {
         />
         <div className="px-10 pb-10">
           <SearchDeleteTable
+            placeholder="업체명이나 품목명을 검색하세요."
             checkedCount={checkedCount}
             deleteButtonText={getDeleteButtonText()}
             onDelete={() => setIsDeleteModalOpen(true)}
             onCancel={() => setAllChecked(false)}
+            onSearch={handleSearch}
+            searchKeyword={searchKeyword}
           />
-          <div>
-            <TableHeader
-              checkedCount={checkedCount}
-              onToggleAll={toggleAll}
-              onSort={handleSort}
-            />
-            {currentProjects.map((item) => (
-              <TableItem
-                key={item.id}
-                {...item}
-                checked={isChecked(item.id)}
-                onToggle={() => toggleOne(item.id)}
-              />
-            ))}
-          </div>
+
+          {isProjectsLoading && !projectData ? (
+            <div className="flex justify-center items-center h-100">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              <div className="overflow-y-auto w-full">
+                <TableHeader
+                  isAllChecked={isAllChecked}
+                  onToggleAll={toggleAll}
+                  onSort={handleSort}
+                />
+                {sortedProjects.map((project) => (
+                  <TableItem
+                    key={project.project_id}
+                    project={project}
+                    checked={isChecked(project.project_id)}
+                    onToggle={() => toggleOne(project.project_id)}
+                    isArchived={true}
+                  />
+                ))}
+              </div>
+              {/* 페이지네이션 */}
+              {projectData && projectData.pageCnt > 1 && (
+                <Pagination
+                  currentPage={projectData.curPage}
+                  totalPages={projectData.pageCnt}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </>
+          )}
         </div>
-      </div>
-      <div className="flex justify-center">
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        )}
       </div>
 
       {isDeleteModalOpen && (
         <DeleteModal
           onClose={() => setIsDeleteModalOpen(false)}
-          onDelete={() => setIsDeleteModalOpen(false)}
+          onDelete={handleDeleteProjects}
+          isLoading={isDeleteLoading}
         />
       )}
     </>

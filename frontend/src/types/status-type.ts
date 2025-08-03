@@ -32,7 +32,7 @@ export const EquipmentStatusColorMap: Record<
 // 프로젝트 상태
 export type ProjectStatusType =
   | 'quotation'
-  | 'order'
+  | 'confirmed'
   | 'pending'
   | 'production'
   | 'manufactured'
@@ -52,7 +52,7 @@ export const ProjectStatusColorMap: Record<
   StatusColorModel
 > = {
   quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
-  order: { bgColor: 'bg-[#FF6C17]/8', textColor: 'text-[#FF6C17]' },
+  confirmed: { bgColor: 'bg-[#FF6C17]/8', textColor: 'text-[#FF6C17]' },
   pending: { bgColor: 'bg-bg', textColor: 'text-dg' },
   production: { bgColor: 'bg-purple-8', textColor: 'text-purple' },
   manufactured: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
@@ -107,7 +107,7 @@ export type OperationStatusType =
   | '가동 대기'
   | '가동 중'
   | '가동 완료'
-  | '가동 중지';
+  | '가동 불가';
 export const OperationStatusColorMap: Record<
   OperationStatusType,
   StatusColorModel
@@ -127,7 +127,7 @@ export const OperationStatusColorMap: Record<
     bgColor: 'bg-primary-8',
     hover: 'hover:bg-secondary-hover',
   },
-  '가동 중지': {
+  '가동 불가': {
     textColor: 'text-red',
     bgColor: 'bg-red-8',
     hover: 'hover:bg-red-hover',

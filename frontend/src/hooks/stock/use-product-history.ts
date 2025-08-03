@@ -67,15 +67,14 @@ const useProductHistory = () => {
             params.append(key, String(value));
         });
 
-        // product_id가 있으면 path parameter로, 없으면 query parameter로
-        let url: string;
+        // product_id를 쿼리 파라미터로 추가
         // eslint-disable-next-line camelcase
         if (product_id) {
           // eslint-disable-next-line camelcase
-          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${product_id}/history?${params.toString()}`;
-        } else {
-          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
+          params.append('product_id', String(product_id));
         }
+        
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
 
         const res = await fetch(url, {
           method: 'GET',
@@ -116,14 +115,14 @@ const useProductHistory = () => {
             params.append(key, String(value));
         });
 
-        let url: string;
+        // product_id를 쿼리 파라미터로 추가
         // eslint-disable-next-line camelcase
         if (product_id) {
           // eslint-disable-next-line camelcase
-          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${product_id}/history?${params.toString()}`;
-        } else {
-          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
+          params.append('product_id', String(product_id));
         }
+        
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
 
         const res = await fetch(url, {
           method: 'GET',

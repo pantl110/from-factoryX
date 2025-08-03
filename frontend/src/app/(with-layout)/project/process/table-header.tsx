@@ -13,26 +13,25 @@ const TableHeader = ({
   onSort,
 }: TableHeaderProps) => {
   return (
-    <div className="flex items-center h-12 w-[1448px] border-t border-b border-lg Me_Body-1">
+    <div className="flex items-center h-12 w-full border-t border-b border-lg Me_Body-1">
       <Checkbox isChecked={isAllChecked} onToggle={onToggleAll || (() => {})} />
       <p className="w-[150px] px-3 text-sv">진행상태</p>
-      <p className="flex-2 px-3 text-sv">업체명</p>
-      <p className="flex-2 px-3 text-sv">품목명</p>
-      <div
+      <p className="flex-1 px-3 text-sv">업체명</p>
+      <p className="flex-1 px-3 text-sv">품목명</p>
+      {/* <div
         className="w-[200px] px-3 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
         onClick={() => onSort && onSort('startDate')}
       >
         <p className=" text-sv">생산일자</p>
         <CaretUpDown size={21} className="text-sv" />
-      </div>
+      </div> */}
       <div
         className="w-[200px] px-3 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
         onClick={() => onSort && onSort('endDate')}
       >
-        <p className=" text-sv">납기일자</p>
+        <p className=" text-sv">완료일자</p>
         <CaretUpDown size={21} className="text-sv" />
       </div>
-      <p className="w-[200px] px-3 text-sv">세금계산서</p>
     </div>
   );
 };

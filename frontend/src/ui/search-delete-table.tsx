@@ -2,7 +2,7 @@
 
 import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface SearchDeleteTableProps {
   placeholder?: string;
@@ -11,6 +11,7 @@ interface SearchDeleteTableProps {
   onDelete: () => void;
   onCancel: () => void;
   onSearch?: (query: string) => void;
+  searchKeyword?: string;
 }
 
 const SearchDeleteTable = ({
@@ -20,8 +21,14 @@ const SearchDeleteTable = ({
   onDelete,
   onCancel,
   onSearch,
+  searchKeyword = '',
 }: SearchDeleteTableProps) => {
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState(searchKeyword);
+
+  // 외부에서 searchKeyword가 변경되면 내부 state 동기화
+  useEffect(() => {
+    setSearchValue(searchKeyword);
+  }, [searchKeyword]);
 
   const handleSearchChange = (value: string) => {
     setSearchValue(value);

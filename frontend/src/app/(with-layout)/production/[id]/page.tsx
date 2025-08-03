@@ -2,11 +2,8 @@
 
 import { useParams, notFound } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
-import { projectData, ProjectDataModel } from '@/mocks/project-data';
-import completedProjectData, {
-  CompletedProjectDataModel,
-} from '@/mocks/completed-project-data';
 import usePageStatusStore from '@/store/page-status-store';
+import { useGetProjects } from '@/hooks';
 import ProductFlowTitle from '../product-flow-title';
 import ProductionPlan from '../production-plan';
 import ProductionMonitor from '../production-monitor';

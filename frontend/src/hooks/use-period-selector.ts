@@ -52,6 +52,40 @@ export const usePeriodSelector = ({
     return { startDate, endDate };
   };
 
+  // 날짜 유효성 검사 함수
+  const validateDate = (dateString: string): boolean => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return false;
+    
+    const date = new Date(dateString);
+    const [year, month, day] = dateString.split('-').map(Number);
+    
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day &&
+      !isNaN(date.getTime())
+    );
+  };
+
+  // 날짜 범위 유효성 검사 함수
+  const validateDateRange = (startDate: string, endDate: string): { isValid: boolean; message?: string } => {
+    if (!validateDate(startDate)) {
+      return { isValid: false, message: '시작일이 유효하지 않습니다.' };
+    }
+    if (!validateDate(endDate)) {
+      return { isValid: false, message: '종료일이 유효하지 않습니다.' };
+    }
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (start > end) {
+      return { isValid: false, message: '시작일이 종료일보다 늦을 수 없습니다.' };
+    }
+    
+    return { isValid: true };
+  };
+
   const createFilters = (period: PeriodType, currentPage: number = page) => {
     const filters: Record<string, unknown> = {
       page: currentPage,
@@ -66,6 +100,12 @@ export const usePeriodSelector = ({
     }
 
     if (period === '직접 설정' && customStartDate && customEndDate) {
+      const validation = validateDateRange(customStartDate, customEndDate);
+      if (!validation.isValid) {
+        // 유효하지 않은 날짜 범위일 때는 에러를 throw하여 요청을 중단
+        alert(validation.message || '날짜가 유효하지 않습니다.');
+        return filters; // Return the partial filters object instead of undefined
+      }
       filters.start_date = customStartDate;
       filters.end_date = customEndDate;
     } else if (period !== '직접 설정') {
@@ -81,15 +121,22 @@ export const usePeriodSelector = ({
 
   // 요청을 보내는 함수 (중복 체크 포함)
   const sendRequest = (filters: Record<string, unknown>) => {
-    const requestKey = JSON.stringify(filters);
+    try {
+      const requestKey = JSON.stringify(filters);
 
-    // 이전 요청과 같으면 중복 요청 방지
-    if (lastRequestRef.current === requestKey) {
-      return;
+      // 이전 요청과 같으면 중복 요청 방지
+      if (lastRequestRef.current === requestKey) {
+        return;
+      }
+
+      lastRequestRef.current = requestKey;
+      onPeriodChange?.(filters);
+    } catch (error) {
+      // 날짜 유효성 검사 실패 시 토스트 표시
+      if (error instanceof Error) {
+        alert(error.message);
+      }
     }
-
-    lastRequestRef.current = requestKey;
-    onPeriodChange?.(filters);
   };
 
   const handlePeriodChange = (newPeriod: PeriodType) => {
@@ -100,7 +147,9 @@ export const usePeriodSelector = ({
       setCustomEndDate('');
     } else if (onPeriodChange) {
       const filters = createFilters(newPeriod, 1);
-      sendRequest(filters);
+      if (filters) {
+        sendRequest(filters);
+      }
     }
   };
 
@@ -126,7 +175,9 @@ export const usePeriodSelector = ({
     ) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       const filters = createFilters('직접 설정');
-      sendRequest(filters);
+      if (filters) {
+        sendRequest(filters);
+      }
     }
   };
 
@@ -136,7 +187,9 @@ export const usePeriodSelector = ({
     if (selectedPeriod === '직접 설정') return;
 
     const filters = createFilters(selectedPeriod);
-    sendRequest(filters);
+    if (filters) {
+      sendRequest(filters);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasValidId, page, selectedPeriod]);
 
@@ -157,7 +210,9 @@ export const usePeriodSelector = ({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       const filters = createFilters('직접 설정');
-      sendRequest(filters);
+      if (filters) {
+        sendRequest(filters);
+      }
     }, 500);
 
     return () => {

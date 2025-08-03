@@ -9,8 +9,15 @@ const useDeleteProject = () => {
     setError(null);
 
     try {
+      // localStorage에서 factoryId 가져오기
+      const factoryId = localStorage.getItem('factoryId');
+      if (!factoryId) {
+        setError('Factory ID를 찾을 수 없습니다.');
+        return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
+      }
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/${projectId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/${projectId}?factory_id=${factoryId}`,
         {
           method: 'DELETE',
           credentials: 'include',

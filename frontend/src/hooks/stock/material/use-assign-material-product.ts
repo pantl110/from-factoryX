@@ -7,7 +7,9 @@ interface AssignMaterialProductModel {
     name: string;
     code: string;
     spec: string;
-    quantity: number;
+    unit: string;
+    quantity: number | null;
+    price: number | null;
   }>;
 }
 

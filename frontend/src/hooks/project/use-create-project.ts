@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import { useState } from 'react';
 
 interface CreateProjectResponseModel {
   quotation_id: number;
@@ -37,7 +36,6 @@ const useCreateProject = () => {
 
     try {
       const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/project?factory_id=${factoryId}`;
-      console.log('API 호출 URL:', url);
 
       const response = await fetch(url, {
         method: 'POST',

@@ -130,7 +130,9 @@ const ConnectMaterialModal = ({
             name: material.name,
             code: material.code,
             spec: material.spec,
-            quantity: material.quantity || 100, // ‼️ ‼️ ‼️ ‼️ ‼️ ‼️ ‼️ 기본 수량 1로 설정 (수정 필요...!!
+            unit: material.unit,
+            quantity: material.quantity,
+            price: material.price,
           })),
         };
 

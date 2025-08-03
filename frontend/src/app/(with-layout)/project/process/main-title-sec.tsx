@@ -18,7 +18,7 @@ interface MainTitleSecProps {
 const statusTabMap = [
   { label: '전체', value: 'progress' },
   { label: '견적 요청', value: 'quotation' },
-  { label: '주문 확정', value: 'order' },
+  { label: '주문 확정', value: 'confirmed' },
   { label: '생산 대기', value: 'pending' },
   { label: '생산 중', value: 'production' },
   { label: '생산 완료', value: 'manufactured' },

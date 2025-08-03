@@ -64,29 +64,28 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
           </h3>
 
           {/* 기간 선택 */}
-          {productId !== null ||
-            (histories.length > 0 && (
-              <div className="relative">
-                <MiniBtn
-                  text={periodSelector.selectedPeriod}
-                  textColor="text-dg"
-                  borderColor="border-lg"
-                  hoverColor="hover:bg-bg"
-                  icon={CaretDown}
-                  iconPosition="right"
-                  onClick={() => setIsProductStockLogDropdownOpen(true)}
-                  height="h-9"
-                />
-                {isProductStockLogDropdownOpen && (
-                  <div className="absolute top-12 right-0 z-10 pb-5">
-                    <ProductStockLogDropdown
-                      onClose={() => setIsProductStockLogDropdownOpen(false)}
-                      onSelect={handleDropdownSelect}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
+          {productId !== null && (
+            <div className="relative">
+              <MiniBtn
+                text={periodSelector.selectedPeriod}
+                textColor="text-dg"
+                borderColor="border-lg"
+                hoverColor="hover:bg-bg"
+                icon={CaretDown}
+                iconPosition="right"
+                onClick={() => setIsProductStockLogDropdownOpen(true)}
+                height="h-9"
+              />
+              {isProductStockLogDropdownOpen && (
+                <div className="absolute top-12 right-0 z-10 pb-5">
+                  <ProductStockLogDropdown
+                    onClose={() => setIsProductStockLogDropdownOpen(false)}
+                    onSelect={handleDropdownSelect}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {periodSelector.selectedPeriod === '직접 설정' && (
             <div className="flex items-center px-3 h-9 gap-2 border border-lg rounded-lg">

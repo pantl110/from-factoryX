@@ -8,6 +8,7 @@ import ProfileImage from '@/ui/profile-image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import ProfileModal from './modals/profile-modal';
+import usePageStatusStore from '@/store/page-status-store';
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
@@ -27,8 +28,13 @@ const TopBarContent = ({
   onMoveToStorageClick,
   onNotificationClick,
 }: TopBarContentProps) => {
+  const isProductionPlanValid = usePageStatusStore(
+    (state) => state.isProductionPlanValid
+  ); // 생산 계획 폼 유효성 검사 상태
   const isProductionPlanSaveActive =
-    productionTab === '생산 계획' && pageStatus === '생산 대기';
+    productionTab === '생산 계획' &&
+    pageStatus === '생산 대기' &&
+    isProductionPlanValid;
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const pathname = usePathname();
 

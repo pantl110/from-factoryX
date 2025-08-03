@@ -118,11 +118,6 @@ const QuotationPageContent = () => {
     try {
       const formData = watch();
 
-      // quotationId가 유효하지 않으면 에러 처리
-      // if (!quotationId) {
-      //   throw new Error('견적서 ID가 없습니다.');
-      // }
-
       const draftData = {
         quotation_id: quotationId || 0,
         client: {
@@ -247,8 +242,7 @@ const QuotationPageContent = () => {
             ) : ocrData ? (
               <PreviewImage isOrderStatus={isOrderStatus} />
             ) : (
-              // <History selectedProduct={null} />
-              <PreviewImage isOrderStatus={isOrderStatus} />
+              <History selectedProduct={null} />
             )}
           </div>
 
@@ -301,6 +295,7 @@ const QuotationPageContent = () => {
                   onProductClick={handleProductClick}
                   setHasQuotationProducts={setHasQuotationProducts}
                   onProductsChange={setQuotationProducts}
+                  quotationId={quotationId}
                 />
               </div>
             </div>

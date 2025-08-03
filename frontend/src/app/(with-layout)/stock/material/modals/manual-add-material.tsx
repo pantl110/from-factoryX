@@ -99,7 +99,7 @@ const ManualAddMaterial = ({
   };
 
   return (
-    <div className="flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
+    <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2.5">
           <div className="flex w-full gap-2.5">

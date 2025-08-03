@@ -622,15 +622,15 @@ export interface EquipmentForPlanModel {
 }
 
 export interface ProjectPlanModel {
-  id: number;
+  id: number; // project_plan_id
   project_id: number;
   quotation_product: QuotationProductForPlanModel;
   equipment: EquipmentForPlanModel;
-  status: string;
-  quantity: number;
-  start_date: string;
-  end_date: string;
-  avg_production_time: number;
+  status: string; // 가동 대기, 가동 중, 가동 완료, 가동 불가
+  quantity: number; // 생산 수량
+  start_date: string; // 생산 시작 일자
+  end_date: string; // 생산 종료 일자
+  avg_production_time: number; // 단위당 소요 시간
 }
 
 export interface ProjectPlanListResponseModel extends PaginationModel {
