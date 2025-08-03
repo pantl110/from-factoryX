@@ -233,9 +233,9 @@ const ProductionPlan = () => {
             <TableItem
               key={item.id}
               item={item}
-              onOperationStatusClick={(e) =>
-                handleOperationStatusClick(e, item.id)
-              }
+              // onOperationStatusClick={(e) =>
+              //   handleOperationStatusClick(e, item.id)
+              // }
               onFacilityClick={(e) => handleFacilityClick(e, item.id)}
               onFormChange={handleFormChange}
               formData={formChanges[item.id]}

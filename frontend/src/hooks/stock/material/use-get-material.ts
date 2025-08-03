@@ -55,7 +55,7 @@ const useGetMaterial = () => {
         if (filters.limit) params.append('limit', filters.limit.toString());
 
         params.append('factory_id', factoryId.toString());
-        
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material?${params}`,
           {
@@ -87,7 +87,7 @@ const useGetMaterial = () => {
   const getMaterialDetail = useCallback(async (materialId: number) => {
     setIsLoading(true);
     setError(null);
-    
+
     // 로컬스토리지에서 factoryId 가져오기
     const factoryId = getStoredFactoryId();
     if (!factoryId) {
@@ -95,7 +95,7 @@ const useGetMaterial = () => {
       setIsLoading(false);
       return { success: false, error: '공장 정보가 없습니다.' };
     }
-    
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/${materialId}?factory_id=${factoryId}`,

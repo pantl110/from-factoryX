@@ -65,8 +65,7 @@ const ProductionPageContent = () => {
   const [project, setProject] = useState<ProjectResponseModel | null>(null);
 
   // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
-  const { data: quotationData, isLoading: isQuotationLoading } =
-    useGetDetailQuotation(projectId);
+  const { data: quotationData } = useGetDetailQuotation(projectId);
 
   // 프로젝트 데이터 로드
   useEffect(() => {

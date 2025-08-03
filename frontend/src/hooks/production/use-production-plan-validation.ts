@@ -19,7 +19,7 @@ export const useProductionPlanValidation = (
 
   // 검증 결과를 useMemo로 메모이제이션
   const isValid = useMemo(() => {
-    const result = projectPlans.every((plan) => {
+    const isValidResult = projectPlans.every((plan) => {
       const formData = formChanges[plan.id];
       const currentData = formData || {
         quantity: plan.quantity,
@@ -28,19 +28,18 @@ export const useProductionPlanValidation = (
         end_date: plan.end_date,
       };
 
-      const isItemValid = (
+      const isItemValid =
         currentData.quantity > 0 &&
         currentData.equipment_id > 0 &&
         currentData.start_date?.trim() !== '' &&
         currentData.end_date?.trim() !== '' &&
         currentData.start_date?.length >= 10 && // YYYY-MM-DD 형식 최소 길이
-        currentData.end_date?.length >= 10
-      );
+        currentData.end_date?.length >= 10;
 
       return isItemValid;
     });
 
-    return result;
+    return isValidResult;
   }, [projectPlans, formChanges]);
 
   // 검증 상태 업데이트

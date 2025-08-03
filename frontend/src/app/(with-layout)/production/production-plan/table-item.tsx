@@ -22,7 +22,7 @@ interface ProductionPlanFormDataModel {
 
 interface TableItemProps {
   item: ProjectPlanModel;
-  onOperationStatusClick: (e: React.MouseEvent) => void;
+  // onOperationStatusClick: (e: React.MouseEvent) => void;
   onFacilityClick: (e: React.MouseEvent) => void;
   onFormChange?: (
     planId: number,
@@ -34,7 +34,7 @@ interface TableItemProps {
 
 const TableItem = ({
   item,
-  onOperationStatusClick,
+  // onOperationStatusClick,
   onFacilityClick,
   onFormChange,
   formData: currentFormData,
@@ -113,6 +113,7 @@ const TableItem = ({
     watchedStartDate,
     watchedEndDate,
     item.id,
+    onFormChange,
   ]);
 
   // 현재 선택된 설비 정보 (formData의 equipment_id 우선, 없으면 원본 데이터)
