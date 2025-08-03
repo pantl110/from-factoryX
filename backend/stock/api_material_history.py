@@ -37,14 +37,14 @@ async def create_single_material_history(request, payload: SingleMaterialHistory
     except FactoryClient.DoesNotExist:
         raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
     
-    if payload.type not in [MaterialHistory.MaterialHistoryType.purchase, MaterialHistory.MaterialHistoryType.consumption]:
+    if payload.type not in ["purchase", "consumption"]:
         raise HttpError(400, "잘못된 거래 타입입니다. 'purchase' 또는 'consumption'을 입력해주세요.")
     
-    if payload.type == MaterialHistory.MaterialHistoryType.purchase and payload.price is None:
+    if payload.type == "purchase" and payload.price is None:
         raise HttpError(400, "구매 시에는 가격을 입력해주세요.")
     
     current_stock = material.current_stock
-    if payload.type == MaterialHistory.MaterialHistoryType.purchase:
+    if payload.type == "purchase":
         new_stock = current_stock + payload.quantity
     else:
         new_stock = current_stock - payload.quantity
@@ -54,8 +54,13 @@ async def create_single_material_history(request, payload: SingleMaterialHistory
     material.current_stock = new_stock
     await sync_to_async(material.save)()
     
+    type_mapping = {
+        "purchase": MaterialHistory.MaterialHistoryType.purchase,
+        "consumption": MaterialHistory.MaterialHistoryType.consumption
+    }
+    
     material_history = await MaterialHistory.objects.acreate(
-        type=payload.type,
+        type=type_mapping[payload.type],
         material=material,
         client=client,
         quantity=payload.quantity,
@@ -185,6 +190,13 @@ async def get_material_history(request, material_id: int, filters: MaterialHisto
     @sync_to_async
     def get_histories():
         queryset = MaterialHistory.objects.filter(material=material)
+        # type 파라미터 영어→한글 변환 지원
+        type_param = request.GET.get("type")
+        type_map = {"purchase": "구매", "consumption": "소모"}
+        if type_param in type_map:
+            queryset = queryset.filter(type=type_map[type_param])
+        elif type_param:
+            queryset = queryset.filter(type=type_param)
         queryset = filters.filter(queryset)
         
         total_count = queryset.count()
