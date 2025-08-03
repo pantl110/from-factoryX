@@ -15,6 +15,10 @@ class QuotationDetailProductOut(Schema):
     tax_amount: int
 
 
+# ------------------------------------------------------------
+# Quotation API
+# ------------------------------------------------------------
+
 # (GET) Quotation Detail
 class QuotationDetailOut(Schema):
     factory_name: str
@@ -27,7 +31,11 @@ class QuotationDetailOut(Schema):
     business_category: Optional[str] = None
     address: Optional[str] = None
     products: List[QuotationDetailProductOut]
-    
+
+
+# ------------------------------------------------------------
+# Quotation Product API
+# ------------------------------------------------------------
 
 # (GET) Quotation Product Detail
 class QuotationProductOut(Schema):

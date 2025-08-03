@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from factory.models import Factory, FactoryClient
+from factory.models import Factory, FactoryClient, FactoryMember
 from stock.models import Material, Product, MaterialProduct
 import json
 import jwt
@@ -24,6 +24,15 @@ class MaterialProductAPITestCase(TestCase):
         self.factory = Factory.objects.create(
             name='테스트 공장',
             owner=self.user
+        )
+        
+        # 사용자를 공장 멤버로 추가
+        FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role='admin',
+            status='active',
+            invited_by=self.user
         )
         
         # 원자재 생성
@@ -95,7 +104,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_create_material_product_connections_product_type(self):
         """제품 기준으로 원자재 연결 생성 테스트"""
-        url = '/v1/stock/materialproduct'
+        url = f'/v1/stock/materialproduct?factory_id={self.factory.id}'
         
         payload = {
             'type': 'product',
@@ -139,7 +148,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_create_material_product_connections_material_type(self):
         """원자재 기준으로 제품 연결 생성 테스트"""
-        url = '/v1/stock/materialproduct'
+        url = f'/v1/stock/materialproduct?factory_id={self.factory.id}'
         
         payload = {
             'type': 'material',
@@ -170,7 +179,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_create_material_product_connections_invalid_type(self):
         """올바르지 않은 타입으로 연결 생성 시도 테스트"""
-        url = '/v1/stock/materialproduct'
+        url = f'/v1/stock/materialproduct?factory_id={self.factory.id}'
         
         payload = {
             'type': 'invalid_type',
@@ -192,7 +201,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_create_material_product_connections_nonexistent_target(self):
         """존재하지 않는 대상으로 연결 생성 시도 테스트"""
-        url = '/v1/stock/materialproduct'
+        url = f'/v1/stock/materialproduct?factory_id={self.factory.id}'
         
         payload = {
             'type': 'product',
@@ -214,7 +223,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_create_material_product_connections_nonexistent_connection(self):
         """존재하지 않는 연결 대상으로 연결 생성 시도 테스트"""
-        url = '/v1/stock/materialproduct'
+        url = f'/v1/stock/materialproduct?factory_id={self.factory.id}'
         
         payload = {
             'type': 'product',
@@ -243,7 +252,7 @@ class MaterialProductAPITestCase(TestCase):
             quantity=500.0
         )
         
-        url = '/v1/stock/materialproduct'
+        url = f'/v1/stock/materialproduct?factory_id={self.factory.id}'
         
         payload = {
             'type': 'product',
@@ -285,7 +294,7 @@ class MaterialProductAPITestCase(TestCase):
             quantity=50.0
         )
         
-        url = f'/v1/stock/materialproduct/{self.product1.id}?type=product'
+        url = f'/v1/stock/materialproduct/{self.product1.id}?type=product&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -328,7 +337,7 @@ class MaterialProductAPITestCase(TestCase):
             quantity=1000.0
         )
         
-        url = f'/v1/stock/materialproduct/{self.material1.id}?type=material'
+        url = f'/v1/stock/materialproduct/{self.material1.id}?type=material&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -359,7 +368,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_get_material_product_connections_invalid_type(self):
         """올바르지 않은 타입으로 조회 시도 테스트"""
-        url = f'/v1/stock/materialproduct/{self.product1.id}?type=invalid_type'
+        url = f'/v1/stock/materialproduct/{self.product1.id}?type=invalid_type&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -371,7 +380,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_get_material_product_connections_nonexistent_target(self):
         """존재하지 않는 대상으로 조회 시도 테스트"""
-        url = '/v1/stock/materialproduct/999?type=product'
+        url = f'/v1/stock/materialproduct/999?type=product&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -383,7 +392,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_get_material_product_connections_no_connections(self):
         """연결이 없는 경우 조회 테스트"""
-        url = f'/v1/stock/materialproduct/{self.product1.id}?type=product'
+        url = f'/v1/stock/materialproduct/{self.product1.id}?type=product&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -405,7 +414,7 @@ class MaterialProductAPITestCase(TestCase):
             quantity=500.0
         )
         
-        url = f'/v1/stock/materialproduct/connection/{connection.id}'
+        url = f'/v1/stock/materialproduct/connection/{connection.id}?factory_id={self.factory.id}'
         
         response = self.client.delete(
             url,
@@ -425,7 +434,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_delete_material_product_connection_nonexistent(self):
         """존재하지 않는 연결 삭제 시도 테스트"""
-        url = '/v1/stock/materialproduct/connection/999'
+        url = f'/v1/stock/materialproduct/connection/999?factory_id={self.factory.id}'
         
         response = self.client.delete(
             url,
@@ -437,7 +446,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_create_material_product_connections_without_auth(self):
         """인증 없이 연결 생성 시도 테스트"""
-        url = '/v1/stock/materialproduct'
+        url = f'/v1/stock/materialproduct?factory_id={self.factory.id}'
         
         payload = {
             'type': 'product',
@@ -457,7 +466,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_get_material_product_connections_without_auth(self):
         """인증 없이 연결 조회 시도 테스트"""
-        url = f'/v1/stock/materialproduct/{self.product1.id}?type=product'
+        url = f'/v1/stock/materialproduct/{self.product1.id}?type=product&factory_id={self.factory.id}'
         
         response = self.client.get(url)
         
@@ -472,7 +481,7 @@ class MaterialProductAPITestCase(TestCase):
             quantity=500.0
         )
         
-        url = f'/v1/stock/materialproduct/connection/{connection.id}'
+        url = f'/v1/stock/materialproduct/connection/{connection.id}?factory_id={self.factory.id}'
         
         response = self.client.delete(url)
         
@@ -480,7 +489,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_create_material_product_connections_empty_connections(self):
         """빈 연결 리스트로 생성 시도 테스트"""
-        url = '/v1/stock/materialproduct'
+        url = f'/v1/stock/materialproduct?factory_id={self.factory.id}'
         
         payload = {
             'type': 'product',
@@ -504,7 +513,7 @@ class MaterialProductAPITestCase(TestCase):
 
     def test_create_material_product_connections_negative_quantity(self):
         """음수 수량으로 연결 생성 시도 테스트"""
-        url = '/v1/stock/materialproduct'
+        url = f'/v1/stock/materialproduct?factory_id={self.factory.id}'
         
         payload = {
             'type': 'product',
@@ -545,7 +554,7 @@ class MaterialProductAPITestCase(TestCase):
         )
         
         # 제품 기준 조회 테스트
-        url_product = f'/v1/stock/materialproduct/{self.product1.id}?type=product'
+        url_product = f'/v1/stock/materialproduct/{self.product1.id}?type=product&factory_id={self.factory.id}'
         response_product = self.client.get(
             url_product,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -561,7 +570,7 @@ class MaterialProductAPITestCase(TestCase):
         self.assertEqual(data_product[0]['quantity'], 500.0)
         
         # 원자재 기준 조회 테스트
-        url_material = f'/v1/stock/materialproduct/{self.material1.id}?type=material'
+        url_material = f'/v1/stock/materialproduct/{self.material1.id}?type=material&factory_id={self.factory.id}'
         response_material = self.client.get(
             url_material,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -598,7 +607,7 @@ class MaterialProductAPITestCase(TestCase):
             connections.append(connection)
         
         # 조회
-        url = f'/v1/stock/materialproduct/{self.product1.id}?type=product'
+        url = f'/v1/stock/materialproduct/{self.product1.id}?type=product&factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'

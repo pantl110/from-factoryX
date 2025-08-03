@@ -20,16 +20,6 @@ class MaterialListOut(Schema):
     materials: List[dict]
 
 
-class MaterialSummaryOut(Schema):
-    id: int
-    name: str
-    code: str
-    spec: str
-    unit: str
-    current_stock: int
-    standard_stock: int
-
-
 class MaterialDetailOut(Schema):
     id: int
     name: str
@@ -96,15 +86,6 @@ class MaterialProductConnectionOut(Schema):
     material_name: str = Field(..., description="원자재명")
 
 
-# Onboarding Tab
-# assign_materialproduct
-class MaterialProductConnectOut(Schema):
-    """MaterialProduct 연결 생성 응답 스키마"""
-    message: str = Field(..., description="처리 결과 메시지")
-    created_connections: List[MaterialProductConnectionOut] = Field(..., description="생성된 연결 목록")
-    total_count: int = Field(..., description="총 연결 개수")
-
-
 class ProductListOut(Schema):
     id: int
     factory: int
@@ -123,6 +104,39 @@ class MaterialHistoryDetailResponseOut(Schema):
     total_stock: int
     purchase_tax_invoice_id: Optional[int]
     cash_receipt_id: Optional[int]
+
+
+
+# ------------------------------------------------------------
+# Material API
+# ------------------------------------------------------------
+
+# (POST) Assign Material
+class AssignMaterialOut(Schema):
+    material_ids: List[int]
+    message: str
+
+
+# (GET) Material By Factory
+class MaterialSummaryOut(Schema):
+    id: int
+    name: str
+    code: str
+    spec: str
+    unit: str
+    current_stock: int
+    standard_stock: int
+
+
+# ------------------------------------------------------------
+# Material Product API
+# ------------------------------------------------------------
+
+# (POST) Create Material Product Connection
+class MaterialProductConnectOut(Schema):
+    message: str
+    created_connections: List[MaterialProductConnectionOut]
+    total_count: int
 
 
 # ------------------------------------------------------------

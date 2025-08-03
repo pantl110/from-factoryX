@@ -26,10 +26,18 @@ class QuotationProductInfoIn(Schema):
     delivery_date: Optional[str] = None
 
 
+# ------------------------------------------------------------
+# Quotation API
+# ------------------------------------------------------------
+
 # (POST) OCR
 class OcrIn(Schema):
     data: str
-    
+
+
+# ------------------------------------------------------------
+# Quotation Product API
+# ------------------------------------------------------------
 
 # (POST) Quotation Draft
 class QuotationDraftIn(Schema):   

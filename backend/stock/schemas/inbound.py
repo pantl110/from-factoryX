@@ -1,3 +1,4 @@
+from sys import int_info
 from ninja import ModelSchema, Field, FilterSchema, Schema
 from pydantic import BaseModel
 from typing import Optional, List, Any
@@ -62,17 +63,6 @@ class FactoryClientCreateIn(Schema):
     address: Optional[str] = Field(default=None, description="사업장 주소")
 
 
-class MaterialUpdateIn(Schema):
-    """원자재 수정 입력 스키마"""
-
-    name: Optional[str] = Field(default=None, description="자재명")
-    code: Optional[str] = Field(default=None, description="자재코드")
-    spec: Optional[str] = Field(default=None, description="규격")
-    unit: Optional[str] = Field(default=None, description="단위")
-    current_stock: Optional[int] = Field(default=None, description="현재 재고")
-    standard_stock: Optional[int] = Field(default=None, description="안전 재고")
-
-
 class MaterialProductConnectionIn(Schema):
     """MaterialProduct 연결 정보"""
 
@@ -81,21 +71,6 @@ class MaterialProductConnectionIn(Schema):
         description="연결할 ID (type이 material이면 Product ID, type이 product이면 Material ID)",
     )
     quantity: float = Field(..., description="제품 1개 생산에 필요한 원자재 수량")
-
-
-class MaterialProductConnectIn(Schema):
-    """MaterialProduct 연결 생성 입력 스키마"""
-
-    type: str = Field(
-        ..., description="연결 타입 (material: 원자재 기준, product: 제품 기준)"
-    )
-    target_id: int = Field(
-        ...,
-        description="기준이 되는 ID (type이 material이면 Material ID, type이 product이면 Product ID)",
-    )
-    connections: List[MaterialProductConnectionIn] = Field(
-        ..., description="연결할 항목들"
-    )
 
 
 class ProductHistoryCreateIn(ModelSchema):
@@ -124,10 +99,6 @@ class ProductHistoryFilter(FilterSchema):
     )
 
 
-class MaterialProductUpdateIn(Schema):
-    quantity: float
-
-
 # Onboarding Tab
 # create_single_product
 class SingleProductCreateIn(Schema):
@@ -150,13 +121,6 @@ class MaterialAssignmentIn(Schema):
 
 
 # Onboarding Tab
-class AssignMaterialIn(Schema):
-    """원자재 생성 및 품목 연결 입력 스키마"""
-    factory_id: int = Field(..., description="공장 ID")
-    product_id: int = Field(..., description="품목 ID")
-    materials: List[MaterialAssignmentIn] = Field(..., description="원자재 목록")
-
-
 class ProductAssignmentIn(Schema):
     name: str = Field(..., description="품목명")
     code: str = Field(..., description="품목코드")
@@ -169,6 +133,41 @@ class AssignProductIn(Schema):
     material_id: int = Field(..., description="원자재 ID")
     products: List[ProductAssignmentIn] = Field(..., description="연결할 품목 목록")
 
+
+# ------------------------------------------------------------
+# Material API
+# ------------------------------------------------------------
+
+# (POST) Assign Material
+class AssignMaterialIn(Schema):
+    product_id: int
+    materials: List[MaterialAssignmentIn]
+
+
+# (PATCH) Update Material
+class MaterialUpdateIn(Schema):
+    name: Optional[str] = Field(default=None)
+    code: Optional[str] = Field(default=None)
+    spec: Optional[str] = Field(default=None)
+    unit: Optional[str] = Field(default=None)
+    current_stock: Optional[int] = Field(default=None)
+    standard_stock: Optional[int] = Field(default=None)
+
+
+# ------------------------------------------------------------
+# Material Product API
+# ------------------------------------------------------------
+
+# (POST) Create Material Product Connection
+class MaterialProductConnectIn(Schema):
+    type: str
+    target_id: int
+    connections: List[MaterialProductConnectionIn]
+
+
+# (PATCH) Update Material Product Connection
+class MaterialProductUpdateIn(Schema):
+    quantity: float
 
 # ------------------------------------------------------------
 # Material History API
