@@ -55,6 +55,7 @@ async def assign_material(request, payload: AssignMaterialIn):
         raise HttpError(404, "해당 제품이 존재하지 않습니다.")
 
     material_ids = []
+    material_codes = []
     try:
         for material_info in materials_data:
             material, created = await Material.objects.aget_or_create(
@@ -69,6 +70,7 @@ async def assign_material(request, payload: AssignMaterialIn):
                 }
             )
             material_ids.append(material.id)
+            material_codes.append(material.code)
             
             material_product, created = await MaterialProduct.objects.aget_or_create(
                 product=product,
@@ -81,6 +83,7 @@ async def assign_material(request, payload: AssignMaterialIn):
         
         return 201, AssignMaterialOut(
             material_ids=material_ids,
+            material_codes=material_codes,
             message="원자재가 성공적으로 생성 및 연결되었습니다."
         )
     except IntegrityError:

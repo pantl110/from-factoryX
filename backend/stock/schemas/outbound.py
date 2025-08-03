@@ -114,6 +114,7 @@ class MaterialHistoryDetailResponseOut(Schema):
 # (POST) Assign Material
 class AssignMaterialOut(Schema):
     material_ids: List[int]
+    material_codes: List[str]
     message: str
 
 
