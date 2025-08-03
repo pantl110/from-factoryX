@@ -1,11 +1,17 @@
 'use client';
 
+import { useEffect } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
 import SystemSetting from './system-setting';
 import MasterData from './master-data';
 
 const SettingPageContent = () => {
   const { settingTab, setSettingTab } = usePageStatusStore();
+
+  // 페이지 진입 시마다 시스템 탭으로 초기화
+  useEffect(() => {
+    setSettingTab('system');
+  }, [setSettingTab]);
 
   return (
     <div className="max-w-[1400px] min-w-[1200px]">

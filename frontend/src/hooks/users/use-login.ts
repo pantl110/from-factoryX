@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { LoginFormDataModel, LoginResponseModel } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
 import useFactoryStore from '@/store/factory-store';
+import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
+// import useCreateFactory from '@/hooks/factory/use-create-factory';
 
 interface UseLoginReturnModel {
   login: (data: LoginFormDataModel) => Promise<{
@@ -17,6 +19,8 @@ export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo, setAuthenticated } = useAuthStore();
   const setFactoryId = useFactoryStore((state) => state.setFactoryId);
+  const { getFactoryList } = useGetFactoryList();
+  // const { createFactory } = useCreateFactory();
 
   const login = async (data: LoginFormDataModel) => {
     setIsLoading(true);
@@ -53,11 +57,6 @@ export const useLogin = (): UseLoginReturnModel => {
             }
           );
 
-          if (!userResponse.ok) {
-            const errorText = await userResponse.text();
-            console.error('🛑 /auth/me 오류 내용:', errorText);
-          }
-
           if (userResponse.ok) {
             const userData = await userResponse.json();
             // 전역 상태에 사용자 정보 저장
@@ -67,32 +66,48 @@ export const useLogin = (): UseLoginReturnModel => {
             // 성공 시
             // 공장 리스트 받아와서 factoryId 전역 저장
             try {
-              const factoryRes = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/factories`,
-                {
-                  method: 'GET',
-                  credentials: 'include',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                }
-              );
-              if (factoryRes.ok) {
-                const factoryList = await factoryRes.json();
-                if (
-                  factoryList?.data &&
-                  Array.isArray(factoryList.data) &&
-                  factoryList.data.length > 0
-                ) {
-                  setFactoryId(factoryList.data[0].id);
-                }
+              const factoryResult = await getFactoryList();
+              if (
+                factoryResult.success &&
+                factoryResult.data?.data &&
+                factoryResult.data.data.length > 0
+              ) {
+                setFactoryId(factoryResult.data.data[0].id);
+              } else {
+                // 공장 목록이 비어있으면 임의로  공장을 하나 생성
+                // try {
+                //   const createFactoryResponse = await createFactory({
+                //     name: '',
+                //     business_registration_number: '',
+                //     representative_name: '',
+                //     manager_email: userData.email,
+                //     manager_phone: '',
+                //     manager_fax: '',
+                //     business_type: '',
+                //     business_category: '',
+                //     business_address: '',
+                //     is_trial: true,
+                //     billing_key: '',
+                //   });
+
+                //   if (createFactoryResponse.success && createFactoryResponse.data) {
+                //     setFactoryId(createFactoryResponse.data.id);
+                //   } else {
+                //     // setFactoryId(10);
+                //   }
+                //   } catch {
+                //     // setFactoryId(10);
+                //   }
+                setFactoryId(2);
               }
             } catch {
-              // 공장 리스트 fetch 실패 시 무시
+              // 공장 리스트 fetch 실패 시 일단 임의로 기본값 설정
+              setFactoryId(2);
             }
           }
         } catch {
           // 사용자 정보 fetch 실패 시 무시
+          setFactoryId(2); // 일단 임의로 설정
         }
 
         return {

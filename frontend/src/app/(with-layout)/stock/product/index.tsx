@@ -27,7 +27,6 @@ const Product = ({
   const { getProductList, productList, pagination, isLoading, error } =
     useGetProduct();
   const { deleteProduct } = useDeleteProduct();
-  const { factoryId } = useFactoryStore();
 
   const [searchKeyword, setSearchKeyword] = useState('');
   const [_currentPage, setCurrentPage] = useState(1);
@@ -43,24 +42,16 @@ const Product = ({
     null
   );
 
-  useEffect(() => {
-    if (setSelectedProductIdToParent) {
-      setSelectedProductIdToParent(() => setSelectedProductId);
-    }
-  }, [setSelectedProductIdToParent]);
-
   // 제품 목록 로드 함수
   const loadProducts = useCallback(
     (page = 1, search = '') => {
-      if (!factoryId) return;
       getProductList({
-        factory_id: factoryId,
         q: search || undefined,
         page,
         page_size: 10,
       });
     },
-    [getProductList, factoryId]
+    [getProductList]
   );
 
   // 초기 로드

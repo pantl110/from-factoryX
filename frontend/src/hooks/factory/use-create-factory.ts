@@ -11,7 +11,7 @@ const useCreateFactory = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/factories`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory`,
         {
           method: 'POST',
           credentials: 'include',

@@ -17,9 +17,8 @@ import useFactoryStore from '@/store/factory-store';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
-  const { getProjects, isLoading } = useGetProjects();
-  const { createProject } = useCreateProject();
-  const { factoryId } = useFactoryStore();
+  const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
+  const { createProject, isLoading: isCreateLoading } = useCreateProject();
 
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
   const searchParams = useSearchParams();
@@ -50,9 +49,21 @@ const ProcessProjectPageInner = () => {
   const [sortKey, setSortKey] = useState<'startDate' | 'endDate'>('startDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
+  // 로컬스토리지에서 factoryId 가져오기
+  const getStoredFactoryId = (): number | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = localStorage.getItem('factoryId');
+      return stored ? parseInt(stored, 10) : null;
+    } catch {
+      return null;
+    }
+  };
+
   // 초기 데이터 로드
   useEffect(() => {
     const loadProjects = async () => {
+      const factoryId = getStoredFactoryId();
       if (!factoryId) return;
 
       const result = await getProjects({
@@ -79,7 +90,6 @@ const ProcessProjectPageInner = () => {
     searchKeyword,
     sortKey,
     sortOrder,
-    factoryId,
     // getProjects,
   ]);
 
@@ -139,19 +149,22 @@ const ProcessProjectPageInner = () => {
     setCurrentPage(1); // 탭 상태 변경 시 표는 첫 페이지로 이동
     setSearchKeyword(''); // 탭 변경시 검색어도 초기화
   };
+  9;
 
   const handleDirectInputClick = async (ocrData?: OcrDataModel) => {
     if (ocrData) {
-      // OCR data로 프로젝트와 견적서 생성 후 이동 필요 ‼️‼️‼️‼️
+      // OCR data로 프로젝트와 견적서 생성 후 견적서 아이디와 프로젝트 아이디 기억하고 이동 필요 ‼️‼️‼️‼️
     } else {
-      // 빈 값으로 프로젝트와 견적서 생성 후 견적서 아이디 기억하고 이동
+      // 빈 값으로 프로젝트와 견적서 생성 후 견적서 아이디와 프로젝트 아이디 기억하고 이동
       try {
         // 프로젝트와 견적서 생성
         const result = await createProject();
 
         if (result.success && result.data) {
-          // 생성된 견적서 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
-          router.push(`/quotation?id=${result.data.id}`);
+          // 생성된 견적서 ID와 프로젝트 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
+          router.push(
+            `/quotation?quotation_id=${result.data.quotation_id}&project_id=${result.data.project_id}`
+          );
         } else {
           alert('프로젝트 생성에 실패했습니다.');
         }
@@ -163,6 +176,7 @@ const ProcessProjectPageInner = () => {
 
   // 테스트 프로젝트 생성 핸들러
   const handleCreateTestProjects = async () => {
+    const factoryId = getStoredFactoryId();
     if (!factoryId) return;
     try {
       const res = await fetch(
@@ -188,15 +202,6 @@ const ProcessProjectPageInner = () => {
       alert('테스트 프로젝트 생성 중 오류가 발생했습니다.');
     }
   };
-
-  // 로딩 상태 표시 (factoryId가 없거나 데이터 로딩 중일 때)
-  if (!factoryId || (isLoading && !projectData)) {
-    return (
-      <div className="flex justify-center items-center h-100">
-        <Spinner />
-      </div>
-    );
-  }
 
   return (
     <>
@@ -232,29 +237,37 @@ const ProcessProjectPageInner = () => {
             onCancel={() => setAllChecked(false)}
             onSearch={handleSearch}
           />
-          <div className="overflow-y-auto w-full">
-            <TableHeader
-              isAllChecked={isAllChecked}
-              onToggleAll={toggleAll}
-              onSort={handleSort}
-            />
-            {sortedProjects.map((project) => (
-              <TableItem
-                key={project.project_id}
-                project={project}
-                checked={isChecked(project.project_id)}
-                onToggle={() => toggleOne(project.project_id)}
-              />
-            ))}
-          </div>
 
-          {/* 페이지네이션 */}
-          {projectData && projectData.pageCnt > 1 && (
-            <Pagination
-              currentPage={projectData.curPage}
-              totalPages={projectData.pageCnt}
-              onPageChange={handlePageChange}
-            />
+          {!getStoredFactoryId() || (isProjectsLoading && !projectData) ? (
+            <div className="flex justify-center items-center h-100">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              <div className="overflow-y-auto w-full">
+                <TableHeader
+                  isAllChecked={isAllChecked}
+                  onToggleAll={toggleAll}
+                  onSort={handleSort}
+                />
+                {sortedProjects.map((project) => (
+                  <TableItem
+                    key={project.project_id}
+                    project={project}
+                    checked={isChecked(project.project_id)}
+                    onToggle={() => toggleOne(project.project_id)}
+                  />
+                ))}
+              </div>
+              {/* 페이지네이션 */}
+              {projectData && projectData.pageCnt > 1 && (
+                <Pagination
+                  currentPage={projectData.curPage}
+                  totalPages={projectData.pageCnt}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </>
           )}
         </div>
       </div>
@@ -263,7 +276,10 @@ const ProcessProjectPageInner = () => {
       {(isUploadModalOpen || isOrderUploadModalOpen) && (
         <ExcelUploadModal
           documentTitle={isUploadModalOpen ? '견적 요청서' : '주문서'}
-          onClose={() => setIsUploadModalOpen(false)}
+          onClose={() => {
+            setIsUploadModalOpen(false);
+            setIsOrderUploadModalOpen(false);
+          }}
           onComplete={handleDirectInputClick}
         />
       )}

@@ -251,7 +251,7 @@ const RequestInfo = ({
                   <th className="text-left px-3 flex-1">제작 수량</th>
                   <th className="text-left px-3 w-[100px]">단가</th>
                   <th className="text-left px-3 flex-1">금액</th>
-                  <th className="w-8" />
+                  <th className="w-9" />
                 </tr>
               </thead>
               <tbody>

@@ -34,17 +34,15 @@ const ProductItem = ({
 }: ProductItemProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { getProductList } = useGetProduct();
-  const { factoryId } = useFactoryStore();
   const { isOpen, openDropdown, anchorRect } = usePortalDropdown();
 
   // 검색어가 변경될 때마다 제품 목록 필터링 (디바운스 300ms)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (searchTerm.length > 0 && factoryId && isOpen) {
+      if (searchTerm.length > 0 && isOpen) {
         const fetchProducts = async () => {
           try {
             const response = await getProductList({
-              factory_id: factoryId,
               q: searchTerm,
             });
             const products = response?.data?.data || [];
@@ -61,7 +59,7 @@ const ProductItem = ({
 
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, factoryId, isOpen]);
+  }, [searchTerm, isOpen]);
 
   return (
     <>
@@ -87,7 +85,7 @@ const ProductItem = ({
         >
           {data?.product_name ? (
             <>
-              <p className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}>
+              <p className={`${onlyRead ? 'break-words' : 'truncate'}`}>
                 {data.product_name}
               </p>
               {!onlyRead && (
@@ -140,6 +138,7 @@ const ProductItem = ({
           ) : (
             <input
               type="text"
+              placeholder="(필수)"
               value={data?.quantity?.toLocaleString() || ''}
               className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
               style={{ width: '100%', maxWidth: '100%' }}
@@ -162,6 +161,7 @@ const ProductItem = ({
           ) : (
             <input
               type="text"
+              placeholder="(필수)"
               value={data?.unit_price?.toLocaleString() || ''}
               className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
               style={{ width: '100%', maxWidth: '100%' }}
@@ -183,9 +183,9 @@ const ProductItem = ({
           </p>
         </td>
         {canDelete && !onlyRead && (
-          <td className="w-8 h-full flex justify-center items-center">
+          <td className="w-9 h-full flex justify-center items-center">
             <button
-              className="flex items-center justify-center w-full h-8 rounded-[8px] hover:bg-bg cursor-pointer"
+              className="flex items-center justify-center w-full h-9 rounded-[8px] hover:bg-bg cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete?.();

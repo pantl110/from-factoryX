@@ -71,6 +71,10 @@ const ProductDetail = ({
   } = useMaterialProduct();
   const { getMaterialDetail } = useGetMaterial();
   const factoryId = useFactoryStore((state) => state.factoryId);
+  const getFactoryIdFromLocal = useFactoryStore(
+    (state) => state.getFactoryIdFromLocal
+  );
+  const setFactoryId = useFactoryStore((state) => state.setFactoryId);
   const {
     createLocation,
     updateLocation,
@@ -79,6 +83,16 @@ const ProductDetail = ({
     listLocations,
   } = useLocation();
   const { uploadMultipleFiles } = useUploadFile();
+
+  // factoryId가 null이면 로컬에서 가져오기
+  useEffect(() => {
+    if (!factoryId) {
+      const localFactoryId = getFactoryIdFromLocal();
+      if (localFactoryId !== null) {
+        setFactoryId(localFactoryId);
+      }
+    }
+  }, [factoryId, getFactoryIdFromLocal, setFactoryId]);
 
   // 여러 자재의 상세 정보를 저장할 상태
   const [materialDetails, setMaterialDetails] = useState<

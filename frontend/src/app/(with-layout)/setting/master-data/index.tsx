@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
 import useFactoryStore from '@/store/factory-store';
 import { SettingChipType } from '@/components/top-bar/types';
@@ -17,9 +17,20 @@ import {
   useDeleteClient,
 } from '@/hooks';
 
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
+
 const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+
   const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
     useState(false);
 
@@ -37,13 +48,13 @@ const MasterData = () => {
     clientList,
     isLoading: isClientLoading,
     searchKeyword: clientSearchKeyword,
-    currentPage: clientCurrentPage,
     pageSize: clientPageSize,
     searchClients,
     getClients,
-    setCurrentPage: setClientCurrentPage,
-    refetch: refetchClient,
   } = useGetClient();
+
+  // 거래처 페이지 상태 로컬 관리
+  const [clientCurrentPage, setClientCurrentPage] = useState(1);
 
   // 삭제 훅
   const { deleteEquipment, isLoading: isDeleteLoading } = useDeleteEquipment(); // 설비 삭제 훅
@@ -69,6 +80,30 @@ const MasterData = () => {
       searchClients(keyword);
     },
     [searchClients]
+  );
+
+  // 검색어 변경 시 debounce 적용
+  const handleSearchChange = useCallback(
+    (keyword: string) => {
+      setSearchKeyword(keyword);
+
+      // 이전 타이머 클리어
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+
+      // 새 타이머 설정 (300ms debounce)
+      const timer = setTimeout(() => {
+        if (keyword.trim()) {
+          searchClients(keyword);
+        } else {
+          getClients();
+        }
+      }, 300);
+
+      debounceTimer.current = timer;
+    },
+    [debounceTimer, searchClients, getClients]
   );
 
   // 검색어 상태 동기화 (디바운싱)
@@ -193,22 +228,21 @@ const MasterData = () => {
       }
       try {
         // 선택된 모든 거래처 삭제
+        const factoryId = getStoredFactoryId();
+        if (!factoryId) {
+          alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+          return;
+        }
+
         const deletePromises = checkedClientIds.map((id) =>
           deleteClient({
-            factory_id: factoryId || 0,
+            factory_id: factoryId,
             client_id: id,
           })
         );
         await Promise.all(deletePromises);
         // 거래처 목록 새로고침
-        if (factoryId) {
-          await getClients({
-            factory_id: factoryId,
-            q: clientSearchKeyword,
-            page: clientCurrentPage,
-            page_size: clientPageSize,
-          });
-        }
+        await getClients();
       } catch {
         alert('거래처 삭제 중 오류가 발생했습니다.');
       }
@@ -239,14 +273,11 @@ const MasterData = () => {
   // 페이지네이션 변경 핸들러 (Client용)
   const handleClientPageChange = async (page: number) => {
     setClientCurrentPage(page);
-    if (factoryId) {
-      await getClients({
-        factory_id: factoryId,
-        q: clientSearchKeyword,
-        page,
-        page_size: clientPageSize,
-      });
-    }
+    await getClients({
+      q: clientSearchKeyword,
+      page,
+      page_size: clientPageSize,
+    });
   };
 
   const renderContent = () => {
@@ -286,7 +317,7 @@ const MasterData = () => {
             clientList={clientList}
             onPageChange={handleClientPageChange}
             refetchClient={() => {
-              if (factoryId) refetchClient({ factory_id: factoryId });
+              getClients();
             }}
           />
         );
@@ -329,7 +360,7 @@ const MasterData = () => {
               : '검색어를 입력하세요.'
           }
           value={searchKeyword}
-          onChange={setSearchKeyword}
+          onChange={handleSearchChange}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               if (debounceTimer.current) clearTimeout(debounceTimer.current);

@@ -28,18 +28,22 @@ const ExcelUploadModal = ({
           // TODO: OCR 결과 데이터를 파싱
           alert('OCR 처리 성공');
           onComplete();
+          onClose(); // 모달 닫기 추가
         } else {
           // OCR 실패 시 에러 처리
           alert('OCR 처리에 실패했습니다.' + result.message);
           onComplete();
+          onClose(); // 모달 닫기 추가
         }
       } catch (err) {
         alert('OCR 업로드 중 오류가 발생했습니다.' + err);
         onComplete();
+        onClose(); // 모달 닫기 추가
       }
     } else {
       // 파일이 없는 경우 빈 데이터 반환
       onComplete();
+      onClose(); // 모달 닫기 추가
     }
   };
 

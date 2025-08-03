@@ -4,7 +4,6 @@ import {
   MaterialResponseModel,
   PaginationModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
 
 interface MaterialFilterModel {
   page?: number;
@@ -14,10 +13,18 @@ interface MaterialFilterModel {
   limit?: number;
 }
 
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
+
 const useGetMaterial = () => {
-  const factoryId = useFactoryStore(
-    (state: { factoryId: number | null }) => state.factoryId
-  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [material, setMaterial] = useState<MaterialResponseModel | null>(null);
@@ -29,12 +36,16 @@ const useGetMaterial = () => {
     async (filters: MaterialFilterModel = {}) => {
       setIsLoading(true);
       setError(null);
+      
+      // 로컬스토리지에서 factoryId 가져오기
+      const factoryId = getStoredFactoryId();
+      if (!factoryId) {
+        setError('공장 정보가 없습니다.');
+        setIsLoading(false);
+        return { success: false, error: '공장 정보가 없습니다.' };
+      }
+
       try {
-        if (!factoryId) {
-          setError('공장 정보가 없습니다.');
-          setIsLoading(false);
-          return { success: false, error: '공장 정보가 없습니다.' };
-        }
         const params = new URLSearchParams();
         if (filters.page) params.append('page', filters.page.toString());
         if (filters.page_size)
@@ -42,6 +53,7 @@ const useGetMaterial = () => {
         if (filters.q) params.append('q', filters.q);
         if (filters.order) params.append('order', filters.order);
         if (filters.limit) params.append('limit', filters.limit.toString());
+        
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/factory/${factoryId}?${params}`,
           {
@@ -66,7 +78,7 @@ const useGetMaterial = () => {
         setIsLoading(false);
       }
     },
-    [factoryId]
+    []
   );
 
   // 원자재 상세 조회
@@ -99,13 +111,13 @@ const useGetMaterial = () => {
   }, []);
 
   return {
-    getMaterialList,
-    getMaterialDetail,
     material,
     materialList,
     pagination,
     isLoading,
     error,
+    getMaterialList,
+    getMaterialDetail,
   };
 };
 

@@ -6,9 +6,23 @@ import { useState, useEffect } from 'react';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from '../../material/modals/manual-add-material';
 import { MaterialItemModel } from '@/types/data-model';
-import { useGetMaterial } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
-import { useMaterialProduct, useAssignMaterialProduct } from '@/hooks';
+import { MaterialResponseModel } from '@/types/data-model';
+import {
+  useGetMaterial,
+  useMaterialProduct,
+  useAssignMaterialProduct,
+} from '@/hooks';
+
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
 
 interface ConnectMaterialModalProps {
   onClose: () => void;
@@ -21,32 +35,56 @@ const ConnectMaterialModal = ({
   productId,
   onSuccess,
 }: ConnectMaterialModalProps) => {
-  const factoryId = useFactoryStore((state) => state.factoryId);
-  const { getMaterialList, materialList } = useGetMaterial();
+  const [input, setInput] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [newMaterials, setNewMaterials] = useState<MaterialItemModel[]>([]); // 수동 추가한 새로운 원자재
+  const [isManualAddMode, setIsManualAddMode] = useState(false);
+  const [filteredMaterials, setFilteredMaterials] = useState<
+    MaterialResponseModel[]
+  >([]);
+  const { getMaterialList } = useGetMaterial();
   const { createMaterialProduct, isLoading: isConnecting } =
     useMaterialProduct();
   const { assignMaterialProduct, isLoading: isAssigning } =
     useAssignMaterialProduct();
 
-  const [input, setInput] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedMaterials, setSelectedMaterials] = useState<
     MaterialItemModel[]
-  >([]); // 기존 원자재 검색으로 추가
-  const [newMaterials, setNewMaterials] = useState<MaterialItemModel[]>([]); // 수동 추가한 새로운 원자재
-  const [isManualAddMode, setIsManualAddMode] = useState(false);
+  >([]);
 
-  // 검색어가 변경될 때마다 서버에서 검색
+  // 검색어가 변경될 때 서버에서 검색
   useEffect(() => {
-    if (factoryId) {
-      const searchParams = {
-        limit: 100,
-        ...(input.trim() && { q: input.trim() }), // 검색어가 있을 때만 q 파라미터 추가
-      };
-      getMaterialList(searchParams);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryId, input]);
+    const searchMaterials = async () => {
+      if (input.trim()) {
+        // 첫 페이지를 가져와서 전체 페이지 수 확인
+        const firstPageResult = await getMaterialList({
+          q: input,
+          page: 1,
+          page_size: 10,
+        });
+
+        if (firstPageResult.success && firstPageResult.data) {
+          const { totalCnt } = firstPageResult.data;
+
+          // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
+          const allDataResult = await getMaterialList({
+            q: input,
+            page: 1,
+            page_size: totalCnt,
+          });
+
+          if (allDataResult.success && allDataResult.data) {
+            setFilteredMaterials(allDataResult.data.data);
+          }
+        }
+      } else {
+        setFilteredMaterials([]);
+      }
+    };
+
+    const timeoutId = setTimeout(searchMaterials, 150); // 디바운스
+    return () => clearTimeout(timeoutId);
+  }, [input, getMaterialList]);
 
   // 원자재 선택 시
   const handleSelectMaterial = (item: MaterialItemModel) => {
@@ -79,12 +117,18 @@ const ConnectMaterialModal = ({
     try {
       // 1. 새로운 원자재 생성 및 연결
       if (newMaterials.length > 0) {
+        const factoryId = getStoredFactoryId();
+        if (!factoryId) {
+          alert('공장 정보가 없습니다.');
+          return;
+        }
+
         const assignPayload = {
-          factory_id: factoryId as number,
+          factory_id: factoryId, // 로컬스토리지에서 가져오기
           product_id: productId,
           materials: newMaterials.map((material) => ({
             name: material.name,
-            code: material.code || '',
+            code: material.code,
             spec: material.spec,
             quantity: material.quantity || 100, // ‼️ ‼️ ‼️ ‼️ ‼️ ‼️ ‼️ 기본 수량 1로 설정 (수정 필요...!!
           })),
@@ -103,7 +147,7 @@ const ConnectMaterialModal = ({
           type: 'product' as const,
           target_id: productId,
           connections: selectedMaterials.map((material) => {
-            const originalMaterial = materialList.find(
+            const originalMaterial = filteredMaterials.find(
               (mat) => mat.code === material.code
             );
             return {
@@ -153,10 +197,10 @@ const ConnectMaterialModal = ({
           onClick={() => setIsManualAddMode(true)}
         />
 
-        {isDropdownOpen && input.trim() && materialList.length > 0 && (
+        {isDropdownOpen && input.trim() && filteredMaterials.length > 0 && (
           <div className="absolute left-0 top-14 z-10 w-[451px] h-[256px] overflow-y-auto">
             <MaterialNameDropdown
-              items={materialList.map((mat) => ({
+              items={filteredMaterials.map((mat) => ({
                 name: mat.name,
                 code: mat.code,
                 spec: mat.spec,

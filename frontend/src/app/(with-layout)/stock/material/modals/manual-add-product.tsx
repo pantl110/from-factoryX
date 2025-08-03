@@ -1,4 +1,4 @@
-import { MaterialModel } from '@/types/data-model';
+import { MaterialItemModel } from '@/types/data-model';
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
@@ -6,30 +6,57 @@ import { useForm } from 'react-hook-form';
 interface ManualAddProductProps {
   setIsManualAddMode: (v: boolean) => void;
   setSelectedProducts?: (
-    fn: (prev: MaterialModel[]) => MaterialModel[]
+    fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
   ) => void;
+  checkDuplicateProductCode?: (code: string) => boolean;
+  showDuplicateProductToast?: () => void;
 }
 
 const ManualAddProduct = ({
   setIsManualAddMode,
   setSelectedProducts,
+  checkDuplicateProductCode,
+  showDuplicateProductToast,
 }: ManualAddProductProps) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    setError,
     reset,
-  } = useForm<MaterialModel>({
+    watch,
+    formState: { errors },
+  } = useForm<MaterialItemModel>({
     defaultValues: {
       name: '',
       code: '',
       spec: '',
       unit: '',
+      quantity: null,
+      price: null,
     },
-    mode: 'onBlur',
+    mode: 'onChange',
   });
 
-  const onSubmit = (data: MaterialModel) => {
+  // 모든 필드의 값을 감시
+  const watchedValues = watch();
+
+  // 모든 필드가 입력되었는지 확인
+  const isFormValid = () => {
+    const { name, code, spec, unit } = watchedValues;
+    return name?.trim() && code?.trim() && spec?.trim() && unit?.trim();
+  };
+
+  const onSubmit = (data: MaterialItemModel) => {
+    // 중복 검사
+    if (checkDuplicateProductCode && checkDuplicateProductCode(data.code)) {
+      showDuplicateProductToast?.();
+      setError('code', {
+        type: 'manual',
+        message: '이미 존재하는 품목코드입니다.',
+      });
+      return;
+    }
+
     setSelectedProducts?.((prev) => [
       ...prev,
       {
@@ -37,6 +64,8 @@ const ManualAddProduct = ({
         code: data.code,
         spec: data.spec,
         unit: data.unit,
+        quantity: data.quantity,
+        price: data.price,
       },
     ]);
     reset();
@@ -111,6 +140,7 @@ const ManualAddProduct = ({
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
             type="submit"
+            disabled={!isFormValid()}
           />
         </div>
       </form>

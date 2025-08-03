@@ -34,8 +34,11 @@ import InputSection from './input-section';
 const QuotationPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const quotationId = searchParams.get('id')
-    ? parseInt(searchParams.get('id') || '0')
+  const quotationId = searchParams.get('quotation_id')
+    ? parseInt(searchParams.get('quotation_id') || '0')
+    : undefined;
+  const projectId = searchParams.get('project_id')
+    ? parseInt(searchParams.get('project_id') || '0')
     : undefined;
 
   const { saveDraft } = useSaveDraftQuotation();
@@ -114,6 +117,12 @@ const QuotationPageContent = () => {
   const handleSaveDraft = useCallback(async () => {
     try {
       const formData = watch();
+
+      // quotationId가 유효하지 않으면 에러 처리
+      // if (!quotationId) {
+      //   throw new Error('견적서 ID가 없습니다.');
+      // }
+
       const draftData = {
         quotation_id: quotationId || 0,
         client: {
@@ -137,9 +146,11 @@ const QuotationPageContent = () => {
               product.product_id && product.quantity && product.unit_price
           )
           .map((product) => ({
-            id: product.product_id as number,
+            product_id: product.product_id as number,
             quantity: product.quantity as number,
             unit_price: product.unit_price as number,
+            is_delivery: false,
+            delivery_date: null,
           })),
       };
 
@@ -149,7 +160,7 @@ const QuotationPageContent = () => {
       throw new Error('Failed to save draft');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saveDraft, watch, quotationId]);
+  }, [saveDraft, watch, quotationId, quotationProducts]);
 
   // 생산 시작 버튼 핸들러
   const handleStartProduction = useCallback(async () => {
@@ -178,7 +189,7 @@ const QuotationPageContent = () => {
               product.product_id && product.quantity && product.unit_price
           )
           .map((product) => ({
-            id: product.product_id as number,
+            product_id: product.product_id as number,
             quantity: product.quantity as number,
             unit_price: product.unit_price as number,
           })),
@@ -214,6 +225,7 @@ const QuotationPageContent = () => {
           isDirty={formState.isDirty}
           isInterruptionStatus={isInterruptionStatus}
           setIsInterruptionStatus={setIsInterruptionStatus}
+          projectId={projectId}
         />
         <TabArea
           isOrderStatus={isOrderStatus}

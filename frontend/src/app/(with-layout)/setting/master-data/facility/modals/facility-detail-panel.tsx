@@ -9,7 +9,7 @@ import useFactoryStore from '@/store/factory-store';
 import { EquipmentStatusType } from '@/types/status-type';
 import { Controller, useForm } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface FacilityDetailPanelProps {
   facility?: EquipmentResponseModel;
@@ -36,6 +36,20 @@ const FacilityDetailPanel = ({
   const { createEquipment } = useCreateEquipment();
   const { updateEquipment } = useUpdateEquipment();
   const factoryId = useFactoryStore((state) => state.factoryId);
+  const getFactoryIdFromLocal = useFactoryStore(
+    (state) => state.getFactoryIdFromLocal
+  );
+  const setFactoryId = useFactoryStore((state) => state.setFactoryId);
+
+  // factoryId가 null이면 로컬에서 가져오기
+  useEffect(() => {
+    if (!factoryId) {
+      const localFactoryId = getFactoryIdFromLocal();
+      if (localFactoryId !== null) {
+        setFactoryId(localFactoryId);
+      }
+    }
+  }, [factoryId, getFactoryIdFromLocal, setFactoryId]);
 
   const {
     handleSubmit,

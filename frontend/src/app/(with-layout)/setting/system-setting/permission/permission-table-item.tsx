@@ -92,11 +92,12 @@ const PermissionTableItem = ({
           onUpdate();
         }
       } else {
-        throw new Error(result.error || '권한 변경 실패');
+        alert(result.error || '권한 변경에 실패했습니다.');
+        closeAuthDropdown();
       }
-    } catch {
+    } catch (error) {
+      alert('권한 변경 중 오류가 발생했습니다.');
       closeAuthDropdown();
-      // 에러 발생 시에도 드롭다운은 닫음
     }
   };
 
@@ -116,8 +117,12 @@ const PermissionTableItem = ({
             bgColor={authColors.chipColor.bg}
             hover={authColors.chipColor.hover}
             state={true}
-            cursor="cursor-pointer"
-            onClick={(e) => openAuthDropdown(e as React.MouseEvent)}
+            cursor={role === 'admin' ? 'cursor-default' : 'cursor-pointer'}
+            onClick={(e) => {
+              if (role !== 'admin') {
+                openAuthDropdown(e as React.MouseEvent);
+              }
+            }}
           />
         </div>
         <p className="px-3 flex-1">{formatDate(invitedAt)}</p>

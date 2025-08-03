@@ -9,14 +9,16 @@ interface ManualAddMaterialProps {
   setNewMaterials: (
     fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
   ) => void;
-  existingMaterials?: string[]; // 원자재 코드만 저장
+  existingMaterials?: string[]; // 기존 원자재 코드만 저장
+  selectedMaterials?: MaterialItemModel[]; // 현재 선택된 원자재들
   showToast?: () => void;
 }
 
 const ManualAddMaterial = ({
   setIsManualAddMode,
   setNewMaterials,
-  existingMaterials, // 원자재 코드 목록 받기
+  existingMaterials, // 기존 원자재 코드 목록 받기
+  selectedMaterials = [], // 현재 선택된 원자재들
   showToast,
 }: ManualAddMaterialProps) => {
   // 각 필드의 값을 직접 관리
@@ -63,8 +65,12 @@ const ManualAddMaterial = ({
   };
 
   const onSubmit = (data: MaterialItemModel) => {
-    // 중복 검사 - 코드만 비교
-    const isDuplicate = existingMaterials?.includes(data.code);
+    // 중복 검사 - 기존 원자재 + 현재 선택된 원자재들
+    const isExistingDuplicate = existingMaterials?.includes(data.code);
+    const isSelectedDuplicate = selectedMaterials.some(
+      (material) => material.code === data.code
+    );
+    const isDuplicate = isExistingDuplicate || isSelectedDuplicate;
 
     if (isDuplicate) {
       // 토스트 메시지 표시 (토스트 시스템이 있다면)

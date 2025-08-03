@@ -103,6 +103,7 @@ export { default as useAssignMaterialProduct } from './stock/material/use-assign
 export { default as useCreateMaterialHistory } from './stock/material-history/use-create-material-history';
 export { default as useCreateSingleMaterialHistory } from './stock/material-history/use-create-single-material-history';
 export { default as useGetMaterialHistory } from './stock/material-history/use-get-material-history';
+export { default as useGetMaterialHistoryDetail } from './stock/material-history/use-get-material-history-detail';
 
 // Material product related hooks
 export { default as useMaterialProduct } from './stock/use-material-product';

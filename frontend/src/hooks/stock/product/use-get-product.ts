@@ -6,11 +6,21 @@ import {
 } from '@/types/data-model';
 
 interface GetProductListModel {
-  factory_id: number;
   q?: string;
   page?: number;
   page_size?: number;
 }
+
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
 
 const useGetProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,14 +29,22 @@ const useGetProduct = () => {
   const [productList, setProductList] = useState<ProductResponseModel[]>([]);
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
 
-  // 제품 목록 조회 (factory_id, q, page, page_size)
-  const getProductList = useCallback(async (params: GetProductListModel) => {
+  // 제품 목록 조회 (q, page, page_size)
+  const getProductList = useCallback(async (params: GetProductListModel = {}) => {
     setIsLoading(true);
     setError(null);
 
+    // 로컬스토리지에서 factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      setError('공장 정보가 없습니다.');
+      setIsLoading(false);
+      return { success: false, error: '공장 정보가 없습니다.' };
+    }
+
     try {
       const queryParams = new URLSearchParams();
-      queryParams.append('factory_id', params.factory_id.toString());
+      queryParams.append('factory_id', factoryId.toString());
       if (params.q) queryParams.append('q', params.q);
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.page_size)

@@ -1,5 +1,5 @@
 import { CalendarCheck, CaretDown } from '@phosphor-icons/react';
-import ProductStockLogDropdown from '../../../../../../ui/dropdown/select-period-dropdown';
+import ProductStockLogDropdown from '../../../../../../ui/dropdown/select-period-dropdown/select-period-dropdown';
 import { useState } from 'react';
 import MiniBtn from '@/ui/mini-btn';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -100,7 +100,7 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
                 onChange={(e) =>
                   periodSelector.handleDateAutoHyphen(
                     e.target.value,
-                    periodSelector.setCustomStartDate
+                    periodSelector.handleStartDateChange
                   )
                 }
                 maxLength={10}
@@ -117,7 +117,7 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
                 onChange={(e) =>
                   periodSelector.handleDateAutoHyphen(
                     e.target.value,
-                    periodSelector.setCustomEndDate
+                    periodSelector.handleEndDateChange
                   )
                 }
                 maxLength={10}
@@ -131,7 +131,7 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
         {/* 재고 이력 목록 */}
         {productId === null || histories.length === 0 ? (
           <NoHistoryBox
-            title="아직 등록된 재고 이력이 없어요."
+            title="등록된 재고 이력이 아직 없어요."
             text="입고나 출고와 관련된 재고 이력이 등록되면 이곳에서 확인할 수 있어요."
           />
         ) : (

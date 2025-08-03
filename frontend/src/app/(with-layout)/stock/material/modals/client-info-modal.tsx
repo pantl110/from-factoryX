@@ -45,7 +45,6 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     },
   });
 
-  const factoryId = useFactoryStore((state) => state.factoryId);
   const { clientList, getClients, searchClients } = useGetClient();
 
   // 드롭다운 상태 관리
@@ -57,10 +56,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
 
   // 초기 거래처 목록 로드
   useEffect(() => {
-    if (factoryId) {
-      getClients({ factory_id: factoryId });
-    }
-  }, [factoryId, getClients]);
+    getClients();
+  }, [getClients]);
 
   // 검색어 변경 시 debounce 적용
   const handleSearchChange = useCallback(
@@ -77,15 +74,13 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         if (keyword.trim()) {
           searchClients(keyword);
         } else {
-          if (factoryId) {
-            getClients({ factory_id: factoryId });
-          }
+          getClients();
         }
       }, 300);
 
       setDebounceTimer(timer);
     },
-    [debounceTimer, searchClients, getClients, factoryId]
+    [debounceTimer, searchClients, getClients]
   );
 
   // 컴포넌트 언마운트 시 타이머 클리어
@@ -112,7 +107,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
   };
 
   const clientItems = clientList?.data || [];
-  if (!factoryId) return null;
+  if (!clientItems.length) return null;
 
   // 필수 필드들의 값 감시
   const name = watch('name');

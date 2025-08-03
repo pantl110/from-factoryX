@@ -5,8 +5,7 @@ import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from './manual-add-material';
-import { ClientModel, MaterialItemModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import { MaterialItemModel, ClientModel } from '@/types/data-model';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import { useGetMaterial, useCreateMaterialHistory } from '@/hooks';
 import { useForm } from 'react-hook-form';
@@ -22,6 +21,17 @@ interface MaterialFormModel {
   price: { [key: string]: number | null };
 }
 
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
+
 const MaterialEnrollmentModal = ({
   onClose,
   clientInfo, // 추가: 상위에서 전달받는 거래처 정보
@@ -33,8 +43,8 @@ const MaterialEnrollmentModal = ({
   const [filteredMaterials, setFilteredMaterials] = useState<
     MaterialItemModel[]
   >([]);
+  const { getMaterialList } = useGetMaterial();
 
-  const factoryId = useFactoryStore((state) => state.factoryId);
   const [selectedMaterials, setSelectedMaterials] = useState<
     MaterialItemModel[]
   >([]);
@@ -44,14 +54,8 @@ const MaterialEnrollmentModal = ({
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const { setShouldReload } = useMaterialReloadStore();
 
-  const { getMaterialList } = useGetMaterial();
-
   // React Hook Form
-  const {
-    register,
-    setValue,
-    formState: { isValid },
-  } = useForm<MaterialFormModel>({
+  const { register, setValue } = useForm<MaterialFormModel>({
     mode: 'onChange',
   });
 
@@ -73,14 +77,14 @@ const MaterialEnrollmentModal = ({
 
   useEffect(() => {
     // 직접 추가 모드 진입 시 전체 원자재 코드 목록을 받아옴
-    if (isManualAddMode && factoryId) {
+    if (isManualAddMode) {
       getMaterialList({}).then((result) => {
         if (result.success && result.data) {
           setAllMaterials((result.data.data || []).map((mat) => mat.code));
         }
       });
     }
-  }, [isManualAddMode, factoryId, getMaterialList]);
+  }, [isManualAddMode, getMaterialList]);
 
   useEffect(() => {
     const searchMaterials = async () => {
@@ -147,7 +151,10 @@ const MaterialEnrollmentModal = ({
   };
 
   const handleRegister = async () => {
-    if (factoryId === null) {
+    // 로컬스토리지에서 factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       return;
     }
 
@@ -204,7 +211,7 @@ const MaterialEnrollmentModal = ({
                 onBlur={() => setTimeout(() => setIsOpen(false), 150)}
               />
               {isOpen && filteredMaterials.length > 0 && (
-                <div className="absolute left-0 top-12 z-10 w-full">
+                <div className="absolute left-0 top-14 w-[449.3px] z-10">
                   <MaterialNameDropdown
                     items={filteredMaterials}
                     onSelect={handleSelectMaterial}
@@ -255,6 +262,7 @@ const MaterialEnrollmentModal = ({
                   });
                 }}
                 existingMaterials={allMaterials}
+                selectedMaterials={selectedMaterials}
                 showToast={showToast}
               />
             )}

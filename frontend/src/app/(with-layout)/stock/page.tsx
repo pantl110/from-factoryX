@@ -15,6 +15,8 @@ import { ClientModel } from '@/types/data-model';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useToast from '@/hooks/use-toast';
+import { useGetMaterial } from '@/hooks';
+import useFactoryStore from '@/store/factory-store';
 
 const StockPageContent = () => {
   const stockTab = usePageStatusStore((state) => state.stockTab);
@@ -25,6 +27,8 @@ const StockPageContent = () => {
     const tabParam = searchParams.get('tab');
     if (tabParam === 'material') {
       setStockTab('material');
+    } else if (tabParam === 'product' || tabParam === null) {
+      setStockTab('product');
     }
   }, [setStockTab, searchParams]);
 
@@ -53,6 +57,8 @@ const StockPageContent = () => {
   const [isProductDetailPanelOpen, setIsProductDetailPanelOpen] =
     useState(false); // 품목 디테일 판넬 상태
   const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false); // 자재 디테일 판넬 상태
+
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 탭 변경
   const handleTabChange = (tab: StockTabType) => {
