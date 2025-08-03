@@ -20,16 +20,6 @@ class MaterialListOut(Schema):
     materials: List[dict]
 
 
-class MaterialSummaryOut(Schema):
-    id: int
-    name: str
-    code: str
-    spec: str
-    unit: str
-    current_stock: int
-    standard_stock: int
-
-
 class MaterialDetailOut(Schema):
     id: int
     name: str
@@ -96,10 +86,6 @@ class MaterialProductConnectionOut(Schema):
     material_name: str = Field(..., description="원자재명")
 
 
-# Onboarding Tab
-# assign_materialproduct
-
-
 class ProductListOut(Schema):
     id: int
     factory: int
@@ -118,6 +104,28 @@ class MaterialHistoryDetailResponseOut(Schema):
     total_stock: int
     purchase_tax_invoice_id: Optional[int]
     cash_receipt_id: Optional[int]
+
+
+
+# ------------------------------------------------------------
+# Material API
+# ------------------------------------------------------------
+
+# (POST) Assign Material
+class AssignMaterialOut(Schema):
+    material_ids: List[int]
+    message: str
+
+
+# (GET) Material By Factory
+class MaterialSummaryOut(Schema):
+    id: int
+    name: str
+    code: str
+    spec: str
+    unit: str
+    current_stock: int
+    standard_stock: int
 
 
 # ------------------------------------------------------------

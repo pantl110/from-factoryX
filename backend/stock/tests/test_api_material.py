@@ -6,7 +6,7 @@ from user.api import router as user_router
 from stock.api_material import router as material_router
 
 from user.models import User
-from factory.models import Factory, FactoryClient
+from factory.models import Factory, FactoryClient, FactoryMember
 from stock.models import Material
 from user.models import EmailVerification
 
@@ -33,6 +33,15 @@ class TestMaterialAPI(TestCase):
             owner=self.user,
             name="Test Factory",
             business_registration_number="123-45-67890",
+        )
+        
+        # FactoryMember 생성 (권한 문제 해결)
+        self.factory_member = FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
         )
         
         # 테스트 원자재 생성
@@ -62,10 +71,12 @@ class TestMaterialAPI(TestCase):
         """공장별 원자재 목록 조회 성공 테스트"""
         headers = await self.authenticate()
         
-        response = await self.client.get(f"/factory/{self.factory.id}", headers=headers)
+        # factory_id를 GET 파라미터로 전달
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
+        # 페이지네이션 응답 구조 확인
         self.assertIn("data", data)
         self.assertIn("count", data)
         self.assertIn("totalCnt", data)
@@ -88,26 +99,36 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(data["pageCnt"], 1)
         self.assertEqual(data["curPage"], 1)
 
+    async def test_get_materials_by_factory_missing_factory_id(self):
+        """factory_id가 없는 경우 테스트"""
+        headers = await self.authenticate()
+        
+        response = await self.client.get("", headers=headers)
+        self.assertEqual(response.status_code, 400)
+        
+        data = response.json()
+        self.assertEqual(data.get("message") or data.get("detail"), "factory_id를 입력해야 합니다.")
+
     async def test_get_materials_by_factory_not_found(self):
         """존재하지 않는 공장 조회 테스트"""
         headers = await self.authenticate()
         
-        response = await self.client.get("/factory/99999", headers=headers)
+        response = await self.client.get("?factory_id=99999", headers=headers)
         self.assertEqual(response.status_code, 404)
         
         data = response.json()
-        self.assertEqual(data.get("message") or data.get("detail"), "공장 정보를 찾을 수 없습니다.")
+        self.assertEqual(data.get("message") or data.get("detail"), "해당 공장에 멤버가 아닙니다.")
 
     async def test_get_materials_by_factory_unauthorized(self):
         """인증되지 않은 사용자 테스트"""
-        response = await self.client.get(f"/factory/{self.factory.id}")
+        response = await self.client.get(f"?factory_id={self.factory.id}")
         self.assertEqual(response.status_code, 401)
 
     async def test_get_material_detail_success(self):
         """원자재 상세 조회 성공 테스트"""
         headers = await self.authenticate()
         
-        response = await self.client.get(f"/{self.material.id}", headers=headers)
+        response = await self.client.get(f"/{self.material.id}?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
@@ -119,11 +140,21 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(data["current_stock"], 100)
         self.assertEqual(data["standard_stock"], 50)
 
+    async def test_get_material_detail_missing_factory_id(self):
+        """factory_id가 없는 경우 테스트"""
+        headers = await self.authenticate()
+        
+        response = await self.client.get(f"/{self.material.id}", headers=headers)
+        self.assertEqual(response.status_code, 400)
+        
+        data = response.json()
+        self.assertEqual(data.get("message") or data.get("detail"), "factory_id를 입력해야 합니다.")
+
     async def test_get_material_detail_not_found(self):
         """존재하지 않는 원자재 조회 테스트"""
         headers = await self.authenticate()
         
-        response = await self.client.get("/99999", headers=headers)
+        response = await self.client.get(f"/99999?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 404)
         
         data = response.json()
@@ -131,7 +162,7 @@ class TestMaterialAPI(TestCase):
 
     async def test_get_material_detail_unauthorized(self):
         """인증되지 않은 사용자 테스트"""
-        response = await self.client.get(f"/{self.material.id}")
+        response = await self.client.get(f"/{self.material.id}?factory_id={self.factory.id}")
         self.assertEqual(response.status_code, 401)
 
     async def test_update_material_success(self):
@@ -145,7 +176,7 @@ class TestMaterialAPI(TestCase):
             "standard_stock": 75
         }
         
-        response = await self.client.patch(f"/{self.material.id}", headers=headers, json=payload)
+        response = await self.client.patch(f"/{self.material.id}?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
@@ -170,7 +201,7 @@ class TestMaterialAPI(TestCase):
             "name": "부분 수정된 원자재"
         }
         
-        response = await self.client.patch(f"/{self.material.id}", headers=headers, json=payload)
+        response = await self.client.patch(f"/{self.material.id}?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
@@ -198,11 +229,25 @@ class TestMaterialAPI(TestCase):
             "code": "TEST002"
         }
         
-        response = await self.client.patch(f"/{self.material.id}", headers=headers, json=payload)
+        response = await self.client.patch(f"/{self.material.id}?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
         
         data = response.json()
         self.assertEqual(data.get("message") or data.get("detail"), "이미 존재하는 자재코드입니다.")
+
+    async def test_update_material_missing_factory_id(self):
+        """factory_id가 없는 경우 테스트"""
+        headers = await self.authenticate()
+        
+        payload = {
+            "name": "수정된 원자재"
+        }
+        
+        response = await self.client.patch(f"/{self.material.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        
+        data = response.json()
+        self.assertEqual(data.get("message") or data.get("detail"), "factory_id를 입력해야 합니다.")
 
     async def test_update_material_not_found(self):
         """존재하지 않는 원자재 수정 테스트"""
@@ -212,7 +257,7 @@ class TestMaterialAPI(TestCase):
             "name": "수정된 원자재"
         }
         
-        response = await self.client.patch("/99999", headers=headers, json=payload)
+        response = await self.client.patch(f"/99999?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 404)
         
         data = response.json()
@@ -224,14 +269,14 @@ class TestMaterialAPI(TestCase):
             "name": "수정된 원자재"
         }
         
-        response = await self.client.patch(f"/{self.material.id}", json=payload)
+        response = await self.client.patch(f"/{self.material.id}?factory_id={self.factory.id}", json=payload)
         self.assertEqual(response.status_code, 401)
 
     async def test_delete_material_success(self):
         """원자재 삭제 성공 테스트"""
         headers = await self.authenticate()
         
-        response = await self.client.delete(f"/{self.material.id}", headers=headers)
+        response = await self.client.delete(f"/{self.material.id}?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
@@ -241,11 +286,21 @@ class TestMaterialAPI(TestCase):
         material_exists = await sync_to_async(Material.objects.filter(id=self.material.id).exists)()
         self.assertFalse(material_exists)
 
+    async def test_delete_material_missing_factory_id(self):
+        """factory_id가 없는 경우 테스트"""
+        headers = await self.authenticate()
+        
+        response = await self.client.delete(f"/{self.material.id}", headers=headers)
+        self.assertEqual(response.status_code, 400)
+        
+        data = response.json()
+        self.assertEqual(data.get("message") or data.get("detail"), "factory_id를 입력해야 합니다.")
+
     async def test_delete_material_not_found(self):
         """존재하지 않는 원자재 삭제 테스트"""
         headers = await self.authenticate()
         
-        response = await self.client.delete("/99999", headers=headers)
+        response = await self.client.delete(f"/99999?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 404)
         
         data = response.json()
@@ -253,7 +308,153 @@ class TestMaterialAPI(TestCase):
 
     async def test_delete_material_unauthorized(self):
         """인증되지 않은 사용자 테스트"""
-        response = await self.client.delete(f"/{self.material.id}")
+        response = await self.client.delete(f"/{self.material.id}?factory_id={self.factory.id}")
+        self.assertEqual(response.status_code, 401)
+
+    async def test_assign_material_success(self):
+        """원자재 생성 및 품목 연결 성공 테스트"""
+        headers = await self.authenticate()
+        
+        # 테스트용 Product 생성
+        from stock.models import Product
+        product = await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            name="테스트 제품",
+            code="PROD100",
+            unit="EA",
+            spec="테스트 스펙"
+        )
+        
+        payload = {
+            "product_id": product.id,
+            "materials": [
+                {"name": "신규원자재1", "code": "NEWMAT001", "spec": "규격A", "quantity": 10},
+                {"name": "신규원자재2", "code": "NEWMAT002", "spec": "규격B", "quantity": 20},
+                {"name": self.material.name, "code": self.material.code, "spec": self.material.spec, "quantity": 30},  # 기존 원자재
+            ]
+        }
+        
+        response = await self.client.post(f"/assign?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 201)
+
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertIn("material_ids", data)
+        self.assertIn("message", data)
+        self.assertEqual(data["message"], "원자재가 성공적으로 생성 및 연결되었습니다.")
+        self.assertEqual(len(data["material_ids"]), 3)  # 3개의 원자재 ID 반환
+
+        # DB에 신규 원자재가 생성되었는지, 연결이 되었는지 확인
+        from stock.models import Material, MaterialProduct
+        mat1 = await sync_to_async(Material.objects.get)(code="NEWMAT001", factory=self.factory)
+        mat2 = await sync_to_async(Material.objects.get)(code="NEWMAT002", factory=self.factory)
+        
+        # 반환된 ID들이 실제 생성된 원자재 ID와 일치하는지 확인
+        self.assertIn(mat1.id, data["material_ids"])
+        self.assertIn(mat2.id, data["material_ids"])
+        self.assertIn(self.material.id, data["material_ids"])
+        
+        # 연결 확인
+        self.assertTrue(await sync_to_async(MaterialProduct.objects.filter(product=product, material=mat1, quantity=10).exists)())
+        self.assertTrue(await sync_to_async(MaterialProduct.objects.filter(product=product, material=mat2, quantity=20).exists)())
+        self.assertTrue(await sync_to_async(MaterialProduct.objects.filter(product=product, material=self.material, quantity=30).exists)())
+
+    async def test_assign_material_missing_factory_id(self):
+        """factory_id가 없는 경우 테스트"""
+        headers = await self.authenticate()
+        
+        from stock.models import Product
+        product = await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            name="테스트 제품",
+            code="PROD200",
+            unit="EA",
+            spec="테스트 스펙"
+        )
+        
+        payload = {
+            "product_id": product.id,
+            "materials": [
+                {"name": "신규원자재", "code": "NEWCODE", "spec": "규격", "quantity": 5}
+            ]
+        }
+        
+        response = await self.client.post("/assign", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        
+        data = response.json()
+        self.assertEqual(data.get("message") or data.get("detail"), "factory_id를 입력해야 합니다.")
+
+    async def test_assign_material_wrong_factory(self):
+        """품목이 공장에 속하지 않을 때 실패 테스트"""
+        headers = await self.authenticate()
+        
+        from stock.models import Product
+        # 다른 공장, 다른 품목 생성
+        other_factory = await sync_to_async(Factory.objects.create)(name='다른공장', owner=self.user)
+        other_product = await sync_to_async(Product.objects.create)(
+            factory=other_factory, name='다른제품', code='OTHERPROD', unit='EA', spec='스펙'
+        )
+        
+        payload = {
+            "product_id": other_product.id,
+            "materials": [
+                {"name": "신규원자재", "code": "NEWCODE", "spec": "규격", "quantity": 5}
+            ]
+        }
+        
+        response = await self.client.post(f"/assign?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        
+        data = response.json()
+        self.assertEqual(data.get("message") or data.get("detail"), "품목이 해당 공장에 속하지 않습니다.")
+
+    async def test_assign_material_duplicate_code(self):
+        """원자재 코드 중복 등으로 실패 테스트"""
+        headers = await self.authenticate()
+        
+        from stock.models import Product
+        product = await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            name="테스트 제품",
+            code="PROD300",
+            unit="EA",
+            spec="테스트 스펙"
+        )
+        
+        payload = {
+            "product_id": product.id,
+            "materials": [
+                {"name": "철판", "code": self.material.code, "spec": "3mm 두께", "quantity": 10},  # 이미 존재하는 원자재
+                {"name": "철판", "code": self.material.code, "spec": "3mm 두께", "quantity": 20},  # 중복 입력
+            ]
+        }
+        
+        response = await self.client.post(f"/assign?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        
+        data = response.json()
+        self.assertEqual(data.get("message") or data.get("detail"), "원자재 코드가 중복되거나 연결 정보에 오류가 있습니다.")
+
+    async def test_assign_material_unauthorized(self):
+        """인증되지 않은 사용자 테스트"""
+        from stock.models import Product
+        product = await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            name="테스트 제품",
+            code="PROD400",
+            unit="EA",
+            spec="테스트 스펙"
+        )
+        
+        payload = {
+            "product_id": product.id,
+            "materials": [
+                {"name": "신규원자재", "code": "NEWCODE", "spec": "규격", "quantity": 5}
+            ]
+        }
+        
+        response = await self.client.post(f"/assign?factory_id={self.factory.id}", json=payload)
         self.assertEqual(response.status_code, 401)
 
     async def test_multiple_materials_in_factory(self):
@@ -279,7 +480,7 @@ class TestMaterialAPI(TestCase):
         )
         
         headers = await self.authenticate()
-        response = await self.client.get(f"/factory/{self.factory.id}", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
@@ -300,7 +501,7 @@ class TestMaterialAPI(TestCase):
             "code": "TEST001"  # 기존과 같은 코드
         }
         
-        response = await self.client.patch(f"/{self.material.id}", headers=headers, json=payload)
+        response = await self.client.patch(f"/{self.material.id}?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
@@ -316,10 +517,11 @@ class TestMaterialAPI(TestCase):
             "current_stock": None
         }
         
-        response = await self.client.patch(f"/{self.material.id}", headers=headers, json=payload)
+        response = await self.client.patch(f"/{self.material.id}?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
-        # 400 에러 메시지 확인
-        self.assertIn("공란 또는 null 불가", response.json().get("detail", ""))
+        
+        data = response.json()
+        self.assertIn("공란 또는 null 불가", data.get("detail", ""))
 
     async def test_material_update_with_empty_string(self):
         """빈 문자열로 수정하는 경우 테스트"""
@@ -330,86 +532,11 @@ class TestMaterialAPI(TestCase):
             "spec": ""
         }
         
-        response = await self.client.patch(f"/{self.material.id}", headers=headers, json=payload)
+        response = await self.client.patch(f"/{self.material.id}?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
-        # 400 에러 메시지 확인
-        self.assertIn("공란 또는 null 불가", response.json().get("detail", ""))
-
-    async def test_assign_materialproduct_success(self):
-        """원자재 생성 및 품목 연결 성공 테스트"""
-        headers = await self.authenticate()
-        # 테스트용 Product 생성
-        from stock.models import Product
-        product = await sync_to_async(Product.objects.create)(
-            factory=self.factory,
-            name="테스트 제품",
-            code="PROD100",
-            unit="EA",
-            spec="테스트 스펙"
-        )
-        payload = {
-            "factory_id": self.factory.id,
-            "product_id": product.id,
-            "materials": [
-                {"name": "신규원자재1", "code": "NEWMAT001", "spec": "규격A", "quantity": 10},
-                {"name": "신규원자재2", "code": "NEWMAT002", "spec": "규격B", "quantity": 20},
-                {"name": self.material.name, "code": self.material.code, "spec": self.material.spec, "quantity": 30},  # 기존 원자재
-            ]
-        }
-        response = await self.client.post("/assign", headers=headers, json=payload)
-        self.assertEqual(response.status_code, 201)
-
-        # DB에 신규 원자재가 생성되었는지, 연결이 되었는지 확인
-        from stock.models import Material, MaterialProduct
-        mat1 = await sync_to_async(Material.objects.get)(code="NEWMAT001", factory=self.factory)
-        mat2 = await sync_to_async(Material.objects.get)(code="NEWMAT002", factory=self.factory)
-        # 연결 확인
-        self.assertTrue(await sync_to_async(MaterialProduct.objects.filter(product=product, material=mat1, quantity=10).exists)())
-        self.assertTrue(await sync_to_async(MaterialProduct.objects.filter(product=product, material=mat2, quantity=20).exists)())
-        self.assertTrue(await sync_to_async(MaterialProduct.objects.filter(product=product, material=self.material, quantity=30).exists)())
-
-    async def test_assign_materialproduct_wrong_factory(self):
-        """품목이 공장에 속하지 않을 때 실패 테스트"""
-        headers = await self.authenticate()
-        from stock.models import Product
-        # 다른 공장, 다른 품목 생성
-        other_factory = await sync_to_async(Factory.objects.create)(name='다른공장', owner=self.user)
-        other_product = await sync_to_async(Product.objects.create)(
-            factory=other_factory, name='다른제품', code='OTHERPROD', unit='EA', spec='스펙'
-        )
-        payload = {
-            "factory_id": self.factory.id,
-            "product_id": other_product.id,
-            "materials": [
-                {"name": "신규원자재", "code": "NEWCODE", "spec": "규격", "quantity": 5}
-            ]
-        }
-        response = await self.client.post("/assign", headers=headers, json=payload)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("품목이 해당 공장에 속하지 않습니다.", response.json().get("detail", ""))
-
-    async def test_assign_materialproduct_duplicate_code(self):
-        """원자재 코드 중복 등으로 실패 테스트"""
-        headers = await self.authenticate()
-        from stock.models import Product
-        product = await sync_to_async(Product.objects.create)(
-            factory=self.factory,
-            name="테스트 제품",
-            code="PROD200",
-            unit="EA",
-            spec="테스트 스펙"
-        )
-        payload = {
-            "factory_id": self.factory.id,
-            "product_id": product.id,
-            "materials": [
-                {"name": "철판", "code": self.material.code, "spec": "3mm 두께", "quantity": 10},  # 이미 존재하는 원자재
-                {"name": "철판", "code": self.material.code, "spec": "3mm 두께", "quantity": 20},  # 중복 입력
-            ]
-        }
-        response = await self.client.post("/assign", headers=headers, json=payload)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("원자재 코드가 중복되거나 연결 정보에 오류가 있습니다.", response.json().get("detail", ""))
+        
+        data = response.json()
+        self.assertIn("공란 또는 null 불가", data.get("detail", ""))
 
     async def test_get_materials_by_factory_search_name(self):
         """자재명(q)으로 검색 테스트"""
@@ -432,10 +559,12 @@ class TestMaterialAPI(TestCase):
             current_stock=20,
             standard_stock=10
         )
+        
         headers = await self.authenticate()
         # 자재명 일부로 검색
-        response = await self.client.get(f"/factory/{self.factory.id}?q=알루미늄", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&q=알루미늄", headers=headers)
         self.assertEqual(response.status_code, 200)
+        
         data = response.json()
         self.assertEqual(len(data["data"]), 1)
         self.assertEqual(data["data"][0]["name"], "알루미늄 판재")
@@ -451,10 +580,12 @@ class TestMaterialAPI(TestCase):
             current_stock=5,
             standard_stock=2
         )
+        
         headers = await self.authenticate()
         # 자재코드 일부로 검색
-        response = await self.client.get(f"/factory/{self.factory.id}?q=COPPER", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&q=COPPER", headers=headers)
         self.assertEqual(response.status_code, 200)
+        
         data = response.json()
         self.assertEqual(len(data["data"]), 1)
         self.assertEqual(data["data"][0]["code"], "COPPER123")
@@ -462,8 +593,9 @@ class TestMaterialAPI(TestCase):
     async def test_get_materials_by_factory_search_no_result(self):
         """검색 결과가 없는 경우 테스트"""
         headers = await self.authenticate()
-        response = await self.client.get(f"/factory/{self.factory.id}?q=없는자재", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&q=없는자재", headers=headers)
         self.assertEqual(response.status_code, 200)
+        
         data = response.json()
         self.assertEqual(len(data["data"]), 0)
 
@@ -496,9 +628,11 @@ class TestMaterialAPI(TestCase):
             current_stock=50,
             standard_stock=25
         )
+        
         headers = await self.authenticate()
-        response = await self.client.get(f"/factory/{self.factory.id}?order=asc", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&order=asc", headers=headers)
         self.assertEqual(response.status_code, 200)
+        
         data = response.json()
         stocks = [m["current_stock"] for m in data["data"]]
         self.assertEqual(stocks, sorted(stocks))
@@ -532,9 +666,11 @@ class TestMaterialAPI(TestCase):
             current_stock=50,
             standard_stock=25
         )
+        
         headers = await self.authenticate()
-        response = await self.client.get(f"/factory/{self.factory.id}?order=desc", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&order=desc", headers=headers)
         self.assertEqual(response.status_code, 200)
+        
         data = response.json()
         stocks = [m["current_stock"] for m in data["data"]]
         self.assertEqual(stocks, sorted(stocks, reverse=True))
@@ -568,9 +704,11 @@ class TestMaterialAPI(TestCase):
             current_stock=50,
             standard_stock=25
         )
+        
         headers = await self.authenticate()
-        response = await self.client.get(f"/factory/{self.factory.id}", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
+        
         data = response.json()
         stocks = [m["current_stock"] for m in data["data"]]
         self.assertEqual(stocks, sorted(stocks, reverse=True))  # 기본값은 desc
@@ -592,10 +730,10 @@ class TestMaterialAPI(TestCase):
         headers = await self.authenticate()
         
         # 첫 번째 페이지 테스트
-        response = await self.client.get(f"/factory/{self.factory.id}?page=1&limit=10", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&page=1&limit=10", headers=headers)
         self.assertEqual(response.status_code, 200)
-        data = response.json()
         
+        data = response.json()
         self.assertIn("data", data)
         self.assertIn("count", data)
         self.assertIn("totalCnt", data)
@@ -609,10 +747,10 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(data["curPage"], 1)
         
         # 두 번째 페이지 테스트
-        response = await self.client.get(f"/factory/{self.factory.id}?page=2&limit=10", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&page=2&limit=10", headers=headers)
         self.assertEqual(response.status_code, 200)
-        data = response.json()
         
+        data = response.json()
         self.assertEqual(len(data["data"]), 10)
         self.assertEqual(data["count"], 10)
         self.assertEqual(data["totalCnt"], 26)
@@ -620,10 +758,10 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(data["curPage"], 2)
         
         # 마지막 페이지 테스트
-        response = await self.client.get(f"/factory/{self.factory.id}?page=3&limit=10", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&page=3&limit=10", headers=headers)
         self.assertEqual(response.status_code, 200)
-        data = response.json()
         
+        data = response.json()
         self.assertEqual(len(data["data"]), 6)  # 마지막 페이지는 6개
         self.assertEqual(data["count"], 6)
         self.assertEqual(data["totalCnt"], 26)

@@ -1,3 +1,4 @@
+from sys import int_info
 from ninja import ModelSchema, Field, FilterSchema, Schema
 from pydantic import BaseModel
 from typing import Optional, List, Any
@@ -62,17 +63,6 @@ class FactoryClientCreateIn(Schema):
     address: Optional[str] = Field(default=None, description="사업장 주소")
 
 
-class MaterialUpdateIn(Schema):
-    """원자재 수정 입력 스키마"""
-
-    name: Optional[str] = Field(default=None, description="자재명")
-    code: Optional[str] = Field(default=None, description="자재코드")
-    spec: Optional[str] = Field(default=None, description="규격")
-    unit: Optional[str] = Field(default=None, description="단위")
-    current_stock: Optional[int] = Field(default=None, description="현재 재고")
-    standard_stock: Optional[int] = Field(default=None, description="안전 재고")
-
-
 class MaterialProductConnectionIn(Schema):
     """MaterialProduct 연결 정보"""
 
@@ -131,13 +121,6 @@ class MaterialAssignmentIn(Schema):
 
 
 # Onboarding Tab
-class AssignMaterialIn(Schema):
-    """원자재 생성 및 품목 연결 입력 스키마"""
-    factory_id: int = Field(..., description="공장 ID")
-    product_id: int = Field(..., description="품목 ID")
-    materials: List[MaterialAssignmentIn] = Field(..., description="원자재 목록")
-
-
 class ProductAssignmentIn(Schema):
     name: str = Field(..., description="품목명")
     code: str = Field(..., description="품목코드")
@@ -149,6 +132,26 @@ class AssignProductIn(Schema):
     factory_id: int = Field(..., description="공장 ID")
     material_id: int = Field(..., description="원자재 ID")
     products: List[ProductAssignmentIn] = Field(..., description="연결할 품목 목록")
+
+
+# ------------------------------------------------------------
+# Material API
+# ------------------------------------------------------------
+
+# (POST) Assign Material
+class AssignMaterialIn(Schema):
+    product_id: int
+    materials: List[MaterialAssignmentIn]
+
+
+# (PATCH) Update Material
+class MaterialUpdateIn(Schema):
+    name: Optional[str] = Field(default=None)
+    code: Optional[str] = Field(default=None)
+    spec: Optional[str] = Field(default=None)
+    unit: Optional[str] = Field(default=None)
+    current_stock: Optional[int] = Field(default=None)
+    standard_stock: Optional[int] = Field(default=None)
 
 
 # ------------------------------------------------------------
