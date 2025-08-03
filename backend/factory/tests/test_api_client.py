@@ -3,7 +3,7 @@ from user.api import router as user_router
 from factory.api_client import router
 from ninja.testing import TestAsyncClient
 from user.models import User
-from factory.models import Factory, FactoryClient
+from factory.models import Factory, FactoryClient, FactoryMember
 from asgiref.sync import sync_to_async
 
 
@@ -21,9 +21,17 @@ class TestFactoryClient(TestCase):
             name="Test Factory",
             business_registration_number="123-45-67890",
         )
+        # FactoryMember 생성
+        self.factory_member = FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role="manager",
+            invited_by=self.user,
+            status="active"
+        )
         self.client_obj = FactoryClient.objects.create(
             factory=self.factory,
-            type="customer",  # 명시적으로 추가!
+            type="customer",
             name="거래처1",
             business_registration_number="111-22-33333",
             representative_name="홍길동",
@@ -53,8 +61,8 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         payload = {
-            "factory_id": self.factory.id,
             "name": "거래처2",
+            "type": "supplier",
             "business_registration_number": "222-33-44444",
             "representative_name": "이몽룡",
             "email": "client2@example.com",
@@ -62,11 +70,42 @@ class TestFactoryClient(TestCase):
             "business_type": "도소매",
             "business_category": "전자",
         }
-        response = await self.client.post("/", headers=headers, json=payload)
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertEqual(data["name"], "거래처2")
+        self.assertEqual(data["type"], "supplier")
         self.assertEqual(data["business_registration_number"], "222-33-44444")
+
+    async def test_create_factory_client_duplicate_name(self):
+        """
+        중복 거래처명 등록 테스트
+        """
+        headers = await self.authenticate()
+        payload = {
+            "name": "거래처1",  # 이미 존재하는 이름
+            "type": "supplier",
+            "business_registration_number": "999-99-99999",
+        }
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("이미 등록된 거래처입니다", data["detail"])
+
+    async def test_create_factory_client_invalid_type(self):
+        """
+        잘못된 거래처 타입 등록 테스트
+        """
+        headers = await self.authenticate()
+        payload = {
+            "name": "거래처3",
+            "type": "invalid_type",  # 잘못된 타입
+            "business_registration_number": "333-44-55555",
+        }
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("잘못된 거래처 타입입니다", data["detail"])
 
     async def test_list_factory_clients(self):
         """
@@ -90,6 +129,7 @@ class TestFactoryClient(TestCase):
         data = response.json()
         self.assertEqual(data["id"], self.client_obj.id)
         self.assertEqual(data["name"], "거래처1")
+        self.assertEqual(data["type"], "customer")
 
     async def test_update_factory_client(self):
         """
@@ -142,7 +182,7 @@ class TestFactoryClient(TestCase):
 
     async def test_search_all_fields(self):
         """
-        거래처 통합검색: 모든 주요 필드별 부분검색 및 client_type 반환 테스트
+        거래처 통합검색: 모든 주요 필드별 부분검색 및 type 반환 테스트
         """
         headers = await self.authenticate()
         # 각 필드별로 검색어를 다르게 테스트
@@ -166,13 +206,13 @@ class TestFactoryClient(TestCase):
                     any(value in str(item.get(field, "")) for item in data["data"]),
                     msg=f"{field} 검색 실패: {value}"
                 )
-                # 모든 결과에 client_type 필드가 포함되어 있는지 확인
+                # 모든 결과에 type 필드가 포함되어 있는지 확인
                 for item in data["data"]:
-                    self.assertIn("client_type", item)
+                    self.assertIn("type", item)
 
-    async def test_client_type_always_in_response(self):
+    async def test_type_always_in_response(self):
         """
-        거래처 목록 조회시 client_type 필드가 항상 포함되는지 테스트
+        거래처 목록 조회시 type 필드가 항상 포함되는지 테스트
         """
         headers = await self.authenticate()
         response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
@@ -180,7 +220,7 @@ class TestFactoryClient(TestCase):
         data = response.json()
         self.assertIn("data", data)
         for item in data["data"]:
-            self.assertIn("client_type", item)
+            self.assertIn("type", item)
 
     async def test_search_multiple_clients(self):
         """
@@ -190,6 +230,7 @@ class TestFactoryClient(TestCase):
         # 거래처 2, 3 추가 생성
         client2 = await sync_to_async(FactoryClient.objects.create)(
             factory=self.factory,
+            type="supplier",
             name="거래처2",
             business_registration_number="222-33-44444",
             representative_name="이몽룡",
@@ -200,6 +241,7 @@ class TestFactoryClient(TestCase):
         )
         client3 = await sync_to_async(FactoryClient.objects.create)(
             factory=self.factory,
+            type="customer",
             name="특별상사",
             business_registration_number="333-44-55555",
             representative_name="성춘향",
@@ -230,13 +272,13 @@ class TestFactoryClient(TestCase):
                     any(item["name"] == expected_name for item in data["data"]),
                     msg=f"q={q} 검색 결과에 {expected_name}이(가) 없음"
                 )
-                # client_type 필드도 항상 포함되어야 함
+                # type 필드도 항상 포함되어야 함
                 for item in data["data"]:
-                    self.assertIn("client_type", item)
+                    self.assertIn("type", item)
 
     async def test_search_multiple_clients_with_types(self):
         """
-        여러 거래처를 수주처/발주처 등 type을 다르게 생성 후, 통합검색(q)으로 각기 다른 거래처와 client_type이 검색되는지 테스트
+        여러 거래처를 수주처/발주처 등 type을 다르게 생성 후, 통합검색(q)으로 각기 다른 거래처와 type이 검색되는지 테스트
         """
         headers = await self.authenticate()
         # 거래처 2, 3 추가 생성 (type 다르게)
@@ -263,9 +305,9 @@ class TestFactoryClient(TestCase):
             business_category="식품",
         )
 
-        # (검색어, 기대 거래처명, 기대 client_type)
+        # (검색어, 기대 거래처명, 기대 type)
         search_cases = [
-            ("거래처1", "거래처1", "customer"),  # 기본값이 customer
+            ("거래처1", "거래처1", "customer"),
             ("222-33-44444", "거래처2", "supplier"),
             ("성춘향", "특별상사", "customer"),
             ("special@example.com", "특별상사", "customer"),
@@ -279,14 +321,14 @@ class TestFactoryClient(TestCase):
                 self.assertEqual(response.status_code, 200)
                 data = response.json()
                 self.assertIn("data", data)
-                # 검색 결과에 기대 거래처명이 포함되어 있고, client_type도 기대값인지 확인
+                # 검색 결과에 기대 거래처명이 포함되어 있고, type도 기대값인지 확인
                 self.assertTrue(
-                    any(item["name"] == expected_name and item["client_type"] == expected_type for item in data["data"]),
+                    any(item["name"] == expected_name and item["type"] == expected_type for item in data["data"]),
                     msg=f"q={q} 검색 결과에 {expected_name}({expected_type})이(가) 없음"
                 )
-                # client_type 필드도 항상 포함되어야 함
+                # type 필드도 항상 포함되어야 함
                 for item in data["data"]:
-                    self.assertIn("client_type", item)
+                    self.assertIn("type", item)
 
     async def test_search_without_q_returns_all(self):
         """
@@ -301,7 +343,7 @@ class TestFactoryClient(TestCase):
         # 응답 구조 확인
         for item in data["data"]:
             self.assertIn("id", item)
-            self.assertIn("client_type", item)
+            self.assertIn("type", item)
             self.assertIn("name", item)
 
     async def test_pagination_structure(self):
@@ -391,7 +433,7 @@ class TestFactoryClient(TestCase):
         
         # FactoryClientOut 스키마 필드 확인
         required_fields = [
-            "id", "client_type", "name", "business_registration_number",
+            "id", "type", "name", "business_registration_number",
             "representative_name", "business_type", "business_category",
             "phone", "email", "note"
         ]
@@ -402,5 +444,37 @@ class TestFactoryClient(TestCase):
             
             # 필드 타입 확인
             self.assertIsInstance(item["id"], int)
-            self.assertIsInstance(item["client_type"], str)
+            self.assertIsInstance(item["type"], str)
             self.assertIsInstance(item["name"], str)
+
+    async def test_create_factory_client_without_type(self):
+        """
+        type 필드 없이 거래처 등록 테스트 (기본값 customer 사용)
+        """
+        headers = await self.authenticate()
+        payload = {
+            "name": "거래처4",
+            "business_registration_number": "444-55-66666",
+            "representative_name": "김철수",
+        }
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data["name"], "거래처4")
+        self.assertEqual(data["type"], "customer")  # 기본값
+
+    async def test_create_factory_client_with_null_type(self):
+        """
+        type 필드를 null로 거래처 등록 테스트 (기본값 customer 사용)
+        """
+        headers = await self.authenticate()
+        payload = {
+            "name": "거래처5",
+            "type": None,
+            "business_registration_number": "555-66-77777",
+        }
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data["name"], "거래처5")
+        self.assertEqual(data["type"], "customer")  # 기본값

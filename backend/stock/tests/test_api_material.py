@@ -404,10 +404,10 @@ class TestMaterialAPI(TestCase):
         }
         
         response = await self.client.post(f"/assign?factory_id={self.factory.id}", headers=headers, json=payload)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
         
         data = response.json()
-        self.assertEqual(data.get("message") or data.get("detail"), "품목이 해당 공장에 속하지 않습니다.")
+        self.assertEqual(data.get("message") or data.get("detail"), "해당 제품이 존재하지 않습니다.")
 
     async def test_assign_material_duplicate_code(self):
         """원자재 코드 중복 등으로 실패 테스트"""

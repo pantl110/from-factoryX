@@ -1,14 +1,17 @@
 from ninja import Router, Query
+from ninja.errors import HttpError
 from ninja.pagination import paginate
 from api.security import jwt_auth
 from factory.schemas.inbound import FactoryClientCreateIn, FactoryClientUpdateIn, FactoryClientSearchFilter
 from factory.schemas.outbound import FactoryClientOut, FactoryClientDetailOut
-from factory.models import FactoryClient
+from factory.models import FactoryClient, Factory
 from asgiref.sync import sync_to_async
 from typing import List
-from factory.utils import get_factory_client_by_id, get_factory_by_id
+from factory.utils import is_factory_member
+
 
 router = Router(tags=["Factory Client"])
+
 
 @router.post(
     "",
@@ -18,14 +21,38 @@ router = Router(tags=["Factory Client"])
     auth=jwt_auth,
 )
 async def create_factory_client(request, payload: FactoryClientCreateIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     data = payload.dict()
-    factory_id = data.pop("factory_id")
-    factory = await get_factory_by_id(factory_id, user)
+    
+    existing_client = await FactoryClient.objects.filter(
+        factory_id=int(factory_id), 
+        name=data['name']
+    ).afirst()
+    
+    if existing_client:
+        raise HttpError(400, f"이미 등록된 거래처입니다: {data['name']}")
+    
+    data = payload.dict()
+    
+    if 'type' in data and data['type'] is not None:
+        valid_types = ['customer', 'supplier']
+        if data['type'] not in valid_types:
+            raise HttpError(400, f"잘못된 거래처 타입입니다. 'customer' 또는 'supplier' 중 하나를 입력해주세요.")
+    else:
+        if 'type' in data:
+            del data['type']
+    
+    factory = await Factory.objects.aget(id=int(factory_id))
     client = await FactoryClient.objects.acreate(factory=factory, **data)
     return 201, {
         "id": client.id,
-        "client_type": client.get_type_display() if hasattr(client, 'get_type_display') else client.type,
+        "type": client.get_type_display() if hasattr(client, 'get_type_display') else client.type,
         "name": client.name,
         "business_registration_number": client.business_registration_number,
         "representative_name": client.representative_name,
@@ -33,9 +60,9 @@ async def create_factory_client(request, payload: FactoryClientCreateIn):
         "business_category": client.business_category,
         "phone": client.phone,
         "email": client.email,
-        "fax": client.fax,  # 팩스번호 필드 추가
-        "address": client.address,  # 주소 필드 추가
-        "manager": client.manager,  # 담당자 필드 추가
+        "fax": client.fax,
+        "address": client.address,
+        "manager": client.manager,
         "note": client.note,
     }
 
@@ -50,40 +77,13 @@ async def create_factory_client(request, payload: FactoryClientCreateIn):
     auth=jwt_auth,
 )
 @paginate
-async def list_factory_clients(
-    request, 
-    factory_id: int, 
-    filters: FactoryClientSearchFilter = Query(None)
-):
-    """
-    입력 필드:
-    - factory_id: 공장 ID (필수, 쿼리 파라미터)
-    - q: 검색어 (선택, 미입력시 전체)
-
-    검색 대상 필드:
-    - name: 회사명
-    - business_registration_number: 사업자등록번호
-    - representative_name: 대표자명
-    - business_type: 업태
-    - business_category: 종목
-    - phone: 연락처
-    - email: 이메일
-
-    반환 필드:
-    - client_type: 거래처
-    - name: 회사명
-    - business_registration_number: 사업자등록번호
-    - representative_name: 대표자명
-    - business_type: 업태
-    - business_category: 종목
-    - phone: 연락처
-    - email: 이메일
-    - fax: 팩스번호
-    - address: 주소
-    - manager: 담당자
-    """
+async def list_factory_clients(request, filters: FactoryClientSearchFilter = Query(None)):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    await get_factory_by_id(factory_id, user)
+    await is_factory_member(int(factory_id), user)
 
     @sync_to_async
     def get_factory_clients():
@@ -103,7 +103,7 @@ async def list_factory_clients(
     result = [
         FactoryClientOut(
             id=c.id,
-            client_type=c.type,
+            type=c.type,
             name=c.name,
             business_registration_number=c.business_registration_number,
             representative_name=c.representative_name,
@@ -111,9 +111,9 @@ async def list_factory_clients(
             business_category=c.business_category,
             phone=c.phone,
             email=c.email,
-            fax=c.fax,  # 팩스번호 필드 추가
-            address=c.address,  # 주소 필드 추가
-            manager=c.manager,  # 담당자 필드 추가
+            fax=c.fax,
+            address=c.address,
+            manager=c.manager,
             note=c.note,
         )
         for c in clients
@@ -129,35 +129,22 @@ async def list_factory_clients(
     response={200: FactoryClientDetailOut, 404: dict},
     auth=jwt_auth,
 )
-async def get_factory_client(
-    request, 
-    client_id: int, 
-    factory_id: int
-):
-    """
-    입력 필드:
-    - client_id: 거래처 ID (필수, 쿼리 파라미터)
-
-    반환 필드:
-    - id: 거래처 ID
-    - client_type: 거래처
-    - name: 회사명
-    - business_registration_number: 사업자등록번호
-    - representative_name: 대표자명
-    - business_type: 업태
-    - business_category: 종목
-    - phone: 연락처
-    - email: 이메일
-    - fax: 팩스번호
-    - address: 주소
-    - manager: 담당자
-    - note: 비고
-    """
+async def get_factory_client(request, client_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    client = await get_factory_client_by_id(client_id, factory_id, user)
+    await is_factory_member(int(factory_id), user)
+    
+    try:
+        client = await FactoryClient.objects.aget(id=client_id, factory_id=int(factory_id))
+    except FactoryClient.DoesNotExist:
+        raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
+        
     return {
         "id": client.id,
-        "client_type": client.type,
+        "type": client.type,
         "name": client.name,
         "business_registration_number": client.business_registration_number,
         "representative_name": client.representative_name,
@@ -165,9 +152,9 @@ async def get_factory_client(
         "business_category": client.business_category,
         "phone": client.phone,
         "email": client.email,
-        "fax": client.fax,  # 팩스번호 필드 추가
-        "address": client.address,  # 주소 필드 추가
-        "manager": client.manager,  # 담당자 필드 추가
+        "fax": client.fax,
+        "address": client.address,
+        "manager": client.manager,
         "note": client.note,
     }
 
@@ -180,45 +167,18 @@ async def get_factory_client(
     response={200: FactoryClientDetailOut, 404: dict},
     auth=jwt_auth,
 )
-async def update_factory_client(
-    request,
-    client_id: int,
-    factory_id: int,
-    payload: FactoryClientUpdateIn,
-):
-    """
-    입력 필드:
-    - client_id: 거래처 ID (필수, 경로)
-    - factory_id: 공장 ID (필수, 경로)
-    - client_type: 거래처
-    - name: 회사명
-    - business_registration_number: 사업자등록번호
-    - representative_name: 대표자명
-    - business_type: 업태
-    - business_category: 종목
-    - phone: 연락처
-    - email: 이메일
-    - fax: 팩스번호
-    - address: 주소
-    - manager: 담당자
-    - note: 비고
-
-    반환 필드:
-    - client_type: 거래처
-    - name: 회사명
-    - business_registration_number: 사업자등록번호
-    - representative_name: 대표자명
-    - business_type: 업태
-    - business_category: 종목
-    - phone: 연락처
-    - email: 이메일
-    - fax: 팩스번호
-    - address: 주소
-    - manager: 담당자
-    - note: 비고
-    """
+async def update_factory_client(request, client_id: int, payload: FactoryClientUpdateIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    client = await get_factory_client_by_id(client_id, factory_id, user)
+    await is_factory_member(int(factory_id), user)
+    
+    try:
+        client = await FactoryClient.objects.aget(id=client_id, factory_id=int(factory_id))
+    except FactoryClient.DoesNotExist:
+        raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
     for field in [
         "type", "name", "business_registration_number", "representative_name",
         "business_type", "business_category", "phone", "email", "fax", "address", "manager", "note"
@@ -229,7 +189,7 @@ async def update_factory_client(
     await sync_to_async(client.save)()
     return {
         "id": client.id,
-        "client_type": client.type,
+        "type": client.type,
         "name": client.name,
         "business_registration_number": client.business_registration_number,
         "representative_name": client.representative_name,
@@ -237,9 +197,9 @@ async def update_factory_client(
         "business_category": client.business_category,
         "phone": client.phone,
         "email": client.email,
-        "fax": client.fax,  # 팩스번호 필드 추가
-        "address": client.address,  # 주소 필드 추가
-        "manager": client.manager,  # 담당자 필드 추가
+        "fax": client.fax,
+        "address": client.address,
+        "manager": client.manager,
         "note": client.note,
     }
 
@@ -252,8 +212,18 @@ async def update_factory_client(
     response={204: None, 404: dict},
     auth=jwt_auth,
 )
-async def delete_factory_client(request, client_id: int, factory_id: int):
+async def delete_factory_client(request, client_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    client = await get_factory_client_by_id(client_id, factory_id, user)
+    await is_factory_member(int(factory_id), user)
+    
+    try:
+        client = await FactoryClient.objects.aget(id=client_id, factory_id=int(factory_id))
+    except FactoryClient.DoesNotExist:
+        raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
+    
     await client.adelete()
-    return 204, None 
+    return 204, None

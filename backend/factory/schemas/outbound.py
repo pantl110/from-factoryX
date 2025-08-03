@@ -16,39 +16,6 @@ class FactoryEqOut(ModelSchema):
         fields = "__all__"
 
 
-# 거래처 관련 스키마
-class FactoryClientOut(Schema):
-    id: int
-    client_type: str
-    name: str
-    business_registration_number: Optional[str]
-    representative_name: Optional[str]
-    business_type: Optional[str]
-    business_category: Optional[str]
-    phone: Optional[str]
-    email: Optional[str]
-    fax: Optional[str]  # 팩스번호 필드 추가
-    address: Optional[str]  # 주소 필드 추가
-    manager: Optional[str]  # 담당자 필드 추가
-    note: Optional[str]
-
-
-class FactoryClientDetailOut(Schema):
-    id: int
-    client_type: str
-    name: str
-    business_registration_number: Optional[str]
-    representative_name: Optional[str]
-    business_type: Optional[str]
-    business_category: Optional[str]
-    phone: Optional[str]
-    email: Optional[str]
-    fax: Optional[str]  # 팩스번호 필드 추가
-    address: Optional[str]  # 주소 필드 추가
-    manager: Optional[str]  # 담당자 필드 추가
-    note: Optional[str]
-
-
 class FactoryMemberOut(Schema):
     id: int
     factory: int
@@ -71,3 +38,41 @@ class FactoryMemberOut(Schema):
             status=obj.status,
             invited_at=obj.invited_at.isoformat() if obj.invited_at else None,
         )
+
+
+
+# ------------------------------------------------------------
+# Factory Client API
+# ------------------------------------------------------------
+
+# 거래처 관련 스키마
+class FactoryClientOut(Schema):
+    id: int
+    type: str
+    name: str
+    business_registration_number: Optional[str]
+    representative_name: Optional[str]
+    business_type: Optional[str]
+    business_category: Optional[str]
+    phone: Optional[str]
+    email: Optional[str]
+    fax: Optional[str]  # 팩스번호 필드 추가
+    address: Optional[str]  # 주소 필드 추가
+    manager: Optional[str]  # 담당자 필드 추가
+    note: Optional[str]
+
+
+class FactoryClientDetailOut(Schema):
+    id: int
+    type: str
+    name: str
+    business_registration_number: Optional[str]
+    representative_name: Optional[str]
+    business_type: Optional[str]
+    business_category: Optional[str]
+    phone: Optional[str]
+    email: Optional[str]
+    fax: Optional[str]  # 팩스번호 필드 추가
+    address: Optional[str]  # 주소 필드 추가
+    manager: Optional[str]  # 담당자 필드 추가
+    note: Optional[str]

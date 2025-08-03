@@ -1,17 +1,11 @@
 from ninja import Router, Query
 from ninja.pagination import paginate
 from api.security import jwt_auth
-from stock.models import ProductHistory, Product
+from stock.models import ProductHistory
 from asgiref.sync import sync_to_async
 from typing import List
-from django.utils import timezone
-from datetime import timedelta
-from ninja.errors import HttpError
 
-from stock.schemas.inbound import (
-    ProductHistoryCreateIn,
-    ProductHistoryFilter,
-)
+from stock.schemas.inbound import ProductHistoryCreateIn, ProductHistoryFilter
 from stock.schemas.outbound import ProductHistoryOut
 from stock.utils import get_history_by_id, get_product_by_id
 

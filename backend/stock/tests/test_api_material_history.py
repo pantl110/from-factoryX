@@ -273,7 +273,7 @@ class TestMaterialHistoryAPI(TestCase):
         
         payload = {
             "material_id": self.material.id,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": 2000,
             "client_id": self.client_obj.id
@@ -298,7 +298,7 @@ class TestMaterialHistoryAPI(TestCase):
         
         payload = {
             "material_id": self.material.id,
-            "type": "소모",
+            "type": "consumption",
             "quantity": 30,
             "price": None,
             "client_id": self.client_obj.id
@@ -323,7 +323,7 @@ class TestMaterialHistoryAPI(TestCase):
         
         payload = {
             "material_id": 99999,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": 2000,
             "client_id": self.client_obj.id
@@ -341,7 +341,7 @@ class TestMaterialHistoryAPI(TestCase):
         
         payload = {
             "material_id": self.material.id,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": 2000,
             "client_id": 99999
@@ -377,7 +377,7 @@ class TestMaterialHistoryAPI(TestCase):
         
         payload = {
             "material_id": self.material.id,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": None,
             "client_id": self.client_obj.id
@@ -395,7 +395,7 @@ class TestMaterialHistoryAPI(TestCase):
         
         payload = {
             "material_id": self.material.id,
-            "type": "소모",
+            "type": "consumption",
             "quantity": 150,  # 현재 재고(100)보다 많은 수량
             "price": None,
             "client_id": self.client_obj.id
@@ -411,7 +411,7 @@ class TestMaterialHistoryAPI(TestCase):
         """인증되지 않은 사용자 테스트"""
         payload = {
             "material_id": self.material.id,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": 2000,
             "client_id": self.client_obj.id
@@ -428,7 +428,7 @@ class TestMaterialHistoryAPI(TestCase):
         # 구매 히스토리 생성
         purchase_payload = {
             "material_id": self.material.id,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": 2000,
             "client_id": self.client_obj.id
@@ -438,7 +438,7 @@ class TestMaterialHistoryAPI(TestCase):
         # 소모 히스토리 생성
         consumption_payload = {
             "material_id": self.material.id,
-            "type": "소모",
+            "type": "consumption",
             "quantity": 20,
             "price": None,
             "client_id": self.client_obj.id
@@ -459,7 +459,7 @@ class TestMaterialHistoryAPI(TestCase):
         # 히스토리 데이터 생성
         purchase_payload = {
             "material_id": self.material.id,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": 2000,
             "client_id": self.client_obj.id
@@ -468,7 +468,7 @@ class TestMaterialHistoryAPI(TestCase):
         
         consumption_payload = {
             "material_id": self.material.id,
-            "type": "소모",
+            "type": "consumption",
             "quantity": 20,
             "price": None,
             "client_id": self.client_obj.id
@@ -504,7 +504,7 @@ class TestMaterialHistoryAPI(TestCase):
         # 히스토리 데이터 생성
         purchase_payload = {
             "material_id": self.material.id,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": 2000,
             "client_id": self.client_obj.id
@@ -535,7 +535,7 @@ class TestMaterialHistoryAPI(TestCase):
         # 구매 히스토리 생성
         purchase_payload = {
             "material_id": self.material.id,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": 2000,
             "client_id": self.client_obj.id
@@ -545,7 +545,7 @@ class TestMaterialHistoryAPI(TestCase):
         # 소모 히스토리 생성
         consumption_payload = {
             "material_id": self.material.id,
-            "type": "소모",
+            "type": "consumption",
             "quantity": 20,
             "price": None,
             "client_id": self.client_obj.id
@@ -577,7 +577,7 @@ class TestMaterialHistoryAPI(TestCase):
         # 구매 히스토리 생성
         purchase_payload = {
             "material_id": self.material.id,
-            "type": "구매",
+            "type": "purchase",
             "quantity": 50,
             "price": 2000,
             "client_id": self.client_obj.id
@@ -587,7 +587,7 @@ class TestMaterialHistoryAPI(TestCase):
         # 소모 히스토리 생성
         consumption_payload = {
             "material_id": self.material.id,
-            "type": "소모",
+            "type": "consumption",
             "quantity": 20,
             "price": None,
             "client_id": self.client_obj.id
@@ -628,7 +628,7 @@ class TestMaterialHistoryAPI(TestCase):
         for i in range(6):
             purchase_payload = {
                 "material_id": self.material.id,
-                "type": "구매",
+                "type": "purchase",
                 "quantity": 10 + i,
                 "price": 1000 + i * 100,
                 "client_id": self.client_obj.id

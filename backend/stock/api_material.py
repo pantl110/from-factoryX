@@ -6,11 +6,11 @@ from django.db import IntegrityError
 from api.security import jwt_auth
 from typing import List
 
-from stock.models import Material, MaterialProduct
+from stock.models import Material, MaterialProduct, Product
 from stock.schemas.inbound import MaterialUpdateIn, AssignMaterialIn
 from stock.schemas.outbound import MaterialDetailOut, AssignMaterialOut, MaterialSummaryOut
 from factory.models import Factory
-from stock.utils import get_product_by_id
+
 from factory.utils import is_factory_member
 
 
@@ -42,16 +42,17 @@ async def assign_material(request, payload: AssignMaterialIn):
     if len(codes) != len(set(codes)):
         raise HttpError(400, "원자재 코드가 중복되거나 연결 정보에 오류가 있습니다.")
 
-    # Factory 객체 가져오기
     try:
         factory = await Factory.objects.aget(id=factory_id)
     except Factory.DoesNotExist:
         raise HttpError(404, "공장 정보를 찾을 수 없습니다.")
 
-    product = await get_product_by_id(product_id, user)
-
-    if product.factory_id != factory_id:
-        raise HttpError(400, "품목이 해당 공장에 속하지 않습니다.")
+    try:
+        product = await Product.objects.select_related("factory").aget(
+            id=product_id, factory_id=int(factory_id)
+        )
+    except Product.DoesNotExist:
+        raise HttpError(404, "해당 제품이 존재하지 않습니다.")
 
     material_ids = []
     try:

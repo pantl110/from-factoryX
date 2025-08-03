@@ -63,17 +63,6 @@ class FactoryEqFilter(FilterSchema):
 
 
 # 거래처 관련 스키마
-class FactoryClientCreateIn(ModelSchema):
-    factory_id: int = Field(description="공장 ID")
-
-    class Meta:
-        model = FactoryClient
-        exclude = [
-            "id",
-            "factory",
-            "created_at",
-            "updated_at",
-        ]
 
 
 class FactoryEqUpdateIn(ModelSchema):
@@ -148,3 +137,21 @@ class InviteMemberIn(Schema):
     factory_id: int
     email: str
     role: str
+
+# ------------------------------------------------------------
+# Factory Client API
+# ------------------------------------------------------------
+
+class FactoryClientCreateIn(Schema):
+    type: Optional[str] = None
+    name: str
+    business_registration_number: Optional[str] = None
+    representative_name: Optional[str] = None
+    business_type: Optional[str] = None
+    business_category: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    fax: Optional[str] = None
+    address: Optional[str] = None
+    manager: Optional[str] = None
+    note: Optional[str] = None
