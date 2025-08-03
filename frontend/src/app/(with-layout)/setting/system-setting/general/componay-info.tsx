@@ -13,7 +13,6 @@ import {
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
 
 const CompanyInfo = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);

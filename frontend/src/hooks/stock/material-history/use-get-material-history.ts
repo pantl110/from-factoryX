@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { MaterialHistoryPriceResponseModel, MaterialHistoryPriceListResponseModel } from '@/types/data-model';
+import {
+  MaterialHistoryPriceResponseModel,
+  MaterialHistoryPriceListResponseModel,
+} from '@/types/data-model';
 
 interface GetMaterialHistoryOptionModel {
   start_date?: string;
@@ -65,7 +68,7 @@ const useGetMaterialHistory = () => {
       // 페이지네이션 파라미터
       const page = options?.page || 1;
       const pageSize = options?.page_size || 5;
-      
+
       params.append('page', page.toString());
       params.append('page_size', pageSize.toString());
 
@@ -83,8 +86,6 @@ const useGetMaterialHistory = () => {
       if (response.ok) {
         const result: MaterialHistoryPriceListResponseModel =
           await response.json();
-
-        console.log('Material History API Response:', result);
 
         // API 응답을 그대로 사용 (백엔드에서 올바른 구조로 보내줄 것으로 예상)
         const transformedData: MaterialHistoryPriceListResponseModel = {

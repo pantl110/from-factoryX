@@ -18,12 +18,11 @@ import {
   useCheckAll,
   useDeleteProject,
 } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
   const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
-  const { createProject, isLoading: isCreateLoading } = useCreateProject();
+  const { createProject } = useCreateProject();
   const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
 
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
@@ -32,7 +31,7 @@ const ProcessProjectPageInner = () => {
 
   // 탭 상태
   const [selectedStatus, setSelectedStatus] = useState<
-    ProjectStatusType | 'progress'
+    ProjectStatusType | 'progress' | 'archived'
   >(
     tab === 'quote'
       ? 'quotation'
@@ -135,12 +134,13 @@ const ProcessProjectPageInner = () => {
     setIsOrderUploadModalOpen(true);
   };
 
-  const handleTabChange = (status: ProjectStatusType | 'progress') => {
+  const handleTabChange = (
+    status: ProjectStatusType | 'progress' | 'archived'
+  ) => {
     setSelectedStatus(status);
     setCurrentPage(1); // 탭 상태 변경 시 표는 첫 페이지로 이동
     setSearchKeyword(''); // 탭 변경시 검색어도 초기화
   };
-  9;
 
   const handleDirectInputClick = async (ocrData?: OcrDataModel) => {
     if (ocrData) {

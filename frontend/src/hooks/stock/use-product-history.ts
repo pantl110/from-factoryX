@@ -70,10 +70,9 @@ const useProductHistory = () => {
         // product_id를 쿼리 파라미터로 추가
         // eslint-disable-next-line camelcase
         if (product_id) {
-          // eslint-disable-next-line camelcase
           params.append('product_id', String(product_id));
         }
-        
+
         const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
 
         const res = await fetch(url, {
@@ -118,10 +117,9 @@ const useProductHistory = () => {
         // product_id를 쿼리 파라미터로 추가
         // eslint-disable-next-line camelcase
         if (product_id) {
-          // eslint-disable-next-line camelcase
           params.append('product_id', String(product_id));
         }
-        
+
         const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
 
         const res = await fetch(url, {

@@ -177,6 +177,7 @@ const CompletedProjectPage = () => {
                   isAllChecked={isAllChecked}
                   onToggleAll={toggleAll}
                   onSort={handleSort}
+                  isArchived={true}
                 />
                 {sortedProjects.map((project) => (
                   <TableItem

@@ -26,7 +26,7 @@ const useGetClient = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const pageSize = 10;
 
   // 거래처 목록 조회 함수
   const getClients = useCallback(async (params: GetClientParamsModel = {}) => {

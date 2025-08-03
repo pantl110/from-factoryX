@@ -35,8 +35,6 @@ export const useGetFactoryList = () => {
         const result = await response.json();
 
         // 백엔드가 @paginate를 사용하므로 페이지네이션 형태로 응답이 올 수 있음
-        // 하지만 결과가 빈 배열일 경우를 대비해 로깅 추가
-        console.log('Factory API Response:', result);
 
         let factoryListData: FactoriesListResponseModel;
 

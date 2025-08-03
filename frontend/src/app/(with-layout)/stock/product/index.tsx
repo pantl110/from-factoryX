@@ -10,7 +10,6 @@ import DeleteModal from '@/ui/modal/delete-modal';
 import Pagination from '@/components/pagination';
 import { ProductResponseModel } from '@/types/data-model';
 import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
 import Spinner from '@/ui/spinner';
 
 interface ProductProps {
@@ -20,7 +19,6 @@ interface ProductProps {
 }
 
 const Product = ({
-  setSelectedProductIdToParent,
   isProductDetailPanelOpen,
   setIsProductDetailPanelOpen,
 }: ProductProps) => {

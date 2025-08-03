@@ -95,7 +95,7 @@ const PermissionTableItem = ({
         alert(result.error || '권한 변경에 실패했습니다.');
         closeAuthDropdown();
       }
-    } catch (error) {
+    } catch {
       alert('권한 변경 중 오류가 발생했습니다.');
       closeAuthDropdown();
     }

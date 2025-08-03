@@ -3,7 +3,7 @@ import { ProjectStatusType } from '@/types/status-type';
 import { useState } from 'react';
 
 interface GetProjectModel {
-  status: ProjectStatusType | 'archived';
+  status: ProjectStatusType | 'archived' | 'progress';
   search?: string; // 업체명 또는 품목명
   order_by?: 'start_date' | 'due_date';
   order_dir?: 'asc' | 'desc';

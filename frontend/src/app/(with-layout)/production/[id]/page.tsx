@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, notFound } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
 import { useGetProjects } from '@/hooks';
@@ -14,7 +14,24 @@ import TransactionDocumentView from '../../document/transaction-document-view';
 // import OrderDocumentView from '../../document/order-document-view';
 import { ProjectStatusType } from '@/types/status-type';
 import { ProductionTabType } from '@/components/top-bar/types';
+import { ProjectResponseModel } from '@/types/data-model';
 import Spinner from '@/ui/spinner';
+
+// 한글 상태를 영어로 매핑
+const mapKoreanToEnglish = (koreanStatus: string): ProjectStatusType => {
+  const statusMap: Record<string, ProjectStatusType> = {
+    '견적 협의중': 'quotation',
+    '주문 확정': 'confirmed',
+    '생산 대기': 'pending',
+    '생산 중': 'production',
+    '생산 완료': 'manufactured',
+    납품: 'delivery',
+    '프로젝트 완료': 'completed',
+    중단: 'interruption',
+  };
+
+  return statusMap[koreanStatus] || 'quotation'; // 기본값
+};
 
 const getTabsByStatus = (status: string): ProductionTabType[] => {
   if (status === '생산 대기') return ['생산 계획', '주문서'];
@@ -35,29 +52,89 @@ const getTabsByStatus = (status: string): ProductionTabType[] => {
 
 const ProductionPageContent = () => {
   const params = useParams();
-  const id = Number(params.id);
+  const projectId = Number(params.id);
+  const { getProjects, isLoading } = useGetProjects();
   const setPageStatus = usePageStatusStore((state) => state.setPageStatus); // 바뀐 프로젝트상태 전역상태로로관리 -> top-bar 상태에 적용
   const [selectedTab, setSelectedTab] = useState(0);
   const setProductionTab = usePageStatusStore(
     (state) => state.setProductionTab // 바뀐 탭 전역상태로관리 -> top-bar 상태에 적용
   );
 
-  const project =
-    projectData.find((item: ProjectDataModel) => item.id === id) ||
-    completedProjectData.find(
-      (item: CompletedProjectDataModel) => item.id === id
-    );
+  // 프로젝트 데이터 가져와서 상태 확인
+  const [project, setProject] = useState<ProjectResponseModel | null>(null);
 
-  // Determine if the project is a stopped (중단) completed project
-  const isStopped = project && 'status' in project && project.status === '중단'; // '보관된 프로젝트에서 중단 상태이면 is Stopped ture'
+  // 프로젝트 데이터 로드
+  useEffect(() => {
+    if (!projectId) return;
 
-  const newStatus =
-    project?.status === '완료' ? '프로젝트 완료' : project?.status || null;
-  const tabs = getTabsByStatus(newStatus || '');
+    const loadProject = async () => {
+      try {
+        // 상태별로 페이지네이션으로 검색하는 함수
+        const searchInStatus = async (
+          status: ProjectStatusType | 'archived' | 'progress'
+        ) => {
+          let page = 1;
+          let foundProject = null;
+
+          while (!foundProject) {
+            const result = await getProjects({
+              status,
+              page,
+              size: 50, // 적당한 페이지 크기
+            });
+
+            if (!result.success || !result.data) {
+              break;
+            }
+
+            // 현재 페이지에서 프로젝트 검색
+            foundProject = result.data.data.find(
+              (p) => p.project_id === projectId
+            );
+
+            if (foundProject) {
+              return foundProject;
+            }
+
+            // 다음 페이지가 없으면 중단
+            if (!result.data.nextPage || page >= result.data.pageCnt) {
+              break;
+            }
+
+            page++;
+          }
+
+          return null;
+        };
+
+        // 진행중인 프로젝트에서 검색
+        let foundProject = await searchInStatus('progress');
+
+        // 진행중에서 못 찾으면 보관된 프로젝트에서 검색
+        if (!foundProject) {
+          foundProject = await searchInStatus('archived');
+        }
+
+        setProject(foundProject || null);
+      } catch (error) {
+        console.error('Failed to load project:', error);
+        setProject(null);
+      }
+    };
+
+    loadProject();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
+
+  const mappedStatus = project
+    ? mapKoreanToEnglish(project.status)
+    : 'quotation';
+  const tabs = getTabsByStatus(project?.status || '');
 
   useEffect(() => {
-    if (!project || isStopped) return;
-    setPageStatus(newStatus);
+    if (!project) return;
+    setPageStatus(mappedStatus);
     setProductionTab(tabs[selectedTab]);
     return () => {
       setPageStatus(null);
@@ -65,20 +142,33 @@ const ProductionPageContent = () => {
     };
   }, [
     project,
-    isStopped,
-    newStatus,
     selectedTab,
     setPageStatus,
     setProductionTab,
     tabs,
+    mappedStatus,
   ]);
 
-  if (!project || isStopped) return notFound();
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!project || !projectId) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col">
       <ProductFlowTitle
-        status={newStatus as ProjectStatusType}
+        status={mappedStatus}
         tabs={tabs}
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}

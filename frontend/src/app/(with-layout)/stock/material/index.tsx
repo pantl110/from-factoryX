@@ -7,7 +7,6 @@ import MiniBtn from '@/ui/mini-btn';
 import DeleteModal from '@/ui/modal/delete-modal';
 import { useState, useEffect } from 'react';
 import { useDeleteMaterial, useCheckAll, useGetMaterial } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
 import Spinner from '@/ui/spinner';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import Pagination from '@/components/pagination';

@@ -18,13 +18,13 @@ const useGetProjectPlans = () => {
           credentials: 'include',
         }
       );
-      
+
       if (response.ok) {
         const result: ProjectPlanModel[] = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        
+
         // 백엔드 에러 코드에 따른 구체적인 메시지
         switch (response.status) {
           case 404:
@@ -39,7 +39,8 @@ const useGetProjectPlans = () => {
         return { success: false, error: errorData.detail };
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '서버 연결에 실패했습니다.';
+      const errorMessage =
+        err instanceof Error ? err.message : '서버 연결에 실패했습니다.';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {

@@ -2,7 +2,7 @@ import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { CaretDown, X } from '@phosphor-icons/react/dist/ssr';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import AuthDropdown from './auth-dropdown';
 import { MemberFromDataModel } from '../../general/types';
@@ -12,7 +12,6 @@ import { PermissionRoleInfo, PermissionRoleType } from '../types';
 import { createPortal } from 'react-dom';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import useInviteMember from '@/hooks/factory/factory-member/use-invite-member';
-import useFactoryStore from '@/store/factory-store';
 
 interface InviteModalProps {
   onClose: () => void;

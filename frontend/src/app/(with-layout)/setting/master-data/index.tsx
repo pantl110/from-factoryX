@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
-import useFactoryStore from '@/store/factory-store';
 import { SettingChipType } from '@/components/top-bar/types';
 import Chip from '@/ui/chip';
 import SearchInput from '@/ui/search-input';
@@ -52,9 +51,6 @@ const MasterData = () => {
     searchClients,
     getClients,
   } = useGetClient();
-
-  // 거래처 페이지 상태 로컬 관리
-  const [clientCurrentPage, setClientCurrentPage] = useState(1);
 
   // 삭제 훅
   const { deleteEquipment, isLoading: isDeleteLoading } = useDeleteEquipment(); // 설비 삭제 훅
@@ -272,7 +268,6 @@ const MasterData = () => {
 
   // 페이지네이션 변경 핸들러 (Client용)
   const handleClientPageChange = async (page: number) => {
-    setClientCurrentPage(page);
     await getClients({
       q: clientSearchKeyword,
       page,

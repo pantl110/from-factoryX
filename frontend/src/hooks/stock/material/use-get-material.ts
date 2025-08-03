@@ -36,7 +36,7 @@ const useGetMaterial = () => {
     async (filters: MaterialFilterModel = {}) => {
       setIsLoading(true);
       setError(null);
-      
+
       // 로컬스토리지에서 factoryId 가져오기
       const factoryId = getStoredFactoryId();
       if (!factoryId) {
@@ -53,7 +53,7 @@ const useGetMaterial = () => {
         if (filters.q) params.append('q', filters.q);
         if (filters.order) params.append('order', filters.order);
         if (filters.limit) params.append('limit', filters.limit.toString());
-        
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/factory/${factoryId}?${params}`,
           {

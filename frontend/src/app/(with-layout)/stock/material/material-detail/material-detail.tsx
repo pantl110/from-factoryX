@@ -20,7 +20,6 @@ import { usePeriodSelector } from '@/hooks/use-period-selector';
 import { ProductRequiringMaterialRefModel } from './product-requiring-material';
 import CustomDateSelector from '@/ui/dropdown/select-period-dropdown/custom-date-selector';
 import { useGetMaterialHistory, useGetMaterialHistoryDetail } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
 
 export type { MaterialInfoModel } from './material-info';
 

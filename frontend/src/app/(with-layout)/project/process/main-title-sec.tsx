@@ -6,8 +6,8 @@ import { OcrDataModel } from '@/types/data-model';
 
 interface MainTitleSecProps {
   onNewQuotation: () => void;
-  selectedStatus: ProjectStatusType | 'progress';
-  onStatusChange: (status: ProjectStatusType | 'progress') => void;
+  selectedStatus: ProjectStatusType | 'progress' | 'archived';
+  onStatusChange: (status: ProjectStatusType | 'progress' | 'archived') => void;
   isSelectDropdownOpen?: boolean;
   onSelectDropdownClose?: () => void;
   onUploadClick?: () => void;

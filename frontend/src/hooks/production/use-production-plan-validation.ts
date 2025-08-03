@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { ProjectPlanModel } from '@/types/data-model';
 import usePageStatusStore from '@/store/page-status-store';
 
-interface ProductionPlanFormData {
+interface ProductionPlanFormDataModel {
   quantity: number;
   equipment_id: number;
   start_date: string;
@@ -11,7 +11,7 @@ interface ProductionPlanFormData {
 
 export const useProductionPlanValidation = (
   projectPlans: ProjectPlanModel[],
-  formChanges: Record<number, ProductionPlanFormData>
+  formChanges: Record<number, ProductionPlanFormDataModel>
 ) => {
   const setProductionPlanValid = usePageStatusStore(
     (state) => state.setProductionPlanValid
@@ -27,7 +27,7 @@ export const useProductionPlanValidation = (
         start_date: plan.start_date,
         end_date: plan.end_date,
       };
-      
+
       return (
         currentData.quantity > 0 &&
         currentData.equipment_id > 0 &&
@@ -41,10 +41,11 @@ export const useProductionPlanValidation = (
   useEffect(() => {
     const isValid = validateAllFields();
     setProductionPlanValid(isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectPlans, formChanges, setProductionPlanValid]);
 
   return {
     validateAllFields,
     isValid: validateAllFields(),
   };
-}; 
+};

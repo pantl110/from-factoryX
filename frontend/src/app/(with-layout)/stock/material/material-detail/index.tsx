@@ -20,17 +20,6 @@ import { MaterialItemModel } from '@/types/data-model';
 import DeleteModal from '@/ui/modal/delete-modal';
 import ProductDetailPanel from '@/app/(with-layout)/stock/product/product-detail';
 
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
-
 interface LocationModel {
   id: number;
   location: string;

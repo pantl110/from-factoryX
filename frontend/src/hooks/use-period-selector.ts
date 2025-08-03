@@ -55,10 +55,10 @@ export const usePeriodSelector = ({
   // 날짜 유효성 검사 함수
   const validateDate = (dateString: string): boolean => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return false;
-    
+
     const date = new Date(dateString);
     const [year, month, day] = dateString.split('-').map(Number);
-    
+
     return (
       date.getFullYear() === year &&
       date.getMonth() === month - 1 &&
@@ -68,21 +68,27 @@ export const usePeriodSelector = ({
   };
 
   // 날짜 범위 유효성 검사 함수
-  const validateDateRange = (startDate: string, endDate: string): { isValid: boolean; message?: string } => {
+  const validateDateRange = (
+    startDate: string,
+    endDate: string
+  ): { isValid: boolean; message?: string } => {
     if (!validateDate(startDate)) {
       return { isValid: false, message: '시작일이 유효하지 않습니다.' };
     }
     if (!validateDate(endDate)) {
       return { isValid: false, message: '종료일이 유효하지 않습니다.' };
     }
-    
+
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
+
     if (start > end) {
-      return { isValid: false, message: '시작일이 종료일보다 늦을 수 없습니다.' };
+      return {
+        isValid: false,
+        message: '시작일이 종료일보다 늦을 수 없습니다.',
+      };
     }
-    
+
     return { isValid: true };
   };
 

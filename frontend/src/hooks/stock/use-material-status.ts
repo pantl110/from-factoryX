@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useMaterialProduct, useGetMaterial } from '@/hooks';
-import { MaterialResponseModel, MaterialProductConnectionModel } from '@/types/data-model';
+import {
+  MaterialResponseModel,
+  MaterialProductConnectionModel,
+} from '@/types/data-model';
 
 // 생산 계획 페이지에서 사용하는 자재 상태 확인 훅
 export const useMaterialStatus = (productId: number) => {
@@ -20,9 +23,16 @@ export const useMaterialStatus = (productId: number) => {
       setIsLoading(true);
       try {
         // 1. 제품과 연결된 자재들 조회
-        const connectionsResult = await getMaterialProductConnections(productId, 'product');
-        
-        if (!connectionsResult || !Array.isArray(connectionsResult) || connectionsResult.length === 0) {
+        const connectionsResult = await getMaterialProductConnections(
+          productId,
+          'product'
+        );
+
+        if (
+          !connectionsResult ||
+          !Array.isArray(connectionsResult) ||
+          connectionsResult.length === 0
+        ) {
           // 연결된 자재가 없으면 충분으로 처리
           setMaterialStatus('충분');
           setIsLoading(false);
@@ -31,7 +41,7 @@ export const useMaterialStatus = (productId: number) => {
 
         // 2. 각 자재의 상세 정보 조회하여 재고 상태 확인
         const materialPromises = connectionsResult
-          .filter(connection => 'material_id' in connection)
+          .filter((connection) => 'material_id' in connection)
           .map(async (connection: MaterialProductConnectionModel) => {
             try {
               const result = await getMaterialDetail(connection.material_id);
@@ -47,12 +57,15 @@ export const useMaterialStatus = (productId: number) => {
         const materialDetails = await Promise.all(materialPromises);
 
         // 3. 하나라도 부족하면 '부족', 모두 충분하면 '충분'
-        const hasInsufficientMaterial = materialDetails.some(detail => {
+        const hasInsufficientMaterial = materialDetails.some((detail) => {
           if (!detail) return false;
-          
+
+          // eslint-disable-next-line camelcase
           const { current_stock, standard_stock } = detail;
+          // eslint-disable-next-line camelcase
           if (!current_stock || !standard_stock) return false;
-          
+
+          // eslint-disable-next-line camelcase
           return current_stock < standard_stock; // 부족한 상태
         });
 
@@ -70,4 +83,4 @@ export const useMaterialStatus = (productId: number) => {
   }, [productId, getMaterialProductConnections, getMaterialDetail]);
 
   return { materialStatus, isLoading };
-}; 
+};

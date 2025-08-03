@@ -66,7 +66,15 @@ const TableItem = ({
 
   // production 페이지로 이동
   const handleClick = () => {
-    if (mappedStatus === 'quotation') router.push(`/quotation`);
+    if (
+      mappedStatus === 'quotation' ||
+      mappedStatus === 'confirmed' ||
+      mappedStatus === 'interruption'
+    )
+      router.push(
+        `/quotation?quotation_id=${project.project_id}&project_id=${project.project_id}`
+      );
+    // ‼️‼️‼️‼️‼️ quotation_id가 project_id와 같은지 확인 필요
     else router.push(`/production/${project.project_id}`);
   };
 
@@ -99,31 +107,41 @@ const TableItem = ({
           textColor={chipColors.textColor}
         />
       </div>
-      <p className="flex-2 px-3 text-dg truncate" title={project.client_name}>
-        {project.client_name}
+      <p
+        className="flex-2 px-3 text-dg truncate"
+        title={project.client_name || '-'}
+      >
+        {project.client_name || '-'}
       </p>
       <p
         className="flex-2 px-3 text-dg truncate"
         title={
-          project.product_names.length > 1
-            ? `${project.product_names[0]} 외 ${project.product_names.length - 1}개`
-            : project.product_names[0]
+          project.product_names.length === 0
+            ? '-'
+            : project.product_names.length > 1
+              ? `${project.product_names[0]} 외 ${project.product_names.length - 1}개`
+              : project.product_names[0]
         }
       >
-        {project.product_names.length > 1
-          ? `${project.product_names[0]} 외 ${project.product_names.length - 1}개`
-          : project.product_names[0]}
+        {project.product_names.length === 0
+          ? '-'
+          : project.product_names.length > 1
+            ? `${project.product_names[0]} 외 ${project.product_names.length - 1}개`
+            : project.product_names[0]}
       </p>
       {!isArchived && (
         <p
           className="w-[200px] px-3 text-dg truncate"
-          title={project.start_date}
+          title={project.start_date || '-'}
         >
-          {project.start_date}
+          {project.start_date || '-'}
         </p>
       )}
-      <p className="w-[200px] px-3 text-dg truncate" title={project.due_date}>
-        {project.due_date}
+      <p
+        className="w-[200px] px-3 text-dg truncate"
+        title={project.due_date || '-'}
+      >
+        {project.due_date || '-'}
       </p>
       {!isArchived && (
         <div

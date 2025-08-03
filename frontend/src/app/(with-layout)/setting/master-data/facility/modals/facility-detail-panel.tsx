@@ -9,7 +9,7 @@ import useFactoryStore from '@/store/factory-store';
 import { EquipmentStatusType } from '@/types/status-type';
 import { Controller, useForm } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 interface FacilityDetailPanelProps {
   facility?: EquipmentResponseModel;

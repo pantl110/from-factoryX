@@ -13,7 +13,7 @@ import { useMaterialStatus } from '@/hooks';
 import { useForm, Controller } from 'react-hook-form';
 
 // Form 데이터 타입 정의
-interface ProductionPlanFormData {
+interface ProductionPlanFormDataModel {
   quantity: number;
   equipment_id: number;
   start_date: string;
@@ -24,8 +24,11 @@ interface TableItemProps {
   item: ProjectPlanModel;
   onOperationStatusClick: (e: React.MouseEvent) => void;
   onFacilityClick: (e: React.MouseEvent) => void;
-  onFormChange?: (planId: number, formData: ProductionPlanFormData) => void;
-  formData?: ProductionPlanFormData; // 현재 form 데이터
+  onFormChange?: (
+    planId: number,
+    formData: ProductionPlanFormDataModel
+  ) => void;
+  formData?: ProductionPlanFormDataModel; // 현재 form 데이터
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
 }
 
@@ -63,7 +66,7 @@ const TableItem = ({
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
   // React Hook Form 설정
-  const { control, watch, setValue, reset } = useForm<ProductionPlanFormData>({
+  const { control, watch, reset } = useForm<ProductionPlanFormDataModel>({
     defaultValues: currentFormData || {
       quantity: item.quantity,
       equipment_id: item.equipment.id,

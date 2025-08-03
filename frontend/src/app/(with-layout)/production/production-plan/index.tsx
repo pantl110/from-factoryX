@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import ProductionPlanSaveModal from './modals/production-plan-save-modal';
 import TableHeader from './table-header';
 import TableItem from './table-item';
-import { ProjectPlanModel } from '@/types/data-model';
+import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import usePageStatusStore from '@/store/page-status-store';
 import OperationStatusDropdown from './modals/operation-status-dropdown';
 import { createPortal } from 'react-dom';
@@ -32,14 +32,14 @@ const ProductionPlan = () => {
   const [projectPlans, setProjectPlans] = useState<ProjectPlanModel[]>([]);
 
   // Form 데이터 저장
-  interface ProductionPlanFormData {
+  interface ProductionPlanFormDataModel {
     quantity: number;
     equipment_id: number;
     start_date: string;
     end_date: string;
   }
   const [formChanges, setFormChanges] = useState<
-    Record<number, ProductionPlanFormData>
+    Record<number, ProductionPlanFormDataModel>
   >({});
 
   // production의 "생산 대기" 상태의 "생산 계획" 탭에서 저장 버튼 클릭 시 모달 오픈
@@ -60,7 +60,7 @@ const ProductionPlan = () => {
         setProjectPlans(result.data);
 
         // formChanges를 원본 데이터로 초기화
-        const initialFormData: Record<number, ProductionPlanFormData> = {};
+        const initialFormData: Record<number, ProductionPlanFormDataModel> = {};
         result.data.forEach((plan) => {
           initialFormData[plan.id] = {
             quantity: plan.quantity,
@@ -118,7 +118,7 @@ const ProductionPlan = () => {
   };
 
   // 설비 선택 핸들러
-  const handleEquipmentSelect = (equipment: any) => {
+  const handleEquipmentSelect = (equipment: EquipmentResponseModel) => {
     if (facilityDropdownRowId) {
       // form 데이터에 설비 변경 반영
       setFormChanges((prev) => ({
@@ -149,7 +149,7 @@ const ProductionPlan = () => {
   // Form 변경 handler
   const handleFormChange = (
     planId: number,
-    formData: ProductionPlanFormData
+    formData: ProductionPlanFormDataModel
   ) => {
     setFormChanges((prev) => ({
       ...prev,
@@ -168,7 +168,7 @@ const ProductionPlan = () => {
           if (!originalPlan) return Promise.resolve();
 
           // 변경된 것만 업데이트
-          const changes: any = {};
+          const changes: Record<string, unknown> = {};
           if (formData.quantity !== originalPlan.quantity)
             changes.quantity = formData.quantity;
           if (formData.equipment_id !== originalPlan.equipment.id)
@@ -209,7 +209,7 @@ const ProductionPlan = () => {
       setFormChanges({});
       setProductionPlanSaveModalOpen(false);
       alert('생산 계획이 저장되었습니다.');
-    } catch (error) {
+    } catch {
       alert('저장 중 오류가 발생했습니다.');
     }
   };

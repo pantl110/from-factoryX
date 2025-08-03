@@ -54,14 +54,14 @@ const OperationStatusDropdown = ({
       </DropdownItem>
       <DropdownItem noHover={true}>
         <Chip
-          text="가동 중지"
-          bgColor={color['가동 중지'].bgColor}
-          textColor={color['가동 중지'].textColor}
+          text="가동 불가"
+          bgColor={color['가동 불가'].bgColor}
+          textColor={color['가동 불가'].textColor}
           onClick={(e) => {
             e?.stopPropagation();
             onClose();
           }}
-          hover={color['가동 중지'].hover}
+          hover={color['가동 불가'].hover}
         />
       </DropdownItem>
     </Dropdown>

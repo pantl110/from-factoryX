@@ -11,7 +11,6 @@ import {
   handleNumberKeyDown,
 } from '@/hooks/format-number';
 import { ClientResponseModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
 
 interface ClientInfoModalProps {
   onClose?: () => void;

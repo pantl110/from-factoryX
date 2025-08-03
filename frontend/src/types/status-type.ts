@@ -41,6 +41,7 @@ export type ProjectStatusType =
   | 'interruption';
 
 // | '견적 협의' // quotation
+// | '주문 확정' // confirmed
 // | '생산 대기' // pending
 // | '생산 중' // production
 // | '생산 완료' // manufactured

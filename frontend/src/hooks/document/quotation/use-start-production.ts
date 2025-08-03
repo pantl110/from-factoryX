@@ -1,6 +1,5 @@
 import { SaveDraftQuotationModel } from '@/types/data-model';
-import { useState, useEffect } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import { useState } from 'react';
 
 interface StartProductionResponseModel {
   quotation_id: number;

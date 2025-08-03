@@ -5,7 +5,6 @@ import {
 import { X } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import { ArrowLineUpRight } from '@phosphor-icons/react/dist/ssr';
 

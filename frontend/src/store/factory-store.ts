@@ -47,10 +47,10 @@ const useFactoryStore = create<FactoryStoreModel>((set, get) => ({
   },
   initializeFactoryId: async () => {
     const currentFactoryId = get().factoryId;
-    
+
     // 이미 설정되어 있으면 스킵
     if (currentFactoryId !== null) return;
-    
+
     // 로컬스토리지에서 먼저 확인
     const localFactoryId = getStoredFactoryId();
     if (localFactoryId !== null) {
