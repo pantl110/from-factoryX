@@ -905,15 +905,16 @@ class ProjectAPITestCase(TestCase):
         # 3. 진행중 프로젝트 생성 (생산 중)
         project_progress, _ = self.create_test_project_with_quotation(status='생산 중')
 
-        # 4. 보관함(archived) 조회: 완료 + 중단
+        # 4. 보관함(archived) 조회: 중단된 프로젝트만 (API 실제 동작에 맞춤)
         url = f'/v1/project?factory_id={self.factory.id}&status=archived'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
         ids = [item['project_id'] for item in data['data']]
         is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data['data']}
-        self.assertIn(project_complete.id, ids)
-        self.assertIn(project_abandoned.id, ids)
+        # API 실제 동작: archived는 완료 + 중단 프로젝트를 포함
+        self.assertIn(project_complete.id, ids)     # 완료된 프로젝트도 포함됨
+        self.assertIn(project_abandoned.id, ids)    # 중단된 프로젝트도 포함됨
         self.assertTrue(is_abandoned_map[project_abandoned.id])
         self.assertFalse(is_abandoned_map[project_complete.id])
         self.assertNotIn(project_progress.id, ids)
@@ -924,6 +925,7 @@ class ProjectAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         ids = [item['project_id'] for item in data['data']]
+        # API 실제 동작에 맞춤: complete는 완료된 프로젝트만 포함
         self.assertIn(project_complete.id, ids)
         self.assertNotIn(project_abandoned.id, ids)
         self.assertNotIn(project_progress.id, ids)
@@ -960,12 +962,13 @@ class ProjectAPITestCase(TestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        # 진행중(생산 중, 생산 대기)만 포함, 완료/중단 제외
+        # API 실제 동작: progress는 완료되지 않은 프로젝트만 포함
         project_ids = [item['project_id'] for item in data['data']]
         self.assertIn(project1.id, project_ids)
         self.assertIn(project2.id, project_ids)
-        self.assertNotIn(project3.id, project_ids)
-        self.assertNotIn(project4.id, project_ids)
+        # API 실제 동작: progress는 완료되지 않은 프로젝트만 포함
+        self.assertNotIn(project3.id, project_ids)  # 완료된 프로젝트는 제외됨
+        self.assertNotIn(project4.id, project_ids)  # 중단된 프로젝트도 제외됨
         # 3. 각 상태별 조회 (status=생산 중, status=생산 대기, status=견적 협의중)
         url = f'/v1/project?factory_id={self.factory.id}&status=production'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
@@ -990,26 +993,26 @@ class ProjectAPITestCase(TestCase):
         ids = [item['project_id'] for item in data['data']]
         self.assertIn(project5.id, ids)
         self.assertNotIn(project4.id, ids)  # 중단은 제외
-        # 4. 보관함(archived) 조회 (status=archived)
+        # 4. 보관함(archived) 조회 (status=archived) - 완료 + 중단 프로젝트
         url = f'/v1/project?factory_id={self.factory.id}&status=archived'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
         ids = [item['project_id'] for item in data['data']]
         is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data['data']}
-        self.assertIn(project3.id, ids)  # 완료
-        self.assertIn(project4.id, ids)  # 중단
+        self.assertIn(project3.id, ids)     # 완료된 프로젝트도 포함됨
+        self.assertIn(project4.id, ids)     # 중단된 프로젝트도 포함됨
         self.assertTrue(is_abandoned_map[project4.id])
         self.assertFalse(is_abandoned_map[project3.id])
-        # 5. 완료/중단 포함 조회 (status=complete)
+        # 5. 완료(complete) 조회 - 완료된 프로젝트만
         url = f'/v1/project?factory_id={self.factory.id}&status=complete'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
         ids = [item['project_id'] for item in data['data']]
         is_abandoned_map = {item['project_id']: item.get('is_abandoned', False) for item in data['data']}
-        self.assertIn(project3.id, ids)  # 완료
-        self.assertNotIn(project4.id, ids)  # 중단은 포함X
+        self.assertIn(project3.id, ids)  # 완료된 프로젝트만 포함
+        self.assertNotIn(project4.id, ids)  # 중단된 프로젝트는 포함되지 않음
         self.assertFalse(is_abandoned_map[project3.id])
         # 6. 중단만 조회 (status=interruption)
         url = f'/v1/project?factory_id={self.factory.id}&status=interruption'
