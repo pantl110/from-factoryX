@@ -184,7 +184,7 @@ async def clone_project(request, payload: ProjectCloneIn):
     response={200: List[ListProgressProjectOut], 400: dict, 500: dict},
 )
 @paginate
-async def list_project(request, filters: ProjectListFilter = Query(...)):
+async def list_project(request, status: str = Query(...), search: str = Query(None), order_by: str = Query("start_date"), order_dir: str = Query("asc")):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -205,8 +205,6 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
             "manufactured",
             "delivery",
         ]
-        status = filters.status
-        factory_id = filters.factory_id
         if status not in valid_statuses:
             raise HttpError(400, f"status는 {valid_statuses} 중 하나여야 합니다.")
         if not factory_id:
@@ -216,12 +214,12 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
 
         @sync_to_async
         def get_projects():
-            base_qs = Project.objects.filter(quotations__factory_id=factory_id)
+            base_qs = Project.objects.filter(quotations__factory_id=int(factory_id))
             # 중단 프로젝트 판별: 견적 협의중 + 2개월간 ProjectPlan 없음 (updated_at 기준)
             abandoned_qs = base_qs.annotate(
                 has_plan=Exists(ProjectPlan.objects.filter(project=OuterRef("pk")))
             ).filter(
-                status=Project.ProjectStatus.quotation,
+                status="견적 협의중",
                 has_plan=False,
                 updated_at__lte=two_months_ago,
             )
@@ -230,12 +228,12 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
             # 상태별 분기
             if status == "progress":
                 # 완료/중단 제외
-                base_qs = base_qs.exclude(status=Project.ProjectStatus.completed)
+                base_qs = base_qs.exclude(status="프로젝트 완료")
                 if abandoned_ids:
                     base_qs = base_qs.exclude(pk__in=abandoned_ids)
             elif status == "archived":
                 # 완료 + 중단
-                completed_qs = base_qs.filter(status=Project.ProjectStatus.completed)
+                completed_qs = base_qs.filter(status="프로젝트 완료")
                 abandoned_qs = Project.objects.filter(pk__in=abandoned_ids) if abandoned_ids else Project.objects.none()
                 # union 연산을 위해 QuerySet을 합침
                 project_ids = list(completed_qs.values_list("pk", flat=True))
@@ -243,7 +241,7 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
                     project_ids.extend(abandoned_ids)
                 base_qs = Project.objects.filter(pk__in=project_ids)
             elif status == "complete":
-                base_qs = base_qs.filter(status=Project.ProjectStatus.completed)
+                base_qs = base_qs.filter(status="프로젝트 완료")
             elif status == "interruption":
                 # 중단: abandoned_ids에 해당하는 프로젝트만
                 if abandoned_ids:
@@ -251,14 +249,14 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
                 else:
                     base_qs = Project.objects.none()
             else:
-                # 개별 상태별 매핑
+                # 개별 상태별 매핑 (한글 값으로 필터링)
                 status_mapping = {
-                    "quotation": Project.ProjectStatus.quotation,
-                    "confirmed": Project.ProjectStatus.confirmed,
-                    "pending": Project.ProjectStatus.pending,
-                    "production": Project.ProjectStatus.production,
-                    "manufactured": Project.ProjectStatus.manufactured,
-                    "delivery": Project.ProjectStatus.delivery,
+                    "quotation": "견적 협의중",
+                    "confirmed": "주문 확정",
+                    "pending": "생산 대기",
+                    "production": "생산 중",
+                    "manufactured": "생산 완료",
+                    "delivery": "납품",
                 }
                 if status in status_mapping:
                     base_qs = base_qs.filter(status=status_mapping[status])
@@ -267,10 +265,10 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
                 else:
                     base_qs = Project.objects.none()
 
-            if filters.search:
-                qs1 = base_qs.filter(quotations__client__name__icontains=filters.search)
+            if search:
+                qs1 = base_qs.filter(quotations__client__name__icontains=search)
                 qs2 = base_qs.filter(
-                    quotations__products__product__name__icontains=filters.search
+                    quotations__products__product__name__icontains=search
                 )
                 base_qs = qs1.union(qs2)
 
@@ -294,7 +292,7 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
             result = []
             for project in projects:
                 quotations = project.quotations.filter(
-                    factory_id=factory_id
+                    factory_id=int(factory_id)
                 ).prefetch_related("client", "products__product")
                 for quotation in quotations:
                     product_names = []
@@ -316,7 +314,7 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
                             project_id=project.id,
                             client_name=quotation.client.name if quotation.client else "",
                             product_names=product_names,
-                            start_date=start_date or quotation.due_date,
+                            start_date=start_date,
                             due_date=quotation.due_date,
                             publish_status=publish_status,
                             status=project.status,
@@ -324,14 +322,17 @@ async def list_project(request, filters: ProjectListFilter = Query(...)):
                         )
                     )
             order_field = (
-                filters.order_by
-                if filters.order_by in ["start_date", "due_date"]
+                order_by
+                if order_by in ["start_date", "due_date"]
                 else "start_date"
             )
-            reverse = filters.order_dir == "desc"
+            reverse = order_dir == "desc"
 
             def get_sort_key(item):
-                return getattr(item, order_field) or date.min
+                value = getattr(item, order_field)
+                if value is None:
+                    return date.min
+                return value
 
             result.sort(key=get_sort_key, reverse=reverse)
             return result

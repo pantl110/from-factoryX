@@ -17,8 +17,8 @@ class ListProgressProjectOut(Schema):
     project_id: int
     client_name: str
     product_names: List[str]
-    start_date: datetime.date
-    due_date: datetime.date
+    start_date: Optional[datetime.date] = None
+    due_date: Optional[datetime.date] = None
     publish_status: Optional[str] = None
     status: str
     is_abandoned: bool = False
