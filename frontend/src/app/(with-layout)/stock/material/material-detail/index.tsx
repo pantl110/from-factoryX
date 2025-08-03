@@ -75,6 +75,17 @@ const MaterialDetailPanel = ({
     null
   );
 
+  // MaterialDetail 컴포넌트 리마운트를 위한 key 상태
+  const [materialDetailKey, setMaterialDetailKey] = useState(0);
+
+  // 품목 디테일 패널이 닫힐 때 원자재 데이터 새로고침
+  const handleProductDetailClose = () => {
+    setSelectedProductId(null);
+
+    // MaterialDetail 컴포넌트를 리마운트하여 모든 데이터 새로고침
+    setMaterialDetailKey((prev) => prev + 1);
+  };
+
   // ClientDetailPanel 열기 함수
   const setIsClinetDetailPanelOpen = (clientId: number) => {
     setSelectedClientId(clientId);
@@ -320,6 +331,7 @@ const MaterialDetailPanel = ({
         }
       >
         <MaterialDetail
+          key={materialDetailKey}
           ref={materialDetailRef}
           materialId={selectedMaterialId}
           locations={prevLocations}
@@ -409,7 +421,7 @@ const MaterialDetailPanel = ({
       {/* 연결된 품목 클릭 시 품목 디테일 판넬 열기 */}
       {selectedProductId && (
         <ProductDetailPanel
-          onClose={() => setSelectedProductId(null)}
+          onClose={handleProductDetailClose}
           productId={selectedProductId}
         />
       )}

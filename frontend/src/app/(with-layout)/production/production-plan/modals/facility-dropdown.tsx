@@ -21,8 +21,8 @@ const FacilityDropdown = ({
   };
 
   return (
-    <div style={style}>
-      <Dropdown onClose={onClose} width="w-[153px]">
+    <div style={{ ...style, minWidth: style?.width }} className="w-fit">
+      <Dropdown onClose={onClose} width="w-full">
         {equipments.length > 0 &&
           equipments.map((equipment) => (
             <DropdownItem

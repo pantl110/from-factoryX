@@ -5,8 +5,8 @@ import {
 } from '@/types/status-type';
 import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import { tableHeader } from './types';
-import { CaretDown } from '@phosphor-icons/react/dist/ssr';
-import { useState, useEffect } from 'react';
+import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react/dist/ssr';
+import { useState, useEffect, useMemo } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks/format-number';
 import { useMaterialStatus } from '@/hooks';
@@ -65,28 +65,55 @@ const TableItem = ({
   const materialColor = InventoryStatusColorMap[materialStatus];
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
+  // Form 데이터를 메모이제이션하여 불필요한 re-render 방지
+  const stableFormData = useMemo(() => {
+    return (
+      currentFormData || {
+        quantity: item.quantity,
+        equipment_id: item.equipment.id,
+        start_date: item.start_date,
+        end_date: item.end_date,
+      }
+    );
+  }, [
+    currentFormData,
+    item.quantity,
+    item.equipment.id,
+    item.start_date,
+    item.end_date,
+  ]);
+
   // React Hook Form 설정
   const { control, watch, reset } = useForm<ProductionPlanFormDataModel>({
-    defaultValues: currentFormData || {
-      quantity: item.quantity,
-      equipment_id: item.equipment.id,
-      start_date: item.start_date,
-      end_date: item.end_date,
-    },
+    defaultValues: stableFormData,
   });
 
   // currentFormData가 변경되면 form을 리셋 // 변경된 데이터를 React Hook Form과 동기화
   useEffect(() => {
-    if (currentFormData) {
-      reset(currentFormData);
-    }
-  }, [currentFormData, reset]);
+    reset(stableFormData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stableFormData]);
 
-  // Form 데이터 변경 시 부모 컴포넌트에 알림
-  const formData = watch();
+  // Form 데이터 변경 시 부모 컴포넌트에 알림 (필요한 필드만 감시)
+  const watchedQuantity = watch('quantity');
+  const watchedEquipmentId = watch('equipment_id');
+  const watchedStartDate = watch('start_date');
+  const watchedEndDate = watch('end_date');
+
   useEffect(() => {
-    onFormChange?.(item.id, formData);
-  }, [formData, item.id, onFormChange]);
+    onFormChange?.(item.id, {
+      quantity: watchedQuantity,
+      equipment_id: watchedEquipmentId,
+      start_date: watchedStartDate,
+      end_date: watchedEndDate,
+    });
+  }, [
+    watchedQuantity,
+    watchedEquipmentId,
+    watchedStartDate,
+    watchedEndDate,
+    item.id,
+  ]);
 
   // 현재 선택된 설비 정보 (formData의 equipment_id 우선, 없으면 원본 데이터)
   const selectedEquipment =
@@ -101,11 +128,11 @@ const TableItem = ({
         text={operationStatus}
         textColor={operationColor.textColor}
         bgColor={operationColor.bgColor}
-        cursor="cursor-pointer"
+        // cursor="cursor-pointer"
         onClick={(e) => {
           if (e) {
             e.stopPropagation();
-            onOperationStatusClick(e);
+            // onOperationStatusClick(e);
           }
         }}
       />
@@ -144,12 +171,14 @@ const TableItem = ({
             operationStatus === '가동 완료' ? 'bg-bg' : materialColor.bgColor
           }
         />
-        <p
-          className="cursor-pointer Re_Body-1 text-gr flex items-center opacity-0 hover:opacity-100 transition-opacity duration-200 ease-in-out"
-          onClick={() => setIsProductDetailOpen(true)}
-        >
-          상세보기
-        </p>
+        {materialStatus === '부족' && (
+          <div
+            className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
+            onClick={() => setIsProductDetailOpen(true)}
+          >
+            <ArrowLineUpRight size={16} className="text-dg" />
+          </div>
+        )}
       </div>
     ),
     '생산 설비': (
@@ -220,7 +249,7 @@ const TableItem = ({
   return (
     <>
       <div
-        className={`flex items-center w-[1494px] h-12 border-b border-lg Me_Body-1 bg-whit ${
+        className={`group flex items-center min-w-[1494px] h-12 border-b border-lg Me_Body-1 bg-whit ${
           operationStatus === '가동 완료' ? 'text-gr' : 'text-dg'
         }`}
       >

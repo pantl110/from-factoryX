@@ -74,7 +74,8 @@ const ProductionPlan = () => {
     };
 
     loadProjectPlans();
-  }, [projectId, getProjectPlans]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
 
   // 생산 계획 검증 훅 사용
   useProductionPlanValidation(projectPlans, formChanges);
@@ -197,18 +198,18 @@ const ProductionPlan = () => {
 
       // 프로젝트 상태를 다음 단계로 변경
       if (projectId) {
-        const statusResult = await updateProjectStatus(projectId, 'production');
+        const statusResult = await updateProjectStatus(projectId, '생산 중');
         if (!statusResult.success) {
-          console.error('프로젝트 상태 변경 실패:', statusResult.error);
+          // console.error('프로젝트 상태 변경 실패:', statusResult.error);
+        } else {
+          // 상태 변경 성공 시 페이지 reload
+          window.location.reload();
         }
       }
-
-      // 그리고 다음 페이지로 이동
 
       // 변경사항 초기화
       setFormChanges({});
       setProductionPlanSaveModalOpen(false);
-      alert('생산 계획이 저장되었습니다.');
     } catch {
       alert('저장 중 오류가 발생했습니다.');
     }
@@ -270,8 +271,9 @@ const ProductionPlan = () => {
             onSelect={handleEquipmentSelect}
             style={{
               position: 'fixed',
-              left: facilityAnchorRect.left,
-              top: facilityAnchorRect.bottom,
+              left: facilityAnchorRect.left - 12,
+              top: facilityAnchorRect.bottom + 11,
+              width: facilityAnchorRect.width + 24,
               zIndex: 10,
             }}
           />,

@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
 import { useGetProjects } from '@/hooks';
+import useGetDetailQuotation from '@/hooks/document/use-get-quotation';
 import ProductFlowTitle from '../product-flow-title';
 import ProductionPlan from '../production-plan';
 import ProductionMonitor from '../production-monitor';
@@ -11,7 +12,7 @@ import ProductionLog from '../production-log';
 import Delivery from '../delivery';
 import TaxDocumentView from '../../document/tax-document-view';
 import TransactionDocumentView from '../../document/transaction-document-view';
-// import OrderDocumentView from '../../document/order-document-view';
+import OrderDocumentView from '../../document/order-document-view';
 import { ProjectStatusType } from '@/types/status-type';
 import { ProductionTabType } from '@/components/top-bar/types';
 import { ProjectResponseModel } from '@/types/data-model';
@@ -62,6 +63,10 @@ const ProductionPageContent = () => {
 
   // 프로젝트 데이터 가져와서 상태 확인
   const [project, setProject] = useState<ProjectResponseModel | null>(null);
+
+  // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
+  const { data: quotationData, isLoading: isQuotationLoading } =
+    useGetDetailQuotation(projectId);
 
   // 프로젝트 데이터 로드
   useEffect(() => {
@@ -134,20 +139,16 @@ const ProductionPageContent = () => {
 
   useEffect(() => {
     if (!project) return;
-    setPageStatus(mappedStatus);
-    setProductionTab(tabs[selectedTab]);
+    const currentMappedStatus = mapKoreanToEnglish(project.status);
+    const currentTabs = getTabsByStatus(project.status || '');
+    setPageStatus(currentMappedStatus);
+    setProductionTab(currentTabs[selectedTab]);
     return () => {
       setPageStatus(null);
       setProductionTab(null);
     };
-  }, [
-    project,
-    selectedTab,
-    setPageStatus,
-    setProductionTab,
-    tabs,
-    mappedStatus,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project?.status, selectedTab]);
 
   if (isLoading) {
     return (
@@ -188,8 +189,28 @@ const ProductionPageContent = () => {
       {tabs[selectedTab] === '생산 현황' && <ProductionMonitor />}
       {tabs[selectedTab] === '생산 내역' && <ProductionLog />}
       {tabs[selectedTab] === '생산 계획' && <ProductionPlan />}
-      {tabs[selectedTab] === '주문서' && (
-        <div className="px-10 pt-5 pb-10">{/* <OrderDocumentView /> */}</div>
+      {tabs[selectedTab] === '주문서' && quotationData && (
+        <div className="px-10 pt-5 pb-10">
+          <OrderDocumentView
+            documentTitle="주문서"
+            clientData={{
+              name: quotationData.factory_name,
+              business_registration_number:
+                quotationData.business_registration_number,
+              representative_name: quotationData.representative_name,
+              address: quotationData.address,
+              business_type: quotationData.business_type,
+              business_category: quotationData.business_category,
+            }}
+            dueDate={project?.due_date || ''}
+            productListInfoTitle="상품 목록"
+            productItems={quotationData.products}
+            supplyAmount={quotationData.products.reduce(
+              (sum, item) => sum + (item.supply_amount || 0),
+              0
+            )}
+          />
+        </div>
       )}
     </div>
   );

@@ -156,6 +156,25 @@ const ProductDetail = ({
   const [isMaterialDetailPanelOpen, setIsMaterialDetailPanelOpen] =
     useState(false);
 
+  // 원자재 디테일 패널이 닫힐 때 데이터 새로고침
+  const handleMaterialDetailClose = async () => {
+    setIsMaterialDetailPanelOpen(false);
+    setMaterialId(null);
+
+    // 품목 데이터와 연결된 원자재 데이터 다시 로드
+    if (productId) {
+      // 1. 품목 상세 정보 다시 로드
+      await getProductDetail(productId);
+
+      // 2. 연결된 원자재 정보 다시 로드
+      resetData(); // 기존 연결 데이터 초기화
+      await getMaterialProductConnections(productId, 'product');
+
+      // 3. 원자재 상세 정보도 다시 로드 (재고량 업데이트 반영)
+      setMaterialDetails({});
+    }
+  };
+
   // 각 StockLocationItem 별 모달 오픈 상태 관리
   const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
 
@@ -655,7 +674,7 @@ const ProductDetail = ({
       {/* 자재 디테일 판넬 */}
       {isMaterialDetailPanelOpen && materialId && (
         <MaterialDetailPanel
-          setIsMaterialDetailOpen={setIsMaterialDetailPanelOpen}
+          setIsMaterialDetailOpen={handleMaterialDetailClose}
           selectedMaterialId={materialId}
         />
       )}

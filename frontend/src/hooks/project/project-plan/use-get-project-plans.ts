@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ProjectPlanModel } from '@/types/data-model';
 
 // project_id로 해당 프로젝트의 모든 생산 계획을 조회
@@ -6,7 +6,7 @@ const useGetProjectPlans = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getProjectPlans = async (projectId: number) => {
+  const getProjectPlans = useCallback(async (projectId: number) => {
     setIsLoading(true);
     setError(null);
 
@@ -46,7 +46,7 @@ const useGetProjectPlans = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return { getProjectPlans, isLoading, error };
 };

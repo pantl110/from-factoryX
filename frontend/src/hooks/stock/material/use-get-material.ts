@@ -54,8 +54,10 @@ const useGetMaterial = () => {
         if (filters.order) params.append('order', filters.order);
         if (filters.limit) params.append('limit', filters.limit.toString());
 
+        params.append('factory_id', factoryId.toString());
+        
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/factory/${factoryId}?${params}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material?${params}`,
           {
             method: 'GET',
             credentials: 'include',
@@ -85,9 +87,18 @@ const useGetMaterial = () => {
   const getMaterialDetail = useCallback(async (materialId: number) => {
     setIsLoading(true);
     setError(null);
+    
+    // 로컬스토리지에서 factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      setError('공장 정보가 없습니다.');
+      setIsLoading(false);
+      return { success: false, error: '공장 정보가 없습니다.' };
+    }
+    
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/${materialId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/${materialId}?factory_id=${factoryId}`,
         {
           method: 'GET',
           credentials: 'include',

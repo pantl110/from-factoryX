@@ -106,7 +106,6 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
   };
 
   const clientItems = clientList?.data || [];
-  if (!clientItems.length) return null;
 
   // 필수 필드들의 값 감시
   const name = watch('name');

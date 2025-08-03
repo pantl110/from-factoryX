@@ -240,23 +240,40 @@ const MaterialEnrollmentModal = ({
                     const updatedMaterials = [...prev, ...newMaterials];
 
                     // React Hook Form에 새로 추가된 material의 수량과 단가 설정
-                    newMaterials.forEach((material) => {
-                      if (
-                        material.quantity !== null &&
-                        material.quantity !== undefined
-                      ) {
-                        setValue(
-                          `quantity.${material.code}`,
-                          material.quantity
-                        );
-                      }
-                      if (
-                        material.price !== null &&
-                        material.price !== undefined
-                      ) {
-                        setValue(`price.${material.code}`, material.price);
-                      }
-                    });
+                    setTimeout(() => {
+                      newMaterials.forEach((material) => {
+                        if (
+                          material.quantity !== null &&
+                          material.quantity !== undefined
+                        ) {
+                          setValue(
+                            `quantity.${material.code}`,
+                            material.quantity
+                          );
+                          // DOM에 직접 포맷된 값 설정
+                          const quantityInput = document.querySelector(
+                            `input[name="quantity.${material.code}"]`
+                          ) as HTMLInputElement;
+                          if (quantityInput) {
+                            quantityInput.value =
+                              material.quantity.toLocaleString();
+                          }
+                        }
+                        if (
+                          material.price !== null &&
+                          material.price !== undefined
+                        ) {
+                          setValue(`price.${material.code}`, material.price);
+                          // DOM에 직접 포맷된 값 설정
+                          const priceInput = document.querySelector(
+                            `input[name="price.${material.code}"]`
+                          ) as HTMLInputElement;
+                          if (priceInput) {
+                            priceInput.value = material.price.toLocaleString();
+                          }
+                        }
+                      });
+                    }, 0);
 
                     return updatedMaterials;
                   });
@@ -374,7 +391,7 @@ const MaterialEnrollmentModal = ({
                       </div>
                       <p
                         className="flex-1 px-3 text-dg truncate min-w-0"
-                        title={`${mat.quantity} * ${mat.price}`}
+                        title={`${mat?.quantity ? mat.quantity * (mat?.price ?? 0) : '-'}`}
                       >
                         {(() => {
                           const material = selectedMaterials.find(

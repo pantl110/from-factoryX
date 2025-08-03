@@ -41,6 +41,7 @@ const TableHeader = ({
         <CaretUpDown size={21} className="text-sv" />
       </div>
       {!isArchived && <p className="w-[200px] px-3 text-sv">세금계산서</p>}
+      {isArchived && <div className="w-9" />}
     </div>
   );
 };

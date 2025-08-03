@@ -31,14 +31,15 @@ const TopBarContent = ({
   const isProductionPlanValid = usePageStatusStore(
     (state) => state.isProductionPlanValid
   ); // 생산 계획 폼 유효성 검사 상태
+
   const isProductionPlanSaveActive =
     productionTab === '생산 계획' &&
-    pageStatus === '생산 대기' &&
+    pageStatus === 'pending' &&
     isProductionPlanValid;
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pageStatus === '프로젝트 완료') {
+  if (pageStatus === 'completed') {
     return (
       <div className="flex gap-2">
         <MiniBtn
@@ -84,7 +85,7 @@ const TopBarContent = ({
   }
 
   if (productionTab === '생산 내역') {
-    if (pageStatus === '생산 완료') {
+    if (pageStatus === 'manufactured') {
       return (
         <div className="flex gap-2">
           <MiniBtn

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { UpdateProjectPlanModel } from '@/types/data-model';
 
 interface UpdateProjectPlanResponseModel {
@@ -11,7 +11,7 @@ const useUpdateProjectPlan = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updateProjectPlan = async (
+  const updateProjectPlan = useCallback(async (
     planId: number,
     data: UpdateProjectPlanModel
   ) => {
@@ -44,7 +44,7 @@ const useUpdateProjectPlan = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return { updateProjectPlan, isLoading, error };
 };

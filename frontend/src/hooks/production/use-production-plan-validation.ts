@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ProjectPlanModel } from '@/types/data-model';
 import usePageStatusStore from '@/store/page-status-store';
 
@@ -17,9 +17,9 @@ export const useProductionPlanValidation = (
     (state) => state.setProductionPlanValid
   );
 
-  // 모든 필수 필드가 입력되었는지 검증
-  const validateAllFields = (): boolean => {
-    return projectPlans.every((plan) => {
+  // 검증 결과를 useMemo로 메모이제이션
+  const isValid = useMemo(() => {
+    const result = projectPlans.every((plan) => {
       const formData = formChanges[plan.id];
       const currentData = formData || {
         quantity: plan.quantity,
@@ -28,24 +28,28 @@ export const useProductionPlanValidation = (
         end_date: plan.end_date,
       };
 
-      return (
+      const isItemValid = (
         currentData.quantity > 0 &&
         currentData.equipment_id > 0 &&
-        currentData.start_date?.trim() &&
-        currentData.end_date?.trim()
+        currentData.start_date?.trim() !== '' &&
+        currentData.end_date?.trim() !== '' &&
+        currentData.start_date?.length >= 10 && // YYYY-MM-DD 형식 최소 길이
+        currentData.end_date?.length >= 10
       );
-    });
-  };
 
-  // 데이터 변경 시마다 검증 상태 업데이트
+      return isItemValid;
+    });
+
+    return result;
+  }, [projectPlans, formChanges]);
+
+  // 검증 상태 업데이트
   useEffect(() => {
-    const isValid = validateAllFields();
     setProductionPlanValid(isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectPlans, formChanges, setProductionPlanValid]);
+  }, [isValid]);
 
   return {
-    validateAllFields,
-    isValid: validateAllFields(),
+    isValid,
   };
 };
