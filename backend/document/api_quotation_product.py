@@ -194,14 +194,14 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
         return 200, {
             "quotation_id": quotation.id,
             "project_id": project.id,
-            "status": "production_started"
+            "status": "confirmed"
         }
             
     except HttpError:
         raise
     except Exception as e:
-        print(f"[PRODUCTION ERROR] {str(e)}")
-        raise HttpError(500, f"생산 시작 중 오류가 발생했습니다: {str(e)}")
+        print(f"[CONFIRMATION ERROR] {str(e)}")
+        raise HttpError(500, f"주문 확정 중 오류가 발생했습니다: {str(e)}")
 
 
 # Quotation Tab
