@@ -61,7 +61,7 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
     @sync_to_async
     def get_histories():
         queryset = (
-            ProductHistory.objects.filter(product__factory__owner=user)
+            ProductHistory.objects.filter(product__factory_id=int(factory_id))
             .select_related("product")
             .order_by("-created_at")
         )
@@ -69,7 +69,21 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
         return list(queryset)
 
     histories = await get_histories()
-    return histories
+    
+    # ProductHistoryOut 스키마에 맞게 응답 데이터 변환
+    response_data = [
+        {
+            "id": history.id,
+            "type": history.type,
+            "product_id": history.product_id,
+            "quantity": history.quantity,
+            "total_stock": history.total_stock,
+            "created_at": history.created_at,
+            "updated_at": history.updated_at,
+        }
+        for history in histories
+    ]
+    return response_data
 
 
 # Product Tab
@@ -96,4 +110,14 @@ async def get_product_history(request, history_id: int):
     except ProductHistory.DoesNotExist:
         raise HttpError(404, "해당 입출고 이력을 찾을 수 없습니다.")
     
-    return history
+    # ProductHistoryOut 스키마에 맞게 응답 데이터 변환
+    response_data = {
+        "id": history.id,
+        "type": history.type,
+        "product_id": history.product_id,
+        "quantity": history.quantity,
+        "total_stock": history.total_stock,
+        "created_at": history.created_at,
+        "updated_at": history.updated_at,
+    }
+    return response_data
