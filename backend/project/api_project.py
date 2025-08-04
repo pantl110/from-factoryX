@@ -215,6 +215,21 @@ async def list_project(request, status: str = Query(...), search: str = Query(No
         @sync_to_async
         def get_projects():
             base_qs = Project.objects.filter(quotations__factory_id=int(factory_id))
+            
+            # 2개월간 생산계획이 없는 프로젝트를 자동으로 중단 상태로 변경
+            projects_to_suspend = base_qs.annotate(
+                has_plan=Exists(ProjectPlan.objects.filter(project=OuterRef("pk")))
+            ).filter(
+                status__in=["견적 협의중", "주문 확정", "생산 대기", "생산 중"],
+                has_plan=False,
+                updated_at__lte=two_months_ago,
+            )
+            
+            # 자동으로 중단 상태로 변경
+            for project in projects_to_suspend:
+                project.status = "중단"
+                project.save()
+            
             # 중단 프로젝트 판별: 견적 협의중 + 2개월간 ProjectPlan 없음 (updated_at 기준)
             abandoned_qs = base_qs.annotate(
                 has_plan=Exists(ProjectPlan.objects.filter(project=OuterRef("pk")))
@@ -229,25 +244,30 @@ async def list_project(request, status: str = Query(...), search: str = Query(No
             if status == "progress":
                 # 완료/중단 제외
                 base_qs = base_qs.exclude(status="프로젝트 완료")
+                base_qs = base_qs.exclude(status="중단")  # 자동 중단된 프로젝트도 제외
                 if abandoned_ids:
                     base_qs = base_qs.exclude(pk__in=abandoned_ids)
             elif status == "archived":
-                # 완료 + 중단
+                # 완료 + 중단 + abandoned
                 completed_qs = base_qs.filter(status="프로젝트 완료")
+                suspended_qs = base_qs.filter(status="중단")
                 abandoned_qs = Project.objects.filter(pk__in=abandoned_ids) if abandoned_ids else Project.objects.none()
                 # union 연산을 위해 QuerySet을 합침
                 project_ids = list(completed_qs.values_list("pk", flat=True))
+                project_ids.extend(list(suspended_qs.values_list("pk", flat=True)))
                 if abandoned_ids:
                     project_ids.extend(abandoned_ids)
                 base_qs = Project.objects.filter(pk__in=project_ids)
             elif status == "complete":
                 base_qs = base_qs.filter(status="프로젝트 완료")
             elif status == "interruption":
-                # 중단: abandoned_ids에 해당하는 프로젝트만
+                # 중단: status가 "중단"이거나 abandoned_ids에 해당하는 프로젝트만
+                suspended_qs = base_qs.filter(status="중단")
+                abandoned_qs = Project.objects.filter(pk__in=abandoned_ids) if abandoned_ids else Project.objects.none()
+                project_ids = list(suspended_qs.values_list("pk", flat=True))
                 if abandoned_ids:
-                    base_qs = Project.objects.filter(pk__in=abandoned_ids)
-                else:
-                    base_qs = Project.objects.none()
+                    project_ids.extend(abandoned_ids)
+                base_qs = Project.objects.filter(pk__in=project_ids)
             else:
                 # 개별 상태별 매핑 (한글 값으로 필터링)
                 status_mapping = {
@@ -305,7 +325,7 @@ async def list_project(request, status: str = Query(...), search: str = Query(No
                         publish_status = project.tax_invoice.publish_status
                     is_abandoned = False
                     if status in ["archived", "interruption"]:
-                        is_abandoned = project.pk in abandoned_ids
+                        is_abandoned = project.pk in abandoned_ids or project.status == "중단"
                     result.append(
                         ListProgressProjectOut(
                             project_id=project.id,
