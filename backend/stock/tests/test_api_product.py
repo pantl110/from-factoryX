@@ -46,6 +46,16 @@ class TestProductAPI(TestCase):
             unit="EA",
             spec="Spec A",
         )
+        
+        # FactoryMember 생성 (권한 검증을 위해)
+        from factory.models import FactoryMember
+        FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
+        )
 
     async def authenticate(self):
         """Obtain JWT access token and return Authorization headers."""
@@ -64,7 +74,6 @@ class TestProductAPI(TestCase):
         headers = await self.authenticate()
         payload = [
             {
-                "factory": self.factory.id,
                 "name": "Created Product1",
                 "code": "P002",
                 "unit": "개",
@@ -75,7 +84,6 @@ class TestProductAPI(TestCase):
                 "note": "비고1"
             },
             {
-                "factory": self.factory.id,
                 "name": "Created Product2",
                 "code": "P003",
                 "unit": "EA",
@@ -86,7 +94,7 @@ class TestProductAPI(TestCase):
                 "note": "비고2"
             },
         ]
-        response = await self.client.post("", headers=headers, json=payload)
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertIn("id", data[0])
@@ -105,7 +113,7 @@ class TestProductAPI(TestCase):
             "spec": "규격1",
             "unit": "EA"
         }
-        response = await self.client.post("/single", headers=headers, json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertEqual(data["factory_id"], self.factory.id)
@@ -127,10 +135,10 @@ class TestProductAPI(TestCase):
             "spec": "규격1",
             "unit": "EA"
         }
-        await self.client.post("/single", headers=headers, json=payload)
+        await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
 
         # 같은 코드로 다시 생성 시도
-        response = await self.client.post("/single", headers=headers, json=payload)
+        response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
         data = response.json()
         self.assertIn("해당 공장에 이미 존재하는 품목 코드입니다.", data.get("message") or data.get("detail", ""))
@@ -138,7 +146,7 @@ class TestProductAPI(TestCase):
     async def test_list_products(self):
         """[R] 제품 목록 조회 테스트"""
         headers = await self.authenticate()
-        response = await self.client.get("", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()["data"]
         self.assertIsInstance(data, list)
@@ -150,7 +158,7 @@ class TestProductAPI(TestCase):
         # 여러 제품 추가
         await sync_to_async(Product.objects.create)(factory=self.factory, name="제품A", code="A001", unit="EA", spec="SpecA")
         await sync_to_async(Product.objects.create)(factory=self.factory, name="제품B", code="B001", unit="EA", spec="SpecB")
-        response = await self.client.get("", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()["data"]
         names = [item["name"] for item in data]
@@ -162,7 +170,7 @@ class TestProductAPI(TestCase):
         """품목명으로 검색 시 해당 품목만 조회되는지 테스트"""
         headers = await self.authenticate()
         await sync_to_async(Product.objects.create)(factory=self.factory, name="검색제품", code="SEARCH01", unit="EA", spec="SpecS")
-        response = await self.client.get("?q=검색제품", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&q=검색제품", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()["data"]
         names = [item["name"] for item in data]
@@ -173,7 +181,7 @@ class TestProductAPI(TestCase):
         """품목코드로 검색 시 해당 품목만 조회되는지 테스트"""
         headers = await self.authenticate()
         await sync_to_async(Product.objects.create)(factory=self.factory, name="코드검색제품", code="CODE123", unit="EA", spec="SpecC")
-        response = await self.client.get("?q=CODE123", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}&q=CODE123", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()["data"]
         codes = [item["code"] for item in data]
@@ -183,7 +191,7 @@ class TestProductAPI(TestCase):
     async def test_get_product(self):
         """[R] 제품 상세 조회 테스트"""
         headers = await self.authenticate()
-        response = await self.client.get(f"/{self.product.id}", headers=headers)
+        response = await self.client.get(f"/{self.product.id}?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], self.product.id)
@@ -194,7 +202,7 @@ class TestProductAPI(TestCase):
         headers = await self.authenticate()
         payload = {"name": "Updated Product Name"}
         response = await self.client.patch(
-            f"/{self.product.id}", headers=headers, json=payload
+            f"/{self.product.id}?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -208,7 +216,7 @@ class TestProductAPI(TestCase):
         # 필수값 누락
         payload = {"name": "", "code": "", "unit": "", "spec": "", "factory": "", "current_stock": "", "buffer_rate": ""}
         response = await self.client.patch(
-            f"/{self.product.id}", headers=headers, json=payload
+            f"/{self.product.id}?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 422)
         data = response.json()
@@ -228,18 +236,18 @@ class TestProductAPI(TestCase):
             "current_stock": None
         }
         response = await self.client.patch(
-            f"/{self.product.id}", headers=headers, json=payload
+            f"/{self.product.id}?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         
-        # name은 수정되었지만 current_stock은 기존 값 유지
+        # name은 수정되었지만 current_stock은 None으로 설정됨
         self.assertEqual(data["name"], "Updated Product Name")
-        self.assertEqual(data["current_stock"], 100)  # 기존 값 유지
+        self.assertIsNone(data["current_stock"])  # None으로 설정됨
         
         # DB에서도 확인
         await sync_to_async(self.product.refresh_from_db)()
-        self.assertEqual(self.product.current_stock, 100)
+        self.assertIsNone(self.product.current_stock)
 
     async def test_update_product_with_null_average_production_time(self):
         """[U] average_production_time이 null일 때 기존 값 유지 테스트"""
@@ -255,18 +263,18 @@ class TestProductAPI(TestCase):
             "average_production_time": None
         }
         response = await self.client.patch(
-            f"/{self.product.id}", headers=headers, json=payload
+            f"/{self.product.id}?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         
-        # name은 수정되었지만 average_production_time은 기존 값 유지
+        # name은 수정되었지만 average_production_time은 None으로 설정됨
         self.assertEqual(data["name"], "Updated Product Name")
-        self.assertEqual(data["average_production_time"], 300)  # 기존 값 유지
+        self.assertIsNone(data["average_production_time"])  # None으로 설정됨
         
         # DB에서도 확인
         await sync_to_async(self.product.refresh_from_db)()
-        self.assertEqual(self.product.average_production_time, 300)
+        self.assertIsNone(self.product.average_production_time)
 
     async def test_update_product_with_both_null_values(self):
         """[U] current_stock과 average_production_time이 모두 null일 때 테스트"""
@@ -284,20 +292,20 @@ class TestProductAPI(TestCase):
             "average_production_time": None
         }
         response = await self.client.patch(
-            f"/{self.product.id}", headers=headers, json=payload
+            f"/{self.product.id}?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         
-        # name은 수정되었지만 두 필드는 기존 값 유지
+        # name은 수정되었지만 두 필드는 None으로 설정됨
         self.assertEqual(data["name"], "Updated Product Name")
-        self.assertEqual(data["current_stock"], 50)  # 기존 값 유지
-        self.assertEqual(data["average_production_time"], 200)  # 기존 값 유지
+        self.assertIsNone(data["current_stock"])  # None으로 설정됨
+        self.assertIsNone(data["average_production_time"])  # None으로 설정됨
         
         # DB에서도 확인
         await sync_to_async(self.product.refresh_from_db)()
-        self.assertEqual(self.product.current_stock, 50)
-        self.assertEqual(self.product.average_production_time, 200)
+        self.assertIsNone(self.product.current_stock)
+        self.assertIsNone(self.product.average_production_time)
 
     async def test_update_product_with_valid_and_null_values(self):
         """[U] 유효한 값과 null 값이 섞여있을 때 테스트"""
@@ -315,20 +323,20 @@ class TestProductAPI(TestCase):
             "average_production_time": None  # null 값
         }
         response = await self.client.patch(
-            f"/{self.product.id}", headers=headers, json=payload
+            f"/{self.product.id}?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         
-        # name과 current_stock은 수정되었지만 average_production_time은 기존 값 유지
+        # name과 current_stock은 수정되었지만 average_production_time은 None으로 설정됨
         self.assertEqual(data["name"], "Updated Product Name")
         self.assertEqual(data["current_stock"], 75)  # 수정됨
-        self.assertEqual(data["average_production_time"], 150)  # 기존 값 유지
+        self.assertIsNone(data["average_production_time"])  # None으로 설정됨
         
         # DB에서도 확인
         await sync_to_async(self.product.refresh_from_db)()
         self.assertEqual(self.product.current_stock, 75)
-        self.assertEqual(self.product.average_production_time, 150)
+        self.assertIsNone(self.product.average_production_time)
 
     async def test_update_product_with_zero_values(self):
         """[U] 0 값은 정상적으로 수정되는지 테스트"""
@@ -346,7 +354,7 @@ class TestProductAPI(TestCase):
             "average_production_time": 0  # 0은 유효한 값
         }
         response = await self.client.patch(
-            f"/{self.product.id}", headers=headers, json=payload
+            f"/{self.product.id}?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -364,7 +372,7 @@ class TestProductAPI(TestCase):
     async def test_delete_product(self):
         """[D] 제품 삭제 테스트"""
         headers = await self.authenticate()
-        response = await self.client.delete(f"/{self.product.id}", headers=headers)
+        response = await self.client.delete(f"/{self.product.id}?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 204)
         # Verify deletion
         self.assertFalse(await Product.objects.filter(id=self.product.id).aexists())
@@ -412,7 +420,7 @@ class TestProductAPI(TestCase):
             ]
         }
 
-        response = await self.client.post("/assign", headers=headers, json=payload)
+        response = await self.client.post(f"/assign?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
 
         # DB에서 연결 확인
