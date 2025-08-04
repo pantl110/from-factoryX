@@ -1,4 +1,4 @@
-from ninja import Router, Query, FilterSchema
+from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
@@ -24,29 +24,13 @@ router = Router(tags=["ProjectPlan"], auth=jwt_auth)
     response={ 200: ProjectPlansCreateOut, 400: dict, 404: dict, 500: dict }
 )
 async def create_project_plans(request, payload: ProjectPlanCreateIn):
-    """
-    입력 필드:
-    - project_id: int - 프로젝트 ID (필수)
-    - quotation_product_ids: List[int] - 견적서 품목 ID 목록 (필수)
-    - production_quantities: List[int] - 각 품목별 생산 수량 (필수)
-    - equipment_ids: List[int] - 각 품목별 설비 ID (필수)
-    - start_dates: List[str] - 각 품목별 시작일 (필수, YYYY-MM-DD 형식)
-    - end_dates: List[str] - 각 품목별 종료일 (필수, YYYY-MM-DD 형식)
-    - avg_production_times: List[int] - 각 품목별 평균 생산 시간 (필수, 초 단위)
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
 
-    반환 필드:
-    - message: str - 생성 완료 메시지
-    - created_plans: List[ProjectPlanDetailOut] - 생성된 생산 계획 목록
-        - id: int - 생산 계획 ID
-        - project_id: int - 프로젝트 ID
-        - quotation_product_id: int - 견적서 품목 ID
-        - equipment_id: int - 설비 ID
-        - status: str - 생산 상태
-        - quantity: int - 생산 수량
-        - start_date: date - 시작일
-        - end_date: date - 종료일
-        - avg_production_time: int - 평균 생산 시간
-    """
     try:
         project = await Project.objects.aget(id=payload.project_id)
     except Project.DoesNotExist:
@@ -187,6 +171,13 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn):
 )
 @paginate
 async def list_ongoing_project_plans(request, filters: ProjectPlanListFilter = Query(...)):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     try:
         ongoing_statuses = [
             Project.ProjectStatus.quotation,
@@ -265,6 +256,13 @@ async def list_ongoing_project_plans(request, filters: ProjectPlanListFilter = Q
 )
 @paginate
 async def list_completed_project_plans(request, filters: ProjectPlanListFilter = Query(...)):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     try:
         completed_statuses = [
             Project.ProjectStatus.manufactured,
@@ -342,6 +340,13 @@ async def list_completed_project_plans(request, filters: ProjectPlanListFilter =
     response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict}
 )
 async def list_project_plans(request, project_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     try:
         project = await Project.objects.aget(id=project_id)
     except Project.DoesNotExist:

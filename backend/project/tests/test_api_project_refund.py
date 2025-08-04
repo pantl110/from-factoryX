@@ -37,6 +37,24 @@ class ProjectRefundAPITestCase(TestCase):
         # 프로젝트 생성
         self.project = Project.objects.create()
         
+        # FactoryMember 생성
+        from factory.models import FactoryMember
+        FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
+        )
+        
+        # 견적서 생성 (프로젝트를 공장과 연결)
+        from document.models import Quotation
+        self.quotation = Quotation.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            project=self.project
+        )
+        
         # 제품 생성
         self.product = Product.objects.create(
             factory=self.factory,
@@ -75,7 +93,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -118,7 +136,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -139,7 +157,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -160,7 +178,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -181,7 +199,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -202,7 +220,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -258,7 +276,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -310,7 +328,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -335,7 +353,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -371,7 +389,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -407,7 +425,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -443,7 +461,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -499,7 +517,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -540,7 +558,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -585,7 +603,7 @@ class ProjectRefundAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'

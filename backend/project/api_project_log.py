@@ -4,8 +4,10 @@ from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from project.models import Project, ProjectLog
-from project.schemas.outbound import ProjectLogDetailOut, ProjectLogCreateIn, ProjectLogUpdateIn, ProjectLogCreateOut, ProjectLogUpdateOut
+from project.schemas.outbound import ProjectLogDetailOut, ProjectLogCreateOut, ProjectLogUpdateOut
+from project.schemas.inbound import ProjectLogCreateIn, ProjectLogUpdateIn
 from typing import List
+from factory.utils import is_factory_member
 
 router = Router(tags=["ProjectLog"], auth=jwt_auth)
 
@@ -17,8 +19,19 @@ router = Router(tags=["ProjectLog"], auth=jwt_auth)
     response={200: ProjectLogCreateOut, 400: dict, 404: dict, 500: dict}
 )
 async def create_project_log(request, payload: ProjectLogCreateIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     try:
         project = await Project.objects.aget(id=payload.project_id)
+        # 프로젝트가 해당 공장에 속하는지 확인
+        quotation_exists = await sync_to_async(project.quotations.filter(factory_id=int(factory_id)).exists)()
+        if not quotation_exists:
+            raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
     
@@ -53,8 +66,19 @@ async def create_project_log(request, payload: ProjectLogCreateIn):
 )
 @paginate
 async def list_project_logs(request, project_id: int = Query(...)):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     try:
         project = await Project.objects.aget(id=project_id)
+        # 프로젝트가 해당 공장에 속하는지 확인
+        quotation_exists = await sync_to_async(project.quotations.filter(factory_id=int(factory_id)).exists)()
+        if not quotation_exists:
+            raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
     
@@ -75,7 +99,9 @@ async def list_project_logs(request, project_id: int = Query(...)):
             project_id=log.project_id,  # 직접 project_id 필드 사용
             type=log.type,
             title=log.title,
-            content=log.content
+            content=log.content,
+            created_at=log.created_at,
+            updated_at=log.updated_at
         ))
     
     return logs_detail_list
@@ -88,8 +114,19 @@ async def list_project_logs(request, project_id: int = Query(...)):
     response={200: ProjectLogUpdateOut, 400: dict, 404: dict, 500: dict}
 )
 async def update_project_log(request, log_id: int, payload: ProjectLogUpdateIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     try:
-        log = await ProjectLog.objects.aget(id=log_id)
+        log = await ProjectLog.objects.select_related('project').aget(id=log_id)
+        # 로그가 해당 공장의 프로젝트에 속하는지 확인
+        quotation_exists = await sync_to_async(log.project.quotations.filter(factory_id=int(factory_id)).exists)()
+        if not quotation_exists:
+            raise HttpError(404, "해당 로그를 찾을 수 없습니다.")
     except ProjectLog.DoesNotExist:
         raise HttpError(404, "해당 로그를 찾을 수 없습니다.")
     

@@ -40,7 +40,25 @@ class ProjectTransactDateUpdateIn(Schema):
 # Project Refund API
 # ------------------------------------------------------------
 
-# for create_project_plans method
+# (POST) Refund Create
+class RefundCreateIn(Schema):
+    project_id: int
+    product_id: int
+    refund_date: str  # YYYY-MM-DD 형식
+    production_amount: Optional[int] = None
+
+# (PATCH) Refund Update
+class RefundUpdateIn(Schema):
+    refund_date: Optional[str] = None  # YYYY-MM-DD 형식
+    current_stock: Optional[int] = None
+    production_amount: Optional[int] = None
+
+
+# ------------------------------------------------------------
+# Project Plan API
+# ------------------------------------------------------------
+
+# (POST) Project Plan Create
 class ProjectPlanCreateIn(Schema):
     project_id: int
     quotation_product_ids: List[int]
@@ -51,7 +69,17 @@ class ProjectPlanCreateIn(Schema):
     avg_production_times: List[int]
 
 
-# for update_project_plan method
+# (GET) Project Plan List
+class ProjectPlanListFilter(FilterSchema):
+    client_name: Optional[str] = None
+
+    def filter(self, qs):
+        if self.client_name:
+            qs = qs.filter(quotations__client__name__icontains=self.client_name)
+        return qs
+
+
+# (PATCH) Project Plan Update
 class ProjectPlanUpdateIn(Schema):
     equipment_id: Optional[int] = None
     quantity: Optional[int] = None
@@ -61,16 +89,20 @@ class ProjectPlanUpdateIn(Schema):
     avg_production_time: Optional[int] = None
 
 
-# for project plan list filters
-class ProjectPlanListFilter(FilterSchema):
-    client_name: Optional[str] = None  # FactoryClient의 회사명으로 검색
+# ------------------------------------------------------------
+# Project Log API
+# ------------------------------------------------------------
 
-    def filter(self, qs):
-        if self.client_name:
-            qs = qs.filter(quotations__client__name__icontains=self.client_name)
-        return qs
+# (POST) Project Log Create
+class ProjectLogCreateIn(Schema):
+    project_id: int
+    type: str
+    title: str
+    content: str
 
-# list_progress_project
-class ListProgressProjectIn(Schema):
-    factory_id: int
-    status: str  # "progress" 또는 "complete"
+
+# (PATCH) Project Log Update
+class ProjectLogUpdateIn(Schema):
+    type: Optional[str] = None
+    title: Optional[str] = None
+    content: Optional[str] = None

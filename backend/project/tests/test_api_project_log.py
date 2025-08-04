@@ -33,8 +33,26 @@ class ProjectLogAPITestCase(TestCase):
             business_registration_number='123-45-67890'
         )
         
+        # FactoryMember 생성
+        from factory.models import FactoryMember
+        FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
+        )
+        
         # 프로젝트 생성
         self.project = Project.objects.create()
+        
+        # 견적서 생성 (프로젝트를 공장과 연결)
+        from document.models import Quotation
+        self.quotation = Quotation.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            project=self.project
+        )
         
         # JWT 토큰 생성
         self.token = self.generate_jwt_token()
@@ -65,7 +83,7 @@ class ProjectLogAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -98,7 +116,7 @@ class ProjectLogAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -118,7 +136,7 @@ class ProjectLogAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -138,7 +156,7 @@ class ProjectLogAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -183,7 +201,7 @@ class ProjectLogAPITestCase(TestCase):
         )
         
         # 로그 조회
-        url = f'/v1/project/log?project_id={self.project.id}'
+        url = f'/v1/project/log?project_id={self.project.id}&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -217,7 +235,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_list_project_logs_nonexistent_project(self):
         """존재하지 않는 프로젝트로 로그 조회 시도 테스트"""
-        url = '/v1/project/log?project_id=999'
+        url = f'/v1/project/log?project_id=999&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -228,7 +246,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_list_project_logs_no_logs(self):
         """로그가 없는 프로젝트 조회 시도 테스트"""
-        url = f'/v1/project/log?project_id={self.project.id}'
+        url = f'/v1/project/log?project_id={self.project.id}&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -239,7 +257,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_list_project_logs_without_auth(self):
         """인증 없이 로그 조회 시도 테스트"""
-        url = f'/v1/project/log?project_id={self.project.id}'
+        url = f'/v1/project/log?project_id={self.project.id}&factory_id={self.factory.id}'
         
         response = self.client.get(url)
         
@@ -264,7 +282,7 @@ class ProjectLogAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -293,7 +311,7 @@ class ProjectLogAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -319,7 +337,7 @@ class ProjectLogAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -345,7 +363,7 @@ class ProjectLogAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -371,7 +389,7 @@ class ProjectLogAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json'
         )

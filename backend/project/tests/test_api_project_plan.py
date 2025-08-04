@@ -111,7 +111,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -155,7 +155,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -178,7 +178,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url,
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -223,7 +223,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         create_response = self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -285,7 +285,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         create_response = self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -324,7 +324,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         create_response = self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -363,7 +363,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         create_response = self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -417,14 +417,14 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         
         # 프로젝트 생산 계획 조회
-        list_url = f'/v1/project/plan?project_id={self.project.id}'
+        list_url = f'/v1/project/plan?project_id={self.project.id}&factory_id={self.factory.id}'
         
         response = self.client.get(
             list_url,
@@ -475,7 +475,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_list_project_plans_nonexistent_project(self):
         """존재하지 않는 프로젝트로 생산 계획 조회 시도 테스트"""
-        url = '/v1/project/plan?project_id=999'
+        url = f'/v1/project/plan?project_id=999&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -489,7 +489,7 @@ class ProjectPlanAPITestCase(TestCase):
         # 새로운 프로젝트 생성 (생산 계획 없음)
         new_project = Project.objects.create()
         
-        url = f'/v1/project/plan?project_id={new_project.id}'
+        url = f'/v1/project/plan?project_id={new_project.id}&factory_id={self.factory.id}'
         
         response = self.client.get(
             url,
@@ -521,14 +521,14 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         
         # 진행 중인 프로젝트 계획 조회 (쿼리 파라미터 없이)
-        list_url = '/v1/project/plan/ongoing'
+        list_url = f'/v1/project/plan/ongoing?factory_id={self.factory.id}'
         
         response = self.client.get(
             list_url,
@@ -586,14 +586,14 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         
         # 고객사 회사명으로 검색
-        list_url = f'/v1/project/plan/ongoing?client_name={self.client_company.name}'
+        list_url = f'/v1/project/plan/ongoing?client_name={self.client_company.name}&factory_id={self.factory.id}'
         
         response = self.client.get(
             list_url,
@@ -617,7 +617,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_list_completed_project_plans_empty(self):
         """완료된 프로젝트 계획 조회 (빈 결과) 테스트"""
         # 완료된 프로젝트 계획 조회 (쿼리 파라미터 없이)
-        list_url = '/v1/project/plan/completed'
+        list_url = f'/v1/project/plan/completed?factory_id={self.factory.id}'
         
         response = self.client.get(
             list_url,
@@ -634,7 +634,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_list_ongoing_project_plans_empty(self):
         """진행 중인 프로젝트 계획 조회 (빈 결과) 테스트"""
         # 존재하지 않는 프로젝트가 없으므로 쿼리 파라미터 없이 호출
-        list_url = '/v1/project/plan/ongoing'
+        list_url = f'/v1/project/plan/ongoing?factory_id={self.factory.id}'
         
         response = self.client.get(
             list_url,
@@ -663,7 +663,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -737,7 +737,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -788,7 +788,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            create_url,
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(create_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
