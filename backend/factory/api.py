@@ -1,19 +1,14 @@
-from ninja import Router, Query
+from ninja import Router
 from ninja.pagination import paginate
 from api.security import jwt_auth
-from factory.schemas.inbound import (
-    FactoryCreateIn,
-    FactoryUpdateIn,
-    FactoryDetailIn,
-    FactoryDeleteIn,
-)
+from factory.schemas.inbound import FactoryUpdateIn
 from factory.schemas.outbound import FactoryOut
-from factory.models import Factory
-from asgiref.sync import sync_to_async
+from factory.models import Factory, FactoryMember
 from typing import List
-from factory.utils import get_factory_by_id
 from ninja.errors import HttpError
 from factory.utils import is_factory_member
+from asgiref.sync import sync_to_async
+
 
 router = Router(tags=["Factory"])
 
@@ -29,8 +24,6 @@ router = Router(tags=["Factory"])
 async def create_factory(request):
     user = request.auth
     factory = await Factory.objects.acreate(owner=user)
-    
-    from factory.models import FactoryMember
 
     await FactoryMember.objects.acreate(
         factory=factory,
@@ -51,11 +44,15 @@ async def create_factory(request):
 )
 @paginate
 async def list_factories(request):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
+    await is_factory_member(int(factory_id), user)
 
     @sync_to_async
     def get_factories():
-        from factory.models import FactoryMember
         member_factories = FactoryMember.objects.filter(
             user=user, 
             status=FactoryMember.MemberStatus.active
@@ -65,48 +62,140 @@ async def list_factories(request):
         return list(queryset)
 
     factories = await get_factories()
-    return factories
+    
+    # 모델 객체를 딕셔너리로 변환
+    factory_list = []
+    for factory in factories:
+        factory_list.append({
+            "id": factory.id,
+            "owner": factory.owner_id,
+            "name": factory.name,
+            "business_registration_number": factory.business_registration_number,
+            "representative_name": factory.representative_name,
+            "manager_email": factory.manager_email,
+            "manager_phone": factory.manager_phone,
+            "manager_fax": factory.manager_fax,
+            "business_type": factory.business_type,
+            "business_category": factory.business_category,
+            "business_address": factory.business_address,
+            "is_trial": factory.is_trial,
+            "billing_key": factory.billing_key,
+            "inviting": factory.inviting,
+            "created_at": factory.created_at.isoformat() if factory.created_at else None,
+            "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
+        })
+    
+    return factory_list
 
 
 @router.get(
-    "/{factory_id}",
+    "",
     summary="[C] 공장 상세 조회",
     description="공장 ID로 공장 정보를 조회합니다.",
     response={200: FactoryOut},
     auth=jwt_auth,
 )
-async def get_factory(request, factory_id: int):
+async def get_factory(request):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    factory = await get_factory_by_id(factory_id, user)
-    return factory
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        factory = await Factory.objects.aget(id=int(factory_id))
+    except Factory.DoesNotExist:
+        raise HttpError(404, "해당 공장이 존재하지 않습니다.")
+    
+    return {
+        "id": factory.id,
+        "owner": factory.owner_id,
+        "name": factory.name,
+        "business_registration_number": factory.business_registration_number,
+        "representative_name": factory.representative_name,
+        "manager_email": factory.manager_email,
+        "manager_phone": factory.manager_phone,
+        "manager_fax": factory.manager_fax,
+        "business_type": factory.business_type,
+        "business_category": factory.business_category,
+        "business_address": factory.business_address,
+        "is_trial": factory.is_trial,
+        "billing_key": factory.billing_key,
+        "inviting": factory.inviting,
+        "created_at": factory.created_at.isoformat() if factory.created_at else None,
+        "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
+    }
 
 
 @router.patch(
-    "/{factory_id}",
+    "",
     summary="[C] 공장 정보 수정",
     description="공장 ID로 공장 정보를 수정합니다.",
     response={200: FactoryOut},
     auth=jwt_auth,
 )
-async def update_factory(request, factory_id: int, payload: FactoryUpdateIn):
+async def update_factory(request, payload: FactoryUpdateIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    data = payload.dict(exclude_unset=True)
-    factory = await get_factory_by_id(factory_id, user)
-    for attr, value in data.items():
-        setattr(factory, attr, value)
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        factory = await Factory.objects.aget(id=int(factory_id))
+    except Factory.DoesNotExist:
+        raise HttpError(404, "해당 공장이 존재하지 않습니다.")
+
+    # None이 아닌 값만 업데이트
+    update_data = payload.dict(exclude_unset=True)
+    update_data = {k: v for k, v in update_data.items() if v is not None}
+    
+    for field, value in update_data.items():
+        setattr(factory, field, value)
+    
     await factory.asave()
-    return factory
+    
+    return {
+        "id": factory.id,
+        "owner": factory.owner_id,
+        "name": factory.name,
+        "business_registration_number": factory.business_registration_number,
+        "representative_name": factory.representative_name,
+        "manager_email": factory.manager_email,
+        "manager_phone": factory.manager_phone,
+        "manager_fax": factory.manager_fax,
+        "business_type": factory.business_type,
+        "business_category": factory.business_category,
+        "business_address": factory.business_address,
+        "is_trial": factory.is_trial,
+        "billing_key": factory.billing_key,
+        "inviting": factory.inviting,
+        "created_at": factory.created_at.isoformat() if factory.created_at else None,
+        "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
+    }
 
 
 @router.delete(
-    "/{factory_id}",
+    "",
     summary="[C] 공장 삭제",
     description="공장 ID로 공장을 삭제합니다.",
     response={204: None},
     auth=jwt_auth,
 )
-async def delete_factory(request, factory_id: int):
+async def delete_factory(request):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    factory = await get_factory_by_id(factory_id, user)
+    await is_factory_member(int(factory_id), user)
+    
+    try:
+        factory = await Factory.objects.aget(id=int(factory_id))
+    except Factory.DoesNotExist:
+        raise HttpError(404, "해당 공장이 존재하지 않습니다.")
+    
     await factory.adelete()
     return 204, None

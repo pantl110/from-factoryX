@@ -1,11 +1,12 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from location.schemas.inbound import LocationCreateIn, LocationUpdateIn
-from location.schemas.outbound import LocationListOut, LocationDetailOut, ItemLocationsListOut
+from location.schemas.outbound import LocationDetailOut, ItemLocationsListOut
 from location.models import Location
 from stock.models import Material, Product
+from factory.utils import is_factory_member
 
 router = Router(tags=["Location"], auth=jwt_auth)
 
@@ -18,19 +19,12 @@ router = Router(tags=["Location"], auth=jwt_auth)
     response={ 200: LocationDetailOut, 400: dict, 404: dict, 500: dict }
     )
 async def create_location(request, payload: LocationCreateIn):
-    """
-    입력 필드:
-    - type: 타입 ("material" 또는 "product", 필수)
-    - id: 대상 아이템 ID (material 또는 product의 id, 필수)
-    - location: 창고 위치명 (str, 필수)
-    - images: 이미지 리스트 (list, 선택)
-
-    반환 필드 (LocationDetailOut):
-    - id: 위치 ID (int)
-    - type: 타입 (str)
-    - location: 창고 위치명 (str)
-    - images: 이미지 리스트 (list)
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
 
     if payload.type == "material":
         target_model = Material
@@ -68,18 +62,12 @@ async def create_location(request, payload: LocationCreateIn):
     response={ 200: ItemLocationsListOut, 400: dict, 404: dict, 500: dict }
     )
 async def list_locations(request, type: str, id: int):
-    """
-    입력 필드:
-    - type: 타입 ("material" 또는 "product", 필수, 쿼리 파라미터)
-    - id: 대상 아이템 ID (material 또는 product의 id, 필수, 쿼리 파라미터)
-
-    반환 필드 (ItemLocationsListOut):
-    - locations: 위치 정보 리스트 (LocationDetailOut의 리스트)
-        - id: 위치 ID (int)
-        - type: 타입 (str)
-        - location: 창고 위치명 (str)
-        - images: 이미지 리스트 (list)
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
 
     if type == "material":
         target_model = Material
@@ -119,18 +107,13 @@ async def list_locations(request, type: str, id: int):
     response={200: LocationDetailOut, 400: dict, 404: dict, 500: dict}
 )
 async def update_location(request, location_id: int, payload: LocationUpdateIn):
-    """
-    [입력 필드]
-    - location_id (int): 수정할 Location 객체의 id (필수, 경로 파라미터)
-    - location (str): 새 위치명(창고명 등, 선택) - null이면 기존 값 유지
-    - images (list): 새 이미지 URL 목록 (선택) - null이면 기존 값 유지
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
 
-    [반환 필드]
-    - id (int): 위치 id
-    - type (str): 위치 타입
-    - location (str): 수정된 위치명
-    - images (list): 수정된 이미지 URL 목록
-    """
     # Location 객체 직접 조회
     try:
         location = await Location.objects.aget(id=location_id)
@@ -160,14 +143,13 @@ async def update_location(request, location_id: int, payload: LocationUpdateIn):
     response={ 200: dict, 400: dict, 404: dict, 500: dict }
     )
 async def delete_location(request, location_id: int):
-    """
-    입력 필드:
-    - location_id: 삭제할 위치의 id (필수, 경로 파라미터)
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
     
-    반환 필드:
-    - message: 삭제 완료 메시지
-    - deleted_location_id: 삭제된 위치 ID
-    """
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     # Location 객체 직접 조회
     try:
         location = await Location.objects.aget(id=location_id)

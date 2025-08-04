@@ -27,6 +27,15 @@ class LocationAPITestCase(TestCase):
             name='테스트 공장',
             business_registration_number='123-45-67890'
         )
+        # 테스트용 공장 멤버 등록
+        from factory.models import FactoryMember
+        FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role='admin',
+            status='active',
+            invited_by=self.user
+        )
         
         # 테스트용 원자재 생성
         self.material = Material.objects.create(
@@ -73,7 +82,7 @@ class LocationAPITestCase(TestCase):
         }
         
         response = self.client.post(
-            url, 
+            f'{url}?factory_id={self.factory.id}', 
             data, 
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -90,7 +99,7 @@ class LocationAPITestCase(TestCase):
 
     def test_create_product_location(self):
         """품목 위치 생성 테스트"""
-        url = '/v1/location'
+        url = f'/v1/location?factory_id={self.factory.id}'
         data = {
             'type': 'product',
             'id': self.product.id,
@@ -117,7 +126,7 @@ class LocationAPITestCase(TestCase):
 
     def test_create_multiple_locations(self):
         """한 아이템에 여러 위치 생성 테스트"""
-        url = '/v1/location'
+        url = f'/v1/location?factory_id={self.factory.id}'
         
         # 첫 번째 위치 생성
         data1 = {
@@ -159,7 +168,7 @@ class LocationAPITestCase(TestCase):
 
     def test_create_location_invalid_type(self):
         """잘못된 타입으로 위치 생성 시도 테스트"""
-        url = '/v1/location'
+        url = f'/v1/location?factory_id={self.factory.id}'
         data = {
             'type': 'invalid_type',
             'id': self.material.id,
@@ -178,7 +187,7 @@ class LocationAPITestCase(TestCase):
 
     def test_create_location_nonexistent_material(self):
         """존재하지 않는 원자재 ID로 위치 생성 시도 테스트"""
-        url = '/v1/location'
+        url = f'/v1/location?factory_id={self.factory.id}'
         data = {
             'type': 'material',
             'id': 99999,  # 존재하지 않는 ID
@@ -197,7 +206,7 @@ class LocationAPITestCase(TestCase):
 
     def test_create_location_nonexistent_product(self):
         """존재하지 않는 품목 ID로 위치 생성 시도 테스트"""
-        url = '/v1/location'
+        url = f'/v1/location?factory_id={self.factory.id}'
         data = {
             'type': 'product',
             'id': 99999,  # 존재하지 않는 ID
@@ -229,7 +238,7 @@ class LocationAPITestCase(TestCase):
         )
         self.material.location.add(location1, location2)
         
-        url = f'/v1/location?type=material&id={self.material.id}'
+        url = f'/v1/location?type=material&id={self.material.id}&factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -253,7 +262,7 @@ class LocationAPITestCase(TestCase):
         )
         self.product.location.add(location)
         
-        url = f'/v1/location?type=product&id={self.product.id}'
+        url = f'/v1/location?type=product&id={self.product.id}&factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -268,7 +277,7 @@ class LocationAPITestCase(TestCase):
 
     def test_list_locations_without_location(self):
         """위치가 연결되지 않은 원자재/품목 조회 테스트"""
-        url = f'/v1/location?type=material&id={self.material.id}'
+        url = f'/v1/location?type=material&id={self.material.id}&factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -279,7 +288,7 @@ class LocationAPITestCase(TestCase):
 
     def test_list_locations_nonexistent_material(self):
         """존재하지 않는 원자재 ID로 위치 조회 시도 테스트"""
-        url = '/v1/location?type=material&id=99999'
+        url = f'/v1/location?type=material&id=99999&factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -289,7 +298,7 @@ class LocationAPITestCase(TestCase):
 
     def test_list_locations_nonexistent_product(self):
         """존재하지 않는 품목 ID로 위치 조회 시도 테스트"""
-        url = '/v1/location?type=product&id=99999'
+        url = f'/v1/location?type=product&id=99999&factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -299,7 +308,7 @@ class LocationAPITestCase(TestCase):
 
     def test_list_locations_invalid_type(self):
         """잘못된 타입으로 위치 조회 시도 테스트"""
-        url = f'/v1/location?type=invalid_type&id={self.material.id}'
+        url = f'/v1/location?type=invalid_type&id={self.material.id}&factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -322,7 +331,7 @@ class LocationAPITestCase(TestCase):
         )
         self.material.location.add(location1, location2)
         # location2의 정보만 수정 (새로운 API 구조)
-        url = f'/v1/location/{location2.id}'
+        url = f'/v1/location/{location2.id}?factory_id={self.factory.id}'
         data = {
             'location': 'B-2-2',
             'images': ['new_image.jpg']
@@ -351,7 +360,7 @@ class LocationAPITestCase(TestCase):
             images=[]
         )
         # 연결하지 않음 (새로운 API는 연결 여부와 무관하게 수정 가능)
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         data = {
             'location': 'B-2-2',
             'images': ['new_image.jpg']
@@ -376,7 +385,7 @@ class LocationAPITestCase(TestCase):
             images=[]
         )
         self.material.location.add(location)
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         data = {
             'location': 'B-2-2',
             'images': ['new_image.jpg']
@@ -395,7 +404,7 @@ class LocationAPITestCase(TestCase):
 
     def test_update_location_nonexistent_location(self):
         """존재하지 않는 location_id로 수정 시도 시 404 반환"""
-        url = '/v1/location/99999'  # 존재하지 않는 id
+        url = f'/v1/location/99999?factory_id={self.factory.id}'  # 존재하지 않는 id
         data = {
             'location': 'B-2-2',
             'images': ['new_image.jpg']
@@ -425,7 +434,7 @@ class LocationAPITestCase(TestCase):
         )
         self.material.location.add(location1, location2)
         # location2만 삭제 (새로운 API 구조)
-        url = f'/v1/location/{location2.id}'
+        url = f'/v1/location/{location2.id}?factory_id={self.factory.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -444,7 +453,7 @@ class LocationAPITestCase(TestCase):
             images=['image1.jpg']
         )
         self.product.location.add(location)
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -461,7 +470,7 @@ class LocationAPITestCase(TestCase):
             images=[]
         )
         self.material.location.add(location)
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -472,7 +481,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_nonexistent_material(self):
         """존재하지 않는 Location ID로 삭제 시도 테스트"""
-        url = '/v1/location/99999'
+        url = f'/v1/location/99999?factory_id={self.factory.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -481,7 +490,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_nonexistent_product(self):
         """존재하지 않는 Location ID로 삭제 시도 테스트 (product 타입)"""
-        url = '/v1/location/99999'
+        url = f'/v1/location/99999?factory_id={self.factory.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -496,7 +505,7 @@ class LocationAPITestCase(TestCase):
             images=[]
         )
         # 연결하지 않음 (새로운 API는 연결 여부와 무관)
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         response = self.client.delete(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -515,7 +524,7 @@ class LocationAPITestCase(TestCase):
         )
         
         # 새로운 API 구조로 수정
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         data = {
             'location': 'B-2-2',
             'images': ['new_image.jpg', 'new_image2.jpg']
@@ -537,7 +546,7 @@ class LocationAPITestCase(TestCase):
 
     def test_update_location_direct_by_id_not_found(self):
         """존재하지 않는 Location ID로 수정 시도 시 404 반환"""
-        url = '/v1/location/99999'
+        url = f'/v1/location/99999?factory_id={self.factory.id}'
         data = {
             'location': 'B-2-2',
             'images': ['new_image.jpg']
@@ -562,7 +571,7 @@ class LocationAPITestCase(TestCase):
         )
         
         # images만 수정
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         data = {
             'images': ['new_image.jpg']
         }
@@ -591,7 +600,7 @@ class LocationAPITestCase(TestCase):
         )
         
         # 새로운 API 구조로 삭제
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         
         response = self.client.delete(
             url,
@@ -605,7 +614,7 @@ class LocationAPITestCase(TestCase):
 
     def test_delete_location_direct_by_id_not_found(self):
         """존재하지 않는 Location ID로 삭제 시도 시 404 반환"""
-        url = '/v1/location/99999'
+        url = f'/v1/location/99999?factory_id={self.factory.id}'
         
         response = self.client.delete(
             url,
@@ -623,7 +632,7 @@ class LocationAPITestCase(TestCase):
             images=[]
         )
         
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         data = {
             'location': 'Material-B-2',
             'images': ['material_image.jpg']
@@ -653,7 +662,7 @@ class LocationAPITestCase(TestCase):
             images=[]
         )
         
-        url = f'/v1/location/{location.id}'
+        url = f'/v1/location/{location.id}?factory_id={self.factory.id}'
         data = {
             'location': 'Product-B-2',
             'images': ['product_image.jpg']

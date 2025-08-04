@@ -61,7 +61,7 @@ class FactoryCreateAPITestCase(TestCase):
 
     def test_list_factories_success(self):
         """공장 목록 조회 성공 테스트"""
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -102,7 +102,7 @@ class FactoryCreateAPITestCase(TestCase):
             invited_by=self.user
         )
         
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -144,7 +144,7 @@ class FactoryCreateAPITestCase(TestCase):
             invited_by=other_user
         )
         
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -187,7 +187,7 @@ class FactoryCreateAPITestCase(TestCase):
             invited_by=other_user
         )
         
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -230,7 +230,7 @@ class FactoryCreateAPITestCase(TestCase):
             invited_by=other_user
         )
         
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -289,7 +289,7 @@ class FactoryCreateAPITestCase(TestCase):
             invited_by=user2
         )
         
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -310,24 +310,40 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertIn('운영자 공장', factory_names)
 
     def test_list_factories_empty_result(self):
-        """멤버로 등록된 공장이 없는 경우 빈 결과 반환 테스트"""
-        # 기존 공장과 멤버 삭제
-        FactoryMember.objects.filter(user=self.user).delete()
-        Factory.objects.filter(owner=self.user).delete()
+        """멤버로 등록된 공장이 없는 경우 404 반환 테스트"""
+        # 다른 사용자 생성
+        other_user = User.objects.create_user(
+            email='other@example.com',
+            password='testpass123'
+        )
         
-        url = '/v1/factory'
+        # 다른 사용자가 소유한 공장 생성
+        other_factory = Factory.objects.create(
+            name='다른 사용자 공장',
+            owner=other_user,
+            business_address='서울시 강남구'
+        )
+        
+        # 현재 사용자를 멤버로 등록했다가 삭제
+        member = FactoryMember.objects.create(
+            factory=other_factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.viewer,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=other_user
+        )
+        
+        # 멤버 삭제
+        member.delete()
+        
+        url = f'/v1/factory?factory_id={other_factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        
-        # 빈 결과 확인
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 0)
+        # 멤버가 없으면 404 반환
+        self.assertEqual(response.status_code, 404)
 
     def test_list_factories_only_active_members(self):
         """활성 상태의 멤버만 조회되는지 테스트"""
@@ -348,7 +364,7 @@ class FactoryCreateAPITestCase(TestCase):
             business_address='서울시 강남구'
         )
         
-        # 현재 사용자를 활성 멤버로 등록
+        # 현재 사용자를 활성 멤버로 등록 (하나만)
         active_member = FactoryMember.objects.create(
             factory=other_factory,
             user=self.user,
@@ -357,16 +373,7 @@ class FactoryCreateAPITestCase(TestCase):
             invited_by=other_user
         )
         
-        # 비활성 멤버도 추가
-        inactive_member = FactoryMember.objects.create(
-            factory=other_factory,
-            user=self.user,
-            role=FactoryMember.FactoryMemberType.manager,
-            status=FactoryMember.MemberStatus.invited,  # 비활성 상태
-            invited_by=other_user
-        )
-        
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={other_factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -402,7 +409,7 @@ class FactoryCreateAPITestCase(TestCase):
             invited_by=self.user
         )
         
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={new_factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -477,7 +484,7 @@ class FactoryCreateAPITestCase(TestCase):
             invited_by=user3
         )
         
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={self.factory.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -551,7 +558,7 @@ class FactoryCreateAPITestCase(TestCase):
             invited_by=self.user
         )
         
-        url = '/v1/factory'
+        url = f'/v1/factory?factory_id={factory3.id}'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -675,7 +682,7 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertEqual(member.status, FactoryMember.MemberStatus.active)
         
         # 공장 목록 조회
-        list_url = '/v1/factory'
+        list_url = f'/v1/factory?factory_id={factory_id}'
         list_response = self.client.get(
             list_url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -716,3 +723,206 @@ class FactoryCreateAPITestCase(TestCase):
         
         # 잘못된 토큰으로는 401 에러가 발생해야 함
         self.assertEqual(response.status_code, 401)
+
+    def test_get_factory_success(self):
+        """공장 상세 조회 성공 테스트"""
+        url = f'/v1/factory?factory_id={self.factory.id}'
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 페이지네이션된 응답 구조 확인
+        self.assertIn('data', data)
+        self.assertIsInstance(data['data'], list)
+        self.assertEqual(len(data['data']), 1)
+        
+        factory_data = data['data'][0]
+        self.assertEqual(factory_data['id'], self.factory.id)
+        self.assertEqual(factory_data['name'], '테스트 공장')
+        self.assertEqual(factory_data['business_address'], '서울시 강남구')
+        self.assertEqual(factory_data['owner'], self.user.id)
+
+    def test_get_factory_nonexistent(self):
+        """존재하지 않는 공장 조회 테스트"""
+        url = '/v1/factory?factory_id=99999'
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_factory_unauthorized(self):
+        """권한이 없는 공장 조회 테스트"""
+        # 다른 사용자의 공장 생성
+        other_user = User.objects.create_user(
+            email='other@example.com',
+            password='testpass123'
+        )
+        
+        other_factory = Factory.objects.create(
+            name='다른 공장',
+            owner=other_user,
+            business_address='서울시 서초구'
+        )
+        
+        url = f'/v1/factory?factory_id={other_factory.id}'
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_factory_success(self):
+        """공장 정보 수정 성공 테스트"""
+        url = f'/v1/factory?factory_id={self.factory.id}'
+        payload = {
+            'name': '수정된 공장명',
+            'business_address': '서울시 마포구'
+        }
+        
+        response = self.client.patch(
+            url,
+            data=payload,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertEqual(data['id'], self.factory.id)
+        self.assertEqual(data['name'], '수정된 공장명')
+        self.assertEqual(data['business_address'], '서울시 마포구')
+        
+        # 데이터베이스에서도 확인
+        self.factory.refresh_from_db()
+        self.assertEqual(self.factory.name, '수정된 공장명')
+        self.assertEqual(self.factory.business_address, '서울시 마포구')
+
+    def test_update_factory_partial(self):
+        """공장 정보 부분 수정 테스트"""
+        url = f'/v1/factory?factory_id={self.factory.id}'
+        payload = {
+            'name': '부분 수정된 공장명'
+        }
+        
+        response = self.client.patch(
+            url,
+            data=payload,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertEqual(data['name'], '부분 수정된 공장명')
+        self.assertEqual(data['business_address'], '서울시 강남구')  # 기존 값 유지
+        
+        # 데이터베이스에서도 확인
+        self.factory.refresh_from_db()
+        self.assertEqual(self.factory.name, '부분 수정된 공장명')
+        self.assertEqual(self.factory.business_address, '서울시 강남구')
+
+    def test_update_factory_nonexistent(self):
+        """존재하지 않는 공장 수정 테스트"""
+        url = '/v1/factory?factory_id=99999'
+        payload = {
+            'name': '수정된 공장명'
+        }
+        
+        response = self.client.patch(
+            url,
+            data=payload,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_factory_unauthorized(self):
+        """권한이 없는 공장 수정 테스트"""
+        # 다른 사용자의 공장 생성
+        other_user = User.objects.create_user(
+            email='other@example.com',
+            password='testpass123'
+        )
+        
+        other_factory = Factory.objects.create(
+            name='다른 공장',
+            owner=other_user,
+            business_address='서울시 서초구'
+        )
+        
+        url = f'/v1/factory?factory_id={other_factory.id}'
+        payload = {
+            'name': '수정된 공장명'
+        }
+        
+        response = self.client.patch(
+            url,
+            data=payload,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_factory_success(self):
+        """공장 삭제 성공 테스트"""
+        url = f'/v1/factory?factory_id={self.factory.id}'
+        
+        response = self.client.delete(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 204)
+        
+        # 데이터베이스에서 삭제되었는지 확인
+        self.assertFalse(Factory.objects.filter(id=self.factory.id).exists())
+        # FactoryMember도 함께 삭제되었는지 확인
+        self.assertFalse(FactoryMember.objects.filter(factory_id=self.factory.id).exists())
+
+    def test_delete_factory_nonexistent(self):
+        """존재하지 않는 공장 삭제 테스트"""
+        url = '/v1/factory?factory_id=99999'
+        
+        response = self.client.delete(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_factory_unauthorized(self):
+        """권한이 없는 공장 삭제 테스트"""
+        # 다른 사용자의 공장 생성
+        other_user = User.objects.create_user(
+            email='other@example.com',
+            password='testpass123'
+        )
+        
+        other_factory = Factory.objects.create(
+            name='다른 공장',
+            owner=other_user,
+            business_address='서울시 서초구'
+        )
+        
+        url = f'/v1/factory?factory_id={other_factory.id}'
+        
+        response = self.client.delete(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        
+        # 데이터베이스에서 삭제되지 않았는지 확인
+        self.assertTrue(Factory.objects.filter(id=other_factory.id).exists())

@@ -7,23 +7,10 @@ from typing import Optional, List
 # Project API
 # ------------------------------------------------------------
 
-# (POST) Test Create Projects
-class TestCreateProjectsIn(Schema):
-    factory_id: int
-
 
 # (POST) Project Clone
 class ProjectCloneIn(Schema):
     project_id: int
-
-
-# (GET) List Project
-class ProjectListFilter(FilterSchema):
-    factory_id: int
-    status: str
-    search: Optional[str] = None
-    order_by: Optional[str] = "start_date"
-    order_dir: Optional[str] = "asc"
 
     
 # (PATCH) Project Status Update
@@ -44,12 +31,12 @@ class ProjectTransactDateUpdateIn(Schema):
 class RefundCreateIn(Schema):
     project_id: int
     product_id: int
-    refund_date: str  # YYYY-MM-DD 형식
+    refund_date: str
     production_amount: Optional[int] = None
 
 # (PATCH) Refund Update
 class RefundUpdateIn(Schema):
-    refund_date: Optional[str] = None  # YYYY-MM-DD 형식
+    refund_date: Optional[str] = None
     current_stock: Optional[int] = None
     production_amount: Optional[int] = None
 
