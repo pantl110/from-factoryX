@@ -98,16 +98,16 @@ export const useLogin = (): UseLoginReturnModel => {
                 //   } catch {
                 //     // setFactoryId(10);
                 //   }
-                setFactoryId(2);
+                // setFactoryId(2);
               }
             } catch {
               // 공장 리스트 fetch 실패 시 일단 임의로 기본값 설정
-              setFactoryId(2);
+              // setFactoryId(2);
             }
           }
         } catch {
           // 사용자 정보 fetch 실패 시 무시
-          setFactoryId(2); // 일단 임의로 설정
+          // setFactoryId(2); // 일단 임의로 설정
         }
 
         return {

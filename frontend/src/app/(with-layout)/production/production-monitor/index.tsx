@@ -1,90 +1,141 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import MiniBtn from '@/ui/mini-btn';
 import LogItem from './log-item';
 import ReturnSection from './return';
-import { logData, LogDataModel } from '@/mocks/log-data';
 import NoSelectedLog from './no-selected-log';
 import MemoSection from './memo';
 import PlanChangeSection from './plan-change';
 import DeleteMemoModal from './modals/delete-memo-modal';
 import CreateMemoModal from './modals/create-memo-modal';
 import EmptyLog from './empty-log';
+import {
+  ProjectLogListResponseModel,
+  ProjectLogResponseModel,
+} from '@/types/data-model';
+import { useGetProjectLogs } from '@/hooks';
+import Spinner from '@/ui/spinner';
 
 const ProductionMonitor = () => {
-  const [selectedLog, setSelectedLog] = useState<LogDataModel | null>(null);
+  const params = useParams();
+  const projectId = params.id ? parseInt(params.id as string) : null;
+
+  const [selectedLog, setSelectedLog] =
+    useState<ProjectLogResponseModel | null>(null);
   const [isCreateMemoModalOpen, setIsCreateMemoModalOpen] = useState(false);
-  const [isDeleteMemoModalOpen, setIsDeleteMemoModalOpen] = useState(false);
+
+  const { getProjectLogs, isLoading } = useGetProjectLogs();
+  const [logData, setLogData] = useState<ProjectLogListResponseModel>({
+    data: [],
+    count: 0,
+    totalCnt: 0,
+    pageCnt: 0,
+    curPage: 0,
+    nextPage: null,
+    previousPage: null,
+  });
+
+  // 프로젝트 로그 데이터 가져오기
+  const loadProjectLogs = async () => {
+    if (!projectId) return;
+
+    const result = await getProjectLogs(projectId);
+    if (result.success && result.data) {
+      setLogData(result.data);
+    }
+  };
+
+  useEffect(() => {
+    loadProjectLogs();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
 
   return (
-    <div
-      className="flex gap-3 px-10 w-full overflow-y-hidden"
-      style={{ height: 'calc(100vh - 253px)' }}
-    >
-      {/* 왼쪽 영역 */}
-      <div className={`w-[50%] flex flex-col gap-4 flex-1 pt-5`}>
-        <div className="flex flex-col gap-4 h-full min-h-0">
-          <div>
-            <MiniBtn
-              text="메모 작성"
-              textColor="text-dg"
-              borderColor="border-lg"
-              onClick={() => setIsCreateMemoModalOpen(true)}
-              hoverColor="hover:bg-bg"
-            />
+    <>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-100">
+          <Spinner />
+        </div>
+      ) : (
+        <div
+          className="flex gap-3 px-10 w-full overflow-y-hidden"
+          style={{ height: 'calc(100vh - 253px)' }}
+        >
+          {/* 왼쪽 영역 */}
+          <div className={`w-[50%] flex flex-col gap-4 flex-1 pt-5`}>
+            <div className="flex flex-col gap-4 h-full min-h-0">
+              <div>
+                <MiniBtn
+                  text="메모 작성"
+                  textColor="text-dg"
+                  borderColor="border-lg"
+                  onClick={() => setIsCreateMemoModalOpen(true)}
+                  hoverColor="hover:bg-bg"
+                />
+              </div>
+
+              {logData.data.length === 0 ? (
+                <EmptyLog />
+              ) : (
+                <div className="flex flex-col gap-4 flex-1 pb-10 h-full min-h-0 overflow-y-auto scrollbar-hide">
+                  {logData.data.map((log) => {
+                    return (
+                      <LogItem
+                        key={log.id}
+                        log={log}
+                        onClick={() => setSelectedLog(log)}
+                        isSelected={selectedLog?.id === log.id}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
-          {logData.length === 0 ? (
-            <EmptyLog />
-          ) : (
-            <div className="flex flex-col gap-4 flex-1 pb-10 h-full min-h-0 overflow-y-auto scrollbar-hide">
-              {logData.map((log) => (
-                <LogItem
-                  key={log.id}
-                  type={log.type}
-                  title={log.title}
-                  content={log.content}
-                  createdAt={log.createdAt}
-                  onClick={() => setSelectedLog(log)}
-                  isSelected={selectedLog?.id === log.id}
-                />
-              ))}
-            </div>
+          {logData.data.length === 0 ? null : (
+            <div className="w-1 border-r border-lg" />
           )}
-        </div>
-      </div>
 
-      {logData.length === 0 ? null : <div className="w-1 border-r border-lg" />}
+          {/* 오른쪽 영역: 선택된 로그에 따라 렌더링 */}
+          <div className="w-[50%] flex-1 pt-5">
+            {selectedLog ? (
+              selectedLog.type === '메모' ? (
+                <MemoSection
+                  key={selectedLog.id} // 강제 리렌더링을 위한 key
+                  logId={selectedLog.id}
+                  title={selectedLog.title}
+                  content={selectedLog.content}
+                  onUpdate={loadProjectLogs}
+                />
+              ) : selectedLog.type === '반품' ? (
+                <ReturnSection key={selectedLog.id} />
+              ) : selectedLog.type === '계획 변경' ? (
+                <PlanChangeSection
+                  key={selectedLog.id}
+                  title={selectedLog.title}
+                  content={selectedLog.content}
+                />
+              ) : null
+            ) : (
+              <NoSelectedLog />
+            )}
 
-      {/* 오른쪽 영역: 선택된 로그에 따라 렌더링 */}
-      <div className="w-[50%] flex-1 pt-5">
-        {selectedLog ? (
-          selectedLog.type === 'memo' ? (
-            <MemoSection
-              title={selectedLog.title}
-              content={selectedLog.content}
-              setIsDeleteModalOpen={setIsDeleteMemoModalOpen}
-            />
-          ) : selectedLog.type === 'return' ? (
-            <ReturnSection />
-          ) : selectedLog.type === 'planChange' ? (
-            <PlanChangeSection
-              title={selectedLog.title}
-              content={selectedLog.content}
-            />
-          ) : null
-        ) : (
-          <NoSelectedLog />
-        )}
-
-        {/* 모달 */}
-        {isCreateMemoModalOpen && (
-          <CreateMemoModal onClose={() => setIsCreateMemoModalOpen(false)} />
-        )}
-        {isDeleteMemoModalOpen && (
+            {/* 모달 */}
+            {isCreateMemoModalOpen && (
+              <CreateMemoModal
+                onClose={() => setIsCreateMemoModalOpen(false)}
+                onSuccess={loadProjectLogs}
+              />
+            )}
+            {/* {isDeleteMemoModalOpen && (
           <DeleteMemoModal onClose={() => setIsDeleteMemoModalOpen(false)} />
-        )}
-      </div>
-    </div>
+        )} */}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

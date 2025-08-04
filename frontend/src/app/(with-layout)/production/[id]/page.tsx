@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
-import { useGetProjects } from '@/hooks';
+import { useGetProjectStatus } from '@/hooks';
 import useGetDetailQuotation from '@/hooks/document/use-get-quotation';
 import ProductFlowTitle from '../product-flow-title';
 import ProductionPlan from '../production-plan';
@@ -15,31 +15,18 @@ import TransactionDocumentView from '../../document/transaction-document-view';
 import OrderDocumentView from '../../document/order-document-view';
 import { ProjectStatusType } from '@/types/status-type';
 import { ProductionTabType } from '@/components/top-bar/types';
-import { ProjectResponseModel } from '@/types/data-model';
 import Spinner from '@/ui/spinner';
 
-// 한글 상태를 영어로 매핑
-const mapKoreanToEnglish = (koreanStatus: string): ProjectStatusType => {
-  const statusMap: Record<string, ProjectStatusType> = {
-    '견적 협의중': 'quotation',
-    '주문 확정': 'confirmed',
-    '생산 대기': 'pending',
-    '생산 중': 'production',
-    '생산 완료': 'manufactured',
-    납품: 'delivery',
-    '프로젝트 완료': 'completed',
-    중단: 'interruption',
-  };
-
-  return statusMap[koreanStatus] || 'quotation'; // 기본값
-};
-
-const getTabsByStatus = (status: string): ProductionTabType[] => {
-  if (status === '생산 대기') return ['생산 계획', '주문서'];
-  if (status === '생산 중') return ['생산 현황', '생산 계획', '주문서'];
-  if (status === '생산 완료') return ['생산 현황', '생산 내역', '주문서'];
-  if (status === '납품') return ['납품', '생산 현황', '생산 내역', '주문서'];
-  if (status === '프로젝트 완료')
+const getTabsByStatus = (status: ProjectStatusType): ProductionTabType[] => {
+  if (status === 'pending' || status === '생산 대기')
+    return ['생산 계획', '주문서'];
+  if (status === 'production' || status === '생산 중')
+    return ['생산 현황', '생산 계획', '주문서'];
+  if (status === 'manufactured' || status === '생산 완료')
+    return ['생산 현황', '생산 내역', '주문서'];
+  if (status === 'delivery' || status === '납품')
+    return ['납품', '생산 현황', '생산 내역', '주문서'];
+  if (status === 'completed' || status === '프로젝트 완료')
     return [
       '세금계산서',
       '거래명세서',
@@ -54,112 +41,68 @@ const getTabsByStatus = (status: string): ProductionTabType[] => {
 const ProductionPageContent = () => {
   const params = useParams();
   const projectId = Number(params.id);
-  const { getProjects, isLoading } = useGetProjects();
-  const setPageStatus = usePageStatusStore((state) => state.setPageStatus); // 바뀐 프로젝트상태 전역상태로로관리 -> top-bar 상태에 적용
+  const { getProjectStatus, isLoading } = useGetProjectStatus();
+  const setPageStatus = usePageStatusStore((state) => state.setPageStatus);
   const [selectedTab, setSelectedTab] = useState(0);
   const setProductionTab = usePageStatusStore(
-    (state) => state.setProductionTab // 바뀐 탭 전역상태로관리 -> top-bar 상태에 적용
+    (state) => state.setProductionTab
   );
 
-  // 프로젝트 데이터 가져와서 상태 확인
-  const [project, setProject] = useState<ProjectResponseModel | null>(null);
+  // 프로젝트 상태 데이터
+  const [projectStatus, setProjectStatus] = useState<{
+    project_id: number;
+    status: string;
+    created_at: string;
+    updated_at: string;
+  } | null>(null);
 
   // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
   const { data: quotationData } = useGetDetailQuotation(projectId);
 
-  // 프로젝트 데이터 로드
+  // 프로젝트 상태 로드 및 store 업데이트
   useEffect(() => {
     if (!projectId) return;
 
-    const loadProject = async () => {
+    const loadProjectStatus = async () => {
       try {
-        // 상태별로 페이지네이션으로 검색하는 함수
-        const searchInStatus = async (
-          status: ProjectStatusType | 'archived' | 'progress'
-        ) => {
-          let page = 1;
-          let foundProject = null;
+        const result = await getProjectStatus(projectId);
+        if (result.success && result.data) {
+          setProjectStatus(result.data);
+          // 프로젝트 상태를 store에 업데이트
+          const projectStatus = result.data.status as ProjectStatusType;
+          const tabs = getTabsByStatus(projectStatus);
 
-          while (!foundProject) {
-            const result = await getProjects({
-              status,
-              page,
-              size: 50, // 적당한 페이지 크기
-            });
-
-            if (!result.success || !result.data) {
-              break;
-            }
-
-            // 현재 페이지에서 프로젝트 검색
-            foundProject = result.data.data.find(
-              (p) => p.project_id === projectId
-            );
-
-            if (foundProject) {
-              return foundProject;
-            }
-
-            // 다음 페이지가 없으면 중단
-            if (!result.data.nextPage || page >= result.data.pageCnt) {
-              break;
-            }
-
-            page++;
-          }
-
-          return null;
-        };
-
-        // 진행중인 프로젝트에서 검색
-        let foundProject = await searchInStatus('progress');
-
-        // 진행중에서 못 찾으면 보관된 프로젝트에서 검색
-        if (!foundProject) {
-          foundProject = await searchInStatus('archived');
+          setPageStatus(projectStatus);
+          setProductionTab(tabs[selectedTab]);
+        } else {
         }
-
-        setProject(foundProject || null);
-      } catch (error) {
-        console.error('Failed to load project:', error);
-        setProject(null);
-      }
+      } catch {}
     };
 
-    loadProject();
+    loadProjectStatus();
+  }, [
+    projectId,
+    getProjectStatus,
+    selectedTab,
+    setPageStatus,
+    setProductionTab,
+  ]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
-
-  const mappedStatus = project
-    ? mapKoreanToEnglish(project.status)
-    : 'quotation';
-  const tabs = getTabsByStatus(project?.status || '');
-
-  useEffect(() => {
-    if (!project) return;
-    const currentMappedStatus = mapKoreanToEnglish(project.status);
-    const currentTabs = getTabsByStatus(project.status || '');
-    setPageStatus(currentMappedStatus);
-    setProductionTab(currentTabs[selectedTab]);
-    return () => {
-      setPageStatus(null);
-      setProductionTab(null);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project?.status, selectedTab]);
+  const projectStatusType =
+    (projectStatus?.status as ProjectStatusType) || 'quotation';
+  const tabs = getTabsByStatus(projectStatusType);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-[calc(100vh-60px)]">
         <Spinner />
       </div>
     );
   }
 
-  if (!project || !projectId) {
+  if (!projectStatus || !projectId) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-[calc(100vh-60px)]">
         <Spinner />
       </div>
     );
@@ -168,7 +111,7 @@ const ProductionPageContent = () => {
   return (
     <div className="w-full flex flex-col">
       <ProductFlowTitle
-        status={mappedStatus}
+        status={projectStatusType}
         tabs={tabs}
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
@@ -201,7 +144,7 @@ const ProductionPageContent = () => {
               business_type: quotationData.business_type,
               business_category: quotationData.business_category,
             }}
-            dueDate={project?.due_date || ''}
+            dueDate={''}
             productListInfoTitle="상품 목록"
             productItems={quotationData.products}
             supplyAmount={quotationData.products.reduce(

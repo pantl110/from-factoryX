@@ -86,6 +86,11 @@ const useGetDetailQuotation = (
   useEffect(() => {
     if (quotationId && quotationId > 0) {
       fetchQuotation();
+    } else {
+      // quotationId가 유효하지 않으면 로딩 상태를 false로 설정
+      setIsLoading(false);
+      setData(null);
+      setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quotationId]);

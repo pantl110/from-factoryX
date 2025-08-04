@@ -1,3 +1,4 @@
+import ClientInfo from '../../tax/list/modals/create-tax-panel/client-info';
 import DocumentViewTitle from '../document-view-title';
 import ProductListInfo from '../product-list-info';
 import SupplierInfo from '../supplier-info';

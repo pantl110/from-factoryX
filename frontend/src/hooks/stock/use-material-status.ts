@@ -5,7 +5,7 @@ import {
   MaterialProductConnectionModel,
 } from '@/types/data-model';
 
-// 생산 계획 페이지에서 사용하는 자재 상태 확인 훅
+// 생산계획 & 생산내역 페이지에서 사용하는 자재 상태 확인 훅
 export const useMaterialStatus = (productId: number) => {
   const [materialStatus, setMaterialStatus] = useState<'충분' | '부족'>('충분');
   const [isLoading, setIsLoading] = useState(true);

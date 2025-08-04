@@ -46,7 +46,8 @@ const useCloneProject = () => {
       );
 
       if (response.status === 200) {
-        return { success: true };
+        const result = await response.json();
+        return { success: true, data: result };
       } else {
         const errorData = await response.json();
         setError(errorData.detail || '프로젝트 복제에 실패했습니다.');

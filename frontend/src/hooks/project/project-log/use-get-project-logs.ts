@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ProjectLogListResponseModel } from '@/types/data-model';
 
 interface PaginationParamsModel {
@@ -10,7 +10,7 @@ const useGetProjectLogs = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getProjectLogs = async (
+  const getProjectLogs = useCallback(async (
     projectId: number,
     pagination?: PaginationParamsModel
   ) => {
@@ -51,7 +51,7 @@ const useGetProjectLogs = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return { getProjectLogs, isLoading, error };
 };

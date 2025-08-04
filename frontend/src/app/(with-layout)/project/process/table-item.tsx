@@ -34,40 +34,35 @@ const TableItem = ({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const { cloneProject, isLoading: isCloning } = useCloneProject();
 
-  // 한글 상태를 영어 키로 매핑
-  const mapKoreanToEnglish = (status: string): ProjectStatusType => {
-    const statusMap: Record<string, ProjectStatusType> = {
-      '견적 협의중': 'quotation',
-      '주문 확정': 'confirmed',
-      '생산 대기': 'pending',
-      '생산 중': 'production',
-      '생산 완료': 'manufactured',
-      납품: 'delivery',
-      '프로젝트 완료': 'completed',
-      완료: 'completed',
-      중단: 'interruption',
-    };
+  // 프로젝트 상태 색상 가져오기 (영어/한글 모두 지원)
+  const chipColors =
+    ProjectStatusColorMap[project.status] || ProjectStatusColorMap.quotation;
 
-    return statusMap[status];
-  };
-
-  const mappedStatus = mapKoreanToEnglish(project.status);
-  const chipColors = ProjectStatusColorMap[mappedStatus];
-
-  // 칩에서 표시할 텍스트 매핑
+  // 칩에서 표시할 텍스트 매핑 (영어/한글 모두 지원)
   const getDisplayText = (status: string): string => {
     const displayMap: Record<string, string> = {
-      '견적 협의중': '견적 요청',
+      // 영어 상태
+      quotation: '견적 협의',
+      confirmed: '주문 확정',
+      pending: '생산 대기',
+      production: '생산 중',
+      manufactured: '생산 완료',
+      delivery: '납품',
+      completed: '완료',
+      interruption: '중단',
+      // 한글 상태
+      '견적 협의중': '견적 협의',
       '주문 확정': '주문 확정',
       '생산 대기': '생산 대기',
       '생산 중': '생산 중',
       '생산 완료': '생산 완료',
       납품: '납품',
       '프로젝트 완료': '완료',
-      // 중단: '중단',
+      완료: '완료',
+      중단: '중단',
     };
 
-    return displayMap[status] || status;
+    return displayMap[status] || '견적 요청';
   };
 
   const displayText = getDisplayText(project.status);
@@ -80,9 +75,8 @@ const TableItem = ({
 
     const result = await cloneProject(project.project_id);
     if (result.success) {
-      alert('프로젝트가 성공적으로 복제되었습니다.');
       //  production 페이지로 이동
-      // router.push(`/production/${project.}`);
+      router.push(`/production/${result.data.project_id}`);
     } else {
       alert(`프로젝트 복제에 실패했습니다: ${result.error}`);
     }
@@ -90,16 +84,22 @@ const TableItem = ({
 
   // production 페이지로 이동
   const handleClick = () => {
-    if (
-      mappedStatus === 'quotation' ||
-      mappedStatus === 'confirmed' ||
-      mappedStatus === 'interruption'
-    )
+    // 견적 관련 상태들 (영어/한글 모두 체크)
+    const isQuotationStatus =
+      project.status === 'quotation' ||
+      project.status === 'confirmed' ||
+      project.status === 'interruption' ||
+      (project.status as string) === '견적 협의중' ||
+      (project.status as string) === '주문 확정' ||
+      (project.status as string) === '중단';
+
+    if (isQuotationStatus) {
       router.push(
         `/quotation?quotation_id=${project.project_id}&project_id=${project.project_id}`
       );
-    // ‼️‼️‼️‼️‼️ quotation_id가 project_id와 같은지 확인 필요
-    else router.push(`/production/${project.project_id}`);
+    } else {
+      router.push(`/production/${project.project_id}`);
+    }
   };
 
   // 세금계산서 발행 상태 표시 텍스트 변환

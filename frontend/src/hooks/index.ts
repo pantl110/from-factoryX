@@ -57,6 +57,7 @@ export { default as useDeleteProject } from './project/use-delete-project';
 export { default as useUpdateProjectStatus } from './project/use-update-project-status';
 export { default as useUpdateProjectTransactDate } from './project/use-update-project-transact-date';
 export { default as useGetProjects } from './project/use-get-projects';
+export { default as useGetProjectStatus } from './project/use-get-project-status';
 export { default as useCloneProject } from './project/project-plan/use-clone-project';
 
 // Project log related hooks

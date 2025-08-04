@@ -465,11 +465,19 @@ export interface ProjectResponseModel {
   start_date: string;
   due_date: string;
   publish_status: TaxStatusType; // 세금계산서 발행 상태
-  status: ProjectStatusType; // 프로젝트 상태
+  status: ProjectStatusType; // 프로젝트 상태 (영어)
 }
 
 export interface ProjectListResponseModel extends PaginationModel {
   data: ProjectResponseModel[];
+}
+
+// 프로젝트 상태 조회 응답
+export interface ProjectStatusResponseModel {
+  project_id: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 //////////////////////
@@ -552,27 +560,35 @@ export interface QuotationProductHistoryItemResponseModel {
   unit_price: number; // 단가
   total_amount: number; // 금액 (수량*단가)
 }
-//////////////////////
+
+/////////////////////////////
 // Project Log API
+// 프로젝트 로그 생성
 export interface ProjectLogModel {
-  type: string;
+  type: ProjectLogType;
   title: string;
   content: string;
 }
 
+export interface CreateProjectLogResponseModel {
+  message: string;
+  log_id: number;
+}
+
+// 프로젝트 로그 조회
 export interface ProjectLogResponseModel {
-  id: number;
+  id: number; // 로그 아이디
   project_id: number;
-  type: string;
+  type: ProjectLogType;
   title: string;
   content: string;
-  // created_at?: string;
-  // updated_at?: string;
-}
+  created_at?: string; // 생성 시간 (백엔드에서 제공하는 경우)
+} 
 
 export interface ProjectLogListResponseModel extends PaginationModel {
   data: ProjectLogResponseModel[];
 }
+
 
 //////////////////////
 // Project Plan API
@@ -646,6 +662,7 @@ export interface UpdateProjectPlanModel {
   end_date?: string;
   avg_production_time?: number;
 }
+
 
 //////////////////////
 // Factory Member API
@@ -729,6 +746,7 @@ import {
   ProjectStatusType,
   TaxStatusType,
   EquipmentStatusType,
+  ProjectLogType,
 } from './status-type';
 
 export type {

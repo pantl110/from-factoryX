@@ -1,60 +1,62 @@
-import { ProductionDataModel } from '@/mocks/production-data';
+import { ProjectPlanModel } from '@/types/data-model';
 import Chip from '@/ui/chip';
 import { useState } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
+import { useMaterialStatus } from '@/hooks';
+import { ArrowLineUpRight } from '@phosphor-icons/react';
 
 interface ProductionLogTableItemProps {
-  product: ProductionDataModel;
+  plan: ProjectPlanModel;
 }
-const ProductionLogTableItem = ({ product }: ProductionLogTableItemProps) => {
+const ProductionLogTableItem = ({ plan }: ProductionLogTableItemProps) => {
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
+  const { materialStatus, isLoading: isMaterialStatusLoading } =
+    useMaterialStatus(plan.quotation_product.product.id);
   return (
     <>
       <div className="flex items-center h-14 min-w-[1559px] border-b border-[#eeeeee] Me_Body-1 text-dg">
-        <p className="flex-2 px-3">{product.productName}</p>
-        <p className="flex-1 px-3">{product.productCode}</p>
-        <p className="flex-1 px-3">{product.standard}</p>
-        <p className="w-[80px] px-3">{product.unit}</p>
+        <p className="flex-2 px-3">{plan.quotation_product.product.name}</p>
+        <p className="flex-1 px-3">{plan.quotation_product.product.code}</p>
+        <p className="flex-1 px-3">{plan.quotation_product.product.spec}</p>
+        <p className="w-[80px] px-3">{plan.quotation_product.product.unit}</p>
         <p className="flex-1 px-3">
-          {product.orderQuantity?.toLocaleString() || '-'}
+          {plan.quotation_product.quantity?.toLocaleString() || '-'}
         </p>
-        <p className="flex-1 px-3">
-          {product.productionQuantity?.toLocaleString() || '-'}
+        <p className="flex-1 px-3">{plan.quantity?.toLocaleString() || '-'}</p>
+        <p className="flex-1 px-3">{plan.equipment.name || '-'}</p>
+        <p className="w-[200px] px-3">{plan.start_date || '-'}</p>
+        <p className="w-[140px] px-3">
+          {plan.avg_production_time ? `${plan.avg_production_time}초` : '-'}
         </p>
-        <p className="flex-1 px-3">{product.machine || '-'}</p>
-        <p className="w-[200px] px-3">{product.productionTime || '-'}</p>
-        <p className="w-[140px] px-3">{product.unitTime || '-'}</p>
         <div className="w-[150px] px-3">
-          {product.materialStatus && (
+          {!isMaterialStatusLoading && materialStatus && (
             <div className="flex justify-between">
               <Chip
-                text={product.materialStatus}
+                text={materialStatus}
                 textColor={
-                  product.materialStatus === '충분'
-                    ? 'text-primary'
-                    : 'text-red'
+                  materialStatus === '충분' ? 'text-primary' : 'text-red'
                 }
                 bgColor={
-                  product.materialStatus === '충분'
-                    ? 'bg-primary-8'
-                    : 'bg-red-8'
+                  materialStatus === '충분' ? 'bg-primary-8' : 'bg-red-8'
                 }
               />
-              {product.materialStatus === '부족' && (
-                <p
-                  className="cursor-pointer Re_Body-1 text-gr flex items-center opacity-0 hover:opacity-100 transition-opacity duration-200 ease-in-out"
+              {materialStatus === '부족' && (
+                <div
+                  className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
                   onClick={() => setIsProductDetailOpen(true)}
                 >
-                  상세보기
-                </p>
+                  <ArrowLineUpRight size={16} className="text-dg" />
+                </div>
               )}
             </div>
           )}
         </div>
-        <p className="w-[200px] px-3">{product.endDate || '-'}</p>
+        <p className="w-[200px] px-3">{plan.end_date || '-'}</p>
+
+        {/* 품목 디테일 판넬 보기 */}
         {isProductDetailOpen && (
           <ProductDetail
-            productId={product.id}
+            productId={plan.quotation_product.product.id}
             onClose={() => setIsProductDetailOpen(false)}
           />
         )}
