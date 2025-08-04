@@ -7,7 +7,7 @@ from api.security import jwt_auth
 from typing import List
 
 from stock.models import Material, MaterialProduct, Product
-from stock.schemas.inbound import MaterialUpdateIn, AssignMaterialIn
+from stock.schemas.inbound import MaterialUpdateIn, AssignMaterialIn, SingleMaterialCreateIn
 from stock.schemas.outbound import MaterialDetailOut, AssignMaterialOut, MaterialSummaryOut
 from factory.models import Factory
 
@@ -15,6 +15,61 @@ from factory.utils import is_factory_member
 
 
 router = Router(tags=["Material"], auth=jwt_auth)
+
+
+@router.post(
+    "",
+    summary="[C] 원자재 생성",
+    description="공장에 연결된 원자재를 생성합니다. 하나 또는 여러 개를 한 번에 생성할 수 있습니다.",
+    response={201: dict},
+    auth=jwt_auth,
+)
+async def create_materials(request, payload: List[SingleMaterialCreateIn]):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        factory = await Factory.objects.aget(id=int(factory_id))
+    except Factory.DoesNotExist:
+        raise HttpError(404, "해당 공장을 찾을 수 없습니다.")
+
+    # 중복 코드 체크
+    codes = [item.code for item in payload]
+    if len(codes) != len(set(codes)):
+        raise HttpError(400, "원자재 코드가 중복되었습니다.")
+
+    # 기존 코드와 중복 체크
+    existing_codes = await sync_to_async(list)(Material.objects.filter(factory=factory, code__in=codes).values_list('code', flat=True))
+    if existing_codes:
+        raise HttpError(400, f"이미 존재하는 원자재 코드: {existing_codes}")
+
+    material_ids = []
+    for item in payload:
+        data = item.dict()
+        
+        # 기본값 설정
+        if "unit" not in data or data["unit"] is None:
+            data["unit"] = "EA"
+        # current_stock과 standard_stock은 None이면 제거 (모델의 기본값 사용)
+        if data.get("current_stock") is None:
+            data.pop("current_stock", None)
+        if data.get("standard_stock") is None:
+            data.pop("standard_stock", None)
+        
+        material = await Material.objects.acreate(
+            factory=factory,
+            **data
+        )
+        material_ids.append(material.id)
+    
+    return 201, {
+        "material_ids": material_ids,
+        "message": f"{len(material_ids)}개의 원자재가 성공적으로 생성되었습니다."
+    }
 
 
 # Onboarding

@@ -198,10 +198,14 @@ async def get_project_status(request, project_id: int):
 
     try:
         # 프로젝트가 해당 공장에 속하는지 확인
-        project = await Project.objects.select_related("quotations__factory").aget(
-            id=project_id,
-            quotations__factory_id=int(factory_id)
+        project = await sync_to_async(Project.objects.get)(
+            id=project_id
         )
+        
+        # 프로젝트의 견적서가 해당 공장에 속하는지 확인
+        quotation_exists = await sync_to_async(project.quotations.filter(factory_id=int(factory_id)).exists)()
+        if not quotation_exists:
+            raise Project.DoesNotExist
         
         return ProjectStatusOut(
             project_id=project.id,
@@ -213,7 +217,7 @@ async def get_project_status(request, project_id: int):
     except Project.DoesNotExist:
         raise HttpError(404, "프로젝트를 찾을 수 없습니다.")
     except Exception as e:
-        raise HttpError(500, "프로젝트 상태 조회 중 내부 서버 오류가 발생했습니다.")
+        raise HttpError(500, f"프로젝트 상태 조회 중 내부 서버 오류가 발생했습니다: {str(e)}")
 
 
 @router.get(
