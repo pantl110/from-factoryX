@@ -1,6 +1,6 @@
 from django.db import models
 from common.models import BaseModel
-from document.models import Quotation, QuotationProduct
+from document.models import QuotationProduct
 from factory.models import FactoryEquipment
 
 
@@ -14,6 +14,7 @@ class Project(BaseModel):
         manufactured = ("생산 완료", "manufactured")
         delivery = ("납품", "delivery")
         completed = ("프로젝트 완료", "completed")
+        suspended = ("중단", "suspended")
 
     class TaxInvoiceStatus(models.TextChoices):
         pending = ("미발행", "pending")
