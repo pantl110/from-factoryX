@@ -12,9 +12,16 @@ class ProjectCreateOut(Schema):
     project_id: int
 
 
+# (POST) Project Clone
+class ProjectCloneOut(Schema):
+    project_id: int
+    message: str
+
+
 # (GET) List Progress Project
 class ListProgressProjectOut(Schema):
     project_id: int
+    quotation_id: int
     client_name: str
     product_names: List[str]
     start_date: Optional[datetime.date] = None
@@ -22,6 +29,14 @@ class ListProgressProjectOut(Schema):
     publish_status: Optional[str] = None
     status: str
     is_abandoned: bool = False
+
+
+# (GET) Project Status
+class ProjectStatusOut(Schema):
+    project_id: int
+    status: str
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
 
 
 # (PATCH) Project Status Update

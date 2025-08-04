@@ -775,7 +775,10 @@ class ProjectAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data, {})
+        self.assertIn('project_id', data)
+        self.assertIn('message', data)
+        self.assertIsInstance(data['project_id'], int)
+        self.assertIsInstance(data['message'], str)
         
         # 복제된 프로젝트 확인
         cloned_projects = Project.objects.filter(status=Project.ProjectStatus.pending)
