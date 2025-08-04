@@ -353,7 +353,7 @@ class ProjectAPITestCase(TestCase):
         
         url = f'/v1/project/{project.id}/status?factory_id={self.factory.id}'
         payload = {
-            'status': '생산 대기'
+            'status': 'pending'
         }
         
         response = self.client.patch(
@@ -391,12 +391,14 @@ class ProjectAPITestCase(TestCase):
         )
         
         self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn('다음 중 하나를 입력해주세요', data['detail'])
 
     def test_update_project_status_nonexistent(self):
         """존재하지 않는 프로젝트 상태 업데이트 시도 테스트"""
         url = f'/v1/project/999/status?factory_id={self.factory.id}'
         payload = {
-            'status': '생산 대기'
+            'status': 'pending'
         }
         
         response = self.client.patch(
@@ -412,9 +414,10 @@ class ProjectAPITestCase(TestCase):
         """모든 유효한 상태값으로 프로젝트 상태 업데이트 테스트"""
         project = Project.objects.create()
         
-        valid_statuses = ['견적 협의중', '생산 대기', '생산 중', '생산 완료', '납품', '프로젝트 완료']
+        valid_statuses = ['quotation', 'pending', 'production', 'manufactured', 'delivery', 'completed']
+        expected_korean_statuses = ['견적 협의중', '생산 대기', '생산 중', '생산 완료', '납품', '프로젝트 완료']
         
-        for status in valid_statuses:
+        for i, status in enumerate(valid_statuses):
             url = f'/v1/project/{project.id}/status?factory_id={self.factory.id}'
             payload = {'status': status}
             
@@ -429,7 +432,7 @@ class ProjectAPITestCase(TestCase):
             
             # 데이터베이스에서 상태가 업데이트되었는지 확인
             project.refresh_from_db()
-            self.assertEqual(project.status, status)
+            self.assertEqual(project.status, expected_korean_statuses[i])
 
     def test_update_project_transact_date_success(self):
         """거래명세서 발급일 업데이트 성공 테스트"""

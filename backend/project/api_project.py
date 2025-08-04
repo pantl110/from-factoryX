@@ -396,13 +396,25 @@ async def update_project_status(request, project_id: int, payload: ProjectStatus
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
-    valid_statuses = [choice[0] for choice in Project.ProjectStatus.choices]
-    if payload.status not in valid_statuses:
-        raise HttpError(400, "올바르지 않은 상태값입니다.")
+    # 영어 상태값을 한글 상태값으로 매핑
+    status_mapping = {
+        "quotation": "견적 협의중",
+        "confirmed": "주문 확정", 
+        "pending": "생산 대기",
+        "production": "생산 중",
+        "manufactured": "생산 완료",
+        "delivery": "납품",
+        "completed": "프로젝트 완료"
+    }
+    
+    valid_english_statuses = list(status_mapping.keys())
+    
+    if payload.status not in status_mapping:
+        raise HttpError(400, f"잘못된 상태값입니다. 다음 중 하나를 입력해주세요: {', '.join(valid_english_statuses)}")
 
     try:
         project = await Project.objects.aget(id=project_id)
-        project.status = payload.status
+        project.status = status_mapping[payload.status]
         await project.asave()
 
         return 200, ProjectDetailOut(
