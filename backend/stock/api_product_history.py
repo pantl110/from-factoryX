@@ -1,13 +1,16 @@
 from ninja import Router, Query
 from ninja.pagination import paginate
+from ninja.errors import HttpError
 from api.security import jwt_auth
-from stock.models import ProductHistory
 from asgiref.sync import sync_to_async
 from typing import List
 
+from stock.models import Product, ProductHistory
 from stock.schemas.inbound import ProductHistoryCreateIn, ProductHistoryFilter
 from stock.schemas.outbound import ProductHistoryOut
-from stock.utils import get_history_by_id, get_product_by_id
+
+from factory.utils import is_factory_member
+
 
 router = Router(tags=["ProductHistory"], auth=jwt_auth)
 
@@ -20,28 +23,21 @@ router = Router(tags=["ProductHistory"], auth=jwt_auth)
     auth=jwt_auth,
 )
 async def create_product_history(request, payload: ProductHistoryCreateIn):
-    """
-    입력 필드:
-    - product: int - 제품 ID (필수)
-    - type: str - 입출고 타입 (필수)
-      - "in": 입고
-      - "out": 출고
-    - quantity: int - 수량 (필수)
-    - total_stock: int - 거래 후 총 재고 (필수)
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
     
-    반환 필드:
-    - id: int - 히스토리 ID
-    - product: int - 제품 ID
-    - type: str - 입출고 타입 ("입고" 또는 "출고")
-    - quantity: int - 수량
-    - total_stock: int - 거래 후 총 재고
-    - created_at: str - 생성일시
-    - updated_at: str - 수정일시
-    """
     user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     data = payload.dict()
     product_id = data.pop("product")
-    product = await get_product_by_id(product_id, user)
+    
+    try:
+        product = await Product.objects.aget(id=product_id, factory_id=int(factory_id))
+    except Product.DoesNotExist:
+        raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
+    
     product_history = await ProductHistory.objects.acreate(product=product, **data)
     return 201, product_history
 
@@ -55,29 +51,12 @@ async def create_product_history(request, payload: ProductHistoryCreateIn):
 )
 @paginate
 async def list_product_histories(request, filters: ProductHistoryFilter = Query(...)):
-    """
-    입력 필드 (쿼리 파라미터):
-    - start_date: str - 조회 시작일 (YYYY-MM-DD, 선택)
-    - end_date: str - 조회 종료일 (YYYY-MM-DD, 선택)
-    - product_id: int - 품목 ID (선택)
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
     
-    반환 필드 (페이지네이션 포함):
-    - count: int - 총 개수
-    - totalCnt: int - 총 개수
-    - pageCnt: int - 총 페이지 수
-    - curPage: int - 현재 페이지
-    - nextPage: int - 다음 페이지 (null 가능)
-    - previousPage: int - 이전 페이지 (null 가능)
-    - data: List[ProductHistoryOut] - 제품 히스토리 목록
-      - id: int - 히스토리 ID
-      - product: int - 제품 ID
-      - type: str - 입출고 타입 ("입고" 또는 "출고")
-      - quantity: int - 수량
-      - total_stock: int - 거래 후 총 재고
-      - created_at: str - 생성일시
-      - updated_at: str - 수정일시
-    """
     user = request.auth
+    await is_factory_member(int(factory_id), user)
 
     @sync_to_async
     def get_histories():
@@ -102,19 +81,19 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
     auth=jwt_auth,
 )
 async def get_product_history(request, history_id: int):
-    """
-    입력 필드 (URL 파라미터):
-    - history_id: int - 제품 히스토리 ID (필수)
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
     
-    반환 필드:
-    - id: int - 히스토리 ID
-    - product: int - 제품 ID
-    - type: str - 입출고 타입 ("입고" 또는 "출고")
-    - quantity: int - 수량
-    - total_stock: int - 거래 후 총 재고
-    - created_at: str - 생성일시
-    - updated_at: str - 수정일시
-    """
     user = request.auth
-    history = await get_history_by_id(history_id, user)
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        history = await ProductHistory.objects.select_related("product").aget(
+            id=history_id,
+            product__factory_id=int(factory_id)
+        )
+    except ProductHistory.DoesNotExist:
+        raise HttpError(404, "해당 입출고 이력을 찾을 수 없습니다.")
+    
     return history

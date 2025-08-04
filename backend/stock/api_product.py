@@ -1,22 +1,20 @@
 from ninja import Router, Query
 from ninja.pagination import paginate
+from ninja.errors import HttpError
+from django.http import JsonResponse
+from django.db import IntegrityError
 from api.security import jwt_auth
 from asgiref.sync import sync_to_async
 from typing import List
-from stock.models import Product
-from stock.schemas.inbound import ProductCreateIn, ProductUpdateIn, ProductFilter
-from stock.schemas.outbound import ProductOut
-from stock.utils import get_product_by_id
-from factory.utils import get_factory_by_id
-from django.db import IntegrityError
-from stock.models import MaterialProduct
-from ninja.errors import HttpError
-from stock.schemas.inbound import SingleProductCreateIn
-from stock.schemas.outbound import SingleProductCreateOut
-from stock.schemas.outbound import ProductListOut
-from django.http import JsonResponse
-from stock.utils import get_material_by_id
-from stock.schemas.inbound import AssignProductIn
+
+from stock.models import Product, MaterialProduct
+from stock.schemas.inbound import SingleProductCreateIn, ProductCreateIn, ProductUpdateIn, ProductFilter, AssignProductIn
+from stock.schemas.outbound import SingleProductCreateOut, ProductListOut, ProductOut
+
+from factory.utils import is_factory_member
+from factory.models import Factory
+from stock.models import Material
+
 
 
 router = Router(tags=["Product"])
@@ -31,22 +29,19 @@ router = Router(tags=["Product"])
     auth=jwt_auth,
 )
 async def create_single_product(request, payload: SingleProductCreateIn):
-    """
-    입력 필드:
-    - factory_id: 공장 ID
-    - name: 품목명
-    - code: 품목 코드
-    - spec: 규격
-    - unit: 단위
-
-    반환 필드:
-    - factory_id: 공장 ID
-    - product_id: 생성된 품목 ID
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     data = payload.dict()
-    factory_id = data.pop("factory_id")
-    factory = await get_factory_by_id(factory_id, user)
+    factory_id = int(factory_id)
+    try:
+        factory = await Factory.objects.aget(id=factory_id)
+    except Factory.DoesNotExist:
+        raise HttpError(404, "해당 공장을 찾을 수 없습니다.")
 
     # 중복 코드 체크
     exists = await Product.objects.filter(factory=factory, code=data["code"]).aexists()
@@ -64,9 +59,6 @@ async def create_single_product(request, payload: SingleProductCreateIn):
     return 201, response_data
 
 
-
-
-
 @router.post(
     "",
     summary="[C] 제품 등록",
@@ -75,15 +67,20 @@ async def create_single_product(request, payload: SingleProductCreateIn):
     auth=jwt_auth,
 )
 async def create_product(request, payload: List[ProductCreateIn]):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     result: List[dict] = []
+    try:
+        factory = await Factory.objects.aget(id=int(factory_id))
+    except Factory.DoesNotExist:
+        raise HttpError(404, "해당 공장을 찾을 수 없습니다.")
     for item in payload:
         data = item.dict()
-        factory_id = data.pop("factory")
-        factory = await get_factory_by_id(factory_id, user)
-        # current_stock이 None이면 0으로 저장
-        if data.get("current_stock") is None:
-            data["current_stock"] = 0
         product = await Product.objects.acreate(factory=factory, **data)
 
         # 응답 데이터 직렬화
@@ -113,21 +110,27 @@ async def create_product(request, payload: List[ProductCreateIn]):
     auth=jwt_auth,
 )
 async def assign_product(request, payload: AssignProductIn):
-    """
-    입력 필드:
-    - factory_id: 공장 ID
-    - material_id: 원자재 ID
-    - products: 품목 목록 (name, code, spec, unit, quantity)
-    반환 필드: 없음
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
+    await is_factory_member(int(factory_id), user)
+
     data = payload.dict()
-    factory_id = data["factory_id"]
+    payload_factory_id = int(factory_id)
     material_id = data["material_id"]
     products_data = data["products"]
 
-    factory = await get_factory_by_id(factory_id, user)
-    material = await get_material_by_id(material_id, factory_id, user)
+    try:
+        factory = await Factory.objects.aget(id=payload_factory_id)
+    except Factory.DoesNotExist:
+        raise HttpError(404, "해당 공장을 찾을 수 없습니다.")
+    
+    try:
+        material = await Material.objects.aget(id=material_id, factory_id=payload_factory_id)
+    except Material.DoesNotExist:
+        raise HttpError(404, "해당 원자재를 찾을 수 없습니다.")
 
     try:
         for product_info in products_data:
@@ -166,21 +169,12 @@ async def assign_product(request, payload: AssignProductIn):
 )
 @paginate
 async def list_products(request, filters: ProductFilter = Query(None), q: str = None):
-    """
-    입력 필드:
-    - q: 검색어 (품목명 또는 품목코드, 선택)
-    - factory_id: 공장 ID (필수, 인증된 유저의 소유 공장만 조회)
-
-    반환 필드 (ProductListOut):
-    - id: 제품 ID (int)
-    - factory: 공장 ID (int)
-    - name: 제품명 (str)
-    - code: 제품코드 (str)
-    - unit: 단위 (str)
-    - spec: 규격 (str)
-    - current_stock: 현재 재고 (int)
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
+    await is_factory_member(int(factory_id), user)
 
     @sync_to_async
     def get_products():
@@ -219,23 +213,17 @@ async def list_products(request, filters: ProductFilter = Query(None), q: str = 
     auth=jwt_auth,
 )
 async def get_product(request, product_id: int):
-    """
-    입력 필드:
-    - product_id: 제품 ID (경로 파라미터, 필수)
-
-    반환 필드 (ProductOut):
-    - id: 제품 ID (int)
-    - factory: 공장 ID (int)
-    - name: 제품명 (str)
-    - code: 제품코드 (str)
-    - unit: 단위 (str)
-    - spec: 규격 (str)
-    - current_stock: 현재 재고 (int)
-    - average_production_time: 평균 생산 시간 (초, int, nullable)
-    - note: 특이사항 (str, nullable)
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    product = await get_product_by_id(product_id, user)
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        product = await Product.objects.aget(id=product_id, factory_id=int(factory_id))
+    except Product.DoesNotExist:
+        raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
     response_data = {
         "id": product.id,
         "factory": product.factory_id,
@@ -260,33 +248,17 @@ async def get_product(request, product_id: int):
     auth=jwt_auth,
 )
 async def update_product(request, product_id: int, payload: ProductUpdateIn):
-    """
-    입력 필드:
-    - product_id: 수정할 제품 ID (필수, 경로 파라미터)
-    - name: 제품명 (선택)
-    - code: 제품 코드 (선택)
-    - unit: 단위 (선택)
-    - spec: 규격 (선택)
-    - current_stock: 현재 재고 (선택)
-    - average_production_time: 평균 생산 시간 (선택)
-    - buffer_rate: 버퍼율 (선택)
-    - location: 위치 (선택, null 허용)
-    - note: 비고 (선택, null 허용)
-
-    반환 필드:
-    - id: 제품 ID (int)
-    - factory: 팩토리 ID (int)
-    - name: 제품명 (str)
-    - code: 제품 코드 (str)
-    - unit: 단위 (str)
-    - spec: 규격 (str)
-    - current_stock: 현재 재고 (int)
-    - average_production_time: 평균 생산 시간 (int, null 허용)
-    - buffer_rate: 버퍼율 (float)
-    - note: 비고 (str, null 허용)
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    product = await get_product_by_id(product_id, user)
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        product = await Product.objects.aget(id=product_id, factory_id=int(factory_id))
+    except Product.DoesNotExist:
+        raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
     update_data = payload.dict(exclude_unset=True)
 
     # null, blank가가 허용되는 필드 목록
@@ -308,9 +280,6 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
         return JsonResponse({"detail": f"공란 또는 null 불가: {', '.join(blank_fields)}"}, status=400)
 
     for key, value in update_data.items():
-        # current_stock과 average_production_time이 null이면 수정하지 않음
-        if key in ["current_stock", "average_production_time"] and value is None:
-            continue
         setattr(product, key, value)
     await product.asave()
 
@@ -338,8 +307,17 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
     auth=jwt_auth,
 )
 async def delete_product(request, product_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
     user = request.auth
-    product = await get_product_by_id(product_id, user)
+    await is_factory_member(int(factory_id), user)
+    
+    try:
+        product = await Product.objects.aget(id=product_id, factory_id=int(factory_id))
+    except Product.DoesNotExist:
+        raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
     await product.adelete()
     return 204, None
 

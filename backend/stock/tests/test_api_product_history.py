@@ -98,6 +98,16 @@ class TestProductHistoryAPI(TestCase):
             quantity=15,
             total_stock=15,
         )
+        
+        # FactoryMember 생성 (권한 검증을 위해)
+        from factory.models import FactoryMember
+        FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
+        )
 
     async def authenticate(self):
         """Return headers with valid JWT token for the test user."""
@@ -117,7 +127,7 @@ class TestProductHistoryAPI(TestCase):
             "quantity": 5,
             "total_stock": 5,
         }
-        response = await self.client.post("", headers=headers, json=payload)
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertIn("id", data)
@@ -126,7 +136,7 @@ class TestProductHistoryAPI(TestCase):
     async def test_list_histories_without_filter(self):
         """[R] 제품 입출고 이력 목록 조회 (필터 없음)"""
         headers = await self.authenticate()
-        response = await self.client.get("", headers=headers)
+        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
@@ -138,7 +148,7 @@ class TestProductHistoryAPI(TestCase):
         """[R] 제품 입출고 이력 목록 조회 - product_id 필터"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"?product_id={self.product1.id}", 
+            f"?factory_id={self.factory.id}&product_id={self.product1.id}", 
             headers=headers
         )
         self.assertEqual(response.status_code, 200)
@@ -150,7 +160,7 @@ class TestProductHistoryAPI(TestCase):
         
         # 모든 아이템이 product1에 속하는지 확인
         for item in data["data"]:
-            self.assertEqual(item["product"], self.product1.id)
+            self.assertEqual(item["product_id"], self.product1.id)
 
 
 
@@ -158,7 +168,7 @@ class TestProductHistoryAPI(TestCase):
         """[R] 제품 입출고 이력 목록 조회 - 날짜 범위 필터"""
         headers = await self.authenticate()
         response = await self.client.get(
-            "?start_date=2025-01-01&end_date=2025-12-31", 
+            f"?factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31", 
             headers=headers
         )
         self.assertEqual(response.status_code, 200)
@@ -172,7 +182,7 @@ class TestProductHistoryAPI(TestCase):
         """[R] 제품 입출고 이력 목록 조회 - 복합 필터 (product_id + 날짜)"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"?product_id={self.product1.id}&start_date=2025-01-01", 
+            f"?factory_id={self.factory.id}&product_id={self.product1.id}&start_date=2025-01-01", 
             headers=headers
         )
         self.assertEqual(response.status_code, 200)
@@ -184,4 +194,4 @@ class TestProductHistoryAPI(TestCase):
         
         # 아이템이 product1에 속하는지 확인
         item = data["data"][0]
-        self.assertEqual(item["product"], self.product1.id)
+        self.assertEqual(item["product_id"], self.product1.id)
