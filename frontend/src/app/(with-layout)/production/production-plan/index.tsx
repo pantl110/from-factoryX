@@ -83,16 +83,16 @@ const ProductionPlan = () => {
   // 가동상태 드랍다운운을 row별로 관리
   const {
     isOpen: isOperationStatusDropdownOpen,
-    openDropdown: openOperationStatusDropdown,
+    // openDropdown: openOperationStatusDropdown,
     closeDropdown: closeOperationStatusDropdown,
     anchorRect: operationStatusAnchorRect,
   } = usePortalDropdown();
   const [operationStatusDropdownRowId, setOperationStatusDropdownRowId] =
     useState<number | null>(null);
-  const handleOperationStatusClick = (e: React.MouseEvent, rowId: number) => {
-    openOperationStatusDropdown(e);
-    setOperationStatusDropdownRowId(rowId);
-  };
+  // const handleOperationStatusClick = (e: React.MouseEvent, rowId: number) => {
+  //   openOperationStatusDropdown(e);
+  //   setOperationStatusDropdownRowId(rowId);
+  // };
   const handleCloseOperationStatusModal = () => {
     setOperationStatusDropdownRowId(null);
     closeOperationStatusDropdown();

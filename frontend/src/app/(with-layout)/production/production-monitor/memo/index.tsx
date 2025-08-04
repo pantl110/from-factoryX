@@ -35,7 +35,7 @@ const MemoSection = ({ title, content, logId, onUpdate }: MemoSectionProps) => {
       } else {
         alert(`메모 수정에 실패했습니다: ${result.error}`);
       }
-    } catch (error) {
+    } catch {
       alert('메모 수정 중 오류가 발생했습니다.');
     }
   };

@@ -24,6 +24,7 @@ const ProductionLog = () => {
 
   useEffect(() => {
     loadProjectPlans();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   if (isLoading || error) {

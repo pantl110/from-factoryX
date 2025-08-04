@@ -16,7 +16,6 @@ import StartProductionModal from './modals/start-production-modal';
 import {
   ClientModel,
   OcrDataModel,
-  ProjectStatusType,
   QuotationProductDetailResponseModel,
 } from '@/types/data-model';
 import useSaveDraftQuotation from '@/hooks/document/quotation/use-save-draft-quotation';

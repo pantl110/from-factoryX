@@ -89,7 +89,6 @@ export const useLogin = (): UseLoginReturnModel => {
                 //     is_trial: true,
                 //     billing_key: '',
                 //   });
-
                 //   if (createFactoryResponse.success && createFactoryResponse.data) {
                 //     setFactoryId(createFactoryResponse.data.id);
                 //   } else {

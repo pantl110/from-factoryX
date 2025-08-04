@@ -6,7 +6,6 @@ import ReturnSection from './return';
 import NoSelectedLog from './no-selected-log';
 import MemoSection from './memo';
 import PlanChangeSection from './plan-change';
-import DeleteMemoModal from './modals/delete-memo-modal';
 import CreateMemoModal from './modals/create-memo-modal';
 import EmptyLog from './empty-log';
 import {

@@ -4,11 +4,7 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Chip from '@/ui/chip';
 import { useRouter } from 'next/navigation';
-import {
-  ProjectStatusType,
-  ProjectStatusColorMap,
-  TaxStatusType,
-} from '@/types/status-type';
+import { ProjectStatusColorMap, TaxStatusType } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import MiniBtn from '@/ui/mini-btn';
 import { ProjectResponseModel } from '@/types/data-model';

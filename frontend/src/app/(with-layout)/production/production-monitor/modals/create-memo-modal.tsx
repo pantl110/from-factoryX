@@ -3,9 +3,8 @@ import { useParams } from 'next/navigation';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import useCreateProjectLog from '@/hooks/project/project-log/use-create-project-log';
-import { CreateProjectLogResponseModel } from '@/types/data-model';
 
-interface CreateMemoFormData {
+interface CreateMemoFormDataModel {
   title: string;
   content: string;
 }
@@ -26,14 +25,14 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
     handleSubmit,
     formState: { isValid },
     reset,
-  } = useForm<CreateMemoFormData>({
+  } = useForm<CreateMemoFormDataModel>({
     defaultValues: {
       title: '',
       content: '',
     },
   });
 
-  const onSubmit = async (data: CreateMemoFormData) => {
+  const onSubmit = async (data: CreateMemoFormDataModel) => {
     if (!projectId) {
       alert('프로젝트 정보를 찾을 수 없습니다.');
       return;

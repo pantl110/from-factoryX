@@ -583,12 +583,11 @@ export interface ProjectLogResponseModel {
   title: string;
   content: string;
   created_at?: string; // 생성 시간 (백엔드에서 제공하는 경우)
-} 
+}
 
 export interface ProjectLogListResponseModel extends PaginationModel {
   data: ProjectLogResponseModel[];
 }
-
 
 //////////////////////
 // Project Plan API
@@ -662,7 +661,6 @@ export interface UpdateProjectPlanModel {
   end_date?: string;
   avg_production_time?: number;
 }
-
 
 //////////////////////
 // Factory Member API

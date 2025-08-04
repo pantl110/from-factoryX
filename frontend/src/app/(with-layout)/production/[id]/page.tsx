@@ -75,8 +75,11 @@ const ProductionPageContent = () => {
           setPageStatus(projectStatus);
           setProductionTab(tabs[selectedTab]);
         } else {
+          alert('프로젝트 상태 로드 실패');
         }
-      } catch {}
+      } catch {
+        alert('프로젝트 상태 로드 중 오류');
+      }
     };
 
     loadProjectStatus();

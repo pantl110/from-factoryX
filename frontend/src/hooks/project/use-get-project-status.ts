@@ -63,4 +63,4 @@ const useGetProjectStatus = () => {
   return { getProjectStatus, isLoading, error };
 };
 
-export default useGetProjectStatus; 
+export default useGetProjectStatus;
