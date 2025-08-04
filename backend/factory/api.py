@@ -29,7 +29,7 @@ router = Router(tags=["Factory"])
 async def create_factory(request):
     user = request.auth
     factory = await Factory.objects.acreate(owner=user)
-    # owner를 admin 권한으로 FactoryMember에 자동 등록
+    
     from factory.models import FactoryMember
 
     await FactoryMember.objects.acreate(

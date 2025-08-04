@@ -1,6 +1,8 @@
 from ninja import Field, FilterSchema, Schema
 from typing import Optional, List
 
+from pydantic_core.core_schema import str_schema
+
 
 # Product Info
 class ProductAssignmentIn(Schema):
@@ -98,6 +100,16 @@ class ProductHistoryFilter(FilterSchema):
 # ------------------------------------------------------------
 # Material API
 # ------------------------------------------------------------
+
+# (POST) Create Single Material
+class SingleMaterialCreateIn(Schema):
+    name: str
+    code: str
+    spec: str
+    unit: Optional[str] = None
+    current_stock: Optional[int] = None
+    standard_stock: Optional[int] = None
+
 
 # (POST) Assign Material
 class AssignMaterialIn(Schema):

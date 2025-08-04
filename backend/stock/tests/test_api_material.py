@@ -67,6 +67,143 @@ class TestMaterialAPI(TestCase):
         self.assertIn("access_token", tokens)
         return {"Authorization": f"Bearer {tokens['access_token']}"}
 
+    async def test_create_materials_success(self):
+        """원자재 생성 성공 테스트 (단일)"""
+        headers = await self.authenticate()
+        payload = [{
+            "name": "새로운 원자재",
+            "code": "NEW001",
+            "spec": "새로운 규격",
+            "unit": "개",
+            "current_stock": 25,
+            "standard_stock": 10
+        }]
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertIn("material_ids", data)
+        self.assertIn("message", data)
+        self.assertEqual(data["message"], "1개의 원자재가 성공적으로 생성되었습니다.")
+        self.assertEqual(len(data["material_ids"]), 1)
+
+        # DB에 실제로 생성되었는지 확인
+        material_exists = await sync_to_async(Material.objects.filter(id=data["material_ids"][0]).exists)()
+        self.assertTrue(material_exists)
+
+    async def test_create_materials_duplicate_code(self):
+        """중복된 원자재 코드로 생성 시도시 실패 테스트"""
+        headers = await self.authenticate()
+        payload = [{
+            "name": "중복 원자재",
+            "code": "TEST001",  # 이미 존재하는 코드
+            "spec": "중복 규격"
+        }]
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("이미 존재하는 원자재 코드", data.get("detail", ""))
+
+    async def test_create_materials_missing_factory_id(self):
+        """factory_id 누락시 실패 테스트"""
+        headers = await self.authenticate()
+        payload = [{
+            "name": "테스트 원자재",
+            "code": "TEST002",
+            "spec": "테스트 규격"
+        }]
+        response = await self.client.post("", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("factory_id를 입력해야 합니다.", data.get("detail", ""))
+
+    async def test_create_materials_with_default_values(self):
+        """기본값으로 원자재 생성 테스트"""
+        headers = await self.authenticate()
+        payload = [{
+            "name": "기본값 원자재",
+            "code": "DEFAULT001",
+            "spec": "기본 규격"
+        }]
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertIn("material_ids", data)
+
+        # DB에서 기본값 확인
+        material = await sync_to_async(Material.objects.get)(id=data["material_ids"][0])
+        self.assertEqual(material.unit, "EA")
+        self.assertEqual(material.current_stock, 0)  # 모델 기본값 사용
+        self.assertEqual(material.standard_stock, 0)  # 모델 기본값 사용
+
+    async def test_create_materials_unauthorized(self):
+        """인증되지 않은 사용자 요청 실패 테스트"""
+        payload = [{
+            "name": "인증 실패 원자재",
+            "code": "AUTH001",
+            "spec": "인증 실패 규격"
+        }]
+        response = await self.client.post(f"?factory_id={self.factory.id}", json=payload)
+        self.assertEqual(response.status_code, 401)
+
+    async def test_create_multiple_materials_success(self):
+        """여러 원자재 생성 성공 테스트"""
+        headers = await self.authenticate()
+        payload = [
+            {
+                "name": "원자재1",
+                "code": "MAT001",
+                "spec": "규격1",
+                "unit": "개",
+                "current_stock": 10,
+                "standard_stock": 5
+            },
+            {
+                "name": "원자재2",
+                "code": "MAT002",
+                "spec": "규격2",
+                "unit": "EA",
+                "current_stock": 20,
+                "standard_stock": 10
+            },
+            {
+                "name": "원자재3",
+                "code": "MAT003",
+                "spec": "규격3"
+            }
+        ]
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertIn("material_ids", data)
+        self.assertIn("message", data)
+        self.assertEqual(data["message"], "3개의 원자재가 성공적으로 생성되었습니다.")
+        self.assertEqual(len(data["material_ids"]), 3)
+
+        # DB에 실제로 생성되었는지 확인
+        for material_id in data["material_ids"]:
+            material_exists = await sync_to_async(Material.objects.filter(id=material_id).exists)()
+            self.assertTrue(material_exists)
+
+    async def test_create_materials_duplicate_codes_in_payload(self):
+        """요청 내에서 중복된 코드로 생성 시도시 실패 테스트"""
+        headers = await self.authenticate()
+        payload = [
+            {
+                "name": "원자재1",
+                "code": "DUPLICATE001",
+                "spec": "규격1"
+            },
+            {
+                "name": "원자재2",
+                "code": "DUPLICATE001",  # 중복된 코드
+                "spec": "규격2"
+            }
+        ]
+        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("원자재 코드가 중복되었습니다.", data.get("detail", ""))
+
     async def test_get_materials_by_factory_success(self):
         """공장별 원자재 목록 조회 성공 테스트"""
         headers = await self.authenticate()
