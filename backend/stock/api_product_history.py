@@ -33,13 +33,36 @@ async def create_product_history(request, payload: ProductHistoryCreateIn):
     data = payload.dict()
     product_id = data.pop("product")
     
+    # type 필드 검증 (한국어와 영어 모두 허용)
+    type_value = data.get("type")
+    valid_types = [choice[0] for choice in ProductHistory.ProductHistoryType.choices] + [choice[1] for choice in ProductHistory.ProductHistoryType.choices]
+    if type_value not in valid_types:
+        raise HttpError(400, f"유효하지 않은 type입니다. 가능한 값: {valid_types}")
+    
+    # 영어 값을 한국어로 변환 (DB에는 한국어로 저장)
+    if type_value == "in":
+        data["type"] = "입고"
+    elif type_value == "out":
+        data["type"] = "출고"
+    
     try:
         product = await Product.objects.aget(id=product_id, factory_id=int(factory_id))
     except Product.DoesNotExist:
         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
     
     product_history = await ProductHistory.objects.acreate(product=product, **data)
-    return 201, product_history
+    
+    # ProductHistoryOut 스키마에 맞게 응답 데이터 변환
+    response_data = {
+        "id": product_history.id,
+        "type": product_history.type,
+        "product_id": product_history.product_id,
+        "quantity": product_history.quantity,
+        "total_stock": product_history.total_stock,
+        "created_at": product_history.created_at,
+        "updated_at": product_history.updated_at,
+    }
+    return 201, response_data
 
 
 @router.get(
