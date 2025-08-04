@@ -396,7 +396,6 @@ async def update_project_status(request, project_id: int, payload: ProjectStatus
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
-    # 영어 상태값을 한글 상태값으로 매핑
     status_mapping = {
         "quotation": "견적 협의중",
         "confirmed": "주문 확정", 

@@ -69,6 +69,16 @@ class ProjectPlanAPITestCase(TestCase):
             unit_price=1000
         )
         
+        # FactoryMember 생성 (권한 검증을 위해)
+        from factory.models import FactoryMember
+        FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
+        )
+        
         # JWT 토큰 생성
         self.token = self.generate_jwt_token()
         
@@ -223,7 +233,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = create_response.json()['created_plans'][0]['id']
         
         # 생산 계획 수정
-        update_url = f'/v1/project/plan/{plan_id}'
+        update_url = f'/v1/project/plan/{plan_id}?factory_id={self.factory.id}'
         update_payload = {
             'quantity': 10,
             'status': '가동 중',
@@ -246,7 +256,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_update_project_plan_nonexistent(self):
         """존재하지 않는 생산 계획 수정 시도 테스트"""
-        url = '/v1/project/plan/999'
+        url = f'/v1/project/plan/999?factory_id={self.factory.id}'
         payload = {
             'quantity': 15
         }
@@ -285,7 +295,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = create_response.json()['created_plans'][0]['id']
         
         # 존재하지 않는 설비로 수정 시도
-        update_url = f'/v1/project/plan/{plan_id}'
+        update_url = f'/v1/project/plan/{plan_id}?factory_id={self.factory.id}'
         update_payload = {
             'equipment_id': 999
         }
@@ -324,7 +334,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = create_response.json()['created_plans'][0]['id']
         
         # 올바르지 않은 상태값으로 수정 시도
-        update_url = f'/v1/project/plan/{plan_id}'
+        update_url = f'/v1/project/plan/{plan_id}?factory_id={self.factory.id}'
         update_payload = {
             'status': '잘못된상태'
         }
@@ -363,7 +373,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = create_response.json()['created_plans'][0]['id']
         
         # 올바르지 않은 수량으로 수정 시도
-        update_url = f'/v1/project/plan/{plan_id}'
+        update_url = f'/v1/project/plan/{plan_id}?factory_id={self.factory.id}'
         update_payload = {
             'quantity': 0
         }
@@ -665,7 +675,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = response.json()['created_plans'][0]['id']
         
         # 계획 상태를 "가동 중"으로 변경
-        update_status_url = f'/v1/project/plan/{plan_id}'
+        update_status_url = f'/v1/project/plan/{plan_id}?factory_id={self.factory.id}'
         status_payload = {
             'status': '가동 중'
         }
@@ -751,7 +761,7 @@ class ProjectPlanAPITestCase(TestCase):
         }
         
         response = self.client.patch(
-            f'/v1/project/plan/{plan_id}',
+            f'/v1/project/plan/{plan_id}?factory_id={self.factory.id}',
             data=json.dumps(equipment_change_payload),
             content_type='application/json',
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -790,7 +800,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = response.json()['created_plans'][0]['id']
         
         # 계획 상태를 "가동 중"으로 변경
-        update_status_url = f'/v1/project/plan/{plan_id}'
+        update_status_url = f'/v1/project/plan/{plan_id}?factory_id={self.factory.id}'
         status_payload = {
             'status': '가동 중'
         }
