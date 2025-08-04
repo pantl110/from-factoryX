@@ -9,10 +9,10 @@ from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
 from factory.models import FactoryEquipment
 from stock.models import Product
-from datetime import date, timedelta
+from datetime import date
 from factory.models import Factory
-from typing import List, Optional
-from django.db.models import Q
+from typing import List
+from factory.utils import is_factory_member
 
 router = Router(tags=["ProjectPlan"], auth=jwt_auth)
 
@@ -398,19 +398,13 @@ async def list_project_plans(request, project_id: int):
     response={200: dict, 400: dict, 404: dict, 500: dict}
 )
 async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn):
-    """
-    입력 필드:
-    - plan_id: int - 수정할 생산 계획 ID (URL 경로 파라미터, 필수)
-    - equipment_id: int - 설비 ID (선택)
-    - quantity: int - 생산 수량 (선택, 견적서 수량을 초과할 수 없음)
-    - status: str - 생산 상태 (선택, "가동 대기", "가동 중", "가동 완료", "가동 불가")
-    - start_date: str - 시작일 (선택, YYYY-MM-DD 형식)
-    - end_date: str - 종료일 (선택, YYYY-MM-DD 형식)
-    - avg_production_time: int - 평균 생산 시간 (선택, 초 단위)
-
-    반환 필드:
-    - message: str - 수정 완료 메시지
-    """
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
     try:
         plan = await ProjectPlan.objects.aget(id=plan_id)
     except ProjectPlan.DoesNotExist:
@@ -437,12 +431,6 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         quotation_quantity = await sync_to_async(lambda: plan.product.quantity)()
         new_quantity = payload.quantity
         
-        if new_quantity > quotation_quantity:
-            raise HttpError(400, "생산 수량은 견적서 수량을 초과할 수 없습니다.")
-        
-        # 기존 계획 수정
-        plan.quantity = new_quantity
-        
         # 기존에 남은 수량 계획이 있다면 삭제
         await ProjectPlan.objects.filter(
             project=project,
@@ -450,18 +438,46 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
             id__gt=plan.id  # 현재 계획보다 나중에 생성된 계획들
         ).adelete()
         
-        # 남은 수량이 있으면 새 계획 생성
-        remaining = quotation_quantity - new_quantity
-        if remaining > 0:
+        # 사용자가 수정한 수량이 주문 수량보다 적은 경우
+        if new_quantity < quotation_quantity:
+            # 첫 번째 계획: 사용자가 수정한 수량
+            plan.quantity = new_quantity
+            
+            # 두 번째 계획: 부족한 수량에 buffer rate 적용
+            product_obj = await sync_to_async(lambda: plan.product.product)()
+            buffer_rate = float(product_obj.buffer_rate)
+            shortage_quantity = quotation_quantity - new_quantity
+            buffer_quantity = int(shortage_quantity * (1 + buffer_rate))
+            
             await ProjectPlan.objects.acreate(
                 project=project,
                 product=product,
-                quantity=remaining,
+                quantity=buffer_quantity,
                 equipment=plan.equipment,  # 같은 설비 사용
                 start_date=plan.start_date,
                 end_date=plan.end_date,
                 avg_production_time=plan.avg_production_time
             )
+            
+            # Buffer rate는 기존 값 유지 (총 생산량이 주문량과 동일하므로)
+            
+        # 사용자가 수정한 수량이 주문 수량보다 큰 경우
+        elif new_quantity > quotation_quantity:
+            # 새로운 buffer rate 계산: (생산수량 - 주문수량) / 주문수량
+            new_buffer_rate = (new_quantity - quotation_quantity) / quotation_quantity
+            # 제품의 buffer rate 업데이트
+            product_obj = await sync_to_async(lambda: plan.product.product)()
+            product_obj.buffer_rate = new_buffer_rate
+            await sync_to_async(product_obj.save)()
+            
+            # 기존 계획 수정
+            plan.quantity = new_quantity
+            
+        # 사용자가 수정한 수량이 주문 수량과 같은 경우
+        else:
+            # 기존 계획 수정
+            plan.quantity = new_quantity
+            # Buffer rate는 기존 값 유지 (변경하지 않음)
 
     # 이후에도 plan.project, plan.product 대신 project, product 사용
     if payload.status is not None:

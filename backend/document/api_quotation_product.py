@@ -88,7 +88,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         raise HttpError(500, f"임시 저장 중 오류가 발생했습니다: {str(e)}")
 
 
-@router.post("/confirmed", summary="주문 확정", description="완성된 견적서로 주문을 확정합니다. 모든 필수 정보가 필요합니다.")
+@router.post("/confirmed", summary="생산 시작작", description="완성된 견적서로 생산을 시작합니다. 모든 필수 정보가 필요합니다.")
 async def confirm_order(request, payload: QuotationConfirmedIn):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
@@ -153,7 +153,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 )
         
         project = await sync_to_async(lambda: quotation.project)()
-        project.status = Project.ProjectStatus.confirmed
+        project.status = Project.ProjectStatus.production
         await sync_to_async(project.save)()
         
         for prod in payload.products:
@@ -176,7 +176,12 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             except Exception as e:
                 raise HttpError(400, f"설비 조회 중 오류가 발생했습니다: {str(e)}")
             
-            quantity = prod.quantity
+            # 제품의 buffer rate를 가져와서 생산 수량 계산
+            product = await sync_to_async(lambda: quotation_product.product)()
+            buffer_rate = float(product.buffer_rate)
+            base_quantity = prod.quantity
+            production_quantity = int(base_quantity * (1 + buffer_rate))
+            
             start_date = datetime.now().strftime("%Y-%m-%d") 
             end_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
             avg_production_time = 3600
@@ -184,7 +189,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             await ProjectPlan.objects.acreate(
                 project=project,
                 product=quotation_product,
-                quantity=quantity,
+                quantity=production_quantity,
                 equipment=equipment,
                 start_date=datetime.strptime(start_date, "%Y-%m-%d").date(),
                 end_date=datetime.strptime(end_date, "%Y-%m-%d").date(),
@@ -194,7 +199,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
         return 200, {
             "quotation_id": quotation.id,
             "project_id": project.id,
-            "status": "confirmed"
+            "status": "production_started"
         }
             
     except HttpError:
@@ -234,6 +239,7 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
             "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None
         } for qp in qps
     ]
+
 
 @router.get("/{quotation_product_id}", summary="[C] 견적서 품목 상세 조회", response={200: QuotationProductOut, 404: dict, 500: dict})
 async def get_quotation_product_detail(request, quotation_product_id: int):
