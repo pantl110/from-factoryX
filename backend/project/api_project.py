@@ -5,15 +5,16 @@ from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from project.schemas.outbound import (
     ProjectCreateOut,
+    ListProgressProjectOut,
     ProjectDetailOut,
     ProjectUpdateOut,
-    ListProgressProjectOut,
+    ProjectStatusOut,
+    ProjectCloneOut,
 )
 from project.schemas.inbound import (
     ProjectStatusUpdateIn,
     ProjectTransactDateUpdateIn,
     ProjectCloneIn,
-    ProjectListFilter,
     TestCreateProjectsIn,
 )
 from project.models import Project, ProjectPlan
@@ -93,7 +94,7 @@ async def create_project(request):
     "/clone",
     summary="[C] 프로젝트 복제",
     description="완료된 프로젝트를 복제하여 생산 대기 상태로 새 프로젝트를 생성합니다.",
-    response={200: dict, 400: dict, 404: dict, 500: dict},
+    response={200: ProjectCloneOut, 400: dict, 404: dict, 500: dict},
 )
 async def clone_project(request, payload: ProjectCloneIn):
     factory_id = request.GET.get('factory_id')
@@ -166,10 +167,13 @@ async def clone_project(request, payload: ProjectCloneIn):
                     content=original_log.content,
                 )
 
-            return {}
+            return new_project.id
 
-        result = await clone_project_data()
-        return result
+        new_project_id = await clone_project_data()
+        return 200, ProjectCloneOut(
+            project_id=new_project_id,
+            message="프로젝트가 성공적으로 복제되었습니다."
+        )
 
     except HttpError:
         raise
@@ -178,9 +182,44 @@ async def clone_project(request, payload: ProjectCloneIn):
 
 
 @router.get(
+    "/{project_id}",
+    summary="[C] 프로젝트 상태 조회",
+    description="프로젝트 ID로 프로젝트 상태를 조회합니다.",
+    response={200: ProjectStatusOut, 404: dict, 403: dict, 500: dict},
+    auth=jwt_auth,
+)
+async def get_project_status(request, project_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        # 프로젝트가 해당 공장에 속하는지 확인
+        project = await Project.objects.select_related("quotations__factory").aget(
+            id=project_id,
+            quotations__factory_id=int(factory_id)
+        )
+        
+        return ProjectStatusOut(
+            project_id=project.id,
+            status=project.status,
+            created_at=project.created_at,
+            updated_at=project.updated_at,
+        )
+        
+    except Project.DoesNotExist:
+        raise HttpError(404, "프로젝트를 찾을 수 없습니다.")
+    except Exception as e:
+        raise HttpError(500, "프로젝트 상태 조회 중 내부 서버 오류가 발생했습니다.")
+
+
+@router.get(
     "",
     summary="[C] 진행, 보관된 프로젝트 조회",
-    description="진행 또는 보관 중인 프로젝트를 조회, 검색색합니다.",
+    description="진행 또는 보관 중인 프로젝트를 조회, 검색합니다.",
     response={200: List[ListProgressProjectOut], 400: dict, 500: dict},
 )
 @paginate
@@ -309,6 +348,7 @@ async def list_project(request, status: str = Query(...), search: str = Query(No
                     result.append(
                         ListProgressProjectOut(
                             project_id=project.id,
+                            quotation_id=quotation.id,
                             client_name=quotation.client.name if quotation.client else "",
                             product_names=product_names,
                             start_date=start_date,

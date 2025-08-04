@@ -73,7 +73,7 @@ async def get_quotation_detail(request, quotation_id: int):
 
         factory = quotation.factory
         factory_info = {
-            "factory_name": factory.name if factory else "",
+            "factory_name": factory.name if factory and factory.name else "",
             "business_registration_number": getattr(factory, "business_registration_number", None),
             "representative_name": getattr(factory, "representative_name", None),
             "email": getattr(factory, "manager_email", None),
