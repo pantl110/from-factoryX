@@ -1,64 +1,23 @@
 from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
+from django.db.models import Exists, OuterRef
 from asgiref.sync import sync_to_async
+from datetime import date, timedelta
 from api.security import jwt_auth
-from project.schemas.outbound import (
-    ProjectCreateOut,
-    ListProgressProjectOut,
-    ProjectDetailOut,
-    ProjectUpdateOut,
-    ProjectStatusOut,
-    ProjectCloneOut,
-)
-from project.schemas.inbound import (
-    ProjectStatusUpdateIn,
-    ProjectTransactDateUpdateIn,
-    ProjectCloneIn,
-    TestCreateProjectsIn,
-)
+from typing import List
+
 from project.models import Project, ProjectPlan
+from project.schemas.inbound import ProjectStatusUpdateIn, ProjectTransactDateUpdateIn, ProjectCloneIn
+from project.schemas.outbound import ProjectCreateOut, ListProgressProjectOut, ProjectDetailOut, ProjectUpdateOut, ProjectStatusOut, ProjectCloneOut
 from document.models import Quotation
 from factory.models import Factory
-from datetime import date, timedelta
-from typing import List
-from django.db.models import Exists, OuterRef
-
-import random
-import string
-from factory.models import FactoryClient
 from factory.utils import is_factory_member
+from document.models import Quotation, QuotationProduct
+from project.models import ProjectPlan, ProjectLog
+
 
 router = Router(tags=["Project"], auth=jwt_auth)
-
-
-@router.post(
-    "/test",
-    summary="[TEST] 상태별 프로젝트 일괄 생성",
-    description="테스트용: factory_id로 모든 상태별 프로젝트+견적서를 생성합니다.",
-    response={200: dict},
-    auth=None,
-)
-async def test_create_projects_by_status(request, payload: TestCreateProjectsIn):
-    try:
-        factory = await Factory.objects.aget(id=payload.factory_id)
-    except Factory.DoesNotExist:
-        raise HttpError(404, "공장 정보를 찾을 수 없습니다.")
-
-    created = []
-    for status, _ in Project.ProjectStatus.choices:
-        rand_name = "테스트거래처_" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-        client = await FactoryClient.objects.acreate(
-            factory=factory,
-            name=rand_name,
-            business_registration_number=''.join(random.choices(string.digits, k=10)),
-            representative_name="홍길동",
-            type=FactoryClient.ClientType.customer
-        )
-        project = await Project.objects.acreate(status=status)
-        quotation = await Quotation.objects.acreate(project=project, factory=factory, client=client)
-        created.append({"id": project.id, "status": status, "client_name": client.name})
-    return {"projects": created}
 
 
 # Project Tab
@@ -77,9 +36,10 @@ async def create_project(request):
     await is_factory_member(int(factory_id), user)
     
     try:
+        factory = await Factory.objects.aget(id=int(factory_id))
         new_project = await Project.objects.acreate()
 
-        new_quotation = await Quotation.objects.acreate(project=new_project)
+        new_quotation = await Quotation.objects.acreate(project=new_project, factory=factory)
 
         return 201, {"quotation_id": new_quotation.id, "project_id": new_project.id}
 
@@ -107,9 +67,6 @@ async def clone_project(request, payload: ProjectCloneIn):
     try:
         @sync_to_async
         def clone_project_data():
-            from document.models import Quotation, QuotationProduct
-            from project.models import ProjectPlan, ProjectLog
-
             try:
                 original_project = Project.objects.get(id=payload.project_id)
             except Project.DoesNotExist:

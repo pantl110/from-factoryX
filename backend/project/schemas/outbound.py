@@ -2,6 +2,7 @@ from ninja import Schema
 import datetime
 from typing import Optional, List
 
+
 # ------------------------------------------------------------
 # Project API
 # ------------------------------------------------------------
@@ -58,7 +59,24 @@ class ProjectUpdateOut(Schema):
 # Project Refund API
 # ------------------------------------------------------------
 
-# for project plan response
+# (POST) Refund Create
+class RefundCreateOut(Schema):
+    message: str
+    refund_id: int
+    log_id: int
+
+
+# (PATCH) Refund Update
+class RefundUpdateOut(Schema):
+    message: str
+    refund_id: int
+
+
+# ------------------------------------------------------------
+# Project Plan API
+# ------------------------------------------------------------
+
+# (POST) Project Plan Create
 class ProjectPlanDetailOut(Schema):
     id: int
     project_id: int
@@ -70,13 +88,14 @@ class ProjectPlanDetailOut(Schema):
     end_date: datetime.date
     avg_production_time: int
 
-# for create project plans response
+
+# (POST) Project Plan Create
 class ProjectPlansCreateOut(Schema):
     message: str
     created_plans: List[ProjectPlanDetailOut]
 
 
-# for detailed project plan response (with related objects)
+# (GET) Product Detail
 class ProductDetailOut(Schema):
     id: int
     name: str
@@ -84,17 +103,23 @@ class ProductDetailOut(Schema):
     unit: str
     spec: str
 
+
+# (GET) Quotation Product Detail
 class QuotationProductDetailOut(Schema):
     id: int
     product: ProductDetailOut
     quantity: int
     unit_price: int
 
+
+# (GET) Equipment Detail
 class EquipmentDetailOut(Schema):
     id: int
     name: str
     priority: int
 
+
+# (GET) Project Plan Detail
 class ProjectPlanDetailWithRelationsOut(Schema):
     id: int
     project_id: int
@@ -106,54 +131,28 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     end_date: datetime.date
     avg_production_time: int
 
+
+# ------------------------------------------------------------
+# Project Log API
+# ------------------------------------------------------------
+
+# (POST) Project Log Create
+class ProjectLogCreateOut(Schema):
+    message: str
+    log_id: int
+
+    
+# (GET) Project Log Detail
 class ProjectLogDetailOut(Schema):
     id: int
     project_id: int
     type: str
     title: str
     content: str
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
 
-# for project log create request
-class ProjectLogCreateIn(Schema):
-    project_id: int
-    type: str
-    title: str
-    content: str
 
-# for project log update request
-class ProjectLogUpdateIn(Schema):
-    type: Optional[str] = None
-    title: Optional[str] = None
-    content: Optional[str] = None
-
-# for project log create/update response
-class ProjectLogCreateOut(Schema):
-    message: str
-    log_id: int
-
+# (PATCH) Project Log Update
 class ProjectLogUpdateOut(Schema):
     message: str
-
-# for refund create request
-class RefundCreateIn(Schema):
-    project_id: int
-    product_id: int
-    refund_date: str  # YYYY-MM-DD 형식
-    production_amount: Optional[int] = None
-
-# for refund create response
-class RefundCreateOut(Schema):
-    message: str
-    refund_id: int
-    log_id: int
-
-# for refund update request
-class RefundUpdateIn(Schema):
-    refund_date: Optional[str] = None  # YYYY-MM-DD 형식
-    current_stock: Optional[int] = None
-    production_amount: Optional[int] = None
-
-# for refund update response
-class RefundUpdateOut(Schema):
-    message: str
-    refund_id: int
