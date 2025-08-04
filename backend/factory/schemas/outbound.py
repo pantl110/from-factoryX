@@ -1,51 +1,65 @@
-from ninja import ModelSchema, Field, Schema
-from factory.models import Factory, FactoryEquipment, FactoryClient, FactoryMember
+from ninja import Schema
 from typing import Optional
-from user.models import User
 
 
-class FactoryOut(ModelSchema):
-    class Meta:
-        model = Factory
-        fields = "__all__"
+# ------------------------------------------------------------
+# Factory API
+# ------------------------------------------------------------
+
+# (GET) Factory
+class FactoryOut(Schema):
+    id: int
+    owner: int
+    name: Optional[str]
+    business_registration_number: Optional[str]
+    representative_name: Optional[str]
+    manager_email: Optional[str]
+    manager_phone: Optional[str]
+    manager_fax: Optional[str]
+    business_type: Optional[str]
+    business_category: Optional[str]
+    business_address: Optional[str]
+    is_trial: bool
+    billing_key: Optional[str]
+    inviting: list
+    created_at: str
+    updated_at: str
 
 
-class FactoryEqOut(ModelSchema):
-    class Meta:
-        model = FactoryEquipment
-        fields = "__all__"
+# ------------------------------------------------------------
+# Factory Member API
+# ------------------------------------------------------------
+
+# (GET) Factory Equipment
+class FactoryEqOut(Schema):
+    id: int
+    factory: int
+    name: str
+    status: str
+    priority: int
+    location: Optional[str]
+    note: Optional[str]
+    created_at: str
+    updated_at: str
 
 
+# (GET) Factory Member
 class FactoryMemberOut(Schema):
     id: int
     factory: int
-    user: Optional[int]  # int → Optional[int]로 변경
+    user: Optional[int]
     name: str
     email: str
     role: str
     status: str
-    invited_at: Optional[str]  # ISO8601 문자열로 반환
-
-    @classmethod
-    def from_orm(cls, obj: FactoryMember):
-        return cls(
-            id=obj.id,
-            factory=obj.factory_id,
-            user=obj.user_id,
-            name=getattr(obj.user, 'username', '') or getattr(obj.user, 'name', '') or getattr(obj.user, 'email', ''),
-            email=getattr(obj.user, 'email', ''),
-            role=obj.role,
-            status=obj.status,
-            invited_at=obj.invited_at.isoformat() if obj.invited_at else None,
-        )
-
+    invited_at: Optional[str]
 
 
 # ------------------------------------------------------------
 # Factory Client API
 # ------------------------------------------------------------
 
-# 거래처 관련 스키마
+# (GET) Factory Client
 class FactoryClientOut(Schema):
     id: int
     type: str
@@ -56,12 +70,13 @@ class FactoryClientOut(Schema):
     business_category: Optional[str]
     phone: Optional[str]
     email: Optional[str]
-    fax: Optional[str]  # 팩스번호 필드 추가
-    address: Optional[str]  # 주소 필드 추가
-    manager: Optional[str]  # 담당자 필드 추가
+    fax: Optional[str]
+    address: Optional[str]
+    manager: Optional[str]
     note: Optional[str]
 
 
+# (GET) Factory Client Detail
 class FactoryClientDetailOut(Schema):
     id: int
     type: str
@@ -72,7 +87,7 @@ class FactoryClientDetailOut(Schema):
     business_category: Optional[str]
     phone: Optional[str]
     email: Optional[str]
-    fax: Optional[str]  # 팩스번호 필드 추가
-    address: Optional[str]  # 주소 필드 추가
-    manager: Optional[str]  # 담당자 필드 추가
+    fax: Optional[str]
+    address: Optional[str]
+    manager: Optional[str]
     note: Optional[str]

@@ -3,23 +3,16 @@ from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from factory.models import Factory, FactoryMember
 from user.models import User
-from factory.schemas import FactoryMemberOut, FactoryMemberUpdateIn
+from api.security import jwt_auth
 from typing import List
 from ninja.pagination import paginate
-from factory.schemas.inbound import InviteMemberIn
+from factory.schemas.inbound import InviteMemberIn, FactoryMemberUpdateIn
+from factory.schemas.outbound import FactoryMemberOut
 from datetime import datetime, timezone
+from factory.utils import is_factory_member
 
-router = Router(tags=["FactoryMember"])
 
-
-def send_invite_email(email, factory, role):
-    print(f"[더미] {email}에게 {factory.name}({role}) 초대 메일 발송")
-
-def get_user_id(user):
-    try:
-        return int(getattr(user, 'id', getattr(user, 'pk', 0)))
-    except Exception:
-        return 0
+router = Router(tags=["FactoryMember"], auth=jwt_auth)
 
 
 # Factory Member Tab
@@ -28,22 +21,24 @@ def get_user_id(user):
     summary="[C] 팩토리 멤버 초대"
 )
 async def invite_factory_member(request, payload: InviteMemberIn):
-    """
-    입력 필드:
-    - factory_id: 초대할 팩토리 ID (필수)
-    - email: 초대할 유저 이메일 (필수)
-    - role: 초대할 멤버의 역할 (필수)
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
 
-    반환 필드:
-    - message: 처리 결과 메시지 (str)
-    - inviting: (신규 유저 초대 시) 팩토리의 초대 대기 목록 (list, 각 항목은 dict)
-        - email: 초대한 이메일 (str)
-        - role: 초대한 역할 (str)
-        - invited_by: 초대한 사람의 user id (int)
-        - invited_at: 초대한 시각(ISO8601, str)
-    """
+    def send_invite_email(email, factory, role):
+        print(f"[더미] {email}에게 {factory.name}({role}) 초대 메일 발송")
+
+    def get_user_id(user):
+        try:
+            return int(getattr(user, 'id', getattr(user, 'pk', 0)))
+        except Exception:
+            return 0
+
     def _invite_member():
-        factory = Factory.objects.get(id=payload.factory_id)
+        factory = Factory.objects.get(id=int(factory_id))
         email = payload.email
         role = payload.role
         try:
@@ -91,48 +86,45 @@ async def invite_factory_member(request, payload: InviteMemberIn):
     response=List[FactoryMemberOut]
 )
 @paginate
-async def list_factory_members(request, factory_id: int):
-    """
-    입력 필드:
-    - factory_id: 멤버를 조회할 팩토리 ID (필수)
+async def list_factory_members(request):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
 
-    반환 필드: (FactoryMemberOut 리스트, 각 멤버별 상세 정보)
-    - id: 멤버 ID (int, 초대 대기자는 0~999, 기존 멤버는 1000+)
-    - factory: 팩토리 ID (int)
-    - user: 유저 ID (int, 미가입 초대자는 None)
-    - name: 사용자 이름 (str, 미가입 초대자는 "")
-    - email: 이메일 (str)
-    - role: 역할 (str, 예: admin/manager/viewer)
-    - status: 상태 (str, 예: invited/active)
-    - invited_at: 초대 일시 (datetime)
-
-    동작:
-    - 해당 팩토리의 모든 멤버(가입 완료된 유저)와 초대받았지만 가입하지 않은 유저를 모두 반환
-    - user는 id만 반환됨(미가입 초대자는 None)
-    """
-    factory = await sync_to_async(Factory.objects.get)(id=factory_id)
+    factory = await sync_to_async(Factory.objects.get)(id=int(factory_id))
     # 가입된 멤버
-    members = await sync_to_async(lambda: list(FactoryMember.objects.filter(factory_id=factory_id).select_related("user")))()
+    members = await sync_to_async(lambda: list(FactoryMember.objects.filter(factory_id=int(factory_id)).select_related("user")))()
     member_outs = []
     for idx, member in enumerate(members):
-        member_out = FactoryMemberOut.from_orm(member)
-        member_out.id = 1000 + idx  # 기존 멤버는 1000부터 시작
+        member_out = {
+            "id": 1000 + idx,  # 기존 멤버는 1000부터 시작
+            "factory": member.factory_id,
+            "user": member.user_id,
+            "name": getattr(member.user, 'username', '') or getattr(member.user, 'name', '') or getattr(member.user, 'email', ''),
+            "email": getattr(member.user, 'email', ''),
+            "role": member.role,
+            "status": member.status,
+            "invited_at": member.invited_at.isoformat() if member.invited_at else None,
+        }
         member_outs.append(member_out)
     
     # 미가입 초대자
     inviting = factory.inviting or []
     inviting_outs = []
     for idx, item in enumerate(inviting):
-        inviting_outs.append(FactoryMemberOut(
-            id=idx,  # 0, 1, 2, 3... (초대 대기자는 0부터)
-            factory=factory.id,
-            user=None,
-            name="",
-            email=item.get("email", ""),
-            role=item.get("role", "invited"),
-            status="invited",
-            invited_at=item.get("invited_at"),
-        ))
+        inviting_outs.append({
+            "id": idx,  # 0, 1, 2, 3... (초대 대기자는 0부터)
+            "factory": factory.id,
+            "user": None,
+            "name": "",
+            "email": item.get("email", ""),
+            "role": item.get("role", "invited"),
+            "status": "invited",
+            "invited_at": item.get("invited_at"),
+        })
     return member_outs + inviting_outs
 
 
@@ -141,22 +133,17 @@ async def list_factory_members(request, factory_id: int):
     "/{member_id}",
     summary="[C] 멤버 수정"
 )
-async def update_factory_member(request, member_id: int, payload: FactoryMemberUpdateIn, factory_id: int):
-    """
-    입력 필드:
-    - member_id: 수정할 멤버의 ID (필수)
-    - factory_id: 팩토리 ID (필수)
-    - role: 변경할 역할 (필수)
+async def update_factory_member(request, member_id: int, payload: FactoryMemberUpdateIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
 
-    반환 필드:
-    - id: 멤버 ID (int, 초대 대기자는 0~999, 기존 멤버는 1000+)
-    - factory: 팩토리 ID (int)
-    - user: 유저 ID (int, 미가입 초대자는 None)
-    - role: 역할 (str)
-    """
     if member_id < 1000:  # 초대 대기자 (0~999)
         def _update_inviting():
-            factory = Factory.objects.get(id=factory_id)
+            factory = Factory.objects.get(id=int(factory_id))
             inviting = factory.inviting or []
             if 0 <= member_id < len(inviting):
                 inviting[member_id]['role'] = payload.role
@@ -197,23 +184,17 @@ async def update_factory_member(request, member_id: int, payload: FactoryMemberU
     "/{member_id}",
     summary="[C] 멤버 삭제"
 )
-async def delete_factory_member(request, member_id: int, factory_id: int):
-    """
-    입력 필드:
-    - member_id: 삭제할 멤버의 ID (필수)
-    - factory_id: 팩토리 ID (필수)
+async def delete_factory_member(request, member_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
 
-    반환 필드:
-    - message: 처리 결과 메시지 (str)
-    - deleted_member_id: 삭제된 멤버의 ID (int)
-
-    동작:
-    - member_id가 0~999면 초대 대기자 삭제
-    - member_id가 1000+면 기존 멤버 삭제
-    """
     if member_id < 1000:  # 초대 대기자 (0~999)
         def _delete_inviting():
-            factory = Factory.objects.get(id=factory_id)
+            factory = Factory.objects.get(id=int(factory_id))
             inviting = factory.inviting or []
             if 0 <= member_id < len(inviting):
                 inviting.pop(member_id)

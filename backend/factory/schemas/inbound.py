@@ -1,147 +1,78 @@
-from ninja import ModelSchema, Field, FilterSchema, Schema
-from factory.models import Factory, FactoryEquipment, FactoryClient
+from ninja import Field, FilterSchema, Schema
 from typing import Optional
 
 
-class FactoryCreateIn(ModelSchema):
-    class Meta:
-        model = Factory
-        exclude = [
-            "id",
-            "owner",
-            "created_at",
-            "updated_at",
-        ]
+# ------------------------------------------------------------
+# Factory API
+# ------------------------------------------------------------
 
-
-class FactoryUpdateIn(ModelSchema):
-    name: Optional[str] = Field(default=None, description="공장 이름")
-
-    class Meta:
-        model = Factory
-        exclude = [
-            "id",
-            "owner",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class FactoryFilter(FilterSchema):
-    name: Optional[str] = Field(default=None, q="name__icontains", description="공장명")
-
-
-class FactoryDetailIn(Schema):
-    factory_id: int
-
-
-class FactoryDeleteIn(Schema):
-    factory_id: int
-
-
-class FactoryEqCreateIn(ModelSchema):
-    # accept factory PK directly
-    factory: int
-
-    class Meta:
-        model = FactoryEquipment
-        exclude = [
-            "id",
-            "created_at",
-            "updated_at",
-        ]
-
-
-# Factory Equipment Filter Schema
-class FactoryEqFilter(FilterSchema):
-    name: Optional[str] = Field(default=None, q="name__icontains", description="설비명")
-    status: Optional[str] = Field(default=None, q="status", description="설비 상태")
-    location: Optional[str] = Field(
-        default=None, q="location__icontains", description="설비 위치"
-    )
-    priority: Optional[int] = Field(default=None, q="priority", description="우선순위")
-
-
-# 거래처 관련 스키마
-
-
-class FactoryEqUpdateIn(ModelSchema):
-    name: Optional[str] = Field(default=None, description="공장 설비 이름")
-    factory: Optional[int] = Field(default=None, description="공장 ID")
-    priority: Optional[int] = Field(default=None, description="우선순위")
-    note: Optional[str] = Field(default=None, description="설비 설명")
-    status: Optional[str] = Field(default=None, description="설비 상태")
-    location: Optional[str] = Field(default=None, description="설비 위치")
-
-    class Meta:
-        model = FactoryEquipment
-        exclude = [
-            "id",
-            "factory",
-            "created_at",
-            "updated_at",
-        ]
-
-
-# 거래처 관련 스키마
-class FactoryClientUpdateIn(Schema):
-    id: Optional[int] = None
-    client_type: Optional[str] = None
+# (PATCH) Factory Update
+class FactoryUpdateIn(Schema):
     name: Optional[str] = None
     business_registration_number: Optional[str] = None
     representative_name: Optional[str] = None
+    manager_email: Optional[str] = None
+    manager_phone: Optional[str] = None
+    manager_fax: Optional[str] = None
     business_type: Optional[str] = None
     business_category: Optional[str] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
-    fax: Optional[str] = None  # 팩스번호 필드 추가
-    address: Optional[str] = None  # 주소 필드 추가
-    manager: Optional[str] = None  # 담당자 필드 추가
-    note: Optional[str] = None
+    business_address: Optional[str] = None
+    is_trial: Optional[bool] = None
+    billing_key: Optional[str] = None
 
 
-# Factory Client Filter Schema
-class FactoryClientFilter(FilterSchema):
-    name: Optional[str] = Field(
-        default=None, q="name__icontains", description="거래처명"
-    )
-    business_registration_number: Optional[str] = Field(
-        default=None,
-        q="business_registration_number__icontains",
-        description="사업자등록번호",
-    )
-    representative_name: Optional[str] = Field(
-        default=None, q="representative_name__icontains", description="대표자명"
-    )
-    client_type: Optional[str] = Field(
-        default=None, q="client_type", description="거래처 유형 (customer/supplier)"
-    )
+# ------------------------------------------------------------
+# Factory Member API
+# ------------------------------------------------------------
+
+# (POST) Factory Member Invite
+class InviteMemberIn(Schema):
+    email: str
+    role: str
 
 
-# 거래처 검색용 스키마
-class FactoryClientSearchIn(Schema):
-    factory_id: int
-    q: Optional[str] = ""
-
-
+# (PATCH) Factory Member Update
 class FactoryMemberUpdateIn(Schema):
     role: Optional[str] = None
     status: Optional[str] = None
 
 
-class FactoryClientSearchFilter(FilterSchema):
-    q: Optional[str] = None
+# ------------------------------------------------------------
+# Factory Equipment API
+# ------------------------------------------------------------
+
+# (POST) Factory Equipment Create
+class FactoryEqCreateIn(Schema):
+    name: str
+    status: Optional[str] = None
+    priority: int
+    location: Optional[str] = None
+    note: Optional[str] = None
 
 
-class InviteMemberIn(Schema):
-    factory_id: int
-    email: str
-    role: str
+# (GET) Factory Equipment Filter
+class FactoryEqFilter(FilterSchema):
+    name: Optional[str] = Field(default=None, q="name__icontains")
+    status: Optional[str] = Field(default=None, q="status")
+    location: Optional[str] = Field(default=None, q="location__icontains")
+    priority: Optional[int] = Field(default=None, q="priority")
+
+
+# (PATCH) Factory Equipment Update
+class FactoryEqUpdateIn(Schema):
+    name: Optional[str] = None
+    factory: Optional[int] = None
+    priority: Optional[int] = None
+    note: Optional[str] = None
+    status: Optional[str] = None
+    location: Optional[str] = None
+
 
 # ------------------------------------------------------------
 # Factory Client API
 # ------------------------------------------------------------
 
+# (POST) Factory Client Create
 class FactoryClientCreateIn(Schema):
     type: Optional[str] = None
     name: str
@@ -155,3 +86,25 @@ class FactoryClientCreateIn(Schema):
     address: Optional[str] = None
     manager: Optional[str] = None
     note: Optional[str] = None
+
+
+# (PATCH) Factory Client Update
+class FactoryClientUpdateIn(Schema):
+    id: Optional[int] = None
+    client_type: Optional[str] = None
+    name: Optional[str] = None
+    business_registration_number: Optional[str] = None
+    representative_name: Optional[str] = None
+    business_type: Optional[str] = None
+    business_category: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    fax: Optional[str] = None
+    address: Optional[str] = None
+    manager: Optional[str] = None
+    note: Optional[str] = None
+
+
+# (GET) Factory Client Search Filter
+class FactoryClientSearchFilter(FilterSchema):
+    q: Optional[str] = None

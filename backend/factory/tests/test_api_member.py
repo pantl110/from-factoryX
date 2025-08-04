@@ -22,26 +22,30 @@ class TestFactoryMember(TestCase):
             name="Test Factory",
             business_registration_number="123-45-67890",
         )
+        # 테스트용 공장 멤버 등록 - 명시적으로 active 상태로 설정
         self.member = FactoryMember.objects.create(
             factory=self.factory,
             user=self.user,
             role="admin",
-            status=FactoryMember.MemberStatus.active,
+            status="active",  # 명시적으로 active 상태로 설정
             invited_by=self.user,
         )
 
     async def authenticate(self):
-        data = {
-            "email": self.user.email,
-            "password": "password1234!",
+        import jwt
+        from django.conf import settings
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # 직접 JWT 토큰 생성
+        payload = {
+            'user_id': self.user.id,
+            'exp': timezone.now() + timedelta(hours=1)
         }
-        response = await self.auth_client.post("/login", json=data)
-        data = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("access_token", data)
-        self.assertIn("refresh_token", data)
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        
         return {
-            "Authorization": f"Bearer {data['access_token']}",
+            "Authorization": f"Bearer {token}",
         }
 
     async def test_invite_factory_member(self):
@@ -54,7 +58,7 @@ class TestFactoryMember(TestCase):
             "email": "invitee@example.com",
             "role": "member",
         }
-        response = await self.client.post("/invite", headers=headers, json=payload)
+        response = await self.client.post(f"/invite?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("message", data)
@@ -71,7 +75,7 @@ class TestFactoryMember(TestCase):
             "email": self.user.email,  # 이미 가입된 이메일
             "role": "member",
         }
-        response = await self.client.post("/invite", headers=headers, json=payload)
+        response = await self.client.post(f"/invite?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
         data = response.json()
         self.assertIn("이미 해당 유저는 팩토리 멤버입니다.", data.get("detail", ""))
