@@ -4,6 +4,7 @@ from typing import List, Optional
 
 # Factory Client Field
 class FactoryClientInfoIn(Schema):
+    client_id: Optional[int] = None  # 기존 클라이언트 ID (선택사항)
     type: str = "customer"
     name: str
     business_registration_number: Optional[str] = None
@@ -17,11 +18,20 @@ class FactoryClientInfoIn(Schema):
     fax: Optional[str] = None
 
 
-# Quotation Product Field
+# Quotation Product Field (확정용)
 class QuotationProductInfoIn(Schema):
     product_id: int
     quantity: int
     unit_price: int
+    is_delivery: bool = False
+    delivery_date: Optional[str] = None
+
+
+# Quotation Product Field (임시저장용)
+class QuotationProductDraftIn(Schema):
+    product_id: Optional[int] = None
+    quantity: Optional[int] = None
+    unit_price: Optional[int] = None
     is_delivery: bool = False
     delivery_date: Optional[str] = None
 
@@ -43,7 +53,7 @@ class OcrIn(Schema):
 class QuotationDraftIn(Schema):   
     quotation_id: int
     client: Optional[FactoryClientInfoIn] = None
-    products: Optional[List[QuotationProductInfoIn]] = None
+    products: Optional[List[QuotationProductDraftIn]] = None
     due_date: Optional[str] = None
 
 

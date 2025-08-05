@@ -475,9 +475,16 @@ class QuotationProductAPITestCase(TestCase):
         draft_data = {
             "quotation_id": self.quotation.id,
             "client": {
+                "client_id": self.client_company.id,  # 기존 클라이언트 ID 사용
                 "name": original_name,  # 기존 이름 사용
                 "email": "updated@client.com",
-                "phone": "010-1111-2222"
+                "phone": "010-1111-2222",
+                "business_registration_number": "987-65-43210",
+                "representative_name": "김수정",
+                "business_type": "서비스업",
+                "business_category": "IT서비스",
+                "address": "서울시 서초구",
+                "fax": "02-987-6543"
             }
         }
         
@@ -490,15 +497,137 @@ class QuotationProductAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 200)
         
-        # API는 get_or_create를 사용하므로 기존 클라이언트가 반환됨
         # 견적서의 클라이언트가 올바르게 설정되었는지 확인
         self.quotation.refresh_from_db()
         self.assertEqual(self.quotation.client.name, original_name)
         
-        # 기존 클라이언트 정보는 변경되지 않았는지 확인 (get_or_create의 동작)
+        # 기존 클라이언트 정보가 업데이트되었는지 확인
         self.client_company.refresh_from_db()
-        self.assertNotEqual(self.client_company.email, "updated@client.com")
-        self.assertNotEqual(self.client_company.phone, "010-1111-2222")
+        self.assertEqual(self.client_company.email, "updated@client.com")
+        self.assertEqual(self.client_company.phone, "010-1111-2222")
+        self.assertEqual(self.client_company.business_registration_number, "987-65-43210")
+        self.assertEqual(self.client_company.representative_name, "김수정")
+        self.assertEqual(self.client_company.business_type, "서비스업")
+        self.assertEqual(self.client_company.business_category, "IT서비스")
+        self.assertEqual(self.client_company.address, "서울시 서초구")
+        self.assertEqual(self.client_company.fax, "02-987-6543")
+
+    def test_save_draft_quotation_new_client_creation(self):
+        """새 클라이언트 생성 테스트 (client_id 없이)"""
+        draft_data = {
+            "quotation_id": self.quotation.id,
+            "client": {
+                "name": "새로운 클라이언트",
+                "email": "new@client.com",
+                "phone": "010-9999-8888",
+                "business_registration_number": "111-22-33333",
+                "representative_name": "새대표",
+                "business_type": "제조업",
+                "business_category": "전자제품",
+                "address": "경기도 성남시",
+                "fax": "031-111-2222"
+            }
+        }
+        
+        response = self.client.post(
+            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "draft_saved")
+        
+        # 견적서의 클라이언트가 새로 생성되었는지 확인
+        self.quotation.refresh_from_db()
+        self.assertEqual(self.quotation.client.name, "새로운 클라이언트")
+        self.assertEqual(self.quotation.client.email, "new@client.com")
+        
+        # 새로운 클라이언트가 데이터베이스에 생성되었는지 확인
+        new_client = FactoryClient.objects.get(name="새로운 클라이언트", factory=self.factory)
+        self.assertEqual(new_client.business_registration_number, "111-22-33333")
+        self.assertEqual(new_client.representative_name, "새대표")
+
+    def test_save_draft_quotation_invalid_client_id(self):
+        """잘못된 클라이언트 ID로 임시 저장 실패 테스트"""
+        draft_data = {
+            "quotation_id": self.quotation.id,
+            "client": {
+                "client_id": 99999,  # 존재하지 않는 클라이언트 ID
+                "name": "잘못된 클라이언트",
+                "email": "invalid@client.com"
+            }
+        }
+        
+        response = self.client.post(
+            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        # Django Ninja의 HttpError 응답 구조 확인
+        if "message" in data:
+            self.assertIn("클라이언트 ID 99999를 찾을 수 없습니다", data["message"])
+        elif "detail" in data:
+            self.assertIn("클라이언트 ID 99999를 찾을 수 없습니다", data["detail"])
+        else:
+            # 응답 구조를 확인하기 위해 출력
+            print(f"Error response structure: {data}")
+            self.fail("Expected 'message' or 'detail' key in error response")
+
+    def test_save_draft_quotation_partial_product_info(self):
+        """부분적인 품목 정보로 임시저장 테스트"""
+        draft_data = {
+            "quotation_id": self.quotation.id,
+            "products": [
+                {
+                    "product_id": self.product1.id,
+                    "quantity": 10,
+                    # unit_price는 생략
+                },
+                {
+                    "product_id": self.product2.id,
+                    # quantity는 생략
+                    "unit_price": 2000,
+                },
+                {
+                    # product_id가 None인 경우는 건너뛰어야 함
+                    "product_id": None,
+                    "quantity": 5,
+                    "unit_price": 1000,
+                }
+            ]
+        }
+        
+        response = self.client.post(
+            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "draft_saved")
+        
+        # 품목이 올바르게 저장되었는지 확인
+        quotation_products = QuotationProduct.objects.filter(quotation=self.quotation)
+        self.assertEqual(quotation_products.count(), 2)  # product_id가 None인 것은 제외
+        
+        # 첫 번째 품목 확인 (quantity만 있고 unit_price는 기본값 0)
+        product1_quotation = quotation_products.get(product=self.product1)
+        self.assertEqual(product1_quotation.quantity, 10)
+        self.assertEqual(product1_quotation.unit_price, 0)
+        
+        # 두 번째 품목 확인 (unit_price만 있고 quantity는 기본값 0)
+        product2_quotation = quotation_products.get(product=self.product2)
+        self.assertEqual(product2_quotation.quantity, 0)
+        self.assertEqual(product2_quotation.unit_price, 2000)
 
     def test_confirm_order_success(self):
         """주문 확정 성공 테스트"""
@@ -545,6 +674,61 @@ class QuotationProductAPITestCase(TestCase):
         # 생산 계획이 생성되었는지 확인
         project_plans = ProjectPlan.objects.filter(project=self.project)
         self.assertEqual(project_plans.count(), 1)
+
+    def test_confirm_order_existing_client_update(self):
+        """확정된 견적서에서 기존 클라이언트 정보 업데이트 테스트"""
+        # 기존 클라이언트 정보 확인
+        original_name = self.client_company.name
+        
+        confirmed_data = {
+            "quotation_id": self.quotation.id,
+            "client": {
+                "client_id": self.client_company.id,  # 기존 클라이언트 ID 사용
+                "name": original_name,  # 기존 이름 사용
+                "email": "confirmed@client.com",
+                "phone": "010-9999-8888",
+                "business_registration_number": "555-44-33333",
+                "representative_name": "박확정",
+                "business_type": "도소매업",
+                "business_category": "전자제품",
+                "address": "부산시 해운대구",
+                "fax": "051-555-4444"
+            },
+            "products": [
+                {
+                    "product_id": self.product1.id,
+                    "quantity": 100,
+                    "unit_price": 1000
+                }
+            ],
+            "due_date": "2025-08-15"
+        }
+        
+        response = self.client.post(
+            f"/v1/document/quotation/product/confirmed?factory_id={self.factory.id}",
+            data=json.dumps(confirmed_data),
+            content_type="application/json",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "production_started")
+        
+        # 견적서의 클라이언트가 올바르게 설정되었는지 확인
+        self.quotation.refresh_from_db()
+        self.assertEqual(self.quotation.client.name, original_name)
+        
+        # 기존 클라이언트 정보가 업데이트되었는지 확인
+        self.client_company.refresh_from_db()
+        self.assertEqual(self.client_company.email, "confirmed@client.com")
+        self.assertEqual(self.client_company.phone, "010-9999-8888")
+        self.assertEqual(self.client_company.business_registration_number, "555-44-33333")
+        self.assertEqual(self.client_company.representative_name, "박확정")
+        self.assertEqual(self.client_company.business_type, "도소매업")
+        self.assertEqual(self.client_company.business_category, "전자제품")
+        self.assertEqual(self.client_company.address, "부산시 해운대구")
+        self.assertEqual(self.client_company.fax, "051-555-4444")
 
     def test_confirm_order_multiple_products(self):
         """여러 제품으로 주문 확정 테스트"""
