@@ -22,7 +22,19 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend:/backend
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - network
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
 
   nginx:
     image: nginx:latest
@@ -39,3 +51,7 @@ services:
 
 networks:
   network:
+
+
+volumes:
+  redis_data:

@@ -10,9 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-from pathlib import Path
 from decouple import config
 from pathlib import Path
+from zeep import Client
 import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,6 +36,7 @@ if DEBUG:
     ALLOWED_HOSTS += [
         "127.0.0.1",
         "localhost",
+        "0.0.0.0",
     ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -55,9 +56,21 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # third party
     "corsheaders",
+    "django_crontab",
     # local apps
+    "aws",
     "user",
     "commando",
+    "common",
+    "factory",
+    "document",
+    "project",
+    "subscription",
+    "notification",
+    "stock",
+    "tax",
+    "location",
+    "barobill",
 ]
 
 MIDDLEWARE = [
@@ -117,7 +130,12 @@ WSGI_APPLICATION = "cfehome.wsgi.application"
 
 CONN_MAX_AGE = config("CONN_MAX_AGE", cast=int, default=300)
 DATABASE_URL = config("DATABASE_URL", default=None)
-
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    },
+}
 if DATABASE_URL is not None:
     import dj_database_url
 
@@ -204,3 +222,57 @@ if DEBUG:
     FRONTEND_URL = "http://127.0.0.1:3000"
 else:
     FRONTEND_URL = config("FRONTEND_URL", default=None)
+
+# Redis Cache Settings
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": config("REDIS_URL", default="redis://redis:6379/1"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+# AWS SES Email Settings
+USE_SES = config("USE_SES", default=False, cast=bool)
+
+if USE_SES:
+    # AWS SES Configuration
+    AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default=None)
+    AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default=None)
+    AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", default="ap-northeast-2")
+    AWS_SES_REGION = config("AWS_SES_REGION", default="ap-northeast-2")
+
+    # Email backend using SES
+    EMAIL_BACKEND = "user.backends.SESEmailBackend"
+
+    # Default from email
+    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@yourdomain.com")
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
+else:
+    # Console backend for development
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = "noreply@localhost"
+
+# AWS S3 Storage Settings
+AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default=None)
+AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default=None)
+AWS_REGION = config("AWS_REGION", default="ap-northeast-2")
+AWS_CLOUDFRONT_URL = config("AWS_CLOUDFRONT_URL", default=None)
+AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default=None)
+
+# Barobill settings
+BAROBILL_CERT_KEY = config("BAROBILL_CERT_KEY", default=None)
+BAROBILL_CLIENT = Client("https://testws.baroservice.com/TI.asmx?WSDL")  # 테스트서버
+# BAROBILL_CLIENT = Client("https://ws.baroservice.com/TI.asmx?WSDL")  # 운영서버
+BAROBILL_CASHBILL_CLIENT = Client(
+    "https://testws.baroservice.com/CASHBILL.asmx?WSDL"
+)  # 테스트서버
+# BAROBILL_CASHBILL_CLIENT = Client("https://ws.baroservice.com/CASHBILL.asmx?WSDL")  # 운영서버
+
+# Django Crontab Settings
+CRONJOBS = [
+    # 매일 오전 9시에 프로덕션 상태 업데이트 실행
+    ('0 9 * * *', 'project.management.commands.update_production_status.Command.handle'),
+]

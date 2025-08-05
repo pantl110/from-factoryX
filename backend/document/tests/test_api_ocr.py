@@ -1,0 +1,86 @@
+from django.test import TestCase
+from ninja.testing import TestAsyncClient
+from pathlib import Path
+import aiofiles
+import base64
+
+from user.api import router as user_router
+from document.api_quotation import router as quotation_router
+
+from user.models import User
+from user.models import EmailVerification
+from factory.models import Factory, FactoryMember
+
+
+class TestDocumentOCR(TestCase):
+    """Document OCR API tests"""
+
+    def setUp(self):
+        # API clients for authentication and document API
+        self.auth_client = TestAsyncClient(user_router)
+        self.quotation_client = TestAsyncClient(quotation_router)
+
+        # Create a user & factory that owns the equipment
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="password1234!",
+        )
+        
+        # Create factory
+        self.factory = Factory.objects.create(
+            name='테스트 공장',
+            owner=self.user
+        )
+        
+        # Create factory member
+        self.factory_member = FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role='admin',
+            status='active',
+            invited_by=self.user
+        )
+        
+        self.verification = EmailVerification.objects.create(
+            email=self.user.email,
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+
+        # Define test file paths
+        self.test_data_dir = Path(__file__).parent / "data"
+        self.pdf_file_path = self.test_data_dir / "test1.pdf"
+        self.jpg_file_path = self.test_data_dir / "test1_01.jpg"
+
+    async def authenticate(self):
+        """Obtain JWT access token and return Authorization headers."""
+        data = {
+            "email": self.user.email,
+            "password": "password1234!",  # password validation is disabled in user.api.login
+        }
+        response = await self.auth_client.post("/login", json=data)
+        self.assertEqual(response.status_code, 200)
+        tokens = response.json()
+        self.assertIn("access_token", tokens)
+        return {
+            "Authorization": f"Bearer {tokens['access_token']}",
+        }
+
+    async def test_ocr_pdf_upload(self):
+        """Test uploading a PDF file to the OCR endpoint"""
+        # Authenticate first
+        headers = await self.authenticate()
+        # Prepare the file for upload``
+        async with aiofiles.open(self.pdf_file_path, "rb") as f:
+            content = await f.read()
+        payload = {
+            "data": base64.b64encode(content).decode("utf-8"),
+        }
+        # Upload the PDF file - Django client handles file uploads differently
+        response = await self.quotation_client.post(
+            f"/ocr?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
+        )
+        print(response.json())
