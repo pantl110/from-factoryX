@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # third party
     "corsheaders",
+    "django_crontab",
     # local apps
     "aws",
     "user",
@@ -269,3 +270,9 @@ BAROBILL_CASHBILL_CLIENT = Client(
     "https://testws.baroservice.com/CASHBILL.asmx?WSDL"
 )  # 테스트서버
 # BAROBILL_CASHBILL_CLIENT = Client("https://ws.baroservice.com/CASHBILL.asmx?WSDL")  # 운영서버
+
+# Django Crontab Settings
+CRONJOBS = [
+    # 매일 오전 9시에 프로덕션 상태 업데이트 실행
+    ('0 9 * * *', 'project.management.commands.update_production_status.Command.handle'),
+]

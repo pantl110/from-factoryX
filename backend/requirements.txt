@@ -45,3 +45,4 @@ upstage
 openai
 aiofiles
 zeep
+django-crontab
