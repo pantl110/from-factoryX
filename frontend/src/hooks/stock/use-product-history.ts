@@ -5,6 +5,17 @@ import {
 } from '@/types/data-model';
 import { useState, useCallback } from 'react';
 
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
+
 export interface ProductHistoryFilterModel {
   product_id?: number; // 제품 ID (product -> product_id로 변경)
   start_date?: string; // 조회 시작일 (YYYY-MM-DD)
@@ -25,9 +36,18 @@ const useProductHistory = () => {
     async (payload: ProductHistoryModel) => {
       setIsLoading(true);
       setError(null);
+
+      // 로컬스토리지에서 factoryId 가져오기
+      const factoryId = getStoredFactoryId();
+      if (!factoryId) {
+        setError('공장 정보가 없습니다.');
+        setIsLoading(false);
+        return { success: false, error: '공장 정보가 없습니다.' };
+      }
+
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?factory_id=${factoryId}`,
           {
             method: 'POST',
             credentials: 'include',
@@ -58,6 +78,15 @@ const useProductHistory = () => {
     async (filters: ProductHistoryFilterModel = {}) => {
       setIsLoading(true);
       setError(null);
+
+      // 로컬스토리지에서 factoryId 가져오기
+      const factoryId = getStoredFactoryId();
+      if (!factoryId) {
+        setError('공장 정보가 없습니다.');
+        setIsLoading(false);
+        return { success: false, error: '공장 정보가 없습니다.' };
+      }
+
       try {
         // eslint-disable-next-line camelcase
         const { product_id, ...otherFilters } = filters;
@@ -67,15 +96,16 @@ const useProductHistory = () => {
             params.append(key, String(value));
         });
 
-        // product_id가 있으면 path parameter로, 없으면 query parameter로
-        let url: string;
+        // product_id를 쿼리 파라미터로 추가
         // eslint-disable-next-line camelcase
         if (product_id) {
-          // eslint-disable-next-line camelcase
-          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${product_id}/history?${params.toString()}`;
-        } else {
-          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
+          params.append('product_id', String(product_id));
         }
+
+        // factory_id 추가
+        params.append('factory_id', factoryId.toString());
+
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
 
         const res = await fetch(url, {
           method: 'GET',
@@ -107,6 +137,15 @@ const useProductHistory = () => {
     async (filters: ProductHistoryFilterModel = {}) => {
       setIsLoading(true);
       setError(null);
+
+      // 로컬스토리지에서 factoryId 가져오기
+      const factoryId = getStoredFactoryId();
+      if (!factoryId) {
+        setError('공장 정보가 없습니다.');
+        setIsLoading(false);
+        return { success: false, error: '공장 정보가 없습니다.' };
+      }
+
       try {
         // eslint-disable-next-line camelcase
         const { product_id, ...otherFilters } = filters;
@@ -116,14 +155,16 @@ const useProductHistory = () => {
             params.append(key, String(value));
         });
 
-        let url: string;
+        // product_id를 쿼리 파라미터로 추가
         // eslint-disable-next-line camelcase
         if (product_id) {
-          // eslint-disable-next-line camelcase
-          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${product_id}/history?${params.toString()}`;
-        } else {
-          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
+          params.append('product_id', String(product_id));
         }
+
+        // factory_id 추가
+        params.append('factory_id', factoryId.toString());
+
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?${params.toString()}`;
 
         const res = await fetch(url, {
           method: 'GET',

@@ -1,18 +1,24 @@
 import { useState, useCallback } from 'react';
-import { ProjectPlanModel } from '@/types/data-model';
+import { ProjectStatusResponseModel } from '@/types/data-model';
 
-// project_id로 해당 프로젝트의 모든 생산 계획을 조회
-const useGetProjectPlans = () => {
+// 프로젝트 상태 조회 훅
+const useGetProjectStatus = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getProjectPlans = useCallback(async (projectId: number) => {
+  const getProjectStatus = useCallback(async (projectId: number) => {
     setIsLoading(true);
     setError(null);
 
     try {
+      // localStorage에서 factory_id 가져오기
+      const factoryId = localStorage.getItem('factoryId');
+      if (!factoryId) {
+        throw new Error('factory_id를 찾을 수 없습니다.');
+      }
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan?project_id=${projectId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/${projectId}?factory_id=${factoryId}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -20,21 +26,27 @@ const useGetProjectPlans = () => {
       );
 
       if (response.ok) {
-        const result: ProjectPlanModel[] = await response.json();
+        const result: ProjectStatusResponseModel = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
 
         // 백엔드 에러 코드에 따른 구체적인 메시지
         switch (response.status) {
+          case 400:
+            setError(errorData.detail || '잘못된 요청입니다.');
+            break;
+          case 403:
+            setError('해당 공장에 대한 접근 권한이 없습니다.');
+            break;
           case 404:
-            setError('해당 프로젝트를 찾을 수 없거나 생산 계획이 없습니다.');
+            setError('프로젝트를 찾을 수 없습니다.');
             break;
           case 500:
             setError('서버 내부 오류가 발생했습니다.');
             break;
           default:
-            setError(errorData.detail || '프로젝트 계획 조회에 실패했습니다.');
+            setError(errorData.detail || '프로젝트 상태 조회에 실패했습니다.');
         }
         return { success: false, error: errorData.detail };
       }
@@ -48,7 +60,7 @@ const useGetProjectPlans = () => {
     }
   }, []);
 
-  return { getProjectPlans, isLoading, error };
+  return { getProjectStatus, isLoading, error };
 };
 
-export default useGetProjectPlans;
+export default useGetProjectStatus;

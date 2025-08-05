@@ -5,6 +5,7 @@ export type PeriodType = '1개월' | '3개월' | '6개월' | '1년' | '직접 �
 interface PeriodSelectorOptionsModel {
   onPeriodChange?: (filters: Record<string, unknown>) => void;
   productId?: number | null;
+  materialId?: number | null;
   page?: number;
   pageSize?: number;
 }
@@ -12,13 +13,18 @@ interface PeriodSelectorOptionsModel {
 export const usePeriodSelector = ({
   onPeriodChange,
   productId,
+  materialId,
   page = 1,
-  pageSize = 8,
+  pageSize = 5,
 }: PeriodSelectorOptionsModel = {}) => {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('1개월');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const lastRequestRef = useRef<string>(''); // 이전 요청값을 저장
+
+  // productId 또는 materialId 중 하나라도 있으면 true
+  const hasValidId = productId || materialId;
 
   const getPeriodRange = (period: PeriodType) => {
     const today = new Date();
@@ -46,6 +52,46 @@ export const usePeriodSelector = ({
     return { startDate, endDate };
   };
 
+  // 날짜 유효성 검사 함수
+  const validateDate = (dateString: string): boolean => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return false;
+
+    const date = new Date(dateString);
+    const [year, month, day] = dateString.split('-').map(Number);
+
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day &&
+      !isNaN(date.getTime())
+    );
+  };
+
+  // 날짜 범위 유효성 검사 함수
+  const validateDateRange = (
+    startDate: string,
+    endDate: string
+  ): { isValid: boolean; message?: string } => {
+    if (!validateDate(startDate)) {
+      return { isValid: false, message: '시작일이 유효하지 않습니다.' };
+    }
+    if (!validateDate(endDate)) {
+      return { isValid: false, message: '종료일이 유효하지 않습니다.' };
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (start > end) {
+      return {
+        isValid: false,
+        message: '시작일이 종료일보다 늦을 수 없습니다.',
+      };
+    }
+
+    return { isValid: true };
+  };
+
   const createFilters = (period: PeriodType, currentPage: number = page) => {
     const filters: Record<string, unknown> = {
       page: currentPage,
@@ -53,10 +99,19 @@ export const usePeriodSelector = ({
     };
 
     if (productId) {
-      filters.product_id = productId; // product -> product_id로 변경
+      filters.product_id = productId;
+    }
+    if (materialId) {
+      filters.material_id = materialId;
     }
 
     if (period === '직접 설정' && customStartDate && customEndDate) {
+      const validation = validateDateRange(customStartDate, customEndDate);
+      if (!validation.isValid) {
+        // 유효하지 않은 날짜 범위일 때는 에러를 throw하여 요청을 중단
+        alert(validation.message || '날짜가 유효하지 않습니다.');
+        return filters; // Return the partial filters object instead of undefined
+      }
       filters.start_date = customStartDate;
       filters.end_date = customEndDate;
     } else if (period !== '직접 설정') {
@@ -70,11 +125,37 @@ export const usePeriodSelector = ({
     return filters;
   };
 
+  // 요청을 보내는 함수 (중복 체크 포함)
+  const sendRequest = (filters: Record<string, unknown>) => {
+    try {
+      const requestKey = JSON.stringify(filters);
+
+      // 이전 요청과 같으면 중복 요청 방지
+      if (lastRequestRef.current === requestKey) {
+        return;
+      }
+
+      lastRequestRef.current = requestKey;
+      onPeriodChange?.(filters);
+    } catch (error) {
+      // 날짜 유효성 검사 실패 시 토스트 표시
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    }
+  };
+
   const handlePeriodChange = (newPeriod: PeriodType) => {
     setSelectedPeriod(newPeriod);
-    if (onPeriodChange) {
+    // 직접 설정 버튼 클릭 시에는 GET 요청을 하지 않고 커스텀 날짜값을 리셋
+    if (newPeriod === '직접 설정') {
+      setCustomStartDate('');
+      setCustomEndDate('');
+    } else if (onPeriodChange) {
       const filters = createFilters(newPeriod, 1);
-      onPeriodChange(filters);
+      if (filters) {
+        sendRequest(filters);
+      }
     }
   };
 
@@ -95,34 +176,49 @@ export const usePeriodSelector = ({
       e.key === 'Enter' &&
       customStartDate &&
       customEndDate &&
-      productId &&
+      hasValidId &&
       onPeriodChange
     ) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       const filters = createFilters('직접 설정');
-      onPeriodChange(filters);
+      if (filters) {
+        sendRequest(filters);
+      }
     }
   };
 
   // 일반 기간(1,3,6개월,1년) 검색
   useEffect(() => {
-    if (!productId || !onPeriodChange) return;
+    if (!hasValidId || !onPeriodChange) return;
     if (selectedPeriod === '직접 설정') return;
 
     const filters = createFilters(selectedPeriod);
-    onPeriodChange(filters);
+    if (filters) {
+      sendRequest(filters);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId, page, selectedPeriod]);
+  }, [hasValidId, page, selectedPeriod]);
 
   // 직접 설정: 입력 후 0.5초 디바운스
   useEffect(() => {
-    if (selectedPeriod !== '직접 설정' || !productId || !onPeriodChange) return;
-    if (!customStartDate || !customEndDate) return;
+    if (selectedPeriod !== '직접 설정' || !hasValidId || !onPeriodChange)
+      return;
+
+    // 날짜가 완전히 입력되었는지 확인 (YYYY-MM-DD 형식)
+    const isStartDateComplete =
+      customStartDate.length === 10 &&
+      /^\d{4}-\d{2}-\d{2}$/.test(customStartDate);
+    const isEndDateComplete =
+      customEndDate.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(customEndDate);
+
+    if (!isStartDateComplete || !isEndDateComplete) return;
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       const filters = createFilters('직접 설정');
-      onPeriodChange(filters);
+      if (filters) {
+        sendRequest(filters);
+      }
     }, 500);
 
     return () => {
@@ -133,7 +229,7 @@ export const usePeriodSelector = ({
     customStartDate,
     customEndDate,
     selectedPeriod,
-    productId,
+    hasValidId,
     page,
     onPeriodChange,
   ]);
@@ -142,8 +238,8 @@ export const usePeriodSelector = ({
     selectedPeriod,
     customStartDate,
     customEndDate,
-    setCustomStartDate,
-    setCustomEndDate,
+    handleStartDateChange: setCustomStartDate,
+    handleEndDateChange: setCustomEndDate,
     handlePeriodChange,
     handleDateAutoHyphen,
     handleCustomDateKeyDown,

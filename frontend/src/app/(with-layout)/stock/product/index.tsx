@@ -10,7 +10,6 @@ import DeleteModal from '@/ui/modal/delete-modal';
 import Pagination from '@/components/pagination';
 import { ProductResponseModel } from '@/types/data-model';
 import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
 import Spinner from '@/ui/spinner';
 
 interface ProductProps {
@@ -20,14 +19,12 @@ interface ProductProps {
 }
 
 const Product = ({
-  setSelectedProductIdToParent,
   isProductDetailPanelOpen,
   setIsProductDetailPanelOpen,
 }: ProductProps) => {
   const { getProductList, productList, pagination, isLoading, error } =
     useGetProduct();
   const { deleteProduct } = useDeleteProduct();
-  const { factoryId } = useFactoryStore();
 
   const [searchKeyword, setSearchKeyword] = useState('');
   const [_currentPage, setCurrentPage] = useState(1);
@@ -43,24 +40,16 @@ const Product = ({
     null
   );
 
-  useEffect(() => {
-    if (setSelectedProductIdToParent) {
-      setSelectedProductIdToParent(() => setSelectedProductId);
-    }
-  }, [setSelectedProductIdToParent]);
-
   // 제품 목록 로드 함수
   const loadProducts = useCallback(
     (page = 1, search = '') => {
-      if (!factoryId) return;
       getProductList({
-        factory_id: factoryId,
         q: search || undefined,
         page,
         page_size: 10,
       });
     },
-    [getProductList, factoryId]
+    [getProductList]
   );
 
   // 초기 로드

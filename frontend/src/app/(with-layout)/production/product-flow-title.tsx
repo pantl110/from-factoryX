@@ -21,7 +21,23 @@ const ProductFlowTitle = ({
     <>
       <div className="px-10 pt-7 flex justify-between">
         <div className="flex flex-col gap-2">
-          <Chip text={status} textColor={textColor} bgColor={bgColor} />
+          <Chip
+            text={
+              status === 'completed'
+                ? '프로젝트 완료'
+                : status === 'delivery'
+                  ? '납품'
+                  : status === 'manufactured'
+                    ? '생산 완료'
+                    : status === 'production'
+                      ? '생산 중'
+                      : status === 'pending'
+                        ? '생산 대기'
+                        : status
+            }
+            textColor={textColor}
+            bgColor={bgColor}
+          />
           <h1 className="Heading-1 text-dg">플라스틱이 좋아</h1>
         </div>
         <div className="flex flex-col gap-1">

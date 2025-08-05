@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLineLeftIcon,
@@ -20,6 +20,7 @@ import {
 } from '@/types/data-model';
 import useSaveDraftQuotation from '@/hooks/document/quotation/use-save-draft-quotation';
 import useStartProduction from '@/hooks/document/quotation/use-start-production';
+import { useGetProjectStatus, useUpdateProjectStatus } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
 
 // Extend ClientModel for quotation form to include due_date
@@ -34,12 +35,53 @@ import InputSection from './input-section';
 const QuotationPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const quotationId = searchParams.get('id')
-    ? parseInt(searchParams.get('id') || '0')
+  const quotationId = searchParams.get('quotation_id')
+    ? parseInt(searchParams.get('quotation_id') || '0')
+    : undefined;
+  const projectId = searchParams.get('project_id')
+    ? parseInt(searchParams.get('project_id') || '0')
     : undefined;
 
   const { saveDraft } = useSaveDraftQuotation();
   const { startProduction } = useStartProduction();
+  const { getProjectStatus } = useGetProjectStatus();
+  const { updateProjectStatus } = useUpdateProjectStatus();
+
+  // 프로젝트 상태 로드
+  const loadProjectStatus = useCallback(async () => {
+    if (!projectId) return;
+
+    try {
+      const result = await getProjectStatus(projectId);
+      if (result.success && result.data) {
+        setProjectStatus(result.data.status);
+      }
+    } catch (error) {
+      console.error('프로젝트 상태 로드 실패:', error);
+    }
+  }, [getProjectStatus, projectId]);
+
+  // 프로젝트 상태 변경
+  const handleProjectStatusChange = useCallback(
+    async (newStatus: string) => {
+      if (!projectId) return;
+
+      try {
+        const result = await updateProjectStatus(projectId, newStatus);
+        if (result.success) {
+          setProjectStatus(newStatus);
+        }
+      } catch (error) {
+        console.error('프로젝트 상태 변경 실패:', error);
+      }
+    },
+    [updateProjectStatus, projectId]
+  );
+
+  // 컴포넌트 마운트 시 프로젝트 상태 로드
+  useEffect(() => {
+    loadProjectStatus();
+  }, [loadProjectStatus]);
 
   // 거래처 정보 폼
   const { setValue, control, trigger, watch, formState } =
@@ -61,10 +103,14 @@ const QuotationPageContent = () => {
       },
     });
 
-  // 견적서 & 주문서 상태 관리
-  const [isOrderStatus, setIsOrderStatus] = useState(false);
-  // 견적 요청 & 중단 상태 관리
-  const [isInterruptionStatus, setIsInterruptionStatus] = useState(false);
+  // 프로젝트 상태 관리
+  const [projectStatus, setProjectStatus] = useState<string | null>(null);
+
+  // 견적서 & 주문서 상태 관리 (프로젝트 상태에 따라 결정)
+  const isOrderStatus =
+    projectStatus === 'confirmed' || projectStatus === '주문 확정';
+  const isInterruptionStatus =
+    projectStatus === 'interruption' || projectStatus === '중단';
   // OCR 데이터 상태 관리
   const [ocrData, _setOcrData] = useState<OcrDataModel | null>(null);
 
@@ -114,10 +160,17 @@ const QuotationPageContent = () => {
   const handleSaveDraft = useCallback(async () => {
     try {
       const formData = watch();
+
+      // localStorage에서 factoryId 가져오기
+      const factoryId = localStorage.getItem('factoryId');
+      if (!factoryId) {
+        throw new Error('공장 정보가 없습니다.');
+      }
+
       const draftData = {
         quotation_id: quotationId || 0,
         client: {
-          factory_id: formData.factory_id,
+          factory_id: parseInt(factoryId, 10),
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -137,9 +190,11 @@ const QuotationPageContent = () => {
               product.product_id && product.quantity && product.unit_price
           )
           .map((product) => ({
-            id: product.product_id as number,
+            product_id: product.product_id as number,
             quantity: product.quantity as number,
             unit_price: product.unit_price as number,
+            is_delivery: false,
+            delivery_date: null,
           })),
       };
 
@@ -148,17 +203,23 @@ const QuotationPageContent = () => {
     } catch {
       throw new Error('Failed to save draft');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saveDraft, watch, quotationId]);
+  }, [saveDraft, watch, quotationId, quotationProducts]);
 
   // 생산 시작 버튼 핸들러
   const handleStartProduction = useCallback(async () => {
     try {
       const formData = watch();
+
+      // localStorage에서 factoryId 가져오기
+      const factoryId = localStorage.getItem('factoryId');
+      if (!factoryId) {
+        throw new Error('공장 정보가 없습니다.');
+      }
+
       const productionData = {
         quotation_id: quotationId || 0,
         client: {
-          factory_id: formData.factory_id,
+          factory_id: parseInt(factoryId, 10),
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -178,7 +239,7 @@ const QuotationPageContent = () => {
               product.product_id && product.quantity && product.unit_price
           )
           .map((product) => ({
-            id: product.product_id as number,
+            product_id: product.product_id as number,
             quantity: product.quantity as number,
             unit_price: product.unit_price as number,
           })),
@@ -208,12 +269,15 @@ const QuotationPageContent = () => {
           watch={watch}
           formState={formState}
           isOrderStatus={isOrderStatus}
-          setIsOrderStatus={setIsOrderStatus}
+          setIsOrderStatus={() => handleProjectStatusChange('confirmed')}
           hasQuotationProducts={hasQuotationProducts}
           onSaveDraft={handleSaveDraft}
           isDirty={formState.isDirty}
           isInterruptionStatus={isInterruptionStatus}
-          setIsInterruptionStatus={setIsInterruptionStatus}
+          setIsInterruptionStatus={() =>
+            handleProjectStatusChange('interruption')
+          }
+          projectId={projectId}
         />
         <TabArea
           isOrderStatus={isOrderStatus}
@@ -235,8 +299,7 @@ const QuotationPageContent = () => {
             ) : ocrData ? (
               <PreviewImage isOrderStatus={isOrderStatus} />
             ) : (
-              // <History selectedProduct={null} />
-              <PreviewImage isOrderStatus={isOrderStatus} />
+              <History selectedProduct={null} />
             )}
           </div>
 
@@ -289,6 +352,7 @@ const QuotationPageContent = () => {
                   onProductClick={handleProductClick}
                   setHasQuotationProducts={setHasQuotationProducts}
                   onProductsChange={setQuotationProducts}
+                  quotationId={quotationId}
                 />
               </div>
             </div>

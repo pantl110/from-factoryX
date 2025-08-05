@@ -31,9 +31,10 @@ const Material = ({
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const pageSize = 10;
 
-  const { getMaterialList, materialList, isLoading, error, pagination } =
+  const { getMaterialList, materialList, pagination, isLoading, error } =
     useGetMaterial();
   const { shouldReload, setShouldReload } = useMaterialReloadStore();
+  const { deleteMaterial, isLoading: isDeleting } = useDeleteMaterial();
 
   const {
     checkedCount,
@@ -44,8 +45,6 @@ const Material = ({
     setAllChecked,
     getDeleteButtonText,
   } = useCheckAll(materialList.map((m) => m.id));
-
-  const { deleteMaterial, isLoading: isDeleting } = useDeleteMaterial();
 
   // 정렬 핸들러
   const handleSortChange = (newOrder: 'asc' | 'desc') => {
@@ -75,7 +74,12 @@ const Material = ({
   // shouldReload가 true일 때 목록 새로고침
   useEffect(() => {
     if (shouldReload) {
-      getMaterialList({ order, q: search, page, page_size: pageSize });
+      getMaterialList({
+        order,
+        q: search,
+        page,
+        page_size: pageSize,
+      });
       setShouldReload(false);
     }
   }, [
@@ -92,7 +96,12 @@ const Material = ({
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1); // 검색 시 첫 페이지로 이동
-    getMaterialList({ order, q: value, page: 1, page_size: pageSize });
+    getMaterialList({
+      order,
+      q: value,
+      page: 1,
+      page_size: pageSize,
+    });
   };
 
   return (

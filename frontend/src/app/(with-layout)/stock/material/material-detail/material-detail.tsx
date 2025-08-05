@@ -5,8 +5,8 @@ import QuotationHistory from './quotation-history.tsx';
 import MaterialStockLog from './material-stock-log';
 import StockLocation from '../../stock-location';
 import NoHistoryBox from '@/ui/no-history-box';
-import { CalendarCheck, CaretDown } from '@phosphor-icons/react';
-import SelectPeriodDropdown from '@/ui/dropdown/select-period-dropdown';
+import { CaretDown } from '@phosphor-icons/react';
+import SelectPeriodDropdown from '@/ui/dropdown/select-period-dropdown/select-period-dropdown';
 import {
   useImperativeHandle,
   forwardRef,
@@ -18,16 +18,20 @@ import {
 import { useForm, useFieldArray } from 'react-hook-form';
 import { usePeriodSelector } from '@/hooks/use-period-selector';
 import { ProductRequiringMaterialRefModel } from './product-requiring-material';
+import CustomDateSelector from '@/ui/dropdown/select-period-dropdown/custom-date-selector';
+import { useGetMaterialHistory } from '@/hooks';
 
 export type { MaterialInfoModel } from './material-info';
 
 interface MaterialDetailProps {
   materialId: number;
-  setIsCustomerInfoModalOpen: (v: boolean) => void;
   setIsProductEnrollmentModalOpen: (v: boolean) => void;
   handleOpenUploadModal: (index: number) => void;
   onIsDirtyChange?: (isDirty: boolean) => void;
   locations?: LocationFormModel['locations'];
+  setIsClinetDetailPanelOpen: (clientId: number) => void;
+  handleOpenDeleteModal: (connectionId: number) => void;
+  onProductClick?: (productId: number) => void;
 }
 
 interface LocationFormModel {
@@ -42,11 +46,13 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
   (
     {
       materialId,
-      setIsCustomerInfoModalOpen,
       setIsProductEnrollmentModalOpen,
       handleOpenUploadModal,
       onIsDirtyChange,
       locations,
+      setIsClinetDetailPanelOpen,
+      handleOpenDeleteModal,
+      onProductClick,
     },
     ref
   ) => {
@@ -83,26 +89,80 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       useRef<ProductRequiringMaterialRefModel>(null);
 
     // 기간 선택 드롭다운 상태
-    const [isQuotationPeriodDropdownOpen, setIsQuotationPeriodDropdownOpen] =
+    const [isPricePeriodDropdownOpen, setIsPricePeriodDropdownOpen] =
       useState(false);
     const [isStockLogPeriodDropdownOpen, setIsStockLogPeriodDropdownOpen] =
       useState(false);
 
+    // 업체별 단가 비교 조회 훅 (타입: 구매만)
+    const { getMaterialHistory: getPriceHistory, histories: priceHistories } =
+      useGetMaterialHistory();
+
+    // 재고 이력 조회 훅 (전체)
+    const {
+      getMaterialHistory: getStockHistory,
+      histories: stockHistories,
+      isLoading: isStockLoading,
+    } = useGetMaterialHistory();
+
+    // 페이지네이션 상태
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 5;
+
     // 업체별 단가 비교 기간 선택 훅
-    const quotationPeriodSelector = usePeriodSelector({
-      onPeriodChange: (_filters) => {
-        // TODO: QuotationHistory에서 사용할 수 있도록 콜백 구현
+    const pricePeriodSelector = usePeriodSelector({
+      materialId,
+      page: currentPage,
+      pageSize,
+      onPeriodChange: async (filters) => {
+        if (materialId) {
+          await getPriceHistory(materialId, {
+            start_date: filters.start_date as string | undefined,
+            end_date: filters.end_date as string | undefined,
+            page: filters.page as number,
+            page_size: pageSize,
+            type: '구매',
+          });
+        }
       },
-      pageSize: 8,
     });
 
-    // 원자재 입출고 내역 기간 선택 훅
+    // 재고 이력 기간 선택 훅
     const stockLogPeriodSelector = usePeriodSelector({
-      onPeriodChange: (_filters) => {
-        // TODO: MaterialStockLog에서 사용할 수 있도록 콜백 구현
+      materialId,
+      page: currentPage,
+      pageSize,
+      onPeriodChange: async (filters) => {
+        if (materialId) {
+          await getStockHistory(materialId, {
+            start_date: filters.start_date as string | undefined,
+            end_date: filters.end_date as string | undefined,
+            page: filters.page as number,
+            page_size: pageSize,
+          });
+        }
       },
-      pageSize: 8,
     });
+
+    // 페이지 변경 핸들러
+    const handlePageChange = (page: number) => {
+      setCurrentPage(page);
+      // 페이지 변경 시에도 API 호출
+      if (materialId) {
+        // 업체별 단가 비교 (타입: 구매만)
+        getPriceHistory(materialId, {
+          page,
+          page_size: pageSize,
+          type: '구매',
+        });
+
+        // 재고 이력 (타입: 전체)
+        getStockHistory(materialId, {
+          page,
+          page_size: pageSize,
+        });
+      }
+    };
 
     // watch와 setValue 함수를 메모이제이션
     const memoizedWatch = useCallback(
@@ -249,21 +309,21 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               {/* 기간 선택 */}
               <div className="relative">
                 <MiniBtn
-                  text={quotationPeriodSelector.selectedPeriod}
+                  text={pricePeriodSelector.selectedPeriod}
                   textColor="text-dg"
                   borderColor="border-lg"
                   hoverColor="hover:bg-bg"
                   icon={CaretDown}
                   iconPosition="right"
-                  onClick={() => setIsQuotationPeriodDropdownOpen(true)}
+                  onClick={() => setIsPricePeriodDropdownOpen(true)}
                   height="h-9"
                 />
-                {isQuotationPeriodDropdownOpen && (
+                {isPricePeriodDropdownOpen && (
                   <div className="absolute top-12 right-0 z-10 pb-5">
                     <SelectPeriodDropdown
-                      onClose={() => setIsQuotationPeriodDropdownOpen(false)}
+                      onClose={() => setIsPricePeriodDropdownOpen(false)}
                       onSelect={(value) => {
-                        quotationPeriodSelector.handlePeriodChange(
+                        pricePeriodSelector.handlePeriodChange(
                           value as
                             | '1개월'
                             | '3개월'
@@ -271,62 +331,33 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                             | '1년'
                             | '직접 설정'
                         );
-                        setIsQuotationPeriodDropdownOpen(false);
+                        setIsPricePeriodDropdownOpen(false);
                       }}
                     />
                   </div>
                 )}
               </div>
-              {quotationPeriodSelector.selectedPeriod === '직접 설정' && (
-                <div className="flex items-center px-3 h-9 gap-2 border border-lg rounded-lg">
-                  <CalendarCheck size={20} className="text-dg" />
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="YYYY-MM-DD"
-                    className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
-                    value={quotationPeriodSelector.customStartDate}
-                    onChange={(e) =>
-                      quotationPeriodSelector.handleDateAutoHyphen(
-                        e.target.value,
-                        quotationPeriodSelector.setCustomStartDate
-                      )
-                    }
-                    maxLength={10}
-                    size={
-                      (
-                        quotationPeriodSelector.customStartDate ||
-                        'YYYY-MM-DDDD'
-                      ).length
-                    }
-                    onKeyDown={quotationPeriodSelector.handleCustomDateKeyDown}
-                  />
-                  <span className="mx-0">~</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="YYYY-MM-DD"
-                    className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
-                    value={quotationPeriodSelector.customEndDate}
-                    onChange={(e) =>
-                      quotationPeriodSelector.handleDateAutoHyphen(
-                        e.target.value,
-                        quotationPeriodSelector.setCustomEndDate
-                      )
-                    }
-                    maxLength={10}
-                    size={
-                      (quotationPeriodSelector.customEndDate || 'YYYY-MM-DDDD')
-                        .length
-                    }
-                    onKeyDown={quotationPeriodSelector.handleCustomDateKeyDown}
-                  />
-                </div>
+              {pricePeriodSelector.selectedPeriod === '직접 설정' && (
+                <CustomDateSelector
+                  customStartDate={pricePeriodSelector.customStartDate}
+                  customEndDate={pricePeriodSelector.customEndDate}
+                  onStartDateChange={pricePeriodSelector.handleStartDateChange}
+                  onEndDateChange={pricePeriodSelector.handleEndDateChange}
+                  onDateAutoHyphen={pricePeriodSelector.handleDateAutoHyphen}
+                  onCustomDateKeyDown={
+                    pricePeriodSelector.handleCustomDateKeyDown
+                  }
+                />
               )}
             </div>
 
             <QuotationHistory
-              setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen}
+              setIsClinetDetailPanelOpen={setIsClinetDetailPanelOpen}
+              histories={priceHistories?.data}
+              isLoading={priceHistories === null}
+              currentPage={currentPage}
+              totalPages={priceHistories?.pageCnt || 1}
+              onPageChange={handlePageChange}
             />
           </div>
 
@@ -345,6 +376,13 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             <ProductRequiringMaterial
               ref={productRequiringMaterialRef}
               materialId={materialId}
+              handleOpenDeleteModal={handleOpenDeleteModal}
+              onProductClick={(productId) => {
+                // 품목 디테일 패널 열기 로직
+                if (onProductClick) {
+                  onProductClick(productId);
+                }
+              }}
             />
           </div>
 
@@ -387,52 +425,42 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 )}
               </div>
               {stockLogPeriodSelector.selectedPeriod === '직접 설정' && (
-                <div className="flex items-center px-3 h-9 gap-2 border border-lg rounded-lg">
-                  <CalendarCheck size={20} className="text-dg" />
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="YYYY-MM-DD"
-                    className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
-                    value={stockLogPeriodSelector.customStartDate}
-                    onChange={(e) =>
-                      stockLogPeriodSelector.handleDateAutoHyphen(
-                        e.target.value,
-                        stockLogPeriodSelector.setCustomStartDate
-                      )
-                    }
-                    maxLength={10}
-                    size={
-                      (stockLogPeriodSelector.customStartDate || 'YYYY-MM-DDDD')
-                        .length
-                    }
-                    onKeyDown={stockLogPeriodSelector.handleCustomDateKeyDown}
-                  />
-                  <span className="mx-0">~</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="YYYY-MM-DD"
-                    className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
-                    value={stockLogPeriodSelector.customEndDate}
-                    onChange={(e) =>
-                      stockLogPeriodSelector.handleDateAutoHyphen(
-                        e.target.value,
-                        stockLogPeriodSelector.setCustomEndDate
-                      )
-                    }
-                    maxLength={10}
-                    size={
-                      (stockLogPeriodSelector.customEndDate || 'YYYY-MM-DDDD')
-                        .length
-                    }
-                    onKeyDown={stockLogPeriodSelector.handleCustomDateKeyDown}
-                  />
-                </div>
+                <CustomDateSelector
+                  customStartDate={stockLogPeriodSelector.customStartDate}
+                  customEndDate={stockLogPeriodSelector.customEndDate}
+                  onStartDateChange={
+                    stockLogPeriodSelector.handleStartDateChange
+                  }
+                  onEndDateChange={stockLogPeriodSelector.handleEndDateChange}
+                  onDateAutoHyphen={stockLogPeriodSelector.handleDateAutoHyphen}
+                  onCustomDateKeyDown={
+                    stockLogPeriodSelector.handleCustomDateKeyDown
+                  }
+                />
               )}
             </div>
 
-            <MaterialStockLog />
+            <MaterialStockLog
+              // startDate={
+              //   stockLogPeriodSelector.selectedPeriod === '직접 설정'
+              //     ? stockLogPeriodSelector.customStartDate
+              //     : (stockLogPeriodSelector.createFilters(
+              //         stockLogPeriodSelector.selectedPeriod
+              //       ).start_date as string)
+              // }
+              // endDate={
+              //   stockLogPeriodSelector.selectedPeriod === '직접 설정'
+              //     ? stockLogPeriodSelector.customEndDate
+              //     : (stockLogPeriodSelector.createFilters(
+              //         stockLogPeriodSelector.selectedPeriod
+              //       ).end_date as string)
+              // }
+              histories={stockHistories?.data}
+              isLoading={isStockLoading}
+              currentPage={currentPage}
+              totalPages={stockHistories?.pageCnt || 1}
+              onPageChange={handlePageChange}
+            />
           </div>
         </div>
       </>

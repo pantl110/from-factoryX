@@ -2,48 +2,78 @@ import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { useState, useEffect } from 'react';
-import { ProductResponseModel, MaterialModel } from '@/types/data-model';
-// import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
+import { ProductResponseModel, MaterialItemModel } from '@/types/data-model';
+import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddProduct from './manual-add-product';
 import { useGetProduct, useAssignProduct } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
 
 interface ProductEnrollmentModalProps {
   onClose?: () => void;
   materialId: number;
   onSuccess?: () => void;
+  checkDuplicateProductCode?: (
+    code: string,
+    selectedProducts?: MaterialItemModel[]
+  ) => boolean;
+  showDuplicateProductToast?: () => void;
 }
+
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
 
 const ProductEnrollmentModal = ({
   onClose,
   materialId,
   onSuccess,
+  checkDuplicateProductCode,
+  showDuplicateProductToast,
 }: ProductEnrollmentModalProps) => {
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState<
     ProductResponseModel[]
   >([]);
-  const factoryId = useFactoryStore((state) => state.factoryId);
-
   const { getProductList } = useGetProduct();
-  const { assignProduct, isLoading } = useAssignProduct();
+  const { assignProduct, isLoading: isAssignLoading } = useAssignProduct();
 
-  const [selectedProducts, setSelectedProducts] = useState<MaterialModel[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<MaterialItemModel[]>(
+    []
+  );
   const [isManualAddMode, setIsManualAddMode] = useState(false);
 
   // 검색어가 변경될 때 서버에서 검색
   useEffect(() => {
     const searchProducts = async () => {
-      if (input.trim() && factoryId) {
-        const result = await getProductList({
-          factory_id: factoryId,
+      if (input.trim()) {
+        // 첫 페이지를 가져와서 전체 개수 확인
+        const firstPageResult = await getProductList({
           q: input,
-          page_size: 100,
+          page: 1,
+          page_size: 10,
         });
-        if (result.success && result.data) {
-          setFilteredProducts(result.data.data);
+
+        if (firstPageResult.success && firstPageResult.data) {
+          const { totalCnt } = firstPageResult.data;
+
+          // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
+          const allDataResult = await getProductList({
+            q: input,
+            page: 1,
+            page_size: totalCnt,
+          });
+
+          if (allDataResult.success && allDataResult.data) {
+            setFilteredProducts(allDataResult.data.data);
+          }
         }
       } else {
         setFilteredProducts([]);
@@ -52,15 +82,38 @@ const ProductEnrollmentModal = ({
 
     const timeoutId = setTimeout(searchProducts, 150); // 디바운스
     return () => clearTimeout(timeoutId);
-  }, [input, factoryId, getProductList]);
+  }, [input, getProductList]);
 
-  // 품목 선택 시 - ProductResponseModel을 MaterialModel로 변환
+  // 품목 선택 시 - ProductResponseModel을 MaterialItemModel로 변환
+  const handleSelectProduct = (product: ProductResponseModel) => {
+    const materialItemModel: MaterialItemModel = {
+      name: product.name,
+      code: product.code,
+      spec: product.spec,
+      unit: product.unit,
+      quantity: null,
+      price: null,
+    };
+    setSelectedProducts((prev) => [...prev, materialItemModel]);
+    setInput(''); // 검색어 초기화
+    setIsOpen(false); // 드롭다운 닫기
+  };
+
   const handleRemoveProduct = (code: string) => {
-    setSelectedProducts((prev) => prev.filter((prod) => prod.code !== code));
+    setSelectedProducts((prev) =>
+      prev.filter((product) => product.code !== code)
+    );
   };
 
   const handleAddProducts = async () => {
-    if (!factoryId || selectedProducts.length === 0) return;
+    if (selectedProducts.length === 0) return;
+
+    // 로컬스토리지에서 factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
 
     const result = await assignProduct({
       factory_id: factoryId,
@@ -70,7 +123,7 @@ const ProductEnrollmentModal = ({
         code: product.code,
         spec: product.spec,
         unit: product.unit,
-        quantity: 10, // ‼️‼️‼️‼️‼️‼️‼️ 수정 필요 ‼️‼️‼️‼️ 기본 수량 10으로 설정 ‼️
+        quantity: product.quantity ?? 10, // ‼️‼️‼️‼️‼️‼️‼️ 수정 필요 ‼️‼️‼️‼️ 기본 수량 10으로 설정 ‼️
       })),
     });
 
@@ -105,12 +158,13 @@ const ProductEnrollmentModal = ({
         />
 
         {isOpen && filteredProducts.length > 0 && (
-          <div className="absolute left-0 top-12 z-10 w-[437px]">
-            {/* <ProductNameDropdown
+          <div className="absolute left-0 top-14 w-[449.3px] z-10">
+            <ProductNameDropdown
               items={filteredProducts}
               onSelect={handleSelectProduct}
               width="w-full"
-            /> */}
+              onClose={() => setIsOpen(false)}
+            />
           </div>
         )}
       </div>
@@ -120,6 +174,10 @@ const ProductEnrollmentModal = ({
         <ManualAddProduct
           setIsManualAddMode={setIsManualAddMode}
           setSelectedProducts={setSelectedProducts}
+          checkDuplicateProductCode={(code) =>
+            checkDuplicateProductCode?.(code, selectedProducts) ?? false
+          }
+          showDuplicateProductToast={showDuplicateProductToast}
         />
       ) : (
         // 선택한 품목 list
@@ -156,7 +214,7 @@ const ProductEnrollmentModal = ({
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"
           disabled={
-            selectedProducts.length === 0 || isManualAddMode || isLoading
+            selectedProducts.length === 0 || isManualAddMode || isAssignLoading
           }
           onClick={handleAddProducts}
         />

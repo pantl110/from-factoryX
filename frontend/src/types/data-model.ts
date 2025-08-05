@@ -6,8 +6,8 @@ export interface PaginationModel {
   totalCnt: number;
   pageCnt: number;
   curPage: number;
-  nextPage: number;
-  previousPage: number;
+  nextPage: number | null;
+  previousPage: number | null;
 }
 
 // Users API
@@ -288,7 +288,17 @@ export interface ProductHistoryListResponseModel extends PaginationModel {
 
 //////////////////////
 // Material API
-// 원자재 등록
+// 원자재 생성 material_create_in
+export interface CreateMaterialModel {
+  name: string;
+  code: string;
+  spec: string;
+  unit: string;
+  current_stock?: number;
+  standard_stock?: number;
+}
+
+// 원자재 수정
 export interface MaterialModel {
   factory_id?: number;
   name: string;
@@ -320,6 +330,7 @@ export interface MaterialListResponseModel extends PaginationModel {
 
 // Material History API
 export interface MaterialItemModel {
+  id?: number;
   name: string;
   code: string;
   spec: string; // 규격
@@ -334,17 +345,21 @@ export interface MaterialHistoryModel {
   materials: MaterialItemModel[];
 }
 
+// 업체별 단가 비교 & 원자재 입출고 내역// 원자재 히스토리 조회
 export interface MaterialHistoryResponseModel {
   id: number; // material_history_id
-  type: 'purchase' | 'consumption'; // 구매 또는 소비
-  material_id: number;
+  type: '구매' | '소모'; // 구매 또는 소비
   client_id: number;
-  quantity: number;
-  price: number;
-  total_stock: number;
+  client_name: string; // 거래처명
+  quantity: number; // 수량
+  unit_price: number; // 구매 단가
+  amount: number; // 금액(수량x단가)
+  date: string; // 거래일자 (ISO8601)
+  total_stock: number; // 거래 후 총 재고
+  purchase_tax_invoice_id?: number | null; // 매입 세금계산서 연결 ID (null 가능)
+  cash_receipt_id?: number | null; // 현금영수증 연결 ID (null 가능)
 }
 
-// 원자재 히스토리 조회
 export interface MaterialHistoryListResponseModel extends PaginationModel {
   data: MaterialHistoryResponseModel[];
 }
@@ -446,11 +461,19 @@ export interface ProjectResponseModel {
   start_date: string;
   due_date: string;
   publish_status: TaxStatusType; // 세금계산서 발행 상태
-  status: ProjectStatusType; // 프로젝트 상태
+  status: ProjectStatusType; // 프로젝트 상태 (영어)
 }
 
 export interface ProjectListResponseModel extends PaginationModel {
   data: ProjectResponseModel[];
+}
+
+// 프로젝트 상태 조회 응답
+export interface ProjectStatusResponseModel {
+  project_id: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 //////////////////////
@@ -489,9 +512,11 @@ export interface QuotationResponseModel {
 
 // 견적서 임시 저장 // 생산 시작
 export interface QuotationProductModel {
-  id: number; // product_id
+  product_id: number;
   quantity: number;
   unit_price: number;
+  is_delivery?: boolean;
+  delivery_date?: string | null;
 }
 
 export interface SaveDraftQuotationModel {
@@ -531,22 +556,29 @@ export interface QuotationProductHistoryItemResponseModel {
   unit_price: number; // 단가
   total_amount: number; // 금액 (수량*단가)
 }
-//////////////////////
+
+/////////////////////////////
 // Project Log API
+// 프로젝트 로그 생성
 export interface ProjectLogModel {
-  type: string;
+  type: ProjectLogType;
   title: string;
   content: string;
 }
 
+export interface CreateProjectLogResponseModel {
+  message: string;
+  log_id: number;
+}
+
+// 프로젝트 로그 조회
 export interface ProjectLogResponseModel {
-  id: number;
+  id: number; // 로그 아이디
   project_id: number;
-  type: string;
+  type: ProjectLogType;
   title: string;
   content: string;
-  // created_at?: string;
-  // updated_at?: string;
+  created_at?: string; // 생성 시간 (백엔드에서 제공하는 경우)
 }
 
 export interface ProjectLogListResponseModel extends PaginationModel {
@@ -601,15 +633,15 @@ export interface EquipmentForPlanModel {
 }
 
 export interface ProjectPlanModel {
-  id: number;
+  id: number; // project_plan_id
   project_id: number;
   quotation_product: QuotationProductForPlanModel;
   equipment: EquipmentForPlanModel;
-  status: string;
-  quantity: number;
-  start_date: string;
-  end_date: string;
-  avg_production_time: number;
+  status: string; // 가동 대기, 가동 중, 가동 완료, 가동 불가
+  quantity: number; // 생산 수량
+  start_date: string; // 생산 시작 일자
+  end_date: string; // 생산 종료 일자
+  avg_production_time: number; // 단위당 소요 시간
 }
 
 export interface ProjectPlanListResponseModel extends PaginationModel {
@@ -708,6 +740,7 @@ import {
   ProjectStatusType,
   TaxStatusType,
   EquipmentStatusType,
+  ProjectLogType,
 } from './status-type';
 
 export type {

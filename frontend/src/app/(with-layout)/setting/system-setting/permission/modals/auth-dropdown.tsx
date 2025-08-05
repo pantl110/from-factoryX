@@ -15,7 +15,7 @@ const AuthDropdown = ({ onClose, onSelect }: AuthDropdownProps) => {
   };
 
   return (
-    <Dropdown onClose={onClose} width="w-fit" className="gap-2.5">
+    <Dropdown onClose={onClose} width="w-fit" gap="gap-2.5">
       <DropdownItem noHover={true} chip={true}>
         <Chip
           text="운영자"

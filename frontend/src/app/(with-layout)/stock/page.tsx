@@ -25,6 +25,8 @@ const StockPageContent = () => {
     const tabParam = searchParams.get('tab');
     if (tabParam === 'material') {
       setStockTab('material');
+    } else if (tabParam === 'product' || tabParam === null) {
+      setStockTab('product');
     }
   }, [setStockTab, searchParams]);
 

@@ -5,6 +5,17 @@ import { useState } from 'react';
 //  - 세금계산서 연결 초기화
 //  - 견적서, 생산 게획, 생산 로그 (메모만) 복제
 
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
+
 const useCloneProject = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -13,9 +24,17 @@ const useCloneProject = () => {
     setIsLoading(true);
     setError(null);
 
+    // factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+      setIsLoading(false);
+      return { success: false, error: '공장 정보가 없습니다.' };
+    }
+
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/clone`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/clone?factory_id=${factoryId}`,
         {
           method: 'POST',
           credentials: 'include',
@@ -27,7 +46,8 @@ const useCloneProject = () => {
       );
 
       if (response.status === 200) {
-        return { success: true };
+        const result = await response.json();
+        return { success: true, data: result };
       } else {
         const errorData = await response.json();
         setError(errorData.detail || '프로젝트 복제에 실패했습니다.');

@@ -12,7 +12,6 @@ import { PermissionRoleInfo, PermissionRoleType } from '../types';
 import { createPortal } from 'react-dom';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import useInviteMember from '@/hooks/factory/factory-member/use-invite-member';
-import useFactoryStore from '@/store/factory-store';
 
 interface InviteModalProps {
   onClose: () => void;
@@ -28,8 +27,18 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
   const [changeAuthEmail, setChangeAuthEmail] = useState<string | null>(null);
   const [members, setMembers] = useState<MemberFromDataModel[]>([]);
 
-  const factoryId = useFactoryStore((state) => state.factoryId);
   const { inviteMember, isLoading: isInviteLoading } = useInviteMember();
+
+  // 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+  const getStoredFactoryId = (): number | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = localStorage.getItem('factoryId');
+      return stored ? parseInt(stored, 10) : null;
+    } catch {
+      return null;
+    }
+  };
 
   const {
     control,
@@ -97,6 +106,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
   };
 
   const handleInviteMembers = async () => {
+    const factoryId = getStoredFactoryId();
     if (!factoryId || members.length === 0) return;
 
     try {

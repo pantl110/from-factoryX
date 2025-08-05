@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LogoutResponseModel } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
+import useFactoryStore from '@/store/factory-store';
 
 interface UseLogoutReturnModel {
   logout: () => Promise<{
@@ -14,6 +15,7 @@ interface UseLogoutReturnModel {
 export const useLogout = (): UseLogoutReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { clearAuth } = useAuthStore();
+  const { clearFactoryId } = useFactoryStore();
 
   const logout = async () => {
     setIsLoading(true);
@@ -35,6 +37,7 @@ export const useLogout = (): UseLogoutReturnModel => {
 
         // 로그아웃 성공 시 전역 상태 초기화
         clearAuth();
+        clearFactoryId(); // factoryId도 클리어
 
         // 쿠키 삭제
         document.cookie =

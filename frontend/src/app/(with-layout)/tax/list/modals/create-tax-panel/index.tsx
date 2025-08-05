@@ -1,6 +1,6 @@
 import Panel from '@/ui/panel';
 import SellerInfo from './seller-info';
-import ClientInfo from './client-info';
+// import ClientInfo from './client-info';
 import MiniBtn from '@/ui/mini-btn';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
 import EmptySpace from '@/ui/empty-space';
@@ -67,7 +67,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
       >
         <div className="flex gap-5">
           <SellerInfo />
-          <ClientInfo />
+          {/* <ClientInfo /> */}
         </div>
 
         <div className="flex flex-col gap-3 mt-9">

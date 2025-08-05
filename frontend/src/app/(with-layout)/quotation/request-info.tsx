@@ -2,7 +2,7 @@ import MiniBtn from '@/ui/mini-btn';
 import ProductItem from './product-item';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { useGetDetailQuotation, useGetProduct } from '@/hooks';
-import { useSearchParams } from 'next/navigation';
+
 import { useEffect, useState, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import {
@@ -18,12 +18,14 @@ interface RequestInfoProps {
   onProductClick: (productId: number) => void;
   setHasQuotationProducts: (hasQuotationProducts: boolean) => void;
   onProductsChange?: (products: QuotationProductDetailResponseModel[]) => void;
+  quotationId?: number;
 }
 
 const RequestInfo = ({
   onProductClick,
   setHasQuotationProducts,
   onProductsChange,
+  quotationId,
 }: RequestInfoProps) => {
   const [isProductEnrollmentDropdownOpen, setIsProductEnrollmentDropdownOpen] =
     useState(false);
@@ -33,10 +35,7 @@ const RequestInfo = ({
   >(null);
   const [supplyAmount, setSupplyAmount] = useState<number>(0);
 
-  const searchParams = useSearchParams();
-  const quotationId = searchParams.get('id')
-    ? parseInt(searchParams.get('id') || '0')
-    : undefined;
+  // hook을 항상 호출 (0을 전달하면 hook 내부에서 처리)
   const { data: quotationDetail, isLoading: isLoadingQuotation } =
     useGetDetailQuotation(quotationId || 0);
   const { getProductDetail } = useGetProduct();
@@ -251,7 +250,7 @@ const RequestInfo = ({
                   <th className="text-left px-3 flex-1">제작 수량</th>
                   <th className="text-left px-3 w-[100px]">단가</th>
                   <th className="text-left px-3 flex-1">금액</th>
-                  <th className="w-8" />
+                  <th className="w-9" />
                 </tr>
               </thead>
               <tbody>

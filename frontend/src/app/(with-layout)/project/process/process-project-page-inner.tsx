@@ -12,14 +12,18 @@ import Pagination from '@/components/pagination';
 import { OcrDataModel, ProjectListResponseModel } from '@/types/data-model';
 import DeleteModal from '@/ui/modal/delete-modal';
 import Spinner from '@/ui/spinner';
-import { useCreateProject, useGetProjects, useCheckAll } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
+import {
+  useCreateProject,
+  useGetProjects,
+  useCheckAll,
+  useDeleteProject,
+} from '@/hooks';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
-  const { getProjects, isLoading } = useGetProjects();
+  const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
   const { createProject } = useCreateProject();
-  const { factoryId } = useFactoryStore();
+  const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
 
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
   const searchParams = useSearchParams();
@@ -27,7 +31,7 @@ const ProcessProjectPageInner = () => {
 
   // 탭 상태
   const [selectedStatus, setSelectedStatus] = useState<
-    ProjectStatusType | 'progress'
+    ProjectStatusType | 'progress' | 'archived'
   >(
     tab === 'quote'
       ? 'quotation'
@@ -53,10 +57,7 @@ const ProcessProjectPageInner = () => {
   // 초기 데이터 로드
   useEffect(() => {
     const loadProjects = async () => {
-      if (!factoryId) return;
-
       const result = await getProjects({
-        factory_id: factoryId,
         status: selectedStatus,
         search: searchKeyword,
         order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
@@ -79,7 +80,6 @@ const ProcessProjectPageInner = () => {
     searchKeyword,
     sortKey,
     sortOrder,
-    factoryId,
     // getProjects,
   ]);
 
@@ -134,7 +134,9 @@ const ProcessProjectPageInner = () => {
     setIsOrderUploadModalOpen(true);
   };
 
-  const handleTabChange = (status: ProjectStatusType | 'progress') => {
+  const handleTabChange = (
+    status: ProjectStatusType | 'progress' | 'archived'
+  ) => {
     setSelectedStatus(status);
     setCurrentPage(1); // 탭 상태 변경 시 표는 첫 페이지로 이동
     setSearchKeyword(''); // 탭 변경시 검색어도 초기화
@@ -142,16 +144,18 @@ const ProcessProjectPageInner = () => {
 
   const handleDirectInputClick = async (ocrData?: OcrDataModel) => {
     if (ocrData) {
-      // OCR data로 프로젝트와 견적서 생성 후 이동 필요 ‼️‼️‼️‼️
+      // OCR data로 프로젝트와 견적서 생성 후 견적서 아이디와 프로젝트 아이디 기억하고 이동 필요 ‼️‼️‼️‼️
     } else {
-      // 빈 값으로 프로젝트와 견적서 생성 후 견적서 아이디 기억하고 이동
+      // 빈 값으로 프로젝트와 견적서 생성 후 견적서 아이디와 프로젝트 아이디 기억하고 이동
       try {
         // 프로젝트와 견적서 생성
         const result = await createProject();
 
         if (result.success && result.data) {
-          // 생성된 견적서 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
-          router.push(`/quotation?id=${result.data.id}`);
+          // 생성된 견적서 ID와 프로젝트 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
+          router.push(
+            `/quotation?quotation_id=${result.data.quotation_id}&project_id=${result.data.project_id}`
+          );
         } else {
           alert('프로젝트 생성에 실패했습니다.');
         }
@@ -161,42 +165,75 @@ const ProcessProjectPageInner = () => {
     }
   };
 
-  // 테스트 프로젝트 생성 핸들러
-  const handleCreateTestProjects = async () => {
-    if (!factoryId) return;
+  // 선택된 프로젝트 삭제 핸들러
+  const handleDeleteProjects = async () => {
+    if (checkedCount === 0) {
+      alert('삭제할 프로젝트를 선택해주세요.');
+      return;
+    }
+
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/test`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            factory_id: factoryId,
-          }),
-        }
-      );
-      if (res.ok) {
-        alert('테스트 프로젝트가 생성되었습니다.');
-        // 새로고침
-        window.location.reload();
-      } else {
-        const data = await res.json();
-        alert(data.detail || '테스트 프로젝트 생성에 실패했습니다.');
+      const checkedIds = currentIds.filter((id) => isChecked(id));
+
+      // 선택된 프로젝트들을 순차적으로 삭제
+      for (const projectId of checkedIds) {
+        await deleteProject(projectId);
+      }
+
+      setAllChecked(false); // 선택 해제
+      setIsDeleteModalOpen(false);
+
+      // 프로젝트 목록 새로고침
+      const result = await getProjects({
+        status: selectedStatus,
+        search: searchKeyword,
+        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
+        order_dir: sortOrder,
+        page: currentPage,
+        size: 10,
+      });
+
+      if (result.success && result.data) {
+        setProjectData(result.data);
       }
     } catch {
-      alert('테스트 프로젝트 생성 중 오류가 발생했습니다.');
+      alert('프로젝트 삭제 중 오류가 발생했습니다.');
+      setIsDeleteModalOpen(false);
     }
   };
 
-  // 로딩 상태 표시 (factoryId가 없거나 데이터 로딩 중일 때)
-  if (!factoryId || (isLoading && !projectData)) {
-    return (
-      <div className="flex justify-center items-center h-100">
-        <Spinner />
-      </div>
-    );
-  }
+  // 테스트 프로젝트 생성 핸들러
+  // const handleCreateTestProjects = async () => {
+  //   try {
+  //     const factoryId = localStorage.getItem('factoryId');
+  //     if (!factoryId) {
+  //       alert('Factory ID를 찾을 수 없습니다.');
+  //       return;
+  //     }
+
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_URL}/v1/project/test`,
+  //       {
+  //         method: 'POST',
+  //         credentials: 'include',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({
+  //           factory_id: parseInt(factoryId),
+  //         }),
+  //       }
+  //     );
+  //     if (res.ok) {
+  //       alert('테스트 프로젝트가 생성되었습니다.');
+  //       // 새로고침
+  //       window.location.reload();
+  //     } else {
+  //       const data = await res.json();
+  //       alert(data.detail || '테스트 프로젝트 생성에 실패했습니다.');
+  //     }
+  //   } catch {
+  //     alert('테스트 프로젝트 생성 중 오류가 발생했습니다.');
+  //   }
+  // };
 
   return (
     <>
@@ -213,7 +250,7 @@ const ProcessProjectPageInner = () => {
         />
 
         {/* 테스트 프로젝트 생성 버튼 */}
-        <div className="px-10 pb-2">
+        {/* <div className="px-10 pb-2">
           <button
             className="bg-primary-8 text-white px-4 py-2 rounded hover:bg-primary"
             onClick={handleCreateTestProjects}
@@ -221,7 +258,7 @@ const ProcessProjectPageInner = () => {
           >
             테스트 프로젝트 일괄 생성
           </button>
-        </div>
+        </div> */}
 
         <div className="px-10 pb-10">
           <SearchDeleteTable
@@ -231,30 +268,39 @@ const ProcessProjectPageInner = () => {
             onDelete={() => setIsDeleteModalOpen(true)}
             onCancel={() => setAllChecked(false)}
             onSearch={handleSearch}
+            searchKeyword={searchKeyword}
           />
-          <div className="overflow-y-auto w-full">
-            <TableHeader
-              isAllChecked={isAllChecked}
-              onToggleAll={toggleAll}
-              onSort={handleSort}
-            />
-            {sortedProjects.map((project) => (
-              <TableItem
-                key={project.project_id}
-                project={project}
-                checked={isChecked(project.project_id)}
-                onToggle={() => toggleOne(project.project_id)}
-              />
-            ))}
-          </div>
 
-          {/* 페이지네이션 */}
-          {projectData && projectData.pageCnt > 1 && (
-            <Pagination
-              currentPage={projectData.curPage}
-              totalPages={projectData.pageCnt}
-              onPageChange={handlePageChange}
-            />
+          {isProjectsLoading && !projectData ? (
+            <div className="flex justify-center items-center h-100">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              <div className="overflow-y-auto w-full">
+                <TableHeader
+                  isAllChecked={isAllChecked}
+                  onToggleAll={toggleAll}
+                  onSort={handleSort}
+                />
+                {sortedProjects.map((project) => (
+                  <TableItem
+                    key={project.project_id}
+                    project={project}
+                    checked={isChecked(project.project_id)}
+                    onToggle={() => toggleOne(project.project_id)}
+                  />
+                ))}
+              </div>
+              {/* 페이지네이션 */}
+              {projectData && projectData.pageCnt > 1 && (
+                <Pagination
+                  currentPage={projectData.curPage}
+                  totalPages={projectData.pageCnt}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </>
           )}
         </div>
       </div>
@@ -263,7 +309,10 @@ const ProcessProjectPageInner = () => {
       {(isUploadModalOpen || isOrderUploadModalOpen) && (
         <ExcelUploadModal
           documentTitle={isUploadModalOpen ? '견적 요청서' : '주문서'}
-          onClose={() => setIsUploadModalOpen(false)}
+          onClose={() => {
+            setIsUploadModalOpen(false);
+            setIsOrderUploadModalOpen(false);
+          }}
           onComplete={handleDirectInputClick}
         />
       )}
@@ -272,7 +321,8 @@ const ProcessProjectPageInner = () => {
       {isDeleteModalOpen && (
         <DeleteModal
           onClose={() => setIsDeleteModalOpen(false)}
-          onDelete={() => setIsDeleteModalOpen(false)}
+          onDelete={handleDeleteProjects}
+          isLoading={isDeleteLoading}
         />
       )}
     </>

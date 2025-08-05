@@ -15,7 +15,7 @@ const useUpdateFactory = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/factories`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory?factory_id=${data.factory_id}`,
         {
           method: 'PATCH',
           credentials: 'include',

@@ -3,8 +3,7 @@ import { ProjectStatusType } from '@/types/status-type';
 import { useState } from 'react';
 
 interface GetProjectModel {
-  factory_id: number;
-  status: ProjectStatusType | 'progress';
+  status: ProjectStatusType | 'archived' | 'progress';
   search?: string; // 업체명 또는 품목명
   order_by?: 'start_date' | 'due_date';
   order_dir?: 'asc' | 'desc';
@@ -26,8 +25,15 @@ const useGetProjects = () => {
     setError(null);
 
     try {
+      // localStorage에서 factoryId 가져오기
+      const factoryId = localStorage.getItem('factoryId');
+      if (!factoryId) {
+        setError('Factory ID를 찾을 수 없습니다.');
+        return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
+      }
+
       const queryParams = new URLSearchParams();
-      queryParams.append('factory_id', params.factory_id.toString());
+      queryParams.append('factory_id', factoryId);
       queryParams.append('status', params.status);
 
       if (params.page) {

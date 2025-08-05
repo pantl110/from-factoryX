@@ -2,12 +2,23 @@ import Panel from '@/ui/panel';
 import React, { useEffect, useRef, useState } from 'react';
 import MaterialDetail, { MaterialInfoModel } from './material-detail';
 import MiniBtn from '@/ui/mini-btn';
-import { useLocation, useUpdateMaterial } from '@/hooks';
-import { useUploadFile } from '@/hooks';
+import {
+  useLocation,
+  useUpdateMaterial,
+  useGetProduct,
+  useUploadFile,
+  useToast,
+  useMaterialProduct,
+} from '@/hooks';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
-import CustomerInfoModal from '../modals/customer-info-modal';
 import ProductEnrollmentModal from '../modals/product-enrollment-modal';
 import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
+import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
+import { MaterialItemModel } from '@/types/data-model';
+import DeleteModal from '@/ui/modal/delete-modal';
+import ProductDetailPanel from '@/app/(with-layout)/stock/product/product-detail';
 
 interface LocationModel {
   id: number;
@@ -41,15 +52,130 @@ const MaterialDetailPanel = ({
   selectedMaterialId,
 }: MaterialDetailPanelProps) => {
   const [isMaterialDetailDirty, setIsMaterialDetailDirty] = useState(false); // 원자재 디테일 판넬 수정 상태
-  const [isCustomerInfoModalOpen, setIsCustomerInfoModalOpen] = useState(false);
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
   const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
 
+  // ClientDetailPanel 관련 상태
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+
+  // 품목 코드 중복 검사를 위한 상태
+  const [existingProductCodes, setExistingProductCodes] = useState<string[]>(
+    []
+  );
+
+  // 삭제 모달 관련 상태
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConnectionId, setDeleteConnectionId] = useState<number | null>(
+    null
+  );
+
+  // 품목 디테일 판넬 열기 관련 상태
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(
+    null
+  );
+
+  // MaterialDetail 컴포넌트 리마운트를 위한 key 상태
+  const [materialDetailKey, setMaterialDetailKey] = useState(0);
+
+  // 품목 디테일 패널이 닫힐 때 원자재 데이터 새로고침
+  const handleProductDetailClose = () => {
+    setSelectedProductId(null);
+
+    // MaterialDetail 컴포넌트를 리마운트하여 모든 데이터 새로고침
+    setMaterialDetailKey((prev) => prev + 1);
+  };
+
+  // ClientDetailPanel 열기 함수
+  const setIsClinetDetailPanelOpen = (clientId: number) => {
+    setSelectedClientId(clientId);
+  };
+
   const { createLocation, updateLocation, deleteLocation, listLocations } =
     useLocation();
   const { uploadMultipleFiles } = useUploadFile();
+  const { getProductList } = useGetProduct();
+  const { isToastOpen, isVisible, showToast } = useToast(3000);
+  const { deleteMaterialProductConnection } = useMaterialProduct();
   const [prevLocations, setPrevLocations] = useState<LocationModel[]>([]);
+
+  // 삭제 모달 열기 함수
+  const handleOpenDeleteModal = (connectionId: number) => {
+    setDeleteConnectionId(connectionId);
+    setIsDeleteModalOpen(true);
+  };
+
+  // 삭제 확인 함수
+  const handleConfirmDelete = async () => {
+    if (deleteConnectionId) {
+      try {
+        const result =
+          await deleteMaterialProductConnection(deleteConnectionId);
+        if (result.success) {
+          // MaterialDetail의 productRequiringMaterialRef를 통해 refresh 호출
+          const materialDetailRefObj = materialDetailRef.current;
+          if (
+            materialDetailRefObj?.productRequiringMaterialRef?.current?.refresh
+          ) {
+            materialDetailRefObj.productRequiringMaterialRef.current.refresh();
+          }
+        }
+      } catch {
+        // 삭제 실패 시 에러 처리
+      }
+    }
+    setIsDeleteModalOpen(false);
+    setDeleteConnectionId(null);
+  };
+
+  // 모든 품목 코드 가져오기
+  useEffect(() => {
+    const fetchAllProductCodes = async () => {
+      // 첫 페이지를 가져와서 전체 개수 확인
+      const firstPageResult = await getProductList({
+        page: 1,
+        page_size: 10,
+      });
+
+      if (firstPageResult.success && firstPageResult.data) {
+        const { totalCnt } = firstPageResult.data;
+
+        // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
+        const allDataResult = await getProductList({
+          page: 1,
+          page_size: totalCnt,
+        });
+
+        if (allDataResult.success && allDataResult.data) {
+          const codes = allDataResult.data.data.map((product) => product.code);
+          setExistingProductCodes(codes);
+        }
+      }
+    };
+    fetchAllProductCodes();
+  }, [getProductList]);
+
+  // 중복 검사 함수
+  const checkDuplicateProductCode = (
+    code: string,
+    selectedProducts: MaterialItemModel[] = []
+  ): boolean => {
+    // 기존 제품 코드들 확인
+    const isExistingDuplicate = existingProductCodes.includes(code);
+
+    // 현재 선택된 제품들 중에서도 중복 확인
+    const isSelectedDuplicate = selectedProducts.some(
+      (product) => product.code === code
+    );
+
+    return isExistingDuplicate || isSelectedDuplicate;
+  };
+
+  // 중복 토스트 표시 함수
+  const showDuplicateProductToast = () => {
+    showToast();
+  };
+
   // 원자재 디테일 열릴 때 기존 위치 목록 불러오기
   useEffect(() => {
     const fetchLocations = async () => {
@@ -205,16 +331,20 @@ const MaterialDetailPanel = ({
         }
       >
         <MaterialDetail
+          key={materialDetailKey}
           ref={materialDetailRef}
           materialId={selectedMaterialId}
           locations={prevLocations}
-          setIsCustomerInfoModalOpen={setIsCustomerInfoModalOpen}
           setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
           handleOpenUploadModal={handleOpenUploadModal}
           onIsDirtyChange={setIsMaterialDetailDirty}
+          setIsClinetDetailPanelOpen={setIsClinetDetailPanelOpen}
+          handleOpenDeleteModal={handleOpenDeleteModal}
+          onProductClick={(productId) => {
+            setSelectedProductId(productId);
+          }}
         />
       </Panel>
-
       {openUploadModals.map((open, idx) =>
         open ? (
           <StockLocationUploadModal
@@ -244,9 +374,13 @@ const MaterialDetailPanel = ({
           />
         ) : null
       )}
-      {/* MaterialDetail의 거래처 정보 상세보기 모달 */}
-      {isCustomerInfoModalOpen && (
-        <CustomerInfoModal onClose={() => setIsCustomerInfoModalOpen(false)} />
+      {/* MaterialDetail의 거래처 정보 디테일 판넬 */}
+      {selectedClientId && (
+        <ClientDetailPanel
+          onClose={() => setSelectedClientId(null)}
+          refetchClient={() => {}}
+          clientId={selectedClientId}
+        />
       )}
       {/* MaterialDetail의 추가하기 버튼 모달 */}
       {isProductEnrollmentModalOpen && (
@@ -263,6 +397,32 @@ const MaterialDetailPanel = ({
               materialDetailRefObj.productRequiringMaterialRef.current.refresh();
             }
           }}
+          checkDuplicateProductCode={checkDuplicateProductCode}
+          showDuplicateProductToast={showDuplicateProductToast}
+        />
+      )}
+      {/* 품목 연결하기에서 품목 코드 겹칠 시 토스트 */}
+      {isToastOpen && (
+        <Toast
+          text="이미 존재하는 품목코드에요."
+          subtext="다른 품목코드로 수정해주세요"
+          icon={<WarningCircle size={20} className="text-red" />}
+          type="red"
+          isVisible={isVisible}
+        />
+      )}
+      {/* 품목 연결하기에서 삭제 버튼 누를 시 모달 */}
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleConfirmDelete}
+        />
+      )}
+      {/* 연결된 품목 클릭 시 품목 디테일 판넬 열기 */}
+      {selectedProductId && (
+        <ProductDetailPanel
+          onClose={handleProductDetailClose}
+          productId={selectedProductId}
         />
       )}
     </>

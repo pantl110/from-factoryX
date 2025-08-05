@@ -1,10 +1,10 @@
-import { MaterialItemModel } from '@/types/data-model';
+import { MaterialResponseModel } from '@/types/data-model';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
 
 interface MaterialNameDropdownProps {
-  items: MaterialItemModel[];
-  onSelect: (item: MaterialItemModel) => void;
+  items: MaterialResponseModel[];
+  onSelect: (item: MaterialResponseModel) => void;
   width?: string;
 }
 

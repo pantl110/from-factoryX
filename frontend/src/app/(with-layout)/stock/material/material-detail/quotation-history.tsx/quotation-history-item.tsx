@@ -1,31 +1,45 @@
+import { MaterialHistoryResponseModel } from '@/types/data-model';
+import { ArrowLineUpRight } from '@phosphor-icons/react';
+
 interface QuotationHistoryItemProps {
   onClick: () => void;
-  clientName: string;
-  quantity: number;
-  unitPrice: number;
+  data: MaterialHistoryResponseModel;
 }
 
-const QuotationHistoryItem = ({
-  onClick,
-  clientName,
-  quantity,
-  unitPrice,
-}: QuotationHistoryItemProps) => {
+const QuotationHistoryItem = ({ onClick, data }: QuotationHistoryItemProps) => {
   return (
-    <div
-      className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200 group"
-      onClick={onClick}
-    >
-      <p className="flex-1 px-3 text-dg truncate" title={clientName}>
-        {clientName}
+    <div className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer hover:border hover:border-primary transition-colors duration-200 group">
+      <div
+        className="flex-1 px-3 flex items-center gap-1 min-w-0"
+        title={data.client_name}
+      >
+        <p className="text-dg truncate">{data.client_name}</p>
+        <button
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-colors duration-200 group-hover:opacity-100 opacity-0"
+          onClick={onClick}
+        >
+          <ArrowLineUpRight size={16} className="text-dg" />
+        </button>
+      </div>
+
+      <p className="flex-1 px-3 text-dg">{data.date?.split('T')[0]}</p>
+      <p
+        className="flex-[0.5] px-3 text-dg truncate min-w-0"
+        title={data.quantity.toLocaleString()}
+      >
+        {data.quantity.toLocaleString()}
       </p>
-      <p className="flex-1 px-3 text-dg">{quantity.toLocaleString()}</p>
-      <p className="flex-1 px-3 text-dg">{unitPrice.toLocaleString()}</p>
-      <p className="flex-1 px-3 text-dg">
-        {(quantity * unitPrice).toLocaleString()}
+      <p
+        className="flex-[0.5] px-3 text-dg truncate min-w-0"
+        title={data.unit_price.toLocaleString()}
+      >
+        {data.unit_price.toLocaleString()}
       </p>
-      <p className="Re_Body-1 text-gr px-3 group-hover:opacity-100 opacity-0 transition-opacity duration-200">
-        상세보기
+      <p
+        className="flex-[0.5] px-3 text-dg truncate min-w-0"
+        title={data.amount.toLocaleString()}
+      >
+        {data.amount.toLocaleString()}
       </p>
     </div>
   );

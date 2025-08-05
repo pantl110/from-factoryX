@@ -6,8 +6,8 @@ import { OcrDataModel } from '@/types/data-model';
 
 interface MainTitleSecProps {
   onNewQuotation: () => void;
-  selectedStatus: ProjectStatusType | 'progress';
-  onStatusChange: (status: ProjectStatusType | 'progress') => void;
+  selectedStatus: ProjectStatusType | 'progress' | 'archived';
+  onStatusChange: (status: ProjectStatusType | 'progress' | 'archived') => void;
   isSelectDropdownOpen?: boolean;
   onSelectDropdownClose?: () => void;
   onUploadClick?: () => void;
@@ -18,7 +18,7 @@ interface MainTitleSecProps {
 const statusTabMap = [
   { label: '전체', value: 'progress' },
   { label: '견적 요청', value: 'quotation' },
-  { label: '주문 확정', value: 'order' },
+  { label: '주문 확정', value: 'confirmed' },
   { label: '생산 대기', value: 'pending' },
   { label: '생산 중', value: 'production' },
   { label: '생산 완료', value: 'manufactured' },

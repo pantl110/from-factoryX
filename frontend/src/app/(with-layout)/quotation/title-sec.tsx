@@ -7,6 +7,7 @@ import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
 import { ClientModel } from '@/types/data-model';
 import { useMemo } from 'react';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
+import { useUpdateProjectStatus } from '@/hooks';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -27,6 +28,7 @@ interface TitleSecProps {
   isDirty: boolean;
   isInterruptionStatus: boolean;
   setIsInterruptionStatus: (status: boolean) => void;
+  projectId?: number;
 }
 
 const TitleSec = ({
@@ -43,12 +45,16 @@ const TitleSec = ({
   isDirty,
   isInterruptionStatus,
   setIsInterruptionStatus,
+  projectId,
 }: TitleSecProps) => {
   // 실시간으로 업체명 가져오기
   const clientName = watch('name');
 
   // 토스트 훅
   const { isToastOpen, isVisible, showToast } = useToast();
+
+  // 프로젝트 상태 업데이트 훅
+  const { updateProjectStatus } = useUpdateProjectStatus();
 
   // 폼 유효성 검사 - 실제 필드 값과 에러 상태 확인
   const isFormValid = useMemo(() => {
@@ -62,6 +68,33 @@ const TitleSec = ({
     closeDropdown: closeQuotationStatusDropdown,
     anchorRect: quotationStatusAnchorRect,
   } = usePortalDropdown();
+
+  // 프로젝트 상태 변경 핸들러
+  const handleStatusChange = async (newStatus: string) => {
+    if (!projectId) {
+      return;
+    }
+
+    try {
+      const result = await updateProjectStatus(projectId, newStatus);
+      if (result.success) {
+        // 상태 변경 성공 시 UI 업데이트
+        if (newStatus === 'quotation') {
+          setIsInterruptionStatus(false);
+          setIsOrderStatus(false);
+        } else if (newStatus === 'interruption') {
+          setIsInterruptionStatus(true);
+          setIsOrderStatus(false);
+        } else if (newStatus === 'order') {
+          setIsOrderStatus(true);
+          setIsInterruptionStatus(false);
+        }
+      }
+    } catch {
+      // 에러 처리 없음
+    }
+    closeQuotationStatusDropdown();
+  };
 
   return (
     <div className="flex gap-1 mb-4 pr-10">
@@ -111,14 +144,8 @@ const TitleSec = ({
               >
                 <QuotationStatusDropdown
                   onClose={closeQuotationStatusDropdown}
-                  onQuotationClick={() => {
-                    setIsInterruptionStatus(false);
-                    closeQuotationStatusDropdown();
-                  }}
-                  onInterruptionClick={() => {
-                    setIsInterruptionStatus(true);
-                    closeQuotationStatusDropdown();
-                  }}
+                  onQuotationClick={() => handleStatusChange('quotation')}
+                  onInterruptionClick={() => handleStatusChange('interruption')}
                 />
               </div>
             )}

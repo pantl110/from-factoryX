@@ -32,33 +32,53 @@ export const EquipmentStatusColorMap: Record<
 // 프로젝트 상태
 export type ProjectStatusType =
   | 'quotation'
-  | 'order'
+  | 'confirmed'
   | 'pending'
   | 'production'
   | 'manufactured'
   | 'delivery'
   | 'completed'
-  | 'interruption';
+  | 'interruption'
+  // 한글 상태 추가
+  | '견적 협의중'
+  | '주문 확정'
+  | '생산 대기'
+  | '생산 중'
+  | '생산 완료'
+  | '납품'
+  | '프로젝트 완료'
+  | '완료'
+  | '중단';
 
 // | '견적 협의' // quotation
+// | '주문 확정' // confirmed
 // | '생산 대기' // pending
 // | '생산 중' // production
 // | '생산 완료' // manufactured
 // | '납품' // delivery
 // | '프로젝트 완료' // completed
 // | '중단'; // interruption
-export const ProjectStatusColorMap: Record<
-  ProjectStatusType,
-  StatusColorModel
-> = {
+export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
+  // 영어 상태
   quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
-  order: { bgColor: 'bg-[#FF6C17]/8', textColor: 'text-[#FF6C17]' },
+  confirmed: { bgColor: 'bg-[#FF6C17]/8', textColor: 'text-[#FF6C17]' },
   pending: { bgColor: 'bg-bg', textColor: 'text-dg' },
   production: { bgColor: 'bg-purple-8', textColor: 'text-purple' },
   manufactured: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
   delivery: { bgColor: 'bg-green-8', textColor: 'text-green' },
   completed: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
   interruption: { bgColor: 'bg-red-8', textColor: 'text-red' },
+
+  // 한글 상태 (기존 호환성 유지)
+  '견적 협의중': { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
+  '주문 확정': { bgColor: 'bg-[#FF6C17]/8', textColor: 'text-[#FF6C17]' },
+  '생산 대기': { bgColor: 'bg-bg', textColor: 'text-dg' },
+  '생산 중': { bgColor: 'bg-purple-8', textColor: 'text-purple' },
+  '생산 완료': { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  납품: { bgColor: 'bg-green-8', textColor: 'text-green' },
+  '프로젝트 완료': { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  완료: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
 
 // 세금계산서 발행 상태
@@ -74,6 +94,10 @@ export const InventoryStatusColorMap: Record<
   충분: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
   부족: { textColor: 'text-red', bgColor: 'bg-red-8' },
 };
+
+// 프로젝트 로그 타입
+export type ProjectLogType = '메모' | '반품' | '계획 변경';
+// memo: 메모 // return: 반품 // plan: 계획 변경
 
 ////////////////////
 ////////////////////
@@ -107,7 +131,7 @@ export type OperationStatusType =
   | '가동 대기'
   | '가동 중'
   | '가동 완료'
-  | '가동 중지';
+  | '가동 불가';
 export const OperationStatusColorMap: Record<
   OperationStatusType,
   StatusColorModel
@@ -127,7 +151,7 @@ export const OperationStatusColorMap: Record<
     bgColor: 'bg-primary-8',
     hover: 'hover:bg-secondary-hover',
   },
-  '가동 중지': {
+  '가동 불가': {
     textColor: 'text-red',
     bgColor: 'bg-red-8',
     hover: 'hover:bg-red-hover',

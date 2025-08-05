@@ -9,7 +9,7 @@ import {
 } from '@/types/data-model';
 import { ArrowLineUpRight, X } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import useMaterialProduct from '@/hooks/stock/use-material-product';
 import { handleNumberKeyDown } from '@/hooks/format-number';
 
@@ -45,6 +45,7 @@ const StockStatusItem = ({
 
   const { updateMaterialProductConnection } = useMaterialProduct();
   const [isSaving, setIsSaving] = useState(false);
+  const [displayValue, setDisplayValue] = useState('');
 
   // 재고 상태를 판단
   const getStockStatus = (currentStock?: number, standardStock?: number) => {
@@ -57,9 +58,32 @@ const StockStatusItem = ({
     materialDetail?.standard_stock
   );
 
+  // 천 단위 구분자 포맷팅 함수
+  const formatNumberWithCommas = useCallback(
+    (value: number | null | undefined): string => {
+      if (value === null || value === undefined || value === 0) return '';
+      return value.toLocaleString();
+    },
+    []
+  );
+
+  // displayValue 업데이트
+  useEffect(() => {
+    const formValue = materialQuantityForm.watch('quantity');
+    const valueToFormat =
+      formValue !== undefined ? formValue : connection.quantity;
+    setDisplayValue(formatNumberWithCommas(valueToFormat));
+  }, [materialQuantityForm, connection.quantity, formatNumberWithCommas]);
+
+  // 초기값 설정
+  useEffect(() => {
+    setDisplayValue(formatNumberWithCommas(connection.quantity));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connection.quantity]);
+
   // 수량 변경 처리
   const handleQuantityChangeLocal = (inputValue: string) => {
-    // 음수 부호와 숫자가 아닌 문자 제거
+    // 음수 부호와 숫자가 아닌 문자 제거 (쉼표 포함)
     const cleanValue = inputValue.replace(/[^0-9]/g, '');
     const newValue = cleanValue === '' ? 0 : parseInt(cleanValue) || 0;
 
@@ -146,26 +170,37 @@ const StockStatusItem = ({
           <ArrowLineUpRight size={16} className="text-dg" />
         </button>
       </div>
-      <p className="flex-1 px-3 text-dg">{connection.material_code || '-'}</p>
-      <p className="flex-1 px-3 text-dg">{connection.material_unit || '-'}</p>
-      <p className="flex-[0.5] px-3 text-dg">
+      <p
+        className="flex-1 px-3 text-dg truncate"
+        title={connection.material_code || '-'}
+      >
+        {connection.material_code || '-'}
+      </p>
+      <p
+        className="flex-1 px-3 text-dg truncate"
+        title={connection.material_unit || '-'}
+      >
+        {connection.material_unit || '-'}
+      </p>
+      <p
+        className="flex-[0.5] px-3 text-dg truncate"
+        title={connection.material_spec || '-'}
+      >
         {connection.material_spec || '-'}
       </p>
       <input
-        type="number"
+        type="text"
         className="flex-[0.5] px-3 text-dg focus:outline-none w-full min-w-0"
-        value={
-          materialQuantityForm.watch('quantity') !== undefined
-            ? materialQuantityForm.watch('quantity') || ''
-            : connection.quantity || ''
-        }
+        value={displayValue}
         placeholder="(필수)"
         onChange={(e) => handleQuantityChangeLocal(e.target.value)}
-        onBlur={(e) => handleSaveQuantity(parseInt(e.target.value) || 0)}
+        onBlur={(e) => {
+          const cleanValue = e.target.value.replace(/[^0-9]/g, '');
+          handleSaveQuantity(parseInt(cleanValue) || 0);
+        }}
         onKeyDown={handleNumberKeyDown}
         onCompositionEnd={handleCompositionEnd}
         disabled={isSaving}
-        min="0"
       />
       <div className="flex-[0.8] px-3 text-dg flex justify-between">
         {status === '부족' || status === '충분' ? (

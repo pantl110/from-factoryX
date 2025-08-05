@@ -12,9 +12,12 @@ import {
   ProductMaterialConnectionModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
+import Pagination from '@/components/pagination';
 
 interface ProductRequiringMaterialProps {
   materialId: number;
+  handleOpenDeleteModal: (connectionId: number) => void;
+  onProductClick: (productId: number) => void;
 }
 
 export interface ProductRequiringMaterialRefModel {
@@ -28,13 +31,30 @@ type ConnectionModelType =
 const ProductRequiringMaterial = forwardRef<
   ProductRequiringMaterialRefModel,
   ProductRequiringMaterialProps
->(({ materialId }, ref) => {
+>(({ materialId, handleOpenDeleteModal, onProductClick }, ref) => {
   const { getMaterialProductConnections, data: connections } =
     useMaterialProduct();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [productConnections, setProductConnections] = useState<
     ConnectionModelType[]
   >([]);
+
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+  const totalPages = Math.ceil(productConnections.length / pageSize);
+
+  // 현재 페이지의 연결된 제품들만 표시
+  const getCurrentPageConnections = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return productConnections.slice(startIndex, endIndex);
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   // materialId나 refreshTrigger가 변경될 때마다 연결된 제품들을 가져오기
   useEffect(() => {
@@ -47,15 +67,18 @@ const ProductRequiringMaterial = forwardRef<
   useEffect(() => {
     if (connections && Array.isArray(connections)) {
       setProductConnections(connections);
+      setCurrentPage(1); // 데이터가 변경되면 첫 페이지로 리셋
     } else if (connections && connections.created_connections) {
       // API 응답이 MaterialProductConnectionResponseModel 형태인 경우
       setProductConnections(connections.created_connections);
+      setCurrentPage(1); // 데이터가 변경되면 첫 페이지로 리셋
     }
   }, [connections]);
 
   // 외부에서 호출할 수 있는 refresh 함수
   const refresh = useCallback(() => {
     setRefreshTrigger((prev) => prev + 1);
+    setCurrentPage(1); // 새로고침 시 첫 페이지로 리셋
   }, []);
 
   // ref를 통해 refresh 함수 노출
@@ -76,6 +99,7 @@ const ProductRequiringMaterial = forwardRef<
         code: connection.material_code,
         spec: connection.material_spec,
         unit: connection.material_unit,
+        id: connection.material_id || 0,
       };
     }
     // ProductMaterialConnectionModel인지 확인
@@ -85,9 +109,10 @@ const ProductRequiringMaterial = forwardRef<
         code: connection.product_code,
         spec: connection.product_spec,
         unit: connection.product_unit,
+        id: connection.product_id || 0,
       };
     }
-    return { name: '-', code: '-', spec: '-', unit: '-' };
+    return { name: '-', code: '-', spec: '-', unit: '-', id: 0 };
   };
 
   return (
@@ -99,8 +124,9 @@ const ProductRequiringMaterial = forwardRef<
             <p className="flex-1 py-1 px-3 text-sv">품목 코드</p>
             <p className="flex-1 py-1 px-3 text-sv">규격</p>
             <p className="w-[80px] py-1 px-3 text-sv">단위</p>
+            <div className="w-9" />
           </div>
-          {productConnections.map((connection) => {
+          {getCurrentPageConnections().map((connection) => {
             const productInfo = getProductInfo(connection);
             return (
               <ProductRequiringMaterialItem
@@ -109,9 +135,20 @@ const ProductRequiringMaterial = forwardRef<
                 productCode={productInfo.code}
                 size={productInfo.spec}
                 unit={productInfo.unit}
+                connectionId={connection.connection_id}
+                handleOpenDeleteModal={handleOpenDeleteModal}
+                onProductClick={onProductClick}
+                productId={productInfo.id}
               />
             );
           })}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       ) : (
         <NoHistoryBox

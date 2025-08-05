@@ -26,6 +26,10 @@ export interface PageStatusModel {
   isProductionPlanSaveModalOpen: boolean;
   setProductionPlanSaveModalOpen: (open: boolean) => void;
 
+  // production의 "생산 계획" 탭에서 다음 버튼 누르기 전 모든 필드가 입력되었는지 여부
+  isProductionPlanValid: boolean;
+  setProductionPlanValid: (valid: boolean) => void;
+
   // production의 "납품" 상태의 "납품" 탭에서 <반품 등록> 버튼 클릭 시 모달 오픈
   isAddReturnModalOpen: boolean;
   setAddReturnModalOpen: (open: boolean) => void;
@@ -45,6 +49,8 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   isProductionPlanSaveModalOpen: false,
   setProductionPlanSaveModalOpen: (open) =>
     set({ isProductionPlanSaveModalOpen: open }),
+  isProductionPlanValid: false,
+  setProductionPlanValid: (valid) => set({ isProductionPlanValid: valid }),
   isAddReturnModalOpen: false,
   setAddReturnModalOpen: (open) => set({ isAddReturnModalOpen: open }),
   isMoveToStorageModalOpen: false,

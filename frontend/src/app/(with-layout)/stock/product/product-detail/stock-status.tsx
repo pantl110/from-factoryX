@@ -42,7 +42,7 @@ const StockStatus = ({
             <p className="flex-[0.5] px-3 text-sv">단위</p>
             <p className="flex-[0.5] px-3 text-sv">사용 수량</p>
             <p className="flex-[0.8] px-3 text-sv">자재 재고 상태</p>
-            <div className="w-8" />
+            <div className="w-9" />
           </div>
 
           {connections.map((connection: ConnectionModelType, index: number) => {
