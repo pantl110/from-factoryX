@@ -97,7 +97,7 @@ export const useGetFactory = () => {
     setError(null);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/${factoryId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/detail?factory_id=${factoryId}`,
         {
           method: 'GET',
           credentials: 'include',

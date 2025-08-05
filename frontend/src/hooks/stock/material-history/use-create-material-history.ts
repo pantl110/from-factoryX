@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import {
   MaterialHistoryModel,
-  MaterialHistoryPriceResponseModel,
+  MaterialHistoryResponseModel,
 } from '@/types/data-model';
 
 interface CreateMaterialHistoryResponseModel {
-  materials: MaterialHistoryPriceResponseModel[];
+  materials: MaterialHistoryResponseModel[];
 }
 
 // 로컬스토리지에서 factoryId를 안전하게 가져오는 함수

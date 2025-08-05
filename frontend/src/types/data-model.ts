@@ -345,8 +345,8 @@ export interface MaterialHistoryModel {
   materials: MaterialItemModel[];
 }
 
-// 업체별 단가 비교 // 원자재 히스토리 조회
-export interface MaterialHistoryPriceResponseModel {
+// 업체별 단가 비교 & 원자재 입출고 내역// 원자재 히스토리 조회
+export interface MaterialHistoryResponseModel {
   id: number; // material_history_id
   type: '구매' | '소모'; // 구매 또는 소비
   client_id: number;
@@ -360,23 +360,8 @@ export interface MaterialHistoryPriceResponseModel {
   cash_receipt_id?: number | null; // 현금영수증 연결 ID (null 가능)
 }
 
-export interface MaterialHistoryPriceListResponseModel extends PaginationModel {
-  data: MaterialHistoryPriceResponseModel[];
-}
-
-// 원자재 입출고 내역 // 원자재 히스토리 디테일 조회
-export interface MaterialHistoryStockResponseModel {
-  id: number; // material_history_id
-  date: string; // 처리일자 (ISO8601)
-  type: '구매' | '소모'; // 구매 또는 소모
-  quantity: number; // 수량
-  total_stock: number; // 이력 반영 후 현재 재고
-  purchase_tax_invoice_id: number | null; // 매입 세금계산서 연결 ID (null 가능)
-  cash_receipt_id: number | null; // 현금영수증 연결 ID (null 가능)
-}
-
-export interface MaterialHistoryStockListResponseModel extends PaginationModel {
-  data: MaterialHistoryStockResponseModel[];
+export interface MaterialHistoryListResponseModel extends PaginationModel {
+  data: MaterialHistoryResponseModel[];
 }
 
 //////////////////////

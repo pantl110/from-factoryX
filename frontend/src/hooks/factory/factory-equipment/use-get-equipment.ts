@@ -4,6 +4,17 @@ import {
   EquipmentResponseModel,
 } from '@/types/data-model';
 
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
+
 const useGetEquipment = () => {
   const [equipmentList, setEquipmentList] =
     useState<EquipmentListResponseModel | null>(null);
@@ -16,9 +27,17 @@ const useGetEquipment = () => {
     setIsLoading(true);
     setError(null);
 
+    // 로컬스토리지에서 factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      setError('공장 정보가 없습니다.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -44,13 +63,24 @@ const useGetEquipment = () => {
   const searchAllFields = async (value: string) => {
     setIsLoading(true);
     setError(null);
+
+    // 로컬스토리지에서 factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      setError('공장 정보가 없습니다.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const isNumber = !isNaN(Number(value)) && value.trim() !== '';
       const endpoints = [
-        { qs: `name=${encodeURIComponent(value)}` },
-        { qs: `status=${encodeURIComponent(value)}` },
-        { qs: `location=${encodeURIComponent(value)}` },
-        ...(isNumber ? [{ qs: `priority=${Number(value)}` }] : []),
+        { qs: `name=${encodeURIComponent(value)}&factory_id=${factoryId}` },
+        { qs: `status=${encodeURIComponent(value)}&factory_id=${factoryId}` },
+        { qs: `location=${encodeURIComponent(value)}&factory_id=${factoryId}` },
+        ...(isNumber
+          ? [{ qs: `priority=${Number(value)}&factory_id=${factoryId}` }]
+          : []),
       ];
       const fetches = endpoints.map(({ qs }) =>
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?${qs}`, {

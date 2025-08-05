@@ -1,8 +1,8 @@
-import { MaterialHistoryStockResponseModel } from '@/types/data-model';
+import { MaterialHistoryResponseModel } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
 
 interface MaterialStockLogItemProps {
-  data: MaterialHistoryStockResponseModel;
+  data: MaterialHistoryResponseModel;
 }
 
 const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {

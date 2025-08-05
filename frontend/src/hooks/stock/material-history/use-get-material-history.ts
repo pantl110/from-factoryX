@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
-  MaterialHistoryPriceResponseModel,
-  MaterialHistoryPriceListResponseModel,
+  MaterialHistoryResponseModel,
+  MaterialHistoryListResponseModel,
 } from '@/types/data-model';
 
 interface GetMaterialHistoryOptionModel {
@@ -29,7 +29,7 @@ const useGetMaterialHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [histories, setHistories] =
-    useState<MaterialHistoryPriceListResponseModel | null>(null);
+    useState<MaterialHistoryListResponseModel | null>(null);
 
   const getMaterialHistory = async (
     materialId: number,
@@ -84,14 +84,13 @@ const useGetMaterialHistory = () => {
       });
 
       if (response.ok) {
-        const result: MaterialHistoryPriceListResponseModel =
-          await response.json();
+        const result: MaterialHistoryListResponseModel = await response.json();
 
         // API 응답을 그대로 사용 (백엔드에서 올바른 구조로 보내줄 것으로 예상)
-        const transformedData: MaterialHistoryPriceListResponseModel = {
+        const transformedData: MaterialHistoryListResponseModel = {
           ...result,
           data:
-            result.data?.map((item: MaterialHistoryPriceResponseModel) => ({
+            result.data?.map((item: MaterialHistoryResponseModel) => ({
               ...item,
               type: item.type,
               client_name: item.client_name || '',

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MaterialHistoryPriceResponseModel } from '@/types/data-model';
+import { MaterialHistoryResponseModel } from '@/types/data-model';
 
 interface SingleMaterialHistoryCreateModel {
   material_id: number;
@@ -15,7 +15,7 @@ const useCreateSingleMaterialHistory = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [createdHistory, setCreatedHistory] =
-    useState<MaterialHistoryPriceResponseModel | null>(null);
+    useState<MaterialHistoryResponseModel | null>(null);
 
   const createSingleMaterialHistory = async (
     data: SingleMaterialHistoryCreateModel
@@ -38,7 +38,7 @@ const useCreateSingleMaterialHistory = () => {
       );
 
       if (response.ok) {
-        const result: MaterialHistoryPriceResponseModel = await response.json();
+        const result: MaterialHistoryResponseModel = await response.json();
         setCreatedHistory(result);
         setIsSuccess(true);
         return { success: true, data: result };

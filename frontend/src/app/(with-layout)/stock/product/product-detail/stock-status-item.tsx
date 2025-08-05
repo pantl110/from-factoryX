@@ -78,6 +78,7 @@ const StockStatusItem = ({
   // 초기값 설정
   useEffect(() => {
     setDisplayValue(formatNumberWithCommas(connection.quantity));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connection.quantity]);
 
   // 수량 변경 처리

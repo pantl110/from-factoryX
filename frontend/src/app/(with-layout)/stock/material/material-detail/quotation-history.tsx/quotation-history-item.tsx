@@ -1,9 +1,9 @@
-import { MaterialHistoryPriceResponseModel } from '@/types/data-model';
+import { MaterialHistoryResponseModel } from '@/types/data-model';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 
 interface QuotationHistoryItemProps {
   onClick: () => void;
-  data: MaterialHistoryPriceResponseModel;
+  data: MaterialHistoryResponseModel;
 }
 
 const QuotationHistoryItem = ({ onClick, data }: QuotationHistoryItemProps) => {

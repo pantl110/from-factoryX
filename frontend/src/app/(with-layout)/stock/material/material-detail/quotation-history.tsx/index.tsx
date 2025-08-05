@@ -1,11 +1,11 @@
-import { MaterialHistoryPriceResponseModel } from '@/types/data-model';
+import { MaterialHistoryResponseModel } from '@/types/data-model';
 import QuotationHistoryItem from './quotation-history-item';
 import NoHistoryBox from '@/ui/no-history-box';
 import Pagination from '@/components/pagination';
 
 interface QuotationHistoryProps {
   setIsClinetDetailPanelOpen: (clientId: number) => void;
-  histories?: MaterialHistoryPriceResponseModel[];
+  histories?: MaterialHistoryResponseModel[];
   isLoading?: boolean;
   currentPage?: number;
   totalPages?: number;

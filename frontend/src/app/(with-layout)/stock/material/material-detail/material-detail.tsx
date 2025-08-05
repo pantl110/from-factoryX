@@ -19,7 +19,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { usePeriodSelector } from '@/hooks/use-period-selector';
 import { ProductRequiringMaterialRefModel } from './product-requiring-material';
 import CustomDateSelector from '@/ui/dropdown/select-period-dropdown/custom-date-selector';
-import { useGetMaterialHistory, useGetMaterialHistoryDetail } from '@/hooks';
+import { useGetMaterialHistory } from '@/hooks';
 
 export type { MaterialInfoModel } from './material-info';
 
@@ -94,16 +94,16 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     const [isStockLogPeriodDropdownOpen, setIsStockLogPeriodDropdownOpen] =
       useState(false);
 
-    // 원자재 히스토리 조회 훅
-    const { getMaterialHistory, histories: priceHistories } =
+    // 업체별 단가 비교 조회 훅 (타입: 구매만)
+    const { getMaterialHistory: getPriceHistory, histories: priceHistories } =
       useGetMaterialHistory();
 
-    // 재고 이력 조회 훅
+    // 재고 이력 조회 훅 (전체)
     const {
-      getMaterialHistoryDetail,
+      getMaterialHistory: getStockHistory,
       histories: stockHistories,
       isLoading: isStockLoading,
-    } = useGetMaterialHistoryDetail();
+    } = useGetMaterialHistory();
 
     // 페이지네이션 상태
     const [currentPage, setCurrentPage] = useState(1);
@@ -116,7 +116,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       pageSize,
       onPeriodChange: async (filters) => {
         if (materialId) {
-          await getMaterialHistory(materialId, {
+          await getPriceHistory(materialId, {
             start_date: filters.start_date as string | undefined,
             end_date: filters.end_date as string | undefined,
             page: filters.page as number,
@@ -134,11 +134,11 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       pageSize,
       onPeriodChange: async (filters) => {
         if (materialId) {
-          await getMaterialHistoryDetail(materialId, {
+          await getStockHistory(materialId, {
             start_date: filters.start_date as string | undefined,
             end_date: filters.end_date as string | undefined,
             page: filters.page as number,
-            size: pageSize,
+            page_size: pageSize,
           });
         }
       },
@@ -149,10 +149,17 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       setCurrentPage(page);
       // 페이지 변경 시에도 API 호출
       if (materialId) {
-        getMaterialHistory(materialId, {
+        // 업체별 단가 비교 (타입: 구매만)
+        getPriceHistory(materialId, {
           page,
           page_size: pageSize,
           type: '구매',
+        });
+
+        // 재고 이력 (타입: 전체)
+        getStockHistory(materialId, {
+          page,
+          page_size: pageSize,
         });
       }
     };

@@ -2,10 +2,10 @@ import { useState } from 'react';
 import MaterialStockLogItem from './material-stock-log-item';
 import NoHistoryBox from '@/ui/no-history-box';
 import Pagination from '@/components/pagination';
-import { MaterialHistoryStockResponseModel } from '@/types/data-model';
+import { MaterialHistoryResponseModel } from '@/types/data-model';
 
 interface MaterialStockLogProps {
-  histories?: MaterialHistoryStockResponseModel[];
+  histories?: MaterialHistoryResponseModel[];
   isLoading?: boolean;
   currentPage?: number;
   totalPages?: number;
