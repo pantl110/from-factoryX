@@ -1,11 +1,5 @@
-import Chip from "@/ui/chip";
-import {
-  ProductionStatusType,
-  ProductionStatusColorMap,
-} from "@/types/status-type";
-
 export interface ProductionTableItemProps {
-  status: ProductionStatusType;
+  companyName: string;
   productName: string;
   productCode: string;
   size: string;
@@ -16,7 +10,7 @@ export interface ProductionTableItemProps {
 }
 
 const ProductionTableItem = ({
-  status,
+  companyName,
   productName,
   productCode,
   size,
@@ -25,26 +19,35 @@ const ProductionTableItem = ({
   machine,
   time,
 }: ProductionTableItemProps) => {
-  const colors = ProductionStatusColorMap[status];
-
   return (
-    <div className="flex w-[1324px] h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <div className="flex items-center py-1 px-3 w-[150px]">
-        <Chip
-          text={status}
-          textColor={colors.textColor}
-          bgColor={colors.bgColor}
-        />
-      </div>
-      <p className="py-1 px-3 flex-2">{productName}</p>
-      <p className="py-1 px-3 flex-2">{productCode}</p>
-      <p className="py-1 px-3 flex-1">{size}</p>
-      <p className="py-1 px-3 w-[80px]">{unit}</p>
-      <p className="flex items-center py-1 px-3 flex-1">
+    <div className="flex min-w-[1324px] h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
+      <p className="px-3 flex-2 truncate" title={companyName}>
+        {companyName}
+      </p>
+      <p className="px-3 flex-2 truncate" title={productName}>
+        {productName}
+      </p>
+      <p className="px-3 flex-2 truncate" title={productCode}>
+        {productCode}
+      </p>
+      <p className="px-3 flex-1 truncate" title={size}>
+        {size}
+      </p>
+      <p className="px-3 w-[80px] truncate" title={unit}>
+        {unit}
+      </p>
+      <p
+        className="flex items-center px-3 flex-1 truncate"
+        title={quantity.toLocaleString()}
+      >
         {quantity.toLocaleString()}
       </p>
-      <p className="flex items-center py-1 px-3 flex-2">{machine}</p>
-      <p className="py-1 px-3 w-[200px]">{time}</p>
+      <p className="flex items-center px-3 flex-2 truncate" title={machine}>
+        {machine}
+      </p>
+      <p className="px-3 w-[200px]" title={time}>
+        {time}
+      </p>
     </div>
   );
 };

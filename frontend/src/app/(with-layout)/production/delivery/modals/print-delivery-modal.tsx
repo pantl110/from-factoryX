@@ -1,5 +1,5 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal";
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
 
 interface PrintDeliveryModalProps {
   onClose: () => void;
@@ -15,7 +15,12 @@ const PrintDeliveryModal = ({ onClose }: PrintDeliveryModalProps) => {
       width="w-[487px]"
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text="취소하기" borderColor="border-lg" onClick={onClose} />
+        <MiniBtn
+          text="취소하기"
+          borderColor="border-lg"
+          onClick={onClose}
+          hoverColor=""
+        />
         <MiniBtn
           text="출력하기"
           bgColor="bg-primary"

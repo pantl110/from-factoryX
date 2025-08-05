@@ -1,14 +1,19 @@
+import { CaretDown } from '@phosphor-icons/react';
+
 interface ChipProps {
   text: string;
   bgColor?: string;
   textColor?: string;
   borderColor?: string;
   containerWidth?: string;
-  sm?: boolean;
+  state?: boolean;
   radius?: string;
-  icon?: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   cursor?: string;
+  hover?: string;
+  height?: string;
+  padding?: string;
+  width?: string;
 }
 
 const Chip = ({
@@ -17,22 +22,30 @@ const Chip = ({
   textColor,
   borderColor,
   containerWidth,
-  sm = false,
-  radius = "rounded",
-  icon,
+  state = false,
+  radius = 'rounded',
   onClick,
-  cursor = "",
+  cursor = onClick ? 'cursor-pointer' : '',
+  hover = '',
+  height = 'h-8',
+  padding = 'px-3',
+  width = 'w-fit',
 }: ChipProps) => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClick?.(e);
+  };
+
   return (
     <div
       className={`${containerWidth}`}
-      onClick={onClick}
-      role={onClick ? "button" : undefined}
+      onClick={onClick ? handleClick : undefined}
+      role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={
         onClick
           ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
+              if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 onClick();
               }
@@ -41,12 +54,12 @@ const Chip = ({
       }
     >
       <div
-        className={`flex gap-1 items-center w-fit ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${
-          sm ? "h-7 px-2" : "h-9 px-3"
-        } ${borderColor ? `border ${borderColor}` : ""}`}
+        className={`flex gap-1 items-center justify-center ${width} ${height} ${padding} ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${hover} ${borderColor ? `border ${borderColor}` : ''} ${
+          state ? 'cursor-pointer' : ''
+        }`}
       >
-        <p>{text}</p>
-        {icon}
+        <span>{text}</span>
+        {state && <CaretDown size={12} />}
       </div>
     </div>
   );

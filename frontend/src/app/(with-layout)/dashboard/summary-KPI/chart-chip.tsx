@@ -1,4 +1,4 @@
-import { TrendUpIcon, TrendDownIcon } from "@phosphor-icons/react/dist/ssr";
+import { TrendUpIcon, TrendDownIcon } from '@phosphor-icons/react/dist/ssr';
 
 interface ChartChipProps {
   up: boolean;
@@ -6,12 +6,12 @@ interface ChartChipProps {
 
 const ChartChip = ({ up }: ChartChipProps) => {
   return (
-    <div className={`py-1 px-2 rounded-xl ${up ? "bg-red-8" : "bg-primary-8"}`}>
+    <div className={`py-1 px-2 rounded-xl ${up ? 'bg-red-8' : 'bg-primary-8'}`}>
       <div className="flex gap-1 items-center">
-        <div className={`w-4 h-4 ${up ? "text-red" : "text-primary"}`}>
+        <div className={`w-4 h-4 ${up ? 'text-red' : 'text-primary'}`}>
           {up ? <TrendUpIcon size={16} /> : <TrendDownIcon size={16} />}
         </div>
-        <p className={`Heading-5 ${up ? "text-red" : "text-primary"}`}>90%</p>
+        <p className={`Heading-5 ${up ? 'text-red' : 'text-primary'}`}>90%</p>
       </div>
     </div>
   );

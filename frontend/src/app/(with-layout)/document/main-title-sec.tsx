@@ -1,4 +1,4 @@
-import { DocumentType } from "./types";
+import { DocumentType } from './types';
 
 interface MainTitleSecProps {
   selectedType: DocumentType;
@@ -7,11 +7,11 @@ interface MainTitleSecProps {
 
 const MainTitleSec = ({ selectedType, setSelectedType }: MainTitleSecProps) => {
   const documentTypes = [
-    "주문서",
-    "생산지시서",
-    "거래명세서",
-    "매출 세금계산서",
-    "매입 세금계산서",
+    '주문서',
+    '생산지시서',
+    '거래명세서',
+    '매출 세금계산서',
+    '매입 세금계산서',
   ];
 
   return (
@@ -22,8 +22,8 @@ const MainTitleSec = ({ selectedType, setSelectedType }: MainTitleSecProps) => {
           <button
             key={type}
             type="button"
-            className={`cursor-pointer Heading-3 ${selectedType === type ? "text-dg" : "text-gr"}`}
-            onClick={() => setSelectedType(type)}
+            className={`cursor-pointer Heading-3 ${selectedType === type ? 'text-dg' : 'text-gr'}`}
+            onClick={() => setSelectedType(type as DocumentType)}
           >
             {type}
           </button>

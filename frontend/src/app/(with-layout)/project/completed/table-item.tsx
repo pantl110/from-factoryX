@@ -1,11 +1,13 @@
-"use client";
+'use client';
 
-import Chip from "@/ui/chip";
-import { useRouter } from "next/navigation";
+import Chip from '@/ui/chip';
+import { useRouter } from 'next/navigation';
 import {
   CompletedProjectStatusType,
   CompletedProjectStatusColorMap,
-} from "@/types/status-type";
+} from '@/types/status-type';
+import Checkbox from '@/ui/checkbox';
+import { CopySimple } from '@phosphor-icons/react/dist/ssr';
 
 interface TableItemProps {
   id: number;
@@ -13,6 +15,8 @@ interface TableItemProps {
   companyName: string;
   productName: string;
   date: string;
+  checked: boolean;
+  onToggle: () => void;
 }
 
 const TableItem = ({
@@ -21,22 +25,24 @@ const TableItem = ({
   companyName,
   productName,
   date,
+  checked,
+  onToggle,
 }: TableItemProps) => {
   const router = useRouter();
   const chipColors = CompletedProjectStatusColorMap[status];
   const handleClick = () => {
-    if (status === "중단") return;
+    if (status === '중단') return;
     router.push(`/production/${id}`);
   };
 
   return (
     <div
-      className="flex items-center h-14 w-full min-w-[1146px] border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-gray-50"
+      className="group flex items-center h-14 w-full min-w-[1146px] border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
       role="button"
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") handleClick();
+        if (e.key === 'Enter' || e.key === ' ') handleClick();
       }}
     >
       <div
@@ -45,10 +51,10 @@ const TableItem = ({
         tabIndex={0}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") e.stopPropagation();
+          if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
         }}
       >
-        <input type="checkbox" className="w-4 h-4 border-sv" />
+        <Checkbox isChecked={checked} onToggle={onToggle} />
       </div>
       <div className="py-1 px-3 w-[150px]">
         <Chip
@@ -60,6 +66,19 @@ const TableItem = ({
       <p className="flex-1 py-1 px-3 text-dg">{companyName}</p>
       <p className="flex-1 py-1 px-3 text-dg">{productName}</p>
       <p className="w-[200px] py-1 px-3 text-dg">{date}</p>
+      <div
+        className="w-9"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {status === '완료' && (
+          <CopySimple
+            size={20}
+            className="text-sv opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          />
+        )}
+      </div>
     </div>
   );
 };

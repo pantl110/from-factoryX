@@ -1,13 +1,19 @@
-import { ProjectDataModel } from "@/mocks/project-data";
-import Chip from "@/ui/chip";
+'use client';
+
+import { ProjectDataModel } from '@/mocks/project-data';
+import Chip from '@/ui/chip';
 
 interface PendingQuoteItemProps {
   project: ProjectDataModel;
+  onClick: () => void;
 }
 
-const PendingQuoteItem = ({ project }: PendingQuoteItemProps) => {
+const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
   return (
-    <div className="flex flex-col flex-shrink-0 w-[453px] gap-2 p-4 border rounded-lg border-[#eeeeee]">
+    <div
+      className="flex flex-col flex-shrink-0 w-[453px] gap-2 p-4 border rounded-lg border-[#eeeeee] cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex flex-col gap-2.5">
         <h4 className="Heading-4">{project.companyName}</h4>
         <div className="Me_Body-1 text-sv">

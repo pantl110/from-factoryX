@@ -1,110 +1,177 @@
-"use client";
+'use client';
 
-import { useParams, notFound } from "next/navigation";
-import { useState, useEffect } from "react";
-import { projectData, ProjectDataModel } from "@/mocks/project-data";
-import completedProjectData, {
-  CompletedProjectDataModel,
-} from "@/mocks/completed-project-data";
-import usePageStatusStore from "@/store/page-status-store";
-import ProductFlowTitle from "../product-flow-title";
-import ProductionPlan from "../production-plan";
-import ProductionMonitor from "../production-monitor";
-import ProductionLog from "../production-log";
-import Delivery from "../delivery";
-import TaxDocumentView from "../../document/tax-document-view";
-import TransactionDocumentView from "../../document/transaction-document-view";
-import OrderDocumentView from "../../document/order-document-view";
-import { ProjectStatusType } from "@/types/status-type";
+import { useParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import usePageStatusStore from '@/store/page-status-store';
+import { useGetProjectStatus } from '@/hooks';
+import useGetDetailQuotation from '@/hooks/document/use-get-quotation';
+import ProductFlowTitle from '../product-flow-title';
+import ProductionPlan from '../production-plan';
+import ProductionMonitor from '../production-monitor';
+import ProductionLog from '../production-log';
+import Delivery from '../delivery';
+import TaxDocumentView from '../../document/tax-document-view';
+import TransactionDocumentView from '../../document/transaction-document-view';
+import OrderDocumentView from '../../document/order-document-view';
+import { ProjectStatusType } from '@/types/status-type';
+import { ProductionTabType } from '@/components/top-bar/types';
+import Spinner from '@/ui/spinner';
 
-const getTabsByStatus = (status: string) => {
-  if (status === "생산 대기") return ["생산 계획", "주문서"];
-  if (status === "생산 중") return ["생산 현황", "생산 계획", "주문서"];
-  if (status === "생산 완료") return ["생산 현황", "생산 내역", "주문서"];
-  if (status === "납품") return ["납품", "생산 현황", "생산 내역", "주문서"];
-  if (status === "프로젝트 완료")
+const getTabsByStatus = (status: ProjectStatusType): ProductionTabType[] => {
+  if (status === 'pending' || status === '생산 대기')
+    return ['생산 계획', '주문서'];
+  if (status === 'production' || status === '생산 중')
+    return ['생산 현황', '생산 계획', '주문서'];
+  if (status === 'manufactured' || status === '생산 완료')
+    return ['생산 현황', '생산 내역', '주문서'];
+  if (status === 'delivery' || status === '납품')
+    return ['납품', '생산 현황', '생산 내역', '주문서'];
+  if (status === 'completed' || status === '프로젝트 완료')
     return [
-      "세금계산서",
-      "거래명세서",
-      "납품",
-      "생산 현황",
-      "생산 내역",
-      "주문서",
+      '세금계산서',
+      '거래명세서',
+      '납품',
+      '생산 현황',
+      '생산 내역',
+      '주문서',
     ];
-  return ["생산 계획", "주문서"];
+  return ['생산 계획', '주문서'];
 };
 
-const ProductionPage = () => {
+const ProductionPageContent = () => {
   const params = useParams();
-  const id = Number(params.id);
-  const setPageStatus = usePageStatusStore((state) => state.setPageStatus); // 바뀐 프로젝트상태 전역상태로로관리 -> top-bar 상태에 적용
+  const projectId = Number(params.id);
+  const { getProjectStatus, isLoading } = useGetProjectStatus();
+  const setPageStatus = usePageStatusStore((state) => state.setPageStatus);
   const [selectedTab, setSelectedTab] = useState(0);
-  const setSelectedTabGlobal = usePageStatusStore(
-    (state) => state.setSelectedTab, // 바뀐 탭 전역상태로관리 -> top-bar 상태에 적용
+  const setProductionTab = usePageStatusStore(
+    (state) => state.setProductionTab
   );
 
-  const project =
-    projectData.find((item: ProjectDataModel) => item.id === id) ||
-    completedProjectData.find(
-      (item: CompletedProjectDataModel) => item.id === id,
-    );
+  // 프로젝트 상태 데이터
+  const [projectStatus, setProjectStatus] = useState<{
+    project_id: number;
+    status: string;
+    created_at: string;
+    updated_at: string;
+  } | null>(null);
 
-  // Determine if the project is a stopped (중단) completed project
-  const isStopped = project && "status" in project && project.status === "중단"; // '보관된 프로젝트에서 중단 상태이면 is Stopped ture'
+  // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
+  const { data: quotationData } = useGetDetailQuotation(projectId);
 
-  const newStatus =
-    project?.status === "완료" ? "프로젝트 완료" : project?.status || null;
-  const tabs = getTabsByStatus(newStatus || "");
-
+  // 프로젝트 상태 로드 및 store 업데이트
   useEffect(() => {
-    if (!project || isStopped) return;
-    setPageStatus(newStatus);
-    setSelectedTabGlobal(tabs[selectedTab]);
-    return () => {
-      setPageStatus(null);
-      setSelectedTabGlobal(null);
+    if (!projectId) return;
+
+    const loadProjectStatus = async () => {
+      try {
+        const result = await getProjectStatus(projectId);
+        if (result.success && result.data) {
+          setProjectStatus(result.data);
+          // 프로젝트 상태를 store에 업데이트
+          const projectStatus = result.data.status as ProjectStatusType;
+          const tabs = getTabsByStatus(projectStatus);
+
+          setPageStatus(projectStatus);
+          setProductionTab(tabs[selectedTab]);
+        } else {
+          alert('프로젝트 상태 로드 실패');
+        }
+      } catch {
+        alert('프로젝트 상태 로드 중 오류');
+      }
     };
+
+    loadProjectStatus();
   }, [
-    project,
-    isStopped,
-    newStatus,
+    projectId,
+    getProjectStatus,
     selectedTab,
     setPageStatus,
-    setSelectedTabGlobal,
-    tabs,
+    setProductionTab,
   ]);
 
-  if (!project || isStopped) return notFound();
+  const projectStatusType =
+    (projectStatus?.status as ProjectStatusType) || 'quotation';
+  const tabs = getTabsByStatus(projectStatusType);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-60px)]">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!projectStatus || !projectId) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-60px)]">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full flex flex-col">
       <ProductFlowTitle
-        status={newStatus as ProjectStatusType}
+        status={projectStatusType}
         tabs={tabs}
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
       />
 
-      {tabs[selectedTab] === "세금계산서" && (
-        <div className="px-10 py-5">
+      {tabs[selectedTab] === '세금계산서' && (
+        <div className="px-10 pt-5 pb-10">
           <TaxDocumentView taxType="매출" />
         </div>
       )}
-      {tabs[selectedTab] === "거래명세서" && (
-        <div className="px-10 py-5">
+      {tabs[selectedTab] === '거래명세서' && (
+        <div className="px-10 pt-5 pb-10">
           <TransactionDocumentView />
         </div>
       )}
-      {tabs[selectedTab] === "납품" && <Delivery />}
-      {tabs[selectedTab] === "생산 현황" && <ProductionMonitor />}
-      {tabs[selectedTab] === "생산 내역" && <ProductionLog />}
-      {tabs[selectedTab] === "생산 계획" && <ProductionPlan />}
-      {tabs[selectedTab] === "주문서" && (
-        <div className="px-10 py-5">
-          <OrderDocumentView />
+      {tabs[selectedTab] === '납품' && <Delivery />}
+      {tabs[selectedTab] === '생산 현황' && <ProductionMonitor />}
+      {tabs[selectedTab] === '생산 내역' && <ProductionLog />}
+      {tabs[selectedTab] === '생산 계획' && <ProductionPlan />}
+      {tabs[selectedTab] === '주문서' && quotationData && (
+        <div className="px-10 pt-5 pb-10">
+          <OrderDocumentView
+            documentTitle="주문서"
+            clientData={{
+              name: quotationData.factory_name,
+              business_registration_number:
+                quotationData.business_registration_number,
+              representative_name: quotationData.representative_name,
+              address: quotationData.address,
+              business_type: quotationData.business_type,
+              business_category: quotationData.business_category,
+            }}
+            dueDate={''}
+            productListInfoTitle="주문 품목 정보"
+            productItems={quotationData.products}
+            supplyAmount={quotationData.products.reduce(
+              (sum, item) => sum + (item.supply_amount || 0),
+              0
+            )}
+          />
         </div>
       )}
     </div>
+  );
+};
+
+const ProductionPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spinner />
+        </div>
+      }
+    >
+      <ProductionPageContent />
+    </Suspense>
   );
 };
 

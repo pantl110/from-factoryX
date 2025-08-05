@@ -1,30 +1,49 @@
-"use client";
+'use client';
 
-import MiniBtn from "@/ui/mini-btn";
-import { BellSimple, User } from "@phosphor-icons/react";
-import { notificationData } from "@/mocks/notification-data";
+import MiniBtn from '@/ui/mini-btn';
+import { BellSimple } from '@phosphor-icons/react';
+import { notificationData } from '@/mocks/notification-data';
+import { ProductionTabType } from './types';
+import ProfileImage from '@/ui/profile-image';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import ProfileModal from './modals/profile-modal';
+import usePageStatusStore from '@/store/page-status-store';
 
 interface TopBarContentProps {
-  selectedTab: string | null;
+  productionTab: ProductionTabType | null;
   pageStatus: string | null;
+
   onProductionPlanSaveClick?: () => void;
   onAddReturnClick?: () => void;
+  onMoveToStorageClick?: () => void;
+  onNotificationClick?: () => void;
 }
 
 const TopBarContent = ({
-  selectedTab,
+  productionTab,
   pageStatus,
   onProductionPlanSaveClick,
   onAddReturnClick,
+  onMoveToStorageClick,
+  onNotificationClick,
 }: TopBarContentProps) => {
-  const isProductionPlanSaveActive =
-    selectedTab === "생산 계획" && pageStatus === "생산 대기";
+  const isProductionPlanValid = usePageStatusStore(
+    (state) => state.isProductionPlanValid
+  ); // 생산 계획 폼 유효성 검사 상태
 
-  if (pageStatus === "프로젝트 완료") {
+  const isProductionPlanSaveActive =
+    productionTab === '생산 계획' &&
+    pageStatus === 'pending' &&
+    isProductionPlanValid;
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const pathname = usePathname();
+
+  if (pageStatus === 'completed') {
     return (
-      <div className="flex">
+      <div className="flex gap-2">
         <MiniBtn
-          text="작업 재개"
+          text="진행 상태로 전환"
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
@@ -33,15 +52,28 @@ const TopBarContent = ({
     );
   }
 
-  if (selectedTab === "주문서" || selectedTab === "생산 현황") {
-    return null;
+  if (productionTab === '주문서' || productionTab === '생산 현황') {
+    return (
+      <MiniBtn
+        text="세금계산서 생성"
+        textColor="text-dg"
+        borderColor="border-lg"
+        hoverColor="hover:bg-bg"
+      />
+    );
   }
 
-  if (selectedTab === "생산 계획") {
+  if (productionTab === '생산 계획') {
     return (
-      <div className="flex">
+      <div className="flex gap-2">
         <MiniBtn
-          text="저장하기"
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+        />
+        <MiniBtn
+          text="다음"
           textColor="text-primary"
           bgColor="bg-primary-8"
           hoverColor="hover:bg-secondary-hover"
@@ -52,12 +84,18 @@ const TopBarContent = ({
     );
   }
 
-  if (selectedTab === "생산 내역") {
-    if (pageStatus === "생산 완료") {
+  if (productionTab === '생산 내역') {
+    if (pageStatus === 'manufactured') {
       return (
-        <div className="flex">
+        <div className="flex gap-2">
           <MiniBtn
-            text="다음단계"
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+          />
+          <MiniBtn
+            text="다음"
             textColor="text-primary"
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
@@ -65,12 +103,25 @@ const TopBarContent = ({
         </div>
       );
     }
-    return null;
+    return (
+      <MiniBtn
+        text="세금계산서 생성"
+        textColor="text-dg"
+        borderColor="border-lg"
+        hoverColor="hover:bg-bg"
+      />
+    );
   }
 
-  if (selectedTab === "납품") {
+  if (productionTab === '납품') {
     return (
       <div className="flex gap-2">
+        <MiniBtn
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+        />
         <MiniBtn
           text="반품 등록"
           textColor="text-red"
@@ -80,9 +131,10 @@ const TopBarContent = ({
         />
         <MiniBtn
           text="보관함으로 이동"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
+          textColor="text-primary"
+          bgColor="bg-primary-8"
+          hoverColor="hover:bg-secondary-hover"
+          onClick={onMoveToStorageClick}
         />
       </div>
     );
@@ -90,17 +142,27 @@ const TopBarContent = ({
 
   // default
   return (
-    <div className="flex">
-      <div className="flex items-center justify-center w-11 h-11 relative cursor-pointer">
+    <div className="flex items-center gap-1">
+      <div
+        className="flex items-center justify-center w-11 h-11 relative cursor-pointer hover:bg-bg rounded-lg"
+        onClick={onNotificationClick}
+      >
         <BellSimple size={20} className="text-dg" />
         {notificationData.length > 0 && (
-          <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full" />
+          <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full " />
         )}
       </div>
-      <div className="flex items-center justify-center w-11 h-11 cursor-pointer">
-        <div className="flex items-center justify-center bg-blue-200 rounded-full w-8 h-8 border-2 border-blue-600">
-          <User size={20} className="text-blue-600" />
-        </div>
+      <div
+        className="flex items-center justify-center w-10 h-10 cursor-pointer relative"
+        onClick={() => setIsProfileModalOpen(true)}
+      >
+        <ProfileImage size="small" />
+
+        {isProfileModalOpen && !pathname.includes('production') && (
+          <div className="absolute top-14.5 right-0">
+            <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
+          </div>
+        )}
       </div>
     </div>
   );

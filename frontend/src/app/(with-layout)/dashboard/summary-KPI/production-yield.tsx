@@ -1,6 +1,4 @@
-import ChartChip from "./chart-chip";
-
-import { CaretUpIcon } from "@phosphor-icons/react/dist/ssr";
+import { CaretUpIcon } from '@phosphor-icons/react/dist/ssr';
 
 const ProductionYield = () => {
   return (
@@ -22,7 +20,7 @@ const ProductionYield = () => {
               </div>
             </div>
           </div>
-          <ChartChip up={true} />
+          {/* <ChartChip up={true} /> */}
         </div>
       </div>
     </div>

@@ -1,0 +1,60 @@
+import { TaxDraftStatusColorMap } from '@/types/status-type';
+import Checkbox from '@/ui/checkbox';
+import Chip from '@/ui/chip';
+
+interface TableItemProps {
+  item: {
+    id: number;
+    status: string;
+    type: string;
+    companyName: string;
+    supplyPrice: number;
+    taxPrice: number;
+    totalPrice: number;
+    date: string;
+  };
+  isChecked: boolean;
+  onToggle: () => void;
+  onItemClick?: () => void;
+}
+
+const TableItem = ({
+  item,
+  isChecked,
+  onToggle,
+  onItemClick,
+}: TableItemProps) => {
+  return (
+    <div
+      className="flex items-center h-14 min-w-[1272px] border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
+      onClick={onItemClick}
+    >
+      <div onClick={(e) => e.stopPropagation()}>
+        <Checkbox isChecked={isChecked} onToggle={onToggle} />
+      </div>
+      <div className="px-3 w-[150px]">
+        <Chip
+          text={item.status}
+          bgColor={
+            TaxDraftStatusColorMap[
+              item.status as keyof typeof TaxDraftStatusColorMap
+            ].bgColor
+          }
+          textColor={
+            TaxDraftStatusColorMap[
+              item.status as keyof typeof TaxDraftStatusColorMap
+            ].textColor
+          }
+        />
+      </div>
+      <p className="px-3 flex-2">{item.type}</p>
+      <p className="px-3 flex-2">{item.companyName}</p>
+      <p className="px-3 w-[200px]">{item.supplyPrice.toLocaleString()}</p>
+      <p className="px-3 w-[200px]">{item.taxPrice.toLocaleString()}</p>
+      <p className="px-3 w-[200px]">{item.totalPrice.toLocaleString()}</p>
+      <p className="px-3 w-[200px]">{item.date}</p>
+    </div>
+  );
+};
+
+export default TableItem;

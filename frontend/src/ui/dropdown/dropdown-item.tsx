@@ -1,29 +1,49 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 interface DropdownItemProps {
   icon?: ReactNode;
-  text: string;
+  text?: string;
   textColor?: string;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
+  children?: ReactNode;
+  noHover?: boolean;
+  chip?: boolean;
+  search?: boolean;
 }
 
 const DropdownItem = ({
   text,
   icon,
-  textColor = "text-dg",
+  textColor = 'text-dg',
   onClick,
+  children,
+  noHover = false,
+  chip = false,
+  search = false,
 }: DropdownItemProps) => {
   return (
     <div
-      className="flex gap-3 w-full h-10 items-center cursor-pointer rounded-lg p-2 hover:bg-bg"
-      onClick={onClick}
+      className={`truncate bg-wh flex gap-3 w-full ${chip ? 'h-fit' : search ? 'h-10' : 'h-12'} items-center cursor-pointer rounded-[4px] p-0 transition-all duration-200 ease-in-out ${
+        noHover ? '' : 'hover:bg-bg'
+      }`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.(e);
+      }}
     >
       {icon && (
-        <div className="flex items-center justify-center w-6 h-6 text-gr">
+        <div className="flex items-center justify-center w-6 h-6 text-gr transition-colors duration-200 ease-in-out">
           {icon}
         </div>
       )}
-      <h4 className={`Heading-4 ${textColor}`}>{text}</h4>
+      {text && (
+        <h4
+          className={`${search ? 'Me_Body-1' : 'Heading-4'} ${textColor} transition-colors duration-200 ease-in-out ${search ? 'text-left pl-2' : 'text-center'} w-full text-center`}
+        >
+          {text}
+        </h4>
+      )}
+      {children}
     </div>
   );
 };

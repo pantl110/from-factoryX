@@ -1,11 +1,28 @@
-import { ReactNode, useRef, useEffect } from "react";
+import { ReactNode, useRef, useEffect } from 'react';
 
 interface DropdownProps {
   children: ReactNode;
   onClose: () => void;
+  width?: string;
+  style?: React.CSSProperties;
+  className?: string;
+  padding?: string;
+  borderColor?: string;
+  maxHeight?: boolean;
+  gap?: string;
 }
 
-const Dropdown = ({ children, onClose }: DropdownProps) => {
+const Dropdown = ({
+  children,
+  onClose,
+  width = 'w-[220px]',
+  style,
+  className = '',
+  padding = 'p-2',
+  borderColor = '',
+  maxHeight = false,
+  gap = '',
+}: DropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 외부 클릭 시 닫기
@@ -19,19 +36,39 @@ const Dropdown = ({ children, onClose }: DropdownProps) => {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside); // 이벤트 리스너 등록
+    document.addEventListener('mousedown', handleClickOutside); // 이벤트 리스너 등록
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside); // 언마운트 시 제거
+      document.removeEventListener('mousedown', handleClickOutside); // 언마운트 시 제거
+    };
+  }, [onClose]);
+
+  // 뷰포트 크기 변경 시 닫기
+  useEffect(() => {
+    const handleResize = () => {
+      onClose();
+    };
+    window.addEventListener('resize', handleResize); // 리사이즈 이벤트 리스너 등록
+    return () => {
+      window.removeEventListener('resize', handleResize); // 언마운트 시 제거
     };
   }, [onClose]);
 
   return (
     <div
       ref={dropdownRef}
-      className="flex flex-col w-[235px] rounded-lg p-2 shadow-lg bg-wh"
+      className={`shadow-[0px_0px_8px_0px_rgba(0,0,0,0.12)] ${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} rounded-lg ${padding} bg-white z-30 ${className} ${
+        maxHeight ? 'max-h-[256px] overflow-y-auto scrollbar-hide' : ''
+      }`}
+      style={style}
     >
-      {children}
+      <div
+        className={`${gap ? 'flex flex-col' : ''} ${gap} ${
+          maxHeight ? 'min-h-0' : ''
+        }`}
+      >
+        {children}
+      </div>
     </div>
   );
 };

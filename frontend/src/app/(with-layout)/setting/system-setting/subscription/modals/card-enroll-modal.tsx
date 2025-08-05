@@ -1,6 +1,6 @@
-import MiniBtn from "@/ui/mini-btn";
-import Modal from "@/ui/modal";
-import { QuestionIcon } from "@phosphor-icons/react/dist/ssr";
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
+import { QuestionIcon } from '@phosphor-icons/react/dist/ssr';
 
 interface CardEnrollModalProps {
   onClose: () => void;
@@ -11,7 +11,7 @@ const CardEnrollModal = ({ onClose }: CardEnrollModalProps) => {
     <Modal
       title="사용하실 결제 카드를 등록해주세요."
       onClose={onClose}
-      width="w-[586px]"
+      width="w-[600px]"
     >
       <div className="flex flex-col gap-1">
         <p className="Me_Body-2 text-gr">
@@ -98,8 +98,19 @@ const CardEnrollModal = ({ onClose }: CardEnrollModalProps) => {
         </div>
       </div>
       <div className="flex justify-end mt-4">
-        <MiniBtn text="취소하기" textColor="text-sv" onClick={onClose} />
-        <MiniBtn text="추가하기" bgColor="bg-lg" textColor="text-gr" />
+        <MiniBtn
+          text="취소하기"
+          textColor="text-sv"
+          onClick={onClose}
+          hoverColor=""
+        />
+        <MiniBtn
+          text="추가하기"
+          bgColor="bg-wh"
+          textColor="text-primary"
+          hoverColor="hover:bg-primary-hover"
+          disabled={true}
+        />
       </div>
     </Modal>
   );
