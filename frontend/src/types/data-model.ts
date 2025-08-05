@@ -288,7 +288,17 @@ export interface ProductHistoryListResponseModel extends PaginationModel {
 
 //////////////////////
 // Material API
-// 원자재 등록
+// 원자재 생성 material_create_in
+export interface CreateMaterialModel {
+  name: string;
+  code: string;
+  spec: string;
+  unit: string;
+  current_stock?: number;
+  standard_stock?: number;
+}
+
+// 원자재 수정
 export interface MaterialModel {
   factory_id?: number;
   name: string;
@@ -320,6 +330,7 @@ export interface MaterialListResponseModel extends PaginationModel {
 
 // Material History API
 export interface MaterialItemModel {
+  id?: number;
   name: string;
   code: string;
   spec: string; // 규격

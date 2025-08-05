@@ -95,6 +95,7 @@ export { default as useAssignProduct } from './stock/product/use-assign-product'
 export { default as useProductHistory } from './stock/use-product-history';
 
 // Material related hooks
+export { default as useCreateMaterial } from './stock/material/use-create-material';
 export { default as useGetMaterial } from './stock/material/use-get-material';
 export { default as useUpdateMaterial } from './stock/material/use-update-material';
 export { default as useDeleteMaterial } from './stock/material/use-delete-material';

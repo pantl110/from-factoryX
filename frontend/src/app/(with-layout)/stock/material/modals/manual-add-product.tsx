@@ -2,6 +2,7 @@ import { MaterialItemModel } from '@/types/data-model';
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 
 interface ManualAddProductProps {
   setIsManualAddMode: (v: boolean) => void;
@@ -18,6 +19,15 @@ const ManualAddProduct = ({
   checkDuplicateProductCode,
   showDuplicateProductToast,
 }: ManualAddProductProps) => {
+  // 각 필드의 값을 직접 관리
+  const [formValues, setFormValues] = useState({
+    name: '',
+    code: '',
+    spec: '',
+    unit: '',
+    quantity: null as number | null,
+  });
+
   const {
     register,
     handleSubmit,
@@ -32,23 +42,29 @@ const ManualAddProduct = ({
       spec: '',
       unit: '',
       quantity: null,
-      price: null,
     },
     mode: 'onChange',
   });
 
-  // 모든 필드의 값을 감시
-  const watchedValues = watch();
-
-  // 모든 필드가 입력되었는지 확인
+  // 수동으로 유효성 검사
   const isFormValid = () => {
-    const { name, code, spec, unit } = watchedValues;
-    return name?.trim() && code?.trim() && spec?.trim() && unit?.trim();
+    const { name, code, spec, unit, quantity } = formValues;
+    return (
+      name.trim() &&
+      code.trim() &&
+      spec.trim() &&
+      unit.trim() &&
+      quantity !== null &&
+      quantity > 0
+    );
   };
 
   const onSubmit = (data: MaterialItemModel) => {
     // 중복 검사
-    if (checkDuplicateProductCode && checkDuplicateProductCode(data.code)) {
+    if (
+      checkDuplicateProductCode &&
+      checkDuplicateProductCode(formValues.code)
+    ) {
       showDuplicateProductToast?.();
       setError('code', {
         type: 'manual',
@@ -60,12 +76,12 @@ const ManualAddProduct = ({
     setSelectedProducts?.((prev) => [
       ...prev,
       {
-        name: data.name,
-        code: data.code,
-        spec: data.spec,
-        unit: data.unit,
-        quantity: data.quantity,
-        price: data.price,
+        name: formValues.name,
+        code: formValues.code,
+        spec: formValues.spec,
+        unit: formValues.unit,
+        quantity: formValues.quantity,
+        price: null, // Price is not managed in formValues, so it's null
       },
     ]);
     reset();
@@ -86,6 +102,9 @@ const ManualAddProduct = ({
                 validate: (v) => !!(v || '').trim(),
               })}
               showError={!!errors.name}
+              onChange={(e) =>
+                setFormValues((prev) => ({ ...prev, name: e.target.value }))
+              }
             />
           </div>
           <div className="flex-1">
@@ -98,6 +117,9 @@ const ManualAddProduct = ({
                 validate: (v) => !!(v || '').trim(),
               })}
               showError={!!errors.code}
+              onChange={(e) =>
+                setFormValues((prev) => ({ ...prev, code: e.target.value }))
+              }
             />
           </div>
         </div>
@@ -112,6 +134,9 @@ const ManualAddProduct = ({
                 validate: (v) => !!(v || '').trim(),
               })}
               showError={!!errors.spec}
+              onChange={(e) =>
+                setFormValues((prev) => ({ ...prev, spec: e.target.value }))
+              }
             />
           </div>
           <div className="flex-1">
@@ -124,9 +149,45 @@ const ManualAddProduct = ({
                 validate: (v) => !!(v || '').trim(),
               })}
               showError={!!errors.unit}
+              onChange={(e) =>
+                setFormValues((prev) => ({ ...prev, unit: e.target.value }))
+              }
             />
           </div>
         </div>
+        <div className="flex gap-2.5 mt-2.5">
+          <div className="flex-1">
+            <Input
+              placeholder="EX) 100"
+              label="사용 수량"
+              required
+              type="text"
+              {...register('quantity', {
+                required: true,
+                validate: (v) => {
+                  const num = Number(String(v).replace(/[^0-9]/g, ''));
+                  return !isNaN(num) && num > 0;
+                },
+                setValueAs: (v) => {
+                  if (v === '' || v === null || v === undefined) return null;
+                  const num = Number(String(v).replace(/[^0-9]/g, ''));
+                  return num === 0 ? null : num;
+                },
+              })}
+              onChange={(e) => {
+                const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                const formatted = onlyNums
+                  ? parseInt(onlyNums).toLocaleString()
+                  : '';
+                e.target.value = formatted;
+
+                const num = onlyNums ? parseInt(onlyNums) : null;
+                setFormValues((prev) => ({ ...prev, quantity: num }));
+              }}
+            />
+          </div>
+        </div>
+
         <div className="flex gap-2 justify-end mt-3">
           <MiniBtn
             text="취소"

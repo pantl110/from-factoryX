@@ -5,13 +5,11 @@ import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from '../../material/modals/manual-add-material';
-import { MaterialItemModel } from '@/types/data-model';
-import { MaterialResponseModel } from '@/types/data-model';
-import {
-  useGetMaterial,
-  useMaterialProduct,
-  useAssignMaterialProduct,
-} from '@/hooks';
+import { MaterialItemModel, MaterialResponseModel } from '@/types/data-model';
+import { useGetMaterial, useMaterialProduct, useCreateMaterial } from '@/hooks';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
+import { useToast } from '@/hooks';
 
 // 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
 const getStoredFactoryId = (): number | null => {
@@ -42,15 +40,34 @@ const ConnectMaterialModal = ({
   const [filteredMaterials, setFilteredMaterials] = useState<
     MaterialResponseModel[]
   >([]);
-  const { getMaterialList } = useGetMaterial();
+  const [allMaterialCodes, setAllMaterialCodes] = useState<string[]>([]); // 모든 원자재 코드
+  const { getMaterialList, getAllMaterials } = useGetMaterial();
   const { createMaterialProduct, isLoading: isConnecting } =
     useMaterialProduct();
-  const { assignMaterialProduct, isLoading: isAssigning } =
-    useAssignMaterialProduct();
+  const { createMaterial, isLoading: isCreating } = useCreateMaterial();
+  const { isToastOpen, isVisible, showToast } = useToast();
 
   const [selectedMaterials, setSelectedMaterials] = useState<
     MaterialItemModel[]
   >([]);
+
+  // 모든 원자재 정보 가져오기
+  const fetchAllMaterials = async () => {
+    try {
+      const result = await getAllMaterials();
+      if (result.success && result.data) {
+        const codes = result.data.map((material) => material.code);
+        setAllMaterialCodes(codes);
+      }
+    } catch (error) {
+      console.error('원자재 목록 가져오기 실패:', error);
+    }
+  };
+
+  // 컴포넌트 마운트 시 모든 원자재 정보 가져오기
+  useEffect(() => {
+    fetchAllMaterials();
+  }, []);
 
   // 검색어가 변경될 때 서버에서 검색
   useEffect(() => {
@@ -87,11 +104,21 @@ const ConnectMaterialModal = ({
   }, [input, getMaterialList]);
 
   // 원자재 선택 시
-  const handleSelectMaterial = (item: MaterialItemModel) => {
+  const handleSelectMaterial = (item: MaterialResponseModel) => {
     setInput('');
     setSelectedMaterials((prev) => {
       if (!prev.some((mat) => mat.code === item.code)) {
-        return [...prev, item];
+        // MaterialResponseModel을 MaterialItemModel로 변환
+        const materialItem: MaterialItemModel = {
+          id: item.id,
+          name: item.name,
+          code: item.code,
+          spec: item.spec,
+          unit: item.unit,
+          quantity: null, // 사용자가 입력할 수량
+          price: null, // 사용자가 입력할 단가
+        };
+        return [...prev, materialItem];
       }
       return prev;
     });
@@ -115,7 +142,9 @@ const ConnectMaterialModal = ({
       return;
 
     try {
-      // 1. 새로운 원자재 생성 및 연결
+      let allMaterialIds: { id: number; quantity: number }[] = [];
+
+      // 1. 새로운 원자재 생성
       if (newMaterials.length > 0) {
         const factoryId = getStoredFactoryId();
         if (!factoryId) {
@@ -123,45 +152,56 @@ const ConnectMaterialModal = ({
           return;
         }
 
-        const assignPayload = {
-          factory_id: factoryId, // 로컬스토리지에서 가져오기
-          product_id: productId,
-          materials: newMaterials.map((material) => ({
-            name: material.name,
-            code: material.code,
-            spec: material.spec,
-            unit: material.unit,
-            quantity: material.quantity,
-            price: material.price,
-          })),
-        };
+        // 새로운 원자재들을 먼저 생성
+        const createPayload = newMaterials.map((material) => ({
+          name: material.name,
+          code: material.code,
+          spec: material.spec,
+          unit: material.unit,
+        }));
 
-        const assignResult = await assignMaterialProduct(assignPayload);
-        if (!assignResult.success) {
-          alert('새 원자재 생성 및 연결 실패: ' + assignResult.error);
+        const createResult = await createMaterial(createPayload);
+        if (!createResult.success) {
+          alert('새 원자재 생성 실패: ' + createResult.error);
           return;
         }
+
+        // 생성된 원자재 ID들을 가져와서 연결 목록에 추가
+        const createdMaterialIds = createResult.data?.material_ids;
+        if (!createdMaterialIds || createdMaterialIds.length === 0) {
+          alert('새 원자재 ID를 가져올 수 없습니다.');
+          return;
+        }
+
+        // 생성된 원자재들을 연결 목록에 추가
+        allMaterialIds.push(
+          ...createdMaterialIds.map((materialId, index) => ({
+            id: materialId,
+            quantity: newMaterials[index]?.quantity || 0,
+          }))
+        );
       }
 
-      // 2. 기존 원자재 연결
+      // 2. 기존 원자재 ID들을 연결 목록에 추가
       if (selectedMaterials.length > 0) {
+        const existingMaterialIds = selectedMaterials.map((material) => ({
+          id: material.id || 0,
+          quantity: material.quantity || 100, // ‼️‼️‼️‼️‼️‼️‼️ 임시 수량 ‼️‼️‼️‼️‼️‼️‼️
+        }));
+        allMaterialIds.push(...existingMaterialIds);
+      }
+
+      // 3. 모든 원자재를 한 번에 품목에 연결
+      if (allMaterialIds.length > 0) {
         const connectPayload = {
           type: 'product' as const,
           target_id: productId,
-          connections: selectedMaterials.map((material) => {
-            const originalMaterial = filteredMaterials.find(
-              (mat) => mat.code === material.code
-            );
-            return {
-              id: originalMaterial?.id || 0,
-              quantity: 100,
-            };
-          }),
+          connections: allMaterialIds,
         };
 
         const connectResult = await createMaterialProduct(connectPayload);
         if (!connectResult.success) {
-          alert('기존 원자재 연결 실패: ' + connectResult.error);
+          alert('원자재 연결 실패: ' + connectResult.error);
           return;
         }
       }
@@ -202,14 +242,7 @@ const ConnectMaterialModal = ({
         {isDropdownOpen && input.trim() && filteredMaterials.length > 0 && (
           <div className="absolute left-0 top-14 z-10 w-[451px] h-[256px] overflow-y-auto">
             <MaterialNameDropdown
-              items={filteredMaterials.map((mat) => ({
-                name: mat.name,
-                code: mat.code,
-                spec: mat.spec,
-                unit: mat.unit,
-                quantity: 0,
-                price: 0,
-              }))}
+              items={filteredMaterials}
               onSelect={handleSelectMaterial}
               width="w-full"
             />
@@ -222,6 +255,9 @@ const ConnectMaterialModal = ({
         <ManualAddMaterial
           setIsManualAddMode={setIsManualAddMode}
           setNewMaterials={setNewMaterials}
+          existingMaterials={allMaterialCodes}
+          selectedMaterials={selectedMaterials}
+          showToast={() => showToast()}
         />
       ) : (
         // 선택한 원자재 list
@@ -277,11 +313,22 @@ const ConnectMaterialModal = ({
             (selectedMaterials.length === 0 && newMaterials.length === 0) ||
             isManualAddMode ||
             isConnecting ||
-            isAssigning
+            isCreating
           }
           onClick={handleConnectMaterials}
         />
       </div>
+
+      {/* 원자재 코드 중복 토스트 */}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text="이미 존재하는 자재코드에요."
+          subtext="다른 자재코드로 수정해주세요."
+          type="red"
+          isVisible={isVisible}
+        />
+      )}
     </Modal>
   );
 };

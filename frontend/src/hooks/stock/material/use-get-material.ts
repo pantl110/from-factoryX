@@ -121,6 +121,77 @@ const useGetMaterial = () => {
     }
   }, []);
 
+  // 모든 원자재 정보 가져오기 (중복 검사용)
+  const getAllMaterials = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    // 로컬스토리지에서 factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      setError('공장 정보가 없습니다.');
+      setIsLoading(false);
+      return { success: false, error: '공장 정보가 없습니다.' };
+    }
+
+    try {
+      // 1. 먼저 첫 페이지를 가져와서 전체 개수 확인
+      const firstPageParams = new URLSearchParams();
+      firstPageParams.append('page', '1');
+      firstPageParams.append('page_size', '1'); // 최소한의 데이터만 가져와서 totalCnt 확인
+      firstPageParams.append('factory_id', factoryId.toString());
+
+      const firstPageResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material?${firstPageParams}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!firstPageResponse.ok) {
+        const errorData = await firstPageResponse.json();
+        setError(errorData.detail || '원자재 목록을 불러오지 못했습니다.');
+        return { success: false, error: errorData.detail };
+      }
+
+      const firstPageResult: MaterialListResponseModel = await firstPageResponse.json();
+      const totalCnt = firstPageResult.totalCnt || 0;
+
+      if (totalCnt === 0) {
+        return { success: true, data: [] };
+      }
+
+      // 2. 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
+      const allDataParams = new URLSearchParams();
+      allDataParams.append('page', '1');
+      allDataParams.append('page_size', totalCnt.toString());
+      allDataParams.append('factory_id', factoryId.toString());
+
+      const allDataResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material?${allDataParams}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (allDataResponse.ok) {
+        const result: MaterialListResponseModel = await allDataResponse.json();
+        return { success: true, data: result.data || [] };
+      } else {
+        const errorData = await allDataResponse.json();
+        setError(errorData.detail || '원자재 목록을 불러오지 못했습니다.');
+        return { success: false, error: errorData.detail };
+      }
+    } catch {
+      setError('서버 연결에 실패했습니다.');
+      return { success: false, error: '서버 연결에 실패했습니다.' };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     material,
     materialList,
@@ -129,6 +200,7 @@ const useGetMaterial = () => {
     error,
     getMaterialList,
     getMaterialDetail,
+    getAllMaterials,
   };
 };
 

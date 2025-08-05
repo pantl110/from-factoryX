@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
 interface ManualAddMaterialProps {
+  noPrice?: boolean;
   setIsManualAddMode: (v: boolean) => void;
   setNewMaterials: (
     fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
@@ -15,6 +16,7 @@ interface ManualAddMaterialProps {
 }
 
 const ManualAddMaterial = ({
+  noPrice = true,
   setIsManualAddMode,
   setNewMaterials,
   existingMaterials, // 기존 원자재 코드 목록 받기
@@ -52,16 +54,19 @@ const ManualAddMaterial = ({
   // 수동으로 유효성 검사
   const isFormValid = () => {
     const { name, code, spec, unit, quantity, price } = formValues;
-    return (
+    const baseValidation =
       name.trim() &&
       code.trim() &&
       spec.trim() &&
       unit.trim() &&
       quantity !== null &&
-      quantity > 0 &&
-      price !== null &&
-      price > 0
-    );
+      quantity > 0;
+
+    if (noPrice) {
+      return baseValidation;
+    }
+
+    return baseValidation && price !== null && price > 0;
   };
 
   const onSubmit = (data: MaterialItemModel) => {
@@ -179,7 +184,7 @@ const ManualAddMaterial = ({
             <div className="flex-1">
               <Input
                 placeholder="EX) 100"
-                label="수량"
+                label="사용 수량"
                 required
                 type="text"
                 {...register('quantity', {
@@ -206,36 +211,39 @@ const ManualAddMaterial = ({
                 }}
               />
             </div>
-            <div className="flex-1">
-              <Input
-                placeholder="EX) 1,000"
-                label="단가"
-                required
-                type="text"
-                {...register('price', {
-                  required: true,
-                  validate: (v) => {
-                    const num = Number(String(v).replace(/[^0-9]/g, ''));
-                    return !isNaN(num) && num > 0;
-                  },
-                  setValueAs: (v) => {
-                    if (v === '' || v === null || v === undefined) return null;
-                    const num = Number(String(v).replace(/[^0-9]/g, ''));
-                    return num === 0 ? null : num;
-                  },
-                })}
-                onChange={(e) => {
-                  const onlyNums = e.target.value.replace(/[^0-9]/g, '');
-                  const formatted = onlyNums
-                    ? parseInt(onlyNums).toLocaleString()
-                    : '';
-                  e.target.value = formatted;
+            {!noPrice && (
+              <div className="flex-1">
+                <Input
+                  placeholder="EX) 1,000"
+                  label="단가"
+                  required
+                  type="text"
+                  {...register('price', {
+                    required: true,
+                    validate: (v) => {
+                      const num = Number(String(v).replace(/[^0-9]/g, ''));
+                      return !isNaN(num) && num > 0;
+                    },
+                    setValueAs: (v) => {
+                      if (v === '' || v === null || v === undefined)
+                        return null;
+                      const num = Number(String(v).replace(/[^0-9]/g, ''));
+                      return num === 0 ? null : num;
+                    },
+                  })}
+                  onChange={(e) => {
+                    const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                    const formatted = onlyNums
+                      ? parseInt(onlyNums).toLocaleString()
+                      : '';
+                    e.target.value = formatted;
 
-                  const num = onlyNums ? parseInt(onlyNums) : null;
-                  setFormValues((prev) => ({ ...prev, price: num }));
-                }}
-              />
-            </div>
+                    const num = onlyNums ? parseInt(onlyNums) : null;
+                    setFormValues((prev) => ({ ...prev, price: num }));
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
         <div className="flex gap-2 justify-end mt-3">

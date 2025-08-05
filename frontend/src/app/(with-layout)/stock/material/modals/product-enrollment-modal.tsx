@@ -123,7 +123,7 @@ const ProductEnrollmentModal = ({
         code: product.code,
         spec: product.spec,
         unit: product.unit,
-        quantity: 10, // ‼️‼️‼️‼️‼️‼️‼️ 수정 필요 ‼️‼️‼️‼️ 기본 수량 10으로 설정 ‼️
+        quantity: product.quantity ?? 10, // ‼️‼️‼️‼️‼️‼️‼️ 수정 필요 ‼️‼️‼️‼️ 기본 수량 10으로 설정 ‼️
       })),
     });
 

@@ -233,6 +233,7 @@ const MaterialEnrollmentModal = ({
             {/* 직접 추가 area */}
             {isManualAddMode && (
               <ManualAddMaterial
+                noPrice={false}
                 setIsManualAddMode={setIsManualAddMode}
                 setNewMaterials={(fn) => {
                   const newMaterials = fn([]);

@@ -30,7 +30,6 @@ import {
 import NoHistoryBox from '@/ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
 import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
-import useFactoryStore from '@/store/factory-store';
 import { useForm, useFieldArray } from 'react-hook-form';
 import StockLocationItem from '../../stock-location-item';
 import { useUploadFile, useToast } from '@/hooks';
@@ -38,6 +37,17 @@ import MaterialDetailPanel from '../../material/material-detail';
 import DeleteModal from '@/ui/modal/delete-modal';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
+
+// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
+const getStoredFactoryId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('factoryId');
+    return stored ? parseInt(stored, 10) : null;
+  } catch {
+    return null;
+  }
+};
 
 interface ProductDetailProps {
   productId: number | null;
@@ -59,40 +69,29 @@ const ProductDetail = ({
   onClose,
   onSuccess,
 }: ProductDetailProps) => {
-  const { getProductDetail, product } = useGetProduct();
+  const { getProductDetail, getAllProductCodes, allProductCodes, product } =
+    useGetProduct();
   const { createSingleProduct } = useCreateSingleProduct();
-  const { updateProduct } = useUpdateProduct();
+  const { updateProduct, isLoading: isProductUpdating } = useUpdateProduct();
   const {
     getMaterialProductConnections,
     data: connections,
     updateMaterialProductConnection,
     deleteMaterialProductConnection,
     resetData,
+    isLoading: isMaterialProductLoading,
   } = useMaterialProduct();
   const { getMaterialDetail } = useGetMaterial();
-  const factoryId = useFactoryStore((state) => state.factoryId);
-  const getFactoryIdFromLocal = useFactoryStore(
-    (state) => state.getFactoryIdFromLocal
-  );
-  const setFactoryId = useFactoryStore((state) => state.setFactoryId);
+  const factoryId = getStoredFactoryId();
   const {
     createLocation,
     updateLocation,
     deleteLocation,
     data: locationListData,
     listLocations,
+    isLoading: isLocationLoading,
   } = useLocation();
-  const { uploadMultipleFiles } = useUploadFile();
-
-  // factoryId가 null이면 로컬에서 가져오기
-  useEffect(() => {
-    if (!factoryId) {
-      const localFactoryId = getFactoryIdFromLocal();
-      if (localFactoryId !== null) {
-        setFactoryId(localFactoryId);
-      }
-    }
-  }, [factoryId, getFactoryIdFromLocal, setFactoryId]);
+  const { uploadMultipleFiles, isUploading } = useUploadFile();
 
   // 여러 자재의 상세 정보를 저장할 상태
   const [materialDetails, setMaterialDetails] = useState<
@@ -237,10 +236,17 @@ const ProductDetail = ({
 
   // productId가 변경되면 상세 정보 로드
   useEffect(() => {
-    if (productId) {
+    if (productId && factoryId) {
       getProductDetail(productId);
     }
-  }, [productId, getProductDetail]);
+  }, [productId, factoryId, getProductDetail]);
+
+  // 모든 품목 코드 로드 (중복 검증용)
+  useEffect(() => {
+    if (factoryId) {
+      getAllProductCodes();
+    }
+  }, [factoryId, getAllProductCodes]);
 
   // product가 로드되면 formData 업데이트
   useEffect(() => {
@@ -258,8 +264,9 @@ const ProductDetail = ({
         note: product.note,
       });
     } else if (!productId) {
+      const currentFactoryId = getStoredFactoryId();
       setFormData({
-        factory: factoryId as number,
+        factory: currentFactoryId as number,
         name: '',
         code: '',
         unit: '',
@@ -271,7 +278,7 @@ const ProductDetail = ({
         note: '',
       });
     }
-  }, [productId, product, factoryId]);
+  }, [productId, product]);
 
   // 서버 location 데이터를 RHF locations 배열에 세팅
   useEffect(() => {
@@ -359,13 +366,42 @@ const ProductDetail = ({
   };
 
   // ProductInfo 저장 함수
-  const handleSaveProductInfo = async () => {
+  const handleSaveProductInfo = async (): Promise<boolean> => {
     try {
       // ProductInfo에서 현재 폼 값 가져오기
       const currentFormData = productInfoRef.current?.getValues() || formData;
 
+      // 품목코드 중복 검사 함수
+      const checkCodeDuplicate = (
+        code: string,
+        currentProductId?: number | null
+      ) => {
+        // 현재 제품의 코드는 제외하고 중복 검사
+        const otherCodes = allProductCodes.filter((existingCode, index) => {
+          // 수정 모드에서는 현재 제품의 코드는 제외
+          if (currentProductId && product && product.code === existingCode) {
+            return false;
+          }
+          const isDuplicate = existingCode === code;
+          return isDuplicate;
+        });
+
+        const hasDuplicate = otherCodes.length > 0;
+
+        return hasDuplicate;
+      };
+
       if (productId) {
         // 수정 모드
+        // 품목코드가 변경되었고 중복인지 확인
+        if (
+          currentFormData.code !== product?.code &&
+          checkCodeDuplicate(currentFormData.code, productId)
+        ) {
+          showToastMessage('이미 존재하는 품목코드에요.');
+          return false;
+        }
+
         // factory 필드는 수정 시 제외 (서버에서 Factory 인스턴스를 기대함)
         const { factory: _factory, ...updateDataWithoutFactory } =
           currentFormData;
@@ -391,17 +427,31 @@ const ProductDetail = ({
         const result = await updateProduct(productId, payload);
         if (result && result.success) {
           // 성공 시 처리
+          return true;
         } else {
-          alert(
+          showToastMessage(
             '품목 수정에 실패하였습니다. ' +
               (result?.error || '알 수 없는 오류')
           );
+          return false;
         }
       } else {
-        // 생성 모드
+        // 생성 모드 - 중복 코드 검증
+        if (checkCodeDuplicate(currentFormData.code)) {
+          showToastMessage('이미 존재하는 품목코드에요.');
+          return false;
+        }
+
+        // 로컬스토리지에서 factoryId 가져오기
+        const storedFactoryId = getStoredFactoryId();
+        if (!storedFactoryId) {
+          showToastMessage('공장 ID가 설정되지 않았습니다.');
+          return false;
+        }
+
         // 데이터 변환
         const createData = {
-          factory_id: currentFormData.factory,
+          factory_id: storedFactoryId,
           name: currentFormData.name,
           code: currentFormData.code,
           spec: currentFormData.spec,
@@ -423,15 +473,18 @@ const ProductDetail = ({
           if (result.data && result.data.product_id) {
             onSuccess?.(result.data.product_id);
           }
+          return true;
         } else {
-          alert(
+          showToastMessage(
             '품목 생성에 실패하였습니다. ' +
               (result?.error || '알 수 없는 오류')
           );
+          return false;
         }
       }
     } catch (error) {
-      alert('저장 중 오류가 발생했습니다. ' + error);
+      showToastMessage('저장 중 오류가 발생했습니다. ' + error);
+      return false;
     }
   };
 
@@ -515,18 +568,22 @@ const ProductDetail = ({
 
     // 품목 정보와 위치 정보 저장
     if (isProductInfoChanged && isLocationsChanged) {
-      await handleSaveProductInfo();
-      await handleSaveLocations(
-        getValues('locations'),
-        prevLocations,
-        productId
-      );
-      onSuccess?.();
-      onClose();
+      const success = await handleSaveProductInfo();
+      if (success) {
+        await handleSaveLocations(
+          getValues('locations'),
+          prevLocations,
+          productId
+        );
+        onSuccess?.();
+        onClose();
+      }
     } else if (isProductInfoChanged) {
-      await handleSaveProductInfo();
-      onSuccess?.();
-      onClose();
+      const success = await handleSaveProductInfo();
+      if (success) {
+        onSuccess?.();
+        onClose();
+      }
     } else if (isLocationsChanged) {
       await handleSaveLocations(
         getValues('locations'),
@@ -543,7 +600,7 @@ const ProductDetail = ({
   };
 
   // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
-  if (!factoryId) {
+  if (!getStoredFactoryId()) {
     return (
       <Panel title="품목 재고관리" onClose={onClose}>
         <div className="flex flex-col items-center justify-center h-100 gap-3">
@@ -567,7 +624,13 @@ const ProductDetail = ({
               bgColor="bg-primary-8"
               hoverColor="hover:bg-secondary-hover"
               onClick={handleSave}
-              disabled={!isValid}
+              disabled={
+                !isValid ||
+                isLocationLoading ||
+                isProductUpdating ||
+                isMaterialProductLoading ||
+                isUploading
+              }
             />
           )
         }
@@ -706,12 +769,16 @@ const ProductDetail = ({
         />
       )}
 
-      {/* 유효하지 않은 자재 수량 토스트 메시지 */}
+      {/* 품목 생성 시 품목 코드 중복 토스트 */}
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
           text={toastMessage}
-          subtext=""
+          subtext={
+            toastMessage.includes('품목코드')
+              ? '다른 품목코드로 수정해주세요.'
+              : ''
+          }
           type="red"
           isVisible={isVisible}
         />

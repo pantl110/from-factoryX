@@ -121,6 +121,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             end_date: filters.end_date as string | undefined,
             page: filters.page as number,
             page_size: pageSize,
+            type: '구매',
           });
         }
       },
@@ -151,6 +152,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
         getMaterialHistory(materialId, {
           page,
           page_size: pageSize,
+          type: '구매',
         });
       }
     };

@@ -28,6 +28,7 @@ const useGetProduct = () => {
   const [product, setProduct] = useState<ProductResponseModel | null>(null);
   const [productList, setProductList] = useState<ProductResponseModel[]>([]);
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
+  const [allProductCodes, setAllProductCodes] = useState<string[]>([]);
 
   // 제품 목록 조회 (q, page, page_size)
   const getProductList = useCallback(
@@ -87,17 +88,23 @@ const useGetProduct = () => {
     setIsLoading(true);
     setError(null);
 
+    // 로컬스토리지에서 factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      setError('공장 정보가 없습니다.');
+      setIsLoading(false);
+      return { success: false, error: '공장 정보가 없습니다.' };
+    }
+
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${productId}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${productId}?factory_id=${factoryId}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (response.ok) {
         const result: ProductResponseModel = await response.json();
@@ -116,12 +123,91 @@ const useGetProduct = () => {
     }
   }, []);
 
+  // 모든 품목 코드 조회
+  const getAllProductCodes = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    // 로컬스토리지에서 factoryId 가져오기
+    const factoryId = getStoredFactoryId();
+    if (!factoryId) {
+      setError('공장 정보가 없습니다.');
+      setIsLoading(false);
+      return { success: false, error: '공장 정보가 없습니다.' };
+    }
+
+    try {
+      // 1. 먼저 첫 번째 요청으로 total 개수 확인
+      const initialQueryParams = new URLSearchParams();
+      initialQueryParams.append('factory_id', factoryId.toString());
+      initialQueryParams.append('page', '1');
+      initialQueryParams.append('page_size', '1'); // 최소한의 데이터만 가져와서 total 확인
+      
+      const initialUrl = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?${initialQueryParams}`;
+      const initialResponse = await fetch(initialUrl, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!initialResponse.ok) {
+        const errorData = await initialResponse.json();
+        setError(errorData.detail || '품목 코드 목록을 불러오지 못했습니다.');
+        return { success: false, error: errorData.detail };
+      }
+
+      const initialResult: ProductListResponseModel = await initialResponse.json();
+      const total = initialResult.totalCnt || 0;
+
+      if (total === 0) {
+        setAllProductCodes([]);
+        return { success: true, data: [] };
+      }
+
+      // 2. total 개수만큼 한 번에 가져오기
+      const queryParams = new URLSearchParams();
+      queryParams.append('factory_id', factoryId.toString());
+      queryParams.append('page', '1');
+      queryParams.append('page_size', total.toString());
+      
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?${queryParams}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result: ProductListResponseModel = await response.json();
+        const products = result.data || [];
+        const codes = products.map(product => product.code).filter(Boolean);
+        setAllProductCodes(codes);
+        return { success: true, data: codes };
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || '품목 코드 목록을 불러오지 못했습니다.');
+        return { success: false, error: errorData.detail };
+      }
+    } catch {
+      setError('서버 연결에 실패했습니다.');
+      return { success: false, error: '서버 연결에 실패했습니다.' };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     getProductList,
     getProductDetail,
+    getAllProductCodes,
     product,
     productList,
     pagination,
+    allProductCodes,
     isLoading,
     error,
   };
