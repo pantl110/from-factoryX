@@ -384,7 +384,8 @@ async def update_project_status(request, project_id: int, payload: ProjectStatus
         "production": "생산 중",
         "manufactured": "생산 완료",
         "delivery": "납품",
-        "completed": "프로젝트 완료"
+        "completed": "프로젝트 완료",
+        "suspended": "중단"
     }
     
     valid_english_statuses = list(status_mapping.keys())
