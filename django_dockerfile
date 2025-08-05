@@ -17,7 +17,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Install os dependencies for our mini vm
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     # for postgres
     libpq-dev \
     # for Pillow
@@ -26,7 +26,8 @@ RUN apt-get update && apt-get install -y \
     libcairo2 \
     # other
     gcc \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Create the mini vm's code directory
 RUN mkdir -p /code
@@ -72,10 +73,9 @@ RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
 RUN chmod +x paracord_runner.sh
 
 # Clean up apt cache to reduce image size
-RUN apt-get remove --purge -y \
-    && apt-get autoremove -y \
+RUN apt-get autoremove -y \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Run the Django project via the runtime script
 # when the container starts
