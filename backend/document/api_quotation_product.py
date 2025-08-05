@@ -39,21 +39,67 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         if payload.client:
             client_data = payload.client
             factory = await sync_to_async(lambda: quotation.factory)()
-            client, created = await FactoryClient.objects.aget_or_create(
-                factory=factory,
-                name=client_data.name,
-                defaults={
-                    "business_registration_number": client_data.business_registration_number,
-                    "representative_name": client_data.representative_name,
-                    "business_type": client_data.business_type,
-                    "business_category": client_data.business_category,
-                    "address": client_data.address,
-                    "manager": client_data.manager,
-                    "email": client_data.email,
-                    "phone": client_data.phone,
-                    "fax": client_data.fax,
-                }
-            )
+            
+            # 클라이언트 ID가 제공된 경우
+            if client_data.client_id is not None:
+                try:
+                    # 기존 클라이언트 조회
+                    client = await FactoryClient.objects.aget(id=client_data.client_id, factory=factory)
+                    
+                    # 클라이언트 정보가 변경된 경우 업데이트
+                    updated = False
+                    if client_data.name != client.name:
+                        client.name = client_data.name
+                        updated = True
+                    if client_data.business_registration_number != client.business_registration_number:
+                        client.business_registration_number = client_data.business_registration_number
+                        updated = True
+                    if client_data.representative_name != client.representative_name:
+                        client.representative_name = client_data.representative_name
+                        updated = True
+                    if client_data.business_type != client.business_type:
+                        client.business_type = client_data.business_type
+                        updated = True
+                    if client_data.business_category != client.business_category:
+                        client.business_category = client_data.business_category
+                        updated = True
+                    if client_data.address != client.address:
+                        client.address = client_data.address
+                        updated = True
+                    if client_data.manager != client.manager:
+                        client.manager = client_data.manager
+                        updated = True
+                    if client_data.email != client.email:
+                        client.email = client_data.email
+                        updated = True
+                    if client_data.phone != client.phone:
+                        client.phone = client_data.phone
+                        updated = True
+                    if client_data.fax != client.fax:
+                        client.fax = client_data.fax
+                        updated = True
+                    
+                    if updated:
+                        await sync_to_async(client.save)()
+                        
+                except FactoryClient.DoesNotExist:
+                    raise HttpError(404, f"클라이언트 ID {client_data.client_id}를 찾을 수 없습니다.")
+            else:
+                # 클라이언트 ID가 없는 경우 새로 생성
+                client = await FactoryClient.objects.acreate(
+                    factory=factory,
+                    name=client_data.name,
+                    business_registration_number=client_data.business_registration_number,
+                    representative_name=client_data.representative_name,
+                    business_type=client_data.business_type,
+                    business_category=client_data.business_category,
+                    address=client_data.address,
+                    manager=client_data.manager,
+                    email=client_data.email,
+                    phone=client_data.phone,
+                    fax=client_data.fax,
+                )
+            
             quotation.client = client
         
         if payload.due_date:
@@ -70,15 +116,24 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
             
             if payload.products:
                 for prod in payload.products:
+                    # 임시저장에서는 필수 필드가 없을 수 있음
+                    if prod.product_id is None:
+                        continue  # product_id가 없으면 건너뛰기
+                    
                     try:
                         product = await sync_to_async(get_object_or_404)(Product, id=prod.product_id)
                     except Http404:
                         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
+                    
+                    # 기본값 설정
+                    quantity = prod.quantity if prod.quantity is not None else 0
+                    unit_price = prod.unit_price if prod.unit_price is not None else 0
+                    
                     await QuotationProduct.objects.acreate(
                         quotation=quotation,
                         product=product,
-                        quantity=prod.quantity,
-                        unit_price=prod.unit_price,
+                        quantity=quantity,
+                        unit_price=unit_price,
                         is_delivery=prod.is_delivery,
                         delivery_date=datetime.strptime(prod.delivery_date, "%Y-%m-%d").date() if prod.delivery_date else None
                     )
@@ -117,20 +172,63 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
         
         client_data = payload.client
         factory = await sync_to_async(lambda: quotation.factory)()
-        client, created = await FactoryClient.objects.aget_or_create(
-            factory=factory,
-            name=client_data.name,
-            defaults={
-                "business_registration_number": client_data.business_registration_number,
-                "representative_name": client_data.representative_name,
-                "business_type": client_data.business_type,
-                "business_category": client_data.business_category,
-                "address": client_data.address,
-                "email": client_data.email,
-                "phone": client_data.phone,
-                "fax": client_data.fax,
-            }
-        )
+        
+        # 클라이언트 ID가 제공된 경우
+        if client_data.client_id is not None:
+            try:
+                # 기존 클라이언트 조회
+                client = await FactoryClient.objects.aget(id=client_data.client_id, factory=factory)
+                
+                # 클라이언트 정보가 변경된 경우 업데이트
+                updated = False
+                if client_data.name != client.name:
+                    client.name = client_data.name
+                    updated = True
+                if client_data.business_registration_number != client.business_registration_number:
+                    client.business_registration_number = client_data.business_registration_number
+                    updated = True
+                if client_data.representative_name != client.representative_name:
+                    client.representative_name = client_data.representative_name
+                    updated = True
+                if client_data.business_type != client.business_type:
+                    client.business_type = client_data.business_type
+                    updated = True
+                if client_data.business_category != client.business_category:
+                    client.business_category = client_data.business_category
+                    updated = True
+                if client_data.address != client.address:
+                    client.address = client_data.address
+                    updated = True
+                if client_data.email != client.email:
+                    client.email = client_data.email
+                    updated = True
+                if client_data.phone != client.phone:
+                    client.phone = client_data.phone
+                    updated = True
+                if client_data.fax != client.fax:
+                    client.fax = client_data.fax
+                    updated = True
+                
+                if updated:
+                    await sync_to_async(client.save)()
+                    
+            except FactoryClient.DoesNotExist:
+                raise HttpError(404, f"클라이언트 ID {client_data.client_id}를 찾을 수 없습니다.")
+        else:
+            # 클라이언트 ID가 없는 경우 새로 생성
+            client = await FactoryClient.objects.acreate(
+                factory=factory,
+                name=client_data.name,
+                business_registration_number=client_data.business_registration_number,
+                representative_name=client_data.representative_name,
+                business_type=client_data.business_type,
+                business_category=client_data.business_category,
+                address=client_data.address,
+                email=client_data.email,
+                phone=client_data.phone,
+                fax=client_data.fax,
+            )
+        
         quotation.client = client
         
         if payload.due_date:

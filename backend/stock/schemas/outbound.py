@@ -95,6 +95,13 @@ class MaterialDetailOut(Schema):
     standard_stock: int
 
 
+# (GET) Shortage Material Count
+class ShortageMaterialCountOut(Schema):
+    shortage_count: int
+    total_materials: int
+    shortage_percentage: float
+
+
 # ------------------------------------------------------------
 # Material Product API
 # ------------------------------------------------------------

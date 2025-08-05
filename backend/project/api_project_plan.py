@@ -3,8 +3,9 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
+from django.db import models
 from project.schemas.inbound import ProjectPlanCreateIn, ProjectPlanUpdateIn, ProjectPlanListFilter
-from project.schemas.outbound import ProjectPlansCreateOut, ProjectPlanDetailOut, ProjectPlanDetailWithRelationsOut, ProductDetailOut, QuotationProductDetailOut, EquipmentDetailOut
+from project.schemas.outbound import ProjectPlansCreateOut, ProjectPlanDetailOut, ProjectPlanDetailWithRelationsOut, ProductDetailOut, QuotationProductDetailOut, EquipmentDetailOut, DailyProductionQuantityOut
 from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
 from factory.models import FactoryEquipment
@@ -331,6 +332,84 @@ async def list_completed_project_plans(request, filters: ProjectPlanListFilter =
 
     except Exception as e:
         raise HttpError(500, f"서버 오류가 발생했습니다: {str(e)}")
+
+
+@router.get(
+    "/daily",
+    summary="[C] 오늘 생산량 조회",
+    description="오늘 완료된 생산 계획의 수량을 조회합니다. 전월 대비 수치도 포함됩니다.",
+    response={200: DailyProductionQuantityOut, 404: dict, 500: dict}
+)
+async def get_daily_production_quantity(request, target_date: str = Query(None)):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        from datetime import datetime, timedelta
+        
+        # 날짜 파싱 (기본값: 오늘)
+        if target_date:
+            try:
+                target_date_obj = datetime.strptime(target_date, "%Y-%m-%d").date()
+            except ValueError:
+                raise HttpError(400, "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식으로 입력해주세요.")
+        else:
+            target_date_obj = date.today()
+        
+        @sync_to_async
+        def get_production_data():
+            # 해당 공장의 완료된 생산 계획 조회
+            completed_plans = ProjectPlan.objects.filter(
+                project__quotations__factory_id=int(factory_id),
+                status="가동 완료",
+                end_date=target_date_obj
+            )
+            
+            # 오늘 생산량 집계
+            production_count = completed_plans.count()
+            production_quantity = completed_plans.aggregate(
+                total_quantity=models.Sum('quantity')
+            )['total_quantity'] or 0
+            
+            # 전월 대비 계산 (한 달 전)
+            previous_month_date = target_date_obj - timedelta(days=30)
+            previous_month_plans = ProjectPlan.objects.filter(
+                project__quotations__factory_id=int(factory_id),
+                status="가동 완료",
+                end_date=previous_month_date
+            )
+            
+            previous_month_count = previous_month_plans.count()
+            previous_month_quantity = previous_month_plans.aggregate(
+                total_quantity=models.Sum('quantity')
+            )['total_quantity'] or 0
+            
+            # 변화율 계산
+            change_percentage = None
+            if previous_month_quantity > 0:
+                change_percentage = round(
+                    ((production_quantity - previous_month_quantity) / previous_month_quantity) * 100, 2
+                )
+            
+            return {
+                "production_count": production_count,
+                "production_quantity": production_quantity,
+                "previous_month_count": previous_month_count if previous_month_count > 0 else None,
+                "previous_month_quantity": previous_month_quantity if previous_month_quantity > 0 else None,
+                "change_percentage": change_percentage
+            }
+        
+        result = await get_production_data()
+        return 200, DailyProductionQuantityOut(**result)
+        
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, f"오늘 생산량 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.get(
