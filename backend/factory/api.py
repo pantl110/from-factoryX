@@ -44,12 +44,7 @@ async def create_factory(request):
 )
 @paginate
 async def list_factories(request):
-    factory_id = request.GET.get('factory_id')
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
     user = request.auth
-    await is_factory_member(int(factory_id), user)
 
     @sync_to_async
     def get_factories():
@@ -89,7 +84,7 @@ async def list_factories(request):
 
 
 @router.get(
-    "",
+    "/detail",
     summary="[C] 공장 상세 조회",
     description="공장 ID로 공장 정보를 조회합니다.",
     response={200: FactoryOut},
