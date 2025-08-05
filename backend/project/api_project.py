@@ -197,7 +197,7 @@ async def list_project(request, status: str = Query(...), search: str = Query(No
             "progress",
             "archived",
             "complete",
-            "interruption",
+            "suspended",
             "quotation",
             "confirmed",
             "pending",
@@ -260,7 +260,7 @@ async def list_project(request, status: str = Query(...), search: str = Query(No
                 base_qs = Project.objects.filter(pk__in=project_ids)
             elif status == "complete":
                 base_qs = base_qs.filter(status="프로젝트 완료")
-            elif status == "interruption":
+            elif status == "suspended":
                 # 중단: status가 "중단"이거나 abandoned_ids에 해당하는 프로젝트만
                 suspended_qs = base_qs.filter(status="중단")
                 abandoned_qs = Project.objects.filter(pk__in=abandoned_ids) if abandoned_ids else Project.objects.none()
@@ -324,7 +324,7 @@ async def list_project(request, status: str = Query(...), search: str = Query(No
                     if project.tax_invoice:
                         publish_status = project.tax_invoice.publish_status
                     is_abandoned = False
-                    if status in ["archived", "interruption"]:
+                    if status in ["archived", "suspended"]:
                         is_abandoned = project.pk in abandoned_ids or project.status == "중단"
                     result.append(
                         ListProgressProjectOut(
