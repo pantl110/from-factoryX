@@ -64,7 +64,8 @@ const useCreateMaterial = (): UseCreateMaterialReturnModel => {
           return { success: true, data: result };
         } else {
           const errorData = await response.json();
-          const errorMessage = errorData.detail || '원자재 생성에 실패했습니다.';
+          const errorMessage =
+            errorData.detail || '원자재 생성에 실패했습니다.';
           setError(errorMessage);
           return { success: false, error: errorMessage };
         }
@@ -83,4 +84,4 @@ const useCreateMaterial = (): UseCreateMaterialReturnModel => {
   return { createMaterial, isLoading, error };
 };
 
-export default useCreateMaterial; 
+export default useCreateMaterial;

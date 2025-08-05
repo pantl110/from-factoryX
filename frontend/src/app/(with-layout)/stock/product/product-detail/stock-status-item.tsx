@@ -9,7 +9,7 @@ import {
 } from '@/types/data-model';
 import { ArrowLineUpRight, X } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import useMaterialProduct from '@/hooks/stock/use-material-product';
 import { handleNumberKeyDown } from '@/hooks/format-number';
 
@@ -59,10 +59,13 @@ const StockStatusItem = ({
   );
 
   // 천 단위 구분자 포맷팅 함수
-  const formatNumberWithCommas = (value: number | null | undefined): string => {
-    if (value === null || value === undefined || value === 0) return '';
-    return value.toLocaleString();
-  };
+  const formatNumberWithCommas = useCallback(
+    (value: number | null | undefined): string => {
+      if (value === null || value === undefined || value === 0) return '';
+      return value.toLocaleString();
+    },
+    []
+  );
 
   // displayValue 업데이트
   useEffect(() => {
@@ -70,11 +73,7 @@ const StockStatusItem = ({
     const valueToFormat =
       formValue !== undefined ? formValue : connection.quantity;
     setDisplayValue(formatNumberWithCommas(valueToFormat));
-  }, [
-    materialQuantityForm.watch('quantity'),
-    connection.quantity,
-    formatNumberWithCommas,
-  ]);
+  }, [materialQuantityForm, connection.quantity, formatNumberWithCommas]);
 
   // 초기값 설정
   useEffect(() => {

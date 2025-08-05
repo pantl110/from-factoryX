@@ -155,7 +155,8 @@ const useGetMaterial = () => {
         return { success: false, error: errorData.detail };
       }
 
-      const firstPageResult: MaterialListResponseModel = await firstPageResponse.json();
+      const firstPageResult: MaterialListResponseModel =
+        await firstPageResponse.json();
       const totalCnt = firstPageResult.totalCnt || 0;
 
       if (totalCnt === 0) {

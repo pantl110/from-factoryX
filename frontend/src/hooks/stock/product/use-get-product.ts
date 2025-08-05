@@ -142,7 +142,7 @@ const useGetProduct = () => {
       initialQueryParams.append('factory_id', factoryId.toString());
       initialQueryParams.append('page', '1');
       initialQueryParams.append('page_size', '1'); // 최소한의 데이터만 가져와서 total 확인
-      
+
       const initialUrl = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?${initialQueryParams}`;
       const initialResponse = await fetch(initialUrl, {
         method: 'GET',
@@ -158,7 +158,8 @@ const useGetProduct = () => {
         return { success: false, error: errorData.detail };
       }
 
-      const initialResult: ProductListResponseModel = await initialResponse.json();
+      const initialResult: ProductListResponseModel =
+        await initialResponse.json();
       const total = initialResult.totalCnt || 0;
 
       if (total === 0) {
@@ -171,7 +172,7 @@ const useGetProduct = () => {
       queryParams.append('factory_id', factoryId.toString());
       queryParams.append('page', '1');
       queryParams.append('page_size', total.toString());
-      
+
       const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?${queryParams}`;
       const response = await fetch(url, {
         method: 'GET',
@@ -184,7 +185,7 @@ const useGetProduct = () => {
       if (response.ok) {
         const result: ProductListResponseModel = await response.json();
         const products = result.data || [];
-        const codes = products.map(product => product.code).filter(Boolean);
+        const codes = products.map((product) => product.code).filter(Boolean);
         setAllProductCodes(codes);
         return { success: true, data: codes };
       } else {

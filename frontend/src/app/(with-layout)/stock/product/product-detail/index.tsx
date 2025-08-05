@@ -377,7 +377,7 @@ const ProductDetail = ({
         currentProductId?: number | null
       ) => {
         // 현재 제품의 코드는 제외하고 중복 검사
-        const otherCodes = allProductCodes.filter((existingCode, index) => {
+        const otherCodes = allProductCodes.filter((existingCode) => {
           // 수정 모드에서는 현재 제품의 코드는 제외
           if (currentProductId && product && product.code === existingCode) {
             return false;
@@ -568,8 +568,8 @@ const ProductDetail = ({
 
     // 품목 정보와 위치 정보 저장
     if (isProductInfoChanged && isLocationsChanged) {
-      const success = await handleSaveProductInfo();
-      if (success) {
+      const isSuccess = await handleSaveProductInfo();
+      if (isSuccess) {
         await handleSaveLocations(
           getValues('locations'),
           prevLocations,
@@ -579,8 +579,8 @@ const ProductDetail = ({
         onClose();
       }
     } else if (isProductInfoChanged) {
-      const success = await handleSaveProductInfo();
-      if (success) {
+      const isSuccess = await handleSaveProductInfo();
+      if (isSuccess) {
         onSuccess?.();
         onClose();
       }

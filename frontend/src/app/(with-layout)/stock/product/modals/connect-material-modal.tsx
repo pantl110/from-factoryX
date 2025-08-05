@@ -67,6 +67,7 @@ const ConnectMaterialModal = ({
   // 컴포넌트 마운트 시 모든 원자재 정보 가져오기
   useEffect(() => {
     fetchAllMaterials();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 검색어가 변경될 때 서버에서 검색
@@ -142,7 +143,7 @@ const ConnectMaterialModal = ({
       return;
 
     try {
-      let allMaterialIds: { id: number; quantity: number }[] = [];
+      const allMaterialIds: { id: number; quantity: number }[] = [];
 
       // 1. 새로운 원자재 생성
       if (newMaterials.length > 0) {

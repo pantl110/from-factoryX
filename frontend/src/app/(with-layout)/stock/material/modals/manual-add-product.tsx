@@ -33,7 +33,6 @@ const ManualAddProduct = ({
     handleSubmit,
     setError,
     reset,
-    watch,
     formState: { errors },
   } = useForm<MaterialItemModel>({
     defaultValues: {
@@ -59,7 +58,7 @@ const ManualAddProduct = ({
     );
   };
 
-  const onSubmit = (data: MaterialItemModel) => {
+  const onSubmit = () => {
     // 중복 검사
     if (
       checkDuplicateProductCode &&

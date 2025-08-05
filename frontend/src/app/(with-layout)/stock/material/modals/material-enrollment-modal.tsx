@@ -5,7 +5,11 @@ import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from './manual-add-material';
-import { MaterialItemModel, ClientModel } from '@/types/data-model';
+import {
+  MaterialItemModel,
+  ClientModel,
+  MaterialResponseModel,
+} from '@/types/data-model';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import { useGetMaterial, useCreateMaterialHistory } from '@/hooks';
 import { useForm } from 'react-hook-form';
@@ -41,7 +45,7 @@ const MaterialEnrollmentModal = ({
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [filteredMaterials, setFilteredMaterials] = useState<
-    MaterialItemModel[]
+    MaterialResponseModel[]
   >([]);
   const { getMaterialList } = useGetMaterial();
 
@@ -102,16 +106,7 @@ const MaterialEnrollmentModal = ({
 
       const result = await getMaterialList({ q: input.trim() });
       if (result.success && result.data) {
-        setFilteredMaterials(
-          (result.data.data || []).map((mat) => ({
-            name: mat.name,
-            code: mat.code,
-            spec: mat.spec,
-            unit: mat.unit,
-            quantity: 0,
-            price: 0,
-          }))
-        );
+        setFilteredMaterials(result.data.data || []);
         setPreviousSearchKeyword(input.trim());
       }
     };
@@ -120,14 +115,24 @@ const MaterialEnrollmentModal = ({
     return () => clearTimeout(timeoutId);
   }, [input, getMaterialList, previousSearchKeyword]);
 
-  const handleSelectMaterial = (item: MaterialItemModel) => {
+  const handleSelectMaterial = (item: MaterialResponseModel) => {
     setInput('');
     setSelectedMaterials((prev) => {
       if (!prev.some((mat) => mat.code === item.code)) {
+        // MaterialResponseModel을 MaterialItemModel로 변환
+        const materialItem: MaterialItemModel = {
+          name: item.name,
+          code: item.code,
+          spec: item.spec,
+          unit: item.unit,
+          quantity: null, // 사용자가 입력할 수량
+          price: null, // 사용자가 입력할 단가
+        };
+
         // React Hook Form에 기본값 설정
         setValue(`quantity.${item.code}`, null);
         setValue(`price.${item.code}`, null);
-        return [...prev, item];
+        return [...prev, materialItem];
       }
       return prev;
     });
