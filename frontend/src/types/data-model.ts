@@ -485,18 +485,18 @@ export interface OcrDataModel {
 
 // 견적서 상세 조회
 export interface QuotationProductDetailResponseModel {
-  product_id?: number;
+  productId: number | null;
+  product_code: string;
   product_name: string;
-  product_code?: string;
   spec: string;
   unit: string;
   quantity: number | null;
   unit_price: number | null;
-  supply_amount: number | null; // 공급가액
+  supply_amount?: number | null; // 공급가액
   tax_amount?: number | null; // 세액
 }
 export interface QuotationResponseModel {
-  // 판매처 정보 (본인 공장)
+  // 거래처 정보 (factory_info로 변경됨)
   factory_name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -508,6 +508,8 @@ export interface QuotationResponseModel {
   address?: string;
   // 주문 품목 정보
   products: QuotationProductDetailResponseModel[];
+  // 납기일
+  due_date?: string;
 }
 
 // 견적서 임시 저장 // 생산 시작
@@ -578,7 +580,8 @@ export interface ProjectLogResponseModel {
   type: ProjectLogType;
   title: string;
   content: string;
-  created_at?: string; // 생성 시간 (백엔드에서 제공하는 경우)
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ProjectLogListResponseModel extends PaginationModel {

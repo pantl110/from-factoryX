@@ -38,7 +38,7 @@ export type ProjectStatusType =
   | 'manufactured'
   | 'delivery'
   | 'completed'
-  | 'interruption'
+  | 'suspended'
   // 한글 상태 추가
   | '견적 협의중'
   | '주문 확정'
@@ -57,7 +57,7 @@ export type ProjectStatusType =
 // | '생산 완료' // manufactured
 // | '납품' // delivery
 // | '프로젝트 완료' // completed
-// | '중단'; // interruption
+// | '중단'; // suspended
 export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
   // 영어 상태
   quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
@@ -67,7 +67,7 @@ export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
   manufactured: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
   delivery: { bgColor: 'bg-green-8', textColor: 'text-green' },
   completed: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  interruption: { bgColor: 'bg-red-8', textColor: 'text-red' },
+  suspended: { bgColor: 'bg-red-8', textColor: 'text-red' },
 
   // 한글 상태 (기존 호환성 유지)
   '견적 협의중': { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },

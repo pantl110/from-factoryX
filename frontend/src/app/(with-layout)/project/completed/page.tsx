@@ -39,7 +39,7 @@ const CompletedProjectPage = () => {
       if (selectedStatus === '완료') {
         status = 'complete';
       } else if (selectedStatus === '중단') {
-        status = 'interruption';
+        status = 'suspended';
       }
 
       const result = await getProjects({
@@ -131,7 +131,7 @@ const CompletedProjectPage = () => {
             ? 'archived'
             : selectedStatus === '완료'
               ? 'completed'
-              : ('interruption' as ProjectStatusType),
+              : ('suspended' as ProjectStatusType),
         search: searchKeyword,
         order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
         order_dir: sortOrder,

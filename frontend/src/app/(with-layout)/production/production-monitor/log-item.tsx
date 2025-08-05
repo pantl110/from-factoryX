@@ -112,7 +112,7 @@ const LogItem = ({ onClick, isSelected, log }: LogItemProps) => {
             {log.content}
           </p>
           <p className="flex items-end Re_Body-1 text-sv flex-shrink-0">
-            {formatRelativeTime(log.created_at || '')}
+            {formatRelativeTime(log.updated_at || log.created_at || '')}
           </p>
         </div>
       </div>

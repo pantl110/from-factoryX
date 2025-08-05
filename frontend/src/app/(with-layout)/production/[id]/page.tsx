@@ -148,7 +148,7 @@ const ProductionPageContent = () => {
               business_category: quotationData.business_category,
             }}
             dueDate={''}
-            productListInfoTitle="상품 목록"
+            productListInfoTitle="주문 품목 정보"
             productItems={quotationData.products}
             supplyAmount={quotationData.products.reduce(
               (sum, item) => sum + (item.supply_amount || 0),

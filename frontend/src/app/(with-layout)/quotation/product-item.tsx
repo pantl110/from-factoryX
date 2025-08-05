@@ -91,7 +91,7 @@ const ProductItem = ({
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
-                    onProductDetailClick?.(data?.product_id || null);
+                    onProductDetailClick?.(data?.productId || null);
                   }}
                   className="opacity-0 group-hover:opacity-100 w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg cursor-pointer transition-all duration-200 ease-in-out"
                 >

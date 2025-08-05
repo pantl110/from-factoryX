@@ -17,10 +17,15 @@ import {
   ClientModel,
   OcrDataModel,
   QuotationProductDetailResponseModel,
+  QuotationResponseModel,
 } from '@/types/data-model';
-import useSaveDraftQuotation from '@/hooks/document/quotation/use-save-draft-quotation';
-import useStartProduction from '@/hooks/document/quotation/use-start-production';
-import { useGetProjectStatus, useUpdateProjectStatus } from '@/hooks';
+import {
+  useStartProduction,
+  useSaveDraftQuotation,
+  useGetProjectStatus,
+  useUpdateProjectStatus,
+  useGetDetailQuotation,
+} from '@/hooks';
 import { useSearchParams } from 'next/navigation';
 
 // Extend ClientModel for quotation form to include due_date
@@ -46,6 +51,8 @@ const QuotationPageContent = () => {
   const { startProduction } = useStartProduction();
   const { getProjectStatus } = useGetProjectStatus();
   const { updateProjectStatus } = useUpdateProjectStatus();
+  const { data: quotationData, isLoading: isQuotationLoading } =
+    useGetDetailQuotation(quotationId || 0);
 
   // 프로젝트 상태 로드
   const loadProjectStatus = useCallback(async () => {
@@ -87,7 +94,13 @@ const QuotationPageContent = () => {
   const { setValue, control, trigger, watch, formState } =
     useForm<QuotationFormModel>({
       defaultValues: {
-        factory_id: 0,
+        factory_id: (() => {
+          if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('factoryId');
+            return stored ? parseInt(stored, 10) : 0;
+          }
+          return 0;
+        })(),
         name: '',
         business_registration_number: '',
         representative_name: '',
@@ -103,14 +116,51 @@ const QuotationPageContent = () => {
       },
     });
 
+  // 견적서 데이터로 폼 기본값 설정
+  const setFormValuesFromQuotation = useCallback(
+    (quotation: QuotationResponseModel) => {
+      // factory_id를 로컬 스토리지에서 가져와서 설정
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('factoryId');
+        setValue('factory_id', stored ? parseInt(stored, 10) : 0);
+      }
+
+      // 백엔드 응답 구조에 맞게 직접 접근
+      setValue('name', quotation.factory_name || '');
+      setValue(
+        'business_registration_number',
+        quotation.business_registration_number || ''
+      );
+      setValue('representative_name', quotation.representative_name || '');
+      setValue('business_type', quotation.business_type || '');
+      setValue('business_category', quotation.business_category || '');
+      setValue('address', quotation.address || '');
+      setValue('email', quotation.email || '');
+      setValue('phone', quotation.phone || '');
+      setValue('fax', quotation.fax || '');
+
+      if (quotation?.due_date) {
+        setValue('due_date', quotation.due_date);
+      }
+    },
+    [setValue]
+  );
+
+  // 견적서 데이터가 로드되면 폼에 설정
+  useEffect(() => {
+    if (quotationData && !isQuotationLoading) {
+      setFormValuesFromQuotation(quotationData);
+    }
+  }, [quotationData, isQuotationLoading, setFormValuesFromQuotation]);
+
   // 프로젝트 상태 관리
   const [projectStatus, setProjectStatus] = useState<string | null>(null);
 
   // 견적서 & 주문서 상태 관리 (프로젝트 상태에 따라 결정)
   const isOrderStatus =
     projectStatus === 'confirmed' || projectStatus === '주문 확정';
-  const isInterruptionStatus =
-    projectStatus === 'interruption' || projectStatus === '중단';
+  const isSuspendedStatus =
+    projectStatus === 'suspended' || projectStatus === '중단';
   // OCR 데이터 상태 관리
   const [ocrData, _setOcrData] = useState<OcrDataModel | null>(null);
 
@@ -187,10 +237,10 @@ const QuotationPageContent = () => {
         products: quotationProducts
           .filter(
             (product) =>
-              product.product_id && product.quantity && product.unit_price
+              product.productId && product.quantity && product.unit_price
           )
           .map((product) => ({
-            product_id: product.product_id as number,
+            product_id: product.productId as number,
             quantity: product.quantity as number,
             unit_price: product.unit_price as number,
             is_delivery: false,
@@ -236,10 +286,10 @@ const QuotationPageContent = () => {
         products: quotationProducts
           .filter(
             (product) =>
-              product.product_id && product.quantity && product.unit_price
+              product.productId && product.quantity && product.unit_price
           )
           .map((product) => ({
-            product_id: product.product_id as number,
+            product_id: product.productId as number,
             quantity: product.quantity as number,
             unit_price: product.unit_price as number,
           })),
@@ -273,10 +323,8 @@ const QuotationPageContent = () => {
           hasQuotationProducts={hasQuotationProducts}
           onSaveDraft={handleSaveDraft}
           isDirty={formState.isDirty}
-          isInterruptionStatus={isInterruptionStatus}
-          setIsInterruptionStatus={() =>
-            handleProjectStatusChange('interruption')
-          }
+          isSuspendedStatus={isSuspendedStatus}
+          setIsSuspendedStatus={() => handleProjectStatusChange('suspended')}
           projectId={projectId}
         />
         <TabArea

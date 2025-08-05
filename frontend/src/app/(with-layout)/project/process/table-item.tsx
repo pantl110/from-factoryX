@@ -45,7 +45,7 @@ const TableItem = ({
       manufactured: '생산 완료',
       delivery: '납품',
       completed: '완료',
-      interruption: '중단',
+      suspended: '중단',
       // 한글 상태
       '견적 협의중': '견적 협의',
       '주문 확정': '주문 확정',
@@ -84,7 +84,7 @@ const TableItem = ({
     const isQuotationStatus =
       project.status === 'quotation' ||
       project.status === 'confirmed' ||
-      project.status === 'interruption' ||
+      project.status === 'suspended' ||
       (project.status as string) === '견적 협의중' ||
       (project.status as string) === '주문 확정' ||
       (project.status as string) === '중단';

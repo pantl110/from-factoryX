@@ -84,7 +84,7 @@ const RequestInfo = ({
         prevProducts.some((prev, index) => {
           const current = currentProducts[index];
           return (
-            prev.product_id !== current.product_id ||
+            prev.productId !== current.productId ||
             prev.product_name !== current.product_name ||
             prev.product_code !== current.product_code ||
             prev.spec !== current.spec ||
@@ -173,7 +173,7 @@ const RequestInfo = ({
   // 기존 품목 추가 시 빈 품목 추가
   const handleAddEmptyProduct = () => {
     const emptyProduct: QuotationProductDetailResponseModel = {
-      product_id: undefined,
+      productId: null,
       product_name: '',
       product_code: '',
       spec: '',
@@ -192,7 +192,7 @@ const RequestInfo = ({
 
       // 새로운 품목을 form에 추가
       const newProduct: QuotationProductDetailResponseModel = {
-        product_id: productId,
+        productId,
         product_name: productDetail?.data?.name || '-',
         product_code: productDetail?.data?.code || '-',
         spec: productDetail?.data?.spec || '-',
@@ -200,6 +200,7 @@ const RequestInfo = ({
         quantity: null,
         unit_price: null,
         supply_amount: null, // 공급가액
+        tax_amount: null,
       };
 
       append(newProduct);
@@ -260,7 +261,7 @@ const RequestInfo = ({
                     <ProductItem
                       key={index}
                       data={item}
-                      onClick={() => onProductClick(item.product_id || 0)}
+                      onClick={() => onProductClick(item.productId || 0)}
                       canDelete={true}
                       onChange={(field, value) => {
                         handleQuantityOrPriceChange(index, field, value);
@@ -318,7 +319,7 @@ const RequestInfo = ({
                 if (activeDropdownIndex !== null) {
                   update(activeDropdownIndex, {
                     ...fields[activeDropdownIndex],
-                    product_id: product.id,
+                    productId: product.id,
                     product_name: product.name,
                     product_code: product.code,
                     spec: product.spec,

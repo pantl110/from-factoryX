@@ -26,8 +26,9 @@ interface TitleSecProps {
   hasQuotationProducts: boolean;
   onSaveDraft?: () => void | Promise<void>;
   isDirty: boolean;
-  isInterruptionStatus: boolean;
-  setIsInterruptionStatus: (status: boolean) => void;
+
+  isSuspendedStatus: boolean;
+  setIsSuspendedStatus: (status: boolean) => void;
   projectId?: number;
 }
 
@@ -43,8 +44,8 @@ const TitleSec = ({
   hasQuotationProducts,
   onSaveDraft,
   isDirty,
-  isInterruptionStatus,
-  setIsInterruptionStatus,
+  isSuspendedStatus,
+  setIsSuspendedStatus,
   projectId,
 }: TitleSecProps) => {
   // 실시간으로 업체명 가져오기
@@ -80,14 +81,14 @@ const TitleSec = ({
       if (result.success) {
         // 상태 변경 성공 시 UI 업데이트
         if (newStatus === 'quotation') {
-          setIsInterruptionStatus(false);
+          setIsSuspendedStatus(false);
           setIsOrderStatus(false);
-        } else if (newStatus === 'interruption') {
-          setIsInterruptionStatus(true);
+        } else if (newStatus === 'suspended') {
+          setIsSuspendedStatus(true);
           setIsOrderStatus(false);
         } else if (newStatus === 'order') {
           setIsOrderStatus(true);
-          setIsInterruptionStatus(false);
+          setIsSuspendedStatus(false);
         }
       }
     } catch {
@@ -106,21 +107,21 @@ const TitleSec = ({
             text={
               isOrderStatus
                 ? '주문 확정'
-                : isInterruptionStatus
+                : isSuspendedStatus
                   ? '중단'
                   : '견적 요청'
             }
             bgColor={
               isOrderStatus
                 ? 'bg-orange-8'
-                : isInterruptionStatus
+                : isSuspendedStatus
                   ? 'bg-red-8'
                   : 'bg-yellow-8'
             }
             textColor={
               isOrderStatus
                 ? 'text-orange'
-                : isInterruptionStatus
+                : isSuspendedStatus
                   ? 'text-red'
                   : 'text-yellow'
             }
@@ -145,7 +146,7 @@ const TitleSec = ({
                 <QuotationStatusDropdown
                   onClose={closeQuotationStatusDropdown}
                   onQuotationClick={() => handleStatusChange('quotation')}
-                  onInterruptionClick={() => handleStatusChange('interruption')}
+                  onSuspendedClick={() => handleStatusChange('suspended')}
                 />
               </div>
             )}
