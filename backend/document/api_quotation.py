@@ -71,17 +71,17 @@ async def get_quotation_detail(request, quotation_id: int):
         except Quotation.DoesNotExist:
             raise HttpError(404, "견적서를 찾을 수 없습니다.")
 
-        factory = quotation.factory
+        client = quotation.client
         factory_info = {
-            "factory_name": factory.name if factory and factory.name else "",
-            "business_registration_number": getattr(factory, "business_registration_number", None),
-            "representative_name": getattr(factory, "representative_name", None),
-            "email": getattr(factory, "manager_email", None),
-            "phone": getattr(factory, "manager_phone", None),
-            "fax": getattr(factory, "manager_fax", None),
-            "business_type": getattr(factory, "business_type", None),
-            "business_category": getattr(factory, "business_category", None),
-            "address": getattr(factory, "business_address", None),
+            "factory_name": client.name if client and client.name else "",
+            "business_registration_number": getattr(client, "business_registration_number", None),
+            "representative_name": getattr(client, "representative_name", None),
+            "email": getattr(client, "email", None),
+            "phone": getattr(client, "phone", None),
+            "fax": getattr(client, "fax", None),
+            "business_type": getattr(client, "business_type", None),
+            "business_category": getattr(client, "business_category", None),
+            "address": getattr(client, "address", None),
         }
 
         products = []
@@ -101,7 +101,12 @@ async def get_quotation_detail(request, quotation_id: int):
                 "tax_amount": tax_amount,
             })
 
-        return {**factory_info, "products": products}
+        response_data = {**factory_info, "products": products}
+        if quotation.due_date:
+            response_data["due_date"] = quotation.due_date.isoformat()
+        else:
+            response_data["due_date"] = ""
+        return response_data
 
     except HttpError as e:
         return Response({"status": "error", "message": str(e)}, status=e.status_code)
