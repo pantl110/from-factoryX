@@ -3,12 +3,13 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from django.db import IntegrityError
+from django.db.models import F
 from api.security import jwt_auth
 from typing import List
 
 from stock.models import Material, MaterialProduct, Product
 from stock.schemas.inbound import MaterialUpdateIn, AssignMaterialIn, SingleMaterialCreateIn
-from stock.schemas.outbound import MaterialDetailOut, AssignMaterialOut, MaterialSummaryOut
+from stock.schemas.outbound import MaterialDetailOut, AssignMaterialOut, MaterialSummaryOut, ShortageMaterialCountOut
 from factory.models import Factory
 
 from factory.utils import is_factory_member
@@ -195,6 +196,48 @@ async def get_materials_by_factory(request, q: str = None, order: str = "desc"):
         })
     
     return material_list
+
+
+@router.get(
+    "/shortage",
+    summary="[C] 부족한 원자재 수 조회",
+    description="현재 재고가 안전 재고보다 적은 원자재의 개수를 조회합니다.",
+    response={200: ShortageMaterialCountOut, 404: dict, 500: dict}
+)
+async def get_insufficient_material_count(request):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        @sync_to_async
+        def get_shortage_count():
+            # 전체 원자재 수
+            total_materials = Material.objects.filter(factory_id=int(factory_id)).count()
+            
+            # 부족한 원자재 수 (현재 재고 < 안전 재고)
+            shortage_count = Material.objects.filter(
+                factory_id=int(factory_id),
+                current_stock__lt=F('standard_stock')
+            ).count()
+            
+            # 부족 비율 계산
+            shortage_percentage = (shortage_count / total_materials * 100) if total_materials > 0 else 0
+            
+            return {
+                "shortage_count": shortage_count,
+                "total_materials": total_materials,
+                "shortage_percentage": round(shortage_percentage, 2)
+            }
+        
+        result = await get_shortage_count()
+        return 200, ShortageMaterialCountOut(**result)
+        
+    except Exception as e:
+        raise HttpError(500, f"부족한 원자재 수 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 # Material Tab

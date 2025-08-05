@@ -132,6 +132,15 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     avg_production_time: int
 
 
+# (GET) Daily Production Quantity
+class DailyProductionQuantityOut(Schema):
+    production_count: int
+    production_quantity: int
+    previous_month_count: Optional[int] = None
+    previous_month_quantity: Optional[int] = None
+    change_percentage: Optional[float] = None
+
+
 # ------------------------------------------------------------
 # Project Log API
 # ------------------------------------------------------------
