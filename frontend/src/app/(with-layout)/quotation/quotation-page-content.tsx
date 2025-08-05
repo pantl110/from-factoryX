@@ -234,24 +234,22 @@ const QuotationPageContent = () => {
           note: formData.note,
         },
         due_date: formData.due_date,
-        products: quotationProducts
-          .filter(
-            (product) =>
-              product.productId && product.quantity && product.unit_price
-          )
-          .map((product) => ({
-            product_id: product.productId as number,
-            quantity: product.quantity as number,
-            unit_price: product.unit_price as number,
-            is_delivery: false,
-            delivery_date: null,
-          })),
+        products: quotationProducts.map((product) => ({
+          product_id: product.productId || 0,
+          quantity: product.quantity || 0,
+          unit_price: product.unit_price || 0,
+          is_delivery: false,
+          delivery_date: null,
+        })),
       };
 
       await saveDraft(draftData);
       // 성공 시 토스트 메시지나 다른 피드백 제공
-    } catch {
-      throw new Error('Failed to save draft');
+    } catch (error) {
+      alert(
+        '임시저장에 실패했습니다: ' +
+          (error instanceof Error ? error.message : '알 수 없는 오류')
+      );
     }
   }, [saveDraft, watch, quotationId, quotationProducts]);
 
@@ -264,6 +262,19 @@ const QuotationPageContent = () => {
       const factoryId = localStorage.getItem('factoryId');
       if (!factoryId) {
         throw new Error('공장 정보가 없습니다.');
+      }
+
+      // 주문확정 시에는 모든 품목이 완전해야 함
+      const incompleteProducts = quotationProducts.filter(
+        (product) =>
+          !product.productId || !product.quantity || !product.unit_price
+      );
+
+      if (incompleteProducts.length > 0) {
+        alert(
+          '주문확정을 위해서는 모든 품목의 수량과 단가가 입력되어야 합니다.'
+        );
+        return;
       }
 
       const productionData = {
@@ -283,16 +294,13 @@ const QuotationPageContent = () => {
           note: formData.note,
         },
         due_date: formData.due_date,
-        products: quotationProducts
-          .filter(
-            (product) =>
-              product.productId && product.quantity && product.unit_price
-          )
-          .map((product) => ({
-            product_id: product.productId as number,
-            quantity: product.quantity as number,
-            unit_price: product.unit_price as number,
-          })),
+        products: quotationProducts.map((product) => ({
+          product_id: product.productId as number,
+          quantity: product.quantity as number,
+          unit_price: product.unit_price as number,
+          is_delivery: false,
+          delivery_date: null,
+        })),
       };
 
       const result = await startProduction(productionData);
@@ -306,7 +314,7 @@ const QuotationPageContent = () => {
       throw new Error('Failed to start production');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startProduction, watch, quotationId]);
+  }, [startProduction, watch, quotationId, quotationProducts]);
 
   return (
     <>

@@ -159,15 +159,31 @@ const RequestInfo = ({
 
     // 현재 필드의 값을 가져와서 업데이트
     const currentField = fields[index];
-    update(index, {
+    const updatedField = {
       ...currentField,
       [field]: numericValue,
-    });
+    };
+
+    update(index, updatedField);
+
+    // 부모 컴포넌트에 변경사항 알림 (최신 상태 사용)
+    if (onProductsChange) {
+      const updatedFields = fields.map((field, i) =>
+        i === index ? updatedField : field
+      );
+      onProductsChange(updatedFields);
+    }
   };
 
   // 품목 삭제
   const handleDeleteProduct = (index: number) => {
     remove(index);
+
+    // 부모 컴포넌트에 변경사항 알림
+    if (onProductsChange) {
+      const updatedFields = fields.filter((_, i) => i !== index);
+      onProductsChange(updatedFields);
+    }
   };
 
   // 기존 품목 추가 시 빈 품목 추가
@@ -181,8 +197,15 @@ const RequestInfo = ({
       quantity: null,
       unit_price: null,
       supply_amount: null,
+      tax_amount: null,
     };
     append(emptyProduct);
+
+    // 부모 컴포넌트에 변경사항 알림
+    if (onProductsChange) {
+      const updatedFields = [...fields, emptyProduct];
+      onProductsChange(updatedFields);
+    }
   };
 
   // 새로운 품목 추가 시 품목 디테일 판넬에서 저장버튼 누르면
@@ -199,11 +222,17 @@ const RequestInfo = ({
         unit: productDetail?.data?.unit || '-',
         quantity: null,
         unit_price: null,
-        supply_amount: null, // 공급가액
+        supply_amount: null,
         tax_amount: null,
       };
 
       append(newProduct);
+
+      // 부모 컴포넌트에 변경사항 알림
+      if (onProductsChange) {
+        const updatedFields = [...fields, newProduct];
+        onProductsChange(updatedFields);
+      }
     }
   };
 
@@ -317,14 +346,22 @@ const RequestInfo = ({
               onSelect={(product: ProductResponseModel) => {
                 // 선택된 품목 정보로 해당 행 업데이트
                 if (activeDropdownIndex !== null) {
-                  update(activeDropdownIndex, {
+                  const updatedProduct = {
                     ...fields[activeDropdownIndex],
                     productId: product.id,
                     product_name: product.name,
                     product_code: product.code,
                     spec: product.spec,
                     unit: product.unit,
-                  });
+                  };
+                  update(activeDropdownIndex, updatedProduct);
+
+                  // 부모 컴포넌트에 변경사항 알림
+                  if (onProductsChange) {
+                    const updatedFields = [...fields];
+                    updatedFields[activeDropdownIndex] = updatedProduct;
+                    onProductsChange(updatedFields);
+                  }
                 }
                 setActiveDropdownIndex(null);
                 setDropdownProducts([]);
