@@ -58,6 +58,7 @@ async def upload_file(request, payload: OcrIn):
     auth=jwt_auth,
 )
 async def get_quotation_detail(request, quotation_id: int):
+    # Only those related to the factory can view
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -66,10 +67,12 @@ async def get_quotation_detail(request, quotation_id: int):
     await is_factory_member(int(factory_id), user)
 
     try:
-        try:
-            quotation = await Quotation.objects.select_related("client", "factory").aget(id=quotation_id)
-        except Quotation.DoesNotExist:
+        quotation = await Quotation.objects.filter(id=quotation_id).select_related("client", "factory").afirst()
+        if not quotation:
             raise HttpError(404, "견적서를 찾을 수 없습니다.")
+        
+        if quotation.factory_id != int(factory_id):
+            raise HttpError(403, "해당 공장의 견적서가 아닙니다.")
 
         client = quotation.client
         factory_info = {
@@ -106,6 +109,7 @@ async def get_quotation_detail(request, quotation_id: int):
             response_data["due_date"] = quotation.due_date.isoformat()
         else:
             response_data["due_date"] = ""
+            
         return response_data
 
     except HttpError as e:

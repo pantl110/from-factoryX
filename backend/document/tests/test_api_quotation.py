@@ -144,11 +144,11 @@ class QuotationDetailAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         
-        # 판매처 정보 검증 (본인 공장)
-        self.assertEqual(data["factory_name"], "테스트 공장")
+        # 고객사 정보 검증
+        self.assertEqual(data["factory_name"], "ABC 주식회사")
         self.assertEqual(data["business_registration_number"], "123-45-67890")
         self.assertEqual(data["representative_name"], "홍길동")
-        self.assertEqual(data["email"], "manager@test.com")
+        self.assertEqual(data["email"], "contact@abc.com")
         self.assertEqual(data["phone"], "02-1234-5678")
         self.assertEqual(data["fax"], "02-1234-5679")
         self.assertEqual(data["business_type"], "제조업")
@@ -213,8 +213,9 @@ class QuotationDetailAPITestCase(TestCase):
 
     async def test_get_quotation_detail_without_factory(self):
         """공장 정보가 없는 견적서 조회 테스트"""
-        # 공장 정보가 없는 견적서 생성
+        # 공장 정보가 없는 견적서 생성 (factory 필드가 None)
         quotation_no_factory = await sync_to_async(Quotation.objects.create)(
+            factory=None,
             client=self.client_company,
             project=self.project
         )
@@ -224,20 +225,8 @@ class QuotationDetailAPITestCase(TestCase):
             headers=self.get_auth_headers()
         )
         
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        
-        # 공장 정보가 None으로 반환되는지 확인
-        self.assertEqual(data["factory_name"], "")
-        self.assertIsNone(data["business_registration_number"])
-        self.assertIsNone(data["representative_name"])
-        self.assertIsNone(data["email"])
-        self.assertIsNone(data["phone"])
-        self.assertIsNone(data["fax"])
-        self.assertIsNone(data["business_type"])
-        self.assertIsNone(data["business_category"])
-        self.assertIsNone(data["address"])
-        self.assertEqual(data["products"], [])
+        # factory_id가 None이므로 403 에러가 발생해야 함
+        self.assertEqual(response.status_code, 403)
 
     async def test_get_quotation_detail_without_products(self):
         """제품 정보가 없는 견적서 조회 테스트"""
@@ -257,37 +246,28 @@ class QuotationDetailAPITestCase(TestCase):
         data = response.json()
         
         # 고객 정보는 정상적으로 반환
-        self.assertEqual(data["factory_name"], "테스트 공장")
+        self.assertEqual(data["factory_name"], "ABC 주식회사")
         # 제품 목록은 빈 배열
         self.assertEqual(data["products"], [])
 
     async def test_get_quotation_detail_partial_factory_info(self):
-        """부분적인 공장 정보가 있는 견적서 조회 테스트"""
-        # 부분적인 정보만 있는 공장 생성
-        partial_factory = await sync_to_async(Factory.objects.create)(
-            name='부분 정보 공장',
-            owner=self.user,
-            manager_email='partial@test.com'
+        """부분적인 고객사 정보가 있는 견적서 조회 테스트"""
+        # 부분적인 정보만 있는 고객사 생성
+        partial_client = await sync_to_async(FactoryClient.objects.create)(
+            factory=self.factory,
+            name='부분 정보 고객사',
+            email='partial@client.com'
             # 다른 필드들은 null
         )
         
         quotation_partial = await sync_to_async(Quotation.objects.create)(
-            factory=partial_factory,
-            client=self.client_company,
+            factory=self.factory,
+            client=partial_client,
             project=self.project
         )
         
-        # 부분적인 공장의 멤버도 생성
-        partial_factory_member = await sync_to_async(FactoryMember.objects.create)(
-            factory=partial_factory,
-            user=self.user,
-            role='viewer',
-            status='active',
-            invited_by=self.user
-        )
-        
         response = await self.client.get(
-            f"/v1/document/quotation/{quotation_partial.id}?factory_id={partial_factory.id}",
+            f"/v1/document/quotation/{quotation_partial.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers()
         )
         
@@ -295,8 +275,8 @@ class QuotationDetailAPITestCase(TestCase):
         data = response.json()
         
         # 입력된 정보만 반환되고 나머지는 None
-        self.assertEqual(data["factory_name"], "부분 정보 공장")
-        self.assertEqual(data["email"], "partial@test.com")
+        self.assertEqual(data["factory_name"], "부분 정보 고객사")
+        self.assertEqual(data["email"], "partial@client.com")
         self.assertIsNone(data["business_registration_number"])
         self.assertIsNone(data["representative_name"])
         self.assertIsNone(data["phone"])

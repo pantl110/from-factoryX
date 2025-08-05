@@ -33,6 +33,9 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         except Http404:
             raise HttpError(404, "해당 견적서를 찾을 수 없습니다.")
         
+        if quotation.factory_id != int(factory_id):
+            raise HttpError(403, "해당 공장의 견적서가 아닙니다.")
+        
         if payload.client:
             client_data = payload.client
             factory = await sync_to_async(lambda: quotation.factory)()
@@ -88,7 +91,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         raise HttpError(500, f"임시 저장 중 오류가 발생했습니다: {str(e)}")
 
 
-@router.post("/confirmed", summary="생산 시작작", description="완성된 견적서로 생산을 시작합니다. 모든 필수 정보가 필요합니다.")
+@router.post("/confirmed", summary="생산 시작", description="완성된 견적서로 생산을 시작합니다. 모든 필수 정보가 필요합니다.")
 async def confirm_order(request, payload: QuotationConfirmedIn):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
@@ -176,7 +179,6 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             except Exception as e:
                 raise HttpError(400, f"설비 조회 중 오류가 발생했습니다: {str(e)}")
             
-            # 제품의 buffer rate를 가져와서 생산 수량 계산
             product = await sync_to_async(lambda: quotation_product.product)()
             buffer_rate = float(product.buffer_rate)
             base_quantity = prod.quantity
@@ -221,13 +223,18 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
     
     try:
         if quotation_id:
-            qps = await sync_to_async(list)(QuotationProduct.objects.filter(quotation_id=quotation_id))
+            qps = await sync_to_async(list)(QuotationProduct.objects.filter(
+                quotation_id=quotation_id,
+                quotation__factory_id=int(factory_id)
+            ))
         else:
             qps = await sync_to_async(list)(QuotationProduct.objects.filter(quotation__factory_id=int(factory_id)))
     except Exception as e:
         raise HttpError(500, f"조회 중 오류: {str(e)}")
+
     if not qps:
         raise HttpError(404, "품목이 없습니다.")
+
     return 200, [
         {
             "id": qp.id,
