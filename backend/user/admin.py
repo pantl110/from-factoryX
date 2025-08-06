@@ -12,6 +12,7 @@ class UserAdmin(admin.ModelAdmin):
         "phone_number",
         "is_active",
         "is_staff",
+        "factory_roles",
         "date_joined",
     ]
     list_filter = [
@@ -25,7 +26,7 @@ class UserAdmin(admin.ModelAdmin):
         "date_joined",
     ]
     search_fields = ["email", "name", "phone_number"]
-    readonly_fields = ["date_joined", "last_login"]
+    readonly_fields = ["date_joined", "last_login", "factory_roles"]
     list_per_page = 20
     
     fieldsets = (
@@ -34,6 +35,10 @@ class UserAdmin(admin.ModelAdmin):
         }),
         ('상태 정보', {
             'fields': ('status', 'is_active', 'is_staff', 'is_superuser')
+        }),
+        ('공장 권한', {
+            'fields': ('factory_roles',),
+            'description': '사용자가 속한 공장과 권한 정보'
         }),
         ('약관 동의', {
             'fields': ('terms_of_service', 'privacy_policy_agreement', 'marketing_agreement')
@@ -49,6 +54,25 @@ class UserAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def factory_roles(self, obj):
+        """사용자의 공장별 권한 정보 표시"""
+        memberships = obj.factory_members.select_related('factory').all()
+        if not memberships:
+            return "공장 권한 없음"
+        
+        roles = []
+        for membership in memberships:
+            status_text = "활성" if membership.status == 'active' else "초대됨"
+            roles.append(f"{membership.factory.name or f'공장{membership.factory.id}'} ({membership.get_role_display()}, {status_text})")
+        
+        return " | ".join(roles)
+    factory_roles.short_description = '공장 권한'
+    
+    def get_queryset(self, request):
+        """쿼리셋 최적화"""
+        qs = super().get_queryset(request)
+        return qs.prefetch_related('factory_members__factory')
 
 @admin.register(Jwt)
 class JwtAdmin(admin.ModelAdmin):
