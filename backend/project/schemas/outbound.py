@@ -38,6 +38,9 @@ class ProjectStatusOut(Schema):
     status: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    earliest_start_date: Optional[datetime.date] = None
+    latest_end_date: Optional[datetime.date] = None
+    due_date: Optional[datetime.date] = None
 
 
 # (PATCH) Project Status Update

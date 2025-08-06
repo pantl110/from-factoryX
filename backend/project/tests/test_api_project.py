@@ -937,7 +937,7 @@ class ProjectAPITestCase(TestCase):
         self.assertNotIn(project_progress.id, ids)
 
         # 6. 중단(interruption)만 조회
-        url = f'/v1/project?factory_id={self.factory.id}&status=interruption'
+        url = f'/v1/project?factory_id={self.factory.id}&status=suspended'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -1028,8 +1028,8 @@ class ProjectAPITestCase(TestCase):
         self.assertIn(project3.id, ids)  # 완료된 프로젝트만 포함
         self.assertNotIn(project4.id, ids)  # 중단된 프로젝트는 포함되지 않음
         self.assertFalse(is_abandoned_map[project3.id])
-        # 6. 중단만 조회 (status=interruption)
-        url = f'/v1/project?factory_id={self.factory.id}&status=interruption'
+        # 6. 중단만 조회 (status=suspended)
+        url = f'/v1/project?factory_id={self.factory.id}&status=suspended'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -1091,7 +1091,7 @@ class ProjectAPITestCase(TestCase):
         self.assertNotEqual(response.status_code, 500)
         
         # 3. 모든 상태에 대해 테스트
-        statuses = ["progress", "archived", "complete", "interruption", "quotation", "pending", "production", "manufactured", "delivery"]
+        statuses = ["progress", "archived", "complete", "suspended", "quotation", "pending", "production", "manufactured", "delivery"]
         for status in statuses:
             url = f'/v1/project?factory_id={self.factory.id}&status={status}'
             response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
@@ -1153,3 +1153,280 @@ class ProjectAPITestCase(TestCase):
             url = f'/v1/project?factory_id={self.factory.id}&status=production'
             response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
             self.assertNotEqual(response.status_code, 500, f"연속 요청 {i+1}에서 500 에러 발생")
+
+    # 프로젝트 상태 조회 API 테스트
+    def test_get_project_status_success(self):
+        """프로젝트 상태 조회 성공 테스트"""
+        # 프로젝트와 견적서, 생산 계획 생성
+        project, quotation = self.create_test_project_with_quotation(status='생산 대기')
+        
+        # 추가 생산 계획 생성 (다른 날짜)
+        plan2 = ProjectPlan.objects.create(
+            project=project,
+            product=quotation.products.last(),
+            quantity=5,
+            equipment=self.equipment,
+            start_date=date(2025, 6, 15),
+            end_date=date(2025, 6, 20),
+            avg_production_time=3600
+        )
+        
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 기본 필드 확인
+        self.assertEqual(data['project_id'], project.id)
+        self.assertEqual(data['status'], '생산 대기')
+        self.assertIn('created_at', data)
+        self.assertIn('updated_at', data)
+        
+        # 새로운 필드 확인
+        self.assertIn('earliest_start_date', data)
+        self.assertIn('latest_end_date', data)
+        self.assertIn('due_date', data)
+        
+        # 날짜 값 확인
+        self.assertEqual(data['earliest_start_date'], '2025-06-04')  # 가장 빠른 시작일
+        self.assertEqual(data['latest_end_date'], '2025-06-20')     # 가장 늦은 마감일
+        self.assertEqual(data['due_date'], '2025-06-15')           # 견적서 납기일
+
+    def test_get_project_status_without_plans(self):
+        """생산 계획이 없는 프로젝트 상태 조회 테스트"""
+        # 생산 계획 없이 프로젝트 생성
+        project, quotation = self.create_test_project_with_quotation(status='견적 협의중', create_plan=False)
+        
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 날짜 필드가 None인지 확인
+        self.assertIsNone(data['earliest_start_date'])
+        self.assertIsNone(data['latest_end_date'])
+        self.assertEqual(data['due_date'], '2025-06-15')  # 견적서 납기일은 있음
+
+    def test_get_project_status_without_due_date(self):
+        """납기일이 없는 견적서의 프로젝트 상태 조회 테스트"""
+        # 납기일이 없는 견적서로 프로젝트 생성
+        project = Project.objects.create(status='생산 대기')
+        quotation = Quotation.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            project=project,
+            due_date=None  # 납기일 없음
+        )
+        
+        # 생산 계획 생성
+        plan = ProjectPlan.objects.create(
+            project=project,
+            product=QuotationProduct.objects.create(
+                quotation=quotation,
+                product=self.product1,
+                quantity=10,
+                unit_price=1000
+            ),
+            quantity=10,
+            equipment=self.equipment,
+            start_date=date(2025, 6, 4),
+            end_date=date(2025, 6, 10),
+            avg_production_time=3600
+        )
+        
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 납기일이 None인지 확인
+        self.assertIsNone(data['due_date'])
+        self.assertEqual(data['earliest_start_date'], '2025-06-04')
+        self.assertEqual(data['latest_end_date'], '2025-06-10')
+
+    def test_get_project_status_multiple_plans(self):
+        """여러 생산 계획이 있는 프로젝트 상태 조회 테스트"""
+        project, quotation = self.create_test_project_with_quotation(status='생산 중')
+        
+        # 추가 생산 계획들 생성 (다양한 날짜)
+        plan2 = ProjectPlan.objects.create(
+            project=project,
+            product=quotation.products.last(),
+            quantity=5,
+            equipment=self.equipment,
+            start_date=date(2025, 6, 1),   # 가장 빠른 시작일
+            end_date=date(2025, 6, 25),    # 가장 늦은 마감일
+            avg_production_time=3600
+        )
+        
+        plan3 = ProjectPlan.objects.create(
+            project=project,
+            product=quotation.products.last(),
+            quantity=3,
+            equipment=self.equipment,
+            start_date=date(2025, 6, 10),
+            end_date=date(2025, 6, 15),
+            avg_production_time=3600
+        )
+        
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 가장 빠른 시작일과 가장 늦은 마감일 확인
+        self.assertEqual(data['earliest_start_date'], '2025-06-01')  # 가장 빠른 시작일
+        self.assertEqual(data['latest_end_date'], '2025-06-25')     # 가장 늦은 마감일
+
+    def test_get_project_status_nonexistent_project(self):
+        """존재하지 않는 프로젝트 상태 조회 테스트"""
+        url = f'/v1/project/999?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertIn('프로젝트를 찾을 수 없습니다', data['detail'])
+
+    def test_get_project_status_wrong_factory(self):
+        """다른 공장의 프로젝트 상태 조회 시도 테스트"""
+        # 다른 공장 생성
+        other_factory = Factory.objects.create(
+            name='다른 공장',
+            owner=self.user
+        )
+        
+        # 다른 공장의 프로젝트 생성
+        project = Project.objects.create(status='생산 대기')
+        Quotation.objects.create(
+            factory=other_factory,
+            client=self.client_company,
+            project=project,
+            due_date=date(2025, 6, 15)
+        )
+        
+        # 현재 공장으로 조회 시도
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertIn('프로젝트를 찾을 수 없습니다', data['detail'])
+
+    def test_get_project_status_missing_factory_id(self):
+        """factory_id 파라미터 누락 테스트"""
+        project, _ = self.create_test_project_with_quotation(status='생산 대기')
+        
+        url = f'/v1/project/{project.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn('factory_id를 입력해야 합니다', data['detail'])
+
+    def test_get_project_status_without_auth(self):
+        """인증 없이 프로젝트 상태 조회 시도 테스트"""
+        project, _ = self.create_test_project_with_quotation(status='생산 대기')
+        
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
+        response = self.client.get(url)
+        
+        self.assertIn(response.status_code, [401, 403])
+
+    def test_get_project_status_invalid_token(self):
+        """잘못된 토큰으로 프로젝트 상태 조회 시도 테스트"""
+        project, _ = self.create_test_project_with_quotation(status='생산 대기')
+        
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION='Bearer invalid_token')
+        
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_project_status_edge_cases(self):
+        """프로젝트 상태 조회 엣지 케이스 테스트"""
+        # 1. 매우 큰 프로젝트 ID
+        url = f'/v1/project/{2**31-1}?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 404)
+        
+        # 2. 음수 프로젝트 ID
+        url = f'/v1/project/-1?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 404)
+        
+        # 3. 문자열 프로젝트 ID (URL 라우팅에서 처리됨)
+        # Django URL 라우팅에서 int 타입으로 처리되므로 테스트 불가
+        
+        # 4. 매우 큰 factory_id
+        project, _ = self.create_test_project_with_quotation(status='생산 대기')
+        url = f'/v1/project/{project.id}?factory_id={2**31-1}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_project_status_data_consistency(self):
+        """프로젝트 상태 조회 데이터 일관성 테스트"""
+        # 프로젝트 생성
+        project, quotation = self.create_test_project_with_quotation(status='생산 완료')
+        
+        # 생산 계획 생성
+        plan = ProjectPlan.objects.create(
+            project=project,
+            product=quotation.products.first(),
+            quantity=10,
+            equipment=self.equipment,
+            start_date=date(2025, 6, 4),
+            end_date=date(2025, 6, 10),
+            avg_production_time=3600
+        )
+        
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 데이터 일관성 확인
+        self.assertEqual(data['project_id'], project.id)
+        self.assertEqual(data['status'], '생산 완료')
+        
+        # 날짜 데이터 타입 확인
+        self.assertIsInstance(data['earliest_start_date'], str)
+        self.assertIsInstance(data['latest_end_date'], str)
+        self.assertIsInstance(data['due_date'], str)
+        
+        # 날짜 형식 확인 (YYYY-MM-DD)
+        import re
+        date_pattern = r'^\d{4}-\d{2}-\d{2}$'
+        self.assertIsNotNone(re.match(date_pattern, data['earliest_start_date']))
+        self.assertIsNotNone(re.match(date_pattern, data['latest_end_date']))
+        self.assertIsNotNone(re.match(date_pattern, data['due_date']))
+
+    def test_get_project_status_performance(self):
+        """프로젝트 상태 조회 성능 테스트"""
+        # 많은 생산 계획이 있는 프로젝트 생성
+        project, quotation = self.create_test_project_with_quotation(status='생산 중')
+        
+        # 10개의 생산 계획 생성
+        for i in range(10):
+            plan = ProjectPlan.objects.create(
+                project=project,
+                product=quotation.products.first(),
+                quantity=10,
+                equipment=self.equipment,
+                start_date=date(2025, 6, i+1),
+                end_date=date(2025, 6, i+10),
+                avg_production_time=3600
+            )
+        
+        url = f'/v1/project/{project.id}?factory_id={self.factory.id}'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 가장 빠른 시작일과 가장 늦은 마감일 확인
+        self.assertEqual(data['earliest_start_date'], '2025-06-01')  # 가장 빠른 시작일
+        self.assertEqual(data['latest_end_date'], '2025-06-19')     # 가장 늦은 마감일

@@ -164,11 +164,38 @@ async def get_project_status(request, project_id: int):
         if not quotation_exists:
             raise Project.DoesNotExist
         
+        # 프로젝트 플랜에서 가장 빠른 생산일자와 가장 늦은 마감일자 조회
+        @sync_to_async
+        def get_project_dates():
+            plans = project.plans.all()
+            earliest_start_date = None
+            latest_end_date = None
+            
+            if plans:
+                start_dates = [plan.start_date for plan in plans]
+                end_dates = [plan.end_date for plan in plans]
+                earliest_start_date = min(start_dates) if start_dates else None
+                latest_end_date = max(end_dates) if end_dates else None
+            
+            return earliest_start_date, latest_end_date
+        
+        # 견적서의 납기일자 조회
+        @sync_to_async
+        def get_quotation_due_date():
+            quotation = project.quotations.filter(factory_id=int(factory_id)).first()
+            return quotation.due_date if quotation else None
+        
+        earliest_start_date, latest_end_date = await get_project_dates()
+        due_date = await get_quotation_due_date()
+        
         return ProjectStatusOut(
             project_id=project.id,
             status=project.status,
             created_at=project.created_at,
             updated_at=project.updated_at,
+            earliest_start_date=earliest_start_date,
+            latest_end_date=latest_end_date,
+            due_date=due_date,
         )
         
     except Project.DoesNotExist:
