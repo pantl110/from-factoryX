@@ -1,6 +1,6 @@
 from ninja import Router
 from ninja.pagination import paginate
-from api.security import jwt_auth
+from api.security import jwt_auth, jwt_manager_auth, jwt_admin_auth
 from factory.schemas.inbound import FactoryUpdateIn
 from factory.schemas.outbound import FactoryOut
 from factory.models import Factory, FactoryMember
@@ -177,7 +177,7 @@ async def update_factory(request, payload: FactoryUpdateIn):
     summary="[C] 공장 삭제",
     description="공장 ID로 공장을 삭제합니다.",
     response={204: None},
-    auth=jwt_auth,
+    auth=jwt_admin_auth,
 )
 async def delete_factory(request):
     factory_id = request.GET.get('factory_id')
