@@ -121,9 +121,9 @@ class CronProductionStatusTestCase(TestCase):
         out = io.StringIO()
         call_command('update_production_status', stdout=out)
         
-        # 설비 상태가 가동 중으로 변경되었는지 확인
+        # 과거 날짜는 처리하지 않으므로 설비 상태가 변경되지 않았는지 확인
         self.equipment.refresh_from_db()
-        self.assertEqual(self.equipment.status, 'running')
+        self.assertEqual(self.equipment.status, 'standby')
 
     def test_update_equipment_status_future_date(self):
         """미래 생산일자의 프로젝트 계획 테스트"""

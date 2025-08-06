@@ -1115,31 +1115,28 @@ class TaxAPITestCase(TestCase):
         receipt1 = CashReceipt.objects.create(
             client=self.client_company1,
             transaction_date=date(2025, 6, 1),
-            approval_number="A1",
-            transaction_classification="일반",
-            transaction_purpose="구매",
             transaction_amount=10000,
             tax_amount=1000,
+            cash_receipt_type="매입",
+            item_name="구매"
         )
         receipt1.product.add(self.product1)
         receipt2 = CashReceipt.objects.create(
             client=self.client_company1,
             transaction_date=date(2025, 6, 2),
-            approval_number="A2",
-            transaction_classification="일반",
-            transaction_purpose="구매",
             transaction_amount=20000,
             tax_amount=2000,
+            cash_receipt_type="매입",
+            item_name="구매"
         )
         receipt2.product.add(self.product2)
         receipt3 = CashReceipt.objects.create(
             client=self.client_company2,
             transaction_date=date(2025, 6, 3),
-            approval_number="A3",
-            transaction_classification="일반",
-            transaction_purpose="구매",
             transaction_amount=30000,
             tax_amount=3000,
+            cash_receipt_type="매입",
+            item_name="구매"
         )
         receipt3.product.add(self.product3)
         # 전체 조회(최신순)
@@ -1259,11 +1256,10 @@ class TaxAPITestCase(TestCase):
         receipt = CashReceipt.objects.create(
             client=self.client_company2,
             transaction_date=date(2025, 7, 1),
-            approval_number="A1234",
-            transaction_classification="일반",
-            transaction_purpose="구매",
             transaction_amount=50000,
             tax_amount=5000,
+            cash_receipt_type="매입",
+            item_name="구매"
         )
         # 자재 구매 이력 생성(현금영수증 연결)
         history = MaterialHistory.objects.create(
@@ -1288,9 +1284,7 @@ class TaxAPITestCase(TestCase):
             self.client_company2.business_registration_number,
         )
         self.assertEqual(data["transaction_date"], "2025-07-01")
-        self.assertEqual(data["approval_number"], "A1234")
-        self.assertEqual(data["transaction_classification"], "일반")
-        self.assertEqual(data["transaction_purpose"], "구매")
+        # 제거된 필드들은 확인하지 않음
         self.assertIn("materials", data)
         self.assertEqual(len(data["materials"]), 1)
         mat = data["materials"][0]

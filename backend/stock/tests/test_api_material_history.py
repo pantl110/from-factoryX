@@ -678,12 +678,11 @@ class TestMaterialHistoryAPI(TestCase):
         # 현금영수증 생성
         cash_receipt = await sync_to_async(CashReceipt.objects.create)(
             transaction_date="2025-01-15",
-            approval_number="TEST001",
-            transaction_classification="매입",
-            transaction_purpose="원자재 구매",
             client=self.client_obj,
             transaction_amount=50000,
-            tax_amount=5000
+            tax_amount=5000,
+            cash_receipt_type="매입",
+            item_name="원자재 구매"
         )
         
         # 세금계산서가 연결된 히스토리 생성

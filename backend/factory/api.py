@@ -177,7 +177,7 @@ async def update_factory(request, payload: FactoryUpdateIn):
     summary="[C] 공장 삭제",
     description="공장 ID로 공장을 삭제합니다.",
     response={204: None},
-    auth=jwt_admin_auth,
+    auth=jwt_auth,
 )
 async def delete_factory(request):
     factory_id = request.GET.get('factory_id')
