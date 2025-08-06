@@ -41,6 +41,7 @@ from project.api_project_refund import router as projectRefund_router
 from barobill.api import router as barobill_router
 from tax.api import router as tax_router
 from tax.api_cash_receipt import router as cashReceipt_router
+from notification.api import router as notification_router
 from django.contrib.admin.views.decorators import staff_member_required
 
 base_api = NinjaAPI(
@@ -80,6 +81,7 @@ base_api.add_router("v1/project", project_router)
 base_api.add_router("v1/barobill", barobill_router)
 base_api.add_router("v1/tax", tax_router)
 base_api.add_router("v1/receipt", cashReceipt_router)
+base_api.add_router("v1/notification", notification_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
