@@ -11,8 +11,14 @@ const useGetProjectPlans = () => {
     setError(null);
 
     try {
+      // localStorage에서 factoryId 가져오기
+      const factoryId = localStorage.getItem('factoryId');
+      if (!factoryId) {
+        throw new Error('공장 정보가 없습니다.');
+      }
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan?project_id=${projectId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan?project_id=${projectId}&factory_id=${factoryId}`,
         {
           method: 'GET',
           credentials: 'include',

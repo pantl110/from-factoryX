@@ -54,6 +54,9 @@ const ProductionPageContent = () => {
     status: string;
     created_at: string;
     updated_at: string;
+    start_date?: string;
+    end_date?: string;
+    due_date?: string;
   } | null>(null);
 
   // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
@@ -118,6 +121,11 @@ const ProductionPageContent = () => {
         tabs={tabs}
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
+        // 보여줄 정보
+        companyName={quotationData?.factory_name || '-'}
+        dueDate={quotationData?.due_date || '-'}
+        startDate={projectStatus?.start_date || ''}
+        endDate={projectStatus?.end_date || ''}
       />
 
       {tabs[selectedTab] === '세금계산서' && (
@@ -147,7 +155,7 @@ const ProductionPageContent = () => {
               business_type: quotationData.business_type,
               business_category: quotationData.business_category,
             }}
-            dueDate={''}
+            dueDate={quotationData.due_date || '-'}
             productListInfoTitle="주문 품목 정보"
             productItems={quotationData.products}
             supplyAmount={quotationData.products.reduce(

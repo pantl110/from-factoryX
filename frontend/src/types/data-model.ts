@@ -472,6 +472,9 @@ export interface ProjectListResponseModel extends PaginationModel {
 export interface ProjectStatusResponseModel {
   project_id: number;
   status: string;
+  start_date?: string;
+  end_date?: string;
+  due_date?: string;
   created_at: string;
   updated_at: string;
 }

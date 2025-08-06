@@ -60,7 +60,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       if (disabled) {
         className += ' bg-lg text-dg cursor-not-allowed border-[#e4e4e7]';
       } else if (disabledSetting) {
-        className += ' text-bl cursor-not-allowed border-[#e4e4e7] ';
+        className += ' text-bl border-[#e4e4e7] ';
       } else if (showError) {
         className +=
           ' border-red hover:border-primary focus:border-primary focus:text-bl';

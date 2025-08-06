@@ -7,6 +7,10 @@ export interface ProductFlowTitleProps {
   tabs: string[];
   selectedTab: number;
   setSelectedTab: (idx: number) => void;
+  companyName: string;
+  dueDate: string;
+  startDate: string;
+  endDate: string;
 }
 
 const ProductFlowTitle = ({
@@ -14,6 +18,10 @@ const ProductFlowTitle = ({
   tabs,
   selectedTab,
   setSelectedTab,
+  companyName,
+  dueDate,
+  startDate,
+  endDate,
 }: ProductFlowTitleProps) => {
   const { bgColor, textColor } = ProjectStatusColorMap[status];
 
@@ -38,17 +46,29 @@ const ProductFlowTitle = ({
             textColor={textColor}
             bgColor={bgColor}
           />
-          <h1 className="Heading-1 text-dg">플라스틱이 좋아</h1>
+          <h1 className="Heading-1 text-dg">{companyName}</h1>
         </div>
         <div className="flex flex-col gap-1">
           <div className="flex items-center">
-            <Input label="생산시작일" type="date" />
+            <Input
+              label="생산시작일"
+              type="text"
+              value={startDate}
+              placeholder="YYYY-MM-DD"
+              disabledSetting
+            />
             <p className="w-[30px] h-[77px] pt-7 px-2 Re_Body-1 text-sv">__</p>
-            <Input label="생산마감일" type="date" />
+            <Input
+              label="생산마감일"
+              type="text"
+              value={endDate}
+              placeholder="YYYY-MM-DD"
+              disabledSetting
+            />
           </div>
           <div className="flex justify-between p-3 rounded-lg bg-[#f5f5f5] Heading-5">
             <h6>납기일</h6>
-            <h6>2025-07-31</h6>
+            <h6>{dueDate}</h6>
           </div>
         </div>
       </div>
