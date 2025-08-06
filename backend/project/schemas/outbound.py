@@ -35,6 +35,7 @@ class ListProgressProjectOut(Schema):
 # (GET) Project Status
 class ProjectStatusOut(Schema):
     project_id: int
+    quotation_id: Optional[int] = None
     status: str
     created_at: datetime.datetime
     updated_at: datetime.datetime

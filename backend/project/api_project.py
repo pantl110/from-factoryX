@@ -179,17 +179,18 @@ async def get_project_status(request, project_id: int):
             
             return earliest_start_date, latest_end_date
         
-        # 견적서의 납기일자 조회
+        # 견적서의 납기일자와 ID 조회
         @sync_to_async
-        def get_quotation_due_date():
+        def get_quotation_info():
             quotation = project.quotations.filter(factory_id=int(factory_id)).first()
-            return quotation.due_date if quotation else None
+            return quotation.due_date if quotation else None, quotation.id if quotation else None
         
         earliest_start_date, latest_end_date = await get_project_dates()
-        due_date = await get_quotation_due_date()
+        due_date, quotation_id = await get_quotation_info()
         
         return ProjectStatusOut(
             project_id=project.id,
+            quotation_id=quotation_id,
             status=project.status,
             created_at=project.created_at,
             updated_at=project.updated_at,
