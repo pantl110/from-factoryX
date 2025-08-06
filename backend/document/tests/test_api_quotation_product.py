@@ -1643,3 +1643,178 @@ class QuotationProductAPITestCase(TestCase):
         self.assertEqual(new_client.representative_name, "김대표 👨‍💼")
         self.assertEqual(new_client.address, "서울시 강남구 🏢")
 
+    def test_update_quotation_product_delivery_success(self):
+        """견적서 품목 납품 상태 수정 성공 테스트"""
+        url = f'/v1/document/quotation/product/{self.quotation_product1.id}/delivery?factory_id={self.factory.id}'
+        
+        payload = {
+            "is_delivered": True,
+            "delivery_date": "2025-06-30"
+        }
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertEqual(data["quotation_product_id"], self.quotation_product1.id)
+        self.assertTrue(data["is_delivered"])
+        self.assertEqual(data["delivery_date"], "2025-06-30")
+        self.assertIn("성공적으로 업데이트", data["message"])
+        
+        # 데이터베이스에서 확인
+        self.quotation_product1.refresh_from_db()
+        self.assertTrue(self.quotation_product1.is_delivery)
+        self.assertEqual(self.quotation_product1.delivery_date, date(2025, 6, 30))
+
+    def test_update_quotation_product_delivery_remove_date(self):
+        """견적서 품목 납품일자 제거 테스트"""
+        url = f'/v1/document/quotation/product/{self.quotation_product2.id}/delivery?factory_id={self.factory.id}'
+        
+        payload = {
+            "is_delivered": True,
+            "delivery_date": None
+        }
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertTrue(data["is_delivered"])
+        self.assertIsNone(data["delivery_date"])
+        
+        # 데이터베이스에서 확인
+        self.quotation_product2.refresh_from_db()
+        self.assertTrue(self.quotation_product2.is_delivery)
+        self.assertIsNone(self.quotation_product2.delivery_date)
+
+    def test_update_quotation_product_delivery_not_delivered(self):
+        """견적서 품목 납품 취소 테스트"""
+        url = f'/v1/document/quotation/product/{self.quotation_product2.id}/delivery?factory_id={self.factory.id}'
+        
+        payload = {
+            "is_delivered": False,
+            "delivery_date": None
+        }
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertFalse(data["is_delivered"])
+        self.assertIsNone(data["delivery_date"])
+        
+        # 데이터베이스에서 확인
+        self.quotation_product2.refresh_from_db()
+        self.assertFalse(self.quotation_product2.is_delivery)
+        self.assertIsNone(self.quotation_product2.delivery_date)
+
+    def test_update_quotation_product_delivery_not_found(self):
+        """존재하지 않는 견적서 품목 납품 상태 수정 테스트"""
+        url = f'/v1/document/quotation/product/99999/delivery?factory_id={self.factory.id}'
+        
+        payload = {
+            "is_delivered": True,
+            "delivery_date": "2025-06-30"
+        }
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_quotation_product_delivery_wrong_factory(self):
+        """다른 공장의 견적서 품목 납품 상태 수정 테스트"""
+        # 다른 공장 생성
+        other_factory = Factory.objects.create(
+            name='다른 공장',
+            owner=self.user
+        )
+        
+        # 다른 공장의 견적서 품목 생성
+        other_quotation = Quotation.objects.create(
+            factory=other_factory,
+            client=self.client_company,
+            project=self.project
+        )
+        
+        other_quotation_product = QuotationProduct.objects.create(
+            quotation=other_quotation,
+            product=self.product1,
+            quantity=10,
+            unit_price=1000
+        )
+        
+        url = f'/v1/document/quotation/product/{other_quotation_product.id}/delivery?factory_id={self.factory.id}'
+        
+        payload = {
+            "is_delivered": True,
+            "delivery_date": "2025-06-30"
+        }
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 403)
+
+    def test_update_quotation_product_delivery_invalid_date(self):
+        """잘못된 날짜 형식으로 납품 상태 수정 테스트"""
+        url = f'/v1/document/quotation/product/{self.quotation_product1.id}/delivery?factory_id={self.factory.id}'
+        
+        payload = {
+            "is_delivered": True,
+            "delivery_date": "2025-13-45"  # 잘못된 날짜
+        }
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_quotation_product_delivery_missing_factory_id(self):
+        """factory_id 누락 시 납품 상태 수정 테스트"""
+        url = f'/v1/document/quotation/product/{self.quotation_product1.id}/delivery'
+        
+        payload = {
+            "is_delivered": True,
+            "delivery_date": "2025-06-30"
+        }
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 400)
+

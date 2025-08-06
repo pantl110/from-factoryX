@@ -63,3 +63,9 @@ class QuotationConfirmedIn(Schema):
     client: FactoryClientInfoIn
     products: List[QuotationProductInfoIn]
     due_date: Optional[str] = None
+
+
+# (PATCH) Quotation Product Delivery Update
+class QuotationProductDeliveryUpdateIn(Schema):
+    is_delivered: bool
+    delivery_date: Optional[str] = None

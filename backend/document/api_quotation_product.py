@@ -7,7 +7,7 @@ from asgiref.sync import sync_to_async
 from datetime import datetime, timedelta
 
 from document.models import Quotation, QuotationProduct
-from document.schemas.inbound import QuotationDraftIn, QuotationConfirmedIn
+from document.schemas.inbound import QuotationDraftIn, QuotationConfirmedIn, QuotationProductDeliveryUpdateIn
 from document.schemas.outbound import QuotationProductOut
 from stock.models import Product
 from project.models import Project, ProjectPlan
@@ -421,3 +421,53 @@ async def get_quotation_product_detail(request, quotation_product_id: int):
         "is_delivery": qp.is_delivery,
         "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None
     }
+
+
+@router.patch(
+    "/{quotation_product_id}/delivery", 
+    summary="[C] 견적서 품목 납품 상태 수정", 
+    description="견적서 품목의 납품 상태(is_delivery)와 납품일자(delivery_date)를 수정합니다.",
+    response={200: dict, 400: dict, 404: dict, 500: dict}
+)
+async def update_quotation_product_delivery(request, quotation_product_id: int, payload: QuotationProductDeliveryUpdateIn):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
+    try:
+        # 견적서 품목 조회
+        quotation_product = await QuotationProduct.objects.select_related('quotation').aget(id=quotation_product_id)
+        
+        # 해당 공장의 견적서인지 확인
+        if quotation_product.quotation.factory_id != int(factory_id):
+            raise HttpError(403, "해당 공장의 견적서 품목이 아닙니다.")
+        
+        # 납품 상태 업데이트
+        quotation_product.is_delivery = payload.is_delivered
+        
+        # 납품일자 업데이트
+        if payload.delivery_date:
+            quotation_product.delivery_date = datetime.strptime(payload.delivery_date, "%Y-%m-%d").date()
+        else:
+            quotation_product.delivery_date = None
+        
+        await sync_to_async(quotation_product.save)()
+        
+        return 200, {
+            "quotation_product_id": quotation_product.id,
+            "is_delivered": quotation_product.is_delivery,
+            "delivery_date": quotation_product.delivery_date.isoformat() if quotation_product.delivery_date else None,
+            "message": "납품 상태가 성공적으로 업데이트되었습니다."
+        }
+        
+    except QuotationProduct.DoesNotExist:
+        raise HttpError(404, "해당 견적서 품목을 찾을 수 없습니다.")
+    except ValueError as e:
+        raise HttpError(400, f"날짜 형식이 올바르지 않습니다: {str(e)}")
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, f"납품 상태 수정 중 오류가 발생했습니다: {str(e)}")
