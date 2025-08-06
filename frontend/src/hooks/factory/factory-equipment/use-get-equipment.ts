@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   EquipmentListResponseModel,
   EquipmentResponseModel,
@@ -23,7 +23,7 @@ const useGetEquipment = () => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
 
   // 전체 설비 목록 불러오기
-  const getEquipmentList = async () => {
+  const getEquipmentList = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -57,10 +57,10 @@ const useGetEquipment = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // 검색어로 모든 필드 검색 (중복 제거)
-  const searchAllFields = async (value: string) => {
+  const searchAllFields = useCallback(async (value: string) => {
     setIsLoading(true);
     setError(null);
 
@@ -139,7 +139,7 @@ const useGetEquipment = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // 검색어가 바뀔 때마다 자동으로 fetch
   useEffect(() => {
@@ -148,7 +148,7 @@ const useGetEquipment = () => {
     } else {
       getEquipmentList();
     }
-  }, [searchKeyword]);
+  }, [searchKeyword, searchAllFields, getEquipmentList]);
 
   return {
     equipmentList,
@@ -156,8 +156,9 @@ const useGetEquipment = () => {
     error,
     searchKeyword,
     setSearchKeyword,
-    refetch: () =>
+    refetch: useCallback(() =>
       searchKeyword ? searchAllFields(searchKeyword) : getEquipmentList(),
+    [searchKeyword, searchAllFields, getEquipmentList]),
   };
 };
 

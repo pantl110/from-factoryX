@@ -35,14 +35,14 @@ const MemoSection = ({ title, content, logId, onUpdate }: MemoSectionProps) => {
       } else {
         alert(`메모 수정에 실패했습니다: ${result.error}`);
       }
-    } catch {
+    } catch (error) {
       alert('메모 수정 중 오류가 발생했습니다.');
     }
   };
 
   return (
     <>
-      <div className="rounded flex flex-col gap-4 h-full pb-10">
+      <div className="rounded flex flex-col gap-4 h-full">
         <div className="flex flex-col gap-3 flex-1">
           <div className="flex gap-2">
             <div className="h-11 px-3 w-[110px] Me_Body-1 bg-bg flex items-center justify-center rounded">

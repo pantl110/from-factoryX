@@ -45,8 +45,7 @@ export const useProductionPlanValidation = (
   // 검증 상태 업데이트
   useEffect(() => {
     setProductionPlanValid(isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+  }, [isValid, setProductionPlanValid]);
 
   return {
     isValid,
