@@ -146,7 +146,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         raise HttpError(500, f"임시 저장 중 오류가 발생했습니다: {str(e)}")
 
 
-@router.post("/confirmed", summary="생산 시작", description="완성된 견적서로 생산을 시작합니다. 모든 필수 정보가 필요합니다.")
+@router.post("/confirmed", summary="생산 대기", description="완성된 견적서로 생산 대기 상태로 변경합니다. 모든 필수 정보가 필요합니다.")
 async def confirm_order(request, payload: QuotationConfirmedIn):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
@@ -254,7 +254,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 )
         
         project = await sync_to_async(lambda: quotation.project)()
-        project.status = Project.ProjectStatus.production
+        project.status = Project.ProjectStatus.pending
         await sync_to_async(project.save)()
         
         for prod in payload.products:
@@ -299,7 +299,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
         return 200, {
             "quotation_id": quotation.id,
             "project_id": project.id,
-            "status": "production_started"
+            "status": "production_waiting"
         }
             
     except HttpError:
