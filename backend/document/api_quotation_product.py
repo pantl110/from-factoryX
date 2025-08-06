@@ -346,32 +346,6 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
     ]
 
 
-@router.get("/{quotation_product_id}", summary="[C] 견적서 품목 상세 조회", response={200: QuotationProductOut, 404: dict, 500: dict})
-async def get_quotation_product_detail(request, quotation_product_id: int):
-    factory_id = request.GET.get('factory_id')
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-    
-    try:
-        qp = await QuotationProduct.objects.aget(id=quotation_product_id)
-    except QuotationProduct.DoesNotExist:
-        raise HttpError(404, "해당 품목을 찾을 수 없습니다.")
-    except Exception as e:
-        raise HttpError(500, f"조회 중 오류: {str(e)}")
-    return 200, {
-        "id": qp.id,
-        "quotation": qp.quotation_id,
-        "product": qp.product_id,
-        "quantity": qp.quantity,
-        "unit_price": qp.unit_price,
-        "is_delivery": qp.is_delivery,
-        "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None
-    }
-    
-
 # Quotation Tab
 @router.get(
     "/history",
@@ -421,3 +395,29 @@ async def list_history_quotation_product(request):
         raise HttpError(400, "product_ids는 콤마로 구분된 정수여야 합니다.")
     except Exception as e:
         raise HttpError(500, f"조회 중 오류: {str(e)}")
+
+
+@router.get("/{quotation_product_id}", summary="[C] 견적서 품목 상세 조회", response={200: QuotationProductOut, 404: dict, 500: dict})
+async def get_quotation_product_detail(request, quotation_product_id: int):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
+    try:
+        qp = await QuotationProduct.objects.aget(id=quotation_product_id)
+    except QuotationProduct.DoesNotExist:
+        raise HttpError(404, "해당 품목을 찾을 수 없습니다.")
+    except Exception as e:
+        raise HttpError(500, f"조회 중 오류: {str(e)}")
+    return 200, {
+        "id": qp.id,
+        "quotation": qp.quotation_id,
+        "product": qp.product_id,
+        "quantity": qp.quantity,
+        "unit_price": qp.unit_price,
+        "is_delivery": qp.is_delivery,
+        "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None
+    }
