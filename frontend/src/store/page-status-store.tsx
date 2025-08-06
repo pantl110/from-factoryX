@@ -37,6 +37,10 @@ export interface PageStatusModel {
   // production의 "납품" 상태의 <보관함으로 이동> 버튼 클릭 시 모달 오픈
   isMoveToStorageModalOpen: boolean;
   setMoveToStorageModalOpen: (open: boolean) => void;
+
+  // 프로젝트 상태를 delivery로 변경하는 전역 함수 // 프로젝트 완료에서 [진행상태로 전환] 버튼
+  handleChangeToDeliveryStatus: (() => Promise<void>) | null;
+  setHandleChangeToDeliveryStatus: (fn: (() => Promise<void>) | null) => void;
 }
 
 const usePageStatusStore = create<PageStatusModel>((set) => ({
@@ -65,6 +69,11 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   setSettingTab: (tab) => set({ settingTab: tab }),
   settingChip: null,
   setSettingChip: (chip) => set({ settingChip: chip }),
+
+  // 프로젝트 상태를 delivery로 변경하는 전역 함수 // 프로젝트 완료에서 [진행상태로 전환] 버튼
+  handleChangeToDeliveryStatus: null,
+  setHandleChangeToDeliveryStatus: (fn) =>
+    set({ handleChangeToDeliveryStatus: fn }),
 }));
 
 export default usePageStatusStore;

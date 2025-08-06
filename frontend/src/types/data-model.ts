@@ -471,12 +471,13 @@ export interface ProjectListResponseModel extends PaginationModel {
 // 프로젝트 상태 조회 응답
 export interface ProjectStatusResponseModel {
   project_id: number;
-  status: string;
-  start_date?: string;
-  end_date?: string;
-  due_date?: string;
+  quotation_id: number;
+  status: ProjectStatusType;
   created_at: string;
   updated_at: string;
+  earliest_start_date?: string;
+  latest_end_date?: string;
+  due_date?: string;
 }
 
 //////////////////////

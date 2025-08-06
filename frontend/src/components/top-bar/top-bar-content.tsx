@@ -32,14 +32,19 @@ const TopBarContent = ({
     (state) => state.isProductionPlanValid
   ); // 생산 계획 폼 유효성 검사 상태
 
+  // store에서 함수들 가져오기
+  const handleChangeToDeliveryStatus = usePageStatusStore(
+    (state) => state.handleChangeToDeliveryStatus
+  );
+
   const isProductionPlanSaveActive =
     productionTab === '생산 계획' &&
-    pageStatus === 'pending' &&
+    (pageStatus === 'pending' || pageStatus === '생산 대기') &&
     isProductionPlanValid;
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pageStatus === 'completed') {
+  if (pageStatus === 'completed' || pageStatus === '프로젝트 완료') {
     return (
       <div className="flex gap-2">
         <MiniBtn
@@ -47,6 +52,11 @@ const TopBarContent = ({
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
+          onClick={() => {
+            if (handleChangeToDeliveryStatus) {
+              handleChangeToDeliveryStatus();
+            }
+          }}
         />
       </div>
     );

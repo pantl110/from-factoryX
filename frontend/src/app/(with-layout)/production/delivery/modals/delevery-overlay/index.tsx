@@ -1,14 +1,21 @@
 import DocumentViewTitle from '@/app/(with-layout)/document/document-view-title';
-import InfoLabelValue from '@/ui/info-label-value';
 import MiniBtn from '@/ui/mini-btn';
 import OverlayView from '@/ui/ovelay-view';
-import { DeliveryDataModel } from '../../types';
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
+import DeliveryTableItem from './delivery-table-item';
+
+interface DeliveryDataModel {
+  companyName: string;
+  productName: string;
+  spec: string;
+  unit: string;
+  quantity: number;
+}
 
 interface DeliveryOverlayProps {
   onClose: () => void;
-  data: DeliveryDataModel;
+  data: DeliveryDataModel[];
 }
 
 const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
@@ -30,13 +37,13 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
           </div>
           <div className="flex gap-2.5">
             <MiniBtn
-              text="취소하기"
+              text="취소"
               textColor="text-sv"
               hoverColor=""
               onClick={onClose}
             />
             <MiniBtn
-              text="발행하기"
+              text="출력"
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"
@@ -46,13 +53,19 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
         </div>
         <div ref={contentRef}>
           <div className="flex flex-col gap-6">
-            <DocumentViewTitle title="납품표" />
-            <div className="flex flex-col">
-              <InfoLabelValue label="납품처" value={data.companyName} />
-              <InfoLabelValue label="품목명" value={data.productName} />
-              <InfoLabelValue label="규격" value={data.size} />
-              <InfoLabelValue label="수량" value={data.quantity} />
-            </div>
+            {data.map((item, i) => {
+              return (
+                <div key={i} className="flex flex-col gap-3">
+                  {data.length > 1 && (
+                    <DocumentViewTitle title={`납품표 ${i + 1}`} />
+                  )}
+                  <DeliveryTableItem
+                    data={item}
+                    isLast={i === data.length - 1}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

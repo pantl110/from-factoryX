@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import ProductionPlanSaveModal from './modals/production-plan-save-modal';
 import TableHeader from './table-header';
 import TableItem from './table-item';

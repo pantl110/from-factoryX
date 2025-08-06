@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
 import { useGetProjectStatus } from '@/hooks';
 import useGetDetailQuotation from '@/hooks/document/use-get-quotation';
@@ -16,6 +16,7 @@ import OrderDocumentView from '../../document/order-document-view';
 import { ProjectStatusType } from '@/types/status-type';
 import { ProductionTabType } from '@/components/top-bar/types';
 import Spinner from '@/ui/spinner';
+import useUpdateProjectStatus from '@/hooks/project/use-update-project-status';
 
 const getTabsByStatus = (status: ProjectStatusType): ProductionTabType[] => {
   if (status === 'pending' || status === '생산 대기')
@@ -42,6 +43,7 @@ const ProductionPageContent = () => {
   const params = useParams();
   const projectId = Number(params.id);
   const { getProjectStatus, isLoading } = useGetProjectStatus();
+  const { updateProjectStatus } = useUpdateProjectStatus();
   const setPageStatus = usePageStatusStore((state) => state.setPageStatus);
   const [selectedTab, setSelectedTab] = useState(0);
   const setProductionTab = usePageStatusStore(
@@ -51,16 +53,19 @@ const ProductionPageContent = () => {
   // 프로젝트 상태 데이터
   const [projectStatus, setProjectStatus] = useState<{
     project_id: number;
-    status: string;
+    quotation_id: number;
+    status: ProjectStatusType;
     created_at: string;
     updated_at: string;
-    start_date?: string;
-    end_date?: string;
+    earliest_start_date?: string;
+    latest_end_date?: string;
     due_date?: string;
   } | null>(null);
 
   // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
-  const { data: quotationData } = useGetDetailQuotation(projectId);
+  const { data: quotationData } = useGetDetailQuotation(
+    projectStatus?.quotation_id || projectId
+  );
 
   // 프로젝트 상태 로드 및 store 업데이트
   useEffect(() => {
@@ -94,6 +99,59 @@ const ProductionPageContent = () => {
     setProductionTab,
   ]);
 
+  // 프로젝트 상태 리로드 함수
+  const reloadProjectStatus = useCallback(async () => {
+    if (!projectId) return;
+
+    try {
+      const result = await getProjectStatus(projectId);
+      if (result.success && result.data) {
+        setProjectStatus(result.data);
+        // 프로젝트 상태를 store에 업데이트
+        const projectStatus = result.data.status as ProjectStatusType;
+        const tabs = getTabsByStatus(projectStatus);
+
+        setPageStatus(projectStatus);
+        setProductionTab(tabs[selectedTab]);
+      }
+    } catch {
+      alert('프로젝트 상태 리로드 실패');
+    }
+  }, [
+    projectId,
+    getProjectStatus,
+    selectedTab,
+    setPageStatus,
+    setProductionTab,
+  ]);
+
+  // 프로젝트 상태를 delivery로 변경하는 함수
+  const handleChangeToDeliveryStatus = useCallback(async () => {
+    try {
+      const result = await updateProjectStatus(projectId, 'delivery');
+      if (result.success) {
+        // store의 pageStatus를 delivery로 업데이트
+        setPageStatus('delivery');
+        // 상태 변경 후 프로젝트 상태 리로드
+        await reloadProjectStatus();
+      } else {
+        alert('프로젝트 상태 변경에 실패했습니다.');
+      }
+    } catch {
+      alert('프로젝트 상태 변경 중 오류가 발생했습니다.');
+    }
+  }, [projectId, updateProjectStatus, reloadProjectStatus, setPageStatus]);
+
+  // store에 함수 등록
+  const setHandleChangeToDeliveryStatus = usePageStatusStore(
+    (state) => state.setHandleChangeToDeliveryStatus
+  );
+
+  useEffect(() => {
+    setHandleChangeToDeliveryStatus(handleChangeToDeliveryStatus);
+    return () => setHandleChangeToDeliveryStatus(null);
+  }, [handleChangeToDeliveryStatus, setHandleChangeToDeliveryStatus]);
+
   const projectStatusType =
     (projectStatus?.status as ProjectStatusType) || 'quotation';
   const tabs = getTabsByStatus(projectStatusType);
@@ -124,8 +182,8 @@ const ProductionPageContent = () => {
         // 보여줄 정보
         companyName={quotationData?.factory_name || '-'}
         dueDate={quotationData?.due_date || '-'}
-        startDate={projectStatus?.start_date || ''}
-        endDate={projectStatus?.end_date || ''}
+        startDate={projectStatus?.earliest_start_date || ''}
+        endDate={projectStatus?.latest_end_date || ''}
       />
 
       {tabs[selectedTab] === '세금계산서' && (
@@ -133,12 +191,23 @@ const ProductionPageContent = () => {
           <TaxDocumentView taxType="매출" />
         </div>
       )}
-      {tabs[selectedTab] === '거래명세서' && (
+      {tabs[selectedTab] === '거래명세서' && quotationData && (
         <div className="px-10 pt-5 pb-10">
-          <TransactionDocumentView />
+          <TransactionDocumentView
+            quotationData={quotationData}
+            startDate={projectStatus?.earliest_start_date || '-'}
+          />
         </div>
       )}
-      {tabs[selectedTab] === '납품' && <Delivery />}
+      {tabs[selectedTab] === '납품' && quotationData && (
+        <Delivery
+          quotationData={quotationData}
+          quotationId={projectStatus?.quotation_id || projectId}
+          startDate={projectStatus?.earliest_start_date || '-'}
+          onProjectStatusChange={reloadProjectStatus}
+          projectStatus={projectStatus.status as ProjectStatusType}
+        />
+      )}
       {tabs[selectedTab] === '생산 현황' && <ProductionMonitor />}
       {tabs[selectedTab] === '생산 내역' && <ProductionLog />}
       {tabs[selectedTab] === '생산 계획' && <ProductionPlan />}

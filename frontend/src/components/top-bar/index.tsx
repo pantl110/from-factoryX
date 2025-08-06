@@ -35,7 +35,7 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
       <header
         className={`${
           isSidebarVisible ? 'w-[calc(100%-256px)]' : 'w-full'
-        } fixed z-40 bg-white border-b border-[#eeeeee] transition-width duration-300`}
+        } fixed z-40 bg-white border-b border-lg transition-width duration-300`}
       >
         <div className="max-w-[1400px] min-w-[1000px] mx-auto px-10 flex items-center justify-between h-[60px]">
           <TopBarCrumb

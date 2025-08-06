@@ -2,9 +2,15 @@ import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 interface MoveToStorageModalProps {
   onClose: () => void;
+  onMoveToStorage: () => void;
+  isLoading?: boolean;
 }
 
-const MoveToStorageModal = ({ onClose }: MoveToStorageModalProps) => {
+const MoveToStorageModal = ({
+  onClose,
+  onMoveToStorage,
+  isLoading = false,
+}: MoveToStorageModalProps) => {
   return (
     <Modal
       title="프로젝트를 보관하시겠습니까?"
@@ -24,7 +30,8 @@ const MoveToStorageModal = ({ onClose }: MoveToStorageModalProps) => {
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"
-          onClick={onClose}
+          onClick={onMoveToStorage}
+          disabled={isLoading}
         />
       </div>
     </Modal>

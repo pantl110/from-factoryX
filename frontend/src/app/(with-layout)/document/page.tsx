@@ -10,7 +10,7 @@ import { DocumentType } from './types';
 import documentData, { DocumentDataModel } from '@/mocks/document-data';
 import Panel from '@/ui/panel';
 import ProductionDocumentView from './production-document-view';
-import TransactionDocumentView from './transaction-document-view';
+// import TransactionDocumentView from './transaction-document-view';
 import TaxDocumentView from './tax-document-view';
 import Spinner from '@/ui/spinner';
 import { useCheckAll } from '@/hooks/use-check-all';
@@ -106,11 +106,14 @@ const DocumentPageContent = () => {
           <ProductionDocumentView />
         </Panel>
       )}
-      {selectedDocument && selectedDocument.documentType === '거래명세서' && (
+      {/* {selectedDocument && selectedDocument.documentType === '거래명세서' && (
         <Panel title="거래명세서" onClose={() => setSelectedDocument(null)}>
-          <TransactionDocumentView />
+          <TransactionDocumentView
+            quotationData={selectedDocument.quotationData}
+            startDate={selectedDocument.startDate}
+          />
         </Panel>
-      )}
+      )} */}
       {selectedDocument &&
         selectedDocument.documentType === '매출 세금계산서' && (
           <Panel

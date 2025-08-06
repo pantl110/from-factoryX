@@ -156,9 +156,11 @@ const useGetEquipment = () => {
     error,
     searchKeyword,
     setSearchKeyword,
-    refetch: useCallback(() =>
-      searchKeyword ? searchAllFields(searchKeyword) : getEquipmentList(),
-    [searchKeyword, searchAllFields, getEquipmentList]),
+    refetch: useCallback(
+      () =>
+        searchKeyword ? searchAllFields(searchKeyword) : getEquipmentList(),
+      [searchKeyword, searchAllFields, getEquipmentList]
+    ),
   };
 };
 
