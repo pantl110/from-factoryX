@@ -821,6 +821,40 @@ async def publish_tax_invoice(request, tax_id: int):
     return {"message": "세금계산서가 발행되었습니다."}
 
 
+@router.post(
+    "{tax_id}/cancel",
+    summary="[C] 세금계산서 발행 취소",
+    description="국세청 API 세금계산서 발행을 취소합니다.",
+    response={200: dict, 400: dict, 500: dict},
+)
+async def cancel_tax_invoice(request, tax_id: int):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    member = await is_factory_member(tax_service.factory.id, user)
+    # 멤버 권한 검증 추가해야함
+
+    certKey = settings.BAROBILL_CERT_KEY
+    corpNum = tax_service.factory.business_registration_number
+    mgtKey = tax_service.mgt_key
+    procType = "ISSUE_CANCEL"  # 발급완료 된 세금계산서를 공급자가 취소하는 경우 (국세청 전송 전에만 가능)
+    memo = ""
+
+    result = settings.BAROBILL_CLIENT.service.ProcTaxInvoice(
+        CERTKEY=certKey,
+        CorpNum=corpNum,
+        MgtKey=mgtKey,
+        ProcType=procType,
+        Memo=memo,
+    )
+
+    if result < 0:  # 호출 실패
+        raise HttpError(
+            400,
+            f"바로빌 API 오류 - 세금계산서 발행 취소: {barobill_error_codes.get(result, 'Unknown Error')}",
+        )
+    return {"message": "세금계산서 발행이 취소되었습니다."}
+
+
 @router.get(
     "{tax_id}/state",
     summary="[C] 세금계산서 발행 상태 조회",
