@@ -150,6 +150,23 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             )
         )
 
+    async def notification_message(self, event):
+        """
+        웹소켓 유틸에서 전송된 새로운 알림 메시지 처리
+        """
+        notification = event["notification"]
+        message_data = {
+            "type": "new_notification",
+            "notification": notification,
+            "has_unread": True,
+        }
+
+        # 추가 데이터가 있으면 포함
+        if "additional_data" in event:
+            message_data["additional_data"] = event["additional_data"]
+
+        await self.send(text_data=json.dumps(message_data))
+
     async def user_notification_connected(self, event):
         """
         사용자가 알림 웹소켓에 연결되었을 때
