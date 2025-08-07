@@ -666,6 +666,30 @@ export interface UpdateProjectPlanModel {
 }
 
 //////////////////////
+// Project Refund API
+// 반품 생성
+export interface CreateRefundModel {
+  project_id: number;
+  product_id: number;
+  refund_date: string; // YYYY-MM-DD 형식
+  production_amount?: number | null;
+} 
+
+export interface CreateRefundResponseModel {
+  message: string;
+  refund_id: number;
+  log_id: number;
+}
+
+// 반품 수정
+
+export interface UpdateRefundModel {
+  refund_date?: string;
+  current_stock?: number;
+  production_amount?: number;
+}
+
+//////////////////////
 // Factory Member API
 // 멤버 초대
 export interface InviteMemberModel {
