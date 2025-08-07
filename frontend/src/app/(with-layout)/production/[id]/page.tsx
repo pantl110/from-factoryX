@@ -17,6 +17,7 @@ import { ProjectStatusType } from '@/types/status-type';
 import { ProductionTabType } from '@/components/top-bar/types';
 import Spinner from '@/ui/spinner';
 import useUpdateProjectStatus from '@/hooks/project/use-update-project-status';
+import AddReturnModal from '../delivery/modals/add-return-modal/add-return-modal';
 
 const getTabsByStatus = (status: ProjectStatusType): ProductionTabType[] => {
   if (status === 'pending' || status === '생산 대기')
@@ -147,6 +148,14 @@ const ProductionPageContent = () => {
     (state) => state.setHandleChangeToDeliveryStatus
   );
 
+  // store에서 모달 상태 가져오기
+  const isAddReturnModalOpen = usePageStatusStore(
+    (state) => state.isAddReturnModalOpen
+  );
+  const setAddReturnModalOpen = usePageStatusStore(
+    (state) => state.setAddReturnModalOpen
+  );
+
   useEffect(() => {
     setHandleChangeToDeliveryStatus(handleChangeToDeliveryStatus);
     return () => setHandleChangeToDeliveryStatus(null);
@@ -173,68 +182,79 @@ const ProductionPageContent = () => {
   }
 
   return (
-    <div className="w-full flex flex-col">
-      <ProductFlowTitle
-        status={projectStatusType}
-        tabs={tabs}
-        selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
-        // 보여줄 정보
-        companyName={quotationData?.factory_name || '-'}
-        dueDate={quotationData?.due_date || '-'}
-        startDate={projectStatus?.earliest_start_date || ''}
-        endDate={projectStatus?.latest_end_date || ''}
-      />
+    <>
+      <div className="w-full flex flex-col">
+        <ProductFlowTitle
+          status={projectStatusType}
+          tabs={tabs}
+          selectedTab={selectedTab}
+          setSelectedTab={setSelectedTab}
+          // 보여줄 정보
+          companyName={quotationData?.factory_name || '-'}
+          dueDate={quotationData?.due_date || '-'}
+          startDate={projectStatus?.earliest_start_date || ''}
+          endDate={projectStatus?.latest_end_date || ''}
+        />
 
-      {tabs[selectedTab] === '세금계산서' && (
-        <div className="px-10 pt-5 pb-10">
-          <TaxDocumentView taxType="매출" />
-        </div>
-      )}
-      {tabs[selectedTab] === '거래명세서' && quotationData && (
-        <div className="px-10 pt-5 pb-10">
-          <TransactionDocumentView
+        {tabs[selectedTab] === '세금계산서' && (
+          <div className="px-10 pt-5 pb-10">
+            <TaxDocumentView taxType="매출" />
+          </div>
+        )}
+        {tabs[selectedTab] === '거래명세서' && quotationData && (
+          <div className="px-10 pt-5 pb-10">
+            <TransactionDocumentView
+              quotationData={quotationData}
+              startDate={projectStatus?.earliest_start_date || '-'}
+            />
+          </div>
+        )}
+        {tabs[selectedTab] === '납품' && quotationData && (
+          <Delivery
             quotationData={quotationData}
+            quotationId={projectStatus?.quotation_id || projectId}
             startDate={projectStatus?.earliest_start_date || '-'}
+            onProjectStatusChange={reloadProjectStatus}
+            projectStatus={projectStatus.status as ProjectStatusType}
           />
-        </div>
-      )}
-      {tabs[selectedTab] === '납품' && quotationData && (
-        <Delivery
-          quotationData={quotationData}
-          quotationId={projectStatus?.quotation_id || projectId}
-          startDate={projectStatus?.earliest_start_date || '-'}
-          onProjectStatusChange={reloadProjectStatus}
-          projectStatus={projectStatus.status as ProjectStatusType}
+        )}
+        {tabs[selectedTab] === '생산 현황' && <ProductionMonitor />}
+        {tabs[selectedTab] === '생산 내역' && <ProductionLog />}
+        {tabs[selectedTab] === '생산 계획' && <ProductionPlan />}
+        {tabs[selectedTab] === '주문서' && quotationData && (
+          <div className="px-10 pt-5 pb-10">
+            <OrderDocumentView
+              documentTitle="주문서"
+              clientData={{
+                name: quotationData.factory_name,
+                business_registration_number:
+                  quotationData.business_registration_number,
+                representative_name: quotationData.representative_name,
+                address: quotationData.address,
+                business_type: quotationData.business_type,
+                business_category: quotationData.business_category,
+              }}
+              dueDate={quotationData.due_date || '-'}
+              productListInfoTitle="주문 품목 정보"
+              productItems={quotationData.products}
+              supplyAmount={quotationData.products.reduce(
+                (sum, item) => sum + (item.supply_amount || 0),
+                0
+              )}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* 반품 등록 모달 */}
+      {/* 납품, 생산현황 페이지에서 뜸 */}
+      {isAddReturnModalOpen && (
+        <AddReturnModal
+          onClose={() => setAddReturnModalOpen(false)}
+          quotationProductData={quotationData?.products}
         />
       )}
-      {tabs[selectedTab] === '생산 현황' && <ProductionMonitor />}
-      {tabs[selectedTab] === '생산 내역' && <ProductionLog />}
-      {tabs[selectedTab] === '생산 계획' && <ProductionPlan />}
-      {tabs[selectedTab] === '주문서' && quotationData && (
-        <div className="px-10 pt-5 pb-10">
-          <OrderDocumentView
-            documentTitle="주문서"
-            clientData={{
-              name: quotationData.factory_name,
-              business_registration_number:
-                quotationData.business_registration_number,
-              representative_name: quotationData.representative_name,
-              address: quotationData.address,
-              business_type: quotationData.business_type,
-              business_category: quotationData.business_category,
-            }}
-            dueDate={quotationData.due_date || '-'}
-            productListInfoTitle="주문 품목 정보"
-            productItems={quotationData.products}
-            supplyAmount={quotationData.products.reduce(
-              (sum, item) => sum + (item.supply_amount || 0),
-              0
-            )}
-          />
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 

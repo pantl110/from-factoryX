@@ -15,7 +15,6 @@ interface TopBarContentProps {
   pageStatus: string | null;
 
   onProductionPlanSaveClick?: () => void;
-  onAddReturnClick?: () => void;
   onMoveToStorageClick?: () => void;
   onNotificationClick?: () => void;
 }
@@ -24,7 +23,6 @@ const TopBarContent = ({
   productionTab,
   pageStatus,
   onProductionPlanSaveClick,
-  onAddReturnClick,
   onMoveToStorageClick,
   onNotificationClick,
 }: TopBarContentProps) => {
@@ -35,6 +33,9 @@ const TopBarContent = ({
   // store에서 함수들 가져오기
   const handleChangeToDeliveryStatus = usePageStatusStore(
     (state) => state.handleChangeToDeliveryStatus
+  );
+  const setAddReturnModalOpen = usePageStatusStore(
+    (state) => state.setAddReturnModalOpen
   );
 
   const isProductionPlanSaveActive =
@@ -137,7 +138,7 @@ const TopBarContent = ({
           textColor="text-red"
           bgColor="bg-red-8"
           hoverColor="hover:bg-red-hover"
-          onClick={onAddReturnClick}
+          onClick={() => setAddReturnModalOpen(true)}
         />
         <MiniBtn
           text="보관함으로 이동"

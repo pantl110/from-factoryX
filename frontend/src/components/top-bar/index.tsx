@@ -52,7 +52,6 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
             onProductionPlanSaveClick={() =>
               setProductionPlanSaveModalOpen(true)
             }
-            onAddReturnClick={() => setAddReturnModalOpen(true)}
             onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
             onNotificationClick={() => setIsNotificationModalOpen(true)}
           />
