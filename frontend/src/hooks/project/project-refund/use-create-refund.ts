@@ -1,6 +1,9 @@
 'use client';
 
-import { CreateRefundModel, CreateRefundResponseModel } from '@/types/data-model';
+import {
+  CreateRefundModel,
+  CreateRefundResponseModel,
+} from '@/types/data-model';
 import { useState } from 'react';
 
 // localStorage에서 factoryId 가져오기
@@ -15,7 +18,9 @@ const useCreateRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createRefund = async (data: CreateRefundModel): Promise<{ success: boolean; data?: CreateRefundResponseModel }> => {
+  const createRefund = async (
+    data: CreateRefundModel
+  ): Promise<{ success: boolean; data?: CreateRefundResponseModel }> => {
     const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
@@ -50,7 +55,10 @@ const useCreateRefund = () => {
       const result = await response.json();
       return { success: true, data: result };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '반품 생성 중 오류가 발생했습니다.';
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : '반품 생성 중 오류가 발생했습니다.';
       setError(errorMessage);
       return { success: false };
     } finally {
@@ -64,6 +72,6 @@ const useCreateRefund = () => {
     error,
     clearError: () => setError(null),
   };
-}; 
+};
 
 export default useCreateRefund;

@@ -1,6 +1,9 @@
 'use client';
 
-import { UpdateRefundModel, UpdateRefundResponseModel } from '@/types/data-model';
+import {
+  UpdateRefundModel,
+  UpdateRefundResponseModel,
+} from '@/types/data-model';
 import { useState } from 'react';
 
 // localStorage에서 factoryId 가져오기
@@ -15,7 +18,10 @@ const useUpdateRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updateRefund = async (refundId: number, data: UpdateRefundModel): Promise<{ success: boolean; data?: UpdateRefundResponseModel }> => {
+  const updateRefund = async (
+    refundId: number,
+    data: UpdateRefundModel
+  ): Promise<{ success: boolean; data?: UpdateRefundResponseModel }> => {
     const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
@@ -50,7 +56,10 @@ const useUpdateRefund = () => {
       const result = await response.json();
       return { success: true, data: result };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '반품 수정 중 오류가 발생했습니다.';
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : '반품 수정 중 오류가 발생했습니다.';
       setError(errorMessage);
       return { success: false };
     } finally {
@@ -64,6 +73,6 @@ const useUpdateRefund = () => {
     error,
     clearError: () => setError(null),
   };
-}; 
+};
 
 export default useUpdateRefund;

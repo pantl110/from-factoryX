@@ -22,9 +22,7 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   const setProductionPlanSaveModalOpen = usePageStatusStore(
     (state) => state.setProductionPlanSaveModalOpen
   );
-  const setAddReturnModalOpen = usePageStatusStore(
-    (state) => state.setAddReturnModalOpen
-  );
+
   const setMoveToStorageModalOpen = usePageStatusStore(
     (state) => state.setMoveToStorageModalOpen
   );
