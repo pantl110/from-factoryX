@@ -146,12 +146,15 @@ const TableItem = ({
         control={control}
         render={({ field }) => (
           <input
-            type="number"
-            value={field.value}
-            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+            type="text"
+            value={field.value?.toLocaleString() || '0'}
+            onChange={(e) => {
+              const value = e.target.value.replace(/,/g, '');
+              const numValue = parseInt(value) || 0;
+              field.onChange(numValue);
+            }}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            min="0"
             disabled={operationStatus !== '가동 대기'}
           />
         )}
@@ -170,7 +173,7 @@ const TableItem = ({
             operationStatus === '가동 완료' ? 'bg-bg' : materialColor.bgColor
           }
         />
-        {materialStatus === '부족' && (
+        {materialStatus === '부족' && operationStatus !== '가동 완료' && (
           <div
             className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
             onClick={() => setIsProductDetailOpen(true)}

@@ -29,6 +29,9 @@ const TopBarContent = ({
   const isProductionPlanValid = usePageStatusStore(
     (state) => state.isProductionPlanValid
   ); // 생산 계획 폼 유효성 검사 상태
+  const isAllProductionCompleted = usePageStatusStore(
+    (state) => state.isAllProductionCompleted
+  ); // 모든 품목이 가동 완료 상태인지 여부
 
   // store에서 함수들 가져오기
   const handleChangeStatus = usePageStatusStore(
@@ -74,7 +77,7 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '생산 계획') {
+  if (productionTab === '생산 계획' && pageStatus === '생산 대기') {
     return (
       <div className="flex gap-2">
         <MiniBtn
@@ -90,6 +93,31 @@ const TopBarContent = ({
           hoverColor="hover:bg-secondary-hover"
           onClick={onProductionPlanSaveClick}
           disabled={!isProductionPlanSaveActive}
+        />
+      </div>
+    );
+  }
+
+  if (productionTab === '생산 계획' && pageStatus === '생산 중') {
+    return (
+      <div className="flex gap-2">
+        <MiniBtn
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+        />
+        <MiniBtn
+          text="다음"
+          textColor="text-primary"
+          bgColor="bg-primary-8"
+          hoverColor="hover:bg-secondary-hover"
+          onClick={() => {
+            if (handleChangeStatus) {
+              handleChangeStatus('manufactured');
+            }
+          }}
+          disabled={!isAllProductionCompleted}
         />
       </div>
     );

@@ -80,6 +80,10 @@ const ProductionPlan = ({
   const setProductionPlanSaveModalOpen = usePageStatusStore(
     (state) => state.setProductionPlanSaveModalOpen
   );
+  // 모든 품목이 가동 완료 상태인지 여부 확인
+  const setAllProductionCompleted = usePageStatusStore(
+    (state) => state.setAllProductionCompleted
+  );
 
   // 프로젝트 계획 데이터 로드
   useEffect(() => {
@@ -119,6 +123,15 @@ const ProductionPlan = ({
 
   // 생산 계획 검증 훅 사용
   useProductionPlanValidation(projectPlans, formChanges);
+
+  // 모든 품목이 가동 완료 상태인지 확인
+  const isAllProductionCompleted = projectPlans.every(
+    (plan) => plan.status === '가동 완료'
+  );
+  // 모든 품목이 가동 완료 상태일 때 store 업데이트
+  useEffect(() => {
+    setAllProductionCompleted(isAllProductionCompleted);
+  }, [isAllProductionCompleted, setAllProductionCompleted]);
 
   // 가동상태 드랍다운운을 row별로 관리
   const {
@@ -200,6 +213,7 @@ const ProductionPlan = ({
 
         if (hasEquipmentConflict) {
           showEquipmentToast();
+          handleCloseFacilityDropdown(); // 드롭다운 닫기
           return; // 충돌이 있으면 설비 변경을 중단
         }
       }
@@ -227,6 +241,9 @@ const ProductionPlan = ({
             '',
         },
       }));
+
+      // 설비 변경 성공 시 드롭다운 닫기
+      handleCloseFacilityDropdown();
     }
   };
 
