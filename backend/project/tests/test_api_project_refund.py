@@ -620,3 +620,267 @@ class ProjectRefundAPITestCase(TestCase):
         # 로그 내용도 업데이트되었는지 확인
         log.refresh_from_db()
         self.assertEqual(log.content, f'{self.product.name} 25개가 반품되었어요.')
+
+    def test_get_refund_detail_success(self):
+        """반품 상세 조회 성공 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 반품 상세 조회
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertEqual(data['id'], refund.id)
+        self.assertEqual(data['amount'], 15)
+        self.assertEqual(data['current_stock'], 10)
+        self.assertEqual(data['production_amount'], 5)
+        self.assertEqual(data['refund_date'], '2024-01-15')
+        
+        # 제품 정보 확인
+        self.assertIn('product', data)
+        self.assertEqual(data['product']['id'], self.product.id)
+        self.assertEqual(data['product']['name'], self.product.name)
+        self.assertEqual(data['product']['code'], self.product.code)
+        self.assertEqual(data['product']['current_stock'], self.product.current_stock)
+        
+        # 프로젝트 정보 확인
+        self.assertIn('project', data)
+        self.assertEqual(data['project']['id'], self.project.id)
+        self.assertEqual(data['project']['status'], self.project.status)
+        
+        # 로그 정보 확인
+        self.assertIn('log', data)
+        self.assertEqual(data['log']['id'], log.id)
+        self.assertEqual(data['log']['title'], log.title)
+        self.assertEqual(data['log']['content'], log.content)
+        self.assertIn('created_at', data['log'])
+        
+        # 생성/수정 일시 확인
+        self.assertIn('created_at', data)
+        self.assertIn('updated_at', data)
+
+    def test_get_refund_detail_nonexistent(self):
+        """존재하지 않는 반품 상세 조회 테스트"""
+        url = '/v1/project/refund/999'
+        
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        self.assertIn('해당 반품을 찾을 수 없습니다', response.json().get('detail', ''))
+
+    def test_get_refund_detail_different_factory(self):
+        """다른 팩토리의 반품 상세 조회 시도 테스트"""
+        # 다른 팩토리 생성
+        other_factory = Factory.objects.create(
+            name='다른 공장',
+            owner=self.user
+        )
+        
+        # 다른 팩토리의 프로젝트 생성
+        other_project = Project.objects.create()
+        
+        # 다른 팩토리의 견적서 생성
+        from document.models import Quotation
+        other_quotation = Quotation.objects.create(
+            factory=other_factory,
+            client=self.client_company,
+            project=other_project
+        )
+        
+        # 다른 팩토리의 반품 생성
+        other_log = ProjectLog.objects.create(
+            project=other_project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 10개가 반품되었어요.'
+        )
+        
+        other_refund = Refund.objects.create(
+            project_log=other_log,
+            product=self.product,
+            amount=10,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=5,
+            production_amount=5
+        )
+        
+        # 현재 팩토리로 다른 팩토리의 반품 조회 시도
+        url = f'/v1/project/refund/{other_refund.id}'
+        
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        self.assertIn('해당 반품을 찾을 수 없습니다', response.json().get('detail', ''))
+
+    def test_get_refund_detail_without_factory_id(self):
+        """factory_id 없이 반품 상세 조회 시도 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # factory_id 없이 조회
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('factory_id를 입력해야 합니다', response.json().get('detail', ''))
+
+    def test_get_refund_detail_without_auth(self):
+        """인증 없이 반품 상세 조회 시도 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 인증 없이 조회
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.get(f"{url}?factory_id={self.factory.id}")
+        
+        self.assertIn(response.status_code, [401, 403])
+
+    def test_get_refund_detail_with_null_refund_date(self):
+        """반품 날짜가 null인 반품 상세 조회 테스트"""
+        # 먼저 반품 생성 (날짜 없이)
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),  # NOT NULL 제약조건으로 인해 날짜 필요
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 반품 상세 조회
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertEqual(data['id'], refund.id)
+        self.assertEqual(data['refund_date'], '2024-01-15')  # 날짜가 있어야 함
+        self.assertEqual(data['amount'], 15)
+        self.assertEqual(data['current_stock'], 10)
+        self.assertEqual(data['production_amount'], 5)
+
+    def test_get_refund_detail_with_related_data(self):
+        """관계 데이터가 포함된 반품 상세 조회 테스트"""
+        # 제품에 현재 재고 설정
+        self.product.current_stock = 25
+        self.product.save()
+        
+        # 프로젝트 상태 설정
+        self.project.status = 'production'
+        self.project.save()
+        
+        # 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 20개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=20,
+            refund_date=datetime.strptime('2024-01-20', '%Y-%m-%d').date(),
+            current_stock=15,
+            production_amount=5
+        )
+        
+        # 반품 상세 조회
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        
+        # 제품 정보 확인 (현재 재고 포함)
+        self.assertEqual(data['product']['current_stock'], 25)
+        
+        # 프로젝트 정보 확인 (상태 포함)
+        self.assertEqual(data['project']['status'], self.project.status)
+        
+        # 반품 정보 확인
+        self.assertEqual(data['amount'], 20)
+        self.assertEqual(data['current_stock'], 15)
+        self.assertEqual(data['production_amount'], 5)
+        self.assertEqual(data['refund_date'], '2024-01-20')

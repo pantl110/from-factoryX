@@ -76,6 +76,35 @@ class RefundUpdateOut(Schema):
     refund_id: int
 
 
+# (GET) Refund List
+class RefundListOut(Schema):
+    id: int
+    product_name: str
+    product_id: int
+    amount: int
+    current_stock: int
+    production_amount: int
+    refund_date: Optional[datetime.date] = None
+    project_name: str
+    project_id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+
+# (GET) Refund Detail
+class RefundDetailOut(Schema):
+    id: int
+    product: dict
+    project: dict
+    amount: int
+    current_stock: int
+    production_amount: int
+    refund_date: Optional[datetime.date] = None
+    log: dict
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+
 # ------------------------------------------------------------
 # Project Plan API
 # ------------------------------------------------------------
