@@ -11,7 +11,7 @@ const getStoredFactoryId = (): string | null => {
   return null;
 };
 
-export const useUpdateRefund = () => {
+const useUpdateRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,3 +65,5 @@ export const useUpdateRefund = () => {
     clearError: () => setError(null),
   };
 }; 
+
+export default useUpdateRefund;

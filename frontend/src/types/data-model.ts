@@ -682,11 +682,15 @@ export interface CreateRefundResponseModel {
 }
 
 // 반품 수정
-
 export interface UpdateRefundModel {
   refund_date?: string;
   current_stock?: number;
   production_amount?: number;
+}
+
+export interface UpdateRefundResponseModel {
+  message: string;
+  refund_id: number;
 }
 
 //////////////////////

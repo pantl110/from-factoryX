@@ -31,8 +31,8 @@ const TopBarContent = ({
   ); // 생산 계획 폼 유효성 검사 상태
 
   // store에서 함수들 가져오기
-  const handleChangeToDeliveryStatus = usePageStatusStore(
-    (state) => state.handleChangeToDeliveryStatus
+  const handleChangeStatus = usePageStatusStore(
+    (state) => state.handleChangeStatus
   );
   const setAddReturnModalOpen = usePageStatusStore(
     (state) => state.setAddReturnModalOpen
@@ -54,8 +54,8 @@ const TopBarContent = ({
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
           onClick={() => {
-            if (handleChangeToDeliveryStatus) {
-              handleChangeToDeliveryStatus();
+            if (handleChangeStatus) {
+              handleChangeStatus('delivery');
             }
           }}
         />

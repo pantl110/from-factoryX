@@ -7,6 +7,7 @@ import {
   SettingChipType,
   StockTabType,
 } from '@/components/top-bar/types';
+import { ProjectStatusType } from '@/types/data-model';
 
 export interface PageStatusModel {
   pageStatus: string | null;
@@ -38,9 +39,11 @@ export interface PageStatusModel {
   isMoveToStorageModalOpen: boolean;
   setMoveToStorageModalOpen: (open: boolean) => void;
 
-  // 프로젝트 상태를 delivery로 변경하는 전역 함수 // 프로젝트 완료에서 [진행상태로 전환] 버튼
-  handleChangeToDeliveryStatus: (() => Promise<void>) | null;
-  setHandleChangeToDeliveryStatus: (fn: (() => Promise<void>) | null) => void;
+  // 프로젝트 상태를 변경하는 전역 함수
+  handleChangeStatus: ((status: ProjectStatusType) => Promise<void>) | null;
+  setHandleChangeStatus: (
+    fn: ((status: ProjectStatusType) => Promise<void>) | null
+  ) => void;
 }
 
 const usePageStatusStore = create<PageStatusModel>((set) => ({
@@ -70,10 +73,9 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   settingChip: null,
   setSettingChip: (chip) => set({ settingChip: chip }),
 
-  // 프로젝트 상태를 delivery로 변경하는 전역 함수 // 프로젝트 완료에서 [진행상태로 전환] 버튼
-  handleChangeToDeliveryStatus: null,
-  setHandleChangeToDeliveryStatus: (fn) =>
-    set({ handleChangeToDeliveryStatus: fn }),
+  // 프로젝트 상태를 변경하는 전역 함수
+  handleChangeStatus: null,
+  setHandleChangeStatus: (fn) => set({ handleChangeStatus: fn }),
 }));
 
 export default usePageStatusStore;

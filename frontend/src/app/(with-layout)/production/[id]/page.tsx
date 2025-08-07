@@ -127,25 +127,28 @@ const ProductionPageContent = () => {
   ]);
 
   // 프로젝트 상태를 delivery로 변경하는 함수
-  const handleChangeToDeliveryStatus = useCallback(async () => {
-    try {
-      const result = await updateProjectStatus(projectId, 'delivery');
-      if (result.success) {
-        // store의 pageStatus를 delivery로 업데이트
-        setPageStatus('delivery');
-        // 상태 변경 후 프로젝트 상태 리로드
-        await reloadProjectStatus();
-      } else {
-        alert('프로젝트 상태 변경에 실패했습니다.');
+  const handleChangeStatus = useCallback(
+    async (status: ProjectStatusType) => {
+      try {
+        const result = await updateProjectStatus(projectId, status);
+        if (result.success) {
+          // store의 pageStatus를 delivery로 업데이트
+          setPageStatus('status');
+          // 상태 변경 후 프로젝트 상태 리로드
+          await reloadProjectStatus();
+        } else {
+          alert('프로젝트 상태 변경에 실패했습니다.');
+        }
+      } catch {
+        alert('프로젝트 상태 변경 중 오류가 발생했습니다.');
       }
-    } catch {
-      alert('프로젝트 상태 변경 중 오류가 발생했습니다.');
-    }
-  }, [projectId, updateProjectStatus, reloadProjectStatus, setPageStatus]);
+    },
+    [projectId, updateProjectStatus, reloadProjectStatus, setPageStatus]
+  );
 
   // store에 함수 등록
-  const setHandleChangeToDeliveryStatus = usePageStatusStore(
-    (state) => state.setHandleChangeToDeliveryStatus
+  const setHandleChangeStatus = usePageStatusStore(
+    (state) => state.setHandleChangeStatus
   );
 
   // store에서 모달 상태 가져오기
@@ -157,9 +160,9 @@ const ProductionPageContent = () => {
   );
 
   useEffect(() => {
-    setHandleChangeToDeliveryStatus(handleChangeToDeliveryStatus);
-    return () => setHandleChangeToDeliveryStatus(null);
-  }, [handleChangeToDeliveryStatus, setHandleChangeToDeliveryStatus]);
+    setHandleChangeStatus(handleChangeStatus);
+    return () => setHandleChangeStatus(null);
+  }, [handleChangeStatus, setHandleChangeStatus]);
 
   const projectStatusType =
     (projectStatus?.status as ProjectStatusType) || 'quotation';
@@ -251,7 +254,8 @@ const ProductionPageContent = () => {
       {isAddReturnModalOpen && (
         <AddReturnModal
           onClose={() => setAddReturnModalOpen(false)}
-          quotationProductData={quotationData?.products}
+          quotationProductData={quotationData?.products || []}
+          onProjectStatusChange={handleChangeStatus}
         />
       )}
     </>
