@@ -644,7 +644,7 @@ export interface ProjectPlanModel {
   project_id: number;
   quotation_product: QuotationProductForPlanModel;
   equipment: EquipmentForPlanModel;
-  status: string; // 가동 대기, 가동 중, 가동 완료, 가동 불가
+  status: OperationStatusType; // 가동 대기, 가동 중, 가동 완료, 가동 불가
   quantity: number; // 생산 수량
   start_date: string; // 생산 시작 일자
   end_date: string; // 생산 종료 일자
@@ -659,7 +659,7 @@ export interface ProjectPlanListResponseModel extends PaginationModel {
 export interface UpdateProjectPlanModel {
   equipment_id?: number;
   quantity?: number;
-  status?: string;
+  status?: OperationStatusType;
   start_date?: string;
   end_date?: string;
   avg_production_time?: number;
@@ -776,6 +776,7 @@ import {
   TaxStatusType,
   EquipmentStatusType,
   ProjectLogType,
+  OperationStatusType,
 } from './status-type';
 
 export type {

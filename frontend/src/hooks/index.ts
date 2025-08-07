@@ -70,6 +70,7 @@ export { default as useCreateProjectPlans } from './project/project-plan/use-cre
 export { default as useGetProjectPlans } from './project/project-plan/use-get-project-plans';
 // export { default as useGetOngoingProjectPlans } from './project/project-plan/use-get-ongoing-project-plans';
 // export { default as useGetCompletedProjectPlans } from './project/project-plan/use-get-completed-project-plans';
+export { default as useGetDailyProductionQuantity } from './project/project-plan/use-get-daily-production-quantity';
 export { default as useUpdateProjectPlan } from './project/project-plan/use-update-project-plan';
 
 // Project refund related hooks
