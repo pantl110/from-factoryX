@@ -1,4 +1,5 @@
 export type OnboardingStepType =
+  | 'choosing-role'
   | 'welcome'
   | 'first-step'
   | 'second-step'

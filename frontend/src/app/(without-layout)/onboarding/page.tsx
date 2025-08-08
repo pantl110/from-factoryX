@@ -7,12 +7,20 @@ import FirstStep from './first-step';
 import SecondStep from './second-step';
 import ThirdStep from './third-step';
 import { useRouter } from 'next/navigation';
+import ChoosingRole from './choosing-role';
 
 const OnboardingPage = () => {
-  const [currentStep, setCurrentStep] = useState<OnboardingStepType>('welcome');
+  const [currentStep, setCurrentStep] =
+    useState<OnboardingStepType>('choosing-role');
 
   const router = useRouter();
-  const steps = ['welcome', 'first-step', 'second-step', 'third-step'] as const;
+  const steps = [
+    'choosing-role',
+    'welcome',
+    'first-step',
+    'second-step',
+    'third-step',
+  ] as const;
   type StepType = (typeof steps)[number];
 
   const handleNextStep = () => {
@@ -32,6 +40,8 @@ const OnboardingPage = () => {
 
   const renderCurrentStep = () => {
     switch (currentStep) {
+      case 'choosing-role':
+        return <ChoosingRole onNextStep={handleNextStep} />;
       case 'welcome':
         return <Welcome onNextStep={handleNextStep} />;
       case 'first-step':
