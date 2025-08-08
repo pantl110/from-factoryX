@@ -60,6 +60,10 @@ class QuotationProduct(BaseModel):
         blank=True,
         help_text="납품 일자",
     )
+    is_refund = models.BooleanField(
+        default=False,
+        help_text="반품 여부",
+    )
 
 
 class WorkInstruction(BaseModel):
