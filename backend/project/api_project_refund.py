@@ -268,6 +268,24 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
     new_refund_amount = current_stock + production_amount
     if new_refund_amount <= 0:
         raise HttpError(400, "반품 수량은 0보다 커야 합니다.")
+    
+    # 원래 반품 수량 저장 (ProjectPlan 비교용)
+    original_refund_amount = refund.amount
+    
+    # 제품 변경 처리 (반품 업데이트 전에 실행)
+    product_changed = False
+    old_product = None
+    if payload.product_id is not None:
+        product_changed = payload.product_id != refund.product.id
+        if product_changed:
+            old_product = refund.product
+            # 새로운 제품으로 업데이트
+            try:
+                new_product = await sync_to_async(Product.objects.get)(id=payload.product_id)
+                update_fields['product'] = new_product
+            except Product.DoesNotExist:
+                raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
+    
     update_fields['amount'] = new_refund_amount
     update_fields['production_amount'] = production_amount
     
@@ -281,7 +299,79 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
     refund.project_log.content = log_content
     await sync_to_async(refund.project_log.save)()
     
+    # 연결된 ProjectPlan이 있는지 확인하고 수정
+    from project.models import ProjectPlan
+    # project를 미리 가져와서 사용
+    project = await sync_to_async(lambda: refund.project_log.project)()
+    related_project_plans = await sync_to_async(list)(
+        ProjectPlan.objects.filter(
+            project=project,
+            product__product=refund.product  # QuotationProduct의 product 필드
+        )
+    )
+    
+    updated_plans = []
+    deleted_plans = []
+    created_plans = []
+    
+    if product_changed:
+        # 제품이 완전히 바뀐 경우: 기존 제품의 ProjectPlan 삭제
+        old_product_plans = await sync_to_async(list)(
+            ProjectPlan.objects.filter(
+                project=project,
+                product__product=old_product  # 기존 제품
+            )
+        )
+        for plan in old_product_plans:
+            if plan.quantity == original_refund_amount:
+                plan_id = plan.id  # 삭제 전에 ID 저장
+                await sync_to_async(plan.delete)()
+                deleted_plans.append(plan_id)
+        
+        # 새로운 제품으로 ProjectPlan 생성 (생산 등록 로직과 동일)
+        try:
+            # 새로운 제품의 QuotationProduct 찾기
+            new_quotation_product = await sync_to_async(
+                QuotationProduct.objects.filter(
+                    quotation__project=project,
+                    product=update_fields.get('product', refund.product)  # 새로운 제품 또는 기존 제품
+                ).first
+            )()
+            
+            if new_quotation_product:
+                # 기본 장비 선택
+                default_equipment = await sync_to_async(FactoryEquipment.objects.filter(
+                    factory_id=int(factory_id)
+                ).order_by('priority').first)()
+                
+                if default_equipment:
+                    # 새로운 ProjectPlan 생성
+                    new_project_plan = await sync_to_async(ProjectPlan.objects.create)(
+                        project=project,
+                        product=new_quotation_product,
+                        equipment=default_equipment,
+                        status="가동 대기",
+                        quantity=new_refund_amount,
+                        start_date=datetime.now().date(),
+                        end_date=datetime.now().date() + timedelta(days=7),
+                        avg_production_time=3600
+                    )
+                    created_plans.append(new_project_plan.id)
+        except Exception as e:
+            # 새로운 제품의 QuotationProduct가 없는 경우 무시
+            pass
+    else:
+        # 같은 제품인 경우: 수량만 수정
+        for plan in related_project_plans:
+            if plan.quantity == original_refund_amount:
+                plan.quantity = new_refund_amount
+                await sync_to_async(plan.save)()
+                updated_plans.append(plan.id)
+    
     return 200, {
         "message": "반품이 성공적으로 수정되었습니다.",
-        "refund_id": refund.id
+        "refund_id": refund.id,
+        "updated_project_plans": updated_plans,
+        "deleted_project_plans": deleted_plans,
+        "created_project_plans": created_plans
     }

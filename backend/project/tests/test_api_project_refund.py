@@ -297,6 +297,7 @@ class ProjectRefundAPITestCase(TestCase):
         data = response.json()
         self.assertIn('message', data)
         self.assertIn('refund_id', data)
+        self.assertIn('updated_project_plans', data)
         self.assertEqual(data['message'], '반품이 성공적으로 수정되었습니다.')
         
         # 데이터베이스에 반품이 수정되었는지 확인
@@ -1140,3 +1141,274 @@ class ProjectRefundAPITestCase(TestCase):
         
         self.assertEqual(response.status_code, 404)
         self.assertIn('해당 제품의 견적서 품목을 찾을 수 없습니다', response.json().get('detail', ''))
+
+    def test_update_refund_with_related_project_plan(self):
+        """반품 수정 시 연결된 ProjectPlan도 함께 수정되는지 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 장비 생성
+        from factory.models import FactoryEquipment
+        equipment = FactoryEquipment.objects.create(
+            factory=self.factory,
+            name='테스트 장비',
+            priority=1
+        )
+        
+        # 반품 생산 등록 (ProjectPlan 생성)
+        from project.models import ProjectPlan
+        project_plan = ProjectPlan.objects.create(
+            project=self.project,
+            product=self.quotation_product,
+            equipment=equipment,
+            status="가동 대기",
+            quantity=15,  # 반품 수량과 동일
+            start_date=datetime.now().date(),
+            end_date=datetime.now().date() + timedelta(days=7),
+            avg_production_time=3600
+        )
+        
+        # 반품 수정 (production_amount를 8로 변경)
+        url = f'/v1/project/refund/{refund.id}'
+        
+        payload = {
+            'production_amount': 8
+        }
+        
+        response = self.client.patch(
+            f"{url}?factory_id={self.factory.id}",
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertEqual(data['message'], '반품이 성공적으로 수정되었습니다.')
+        self.assertIn('updated_project_plans', data)
+        self.assertEqual(len(data['updated_project_plans']), 1)  # 1개의 ProjectPlan이 수정됨
+        self.assertEqual(data['updated_project_plans'][0], project_plan.id)
+        
+        # 데이터베이스 확인
+        refund.refresh_from_db()
+        self.assertEqual(refund.amount, 18)  # 10 + 8
+        self.assertEqual(refund.production_amount, 8)
+        
+        # ProjectPlan도 수정되었는지 확인
+        project_plan.refresh_from_db()
+        self.assertEqual(project_plan.quantity, 18)  # 반품 수량과 동일하게 수정됨
+
+    def test_update_refund_product_change(self):
+        """반품 수정 시 제품이 변경되는 경우 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 새로운 제품 생성
+        new_product = Product.objects.create(
+            factory=self.factory,
+            name='새로운 제품',
+            code='NEW001',
+            unit='개',
+            spec='새로운 규격'
+        )
+        
+        # 새로운 제품의 QuotationProduct 생성
+        from project.models import QuotationProduct
+        new_quotation_product = QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=new_product,
+            quantity=50,
+            unit_price=15000
+        )
+        
+        # 장비 생성
+        from factory.models import FactoryEquipment
+        equipment = FactoryEquipment.objects.create(
+            factory=self.factory,
+            name='테스트 장비',
+            priority=1
+        )
+        
+        # 기존 제품으로 ProjectPlan 생성
+        from project.models import ProjectPlan
+        old_project_plan = ProjectPlan.objects.create(
+            project=self.project,
+            product=self.quotation_product,
+            equipment=equipment,
+            status="가동 대기",
+            quantity=15,
+            start_date=datetime.now().date(),
+            end_date=datetime.now().date() + timedelta(days=7),
+            avg_production_time=3600
+        )
+        
+        # 반품 수정 (제품 변경)
+        url = f'/v1/project/refund/{refund.id}'
+        
+        payload = {
+            'product_id': new_product.id,
+            'production_amount': 8
+        }
+        
+        response = self.client.patch(
+            f"{url}?factory_id={self.factory.id}",
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertEqual(data['message'], '반품이 성공적으로 수정되었습니다.')
+        self.assertIn('updated_project_plans', data)
+        self.assertIn('deleted_project_plans', data)
+        self.assertIn('created_project_plans', data)
+        
+        # 기존 ProjectPlan이 삭제되었는지 확인
+        self.assertEqual(len(data['deleted_project_plans']), 1)
+        self.assertEqual(data['deleted_project_plans'][0], old_project_plan.id)
+        
+        # 새로운 ProjectPlan이 생성되었는지 확인
+        self.assertEqual(len(data['created_project_plans']), 1)
+        
+        # 데이터베이스 확인
+        refund.refresh_from_db()
+        self.assertEqual(refund.product.id, new_product.id)
+        self.assertEqual(refund.amount, 18)  # 10 + 8
+        self.assertEqual(refund.production_amount, 8)
+        
+        # 기존 ProjectPlan이 삭제되었는지 확인
+        with self.assertRaises(ProjectPlan.DoesNotExist):
+            old_project_plan.refresh_from_db()
+        
+        # 새로운 ProjectPlan 확인
+        new_project_plan = ProjectPlan.objects.get(id=data['created_project_plans'][0])
+        self.assertEqual(new_project_plan.product.id, new_quotation_product.id)
+        self.assertEqual(new_project_plan.quantity, 18)
+
+    def test_update_refund_date_only(self):
+        """반품 날짜만 수정하는 경우 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 반품 날짜만 수정
+        url = f'/v1/project/refund/{refund.id}'
+        
+        payload = {
+            'refund_date': '2024-01-25'
+        }
+        
+        response = self.client.patch(
+            f"{url}?factory_id={self.factory.id}",
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertEqual(data['message'], '반품이 성공적으로 수정되었습니다.')
+        self.assertEqual(len(data['updated_project_plans']), 0)  # ProjectPlan 수정 없음
+        self.assertEqual(len(data['deleted_project_plans']), 0)
+        self.assertEqual(len(data['created_project_plans']), 0)
+        
+        # 데이터베이스 확인
+        refund.refresh_from_db()
+        self.assertEqual(refund.refund_date, datetime.strptime('2024-01-25', '%Y-%m-%d').date())
+        self.assertEqual(refund.amount, 15)  # 변경되지 않음
+        self.assertEqual(refund.production_amount, 5)  # 변경되지 않음
+
+    def test_update_refund_no_project_plan(self):
+        """ProjectPlan이 없는 반품 수정 테스트"""
+        # 먼저 반품 생성 (ProjectPlan 없이)
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 반품 수정
+        url = f'/v1/project/refund/{refund.id}'
+        
+        payload = {
+            'production_amount': 8
+        }
+        
+        response = self.client.patch(
+            f"{url}?factory_id={self.factory.id}",
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertEqual(data['message'], '반품이 성공적으로 수정되었습니다.')
+        self.assertEqual(len(data['updated_project_plans']), 0)  # ProjectPlan 없음
+        self.assertEqual(len(data['deleted_project_plans']), 0)
+        self.assertEqual(len(data['created_project_plans']), 0)
+        
+        # 데이터베이스 확인
+        refund.refresh_from_db()
+        self.assertEqual(refund.amount, 18)  # 10 + 8
+        self.assertEqual(refund.production_amount, 8)

@@ -74,6 +74,9 @@ class RefundCreateOut(Schema):
 class RefundUpdateOut(Schema):
     message: str
     refund_id: int
+    updated_project_plans: List[int]
+    deleted_project_plans: List[int]
+    created_project_plans: List[int]
 
 
 # (GET) Refund List

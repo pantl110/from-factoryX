@@ -39,6 +39,7 @@ class RefundUpdateIn(Schema):
     refund_date: Optional[str] = None
     current_stock: Optional[int] = None
     production_amount: Optional[int] = None
+    product_id: Optional[int] = None
 
 
 # ------------------------------------------------------------
