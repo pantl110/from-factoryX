@@ -1214,3 +1214,117 @@ class ProjectPlanAPITestCase(TestCase):
         additional_plan = additional_plans.first()
         self.assertEqual(additional_plan.equipment.id, self.equipment.id)  # 같은 설비 사용
         self.assertEqual(additional_plan.quantity, 44)  # (100-60) * 1.1 = 44 (buffer rate 적용)
+
+    def test_list_today_production_plans_success(self):
+        """오늘 생산 시작인 프로젝트 계획 조회 성공 테스트"""
+        # 오늘 날짜로 프로젝트 계획 생성
+        today = date.today()
+        plan = ProjectPlan.objects.create(
+            project=self.project,
+            product=self.quotation_product,
+            equipment=self.equipment,
+            status="가동 대기",
+            quantity=50,
+            start_date=today,
+            end_date=today + timedelta(days=7),
+            avg_production_time=3600
+        )
+        
+        url = '/v1/project/plan/today'
+        
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=1",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 응답 데이터 확인
+        self.assertEqual(len(data), 1)
+        item = data[0]
+        self.assertEqual(item['company_name'], self.client_company.name)
+        self.assertEqual(item['product_name'], self.product.name)
+        self.assertEqual(item['product_code'], self.product.code)
+        self.assertEqual(item['spec'], self.product.spec)
+        self.assertEqual(item['unit'], self.product.unit)
+        self.assertEqual(item['production_quantity'], 50)
+        self.assertEqual(item['equipment_name'], self.equipment.name)
+        self.assertEqual(item['production_time'], 3600)
+        self.assertEqual(item['project_id'], self.project.id)
+
+    def test_list_today_production_plans_pagination(self):
+        """오늘 생산 시작인 프로젝트 계획 조회 페이지네이션 테스트"""
+        # 오늘 날짜로 7개의 프로젝트 계획 생성
+        today = date.today()
+        for i in range(7):
+            ProjectPlan.objects.create(
+                project=self.project,
+                product=self.quotation_product,
+                equipment=self.equipment,
+                status="가동 대기",
+                quantity=10 + i,
+                start_date=today,
+                end_date=today + timedelta(days=7),
+                avg_production_time=3600 + i * 100
+            )
+        
+        url = '/v1/project/plan/today'
+        
+        # 첫 번째 페이지 (5개)
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=1",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 5)
+        
+        # 두 번째 페이지 (2개)
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=2",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        
+        # 세 번째 페이지 (없음)
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=3",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_list_today_production_plans_no_data(self):
+        """오늘 생산 시작인 프로젝트 계획이 없을 때 테스트"""
+        url = '/v1/project/plan/today'
+        
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=1",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_list_today_production_plans_missing_factory_id(self):
+        """factory_id 누락 시 오늘 생산 시작인 프로젝트 계획 조회 테스트"""
+        url = '/v1/project/plan/today'
+        
+        response = self.client.get(
+            f"{url}?page=1",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_today_production_plans_without_auth(self):
+        """인증 없이 오늘 생산 시작인 프로젝트 계획 조회 테스트"""
+        url = '/v1/project/plan/today'
+        
+        response = self.client.get(f"{url}?factory_id={self.factory.id}&page=1")
+        
+        self.assertEqual(response.status_code, 401)

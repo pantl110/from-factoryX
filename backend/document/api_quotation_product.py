@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 from document.models import Quotation, QuotationProduct
 from document.schemas.inbound import QuotationDraftIn, QuotationConfirmedIn, QuotationProductDeliveryUpdateIn
-from document.schemas.outbound import QuotationProductOut, QuotationConfirmedOut
+from document.schemas.outbound import QuotationProductOut, QuotationConfirmedOut, UndeliveredQuotationProductOut
 from stock.models import Product
 from project.models import Project, ProjectPlan
 from factory.models import FactoryClient, FactoryEquipment
@@ -411,6 +411,66 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
             "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None
         } for qp in qps
     ]
+
+
+@router.get(
+    "/undelivered",
+    summary="[C] 납품되지 않은 견적서 품목 조회",
+    description="프로젝트가 납품 상태이고 납품되지 않은 견적서 품목만 조회합니다. 페이지당 5개씩 반환됩니다.",
+    response={200: list[UndeliveredQuotationProductOut], 400: dict, 404: dict, 500: dict}
+)
+async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1)):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
+    try:
+        # 납품되지 않은 견적서 품목 조회
+        # 조건: 프로젝트가 납품 상태이고, is_delivery가 False인 품목
+        undelivered_products = await sync_to_async(list)(
+            QuotationProduct.objects.select_related(
+                'quotation__client',
+                'quotation__project',
+                'product'
+            ).filter(
+                quotation__factory_id=int(factory_id),
+                quotation__project__status='납품',  # 프로젝트가 납품 상태
+                is_delivery=False  # 납품되지 않음
+            ).order_by('delivery_date')  # 납품일자 순으로 정렬
+        )
+        
+        if not undelivered_products:
+            raise HttpError(404, "납품되지 않은 견적서 품목이 없습니다.")
+        
+        # 페이지네이션 (한 페이지에 5개)
+        page_size = 5
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+        
+        paginated_products = undelivered_products[start_index:end_index]
+        
+        if not paginated_products:
+            raise HttpError(404, f"페이지 {page}에 해당하는 데이터가 없습니다.")
+        
+        # 응답 데이터 구성
+        results = []
+        for qp in paginated_products:
+            results.append({
+                "company_name": qp.quotation.client.name,  # 업체명
+                "product_name": qp.product.name,  # 품목명
+                "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None,  # 납품일자
+                "project_id": qp.quotation.project.id  # 프로젝트 ID
+            })
+        
+        return 200, results
+        
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, f"조회 중 오류가 발생했습니다: {str(e)}")
 
 
 # Quotation Tab

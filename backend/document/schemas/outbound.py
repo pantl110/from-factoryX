@@ -58,3 +58,24 @@ class QuotationProductOut(Schema):
     unit_price: Optional[int] = None
     is_delivery: Optional[bool] = None
     delivery_date: Optional[str] = None
+
+
+# (GET) Undelivered Quotation Products
+class UndeliveredQuotationProductOut(Schema):
+    company_name: str  # 업체명 (클라이언트명)
+    product_name: str  # 품목명
+    delivery_date: Optional[str] = None  # 납품일자
+    project_id: int  # 프로젝트 ID
+
+
+# (GET) Today's Production Plans
+class TodayProductionPlanOut(Schema):
+    company_name: str  # 업체명 (클라이언트명)
+    product_name: str  # 품목명
+    product_code: Optional[str] = None  # 품목코드
+    spec: str  # 규격
+    unit: str  # 단위
+    production_quantity: int  # 생산 수량
+    equipment_name: str  # 생산 설비
+    production_time: int  # 생산 시간 (초)
+    project_id: int  # 프로젝트 ID

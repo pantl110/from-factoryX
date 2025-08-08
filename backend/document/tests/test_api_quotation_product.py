@@ -578,8 +578,6 @@ class QuotationProductAPITestCase(TestCase):
         elif "detail" in data:
             self.assertIn("클라이언트 ID 99999를 찾을 수 없습니다", data["detail"])
         else:
-            # 응답 구조를 확인하기 위해 출력
-            print(f"Error response structure: {data}")
             self.fail("Expected 'message' or 'detail' key in error response")
 
     def test_save_draft_quotation_partial_product_info(self):
@@ -1893,10 +1891,6 @@ class QuotationProductAPITestCase(TestCase):
             HTTP_AUTHORIZATION=f'Bearer {self.generate_jwt_token()}'
         )
         
-        # 디버그 정보 출력
-        print(f"Response status: {response.status_code}")
-        print(f"Response content: {response.content}")
-        
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
@@ -1922,4 +1916,115 @@ class QuotationProductAPITestCase(TestCase):
         datetime_pattern = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}'
         self.assertIsNotNone(re.match(datetime_pattern, plan['start_date']))
         self.assertIsNotNone(re.match(datetime_pattern, plan['end_date']))
+
+    def test_list_undelivered_quotation_products_success(self):
+        """납품되지 않은 견적서 품목 조회 성공 테스트"""
+        # 프로젝트를 납품 상태로 변경
+        self.project.status = '납품'
+        self.project.save()
+        
+        # 기존 quotation_product1을 납품되지 않은 상태로 유지
+        self.quotation_product1.is_delivery = False
+        self.quotation_product1.delivery_date = date(2024, 12, 31)
+        self.quotation_product1.save()
+        
+        url = '/v1/document/quotation/product/undelivered'
+        
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=1",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # 응답 데이터 확인 (기존 quotation_product1이 조건에 맞음)
+        self.assertEqual(len(data), 1)
+        item = data[0]
+        self.assertEqual(item['company_name'], self.client_company.name)
+        self.assertEqual(item['product_name'], self.product1.name)
+        self.assertEqual(item['delivery_date'], '2024-12-31')
+        self.assertEqual(item['project_id'], self.project.id)
+
+    def test_list_undelivered_quotation_products_pagination(self):
+        """납품되지 않은 견적서 품목 조회 페이지네이션 테스트"""
+        # 프로젝트를 납품 상태로 변경
+        self.project.status = '납품'
+        self.project.save()
+        
+        # 기존 quotation_product1을 납품되지 않은 상태로 유지
+        self.quotation_product1.is_delivery = False
+        self.quotation_product1.delivery_date = date(2024, 12, 31)
+        self.quotation_product1.save()
+        
+        # 추가로 6개의 납품되지 않은 QuotationProduct 생성 (총 7개)
+        for i in range(6):
+            QuotationProduct.objects.create(
+                quotation=self.quotation,
+                product=self.product1,
+                quantity=10 + i,
+                unit_price=1000 + i * 100,
+                is_delivery=False,
+                delivery_date=date(2024, 12, 31)
+            )
+        
+        url = '/v1/document/quotation/product/undelivered'
+        
+        # 첫 번째 페이지 (5개)
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=1",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 5)
+        
+        # 두 번째 페이지 (2개)
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=2",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        
+        # 세 번째 페이지 (없음)
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=3",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_list_undelivered_quotation_products_no_data(self):
+        """납품되지 않은 견적서 품목이 없을 때 테스트"""
+        url = '/v1/document/quotation/product/undelivered'
+        
+        response = self.client.get(
+            f"{url}?factory_id={self.factory.id}&page=1",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_list_undelivered_quotation_products_missing_factory_id(self):
+        """factory_id 누락 시 납품되지 않은 견적서 품목 조회 테스트"""
+        url = '/v1/document/quotation/product/undelivered'
+        
+        response = self.client.get(
+            f"{url}?page=1",
+            **self.get_auth_headers()
+        )
+        
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_undelivered_quotation_products_without_auth(self):
+        """인증 없이 납품되지 않은 견적서 품목 조회 테스트"""
+        url = '/v1/document/quotation/product/undelivered'
+        
+        response = self.client.get(f"{url}?factory_id={self.factory.id}&page=1")
+        
+        self.assertEqual(response.status_code, 401)
 
