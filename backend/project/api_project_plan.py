@@ -10,7 +10,7 @@ from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
 from factory.models import FactoryEquipment
 from stock.models import Product
-from datetime import date
+from datetime import date, datetime
 from factory.models import Factory
 from typing import List
 from factory.utils import is_factory_member
@@ -522,28 +522,92 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
             id__gt=plan.id  # 현재 계획보다 나중에 생성된 계획들
         ).adelete()
         
+        # 기존 수량 저장 (원자재 소모량 조정용)
+        old_quantity = plan.quantity
+        
         # 사용자가 수정한 수량이 주문 수량보다 적은 경우
         if new_quantity < quotation_quantity:
             # 첫 번째 계획: 사용자가 수정한 수량
             plan.quantity = new_quantity
             
-            # 두 번째 계획: 부족한 수량에 buffer rate 적용
+            # 원자재 소모량 조정 (수량 변경에 따른 차이만큼)
+            try:
+                from stock.models import Material, MaterialProduct
+                
+                # 수량 차이 계산
+                quantity_difference = new_quantity - old_quantity
+                
+                if quantity_difference != 0:
+                    # 제품과 연결된 원자재들 조회
+                    product_obj = await sync_to_async(lambda: plan.product.product)()
+                    material_products = await sync_to_async(list)(
+                        MaterialProduct.objects.filter(product=product_obj)
+                    )
+                    
+                    for material_product in material_products:
+                        # 소모량 차이 계산
+                        quantity = await sync_to_async(lambda: material_product.quantity)()
+                        consumption_difference = quantity_difference * float(quantity)
+                        
+                        # 원자재 재고 조정
+                        material = await sync_to_async(lambda: material_product.material)()
+                        current_stock = await sync_to_async(lambda: material.current_stock)()
+                        material_name = await sync_to_async(lambda: material.name)()
+                        
+                        if quantity_difference > 0:
+                            # 수량 증가: 재고 감소
+                            if current_stock >= consumption_difference:
+                                material.current_stock = current_stock - consumption_difference
+                                await sync_to_async(material.save)()
+                            else:
+                                raise HttpError(400, f"원자재 '{material_name}'의 재고가 부족합니다. 필요: {consumption_difference}개, 현재: {current_stock}개")
+                        else:
+                            # 수량 감소: 재고 증가 (반환)
+                            material.current_stock = current_stock + abs(consumption_difference)
+                            await sync_to_async(material.save)()
+                            
+            except HttpError:
+                raise
+            except Exception as e:
+                print(f"Raw material adjustment failed: {str(e)}")
+                raise HttpError(500, f"원자재 소모량 조정 중 오류가 발생했습니다: {str(e)}")
+            
+            # 두 번째 계획: 부족한 수량에 buffer rate 적용 (다른 설비 사용)
             product_obj = await sync_to_async(lambda: plan.product.product)()
             buffer_rate = float(product_obj.buffer_rate)
             shortage_quantity = quotation_quantity - new_quantity
             buffer_quantity = int(shortage_quantity * (1 + buffer_rate))
             
-            await ProjectPlan.objects.acreate(
-                project=project,
-                product=product,
-                quantity=buffer_quantity,
-                equipment=plan.equipment,  # 같은 설비 사용
-                start_date=plan.start_date,
-                end_date=plan.end_date,
-                avg_production_time=plan.avg_production_time
-            )
+            # 다른 설비 찾기 (우선순위가 낮은 다음 설비)
+            current_equipment_id = await sync_to_async(lambda: plan.equipment.id)()
+            alternative_equipment = await sync_to_async(
+                FactoryEquipment.objects.filter(
+                    factory_id=int(factory_id)
+                ).exclude(id=current_equipment_id).order_by('priority').first
+            )()
             
-            # Buffer rate는 기존 값 유지 (총 생산량이 주문량과 동일하므로)
+            if alternative_equipment:
+                # 다른 설비로 두 번째 계획 생성
+                await ProjectPlan.objects.acreate(
+                    project=project,
+                    product=product,
+                    quantity=buffer_quantity,
+                    equipment=alternative_equipment,  # 다른 설비 사용
+                    start_date=plan.start_date,
+                    end_date=plan.end_date,
+                    avg_production_time=plan.avg_production_time
+                )
+            else:
+                # 대체 설비가 없으면 같은 설비 사용
+                await ProjectPlan.objects.acreate(
+                    project=project,
+                    product=product,
+                    quantity=buffer_quantity,
+                    equipment=plan.equipment,  # 같은 설비 사용
+                    start_date=plan.start_date,
+                    end_date=plan.end_date,
+                    avg_production_time=plan.avg_production_time
+                )
             
         # 사용자가 수정한 수량이 주문 수량보다 큰 경우
         elif new_quantity > quotation_quantity:
@@ -557,11 +621,95 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
             # 기존 계획 수정
             plan.quantity = new_quantity
             
+            # 원자재 소모량 조정 (수량 변경에 따른 차이만큼)
+            try:
+                from stock.models import Material, MaterialProduct
+                
+                # 수량 차이 계산
+                quantity_difference = new_quantity - old_quantity
+                
+                if quantity_difference != 0:
+                    # 제품과 연결된 원자재들 조회
+                    product_obj = await sync_to_async(lambda: plan.product.product)()
+                    material_products = await sync_to_async(list)(
+                        MaterialProduct.objects.filter(product=product_obj)
+                    )
+                    
+                    for material_product in material_products:
+                        # 소모량 차이 계산
+                        quantity = await sync_to_async(lambda: material_product.quantity)()
+                        consumption_difference = quantity_difference * float(quantity)
+                        
+                        # 원자재 재고 조정
+                        material = await sync_to_async(lambda: material_product.material)()
+                        current_stock = await sync_to_async(lambda: material.current_stock)()
+                        material_name = await sync_to_async(lambda: material.name)()
+                        
+                        if quantity_difference > 0:
+                            # 수량 증가: 재고 감소
+                            if current_stock >= consumption_difference:
+                                material.current_stock = current_stock - consumption_difference
+                                await sync_to_async(material.save)()
+                            else:
+                                raise HttpError(400, f"원자재 '{material_name}'의 재고가 부족합니다. 필요: {consumption_difference}개, 현재: {current_stock}개")
+                        else:
+                            # 수량 감소: 재고 증가 (반환)
+                            material.current_stock = current_stock + abs(consumption_difference)
+                            await sync_to_async(material.save)()
+                            
+            except HttpError:
+                raise
+            except Exception as e:
+                print(f"Raw material adjustment failed: {str(e)}")
+                raise HttpError(500, f"원자재 소모량 조정 중 오류가 발생했습니다: {str(e)}")
+            
         # 사용자가 수정한 수량이 주문 수량과 같은 경우
         else:
             # 기존 계획 수정
             plan.quantity = new_quantity
             # Buffer rate는 기존 값 유지 (변경하지 않음)
+            
+            # 원자재 소모량 조정 (수량 변경에 따른 차이만큼)
+            try:
+                from stock.models import Material, MaterialProduct
+                
+                # 수량 차이 계산
+                quantity_difference = new_quantity - old_quantity
+                
+                if quantity_difference != 0:
+                    # 제품과 연결된 원자재들 조회
+                    product_obj = await sync_to_async(lambda: plan.product.product)()
+                    material_products = await sync_to_async(list)(
+                        MaterialProduct.objects.filter(product=product_obj)
+                    )
+                    
+                    for material_product in material_products:
+                        # 소모량 차이 계산
+                        quantity = await sync_to_async(lambda: material_product.quantity)()
+                        consumption_difference = quantity_difference * float(quantity)
+                        
+                        # 원자재 재고 조정
+                        material = await sync_to_async(lambda: material_product.material)()
+                        current_stock = await sync_to_async(lambda: material.current_stock)()
+                        material_name = await sync_to_async(lambda: material.name)()
+                        
+                        if quantity_difference > 0:
+                            # 수량 증가: 재고 감소
+                            if current_stock >= consumption_difference:
+                                material.current_stock = current_stock - consumption_difference
+                                await sync_to_async(material.save)()
+                            else:
+                                raise HttpError(400, f"원자재 '{material_name}'의 재고가 부족합니다. 필요: {consumption_difference}개, 현재: {current_stock}개")
+                        else:
+                            # 수량 감소: 재고 증가 (반환)
+                            material.current_stock = current_stock + abs(consumption_difference)
+                            await sync_to_async(material.save)()
+                            
+            except HttpError:
+                raise
+            except Exception as e:
+                print(f"Raw material adjustment failed: {str(e)}")
+                raise HttpError(500, f"원자재 소모량 조정 중 오류가 발생했습니다: {str(e)}")
 
     # 이후에도 plan.project, plan.product 대신 project, product 사용
     if payload.status is not None:
@@ -571,10 +719,28 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         plan.status = payload.status
     
     if payload.start_date is not None:
-        plan.start_date = payload.start_date
+        try:
+            # 날짜와 시간 정보를 파싱
+            if ' ' in payload.start_date:
+                # 'yyyy-mm-dd HH:MM' 형식
+                plan.start_date = datetime.strptime(payload.start_date, '%Y-%m-%d %H:%M').date()
+            else:
+                # 'yyyy-mm-dd' 형식
+                plan.start_date = datetime.strptime(payload.start_date, '%Y-%m-%d').date()
+        except ValueError:
+            raise HttpError(400, "올바르지 않은 시작일 형식입니다. YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식으로 입력해주세요.")
     
     if payload.end_date is not None:
-        plan.end_date = payload.end_date
+        try:
+            # 날짜와 시간 정보를 파싱
+            if ' ' in payload.end_date:
+                # 'yyyy-mm-dd HH:MM' 형식
+                plan.end_date = datetime.strptime(payload.end_date, '%Y-%m-%d %H:%M').date()
+            else:
+                # 'yyyy-mm-dd' 형식
+                plan.end_date = datetime.strptime(payload.end_date, '%Y-%m-%d').date()
+        except ValueError:
+            raise HttpError(400, "올바르지 않은 마감일 형식입니다. YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식으로 입력해주세요.")
     
     if payload.avg_production_time is not None:
         if payload.avg_production_time <= 0:

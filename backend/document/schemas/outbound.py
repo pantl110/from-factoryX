@@ -1,5 +1,6 @@
 from ninja import Schema
 from typing import List, Optional
+from datetime import datetime
 
 
 # Quotation Product Detail
@@ -32,6 +33,16 @@ class QuotationDetailOut(Schema):
     address: Optional[str] = None
     due_date: Optional[str] = None
     products: List[QuotationDetailProductOut]
+
+
+# (POST) Quotation Confirmed Response
+class QuotationConfirmedOut(Schema):
+    quotation_id: int
+    project_id: int
+    status: str
+    created_at: datetime
+    due_date: Optional[str] = None
+    production_plans: List[dict]  # 생산 계획 정보
 
 
 # ------------------------------------------------------------

@@ -94,12 +94,22 @@ async def list_project_logs(request, project_id: int = Query(...)):
     
     logs_detail_list = []
     for log in logs:
+        # 반품 로그인 경우 반품 ID 가져오기
+        refund_id = None
+        if log.type == 'refund':
+            try:
+                refund = log.refund
+                refund_id = refund.id
+            except:
+                pass  # 반품이 없는 경우 None 유지
+        
         logs_detail_list.append(ProjectLogDetailOut(
             id=log.id,
             project_id=log.project_id,  # 직접 project_id 필드 사용
             type=log.type,
             title=log.title,
             content=log.content,
+            refund_id=refund_id,
             created_at=log.created_at,
             updated_at=log.updated_at
         ))

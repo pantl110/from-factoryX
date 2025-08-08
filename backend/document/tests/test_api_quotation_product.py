@@ -8,6 +8,7 @@ import json
 import jwt
 from django.conf import settings
 from datetime import datetime, timedelta, date
+import re
 
 User = get_user_model()
 
@@ -41,7 +42,8 @@ class QuotationProductAPITestCase(TestCase):
             name='테스트 제품 1',
             code='TEST001',
             unit='개',
-            spec='10x10x10'
+            spec='10x10x10',
+            average_production_time=3600  # 1시간 (3600초)
         )
         
         self.product2 = Product.objects.create(
@@ -896,7 +898,12 @@ class QuotationProductAPITestCase(TestCase):
         # 기본값 확인
         today = datetime.now().date()
         self.assertEqual(plan.start_date, today)  # 기본값: 오늘
-        self.assertEqual(plan.end_date, today + timedelta(days=7))  # 기본값: 7일 후
+        
+        # end_date는 제품의 average_production_time에 따라 계산됨
+        # 11개 * 3600초 = 39600초 = 11시간 = 1일
+        expected_end_date = today + timedelta(days=1)
+        self.assertEqual(plan.end_date, expected_end_date)
+        
         self.assertEqual(plan.avg_production_time, 3600)  # 기본값: 3600초 (1시간)
         
         # 프로젝트 상태 확인
@@ -1817,4 +1824,102 @@ class QuotationProductAPITestCase(TestCase):
         )
         
         self.assertEqual(response.status_code, 400)
+
+    def test_confirm_order_with_production_plans(self):
+        """생산 계획이 포함된 주문 확정 테스트"""
+        # 제품 생성 (평균 생산 시간 설정)
+        product = Product.objects.create(
+            factory=self.factory,
+            name='테스트 제품',
+            code='TEST001',
+            unit='개',
+            spec='테스트 규격',
+            average_production_time=1800  # 30분
+        )
+        
+        # 견적서 생성
+        quotation = Quotation.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            project=self.project
+        )
+        
+        # QuotationProduct 생성 (필수!)
+        quotation_product = QuotationProduct.objects.create(
+            quotation=quotation,
+            product=product,
+            quantity=10,
+            unit_price=1000
+        )
+        
+        # FactoryEquipment 생성 (필수!)
+        equipment = FactoryEquipment.objects.create(
+            factory=self.factory,
+            name='테스트 설비',
+            status=FactoryEquipment.EquipmentStatus.standby,
+            priority=1
+        )
+        
+        url = '/v1/document/quotation/product/confirmed'
+        
+        payload = {
+            'quotation_id': quotation.id,
+            'client': {
+                'client_id': self.client_company.id,
+                'name': self.client_company.name,
+                'business_registration_number': self.client_company.business_registration_number,
+                'representative_name': self.client_company.representative_name,
+                'business_type': self.client_company.business_type,
+                'business_category': self.client_company.business_category,
+                'address': self.client_company.address,
+                'email': self.client_company.email,
+                'phone': self.client_company.phone,
+                'fax': self.client_company.fax
+            },
+            'products': [
+                {
+                    'product_id': product.id,
+                    'quantity': 10,
+                    'unit_price': 1000
+                }
+            ],
+            'due_date': '2024-12-31'
+        }
+        
+        response = self.client.post(
+            f"{url}?factory_id={self.factory.id}",
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.generate_jwt_token()}'
+        )
+        
+        # 디버그 정보 출력
+        print(f"Response status: {response.status_code}")
+        print(f"Response content: {response.content}")
+        
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertEqual(data['quotation_id'], quotation.id)
+        self.assertEqual(data['status'], 'production_waiting')
+        self.assertIn('created_at', data)
+        self.assertEqual(data['due_date'], '2024-12-31')
+        self.assertIn('production_plans', data)
+        
+        # 생산 계획 확인
+        production_plans = data['production_plans']
+        self.assertEqual(len(production_plans), 1)
+        
+        plan = production_plans[0]
+        self.assertEqual(plan['product_name'], '테스트 제품')
+        self.assertEqual(plan['quantity'], 11)  # buffer rate 적용 (10 * 1.1)
+        self.assertEqual(plan['avg_production_time'], 1800)
+        self.assertIn('start_date', plan)
+        self.assertIn('end_date', plan)
+        self.assertIn('production_days', plan)
+        
+        # 시간 형식 확인 (YYYY-MM-DD HH:MM)
+        datetime_pattern = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}'
+        self.assertIsNotNone(re.match(datetime_pattern, plan['start_date']))
+        self.assertIsNotNone(re.match(datetime_pattern, plan['end_date']))
 

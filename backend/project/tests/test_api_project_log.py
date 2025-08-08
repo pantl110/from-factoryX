@@ -5,7 +5,7 @@ from project.models import Project, ProjectLog
 import json
 import jwt
 from django.conf import settings
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 User = get_user_model()
 
@@ -262,6 +262,69 @@ class ProjectLogAPITestCase(TestCase):
         response = self.client.get(url)
         
         self.assertIn(response.status_code, [401, 403])
+
+    def test_list_project_logs_with_refund_log(self):
+        """반품 로그가 포함된 프로젝트 로그 조회 테스트"""
+        # 반품 로그 생성
+        refund_log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content='테스트 제품 10개가 반품되었어요.'
+        )
+        
+        # 반품 생성 (로그와 연결)
+        from project.models import Refund
+        from stock.models import Product
+        
+        product = Product.objects.create(
+            factory=self.factory,
+            name='테스트 제품',
+            code='TEST001',
+            unit='개',
+            spec='테스트 규격'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=refund_log,
+            product=product,
+            amount=10,
+            refund_date=date(2024, 1, 15),
+            current_stock=5,
+            production_amount=5
+        )
+        
+        # 일반 로그 생성
+        general_log = ProjectLog.objects.create(
+            project=self.project,
+            type='plan',
+            title='생산 계획 생성',
+            content='테스트 제품 생산 계획이 생성되었습니다.'
+        )
+        
+        url = f'/v1/project/log?project_id={self.project.id}'
+        
+        response = self.client.get(
+            f"{url}&factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertEqual(len(data['items']), 2)
+        
+        # 반품 로그 확인
+        refund_log_data = next(log for log in data['items'] if log['type'] == 'refund')
+        self.assertEqual(refund_log_data['id'], refund_log.id)
+        self.assertEqual(refund_log_data['refund_id'], refund.id)
+        self.assertEqual(refund_log_data['title'], '반품 접수 현황')
+        
+        # 일반 로그 확인
+        general_log_data = next(log for log in data['items'] if log['type'] == 'plan')
+        self.assertEqual(general_log_data['id'], general_log.id)
+        self.assertIsNone(general_log_data['refund_id'])
+        self.assertEqual(general_log_data['title'], '생산 계획 생성')
 
     def test_update_project_log_success(self):
         """프로젝트 로그 수정 성공 테스트"""

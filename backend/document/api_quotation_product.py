@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 from document.models import Quotation, QuotationProduct
 from document.schemas.inbound import QuotationDraftIn, QuotationConfirmedIn, QuotationProductDeliveryUpdateIn
-from document.schemas.outbound import QuotationProductOut
+from document.schemas.outbound import QuotationProductOut, QuotationConfirmedOut
 from stock.models import Product
 from project.models import Project, ProjectPlan
 from factory.models import FactoryClient, FactoryEquipment
@@ -146,7 +146,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         raise HttpError(500, f"임시 저장 중 오류가 발생했습니다: {str(e)}")
 
 
-@router.post("/confirmed", summary="생산 대기", description="완성된 견적서로 생산 대기 상태로 변경합니다. 모든 필수 정보가 필요합니다.")
+@router.post("/confirmed", summary="생산 대기", description="완성된 견적서로 생산 대기 상태로 변경합니다. 모든 필수 정보가 필요합니다.", response={200: QuotationConfirmedOut, 400: dict, 404: dict, 500: dict})
 async def confirm_order(request, payload: QuotationConfirmedIn):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
@@ -257,6 +257,8 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
         project.status = Project.ProjectStatus.pending
         await sync_to_async(project.save)()
         
+        production_plans = []
+        
         for prod in payload.products:
             try:
                 product_id = prod.product_id
@@ -282,24 +284,89 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             base_quantity = prod.quantity
             production_quantity = int(base_quantity * (1 + buffer_rate))
             
-            start_date = datetime.now().strftime("%Y-%m-%d") 
-            end_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
-            avg_production_time = 3600
+            # 현재 시간을 기준으로 시작 시간 설정
+            start_datetime = datetime.now()
+            start_date = start_datetime.strftime("%Y-%m-%d")
             
-            await ProjectPlan.objects.acreate(
+            # 평균 생산 시간을 반영하여 마감 일자 계산
+            # 총 생산 시간 = 생산 수량 * 평균 생산 시간(초)
+            avg_production_time = product.average_production_time or 30  # 기본값 30초
+            total_production_seconds = production_quantity * avg_production_time
+            
+            # 총 생산 시간을 일자로 변환
+            production_days = max(1, int(total_production_seconds / (24 * 3600)))  # 24시간 기준
+            
+            end_datetime = start_datetime + timedelta(days=production_days)
+            end_date = end_datetime.strftime("%Y-%m-%d")
+            
+            # 생산 계획 생성
+            project_plan = await ProjectPlan.objects.acreate(
                 project=project,
                 product=quotation_product,
                 quantity=production_quantity,
                 equipment=equipment,
-                start_date=datetime.strptime(start_date, "%Y-%m-%d").date(),
-                end_date=datetime.strptime(end_date, "%Y-%m-%d").date(),
+                start_date=start_datetime.date(),
+                end_date=end_datetime.date(),
                 avg_production_time=avg_production_time
             )
+            
+            # 원자재 소모 처리
+            try:
+                from stock.models import Material, MaterialProduct
+                
+                # 제품과 연결된 원자재들 조회
+                material_products = await sync_to_async(list)(
+                    MaterialProduct.objects.filter(product=product)
+                )
+                
+                for material_product in material_products:
+                    # 소모량 계산 = 생산 수량 * 단위 소모량
+                    consumption_quantity = production_quantity * float(material_product.quantity)
+                    
+                    # 원자재 재고 감소
+                    material = material_product.material
+                    if material.current_stock >= consumption_quantity:
+                        material.current_stock -= consumption_quantity
+                        await sync_to_async(material.save)()
+                        
+                        # 원자재 소모 로그 생성 (선택사항)
+                        # await MaterialHistory.objects.acreate(
+                        #     type=MaterialHistory.MaterialHistoryType.consumption,
+                        #     material=material,
+                        #     quantity=consumption_quantity,
+                        #     total_stock=material.current_stock
+                        # )
+                    else:
+                        # 재고 부족 시 예외 발생
+                        raise HttpError(400, f"원자재 '{material.name}'의 재고가 부족합니다. 필요: {consumption_quantity}개, 현재: {material.current_stock}개")
+                        
+            except HttpError:
+                # HttpError는 그대로 재발생
+                raise
+            except Exception as e:
+                # 기타 예외는 500 에러로 변환
+                print(f"Raw material consumption failed: {str(e)}")
+                raise HttpError(500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}")
+            
+            # 생산 계획 정보 저장
+            production_plans.append({
+                "plan_id": project_plan.id,
+                "product_name": product.name,
+                "quantity": production_quantity,
+                "equipment_name": equipment.name,
+                "start_date": start_datetime.strftime("%Y-%m-%d %H:%M"),
+                "end_date": end_datetime.strftime("%Y-%m-%d %H:%M"),
+                "avg_production_time": avg_production_time,
+                "production_days": production_days
+            })
         
         return 200, {
             "quotation_id": quotation.id,
             "project_id": project.id,
-            "status": "production_waiting"
+            "status": "production_waiting",
+            "created_at": datetime.now(),
+            "due_date": quotation.due_date.isoformat() if quotation.due_date else None,
+            "production_plans": production_plans
         }
             
     except HttpError:

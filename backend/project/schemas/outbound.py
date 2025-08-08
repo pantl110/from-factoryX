@@ -207,6 +207,7 @@ class ProjectLogDetailOut(Schema):
     type: str
     title: str
     content: str
+    refund_id: Optional[int] = None  # 반품 로그인 경우 반품 ID
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
