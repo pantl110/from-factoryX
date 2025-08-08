@@ -1,14 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SideBar from '@/components/side-bar';
 import TopBar from '@/components/top-bar';
 import { usePathname } from 'next/navigation';
+import useAuthStore from '@/store/auth-store';
 // import { useAuthGuard } from '@/hooks/use-auth-guard'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const pathname = usePathname();
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+
+  // 앱 초기화 시 localStorage에서 사용자 정보 로드
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   // useAuthGuard() // 로그인 안되어있으면 로그인 페이지로 리다이렉트
 

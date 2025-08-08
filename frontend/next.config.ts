@@ -12,7 +12,6 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.cloudfront.net',
         port: '',
-        pathname: '/**',
       },
       // AWS S3 관련
       {
