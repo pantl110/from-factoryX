@@ -64,6 +64,15 @@ class ProjectRefundAPITestCase(TestCase):
             spec='테스트 규격'
         )
         
+        # QuotationProduct 생성
+        from document.models import QuotationProduct
+        self.quotation_product = QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product,
+            quantity=100,
+            unit_price=10000
+        )
+        
         # JWT 토큰 생성
         self.token = self.generate_jwt_token()
         
@@ -884,3 +893,250 @@ class ProjectRefundAPITestCase(TestCase):
         self.assertEqual(data['current_stock'], 15)
         self.assertEqual(data['production_amount'], 5)
         self.assertEqual(data['refund_date'], '2024-01-20')
+
+    def test_register_production_from_refund_success(self):
+        """반품 생산 등록 성공 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 장비 생성
+        from factory.models import FactoryEquipment
+        equipment = FactoryEquipment.objects.create(
+            factory=self.factory,
+            name='테스트 장비',
+            priority=1
+        )
+        
+        # 반품 생산 등록
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.post(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertIn('message', data)
+        self.assertIn('refund_id', data)
+        self.assertIn('quotation_id', data)
+        self.assertIn('quotation_product_id', data)
+        self.assertIn('project_plan_id', data)
+        self.assertIn('production_log_id', data)
+        self.assertIn('product_name', data)
+        self.assertIn('quantity', data)
+        self.assertIn('equipment_name', data)
+        
+        self.assertEqual(data['message'], '반품 재생산이 성공적으로 등록되었습니다.')
+        self.assertEqual(data['refund_id'], refund.id)
+        self.assertEqual(data['product_name'], self.product.name)
+        self.assertEqual(data['quantity'], 15)
+        self.assertEqual(data['equipment_name'], equipment.name)
+        
+        # 데이터베이스에 생성된 데이터 확인
+        from document.models import Quotation, QuotationProduct
+        from project.models import ProjectPlan
+        
+        # 기존 QuotationProduct 확인 (새로 생성되지 않고 기존 것 사용)
+        quotation_product = QuotationProduct.objects.get(id=data['quotation_product_id'])
+        self.assertEqual(quotation_product.product.id, self.product.id)
+        # 기존 QuotationProduct의 단가는 변경되지 않음
+        self.assertNotEqual(quotation_product.unit_price, 0)
+        
+        # ProjectPlan 확인
+        project_plan = ProjectPlan.objects.get(id=data['project_plan_id'])
+        self.assertEqual(project_plan.project.id, self.project.id)
+        self.assertEqual(project_plan.product.id, quotation_product.id)
+        self.assertEqual(project_plan.equipment.id, equipment.id)
+        self.assertEqual(project_plan.quantity, 15)
+        self.assertEqual(project_plan.status, '가동 대기')
+
+    def test_register_production_from_refund_nonexistent(self):
+        """존재하지 않는 반품으로 생산 등록 시도 테스트"""
+        url = '/v1/project/refund/999'
+        
+        response = self.client.post(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        self.assertIn('해당 반품을 찾을 수 없습니다', response.json().get('detail', ''))
+
+    def test_register_production_from_refund_zero_amount(self):
+        """반품 수량이 0인 경우 생산 등록 시도 테스트"""
+        # 수량이 0인 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 0개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=0,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=0,
+            production_amount=0
+        )
+        
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.post(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('반품 수량이 0보다 커야 합니다', response.json().get('detail', ''))
+
+    def test_register_production_from_refund_no_equipment(self):
+        """사용 가능한 장비가 없는 경우 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 장비가 없는 상태에서 생산 등록 시도
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.post(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('사용 가능한 장비가 없습니다', response.json().get('detail', ''))
+
+    def test_register_production_from_refund_without_auth(self):
+        """인증 없이 반품 생산 등록 시도 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 인증 없이 생산 등록 시도
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.post(f"{url}?factory_id={self.factory.id}")
+        
+        self.assertIn(response.status_code, [401, 403])
+
+    def test_register_production_from_refund_without_factory_id(self):
+        """factory_id 없이 반품 생산 등록 시도 테스트"""
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{self.product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=self.product,
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # factory_id 없이 생산 등록 시도
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.post(
+            url,
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('factory_id를 입력해야 합니다', response.json().get('detail', ''))
+
+    def test_register_production_from_refund_no_quotation_product(self):
+        """해당 제품의 QuotationProduct가 없는 경우 테스트"""
+        # 새로운 제품 생성 (QuotationProduct가 없는 제품)
+        new_product = Product.objects.create(
+            factory=self.factory,
+            name='새로운 제품',
+            code='NEW001',
+            unit='개',
+            spec='새로운 규격'
+        )
+        
+        # 먼저 반품 생성
+        log = ProjectLog.objects.create(
+            project=self.project,
+            type='refund',
+            title='반품 접수 현황',
+            content=f'{new_product.name} 15개가 반품되었어요.'
+        )
+        
+        refund = Refund.objects.create(
+            project_log=log,
+            product=new_product,  # 새로운 제품 사용
+            amount=15,
+            refund_date=datetime.strptime('2024-01-15', '%Y-%m-%d').date(),
+            current_stock=10,
+            production_amount=5
+        )
+        
+        # 장비 생성
+        from factory.models import FactoryEquipment
+        equipment = FactoryEquipment.objects.create(
+            factory=self.factory,
+            name='테스트 장비',
+            priority=1
+        )
+        
+        # QuotationProduct가 없는 상태에서 생산 등록 시도
+        url = f'/v1/project/refund/{refund.id}'
+        
+        response = self.client.post(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        self.assertIn('해당 제품의 견적서 품목을 찾을 수 없습니다', response.json().get('detail', ''))
