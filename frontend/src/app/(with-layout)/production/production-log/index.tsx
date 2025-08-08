@@ -16,7 +16,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
   const projectId = params.id ? parseInt(params.id as string) : null;
 
   const [projectPlans, setProjectPlans] = useState<ProjectPlanModel[]>([]);
-  const { getProjectPlans, isLoading, error } = useGetProjectPlans();
+  const { getProjectPlans, isLoading } = useGetProjectPlans();
   const { updateProjectPlan } = useUpdateProjectPlan();
 
   // 디바운스 타이머 저장
@@ -24,19 +24,18 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
     Record<number, NodeJS.Timeout>
   >({});
 
-  const loadProjectPlans = async () => {
+  const loadProjectPlans = useCallback(async () => {
     if (!projectId) return;
 
     const result = await getProjectPlans(projectId);
     if (result.success && result.data) {
       setProjectPlans(result.data);
     }
-  };
+  }, [projectId, getProjectPlans]);
 
   useEffect(() => {
     loadProjectPlans();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
+  }, [loadProjectPlans]);
 
   // 컴포넌트 언마운트 시 타이머 정리
   useEffect(() => {
@@ -62,7 +61,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
               // 성공 시 데이터 새로고침
               await loadProjectPlans();
             }
-          } catch (error) {
+          } catch {
             alert('날짜 변경 중 오류가 발생했습니다.');
           }
         }, 1000); // 1초 디바운스
@@ -72,7 +71,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
     [updateProjectPlan, loadProjectPlans]
   );
 
-  if (isLoading || error) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-100">
         <Spinner />

@@ -30,7 +30,7 @@ export const useMaterialStatus = (productId: number) => {
 
         // API 응답 구조 확인 및 데이터 추출
         const connections = connectionsResult?.data || connectionsResult;
-        
+
         if (
           !connections ||
           !Array.isArray(connections) ||
@@ -44,7 +44,10 @@ export const useMaterialStatus = (productId: number) => {
 
         // 2. 각 자재의 상세 정보 조회하여 재고 상태 확인
         const materialPromises = connections
-          .filter((connection: any) => 'material_id' in connection)
+          .filter(
+            (connection: MaterialProductConnectionModel) =>
+              'material_id' in connection
+          )
           .map(async (connection: MaterialProductConnectionModel) => {
             try {
               const result = await getMaterialDetail(connection.material_id);
@@ -60,19 +63,23 @@ export const useMaterialStatus = (productId: number) => {
         const materialDetails = await Promise.all(materialPromises);
 
         // 3. 현재 재고 기준으로 자재 부족 여부 확인
-        const hasInsufficientMaterial = materialDetails.some((detail: any) => {
-          if (!detail) return false;
+        const hasInsufficientMaterial = materialDetails.some(
+          (detail: MaterialResponseModel | null) => {
+            if (!detail) return false;
 
-          // eslint-disable-next-line camelcase
-          const { current_stock, standard_stock } = detail;
-          // eslint-disable-next-line camelcase
-          if (current_stock === null || current_stock === undefined) return false;
-          // eslint-disable-next-line camelcase
-          if (standard_stock === null || standard_stock === undefined) return false;
+            const {
+              current_stock: currentStock,
+              standard_stock: standardStock,
+            } = detail;
+            if (currentStock === null || currentStock === undefined)
+              return false;
+            if (standardStock === null || standardStock === undefined)
+              return false;
 
-          // 현재 재고가 안전 재고보다 적으면 부족
-          return current_stock < standard_stock;
-        });
+            // 현재 재고가 안전 재고보다 적으면 부족
+            return currentStock < standardStock;
+          }
+        );
 
         setMaterialStatus(hasInsufficientMaterial ? '부족' : '충분');
       } catch (error) {

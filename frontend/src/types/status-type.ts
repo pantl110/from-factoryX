@@ -10,9 +10,7 @@ export type MemberRoleType = 'admin' | 'manager' | 'viewer'; // 시스템 관리
 export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
 
 // 설비 상태 // 설정 페이지
-export type EquipmentStatusType =
-  | '가동 대기'
-  | '가동 중'
+export type EquipmentStatusType = '가동 대기' | '가동 중';
 export const EquipmentStatusColorMap: Record<
   EquipmentStatusType,
   StatusColorModel
@@ -129,10 +127,7 @@ export const CompletedProjectStatusColorMap: Record<
 };
 
 // production의 설비 가동 상태
-export type OperationStatusType =
-  | '가동 대기'
-  | '가동 중'
-  | '가동 완료'
+export type OperationStatusType = '가동 대기' | '가동 중' | '가동 완료';
 export const OperationStatusColorMap: Record<
   OperationStatusType,
   StatusColorModel

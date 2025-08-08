@@ -92,6 +92,7 @@ const ProductionPageContent = () => {
     };
 
     loadProjectStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, getProjectStatus, setPageStatus, setProductionTab]);
 
   // 프로젝트 상태 리로드 함수

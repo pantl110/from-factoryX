@@ -1,4 +1,3 @@
-import onboardingImage from '@/assets/onboarding.png';
 import MiniBtn from '@/ui/mini-btn';
 
 interface ChoosingRoleProps {

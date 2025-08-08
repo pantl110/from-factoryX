@@ -351,6 +351,7 @@ const ProductionPlan = ({
         return { ...prevTimers, [planId]: newTimer };
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       projectPlans,
       updateProjectPlan,
@@ -365,8 +366,8 @@ const ProductionPlan = ({
     try {
       // 저장 전에 시간대 충돌만 검사 (설비 충돌은 선택 시점에서 이미 검사됨)
       for (const [planId, formData] of Object.entries(formChanges)) {
-        const timeConflict = checkTimeConflicts(parseInt(planId), formData);
-        if (timeConflict) {
+        const hasTimeConflict = checkTimeConflicts(parseInt(planId), formData);
+        if (hasTimeConflict) {
           showTimeToast();
           return { success: false, error: '시간대 충돌' };
         }
