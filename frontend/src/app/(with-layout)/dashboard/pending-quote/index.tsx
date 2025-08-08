@@ -3,14 +3,14 @@
 import MiniBtn from '@/ui/mini-btn';
 import { useRouter } from 'next/navigation';
 import PendingQuoteItem from './pending-quote-item';
-import { projectData } from '@/mocks/project-data';
+import { ProjectResponseModel } from '@/types/data-model';
 
-const PendingQuote = () => {
+interface PendingQuoteProps {
+  projects: ProjectResponseModel[];
+}
+
+const PendingQuote = ({ projects }: PendingQuoteProps) => {
   const router = useRouter();
-
-  const pendingQuotes = projectData.filter(
-    (project) => project.status === 'quotation'
-  );
 
   return (
     <div>
@@ -26,13 +26,13 @@ const PendingQuote = () => {
           hoverColor="hover:bg-bg"
         />
       </div>
-      <div className="mt-3 flex gap-2 overflow-x-auto">
-        {pendingQuotes.map((project) => (
+      <div className="mt-3 flex gap-2">
+        {projects.map((project) => (
           <PendingQuoteItem
             project={project}
-            key={project.id}
+            key={project.project_id}
             onClick={() => {
-              router.push(`/production/${project.id}`);
+              router.push(`/production/${project.project_id}`);
             }}
           />
         ))}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, Suspense, useRef, useState } from 'react';
 import MainTitleSec from './main-title-sec';
 import DailyProductionQuantity from './summary-KPI/daily-production-quantity';
 import ShortageCount from './summary-KPI/shortage-count';
@@ -16,10 +16,15 @@ import Toast from '@/ui/toast';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
+import useGetProjects from '@/hooks/project/use-get-projects';
+import { ProjectResponseModel } from '@/types/data-model';
 
 const DashboardPageContent = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
   const searchParams = useSearchParams();
+  const { getProjects, isLoading, error } = useGetProjects();
+  const hasFetchedRef = useRef(false);
+  const [projectsData, setProjectsData] = useState<ProjectResponseModel[]>([]);
 
   useEffect(() => {
     const from = searchParams.get('from');
@@ -27,6 +32,60 @@ const DashboardPageContent = () => {
       showToast();
     }
   }, [searchParams, showToast]);
+
+  useEffect(() => {
+    if (!hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+
+      getProjects({
+        status: 'progress',
+        page: 1,
+        size: 10,
+        order_by: 'start_date',
+        order_dir: 'desc',
+      }).then((result) => {
+        if (result.success && result.data) {
+          const responseData = result.data as any;
+          console.log('프로젝트 데이터:', responseData);
+          const projects = responseData.data || [];
+          setProjectsData(Array.isArray(projects) ? projects : []);
+        } else {
+          setProjectsData([]);
+        }
+      });
+    }
+  }, [getProjects]);
+
+  // 협의 중인 견적 데이터 (견적 요청, 주문 확정) - 최신순 3개
+  const pendingQuotes = Array.isArray(projectsData)
+    ? projectsData
+        .filter(
+          (project) =>
+            project.status === '견적 협의중' || project.status === '주문 확정'
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+        )
+        .slice(0, 3)
+    : [];
+
+  // 생산 프로젝트 데이터 (생산 대기, 생산 중, 생산 완료, 납품) - 최신순 4개
+  const processProjects = Array.isArray(projectsData)
+    ? projectsData
+        .filter(
+          (project) =>
+            project.status === '생산 대기' ||
+            project.status === '생산 중' ||
+            project.status === '생산 완료' ||
+            project.status === '납품'
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+        )
+        .slice(0, 4)
+    : [];
 
   return (
     <>
@@ -47,10 +106,10 @@ const DashboardPageContent = () => {
         </div>
 
         {/* 협의 중인 견적 */}
-        <PendingQuote />
+        <PendingQuote projects={pendingQuotes} />
 
         {/* 생산 프로젝트 */}
-        <ProcessProject />
+        <ProcessProject projects={processProjects} />
 
         {/* 오늘의 생산 일정 */}
         <TodayProductionSchedule />

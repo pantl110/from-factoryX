@@ -13,9 +13,9 @@ COPY ./frontend /app
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 빌드 시 환경변수 전달을 위한 ARG 추가
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# # 빌드 시 환경변수 전달을 위한 ARG 추가
+# ARG NEXT_PUBLIC_API_URL
+# ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 # 빌드
 RUN npm run build

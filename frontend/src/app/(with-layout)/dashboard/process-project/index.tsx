@@ -3,14 +3,14 @@
 import MiniBtn from '@/ui/mini-btn';
 import ProcessProjectItem from './process-project-item';
 import { useRouter } from 'next/navigation';
-import { projectData } from '@/mocks/project-data';
+import { ProjectResponseModel } from '@/types/data-model';
 
-const ProcessProject = () => {
+interface ProcessProjectProps {
+  projects: ProjectResponseModel[];
+}
+
+const ProcessProject = ({ projects }: ProcessProjectProps) => {
   const router = useRouter();
-
-  const processProjects = projectData.filter(
-    (project) => project.status === 'production'
-  );
 
   return (
     <div>
@@ -26,13 +26,13 @@ const ProcessProject = () => {
           hoverColor="hover:bg-bg"
         />
       </div>
-      <div className="mt-3 flex gap-2 overflow-x-auto">
-        {processProjects.map((project) => (
+      <div className="mt-3 flex gap-2">
+        {projects.map((project) => (
           <ProcessProjectItem
             project={project}
-            key={project.id}
+            key={project.project_id}
             onClick={() => {
-              router.push(`/production/${project.id}`);
+              router.push(`/production/${project.project_id}`);
             }}
           />
         ))}
