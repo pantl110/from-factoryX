@@ -6,6 +6,7 @@ from api.security import jwt_auth
 from django.db import models
 from project.schemas.inbound import ProjectPlanCreateIn, ProjectPlanUpdateIn, ProjectPlanListFilter
 from project.schemas.outbound import ProjectPlansCreateOut, ProjectPlanDetailOut, ProjectPlanDetailWithRelationsOut, ProductDetailOut, QuotationProductDetailOut, EquipmentDetailOut, DailyProductionQuantityOut
+from document.schemas.outbound import TodayProductionPlanOut
 from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
 from factory.models import FactoryEquipment
@@ -332,6 +333,79 @@ async def list_completed_project_plans(request, filters: ProjectPlanListFilter =
 
     except Exception as e:
         raise HttpError(500, f"서버 오류가 발생했습니다: {str(e)}")
+
+
+@router.get(
+    "/today",
+    summary="[C] 오늘 생산 시작인 프로젝트 계획 조회",
+    description="오늘이 생산 시작인 프로젝트 계획을 조회합니다. 페이지당 5개씩 반환됩니다.",
+    response={200: list[TodayProductionPlanOut], 400: dict, 404: dict, 500: dict}
+)
+async def list_today_production_plans(request, page: int = Query(1, ge=1)):
+    factory_id = request.GET.get('factory_id')
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+    
+    try:
+        today = date.today()
+        
+        @sync_to_async
+        def get_today_plans():
+            return list(
+                ProjectPlan.objects.select_related(
+                    'product__quotation__client',
+                    'product__product',
+                    'equipment'
+                ).filter(
+                    product__quotation__factory_id=int(factory_id),
+                    start_date=today  # 오늘이 시작일
+                ).order_by('start_date')  # 시작 시간 순으로 정렬
+            )
+        
+        today_plans = await get_today_plans()
+        
+        if not today_plans:
+            raise HttpError(404, "오늘 생산 시작인 프로젝트 계획이 없습니다.")
+        
+        # 페이지네이션 (한 페이지에 5개)
+        page_size = 5
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+        
+        paginated_plans = today_plans[start_index:end_index]
+        
+        if not paginated_plans:
+            raise HttpError(404, f"페이지 {page}에 해당하는 데이터가 없습니다.")
+        
+        # 응답 데이터 구성
+        @sync_to_async
+        def build_response_data():
+            results = []
+            for plan in paginated_plans:
+                results.append({
+                    "company_name": plan.product.quotation.client.name,  # 업체명
+                    "product_name": plan.product.product.name,  # 품목명
+                    "product_code": plan.product.product.code,  # 품목코드
+                    "spec": plan.product.product.spec,  # 규격
+                    "unit": plan.product.product.unit,  # 단위
+                    "production_quantity": plan.quantity,  # 생산 수량
+                    "equipment_name": plan.equipment.name,  # 생산 설비
+                    "production_time": plan.avg_production_time,  # 생산 시간 (초)
+                    "project_id": plan.product.quotation.project.id  # 프로젝트 ID
+                })
+            return results
+        
+        results = await build_response_data()
+        
+        return 200, results
+        
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, f"조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.get(
