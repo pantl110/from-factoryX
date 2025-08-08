@@ -1,12 +1,10 @@
-import Image from 'next/image';
-import onboardingImage from '@/assets/onboarding.png';
 import MiniBtn from '@/ui/mini-btn';
 
-interface WelcomeProps {
+interface ChoosingRoleProps {
   onNextStep: () => void;
 }
 
-const Welcome = ({ onNextStep }: WelcomeProps) => {
+const ChoosingRole = ({ onNextStep }: ChoosingRoleProps) => {
   return (
     <div className="bg-wh z-1 w-[586px] pt-14 px-8 pb-6 flex flex-col items-center rounded-lg">
       <h3 className="Heading-3 text-primary mb-2">
@@ -16,12 +14,10 @@ const Welcome = ({ onNextStep }: WelcomeProps) => {
         운영을 시작하려면, 먼저 품목과 설비를 등록해야 해요. <br />
         등록이 완료되면, 생산부터 재고까지 한눈에 관리할 수 있어요!
       </p>
-      <div className="p-7 mb-5">
-        <Image src={onboardingImage} alt="onboarding" />
-      </div>
+
       <div className="w-full flex justify-end">
         <MiniBtn
-          text="다음"
+          text="다음 단계"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"
@@ -32,4 +28,4 @@ const Welcome = ({ onNextStep }: WelcomeProps) => {
   );
 };
 
-export default Welcome;
+export default ChoosingRole;

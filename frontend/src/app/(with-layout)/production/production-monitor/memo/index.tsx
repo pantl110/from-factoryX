@@ -5,15 +5,23 @@ import SaveToast from './save-toast';
 import useToast from '@/hooks/use-toast';
 import { useState } from 'react';
 import useUpdateProjectLog from '@/hooks/project/project-log/use-update-project-log';
+import { ProjectStatusType } from '@/types/status-type';
 
 interface MemoSectionProps {
   title: string;
   content: string;
   logId: number;
   onUpdate?: () => void; // 메모 수정 성공 시 콜백
+  projectStatus: ProjectStatusType;
 }
 
-const MemoSection = ({ title, content, logId, onUpdate }: MemoSectionProps) => {
+const MemoSection = ({
+  title,
+  content,
+  logId,
+  onUpdate,
+  projectStatus,
+}: MemoSectionProps) => {
   const { isToastOpen: isSaveToastOpen, isVisible, showToast } = useToast();
   const { updateProjectLog, isLoading } = useUpdateProjectLog();
   const [memoContent, setMemoContent] = useState(content);
@@ -49,7 +57,7 @@ const MemoSection = ({ title, content, logId, onUpdate }: MemoSectionProps) => {
               메모
             </div>
             <input
-              className="focus:outline-none h-11 border px-3 Re_Body-1 text-dg border-[#E4E4E7] flex items-center rounded-lg flex-1"
+              className="focus:outline-none h-11 border px-3 Re_Body-1 text-dg border-lg flex items-center rounded-lg flex-1"
               value={memoTitle}
               onChange={(e) => setMemoTitle(e.target.value)}
               disabled={!isEditMode}
@@ -57,46 +65,48 @@ const MemoSection = ({ title, content, logId, onUpdate }: MemoSectionProps) => {
             />
           </div>
           <textarea
-            className="border px-3 Re_Body-1 text-dg border-[#E4E4E7] min-h-8 rounded-lg py-5 flex-1"
+            className="border px-3 Re_Body-1 text-dg border-lg min-h-8 rounded-lg py-5 flex-1 overflow-y-auto scrollbar-hide"
             value={memoContent}
             onChange={(e) => setMemoContent(e.target.value)}
             disabled={!isEditMode}
             readOnly={!isEditMode}
           />
         </div>
-        <div className="flex gap-2.5 justify-end">
-          {!isEditMode ? (
-            <MiniBtn
-              text="수정"
-              textColor="text-dg"
-              borderColor="border-lg"
-              hoverColor="hover:bg-bg"
-              onClick={() => setIsEditMode(true)}
-            />
-          ) : (
-            <>
+        {projectStatus !== '프로젝트 완료' && (
+          <div className="flex gap-2.5 justify-end">
+            {!isEditMode ? (
               <MiniBtn
-                text="취소"
-                textColor="text-sv"
+                text="수정"
+                textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
-                onClick={() => {
-                  setIsEditMode(false);
-                  setMemoTitle(title);
-                  setMemoContent(content);
-                }}
+                onClick={() => setIsEditMode(true)}
               />
-              <MiniBtn
-                text="저장"
-                textColor="text-wh"
-                bgColor="bg-primary"
-                hoverColor="hover:bg-primary-hover"
-                onClick={handleMemoSave}
-                disabled={isLoading}
-              />
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <MiniBtn
+                  text="취소"
+                  textColor="text-sv"
+                  borderColor="border-lg"
+                  hoverColor="hover:bg-bg"
+                  onClick={() => {
+                    setIsEditMode(false);
+                    setMemoTitle(title);
+                    setMemoContent(content);
+                  }}
+                />
+                <MiniBtn
+                  text="저장"
+                  textColor="text-wh"
+                  bgColor="bg-primary"
+                  hoverColor="hover:bg-primary-hover"
+                  onClick={handleMemoSave}
+                  disabled={isLoading}
+                />
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 저장하기 토스트 */}

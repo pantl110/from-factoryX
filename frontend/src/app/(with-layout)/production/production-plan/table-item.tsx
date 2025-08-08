@@ -2,6 +2,8 @@ import Chip from '@/ui/chip';
 import {
   OperationStatusColorMap,
   InventoryStatusColorMap,
+  ProjectStatusType,
+  OperationStatusType,
 } from '@/types/status-type';
 import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import { tableHeader } from './types';
@@ -22,7 +24,7 @@ interface ProductionPlanFormDataModel {
 
 interface TableItemProps {
   item: ProjectPlanModel;
-  // onOperationStatusClick: (e: React.MouseEvent) => void;
+  onOperationStatusClick?: (e: React.MouseEvent) => void;
   onFacilityClick: (e: React.MouseEvent) => void;
   onFormChange?: (
     planId: number,
@@ -30,41 +32,18 @@ interface TableItemProps {
   ) => void;
   formData?: ProductionPlanFormDataModel; // 현재 form 데이터
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
+  projectStatus?: ProjectStatusType;
 }
 
 const TableItem = ({
   item,
-  // onOperationStatusClick,
+  onOperationStatusClick,
   onFacilityClick,
   onFormChange,
   formData: currentFormData,
   equipments,
+  projectStatus,
 }: TableItemProps) => {
-  // 백엔드 status를 프론트엔드 OperationStatusType으로 매핑
-  const mapBackendStatusToOperation = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '가동 대기';
-      case 'production':
-        return '가동 중';
-      case 'completed':
-        return '가동 완료';
-      case 'impossible':
-        return '가동 불가';
-      default:
-        return '가동 대기';
-    }
-  };
-
-  // ProjectPlanModel의 실제 필드 사용
-  const operationStatus = mapBackendStatusToOperation(item.status);
-  const { materialStatus } = useMaterialStatus(
-    item.quotation_product.product.id
-  ); // 품목과 연결된 자재들의 재고 상태 확인 훅 사용
-  const operationColor = OperationStatusColorMap[operationStatus];
-  const materialColor = InventoryStatusColorMap[materialStatus];
-  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
-
   // Form 데이터를 메모이제이션하여 불필요한 re-render 방지
   const stableFormData = useMemo(() => {
     return (
@@ -82,6 +61,15 @@ const TableItem = ({
     item.start_date,
     item.end_date,
   ]);
+
+  // 백엔드에서 이미 한글 상태값을 반환하므로 그대로 사용
+  const operationStatus = item.status as OperationStatusType;
+  const { materialStatus } = useMaterialStatus(
+    item.quotation_product.product.id
+  ); // 품목과 연결된 자재들의 재고 상태 확인 훅 사용
+  const operationColor = OperationStatusColorMap[operationStatus];
+  const materialColor = InventoryStatusColorMap[materialStatus];
+  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
   // React Hook Form 설정
   const { control, watch, reset } = useForm<ProductionPlanFormDataModel>({
@@ -129,13 +117,22 @@ const TableItem = ({
         text={operationStatus}
         textColor={operationColor.textColor}
         bgColor={operationColor.bgColor}
-        // cursor="cursor-pointer"
+        cursor={
+          projectStatus === 'pending' || projectStatus === '생산 대기'
+            ? 'cursor-default'
+            : 'cursor-pointer'
+        }
         onClick={(e) => {
-          if (e) {
+          if (e && onOperationStatusClick) {
             e.stopPropagation();
-            // onOperationStatusClick(e);
+            onOperationStatusClick(e);
           }
         }}
+        state={
+          projectStatus === 'pending' || projectStatus === '생산 대기'
+            ? false
+            : true
+        }
       />
     ),
     품목명: item.quotation_product.product.name,
@@ -149,12 +146,16 @@ const TableItem = ({
         control={control}
         render={({ field }) => (
           <input
-            type="number"
-            value={field.value}
-            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+            type="text"
+            value={field.value?.toLocaleString() || '0'}
+            onChange={(e) => {
+              const value = e.target.value.replace(/,/g, '');
+              const numValue = parseInt(value) || 0;
+              field.onChange(numValue);
+            }}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            min="0"
+            disabled={operationStatus !== '가동 대기'}
           />
         )}
       />
@@ -172,7 +173,7 @@ const TableItem = ({
             operationStatus === '가동 완료' ? 'bg-bg' : materialColor.bgColor
           }
         />
-        {materialStatus === '부족' && (
+        {materialStatus === '부족' && operationStatus !== '가동 완료' && (
           <div
             className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
             onClick={() => setIsProductDetailOpen(true)}
@@ -188,14 +189,14 @@ const TableItem = ({
           operationStatus === '가동 완료' ? '' : 'cursor-pointer'
         }`}
         onClick={(e) => {
-          if (operationStatus !== '가동 완료') {
+          if (operationStatus === '가동 대기') {
             e.stopPropagation();
             onFacilityClick(e);
           }
         }}
       >
         <p>{selectedEquipment.name}</p>
-        {operationStatus !== '가동 완료' && (
+        {operationStatus === '가동 대기' && (
           <CaretDown size={16} className="text-sv" />
         )}
       </div>
@@ -214,10 +215,9 @@ const TableItem = ({
             }}
             placeholder="YYYY-MM-DD 00:00"
             maxLength={16}
-            className={`w-full h-8 text-left border-none bg-transparent p-0 ${
-              operationStatus === '가동 불가' ? 'text-red' : ''
-            }`}
+            className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
+            disabled={operationStatus !== '가동 대기'}
           />
         )}
       />
@@ -237,10 +237,9 @@ const TableItem = ({
             }}
             placeholder="YYYY-MM-DD 00:00"
             maxLength={16}
-            className={`w-full h-8 text-left border-none bg-transparent p-0 ${
-              operationStatus === '가동 불가' ? 'text-red' : ''
-            }`}
+            className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
+            disabled={operationStatus !== '가동 대기'}
           />
         )}
       />
