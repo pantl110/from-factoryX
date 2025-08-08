@@ -6,9 +6,9 @@ from factory.models import Factory
 # Create your models here.
 class Subscription(BaseModel):
     class SubscriptionType(models.TextChoices):
-        trial = ("트라이얼", "trial")
-        basic = ("기본", "basic")
-        partners = ("파트너", "partners")
+        trial = ("trial", "트라이얼")
+        basic = ("basic", "기본")
+        partners = ("partners", "파트너")
 
     type = models.CharField(
         max_length=10,
