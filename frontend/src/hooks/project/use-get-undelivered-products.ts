@@ -31,10 +31,7 @@ const useGetUndeliveredProducts = () => {
 
       const queryParams = new URLSearchParams();
       queryParams.append('factory_id', factoryId);
-
-      if (params.page) {
-        queryParams.append('page', params.page.toString());
-      }
+      queryParams.append('page', (params.page || 1).toString());
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/quotation/product/undelivered?${queryParams}`,
@@ -52,10 +49,10 @@ const useGetUndeliveredProducts = () => {
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        setError(
-          errorData.detail || '납품되지 않은 견적서 품목 조회에 실패했습니다.'
-        );
-        return { success: false, error: errorData.detail };
+        const errorMessage =
+          errorData.detail || '납품되지 않은 견적서 품목 조회에 실패했습니다.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
       }
     } catch {
       setError('서버 연결에 실패했습니다.');

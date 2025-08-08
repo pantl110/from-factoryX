@@ -4,12 +4,14 @@ import MiniBtn from '@/ui/mini-btn';
 import { useRouter } from 'next/navigation';
 import PendingQuoteItem from './pending-quote-item';
 import { ProjectResponseModel } from '@/types/data-model';
+import Spinner from '@/ui/spinner';
 
 interface PendingQuoteProps {
   projects: ProjectResponseModel[];
+  isLoading: boolean;
 }
 
-const PendingQuote = ({ projects }: PendingQuoteProps) => {
+const PendingQuote = ({ projects, isLoading }: PendingQuoteProps) => {
   const router = useRouter();
 
   return (
@@ -26,17 +28,27 @@ const PendingQuote = ({ projects }: PendingQuoteProps) => {
           hoverColor="hover:bg-bg"
         />
       </div>
-      <div className="mt-3 flex gap-2">
-        {projects.map((project) => (
-          <PendingQuoteItem
-            project={project}
-            key={project.project_id}
-            onClick={() => {
-              router.push(`/production/${project.project_id}`);
-            }}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="mt-3 flex items-center justify-center h-[120px]">
+          <Spinner />
+        </div>
+      ) : projects.length === 0 ? (
+        <div className="mt-3 flex items-center justify-center h-[120px]">
+          <div className="text-gr">협의 중인 견적이 없습니다.</div>
+        </div>
+      ) : (
+        <div className="mt-3 flex gap-2">
+          {projects.map((project) => (
+            <PendingQuoteItem
+              project={project}
+              key={project.project_id}
+              onClick={() => {
+                router.push(`/production/${project.project_id}`);
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

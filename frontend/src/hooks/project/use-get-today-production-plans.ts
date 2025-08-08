@@ -36,13 +36,10 @@ const useGetTodayProductionPlans = () => {
 
       const queryParams = new URLSearchParams();
       queryParams.append('factory_id', factoryId);
-
-      if (params.page) {
-        queryParams.append('page', params.page.toString());
-      }
+      queryParams.append('page', (params.page || 1).toString());
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan/today?${queryParams}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/today?${queryParams}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -57,8 +54,10 @@ const useGetTodayProductionPlans = () => {
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '오늘의 생산 일정 조회에 실패했습니다.');
-        return { success: false, error: errorData.detail };
+        const errorMessage =
+          errorData.detail || '오늘의 생산 일정 조회에 실패했습니다.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
       }
     } catch {
       setError('서버 연결에 실패했습니다.');

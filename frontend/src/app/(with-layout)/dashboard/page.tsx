@@ -17,14 +17,47 @@ import { useSearchParams } from 'next/navigation';
 import { CheckCircle } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
 import useGetProjects from '@/hooks/project/use-get-projects';
+import useGetTodayProductionPlans from '@/hooks/project/use-get-today-production-plans';
+import useGetUndeliveredProducts from '@/hooks/project/use-get-undelivered-products';
 import { ProjectResponseModel } from '@/types/data-model';
+
+interface TodayProductionPlanModel {
+  company_name: string;
+  product_name: string;
+  product_code: string;
+  spec: string;
+  unit: string;
+  production_quantity: number;
+  equipment_name: string;
+  production_time: number;
+  project_id: number;
+}
+
+interface UndeliveredProductModel {
+  company_name: string;
+  product_name: string;
+  delivery_date: string | null;
+  project_id: number;
+}
 
 const DashboardPageContent = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
   const searchParams = useSearchParams();
-  const { getProjects, isLoading, error } = useGetProjects();
-  const hasFetchedRef = useRef(false);
+  const { getProjects, isLoading: projectsLoading } = useGetProjects();
+  const { getTodayProductionPlans, isLoading: todayPlansLoading } =
+    useGetTodayProductionPlans();
+  const { getUndeliveredProducts, isLoading: undeliveredLoading } =
+    useGetUndeliveredProducts();
+  const hasFetchedProjectsRef = useRef(false);
+  const hasFetchedTodayPlansRef = useRef(false);
+  const hasFetchedUndeliveredRef = useRef(false);
   const [projectsData, setProjectsData] = useState<ProjectResponseModel[]>([]);
+  const [todayProductionPlans, setTodayProductionPlans] = useState<
+    TodayProductionPlanModel[]
+  >([]);
+  const [undeliveredProducts, setUndeliveredProducts] = useState<
+    UndeliveredProductModel[]
+  >([]);
 
   useEffect(() => {
     const from = searchParams.get('from');
@@ -33,20 +66,20 @@ const DashboardPageContent = () => {
     }
   }, [searchParams, showToast]);
 
+  // 프로젝트 데이터 가져오기
   useEffect(() => {
-    if (!hasFetchedRef.current) {
-      hasFetchedRef.current = true;
+    if (!hasFetchedProjectsRef.current) {
+      hasFetchedProjectsRef.current = true;
 
       getProjects({
         status: 'progress',
         page: 1,
-        size: 10,
+        size: 100,
         order_by: 'start_date',
         order_dir: 'desc',
       }).then((result) => {
         if (result.success && result.data) {
           const responseData = result.data as any;
-          console.log('프로젝트 데이터:', responseData);
           const projects = responseData.data || [];
           setProjectsData(Array.isArray(projects) ? projects : []);
         } else {
@@ -55,6 +88,40 @@ const DashboardPageContent = () => {
       });
     }
   }, [getProjects]);
+
+  // 오늘의 생산 일정 가져오기
+  useEffect(() => {
+    if (!hasFetchedTodayPlansRef.current) {
+      hasFetchedTodayPlansRef.current = true;
+
+      getTodayProductionPlans({
+        page: 1,
+      }).then((result) => {
+        if (result.success && result.data) {
+          setTodayProductionPlans(result.data);
+        } else {
+          setTodayProductionPlans([]);
+        }
+      });
+    }
+  }, [getTodayProductionPlans]);
+
+  // 납품되지 않은 견적서 품목 가져오기
+  useEffect(() => {
+    if (!hasFetchedUndeliveredRef.current) {
+      hasFetchedUndeliveredRef.current = true;
+
+      getUndeliveredProducts({
+        page: 1,
+      }).then((result) => {
+        if (result.success && result.data) {
+          setUndeliveredProducts(result.data);
+        } else {
+          setUndeliveredProducts([]);
+        }
+      });
+    }
+  }, [getUndeliveredProducts]);
 
   // 협의 중인 견적 데이터 (견적 요청, 주문 확정) - 최신순 3개
   const pendingQuotes = Array.isArray(projectsData)
@@ -106,13 +173,19 @@ const DashboardPageContent = () => {
         </div>
 
         {/* 협의 중인 견적 */}
-        <PendingQuote projects={pendingQuotes} />
+        <PendingQuote projects={pendingQuotes} isLoading={projectsLoading} />
 
         {/* 생산 프로젝트 */}
-        <ProcessProject projects={processProjects} />
+        <ProcessProject
+          projects={processProjects}
+          isLoading={projectsLoading}
+        />
 
         {/* 오늘의 생산 일정 */}
-        <TodayProductionSchedule />
+        <TodayProductionSchedule
+          todayProductionPlans={todayProductionPlans}
+          isLoading={todayPlansLoading}
+        />
 
         {/* 납품 예정 현황 */}
         <div className="flex gap-5">
@@ -120,7 +193,10 @@ const DashboardPageContent = () => {
             <div className="h-10 flex items-center">
               <h3 className="Heading-3">납품 예정 현황</h3>
             </div>
-            <DeliveryTable />
+            <DeliveryTable
+              undeliveredProducts={undeliveredProducts}
+              isLoading={undeliveredLoading}
+            />
           </div>
 
           {/* 세금계산서 현황 */}
