@@ -7,6 +7,7 @@ from datetime import timedelta
 
 class BarobillCorpRegisterIn(Schema):
     factory: str = Field(..., description="공장 ID")
+    grade: str = Field(..., description="회원 등급 (예: 대표자, 담당자)")
     barobill_id: str = Field(..., description="바로빌 ID")
     barobill_password: str = Field(..., description="바로빌 비밀번호")
     barobill_password_confirm: str = Field(..., description="바로빌 비밀번호 확인")
