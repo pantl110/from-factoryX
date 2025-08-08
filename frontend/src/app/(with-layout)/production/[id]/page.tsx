@@ -213,8 +213,16 @@ const ProductionPageContent = () => {
             projectStatus={projectStatus.status as ProjectStatusType}
           />
         )}
-        {tabs[selectedTab] === '생산 현황' && <ProductionMonitor />}
-        {tabs[selectedTab] === '생산 내역' && <ProductionLog />}
+        {tabs[selectedTab] === '생산 현황' && (
+          <ProductionMonitor
+            projectStatus={projectStatus.status as ProjectStatusType}
+          />
+        )}
+        {tabs[selectedTab] === '생산 내역' && (
+          <ProductionLog
+            projectStatus={projectStatus.status as ProjectStatusType}
+          />
+        )}
         {tabs[selectedTab] === '생산 계획' && (
           <ProductionPlan
             handleChangeStatus={handleChangeStatus}

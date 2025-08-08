@@ -14,8 +14,13 @@ import {
 } from '@/types/data-model';
 import { useGetProjectLogs } from '@/hooks';
 import Spinner from '@/ui/spinner';
+import { ProjectStatusType } from '@/types/status-type';
 
-const ProductionMonitor = () => {
+interface ProductionMonitorProps {
+  projectStatus: ProjectStatusType;
+}
+
+const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
 
@@ -65,15 +70,17 @@ const ProductionMonitor = () => {
             {/* 왼쪽 영역 */}
             <div className={`w-[50%] h-full flex flex-col gap-4 flex-1 pt-5`}>
               <div className="flex flex-col gap-4 h-full min-h-0">
-                <div>
-                  <MiniBtn
-                    text="메모 작성"
-                    textColor="text-dg"
-                    borderColor="border-lg"
-                    onClick={() => setIsCreateMemoModalOpen(true)}
-                    hoverColor="hover:bg-bg"
-                  />
-                </div>
+                {projectStatus !== '프로젝트 완료' && (
+                  <div>
+                    <MiniBtn
+                      text="메모 작성"
+                      textColor="text-dg"
+                      borderColor="border-lg"
+                      onClick={() => setIsCreateMemoModalOpen(true)}
+                      hoverColor="hover:bg-bg"
+                    />
+                  </div>
+                )}
 
                 {logData.data.length === 0 ? (
                   <EmptyLog />
@@ -109,6 +116,7 @@ const ProductionMonitor = () => {
                       title={selectedLog.title}
                       content={selectedLog.content}
                       onUpdate={loadProjectLogs}
+                      projectStatus={projectStatus}
                     />
                   ) : selectedLog.type === '반품' ? (
                     <ReturnSection key={selectedLog.id} />

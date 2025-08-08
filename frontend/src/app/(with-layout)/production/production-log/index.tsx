@@ -1,17 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import ProductionLogTableHeader from './production-log-table-header';
 import ProductionLogTableItem from './production-log-table-item';
-import useGetProjectPlans from '@/hooks/project/project-plan/use-get-project-plans';
+import { useUpdateProjectPlan, useGetProjectPlans } from '@/hooks';
 import { ProjectPlanModel } from '@/types/data-model';
+import { ProjectStatusType } from '@/types/status-type';
 import Spinner from '@/ui/spinner';
 
-const ProductionLog = () => {
+interface ProductionLogProps {
+  projectStatus: ProjectStatusType;
+}
+
+const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
 
   const [projectPlans, setProjectPlans] = useState<ProjectPlanModel[]>([]);
   const { getProjectPlans, isLoading, error } = useGetProjectPlans();
+  const { updateProjectPlan } = useUpdateProjectPlan();
+
+  // 디바운스 타이머 저장
+  const [debounceTimers, setDebounceTimers] = useState<
+    Record<number, NodeJS.Timeout>
+  >({});
 
   const loadProjectPlans = async () => {
     if (!projectId) return;
@@ -27,6 +38,40 @@ const ProductionLog = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers).forEach((timer) => {
+        clearTimeout(timer);
+      });
+    };
+  }, [debounceTimers]);
+
+  // 생산수량, 날짜 변경 핸들러 (디바운스 적용)
+  const handleFormChange = useCallback(
+    (
+      planId: number,
+      formData: { quantity: number; start_date: string; end_date: string }
+    ) => {
+      setDebounceTimers((prevTimers) => {
+        if (prevTimers[planId]) clearTimeout(prevTimers[planId]);
+        const newTimer = setTimeout(async () => {
+          try {
+            const result = await updateProjectPlan(planId, formData);
+            if (result.success) {
+              // 성공 시 데이터 새로고침
+              await loadProjectPlans();
+            }
+          } catch (error) {
+            alert('날짜 변경 중 오류가 발생했습니다.');
+          }
+        }, 1000); // 1초 디바운스
+        return { ...prevTimers, [planId]: newTimer };
+      });
+    },
+    [updateProjectPlan, loadProjectPlans]
+  );
+
   if (isLoading || error) {
     return (
       <div className="flex justify-center items-center h-100">
@@ -37,12 +82,19 @@ const ProductionLog = () => {
 
   return (
     <>
-      <div className="flex flex-col w-full overflow-x-auto px-10 pt-5 pb-10">
-        <ProductionLogTableHeader />
-        {projectPlans.length > 0 &&
-          projectPlans.map((plan) => (
-            <ProductionLogTableItem key={plan.id} plan={plan} />
-          ))}
+      <div className="px-10 pt-5 pb-10">
+        <div className="flex flex-col w-full overflow-x-auto">
+          <ProductionLogTableHeader />
+          {projectPlans.length > 0 &&
+            projectPlans.map((plan) => (
+              <ProductionLogTableItem
+                key={plan.id}
+                plan={plan}
+                onFormChange={handleFormChange}
+                projectStatus={projectStatus}
+              />
+            ))}
+        </div>
       </div>
     </>
   );

@@ -124,7 +124,7 @@ const TopBarContent = ({
   }
 
   if (productionTab === '생산 내역') {
-    if (pageStatus === 'manufactured') {
+    if (pageStatus === '생산 완료') {
       return (
         <div className="flex gap-2">
           <MiniBtn
@@ -138,6 +138,11 @@ const TopBarContent = ({
             textColor="text-primary"
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
+            onClick={() => {
+              if (handleChangeStatus) {
+                handleChangeStatus('delivery');
+              }
+            }}
           />
         </div>
       );
