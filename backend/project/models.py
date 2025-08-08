@@ -67,6 +67,18 @@ class ProjectPlan(BaseModel):
     start_date = models.DateField(help_text="생산 일자")
     end_date = models.DateField(help_text="마감 예정 일자")
     avg_production_time = models.IntegerField(help_text="평균 생산 시간(초)")
+    is_completed = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="생산 완료 여부",
+    )
+    is_refunded = models.BooleanField(
+        null=True,
+        blank=True,
+        default=False,
+        help_text="반품 여부",
+    )
 
 
 # 생산 로그

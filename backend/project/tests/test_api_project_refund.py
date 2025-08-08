@@ -954,11 +954,15 @@ class ProjectRefundAPITestCase(TestCase):
         from document.models import Quotation, QuotationProduct
         from project.models import ProjectPlan
         
-        # 기존 QuotationProduct 확인 (새로 생성되지 않고 기존 것 사용)
+        # 새로운 QuotationProduct 확인 (반품용으로 새로 생성됨)
         quotation_product = QuotationProduct.objects.get(id=data['quotation_product_id'])
         self.assertEqual(quotation_product.product.id, self.product.id)
-        # 기존 QuotationProduct의 단가는 변경되지 않음
-        self.assertNotEqual(quotation_product.unit_price, 0)
+        self.assertEqual(quotation_product.quantity, 15)
+        self.assertEqual(quotation_product.unit_price, 0)  # 반품은 단가 0
+        
+        # ProjectPlan의 반품 여부 확인
+        project_plan = ProjectPlan.objects.get(id=data['project_plan_id'])
+        self.assertTrue(project_plan.is_refunded)  # 반품 여부가 True
         
         # ProjectPlan 확인
         project_plan = ProjectPlan.objects.get(id=data['project_plan_id'])
@@ -967,6 +971,31 @@ class ProjectRefundAPITestCase(TestCase):
         self.assertEqual(project_plan.equipment.id, equipment.id)
         self.assertEqual(project_plan.quantity, 15)
         self.assertEqual(project_plan.status, '가동 대기')
+        # 품목의 평균 생산 시간이 사용되는지 확인
+        expected_avg_time = self.product.average_production_time if self.product.average_production_time is not None else 30
+        self.assertEqual(project_plan.avg_production_time, expected_avg_time)
+        
+        # 마감 시간이 올바르게 계산되는지 확인
+        expected_production_days = int(expected_avg_time * 15 / (24 * 3600))
+        if expected_production_days == 0:
+            expected_production_days = 1
+        expected_end_date = datetime.now().date() + timedelta(days=expected_production_days)
+        self.assertEqual(project_plan.end_date, expected_end_date)
+        
+        # 기존 QuotationProduct는 그대로 유지되는지 확인
+        original_quotation_products = QuotationProduct.objects.filter(
+            quotation__project=self.project,
+            product=self.product
+        )
+        self.assertTrue(original_quotation_products.exists())
+        
+        # 원자재 차감이 제대로 되었는지 확인
+        from stock.models import MaterialProduct, Material
+        material_products = MaterialProduct.objects.filter(product=self.product)
+        for material_product in material_products:
+            material = material_product.material
+            expected_stock = material.current_stock + (material_product.quantity * 15)  # 원래 재고 + 소모된 양
+            self.assertEqual(material.current_stock, expected_stock)
 
     def test_register_production_from_refund_nonexistent(self):
         """존재하지 않는 반품으로 생산 등록 시도 테스트"""
@@ -1096,7 +1125,7 @@ class ProjectRefundAPITestCase(TestCase):
         self.assertIn('factory_id를 입력해야 합니다', response.json().get('detail', ''))
 
     def test_register_production_from_refund_no_quotation_product(self):
-        """해당 제품의 QuotationProduct가 없는 경우 테스트"""
+        """해당 제품의 QuotationProduct가 없는 경우 테스트 (새로운 QuotationProduct 생성)"""
         # 새로운 제품 생성 (QuotationProduct가 없는 제품)
         new_product = Product.objects.create(
             factory=self.factory,
@@ -1131,7 +1160,7 @@ class ProjectRefundAPITestCase(TestCase):
             priority=1
         )
         
-        # QuotationProduct가 없는 상태에서 생산 등록 시도
+        # QuotationProduct가 없는 상태에서 생산 등록 시도 (이제는 성공해야 함)
         url = f'/v1/project/refund/{refund.id}'
         
         response = self.client.post(
@@ -1139,8 +1168,26 @@ class ProjectRefundAPITestCase(TestCase):
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
         )
         
-        self.assertEqual(response.status_code, 404)
-        self.assertIn('해당 제품의 견적서 품목을 찾을 수 없습니다', response.json().get('detail', ''))
+        self.assertEqual(response.status_code, 200)
+        
+        # 응답 데이터 확인
+        data = response.json()
+        self.assertIn('message', data)
+        self.assertIn('quotation_product_id', data)
+        self.assertIn('project_plan_id', data)
+        
+        # 새로운 QuotationProduct가 생성되었는지 확인
+        from document.models import QuotationProduct
+        quotation_product = QuotationProduct.objects.get(id=data['quotation_product_id'])
+        self.assertEqual(quotation_product.product.id, new_product.id)
+        self.assertEqual(quotation_product.quantity, 15)
+        self.assertEqual(quotation_product.unit_price, 0)  # 반품은 단가 0
+        
+        # ProjectPlan도 확인
+        from project.models import ProjectPlan
+        project_plan = ProjectPlan.objects.get(id=data['project_plan_id'])
+        self.assertEqual(project_plan.avg_production_time, 30)  # 기본값 30초 사용
+        self.assertTrue(project_plan.is_refunded)  # 반품 여부가 True
 
     def test_update_refund_with_related_project_plan(self):
         """반품 수정 시 연결된 ProjectPlan도 함께 수정되는지 테스트"""

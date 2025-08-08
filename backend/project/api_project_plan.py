@@ -647,10 +647,17 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
                 raise HttpError(500, f"원자재 소모량 조정 중 오류가 발생했습니다: {str(e)}")
             
             # 두 번째 계획: 부족한 수량에 buffer rate 적용 (다른 설비 사용)
+            # 단, 반품인 경우 buffer rate 적용하지 않음
             product_obj = await sync_to_async(lambda: plan.product.product)()
-            buffer_rate = float(product_obj.buffer_rate)
-            shortage_quantity = quotation_quantity - new_quantity
-            buffer_quantity = int(shortage_quantity * (1 + buffer_rate))
+            is_refunded = await sync_to_async(lambda: plan.is_refunded)()
+            
+            if is_refunded:
+                # 반품인 경우 buffer rate 적용하지 않음
+                buffer_quantity = quotation_quantity - new_quantity
+            else:
+                # 일반 생산인 경우 buffer rate 적용
+                buffer_rate = float(product_obj.buffer_rate)
+                buffer_quantity = int((quotation_quantity - new_quantity) * (1 + buffer_rate))
             
             # 다른 설비 찾기 (우선순위가 낮은 다음 설비)
             current_equipment_id = await sync_to_async(lambda: plan.equipment.id)()

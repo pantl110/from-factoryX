@@ -329,13 +329,6 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                         material.current_stock -= consumption_quantity
                         await sync_to_async(material.save)()
                         
-                        # 원자재 소모 로그 생성 (선택사항)
-                        # await MaterialHistory.objects.acreate(
-                        #     type=MaterialHistory.MaterialHistoryType.consumption,
-                        #     material=material,
-                        #     quantity=consumption_quantity,
-                        #     total_stock=material.current_stock
-                        # )
                     else:
                         # 재고 부족 시 예외 발생
                         raise HttpError(400, f"원자재 '{material.name}'의 재고가 부족합니다. 필요: {consumption_quantity}개, 현재: {material.current_stock}개")

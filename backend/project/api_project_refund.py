@@ -115,18 +115,24 @@ async def register_production_from_refund(request, refund_id: int):
         raise HttpError(400, "이미 생산 등록된 반품입니다.")
     
     try:
-        # 1. 기존 QuotationProduct 찾기
-        existing_quotation_product = await sync_to_async(
-            QuotationProduct.objects.filter(
-                quotation__project=refund.project_log.project,
-                product=refund.product
-            ).first
+        # 1. 기존 Quotation 찾기 (같은 프로젝트의 첫 번째 견적서)
+        existing_quotation = await sync_to_async(
+            refund.project_log.project.quotations.filter(factory_id=int(factory_id)).first
         )()
         
-        if not existing_quotation_product:
-            raise HttpError(404, "해당 제품의 견적서 품목을 찾을 수 없습니다.")
+        if not existing_quotation:
+            raise HttpError(404, "해당 프로젝트의 견적서를 찾을 수 없습니다.")
         
-        # 2. 기본 장비 선택 (우선순위가 가장 높은 장비)
+        # 2. 새로운 QuotationProduct 생성 (반품용)
+        new_quotation_product = await sync_to_async(QuotationProduct.objects.create)(
+            quotation=existing_quotation,
+            product=refund.product,
+            quantity=refund.amount,
+            unit_price=0,  # 반품은 단가 0으로 설정
+            delivery_date=datetime.now().date() + timedelta(days=7)  # 기본 7일 후 납품 예정
+        )
+        
+        # 3. 기본 장비 선택 (우선순위가 가장 높은 장비)
         default_equipment = await sync_to_async(FactoryEquipment.objects.filter(
             factory_id=int(factory_id)
         ).order_by('priority').first)()
@@ -134,20 +140,54 @@ async def register_production_from_refund(request, refund_id: int):
         if not default_equipment:
             raise HttpError(400, "사용 가능한 장비가 없습니다.")
         
-        # 3. 생산 계획 생성 (기존 QuotationProduct 사용)
+        # 4. 원자재 소모 처리
+        from stock.models import MaterialProduct, Material
+        
+        @sync_to_async
+        def consume_raw_materials():
+            material_products = MaterialProduct.objects.filter(product=refund.product)
+            for material_product in material_products:
+                material = material_product.material
+                required_quantity = material_product.quantity * refund.amount
+                
+                if material.current_stock < required_quantity:
+                    raise HttpError(400, f"원자재 {material.name}의 재고가 부족합니다. 필요: {required_quantity}, 보유: {material.current_stock}")
+                
+                # 재고 차감
+                material.current_stock -= required_quantity
+                material.save()
+        
+        await consume_raw_materials()
+        
+        # 5. 생산 계획 생성 (새로운 QuotationProduct 사용)
         from project.models import ProjectPlan
+        
+        # 품목의 평균 생산 시간 가져오기 (기본값 30초)
+        avg_production_time = await sync_to_async(lambda: refund.product.average_production_time)()
+        if avg_production_time is None:
+            avg_production_time = 30  # 기본값 30초
+        
+        # 마감 시간 계산: 시작일 + (평균 생산 시간 × 수량)
+        total_production_seconds = avg_production_time * refund.amount
+        production_days = int(total_production_seconds / (24 * 3600))
+        if production_days == 0:
+            production_days = 1  # 최소 1일
+        start_date = datetime.now().date()
+        end_date = start_date + timedelta(days=production_days)
+        
         project_plan = await sync_to_async(ProjectPlan.objects.create)(
             project=refund.project_log.project,
-            product=existing_quotation_product,  # 기존 QuotationProduct 사용
+            product=new_quotation_product,  # 새로운 QuotationProduct 사용
             equipment=default_equipment,
             status="가동 대기",
             quantity=refund.amount,
-            start_date=datetime.now().date(),
-            end_date=datetime.now().date() + timedelta(days=7),  # 기본 7일 후 완료 예정
-            avg_production_time=3600  # 기본 1시간
+            start_date=start_date,
+            end_date=end_date,
+            avg_production_time=avg_production_time,  # 품목의 평균 생산 시간 사용
+            is_refunded=True  # 반품 여부를 True로 설정
         )
         
-        # 5. 프로젝트 로그 생성
+        # 6. 프로젝트 로그 생성
         production_log = await sync_to_async(ProjectLog.objects.create)(
             project=refund.project_log.project,
             type="계획 변경",
@@ -158,8 +198,8 @@ async def register_production_from_refund(request, refund_id: int):
         return 200, {
             "message": "반품 재생산이 성공적으로 등록되었습니다.",
             "refund_id": refund.id,
-            "quotation_id": await sync_to_async(lambda: existing_quotation_product.quotation.id)(),
-            "quotation_product_id": existing_quotation_product.id,
+            "quotation_id": existing_quotation.id,
+            "quotation_product_id": new_quotation_product.id,
             "project_plan_id": project_plan.id,
             "production_log_id": production_log.id,
             "product_name": refund.product.name,
@@ -170,9 +210,6 @@ async def register_production_from_refund(request, refund_id: int):
     except HttpError:
         raise
     except Exception as e:
-        import traceback
-        print(f"Error in register_production_from_refund: {str(e)}")
-        print(traceback.format_exc())
         raise HttpError(500, f"생산 등록 중 오류가 발생했습니다: {str(e)}")
 
 

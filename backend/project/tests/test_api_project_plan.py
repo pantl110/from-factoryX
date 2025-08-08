@@ -1215,6 +1215,59 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(additional_plan.equipment.id, self.equipment.id)  # 같은 설비 사용
         self.assertEqual(additional_plan.quantity, 44)  # (100-60) * 1.1 = 44 (buffer rate 적용)
 
+    def test_update_project_plan_quantity_less_than_quotation_refund(self):
+        """반품인 경우 생산수량을 주문수량보다 작게 수정하는 테스트 (buffer rate 적용 안함)"""
+        # 두 번째 설비 생성
+        equipment2 = FactoryEquipment.objects.create(
+            factory=self.factory,
+            name='테스트 설비 2',
+            priority=2
+        )
+        
+        # 반품인 프로젝트 계획 생성 (주문수량: 100)
+        plan = ProjectPlan.objects.create(
+            project=self.project,
+            product=self.quotation_product,  # quantity: 100
+            equipment=self.equipment,
+            status="가동 대기",
+            quantity=100,
+            start_date=date(2024, 1, 1),
+            end_date=date(2024, 1, 31),
+            avg_production_time=3600,
+            is_refunded=True  # 반품으로 설정
+        )
+        
+        url = f'/v1/project/plan/{plan.id}'
+        
+        payload = {
+            'quantity': 60  # 주문수량(100)보다 작음
+        }
+        
+        response = self.client.patch(
+            f"{url}?factory_id={self.factory.id}",
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 데이터베이스 확인
+        plan.refresh_from_db()
+        self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
+        
+        # 두 번째 계획이 생성되었는지 확인 (다른 설비로)
+        additional_plans = ProjectPlan.objects.filter(
+            project=self.project,
+            product=self.quotation_product,
+            id__gt=plan.id
+        )
+        self.assertEqual(additional_plans.count(), 1)
+        
+        additional_plan = additional_plans.first()
+        self.assertEqual(additional_plan.equipment.id, equipment2.id)  # 다른 설비 사용
+        self.assertEqual(additional_plan.quantity, 40)  # (100-60) = 40 (buffer rate 적용 안함)
+
     def test_list_today_production_plans_success(self):
         """오늘 생산 시작인 프로젝트 계획 조회 성공 테스트"""
         # 오늘 날짜로 프로젝트 계획 생성
