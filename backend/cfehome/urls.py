@@ -43,6 +43,7 @@ from tax.api import router as tax_router
 from tax.api_cash_receipt import router as cashReceipt_router
 from notification.api import router as notification_router
 from django.contrib.admin.views.decorators import staff_member_required
+from cfehome.views import websocket_test
 
 base_api = NinjaAPI(
     title="Factory X API",
@@ -85,5 +86,6 @@ base_api.add_router("v1/notification", notification_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("notification/", websocket_test, name="websocket_test"),
     path("", base_api.urls),
 ]
