@@ -1,18 +1,7 @@
 import { useState } from 'react';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 interface CreateSingleProductModel {
-  factory_id: number;
   name: string;
   code: string;
   spec: string;
@@ -28,13 +17,12 @@ interface CreateSingleProductResponseModel {
 const useCreateSingleProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const createSingleProduct = async (data: CreateSingleProductModel) => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       const errorMessage = '공장 ID가 설정되지 않았습니다.';
       setError(errorMessage);
@@ -49,7 +37,10 @@ const useCreateSingleProduct = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          factory_id: factoryId,
+        }),
       });
       if (response.status === 201) {
         const result: CreateSingleProductResponseModel = await response.json();

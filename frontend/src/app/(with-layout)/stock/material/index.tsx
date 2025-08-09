@@ -134,7 +134,7 @@ const Material = ({
         </div>
       </div>
 
-      {isLoading || error ? (
+      {isLoading ? (
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
@@ -146,20 +146,23 @@ const Material = ({
             currentOrder={order}
             onSortChange={handleSortChange}
           />
-          {materialList.map((material) => {
-            return (
-              <TableItem
-                key={material.id}
-                material={material}
-                onClick={() => {
-                  setSelectedMaterialId(material.id);
-                  setIsMaterialDetailOpen(true);
-                }}
-                checked={isChecked(material.id)}
-                onToggle={() => toggleOne(material.id)}
-              />
-            );
-          })}
+          {materialList.length > 0 &&
+            materialList.map((material) => {
+              return (
+                <TableItem
+                  key={material.id}
+                  material={material}
+                  onClick={() => {
+                    setSelectedMaterialId(material.id);
+                    setIsMaterialDetailOpen(true);
+                  }}
+                  checked={isChecked(material.id)}
+                  onToggle={() => toggleOne(material.id)}
+                />
+              );
+            })}
+
+          {/* 페이지네이션 */}
           {pagination && pagination.pageCnt > 1 && (
             <Pagination
               currentPage={pagination.curPage}

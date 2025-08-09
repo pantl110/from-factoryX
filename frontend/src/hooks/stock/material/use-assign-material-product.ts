@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 interface AssignMaterialProductModel {
-  factory_id: number;
   product_id: number;
   materials: Array<{
     name: string;
@@ -13,24 +13,35 @@ interface AssignMaterialProductModel {
   }>;
 }
 
-// 온보딩 // 원자재 생성 및 품목 연결
+// 온보딩 // 원자재 생성 및 품목 연결까지
 const useAssignMaterialProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const assignMaterialProduct = async (data: AssignMaterialProductModel) => {
     setIsLoading(true);
     setError(null);
+
+    if (!factoryId) {
+      const errorMessage = '공장 ID가 설정되지 않았습니다.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/assign`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/assign?factory_id=${factoryId}`,
         {
           method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify({
+            ...data,
+            factory_id: factoryId,
+          }),
         }
       );
       if (response.status === 201) {

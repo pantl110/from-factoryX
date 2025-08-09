@@ -7,12 +7,18 @@ import { useForm } from 'react-hook-form';
 import { validateEmail } from '@/utils/validation';
 import { useRouter } from 'next/navigation';
 import FactoryXLogo from '@/ui/icons/factory-x-logo';
-import { LoginFormDataModel } from '@/types/data-model';
+import { LoginFormDataModel, FactoriesResponseModel } from '@/types/data-model';
 import { useLogin } from '@/hooks/users/use-login';
+import { useState } from 'react';
+import FactorySelectModal from './factory-select-modal';
+import useFactoryStore from '@/store/factory-store';
 
 const LoginPage = () => {
   const router = useRouter();
   const { login, isLoading } = useLogin();
+  const setFactoryId = useFactoryStore((state) => state.setFactoryId);
+  const [showFactorySelectModal, setShowFactorySelectModal] = useState(false);
+  const [factories, setFactories] = useState<FactoriesResponseModel[]>([]);
 
   const {
     register,
@@ -30,16 +36,31 @@ const LoginPage = () => {
 
   const watchedValues = watch();
 
+  const handleFactorySelect = (factoryId: number) => {
+    setFactoryId(factoryId);
+    setShowFactorySelectModal(false);
+    router.push('/dashboard');
+  };
+
   const onSubmit = async (data: LoginFormDataModel) => {
     const result = await login(data);
 
     if (result.success) {
-      // 로그인 성공 - 바로 대시보드로 이동
-      router.push('/dashboard');
-      // 시스템관리자이면서 품목과 원자재가 없으면 온보딩 페이지로 이동
-      // if (result.data?.role === 'system_admin' && result.data?.products.length === 0 && result.data?.materials.length === 0) {
-      //   router.push('/onboarding');
-      // }
+      // 로그인 성공 - 공장 개수에 따라 적절한 페이지로 이동
+      if (result.factoryCount === 0) {
+        // 공장이 0개일 때 - 온보딩 페이지로 이동
+        router.push('/onboarding');
+      } else if (result.factoryCount === 1) {
+        // 공장이 1개일 때 - 대시보드로 이동
+        router.push('/dashboard');
+      } else if (result.factoryCount && result.factoryCount >= 2) {
+        // 공장이 2개 이상일 때 - 공장 선택 모달을 보여줌
+        setFactories(result.factories || []);
+        setShowFactorySelectModal(true);
+      } else {
+        // 기본적으로 대시보드로 이동
+        router.push('/dashboard');
+      }
     } else {
       // 로그인 실패
       if (result.field && result.error) {
@@ -55,72 +76,85 @@ const LoginPage = () => {
     isValid && watchedValues.email && watchedValues.password && !isLoading;
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-1 bg-primary flex flex-col items-center justify-center">
-        <FactoryXLogo width={168.908} height={30.558} color="white" />
-      </div>
-      <div className="flex flex-col flex-1 gap-5 items-center justify-center w-full">
-        <h2 className="Heading-2">로그인</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col w-100">
-          <div className="flex flex-col">
-            <Input
-              type="email"
-              placeholder="이메일을 입력해주세요."
-              label="이메일"
-              {...register('email', {
-                required: '이메일을 입력해주세요.',
-                validate: (value) => {
-                  const error = validateEmail(value);
-                  return error || true;
-                },
-              })}
-            />
-            <div className="mt-1 mb-2 h-5">
-              {errors.email && (
-                <span className="text-red Re_Body-1">
-                  {errors.email.message}
-                </span>
-              )}
+    <>
+      <div className="flex min-h-screen">
+        <div className="flex-1 bg-primary flex flex-col items-center justify-center">
+          <FactoryXLogo width={168.908} height={30.558} color="white" />
+        </div>
+        <div className="flex flex-col flex-1 gap-5 items-center justify-center w-full">
+          <h2 className="Heading-2">로그인</h2>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col w-100"
+          >
+            <div className="flex flex-col">
+              <Input
+                type="email"
+                placeholder="이메일을 입력해주세요."
+                label="이메일"
+                {...register('email', {
+                  required: '이메일을 입력해주세요.',
+                  validate: (value) => {
+                    const error = validateEmail(value);
+                    return error || true;
+                  },
+                })}
+              />
+              <div className="mt-1 mb-2 h-5">
+                {errors.email && (
+                  <span className="text-red Re_Body-1">
+                    {errors.email.message}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col">
-            <Input
-              type="password"
-              placeholder="비밀번호를 입력해주세요."
-              label="비밀번호"
-              {...register('password', {
-                required: '비밀번호를 입력해주세요.',
-                validate: (value) => {
-                  if (!value) return '비밀번호를 입력해주세요.';
-                  return true;
-                },
-              })}
-            />
-            <div className="mt-1 mb-2 h-5">
-              {errors.password && (
-                <span className="text-red Re_Body-1">
-                  {errors.password.message}
-                </span>
-              )}
+            <div className="flex flex-col">
+              <Input
+                type="password"
+                placeholder="비밀번호를 입력해주세요."
+                label="비밀번호"
+                {...register('password', {
+                  required: '비밀번호를 입력해주세요.',
+                  validate: (value) => {
+                    if (!value) return '비밀번호를 입력해주세요.';
+                    return true;
+                  },
+                })}
+              />
+              <div className="mt-1 mb-2 h-5">
+                {errors.password && (
+                  <span className="text-red Re_Body-1">
+                    {errors.password.message}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-          <MiniBtn
-            text="로그인"
-            bgColor="bg-primary"
-            textColor="text-wh"
-            hoverColor="hover:bg-primary-hover"
-            height="h-12"
-            type="submit"
-            disabled={!isButtonEnabled}
-            width="w-full"
-          />
-          <div className="flex justify-center items-center Me-Body-1 text-sv gap-5 mt-5">
-            <Link href="/signup">회원가입</Link>
-            <Link href="/findpassword">비밀번호 찾기</Link>
-          </div>
-        </form>
+            <MiniBtn
+              text="로그인"
+              bgColor="bg-primary"
+              textColor="text-wh"
+              hoverColor="hover:bg-primary-hover"
+              height="h-12"
+              type="submit"
+              disabled={!isButtonEnabled}
+              width="w-full"
+            />
+            <div className="flex justify-center items-center Me-Body-1 text-sv gap-5 mt-5">
+              <Link href="/signup">회원가입</Link>
+              <Link href="/findpassword">비밀번호 찾기</Link>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+
+      {showFactorySelectModal && (
+        <FactorySelectModal
+          factories={factories}
+          onSelectFactory={handleFactorySelect}
+          onClose={() => setShowFactorySelectModal(false)}
+        />
+      )}
+    </>
   );
 };
 

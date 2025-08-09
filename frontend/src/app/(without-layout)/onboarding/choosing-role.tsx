@@ -1,28 +1,38 @@
-import MiniBtn from '@/ui/mini-btn';
+import { useRouter } from 'next/navigation';
 
 interface ChoosingRoleProps {
   onNextStep: () => void;
 }
 
 const ChoosingRole = ({ onNextStep }: ChoosingRoleProps) => {
+  const router = useRouter();
+
   return (
-    <div className="bg-wh z-1 w-[586px] pt-14 px-8 pb-6 flex flex-col items-center rounded-lg">
-      <h3 className="Heading-3 text-primary mb-2">
-        팩토리엑스에 오신 걸 환영합니다!
+    <div className="bg-wh z-1 w-[600px] py-10 px-8 flex flex-col items-center rounded-lg">
+      <h3 className="Heading-3 text-primary">
+        어떤 방식으로 서비스를 시작하시겠어요?
       </h3>
       <p className="Me_Body-2 text-center">
-        운영을 시작하려면, 먼저 품목과 설비를 등록해야 해요. <br />
-        등록이 완료되면, 생산부터 재고까지 한눈에 관리할 수 있어요!
+        내 공장을 등록하거나 초대 받은 공장에 소속되어 서비스를 시작해보세요!
       </p>
 
-      <div className="w-full flex justify-end">
-        <MiniBtn
-          text="다음 단계"
-          textColor="text-wh"
-          bgColor="bg-primary"
-          hoverColor="hover:bg-primary-hover"
+      <div className="w-full flex flex-col mt-5 gap-2">
+        <button
           onClick={onNextStep}
-        />
+          className="p-3 border border-lg rounded-[8px] flex flex-col gap-1 items-center justify-center hover:bg-primary-8 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <h4 className="Heading-4 text-dg">공장장으로 시작하기</h4>
+          <p className="Re_Body-2 text-sv">직접 공장을 등록하고 운영해요.</p>
+        </button>
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="p-3 border border-lg rounded-[8px] flex flex-col gap-1 items-center justify-center hover:bg-primary-8 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <h4 className="Heading-4 text-dg">직원으로 시작하기</h4>
+          <p className="Re_Body-2 text-sv">
+            초대 받은 공장이 있다면 자동으로 연결돼요.
+          </p>
+        </button>
       </div>
     </div>
   );

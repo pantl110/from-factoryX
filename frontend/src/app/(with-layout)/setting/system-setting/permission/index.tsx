@@ -23,9 +23,6 @@ const Permission = () => {
   const initializeFactoryId = useFactoryStore(
     (state) => state.initializeFactoryId
   );
-  const getFactoryIdFromLocal = useFactoryStore(
-    (state) => state.getFactoryIdFromLocal
-  );
   const { getMembers, members, isLoading, error } = useGetMembers();
   const { deleteMember } = useDeleteMember();
   const { getFactory, factory } = useGetFactory();
@@ -33,19 +30,12 @@ const Permission = () => {
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
-  // factoryId가 null이면 로컬에서 가져오거나 초기화
+  // factoryId가 null이면 초기화
   useEffect(() => {
     if (!factoryId) {
-      const localFactoryId = getFactoryIdFromLocal();
-      if (localFactoryId !== null) {
-        // 로컬에서 가져온 factoryId로 상태 업데이트
-        useFactoryStore.getState().setFactoryId(localFactoryId);
-      } else {
-        // 로컬에도 없으면 API에서 가져오기
-        initializeFactoryId();
-      }
+      initializeFactoryId();
     }
-  }, [factoryId, initializeFactoryId, getFactoryIdFromLocal]);
+  }, [factoryId, initializeFactoryId]);
 
   // 초대 중인 팀원 목록 불러오기
   useEffect(() => {

@@ -43,7 +43,9 @@ const OnboardingPage = () => {
       case 'choosing-role':
         return <ChoosingRole onNextStep={handleNextStep} />;
       case 'welcome':
-        return <Welcome onNextStep={handleNextStep} />;
+        return (
+          <Welcome onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
+        );
       case 'first-step':
         return (
           <FirstStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
@@ -57,7 +59,7 @@ const OnboardingPage = () => {
           <ThirdStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
         );
       default:
-        return <Welcome onNextStep={handleNextStep} />;
+        return <ChoosingRole onNextStep={handleNextStep} />;
     }
   };
 

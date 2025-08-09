@@ -103,9 +103,7 @@ export interface FactoriesModel {
 }
 
 export interface FactoriesResponseModel {
-  id: number;
-  created_at: string;
-  updated_at: string;
+  id: number; // factory_id
   owner: number;
   name: string;
   business_registration_number: string;
@@ -118,6 +116,10 @@ export interface FactoriesResponseModel {
   business_address: string;
   is_trial: boolean;
   billing_key: string;
+  inviting: string[];
+  created_at: string;
+  updated_at: string;
+  invited_at:string;
 }
 
 // 공장 목록 조회

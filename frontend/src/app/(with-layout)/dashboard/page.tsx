@@ -16,10 +16,12 @@ import Toast from '@/ui/toast';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
+import useFactoryStore from '@/store/factory-store';
 
 const DashboardPageContent = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
   const searchParams = useSearchParams();
+  const { factoryId, initializeFactoryId } = useFactoryStore();
 
   useEffect(() => {
     const from = searchParams.get('from');
@@ -27,6 +29,13 @@ const DashboardPageContent = () => {
       showToast();
     }
   }, [searchParams, showToast]);
+
+  // factoryId가 null이면 초기화
+  useEffect(() => {
+    if (!factoryId) {
+      initializeFactoryId();
+    }
+  }, [factoryId, initializeFactoryId]);
 
   return (
     <>

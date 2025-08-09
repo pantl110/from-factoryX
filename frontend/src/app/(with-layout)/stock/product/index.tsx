@@ -134,7 +134,7 @@ const Product = ({
         </div>
       </div>
 
-      {isLoading || error ? (
+      {isLoading ? (
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
@@ -142,15 +142,16 @@ const Product = ({
         <>
           <div>
             <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
-            {productList.map((product) => (
-              <TableItem
-                key={product.id}
-                product={product}
-                onClick={() => handleItemClick(product)}
-                checked={isChecked(product.id)}
-                onToggle={() => toggleOne(product.id)}
-              />
-            ))}
+            {productList.length > 0 &&
+              productList.map((product) => (
+                <TableItem
+                  key={product.id}
+                  product={product}
+                  onClick={() => handleItemClick(product)}
+                  checked={isChecked(product.id)}
+                  onToggle={() => toggleOne(product.id)}
+                />
+              ))}
           </div>
 
           {/* 페이지네이션 */}
