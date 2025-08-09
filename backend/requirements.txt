@@ -50,3 +50,4 @@ channels
 channels-redis
 daphne
 websockets
+uvicorn
