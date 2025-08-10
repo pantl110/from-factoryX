@@ -2,11 +2,16 @@ import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { useState, useEffect } from 'react';
-import { ProductResponseModel, MaterialItemModel } from '@/types/data-model';
+import {
+  ProductResponseModel,
+  MaterialItemModel,
+  ProductListResponseModel,
+} from '@/types/data-model';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddProduct from './manual-add-product';
 import { useGetProduct, useAssignProduct } from '@/hooks';
+import useFactoryStore from '@/store/factory-store';
 
 interface ProductEnrollmentModalProps {
   onClose?: () => void;
@@ -18,17 +23,6 @@ interface ProductEnrollmentModalProps {
   ) => boolean;
   showDuplicateProductToast?: () => void;
 }
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
 
 const ProductEnrollmentModal = ({
   onClose,
@@ -44,6 +38,7 @@ const ProductEnrollmentModal = ({
   >([]);
   const { getProductList } = useGetProduct();
   const { assignProduct, isLoading: isAssignLoading } = useAssignProduct();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const [selectedProducts, setSelectedProducts] = useState<MaterialItemModel[]>(
     []
@@ -62,7 +57,8 @@ const ProductEnrollmentModal = ({
         });
 
         if (firstPageResult.success && firstPageResult.data) {
-          const { totalCnt } = firstPageResult.data;
+          const responseData = firstPageResult.data as ProductListResponseModel;
+          const totalCnt = responseData.totalCnt || responseData.count || 0;
 
           // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
           const allDataResult = await getProductList({
@@ -108,8 +104,6 @@ const ProductEnrollmentModal = ({
   const handleAddProducts = async () => {
     if (selectedProducts.length === 0) return;
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       return;

@@ -119,7 +119,7 @@ export interface FactoriesResponseModel {
   inviting: string[];
   created_at: string;
   updated_at: string;
-  invited_at:string;
+  invited_at: string;
 }
 
 // 공장 목록 조회

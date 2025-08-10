@@ -3,17 +3,7 @@ import {
   EquipmentListResponseModel,
   EquipmentResponseModel,
 } from '@/types/data-model';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 const useGetEquipment = () => {
   const [equipmentList, setEquipmentList] =
@@ -21,14 +11,13 @@ const useGetEquipment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 전체 설비 목록 불러오기
   const getEquipmentList = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다.');
       setIsLoading(false);
@@ -57,15 +46,13 @@ const useGetEquipment = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [factoryId]);
 
   // 검색어로 모든 필드 검색 (중복 제거)
   const searchAllFields = useCallback(async (value: string) => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다.');
       setIsLoading(false);
@@ -139,7 +126,7 @@ const useGetEquipment = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [factoryId]);
 
   // 검색어가 바뀔 때마다 자동으로 fetch
   useEffect(() => {

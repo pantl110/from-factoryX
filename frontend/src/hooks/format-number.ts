@@ -76,7 +76,7 @@ export const formatFaxNumber = (value: string): string => {
   }
 };
 
-// 숫자와 하이픈만 허용하는 키 이벤트 핸들러
+// 숫자와 소수점만 허용하는 키 이벤트 핸들러 (한글 입력 차단)
 export const handleNumberKeyDown = (
   e: React.KeyboardEvent<HTMLInputElement>
 ) => {
@@ -91,6 +91,7 @@ export const handleNumberKeyDown = (
     '7',
     '8',
     '9',
+    '.',
     'Backspace',
     'Delete',
     'Tab',
@@ -103,9 +104,86 @@ export const handleNumberKeyDown = (
     'End',
   ];
 
+  // 한글 입력 차단
+  if (e.nativeEvent.isComposing) {
+    e.preventDefault();
+    return;
+  }
+
   if (!allowedKeys.includes(e.key)) {
     e.preventDefault();
   }
+};
+
+// 실시간 수량 입력 포맷팅 함수 (입력 중에 콤마 표시, 소수점 한자리까지 허용)
+export const handleQuantityInput = (inputValue: string): {
+  displayValue: string;
+  numericValue: number;
+  isValid: boolean;
+} => {
+  // 빈 문자열 처리
+  if (!inputValue || inputValue === '') {
+    return {
+      displayValue: '',
+      numericValue: 0,
+      isValid: true
+    };
+  }
+
+  // 콤마 제거
+  let cleanValue = inputValue.replace(/,/g, '');
+  
+  // 소수점이 여러 개인지 확인하고 정리
+  const parts = cleanValue.split('.');
+  if (parts.length > 2) {
+    // 소수점이 여러 개면 첫 번째만 유지
+    cleanValue = parts[0] + '.' + parts.slice(1).join('');
+  }
+  
+  // 숫자와 소수점만 허용
+  const numericOnly = cleanValue.replace(/[^0-9.]/g, '');
+  
+  // 소수점이 여러 개인 경우 다시 정리
+  const finalParts = numericOnly.split('.');
+  const finalCleanValue = finalParts.length > 2 
+    ? finalParts[0] + '.' + finalParts.slice(1).join('')
+    : numericOnly;
+
+  // 소수점이 있는 경우 소수점 이하 한자리로 제한
+  let formattedValue = finalCleanValue;
+  if (finalCleanValue.includes('.')) {
+    const [integerPart, decimalPart] = finalCleanValue.split('.');
+    if (decimalPart && decimalPart.length > 1) {
+      formattedValue = integerPart + '.' + decimalPart.slice(0, 1);
+    }
+  }
+
+  // 숫자 변환
+  const numericValue = formattedValue === '' ? 0 : parseFloat(formattedValue) || 0;
+  
+  // 유효성 검사
+  const isValid = !isNaN(numericValue) && numericValue >= 0;
+  
+  // 콤마 포함된 포맷팅 적용
+  let displayValue = '';
+  if (formattedValue !== '') {
+    if (formattedValue.includes('.')) {
+      // 소수점이 있는 경우
+      const [integerPart, decimalPart] = formattedValue.split('.');
+      const formattedInteger = parseInt(integerPart || '0').toLocaleString('en-US');
+      displayValue = `${formattedInteger}.${decimalPart}`;
+    } else {
+      // 정수인 경우
+      const intValue = parseInt(formattedValue || '0');
+      displayValue = intValue === 0 ? '' : intValue.toLocaleString('en-US');
+    }
+  }
+
+  return {
+    displayValue,
+    numericValue,
+    isValid
+  };
 };
 
 // 시간 포맷팅 함수 (HH:MM)

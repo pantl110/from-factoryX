@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FactoriesModel } from '@/types/data-model';
 
-interface CreateFactoryResponse {
+interface CreateFactoryResponseModel {
   factory_id: number;
 }
 
@@ -26,7 +26,7 @@ const useCreateFactory = () => {
         }
       );
       if (response.status === 201) {
-        const result: CreateFactoryResponse = await response.json();
+        const result: CreateFactoryResponseModel = await response.json();
         return { success: true, data: { id: result.factory_id } };
       } else {
         const errorData = await response.json();

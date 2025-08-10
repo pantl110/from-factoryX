@@ -16,7 +16,10 @@ import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
-import { MaterialItemModel } from '@/types/data-model';
+import {
+  MaterialItemModel,
+  ProductListResponseModel,
+} from '@/types/data-model';
 import DeleteModal from '@/ui/modal/delete-modal';
 import ProductDetailPanel from '@/app/(with-layout)/stock/product/product-detail';
 
@@ -138,7 +141,7 @@ const MaterialDetailPanel = ({
       });
 
       if (firstPageResult.success && firstPageResult.data) {
-        const { totalCnt } = firstPageResult.data;
+        const { totalCnt } = firstPageResult.data as ProductListResponseModel;
 
         // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
         const allDataResult = await getProductList({

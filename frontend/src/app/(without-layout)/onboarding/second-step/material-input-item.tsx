@@ -64,16 +64,16 @@ const MaterialInputItem = ({
 
   // 입력값 변경 핸들러
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const { value } = e.target;
     const numericValue = removeComma(value);
 
-    // 숫자만 허용
-    if (numericValue === '' || /^\d+$/.test(numericValue)) {
+    // 숫자와 소수점 한자리까지 허용
+    if (numericValue === '' || /^\d+(\.\d{0,1})?$/.test(numericValue)) {
       const formattedValue = formatNumberWithComma(numericValue);
       setDisplayQuantity(formattedValue);
 
-      // 실제 값은 숫자로 변환하여 저장
-      const numberValue = numericValue ? parseInt(numericValue, 10) : 0;
+      // 실제 값은 숫자로 변환하여 저장 (소수점 포함)
+      const numberValue = numericValue ? parseFloat(numericValue) : 0;
       setValue(`materials.${index}.usageQuantity`, numberValue, {
         shouldValidate: true,
         shouldDirty: true,
@@ -134,9 +134,7 @@ const MaterialInputItem = ({
               onBlur={(e) => {
                 // blur 시에만 register의 onBlur 호출
                 const numericValue = removeComma(e.target.value);
-                const numberValue = numericValue
-                  ? parseInt(numericValue, 10)
-                  : 0;
+                const numberValue = numericValue ? parseFloat(numericValue) : 0;
                 setValue(`materials.${index}.usageQuantity`, numberValue, {
                   shouldValidate: true,
                   shouldDirty: true,

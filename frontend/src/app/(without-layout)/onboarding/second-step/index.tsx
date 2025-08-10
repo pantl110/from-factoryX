@@ -28,7 +28,16 @@ const validationSchema = yup.object({
         usageQuantity: yup
           .number()
           .required('사용 수량을 입력해주세요.')
-          .positive('사용 수량은 양수여야 합니다.'),
+          .positive('사용 수량은 양수여야 합니다.')
+          .test(
+            'decimal',
+            '소수점은 한자리까지만 입력 가능합니다.',
+            (value) => {
+              if (value === undefined || value === null) return true;
+              const decimalPlaces = value.toString().split('.')[1]?.length || 0;
+              return decimalPlaces <= 1;
+            }
+          ),
       })
     )
     .min(1)
@@ -39,12 +48,11 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
   const {
     register,
     handleSubmit,
-    formState: { isValid, errors },
+    formState: { isValid },
     clearErrors,
     control,
     reset,
     setValue,
-    watch,
   } = useForm<SecondStepFormDataModel>({
     resolver: yupResolver(
       validationSchema
@@ -62,9 +70,6 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
       ],
     },
   });
-
-  // 폼의 모든 필드를 감시
-  const watchedFields = watch();
 
   // 특정 필드들을 감시
   const watchedMaterials = useWatch({
@@ -268,7 +273,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
       } else {
         alert('원자재 생성 및 연결에 실패했습니다: ' + result.error);
       }
-    } catch (error) {
+    } catch {
       alert('원자재 생성 및 연결 중 오류가 발생했습니다.');
     }
   };

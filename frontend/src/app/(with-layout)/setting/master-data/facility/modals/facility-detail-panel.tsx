@@ -10,7 +10,6 @@ import { EquipmentStatusType } from '@/types/status-type';
 import { Controller, useForm } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import { useEffect } from 'react';
-import { useGetEquipment } from '@/hooks';
 
 interface FacilityDetailPanelProps {
   facility?: EquipmentResponseModel;

@@ -75,43 +75,46 @@ const useGetProduct = () => {
   );
 
   // 제품 상세 조회 (product_id)
-  const getProductDetail = useCallback(async (productId: number) => {
-    setIsLoading(true);
-    setError(null);
+  const getProductDetail = useCallback(
+    async (productId: number) => {
+      setIsLoading(true);
+      setError(null);
 
-    if (!factoryId) {
-      // factoryId가 없으면 빈 데이터를 반환
-      setProduct(null);
-      setIsLoading(false);
-      return { success: true, data: null };
-    }
-
-    try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${productId}?factory_id=${factoryId}`;
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const result: ProductResponseModel = await response.json();
-        setProduct(result);
-        return { success: true, data: result };
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || '품목 상세 정보를 불러오지 못했습니다.');
-        return { success: false, error: errorData.detail };
+      if (!factoryId) {
+        // factoryId가 없으면 빈 데이터를 반환
+        setProduct(null);
+        setIsLoading(false);
+        return { success: true, data: null };
       }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
-    } finally {
-      setIsLoading(false);
-    }
-  }, [factoryId]);
+
+      try {
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${productId}?factory_id=${factoryId}`;
+        const response = await fetch(url, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const result: ProductResponseModel = await response.json();
+          setProduct(result);
+          return { success: true, data: result };
+        } else {
+          const errorData = await response.json();
+          setError(errorData.detail || '품목 상세 정보를 불러오지 못했습니다.');
+          return { success: false, error: errorData.detail };
+        }
+      } catch {
+        setError('서버 연결에 실패했습니다.');
+        return { success: false, error: '서버 연결에 실패했습니다.' };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [factoryId]
+  );
 
   // 모든 품목 코드 조회
   const getAllProductCodes = useCallback(async () => {

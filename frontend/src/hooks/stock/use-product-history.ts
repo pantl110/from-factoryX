@@ -4,17 +4,7 @@ import {
   ProductHistoryResponseModel,
 } from '@/types/data-model';
 import { useState, useCallback } from 'react';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 export interface ProductHistoryFilterModel {
   product_id?: number; // 제품 ID (product -> product_id로 변경)
@@ -30,6 +20,7 @@ const useProductHistory = () => {
   const [data, setData] = useState<
     ProductHistoryResponseModel | ProductHistoryListResponseModel | null
   >(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   // Create product history 제품 입출고 내역 등록
   const createProductHistory = useCallback(
@@ -37,8 +28,6 @@ const useProductHistory = () => {
       setIsLoading(true);
       setError(null);
 
-      // 로컬스토리지에서 factoryId 가져오기
-      const factoryId = getStoredFactoryId();
       if (!factoryId) {
         setError('공장 정보가 없습니다.');
         setIsLoading(false);
@@ -70,7 +59,7 @@ const useProductHistory = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   // List product histories (paginated)제품 입출고 이력 목록 조회
@@ -79,8 +68,6 @@ const useProductHistory = () => {
       setIsLoading(true);
       setError(null);
 
-      // 로컬스토리지에서 factoryId 가져오기
-      const factoryId = getStoredFactoryId();
       if (!factoryId) {
         setError('공장 정보가 없습니다.');
         setIsLoading(false);
@@ -129,7 +116,7 @@ const useProductHistory = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   // Get single product history // 제품 입출고 이력 상세 조회
@@ -138,8 +125,6 @@ const useProductHistory = () => {
       setIsLoading(true);
       setError(null);
 
-      // 로컬스토리지에서 factoryId 가져오기
-      const factoryId = getStoredFactoryId();
       if (!factoryId) {
         setError('공장 정보가 없습니다.');
         setIsLoading(false);
@@ -187,7 +172,7 @@ const useProductHistory = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   return {

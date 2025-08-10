@@ -164,23 +164,33 @@ const ManualAddProduct = ({
               {...register('quantity', {
                 required: true,
                 validate: (v) => {
-                  const num = Number(String(v).replace(/[^0-9]/g, ''));
+                  const num = Number(String(v).replace(/[^0-9.]/g, ''));
                   return !isNaN(num) && num > 0;
                 },
                 setValueAs: (v) => {
                   if (v === '' || v === null || v === undefined) return null;
-                  const num = Number(String(v).replace(/[^0-9]/g, ''));
+                  const num = Number(String(v).replace(/[^0-9.]/g, ''));
                   return num === 0 ? null : num;
                 },
               })}
               onChange={(e) => {
-                const onlyNums = e.target.value.replace(/[^0-9]/g, '');
-                const formatted = onlyNums
-                  ? parseInt(onlyNums).toLocaleString()
+                const onlyNumsAndDot = e.target.value.replace(/[^0-9.]/g, '');
+                // 소수점이 여러 개 입력되는 것을 방지
+                const parts = onlyNumsAndDot.split('.');
+                const cleanValue =
+                  parts.length > 2
+                    ? parts[0] + '.' + parts.slice(1).join('')
+                    : onlyNumsAndDot;
+
+                const formatted = cleanValue
+                  ? parseFloat(cleanValue).toLocaleString('en-US', {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 1,
+                    })
                   : '';
                 e.target.value = formatted;
 
-                const num = onlyNums ? parseInt(onlyNums) : null;
+                const num = cleanValue ? parseFloat(cleanValue) : null;
                 setFormValues((prev) => ({ ...prev, quantity: num }));
               }}
             />

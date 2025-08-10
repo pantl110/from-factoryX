@@ -23,8 +23,8 @@ const QuotationHistory = ({
   if (isLoading || !histories || histories.length === 0) {
     return (
       <NoHistoryBox
-        title="이 원자재의 거래 내역이 아직 없어요."
-        text="거래 내역이 쌓이면 이곳에서 업체별 단가를 비교할 수 있어요."
+        title="이 원자재의 거래처 정보가 아직 없어요."
+        text="이 원자재를 구입한 거래처 정보를 입력하면 단가가 표시돼요."
       />
     );
   }

@@ -1,5 +1,6 @@
 import { SaveDraftQuotationModel } from '@/types/data-model';
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 interface StartProductionResponseModel {
   quotation_id: number;
@@ -14,17 +15,6 @@ interface UseStartProductionReturnModel {
   isLoading: boolean;
   error: string | null;
 }
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
 
 // 생산 시작 // 완성된 견적서로 생산을 시작
 // - 거래처 정보 업데이트
@@ -44,6 +34,7 @@ const getStoredFactoryId = (): number | null => {
 const useStartProduction = (): UseStartProductionReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const startProduction = async (
     data: SaveDraftQuotationModel
@@ -51,8 +42,6 @@ const useStartProduction = (): UseStartProductionReturnModel => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       const errorMessage = '공장 ID가 설정되지 않았습니다.';
       setError(errorMessage);

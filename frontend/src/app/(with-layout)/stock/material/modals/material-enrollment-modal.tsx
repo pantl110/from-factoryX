@@ -13,6 +13,7 @@ import {
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import { useGetMaterial, useCreateMaterialHistory } from '@/hooks';
 import { useForm } from 'react-hook-form';
+import useFactoryStore from '@/store/factory-store';
 
 interface MaterialEnrollmentProps {
   onClose?: () => void;
@@ -24,17 +25,6 @@ interface MaterialFormModel {
   quantity: { [key: string]: number | null };
   price: { [key: string]: number | null };
 }
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
 
 const MaterialEnrollmentModal = ({
   onClose,
@@ -48,6 +38,7 @@ const MaterialEnrollmentModal = ({
     MaterialResponseModel[]
   >([]);
   const { getMaterialList } = useGetMaterial();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const [selectedMaterials, setSelectedMaterials] = useState<
     MaterialItemModel[]
@@ -156,8 +147,6 @@ const MaterialEnrollmentModal = ({
   };
 
   const handleRegister = async () => {
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       return;
@@ -331,21 +320,34 @@ const MaterialEnrollmentModal = ({
                             validate: (value) => value !== null && value > 0,
                           })}
                           onChange={(e) => {
-                            const onlyNums = e.target.value.replace(
-                              /[^0-9]/g,
+                            const onlyNumsAndDot = e.target.value.replace(
+                              /[^0-9.]/g,
                               ''
                             );
-                            const quantity = onlyNums ? parseInt(onlyNums) : 0;
+                            // 소수점이 여러 개 입력되는 것을 방지
+                            const parts = onlyNumsAndDot.split('.');
+                            const cleanValue =
+                              parts.length > 2
+                                ? parts[0] + '.' + parts.slice(1).join('')
+                                : onlyNumsAndDot;
+
+                            const quantity = cleanValue
+                              ? parseFloat(cleanValue)
+                              : 0;
                             handleQuantityChange(mat.code, quantity);
                             setValue(
                               `quantity.${mat.code}`,
                               quantity === 0 ? null : quantity
                             );
 
-                            // 실시간 콤마 포맷팅
-                            if (onlyNums) {
-                              e.target.value =
-                                parseInt(onlyNums).toLocaleString();
+                            // 실시간 콤마 포맷팅 (소수점 포함)
+                            if (cleanValue) {
+                              e.target.value = parseFloat(
+                                cleanValue
+                              ).toLocaleString('en-US', {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 1,
+                              });
                             }
                           }}
                           onBlur={(e) => {

@@ -18,7 +18,7 @@ interface StockStatusProps {
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
   onDeleteConnection: (connectionId: number) => void;
-  onInvalidQuantity: (message: string) => void;
+  onInvalidQuantity: (message: string, subtext?: string) => void;
 }
 
 const StockStatus = ({

@@ -3,6 +3,7 @@ import {
   MaterialHistoryResponseModel,
   MaterialHistoryListResponseModel,
 } from '@/types/data-model';
+import useFactoryStore from '@/store/factory-store';
 
 interface GetMaterialHistoryOptionModel {
   start_date?: string;
@@ -12,17 +13,6 @@ interface GetMaterialHistoryOptionModel {
   page_size?: number;
 }
 
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
-
 // 특정 원자재의 히스토리를 조회 // 업체별 단가 비교
 // 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회
 const useGetMaterialHistory = () => {
@@ -30,6 +20,7 @@ const useGetMaterialHistory = () => {
   const [error, setError] = useState<string | null>(null);
   const [histories, setHistories] =
     useState<MaterialHistoryListResponseModel | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const getMaterialHistory = async (
     materialId: number,
@@ -38,8 +29,6 @@ const useGetMaterialHistory = () => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 ID가 설정되지 않았습니다.');
       return { success: false, error: '공장 ID가 설정되지 않았습니다.' };

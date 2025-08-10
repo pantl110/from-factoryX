@@ -22,7 +22,7 @@ const Product = ({
   isProductDetailPanelOpen,
   setIsProductDetailPanelOpen,
 }: ProductProps) => {
-  const { getProductList, productList, pagination, isLoading, error } =
+  const { getProductList, productList, pagination, isLoading } =
     useGetProduct();
   const { deleteProduct } = useDeleteProduct();
 

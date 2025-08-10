@@ -75,41 +75,46 @@ const useGetMaterial = () => {
   );
 
   // 원자재 상세 조회
-  const getMaterialDetail = useCallback(async (materialId: number) => {
-    setIsLoading(true);
-    setError(null);
+  const getMaterialDetail = useCallback(
+    async (materialId: number) => {
+      setIsLoading(true);
+      setError(null);
 
-    if (!factoryId) {
-      // factoryId가 없으면 빈 데이터를 반환
-      setMaterial(null);
-      setIsLoading(false);
-      return { success: true, data: null };
-    }
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/${materialId}?factory_id=${factoryId}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
-      if (response.ok) {
-        const result: MaterialResponseModel = await response.json();
-        setMaterial(result);
-        return { success: true, data: result };
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || '원자재 상세 정보를 불러오지 못했습니다.');
-        return { success: false, error: errorData.detail };
+      if (!factoryId) {
+        // factoryId가 없으면 빈 데이터를 반환
+        setMaterial(null);
+        setIsLoading(false);
+        return { success: true, data: null };
       }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
-    } finally {
-      setIsLoading(false);
-    }
-  }, [factoryId]);
+
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/${materialId}?factory_id=${factoryId}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          }
+        );
+        if (response.ok) {
+          const result: MaterialResponseModel = await response.json();
+          setMaterial(result);
+          return { success: true, data: result };
+        } else {
+          const errorData = await response.json();
+          setError(
+            errorData.detail || '원자재 상세 정보를 불러오지 못했습니다.'
+          );
+          return { success: false, error: errorData.detail };
+        }
+      } catch {
+        setError('서버 연결에 실패했습니다.');
+        return { success: false, error: '서버 연결에 실패했습니다.' };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [factoryId]
+  );
 
   // 모든 원자재 정보 가져오기 (중복 검사용)
   const getAllMaterials = useCallback(async () => {

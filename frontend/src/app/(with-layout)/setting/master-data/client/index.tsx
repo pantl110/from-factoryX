@@ -4,17 +4,7 @@ import ClientTableItem from './client-table-item';
 import ClientDetailPanel from './modals/client-detail-panel';
 import { ClientListResponseModel } from '@/types/data-model';
 import Pagination from '@/components/pagination';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 interface ClientProps {
   clientList: ClientListResponseModel | null;
@@ -36,6 +26,7 @@ const Client = ({
   refetchClient,
 }: ClientProps) => {
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   return (
     <>
@@ -65,7 +56,7 @@ const Client = ({
       </div>
 
       {/* panel */}
-      {selectedClientId && getStoredFactoryId() && (
+      {selectedClientId && factoryId && (
         <ClientDetailPanel
           onClose={() => setSelectedClientId(null)}
           refetchClient={refetchClient}

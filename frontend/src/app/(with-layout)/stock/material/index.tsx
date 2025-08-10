@@ -31,7 +31,7 @@ const Material = ({
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const pageSize = 10;
 
-  const { getMaterialList, materialList, pagination, isLoading, error } =
+  const { getMaterialList, materialList, pagination, isLoading } =
     useGetMaterial();
   const { shouldReload, setShouldReload } = useMaterialReloadStore();
   const { deleteMaterial, isLoading: isDeleting } = useDeleteMaterial();

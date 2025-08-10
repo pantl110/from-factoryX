@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { LoginFormDataModel, LoginResponseModel, FactoriesResponseModel } from '@/types/data-model';
+import {
+  LoginFormDataModel,
+  LoginResponseModel,
+  FactoriesResponseModel,
+} from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
 import useFactoryStore from '@/store/factory-store';
 import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
@@ -87,15 +91,15 @@ export const useLogin = (): UseLoginReturnModel => {
                     success: true,
                     data: result,
                     factoryCount: 1,
-                    factories: factories,
+                    factories,
                   };
                 } else {
                   // 공장이 2개 이상일 때 (초대받은 공장이 있다는 뜻) - 공장 선택 모달을 보여줄 수 있도록 반환
                   return {
                     success: true,
                     data: result,
-                    factoryCount: factoryCount,
-                    factories: factories,
+                    factoryCount,
+                    factories,
                   };
                 }
               } else {
