@@ -64,6 +64,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                     self.notification_group_name,
                     {"type": "all_notifications_marked_as_read", "has_unread": False},
                 )
+            elif message_type == "send_notification":
+                message = data["message"]
+
         except Exception as e:
             await self.send_error(str(e))
 

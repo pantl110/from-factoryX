@@ -6,6 +6,8 @@ from factory.utils import is_factory_member
 from asgiref.sync import sync_to_async
 from typing import List
 from notification.utils import get_notification_by_id
+from factory.utils import get_factory_by_id
+from channels.layers import get_channel_layer
 
 
 router = Router(tags=["Notification"], auth=jwt_auth)
@@ -56,6 +58,28 @@ async def get_unread_notifications(request, factory_id: int):
     notifications = await mark_all_notifications_as_read()
 
     return notifications
+
+
+@router.get(
+    "/test",
+    summary="[C] 알림 테스트",
+    description="새로운 알림을 생성합니다.",
+)
+async def websocket_test_notification(request):
+
+    user = request.auth
+
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(
+        f"notification_{user.id}",
+        {
+            "type": "send_notification",
+            "notification": "test",
+            "message": "This is a test notification.",
+        },
+    )
+
+    return {"message": "This is a test notification."}
 
 
 @router.get(

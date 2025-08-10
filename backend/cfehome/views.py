@@ -8,3 +8,7 @@ from django.views.decorators.http import require_http_methods
 
 async def websocket_test(request):
     return render(request, "websocket_test.html")
+
+
+async def websocket_test_local(request):
+    return render(request, "websocket_test_local.html")
