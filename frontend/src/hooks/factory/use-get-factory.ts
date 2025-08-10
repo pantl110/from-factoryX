@@ -4,20 +4,22 @@ import {
   FactoriesResponseModel,
 } from '@/types/data-model';
 
-// 공장 설비 목록 조회
+// 본인의 공장 목록 조회 (사용자가 멤버로 등록된 공장 목록)
 export const useGetFactoryList = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [factoryList, setFactoryList] =
-    useState<FactoriesListResponseModel | null>(null);
+    useState<FactoriesResponseModel[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const getFactoryList = useCallback(async (params?: { name?: string }) => {
+  const getFactoryList = useCallback(async (params?: { name?: string; page?: number; page_size?: number }) => {
     setIsLoading(true);
     setError(null);
     try {
       const query = new URLSearchParams();
 
       if (params?.name?.trim()) query.append('name', params.name.trim());
+      if (params?.page) query.append('page', params.page.toString());
+      if (params?.page_size) query.append('page_size', params.page_size.toString());
 
       const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/factory${
         query.toString() ? `?${query.toString()}` : ''
@@ -32,40 +34,9 @@ export const useGetFactoryList = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
-
-        // 백엔드가 @paginate를 사용하므로 페이지네이션 형태로 응답이 올 수 있음
-
-        let factoryListData: FactoriesListResponseModel;
-
-        if (result && result.items) {
-          // 페이지네이션된 응답인 경우
-          factoryListData = {
-            factories: result.items,
-            count: result.count || result.items.length,
-            // 필요시 페이지네이션 정보도 추가
-            ...(result.total && { total: result.total }),
-            ...(result.page && { page: result.page }),
-            ...(result.pages && { pages: result.pages }),
-          };
-        } else if (Array.isArray(result)) {
-          // 직접 배열로 온 경우
-          factoryListData = {
-            data: result,
-            count: result.length,
-            totalCnt: result.length,
-            pageCnt: 1,
-            curPage: 1,
-            nextPage: null,
-            previousPage: null,
-          };
-        } else {
-          // 다른 형태의 응답인 경우
-          factoryListData = result;
-        }
-
-        setFactoryList(factoryListData);
-        return { success: true, data: factoryListData };
+        const result: FactoriesListResponseModel = await response.json();
+        setFactoryList(result.data);
+        return { success: true, data: result.data };
       } else {
         const errorData = await response.json();
         const errorMessage =

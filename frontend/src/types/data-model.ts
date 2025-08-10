@@ -2,12 +2,12 @@
 
 // 공통
 export interface PaginationModel {
-  count: number;
-  totalCnt: number;
-  pageCnt: number;
-  curPage: number;
-  nextPage: number | null;
-  previousPage: number | null;
+  count?: number;
+  totalCnt?: number;
+  pageCnt?: number;
+  curPage?: number;
+  nextPage?: number | null;
+  previousPage?: number | null;
 }
 
 // Users API
@@ -120,6 +120,8 @@ export interface FactoriesResponseModel {
   created_at: string;
   updated_at: string;
   invited_at: string;
+  role?: string;
+  invited_by: number;
 }
 
 // 공장 목록 조회

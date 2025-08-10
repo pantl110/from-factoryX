@@ -44,11 +44,8 @@ const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
             errorData.detail ||
             '견적서 히스토리 조회에 실패했습니다.';
 
-          // 404 오류나 "해당 제품의 견적 내역이 없습니다" 오류는 빈 배열로 처리
-          if (
-            response.status === 404 ||
-            errorMessage.includes('견적 내역이 없습니다')
-          ) {
+          // 404 오류는 빈 배열로 처리 (데이터가 없는 경우)
+          if (response.status === 404) {
             return { results: [] };
           }
 

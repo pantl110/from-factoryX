@@ -5,7 +5,6 @@ import { usePortalDropdown, useToast } from '@/hooks';
 import Toast from '@/ui/toast';
 import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
 import { ClientModel } from '@/types/data-model';
-import { useMemo } from 'react';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import { useUpdateProjectStatus } from '@/hooks';
 
@@ -20,16 +19,15 @@ interface TitleSecProps {
   setIsStartProductionModalOpen: (open: boolean) => void;
   trigger: UseFormTrigger<QuotationFormModel>;
   watch: UseFormWatch<QuotationFormModel>;
-  formState: FormState<QuotationFormModel>;
   isOrderStatus: boolean;
   setIsOrderStatus: (status: boolean) => void;
   hasQuotationProducts: boolean;
   onSaveDraft?: () => void | Promise<void>;
   isDirty: boolean;
-
   isSuspendedStatus: boolean;
   setIsSuspendedStatus: (status: boolean) => void;
   projectId?: number;
+  isFormValid: boolean;
 }
 
 const TitleSec = ({
@@ -38,7 +36,6 @@ const TitleSec = ({
   setIsStartProductionModalOpen,
   trigger,
   watch,
-  formState,
   isOrderStatus,
   setIsOrderStatus,
   hasQuotationProducts,
@@ -47,6 +44,7 @@ const TitleSec = ({
   isSuspendedStatus,
   setIsSuspendedStatus,
   projectId,
+  isFormValid,
 }: TitleSecProps) => {
   // 실시간으로 업체명 가져오기
   const clientName = watch('name');
@@ -56,11 +54,6 @@ const TitleSec = ({
 
   // 프로젝트 상태 업데이트 훅
   const { updateProjectStatus } = useUpdateProjectStatus();
-
-  // 폼 유효성 검사 - 실제 필드 값과 에러 상태 확인
-  const isFormValid = useMemo(() => {
-    return formState.isValid && !Object.keys(formState.errors).length;
-  }, [formState.isValid, formState.errors]);
 
   // 드랍다운 상태
   const {

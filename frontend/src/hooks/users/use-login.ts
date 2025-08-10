@@ -68,19 +68,19 @@ export const useLogin = (): UseLoginReturnModel => {
             // 전역 상태에 사용자 정보 저장
             setUserInfo(userData);
             setAuthenticated(true);
+            console.log('userData', userData);
 
-            // 공장 리스트 받아와서 factoryId 전역 저장
             try {
-              const factoryResult = await getFactoryList();
-              if (factoryResult.success && factoryResult.data?.data) {
-                const factories = factoryResult.data.data;
-                const factoryCount = factories.length;
+              const factoryResult = await getFactoryList({ page: 1, page_size: 100 }); // 페이지 크기를 100으로 설정하여 모든 공장을 가져옴
+              if (factoryResult.success && factoryResult.data) {
+                const factories = factoryResult.data; // 공장 리스트
+                const factoryCount = factories.length; // 공장 개수
+                console.log('factories', factories);
 
                 if (factoryCount === 0) {
                   // 공장이 0개일 때 - 온보딩 페이지로 이동
                   return {
                     success: true,
-                    data: result,
                     factoryCount: 0,
                     factories: [],
                   };
@@ -89,7 +89,6 @@ export const useLogin = (): UseLoginReturnModel => {
                   setFactoryId(factories[0].id); // 이 함수가 공장아이디를 로컬 스토리지에 저장함
                   return {
                     success: true,
-                    data: result,
                     factoryCount: 1,
                     factories,
                   };
@@ -97,7 +96,6 @@ export const useLogin = (): UseLoginReturnModel => {
                   // 공장이 2개 이상일 때 (초대받은 공장이 있다는 뜻) - 공장 선택 모달을 보여줄 수 있도록 반환
                   return {
                     success: true,
-                    data: result,
                     factoryCount,
                     factories,
                   };

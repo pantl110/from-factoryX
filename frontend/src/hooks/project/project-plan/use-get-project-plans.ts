@@ -1,18 +1,18 @@
 import { useState, useCallback } from 'react';
+import useFactoryStore from '@/store/factory-store';
 import { ProjectPlanModel } from '@/types/data-model';
 
 // project_id로 해당 프로젝트의 모든 생산 계획을 조회
 const useGetProjectPlans = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const getProjectPlans = useCallback(async (projectId: number) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // localStorage에서 factoryId 가져오기
-      const factoryId = localStorage.getItem('factoryId');
       if (!factoryId) {
         throw new Error('공장 정보가 없습니다.');
       }
@@ -52,7 +52,7 @@ const useGetProjectPlans = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [factoryId]);
 
   return { getProjectPlans, isLoading, error };
 };

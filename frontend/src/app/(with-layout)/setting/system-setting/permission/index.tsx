@@ -144,7 +144,7 @@ const Permission = () => {
                   disabled={!isFactoryInfoComplete}
                 />
                 {!isFactoryInfoComplete && (
-                  <div className="absolute top-12 right-0 w-fit opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                  <div className="absolute w-[400px] flex justify-end top-12 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                     <Tooltip
                       color="red"
                       text="팀원을 초대 전, 회사정보(필수 항목)를 먼저 입력해주세요."
@@ -218,7 +218,7 @@ const Permission = () => {
             </div>
             {members?.pageCnt && members.pageCnt > 1 && (
               <Pagination
-                currentPage={members.curPage}
+                currentPage={members.curPage || 1}
                 totalPages={members.pageCnt}
                 onPageChange={setPage}
               />

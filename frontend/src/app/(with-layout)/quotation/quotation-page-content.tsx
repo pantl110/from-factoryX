@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLineLeftIcon,
@@ -27,6 +27,7 @@ import {
   useGetDetailQuotation,
 } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
+import useFactoryStore from '@/store/factory-store';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -53,6 +54,7 @@ const QuotationPageContent = () => {
   const { updateProjectStatus } = useUpdateProjectStatus();
   const { data: quotationData, isLoading: isQuotationLoading } =
     useGetDetailQuotation(quotationId || 0);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 프로젝트 상태 로드
   const loadProjectStatus = useCallback(async () => {
@@ -91,16 +93,11 @@ const QuotationPageContent = () => {
   }, [loadProjectStatus]);
 
   // 거래처 정보 폼
-  const { setValue, control, trigger, watch, formState } =
+  const { setValue, control, trigger, watch, formState, reset } =
     useForm<QuotationFormModel>({
+      mode: 'onChange',
       defaultValues: {
-        factory_id: (() => {
-          if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem('factoryId');
-            return stored ? parseInt(stored, 10) : 0;
-          }
-          return 0;
-        })(),
+        factory_id: factoryId || 0,
         name: '',
         business_registration_number: '',
         representative_name: '',
@@ -119,11 +116,8 @@ const QuotationPageContent = () => {
   // 견적서 데이터로 폼 기본값 설정
   const setFormValuesFromQuotation = useCallback(
     (quotation: QuotationResponseModel) => {
-      // factory_id를 로컬 스토리지에서 가져와서 설정
-      if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem('factoryId');
-        setValue('factory_id', stored ? parseInt(stored, 10) : 0);
-      }
+      // factory_id를 Zustand store에서 가져와서 설정
+      setValue('factory_id', factoryId || 0);
 
       // 백엔드 응답 구조에 맞게 직접 접근
       setValue('name', quotation.factory_name || '');
@@ -143,7 +137,7 @@ const QuotationPageContent = () => {
         setValue('due_date', quotation.due_date);
       }
     },
-    [setValue]
+    [setValue, factoryId]
   );
 
   // 견적서 데이터가 로드되면 폼에 설정
@@ -211,8 +205,6 @@ const QuotationPageContent = () => {
     try {
       const formData = watch();
 
-      // localStorage에서 factoryId 가져오기
-      const factoryId = localStorage.getItem('factoryId');
       if (!factoryId) {
         throw new Error('공장 정보가 없습니다.');
       }
@@ -220,7 +212,7 @@ const QuotationPageContent = () => {
       const draftData = {
         quotation_id: quotationId || 0,
         client: {
-          factory_id: parseInt(factoryId, 10),
+          factory_id: factoryId,
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -244,6 +236,8 @@ const QuotationPageContent = () => {
       };
 
       await saveDraft(draftData);
+      // 폼의 isDirty 상태 초기화 - 현재 값으로 reset하여 변경사항 없음으로 표시
+      reset(formData);
       // 성공 시 토스트 메시지나 다른 피드백 제공
     } catch (error) {
       alert(
@@ -251,15 +245,13 @@ const QuotationPageContent = () => {
           (error instanceof Error ? error.message : '알 수 없는 오류')
       );
     }
-  }, [saveDraft, watch, quotationId, quotationProducts]);
+  }, [saveDraft, watch, quotationId, quotationProducts, factoryId, reset]);
 
   // 생산 시작 버튼 핸들러
   const handleStartProduction = useCallback(async () => {
     try {
       const formData = watch();
 
-      // localStorage에서 factoryId 가져오기
-      const factoryId = localStorage.getItem('factoryId');
       if (!factoryId) {
         throw new Error('공장 정보가 없습니다.');
       }
@@ -280,7 +272,7 @@ const QuotationPageContent = () => {
       const productionData = {
         quotation_id: quotationId || 0,
         client: {
-          factory_id: parseInt(factoryId, 10),
+          factory_id: factoryId,
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -316,6 +308,29 @@ const QuotationPageContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startProduction, watch, quotationId, quotationProducts]);
 
+  // 폼 유효성 검사 - required 필드들이 모두 채워져 있는지 확인 (주문 확정용)
+  const isFormValid = useMemo(() => {
+    const watchedValues = watch();
+
+    // required 필드들: 업체명, 사업자등록번호, 대표자명, 납기일자, 업태, 종목, 사업장주소
+    const requiredFields = [
+      'name',
+      'business_registration_number',
+      'representative_name',
+      'due_date',
+      'business_type',
+      'business_category',
+      'address',
+    ];
+
+    const allRequiredFieldsFilled = requiredFields.every((field) => {
+      const value = watchedValues[field as keyof QuotationFormModel];
+      return value && value.toString().trim() !== '';
+    });
+
+    return allRequiredFieldsFilled;
+  }, [watch]);
+
   return (
     <>
       <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
@@ -325,7 +340,6 @@ const QuotationPageContent = () => {
           setIsStartProductionModalOpen={setIsStartProductionModalOpen}
           trigger={trigger}
           watch={watch}
-          formState={formState}
           isOrderStatus={isOrderStatus}
           setIsOrderStatus={() => handleProjectStatusChange('confirmed')}
           hasQuotationProducts={hasQuotationProducts}
@@ -334,6 +348,7 @@ const QuotationPageContent = () => {
           isSuspendedStatus={isSuspendedStatus}
           setIsSuspendedStatus={() => handleProjectStatusChange('suspended')}
           projectId={projectId}
+          isFormValid={isFormValid}
         />
         <TabArea
           isOrderStatus={isOrderStatus}

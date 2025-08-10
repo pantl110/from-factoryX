@@ -44,6 +44,7 @@ const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormDataModel) => {
     const result = await login(data);
+    console.log(result);
 
     if (result.success) {
       // 로그인 성공 - 공장 개수에 따라 적절한 페이지로 이동

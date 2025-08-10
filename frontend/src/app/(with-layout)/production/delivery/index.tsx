@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import CreateTransactionOverlayview from './modals/create-transaction-overlayview';
 import usePageStatusStore from '@/store/page-status-store';
 import MoveToStorageModal from './modals/move-to-storage-modal';
+import useFactoryStore from '@/store/factory-store';
 import {
   QuotationProductResponseModel,
   ProductResponseModel,
@@ -54,17 +55,15 @@ const Delivery = ({
     (state) => state.setMoveToStorageModalOpen
   );
 
-  // 로컬스토리지에서 factoryId 가져오기
-  const factoryId =
-    typeof window !== 'undefined' ? localStorage.getItem('factoryId') : null;
-  const parsedFactoryId = factoryId ? parseInt(factoryId, 10) : undefined;
+  // Zustand store에서 factoryId 가져오기
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 견적서 품목 데이터 가져오기
   const {
     data: deliveryData,
     isLoading,
     error,
-  } = useGetQuotationProducts(quotationId, parsedFactoryId);
+  } = useGetQuotationProducts(quotationId, factoryId || undefined);
 
   // 제품 상세 정보 배열
   const [productDetails, setProductDetails] = useState<

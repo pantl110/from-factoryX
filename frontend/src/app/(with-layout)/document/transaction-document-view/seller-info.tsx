@@ -2,6 +2,7 @@ import InfoLabelValue from '@/ui/info-label-value';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
 import { useEffect, useState } from 'react';
 import { FactoriesResponseModel } from '@/types/data-model';
+import useFactoryStore from '@/store/factory-store';
 
 interface SellerInfoProps {
   startDate: string;
@@ -9,18 +10,15 @@ interface SellerInfoProps {
 
 const SellerInfo = ({ startDate }: SellerInfoProps) => {
   const { getFactory } = useGetFactory();
+  const factoryId = useFactoryStore((state) => state.factoryId);
   const [factoryData, setFactoryData] = useState<FactoriesResponseModel | null>(
     null
   );
 
   useEffect(() => {
     const fetchFactoryData = async () => {
-      const factoryId =
-        typeof window !== 'undefined'
-          ? localStorage.getItem('factoryId')
-          : null;
       if (factoryId) {
-        const result = await getFactory(parseInt(factoryId, 10));
+        const result = await getFactory(factoryId);
         if (result.success && result.data) {
           setFactoryData(result.data);
         }
@@ -28,7 +26,7 @@ const SellerInfo = ({ startDate }: SellerInfoProps) => {
     };
 
     fetchFactoryData();
-  }, [getFactory]);
+  }, [getFactory, factoryId]);
 
   return (
     <div className="flex flex-col gap-3">

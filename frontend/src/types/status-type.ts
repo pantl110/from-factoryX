@@ -6,7 +6,7 @@ export interface StatusColorModel {
 }
 
 // 팩토리 멤버 type
-export type MemberRoleType = 'admin' | 'manager' | 'viewer'; // 시스템 관리자, 운영자, 조회자
+export type MemberRoleType = 'admin' | 'manager' | 'viewer' | '시스템 관리자' | '운영자' | '조회자' | '관리자'; // 시스템 관리자, 운영자, 조회자
 export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
 
 // 설비 상태 // 설정 페이지

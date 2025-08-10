@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 interface DailyProductionQuantityModel {
   production_count: number;
@@ -12,6 +13,7 @@ interface DailyProductionQuantityModel {
 const useGetDailyProductionQuantity = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const getDailyProductionQuantity = useCallback(
     async (targetDate?: string) => {
@@ -19,15 +21,13 @@ const useGetDailyProductionQuantity = () => {
       setError(null);
 
       try {
-        // localStorage에서 factoryId 가져오기
-        const factoryId = localStorage.getItem('factoryId');
         if (!factoryId) {
           throw new Error('공장 정보가 없습니다.');
         }
 
         // 쿼리 파라미터 구성
         const params = new URLSearchParams({
-          factory_id: factoryId,
+          factory_id: factoryId.toString(),
         });
 
         if (targetDate) {
@@ -74,7 +74,7 @@ const useGetDailyProductionQuantity = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   return { getDailyProductionQuantity, isLoading, error };
