@@ -56,7 +56,6 @@ async def create_factory(request):
     response={200: List[FactoryOut]},
     auth=jwt_auth,
 )
-@paginate
 async def list_factories(request):
     user = request.auth
 

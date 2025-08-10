@@ -70,14 +70,12 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         
-        # 페이지네이션 응답 형식 확인
-        self.assertIn('data', data)
-        self.assertIn('count', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertGreater(len(data['data']), 0)
+        # 응답 형식 확인
+        self.assertIsInstance(data, list)
+        self.assertGreater(len(data), 0)
         
         # 첫 번째 공장 정보 확인
-        factory_data = data['data'][0]
+        factory_data = data[0]
         self.assertIn('id', factory_data)
         self.assertIn('name', factory_data)
         self.assertIn('business_address', factory_data)
@@ -112,12 +110,11 @@ class FactoryCreateAPITestCase(TestCase):
         data = response.json()
         
         # 모든 공장이 조회되는지 확인
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 2)  # 테스트 공장 + 추가 공장
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 2)  # 테스트 공장 + 추가 공장
         
         # 공장 이름들 확인
-        factory_names = [factory['name'] for factory in data['data']]
+        factory_names = [factory['name'] for factory in data]
         self.assertIn('테스트 공장', factory_names)
         self.assertIn('추가 공장', factory_names)
 
@@ -154,12 +151,11 @@ class FactoryCreateAPITestCase(TestCase):
         data = response.json()
         
         # 두 개의 공장이 모두 조회되어야 함 (소유한 공장 + 멤버로 등록된 공장)
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 2)
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 2)
         
         # 공장 이름들 확인
-        factory_names = [factory['name'] for factory in data['data']]
+        factory_names = [factory['name'] for factory in data]
         self.assertIn('테스트 공장', factory_names)
         self.assertIn('다른 공장', factory_names)
 
@@ -197,12 +193,11 @@ class FactoryCreateAPITestCase(TestCase):
         data = response.json()
         
         # 두 개의 공장이 모두 조회되어야 함
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 2)
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 2)
         
         # 공장 이름들 확인
-        factory_names = [factory['name'] for factory in data['data']]
+        factory_names = [factory['name'] for factory in data]
         self.assertIn('테스트 공장', factory_names)
         self.assertIn('다른 사용자 공장', factory_names)
 
@@ -240,12 +235,11 @@ class FactoryCreateAPITestCase(TestCase):
         data = response.json()
         
         # 비활성 멤버 공장은 조회되지 않아야 함
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 1)  # 본인 공장만 조회
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 1)  # 본인 공장만 조회
         
         # 공장 이름 확인
-        factory_names = [factory['name'] for factory in data['data']]
+        factory_names = [factory['name'] for factory in data]
         self.assertIn('테스트 공장', factory_names)
         self.assertNotIn('비활성 멤버 공장', factory_names)
 
@@ -299,12 +293,11 @@ class FactoryCreateAPITestCase(TestCase):
         data = response.json()
         
         # 세 개의 공장이 모두 조회되어야 함 (본인 공장 + 2개 멤버 공장)
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 3)
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 3)
         
         # 공장 이름들 확인
-        factory_names = [factory['name'] for factory in data['data']]
+        factory_names = [factory['name'] for factory in data]
         self.assertIn('테스트 공장', factory_names)
         self.assertIn('관리자 공장', factory_names)
         self.assertIn('운영자 공장', factory_names)
@@ -383,12 +376,11 @@ class FactoryCreateAPITestCase(TestCase):
         data = response.json()
         
         # 활성 멤버 공장만 조회되어야 함
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 1)  # 활성 멤버 공장만
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 1)  # 활성 멤버 공장만
         
         # 공장 이름 확인
-        factory_names = [factory['name'] for factory in data['data']]
+        factory_names = [factory['name'] for factory in data]
         self.assertIn('활성 멤버 공장', factory_names)
 
     def test_list_factories_owner_automatically_included(self):
@@ -419,12 +411,11 @@ class FactoryCreateAPITestCase(TestCase):
         data = response.json()
         
         # 두 개의 공장이 모두 조회되어야 함
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 2)
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 2)
         
         # 공장 이름들 확인
-        factory_names = [factory['name'] for factory in data['data']]
+        factory_names = [factory['name'] for factory in data]
         self.assertIn('테스트 공장', factory_names)
         self.assertIn('소유자 공장', factory_names)
 
@@ -494,12 +485,11 @@ class FactoryCreateAPITestCase(TestCase):
         data = response.json()
         
         # 네 개의 공장이 모두 조회되어야 함 (본인 공장 + 3개 멤버 공장)
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 4)
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 4)
         
         # 공장 이름들 확인
-        factory_names = [factory['name'] for factory in data['data']]
+        factory_names = [factory['name'] for factory in data]
         self.assertIn('테스트 공장', factory_names)
         self.assertIn('관리자 공장', factory_names)
         self.assertIn('운영자 공장', factory_names)
@@ -575,12 +565,11 @@ class FactoryCreateAPITestCase(TestCase):
         data = response.json()
         
         # 세 개의 공장이 조회되어야 함
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 3)
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 3)
         
         # 초대일 기준 내림차순 정렬 확인 (최신이 먼저)
-        factory_names = [factory['name'] for factory in data['data']]
+        factory_names = [factory['name'] for factory in data]
         self.assertEqual(factory_names[0], '세 번째 공장')  # 가장 최근에 초대됨
         self.assertEqual(factory_names[1], '두 번째 공장')
         self.assertEqual(factory_names[2], '첫 번째 공장')  # 가장 오래전에 초대됨
@@ -709,12 +698,11 @@ class FactoryCreateAPITestCase(TestCase):
         list_data = list_response.json()
         
         # 목록에 새로 생성된 공장이 포함되어 있는지 확인
-        self.assertIn('data', list_data)
-        self.assertIsInstance(list_data['data'], list)
-        self.assertEqual(len(list_data['data']), 1)
+        self.assertIsInstance(list_data, list)
+        self.assertEqual(len(list_data), 1)
         
         # 공장 정보 확인
-        factory_data = list_data['data'][0]
+        factory_data = list_data[0]
         self.assertEqual(factory_data['id'], factory_id)
         self.assertEqual(factory_data['owner'], self.user.id)
 
@@ -752,12 +740,11 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         
-        # 페이지네이션된 응답 구조 확인
-        self.assertIn('data', data)
-        self.assertIsInstance(data['data'], list)
-        self.assertEqual(len(data['data']), 1)
+        # 응답 구조 확인
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 1)
         
-        factory_data = data['data'][0]
+        factory_data = data[0]
         self.assertEqual(factory_data['id'], self.factory.id)
         self.assertEqual(factory_data['name'], '테스트 공장')
         self.assertEqual(factory_data['business_address'], '서울시 강남구')

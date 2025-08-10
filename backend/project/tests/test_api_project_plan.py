@@ -71,13 +71,20 @@ class ProjectPlanAPITestCase(TestCase):
         
         # FactoryMember 생성 (권한 검증을 위해)
         from factory.models import FactoryMember
-        FactoryMember.objects.create(
+        from django.utils import timezone
+        from dateutil.relativedelta import relativedelta
+        
+        # 한 달 전에 가입한 것으로 설정
+        one_month_ago = timezone.now() - relativedelta(months=1)
+        self.factory_member = FactoryMember.objects.create(
             factory=self.factory,
             user=self.user,
             role=FactoryMember.FactoryMemberType.admin,
             status=FactoryMember.MemberStatus.active,
             invited_by=self.user,
         )
+        # created_at을 강제로 한 달 전으로 설정
+        FactoryMember.objects.filter(id=self.factory_member.id).update(created_at=one_month_ago)
         
         # JWT 토큰 생성
         self.token = self.generate_jwt_token()
@@ -847,16 +854,17 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600
         )
         
-        # 30일 전 완료된 생산 계획 생성 (전월 대비용)
-        thirty_days_ago = today - timedelta(days=30)
+        # 한 달 전 같은 날짜에 완료된 생산 계획 생성 (전월 대비용)
+        from dateutil.relativedelta import relativedelta
+        one_month_ago = today - relativedelta(months=1)
         previous_plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,
             equipment=self.equipment,
             status="가동 완료",
             quantity=30,
-            start_date=thirty_days_ago,
-            end_date=thirty_days_ago,
+            start_date=one_month_ago,
+            end_date=one_month_ago,
             avg_production_time=3600
         )
         

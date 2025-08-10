@@ -217,3 +217,15 @@ class ProjectLogDetailOut(Schema):
 # (PATCH) Project Log Update
 class ProjectLogUpdateOut(Schema):
     message: str
+
+
+# ------------------------------------------------------------
+# Production Profit Rate API
+# ------------------------------------------------------------
+
+class ProductionProfitRateOut(Schema):
+    current_month_profit: int
+    current_month_count: int
+    previous_month_profit: Optional[int] = None
+    previous_month_count: Optional[int] = None
+    change_percentage: Optional[float] = None
