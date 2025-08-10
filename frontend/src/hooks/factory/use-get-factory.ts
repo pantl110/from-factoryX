@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import {
-  FactoriesListResponseModel,
   FactoriesResponseModel,
 } from '@/types/data-model';
 
@@ -11,19 +10,11 @@ export const useGetFactoryList = () => {
     useState<FactoriesResponseModel[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const getFactoryList = useCallback(async (params?: { name?: string; page?: number; page_size?: number }) => {
+  const getFactoryList = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const query = new URLSearchParams();
-
-      if (params?.name?.trim()) query.append('name', params.name.trim());
-      if (params?.page) query.append('page', params.page.toString());
-      if (params?.page_size) query.append('page_size', params.page_size.toString());
-
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/factory${
-        query.toString() ? `?${query.toString()}` : ''
-      }`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/factory`;
 
       const response = await fetch(url, {
         method: 'GET',
@@ -34,9 +25,9 @@ export const useGetFactoryList = () => {
       });
 
       if (response.ok) {
-        const result: FactoriesListResponseModel = await response.json();
-        setFactoryList(result.data);
-        return { success: true, data: result.data };
+        const result: FactoriesResponseModel[] = await response.json();
+        setFactoryList(result);
+        return { success: true, data: result };
       } else {
         const errorData = await response.json();
         const errorMessage =

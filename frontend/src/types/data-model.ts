@@ -124,11 +124,6 @@ export interface FactoriesResponseModel {
   invited_by: number;
 }
 
-// 공장 목록 조회
-export interface FactoriesListResponseModel extends PaginationModel {
-  data: FactoriesResponseModel[];
-}
-
 // 공장 수정
 export interface FactoriesUpdateModel {
   factory_id: number;

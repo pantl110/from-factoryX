@@ -167,6 +167,21 @@ const QuotationPageContent = () => {
         );
         setInitialQuotationProducts(initialProducts);
         setQuotationProducts(initialProducts);
+
+        // 초기 데이터 로드 시 hasQuotationProducts도 즉시 설정
+        const hasValidInitialProducts = initialProducts.every(
+          (product) =>
+            product.product_name &&
+            product.product_code &&
+            product.spec &&
+            product.unit &&
+            product.quantity &&
+            product.unit_price
+        );
+        setHasQuotationProducts(hasValidInitialProducts);
+      } else {
+        // 품목이 없는 경우
+        setHasQuotationProducts(false);
       }
     }
   }, [quotationData, isQuotationLoading]);
@@ -362,26 +377,43 @@ const QuotationPageContent = () => {
 
   // 폼 유효성 검사 - required 필드들이 모두 채워져 있는지 확인 (주문 확정용)
   const isFormValid = useMemo(() => {
-    const watchedValues = watch();
+    // 견적서 데이터가 아직 로드되지 않았으면 false 반환
+    if (!quotationData || isQuotationLoading) {
+      return false;
+    }
 
-    // required 필드들: 업체명, 사업자등록번호, 대표자명, 납기일자, 업태, 종목, 사업장주소
-    const requiredFields = [
-      'name',
-      'business_registration_number',
-      'representative_name',
-      'due_date',
-      'business_type',
-      'business_category',
-      'address',
-    ];
+    // 실시간으로 특정 필드들을 watch
+    const name = watch('name') || '';
+    const business_registration_number =
+      watch('business_registration_number') || '';
+    const representative_name = watch('representative_name') || '';
+    const due_date = watch('due_date') || '';
+    const business_type = watch('business_type') || '';
+    const business_category = watch('business_category') || '';
+    const address = watch('address') || '';
 
-    const allRequiredFieldsFilled = requiredFields.every((field) => {
-      const value = watchedValues[field as keyof QuotationFormModel];
-      return value && value.toString().trim() !== '';
-    });
+    // required 필드들이 모두 채워져 있는지 확인
+    const allRequiredFieldsFilled =
+      name.trim() !== '' &&
+      business_registration_number.trim() !== '' &&
+      representative_name.trim() !== '' &&
+      due_date.trim() !== '' &&
+      business_type.trim() !== '' &&
+      business_category.trim() !== '' &&
+      address.trim() !== '';
 
     return allRequiredFieldsFilled;
-  }, [watch]);
+  }, [
+    watch('name'),
+    watch('business_registration_number'),
+    watch('representative_name'),
+    watch('due_date'),
+    watch('business_type'),
+    watch('business_category'),
+    watch('address'),
+    quotationData,
+    isQuotationLoading,
+  ]);
 
   return (
     <>

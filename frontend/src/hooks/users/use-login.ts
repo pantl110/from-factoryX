@@ -71,7 +71,7 @@ export const useLogin = (): UseLoginReturnModel => {
             console.log('userData', userData);
 
             try {
-              const factoryResult = await getFactoryList({ page: 1, page_size: 100 }); // 페이지 크기를 100으로 설정하여 모든 공장을 가져옴
+              const factoryResult = await getFactoryList();
               if (factoryResult.success && factoryResult.data) {
                 const factories = factoryResult.data; // 공장 리스트
                 const factoryCount = factories.length; // 공장 개수

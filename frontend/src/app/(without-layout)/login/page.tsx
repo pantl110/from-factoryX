@@ -56,7 +56,7 @@ const LoginPage = () => {
         router.push('/dashboard');
       } else if (result.factoryCount && result.factoryCount >= 2) {
         // 공장이 2개 이상일 때 - 공장 선택 모달을 보여줌
-        setFactories(result.factories || []);
+        setFactories(result.factories as FactoriesResponseModel[]);
         setShowFactorySelectModal(true);
       } else {
         // 기본적으로 대시보드로 이동
