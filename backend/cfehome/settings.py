@@ -14,6 +14,7 @@ from decouple import config
 from pathlib import Path
 from zeep import Client
 import sys
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -115,7 +116,7 @@ DJANGO_ENV_NAME = config("DJANGO_ENV_NAME", default=None)
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -252,14 +253,18 @@ CACHES = {
         "TIMEOUT": 300,  # 기본 캐시 만료 시간(초)
     }
 }
+if REDIS_PASSWORD:
+    CHANNEL_REDIS_URL = (
+        f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+    )
+else:
+    CHANNEL_REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [
-                f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
-            ],
+            "hosts": [CHANNEL_REDIS_URL],
             "symmetric_encryption_keys": [SECRET_KEY],  # 보안 강화
             "capacity": 1500,  # 채널 용량
             "expiry": 60,  # 메시지 만료 시간 (초)
