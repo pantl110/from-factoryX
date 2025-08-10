@@ -99,16 +99,11 @@ class SimpleCronTest(TestCase):
         
         # 출력 확인
         output = out.getvalue()
-        print(f"명령어 출력: {output}")
         
         # 상태 변경 확인
         self.equipment.refresh_from_db()
         self.project_plan.refresh_from_db()
         self.project.refresh_from_db()
-        
-        print(f"설비 상태: {self.equipment.status}")
-        print(f"프로젝트 계획 상태: {self.project_plan.status}")
-        print(f"프로젝트 상태: {self.project.status}")
         
         # 상태가 변경되었는지 확인
         self.assertEqual(self.equipment.status, 'running')

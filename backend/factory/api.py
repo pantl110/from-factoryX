@@ -48,19 +48,20 @@ async def list_factories(request):
 
     @sync_to_async
     def get_factories():
+        # FactoryMember 정보를 함께 조회하여 invited_at 포함
         member_factories = FactoryMember.objects.filter(
             user=user, 
             status=FactoryMember.MemberStatus.active
-        ).values_list('factory_id', flat=True)
+        ).select_related('factory').order_by('-invited_at')
         
-        queryset = Factory.objects.filter(id__in=member_factories).order_by("-created_at")
-        return list(queryset)
+        return list(member_factories)
 
-    factories = await get_factories()
+    member_factories = await get_factories()
     
     # 모델 객체를 딕셔너리로 변환
     factory_list = []
-    for factory in factories:
+    for member in member_factories:
+        factory = member.factory
         factory_list.append({
             "id": factory.id,
             "owner": factory.owner_id,
@@ -78,6 +79,9 @@ async def list_factories(request):
             "inviting": factory.inviting,
             "created_at": factory.created_at.isoformat() if factory.created_at else None,
             "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
+            "invited_at": member.invited_at.isoformat() if member.invited_at else None,
+            "role": member.role,
+            "invited_by": member.invited_by_id,
         })
     
     return factory_list
@@ -103,6 +107,17 @@ async def get_factory(request):
     except Factory.DoesNotExist:
         raise HttpError(404, "해당 공장이 존재하지 않습니다.")
     
+    # FactoryMember 정보 조회
+    @sync_to_async
+    def get_factory_member():
+        return FactoryMember.objects.filter(
+            factory=factory, 
+            user=user,
+            status=FactoryMember.MemberStatus.active
+        ).first()
+    
+    member = await get_factory_member()
+    
     return {
         "id": factory.id,
         "owner": factory.owner_id,
@@ -120,6 +135,9 @@ async def get_factory(request):
         "inviting": factory.inviting,
         "created_at": factory.created_at.isoformat() if factory.created_at else None,
         "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
+        "invited_at": member.invited_at.isoformat() if member and member.invited_at else None,
+        "role": member.role if member else None,
+        "invited_by": member.invited_by_id if member else None,
     }
 
 
@@ -152,6 +170,17 @@ async def update_factory(request, payload: FactoryUpdateIn):
     
     await factory.asave()
     
+    # FactoryMember 정보 조회
+    @sync_to_async
+    def get_factory_member():
+        return FactoryMember.objects.filter(
+            factory=factory, 
+            user=user,
+            status=FactoryMember.MemberStatus.active
+        ).first()
+    
+    member = await get_factory_member()
+    
     return {
         "id": factory.id,
         "owner": factory.owner_id,
@@ -169,6 +198,9 @@ async def update_factory(request, payload: FactoryUpdateIn):
         "inviting": factory.inviting,
         "created_at": factory.created_at.isoformat() if factory.created_at else None,
         "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
+        "invited_at": member.invited_at.isoformat() if member and member.invited_at else None,
+        "role": member.role if member else None,
+        "invited_by": member.invited_by_id if member else None,
     }
 
 

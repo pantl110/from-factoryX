@@ -434,6 +434,228 @@ class ProjectAPITestCase(TestCase):
             project.refresh_from_db()
             self.assertEqual(project.status, expected_korean_statuses[i])
 
+    def test_update_project_status_to_completed_with_material_history(self):
+        """프로젝트를 완료 상태로 변경할 때 원자재 히스토리 생성 및 ProjectPlan 완료 처리 테스트"""
+        from stock.models import Material, MaterialProduct, MaterialHistory
+        
+        # 원자재 생성
+        material1 = Material.objects.create(
+            factory=self.factory,
+            name='테스트 원자재 1',
+            code='MAT001',  # 고유한 코드 추가
+            unit='kg',
+            current_stock=100
+        )
+        
+        material2 = Material.objects.create(
+            factory=self.factory,
+            name='테스트 원자재 2',
+            code='MAT002',  # 고유한 코드 추가
+            unit='개',
+            current_stock=50
+        )
+        
+        # 제품과 원자재 연결
+        MaterialProduct.objects.create(
+            product=self.product1,
+            material=material1,
+            quantity=2.5  # 제품 1개당 원자재 1을 2.5kg 사용
+        )
+        
+        MaterialProduct.objects.create(
+            product=self.product1,
+            material=material2,
+            quantity=3  # 제품 1개당 원자재 2를 3개 사용
+        )
+        
+        # 프로젝트와 견적서 생성
+        project = Project.objects.create(status='생산 완료')
+        quotation = Quotation.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            project=project
+        )
+        
+        # 견적서 품목 생성
+        quotation_product1 = QuotationProduct.objects.create(
+            quotation=quotation,
+            product=self.product1,
+            quantity=10,
+            unit_price=1000
+        )
+        
+        quotation_product2 = QuotationProduct.objects.create(
+            quotation=quotation,
+            product=self.product2,
+            quantity=5,
+            unit_price=2000
+        )
+        
+        # 생산 계획 생성 (완료되지 않은 상태)
+        plan1 = ProjectPlan.objects.create(
+            project=project,
+            product=quotation_product1,
+            equipment=self.equipment,
+            status='생산 완료',
+            quantity=10,
+            start_date=date.today() - timedelta(days=5),
+            end_date=date.today(),
+            avg_production_time=30,  # 평균 생산 시간 추가
+            is_completed=False
+        )
+        
+        plan2 = ProjectPlan.objects.create(
+            project=project,
+            product=quotation_product2,
+            equipment=self.equipment,
+            status='생산 완료',
+            quantity=5,
+            start_date=date.today() - timedelta(days=3),
+            end_date=date.today(),
+            avg_production_time=30,  # 평균 생산 시간 추가
+            is_completed=False
+        )
+        
+        # 프로젝트를 완료 상태로 변경
+        url = f'/v1/project/{project.id}/status?factory_id={self.factory.id}'
+        payload = {'status': 'completed'}
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 프로젝트 상태 확인
+        project.refresh_from_db()
+        self.assertEqual(project.status, '프로젝트 완료')
+        
+        # ProjectPlan 완료 상태 확인
+        plan1.refresh_from_db()
+        plan2.refresh_from_db()
+        self.assertTrue(plan1.is_completed)
+        self.assertTrue(plan2.is_completed)
+        
+        # 원자재 히스토리 생성 확인
+        material_histories = MaterialHistory.objects.filter(
+            material__in=[material1, material2]
+        ).order_by('material__name')
+        
+        self.assertEqual(len(material_histories), 2)
+        
+        # material1 히스토리 확인 (제품1에만 연결되어 있음)
+        material1_history = material_histories.filter(material=material1).first()
+        self.assertIsNotNone(material1_history)
+        self.assertEqual(material1_history.type, 'consumption')
+        self.assertEqual(material1_history.quantity, 2.5 * 10)  # 2.5kg * 10개
+        
+        # material2 히스토리 확인 (제품1에만 연결되어 있음)
+        material2_history = material_histories.filter(material=material2).first()
+        self.assertIsNotNone(material2_history)
+        self.assertEqual(material2_history.type, 'consumption')
+        self.assertEqual(material2_history.quantity, 3 * 10)  # 3개 * 10개
+
+    def test_update_project_status_to_completed_already_completed_plans(self):
+        """이미 완료된 ProjectPlan이 있는 경우 중복 처리 방지 테스트"""
+        from stock.models import Material, MaterialProduct, MaterialHistory
+        
+        # 원자재 생성
+        material = Material.objects.create(
+            factory=self.factory,
+            name='테스트 원자재',
+            unit='kg',
+            current_stock=100
+        )
+        
+        # 제품과 원자재 연결
+        MaterialProduct.objects.create(
+            product=self.product1,
+            material=material,
+            quantity=1.5
+        )
+        
+        # 프로젝트와 견적서 생성
+        project = Project.objects.create(status='생산 완료')
+        quotation = Quotation.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            project=project
+        )
+        
+        # 견적서 품목 생성
+        quotation_product = QuotationProduct.objects.create(
+            quotation=quotation,
+            product=self.product1,
+            quantity=5,
+            unit_price=1000
+        )
+        
+        # 이미 완료된 생산 계획 생성
+        plan = ProjectPlan.objects.create(
+            project=project,
+            product=quotation_product,
+            equipment=self.equipment,
+            status='생산 완료',
+            quantity=5,
+            start_date=date.today() - timedelta(days=3),
+            end_date=date.today(),
+            avg_production_time=30,  # 평균 생산 시간 추가
+            is_completed=True  # 이미 완료된 상태
+        )
+        
+        # 기존 원자재 히스토리 개수 확인
+        initial_history_count = MaterialHistory.objects.count()
+        
+        # 프로젝트를 완료 상태로 변경
+        url = f'/v1/project/{project.id}/status?factory_id={self.factory.id}'
+        payload = {'status': 'completed'}
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 프로젝트 상태 확인
+        project.refresh_from_db()
+        self.assertEqual(project.status, '프로젝트 완료')
+        
+        # ProjectPlan 상태는 그대로 유지 (이미 완료된 상태)
+        plan.refresh_from_db()
+        self.assertTrue(plan.is_completed)
+        
+        # 원자재 히스토리가 추가로 생성되지 않았는지 확인
+        final_history_count = MaterialHistory.objects.count()
+        self.assertEqual(final_history_count, initial_history_count)
+
+    def test_update_project_status_to_completed_no_plans(self):
+        """생산 계획이 없는 프로젝트를 완료 상태로 변경하는 테스트"""
+        # 프로젝트 생성 (생산 계획 없음)
+        project = Project.objects.create(status='생산 완료')
+        
+        # 프로젝트를 완료 상태로 변경
+        url = f'/v1/project/{project.id}/status?factory_id={self.factory.id}'
+        payload = {'status': 'completed'}
+        
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {self.token}'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 프로젝트 상태 확인
+        project.refresh_from_db()
+        self.assertEqual(project.status, '프로젝트 완료')
+
     def test_update_project_transact_date_success(self):
         """거래명세서 발급일 업데이트 성공 테스트"""
         project = Project.objects.create()
@@ -978,7 +1200,6 @@ class ProjectAPITestCase(TestCase):
         
         # project4는 자동으로 중단 상태로 변경되었으므로 제외됨
         project4.refresh_from_db()
-        print(f"Project4 status: {project4.status}, updated_at: {project4.updated_at}")
         if project4.status == "중단":
             self.assertNotIn(project4.id, project_ids)  # 자동 중단된 프로젝트는 제외됨
         else:

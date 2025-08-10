@@ -70,6 +70,299 @@ class TestUser(TestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
 
+    async def test_signup_with_invite_token(self):
+        """
+        초대 토큰을 사용한 회원가입 테스트
+        """
+        from datetime import datetime, timezone, timedelta
+        
+        # 팩토리 생성
+        factory = await sync_to_async(Factory.objects.create)(
+            name="테스트 팩토리",
+            business_registration_number="123-45-67890",
+            owner=self.user
+        )
+        
+        # 초대 정보 추가
+        invite_email = "invited@example.com"
+        
+        factory.inviting = [{
+            "email": invite_email,
+            "role": "member",
+            "invited_by": self.user.id,
+            "invited_at": datetime.now(timezone.utc).isoformat()
+        }]
+        await sync_to_async(factory.save)()
+        
+        # 이메일 인증 생성
+        await EmailVerification.objects.acreate(
+            email=invite_email,
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        
+        # 초대받은 정보로 회원가입
+        data = {
+            "email": invite_email,
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+            "factory_id": factory.id,
+            "invite_role": "member"
+        }
+        
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 200)
+        
+        # 사용자가 생성되었는지 확인
+        new_user = await User.objects.aget(email=invite_email)
+        self.assertIsNotNone(new_user)
+        
+        # 팩토리 멤버로 등록되었는지 확인
+        member = await FactoryMember.objects.aget(user=new_user, factory=factory)
+        self.assertEqual(member.role, "member")
+        self.assertEqual(member.status, "활성")
+        
+        # inviting에서 제거되었는지 확인
+        await sync_to_async(factory.refresh_from_db)()
+        self.assertEqual(len(factory.inviting), 0)
+
+    async def test_signup_with_invalid_invite(self):
+        """
+        유효하지 않은 초대로 회원가입 시도 테스트
+        """
+        # 팩토리 생성
+        factory = await sync_to_async(Factory.objects.create)(
+            name="테스트 팩토리",
+            business_registration_number="123-45-67890",
+            owner=self.user
+        )
+        
+        # 이메일 인증 생성
+        await EmailVerification.objects.acreate(
+            email="test@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        
+        # 초대받지 않은 이메일로 회원가입 시도
+        data = {
+            "email": "test@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+            "factory_id": factory.id,
+            "invite_role": "member"
+        }
+        
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("해당 팩토리에서 초대받지 않은 이메일입니다", response.json()["detail"])
+
+    async def test_signup_without_invite_token(self):
+        """
+        초대 토큰 없이 일반 회원가입 테스트
+        """
+        # 이메일 인증 생성
+        await EmailVerification.objects.acreate(
+            email="normal@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        
+        # 초대 토큰 없이 회원가입
+        data = {
+            "email": "normal@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+        }
+        
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 200)
+        
+        # 사용자가 생성되었는지 확인
+        new_user = await User.objects.aget(email="normal@example.com")
+        self.assertIsNotNone(new_user)
+        
+        # 팩토리 멤버로 등록되지 않았는지 확인 (초대 토큰이 없으므로)
+        members = await FactoryMember.objects.filter(user=new_user).acount()
+        self.assertEqual(members, 0)
+
+    async def test_signup_with_expired_invite_token(self):
+        """
+        만료된 초대 토큰으로 회원가입 시도 테스트
+        """
+        from datetime import datetime, timezone, timedelta
+        
+        # 팩토리 생성
+        factory = await sync_to_async(Factory.objects.create)(
+            name="테스트 팩토리",
+            business_registration_number="123-45-67890",
+            owner=self.user
+        )
+        
+        # 만료된 초대 정보 추가 (25시간 전)
+        invite_email = "expired@example.com"
+        expired_time = datetime.now(timezone.utc) - timedelta(hours=25)
+        factory.inviting = [{
+            "email": invite_email,
+            "role": "member",
+            "invited_by": self.user.id,
+            "invited_at": expired_time.isoformat()
+        }]
+        await sync_to_async(factory.save)()
+        
+        # 이메일 인증 생성
+        await EmailVerification.objects.acreate(
+            email=invite_email,
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        
+        # 만료된 초대로 회원가입 시도
+        data = {
+            "email": invite_email,
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+            "factory_id": factory.id,
+            "invite_role": "member"
+        }
+        
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("초대가 만료되었습니다", response.json()["detail"])
+
+    async def test_signup_with_mismatched_email_invite_token(self):
+        """
+        초대받은 이메일과 가입 이메일이 일치하지 않는 경우 테스트
+        """
+        from datetime import datetime, timezone
+        
+        # 팩토리 생성
+        factory = await sync_to_async(Factory.objects.create)(
+            name="테스트 팩토리",
+            business_registration_number="123-45-67890",
+            owner=self.user
+        )
+        
+        # 초대 정보 추가
+        invite_email = "invited@example.com"
+        factory.inviting = [{
+            "email": invite_email,
+            "role": "member",
+            "invited_by": self.user.id,
+            "invited_at": datetime.now(timezone.utc).isoformat()
+        }]
+        await sync_to_async(factory.save)()
+        
+        # 다른 이메일로 인증 생성
+        await EmailVerification.objects.acreate(
+            email="different@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        
+        # 다른 이메일로 회원가입 시도
+        data = {
+            "email": "different@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+            "factory_id": factory.id,
+            "invite_role": "member"
+        }
+        
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("해당 팩토리에서 초대받지 않은 이메일입니다", response.json()["detail"])
+
+    async def test_signup_with_expired_invite(self):
+        """
+        만료된 초대로 회원가입 시도 테스트
+        """
+        from datetime import datetime, timezone, timedelta
+        
+        # 팩토리 생성
+        factory = await sync_to_async(Factory.objects.create)(
+            name="테스트 팩토리",
+            business_registration_number="123-45-67890",
+            owner=self.user
+        )
+        
+        # 만료된 초대 정보 추가 (25시간 전)
+        invite_email = "expired@example.com"
+        expired_time = datetime.now(timezone.utc) - timedelta(hours=25)
+        
+        factory.inviting = [{
+            "email": invite_email,
+            "role": "member",
+            "invited_by": self.user.id,
+            "invited_at": expired_time.isoformat()
+        }]
+        await sync_to_async(factory.save)()
+        
+        # 이메일 인증 생성
+        await EmailVerification.objects.acreate(
+            email=invite_email,
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        
+        # 만료된 초대로 회원가입 시도
+        data = {
+            "email": invite_email,
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+            "factory_id": factory.id,
+            "invite_role": "member"
+        }
+        
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("초대가 만료되었습니다", response.json()["detail"])
+
+    async def test_signup_with_manipulated_factory_id(self):
+        """
+        조작된 factory_id로 회원가입 시도 테스트
+        """
+        # 이메일 인증 생성
+        await EmailVerification.objects.acreate(
+            email="manipulated@example.com",
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+        
+        # 존재하지 않는 팩토리 ID로 회원가입 시도
+        data = {
+            "email": "manipulated@example.com",
+            "password": "password1234!",
+            "password_confirm": "password1234!",
+            "terms_of_service": True,
+            "privacy_policy_agreement": True,
+            "factory_id": 99999,  # 존재하지 않는 팩토리 ID
+            "invite_role": "member"
+        }
+        
+        response = await self.client.post("/signup", json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("존재하지 않는 팩토리입니다", response.json()["detail"])
+
     async def test_login_success(self):
         """
         로그인 성공 테스트"""

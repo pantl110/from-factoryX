@@ -355,7 +355,7 @@ class QuotationProductAPITestCase(TestCase):
             **self.get_auth_headers()
         )
         
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
 
     def test_save_draft_quotation_invalid_delivery_date_format(self):
         """잘못된 납품 날짜 형식으로 임시 저장 실패 테스트"""
@@ -379,7 +379,7 @@ class QuotationProductAPITestCase(TestCase):
             **self.get_auth_headers()
         )
         
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
 
     def test_save_draft_quotation_unauthorized_factory(self):
         """권한이 없는 공장으로 임시 저장 실패 테스트"""

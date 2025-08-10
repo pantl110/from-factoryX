@@ -505,29 +505,24 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertIn('운영자 공장', factory_names)
         self.assertIn('조회자 공장', factory_names)
 
-    def test_list_factories_ordered_by_created_at_desc(self):
-        """공장 목록이 생성일 기준 내림차순으로 정렬되는지 테스트"""
+    def test_list_factories_ordered_by_invited_at_desc(self):
+        """공장 목록이 초대일 기준 내림차순으로 정렬되는지 테스트"""
         # 기존 데이터 정리
         FactoryMember.objects.filter(user=self.user).delete()
         Factory.objects.filter(owner=self.user).delete()
         
-        # 새로운 공장들 생성 (시간 간격을 두고)
-        from django.utils import timezone
-        import time
-        
+        # 새로운 공장들 생성
         factory1 = Factory.objects.create(
             name='첫 번째 공장',
             owner=self.user,
             business_address='서울시 강남구'
         )
-        time.sleep(0.1)  # 시간 간격
         
         factory2 = Factory.objects.create(
             name='두 번째 공장',
             owner=self.user,
             business_address='서울시 서초구'
         )
-        time.sleep(0.1)  # 시간 간격
         
         factory3 = Factory.objects.create(
             name='세 번째 공장',
@@ -535,30 +530,42 @@ class FactoryCreateAPITestCase(TestCase):
             business_address='서울시 마포구'
         )
         
-        # FactoryMember들 생성
+        # FactoryMember들 생성 (시간 간격을 두고)
+        from django.utils import timezone
+        import time
+        
+        base_time = timezone.now()
+        
         member1 = FactoryMember.objects.create(
             factory=factory1,
             user=self.user,
             role=FactoryMember.FactoryMemberType.admin,
             status=FactoryMember.MemberStatus.active,
-            invited_by=self.user
+            invited_by=self.user,
+            invited_at=base_time
         )
+        time.sleep(0.1)  # 시간 간격
+        
         member2 = FactoryMember.objects.create(
             factory=factory2,
             user=self.user,
             role=FactoryMember.FactoryMemberType.admin,
             status=FactoryMember.MemberStatus.active,
-            invited_by=self.user
+            invited_by=self.user,
+            invited_at=base_time + timezone.timedelta(seconds=1)
         )
+        time.sleep(0.1)  # 시간 간격
+        
         member3 = FactoryMember.objects.create(
             factory=factory3,
             user=self.user,
             role=FactoryMember.FactoryMemberType.admin,
             status=FactoryMember.MemberStatus.active,
-            invited_by=self.user
+            invited_by=self.user,
+            invited_at=base_time + timezone.timedelta(seconds=2)
         )
         
-        url = f'/v1/factory?factory_id={factory3.id}'
+        url = '/v1/factory'
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f'Bearer {self.token}'
@@ -572,11 +579,11 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertIsInstance(data['data'], list)
         self.assertEqual(len(data['data']), 3)
         
-        # 생성일 기준 내림차순 정렬 확인 (최신이 먼저)
+        # 초대일 기준 내림차순 정렬 확인 (최신이 먼저)
         factory_names = [factory['name'] for factory in data['data']]
-        self.assertEqual(factory_names[0], '세 번째 공장')  # 가장 최근
+        self.assertEqual(factory_names[0], '세 번째 공장')  # 가장 최근에 초대됨
         self.assertEqual(factory_names[1], '두 번째 공장')
-        self.assertEqual(factory_names[2], '첫 번째 공장')  # 가장 오래됨
+        self.assertEqual(factory_names[2], '첫 번째 공장')  # 가장 오래전에 초대됨
 
     def test_create_factory_success(self):
         """공장 등록 성공 테스트"""

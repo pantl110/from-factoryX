@@ -103,7 +103,16 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
             quotation.client = client
         
         if payload.due_date:
-            quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d").date()
+            # 시간 정보가 포함된 경우와 날짜만 있는 경우 모두 처리
+            try:
+                # "YYYY-MM-DD HH:MM" 형식 시도
+                quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d %H:%M").date()
+            except ValueError:
+                try:
+                    # "YYYY-MM-DD" 형식 시도
+                    quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d").date()
+                except ValueError:
+                    raise HttpError(400, "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식을 사용하세요.")
         
         await sync_to_async(quotation.save)()
         
@@ -129,13 +138,26 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                     quantity = prod.quantity if prod.quantity is not None else 0
                     unit_price = prod.unit_price if prod.unit_price is not None else 0
                     
+                    # delivery_date 시간 처리
+                    delivery_date = None
+                    if prod.delivery_date:
+                        try:
+                            # "YYYY-MM-DD HH:MM" 형식 시도
+                            delivery_date = datetime.strptime(prod.delivery_date, "%Y-%m-%d %H:%M").date()
+                        except ValueError:
+                            try:
+                                # "YYYY-MM-DD" 형식 시도
+                                delivery_date = datetime.strptime(prod.delivery_date, "%Y-%m-%d").date()
+                            except ValueError:
+                                raise HttpError(400, "올바르지 않은 납품일자 형식입니다. YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식을 사용하세요.")
+                    
                     await QuotationProduct.objects.acreate(
                         quotation=quotation,
                         product=product,
                         quantity=quantity,
                         unit_price=unit_price,
                         is_delivery=prod.is_delivery,
-                        delivery_date=datetime.strptime(prod.delivery_date, "%Y-%m-%d").date() if prod.delivery_date else None
+                        delivery_date=delivery_date
                     )
         
         return 200, {"quotation_id": quotation.id, "status": "draft_saved"}

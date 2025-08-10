@@ -312,16 +312,16 @@ class ProjectLogAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
-        self.assertEqual(len(data['items']), 2)
+        self.assertEqual(len(data['data']), 2)
         
         # 반품 로그 확인
-        refund_log_data = next(log for log in data['items'] if log['type'] == 'refund')
+        refund_log_data = next(log for log in data['data'] if log['type'] == 'refund')
         self.assertEqual(refund_log_data['id'], refund_log.id)
         self.assertEqual(refund_log_data['refund_id'], refund.id)
         self.assertEqual(refund_log_data['title'], '반품 접수 현황')
         
         # 일반 로그 확인
-        general_log_data = next(log for log in data['items'] if log['type'] == 'plan')
+        general_log_data = next(log for log in data['data'] if log['type'] == 'plan')
         self.assertEqual(general_log_data['id'], general_log.id)
         self.assertIsNone(general_log_data['refund_id'])
         self.assertEqual(general_log_data['title'], '생산 계획 생성')

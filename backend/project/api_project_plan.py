@@ -232,7 +232,9 @@ async def list_ongoing_project_plans(request, filters: ProjectPlanListFilter = Q
                     quantity=plan.quantity,
                     start_date=plan.start_date,
                     end_date=plan.end_date,
-                    avg_production_time=plan.avg_production_time
+                    avg_production_time=plan.avg_production_time,
+                    is_refunded=plan.is_refunded,
+                    is_completed=plan.is_completed
                 ))
             return plans_detail_list
 
@@ -317,7 +319,9 @@ async def list_completed_project_plans(request, filters: ProjectPlanListFilter =
                     quantity=plan.quantity,
                     start_date=plan.start_date,
                     end_date=plan.end_date,
-                    avg_production_time=plan.avg_production_time
+                    avg_production_time=plan.avg_production_time,
+                    is_refunded=plan.is_refunded,
+                    is_completed=plan.is_completed
                 ))
             return plans_detail_list
 
@@ -543,7 +547,9 @@ async def list_project_plans(request, project_id: int):
             quantity=plan.quantity,
             start_date=plan.start_date,
             end_date=plan.end_date,
-            avg_production_time=plan.avg_production_time
+            avg_production_time=plan.avg_production_time,
+            is_refunded=plan.is_refunded,
+            is_completed=plan.is_completed
         ))
     
     return 200, plans_detail_list
@@ -643,7 +649,6 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
             except HttpError:
                 raise
             except Exception as e:
-                print(f"Raw material adjustment failed: {str(e)}")
                 raise HttpError(500, f"원자재 소모량 조정 중 오류가 발생했습니다: {str(e)}")
             
             # 두 번째 계획: 부족한 수량에 buffer rate 적용 (다른 설비 사용)
@@ -741,7 +746,6 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
             except HttpError:
                 raise
             except Exception as e:
-                print(f"Raw material adjustment failed: {str(e)}")
                 raise HttpError(500, f"원자재 소모량 조정 중 오류가 발생했습니다: {str(e)}")
             
         # 사용자가 수정한 수량이 주문 수량과 같은 경우
@@ -789,7 +793,6 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
             except HttpError:
                 raise
             except Exception as e:
-                print(f"Raw material adjustment failed: {str(e)}")
                 raise HttpError(500, f"원자재 소모량 조정 중 오류가 발생했습니다: {str(e)}")
 
     # 이후에도 plan.project, plan.product 대신 project, product 사용

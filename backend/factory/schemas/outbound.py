@@ -24,6 +24,9 @@ class FactoryOut(Schema):
     inviting: list
     created_at: str
     updated_at: str
+    invited_at: Optional[str]
+    role: str
+    invited_by: Optional[int]
 
 
 # ------------------------------------------------------------

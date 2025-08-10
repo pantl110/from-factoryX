@@ -12,6 +12,12 @@ class UserSignupIn(Schema):
     marketing_agreement: bool = Field(
         default=False, description="마케팅 정보 수신 동의 여부"
     )
+    factory_id: Optional[int] = Field(
+        None, description="팩토리 ID (초대받은 경우)"
+    )
+    invite_role: Optional[str] = Field(
+        None, description="초대받은 역할 (초대받은 경우)"
+    )
 
 
 class UserLoginIn(Schema):

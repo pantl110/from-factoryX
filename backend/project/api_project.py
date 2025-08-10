@@ -3,7 +3,7 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from django.db.models import Exists, OuterRef
 from asgiref.sync import sync_to_async
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from api.security import jwt_auth
 from typing import List
 
@@ -423,8 +423,61 @@ async def update_project_status(request, project_id: int, payload: ProjectStatus
 
     try:
         project = await Project.objects.aget(id=project_id)
+        
         project.status = status_mapping[payload.status]
         await project.asave()
+        
+        # 프로젝트 완료 처리
+        if payload.status == "completed":
+            @sync_to_async
+            def handle_project_completion(project_id, factory_id):
+                from project.models import ProjectPlan
+                from stock.models import MaterialProduct, Material, MaterialHistory
+                
+                # 해당 프로젝트의 모든 생산 계획 조회
+                project_plans = ProjectPlan.objects.filter(project_id=project_id)
+                
+                for plan in project_plans:
+                    # 이미 완료된 계획은 건너뛰기
+                    if plan.is_completed:
+                        continue
+                    
+                    # 계획을 완료 상태로 변경
+                    plan.is_completed = True
+                    plan.save()
+                    
+                    # 해당 제품에 연결된 원자재 조회
+                    quotation_product = plan.product
+                    material_products = MaterialProduct.objects.filter(product=quotation_product.product)
+                    
+                    for material_product in material_products:
+                        material = material_product.material
+                        consumed_quantity = material_product.quantity * plan.quantity
+                        
+                        # 원자재 히스토리 생성
+                        # client는 factory의 기본 고객으로 설정 (임시)
+                        from factory.models import FactoryClient
+                        default_client = FactoryClient.objects.filter(factory_id=int(factory_id)).first()
+                        if not default_client:
+                            # 기본 고객이 없으면 생성
+                            default_client = FactoryClient.objects.create(
+                                factory_id=int(factory_id),
+                                name="기본 고객",
+                                type="company"
+                            )
+                        
+                        # 현재 재고 계산
+                        current_stock = material.current_stock - consumed_quantity
+                        
+                        MaterialHistory.objects.create(
+                            material=material,
+                            type="consumption",
+                            client=default_client,
+                            quantity=consumed_quantity,
+                            total_stock=current_stock
+                        )
+            
+            await handle_project_completion(project.id, int(factory_id))
 
         return 200, ProjectDetailOut(
             id=project.id,

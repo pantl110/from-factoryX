@@ -83,38 +83,41 @@ async def list_project_logs(request, project_id: int = Query(...)):
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
     
     @sync_to_async
-    def get_project_logs():
+    def get_project_logs_with_refunds():
         logs = list(ProjectLog.objects.filter(project=project).order_by('-created_at'))
-        return logs
+        logs_detail_list = []
+        
+        for log in logs:
+            # 반품 로그인 경우 반품 ID 가져오기
+            refund_id = None
+            if log.type == 'refund':
+                try:
+                    # related_name="refunds"를 통해 접근
+                    refund = log.refunds.first()
+                    if refund:
+                        refund_id = refund.id
+                except Exception:
+                    pass  # 반품이 없는 경우 None 유지
+            
+            logs_detail_list.append({
+                'id': log.id,
+                'project_id': log.project_id,
+                'type': log.type,
+                'title': log.title,
+                'content': log.content,
+                'refund_id': refund_id,
+                'created_at': log.created_at,
+                'updated_at': log.updated_at
+            })
+        
+        return logs_detail_list
     
-    logs = await get_project_logs()
+    logs_detail_list = await get_project_logs_with_refunds()
     
-    if not logs:
+    if not logs_detail_list:
         raise HttpError(404, "해당 프로젝트에 생성된 로그가 없습니다.")
     
-    logs_detail_list = []
-    for log in logs:
-        # 반품 로그인 경우 반품 ID 가져오기
-        refund_id = None
-        if log.type == 'refund':
-            try:
-                refund = log.refund
-                refund_id = refund.id
-            except:
-                pass  # 반품이 없는 경우 None 유지
-        
-        logs_detail_list.append(ProjectLogDetailOut(
-            id=log.id,
-            project_id=log.project_id,  # 직접 project_id 필드 사용
-            type=log.type,
-            title=log.title,
-            content=log.content,
-            refund_id=refund_id,
-            created_at=log.created_at,
-            updated_at=log.updated_at
-        ))
-    
-    return logs_detail_list
+    return [ProjectLogDetailOut(**log_data) for log_data in logs_detail_list]
 
 
 @router.patch(
