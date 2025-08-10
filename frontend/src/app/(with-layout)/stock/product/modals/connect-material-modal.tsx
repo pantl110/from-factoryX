@@ -3,7 +3,6 @@ import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
-import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from '../../material/modals/manual-add-material';
 import {
   MaterialItemModel,
@@ -19,7 +18,7 @@ import {
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useFactoryStore from '@/store/factory-store';
-import ConnetionItem from '../../material/modals/connetion-item';
+import ConnetionItem from '../../modals/connetion-item';
 
 interface ConnectMaterialModalProps {
   onClose: () => void;

@@ -4,22 +4,30 @@ import {
   LocationListResponseModel,
   UpdateLocationModel,
 } from '@/types/data-model';
+import useFactoryStore from '@/store/factory-store';
 
 const useLocation = () => {
+  const factoryId = useFactoryStore((state) => state.factoryId);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<
     LocationListResponseModel | LocationModel | null
   >(null);
-
+  
   // 창고 위치 생성
   // material id/product id에 창고 위치를 생성
   const createLocation = async (payload: LocationModel) => {
     setIsLoading(true);
     setError(null);
+    
+    if (!factoryId) {
+      setError('factory_id가 필요합니다.');
+      return { success: false, error: 'factory_id가 필요합니다.' };
+    }
+    
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/location`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/location?factory_id=${factoryId}`,
         {
           method: 'POST',
           credentials: 'include',
@@ -48,8 +56,14 @@ const useLocation = () => {
   const listLocations = async (type: 'material' | 'product', id: number) => {
     setIsLoading(true);
     setError(null);
+    
+    if (!factoryId) {
+      setError('factory_id가 필요합니다.');
+      return { success: false, error: 'factory_id가 필요합니다.' };
+    }
+    
     try {
-      const params = new URLSearchParams({ type, id: String(id) });
+      const params = new URLSearchParams({ type, id: String(id), factory_id: String(factoryId) });
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/location?${params.toString()}`,
         {
@@ -85,9 +99,15 @@ const useLocation = () => {
   ) => {
     setIsLoading(true);
     setError(null);
+    
+    if (!factoryId) {
+      setError('factory_id가 필요합니다.');
+      return { success: false, error: 'factory_id가 필요합니다.' };
+    }
+    
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/location/${locationId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/location/${locationId}?factory_id=${factoryId}`,
         {
           method: 'PATCH',
           credentials: 'include',
@@ -118,8 +138,14 @@ const useLocation = () => {
   ) => {
     setIsLoading(true);
     setError(null);
+    
+    if (!factoryId) {
+      setError('factory_id가 필요합니다.');
+      return { success: false, error: 'factory_id가 필요합니다.' };
+    }
+    
     try {
-      const params = new URLSearchParams({ type });
+      const params = new URLSearchParams({ type, factory_id: String(factoryId) });
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/location/${locationId}?${params.toString()}`,
         {
