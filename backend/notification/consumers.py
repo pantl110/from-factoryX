@@ -2,21 +2,39 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from channels.db import database_sync_to_async
 from .models import Notification
+from factory.models import Factory, FactoryMember
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope["user"]
-        self.user_id = int(self.scope["url_route"]["kwargs"]["user_id"])
+        self.factory_id = int(self.scope["url_route"]["kwargs"]["factory_id"])
+        self.factory = None
+        self.factory_member = None
         self.notification_group_name = None
 
-        # 권한 체크
-        if not self.user or self.user.id != self.user_id:
+        # 사용자 인증 체크
+        # if not self.user or not self.user.is_authenticated:
+        #     await self.close()
+        #     return
+
+        # Factory와 FactoryMember 조회
+        try:
+            self.factory = await self.get_factory(self.factory_id)
+            # if not self.factory:
+            #     await self.close()
+            #     return
+
+            self.factory_member = await self.get_factory_member(self.factory, self.user)
+            # if not self.factory_member:
+            #     await self.close()
+            #     return
+        except Exception:
             await self.close()
             return
 
         # 그룹 이름 설정
-        self.notification_group_name = f"notification_{self.user_id}"
+        self.notification_group_name = f"notification_{self.factory_id}"
 
         # 그룹에 추가
         await self.channel_layer.group_add(
@@ -27,8 +45,29 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_send(
             self.notification_group_name,
-            {"type": "user_notification_connected", "user_id": str(self.user.id)},
+            {
+                "type": "user_notification_connected",
+                "user_id": str(self.user.id),
+                "factory_id": str(self.factory.id) if self.factory else None,
+                "factory_member_id": (
+                    str(self.factory_member.id) if self.factory_member else None
+                ),
+            },
         )
+
+    @database_sync_to_async
+    def get_factory(self, factory_id):
+        try:
+            return Factory.objects.get(id=factory_id)
+        except Factory.DoesNotExist:
+            return None
+
+    @database_sync_to_async
+    def get_factory_member(self, factory, user):
+        try:
+            return FactoryMember.objects.get(factory=factory, user=user)
+        except FactoryMember.DoesNotExist:
+            return None
 
     async def disconnect(self, close_code):
         if hasattr(self, "notification_group_name") and self.notification_group_name:
@@ -72,8 +111,11 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def check_has_unread(self):
+        if not self.factory_member:
+            return False
         return Notification.objects.filter(
-            receiver_id=self.user_id, is_read=False
+            receiver_id=self.factory_member.id,
+            is_read=False,
         ).exists()
 
     async def send_unread_notifications(self):
@@ -98,7 +140,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_unread_notifications(self):
         return list(
-            Notification.objects.filter(receiver_id=self.user_id, is_read=False)
+            Notification.objects.filter(receiver_id=self.user.id, is_read=False)
             .select_related("receiver")
             .values(
                 "id",
@@ -176,7 +218,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         """
         await self.send(
             text_data=json.dumps(
-                {"type": "user_connected", "user_id": event["user_id"]}
+                {
+                    "type": "user_connected",
+                    "user_id": event["user_id"],
+                    "factory_id": event["factory_id"],
+                    "factory_member_id": event["factory_member_id"],
+                }
             )
         )
 
@@ -186,7 +233,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         """
         await self.send(
             text_data=json.dumps(
-                {"type": "user_disconnected", "user_id": event["user_id"]}
+                {
+                    "type": "user_disconnected",
+                    "user_id": event["user_id"],
+                    "factory_id": event["factory_id"],
+                    "factory_member_id": event["factory_member_id"],
+                }
             )
         )
 
@@ -202,7 +254,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     def mark_notification_as_read(self, notification_id):
         try:
             notification = Notification.objects.get(
-                id=notification_id, receiver_id=self.user_id
+                id=notification_id, receiver_id=self.user.id
             )
             notification.is_read = True
             notification.save()
@@ -212,7 +264,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def mark_all_notifications_as_read(self):
-        Notification.objects.filter(receiver_id=self.user_id, is_read=False).update(
+        Notification.objects.filter(receiver_id=self.user.id, is_read=False).update(
             is_read=True
         )
 

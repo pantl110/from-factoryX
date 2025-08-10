@@ -1,4 +1,5 @@
 from ninja import Router
+from ninja.pagination import paginate
 from api.security import jwt_auth
 from notification.models import Notification
 from notification.schemas.outbound import NotificationOut
@@ -8,6 +9,7 @@ from typing import List
 from notification.utils import get_notification_by_id
 from factory.utils import get_factory_by_id
 from channels.layers import get_channel_layer
+from websocket.utils import send_notification_to_factory
 
 
 router = Router(tags=["Notification"], auth=jwt_auth)
@@ -19,6 +21,7 @@ router = Router(tags=["Notification"], auth=jwt_auth)
     description="해당 공장에 대한 알림을 조회합니다.",
     response=List[NotificationOut],
 )
+@paginate
 async def get_notifications(request, factory_id: int):
 
     user = request.auth
@@ -61,25 +64,36 @@ async def get_unread_notifications(request, factory_id: int):
 
 
 @router.get(
-    "/test",
+    "/test/{factory_id}",
     summary="[C] 알림 테스트",
     description="새로운 알림을 생성합니다.",
 )
-async def websocket_test_notification(request):
+async def websocket_test_notification(request, factory_id: int):
 
     user = request.auth
+    factory = await get_factory_by_id(factory_id)
 
-    channel_layer = get_channel_layer()
-    await channel_layer.group_send(
-        f"notification_{user.id}",
-        {
-            "type": "send_notification",
-            "notification": "test",
-            "message": "This is a test notification.",
-        },
+    # 기존 코드 (주석 처리)
+    # channel_layer = get_channel_layer()
+    # await channel_layer.group_send(
+    #     f"notification_{factory.id}",
+    #     {
+    #         "type": "send_notification",
+    #         "notification": "test",
+    #         "message": "This is a test notification.",
+    #     },
+    # )
+
+    # utils.py의 NotificationSender를 사용하여 factory member들에게 알림 전송
+    result = await send_notification_to_factory(
+        factory_id=factory.id,
+        notification_type="information",
+        notification_case="test",
+        content="This is a test notification.",
+        additional_data={"test": True},
     )
 
-    return {"message": "This is a test notification."}
+    return {"message": "Test notification sent to factory members", "result": result}
 
 
 @router.get(

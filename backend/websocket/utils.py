@@ -21,6 +21,7 @@ class NotificationSender:
     async def send_notification_to_user(
         self,
         user_id: int,
+        factory_id: int,
         notification_type: str,
         notification_case: str,
         content: str,
@@ -42,7 +43,7 @@ class NotificationSender:
         try:
             # Notification 모델에 저장
             notification = await self._save_notification(
-                user_id, notification_type, notification_case, content
+                user_id, factory_id, notification_type, notification_case, content
             )
 
             if not notification:
@@ -61,6 +62,7 @@ class NotificationSender:
 
     async def send_notification_to_multiple_users(
         self,
+        factory_id: int,
         user_ids: List[int],
         notification_type: str,
         notification_case: str,
@@ -85,7 +87,12 @@ class NotificationSender:
         tasks = []
         for user_id in user_ids:
             task = self.send_notification_to_user(
-                user_id, notification_type, notification_case, content, additional_data
+                user_id,
+                factory_id,
+                notification_type,
+                notification_case,
+                content,
+                additional_data,
             )
             tasks.append((user_id, task))
 
@@ -141,6 +148,7 @@ class NotificationSender:
 
             # 일괄 전송
             return await self.send_notification_to_multiple_users(
+                factory_id,
                 member_ids,
                 notification_type,
                 notification_case,
@@ -156,11 +164,18 @@ class NotificationSender:
 
     @sync_to_async
     def _save_notification(
-        self, user_id: int, notification_type: str, notification_case: str, content: str
+        self,
+        user_id: int,
+        factory_id: int,
+        notification_type: str,
+        notification_case: str,
+        content: str,
     ) -> Optional[Notification]:
         """알림을 데이터베이스에 저장합니다."""
         try:
-            factory_member = FactoryMember.objects.get(user_id=user_id)
+            factory_member = FactoryMember.objects.get(
+                user_id=user_id, factory_id=factory_id
+            )
             notification = Notification.objects.create(
                 receiver=factory_member,
                 type=notification_type,
@@ -177,7 +192,7 @@ class NotificationSender:
 
     async def _send_websocket_message(
         self,
-        user_id: int,
+        factory_id: int,
         notification: Notification,
         additional_data: Optional[dict] = None,
     ):
@@ -187,7 +202,7 @@ class NotificationSender:
             return
 
         # 그룹 이름 생성
-        group_name = f"notification_{user_id}"
+        group_name = f"notification_{factory_id}"
 
         # 전송할 메시지 구성
         message_data = {
@@ -236,6 +251,7 @@ notification_sender = NotificationSender()
 
 async def send_notification(
     user_id: int,
+    factory_id: int,
     notification_type: str,
     notification_case: str,
     content: str,
@@ -254,11 +270,17 @@ async def send_notification(
     )
     """
     return await notification_sender.send_notification_to_user(
-        user_id, notification_type, notification_case, content, additional_data
+        user_id,
+        factory_id,
+        notification_type,
+        notification_case,
+        content,
+        additional_data,
     )
 
 
 async def send_notification_to_multiple(
+    factory_id: int,
     user_ids: List[int],
     notification_type: str,
     notification_case: str,
@@ -277,7 +299,12 @@ async def send_notification_to_multiple(
     )
     """
     return await notification_sender.send_notification_to_multiple_users(
-        user_ids, notification_type, notification_case, content, additional_data
+        factory_id,
+        user_ids,
+        notification_type,
+        notification_case,
+        content,
+        additional_data,
     )
 
 
@@ -313,6 +340,7 @@ async def send_notification_to_factory(
 
 def send_notification_sync(
     user_id: int,
+    factory_id: int,
     notification_type: str,
     notification_case: str,
     content: str,
@@ -347,6 +375,7 @@ def send_notification_sync(
                     result = new_loop.run_until_complete(
                         send_notification(
                             user_id,
+                            factory_id,
                             notification_type,
                             notification_case,
                             content,
@@ -375,6 +404,7 @@ def send_notification_sync(
                 return loop.run_until_complete(
                     send_notification(
                         user_id,
+                        factory_id,
                         notification_type,
                         notification_case,
                         content,

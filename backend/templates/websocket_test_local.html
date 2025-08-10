@@ -146,6 +146,9 @@
     <div class="container">
         <h2>🔌 WebSocket 테스트</h2>
         <div class="websocket-test">
+            <div style="margin-bottom: 15px;">
+                <input type="number" id="factoryId" placeholder="Factory ID (예: 1)" value="1" min="1">
+            </div>
             <div class="websocket-controls">
                 <button onclick="connectWebSocket()" id="connectBtn">WebSocket 연결</button>
                 <button onclick="disconnectWebSocket()" id="disconnectBtn" disabled>연결 끊기</button>
@@ -388,6 +391,16 @@
         function connectWebSocket() {
             log(`현재 사용자 정보: ${JSON.stringify(currentUser)}`, 'info');
 
+            // Factory ID 가져오기
+            const factoryIdInput = document.getElementById('factoryId');
+            const factoryId = factoryIdInput.value.trim();
+
+            if (!factoryId || isNaN(factoryId) || parseInt(factoryId) < 1) {
+                showStatus('wsStatus', 'Factory ID를 올바르게 입력해주세요. (숫자, 1 이상)', 'error');
+                factoryIdInput.focus();
+                return;
+            }
+
             // if (!currentUser) {
             //     showStatus('wsStatus', 'WebSocket 연결을 위해서는 먼저 로그인해주세요. (currentUser가 null)', 'error');
             //     return;
@@ -398,9 +411,9 @@
             //     return;
             // }
 
-            const wsUrl = `ws://127.0.0.1:8000/ws/notification/1/`;
+            const wsUrl = `ws://127.0.0.1:8000/ws/notification/${factoryId}/`;
 
-            log(`WebSocket 연결 시도: ${wsUrl}`, 'websocket');
+            log(`WebSocket 연결 시도 (Factory ID: ${factoryId}): ${wsUrl}`, 'websocket');
 
             // 현재 쿠키 상태 확인
             const currentCookies = {
@@ -598,6 +611,13 @@ ${event.code === 1006 ? '⚠️  코드 1006은 보통 네트워크 문제, 서�
         document.getElementById('password').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 login();
+            }
+        });
+
+        // 엔터키로 WebSocket 연결
+        document.getElementById('factoryId').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                connectWebSocket();
             }
         });
 
