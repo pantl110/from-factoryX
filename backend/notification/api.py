@@ -10,6 +10,8 @@ from notification.utils import get_notification_by_id
 from factory.utils import get_factory_by_id
 from channels.layers import get_channel_layer
 from websocket.utils import send_notification_to_factory
+from django.utils import timezone
+from datetime import timedelta
 
 
 router = Router(tags=["Notification"], auth=jwt_auth)
@@ -17,7 +19,7 @@ router = Router(tags=["Notification"], auth=jwt_auth)
 
 @router.get(
     "",
-    summary="[C] 알림 조회",
+    summary="[C] 알림 조회(3일 이내)",
     description="해당 공장에 대한 알림을 조회합니다.",
     response=List[NotificationOut],
 )
@@ -29,7 +31,9 @@ async def get_notifications(request, factory_id: int):
 
     @sync_to_async
     def get_notifications_for_member():
-        queryset = Notification.objects.filter(receiver=member)
+        queryset = Notification.objects.filter(
+            receiver=member, created_at__gte=timezone.now() - timedelta(days=3)
+        )
         queryset = queryset.order_by("-created_at")
         return list(queryset)
 
