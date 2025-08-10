@@ -231,12 +231,6 @@ async def signup(request, data: UserSignupIn):
             if invite_info["role"] != data.invite_role:
                 raise HttpError(400, "초대받은 역할과 일치하지 않습니다.")
             
-            # 초대 만료 시간 확인 (24시간)
-            if invite_info.get("invited_at"):
-                invited_at = datetime.fromisoformat(invite_info["invited_at"].replace('Z', '+00:00'))
-                if timezone.now() - invited_at > timedelta(hours=24):
-                    raise HttpError(400, "초대가 만료되었습니다. 다시 초대받아주세요.")
-            
             # 추가 보안 검사: 이미 가입된 사용자인지 확인
             existing_member = await FactoryMember.objects.filter(
                 factory=target_factory,

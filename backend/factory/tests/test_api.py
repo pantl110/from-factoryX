@@ -618,7 +618,7 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertEqual(member.invited_by, self.user)
 
     def test_create_factory_multiple_factories(self):
-        """여러 공장 등록 테스트"""
+        """여러 공장 등록 테스트 - 새 공장 등록 시 기존 멤버십 삭제"""
         # 기존 공장과 멤버 삭제
         FactoryMember.objects.filter(user=self.user).delete()
         Factory.objects.filter(owner=self.user).delete()
@@ -636,6 +636,11 @@ class FactoryCreateAPITestCase(TestCase):
         data1 = response1.json()
         factory_id1 = data1['factory_id']
         
+        # 첫 번째 공장에 멤버로 등록되었는지 확인
+        factory1 = Factory.objects.get(id=factory_id1)
+        member1 = FactoryMember.objects.get(factory=factory1, user=self.user)
+        self.assertEqual(member1.role, FactoryMember.FactoryMemberType.admin)
+        
         # 두 번째 공장 등록
         response2 = self.client.post(
             url,
@@ -651,16 +656,21 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertNotEqual(factory_id1, factory_id2)
         
         # 두 공장 모두 데이터베이스에 존재하는지 확인
-        factory1 = Factory.objects.get(id=factory_id1)
         factory2 = Factory.objects.get(id=factory_id2)
         self.assertEqual(factory1.owner, self.user)
         self.assertEqual(factory2.owner, self.user)
         
-        # 두 공장 모두 멤버로 등록되었는지 확인
-        member1 = FactoryMember.objects.get(factory=factory1, user=self.user)
+        # 첫 번째 공장의 멤버십은 삭제되었는지 확인
+        with self.assertRaises(FactoryMember.DoesNotExist):
+            FactoryMember.objects.get(factory=factory1, user=self.user)
+        
+        # 두 번째 공장에만 멤버로 등록되었는지 확인
         member2 = FactoryMember.objects.get(factory=factory2, user=self.user)
-        self.assertEqual(member1.role, FactoryMember.FactoryMemberType.admin)
         self.assertEqual(member2.role, FactoryMember.FactoryMemberType.admin)
+        
+        # 전체적으로 사용자는 하나의 공장에만 멤버로 등록되어 있는지 확인
+        total_memberships = FactoryMember.objects.filter(user=self.user).count()
+        self.assertEqual(total_memberships, 1)
 
     def test_create_factory_and_list_verification(self):
         """공장 등록 후 목록 조회로 검증 테스트"""

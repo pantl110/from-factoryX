@@ -574,6 +574,10 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
     except ProjectPlan.DoesNotExist:
         raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
     
+    # 완료된 생산 계획은 수정 불가
+    if plan.status == "완료":
+        raise HttpError(400, "완료된 생산 계획은 수정할 수 없습니다.")
+    
     old_equipment = await FactoryEquipment.objects.aget(id=plan.equipment_id) if plan.equipment_id else None
     
     # 미리 project, product를 비동기 안전하게 가져옴

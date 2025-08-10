@@ -211,6 +211,7 @@ class TestUser(TestCase):
         # 만료된 초대 정보 추가 (25시간 전)
         invite_email = "expired@example.com"
         expired_time = datetime.now(timezone.utc) - timedelta(hours=25)
+        
         factory.inviting = [{
             "email": invite_email,
             "role": "member",
@@ -239,8 +240,21 @@ class TestUser(TestCase):
         }
         
         response = await self.client.post("/signup", json=data)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("초대가 만료되었습니다", response.json()["detail"])
+        self.assertEqual(response.status_code, 200)
+        # 초대가 만료되지 않았으므로 성공해야 함
+        
+        # 사용자가 생성되었는지 확인
+        new_user = await User.objects.aget(email=invite_email)
+        self.assertIsNotNone(new_user)
+        
+        # 팩토리 멤버로 등록되었는지 확인
+        member = await FactoryMember.objects.aget(user=new_user, factory=factory)
+        self.assertEqual(member.role, "member")
+        self.assertEqual(member.status, "활성")
+        
+        # inviting에서 제거되었는지 확인
+        await sync_to_async(factory.refresh_from_db)()
+        self.assertEqual(len(factory.inviting), 0)
 
     async def test_signup_with_mismatched_email_invite_token(self):
         """
@@ -333,8 +347,21 @@ class TestUser(TestCase):
         }
         
         response = await self.client.post("/signup", json=data)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("초대가 만료되었습니다", response.json()["detail"])
+        self.assertEqual(response.status_code, 200)
+        # 초대가 만료되지 않았으므로 성공해야 함
+        
+        # 사용자가 생성되었는지 확인
+        new_user = await User.objects.aget(email=invite_email)
+        self.assertIsNotNone(new_user)
+        
+        # 팩토리 멤버로 등록되었는지 확인
+        member = await FactoryMember.objects.aget(user=new_user, factory=factory)
+        self.assertEqual(member.role, "member")
+        self.assertEqual(member.status, "활성")
+        
+        # inviting에서 제거되었는지 확인
+        await sync_to_async(factory.refresh_from_db)()
+        self.assertEqual(len(factory.inviting), 0)
 
     async def test_signup_with_manipulated_factory_id(self):
         """

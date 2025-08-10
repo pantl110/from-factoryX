@@ -17,14 +17,17 @@ router = Router(tags=["Factory"])
 @router.post(
     "",
     summary="[C] 공장 등록",
-    description="공장을 등록하고 권한을 관리자로 설정합니다.",
+    description="공장을 등록하고 권한을 관리자로 설정합니다. 이미 다른 공장의 멤버인 경우 기존 멤버십은 모두 삭제됩니다.",
     response={201: dict},
     auth=jwt_auth,
 )
 async def create_factory(request):
     user = request.auth
+    
+    # 새 공장 생성
     factory = await Factory.objects.acreate(owner=user)
 
+    # 새 공장에 관리자로 등록
     await FactoryMember.objects.acreate(
         factory=factory,
         user=user,
@@ -32,6 +35,17 @@ async def create_factory(request):
         status=FactoryMember.MemberStatus.active,
         invited_by=user,
     )
+    
+    # 사용자가 다른 공장의 멤버인 경우 모두 삭제 (새 공장 제외)
+    other_factory_members = await FactoryMember.objects.filter(
+        user=user
+    ).exclude(factory=factory).aexists()
+    
+    if other_factory_members:
+        await FactoryMember.objects.filter(
+            user=user
+        ).exclude(factory=factory).adelete()
+    
     return 201, {"factory_id": factory.id}
 
 

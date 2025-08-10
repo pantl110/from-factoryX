@@ -72,10 +72,6 @@ async def invite_factory_member(request, payload: InviteMemberIn):
                     <a href="{invite_url}" style="color: #007bff;">{invite_url}</a>
                 </p>
                 
-                <p style="color: #6c757d; font-size: 14px;">
-                    이 링크는 <strong>24시간</strong> 동안 유효합니다.
-                </p>
-                
                 <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
                 <p style="color: #6c757d; font-size: 12px;">
                     Factory X 팀<br>
@@ -99,8 +95,6 @@ async def invite_factory_member(request, payload: InviteMemberIn):
 
 아래 링크를 클릭하여 가입을 완료해주세요:
 {invite_url}
-
-이 링크는 24시간 동안 유효합니다.
 
 감사합니다.
 Factory X 팀
@@ -200,7 +194,7 @@ Factory X 팀
                 factory.save()
             email_sent = send_invite_email(email, factory, role, request.auth)
             if email_sent:
-                return {"message": "초대 메일을 발송했습니다.", "inviting": factory.inviting}
+                return {"message": "초대 메일을 발송했습니다.", "invited_user": {"email": email, "role": role}}
             else:
                 # 이메일 발송 실패 시 inviting에서 제거
                 factory.inviting = [item for item in factory.inviting if item["email"] != email]
