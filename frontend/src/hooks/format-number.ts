@@ -116,7 +116,9 @@ export const handleNumberKeyDown = (
 };
 
 // 실시간 수량 입력 포맷팅 함수 (입력 중에 콤마 표시, 소수점 한자리까지 허용)
-export const handleQuantityInput = (inputValue: string): {
+export const handleQuantityInput = (
+  inputValue: string
+): {
   displayValue: string;
   numericValue: number;
   isValid: boolean;
@@ -126,28 +128,29 @@ export const handleQuantityInput = (inputValue: string): {
     return {
       displayValue: '',
       numericValue: 0,
-      isValid: true
+      isValid: true,
     };
   }
 
   // 콤마 제거
   let cleanValue = inputValue.replace(/,/g, '');
-  
+
   // 소수점이 여러 개인지 확인하고 정리
   const parts = cleanValue.split('.');
   if (parts.length > 2) {
     // 소수점이 여러 개면 첫 번째만 유지
     cleanValue = parts[0] + '.' + parts.slice(1).join('');
   }
-  
+
   // 숫자와 소수점만 허용
   const numericOnly = cleanValue.replace(/[^0-9.]/g, '');
-  
+
   // 소수점이 여러 개인 경우 다시 정리
   const finalParts = numericOnly.split('.');
-  const finalCleanValue = finalParts.length > 2 
-    ? finalParts[0] + '.' + finalParts.slice(1).join('')
-    : numericOnly;
+  const finalCleanValue =
+    finalParts.length > 2
+      ? finalParts[0] + '.' + finalParts.slice(1).join('')
+      : numericOnly;
 
   // 소수점이 있는 경우 소수점 이하 한자리로 제한
   let formattedValue = finalCleanValue;
@@ -159,18 +162,21 @@ export const handleQuantityInput = (inputValue: string): {
   }
 
   // 숫자 변환
-  const numericValue = formattedValue === '' ? 0 : parseFloat(formattedValue) || 0;
-  
+  const numericValue =
+    formattedValue === '' ? 0 : parseFloat(formattedValue) || 0;
+
   // 유효성 검사
   const isValid = !isNaN(numericValue) && numericValue >= 0;
-  
+
   // 콤마 포함된 포맷팅 적용
   let displayValue = '';
   if (formattedValue !== '') {
     if (formattedValue.includes('.')) {
       // 소수점이 있는 경우
       const [integerPart, decimalPart] = formattedValue.split('.');
-      const formattedInteger = parseInt(integerPart || '0').toLocaleString('en-US');
+      const formattedInteger = parseInt(integerPart || '0').toLocaleString(
+        'en-US'
+      );
       displayValue = `${formattedInteger}.${decimalPart}`;
     } else {
       // 정수인 경우
@@ -182,7 +188,7 @@ export const handleQuantityInput = (inputValue: string): {
   return {
     displayValue,
     numericValue,
-    isValid
+    isValid,
   };
 };
 

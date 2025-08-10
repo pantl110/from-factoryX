@@ -1,13 +1,12 @@
 import { useState, useCallback } from 'react';
-import {
-  FactoriesResponseModel,
-} from '@/types/data-model';
+import { FactoriesResponseModel } from '@/types/data-model';
 
 // 본인의 공장 목록 조회 (사용자가 멤버로 등록된 공장 목록)
 export const useGetFactoryList = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [factoryList, setFactoryList] =
-    useState<FactoriesResponseModel[] | null>(null);
+  const [factoryList, setFactoryList] = useState<
+    FactoriesResponseModel[] | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
 
   const getFactoryList = useCallback(async () => {

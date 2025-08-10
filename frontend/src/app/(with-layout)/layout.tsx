@@ -4,20 +4,19 @@ import { useState, useEffect } from 'react';
 import SideBar from '@/components/side-bar';
 import TopBar from '@/components/top-bar';
 import { usePathname } from 'next/navigation';
+import { useAuthGuard } from '@/hooks';
 import useAuthStore from '@/store/auth-store';
-import { useAuthGuard } from '@/hooks/use-auth-guard';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const pathname = usePathname();
-  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const { initializeAuth } = useAuthStore();
 
-  // 앱 초기화 시 localStorage에서 사용자 정보 로드
+  useAuthGuard();
+
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
-
-  useAuthGuard(); // 로그인 안되어있으면 로그인 페이지로 리다이렉트
 
   const isProductionPage = pathname.startsWith('/production/'); // production 페이지인지 확인
 

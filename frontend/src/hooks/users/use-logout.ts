@@ -39,6 +39,12 @@ export const useLogout = (): UseLogoutReturnModel => {
         clearAuth();
         clearFactoryId(); // factoryId도 클리어
 
+        // localStorage에서 persist 데이터 직접 제거
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth-storage');
+          localStorage.removeItem('factory-storage');
+        }
+
         // 쿠키 삭제
         document.cookie =
           'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';

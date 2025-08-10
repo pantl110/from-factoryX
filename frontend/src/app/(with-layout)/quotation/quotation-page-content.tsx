@@ -384,36 +384,26 @@ const QuotationPageContent = () => {
 
     // 실시간으로 특정 필드들을 watch
     const name = watch('name') || '';
-    const business_registration_number =
+    const businessRegistrationNumber =
       watch('business_registration_number') || '';
-    const representative_name = watch('representative_name') || '';
-    const due_date = watch('due_date') || '';
-    const business_type = watch('business_type') || '';
-    const business_category = watch('business_category') || '';
+    const representativeName = watch('representative_name') || '';
+    const dueDate = watch('due_date') || '';
+    const businessType = watch('business_type') || '';
+    const businessCategory = watch('business_category') || '';
     const address = watch('address') || '';
 
     // required 필드들이 모두 채워져 있는지 확인
-    const allRequiredFieldsFilled =
+    const isAllRequiredFieldsFilled =
       name.trim() !== '' &&
-      business_registration_number.trim() !== '' &&
-      representative_name.trim() !== '' &&
-      due_date.trim() !== '' &&
-      business_type.trim() !== '' &&
-      business_category.trim() !== '' &&
+      businessRegistrationNumber.trim() !== '' &&
+      representativeName.trim() !== '' &&
+      dueDate.trim() !== '' &&
+      businessType.trim() !== '' &&
+      businessCategory.trim() !== '' &&
       address.trim() !== '';
 
-    return allRequiredFieldsFilled;
-  }, [
-    watch('name'),
-    watch('business_registration_number'),
-    watch('representative_name'),
-    watch('due_date'),
-    watch('business_type'),
-    watch('business_category'),
-    watch('address'),
-    quotationData,
-    isQuotationLoading,
-  ]);
+    return isAllRequiredFieldsFilled;
+  }, [watch, quotationData, isQuotationLoading]);
 
   return (
     <>

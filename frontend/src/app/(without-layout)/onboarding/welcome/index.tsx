@@ -22,11 +22,11 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
 
       if (
         factoryResult.success &&
-        factoryResult.data?.data &&
-        factoryResult.data.data.length > 0
+        factoryResult.data &&
+        factoryResult.data.length > 0
       ) {
         // 기존 공장이 있으면 첫 번째 공장을 사용
-        const existingFactory = factoryResult.data.data[0];
+        const existingFactory = factoryResult.data[0];
         setFactoryId(existingFactory.id);
         onNextStep();
       } else {

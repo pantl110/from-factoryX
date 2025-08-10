@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { UserInfoModel } from '@/types/data-model';
 
 interface AuthStateProps {
@@ -13,108 +14,93 @@ interface AuthStateProps {
   initializeAuth: () => void;
 }
 
-const useAuthStore = create<AuthStateProps>((set) => ({
-  userInfo: null,
-  isLoading: true,
-  isAuthenticated: false,
-
-  setUserInfo: (userInfo) => {
-    set({
-      userInfo,
-      isAuthenticated: !!userInfo,
-      isLoading: false,
-    });
-    // localStorage에 사용자 정보 저장
-    if (userInfo) {
-      localStorage.setItem('userInfo', JSON.stringify(userInfo));
-    } else {
-      localStorage.removeItem('userInfo');
-    }
-  },
-
-  setLoading: (isLoading) => set({ isLoading }),
-
-  setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
-
-  clearAuth: () => {
-    set({
+const useAuthStore = create<AuthStateProps>()(
+  persist(
+    (set) => ({
       userInfo: null,
+      isLoading: true,
       isAuthenticated: false,
-      isLoading: false,
-    });
-    // localStorage에서 사용자 정보 제거
-    localStorage.removeItem('userInfo');
-  },
 
-  initializeAuth: () => {
-    try {
-      const storedUserInfo = localStorage.getItem('userInfo');
-      if (storedUserInfo) {
-        const userInfo: UserInfoModel = JSON.parse(storedUserInfo);
+      setUserInfo: (userInfo) => {
         set({
           userInfo,
-          isAuthenticated: true,
+          isAuthenticated: !!userInfo,
           isLoading: false,
         });
-      } else {
+      },
+
+      setLoading: (isLoading) => set({ isLoading }),
+
+      setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
+
+      clearAuth: () => {
         set({
           userInfo: null,
           isAuthenticated: false,
           isLoading: false,
         });
-      }
-    } catch {
-      localStorage.removeItem('userInfo');
-      set({
-        userInfo: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
-    }
-  },
+      },
 
-  fetchUserInfo: async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/me`,
-        {
-          method: 'GET',
-          credentials: 'include', // 쿠키 자동 전송
-          headers: {
-            'Content-Type': 'application/json',
-          },
+      initializeAuth: () => {
+        // persist 미들웨어가 자동으로 상태를 복원하므로 별도 로직 불필요
+        // 단, 로딩 상태만 해제
+        set({ isLoading: false });
+      },
+
+      fetchUserInfo: async () => {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/me`,
+            {
+              method: 'GET',
+              credentials: 'include', // 쿠키 자동 전송
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (response.ok) {
+            const userData: UserInfoModel = await response.json();
+            set({
+              userInfo: userData,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            return true;
+          } else {
+            set({
+              userInfo: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
+            return false;
+          }
+        } catch {
+          set({
+            userInfo: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+          return false;
         }
-      );
-
-      if (response.ok) {
-        const userData: UserInfoModel = await response.json();
-        set({
-          userInfo: userData,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-        // localStorage에 사용자 정보 저장
-        localStorage.setItem('userInfo', JSON.stringify(userData));
-        return true;
-      } else {
-        set({
-          userInfo: null,
-          isAuthenticated: false,
-          isLoading: false,
-        });
-        localStorage.removeItem('userInfo');
-        return false;
-      }
-    } catch {
-      set({
-        userInfo: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
-      localStorage.removeItem('userInfo');
-      return false;
+      },
+    }),
+    {
+      name: 'auth-storage', // localStorage에 저장될 키 이름
+      partialize: (state) => ({
+        // 민감하지 않은 정보만 저장
+        userInfo: state.userInfo,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      onRehydrateStorage: () => (state) => {
+        // 상태 복원 후 로딩 상태 해제
+        if (state) {
+          state.isLoading = false;
+        }
+      },
     }
-  },
-}));
+  )
+);
 
 export default useAuthStore;

@@ -270,7 +270,7 @@ const ProductDetail = ({
         note: '',
       });
     }
-  }, [productId, product]);
+  }, [productId, product, factoryId]);
 
   // 서버 location 데이터를 RHF locations 배열에 세팅
   useEffect(() => {
@@ -288,16 +288,14 @@ const ProductDetail = ({
     if (productId) {
       listLocations('product', productId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  }, [productId, listLocations, factoryId]);
 
   // 연결된 자재의 id를 가져오기
   useEffect(() => {
     if (productId) {
       getMaterialProductConnections(productId, 'product');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  }, [productId, getMaterialProductConnections]);
 
   useEffect(() => {
     if (connections && Array.isArray(connections) && connections.length > 0) {

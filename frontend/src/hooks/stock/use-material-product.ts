@@ -99,7 +99,7 @@ const useMaterialProduct = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   // 연결 삭제

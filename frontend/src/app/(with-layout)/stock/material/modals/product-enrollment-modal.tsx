@@ -8,7 +8,6 @@ import {
   ProductListResponseModel,
 } from '@/types/data-model';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
-import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddProduct from './manual-add-product';
 import { useGetProduct, useAssignProduct } from '@/hooks';
 import useFactoryStore from '@/store/factory-store';

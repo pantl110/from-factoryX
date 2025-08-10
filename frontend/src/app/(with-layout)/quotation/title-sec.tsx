@@ -3,7 +3,7 @@ import ButtonSection from './button-section';
 import QuotationStatusDropdown from './modals/quotation-status-dropdown';
 import { usePortalDropdown, useToast } from '@/hooks';
 import Toast from '@/ui/toast';
-import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
+import { UseFormTrigger, UseFormWatch } from 'react-hook-form';
 import { ClientModel } from '@/types/data-model';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import { useUpdateProjectStatus } from '@/hooks';

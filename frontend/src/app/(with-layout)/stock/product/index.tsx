@@ -155,9 +155,9 @@ const Product = ({
           </div>
 
           {/* 페이지네이션 */}
-          {pagination && pagination.pageCnt > 1 && (
+          {pagination && pagination.pageCnt && pagination.pageCnt > 1 && (
             <Pagination
-              currentPage={pagination.curPage}
+              currentPage={pagination.curPage || 1}
               totalPages={pagination.pageCnt}
               onPageChange={handlePageChange}
             />

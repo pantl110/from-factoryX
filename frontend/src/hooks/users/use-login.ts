@@ -5,9 +5,7 @@ import {
   FactoriesResponseModel,
 } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
-import useFactoryStore from '@/store/factory-store';
 import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
-// import useCreateFactory from '@/hooks/factory/use-create-factory';
 
 interface UseLoginReturnModel {
   login: (data: LoginFormDataModel) => Promise<{
@@ -24,9 +22,7 @@ interface UseLoginReturnModel {
 export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo, setAuthenticated } = useAuthStore();
-  const setFactoryId = useFactoryStore((state) => state.setFactoryId);
   const { getFactoryList } = useGetFactoryList();
-  // const { createFactory } = useCreateFactory();
 
   const login = async (data: LoginFormDataModel) => {
     setIsLoading(true);
@@ -65,17 +61,16 @@ export const useLogin = (): UseLoginReturnModel => {
 
           if (userResponse.ok) {
             const userData = await userResponse.json();
-            // 전역 상태에 사용자 정보 저장
+
+            // 전역 상태에 사용자 정보 저장 (persist가 자동으로 localStorage에 저장)
             setUserInfo(userData);
             setAuthenticated(true);
-            console.log('userData', userData);
 
             try {
               const factoryResult = await getFactoryList();
               if (factoryResult.success && factoryResult.data) {
                 const factories = factoryResult.data; // 공장 리스트
                 const factoryCount = factories.length; // 공장 개수
-                console.log('factories', factories);
 
                 if (factoryCount === 0) {
                   // 공장이 0개일 때 - 온보딩 페이지로 이동
@@ -86,7 +81,6 @@ export const useLogin = (): UseLoginReturnModel => {
                   };
                 } else if (factoryCount === 1) {
                   // 공장이 1개일 때 - 첫 번째 공장 ID를 저장하고 대시보드로 이동
-                  setFactoryId(factories[0].id); // 이 함수가 공장아이디를 로컬 스토리지에 저장함
                   return {
                     success: true,
                     factoryCount: 1,

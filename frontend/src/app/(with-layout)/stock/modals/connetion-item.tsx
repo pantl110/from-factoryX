@@ -26,7 +26,7 @@ const ConnetionItem = ({
     const context = canvas.getContext('2d');
     if (context) {
       context.font = window.getComputedStyle(input).font;
-      const textWidth = context.measureText(input.value || '0').width;
+      const { width: textWidth } = context.measureText(input.value || '0');
       const minWidth = 40; // 최소 너비
       const newWidth = Math.max(textWidth + 22, minWidth); // 22는 좌우 패딩
       input.style.width = `${newWidth}px`;
@@ -47,8 +47,9 @@ const ConnetionItem = ({
     setDisplayQuantity(newQuantity.toString());
 
     // 너비 자동 조정
-    if (inputRef.current) {
-      setTimeout(() => adjustInputWidth(inputRef.current!), 0);
+    const currentInput = inputRef.current;
+    if (currentInput) {
+      setTimeout(() => adjustInputWidth(currentInput), 0);
     }
   };
 
@@ -60,8 +61,9 @@ const ConnetionItem = ({
       setDisplayQuantity(newQuantity.toString());
 
       // 너비 자동 조정
-      if (inputRef.current) {
-        setTimeout(() => adjustInputWidth(inputRef.current!), 0);
+      const currentInput = inputRef.current;
+      if (currentInput) {
+        setTimeout(() => adjustInputWidth(currentInput), 0);
       }
     }
   };
@@ -70,7 +72,7 @@ const ConnetionItem = ({
   const handleQuantityInputChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const value = e.target.value;
+    const { value } = e.target;
     const result = handleQuantityInput(value);
 
     setDisplayQuantity(result.displayValue);
@@ -96,8 +98,9 @@ const ConnetionItem = ({
     }
 
     // 너비 자동 조정
-    if (inputRef.current) {
-      setTimeout(() => adjustInputWidth(inputRef.current!), 0);
+    const currentInput = inputRef.current;
+    if (currentInput) {
+      setTimeout(() => adjustInputWidth(currentInput), 0);
     }
   };
 

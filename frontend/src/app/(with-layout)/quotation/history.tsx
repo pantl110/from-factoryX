@@ -62,6 +62,7 @@ const History = ({ selectedProduct }: HistoryProps) => {
         {historyData.map((item, idx) => (
           <HistoryItem
             key={idx}
+            date={'-'} // ‼️‼️‼️‼️‼️‼️‼️히스토리 데이터에 날짜 없음
             productName={item.product_name}
             quantity={item.quantity}
             unitPrice={item.unit_price}

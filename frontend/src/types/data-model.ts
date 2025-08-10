@@ -2,10 +2,10 @@
 
 // 공통
 export interface PaginationModel {
-  count?: number;
-  totalCnt?: number;
-  pageCnt?: number;
-  curPage?: number;
+  count: number;
+  totalCnt: number;
+  pageCnt: number;
+  curPage: number;
   nextPage?: number | null;
   previousPage?: number | null;
 }

@@ -24,8 +24,8 @@ const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
 
       try {
         // Zustand store에서 factory_id 가져오기
-        const factoryId = useFactoryStore.getState().factoryId;
-        
+        const { factoryId } = useFactoryStore.getState();
+
         const productIdsString = productIds.join(',');
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/history?product_ids=${productIdsString}&factory_id=${factoryId}`,

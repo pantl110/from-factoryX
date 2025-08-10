@@ -15,8 +15,8 @@ import useFactoryStore from '@/store/factory-store';
 
 const LoginPage = () => {
   const router = useRouter();
-  const { login, isLoading } = useLogin();
   const setFactoryId = useFactoryStore((state) => state.setFactoryId);
+  const { login, isLoading } = useLogin();
   const [showFactorySelectModal, setShowFactorySelectModal] = useState(false);
   const [factories, setFactories] = useState<FactoriesResponseModel[]>([]);
 
@@ -36,15 +36,8 @@ const LoginPage = () => {
 
   const watchedValues = watch();
 
-  const handleFactorySelect = (factoryId: number) => {
-    setFactoryId(factoryId);
-    setShowFactorySelectModal(false);
-    router.push('/dashboard');
-  };
-
   const onSubmit = async (data: LoginFormDataModel) => {
     const result = await login(data);
-    console.log(result);
 
     if (result.success) {
       // 로그인 성공 - 공장 개수에 따라 적절한 페이지로 이동
@@ -53,6 +46,9 @@ const LoginPage = () => {
         router.push('/onboarding');
       } else if (result.factoryCount === 1) {
         // 공장이 1개일 때 - 대시보드로 이동
+        if (result.factories && result.factories.length > 0) {
+          setFactoryId(result.factories[0].id); // persist가 자동으로 localStorage에 저장
+        }
         router.push('/dashboard');
       } else if (result.factoryCount && result.factoryCount >= 2) {
         // 공장이 2개 이상일 때 - 공장 선택 모달을 보여줌
@@ -151,7 +147,6 @@ const LoginPage = () => {
       {showFactorySelectModal && (
         <FactorySelectModal
           factories={factories}
-          onSelectFactory={handleFactorySelect}
           onClose={() => setShowFactorySelectModal(false)}
         />
       )}
