@@ -147,6 +147,30 @@ const QuotationPageContent = () => {
     }
   }, [quotationData, isQuotationLoading, setFormValuesFromQuotation]);
 
+  // 견적 품목 초기값 설정 (변경 추적을 위해)
+  useEffect(() => {
+    if (quotationData && !isQuotationLoading) {
+      // 기존 견적 품목이 있다면 초기값으로 설정
+      if (quotationData.products && quotationData.products.length > 0) {
+        const initialProducts = quotationData.products.map(
+          (product: QuotationProductDetailResponseModel) => ({
+            productId: product.productId,
+            product_code: product.product_code || '',
+            product_name: product.product_name || '',
+            spec: product.spec || '',
+            unit: product.unit || '',
+            quantity: product.quantity || 0,
+            unit_price: product.unit_price || 0,
+            is_delivery: false,
+            delivery_date: null,
+          })
+        );
+        setInitialQuotationProducts(initialProducts);
+        setQuotationProducts(initialProducts);
+      }
+    }
+  }, [quotationData, isQuotationLoading]);
+
   // 프로젝트 상태 관리
   const [projectStatus, setProjectStatus] = useState<string | null>(null);
 
@@ -157,6 +181,11 @@ const QuotationPageContent = () => {
     projectStatus === 'suspended' || projectStatus === '중단';
   // OCR 데이터 상태 관리
   const [ocrData, _setOcrData] = useState<OcrDataModel | null>(null);
+
+  // 견적 품목 변경 추적을 위한 상태
+  const [initialQuotationProducts, setInitialQuotationProducts] = useState<
+    QuotationProductDetailResponseModel[]
+  >([]);
 
   // 탭 상태 - ocr데이터가 없으면 히스토리 탭이 활성화
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
@@ -179,6 +208,27 @@ const QuotationPageContent = () => {
   const [quotationProducts, setQuotationProducts] = useState<
     QuotationProductDetailResponseModel[]
   >([]);
+
+  // 견적 품목이 변경되었는지 확인하는 함수
+  const hasQuotationProductsChanged = useMemo(() => {
+    if (initialQuotationProducts.length !== quotationProducts.length) {
+      return true;
+    }
+
+    return initialQuotationProducts.some((initialProduct, index) => {
+      const currentProduct = quotationProducts[index];
+      if (!currentProduct) return true;
+
+      return (
+        initialProduct.productId !== currentProduct.productId ||
+        initialProduct.quantity !== currentProduct.quantity ||
+        initialProduct.unit_price !== currentProduct.unit_price
+      );
+    });
+  }, [initialQuotationProducts, quotationProducts]);
+
+  // 통합된 isDirty 상태 (폼 변경 + 견적 품목 변경)
+  const isDirty = formState.isDirty || hasQuotationProductsChanged;
 
   const handleProductClick = useCallback(
     (productId: number) => {
@@ -238,6 +288,8 @@ const QuotationPageContent = () => {
       await saveDraft(draftData);
       // 폼의 isDirty 상태 초기화 - 현재 값으로 reset하여 변경사항 없음으로 표시
       reset(formData);
+      // 견적 품목 변경 추적 초기화
+      setInitialQuotationProducts([...quotationProducts]);
       // 성공 시 토스트 메시지나 다른 피드백 제공
     } catch (error) {
       alert(
@@ -344,7 +396,7 @@ const QuotationPageContent = () => {
           setIsOrderStatus={() => handleProjectStatusChange('confirmed')}
           hasQuotationProducts={hasQuotationProducts}
           onSaveDraft={handleSaveDraft}
-          isDirty={formState.isDirty}
+          isDirty={isDirty}
           isSuspendedStatus={isSuspendedStatus}
           setIsSuspendedStatus={() => handleProjectStatusChange('suspended')}
           projectId={projectId}
