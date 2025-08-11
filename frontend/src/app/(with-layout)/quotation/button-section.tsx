@@ -52,16 +52,6 @@ const ButtonSection = ({
         />
         {isOrderStatus ? (
           <>
-            {/* <MiniBtn
-            text="수정"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            onClick={() => {
-              setIsOrderStatus(false);
-            }}
-            hoverColor="hover:bg-secondary-hover"
-            disabled={!isFormValid}
-          /> */}
             <MiniBtn
               text="생산 시작"
               textColor="text-wh"

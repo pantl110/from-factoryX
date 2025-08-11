@@ -3,6 +3,9 @@ import MiniBtn from '@/ui/mini-btn';
 import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
 import { FirstStepFormDataModel } from '../types';
+import useCreateSingleProduct from '@/hooks/stock/product/use-create-single-product';
+import useUpdateProduct from '@/hooks/stock/product/use-update-product';
+import useGetProduct from '@/hooks/stock/product/use-get-product';
 
 interface FirstStepProps {
   onNextStep: () => void;
@@ -15,18 +18,24 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
       defaultValues: {
         productName: '',
         productCode: '',
-        size: '',
+        spec: '',
         unit: '',
       },
       mode: 'onChange',
     });
+
+  const { createSingleProduct, isLoading: isCreating } =
+    useCreateSingleProduct();
+  const { updateProduct, isLoading: isUpdating } = useUpdateProduct();
+  const { getProductList, isLoading: isLoadingProductList } = useGetProduct();
+  const isLoading = isCreating || isUpdating || isLoadingProductList;
 
   // 입력값 실시간 감지
   const values = watch();
   const isValid =
     !!values.productName &&
     !!values.productCode &&
-    !!values.size &&
+    !!values.spec &&
     !!values.unit;
 
   // sessionStorage에서 데이터 복원
@@ -54,9 +63,63 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
     onPrevStep();
   };
 
-  const onSubmit = (data: FirstStepFormDataModel) => {
+  const onSubmit = async (data: FirstStepFormDataModel) => {
     saveFormData(data);
-    onNextStep();
+
+    try {
+      // 품목 목록 조회
+      const productListResult = await getProductList();
+
+      if (!productListResult.success) {
+        alert('품목 목록 조회에 실패했습니다: ' + productListResult.error);
+        return;
+      }
+
+      const products = productListResult.data?.data || [];
+
+      if (products.length === 0) {
+        // 품목이 0개이면 새로 생성
+        const result = await createSingleProduct({
+          name: data.productName,
+          code: data.productCode,
+          spec: data.spec,
+          unit: data.unit,
+        });
+
+        if (result.success) {
+          // 생성된 품목의 ID를 sessionStorage에 저장
+          sessionStorage.setItem(
+            'onboarding-product-id',
+            result.data?.product_id?.toString() || ''
+          );
+          onNextStep();
+        } else {
+          alert('품목 생성에 실패했습니다: ' + result.error);
+        }
+      } else {
+        // 품목이 1개 이상이면 첫 번째 품목을 수정
+        const firstProduct = products[0];
+        const result = await updateProduct(firstProduct.id, {
+          name: data.productName,
+          code: data.productCode,
+          spec: data.spec,
+          unit: data.unit,
+        });
+
+        if (result.success) {
+          // 수정된 품목의 ID를 sessionStorage에 저장
+          sessionStorage.setItem(
+            'onboarding-product-id',
+            firstProduct.id.toString()
+          );
+          onNextStep();
+        } else {
+          alert('품목 수정에 실패했습니다: ' + result.error);
+        }
+      }
+    } catch {
+      alert('품목 생성 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -82,14 +145,14 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                 <Input
                   label="품목명"
                   type="text"
-                  placeholder="자재명 입력"
+                  placeholder="품목명을 입력하세요."
                   required={true}
                   {...register('productName', { required: true })}
                 />
                 <Input
                   label="품목 코드"
                   type="text"
-                  placeholder="품목 코드 입력"
+                  placeholder="품목코드를 입력하세요."
                   required={true}
                   {...register('productCode', { required: true })}
                 />
@@ -98,14 +161,14 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                 <Input
                   label="규격"
                   type="text"
-                  placeholder="규격 입력"
+                  placeholder="EX) 100 x300mmc"
                   required={true}
-                  {...register('size', { required: true })}
+                  {...register('spec', { required: true })}
                 />
                 <Input
                   label="단위"
                   type="text"
-                  placeholder="단위 입력"
+                  placeholder="EX) EA"
                   required={true}
                   {...register('unit', { required: true })}
                 />
@@ -119,8 +182,9 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
               text="이전"
               textColor="text-sv"
               bgColor="bg-wh"
-              hoverColor="bg-bg"
+              hoverColor="hover:bg-bg"
               onClick={() => handlePrevStep(getValues())}
+              disabled={isLoading}
             />
             <MiniBtn
               text="다음"
@@ -128,7 +192,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"
               type="submit"
-              disabled={!isValid}
+              disabled={!isValid || isLoading}
             />
           </div>
         </form>

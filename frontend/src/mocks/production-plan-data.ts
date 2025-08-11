@@ -64,7 +64,7 @@ export const productionPlanData: ProductionPlanDataModel[] = [
   },
   {
     id: 4,
-    operationStatus: '가동 불가',
+    operationStatus: '가동 중',
     productName: '종이컵',
     productCode: 'PA-001',
     size: '355ml',

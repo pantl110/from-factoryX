@@ -22,7 +22,7 @@ const Product = ({
   isProductDetailPanelOpen,
   setIsProductDetailPanelOpen,
 }: ProductProps) => {
-  const { getProductList, productList, pagination, isLoading, error } =
+  const { getProductList, productList, pagination, isLoading } =
     useGetProduct();
   const { deleteProduct } = useDeleteProduct();
 
@@ -134,7 +134,7 @@ const Product = ({
         </div>
       </div>
 
-      {isLoading || error ? (
+      {isLoading ? (
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
@@ -142,21 +142,22 @@ const Product = ({
         <>
           <div>
             <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
-            {productList.map((product) => (
-              <TableItem
-                key={product.id}
-                product={product}
-                onClick={() => handleItemClick(product)}
-                checked={isChecked(product.id)}
-                onToggle={() => toggleOne(product.id)}
-              />
-            ))}
+            {productList.length > 0 &&
+              productList.map((product) => (
+                <TableItem
+                  key={product.id}
+                  product={product}
+                  onClick={() => handleItemClick(product)}
+                  checked={isChecked(product.id)}
+                  onToggle={() => toggleOne(product.id)}
+                />
+              ))}
           </div>
 
           {/* 페이지네이션 */}
-          {pagination && pagination.pageCnt > 1 && (
+          {pagination && pagination.pageCnt && pagination.pageCnt > 1 && (
             <Pagination
-              currentPage={pagination.curPage}
+              currentPage={pagination.curPage || 1}
               totalPages={pagination.pageCnt}
               onPageChange={handlePageChange}
             />

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 import {
   InviteMemberModel,
   InviteMemberResponseModel,
@@ -12,14 +13,20 @@ interface InviteResponseModel {
 const useInviteMember = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const inviteMember = async (payload: InviteMemberModel) => {
+    if (!factoryId) {
+      setError('공장 정보를 찾을 수 없습니다.');
+      return { success: false, error: '공장 정보를 찾을 수 없습니다.' };
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/member/invite`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/member/invite?factory_id=${factoryId}`,
         {
           method: 'POST',
           credentials: 'include',

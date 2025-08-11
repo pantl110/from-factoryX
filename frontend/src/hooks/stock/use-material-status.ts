@@ -28,10 +28,13 @@ export const useMaterialStatus = (productId: number) => {
           'product'
         );
 
+        // API 응답 구조 확인 및 데이터 추출
+        const connections = connectionsResult?.data || connectionsResult;
+
         if (
-          !connectionsResult ||
-          !Array.isArray(connectionsResult) ||
-          connectionsResult.length === 0
+          !connections ||
+          !Array.isArray(connections) ||
+          connections.length === 0
         ) {
           // 연결된 자재가 없으면 충분으로 처리
           setMaterialStatus('충분');
@@ -40,8 +43,11 @@ export const useMaterialStatus = (productId: number) => {
         }
 
         // 2. 각 자재의 상세 정보 조회하여 재고 상태 확인
-        const materialPromises = connectionsResult
-          .filter((connection) => 'material_id' in connection)
+        const materialPromises = connections
+          .filter(
+            (connection: MaterialProductConnectionModel) =>
+              'material_id' in connection
+          )
           .map(async (connection: MaterialProductConnectionModel) => {
             try {
               const result = await getMaterialDetail(connection.material_id);
@@ -56,18 +62,24 @@ export const useMaterialStatus = (productId: number) => {
 
         const materialDetails = await Promise.all(materialPromises);
 
-        // 3. 하나라도 부족하면 '부족', 모두 충분하면 '충분'
-        const hasInsufficientMaterial = materialDetails.some((detail) => {
-          if (!detail) return false;
+        // 3. 현재 재고 기준으로 자재 부족 여부 확인
+        const hasInsufficientMaterial = materialDetails.some(
+          (detail: MaterialResponseModel | null) => {
+            if (!detail) return false;
 
-          // eslint-disable-next-line camelcase
-          const { current_stock, standard_stock } = detail;
-          // eslint-disable-next-line camelcase
-          if (!current_stock || !standard_stock) return false;
+            const {
+              current_stock: currentStock,
+              standard_stock: standardStock,
+            } = detail;
+            if (currentStock === null || currentStock === undefined)
+              return false;
+            if (standardStock === null || standardStock === undefined)
+              return false;
 
-          // eslint-disable-next-line camelcase
-          return current_stock < standard_stock; // 부족한 상태
-        });
+            // 현재 재고가 안전 재고보다 적으면 부족
+            return currentStock < standardStock;
+          }
+        );
 
         setMaterialStatus(hasInsufficientMaterial ? '부족' : '충분');
       } catch (error) {
@@ -80,7 +92,8 @@ export const useMaterialStatus = (productId: number) => {
     };
 
     checkMaterialStatus();
-  }, [productId, getMaterialProductConnections, getMaterialDetail]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
 
   return { materialStatus, isLoading };
 };

@@ -1,25 +1,18 @@
 import { useState, useCallback } from 'react';
 import { CreateProjectResponseModel } from '@/types/data-model';
-
-// localStorage에서 factoryId 가져오기
-const getStoredFactoryId = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('factoryId');
-  }
-  return null;
-};
+import useFactoryStore from '@/store/factory-store';
 
 // 프로젝트 상태 업데이트
 const useUpdateProjectStatus = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const updateProjectStatus = useCallback(
     async (projectId: number, status: string) => {
       setIsLoading(true);
       setError(null);
 
-      const factoryId = getStoredFactoryId();
       if (!factoryId) {
         setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
         setIsLoading(false);
@@ -56,7 +49,7 @@ const useUpdateProjectStatus = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   return { updateProjectStatus, isLoading, error };

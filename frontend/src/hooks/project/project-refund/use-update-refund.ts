@@ -5,24 +5,17 @@ import {
   UpdateRefundResponseModel,
 } from '@/types/data-model';
 import { useState } from 'react';
-
-// localStorage에서 factoryId 가져오기
-const getStoredFactoryId = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('factoryId');
-  }
-  return null;
-};
+import useFactoryStore from '@/store/factory-store';
 
 const useUpdateRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const updateRefund = async (
     refundId: number,
     data: UpdateRefundModel
   ): Promise<{ success: boolean; data?: UpdateRefundResponseModel }> => {
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       return { success: false };
@@ -33,7 +26,7 @@ const useUpdateRefund = () => {
 
     try {
       const queryParams = new URLSearchParams({
-        factory_id: factoryId,
+        factory_id: factoryId.toString(),
       });
 
       const response = await fetch(

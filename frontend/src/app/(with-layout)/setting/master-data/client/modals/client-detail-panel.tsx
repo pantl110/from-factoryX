@@ -11,17 +11,7 @@ import Panel from '@/ui/panel';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 interface ClientDetailPanelProps {
   clientId: number;
@@ -36,6 +26,7 @@ const ClientDetailPanel = ({
 }: ClientDetailPanelProps) => {
   const { getClientDetail, clientDetail } = useGetClientDetail();
   const { updateClient, isLoading: isUpdateLoading } = useUpdateClient();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const {
     handleSubmit,
@@ -60,16 +51,14 @@ const ClientDetailPanel = ({
   });
 
   useEffect(() => {
-    const factoryId = getStoredFactoryId();
     if (clientId && factoryId) {
       getClientDetail({ client_id: clientId, factory_id: factoryId });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientId]);
+  }, [clientId, factoryId]);
 
   // clientDetail이 로드되면 폼에 기본값 설정
   useEffect(() => {
-    const factoryId = getStoredFactoryId();
     if (clientDetail && factoryId) {
       reset({
         client_id: clientId,
@@ -88,10 +77,9 @@ const ClientDetailPanel = ({
         note: clientDetail.note || '',
       });
     }
-  }, [clientDetail, reset, clientId]);
+  }, [clientDetail, reset, clientId, factoryId]);
 
   const onSubmit = async (data: ClientUpdateModel) => {
-    const factoryId = getStoredFactoryId();
     if (!factoryId) return;
 
     try {

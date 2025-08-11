@@ -23,9 +23,6 @@ const Permission = () => {
   const initializeFactoryId = useFactoryStore(
     (state) => state.initializeFactoryId
   );
-  const getFactoryIdFromLocal = useFactoryStore(
-    (state) => state.getFactoryIdFromLocal
-  );
   const { getMembers, members, isLoading, error } = useGetMembers();
   const { deleteMember } = useDeleteMember();
   const { getFactory, factory } = useGetFactory();
@@ -33,19 +30,12 @@ const Permission = () => {
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
-  // factoryId가 null이면 로컬에서 가져오거나 초기화
+  // factoryId가 null이면 초기화
   useEffect(() => {
     if (!factoryId) {
-      const localFactoryId = getFactoryIdFromLocal();
-      if (localFactoryId !== null) {
-        // 로컬에서 가져온 factoryId로 상태 업데이트
-        useFactoryStore.getState().setFactoryId(localFactoryId);
-      } else {
-        // 로컬에도 없으면 API에서 가져오기
-        initializeFactoryId();
-      }
+      initializeFactoryId();
     }
-  }, [factoryId, initializeFactoryId, getFactoryIdFromLocal]);
+  }, [factoryId, initializeFactoryId]);
 
   // 초대 중인 팀원 목록 불러오기
   useEffect(() => {
@@ -154,7 +144,7 @@ const Permission = () => {
                   disabled={!isFactoryInfoComplete}
                 />
                 {!isFactoryInfoComplete && (
-                  <div className="absolute top-12 right-0 w-fit opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                  <div className="absolute w-[400px] flex justify-end top-12 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                     <Tooltip
                       color="red"
                       text="팀원을 초대 전, 회사정보(필수 항목)를 먼저 입력해주세요."
@@ -228,7 +218,7 @@ const Permission = () => {
             </div>
             {members?.pageCnt && members.pageCnt > 1 && (
               <Pagination
-                currentPage={members.curPage}
+                currentPage={members.curPage || 1}
                 totalPages={members.pageCnt}
                 onPageChange={setPage}
               />

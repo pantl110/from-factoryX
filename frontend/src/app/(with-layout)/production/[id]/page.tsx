@@ -92,13 +92,8 @@ const ProductionPageContent = () => {
     };
 
     loadProjectStatus();
-  }, [
-    projectId,
-    getProjectStatus,
-    selectedTab,
-    setPageStatus,
-    setProductionTab,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, getProjectStatus, setPageStatus, setProductionTab]);
 
   // 프로젝트 상태 리로드 함수
   const reloadProjectStatus = useCallback(async () => {
@@ -118,13 +113,8 @@ const ProductionPageContent = () => {
     } catch {
       alert('프로젝트 상태 리로드 실패');
     }
-  }, [
-    projectId,
-    getProjectStatus,
-    selectedTab,
-    setPageStatus,
-    setProductionTab,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, getProjectStatus, setPageStatus, setProductionTab]);
 
   // 프로젝트 상태를 delivery로 변경하는 함수
   const handleChangeStatus = useCallback(
@@ -191,7 +181,10 @@ const ProductionPageContent = () => {
           status={projectStatusType}
           tabs={tabs}
           selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
+          setSelectedTab={(idx) => {
+            setSelectedTab(idx);
+            setProductionTab(tabs[idx]);
+          }}
           // 보여줄 정보
           companyName={quotationData?.factory_name || '-'}
           dueDate={quotationData?.due_date || '-'}
@@ -221,9 +214,22 @@ const ProductionPageContent = () => {
             projectStatus={projectStatus.status as ProjectStatusType}
           />
         )}
-        {tabs[selectedTab] === '생산 현황' && <ProductionMonitor />}
-        {tabs[selectedTab] === '생산 내역' && <ProductionLog />}
-        {tabs[selectedTab] === '생산 계획' && <ProductionPlan />}
+        {tabs[selectedTab] === '생산 현황' && (
+          <ProductionMonitor
+            projectStatus={projectStatus.status as ProjectStatusType}
+          />
+        )}
+        {tabs[selectedTab] === '생산 내역' && (
+          <ProductionLog
+            projectStatus={projectStatus.status as ProjectStatusType}
+          />
+        )}
+        {tabs[selectedTab] === '생산 계획' && (
+          <ProductionPlan
+            handleChangeStatus={handleChangeStatus}
+            projectStatus={projectStatus.status as ProjectStatusType}
+          />
+        )}
         {tabs[selectedTab] === '주문서' && quotationData && (
           <div className="px-10 pt-5 pb-10">
             <OrderDocumentView

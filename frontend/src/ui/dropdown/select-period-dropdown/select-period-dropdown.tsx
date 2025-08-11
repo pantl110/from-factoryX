@@ -18,7 +18,7 @@ const SelectPeriodDropdown = ({
         <div className="cursor-pointer">
           <Chip
             text="1개월"
-            bgColor="bg-wh"
+            bgColor="bg-wh hover:bg-bg"
             textColor="text-dg"
             borderColor="border-lg"
             height="h-9"
@@ -31,7 +31,7 @@ const SelectPeriodDropdown = ({
         <div className="cursor-pointer">
           <Chip
             text="3개월"
-            bgColor="bg-wh"
+            bgColor="bg-wh hover:bg-bg"
             textColor="text-dg"
             borderColor="border-lg"
             height="h-9"
@@ -44,7 +44,7 @@ const SelectPeriodDropdown = ({
         <div className="cursor-pointer">
           <Chip
             text="6개월"
-            bgColor="bg-wh"
+            bgColor="bg-wh hover:bg-bg"
             textColor="text-dg"
             borderColor="border-lg"
             height="h-9"
@@ -57,7 +57,7 @@ const SelectPeriodDropdown = ({
         <div className="cursor-pointer">
           <Chip
             text="1년"
-            bgColor="bg-wh"
+            bgColor="bg-wh hover:bg-bg"
             textColor="text-dg"
             borderColor="border-lg"
             height="h-9"
@@ -70,7 +70,7 @@ const SelectPeriodDropdown = ({
         <div className="cursor-pointer">
           <Chip
             text="직접 설정"
-            bgColor="bg-wh"
+            bgColor="bg-wh hover:bg-bg"
             textColor="text-dg"
             borderColor="border-lg"
             height="h-9"

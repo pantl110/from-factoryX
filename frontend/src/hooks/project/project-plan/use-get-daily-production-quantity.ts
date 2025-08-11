@@ -1,15 +1,22 @@
 import { useState, useCallback } from 'react';
 import useFactoryStore from '@/store/factory-store';
-import { ProjectPlanModel } from '@/types/data-model';
 
-// project_id로 해당 프로젝트의 모든 생산 계획을 조회
-const useGetProjectPlans = () => {
+interface DailyProductionQuantityModel {
+  production_count: number;
+  production_quantity: number;
+  previous_month_count: number | null;
+  previous_month_quantity: number | null;
+  change_percentage: number | null;
+}
+
+// 오늘 완료된 생산 계획의 수량을 조회합니다. 전월 대비 수치도 포함됩니다.
+const useGetDailyProductionQuantity = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const factoryId = useFactoryStore((state) => state.factoryId);
 
-  const getProjectPlans = useCallback(
-    async (projectId: number) => {
+  const getDailyProductionQuantity = useCallback(
+    async (targetDate?: string) => {
       setIsLoading(true);
       setError(null);
 
@@ -18,8 +25,17 @@ const useGetProjectPlans = () => {
           throw new Error('공장 정보가 없습니다.');
         }
 
+        // 쿼리 파라미터 구성
+        const params = new URLSearchParams({
+          factory_id: factoryId.toString(),
+        });
+
+        if (targetDate) {
+          params.append('target_date', targetDate);
+        }
+
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan?project_id=${projectId}&factory_id=${factoryId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan/daily?${params}`,
           {
             method: 'GET',
             credentials: 'include',
@@ -27,23 +43,25 @@ const useGetProjectPlans = () => {
         );
 
         if (response.ok) {
-          const result: ProjectPlanModel[] = await response.json();
+          const result: DailyProductionQuantityModel = await response.json();
           return { success: true, data: result };
         } else {
           const errorData = await response.json();
 
-          // 백엔드 에러 코드에 따른 구체적인 메시지
           switch (response.status) {
+            case 400:
+              setError(
+                '올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식으로 입력해주세요.'
+              );
+              break;
             case 404:
-              setError('해당 프로젝트를 찾을 수 없거나 생산 계획이 없습니다.');
+              setError('해당 날짜의 생산 데이터가 없습니다.');
               break;
             case 500:
               setError('서버 내부 오류가 발생했습니다.');
               break;
             default:
-              setError(
-                errorData.detail || '프로젝트 계획 조회에 실패했습니다.'
-              );
+              setError(errorData.detail || '오늘 생산량 조회에 실패했습니다.');
           }
           return { success: false, error: errorData.detail };
         }
@@ -59,7 +77,7 @@ const useGetProjectPlans = () => {
     [factoryId]
   );
 
-  return { getProjectPlans, isLoading, error };
+  return { getDailyProductionQuantity, isLoading, error };
 };
 
-export default useGetProjectPlans;
+export default useGetDailyProductionQuantity;

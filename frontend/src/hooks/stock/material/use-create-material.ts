@@ -1,16 +1,6 @@
 import { CreateMaterialModel } from '@/types/data-model';
 import { useState, useCallback } from 'react';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 // 원자재 생성 응답 모델
 export interface CreateMaterialResponseModel {
@@ -33,14 +23,13 @@ export interface UseCreateMaterialReturnModel {
 const useCreateMaterial = (): UseCreateMaterialReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const createMaterial = useCallback(
     async (materials: CreateMaterialModel[]) => {
       setIsLoading(true);
       setError(null);
 
-      // 로컬스토리지에서 factoryId 가져오기
-      const factoryId = getStoredFactoryId();
       if (!factoryId) {
         const errorMessage = '공장 ID가 설정되지 않았습니다.';
         setError(errorMessage);
@@ -78,7 +67,7 @@ const useCreateMaterial = (): UseCreateMaterialReturnModel => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   return { createMaterial, isLoading, error };

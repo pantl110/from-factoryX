@@ -36,20 +36,16 @@ const FacilityDetailPanel = ({
   const { createEquipment } = useCreateEquipment();
   const { updateEquipment } = useUpdateEquipment();
   const factoryId = useFactoryStore((state) => state.factoryId);
-  const getFactoryIdFromLocal = useFactoryStore(
-    (state) => state.getFactoryIdFromLocal
+  const initializeFactoryId = useFactoryStore(
+    (state) => state.initializeFactoryId
   );
-  const setFactoryId = useFactoryStore((state) => state.setFactoryId);
 
-  // factoryId가 null이면 로컬에서 가져오기
+  // factoryId가 null이면 초기화
   useEffect(() => {
     if (!factoryId) {
-      const localFactoryId = getFactoryIdFromLocal();
-      if (localFactoryId !== null) {
-        setFactoryId(localFactoryId);
-      }
+      initializeFactoryId();
     }
-  }, [factoryId, getFactoryIdFromLocal, setFactoryId]);
+  }, [factoryId, initializeFactoryId]);
 
   const {
     handleSubmit,

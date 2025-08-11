@@ -1,16 +1,6 @@
 import { useState } from 'react';
 import { ProjectLogModel } from '@/types/data-model';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 interface UpdateProjectLogResponseModel {
   message: string;
@@ -19,13 +9,12 @@ interface UpdateProjectLogResponseModel {
 const useUpdateProjectLog = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const updateProjectLog = async (logId: number, data: ProjectLogModel) => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다.');
       setIsLoading(false);

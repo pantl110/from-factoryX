@@ -37,17 +37,7 @@ import MaterialDetailPanel from '../../material/material-detail';
 import DeleteModal from '@/ui/modal/delete-modal';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -82,7 +72,7 @@ const ProductDetail = ({
     isLoading: isMaterialProductLoading,
   } = useMaterialProduct();
   const { getMaterialDetail } = useGetMaterial();
-  const factoryId = getStoredFactoryId();
+  const factoryId = useFactoryStore((state) => state.factoryId);
   const {
     createLocation,
     updateLocation,
@@ -187,10 +177,12 @@ const ProductDetail = ({
   // 토스트 상태
   const { isToastOpen, isVisible, showToast } = useToast();
   const [toastMessage, setToastMessage] = useState('');
+  const [toastSubtext, setToastSubtext] = useState('');
 
   // 토스트 메시지 표시 함수
-  const showToastMessage = (message: string) => {
+  const showToastMessage = (message: string, subtext?: string) => {
     setToastMessage(message);
+    setToastSubtext(subtext || '');
     showToast();
   };
 
@@ -264,7 +256,7 @@ const ProductDetail = ({
         note: product.note,
       });
     } else if (!productId) {
-      const currentFactoryId = getStoredFactoryId();
+      const currentFactoryId = factoryId;
       setFormData({
         factory: currentFactoryId as number,
         name: '',
@@ -278,7 +270,7 @@ const ProductDetail = ({
         note: '',
       });
     }
-  }, [productId, product]);
+  }, [productId, product, factoryId]);
 
   // 서버 location 데이터를 RHF locations 배열에 세팅
   useEffect(() => {
@@ -296,16 +288,14 @@ const ProductDetail = ({
     if (productId) {
       listLocations('product', productId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  }, [productId, listLocations, factoryId]);
 
   // 연결된 자재의 id를 가져오기
   useEffect(() => {
     if (productId) {
       getMaterialProductConnections(productId, 'product');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  }, [productId, getMaterialProductConnections]);
 
   useEffect(() => {
     if (connections && Array.isArray(connections) && connections.length > 0) {
@@ -438,12 +428,15 @@ const ProductDetail = ({
       } else {
         // 생성 모드 - 중복 코드 검증
         if (checkCodeDuplicate(currentFormData.code)) {
-          showToastMessage('이미 존재하는 품목코드에요.');
+          showToastMessage(
+            '이미 존재하는 품목코드에요.',
+            '다른 품목코드로 수정해주세요.'
+          );
           return false;
         }
 
         // 로컬스토리지에서 factoryId 가져오기
-        const storedFactoryId = getStoredFactoryId();
+        const storedFactoryId = factoryId;
         if (!storedFactoryId) {
           showToastMessage('공장 ID가 설정되지 않았습니다.');
           return false;
@@ -600,7 +593,7 @@ const ProductDetail = ({
   };
 
   // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
-  if (!getStoredFactoryId()) {
+  if (!factoryId) {
     return (
       <Panel title="품목 재고관리" onClose={onClose}>
         <div className="flex flex-col items-center justify-center h-100 gap-3">
@@ -774,11 +767,7 @@ const ProductDetail = ({
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
           text={toastMessage}
-          subtext={
-            toastMessage.includes('품목코드')
-              ? '다른 품목코드로 수정해주세요.'
-              : ''
-          }
+          subtext={toastSubtext}
           type="red"
           isVisible={isVisible}
         />

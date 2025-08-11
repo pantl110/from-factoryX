@@ -38,9 +38,9 @@ const PermissionTableItem = ({
   const { status, name, email, role, invited_at: invitedAt, factory } = item;
   const textColor = InvitationStatusColorMap[status];
   const roleText =
-    role === 'admin'
+    role === 'admin' || role === '관리자' || role === '시스템 관리자'
       ? '시스템 관리자'
-      : role === 'manager'
+      : role === 'manager' || role === '운영자'
         ? '운영자'
         : '조회자';
   const authColors = PermissionRoleInfo[roleText as PermissionRoleType];
@@ -103,47 +103,49 @@ const PermissionTableItem = ({
 
   return (
     <>
-      <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-[#eeeeee] group">
-        <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
-        <p className={`px-3 flex-1 ${textColor}`}>
-          {getInvitationStatus(status)}
-        </p>
-        <p className="px-3 flex-1">{name || '-'}</p>
-        <p className="px-3 flex-2">{email}</p>
-        <div className="px-3 flex-1">
-          <Chip
-            text={roleText}
-            textColor={authColors.chipColor.text}
-            bgColor={authColors.chipColor.bg}
-            hover={authColors.chipColor.hover}
-            state={true}
-            cursor={role === 'admin' ? 'cursor-default' : 'cursor-pointer'}
-            onClick={(e) => {
-              if (role !== 'admin') {
-                openAuthDropdown(e as React.MouseEvent);
-              }
-            }}
-          />
-        </div>
-        <p className="px-3 flex-1">{formatDate(invitedAt)}</p>
-      </div>
+      {roleText !== '시스템 관리자' && (
+        <>
+          <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-lg group">
+            <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
+            <p className={`px-3 flex-1 ${textColor}`}>
+              {getInvitationStatus(status)}
+            </p>
+            <p className="px-3 flex-1">{name || '-'}</p>
+            <p className="px-3 flex-2">{email}</p>
+            <div className="px-3 flex-1">
+              <Chip
+                text={roleText}
+                textColor={authColors.chipColor.text}
+                bgColor={authColors.chipColor.bg}
+                hover={authColors.chipColor.hover}
+                state={true}
+                cursor={'cursor-pointer'}
+                onClick={(e) => {
+                  openAuthDropdown(e as React.MouseEvent);
+                }}
+              />
+            </div>
+            <p className="px-3 flex-1">{formatDate(invitedAt)}</p>
+          </div>
 
-      {/* 권한 드롭다운 */}
-      {isAuthDropdownOpen && authAnchorRect && (
-        <div
-          style={{
-            position: 'fixed',
-            left: authAnchorRect.left,
-            top: authAnchorRect.bottom + 8,
-            zIndex: 10,
-            width: authAnchorRect.width,
-          }}
-        >
-          <AuthDropdown
-            onClose={closeAuthDropdown}
-            onSelect={handleAuthChange}
-          />
-        </div>
+          {/* 권한 드롭다운 */}
+          {isAuthDropdownOpen && authAnchorRect && (
+            <div
+              style={{
+                position: 'fixed',
+                left: authAnchorRect.left,
+                top: authAnchorRect.bottom + 8,
+                zIndex: 10,
+                width: authAnchorRect.width,
+              }}
+            >
+              <AuthDropdown
+                onClose={closeAuthDropdown}
+                onSelect={handleAuthChange}
+              />
+            </div>
+          )}
+        </>
       )}
     </>
   );

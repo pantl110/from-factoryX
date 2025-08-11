@@ -45,11 +45,9 @@ const DeliveryTableItem = ({
             text={deliveryStatus}
             bgColor={colors.bgColor}
             textColor={colors.textColor}
-            state={projectStatus === 'delivery' ? true : false}
+            state={projectStatus === '납품' ? true : false}
             onClick={
-              projectStatus === 'delivery'
-                ? (e) => e && openDropdown(e)
-                : undefined
+              projectStatus === '납품' ? (e) => e && openDropdown(e) : undefined
             }
           />
         </div>

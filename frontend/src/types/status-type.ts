@@ -6,7 +6,14 @@ export interface StatusColorModel {
 }
 
 // 팩토리 멤버 type
-export type MemberRoleType = 'admin' | 'manager' | 'viewer'; // 시스템 관리자, 운영자, 조회자
+export type MemberRoleType =
+  | 'admin'
+  | 'manager'
+  | 'viewer'
+  | '시스템 관리자'
+  | '운영자'
+  | '조회자'
+  | '관리자'; // 시스템 관리자, 운영자, 조회자
 export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
 
 // 설비 상태 // 설정 페이지
@@ -127,11 +134,7 @@ export const CompletedProjectStatusColorMap: Record<
 };
 
 // production의 설비 가동 상태
-export type OperationStatusType =
-  | '가동 대기'
-  | '가동 중'
-  | '가동 완료'
-  | '가동 불가';
+export type OperationStatusType = '가동 대기' | '가동 중' | '가동 완료';
 export const OperationStatusColorMap: Record<
   OperationStatusType,
   StatusColorModel
@@ -150,11 +153,6 @@ export const OperationStatusColorMap: Record<
     textColor: 'text-primary',
     bgColor: 'bg-primary-8',
     hover: 'hover:bg-secondary-hover',
-  },
-  '가동 불가': {
-    textColor: 'text-red',
-    bgColor: 'bg-red-8',
-    hover: 'hover:bg-red-hover',
   },
 };
 

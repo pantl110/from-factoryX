@@ -47,10 +47,23 @@ const TableItem = ({
         <p className="flex-1 px-3 text-dg truncate" title={name}>
           {name}
         </p>
-        <p className="flex-1 px-3 text-dg">{code || '-'}</p>
-        <p className="flex-1 px-3 text-dg">{spec}</p>
-        <p className="flex-[0.5] px-3 text-dg">{unit}</p>
-        <p className="flex-1 px-3 text-dg">
+        <p className="flex-1 px-3 text-dg truncate" title={code || '-'}>
+          {code || '-'}
+        </p>
+        <p className="flex-1 px-3 text-dg truncate" title={spec}>
+          {spec}
+        </p>
+        <p className="flex-[0.5] px-3 text-dg truncate" title={unit}>
+          {unit}
+        </p>
+        <p
+          className="flex-1 px-3 text-dg truncate"
+          title={
+            typeof currentStock === 'number'
+              ? currentStock.toLocaleString()
+              : '-'
+          }
+        >
           {typeof currentStock === 'number'
             ? currentStock.toLocaleString()
             : '-'}

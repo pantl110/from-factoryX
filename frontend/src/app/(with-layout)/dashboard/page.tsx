@@ -58,6 +58,7 @@ const DashboardPageContent = () => {
   const [undeliveredProducts, setUndeliveredProducts] = useState<
     UndeliveredProductModel[]
   >([]);
+  const { factoryId, initializeFactoryId } = useFactoryStore();
 
   useEffect(() => {
     const from = searchParams.get('from');

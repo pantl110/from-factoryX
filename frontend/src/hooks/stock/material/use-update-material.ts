@@ -1,16 +1,6 @@
 import { useState } from 'react';
 import { MaterialModel, MaterialResponseModel } from '@/types/data-model';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 const useUpdateMaterial = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +8,7 @@ const useUpdateMaterial = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [updatedMaterial, setUpdatedMaterial] =
     useState<MaterialResponseModel | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const updateMaterial = async (
     materialId: number,
@@ -27,7 +18,6 @@ const useUpdateMaterial = () => {
     setError(null);
     setIsSuccess(false);
 
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       setIsLoading(false);

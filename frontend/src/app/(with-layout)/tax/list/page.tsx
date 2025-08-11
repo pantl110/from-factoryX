@@ -78,8 +78,8 @@ const TaxPageContent = () => {
   useEffect(() => {
     setCurrentPage(1);
     setAllChecked(false);
-  }, [selectedTaxType, setCurrentPage, setAllChecked]); // 의존성 추가
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTaxType]);
   const handleToggleHidden = () => {
     setShowHidden(!showHidden);
     setCurrentPage(1); // 페이지를 1로 리셋

@@ -187,8 +187,14 @@ const AddReturnModal = ({
           required
           value={formatNumberWithComma(returnQuantity)}
           onChange={(e) => {
-            const rawValue = e.target.value.replace(/[^0-9]/g, '');
-            handleReturnQuantityChange(rawValue);
+            const rawValue = e.target.value.replace(/[^0-9.]/g, '');
+            // 소수점이 여러 개 입력되는 것을 방지
+            const parts = rawValue.split('.');
+            const cleanValue =
+              parts.length > 2
+                ? parts[0] + '.' + parts.slice(1).join('')
+                : rawValue;
+            handleReturnQuantityChange(cleanValue);
           }}
           showError={!!returnQuantityError}
           type="text"

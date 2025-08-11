@@ -3,29 +3,22 @@ import {
   CreateProjectLogResponseModel,
   ProjectLogModel,
 } from '@/types/data-model';
+import useFactoryStore from '@/store/factory-store';
 
 interface CreateProjectLogRequestModel extends ProjectLogModel {
   project_id: number;
 }
 
-// localStorage에서 factoryId 가져오기
-const getStoredFactoryId = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('factoryId');
-  }
-  return null;
-};
-
 const useCreateProjectLog = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const createProjectLog = useCallback(
     async (data: CreateProjectLogRequestModel) => {
       setIsLoading(true);
       setError(null);
 
-      const factoryId = getStoredFactoryId();
       if (!factoryId) {
         setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
         setIsLoading(false);
@@ -63,7 +56,7 @@ const useCreateProjectLog = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   return { createProjectLog, isLoading, error };
