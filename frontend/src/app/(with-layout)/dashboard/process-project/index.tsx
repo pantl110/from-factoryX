@@ -3,14 +3,16 @@
 import MiniBtn from '@/ui/mini-btn';
 import ProcessProjectItem from './process-project-item';
 import { useRouter } from 'next/navigation';
-import { projectData } from '@/mocks/project-data';
+import { ProjectResponseModel } from '@/types/data-model';
+import Spinner from '@/ui/spinner';
 
-const ProcessProject = () => {
+interface ProcessProjectProps {
+  projects: ProjectResponseModel[];
+  isLoading: boolean;
+}
+
+const ProcessProject = ({ projects, isLoading }: ProcessProjectProps) => {
   const router = useRouter();
-
-  const processProjects = projectData.filter(
-    (project) => project.status === 'production'
-  );
 
   return (
     <div>
@@ -26,17 +28,27 @@ const ProcessProject = () => {
           hoverColor="hover:bg-bg"
         />
       </div>
-      <div className="mt-3 flex gap-2 overflow-x-auto">
-        {processProjects.map((project) => (
-          <ProcessProjectItem
-            project={project}
-            key={project.id}
-            onClick={() => {
-              router.push(`/production/${project.id}`);
-            }}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="mt-3 flex items-center justify-center h-[120px]">
+          <Spinner />
+        </div>
+      ) : projects.length === 0 ? (
+        <div className="mt-3 flex items-center justify-center h-[120px]">
+          <div className="text-gr">생산 프로젝트가 없습니다.</div>
+        </div>
+      ) : (
+        <div className="mt-3 flex gap-2">
+          {projects.map((project) => (
+            <ProcessProjectItem
+              project={project}
+              key={project.project_id}
+              onClick={() => {
+                router.push(`/production/${project.project_id}`);
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

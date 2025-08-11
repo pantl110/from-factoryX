@@ -8,7 +8,27 @@ import OverlayView from '@/ui/ovelay-view';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import { useReactToPrint } from 'react-to-print';
 
-const TodayProductionSchedule = () => {
+interface TodayProductionPlanModel {
+  company_name: string;
+  product_name: string;
+  product_code: string;
+  spec: string;
+  unit: string;
+  production_quantity: number;
+  equipment_name: string;
+  production_time: number;
+  project_id: number;
+}
+
+interface TodayProductionScheduleProps {
+  todayProductionPlans: TodayProductionPlanModel[];
+  isLoading: boolean;
+}
+
+const TodayProductionSchedule = ({
+  todayProductionPlans,
+  isLoading,
+}: TodayProductionScheduleProps) => {
   const [isPrintOverlayOpen, setIsPrintOverlayOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
@@ -31,7 +51,10 @@ const TodayProductionSchedule = () => {
             hoverColor="hover:bg-bg"
           />
         </div>
-        <ProductionTable />
+        <ProductionTable
+          todayProductionPlans={todayProductionPlans}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* overlay */}
