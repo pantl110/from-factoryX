@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { LoginFormDataModel, LoginResponseModel } from '@/types/data-model';
+import {
+  LoginFormDataModel,
+  LoginResponseModel,
+  FactoriesResponseModel,
+} from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
-import useFactoryStore from '@/store/factory-store';
 import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
-// import useCreateFactory from '@/hooks/factory/use-create-factory';
 
 interface UseLoginReturnModel {
   login: (data: LoginFormDataModel) => Promise<{
@@ -11,6 +13,8 @@ interface UseLoginReturnModel {
     data?: LoginResponseModel;
     error?: string;
     field?: 'email' | 'password';
+    factoryCount?: number;
+    factories?: FactoriesResponseModel[];
   }>;
   isLoading: boolean;
 }
@@ -18,9 +22,7 @@ interface UseLoginReturnModel {
 export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo, setAuthenticated } = useAuthStore();
-  const setFactoryId = useFactoryStore((state) => state.setFactoryId);
   const { getFactoryList } = useGetFactoryList();
-  // const { createFactory } = useCreateFactory();
 
   const login = async (data: LoginFormDataModel) => {
     setIsLoading(true);
@@ -59,60 +61,71 @@ export const useLogin = (): UseLoginReturnModel => {
 
           if (userResponse.ok) {
             const userData = await userResponse.json();
-            // 전역 상태에 사용자 정보 저장
+
+            // 전역 상태에 사용자 정보 저장 (persist가 자동으로 localStorage에 저장)
             setUserInfo(userData);
             setAuthenticated(true);
 
-            // 성공 시
-            // 공장 리스트 받아와서 factoryId 전역 저장
             try {
               const factoryResult = await getFactoryList();
-              if (
-                factoryResult.success &&
-                factoryResult.data?.data &&
-                factoryResult.data.data.length > 0
-              ) {
-                setFactoryId(factoryResult.data.data[0].id);
+              if (factoryResult.success && factoryResult.data) {
+                const factories = factoryResult.data; // 공장 리스트
+                const factoryCount = factories.length; // 공장 개수
+
+                if (factoryCount === 0) {
+                  // 공장이 0개일 때 - 온보딩 페이지로 이동
+                  return {
+                    success: true,
+                    factoryCount: 0,
+                    factories: [],
+                  };
+                } else if (factoryCount === 1) {
+                  // 공장이 1개일 때 - 첫 번째 공장 ID를 저장하고 대시보드로 이동
+                  return {
+                    success: true,
+                    factoryCount: 1,
+                    factories,
+                  };
+                } else {
+                  // 공장이 2개 이상일 때 (초대받은 공장이 있다는 뜻) - 공장 선택 모달을 보여줄 수 있도록 반환
+                  return {
+                    success: true,
+                    factoryCount,
+                    factories,
+                  };
+                }
               } else {
-                // 공장 목록이 비어있으면 임의로  공장을 하나 생성
-                // try {
-                //   const createFactoryResponse = await createFactory({
-                //     name: '',
-                //     business_registration_number: '',
-                //     representative_name: '',
-                //     manager_email: userData.email,
-                //     manager_phone: '',
-                //     manager_fax: '',
-                //     business_type: '',
-                //     business_category: '',
-                //     business_address: '',
-                //     is_trial: true,
-                //     billing_key: '',
-                //   });
-                //   if (createFactoryResponse.success && createFactoryResponse.data) {
-                //     setFactoryId(createFactoryResponse.data.id);
-                //   } else {
-                //     // setFactoryId(10);
-                //   }
-                //   } catch {
-                //     // setFactoryId(10);
-                //   }
-                // setFactoryId(2);
+                // 공장 리스트 조회 실패 시 - 온보딩 페이지로 이동
+                return {
+                  success: true,
+                  data: result,
+                  factoryCount: 0,
+                  factories: [],
+                };
               }
             } catch {
-              // 공장 리스트 fetch 실패 시 일단 임의로 기본값 설정
-              // setFactoryId(2);
+              // 공장 리스트 조회 실패 시 - 온보딩 페이지로 이동
+              return {
+                success: true,
+                data: result,
+                factoryCount: 0,
+                factories: [],
+              };
             }
+          } else {
+            return {
+              success: false,
+              error: '사용자 정보를 가져오는데 실패했습니다.',
+              field: 'email' as const,
+            };
           }
         } catch {
-          // 사용자 정보 fetch 실패 시 무시
-          // setFactoryId(2); // 일단 임의로 설정
+          return {
+            success: false,
+            error: '사용자 정보를 가져오는데 실패했습니다.',
+            field: 'email' as const,
+          };
         }
-
-        return {
-          success: true,
-          data: result,
-        };
       } else {
         // 로그인 실패
         const errorData = await response.json();

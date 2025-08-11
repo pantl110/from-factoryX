@@ -14,8 +14,13 @@ import {
 } from '@/types/data-model';
 import { useGetProjectLogs } from '@/hooks';
 import Spinner from '@/ui/spinner';
+import { ProjectStatusType } from '@/types/status-type';
 
-const ProductionMonitor = () => {
+interface ProductionMonitorProps {
+  projectStatus: ProjectStatusType;
+}
+
+const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
 
@@ -57,68 +62,75 @@ const ProductionMonitor = () => {
           <Spinner />
         </div>
       ) : (
-        <div
-          className="flex gap-3 px-10 w-full overflow-y-hidden"
-          style={{ height: 'calc(100vh - 253px)' }}
-        >
-          {/* 왼쪽 영역 */}
-          <div className={`w-[50%] flex flex-col gap-4 flex-1 pt-5`}>
-            <div className="flex flex-col gap-4 h-full min-h-0">
-              <div>
-                <MiniBtn
-                  text="메모 작성"
-                  textColor="text-dg"
-                  borderColor="border-lg"
-                  onClick={() => setIsCreateMemoModalOpen(true)}
-                  hoverColor="hover:bg-bg"
-                />
+        <div className="mx-10">
+          <div
+            className="flex gap-3 w-full overflow-y-hidden"
+            style={{ height: 'calc(100vh - 263px)' }}
+          >
+            {/* 왼쪽 영역 */}
+            <div className={`w-[50%] h-full flex flex-col gap-4 flex-1 pt-5`}>
+              <div className="flex flex-col gap-4 h-full min-h-0">
+                {projectStatus !== '프로젝트 완료' && (
+                  <div>
+                    <MiniBtn
+                      text="메모 작성"
+                      textColor="text-dg"
+                      borderColor="border-lg"
+                      onClick={() => setIsCreateMemoModalOpen(true)}
+                      hoverColor="hover:bg-bg"
+                    />
+                  </div>
+                )}
+
+                {logData.data.length === 0 ? (
+                  <EmptyLog />
+                ) : (
+                  <div className="flex flex-col gap-4 flex-1 h-full min-h-0 overflow-y-auto scrollbar-hide pb-10">
+                    {logData.data.map((log) => {
+                      return (
+                        <LogItem
+                          key={log.id}
+                          log={log}
+                          onClick={() => setSelectedLog(log)}
+                          isSelected={selectedLog?.id === log.id}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-
-              {logData.data.length === 0 ? (
-                <EmptyLog />
-              ) : (
-                <div className="flex flex-col gap-4 flex-1 pb-10 h-full min-h-0 overflow-y-auto scrollbar-hide">
-                  {logData.data.map((log) => {
-                    return (
-                      <LogItem
-                        key={log.id}
-                        log={log}
-                        onClick={() => setSelectedLog(log)}
-                        isSelected={selectedLog?.id === log.id}
-                      />
-                    );
-                  })}
-                </div>
-              )}
             </div>
-          </div>
 
-          {logData.data.length === 0 ? null : (
-            <div className="w-1 border-r border-lg" />
-          )}
+            {logData.data.length > 0 && (
+              <div className="w-1 border-r border-lg" />
+            )}
 
-          {/* 오른쪽 영역: 선택된 로그에 따라 렌더링 */}
-          <div className="w-[50%] flex-1 pt-5">
-            {selectedLog ? (
-              selectedLog.type === '메모' ? (
-                <MemoSection
-                  key={selectedLog.id} // 강제 리렌더링을 위한 key
-                  logId={selectedLog.id}
-                  title={selectedLog.title}
-                  content={selectedLog.content}
-                  onUpdate={loadProjectLogs}
-                />
-              ) : selectedLog.type === '반품' ? (
-                <ReturnSection key={selectedLog.id} />
-              ) : selectedLog.type === '계획 변경' ? (
-                <PlanChangeSection
-                  key={selectedLog.id}
-                  title={selectedLog.title}
-                  content={selectedLog.content}
-                />
-              ) : null
-            ) : (
-              <NoSelectedLog />
+            {/* 오른쪽 영역: 선택된 로그에 따라 렌더링 */}
+            {logData.data.length > 0 && (
+              <div className="w-[50%] flex-1 pt-5 pb-10">
+                {selectedLog ? (
+                  selectedLog.type === '메모' ? (
+                    <MemoSection
+                      key={selectedLog.id} // 강제 리렌더링을 위한 key
+                      logId={selectedLog.id}
+                      title={selectedLog.title}
+                      content={selectedLog.content}
+                      onUpdate={loadProjectLogs}
+                      projectStatus={projectStatus}
+                    />
+                  ) : selectedLog.type === '반품' ? (
+                    <ReturnSection key={selectedLog.id} />
+                  ) : selectedLog.type === '계획 변경' ? (
+                    <PlanChangeSection
+                      key={selectedLog.id}
+                      title={selectedLog.title}
+                      content={selectedLog.content}
+                    />
+                  ) : null
+                ) : (
+                  <NoSelectedLog />
+                )}
+              </div>
             )}
 
             {/* 모달 */}

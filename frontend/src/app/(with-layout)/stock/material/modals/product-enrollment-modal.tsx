@@ -2,11 +2,16 @@ import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { useState, useEffect } from 'react';
-import { ProductResponseModel, MaterialItemModel } from '@/types/data-model';
+import {
+  ProductResponseModel,
+  MaterialItemModel,
+  ProductListResponseModel,
+} from '@/types/data-model';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
-import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddProduct from './manual-add-product';
 import { useGetProduct, useAssignProduct } from '@/hooks';
+import useFactoryStore from '@/store/factory-store';
+import ConnetionItem from '../../modals/connetion-item';
 
 interface ProductEnrollmentModalProps {
   onClose?: () => void;
@@ -18,17 +23,6 @@ interface ProductEnrollmentModalProps {
   ) => boolean;
   showDuplicateProductToast?: () => void;
 }
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
 
 const ProductEnrollmentModal = ({
   onClose,
@@ -44,6 +38,7 @@ const ProductEnrollmentModal = ({
   >([]);
   const { getProductList } = useGetProduct();
   const { assignProduct, isLoading: isAssignLoading } = useAssignProduct();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const [selectedProducts, setSelectedProducts] = useState<MaterialItemModel[]>(
     []
@@ -62,7 +57,8 @@ const ProductEnrollmentModal = ({
         });
 
         if (firstPageResult.success && firstPageResult.data) {
-          const { totalCnt } = firstPageResult.data;
+          const responseData = firstPageResult.data as ProductListResponseModel;
+          const totalCnt = responseData.totalCnt || responseData.count || 0;
 
           // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
           const allDataResult = await getProductList({
@@ -105,11 +101,18 @@ const ProductEnrollmentModal = ({
     );
   };
 
+  // 품목 수량 변경
+  const handleQuantityChange = (code: string, newQuantity: number) => {
+    setSelectedProducts((prev) =>
+      prev.map((product) =>
+        product.code === code ? { ...product, quantity: newQuantity } : product
+      )
+    );
+  };
+
   const handleAddProducts = async () => {
     if (selectedProducts.length === 0) return;
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       return;
@@ -123,7 +126,7 @@ const ProductEnrollmentModal = ({
         code: product.code,
         spec: product.spec,
         unit: product.unit,
-        quantity: product.quantity ?? 10, // ‼️‼️‼️‼️‼️‼️‼️ 수정 필요 ‼️‼️‼️‼️ 기본 수량 10으로 설정 ‼️
+        quantity: product.quantity || 0,
       })),
     });
 
@@ -136,10 +139,12 @@ const ProductEnrollmentModal = ({
   return (
     <Modal
       title="해당 원자재와 연결할 품목을 등록해 주세요."
+      subtitle="품목을 선택하거나 새로 추가한 뒤, 해당 품목 제작에 필요한 원자재 투입량을 설정해 주세요."
       width="w-[600px]"
       onClose={onClose}
+      scroll={true}
     >
-      <div className="mt-4 flex gap-2.5 relative">
+      <div className="my-4 flex gap-2.5 relative px-6">
         <SearchInput
           placeholder="품목 검색"
           width="flex-1"
@@ -158,7 +163,7 @@ const ProductEnrollmentModal = ({
         />
 
         {isOpen && filteredProducts.length > 0 && (
-          <div className="absolute left-0 top-14 w-[449.3px] z-10">
+          <div className="absolute left-6 top-14 w-[449.3px] z-10">
             <ProductNameDropdown
               items={filteredProducts}
               onSelect={handleSelectProduct}
@@ -170,54 +175,56 @@ const ProductEnrollmentModal = ({
       </div>
 
       {/* 직접 추가 모드 */}
-      {isManualAddMode ? (
-        <ManualAddProduct
-          setIsManualAddMode={setIsManualAddMode}
-          setSelectedProducts={setSelectedProducts}
-          checkDuplicateProductCode={(code) =>
-            checkDuplicateProductCode?.(code, selectedProducts) ?? false
-          }
-          showDuplicateProductToast={showDuplicateProductToast}
-        />
-      ) : (
-        // 선택한 품목 list
-        selectedProducts.length > 0 && (
-          <div className="mt-4 flex flex-col">
-            {selectedProducts.map((product, index) => (
-              <div
-                key={`${product.name}-${index}`}
-                className="flex justify-between items-center h-10"
-              >
-                <p className="Me_body-1 text-dg">{product.name}</p>
-                <div
-                  className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                  onClick={() => handleRemoveProduct(product.code)}
-                >
-                  <X size={16} className="text-gr" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      )}
+      <div className="px-6 pb-6 max-h-[calc(85vh-181px)] overflow-y-auto scrollbar-hide">
+        {isManualAddMode ? (
+          <ManualAddProduct
+            setIsManualAddMode={setIsManualAddMode}
+            setSelectedProducts={setSelectedProducts}
+            checkDuplicateProductCode={(code) =>
+              checkDuplicateProductCode?.(code, selectedProducts) ?? false
+            }
+            showDuplicateProductToast={showDuplicateProductToast}
+          />
+        ) : (
+          // 선택한 품목 list
+          selectedProducts.length > 0 && (
+            <div className="mb-4 flex flex-col gap-3">
+              {selectedProducts.map((product, index) => (
+                <ConnetionItem
+                  key={`${product.name}-${index}`}
+                  name={product.name}
+                  unit={product.unit}
+                  quantity={product.quantity || 0}
+                  onQuantityChange={(quantity) =>
+                    handleQuantityChange(product.code, quantity)
+                  }
+                  onDelete={() => handleRemoveProduct(product.code)}
+                />
+              ))}
+            </div>
+          )
+        )}
 
-      <div className="mt-4 flex gap-2.5 justify-end">
-        <MiniBtn
-          text="취소"
-          textColor="text-sv"
-          hoverColor="bg-bg"
-          onClick={onClose}
-        />
-        <MiniBtn
-          text="추가"
-          textColor="text-wh"
-          bgColor="bg-primary"
-          hoverColor="hover:bg-primary-hover"
-          disabled={
-            selectedProducts.length === 0 || isManualAddMode || isAssignLoading
-          }
-          onClick={handleAddProducts}
-        />
+        <div className="flex gap-2.5 justify-end">
+          <MiniBtn
+            text="취소"
+            textColor="text-sv"
+            hoverColor="bg-bg"
+            onClick={onClose}
+          />
+          <MiniBtn
+            text="추가"
+            textColor="text-wh"
+            bgColor="bg-primary"
+            hoverColor="hover:bg-primary-hover"
+            disabled={
+              selectedProducts.length === 0 ||
+              isManualAddMode ||
+              isAssignLoading
+            }
+            onClick={handleAddProducts}
+          />
+        </div>
       </div>
     </Modal>
   );

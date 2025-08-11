@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { FactoriesModel, FactoriesResponseModel } from '@/types/data-model';
+import { FactoriesModel } from '@/types/data-model';
+
+interface CreateFactoryResponseModel {
+  factory_id: number;
+}
 
 const useCreateFactory = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,8 +26,8 @@ const useCreateFactory = () => {
         }
       );
       if (response.status === 201) {
-        const result: FactoriesResponseModel = await response.json();
-        return { success: true, data: result };
+        const result: CreateFactoryResponseModel = await response.json();
+        return { success: true, data: { id: result.factory_id } };
       } else {
         const errorData = await response.json();
         setError(errorData.detail || '공장 등록에 실패했습니다.');

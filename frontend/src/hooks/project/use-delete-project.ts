@@ -1,16 +1,16 @@
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 const useDeleteProject = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const deleteProject = async (projectId: number) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // localStorage에서 factoryId 가져오기
-      const factoryId = localStorage.getItem('factoryId');
       if (!factoryId) {
         setError('Factory ID를 찾을 수 없습니다.');
         return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };

@@ -152,10 +152,16 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 placeholder="현재 재고 수량을 입력하세요."
                 inputType="text"
                 onChange={(e) => {
-                  const numValue = e.target.value.replace(/[^0-9]/g, '');
-                  // 빈 문자열이면 undefined, 아니면 문자열로 저장
+                  const numValue = e.target.value.replace(/[^0-9.]/g, '');
+                  // 소수점이 여러 개 입력되는 것을 방지
+                  const parts = numValue.split('.');
+                  const cleanValue =
+                    parts.length > 2
+                      ? parts[0] + '.' + parts.slice(1).join('')
+                      : numValue;
+                  // 빈 문자열이면 undefined, 아니면 숫자로 저장 (소수점 포함)
                   field.onChange(
-                    numValue === '' ? undefined : Number(numValue)
+                    cleanValue === '' ? undefined : Number(cleanValue)
                   );
                 }}
               />

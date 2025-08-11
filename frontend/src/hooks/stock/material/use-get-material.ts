@@ -4,6 +4,7 @@ import {
   MaterialResponseModel,
   PaginationModel,
 } from '@/types/data-model';
+import useFactoryStore from '@/store/factory-store';
 
 interface MaterialFilterModel {
   page?: number;
@@ -13,23 +14,13 @@ interface MaterialFilterModel {
   limit?: number;
 }
 
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
-
 const useGetMaterial = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [material, setMaterial] = useState<MaterialResponseModel | null>(null);
   const [materialList, setMaterialList] = useState<MaterialResponseModel[]>([]);
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 원자재 목록 조회
   const getMaterialList = useCallback(
@@ -37,12 +28,12 @@ const useGetMaterial = () => {
       setIsLoading(true);
       setError(null);
 
-      // 로컬스토리지에서 factoryId 가져오기
-      const factoryId = getStoredFactoryId();
       if (!factoryId) {
-        setError('공장 정보가 없습니다.');
+        // factoryId가 없으면 빈 데이터를 반환
+        setMaterialList([]);
+        setPagination(null);
         setIsLoading(false);
-        return { success: false, error: '공장 정보가 없습니다.' };
+        return { success: true, data: { data: [], count: 0 } };
       }
 
       try {
@@ -80,58 +71,60 @@ const useGetMaterial = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   // 원자재 상세 조회
-  const getMaterialDetail = useCallback(async (materialId: number) => {
-    setIsLoading(true);
-    setError(null);
+  const getMaterialDetail = useCallback(
+    async (materialId: number) => {
+      setIsLoading(true);
+      setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
-    if (!factoryId) {
-      setError('공장 정보가 없습니다.');
-      setIsLoading(false);
-      return { success: false, error: '공장 정보가 없습니다.' };
-    }
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/${materialId}?factory_id=${factoryId}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
-      if (response.ok) {
-        const result: MaterialResponseModel = await response.json();
-        setMaterial(result);
-        return { success: true, data: result };
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || '원자재 상세 정보를 불러오지 못했습니다.');
-        return { success: false, error: errorData.detail };
+      if (!factoryId) {
+        // factoryId가 없으면 빈 데이터를 반환
+        setMaterial(null);
+        setIsLoading(false);
+        return { success: true, data: null };
       }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/${materialId}?factory_id=${factoryId}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          }
+        );
+        if (response.ok) {
+          const result: MaterialResponseModel = await response.json();
+          setMaterial(result);
+          return { success: true, data: result };
+        } else {
+          const errorData = await response.json();
+          setError(
+            errorData.detail || '원자재 상세 정보를 불러오지 못했습니다.'
+          );
+          return { success: false, error: errorData.detail };
+        }
+      } catch {
+        setError('서버 연결에 실패했습니다.');
+        return { success: false, error: '서버 연결에 실패했습니다.' };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [factoryId]
+  );
 
   // 모든 원자재 정보 가져오기 (중복 검사용)
   const getAllMaterials = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
-      setError('공장 정보가 없습니다.');
+      // factoryId가 없으면 빈 배열을 반환
       setIsLoading(false);
-      return { success: false, error: '공장 정보가 없습니다.' };
+      return { success: true, data: [] };
     }
 
     try {
@@ -191,7 +184,7 @@ const useGetMaterial = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [factoryId]);
 
   return {
     material,

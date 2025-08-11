@@ -1,135 +1,88 @@
+import { useState } from 'react';
 import Pagination from '@/components/pagination';
-import usePagination from '@/hooks/use-pagination';
 import ProductionTableHeader from './production-table-header';
 import ProductionTableItem from './production-table-item';
+import Spinner from '@/ui/spinner';
 
-// 생산 일정 데이터
-const productionScheduleData = [
-  {
-    id: 1,
-    companyName: '플라스틱이 좋아',
-    productName: 'A품목',
-    productCode: 'P-001',
-    size: '500ml',
-    unit: 'EA',
-    quantity: 5000,
-    machine: '1호기',
-    time: '09:00-13:00',
-  },
-  {
-    id: 2,
-    companyName: '플라스틱 마스터',
-    productName: 'A품목',
-    productCode: 'P-001',
-    size: '500ml',
-    unit: 'EA',
-    quantity: 5000,
-    machine: '1호기',
-    time: '09:00-13:00',
-  },
-  {
-    id: 3,
-    companyName: '플라스틱 프로',
-    productName: 'A품목',
-    productCode: 'P-001',
-    size: '500ml',
-    unit: 'EA',
-    quantity: 5000,
-    machine: '1호기',
-    time: '09:00-13:00',
-  },
-  {
-    id: 4,
-    companyName: '플라스틱 엑스퍼트',
-    productName: 'A품목',
-    productCode: 'P-001',
-    size: '500ml',
-    unit: 'EA',
-    quantity: 5000,
-    machine: '1호기',
-    time: '09:00-13:00',
-  },
-  {
-    id: 5,
-    companyName: '플라스틱 스페셜',
-    productName: 'B품목',
-    productCode: 'P-002',
-    size: '1L',
-    unit: 'EA',
-    quantity: 3000,
-    machine: '2호기',
-    time: '14:00-18:00',
-  },
-  {
-    id: 6,
-    companyName: '플라스틱 프리미엄',
-    productName: 'C품목',
-    productCode: 'P-003',
-    size: '250ml',
-    unit: 'EA',
-    quantity: 8000,
-    machine: '3호기',
-    time: '19:00-23:00',
-  },
-  {
-    id: 7,
-    companyName: '플라스틱 베스트',
-    productName: 'D품목',
-    productCode: 'P-004',
-    size: '750ml',
-    unit: 'EA',
-    quantity: 2000,
-    machine: '1호기',
-    time: '08:00-12:00',
-  },
-  {
-    id: 8,
-    companyName: '플라스틱 퍼펙트',
-    productName: 'E품목',
-    productCode: 'P-005',
-    size: '2L',
-    unit: 'EA',
-    quantity: 1500,
-    machine: '2호기',
-    time: '13:00-17:00',
-  },
-];
+interface TodayProductionPlanModel {
+  company_name: string;
+  product_name: string;
+  product_code: string;
+  spec: string;
+  unit: string;
+  production_quantity: number;
+  equipment_name: string;
+  production_time: number;
+  project_id: number;
+}
 
-const ProductionTable = () => {
-  // 페이지네이션 훅 사용
-  const {
-    currentItems: currentProductions,
-    currentPage,
-    totalPages,
-    setCurrentPage,
-  } = usePagination({
-    items: productionScheduleData,
-    itemsPerPage: 5, // 페이지당 5개 항목
-  });
+interface ProductionTableProps {
+  todayProductionPlans: TodayProductionPlanModel[];
+  isLoading: boolean;
+}
+
+const ProductionTable = ({
+  todayProductionPlans,
+  isLoading,
+}: ProductionTableProps) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // 생산 시간을 시:분 형식으로 변환
+  const formatProductionTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  // 페이지네이션 계산
+  const itemsPerPage = 5;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = todayProductionPlans.slice(startIndex, endIndex);
+  const calculatedTotalPages = Math.ceil(
+    todayProductionPlans.length / itemsPerPage
+  );
+
+  if (isLoading) {
+    return (
+      <div className="mt-3 flex items-center justify-center h-[328px]">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (todayProductionPlans.length === 0) {
+    return (
+      <div className="mt-3 flex items-center justify-center h-[328px]">
+        <div className="text-gr">오늘의 생산 일정이 없습니다.</div>
+      </div>
+    );
+  }
 
   return (
     <>
       <div className="mt-3 overflow-x-auto h-[328px] scrollbar-hide">
         <ProductionTableHeader />
-        {currentProductions.map((item) => (
+        {currentItems.map((item, index) => (
           <ProductionTableItem
-            key={item.id}
-            companyName={item.companyName}
-            productName={item.productName}
-            productCode={item.productCode}
-            size={item.size}
+            key={`${item.project_id}-${index}`}
+            companyName={item.company_name}
+            productName={item.product_name}
+            productCode={item.product_code}
+            size={item.spec}
             unit={item.unit}
-            quantity={item.quantity}
-            machine={item.machine}
-            time={item.time}
+            quantity={item.production_quantity}
+            machine={item.equipment_name}
+            time={formatProductionTime(item.production_time)}
           />
         ))}
       </div>
-      {totalPages > 1 && (
+      {calculatedTotalPages > 1 && (
         <div className="flex justify-center mt-3">
           <Pagination
             currentPage={currentPage}
-            totalPages={totalPages}
+            totalPages={calculatedTotalPages}
             onPageChange={setCurrentPage}
           />
         </div>

@@ -15,20 +15,11 @@ import {
   useDeleteEquipment,
   useDeleteClient,
 } from '@/hooks';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
     useState(false);
@@ -224,7 +215,6 @@ const MasterData = () => {
       }
       try {
         // 선택된 모든 거래처 삭제
-        const factoryId = getStoredFactoryId();
         if (!factoryId) {
           alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
           return;

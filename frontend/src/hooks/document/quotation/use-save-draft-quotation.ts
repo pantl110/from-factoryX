@@ -1,5 +1,6 @@
 import { SaveDraftQuotationModel } from '@/types/data-model';
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 interface SaveDraftQuotationResponseModel {
   quotation_id: number;
@@ -14,17 +15,6 @@ interface UseSaveDraftQuotationReturnModel {
   error: string | null;
 }
 
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
-
 // 견적서 임시 저장
 // - 거래저 정보 업데이트
 // - 납기일자 업데이트
@@ -33,6 +23,7 @@ const getStoredFactoryId = (): number | null => {
 const useSaveDraftQuotation = (): UseSaveDraftQuotationReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const saveDraft = async (
     data: SaveDraftQuotationModel
@@ -40,8 +31,6 @@ const useSaveDraftQuotation = (): UseSaveDraftQuotationReturnModel => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       const errorMessage = '공장 ID가 설정되지 않았습니다.';
       setError(errorMessage);

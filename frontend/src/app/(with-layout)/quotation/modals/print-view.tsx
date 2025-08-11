@@ -30,7 +30,7 @@ const PrintView = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
-    documentTitle: '견적서', // 문서 제목
+    documentTitle: `${documentTitle}`, // 문서 제목
   });
 
   return (

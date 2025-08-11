@@ -11,7 +11,10 @@ import { ArrowLineUpRight, X } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback } from 'react';
 import useMaterialProduct from '@/hooks/stock/use-material-product';
-import { handleNumberKeyDown } from '@/hooks/format-number';
+import {
+  handleNumberKeyDown,
+  handleQuantityInput,
+} from '@/hooks/format-number';
 
 interface StockStatusItemProps {
   connection: MaterialProductConnectionModel;
@@ -21,7 +24,7 @@ interface StockStatusItemProps {
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
   onDeleteConnection: (connectionId: number) => void;
-  onInvalidQuantity: (message: string) => void;
+  onInvalidQuantity: (message: string, subtext?: string) => void;
 }
 
 const StockStatusItem = ({
@@ -62,7 +65,10 @@ const StockStatusItem = ({
   const formatNumberWithCommas = useCallback(
     (value: number | null | undefined): string => {
       if (value === null || value === undefined || value === 0) return '';
-      return value.toLocaleString();
+      return value.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+      });
     },
     []
   );
@@ -83,40 +89,36 @@ const StockStatusItem = ({
 
   // 수량 변경 처리
   const handleQuantityChangeLocal = (inputValue: string) => {
-    // 음수 부호와 숫자가 아닌 문자 제거 (쉼표 포함)
-    const cleanValue = inputValue.replace(/[^0-9]/g, '');
-    const newValue = cleanValue === '' ? 0 : parseInt(cleanValue) || 0;
+    const { displayValue, numericValue, isValid } =
+      handleQuantityInput(inputValue);
 
-    materialQuantityForm.setValue('quantity', newValue, {
-      shouldDirty: true,
-    });
+    // displayValue를 실시간으로 업데이트 (콤마 포함된 포맷팅 적용)
+    setDisplayValue(displayValue);
 
-    // 상위 컴포넌트에 변경사항 전달
-    handleQuantityChange(connection.connection_id, newValue);
+    if (isValid) {
+      materialQuantityForm.setValue('quantity', numericValue, {
+        shouldDirty: true,
+      });
 
-    // 원래 값과 다르면 dirty 상태로 설정
-    if (newValue !== connection.quantity) {
-      setIsQuantityDirty(true);
-    } else {
-      setIsQuantityDirty(false);
+      // 상위 컴포넌트에 변경사항 전달
+      handleQuantityChange(connection.connection_id, numericValue);
+
+      // 원래 값과 다르면 dirty 상태로 설정
+      if (numericValue !== connection.quantity) {
+        setIsQuantityDirty(true);
+      } else {
+        setIsQuantityDirty(false);
+      }
     }
-  };
-
-  // 한글 조합 입력 완료 시 처리
-  const handleCompositionEnd = (
-    e: React.CompositionEvent<HTMLInputElement>
-  ) => {
-    // 한글 입력이 완료되면 숫자만 남기고 제거
-    const target = e.target as HTMLInputElement;
-    const cleanValue = target.value.replace(/[^0-9]/g, '');
-    target.value = cleanValue;
-    handleQuantityChangeLocal(cleanValue);
   };
 
   // 수량 수정 저장
   const handleSaveQuantity = async (newQuantity: number) => {
     if (isNaN(newQuantity) || newQuantity <= 0) {
-      onInvalidQuantity('유효한 수량을 입력해주세요.');
+      onInvalidQuantity(
+        '사용수량이 입력되지 않았어요.',
+        '사용수량을 입력해주세요.'
+      );
       // 유효하지 않은 값이면 원래 값으로 되돌리기
       materialQuantityForm.setValue('quantity', connection.quantity || 0);
       setIsQuantityDirty(false);
@@ -133,13 +135,19 @@ const StockStatusItem = ({
         materialQuantityForm.setValue('quantity', newQuantity);
         setIsQuantityDirty(false); // 저장 성공 시 dirty 상태 해제
       } else {
-        onInvalidQuantity('수량 수정에 실패했습니다: ' + result.error);
+        onInvalidQuantity(
+          '사용 수량 수정에 실패했습니다: ' + result.error,
+          '잠시 후 다시 시도해주세요.'
+        );
         // 저장 실패 시 원래 값으로 되돌리기
         materialQuantityForm.setValue('quantity', connection.quantity || 0);
         setIsQuantityDirty(false);
       }
     } catch {
-      onInvalidQuantity('수량 수정 중 오류가 발생했습니다.');
+      onInvalidQuantity(
+        '사용 수량 수정 중 오류가 발생했습니다.',
+        '잠시 후 다시 시도해주세요.'
+      );
       // 오류 시 원래 값으로 되돌리기
       materialQuantityForm.setValue('quantity', connection.quantity || 0);
       setIsQuantityDirty(false);
@@ -195,11 +203,20 @@ const StockStatusItem = ({
         placeholder="(필수)"
         onChange={(e) => handleQuantityChangeLocal(e.target.value)}
         onBlur={(e) => {
-          const cleanValue = e.target.value.replace(/[^0-9]/g, '');
-          handleSaveQuantity(parseInt(cleanValue) || 0);
+          const cleanValue = e.target.value.replace(/[^0-9.]/g, '');
+          // 소수점이 여러 개 입력되는 것을 방지
+          const parts = cleanValue.split('.');
+          const finalValue =
+            parts.length > 2
+              ? parts[0] + '.' + parts.slice(1).join('')
+              : cleanValue;
+          const numberValue = finalValue ? parseFloat(finalValue) : 0;
+
+          // 저장 후 포맷팅된 값으로 displayValue 업데이트
+          handleSaveQuantity(numberValue);
+          setDisplayValue(formatNumberWithCommas(numberValue));
         }}
         onKeyDown={handleNumberKeyDown}
-        onCompositionEnd={handleCompositionEnd}
         disabled={isSaving}
       />
       <div className="flex-[0.8] px-3 text-dg flex justify-between">

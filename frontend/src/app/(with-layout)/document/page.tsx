@@ -6,7 +6,7 @@ import MainTitleSec from './main-title-sec';
 import DocumentTable from './document-table';
 import Pagination from '@/components/pagination';
 import { DocumentType } from './types';
-// import OrderDocumentView from './order-document-view';
+import OrderDocumentView from './order-document-view';
 import documentData, { DocumentDataModel } from '@/mocks/document-data';
 import Panel from '@/ui/panel';
 import ProductionDocumentView from './production-document-view';
@@ -96,11 +96,40 @@ const DocumentPageContent = () => {
       </div>
 
       {/* 판넬 */}
-      {/* {selectedDocument && selectedDocument.documentType === '주문서' && (
+      {selectedDocument && selectedDocument.documentType === '주문서' && (
         <Panel title="주문서" onClose={() => setSelectedDocument(null)}>
-          <OrderDocumentView />
+          <OrderDocumentView
+            documentTitle={'주문서'}
+            clientData={{
+              name: '플라스틱이 좋아',
+              business_registration_number: '123-45-67890',
+              representative_name: '플라스틱',
+              email: 'plastic@gmail.com',
+              phone: '010-1234-5678',
+              fax: '02-123-4567',
+              business_type: '소프트웨어',
+              business_category: '소프트웨어',
+              address: '서울시 강남구 역삼동',
+            }}
+            dueDate={'2025-08-01'}
+            productListInfoTitle={'상품 목록'}
+            productItems={[
+              {
+                productId: 1,
+                product_code: '1234567890',
+                product_name: '플라스틱',
+                spec: '100x100x100',
+                unit: '개',
+                quantity: 10,
+                unit_price: 50000,
+                supply_amount: 500000,
+                tax_amount: 50000,
+              },
+            ]}
+            supplyAmount={500000}
+          />
         </Panel>
-      )} */}
+      )}
       {selectedDocument && selectedDocument.documentType === '생산지시서' && (
         <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
           <ProductionDocumentView />
@@ -108,7 +137,34 @@ const DocumentPageContent = () => {
       )}
       {selectedDocument && selectedDocument.documentType === '거래명세서' && (
         <Panel title="거래명세서" onClose={() => setSelectedDocument(null)}>
-          <TransactionDocumentView />
+          <TransactionDocumentView
+            quotationData={{
+              factory_name: '플라스틱이 좋아',
+              business_registration_number: '123-45-67890',
+              representative_name: '플라스틱',
+              email: 'plastic@gmail.com',
+              phone: '010-1234-5678',
+              fax: '02-123-4567',
+              business_type: '소프트웨어',
+              business_category: '소프트웨어',
+              address: '서울시 강남구 역삼동',
+              products: [
+                {
+                  productId: 1,
+                  product_code: '1234567890',
+                  product_name: '플라스틱',
+                  spec: '100x100x100',
+                  unit: '개',
+                  quantity: 10,
+                  unit_price: 50000,
+                  supply_amount: 500000,
+                  tax_amount: 50000,
+                },
+              ],
+              due_date: '2025-08-01',
+            }}
+            startDate={'2025-08-01'}
+          />
         </Panel>
       )}
       {selectedDocument &&

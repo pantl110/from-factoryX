@@ -6,8 +6,8 @@ export interface PaginationModel {
   totalCnt: number;
   pageCnt: number;
   curPage: number;
-  nextPage: number | null;
-  previousPage: number | null;
+  nextPage?: number | null;
+  previousPage?: number | null;
 }
 
 // Users API
@@ -103,9 +103,7 @@ export interface FactoriesModel {
 }
 
 export interface FactoriesResponseModel {
-  id: number;
-  created_at: string;
-  updated_at: string;
+  id: number; // factory_id
   owner: number;
   name: string;
   business_registration_number: string;
@@ -118,11 +116,12 @@ export interface FactoriesResponseModel {
   business_address: string;
   is_trial: boolean;
   billing_key: string;
-}
-
-// 공장 목록 조회
-export interface FactoriesListResponseModel extends PaginationModel {
-  data: FactoriesResponseModel[];
+  inviting: string[];
+  created_at: string;
+  updated_at: string;
+  invited_at: string;
+  role?: string;
+  invited_by: number;
 }
 
 // 공장 수정
@@ -471,9 +470,13 @@ export interface ProjectListResponseModel extends PaginationModel {
 // 프로젝트 상태 조회 응답
 export interface ProjectStatusResponseModel {
   project_id: number;
-  status: string;
+  quotation_id: number;
+  status: ProjectStatusType;
   created_at: string;
   updated_at: string;
+  earliest_start_date?: string;
+  latest_end_date?: string;
+  due_date?: string;
 }
 
 //////////////////////
@@ -640,7 +643,7 @@ export interface ProjectPlanModel {
   project_id: number;
   quotation_product: QuotationProductForPlanModel;
   equipment: EquipmentForPlanModel;
-  status: string; // 가동 대기, 가동 중, 가동 완료, 가동 불가
+  status: OperationStatusType; // 가동 대기, 가동 중, 가동 완료, 가동 불가
   quantity: number; // 생산 수량
   start_date: string; // 생산 시작 일자
   end_date: string; // 생산 종료 일자
@@ -655,10 +658,38 @@ export interface ProjectPlanListResponseModel extends PaginationModel {
 export interface UpdateProjectPlanModel {
   equipment_id?: number;
   quantity?: number;
-  status?: string;
+  status?: OperationStatusType;
   start_date?: string;
   end_date?: string;
   avg_production_time?: number;
+}
+
+//////////////////////
+// Project Refund API
+// 반품 생성
+export interface CreateRefundModel {
+  project_id: number;
+  product_id: number;
+  refund_date: string; // YYYY-MM-DD 형식
+  production_amount?: number | null;
+}
+
+export interface CreateRefundResponseModel {
+  message: string;
+  refund_id: number;
+  log_id: number;
+}
+
+// 반품 수정
+export interface UpdateRefundModel {
+  refund_date?: string;
+  current_stock?: number;
+  production_amount?: number;
+}
+
+export interface UpdateRefundResponseModel {
+  message: string;
+  refund_id: number;
 }
 
 //////////////////////
@@ -744,6 +775,7 @@ import {
   TaxStatusType,
   EquipmentStatusType,
   ProjectLogType,
+  OperationStatusType,
 } from './status-type';
 
 export type {

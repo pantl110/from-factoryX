@@ -45,9 +45,13 @@ const FacilityTableItem = ({
           radius="rounded-sm"
         />
       </div>
-      <p className="flex-1 px-3">{facility.name}</p>
+      <p className="flex-1 px-3 truncate" title={facility.name}>
+        {facility.name}
+      </p>
       <p className="flex-1 px-3">{facility.priority.toLocaleString()}</p>
-      <p className="flex-2 px-3">{facility.location}</p>
+      <p className="flex-2 px-3 truncate" title={facility.location}>
+        {facility.location}
+      </p>
     </div>
   );
 };

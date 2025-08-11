@@ -31,7 +31,7 @@ const Material = ({
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const pageSize = 10;
 
-  const { getMaterialList, materialList, pagination, isLoading, error } =
+  const { getMaterialList, materialList, pagination, isLoading } =
     useGetMaterial();
   const { shouldReload, setShouldReload } = useMaterialReloadStore();
   const { deleteMaterial, isLoading: isDeleting } = useDeleteMaterial();
@@ -134,7 +134,7 @@ const Material = ({
         </div>
       </div>
 
-      {isLoading || error ? (
+      {isLoading ? (
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
@@ -146,23 +146,26 @@ const Material = ({
             currentOrder={order}
             onSortChange={handleSortChange}
           />
-          {materialList.map((material) => {
-            return (
-              <TableItem
-                key={material.id}
-                material={material}
-                onClick={() => {
-                  setSelectedMaterialId(material.id);
-                  setIsMaterialDetailOpen(true);
-                }}
-                checked={isChecked(material.id)}
-                onToggle={() => toggleOne(material.id)}
-              />
-            );
-          })}
-          {pagination && pagination.pageCnt > 1 && (
+          {materialList.length > 0 &&
+            materialList.map((material) => {
+              return (
+                <TableItem
+                  key={material.id}
+                  material={material}
+                  onClick={() => {
+                    setSelectedMaterialId(material.id);
+                    setIsMaterialDetailOpen(true);
+                  }}
+                  checked={isChecked(material.id)}
+                  onToggle={() => toggleOne(material.id)}
+                />
+              );
+            })}
+
+          {/* 페이지네이션 */}
+          {pagination && pagination.pageCnt && pagination.pageCnt > 1 && (
             <Pagination
-              currentPage={pagination.curPage}
+              currentPage={pagination.curPage || 1}
               totalPages={pagination.pageCnt}
               onPageChange={setPage}
             />

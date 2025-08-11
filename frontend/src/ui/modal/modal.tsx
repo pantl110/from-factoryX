@@ -13,6 +13,7 @@ interface ModalProps {
   gap?: string;
   className?: string;
   scroll?: boolean;
+  hideCloseIcon?: boolean;
 }
 
 const Modal = ({
@@ -27,6 +28,7 @@ const Modal = ({
   gap,
   className,
   scroll = false,
+  hideCloseIcon = false,
 }: ModalProps) => {
   useEffect(() => {
     const originalStyle = document.body.style.overflow;
@@ -57,12 +59,14 @@ const Modal = ({
             <h3 className="Heading-3">{title}</h3>
             {button}
           </div>
-          <button
-            className={`${sm ? 'w-9 h-9' : 'w-10 h-10'} flex justify-center items-center cursor-pointer rounded-lg transition-colors duration-200 hover:bg-bg`}
-            onClick={onClose}
-          >
-            <X size={16} className="text-sv" />
-          </button>
+          {!hideCloseIcon && (
+            <button
+              className={`${sm ? 'w-9 h-9' : 'w-10 h-10'} flex justify-center items-center cursor-pointer rounded-lg transition-colors duration-200 hover:bg-bg`}
+              onClick={onClose}
+            >
+              <X size={20} className="text-sv" />
+            </button>
+          )}
         </div>
         <div
           className={`${gap ? gap : sm ? 'mt-2' : 'mt-1'} Me_Body-2 text-gr ${

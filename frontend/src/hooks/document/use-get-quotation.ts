@@ -1,16 +1,6 @@
 import { QuotationResponseModel } from '@/types/data-model';
 import { useState, useEffect } from 'react';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 interface UseGetDetailQuotationReturnModel {
   data: QuotationResponseModel | null;
@@ -26,12 +16,12 @@ const useGetDetailQuotation = (
   const [data, setData] = useState<QuotationResponseModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const fetchQuotation = async () => {
     setIsLoading(true);
     setError(null);
 
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 ID가 설정되지 않았습니다.');
       setIsLoading(false);
@@ -84,7 +74,7 @@ const useGetDetailQuotation = (
   };
 
   useEffect(() => {
-    if (quotationId && quotationId > 0) {
+    if (quotationId && quotationId > 0 && factoryId) {
       fetchQuotation();
     } else {
       // quotationId가 유효하지 않으면 로딩 상태를 false로 설정
@@ -93,7 +83,7 @@ const useGetDetailQuotation = (
       setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quotationId]);
+  }, [quotationId, factoryId]);
 
   const refetch = () => {
     fetchQuotation();

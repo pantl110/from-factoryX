@@ -5,17 +5,7 @@ import {
   MaterialProductConnectionModel,
   ProductMaterialConnectionModel,
 } from '@/types/data-model';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
 
 type ConnectionModelType =
   | MaterialProductConnectionModel
@@ -30,6 +20,7 @@ const useMaterialProduct = () => {
   const [data, setData] = useState<
     MaterialProductConnectionResponseModel | ConnectionModelType[] | null
   >(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 연결 생성
   const createMaterialProduct = async (payload: CreateMaterialProductModel) => {
@@ -37,7 +28,6 @@ const useMaterialProduct = () => {
     setError(null);
     setIsSuccess(false);
 
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       setIsLoading(false);
@@ -79,7 +69,6 @@ const useMaterialProduct = () => {
       setError(null);
       setIsSuccess(false);
 
-      const factoryId = getStoredFactoryId();
       if (!factoryId) {
         setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
         setIsLoading(false);
@@ -110,7 +99,7 @@ const useMaterialProduct = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   // 연결 삭제
@@ -119,7 +108,6 @@ const useMaterialProduct = () => {
     setError(null);
     setIsSuccess(false);
 
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       setIsLoading(false);
@@ -167,7 +155,6 @@ const useMaterialProduct = () => {
     setError(null);
     setIsSuccess(false);
 
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       setIsLoading(false);

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLineLeftIcon,
   ArrowLineRightIcon,
+  CheckCircleIcon,
 } from '@phosphor-icons/react/dist/ssr';
 import RequestInfo from './request-info';
 import PreviewImage from './image-preview';
@@ -25,8 +26,10 @@ import {
   useGetProjectStatus,
   useUpdateProjectStatus,
   useGetDetailQuotation,
+  useToast,
 } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
+import useFactoryStore from '@/store/factory-store';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -36,6 +39,7 @@ import TabArea from './tab-area';
 import { useForm } from 'react-hook-form';
 import TitleSec from './title-sec';
 import InputSection from './input-section';
+import Toast from '@/ui/toast';
 
 const QuotationPageContent = () => {
   const router = useRouter();
@@ -48,11 +52,13 @@ const QuotationPageContent = () => {
     : undefined;
 
   const { saveDraft } = useSaveDraftQuotation();
-  const { startProduction } = useStartProduction();
+  const { startProduction, error } = useStartProduction();
   const { getProjectStatus } = useGetProjectStatus();
   const { updateProjectStatus } = useUpdateProjectStatus();
   const { data: quotationData, isLoading: isQuotationLoading } =
     useGetDetailQuotation(quotationId || 0);
+  const factoryId = useFactoryStore((state) => state.factoryId);
+  const { showToast, isToastOpen, isVisible } = useToast(3000);
 
   // 프로젝트 상태 로드
   const loadProjectStatus = useCallback(async () => {
@@ -91,16 +97,11 @@ const QuotationPageContent = () => {
   }, [loadProjectStatus]);
 
   // 거래처 정보 폼
-  const { setValue, control, trigger, watch, formState } =
+  const { setValue, control, trigger, watch, formState, reset } =
     useForm<QuotationFormModel>({
+      mode: 'onChange',
       defaultValues: {
-        factory_id: (() => {
-          if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem('factoryId');
-            return stored ? parseInt(stored, 10) : 0;
-          }
-          return 0;
-        })(),
+        factory_id: factoryId || 0,
         name: '',
         business_registration_number: '',
         representative_name: '',
@@ -119,11 +120,8 @@ const QuotationPageContent = () => {
   // 견적서 데이터로 폼 기본값 설정
   const setFormValuesFromQuotation = useCallback(
     (quotation: QuotationResponseModel) => {
-      // factory_id를 로컬 스토리지에서 가져와서 설정
-      if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem('factoryId');
-        setValue('factory_id', stored ? parseInt(stored, 10) : 0);
-      }
+      // factory_id를 Zustand store에서 가져와서 설정
+      setValue('factory_id', factoryId || 0);
 
       // 백엔드 응답 구조에 맞게 직접 접근
       setValue('name', quotation.factory_name || '');
@@ -143,7 +141,7 @@ const QuotationPageContent = () => {
         setValue('due_date', quotation.due_date);
       }
     },
-    [setValue]
+    [setValue, factoryId]
   );
 
   // 견적서 데이터가 로드되면 폼에 설정
@@ -152,6 +150,45 @@ const QuotationPageContent = () => {
       setFormValuesFromQuotation(quotationData);
     }
   }, [quotationData, isQuotationLoading, setFormValuesFromQuotation]);
+
+  // 견적 품목 초기값 설정 (변경 추적을 위해)
+  useEffect(() => {
+    if (quotationData && !isQuotationLoading) {
+      // 기존 견적 품목이 있다면 초기값으로 설정
+      if (quotationData.products && quotationData.products.length > 0) {
+        const initialProducts = quotationData.products.map(
+          (product: QuotationProductDetailResponseModel) => ({
+            productId: product.productId,
+            product_code: product.product_code || '',
+            product_name: product.product_name || '',
+            spec: product.spec || '',
+            unit: product.unit || '',
+            quantity: product.quantity || 0,
+            unit_price: product.unit_price || 0,
+            is_delivery: false,
+            delivery_date: null,
+          })
+        );
+        setInitialQuotationProducts(initialProducts);
+        setQuotationProducts(initialProducts);
+
+        // 초기 데이터 로드 시 hasQuotationProducts도 즉시 설정
+        const hasValidInitialProducts = initialProducts.every(
+          (product) =>
+            product.product_name &&
+            product.product_code &&
+            product.spec &&
+            product.unit &&
+            product.quantity &&
+            product.unit_price
+        );
+        setHasQuotationProducts(hasValidInitialProducts);
+      } else {
+        // 품목이 없는 경우
+        setHasQuotationProducts(false);
+      }
+    }
+  }, [quotationData, isQuotationLoading]);
 
   // 프로젝트 상태 관리
   const [projectStatus, setProjectStatus] = useState<string | null>(null);
@@ -163,6 +200,11 @@ const QuotationPageContent = () => {
     projectStatus === 'suspended' || projectStatus === '중단';
   // OCR 데이터 상태 관리
   const [ocrData, _setOcrData] = useState<OcrDataModel | null>(null);
+
+  // 견적 품목 변경 추적을 위한 상태
+  const [initialQuotationProducts, setInitialQuotationProducts] = useState<
+    QuotationProductDetailResponseModel[]
+  >([]);
 
   // 탭 상태 - ocr데이터가 없으면 히스토리 탭이 활성화
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
@@ -179,12 +221,37 @@ const QuotationPageContent = () => {
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
 
+  // 에러 토스트 상태
+  const [toastText, setToastText] = useState<string>('');
+  const [toastSubtext, setToastSubtext] = useState<string>('');
+
   // 요청 사항 목록에 따라 버튼 활성화 여부
   const [hasQuotationProducts, setHasQuotationProducts] = useState(false);
   // RequestInfo에서 받은 products 데이터
   const [quotationProducts, setQuotationProducts] = useState<
     QuotationProductDetailResponseModel[]
   >([]);
+
+  // 견적 품목이 변경되었는지 확인하는 함수
+  const hasQuotationProductsChanged = useMemo(() => {
+    if (initialQuotationProducts.length !== quotationProducts.length) {
+      return true;
+    }
+
+    return initialQuotationProducts.some((initialProduct, index) => {
+      const currentProduct = quotationProducts[index];
+      if (!currentProduct) return true;
+
+      return (
+        initialProduct.productId !== currentProduct.productId ||
+        initialProduct.quantity !== currentProduct.quantity ||
+        initialProduct.unit_price !== currentProduct.unit_price
+      );
+    });
+  }, [initialQuotationProducts, quotationProducts]);
+
+  // 통합된 isDirty 상태 (폼 변경 + 견적 품목 변경)
+  const isDirty = formState.isDirty || hasQuotationProductsChanged;
 
   const handleProductClick = useCallback(
     (productId: number) => {
@@ -211,8 +278,6 @@ const QuotationPageContent = () => {
     try {
       const formData = watch();
 
-      // localStorage에서 factoryId 가져오기
-      const factoryId = localStorage.getItem('factoryId');
       if (!factoryId) {
         throw new Error('공장 정보가 없습니다.');
       }
@@ -220,7 +285,7 @@ const QuotationPageContent = () => {
       const draftData = {
         quotation_id: quotationId || 0,
         client: {
-          factory_id: parseInt(factoryId, 10),
+          factory_id: factoryId,
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -234,42 +299,55 @@ const QuotationPageContent = () => {
           note: formData.note,
         },
         due_date: formData.due_date,
-        products: quotationProducts
-          .filter(
-            (product) =>
-              product.productId && product.quantity && product.unit_price
-          )
-          .map((product) => ({
-            product_id: product.productId as number,
-            quantity: product.quantity as number,
-            unit_price: product.unit_price as number,
-            is_delivery: false,
-            delivery_date: null,
-          })),
+        products: quotationProducts.map((product) => ({
+          product_id: product.productId || 0,
+          quantity: product.quantity || 0,
+          unit_price: product.unit_price || 0,
+          is_delivery: false,
+          delivery_date: null,
+        })),
       };
 
       await saveDraft(draftData);
+      // 폼의 isDirty 상태 초기화 - 현재 값으로 reset하여 변경사항 없음으로 표시
+      reset(formData);
+      // 견적 품목 변경 추적 초기화
+      setInitialQuotationProducts([...quotationProducts]);
       // 성공 시 토스트 메시지나 다른 피드백 제공
-    } catch {
-      throw new Error('Failed to save draft');
+    } catch (error) {
+      alert(
+        '임시저장에 실패했습니다: ' +
+          (error instanceof Error ? error.message : '알 수 없는 오류')
+      );
     }
-  }, [saveDraft, watch, quotationId, quotationProducts]);
+  }, [saveDraft, watch, quotationId, quotationProducts, factoryId, reset]);
 
   // 생산 시작 버튼 핸들러
   const handleStartProduction = useCallback(async () => {
     try {
       const formData = watch();
 
-      // localStorage에서 factoryId 가져오기
-      const factoryId = localStorage.getItem('factoryId');
       if (!factoryId) {
         throw new Error('공장 정보가 없습니다.');
+      }
+
+      // 주문확정 시에는 모든 품목이 완전해야 함
+      const incompleteProducts = quotationProducts.filter(
+        (product) =>
+          !product.productId || !product.quantity || !product.unit_price
+      );
+
+      if (incompleteProducts.length > 0) {
+        alert(
+          '주문확정을 위해서는 모든 품목의 수량과 단가가 입력되어야 합니다.'
+        );
+        return;
       }
 
       const productionData = {
         quotation_id: quotationId || 0,
         client: {
-          factory_id: parseInt(factoryId, 10),
+          factory_id: factoryId,
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -283,30 +361,97 @@ const QuotationPageContent = () => {
           note: formData.note,
         },
         due_date: formData.due_date,
-        products: quotationProducts
-          .filter(
-            (product) =>
-              product.productId && product.quantity && product.unit_price
-          )
-          .map((product) => ({
-            product_id: product.productId as number,
-            quantity: product.quantity as number,
-            unit_price: product.unit_price as number,
-          })),
+        products: quotationProducts.map((product) => ({
+          product_id: product.productId as number,
+          quantity: product.quantity as number,
+          unit_price: product.unit_price as number,
+          is_delivery: false,
+          delivery_date: null,
+        })),
       };
 
       const result = await startProduction(productionData);
+
+      // 에러가 발생한 경우 (null 반환)
+      if (!result) {
+        // useStartProduction의 error 상태를 확인
+        const currentError = error;
+
+        let toastText = currentError || '생산 시작에 실패했습니다.';
+        let toastSubtext = '다시 시도해 주세요.';
+
+        if (toastText.includes('해당 공장에 가동 가능한 설비가 없습니다')) {
+          toastText = '가동 가능한 설비가 없습니다.';
+          toastSubtext = '설비 등록 후 생산을 다시 시작해 주세요.';
+        }
+
+        setToastText(toastText);
+        setToastSubtext(toastSubtext);
+        showToast();
+        return;
+      }
+
       // 성공 시 모달 닫고
       setIsStartProductionModalOpen(false);
       //프로젝트 페이지로 이동
-      if (result && result.project_id) {
+      if (result.project_id) {
         router.push(`/production/${result.project_id}`);
       }
-    } catch {
-      throw new Error('Failed to start production');
+    } catch (error) {
+      // 에러 메시지 추출
+      let errorText = '생산 시작에 실패했습니다.';
+      let errorSubtext = '다시 시도해 주세요.';
+
+      if (error instanceof Error) {
+        errorText = error.message;
+
+        // 특정 에러 메시지에 따른 처리
+        if (errorText.includes('해당 공장에 가동 가능한 설비가 없습니다')) {
+          errorText = '가동 가능한 설비가 없습니다.';
+          errorSubtext = '설비 등록 후 생산을 다시 시작해 주세요.';
+        } else if (errorText.includes('설비 조회 중 오류가 발생했습니다')) {
+          errorText = '설비 조회 중 오류가 발생했습니다.';
+          errorSubtext = '다시 시도해 주세요.';
+        }
+      }
+
+      // 에러 토스트 표시
+      setToastText(errorText);
+      setToastSubtext(errorSubtext);
+      showToast();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startProduction, watch, quotationId]);
+  }, [startProduction, watch, quotationId, quotationProducts]);
+
+  // 폼 유효성 검사 - required 필드들이 모두 채워져 있는지 확인 (주문 확정용)
+  const isFormValid = useMemo(() => {
+    // 견적서 데이터가 아직 로드되지 않았으면 false 반환
+    if (!quotationData || isQuotationLoading) {
+      return false;
+    }
+
+    // 실시간으로 특정 필드들을 watch
+    const name = watch('name') || '';
+    const businessRegistrationNumber =
+      watch('business_registration_number') || '';
+    const representativeName = watch('representative_name') || '';
+    const dueDate = watch('due_date') || '';
+    const businessType = watch('business_type') || '';
+    const businessCategory = watch('business_category') || '';
+    const address = watch('address') || '';
+
+    // required 필드들이 모두 채워져 있는지 확인
+    const isAllRequiredFieldsFilled =
+      name.trim() !== '' &&
+      businessRegistrationNumber.trim() !== '' &&
+      representativeName.trim() !== '' &&
+      dueDate.trim() !== '' &&
+      businessType.trim() !== '' &&
+      businessCategory.trim() !== '' &&
+      address.trim() !== '';
+
+    return isAllRequiredFieldsFilled;
+  }, [watch, quotationData, isQuotationLoading]);
 
   return (
     <>
@@ -317,15 +462,15 @@ const QuotationPageContent = () => {
           setIsStartProductionModalOpen={setIsStartProductionModalOpen}
           trigger={trigger}
           watch={watch}
-          formState={formState}
           isOrderStatus={isOrderStatus}
           setIsOrderStatus={() => handleProjectStatusChange('confirmed')}
           hasQuotationProducts={hasQuotationProducts}
           onSaveDraft={handleSaveDraft}
-          isDirty={formState.isDirty}
+          isDirty={isDirty}
           isSuspendedStatus={isSuspendedStatus}
           setIsSuspendedStatus={() => handleProjectStatusChange('suspended')}
           projectId={projectId}
+          isFormValid={isFormValid}
         />
         <TabArea
           isOrderStatus={isOrderStatus}
@@ -483,6 +628,16 @@ const QuotationPageContent = () => {
         <StartProductionModal
           onClose={() => setIsStartProductionModalOpen(false)}
           onClick={handleStartProduction}
+        />
+      )}
+      {/* 에러 토스트 */}
+      {isToastOpen && (
+        <Toast
+          icon={<CheckCircleIcon size={20} className="text-red" />}
+          text={toastText}
+          subtext={toastSubtext}
+          type="red"
+          isVisible={isVisible}
         />
       )}
     </>

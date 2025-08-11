@@ -5,7 +5,7 @@ import { returnData } from '@/mocks/return-data';
 
 const ReturnSection = () => {
   return (
-    <div className="flex-1 h-full min-h-0 flex flex-col gap-7 overflow-y-auto scrollbar-hide pb-10">
+    <div className="flex-1 h-full min-h-0 flex flex-col gap-7 overflow-y-auto scrollbar-hide">
       <div className="flex flex-col gap-3">
         <ReturnInfo returnData={returnData[0]} />
         <div>

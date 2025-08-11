@@ -18,6 +18,7 @@ interface InputProps {
   onBlur?: (() => void) | ((e: React.FocusEvent<HTMLInputElement>) => void);
   name?: string;
   disabledSetting?: boolean;
+  step?: string;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -39,6 +40,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       onBlur,
       name,
       disabledSetting = false,
+      step,
     },
     ref
   ) => {
@@ -60,7 +62,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       if (disabled) {
         className += ' bg-lg text-dg cursor-not-allowed border-[#e4e4e7]';
       } else if (disabledSetting) {
-        className += ' text-bl cursor-not-allowed border-[#e4e4e7] ';
+        className += ' text-bl border-[#e4e4e7] ';
       } else if (showError) {
         className +=
           ' border-red hover:border-primary focus:border-primary focus:text-bl';
@@ -78,7 +80,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (type === 'number') {
-        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        // 소수점 입력 허용
+        e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+        // 소수점이 여러 개 입력되는 것을 방지
+        const parts = e.target.value.split('.');
+        if (parts.length > 2) {
+          e.target.value = parts[0] + '.' + parts.slice(1).join('');
+        }
       }
       if (onChange) {
         onChange(e);
@@ -119,7 +127,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled || disabledSetting}
             className={getInputClassName()}
             onWheel={type === 'number' ? (e) => e.preventDefault() : undefined}
-            pattern={type === 'number' ? '[0-9]*' : undefined}
+            pattern={type === 'number' ? '[0-9.]*' : undefined}
+            step={type === 'number' ? step || '0.1' : undefined}
           />
 
           {isShowPasswordToggle && (

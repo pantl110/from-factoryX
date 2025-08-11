@@ -1,4 +1,5 @@
 export type OnboardingStepType =
+  | 'choosing-role'
   | 'welcome'
   | 'first-step'
   | 'second-step'
@@ -7,15 +8,17 @@ export type OnboardingStepType =
 export interface FirstStepFormDataModel {
   productName: string;
   productCode: string;
-  size: string;
+  spec: string;
   unit: string;
 }
 
 // second-step // 개별 자재 항목 타입
 export interface MaterialItemModel {
   materialName: string;
-  size: string;
-  usageQuantity: number | '';
+  materialCode: string;
+  spec: string;
+  unit: string;
+  usageQuantity: number;
 }
 
 // second-step // 전체 폼 데이터 타입

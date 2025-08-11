@@ -61,7 +61,6 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
       title="생산 메모를 등록해 주세요."
       subtitle="입력된 메모는 생산 현황에서 확인할 수 있어요."
       width="w-[600px]"
-      height="h-[691px]"
       onClose={onClose}
     >
       <form
@@ -75,7 +74,7 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
         />
         <textarea
           {...register('content', { required: '내용을 입력해주세요.' })}
-          className="placeholder:text-sv resize-none h-[448px] mt-4 Re_Body-1 text-bl px-3 py-5 border border-lg rounded overflow-y-auto scrollbar-hide"
+          className="placeholder:text-sv resize-none h-[420px] mt-4 Re_Body-1 text-bl px-3 py-5 border border-lg rounded overflow-y-auto scrollbar-hide"
           placeholder="메모를 입력하세요."
         />
         <div className="flex gap-2.5 justify-end mt-4">

@@ -1,6 +1,10 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  },
+
   images: {
     remotePatterns: [
       // 모든 CloudFront 배포
@@ -8,7 +12,6 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.cloudfront.net',
         port: '',
-        pathname: '/**',
       },
       // AWS S3 관련
       {

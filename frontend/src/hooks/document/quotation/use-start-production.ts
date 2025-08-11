@@ -1,5 +1,6 @@
 import { SaveDraftQuotationModel } from '@/types/data-model';
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 interface StartProductionResponseModel {
   quotation_id: number;
@@ -14,17 +15,6 @@ interface UseStartProductionReturnModel {
   isLoading: boolean;
   error: string | null;
 }
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
 
 // 생산 시작 // 완성된 견적서로 생산을 시작
 // - 거래처 정보 업데이트
@@ -44,6 +34,7 @@ const getStoredFactoryId = (): number | null => {
 const useStartProduction = (): UseStartProductionReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const startProduction = async (
     data: SaveDraftQuotationModel
@@ -51,8 +42,6 @@ const useStartProduction = (): UseStartProductionReturnModel => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
       const errorMessage = '공장 ID가 설정되지 않았습니다.';
       setError(errorMessage);
@@ -76,15 +65,27 @@ const useStartProduction = (): UseStartProductionReturnModel => {
         return result;
       } else {
         const errorData = await response.json();
-        throw new Error(
-          errorData.detail || errorData.message || '주문 확정에 실패했습니다.'
-        );
+        const errorMessage =
+          errorData.detail || errorData.message || '생산 시작에 실패했습니다.';
+
+        // 400 에러인 경우 특별한 메시지 처리
+        if (
+          response.status === 400 &&
+          errorData.detail.includes('해당 공장에 가동 가능한 설비가 없습니다')
+        ) {
+          throw new Error(
+            '해당 공장에 가동 가능한 설비가 없습니다. 설비 등록 후 생산을 시작해 주세요.'
+          );
+        }
+
+        throw new Error(errorMessage);
       }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : '생산 시작에 실패했습니다.';
       setError(errorMessage);
-      throw new Error(errorMessage);
+      // 에러 발생 시 null 반환
+      return null as unknown as StartProductionResponseModel;
     } finally {
       setIsLoading(false);
     }

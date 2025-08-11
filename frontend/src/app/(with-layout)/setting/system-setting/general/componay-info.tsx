@@ -13,12 +13,14 @@ import {
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 const CompanyInfo = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
 
   const { getFactory, factory, error: _factoryError } = useGetFactory();
   const { updateFactory } = useUpdateFactory();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const {
     register,
@@ -42,25 +44,13 @@ const CompanyInfo = () => {
     reValidateMode: 'onSubmit', // 모든 필드 유효성 검사를 동시에 실행
   });
 
-  // 로컬스토리지에서 factoryId 가져오기
-  const getStoredFactoryId = (): number | null => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const stored = localStorage.getItem('factoryId');
-      return stored ? parseInt(stored, 10) : null;
-    } catch {
-      return null;
-    }
-  };
-
   useEffect(() => {
-    const factoryId = getStoredFactoryId();
     if (factoryId) {
       getFactory(factoryId);
     }
     // getFactory는 의존성 배열에서 제거!
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [factoryId]);
 
   useEffect(() => {
     if (factory) {
@@ -82,7 +72,6 @@ const CompanyInfo = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const onSubmit = async (data: FactoriesModel) => {
-    const factoryId = getStoredFactoryId();
     if (isProcessing || !factoryId || !factory) return;
     setIsProcessing(true);
 

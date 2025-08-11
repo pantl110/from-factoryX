@@ -1,16 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SideBar from '@/components/side-bar';
 import TopBar from '@/components/top-bar';
 import { usePathname } from 'next/navigation';
-// import { useAuthGuard } from '@/hooks/use-auth-guard'
+import { useAuthGuard } from '@/hooks';
+import useAuthStore from '@/store/auth-store';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const pathname = usePathname();
+  const { initializeAuth } = useAuthStore();
 
-  // useAuthGuard() // 로그인 안되어있으면 로그인 페이지로 리다이렉트
+  useAuthGuard();
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   const isProductionPage = pathname.startsWith('/production/'); // production 페이지인지 확인
 

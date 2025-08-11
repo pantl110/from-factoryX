@@ -4,23 +4,13 @@ import {
   ProductListResponseModel,
   PaginationModel,
 } from '@/types/data-model';
+import useFactoryStore from '@/store/factory-store';
 
 interface GetProductListModel {
   q?: string;
   page?: number;
   page_size?: number;
 }
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
 
 const useGetProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +19,7 @@ const useGetProduct = () => {
   const [productList, setProductList] = useState<ProductResponseModel[]>([]);
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
   const [allProductCodes, setAllProductCodes] = useState<string[]>([]);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 제품 목록 조회 (q, page, page_size)
   const getProductList = useCallback(
@@ -36,12 +27,12 @@ const useGetProduct = () => {
       setIsLoading(true);
       setError(null);
 
-      // 로컬스토리지에서 factoryId 가져오기
-      const factoryId = getStoredFactoryId();
       if (!factoryId) {
-        setError('공장 정보가 없습니다.');
+        // factoryId가 없으면 빈 데이터를 반환
+        setProductList([]);
+        setPagination(null);
         setIsLoading(false);
-        return { success: false, error: '공장 정보가 없습니다.' };
+        return { success: true, data: { data: [], count: 0 } };
       }
 
       try {
@@ -80,60 +71,61 @@ const useGetProduct = () => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   // 제품 상세 조회 (product_id)
-  const getProductDetail = useCallback(async (productId: number) => {
-    setIsLoading(true);
-    setError(null);
+  const getProductDetail = useCallback(
+    async (productId: number) => {
+      setIsLoading(true);
+      setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
-    if (!factoryId) {
-      setError('공장 정보가 없습니다.');
-      setIsLoading(false);
-      return { success: false, error: '공장 정보가 없습니다.' };
-    }
-
-    try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${productId}?factory_id=${factoryId}`;
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const result: ProductResponseModel = await response.json();
-        setProduct(result);
-        return { success: true, data: result };
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || '품목 상세 정보를 불러오지 못했습니다.');
-        return { success: false, error: errorData.detail };
+      if (!factoryId) {
+        // factoryId가 없으면 빈 데이터를 반환
+        setProduct(null);
+        setIsLoading(false);
+        return { success: true, data: null };
       }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+
+      try {
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/${productId}?factory_id=${factoryId}`;
+        const response = await fetch(url, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const result: ProductResponseModel = await response.json();
+          setProduct(result);
+          return { success: true, data: result };
+        } else {
+          const errorData = await response.json();
+          setError(errorData.detail || '품목 상세 정보를 불러오지 못했습니다.');
+          return { success: false, error: errorData.detail };
+        }
+      } catch {
+        setError('서버 연결에 실패했습니다.');
+        return { success: false, error: '서버 연결에 실패했습니다.' };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [factoryId]
+  );
 
   // 모든 품목 코드 조회
   const getAllProductCodes = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
-    // 로컬스토리지에서 factoryId 가져오기
-    const factoryId = getStoredFactoryId();
     if (!factoryId) {
-      setError('공장 정보가 없습니다.');
+      // factoryId가 없으면 빈 배열을 반환
+      setAllProductCodes([]);
       setIsLoading(false);
-      return { success: false, error: '공장 정보가 없습니다.' };
+      return { success: true, data: [] };
     }
 
     try {
@@ -199,7 +191,7 @@ const useGetProduct = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [factoryId]);
 
   return {
     getProductList,

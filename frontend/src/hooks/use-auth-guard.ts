@@ -13,10 +13,14 @@ export const useAuthGuard = () => {
       if (userInfo && isAuthenticated) {
         return;
       }
-      // 사용자 정보 가져오기
-      const isSuccess = await fetchUserInfo();
 
-      if (!isSuccess) {
+      // persist된 상태가 없거나 만료된 경우에만 API 호출
+      try {
+        const isSuccess = await fetchUserInfo();
+        if (!isSuccess) {
+          router.push('/login');
+        }
+      } catch {
         router.push('/login');
       }
     };

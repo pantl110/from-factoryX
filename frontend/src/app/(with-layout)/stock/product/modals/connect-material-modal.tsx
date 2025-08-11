@@ -3,24 +3,22 @@ import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
-import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from '../../material/modals/manual-add-material';
-import { MaterialItemModel, MaterialResponseModel } from '@/types/data-model';
-import { useGetMaterial, useMaterialProduct, useCreateMaterial } from '@/hooks';
+import {
+  MaterialItemModel,
+  MaterialResponseModel,
+  MaterialListResponseModel,
+} from '@/types/data-model';
+import {
+  useGetMaterial,
+  useMaterialProduct,
+  useCreateMaterial,
+  useToast,
+} from '@/hooks';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
-import { useToast } from '@/hooks';
-
-// 로컬스토리지에서 factoryId를 안전하게 가져오는 함수
-const getStoredFactoryId = (): number | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('factoryId');
-    return stored ? parseInt(stored, 10) : null;
-  } catch {
-    return null;
-  }
-};
+import useFactoryStore from '@/store/factory-store';
+import ConnetionItem from '../../modals/connetion-item';
 
 interface ConnectMaterialModalProps {
   onClose: () => void;
@@ -46,6 +44,7 @@ const ConnectMaterialModal = ({
     useMaterialProduct();
   const { createMaterial, isLoading: isCreating } = useCreateMaterial();
   const { isToastOpen, isVisible, showToast } = useToast();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const [selectedMaterials, setSelectedMaterials] = useState<
     MaterialItemModel[]
@@ -82,7 +81,8 @@ const ConnectMaterialModal = ({
         });
 
         if (firstPageResult.success && firstPageResult.data) {
-          const { totalCnt } = firstPageResult.data;
+          const { totalCnt } =
+            firstPageResult.data as MaterialListResponseModel;
 
           // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
           const allDataResult = await getMaterialList({
@@ -134,6 +134,23 @@ const ConnectMaterialModal = ({
     setNewMaterials((prev) => prev.filter((mat) => mat.code !== code));
   };
 
+  // 원자재 수량 변경
+  const handleMaterialQuantityChange = (code: string, newQuantity: number) => {
+    // 기존 원자재에서 찾기
+    setSelectedMaterials((prev) =>
+      prev.map((mat) =>
+        mat.code === code ? { ...mat, quantity: newQuantity } : mat
+      )
+    );
+
+    // 새로운 원자재에서 찾기
+    setNewMaterials((prev) =>
+      prev.map((mat) =>
+        mat.code === code ? { ...mat, quantity: newQuantity } : mat
+      )
+    );
+  };
+
   // 선택한 원자재들을 제품과 연결
   const handleConnectMaterials = async () => {
     if (
@@ -147,7 +164,6 @@ const ConnectMaterialModal = ({
 
       // 1. 새로운 원자재 생성
       if (newMaterials.length > 0) {
-        const factoryId = getStoredFactoryId();
         if (!factoryId) {
           alert('공장 정보가 없습니다.');
           return;
@@ -187,7 +203,7 @@ const ConnectMaterialModal = ({
       if (selectedMaterials.length > 0) {
         const existingMaterialIds = selectedMaterials.map((material) => ({
           id: material.id || 0,
-          quantity: material.quantity || 100, // ‼️‼️‼️‼️‼️‼️‼️ 임시 수량 ‼️‼️‼️‼️‼️‼️‼️
+          quantity: material.quantity || 0,
         }));
         allMaterialIds.push(...existingMaterialIds);
       }
@@ -219,105 +235,108 @@ const ConnectMaterialModal = ({
   return (
     <Modal
       title="품목과 연결할 원자재를 선택하거나 새로 추가해 주세요."
+      subtitle="원자재를 선택하거나 새로 추가한 뒤, 사용수량을 설정해 주세요."
       width="w-[600px]"
       onClose={onClose}
+      scroll={true}
     >
-      <div className="mt-4 flex gap-2.5 relative">
-        <SearchInput
-          placeholder="원자재를 검색하세요."
-          width="flex-1"
-          value={input}
-          onChange={setInput}
-          onFocus={() => setIsDropdownOpen(true)}
-          onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
-        />
-        <MiniBtn
-          text="직접 추가"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="bg-bg"
-          height="h-12"
-          onClick={() => setIsManualAddMode(true)}
-        />
+      <div>
+        <div className="my-4 flex gap-2.5 px-6 relative">
+          <SearchInput
+            placeholder="원자재를 검색하세요."
+            width="flex-1"
+            value={input}
+            onChange={setInput}
+            onFocus={() => setIsDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
+          />
+          <MiniBtn
+            text="직접 추가"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            height="h-12"
+            onClick={() => setIsManualAddMode(true)}
+          />
 
-        {isDropdownOpen && input.trim() && filteredMaterials.length > 0 && (
-          <div className="absolute left-0 top-14 z-10 w-[451px] h-[256px] overflow-y-auto">
-            <MaterialNameDropdown
-              items={filteredMaterials}
-              onSelect={handleSelectMaterial}
-              width="w-full"
+          {isDropdownOpen && input.trim() && filteredMaterials.length > 0 && (
+            <div className="absolute left-6 top-14 z-10 w-[451px] h-[256px] overflow-y-auto">
+              <MaterialNameDropdown
+                items={filteredMaterials}
+                onSelect={handleSelectMaterial}
+                width="w-full"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col px-6 pb-6 max-h-[calc(85vh-181px)] overflow-y-auto">
+          {/* 직접 추가 모드 */}
+          {isManualAddMode ? (
+            <ManualAddMaterial
+              setIsManualAddMode={setIsManualAddMode}
+              setNewMaterials={setNewMaterials}
+              existingMaterials={allMaterialCodes}
+              selectedMaterials={selectedMaterials}
+              showToast={() => showToast()}
+            />
+          ) : (
+            // 선택한 원자재 list
+            (selectedMaterials.length > 0 || newMaterials.length > 0) && (
+              <div className="flex flex-col gap-3 mb-4">
+                {/* 기존 원자재 */}
+                {selectedMaterials.map((mat) => (
+                  <ConnetionItem
+                    key={mat.code}
+                    name={mat.name}
+                    unit={mat.unit}
+                    quantity={mat.quantity || 0}
+                    onDelete={() => handleRemoveMaterial(mat.code)}
+                    onQuantityChange={(newQuantity) =>
+                      handleMaterialQuantityChange(mat.code, newQuantity)
+                    }
+                  />
+                ))}
+
+                {/* 새로운 원자재 */}
+                {newMaterials.map((mat) => (
+                  <ConnetionItem
+                    key={mat.code}
+                    name={mat.name}
+                    unit={mat.unit}
+                    quantity={mat.quantity || 0}
+                    onDelete={() => handleRemoveNewMaterial(mat.code)}
+                    onQuantityChange={(newQuantity) =>
+                      handleMaterialQuantityChange(mat.code, newQuantity)
+                    }
+                  />
+                ))}
+              </div>
+            )
+          )}
+
+          <div className="flex gap-2.5 justify-end">
+            <MiniBtn
+              text="취소"
+              textColor="text-sv"
+              hoverColor="hover:bg-bg"
+              onClick={onClose}
+            />
+            <MiniBtn
+              text="추가"
+              textColor="text-wh"
+              bgColor="bg-primary"
+              hoverColor="hover:bg-primary-hover"
+              disabled={
+                (selectedMaterials.length === 0 && newMaterials.length === 0) ||
+                isManualAddMode ||
+                isConnecting ||
+                isCreating
+              }
+              onClick={handleConnectMaterials}
             />
           </div>
-        )}
-      </div>
-
-      {/* 직접 추가 모드 */}
-      {isManualAddMode ? (
-        <ManualAddMaterial
-          setIsManualAddMode={setIsManualAddMode}
-          setNewMaterials={setNewMaterials}
-          existingMaterials={allMaterialCodes}
-          selectedMaterials={selectedMaterials}
-          showToast={() => showToast()}
-        />
-      ) : (
-        // 선택한 원자재 list
-        (selectedMaterials.length > 0 || newMaterials.length > 0) && (
-          <div className="mt-4 flex flex-col">
-            {/* 기존 원자재 */}
-            {selectedMaterials.map((mat) => (
-              <div
-                key={mat.code}
-                className="flex justify-between items-center h-10"
-              >
-                <p className="Me_body-1 text-dg">{mat.name}</p>
-                <div
-                  className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                  onClick={() => handleRemoveMaterial(mat.code)}
-                >
-                  <X size={16} className="text-gr" />
-                </div>
-              </div>
-            ))}
-            {/* 새로운 원자재 */}
-            {newMaterials.map((mat) => (
-              <div
-                key={mat.code}
-                className="flex justify-between items-center h-10"
-              >
-                <p className="Me_body-1 text-dg">{mat.name}</p>
-                <div
-                  className="cursor-pointer w-10 h-10 flex justify-center items-center"
-                  onClick={() => handleRemoveNewMaterial(mat.code)}
-                >
-                  <X size={16} className="text-gr" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      )}
-
-      <div className="mt-4 flex gap-2.5 justify-end">
-        <MiniBtn
-          text="취소"
-          textColor="text-sv"
-          hoverColor="bg-bg"
-          onClick={onClose}
-        />
-        <MiniBtn
-          text="추가"
-          textColor="text-wh"
-          bgColor="bg-primary"
-          hoverColor="hover:bg-primary-hover"
-          disabled={
-            (selectedMaterials.length === 0 && newMaterials.length === 0) ||
-            isManualAddMode ||
-            isConnecting ||
-            isCreating
-          }
-          onClick={handleConnectMaterials}
-        />
+        </div>
       </div>
 
       {/* 원자재 코드 중복 토스트 */}

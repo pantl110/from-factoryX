@@ -190,13 +190,15 @@ const CompletedProjectPage = () => {
                 ))}
               </div>
               {/* 페이지네이션 */}
-              {projectData && projectData.pageCnt > 1 && (
-                <Pagination
-                  currentPage={projectData.curPage}
-                  totalPages={projectData.pageCnt}
-                  onPageChange={handlePageChange}
-                />
-              )}
+              {projectData &&
+                projectData.pageCnt &&
+                projectData.pageCnt > 1 && (
+                  <Pagination
+                    currentPage={projectData.curPage || 1}
+                    totalPages={projectData.pageCnt}
+                    onPageChange={handlePageChange}
+                  />
+                )}
             </>
           )}
         </div>

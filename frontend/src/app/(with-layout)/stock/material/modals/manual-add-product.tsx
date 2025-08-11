@@ -3,6 +3,7 @@ import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
+import { handleQuantityInput } from '@/hooks/format-number';
 
 interface ManualAddProductProps {
   setIsManualAddMode: (v: boolean) => void;
@@ -88,7 +89,7 @@ const ManualAddProduct = ({
   };
 
   return (
-    <div className="mt-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
+    <div className="mb-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
         <div className="flex gap-2.5">
           <div className="flex-1">
@@ -158,29 +159,32 @@ const ManualAddProduct = ({
           <div className="flex-1">
             <Input
               placeholder="EX) 100"
-              label="사용 수량"
+              label="원자재 투입량"
               required
               type="text"
               {...register('quantity', {
                 required: true,
                 validate: (v) => {
-                  const num = Number(String(v).replace(/[^0-9]/g, ''));
+                  const num = Number(String(v).replace(/[^0-9.]/g, ''));
                   return !isNaN(num) && num > 0;
                 },
                 setValueAs: (v) => {
                   if (v === '' || v === null || v === undefined) return null;
-                  const num = Number(String(v).replace(/[^0-9]/g, ''));
+                  const num = Number(String(v).replace(/[^0-9.]/g, ''));
                   return num === 0 ? null : num;
                 },
               })}
               onChange={(e) => {
-                const onlyNums = e.target.value.replace(/[^0-9]/g, '');
-                const formatted = onlyNums
-                  ? parseInt(onlyNums).toLocaleString()
-                  : '';
-                e.target.value = formatted;
+                const result = handleQuantityInput(e.target.value);
 
-                const num = onlyNums ? parseInt(onlyNums) : null;
+                // 입력 필드에 포맷된 값 표시
+                e.target.value = result.displayValue;
+
+                // formValues 업데이트
+                const num =
+                  result.isValid && result.numericValue > 0
+                    ? result.numericValue
+                    : null;
                 setFormValues((prev) => ({ ...prev, quantity: num }));
               }}
             />

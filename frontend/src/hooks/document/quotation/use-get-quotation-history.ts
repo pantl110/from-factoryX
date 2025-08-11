@@ -1,5 +1,6 @@
 import { QuotationProductHistoryItemResponseModel } from '@/types/data-model';
 import { useState, useCallback } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 interface QuotationHistoryResponseModel {
   results: QuotationProductHistoryItemResponseModel[];
@@ -22,9 +23,12 @@ const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
       setError(null);
 
       try {
+        // Zustand store에서 factory_id 가져오기
+        const { factoryId } = useFactoryStore.getState();
+
         const productIdsString = productIds.join(',');
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/history/list?product_ids=${productIdsString}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/history?product_ids=${productIdsString}&factory_id=${factoryId}`,
           {
             method: 'GET',
             credentials: 'include',
@@ -44,11 +48,8 @@ const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
             errorData.detail ||
             '견적서 히스토리 조회에 실패했습니다.';
 
-          // 404 오류나 "해당 제품의 견적 내역이 없습니다" 오류는 빈 배열로 처리
-          if (
-            response.status === 404 ||
-            errorMessage.includes('견적 내역이 없습니다')
-          ) {
+          // 404 오류는 빈 배열로 처리 (데이터가 없는 경우)
+          if (response.status === 404) {
             return { results: [] };
           }
 

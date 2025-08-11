@@ -1,6 +1,7 @@
 import { ProjectListResponseModel } from '@/types/data-model';
 import { ProjectStatusType } from '@/types/status-type';
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 interface GetProjectModel {
   status: ProjectStatusType | 'archived' | 'progress';
@@ -19,21 +20,20 @@ interface GetProjectModel {
 const useGetProjects = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const getProjects = async (params: GetProjectModel) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // localStorage에서 factoryId 가져오기
-      const factoryId = localStorage.getItem('factoryId');
       if (!factoryId) {
         setError('Factory ID를 찾을 수 없습니다.');
         return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
       }
 
       const queryParams = new URLSearchParams();
-      queryParams.append('factory_id', factoryId);
+      queryParams.append('factory_id', factoryId.toString());
       queryParams.append('status', params.status);
 
       if (params.page) {

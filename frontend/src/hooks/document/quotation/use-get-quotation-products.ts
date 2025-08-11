@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { QuotationResponseModel } from '@/types/data-model';
+import { QuotationProductResponseModel } from '@/types/data-model';
 
 interface UseGetQuotationProductsReturnModel {
-  data: QuotationResponseModel | null;
+  data: QuotationProductResponseModel[] | null;
   isLoading: boolean;
   error: string | null;
   refetch: () => void;
@@ -13,7 +13,9 @@ const useGetQuotationProducts = (
   quotationId?: number,
   factoryId?: number
 ): UseGetQuotationProductsReturnModel => {
-  const [data, setData] = useState<QuotationResponseModel | null>(null);
+  const [data, setData] = useState<QuotationProductResponseModel[] | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +33,7 @@ const useGetQuotationProducts = (
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/?${params.toString()}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/?${params.toString()}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -51,7 +53,7 @@ const useGetQuotationProducts = (
 
         // 품목이 없는 경우는 정상적인 상태로 처리
         if (errorMessage.includes('품목이 없습니다')) {
-          setData(null);
+          setData([]);
         } else {
           throw new Error(errorMessage);
         }
