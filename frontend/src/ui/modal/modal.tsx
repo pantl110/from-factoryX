@@ -6,7 +6,6 @@ interface ModalProps {
   title?: string;
   subtitle?: string;
   onClose?: () => void;
-  sm?: boolean;
   width?: string;
   height?: string;
   button?: React.ReactNode;
@@ -23,7 +22,6 @@ const Modal = ({
   onClose,
   width = 'w-[520px]',
   height = '',
-  sm = false,
   button,
   gap,
   className,
@@ -61,7 +59,7 @@ const Modal = ({
           </div>
           {!hideCloseIcon && (
             <button
-              className={`${sm ? 'w-9 h-9' : 'w-10 h-10'} flex justify-center items-center cursor-pointer rounded-lg transition-colors duration-200 hover:bg-bg`}
+              className={`w-10 h-10 flex justify-center items-center cursor-pointer rounded-lg transition-colors duration-200 hover:bg-bg`}
               onClick={onClose}
             >
               <X size={20} className="text-sv" />
@@ -69,7 +67,7 @@ const Modal = ({
           )}
         </div>
         <div
-          className={`${gap ? gap : sm ? 'mt-2' : 'mt-1'} Me_Body-2 text-gr ${
+          className={`${gap ? gap : 'mt-1'} Me_Body-2 text-gr ${
             scroll ? 'px-6' : ''
           }`}
         >

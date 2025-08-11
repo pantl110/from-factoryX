@@ -12,7 +12,6 @@ const CardChangeModal = ({ onClose, onConfirm }: CardChangeModalProps) => {
       title="결제 카드를 변경하시겠어요?"
       subtitle="변경된 카드는 다음 결제부터 자동으로 사용돼요."
       onClose={onClose}
-      sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn

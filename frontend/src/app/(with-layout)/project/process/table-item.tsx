@@ -101,7 +101,7 @@ const TableItem = ({
   // 세금계산서 발행 상태 표시 텍스트 변환
   const getPublishStatusText = (status: TaxStatusType | undefined) => {
     if (status === null || status === undefined) return '연결 필요';
-    if (status === 'pending' || status === 'temporary') return '미발행';
+    if (status === 'pending') return '미발행';
     if (status === 'published') return '보기';
     return '';
   };

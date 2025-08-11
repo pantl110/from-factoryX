@@ -11,46 +11,52 @@ import ProcessProject from './process-project';
 import Tax from './tax';
 import TodayProductionSchedule from './today-production-schedule';
 import ProfitGraph from './profit-graph';
-import useToast from '@/hooks/use-toast';
 import Toast from '@/ui/toast';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
-import useGetProjects from '@/hooks/project/use-get-projects';
-import useGetTodayProductionPlans from '@/hooks/project/use-get-today-production-plans';
-import useGetUndeliveredProducts from '@/hooks/project/use-get-undelivered-products';
+import {
+  useToast,
+  useGetProjects,
+  useGetTodayProductionPlans,
+  useGetUndeliveredProducts,
+  useGetDailyProductionQuantity,
+  useGetProductionProfitRate,
+  useGetInsufficientMaterialCount,
+} from '@/hooks';
 import { ProjectResponseModel } from '@/types/data-model';
-
-interface TodayProductionPlanModel {
-  company_name: string;
-  product_name: string;
-  product_code: string;
-  spec: string;
-  unit: string;
-  production_quantity: number;
-  equipment_name: string;
-  production_time: number;
-  project_id: number;
-}
-
-interface UndeliveredProductModel {
-  company_name: string;
-  product_name: string;
-  delivery_date: string | null;
-  project_id: number;
-}
+import useFactoryStore from '@/store/factory-store';
+import {
+  DailyProductionQuantityModel,
+  ProductionProfitRateModel,
+  TodayProductionPlanModel,
+  UndeliveredProductModel,
+  ShortageMaterialCountModel,
+} from './type';
+import NoHistoryBox from '@/ui/no-history-box';
 
 const DashboardPageContent = () => {
-  const { isToastOpen, isVisible, showToast } = useToast(2000);
+  const { isToastOpen, isVisible, showToast } = useToast();
   const searchParams = useSearchParams();
-  const { getProjects, isLoading: projectsLoading } = useGetProjects();
-  const { getTodayProductionPlans, isLoading: todayPlansLoading } =
+  const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
+  const { getTodayProductionPlans, isLoading: isTodayPlansLoading } =
     useGetTodayProductionPlans();
-  const { getUndeliveredProducts, isLoading: undeliveredLoading } =
+  const { getUndeliveredProducts, isLoading: isUndeliveredLoading } =
     useGetUndeliveredProducts();
+  const { getDailyProductionQuantity, isLoading: isDailyProductionLoading } =
+    useGetDailyProductionQuantity();
+  const { getProductionProfitRate, isLoading: isProductionProfitLoading } =
+    useGetProductionProfitRate();
+  const {
+    getInsufficientMaterialCount,
+    isLoading: isInsufficientMaterialLoading,
+  } = useGetInsufficientMaterialCount();
   const hasFetchedProjectsRef = useRef(false);
   const hasFetchedTodayPlansRef = useRef(false);
   const hasFetchedUndeliveredRef = useRef(false);
+  const hasFetchedDailyProductionRef = useRef(false);
+  const hasFetchedProductionProfitRef = useRef(false);
+  const hasFetchedInsufficientMaterialRef = useRef(false);
   const [projectsData, setProjectsData] = useState<ProjectResponseModel[]>([]);
   const [todayProductionPlans, setTodayProductionPlans] = useState<
     TodayProductionPlanModel[]
@@ -58,7 +64,25 @@ const DashboardPageContent = () => {
   const [undeliveredProducts, setUndeliveredProducts] = useState<
     UndeliveredProductModel[]
   >([]);
+  const [dailyProductionData, setDailyProductionData] = useState<
+    DailyProductionQuantityModel | undefined
+  >(undefined);
+  const [productionProfitData, setProductionProfitData] = useState<
+    ProductionProfitRateModel | undefined
+  >(undefined);
+  const [insufficientMaterialData, setInsufficientMaterialData] = useState<
+    ShortageMaterialCountModel | undefined
+  >(undefined);
   const { factoryId, initializeFactoryId } = useFactoryStore();
+
+  // 모든 데이터 로딩 상태를 통합
+  const isLoading =
+    isDailyProductionLoading ||
+    isProjectsLoading ||
+    isTodayPlansLoading ||
+    isUndeliveredLoading ||
+    isProductionProfitLoading ||
+    isInsufficientMaterialLoading;
 
   useEffect(() => {
     const from = searchParams.get('from');
@@ -66,6 +90,13 @@ const DashboardPageContent = () => {
       showToast();
     }
   }, [searchParams, showToast]);
+
+  // factoryId가 null이면 초기화
+  useEffect(() => {
+    if (!factoryId) {
+      initializeFactoryId();
+    }
+  }, [factoryId, initializeFactoryId]);
 
   // 프로젝트 데이터 가져오기
   useEffect(() => {
@@ -80,7 +111,7 @@ const DashboardPageContent = () => {
         order_dir: 'desc',
       }).then((result) => {
         if (result.success && result.data) {
-          const responseData = result.data as any;
+          const responseData = result.data as { data?: ProjectResponseModel[] };
           const projects = responseData.data || [];
           setProjectsData(Array.isArray(projects) ? projects : []);
         } else {
@@ -92,7 +123,7 @@ const DashboardPageContent = () => {
 
   // 오늘의 생산 일정 가져오기
   useEffect(() => {
-    if (!hasFetchedTodayPlansRef.current) {
+    if (factoryId && !hasFetchedTodayPlansRef.current) {
       hasFetchedTodayPlansRef.current = true;
 
       getTodayProductionPlans({
@@ -105,7 +136,7 @@ const DashboardPageContent = () => {
         }
       });
     }
-  }, [getTodayProductionPlans]);
+  }, [getTodayProductionPlans, factoryId]);
 
   // 납품되지 않은 견적서 품목 가져오기
   useEffect(() => {
@@ -123,6 +154,51 @@ const DashboardPageContent = () => {
       });
     }
   }, [getUndeliveredProducts]);
+
+  // 오늘 생산량 데이터 가져오기
+  useEffect(() => {
+    if (factoryId && !hasFetchedDailyProductionRef.current) {
+      hasFetchedDailyProductionRef.current = true;
+
+      getDailyProductionQuantity({}).then((result) => {
+        if (result.success && result.data) {
+          setDailyProductionData(result.data);
+        } else {
+          setDailyProductionData(undefined);
+        }
+      });
+    }
+  }, [getDailyProductionQuantity, factoryId]);
+
+  // 생산 수익률 데이터 가져오기
+  useEffect(() => {
+    if (factoryId && !hasFetchedProductionProfitRef.current) {
+      hasFetchedProductionProfitRef.current = true;
+
+      getProductionProfitRate({}).then((result) => {
+        if (result.success && result.data) {
+          setProductionProfitData(result.data);
+        } else {
+          setProductionProfitData(undefined);
+        }
+      });
+    }
+  }, [getProductionProfitRate, factoryId]);
+
+  // 부족한 원자재 수 데이터 가져오기
+  useEffect(() => {
+    if (factoryId && !hasFetchedInsufficientMaterialRef.current) {
+      hasFetchedInsufficientMaterialRef.current = true;
+
+      getInsufficientMaterialCount().then((result) => {
+        if (result.success && result.data) {
+          setInsufficientMaterialData(result.data);
+        } else {
+          setInsufficientMaterialData(undefined);
+        }
+      });
+    }
+  }, [getInsufficientMaterialCount, factoryId]);
 
   // 협의 중인 견적 데이터 (견적 요청, 주문 확정) - 최신순 3개
   const pendingQuotes = Array.isArray(projectsData)
@@ -159,51 +235,75 @@ const DashboardPageContent = () => {
     <>
       <MainTitleSec />
 
-      <div className="flex flex-col gap-11 p-10">
-        <div className="flex gap-5">
-          {/* Summary KPI */}
-          <div className="flex flex-col gap-3 w-[280px] min-w-[248px]">
-            <h3 className="Heading-3">Summary KPI</h3>
-            <DailyProductionQuantity />
-            <ShortageCount />
-            <ProductionYield />
-          </div>
-
-          {/* 생산 이익 그래프 */}
-          <ProfitGraph />
+      {isLoading ? (
+        <div className="flex flex-col h-100 justify-center items-center">
+          <Spinner />
         </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-11 p-10">
+            <div className="flex  gap-5">
+              {/* Summary KPI */}
+              <div className="flex flex-col">
+                <h3 className="Heading-3">Summary KPI</h3>
+                {dailyProductionData &&
+                productionProfitData &&
+                insufficientMaterialData ? (
+                  <div className="flex flex-col gap-3 w-[280px] min-w-[248px] mt-3">
+                    <DailyProductionQuantity data={dailyProductionData} />
+                    <ShortageCount data={insufficientMaterialData} />
+                    <ProductionYield data={productionProfitData} />
+                  </div>
+                ) : (
+                  <div className="w-100 mt-3">
+                    <NoHistoryBox
+                      title="요약할 데이터가 없어요."
+                      text="시스템을 계속 사용하면 주요 지표가 자동으로 요약돼요."
+                    />
+                  </div>
+                )}
+              </div>
 
-        {/* 협의 중인 견적 */}
-        <PendingQuote projects={pendingQuotes} isLoading={projectsLoading} />
-
-        {/* 생산 프로젝트 */}
-        <ProcessProject
-          projects={processProjects}
-          isLoading={projectsLoading}
-        />
-
-        {/* 오늘의 생산 일정 */}
-        <TodayProductionSchedule
-          todayProductionPlans={todayProductionPlans}
-          isLoading={todayPlansLoading}
-        />
-
-        {/* 납품 예정 현황 */}
-        <div className="flex gap-5">
-          <div className="flex flex-col flex-1 min-w-0 gap-3">
-            <div className="h-10 flex items-center">
-              <h3 className="Heading-3">납품 예정 현황</h3>
+              {/* 생산 이익 그래프 */}
+              <ProfitGraph />
             </div>
-            <DeliveryTable
-              undeliveredProducts={undeliveredProducts}
-              isLoading={undeliveredLoading}
-            />
-          </div>
 
-          {/* 세금계산서 현황 */}
-          <Tax />
-        </div>
-      </div>
+            {/* 견적 및 주문 현황 */}
+            <PendingQuote
+              projects={pendingQuotes}
+              isLoading={isProjectsLoading}
+            />
+
+            {/* 생산 프로젝트 */}
+            <ProcessProject
+              projects={processProjects}
+              isLoading={isProjectsLoading}
+            />
+
+            {/* 오늘의 생산 일정 */}
+            <TodayProductionSchedule
+              todayProductionPlans={todayProductionPlans}
+              isLoading={isTodayPlansLoading}
+            />
+
+            {/* 납품 예정 현황 */}
+            <div className="flex gap-5">
+              <div className="flex flex-col flex-1 min-w-0 gap-3">
+                <div className="h-10 flex items-center">
+                  <h3 className="Heading-3">납품 예정 현황</h3>
+                </div>
+                <DeliveryTable
+                  undeliveredProducts={undeliveredProducts}
+                  isLoading={isUndeliveredLoading}
+                />
+              </div>
+
+              {/* 세금계산서 현황 */}
+              <Tax />
+            </div>
+          </div>
+        </>
+      )}
 
       {isToastOpen && (
         <Toast

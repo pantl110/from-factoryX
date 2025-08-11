@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 interface TodayProductionPlanModel {
   company_name: string;
@@ -19,6 +20,7 @@ interface GetTodayProductionPlansModel {
 const useGetTodayProductionPlans = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { factoryId } = useFactoryStore();
 
   const getTodayProductionPlans = async (
     params: GetTodayProductionPlansModel
@@ -27,15 +29,14 @@ const useGetTodayProductionPlans = () => {
     setError(null);
 
     try {
-      // localStorage에서 factoryId 가져오기
-      const factoryId = localStorage.getItem('factoryId');
+      // Zustand store에서 factoryId 가져오기
       if (!factoryId) {
         setError('Factory ID를 찾을 수 없습니다.');
         return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
       }
 
       const queryParams = new URLSearchParams();
-      queryParams.append('factory_id', factoryId);
+      queryParams.append('factory_id', factoryId.toString());
       queryParams.append('page', (params.page || 1).toString());
 
       const response = await fetch(

@@ -15,7 +15,6 @@ const DeleteAccountModal = ({
       title="계정을 정말 삭제하시겠어요?"
       subtitle="계정을 삭제하면 모든 정보가 사라지며, 복구할 수 없습니다."
       onClose={onClose}
-      sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn

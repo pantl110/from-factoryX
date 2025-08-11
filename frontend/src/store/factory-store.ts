@@ -21,7 +21,12 @@ const useFactoryStore = create<FactoryStoreModel>()(
         // 이미 설정되어 있으면 스킵
         if (currentFactoryId !== null) return;
 
-        // API에서 공장 목록 가져오기
+        // 임시로 factoryId를 3으로 설정
+        // set({ factoryId: 3 });
+        // return;
+
+        // API에서 공장 목록 가져오기 (주석 처리)
+
         try {
           const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/v1/factory`,

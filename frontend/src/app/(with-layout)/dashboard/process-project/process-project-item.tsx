@@ -3,6 +3,7 @@
 import Chip from '@/ui/chip';
 import { ProjectResponseModel } from '@/types/data-model';
 import { ProjectStatusColorMap } from '@/types/status-type';
+import { formatRelativeTime } from '@/utils/format-relative-time';
 
 interface ProcessProjectItemProps {
   project: ProjectResponseModel;
@@ -16,21 +17,6 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
       return { bg: colorMap.bgColor, text: colorMap.textColor };
     }
     return { bg: 'bg-purple-8', text: 'text-purple' };
-  };
-
-  const getDaysAgo = (date: string) => {
-    const dueDate = new Date(date);
-    const today = new Date();
-    const diffTime = dueDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays > 0) {
-      return `${diffDays}일 전`;
-    } else if (diffDays === 0) {
-      return '오늘';
-    } else {
-      return `${Math.abs(diffDays)}일 후`;
-    }
   };
 
   return (
@@ -49,7 +35,7 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
       </div>
       <div className="flex items-center">
         <p className="flex-1 Me_Body-1 text-dg">
-          {getDaysAgo(project.due_date)}
+          {formatRelativeTime(project.start_date)}
         </p>
         <Chip
           text={project.status}

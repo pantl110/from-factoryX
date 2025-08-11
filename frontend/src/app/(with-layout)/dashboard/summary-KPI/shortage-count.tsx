@@ -1,15 +1,20 @@
 import { useRouter } from 'next/navigation';
+import { ShortageMaterialCountModel } from '@/app/(with-layout)/dashboard/type';
 
-const ShortageCount = () => {
+interface ShortageCountProps {
+  data?: ShortageMaterialCountModel;
+}
+
+const ShortageCount = ({ data }: ShortageCountProps) => {
   const router = useRouter();
 
   return (
-    <div className="pt-5 pb-4 px-5 rounded-lg border border-[#eeeeee] h-[141px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)] group">
+    <div className="pt-5 pb-4 px-5 rounded-lg border border-lg h-[141px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)] group">
       <div className="flex flex-col gap-1">
         <p className="Heading-4 text-sv">부족한 원자재 수</p>
         <div className="flex flex-col gap-1">
           <p className="Heading-1">
-            3 <span>개</span>
+            {data?.shortage_count || 0} <span>개</span>
           </p>
           <div className="flex justify-end">
             <button

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   LocationModel,
   LocationListResponseModel,
@@ -53,48 +53,51 @@ const useLocation = () => {
 
   // 창고 위치 목록 조회
   // material id/product id에 창고 위치 목록 조회
-  const listLocations = async (type: 'material' | 'product', id: number) => {
-    setIsLoading(true);
-    setError(null);
+  const listLocations = useCallback(
+    async (type: 'material' | 'product', id: number) => {
+      setIsLoading(true);
+      setError(null);
 
-    if (!factoryId) {
-      setError('factory_id가 필요합니다.');
-      return { success: false, error: 'factory_id가 필요합니다.' };
-    }
+      if (!factoryId) {
+        setError('factory_id가 필요합니다.');
+        return { success: false, error: 'factory_id가 필요합니다.' };
+      }
 
-    try {
-      const params = new URLSearchParams({
-        type,
-        id: String(id),
-        factory_id: String(factoryId),
-      });
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/location?${params.toString()}`,
-        {
-          method: 'GET',
-          credentials: 'include',
+      try {
+        const params = new URLSearchParams({
+          type,
+          id: String(id),
+          factory_id: String(factoryId),
+        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/location?${params.toString()}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          }
+        );
+        // 연결된 장소가 아직 없을 때 빈배열 반환
+        if (res.status === 404) {
+          setData({ locations: [] });
+          return { success: true, data: { locations: [] } };
         }
-      );
-      // 연결된 장소가 아직 없을 때 빈배열 반환
-      if (res.status === 404) {
-        setData({ locations: [] });
-        return { success: true, data: { locations: [] } };
+        const result = await res.json();
+        if (res.ok) {
+          setData(result);
+          return { success: true, data: result };
+        } else {
+          setError(result.detail || '창고 위치 목록 조회에 실패했습니다.');
+          return { success: false, error: result.detail };
+        }
+      } catch {
+        setError('서버 연결에 실패했습니다.');
+        return { success: false, error: '서버 연결에 실패했습니다.' };
+      } finally {
+        setIsLoading(false);
       }
-      const result = await res.json();
-      if (res.ok) {
-        setData(result);
-        return { success: true, data: result };
-      } else {
-        setError(result.detail || '창고 위치 목록 조회에 실패했습니다.');
-        return { success: false, error: result.detail };
-      }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [factoryId]
+  );
 
   // 창고 위치 수정
   const updateLocation = async (

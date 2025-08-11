@@ -89,8 +89,8 @@ export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
 };
 
 // 세금계산서 발행 상태
-export type TaxStatusType = null | 'temporary' | 'pending' | 'published';
-// 세금계산서 미연결(미발행) // 임시 저장(미발행) // 발행 대기 (연결 필요) // 발행 완료(보기)
+export type TaxStatusType = null | '' | 'pending' | 'published';
+// 미발행 // 발행 대기 // 발행 완료
 
 // 재고 상태
 export type InventoryStatusType = '충분' | '부족';

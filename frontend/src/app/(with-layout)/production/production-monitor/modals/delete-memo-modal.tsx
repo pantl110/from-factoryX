@@ -10,7 +10,6 @@ const DeleteMemoModal = ({ onClose }: DeleteMemoModalProps) => {
     <Modal
       title="메모를 삭제하시겠어요?"
       subtitle="삭제하면 해당 메모는 영구적으로 삭제돼요."
-      sm={true}
       onClose={onClose}
     >
       <div className="flex gap-2.5 justify-end mt-4">
