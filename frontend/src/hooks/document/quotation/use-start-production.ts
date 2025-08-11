@@ -65,15 +65,27 @@ const useStartProduction = (): UseStartProductionReturnModel => {
         return result;
       } else {
         const errorData = await response.json();
-        throw new Error(
-          errorData.detail || errorData.message || '주문 확정에 실패했습니다.'
-        );
+        const errorMessage =
+          errorData.detail || errorData.message || '생산 시작에 실패했습니다.';
+
+        // 400 에러인 경우 특별한 메시지 처리
+        if (
+          response.status === 400 &&
+          errorData.detail.includes('해당 공장에 가동 가능한 설비가 없습니다')
+        ) {
+          throw new Error(
+            '해당 공장에 가동 가능한 설비가 없습니다. 설비 등록 후 생산을 시작해 주세요.'
+          );
+        }
+
+        throw new Error(errorMessage);
       }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : '생산 시작에 실패했습니다.';
       setError(errorMessage);
-      throw new Error(errorMessage);
+      // 에러 발생 시 null 반환
+      return null as unknown as StartProductionResponseModel;
     } finally {
       setIsLoading(false);
     }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLineLeftIcon,
   ArrowLineRightIcon,
+  CheckCircleIcon,
 } from '@phosphor-icons/react/dist/ssr';
 import RequestInfo from './request-info';
 import PreviewImage from './image-preview';
@@ -25,6 +26,7 @@ import {
   useGetProjectStatus,
   useUpdateProjectStatus,
   useGetDetailQuotation,
+  useToast,
 } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
 import useFactoryStore from '@/store/factory-store';
@@ -37,6 +39,7 @@ import TabArea from './tab-area';
 import { useForm } from 'react-hook-form';
 import TitleSec from './title-sec';
 import InputSection from './input-section';
+import Toast from '@/ui/toast';
 
 const QuotationPageContent = () => {
   const router = useRouter();
@@ -49,12 +52,13 @@ const QuotationPageContent = () => {
     : undefined;
 
   const { saveDraft } = useSaveDraftQuotation();
-  const { startProduction } = useStartProduction();
+  const { startProduction, error } = useStartProduction();
   const { getProjectStatus } = useGetProjectStatus();
   const { updateProjectStatus } = useUpdateProjectStatus();
   const { data: quotationData, isLoading: isQuotationLoading } =
     useGetDetailQuotation(quotationId || 0);
   const factoryId = useFactoryStore((state) => state.factoryId);
+  const { showToast, isToastOpen, isVisible } = useToast(3000);
 
   // 프로젝트 상태 로드
   const loadProjectStatus = useCallback(async () => {
@@ -217,6 +221,10 @@ const QuotationPageContent = () => {
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
 
+  // 에러 토스트 상태
+  const [toastText, setToastText] = useState<string>('');
+  const [toastSubtext, setToastSubtext] = useState<string>('');
+
   // 요청 사항 목록에 따라 버튼 활성화 여부
   const [hasQuotationProducts, setHasQuotationProducts] = useState(false);
   // RequestInfo에서 받은 products 데이터
@@ -363,14 +371,54 @@ const QuotationPageContent = () => {
       };
 
       const result = await startProduction(productionData);
+
+      // 에러가 발생한 경우 (null 반환)
+      if (!result) {
+        // useStartProduction의 error 상태를 확인
+        const currentError = error;
+
+        let toastText = currentError || '생산 시작에 실패했습니다.';
+        let toastSubtext = '다시 시도해 주세요.';
+
+        if (toastText.includes('해당 공장에 가동 가능한 설비가 없습니다')) {
+          toastText = '가동 가능한 설비가 없습니다.';
+          toastSubtext = '설비 등록 후 생산을 다시 시작해 주세요.';
+        }
+
+        setToastText(toastText);
+        setToastSubtext(toastSubtext);
+        showToast();
+        return;
+      }
+
       // 성공 시 모달 닫고
       setIsStartProductionModalOpen(false);
       //프로젝트 페이지로 이동
-      if (result && result.project_id) {
+      if (result.project_id) {
         router.push(`/production/${result.project_id}`);
       }
-    } catch {
-      throw new Error('Failed to start production');
+    } catch (error) {
+      // 에러 메시지 추출
+      let errorText = '생산 시작에 실패했습니다.';
+      let errorSubtext = '다시 시도해 주세요.';
+
+      if (error instanceof Error) {
+        errorText = error.message;
+
+        // 특정 에러 메시지에 따른 처리
+        if (errorText.includes('해당 공장에 가동 가능한 설비가 없습니다')) {
+          errorText = '가동 가능한 설비가 없습니다.';
+          errorSubtext = '설비 등록 후 생산을 다시 시작해 주세요.';
+        } else if (errorText.includes('설비 조회 중 오류가 발생했습니다')) {
+          errorText = '설비 조회 중 오류가 발생했습니다.';
+          errorSubtext = '다시 시도해 주세요.';
+        }
+      }
+
+      // 에러 토스트 표시
+      setToastText(errorText);
+      setToastSubtext(errorSubtext);
+      showToast();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startProduction, watch, quotationId, quotationProducts]);
@@ -580,6 +628,16 @@ const QuotationPageContent = () => {
         <StartProductionModal
           onClose={() => setIsStartProductionModalOpen(false)}
           onClick={handleStartProduction}
+        />
+      )}
+      {/* 에러 토스트 */}
+      {isToastOpen && (
+        <Toast
+          icon={<CheckCircleIcon size={20} className="text-red" />}
+          text={toastText}
+          subtext={toastSubtext}
+          type="red"
+          isVisible={isVisible}
         />
       )}
     </>
