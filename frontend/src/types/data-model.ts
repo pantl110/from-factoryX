@@ -585,6 +585,7 @@ export interface ProjectLogResponseModel {
   type: ProjectLogType;
   title: string;
   content: string;
+  refund_id?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -682,17 +683,62 @@ export interface CreateRefundResponseModel {
   log_id: number;
 }
 
-// 반품 수정
-export interface UpdateRefundModel {
-  refund_date?: string;
-  current_stock?: number;
-  production_amount?: number;
+// 반품 가져오기
+export interface RefundModel {
+  id: number;
+  product: {
+    id: number;
+    name: string;
+    code: string;
+    current_stock: number;
+    spec: string;
+    unit: string;
+  };
+  project: {
+    id: number;
+    status: string;
+  };
+  amount: number;
+  current_stock: number;
+  production_amount: number;
+  refund_date?: string | null;
+  log: {
+    id: number;
+    title: string;
+    content: string;
+    created_at: string;
+  };
+  created_at: string;
+  updated_at: string;
 }
 
-export interface UpdateRefundResponseModel {
+// 반품 수정
+export interface UpdateRefundModel {
+  product_id?: number;
+  production_amount?: number;
+  refund_date?: string;
+}
+
+// 반품으로 생산계획 생성하기
+export interface RegisterProductionFromRefundResponseModel {
   message: string;
   refund_id: number;
+  updated_project_plans: number[];
+  deleted_project_plans: number[];
+  created_project_plans: number[];
 }
+
+// export interface RefundProductionRegistrationOutModel {
+//   message: string;
+//   refund_id: number;
+//   quotation_id: number;
+//   quotation_product_id: number;
+//   project_plan_id: number;
+//   production_log_id: number;
+//   product_name: string;
+//   quantity: number;
+//   equipment_name: string;
+// }
 
 //////////////////////
 // Factory Member API

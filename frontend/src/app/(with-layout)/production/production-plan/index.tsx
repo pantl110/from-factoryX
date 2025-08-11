@@ -499,7 +499,7 @@ const ProductionPlan = ({
             onStatusChange={handleOperationStatusChange}
             style={{
               position: 'fixed',
-              left: operationStatusAnchorRect.left - 12,
+              left: operationStatusAnchorRect.left - 9.6,
               top: operationStatusAnchorRect.bottom + 8,
               zIndex: 10,
             }}

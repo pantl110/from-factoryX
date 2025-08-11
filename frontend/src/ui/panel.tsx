@@ -124,7 +124,7 @@ const Panel = ({
                 onClick={handleClose}
                 className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-bg rounded-lg transition-all duration-200"
               >
-                <CaretLineRightIcon size={16} className="text-sv" />
+                <CaretLineRightIcon size={20} className="text-sv" />
               </button>
             </div>
 

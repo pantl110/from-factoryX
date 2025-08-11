@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, Suspense, useRef, useState } from 'react';
+import { useEffect, Suspense, useState } from 'react';
 import MainTitleSec from './main-title-sec';
 import DailyProductionQuantity from './summary-KPI/daily-production-quantity';
 import ShortageCount from './summary-KPI/shortage-count';

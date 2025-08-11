@@ -2,7 +2,7 @@
 
 import {
   UpdateRefundModel,
-  UpdateRefundResponseModel,
+  RegisterProductionFromRefundResponseModel,
 } from '@/types/data-model';
 import { useState } from 'react';
 import useFactoryStore from '@/store/factory-store';
@@ -15,7 +15,10 @@ const useUpdateRefund = () => {
   const updateRefund = async (
     refundId: number,
     data: UpdateRefundModel
-  ): Promise<{ success: boolean; data?: UpdateRefundResponseModel }> => {
+  ): Promise<{
+    success: boolean;
+    data?: RegisterProductionFromRefundResponseModel;
+  }> => {
     if (!factoryId) {
       setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       return { success: false };

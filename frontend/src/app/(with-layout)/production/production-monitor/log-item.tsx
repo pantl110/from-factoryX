@@ -53,7 +53,7 @@ const LogItem = ({ onClick, isSelected, log }: LogItemProps) => {
       onClick={onClick}
       style={{ cursor: onClick ? 'pointer' : undefined }}
     >
-      <div className="flex flex-col gap-5 px-1">
+      <div className="flex flex-col gap-3 px-1">
         <div className="flex gap-2">
           <div className="w-6 h-6">
             {icon[getIconKey(log.type) as keyof typeof icon]}

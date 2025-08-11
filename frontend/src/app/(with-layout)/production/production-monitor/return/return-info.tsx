@@ -1,15 +1,15 @@
 import InfoLabelValue from '@/ui/info-label-value';
 import MiniBtn from '@/ui/mini-btn';
-import { ReturnDataModel } from '@/mocks/return-data';
 import { useState } from 'react';
 import RegisterProductionModal from '../modals/register-production-modal';
+import { RefundModel } from '@/types/data-model';
 
 interface ReturnInfoProps {
-  returnData: ReturnDataModel;
+  refundData: RefundModel;
   isProduction?: boolean;
 }
 
-const ReturnInfo = ({ returnData, isProduction }: ReturnInfoProps) => {
+const ReturnInfo = ({ refundData, isProduction }: ReturnInfoProps) => {
   const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
     useState(false);
 
@@ -40,25 +40,22 @@ const ReturnInfo = ({ returnData, isProduction }: ReturnInfoProps) => {
         </div>
 
         <div>
-          <div className="border-t border-b border-[#eeeeee]">
-            <InfoLabelValue label="반품품목" value={returnData.productName} />
+          <div className="border-t border-b border-lg">
+            <InfoLabelValue label="반품품목" value={refundData.product.name} />
           </div>
-          <div className="border-b border-[#eeeeee]">
-            <InfoLabelValue label="반품일자" value={returnData.returnDate} />
+          <div className="border-b border-lg">
+            <InfoLabelValue label="반품일자" value={refundData.refund_date} />
           </div>
-          <div className="border-b border-[#eeeeee]">
-            <InfoLabelValue
-              label="반품수량"
-              value={returnData.returnQuantity}
-            />
+          <div className="border-b border-lg">
+            <InfoLabelValue label="반품수량" value={refundData.amount} />
           </div>
-          <div className="border-b border-[#eeeeee]">
-            <InfoLabelValue label="현재재고" value={returnData.currentStock} />
+          <div className="border-b border-lg">
+            <InfoLabelValue label="현재재고" value={refundData.current_stock} />
           </div>
-          <div className="border-b border-[#eeeeee]">
+          <div className="border-b border-lg">
             <InfoLabelValue
               label="생산수량"
-              value={returnData.productionQuantity}
+              value={refundData.production_amount}
             />
           </div>
         </div>

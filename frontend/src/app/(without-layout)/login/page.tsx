@@ -7,18 +7,19 @@ import { useForm } from 'react-hook-form';
 import { validateEmail } from '@/utils/validation';
 import { useRouter } from 'next/navigation';
 import FactoryXLogo from '@/ui/icons/factory-x-logo';
-import { FactoriesResponseModel, LoginFormDataModel } from '@/types/data-model';
+import { LoginFormDataModel } from '@/types/data-model';
+// import { FactoriesResponseModel, LoginFormDataModel } fro÷m '@/types/data-model';
 import { useLogin } from '@/hooks/users/use-login';
-import { useState } from 'react';
-import FactorySelectModal from './factory-select-modal';
+// import { useState } from 'react';
+// import FactorySelectModal from './factory-select-modal';
 import useFactoryStore from '@/store/factory-store';
 
 const LoginPage = () => {
   const router = useRouter();
   const setFactoryId = useFactoryStore((state) => state.setFactoryId);
   const { login, isLoading } = useLogin();
-  const [showFactorySelectModal, setShowFactorySelectModal] = useState(false);
-  const [factories, setFactories] = useState<FactoriesResponseModel[]>([]);
+  // const [showFactorySelectModal, setShowFactorySelectModal] = useState(false);
+  // const [factories, setFactories] = useState<FactoriesResponseModel[]>([]);
 
   const {
     register,
@@ -146,12 +147,12 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {showFactorySelectModal && (
+      {/* {showFactorySelectModal && (
         <FactorySelectModal
           factories={factories}
           onClose={() => setShowFactorySelectModal(false)}
         />
-      )}
+      )} */}
     </>
   );
 };
