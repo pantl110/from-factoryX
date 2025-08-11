@@ -51,12 +51,7 @@ const DashboardPageContent = () => {
     getInsufficientMaterialCount,
     isLoading: isInsufficientMaterialLoading,
   } = useGetInsufficientMaterialCount();
-  const hasFetchedProjectsRef = useRef(false);
-  const hasFetchedTodayPlansRef = useRef(false);
-  const hasFetchedUndeliveredRef = useRef(false);
-  const hasFetchedDailyProductionRef = useRef(false);
-  const hasFetchedProductionProfitRef = useRef(false);
-  const hasFetchedInsufficientMaterialRef = useRef(false);
+
   const [projectsData, setProjectsData] = useState<ProjectResponseModel[]>([]);
   const [todayProductionPlans, setTodayProductionPlans] = useState<
     TodayProductionPlanModel[]
@@ -100,9 +95,7 @@ const DashboardPageContent = () => {
 
   // 프로젝트 데이터 가져오기
   useEffect(() => {
-    if (!hasFetchedProjectsRef.current) {
-      hasFetchedProjectsRef.current = true;
-
+    if (factoryId) {
       getProjects({
         status: 'progress',
         page: 1,
@@ -119,13 +112,12 @@ const DashboardPageContent = () => {
         }
       });
     }
-  }, [getProjects]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
 
   // 오늘의 생산 일정 가져오기
   useEffect(() => {
-    if (factoryId && !hasFetchedTodayPlansRef.current) {
-      hasFetchedTodayPlansRef.current = true;
-
+    if (factoryId) {
       getTodayProductionPlans({
         page: 1,
       }).then((result) => {
@@ -136,13 +128,12 @@ const DashboardPageContent = () => {
         }
       });
     }
-  }, [getTodayProductionPlans, factoryId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
 
   // 납품되지 않은 견적서 품목 가져오기
   useEffect(() => {
-    if (!hasFetchedUndeliveredRef.current) {
-      hasFetchedUndeliveredRef.current = true;
-
+    if (factoryId) {
       getUndeliveredProducts({
         page: 1,
       }).then((result) => {
@@ -153,13 +144,12 @@ const DashboardPageContent = () => {
         }
       });
     }
-  }, [getUndeliveredProducts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
 
   // 오늘 생산량 데이터 가져오기
   useEffect(() => {
-    if (factoryId && !hasFetchedDailyProductionRef.current) {
-      hasFetchedDailyProductionRef.current = true;
-
+    if (factoryId) {
       getDailyProductionQuantity({}).then((result) => {
         if (result.success && result.data) {
           setDailyProductionData(result.data);
@@ -168,13 +158,12 @@ const DashboardPageContent = () => {
         }
       });
     }
-  }, [getDailyProductionQuantity, factoryId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
 
   // 생산 수익률 데이터 가져오기
   useEffect(() => {
-    if (factoryId && !hasFetchedProductionProfitRef.current) {
-      hasFetchedProductionProfitRef.current = true;
-
+    if (factoryId) {
       getProductionProfitRate({}).then((result) => {
         if (result.success && result.data) {
           setProductionProfitData(result.data);
@@ -183,13 +172,12 @@ const DashboardPageContent = () => {
         }
       });
     }
-  }, [getProductionProfitRate, factoryId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
 
   // 부족한 원자재 수 데이터 가져오기
   useEffect(() => {
-    if (factoryId && !hasFetchedInsufficientMaterialRef.current) {
-      hasFetchedInsufficientMaterialRef.current = true;
-
+    if (factoryId) {
       getInsufficientMaterialCount().then((result) => {
         if (result.success && result.data) {
           setInsufficientMaterialData(result.data);
@@ -198,7 +186,8 @@ const DashboardPageContent = () => {
         }
       });
     }
-  }, [getInsufficientMaterialCount, factoryId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
 
   // 협의 중인 견적 데이터 (견적 요청, 주문 확정) - 최신순 3개
   const pendingQuotes = Array.isArray(projectsData)
