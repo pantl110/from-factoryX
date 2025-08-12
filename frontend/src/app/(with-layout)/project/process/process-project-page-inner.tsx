@@ -227,11 +227,13 @@ const ProcessProjectPageInner = () => {
             searchKeyword={searchKeyword}
           />
 
-          {isProjectsLoading && !projectData ? (
+          {isProjectsLoading && (
             <div className="flex justify-center items-center h-100">
               <Spinner />
             </div>
-          ) : (
+          )}
+
+          {!isProjectsLoading && projectData && (
             <>
               <div className="overflow-y-auto w-full">
                 <TableHeader

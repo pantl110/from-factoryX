@@ -1,6 +1,6 @@
 import { ProjectListResponseModel } from '@/types/data-model';
 import { ProjectStatusType } from '@/types/status-type';
-import { useState } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import useFactoryStore from '@/store/factory-store';
 
 interface GetProjectModel {
@@ -21,8 +21,18 @@ const useGetProjects = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const factoryId = useFactoryStore((state) => state.factoryId);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const getProjects = async (params: GetProjectModel) => {
+  const getProjects = useCallback(async (params: GetProjectModel) => {
+    // 이전 요청이 진행 중이면 취소
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // 새로운 AbortController 생성
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     setIsLoading(true);
     setError(null);
 
@@ -60,24 +70,53 @@ const useGetProjects = () => {
           headers: {
             'Content-Type': 'application/json',
           },
+          signal: abortController.signal, // AbortController signal 연결
         }
       );
 
+      // 요청이 취소되었는지 확인
+      if (abortController.signal.aborted) {
+        return { success: false, error: '요청이 취소되었습니다.' };
+      }
+
       if (response.status === 200) {
         const result: ProjectListResponseModel = await response.json();
+        
+        // 요청이 취소되었는지 다시 확인
+        if (abortController.signal.aborted) {
+          return { success: false, error: '요청이 취소되었습니다.' };
+        }
+        
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
         setError(errorData.detail || '프로젝트 조회에 실패했습니다.');
         return { success: false, error: errorData.detail };
       }
-    } catch {
+    } catch (err) {
+      // AbortError는 정상적인 취소이므로 에러로 처리하지 않음
+      if (err instanceof Error && err.name === 'AbortError') {
+        return { success: false, error: '요청이 취소되었습니다.' };
+      }
+      
       setError('서버 연결에 실패했습니다.');
       return { success: false, error: '서버 연결에 실패했습니다.' };
     } finally {
-      setIsLoading(false);
+      // 요청이 취소되지 않았을 때만 로딩 상태 해제
+      if (!abortController.signal.aborted) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, [factoryId]);
+
+  // 컴포넌트 언마운트 시 진행 중인 요청 취소
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return { getProjects, isLoading, error };
 };
