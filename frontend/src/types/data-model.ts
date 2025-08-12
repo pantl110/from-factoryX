@@ -802,7 +802,79 @@ export interface NotificationListResponseModel extends PaginationModel {
 }
 
 //////////////////////
+// 세금계산서 api
 
+// 발행 완료 세금계산서
+export interface PublishedTaxInvoiceResponseModel {
+  id: number;
+  tax_invoice_type: string;
+  transaction_date: string;
+  client_name: string;
+  product_names: string[];
+  transaction_amount: number;
+  tax_amount: number;
+  total_amount: number;
+}
+
+export interface PublishedTaxInvoiceListResponseModel extends PaginationModel {
+  data: PublishedTaxInvoiceResponseModel[];
+}
+
+// 발행 대기 세금계산서
+interface PendingTaxInvoiceResponseModel {
+  id: number;
+  tax_invoice_type: string;
+  transaction_date: string;
+  client_name: string;
+  product_names: string[];
+  transaction_amount: number;
+  tax_amount: number;
+  total_amount: number;
+}
+
+export interface PendingTaxInvoiceListResponseModel extends PaginationModel {
+  data: PendingTaxInvoiceResponseModel[];
+}
+
+// 미연결 세금계산서
+interface UnlinkedTaxInvoiceResponseModel {
+  id: number;
+  tax_invoice_type: string;
+  transaction_date: string;
+  client_name: string;
+  product_names: string[];
+  transaction_amount: number;
+  tax_amount: number;
+  total_amount: number;
+}
+
+export interface UnlinkedTaxInvoiceListResponseModel extends PaginationModel {
+  data: UnlinkedTaxInvoiceResponseModel[];
+}
+
+///
+export interface TaxInvoiceByMaterialResponseModel {
+  client_name: string;
+  business_registration_number: string;
+  representative_name: string | null;
+  business_type: string | null;
+  business_category: string | null;
+  address: string | null;
+  transaction_date: string;
+  tax_invoice_type: string;
+  transaction_type: string;
+  materials: {
+    material_name: string;
+    spec: string;
+    quantity: number;
+    unit: string;
+    price: number;
+    transaction_amount: number;
+    tax_amount: number;
+  }[];
+}
+
+//////////////////////
 import {
   MemberRoleType,
   MemberStatusType,

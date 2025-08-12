@@ -23,91 +23,94 @@ const useGetProjects = () => {
   const factoryId = useFactoryStore((state) => state.factoryId);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const getProjects = useCallback(async (params: GetProjectModel) => {
-    // 이전 요청이 진행 중이면 취소
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // 새로운 AbortController 생성
-    const abortController = new AbortController();
-    abortControllerRef.current = abortController;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      if (!factoryId) {
-        setError('Factory ID를 찾을 수 없습니다.');
-        return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
+  const getProjects = useCallback(
+    async (params: GetProjectModel) => {
+      // 이전 요청이 진행 중이면 취소
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
 
-      const queryParams = new URLSearchParams();
-      queryParams.append('factory_id', factoryId.toString());
-      queryParams.append('status', params.status);
+      // 새로운 AbortController 생성
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
-      if (params.page) {
-        queryParams.append('page', params.page.toString());
-      }
-      if (params.size) {
-        queryParams.append('size', params.size.toString());
-      }
-      if (params.search) {
-        queryParams.append('search', params.search);
-      }
-      if (params.order_by) {
-        queryParams.append('order_by', params.order_by);
-      }
-      if (params.order_dir) {
-        queryParams.append('order_dir', params.order_dir);
-      }
+      setIsLoading(true);
+      setError(null);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project?${queryParams}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          signal: abortController.signal, // AbortController signal 연결
+      try {
+        if (!factoryId) {
+          setError('Factory ID를 찾을 수 없습니다.');
+          return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
         }
-      );
 
-      // 요청이 취소되었는지 확인
-      if (abortController.signal.aborted) {
-        return { success: false, error: '요청이 취소되었습니다.' };
-      }
+        const queryParams = new URLSearchParams();
+        queryParams.append('factory_id', factoryId.toString());
+        queryParams.append('status', params.status);
 
-      if (response.status === 200) {
-        const result: ProjectListResponseModel = await response.json();
-        
-        // 요청이 취소되었는지 다시 확인
+        if (params.page) {
+          queryParams.append('page', params.page.toString());
+        }
+        if (params.size) {
+          queryParams.append('size', params.size.toString());
+        }
+        if (params.search) {
+          queryParams.append('search', params.search);
+        }
+        if (params.order_by) {
+          queryParams.append('order_by', params.order_by);
+        }
+        if (params.order_dir) {
+          queryParams.append('order_dir', params.order_dir);
+        }
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project?${queryParams}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            signal: abortController.signal, // AbortController signal 연결
+          }
+        );
+
+        // 요청이 취소되었는지 확인
         if (abortController.signal.aborted) {
           return { success: false, error: '요청이 취소되었습니다.' };
         }
-        
-        return { success: true, data: result };
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || '프로젝트 조회에 실패했습니다.');
-        return { success: false, error: errorData.detail };
+
+        if (response.status === 200) {
+          const result: ProjectListResponseModel = await response.json();
+
+          // 요청이 취소되었는지 다시 확인
+          if (abortController.signal.aborted) {
+            return { success: false, error: '요청이 취소되었습니다.' };
+          }
+
+          return { success: true, data: result };
+        } else {
+          const errorData = await response.json();
+          setError(errorData.detail || '프로젝트 조회에 실패했습니다.');
+          return { success: false, error: errorData.detail };
+        }
+      } catch (err) {
+        // AbortError는 정상적인 취소이므로 에러로 처리하지 않음
+        if (err instanceof Error && err.name === 'AbortError') {
+          return { success: false, error: '요청이 취소되었습니다.' };
+        }
+
+        setError('서버 연결에 실패했습니다.');
+        return { success: false, error: '서버 연결에 실패했습니다.' };
+      } finally {
+        // 요청이 취소되지 않았을 때만 로딩 상태 해제
+        if (!abortController.signal.aborted) {
+          setIsLoading(false);
+        }
       }
-    } catch (err) {
-      // AbortError는 정상적인 취소이므로 에러로 처리하지 않음
-      if (err instanceof Error && err.name === 'AbortError') {
-        return { success: false, error: '요청이 취소되었습니다.' };
-      }
-      
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
-    } finally {
-      // 요청이 취소되지 않았을 때만 로딩 상태 해제
-      if (!abortController.signal.aborted) {
-        setIsLoading(false);
-      }
-    }
-  }, [factoryId]);
+    },
+    [factoryId]
+  );
 
   // 컴포넌트 언마운트 시 진행 중인 요청 취소
   useEffect(() => {

@@ -3,19 +3,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MiniBtn from '@/ui/mini-btn';
-import { taxData } from '@/mocks/tax-data';
-import TaxItem from './tax-item';
+// import TaxItem from './tax-item';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
+import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
 const Tax = () => {
   const router = useRouter();
-  const [selectedTax, setSelectedTax] = useState<(typeof taxData)[0] | null>(
-    null
-  );
+  const [selectedTax, setSelectedTax] =
+    useState<PublishedTaxInvoiceResponseModel | null>(null);
 
-  const handleTaxClick = (tax: (typeof taxData)[0]) => {
-    setSelectedTax(tax);
-  };
+  // const handleTaxClick = (tax: PublishedTaxInvoiceResponseModel) => {
+  //   setSelectedTax(tax);
+  // };
 
   const handleClosePanel = () => {
     setSelectedTax(null);
@@ -37,20 +36,20 @@ const Tax = () => {
           />
         </div>
         <div className="flex flex-col gap-3">
-          {taxData
+          {/* {taxData
             .sort(
-              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+              (a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime()
             )
             .slice(0, 5)
             .map((tax) => (
               <TaxItem
                 key={tax.id}
-                taxType={tax.taxType}
-                company={tax.company}
-                date={tax.date}
+                taxType={tax.tax_invoice_type}
+                company={tax.client_name}
+                date={tax.transaction_date}
                 onClick={() => handleTaxClick(tax)}
               />
-            ))}
+            ))} */}
         </div>
       </div>
 
