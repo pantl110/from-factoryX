@@ -2,7 +2,6 @@
 
 import MiniBtn from '@/ui/mini-btn';
 import { BellSimple } from '@phosphor-icons/react';
-import { notificationData } from '@/mocks/notification-data';
 import { ProductionTabType } from './types';
 import ProfileImage from '@/ui/profile-image';
 import { usePathname } from 'next/navigation';
@@ -13,7 +12,7 @@ import usePageStatusStore from '@/store/page-status-store';
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
   pageStatus: string | null;
-
+  hasNotifications: boolean;
   onProductionPlanSaveClick?: () => void;
   onMoveToStorageClick?: () => void;
   onNotificationClick?: () => void;
@@ -22,6 +21,7 @@ interface TopBarContentProps {
 const TopBarContent = ({
   productionTab,
   pageStatus,
+  hasNotifications,
   onProductionPlanSaveClick,
   onMoveToStorageClick,
   onNotificationClick,
@@ -192,7 +192,7 @@ const TopBarContent = ({
         onClick={onNotificationClick}
       >
         <BellSimple size={20} className="text-dg" />
-        {notificationData.length > 0 && (
+        {hasNotifications && (
           <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full " />
         )}
       </div>

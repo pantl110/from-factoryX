@@ -106,6 +106,42 @@ export const InventoryStatusColorMap: Record<
 export type ProjectLogType = '메모' | '반품' | '계획 변경';
 // memo: 메모 // return: 반품 // plan: 계획 변경
 
+// 알림 타입
+export type NotificationType = 'warning' | 'information' | 'completed';
+// 경고 // 정보 // 완료
+
+// 알림 사유
+export type NotificationCaseType =
+  | 'material_lack'
+  | 'project_warning'
+  | 'product_completed'
+  | 'sales_tax_invoice_published'
+  | 'purchase_tax_invoice_published'
+  | 'cash_receipt_published'
+  | 'permission_changed' 
+  | 'due_date_approaching' 
+  | 'production_schedule_changed';
+
+// // 알림 유형 한글 표시
+// export const NotificationTypeLabels: Record<NotificationType, string> = {
+//   [NotificationType.WARNING]: '경고',
+//   [NotificationType.INFORMATION]: '정보',
+//   [NotificationType.COMPLETED]: '완료'
+// };
+
+// // 알림 사유 한글 표시
+// export const NotificationCaseLabels: Record<NotificationCase, string> = {
+//   [NotificationCase.MATERIAL_LACK]: '자재 부족',
+//   [NotificationCase.PROJECT_WARNING]: '프로젝트 생산 계획 이상',
+//   [NotificationCase.PRODUCT_COMPLETED]: '제품 생산 완료',
+//   [NotificationCase.SALES_TAX_INVOICE_PUBLISHED]: '매출 세금계산서 발행 완료',
+//   [NotificationCase.PURCHASE_TAX_INVOICE_PUBLISHED]: '매입 세금계산서 발행 완료',
+//   [NotificationCase.CASH_RECEIPT_PUBLISHED]: '영수증 발행 완료',
+//   [NotificationCase.PERMISSION_CHANGED]: '권한 변경',
+//   [NotificationCase.DUE_DATE_APPROACHING]: '납기일 임박',
+//   [NotificationCase.PRODUCTION_SCHEDULE_CHANGED]: '생산 일정 변경'
+// };
+
 ////////////////////
 ////////////////////
 ////////////////////
@@ -124,14 +160,14 @@ export const TransactionStatusColorMap: Record<TransactionStatusType, string> =
   };
 
 // 완료된 프로젝트 상태
-export type CompletedProjectStatusType = '완료' | '중단';
-export const CompletedProjectStatusColorMap: Record<
-  CompletedProjectStatusType,
-  StatusColorModel
-> = {
-  완료: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
-};
+// export type CompletedProjectStatusType = '완료' | '중단';
+// export const CompletedProjectStatusColorMap: Record<
+//   CompletedProjectStatusType,
+//   StatusColorModel
+// > = {
+//   완료: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+//   중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
+// };
 
 // production의 설비 가동 상태
 export type OperationStatusType = '가동 대기' | '가동 중' | '가동 완료';

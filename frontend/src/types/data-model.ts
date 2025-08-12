@@ -784,37 +784,24 @@ export interface UpdateMemberResponseModel {
   updated_at: string;
 }
 
-///////////////////////////////////////////
-// 여기는 목데이터 데이터 모델!!! 나중에 지우기!
-// export interface MaterialModel {
-//   id: number;
-//   materialName: string;
-//   usageQuantity: string;
-// }
+//////////////////////
+// Notification API
+export interface NotificationResponseModel {
+  id: number;
+  receiver: number; // FactoryMember ID
+  type: NotificationType;
+  case: NotificationCaseType;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
-// export interface ProductDataModel {
-//   id: number | null;
-//   productName: string;
-//   productCode?: string;
-//   size: string;
-//   unit: string;
-//   stock?: number;
-//   productionTime?: string;
-//   location?: string;
-//   comment?: string[];
-//   returnQuantity?: number;
-//   [key: string]: unknown;
-// }
+export interface NotificationListResponseModel extends PaginationModel {
+  data: NotificationResponseModel[];
+}
 
-// export interface MaterialDataModel {
-//   id: string;
-//   materialName: string;
-//   size: string;
-//   usageQuantity?: number | null;
-//   unitPrice?: number | null;
-//   unit?: string;
-//   [key: string]: unknown;
-// }
+//////////////////////
 
 import {
   MemberRoleType,
@@ -824,6 +811,8 @@ import {
   EquipmentStatusType,
   ProjectLogType,
   OperationStatusType,
+  NotificationType,
+  NotificationCaseType,
 } from './status-type';
 
 export type {
