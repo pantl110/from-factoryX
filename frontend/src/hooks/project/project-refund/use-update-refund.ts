@@ -1,74 +1,72 @@
 'use client';
 
-import {
-  UpdateRefundModel,
-  RegisterProductionFromRefundResponseModel,
-} from '@/types/data-model';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import useFactoryStore from '@/store/factory-store';
+
+interface RefundUpdateInModel {
+  refund_date?: string;
+  current_stock?: number;
+  production_amount?: number;
+}
+
+interface RefundUpdateOutModel {
+  message: string;
+  refund_id: number;
+}
 
 const useUpdateRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const { factoryId } = useFactoryStore();
 
-  const updateRefund = async (
-    refundId: number,
-    data: UpdateRefundModel
-  ): Promise<{
-    success: boolean;
-    data?: RegisterProductionFromRefundResponseModel;
-  }> => {
-    if (!factoryId) {
-      setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
-      return { success: false };
-    }
+  const updateRefund = useCallback(
+    async (
+      refundId: number,
+      payload: RefundUpdateInModel
+    ): Promise<{ success: boolean; data?: RefundUpdateOutModel }> => {
+      setIsLoading(true);
+      setError(null);
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const queryParams = new URLSearchParams({
-        factory_id: factoryId.toString(),
-      });
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/refund/${refundId}?${queryParams}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(data),
+      try {
+        if (!factoryId) {
+          setError('Factory ID를 찾을 수 없습니다.');
+          return { success: false };
         }
-      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || '반품 수정에 실패했습니다.');
+        const queryParams = new URLSearchParams();
+        queryParams.append('factory_id', factoryId.toString());
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/refund/${refundId}?${queryParams}`,
+          {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        if (response.ok) {
+          const result: RefundUpdateOutModel = await response.json();
+          return { success: true, data: result };
+        } else {
+          const errorData = await response.json();
+          const errorMessage = errorData.detail || '반품 수정에 실패했습니다.';
+          setError(errorMessage);
+          return { success: false };
+        }
+      } catch {
+        const errorMessage = '서버 연결에 실패했습니다.';
+        setError(errorMessage);
+        return { success: false };
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [factoryId]
+  );
 
-      const result = await response.json();
-      return { success: true, data: result };
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : '반품 수정 중 오류가 발생했습니다.';
-      setError(errorMessage);
-      return { success: false };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    updateRefund,
-    isLoading,
-    error,
-    clearError: () => setError(null),
-  };
+  return { updateRefund, isLoading, error };
 };
 
 export default useUpdateRefund;

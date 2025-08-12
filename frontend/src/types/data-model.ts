@@ -646,7 +646,7 @@ export interface ProjectPlanModel {
   project_id: number;
   quotation_product: QuotationProductForPlanModel;
   equipment: EquipmentForPlanModel;
-  status: OperationStatusType; // 가동 대기, 가동 중, 가동 완료, 가동 불가
+  status: OperationStatusType; // 가동 대기, 가동 중, 가동 완료
   quantity: number; // 생산 수량
   start_date: string; // 생산 시작 일자
   end_date: string; // 생산 종료 일자
