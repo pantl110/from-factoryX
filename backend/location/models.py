@@ -5,8 +5,8 @@ from common.models import BaseModel
 # Create your models here.
 class Location(BaseModel):
     class LocationType(models.TextChoices):
-        material = ("material", "material")
-        product = ("product", "product")
+        material = ("material", "자재")
+        product = ("product", "제품")
 
     type = models.CharField(
         max_length=10,

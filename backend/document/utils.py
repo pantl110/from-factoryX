@@ -125,6 +125,7 @@ async def content_ocr(file):
         # print(response.json())
         text = extract_text_from_upstage(response.json())
         structured = parse_quote_text(text)
-        return json.dumps(structured, ensure_ascii=False, indent=2)
+        # return json.dumps(structured, ensure_ascii=False, indent=2)
+        return structured
     except Exception as e:
         raise HttpError(500, f"OCR error: {str(e)}")

@@ -85,10 +85,10 @@ class User(AbstractUser):
     """Custom User Model Definition"""
 
     class UserStatusChoice(models.TextChoices):
-        inactive = ("비활성유저", "비활성유저")  # 비활성
-        active = ("활성유저", "활성유저")  # 정상
-        admin = ("관리자", "관리자")  # 관리자
-        withdraw = ("탈퇴유저", "탈퇴유저")  # 탈퇴
+        inactive = ("inactive", "비활성유저")  # 비활성
+        active = ("active", "활성유저")  # 정상
+        admin = ("admin", "관리자")  # 관리자
+        withdraw = ("withdraw", "탈퇴유저")  # 탈퇴
 
     objects = CustomUserManager()
     USERNAME_FIELD = "email"
