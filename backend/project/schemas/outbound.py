@@ -7,6 +7,7 @@ from typing import Optional, List
 # Project API
 # ------------------------------------------------------------
 
+
 # (POST) Project Create
 class ProjectCreateOut(Schema):
     quotation_id: int
@@ -37,6 +38,7 @@ class ProjectStatusOut(Schema):
     project_id: int
     quotation_id: Optional[int] = None
     status: str
+    is_refunded: bool
     created_at: datetime.datetime
     updated_at: datetime.datetime
     earliest_start_date: Optional[datetime.date] = None
@@ -62,6 +64,7 @@ class ProjectUpdateOut(Schema):
 # ------------------------------------------------------------
 # Project Refund API
 # ------------------------------------------------------------
+
 
 # (POST) Refund Create
 class RefundCreateOut(Schema):
@@ -124,6 +127,7 @@ class RefundProductionRegistrationOut(Schema):
 # ------------------------------------------------------------
 # Project Plan API
 # ------------------------------------------------------------
+
 
 # (POST) Project Plan Create
 class ProjectPlanDetailOut(Schema):
@@ -196,12 +200,13 @@ class DailyProductionQuantityOut(Schema):
 # Project Log API
 # ------------------------------------------------------------
 
+
 # (POST) Project Log Create
 class ProjectLogCreateOut(Schema):
     message: str
     log_id: int
 
-    
+
 # (GET) Project Log Detail
 class ProjectLogDetailOut(Schema):
     id: int
@@ -222,6 +227,7 @@ class ProjectLogUpdateOut(Schema):
 # ------------------------------------------------------------
 # Production Profit Rate API
 # ------------------------------------------------------------
+
 
 class ProductionProfitRateOut(Schema):
     current_month_profit: int

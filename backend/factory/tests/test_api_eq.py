@@ -34,14 +34,14 @@ class TestFactoryEquipment(TestCase):
             name="Test Factory",
             business_registration_number="123-45-67890",
         )
-        
+
         # 테스트용 공장 멤버 등록
         FactoryMember.objects.create(
             factory=self.factory,
             user=self.user,
-            role='admin',
-            status='active',
-            invited_by=self.user
+            role="admin",
+            status="active",
+            invited_by=self.user,
         )
 
         # Pre-create an equipment instance used by read / update / delete tests
@@ -72,7 +72,9 @@ class TestFactoryEquipment(TestCase):
             "name": "Created Equipment",
             "priority": 5,
         }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertIn("id", data)
@@ -81,7 +83,9 @@ class TestFactoryEquipment(TestCase):
     async def test_list_factory_equipments(self):
         """[R] 설비 목록 조회 테스트"""
         headers = await self.authenticate()
-        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         # Ninja pagination returns list in data["data"]
@@ -90,7 +94,9 @@ class TestFactoryEquipment(TestCase):
 
         # filtering test
         response = await self.client.get(
-            f"?factory_id={self.factory.id}", headers=headers, params={"name": "Equipment"}
+            f"?factory_id={self.factory.id}",
+            headers=headers,
+            params={"name": "Equipment"},
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -100,7 +106,9 @@ class TestFactoryEquipment(TestCase):
     async def test_get_factory_equipment(self):
         """[R] 설비 상세 조회 테스트"""
         headers = await self.authenticate()
-        response = await self.client.get(f"/{self.equipment.id}?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"/{self.equipment.id}?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], self.equipment.id)
@@ -113,7 +121,9 @@ class TestFactoryEquipment(TestCase):
             "name": "Updated Equipment Name",
         }
         response = await self.client.patch(
-            f"/{self.equipment.id}?factory_id={self.factory.id}", headers=headers, json=payload
+            f"/{self.equipment.id}?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -123,7 +133,9 @@ class TestFactoryEquipment(TestCase):
     async def test_delete_factory_equipment(self):
         """[D] 설비 삭제 테스트"""
         headers = await self.authenticate()
-        response = await self.client.delete(f"/{self.equipment.id}?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.delete(
+            f"/{self.equipment.id}?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 204)
         # Verify object is removed from DB
         self.assertFalse(
@@ -138,9 +150,11 @@ class TestFactoryEquipment(TestCase):
             "status": "running",
             "priority": 10,
             "location": "Building A, Floor 2",
-            "note": "This is a test equipment with all fields"
+            "note": "This is a test equipment with all fields",
         }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertIn("id", data)
@@ -153,11 +167,10 @@ class TestFactoryEquipment(TestCase):
     async def test_create_factory_equipment_minimal_fields(self):
         """[C] 최소 필드만으로 설비 생성 테스트"""
         headers = await self.authenticate()
-        payload = {
-            "name": "Minimal Equipment",
-            "priority": 1
-        }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        payload = {"name": "Minimal Equipment", "priority": 1}
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertIn("id", data)
@@ -169,38 +182,34 @@ class TestFactoryEquipment(TestCase):
     async def test_create_factory_equipment_invalid_factory(self):
         """[C] 존재하지 않는 공장에 설비 생성 시도 테스트"""
         headers = await self.authenticate()
-        payload = {
-            "name": "Test Equipment",
-            "priority": 1
-        }
-        response = await self.client.post("?factory_id=99999", headers=headers, json=payload)
+        payload = {"name": "Test Equipment", "priority": 1}
+        response = await self.client.post(
+            "?factory_id=99999", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 404)
 
     async def test_create_factory_equipment_unauthorized(self):
         """[C] 권한이 없는 공장에 설비 생성 시도 테스트"""
         # 다른 사용자와 공장 생성
         from asgiref.sync import sync_to_async
-        
+
         @sync_to_async
         def create_other_factory():
             other_user = User.objects.create_user(
-                email='other@example.com',
-                password='password1234!'
+                email="other@example.com", password="password1234!"
             )
             other_factory = Factory.objects.create(
-                owner=other_user,
-                name="Other Factory"
+                owner=other_user, name="Other Factory"
             )
             return other_factory
-        
+
         other_factory = await create_other_factory()
-        
+
         headers = await self.authenticate()
-        payload = {
-            "name": "Test Equipment",
-            "priority": 1
-        }
-        response = await self.client.post(f"?factory_id={other_factory.id}", headers=headers, json=payload)
+        payload = {"name": "Test Equipment", "priority": 1}
+        response = await self.client.post(
+            f"?factory_id={other_factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 404)
 
     async def test_update_factory_equipment_all_fields(self):
@@ -211,10 +220,12 @@ class TestFactoryEquipment(TestCase):
             "status": "running",
             "priority": 15,
             "location": "Building B, Floor 3",
-            "note": "This equipment has been fully updated"
+            "note": "This equipment has been fully updated",
         }
         response = await self.client.patch(
-            f"/{self.equipment.id}?factory_id={self.factory.id}", headers=headers, json=payload
+            f"/{self.equipment.id}?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -229,12 +240,12 @@ class TestFactoryEquipment(TestCase):
         headers = await self.authenticate()
         original_name = self.equipment.name
         original_priority = self.equipment.priority
-        
-        payload = {
-            "status": "running"
-        }
+
+        payload = {"status": "running"}
         response = await self.client.patch(
-            f"/{self.equipment.id}?factory_id={self.factory.id}", headers=headers, json=payload
+            f"/{self.equipment.id}?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -246,9 +257,7 @@ class TestFactoryEquipment(TestCase):
     async def test_update_factory_equipment_nonexistent(self):
         """[U] 존재하지 않는 설비 수정 시도 테스트"""
         headers = await self.authenticate()
-        payload = {
-            "name": "Updated Name"
-        }
+        payload = {"name": "Updated Name"}
         response = await self.client.patch(
             f"/99999?factory_id={self.factory.id}", headers=headers, json=payload
         )
@@ -258,32 +267,28 @@ class TestFactoryEquipment(TestCase):
         """[U] 다른 공장의 설비 수정 시도 테스트"""
         # 다른 공장의 설비 생성
         from asgiref.sync import sync_to_async
-        
+
         @sync_to_async
         def create_other_equipment():
             other_user = User.objects.create_user(
-                email='other@example.com',
-                password='password1234!'
+                email="other@example.com", password="password1234!"
             )
             other_factory = Factory.objects.create(
-                owner=other_user,
-                name="Other Factory"
+                owner=other_user, name="Other Factory"
             )
             other_equipment = FactoryEquipment.objects.create(
-                factory=other_factory,
-                name="Other Equipment",
-                priority=1
+                factory=other_factory, name="Other Equipment", priority=1
             )
             return other_equipment
-        
+
         other_equipment = await create_other_equipment()
-        
+
         headers = await self.authenticate()
-        payload = {
-            "name": "Updated Name"
-        }
+        payload = {"name": "Updated Name"}
         response = await self.client.patch(
-            f"/{other_equipment.id}?factory_id={self.factory.id}", headers=headers, json=payload
+            f"/{other_equipment.id}?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
         )
         self.assertEqual(response.status_code, 404)
 
@@ -291,7 +296,7 @@ class TestFactoryEquipment(TestCase):
         """[R] 필터를 사용한 설비 목록 조회 테스트"""
         # 추가 설비 생성
         from asgiref.sync import sync_to_async
-        
+
         @sync_to_async
         def create_equipment():
             return FactoryEquipment.objects.create(
@@ -299,13 +304,13 @@ class TestFactoryEquipment(TestCase):
                 name="Filtered Equipment",
                 status="running",
                 priority=2,
-                location="Building C"
+                location="Building C",
             )
-        
+
         equipment2 = await create_equipment()
-        
+
         headers = await self.authenticate()
-        
+
         # 이름으로 필터링
         response = await self.client.get(
             f"?factory_id={self.factory.id}&name=Filtered", headers=headers
@@ -315,7 +320,7 @@ class TestFactoryEquipment(TestCase):
         self.assertIn("data", data)
         self.assertEqual(len(data["data"]), 1)
         self.assertEqual(data["data"][0]["name"], "Filtered Equipment")
-        
+
         # 상태로 필터링
         response = await self.client.get(
             f"?factory_id={self.factory.id}&status=running", headers=headers
@@ -325,7 +330,7 @@ class TestFactoryEquipment(TestCase):
         self.assertIn("data", data)
         self.assertEqual(len(data["data"]), 1)
         self.assertEqual(data["data"][0]["status"], "running")
-        
+
         # 위치로 필터링
         response = await self.client.get(
             f"?factory_id={self.factory.id}&location=Building", headers=headers
@@ -339,7 +344,7 @@ class TestFactoryEquipment(TestCase):
     async def test_list_factory_equipments_empty_result(self):
         """[R] 빈 결과를 반환하는 필터 테스트"""
         headers = await self.authenticate()
-        
+
         # 존재하지 않는 이름으로 필터링
         response = await self.client.get(
             f"?factory_id={self.factory.id}&name=Nonexistent", headers=headers
@@ -352,37 +357,37 @@ class TestFactoryEquipment(TestCase):
     async def test_delete_factory_equipment_nonexistent(self):
         """[D] 존재하지 않는 설비 삭제 시도 테스트"""
         headers = await self.authenticate()
-        response = await self.client.delete(f"/99999?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.delete(
+            f"/99999?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 404)
 
     async def test_delete_factory_equipment_wrong_factory(self):
         """[D] 다른 공장의 설비 삭제 시도 테스트"""
         # 다른 공장의 설비 생성
         from asgiref.sync import sync_to_async
-        
+
         @sync_to_async
         def create_other_equipment():
             other_user = User.objects.create_user(
-                email='other@example.com',
-                password='password1234!'
+                email="other@example.com", password="password1234!"
             )
             other_factory = Factory.objects.create(
-                owner=other_user,
-                name="Other Factory"
+                owner=other_user, name="Other Factory"
             )
             other_equipment = FactoryEquipment.objects.create(
-                factory=other_factory,
-                name="Other Equipment",
-                priority=1
+                factory=other_factory, name="Other Equipment", priority=1
             )
             return other_equipment
-        
+
         other_equipment = await create_other_equipment()
-        
+
         headers = await self.authenticate()
-        response = await self.client.delete(f"/{other_equipment.id}?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.delete(
+            f"/{other_equipment.id}?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 404)
-        
+
         # 설비가 실제로 삭제되지 않았는지 확인
         self.assertTrue(
             await FactoryEquipment.objects.filter(id=other_equipment.id).aexists()
@@ -391,44 +396,43 @@ class TestFactoryEquipment(TestCase):
     async def test_get_factory_equipment_nonexistent(self):
         """[R] 존재하지 않는 설비 조회 테스트"""
         headers = await self.authenticate()
-        response = await self.client.get(f"/99999?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"/99999?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 404)
 
     async def test_get_factory_equipment_wrong_factory(self):
         """[R] 다른 공장의 설비 조회 테스트"""
         # 다른 공장의 설비 생성
         from asgiref.sync import sync_to_async
-        
+
         @sync_to_async
         def create_other_equipment():
             other_user = User.objects.create_user(
-                email='other@example.com',
-                password='password1234!'
+                email="other@example.com", password="password1234!"
             )
             other_factory = Factory.objects.create(
-                owner=other_user,
-                name="Other Factory"
+                owner=other_user, name="Other Factory"
             )
             other_equipment = FactoryEquipment.objects.create(
-                factory=other_factory,
-                name="Other Equipment",
-                priority=1
+                factory=other_factory, name="Other Equipment", priority=1
             )
             return other_equipment
-        
+
         other_equipment = await create_other_equipment()
-        
+
         headers = await self.authenticate()
-        response = await self.client.get(f"/{other_equipment.id}?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"/{other_equipment.id}?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 404)
 
     async def test_create_factory_equipment_without_auth(self):
         """[C] 인증 없이 설비 생성 시도 테스트"""
-        payload = {
-            "name": "Unauthorized Equipment",
-            "priority": 1
-        }
-        response = await self.client.post(f"?factory_id={self.factory.id}", json=payload)
+        payload = {"name": "Unauthorized Equipment", "priority": 1}
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", json=payload
+        )
         self.assertEqual(response.status_code, 401)
 
     async def test_list_factory_equipments_without_auth(self):
@@ -439,18 +443,17 @@ class TestFactoryEquipment(TestCase):
     async def test_create_factory_equipment_invalid_data(self):
         """[C] 잘못된 데이터로 설비 생성 시도 테스트"""
         headers = await self.authenticate()
-        
+
         # 필수 필드 누락 (name 필드 없음)
-        payload = {
-            "priority": 1
-        }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        payload = {"priority": 1}
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 422)
-        
+
         # 잘못된 priority 타입 (문자열 대신 정수 필요)
-        payload = {
-            "name": "Invalid Equipment",
-            "priority": "not_a_number"
-        }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        payload = {"name": "Invalid Equipment", "priority": "not_a_number"}
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 422)  # 타입 오류
