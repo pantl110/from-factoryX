@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-from pathlib import Path
 from decouple import config
 from pathlib import Path
+from zeep import Client
 import sys
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,10 +33,13 @@ ALLOWED_HOSTS = [
     ".railway.app",
 ]
 
+ASGI_APPLICATION = "cfehome.asgi.application"
+
 if DEBUG:
     ALLOWED_HOSTS += [
         "127.0.0.1",
         "localhost",
+        "0.0.0.0",
     ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -47,6 +51,10 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
+    # django channels
+    "channels",
+    "daphne",
+    # django default apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -55,9 +63,21 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # third party
     "corsheaders",
+    "django_crontab",
     # local apps
+    "aws",
     "user",
     "commando",
+    "common",
+    "factory",
+    "document",
+    "project",
+    "subscription",
+    "notification",
+    "stock",
+    "tax",
+    "location",
+    "barobill",
 ]
 
 MIDDLEWARE = [
@@ -96,7 +116,7 @@ DJANGO_ENV_NAME = config("DJANGO_ENV_NAME", default=None)
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -117,7 +137,12 @@ WSGI_APPLICATION = "cfehome.wsgi.application"
 
 CONN_MAX_AGE = config("CONN_MAX_AGE", cast=int, default=300)
 DATABASE_URL = config("DATABASE_URL", default=None)
-
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    },
+}
 if DATABASE_URL is not None:
     import dj_database_url
 
@@ -204,3 +229,101 @@ if DEBUG:
     FRONTEND_URL = "http://127.0.0.1:3000"
 else:
     FRONTEND_URL = config("FRONTEND_URL", default=None)
+
+# Redis Cache Settings
+REDIS_HOST = config("REDIS_HOST", default="redis")  # Redis 호스트
+REDIS_PORT = int(config("REDIS_PORT", default=6379))  # Redis
+REDIS_DB = int(config("REDIS_DB", default=1))  # Redis 데이터베이스 인덱스
+REDIS_CACHE_DB = int(
+    config("REDIS_CACHE_DB", default=0)
+)  # 캐시용 Redis 데이터베이스 인덱스
+REDIS_PASSWORD = config("REDIS_PASSWORD", default=None)
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "IGNORE_EXCEPTIONS": True,  # 캐시 오류 시 애플리케이션 계속 실행
+            "SOCKET_CONNECT_TIMEOUT": 5,  # 연결 타임아웃(초)
+            "SOCKET_TIMEOUT": 5,  # 통신 타임아웃(초)
+            "CONNECTION_POOL_KWARGS": {"max_connections": 50},  # 최대 연결 수
+        },
+        "KEY_PREFIX": "django",  # 키 충돌 방지를 위한 접두사
+        "TIMEOUT": 300,  # 기본 캐시 만료 시간(초)
+    }
+}
+if REDIS_PASSWORD:
+    CHANNEL_REDIS_URL = (
+        f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+    )
+else:
+    CHANNEL_REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [CHANNEL_REDIS_URL],
+            "symmetric_encryption_keys": [SECRET_KEY],  # 보안 강화
+            "capacity": 1500,  # 채널 용량
+            "expiry": 60,  # 메시지 만료 시간 (초)
+        },
+        "OPTIONS": {
+            "connection_timeout": 5,  # 연결 타임아웃
+            "socket_timeout": 5,  # 소켓 타임아웃
+            "max_connections": 50,  # 최대 연결 수
+        },
+    },
+}
+
+# AWS SES Email Settings
+USE_SES = config("USE_SES", default=False, cast=bool)
+
+if USE_SES:
+    # AWS SES Configuration
+    AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default=None)
+    AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default=None)
+    AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", default="ap-northeast-2")
+    AWS_SES_REGION = config("AWS_SES_REGION", default="ap-northeast-2")
+
+    # Email backend using SES
+    EMAIL_BACKEND = "user.backends.SESEmailBackend"
+
+    # Default from email
+    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@yourdomain.com")
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
+else:
+    # Console backend for development
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = "noreply@localhost"
+
+# AWS S3 Storage Settings
+AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default=None)
+AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default=None)
+AWS_REGION = config("AWS_REGION", default="ap-northeast-2")
+AWS_CLOUDFRONT_URL = config("AWS_CLOUDFRONT_URL", default=None)
+AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default=None)
+
+# Barobill settings
+BAROBILL_CERT_KEY = config("BAROBILL_CERT_KEY", default=None)
+BAROBILL_CLIENT = Client("https://testws.baroservice.com/TI.asmx?WSDL")  # 테스트서버
+# BAROBILL_CLIENT = Client("https://ws.baroservice.com/TI.asmx?WSDL")  # 운영서버
+BAROBILL_CASHBILL_CLIENT = Client(
+    "https://testws.baroservice.com/CASHBILL.asmx?WSDL"
+)  # 테스트서버
+# BAROBILL_CASHBILL_CLIENT = Client("https://ws.baroservice.com/CASHBILL.asmx?WSDL")  # 운영서버
+
+# Django Crontab Settings
+CRONJOBS = [
+    # 매일 오전 9시에 프로덕션 상태 업데이트 실행
+    (
+        "0 9 * * *",
+        "project.management.commands.update_production_status.Command.handle",
+    ),
+]
+
+# Toss Payments Settings
+TOSS_PAYMENTS_SECRET_KEY = "test_sk_..."  # 실제 환경에서는 환경변수로 관리
+TOSS_PAYMENTS_CLIENT_KEY = "test_ck_..."
+TOSS_PAYMENTS_BASE_URL = "https://api.tosspayments.com"
