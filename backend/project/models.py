@@ -7,24 +7,28 @@ from factory.models import FactoryEquipment
 # Create your models here.
 class Project(BaseModel):
     class ProjectStatus(models.TextChoices):
-        quotation = ("견적 협의중", "quotation")
-        confirmed = ("주문 확정", "confirmed")
-        pending = ("생산 대기", "pending")
-        production = ("생산 중", "production")
-        manufactured = ("생산 완료", "manufactured")
-        delivery = ("납품", "delivery")
-        completed = ("프로젝트 완료", "completed")
-        suspended = ("중단", "suspended")
+        quotation = ("quotation", "견적 협의중")
+        confirmed = ("confirmed", "주문 확정")
+        pending = ("pending", "생산 대기")
+        production = ("production", "생산 중")
+        manufactured = ("manufactured", "생산 완료")
+        delivery = ("delivery", "납품")
+        completed = ("completed", "프로젝트 완료")
+        suspended = ("suspended", "중단")
 
     class TaxInvoiceStatus(models.TextChoices):
-        pending = ("미발행", "pending")
-        processing = ("발행 중", "processing")
-        completed = ("발행 완료", "completed")
+        pending = ("pending", "미발행")
+        processing = ("processing", "발행 중")
+        completed = ("completed", "발행 완료")
 
     status = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=ProjectStatus.choices,
         default=ProjectStatus.quotation,
+    )
+    is_refunded = models.BooleanField(
+        default=False,
+        help_text="반품 여부",
     )
     transact_date = models.DateField(
         null=True,
@@ -44,14 +48,14 @@ class Project(BaseModel):
 # 생산 계획(내역)
 class ProjectPlan(BaseModel):
     class ProductionStatus(models.TextChoices):
-        pending = ("가동 대기", "pending")
-        production = ("가동 중", "production")
-        completed = ("가동 완료", "completed")
-        impossible = ("가동 불가", "impossible")
+        pending = ("pending", "가동 대기")
+        production = ("production", "가동 중")
+        completed = ("completed", "가동 완료")
+        impossible = ("impossible", "가동 불가")
 
     project = models.ForeignKey(Project, related_name="plans", on_delete=models.CASCADE)
     status = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=ProductionStatus.choices,
         default=ProductionStatus.pending,
     )
@@ -84,13 +88,13 @@ class ProjectPlan(BaseModel):
 # 생산 로그
 class ProjectLog(BaseModel):
     class LogType(models.TextChoices):
-        plan = ("계획 변경", "plan")
-        memo = ("메모", "memo")
-        refund = ("반품", "refund")
+        plan = ("plan", "계획 변경")
+        memo = ("memo", "메모")
+        refund = ("refund", "반품")
 
     project = models.ForeignKey(Project, related_name="logs", on_delete=models.CASCADE)
     type = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=LogType.choices,
         default=LogType.plan,
     )
