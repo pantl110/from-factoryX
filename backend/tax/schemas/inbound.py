@@ -86,10 +86,13 @@ class TaxInvoiceFilter(FilterSchema):
         description="거래처명 또는 품목명 통합 검색어",
         expression_connector="OR",
     )
-    tax_invoice_type: Optional[str] = (
-        Field(
-            "all", description="세금계산서 유형: all(전체), sales(매출), purchase(매입)"
-        ),
+    tax_invoice_type: Optional[str] = Field(
+        None, q="tax_invoice_type", description="sales-매출, purchase-매입"
     )
-    start_date: Optional[date] = (Field(None, description="시작일"),)
-    end_date: Optional[date] = (Field(None, description="종료일"),)
+    start_date: Optional[date] = Field(
+        None, q="transaction_date__gte", description="발급일자 범위 시작일"
+    )
+    end_date: Optional[date] = Field(
+        None, q="transaction_date__lte", description="발급일자 범위 종료일"
+    )
+    is_hidden: Optional[bool] = Field(None, q="is_hidden", description="숨김 여부")

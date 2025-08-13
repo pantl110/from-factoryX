@@ -1,10 +1,8 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
-from typing import List
-from ninja import Query
 from tax.models import NationalTaxService
 from factory.utils import get_factory_by_id, is_factory_member, get_factory_client_by_id
 from stock.utils import get_product_list_by_ids
@@ -21,6 +19,7 @@ from tax.schemas.outbound import (
     NotLinkedTaxInvoiceOut,
     AllTaxInvoiceOut,
     TaxInvoiceByMaterialOut,
+    CashReceiptDetailOut,
 )
 from tax.schemas.inbound import LinkTaxInvoiceIn
 from api.security import jwt_auth
@@ -39,87 +38,47 @@ from barobill.barobill_state import (
     barobill_purpose_types,
 )
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
 
 
-# Tax Tab
-# Material, Tax Tab
 @router.get(
     "/published",
     summary="[C] 발행된 모든 세금계산서 조회",
     description="조건에 따라 세금계산서를 조회합니다.",
-    response={200: List[AllTaxInvoiceOut], 400: dict, 500: dict},
+    response=List[NationalTaxServiceOut],
 )
 @paginate
 async def list_published_tax_invoices(
     request,
     factory_id: int = Query(..., description="공장 ID"),
     filters: TaxInvoiceFilter = Query(...),
-    ordering: Optional[str] = (
-        Query(
-            "-created_at",
-            description="작성일자 정렬: -created_at(최신순), created_at(오래된순)",
-        ),
+    ordering: str = Query(
+        default="-transaction_date",
+        description="작성일자 정렬: -transaction_date(최신순), transaction_date(오래된순)",
     ),
 ):
-    """
-    조건에 따라 세금계산서를 조회합니다.
+    user = request.auth
+    factory = await get_factory_by_id(factory_id)
+    member = await is_factory_member(factory_id, user)
+    # TODO: 권한 체크
 
-    입력 필드:
-    - factory_id: 공장 ID (필수)
-    - q: 거래처명 또는 품목명 통합 검색어 (선택)
-    - tax_invoice_type: all(전체, 기본값), sales(매출), purchase(매입)
+    @sync_to_async
+    def get_all_tax_invoices():
+        queryset = NationalTaxService.objects.filter(
+            factory_id=factory_id, publish_status="published"
+        ).prefetch_related("client", "product")
+        queryset = filters.filter(queryset)
+        if ordering:
+            queryset = queryset.order_by(ordering)
 
-    반환 필드:
-    - id: 세금계산서 ID (NationalTaxService.id)
-    - tax_invoice_type: 세금계산서 유형 (NationalTaxService.tax_invoice_type)
-    - transaction_date: 거래일자 (NationalTaxService.transaction_date)
-    - client_name: 거래처명 (NationalTaxService.client.name)
-    - product_names: 품목명 배열 (NationalTaxService.product.name 배열)
-    - transaction_amount: 공급가액 (NationalTaxService.transaction_amount)
-    - tax_amount: 세액 (NationalTaxService.tax_amount)
-    - total_amount: 합계금액 (transaction_amount + tax_amount)
-    """
-    try:
+        return list(queryset)
 
-        @sync_to_async
-        def get_all_tax_invoices():
-            queryset = NationalTaxService.objects.filter(
-                client__factory_id=factory_id, publish_status="published"
-            ).prefetch_related("client", "product")
-            queryset = filters.filter(queryset)
-            if ordering:
-                queryset = queryset.order_by(ordering)
+    invoices = await get_all_tax_invoices()
 
-            return list(queryset)
-
-        invoices = await get_all_tax_invoices()
-        result = []
-        for invoice in invoices:
-            product_names = [product.name for product in invoice.product.all()]
-            total_amount = invoice.transaction_amount + invoice.tax_amount
-            tax_invoice_type_map = {"sales": "매출", "purchase": "매입"}
-            tax_invoice_type_kr = tax_invoice_type_map.get(
-                invoice.tax_invoice_type, invoice.tax_invoice_type
-            )
-            result.append(
-                AllTaxInvoiceOut(
-                    id=invoice.id,
-                    tax_invoice_type=tax_invoice_type_kr,
-                    transaction_date=invoice.transaction_date,
-                    client_name=invoice.client.name,
-                    product_names=product_names,
-                    transaction_amount=invoice.transaction_amount,
-                    tax_amount=invoice.tax_amount,
-                    total_amount=total_amount,
-                )
-            )
-        return result
-    except Exception as e:
-        raise HttpError(500, f"세금계산서 조회 중 내부 서버 오류가 발생했습니다: {e}")
+    return invoices
 
 
 # Tax Tab
