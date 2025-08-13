@@ -130,14 +130,14 @@ export interface FactoriesUpdateModel {
   name: string;
   business_registration_number: string;
   representative_name: string;
-  manager_email: string;
-  manager_phone: string;
-  manager_fax: string;
+  manager_email?: string;
+  manager_phone?: string;
+  manager_fax?: string;
   business_type: string;
   business_category: string;
-  business_address: string;
-  is_trial: boolean;
-  billing_key: string;
+  business_address?: string;
+  is_trial?: boolean;
+  billing_key?: string;
 }
 
 //////////////////////
@@ -849,6 +849,34 @@ interface UnlinkedTaxInvoiceResponseModel {
 
 export interface UnlinkedTaxInvoiceListResponseModel extends PaginationModel {
   data: UnlinkedTaxInvoiceResponseModel[];
+}
+
+// tax invoice detail 가져오기
+interface TaxServiceItemModel {
+  purchase_expiry: string; // YYYYMMDD 형식
+  name: string;            // 품목명
+  information?: string;    // 규격
+  chargeable_unit: string; // 수량
+  unit_price: string;      // 단가
+  amount: string;          // 공급가액
+  tax: string;             // 세액
+  description?: string;    // 비고
+}
+
+export interface TaxInvoiceDetailResponseModel {
+  id: number;
+  factory: number;
+  client: number;
+  product: number[];
+  line_items: TaxServiceItemModel[];
+  transaction_date: string;
+  publish_status: string;
+  mgt_key?: string;
+  nts_send_key?: string;
+  barobill_state?: string;
+  nts_send_state?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // material_history_id로 세금계산서(구매) 및 자재정보를 조회

@@ -2,15 +2,7 @@ import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
 import { formatBusinessNumber } from '@/hooks/format-number';
 import { useEffect, useState } from 'react';
-
-interface ClientInfoFormData {
-  companyName: string;
-  businessNumber: string;
-  representativeName: string;
-  businessType: string;
-  businessCategory: string;
-  address: string;
-}
+import { ClientInfoFormData } from '../../type';
 
 interface ClientInfoProps {
   onFormChange: (

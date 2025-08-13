@@ -1,23 +1,18 @@
 import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
 import { formatBusinessNumber, formatDate } from '@/hooks/format-number';
-import { useEffect, useState } from 'react';
-
-interface SellerInfoFormData {
-  companyName: string;
-  businessNumber: string;
-  representativeName: string;
-  businessType: string;
-  businessCategory: string;
-  address: string;
-  writeDate: string;
-}
+import { useEffect, useState, useCallback } from 'react';
+import { useGetFactory } from '@/hooks/factory/use-get-factory';
+import useFactoryStore from '@/store/factory-store';
+import { SellerInfoFormData } from '../../type';
 
 interface SellerInfoProps {
   onFormChange: (
     isValid: boolean,
     isDirty: boolean,
-    hasRequiredValues: boolean
+    hasRequiredValues: boolean,
+    isOtherFieldsDirty: boolean,
+    formData: SellerInfoFormData
   ) => void;
   showErrors?: boolean;
 }
@@ -25,10 +20,11 @@ interface SellerInfoProps {
 const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
   const {
     register,
-    formState: { isValid, isDirty, errors },
+    formState: { isValid, isDirty, errors, dirtyFields },
     watch,
     trigger,
     setValue,
+    reset,
   } = useForm<SellerInfoFormData>({
     mode: 'onChange', // 실시간 유효성 검사
     defaultValues: {
@@ -42,14 +38,49 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
     },
   });
 
+  const { getFactory, factory } = useGetFactory();
+  const factoryId = useFactoryStore((state) => state.factoryId);
+
+  // 공장 상세 조회 후 초기값 세팅
+  useEffect(() => {
+    if (factoryId) {
+      getFactory(factoryId);
+    }
+  }, [factoryId, getFactory]);
+
+  useEffect(() => {
+    if (!factory) return;
+    reset({
+      companyName: factory.name || '',
+      businessNumber: formatBusinessNumber(
+        factory.business_registration_number || ''
+      ),
+      representativeName: factory.representative_name || '',
+      businessType: factory.business_type || '',
+      businessCategory: factory.business_category || '',
+      address: factory.business_address || '',
+      writeDate: formatDate(new Date().toISOString().split('T')[0]),
+    });
+    setValidatedFields(new Set());
+  }, [factory, reset]);
+
   // 각 필드별로 에러 표시 여부를 추적하는 상태
   const [validatedFields, setValidatedFields] = useState<
     Set<keyof SellerInfoFormData>
   >(new Set());
 
-  // 폼 데이터 실시간 감시 (디버깅용)
+  // 폼 데이터 실시간 감시
   const formData = watch();
-  console.log('현재 폼 데이터:', formData);
+
+  // 작성일자를 제외한 다른 필드들의 isDirty 상태
+  const isOtherFieldsDirty = Boolean(
+    dirtyFields.companyName ||
+      dirtyFields.businessNumber ||
+      dirtyFields.representativeName ||
+      dirtyFields.businessType ||
+      dirtyFields.businessCategory ||
+      dirtyFields.address
+  );
 
   // 모든 필수 필드에 값이 있는지 확인
   const hasRequiredValues = Boolean(
@@ -62,8 +93,14 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
 
   // 폼 상태가 변경될 때마다 부모 컴포넌트에 알림
   useEffect(() => {
-    onFormChange(isValid, isDirty, hasRequiredValues);
-  }, [isValid, isDirty, hasRequiredValues, onFormChange]);
+    onFormChange(
+      isValid,
+      isDirty,
+      hasRequiredValues,
+      isOtherFieldsDirty,
+      formData
+    );
+  }, [isValid, isDirty, hasRequiredValues, isOtherFieldsDirty, onFormChange]);
 
   // triggerValidation이 true가 되면 유효성 검사 실행
   useEffect(() => {

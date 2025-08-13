@@ -87,6 +87,7 @@ export { default as useGetNotificationDetail } from './notification/use-get-noti
 
 // Tax related hooks
 export { default as useTaxApi } from './tax/use-tax-api';
+export { default as useCreateTaxInvoice } from './tax/use-create-tax-invoice';
 export { default as useGetTaxInvoiceState } from './tax/use-get-tax-invoice-state';
 export { default as useGetPublishedTaxInvoices } from './tax/use-get-published-tax-invoices';
 export { default as useGetPendingTaxInvoices } from './tax/use-get-pending-tax-invoices';
