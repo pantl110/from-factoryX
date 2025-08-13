@@ -1,6 +1,7 @@
 from ninja import Schema
 from typing import List, Optional
 from datetime import datetime
+from pydantic import field_validator
 
 
 # Quotation Product Detail
@@ -19,6 +20,7 @@ class QuotationDetailProductOut(Schema):
 # ------------------------------------------------------------
 # Quotation API
 # ------------------------------------------------------------
+
 
 # (GET) Quotation Detail
 class QuotationDetailOut(Schema):
@@ -48,6 +50,7 @@ class QuotationConfirmedOut(Schema):
 # ------------------------------------------------------------
 # Quotation Product API
 # ------------------------------------------------------------
+
 
 # (GET) Quotation Product Detail
 class QuotationProductOut(Schema):
@@ -79,3 +82,41 @@ class TodayProductionPlanOut(Schema):
     equipment_name: str  # 생산 설비
     production_time: int  # 생산 시간 (초)
     project_id: int  # 프로젝트 ID
+
+
+# OCR 결과 아이템 스키마
+class OCRRequestItemOut(Schema):
+    item_name: str  # 품목명
+    item_code: Optional[str] = ""  # 품목코드
+    spec: Optional[str] = ""  # 규격
+    unit: str  # 단위
+    quantity: str  # 수량
+    unit_price: str  # 단가
+
+
+# OCR 결과 클라이언트 정보 스키마
+class OCRClientInfoOut(Schema):
+    company_name: str  # 업체명
+    registration_number: Optional[str] = ""  # 사업자등록번호
+    ceo_name: Optional[str] = ""  # 대표자명
+    delivery_date: Optional[str] = ""  # 납품일자
+    business_type: Optional[str] = ""  # 업태
+    category: Optional[str] = ""  # 종목
+    address: Optional[str] = ""  # 주소
+    manager_name: Optional[str] = ""  # 담당자명
+    email: Optional[str] = ""  # 이메일
+    fax_number: Optional[str] = ""  # 팩스번호
+    call_number: Optional[str] = ""  # 전화번호
+
+    @field_validator("ceo_name", mode="before")
+    @classmethod
+    def remove_spaces_from_ceo_name(cls, v):
+        if v:
+            return v.replace(" ", "")
+        return v
+
+
+# OCR 결과 전체 스키마
+class OCRResultOut(Schema):
+    client_info: OCRClientInfoOut  # 클라이언트 정보
+    request_items: List[OCRRequestItemOut]  # 요청 품목 리스트
