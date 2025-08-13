@@ -300,7 +300,10 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
     deleted_plans = []
     created_plans = []
 
-    if refund.plan is not None:  # 생산 등록된 반품인 경우만 처리
+    # refund.plan에 async 접근을 위해 sync_to_async 사용
+    refund_plan = await sync_to_async(lambda: refund.plan)()
+
+    if refund_plan is not None:  # 생산 등록된 반품인 경우만 처리
         related_project_plans = await sync_to_async(list)(
             ProjectPlan.objects.filter(
                 project=project,
@@ -318,6 +321,13 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
             for plan in old_product_plans:
                 if plan.quantity == original_refund_amount:
                     plan_id = plan.id  # 삭제 전에 ID 저장
+
+                    # 연결된 Refund가 CASCADE로 삭제되지 않도록 plan 필드를 None으로 설정
+                    plan_refunds = await sync_to_async(list)(plan.refunds.all())
+                    for plan_refund in plan_refunds:
+                        plan_refund.plan = None
+                        await sync_to_async(plan_refund.save)()
+
                     await sync_to_async(plan.delete)()
                     deleted_plans.append(plan_id)
 
