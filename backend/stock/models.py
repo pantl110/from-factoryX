@@ -51,7 +51,7 @@ class MaterialHistory(BaseModel):
         consumption = ("consumption", "소모")
 
     type = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=MaterialHistoryType.choices,
         default=MaterialHistoryType.purchase,
     )
