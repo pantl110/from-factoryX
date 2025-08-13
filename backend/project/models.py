@@ -94,13 +94,18 @@ class ProjectLog(BaseModel):
     )
     title = models.CharField(max_length=100, help_text="로그 제목")
     content = models.TextField(help_text="로그 내용")
+    refund = models.ForeignKey(
+        "project.Refund",
+        related_name="logs",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="반품 정보",
+    )
 
 
 # 반품 등록
 class Refund(BaseModel):
-    project_log = models.ForeignKey(
-        ProjectLog, related_name="refunds", on_delete=models.CASCADE
-    )
     product = models.ForeignKey(
         "stock.Product", related_name="refunds", on_delete=models.CASCADE
     )
