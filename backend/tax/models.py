@@ -6,19 +6,19 @@ import random
 
 
 class TransactionType(models.TextChoices):
-    receipt = ("영수", "receipt")
-    invoice = ("청구", "invoice")
+    receipt = ("receipt", "영수")
+    invoice = ("invoice", "청구")
 
 
 class TaxInvoiceType(models.TextChoices):
-    sales = ("매출", "sales")
-    purchase = ("매입", "purchase")
+    sales = ("sales", "매출")
+    purchase = ("purchase", "매입")
 
 
 class PublishStatus(models.TextChoices):
-    temporary = ("임시 저장", "temporary")
-    pending = ("발행 대기", "pending")
-    published = ("발행 완료", "published")
+    temporary = ("temporary", "임시 저장")
+    pending = ("pending", "발행 대기")
+    published = ("published", "발행 완료")
 
 
 # 국세청 API 세금계산서 데이터 저장
@@ -119,8 +119,8 @@ class NationalTaxService(BaseModel):
 
 
 class CashReceiptType(models.TextChoices):
-    sales = ("매출", "sales")
-    purchase = ("매입", "purchase")
+    sales = ("sales", "매출")
+    purchase = ("purchase", "매입")
 
 
 class CashReceipt(BaseModel):

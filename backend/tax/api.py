@@ -11,9 +11,13 @@ from stock.utils import get_product_list_by_ids
 from django.db import transaction
 from tax.utils import get_tax_service_by_id
 from tax.barobill_utils import issue_barobill_tax_invoice
-from tax.schemas.inbound import NationalTaxServiceCreateIn, NationalTaxServiceUpdateIn
-from tax.schemas.outbound import NationalTaxServiceOut, AllTaxInvoiceOut
+from tax.schemas.inbound import (
+    NationalTaxServiceCreateIn,
+    NationalTaxServiceUpdateIn,
+    TaxInvoiceFilter,
+)
 from tax.schemas.outbound import (
+    NationalTaxServiceOut,
     NotLinkedTaxInvoiceOut,
     AllTaxInvoiceOut,
     TaxInvoiceByMaterialOut,
@@ -35,6 +39,7 @@ from barobill.barobill_state import (
     barobill_purpose_types,
 )
 from datetime import datetime
+from typing import Optional
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
@@ -52,14 +57,12 @@ router = Router(tags=["Tax"], auth=jwt_auth)
 async def list_published_tax_invoices(
     request,
     factory_id: int = Query(..., description="공장 ID"),
-    q: str = Query(None, description="거래처명 또는 품목명 통합 검색어"),
-    tax_invoice_type: str = Query(
-        "all", description="세금계산서 유형: all(전체), sales(매출), purchase(매입)"
-    ),
-    start_date: date = Query(None, description="시작일"),
-    end_date: date = Query(None, description="종료일"),
-    order: str = Query(
-        "desc", description="작성일자 정렬: desc(최신순), asc(오래된순)"
+    filters: TaxInvoiceFilter = Query(...),
+    ordering: Optional[str] = (
+        Query(
+            "-created_at",
+            description="작성일자 정렬: -created_at(최신순), created_at(오래된순)",
+        ),
     ),
 ):
     """
@@ -84,36 +87,14 @@ async def list_published_tax_invoices(
 
         @sync_to_async
         def get_all_tax_invoices():
-            qs = NationalTaxService.objects.filter(
+            queryset = NationalTaxService.objects.filter(
                 client__factory_id=factory_id, publish_status="published"
             ).prefetch_related("client", "product")
+            queryset = filters.filter(queryset)
+            if ordering:
+                queryset = queryset.order_by(ordering)
 
-            if tax_invoice_type == "sales":
-                qs = qs.filter(tax_invoice_type="sales")
-            elif tax_invoice_type == "purchase":
-                qs = qs.filter(tax_invoice_type="purchase")
-            # "all"이면 필터 없음
-
-            if q:
-                ids_client = list(
-                    qs.filter(client__name__icontains=q).values_list("id", flat=True)
-                )
-                ids_product = list(
-                    qs.filter(product__name__icontains=q).values_list("id", flat=True)
-                )
-                ids = set(ids_client) | set(ids_product)
-                qs = qs.filter(id__in=ids)
-
-            if start_date:
-                qs = qs.filter(transaction_date__gte=start_date)
-            if end_date:
-                qs = qs.filter(transaction_date__lte=end_date)
-            if order == "asc":
-                qs = qs.order_by("transaction_date")
-            else:
-                qs = qs.order_by("-transaction_date")
-
-            return list(qs.distinct())
+            return list(queryset)
 
         invoices = await get_all_tax_invoices()
         result = []
