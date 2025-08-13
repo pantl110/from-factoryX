@@ -1,12 +1,13 @@
 import Panel from '@/ui/panel';
 import SellerInfo from './seller-info';
-// import ClientInfo from './client-info';
+import ClientInfo from './client-info';
 import MiniBtn from '@/ui/mini-btn';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
 import EmptySpace from '@/ui/empty-space';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AddItemDropdown from './add-item-dropdown';
 import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
+import IssueTypeDropdown from './issue-type-dropdown';
 
 interface CreatTaxPanelProps {
   onClose: () => void;
@@ -20,13 +21,30 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
   const [selectedIssueType, setSelectedIssueType] = useState<
     '청구' | '영수' | null
   >(null);
+  const [isSellerInfoValid, setIsSellerInfoValid] = useState(false);
+  const [isSellerInfoDirty, setIsSellerInfoDirty] = useState(false);
+  const [hasSellerInfoRequiredValues, setHasSellerInfoRequiredValues] =
+    useState(false);
+  const [isClientInfoValid, setIsClientInfoValid] = useState(false);
+  const [isClientInfoDirty, setIsClientInfoDirty] = useState(false);
+  const [hasClientInfoRequiredValues, setHasClientInfoRequiredValues] =
+    useState(false);
+  const [showErrors, setShowErrors] = useState(false);
 
+  // 발행방식 선택 버튼 클릭 핸들러
   const handleIssueTypeDropdownOpen = () => {
+    // 두 폼 모두 유효해야 드롭다운 열기
+    if (!isSellerInfoValid || !isClientInfoValid) {
+      setShowErrors(true);
+      return;
+    }
+
+    // 폼이 유효하면 에러 표시 해제하고 드롭다운 열기
+    setShowErrors(false);
     setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);
   };
 
   const handleIssueTypeSelect = (issueType: '청구' | '영수') => {
-    // console.log("선택된 발행 방식:", issueType);
     setIsIssueTypeDropdownOpen(false);
     setSelectedIssueType(issueType);
 
@@ -38,7 +56,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
     }
   };
 
-  // 발행방식 선택 버튼 드랍다운
+  // 발행방식 선택 버튼 드롭다운
   const handleIssueTypeDropdownClose = () => {
     setIsIssueTypeDropdownOpen(false);
   };
@@ -54,20 +72,81 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
     // console.log("모달 확인 버튼 클릭됨");
   };
 
+  // 판매처 정보 폼 유효성 및 변경 상태 변경 핸들러
+  const handleSellerInfoChange = (
+    isValid: boolean,
+    isDirty: boolean,
+    hasRequiredValues: boolean
+  ) => {
+    setIsSellerInfoValid(isValid);
+    setIsSellerInfoDirty(isDirty);
+    setHasSellerInfoRequiredValues(hasRequiredValues);
+  };
+
+  // 거래처 정보 폼 유효성 및 변경 상태 변경 핸들러
+  const handleClientInfoChange = (
+    isValid: boolean,
+    isDirty: boolean,
+    hasRequiredValues: boolean
+  ) => {
+    setIsClientInfoValid(isValid);
+    setIsClientInfoDirty(isDirty);
+    setHasClientInfoRequiredValues(hasRequiredValues);
+  };
+
+  // showErrors가 true일 때 폼이 모두 유효해지면 자동으로 false로 변경
+  useEffect(() => {
+    if (showErrors && isSellerInfoValid && isClientInfoValid) {
+      setShowErrors(false);
+    }
+  }, [showErrors, isSellerInfoValid, isClientInfoValid]);
+
+  // 헤더 버튼 구성
+  const headerButton = (
+    <div className="flex gap-2">
+      <MiniBtn
+        text="임시 저장"
+        textColor="text-primary"
+        bgColor="bg-primary-8"
+        hoverColor="hover:bg-secondary-hover"
+        onClick={() => {}}
+        disabled={!isSellerInfoDirty && !isClientInfoDirty}
+      />
+      <div className="relative">
+        <MiniBtn
+          text="발행 방식 선택"
+          textColor="text-wh"
+          bgColor="bg-primary"
+          hoverColor="hover:bg-primary-hover"
+          icon={CaretDown}
+          iconPosition="right"
+          onClick={handleIssueTypeDropdownOpen}
+          disabled={
+            !hasSellerInfoRequiredValues || !hasClientInfoRequiredValues
+          }
+        />
+        {isIssueTypeDropdownOpen && (
+          <IssueTypeDropdown
+            onClose={handleIssueTypeDropdownClose}
+            onSelect={handleIssueTypeSelect}
+          />
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <>
-      <Panel
-        title="세금계산서"
-        onClose={onClose}
-        isCreateTax={true}
-        isIssueTypeDropdownOpen={isIssueTypeDropdownOpen}
-        onIssueTypeDropdownOpen={handleIssueTypeDropdownOpen}
-        onIssueTypeDropdownClose={handleIssueTypeDropdownClose}
-        onIssueTypeSelect={handleIssueTypeSelect}
-      >
+      <Panel title="세금계산서" onClose={onClose} headerButton={headerButton}>
         <div className="flex gap-5">
-          <SellerInfo />
-          {/* <ClientInfo /> */}
+          <SellerInfo
+            onFormChange={handleSellerInfoChange}
+            showErrors={showErrors}
+          />
+          <ClientInfo
+            onFormChange={handleClientInfoChange}
+            showErrors={showErrors}
+          />
         </div>
 
         <div className="flex flex-col gap-3 mt-9">

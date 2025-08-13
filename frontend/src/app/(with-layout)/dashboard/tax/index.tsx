@@ -3,18 +3,24 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MiniBtn from '@/ui/mini-btn';
-// import TaxItem from './tax-item';
+import TaxItem from './tax-item';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import NoHistoryBox from '@/ui/no-history-box';
 
-const Tax = () => {
+interface TaxProps {
+  taxInvoicesData: PublishedTaxInvoiceResponseModel[];
+  isLoading: boolean;
+}
+
+const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
   const router = useRouter();
   const [selectedTax, setSelectedTax] =
     useState<PublishedTaxInvoiceResponseModel | null>(null);
 
-  // const handleTaxClick = (tax: PublishedTaxInvoiceResponseModel) => {
-  //   setSelectedTax(tax);
-  // };
+  const handleTaxClick = (tax: PublishedTaxInvoiceResponseModel) => {
+    setSelectedTax(tax);
+  };
 
   const handleClosePanel = () => {
     setSelectedTax(null);
@@ -36,12 +42,13 @@ const Tax = () => {
           />
         </div>
         <div className="flex flex-col gap-3">
-          {/* {taxData
-            .sort(
-              (a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime()
-            )
-            .slice(0, 5)
-            .map((tax) => (
+          {isLoading || taxInvoicesData.length === 0 ? (
+            <NoHistoryBox
+              title="아직 발행된 세금계산서가 없어요."
+              text="발행된 세금계산서는 최신순으로 보여져요."
+            />
+          ) : (
+            taxInvoicesData.map((tax) => (
               <TaxItem
                 key={tax.id}
                 taxType={tax.tax_invoice_type}
@@ -49,7 +56,8 @@ const Tax = () => {
                 date={tax.transaction_date}
                 onClick={() => handleTaxClick(tax)}
               />
-            ))} */}
+            ))
+          )}
         </div>
       </div>
 

@@ -23,8 +23,12 @@ import {
   useGetDailyProductionQuantity,
   useGetProductionProfitRate,
   useGetInsufficientMaterialCount,
+  useGetPublishedTaxInvoices,
 } from '@/hooks';
-import { ProjectResponseModel } from '@/types/data-model';
+import {
+  ProjectResponseModel,
+  PublishedTaxInvoiceResponseModel,
+} from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 import {
   DailyProductionQuantityModel,
@@ -51,7 +55,8 @@ const DashboardPageContent = () => {
     getInsufficientMaterialCount,
     isLoading: isInsufficientMaterialLoading,
   } = useGetInsufficientMaterialCount();
-
+  const { getPublishedTaxInvoices, isLoading: isTaxInvoicesLoading } =
+    useGetPublishedTaxInvoices();
   const [projectsData, setProjectsData] = useState<ProjectResponseModel[]>([]);
   const [todayProductionPlans, setTodayProductionPlans] = useState<
     TodayProductionPlanModel[]
@@ -68,6 +73,7 @@ const DashboardPageContent = () => {
   const [insufficientMaterialData, setInsufficientMaterialData] = useState<
     ShortageMaterialCountModel | undefined
   >(undefined);
+  const [taxInvoicesData, setTaxInvoicesData] = useState<any[]>([]);
   const { factoryId, initializeFactoryId } = useFactoryStore();
 
   // 모든 데이터 로딩 상태를 통합
@@ -77,7 +83,8 @@ const DashboardPageContent = () => {
     isTodayPlansLoading ||
     isUndeliveredLoading ||
     isProductionProfitLoading ||
-    isInsufficientMaterialLoading;
+    isInsufficientMaterialLoading ||
+    isTaxInvoicesLoading;
 
   useEffect(() => {
     const from = searchParams.get('from');
@@ -189,6 +196,29 @@ const DashboardPageContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
 
+  // 세금계산서 데이터 가져오기 (최신 5개)
+  useEffect(() => {
+    if (factoryId) {
+      getPublishedTaxInvoices({
+        page: 1,
+        size: 5,
+        order: 'desc',
+      }).then((result) => {
+        if (result.success && result.data) {
+          // API 응답에서 데이터 배열 추출
+          const responseData = result.data as {
+            data?: PublishedTaxInvoiceResponseModel[];
+          };
+          const invoices = responseData.data || [];
+          setTaxInvoicesData(Array.isArray(invoices) ? invoices : []);
+        } else {
+          setTaxInvoicesData([]);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
+
   // 협의 중인 견적 데이터 (견적 요청, 주문 확정) - 최신순 3개
   const pendingQuotes = Array.isArray(projectsData)
     ? projectsData
@@ -288,7 +318,10 @@ const DashboardPageContent = () => {
               </div>
 
               {/* 세금계산서 현황 */}
-              <Tax />
+              <Tax
+                taxInvoicesData={taxInvoicesData}
+                isLoading={isTaxInvoicesLoading}
+              />
             </div>
           </div>
         </>

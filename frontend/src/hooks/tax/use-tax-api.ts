@@ -60,7 +60,7 @@ const useTaxApi = () => {
         }
 
         // URL 구성
-        let url = `/v1/tax/${endpoint}`;
+        let url = `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${endpoint}`;
         
         // 현금영수증 관련 엔드포인트는 다른 URL 패턴 사용
         if (endpoint === 'cash-receipts-sync') {
