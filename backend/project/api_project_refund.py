@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import List
 from api.security import jwt_auth
 
-from project.models import Project, ProjectLog, Refund
+from project.models import Project, ProjectLog, Refund, ProjectPlan
 from project.schemas.outbound import (
     RefundCreateOut,
     RefundUpdateOut,
@@ -16,8 +16,13 @@ from project.schemas.outbound import (
 from project.schemas.inbound import RefundCreateIn, RefundUpdateIn
 from stock.models import Product
 from document.models import Quotation, QuotationProduct
-from factory.models import FactoryEquipment
-from factory.utils import is_factory_member
+from project.utils import (
+    validate_factory_and_get_user,
+    get_refund_with_project,
+    parse_and_validate_date,
+    get_default_equipment,
+    consume_raw_materials,
+)
 
 
 router = Router(tags=["ProjectRefund"], auth=jwt_auth)
@@ -30,12 +35,7 @@ router = Router(tags=["ProjectRefund"], auth=jwt_auth)
     response={200: RefundCreateOut, 400: dict, 404: dict, 500: dict},
 )
 async def create_refund(request, payload: RefundCreateIn):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
+    factory_id, user = await validate_factory_and_get_user(request)
 
     try:
         project = await sync_to_async(Project.objects.get)(id=payload.project_id)
@@ -47,6 +47,13 @@ async def create_refund(request, payload: RefundCreateIn):
     except Product.DoesNotExist:
         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
 
+    # 팩토리 권한 확인
+    quotation_exists = await sync_to_async(
+        project.quotations.filter(factory_id=factory_id).exists
+    )()
+    if not quotation_exists:
+        raise HttpError(404, "해당 프로젝트에 대한 권한이 없습니다.")
+
     # Product의 실제 현재 재고를 사용
     current_stock = product.current_stock
     production_amount = (
@@ -57,28 +64,23 @@ async def create_refund(request, payload: RefundCreateIn):
     if refund_amount <= 0:
         raise HttpError(400, "반품 수량은 0보다 커야 합니다.")
 
-    try:
-        refund_date = datetime.strptime(payload.refund_date, "%Y-%m-%d").date()
-    except ValueError:
-        raise HttpError(
-            400, "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식으로 입력해주세요."
-        )
+    refund_date = await parse_and_validate_date(payload.refund_date)
+
+    # Refund 생성
+    refund = await sync_to_async(Refund.objects.create)(
+        product=product,
+        amount=refund_amount,
+        refund_date=refund_date,
+        current_stock=current_stock,
+        production_amount=production_amount,
+    )
 
     log = await sync_to_async(ProjectLog.objects.create)(
         project=project,
         type=ProjectLog.LogType.refund,
         title="반품 접수 현황",
         content=f"{product.name} {refund_amount}개가 반품되었어요.",
-    )
-
-    # Refund 생성
-    refund = await sync_to_async(Refund.objects.create)(
-        project_log=log,
-        product=product,
-        amount=refund_amount,
-        refund_date=refund_date,
-        current_stock=current_stock,
-        production_amount=production_amount,
+        refund=refund,
     )
 
     project.is_refunded = True
@@ -98,43 +100,21 @@ async def create_refund(request, payload: RefundCreateIn):
     response={200: RefundProductionRegistrationOut, 400: dict, 404: dict, 500: dict},
 )
 async def register_production_from_refund(request, refund_id: int):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-
-    try:
-        refund = await sync_to_async(
-            Refund.objects.select_related(
-                "product", "project_log", "project_log__project"
-            ).get
-        )(id=refund_id)
-    except Refund.DoesNotExist:
-        raise HttpError(404, "해당 반품을 찾을 수 없습니다.")
-
-    # 팩토리 권한 확인
-    quotation_exists = await sync_to_async(
-        refund.project_log.project.quotations.filter(factory_id=int(factory_id)).exists
-    )()
-    if not quotation_exists:
-        raise HttpError(404, "해당 반품을 찾을 수 없습니다.")
+    factory_id, user = await validate_factory_and_get_user(request)
+    refund, project = await get_refund_with_project(refund_id, factory_id)
 
     # 반품 수량이 0보다 큰지 확인
     if refund.amount <= 0:
         raise HttpError(400, "반품 수량이 0보다 커야 합니다.")
 
-    # 이미 생산 등록된 반품인지 확인
-    if hasattr(refund, "production_registered") and refund.production_registered:
+    # 이미 생산 등록된 반품인지 확인 (plan이 있으면 이미 등록된 것)
+    if refund.plan is not None:
         raise HttpError(400, "이미 생산 등록된 반품입니다.")
 
     try:
         # 1. 기존 Quotation 찾기 (같은 프로젝트의 첫 번째 견적서)
         existing_quotation = await sync_to_async(
-            refund.project_log.project.quotations.filter(
-                factory_id=int(factory_id)
-            ).first
+            project.quotations.filter(factory_id=factory_id).first
         )()
 
         if not existing_quotation:
@@ -150,41 +130,13 @@ async def register_production_from_refund(request, refund_id: int):
             + timedelta(days=7),  # 기본 7일 후 납품 예정
         )
 
-        # 3. 기본 장비 선택 (우선순위가 가장 높은 장비)
-        default_equipment = await sync_to_async(
-            FactoryEquipment.objects.filter(factory_id=int(factory_id))
-            .order_by("priority")
-            .first
-        )()
-
-        if not default_equipment:
-            raise HttpError(400, "사용 가능한 장비가 없습니다.")
+        # 3. 기본 장비 선택
+        default_equipment = await get_default_equipment(factory_id)
 
         # 4. 원자재 소모 처리
-        from stock.models import MaterialProduct, Material
+        await consume_raw_materials(refund.product, refund.amount)
 
-        @sync_to_async
-        def consume_raw_materials():
-            material_products = MaterialProduct.objects.filter(product=refund.product)
-            for material_product in material_products:
-                material = material_product.material
-                required_quantity = material_product.quantity * refund.amount
-
-                if material.current_stock < required_quantity:
-                    raise HttpError(
-                        400,
-                        f"원자재 {material.name}의 재고가 부족합니다. 필요: {required_quantity}, 보유: {material.current_stock}",
-                    )
-
-                # 재고 차감
-                material.current_stock -= required_quantity
-                material.save()
-
-        await consume_raw_materials()
-
-        # 5. 생산 계획 생성 (새로운 QuotationProduct 사용)
-        from project.models import ProjectPlan
-
+        # 5. 생산 계획 생성
         # 품목의 평균 생산 시간 가져오기 (기본값 30초)
         avg_production_time = await sync_to_async(
             lambda: refund.product.average_production_time
@@ -201,7 +153,7 @@ async def register_production_from_refund(request, refund_id: int):
         end_date = start_date + timedelta(days=production_days)
 
         project_plan = await sync_to_async(ProjectPlan.objects.create)(
-            project=refund.project_log.project,
+            project=project,
             product=new_quotation_product,  # 새로운 QuotationProduct 사용
             equipment=default_equipment,
             status="가동 대기",
@@ -216,7 +168,7 @@ async def register_production_from_refund(request, refund_id: int):
 
         # 6. 프로젝트 로그 생성
         production_log = await sync_to_async(ProjectLog.objects.create)(
-            project=refund.project_log.project,
+            project=project,
             type="계획 변경",
             title="반품 재생산 등록",
             content=f"{refund.product.name} {refund.amount}개 반품 재생산이 등록되었습니다.",
@@ -247,28 +199,11 @@ async def register_production_from_refund(request, refund_id: int):
     response={200: RefundDetailOut, 400: dict, 404: dict, 500: dict},
 )
 async def get_refund_detail(request, refund_id: int):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    factory_id, user = await validate_factory_and_get_user(request)
+    refund, project = await get_refund_with_project(refund_id, factory_id)
 
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-
-    try:
-        refund = await sync_to_async(
-            Refund.objects.select_related(
-                "product", "project_log", "project_log__project"
-            ).get
-        )(id=refund_id)
-    except Refund.DoesNotExist:
-        raise HttpError(404, "해당 반품을 찾을 수 없습니다.")
-
-    # 팩토리 권한 확인 (Project는 Quotation을 통해 Factory와 연결됨)
-    quotation_exists = await sync_to_async(
-        refund.project_log.project.quotations.filter(factory_id=int(factory_id)).exists
-    )()
-    if not quotation_exists:
-        raise HttpError(404, "해당 반품을 찾을 수 없습니다.")
+    # 관련 로그 조회
+    project_log = await sync_to_async(ProjectLog.objects.get)(refund=refund)
 
     return 200, {
         "id": refund.id,
@@ -279,18 +214,18 @@ async def get_refund_detail(request, refund_id: int):
             "current_stock": refund.product.current_stock,
         },
         "project": {
-            "id": refund.project_log.project.id,
-            "status": refund.project_log.project.status,
+            "id": project.id,
+            "status": project.status,
         },
         "amount": refund.amount,
         "current_stock": refund.current_stock,
         "production_amount": refund.production_amount,
         "refund_date": refund.refund_date.isoformat() if refund.refund_date else None,
         "log": {
-            "id": refund.project_log.id,
-            "title": refund.project_log.title,
-            "content": refund.project_log.content,
-            "created_at": refund.project_log.created_at.isoformat(),
+            "id": project_log.id,
+            "title": project_log.title,
+            "content": project_log.content,
+            "created_at": project_log.created_at.isoformat(),
         },
         "created_at": refund.created_at.isoformat(),
         "updated_at": refund.updated_at.isoformat(),
@@ -304,31 +239,15 @@ async def get_refund_detail(request, refund_id: int):
     response={200: RefundUpdateOut, 400: dict, 404: dict, 500: dict},
 )
 async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-
-    try:
-        refund = await sync_to_async(
-            Refund.objects.select_related("product", "project_log").get
-        )(id=refund_id)
-    except Refund.DoesNotExist:
-        raise HttpError(404, "해당 반품을 찾을 수 없습니다.")
+    factory_id, user = await validate_factory_and_get_user(request)
+    refund, project = await get_refund_with_project(refund_id, factory_id)
 
     # 수정할 필드들을 업데이트
     update_fields = {}
 
     if payload.refund_date is not None:
-        try:
-            refund_date = datetime.strptime(payload.refund_date, "%Y-%m-%d").date()
-            update_fields["refund_date"] = refund_date
-        except ValueError:
-            raise HttpError(
-                400, "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식으로 입력해주세요."
-            )
+        refund_date = await parse_and_validate_date(payload.refund_date)
+        update_fields["refund_date"] = refund_date
 
     # current_stock은 수정 불가, 기존 값 사용
     current_stock = refund.current_stock
@@ -371,60 +290,53 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
     await sync_to_async(refund.save)()
 
     # 프로젝트 로그 내용도 업데이트
+    project_log = await sync_to_async(ProjectLog.objects.get)(refund=refund)
     log_content = f"{refund.product.name} {new_refund_amount}개가 반품되었어요."
-    refund.project_log.content = log_content
-    await sync_to_async(refund.project_log.save)()
+    project_log.content = log_content
+    await sync_to_async(project_log.save)()
 
-    # 연결된 ProjectPlan이 있는지 확인하고 수정
-    from project.models import ProjectPlan
-
-    # project를 미리 가져와서 사용
-    project = await sync_to_async(lambda: refund.project_log.project)()
-    related_project_plans = await sync_to_async(list)(
-        ProjectPlan.objects.filter(
-            project=project,
-            product__product=refund.product,  # QuotationProduct의 product 필드
-        )
-    )
-
+    # 연결된 ProjectPlan이 있는지 확인하고 수정 (생산 등록된 경우만)
     updated_plans = []
     deleted_plans = []
     created_plans = []
 
-    if product_changed:
-        # 제품이 완전히 바뀐 경우: 기존 제품의 ProjectPlan 삭제
-        old_product_plans = await sync_to_async(list)(
+    if refund.plan is not None:  # 생산 등록된 반품인 경우만 처리
+        related_project_plans = await sync_to_async(list)(
             ProjectPlan.objects.filter(
-                project=project, product__product=old_product  # 기존 제품
+                project=project,
+                product__product=refund.product,  # QuotationProduct의 product 필드
             )
         )
-        for plan in old_product_plans:
-            if plan.quantity == original_refund_amount:
-                plan_id = plan.id  # 삭제 전에 ID 저장
-                await sync_to_async(plan.delete)()
-                deleted_plans.append(plan_id)
 
-        # 새로운 제품으로 ProjectPlan 생성 (생산 등록 로직과 동일)
-        try:
-            # 새로운 제품의 QuotationProduct 찾기
-            new_quotation_product = await sync_to_async(
-                QuotationProduct.objects.filter(
-                    quotation__project=project,
-                    product=update_fields.get(
-                        "product", refund.product
-                    ),  # 새로운 제품 또는 기존 제품
-                ).first
-            )()
+        if product_changed:
+            # 제품이 완전히 바뀐 경우: 기존 제품의 ProjectPlan 삭제
+            old_product_plans = await sync_to_async(list)(
+                ProjectPlan.objects.filter(
+                    project=project, product__product=old_product  # 기존 제품
+                )
+            )
+            for plan in old_product_plans:
+                if plan.quantity == original_refund_amount:
+                    plan_id = plan.id  # 삭제 전에 ID 저장
+                    await sync_to_async(plan.delete)()
+                    deleted_plans.append(plan_id)
 
-            if new_quotation_product:
-                # 기본 장비 선택
-                default_equipment = await sync_to_async(
-                    FactoryEquipment.objects.filter(factory_id=int(factory_id))
-                    .order_by("priority")
-                    .first
+            # 새로운 제품으로 ProjectPlan 생성
+            try:
+                # 새로운 제품의 QuotationProduct 찾기
+                new_quotation_product = await sync_to_async(
+                    QuotationProduct.objects.filter(
+                        quotation__project=project,
+                        product=update_fields.get(
+                            "product", refund.product
+                        ),  # 새로운 제품 또는 기존 제품
+                    ).first
                 )()
 
-                if default_equipment:
+                if new_quotation_product:
+                    # 기본 장비 선택
+                    default_equipment = await get_default_equipment(factory_id)
+
                     # 새로운 ProjectPlan 생성
                     new_project_plan = await sync_to_async(ProjectPlan.objects.create)(
                         project=project,
@@ -437,16 +349,16 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
                         avg_production_time=3600,
                     )
                     created_plans.append(new_project_plan.id)
-        except Exception as e:
-            # 새로운 제품의 QuotationProduct가 없는 경우 무시
-            pass
-    else:
-        # 같은 제품인 경우: 수량만 수정
-        for plan in related_project_plans:
-            if plan.quantity == original_refund_amount:
-                plan.quantity = new_refund_amount
-                await sync_to_async(plan.save)()
-                updated_plans.append(plan.id)
+            except Exception:
+                # 새로운 제품의 QuotationProduct가 없는 경우 무시
+                pass
+        else:
+            # 같은 제품인 경우: 수량만 수정
+            for plan in related_project_plans:
+                if plan.quantity == original_refund_amount:
+                    plan.quantity = new_refund_amount
+                    await sync_to_async(plan.save)()
+                    updated_plans.append(plan.id)
 
     return 200, {
         "message": "반품이 성공적으로 수정되었습니다.",
