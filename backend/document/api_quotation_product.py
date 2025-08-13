@@ -7,8 +7,16 @@ from asgiref.sync import sync_to_async
 from datetime import datetime, timedelta
 
 from document.models import Quotation, QuotationProduct
-from document.schemas.inbound import QuotationDraftIn, QuotationConfirmedIn, QuotationProductDeliveryUpdateIn
-from document.schemas.outbound import QuotationProductOut, QuotationConfirmedOut, UndeliveredQuotationProductOut
+from document.schemas.inbound import (
+    QuotationDraftIn,
+    QuotationConfirmedIn,
+    QuotationProductDeliveryUpdateIn,
+)
+from document.schemas.outbound import (
+    QuotationProductOut,
+    QuotationConfirmedOut,
+    UndeliveredQuotationProductOut,
+)
 from stock.models import Product
 from project.models import Project, ProjectPlan
 from factory.models import FactoryClient, FactoryEquipment
@@ -18,41 +26,54 @@ from factory.utils import is_factory_member
 router = Router(tags=["QuotationProduct"], auth=jwt_auth)
 
 
-@router.post("/draft", summary="견적서 임시 저장", description="견적서를 임시로 저장합니다. 필수 필드가 비어있어도 저장됩니다.")
+@router.post(
+    "/draft",
+    summary="견적서 임시 저장",
+    description="견적서를 임시로 저장합니다. 필수 필드가 비어있어도 저장됩니다.",
+)
 async def save_draft_quotation(request, payload: QuotationDraftIn):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
     try:
         try:
-            quotation = await sync_to_async(get_object_or_404)(Quotation, id=payload.quotation_id)
+            quotation = await sync_to_async(get_object_or_404)(
+                Quotation, id=payload.quotation_id
+            )
         except Http404:
             raise HttpError(404, "해당 견적서를 찾을 수 없습니다.")
-        
+
         if quotation.factory_id != int(factory_id):
             raise HttpError(403, "해당 공장의 견적서가 아닙니다.")
-        
+
         if payload.client:
             client_data = payload.client
             factory = await sync_to_async(lambda: quotation.factory)()
-            
+
             # 클라이언트 ID가 제공된 경우
             if client_data.client_id is not None:
                 try:
                     # 기존 클라이언트 조회
-                    client = await FactoryClient.objects.aget(id=client_data.client_id, factory=factory)
-                    
+                    client = await FactoryClient.objects.aget(
+                        id=client_data.client_id, factory=factory
+                    )
+
                     # 클라이언트 정보가 변경된 경우 업데이트
                     updated = False
                     if client_data.name != client.name:
                         client.name = client_data.name
                         updated = True
-                    if client_data.business_registration_number != client.business_registration_number:
-                        client.business_registration_number = client_data.business_registration_number
+                    if (
+                        client_data.business_registration_number
+                        != client.business_registration_number
+                    ):
+                        client.business_registration_number = (
+                            client_data.business_registration_number
+                        )
                         updated = True
                     if client_data.representative_name != client.representative_name:
                         client.representative_name = client_data.representative_name
@@ -78,12 +99,15 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                     if client_data.fax != client.fax:
                         client.fax = client_data.fax
                         updated = True
-                    
+
                     if updated:
                         await sync_to_async(client.save)()
-                        
+
                 except FactoryClient.DoesNotExist:
-                    raise HttpError(404, f"클라이언트 ID {client_data.client_id}를 찾을 수 없습니다.")
+                    raise HttpError(
+                        404,
+                        f"클라이언트 ID {client_data.client_id}를 찾을 수 없습니다.",
+                    )
             else:
                 # 클라이언트 ID가 없는 경우 새로 생성
                 client = await FactoryClient.objects.acreate(
@@ -99,115 +123,145 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                     phone=client_data.phone,
                     fax=client_data.fax,
                 )
-            
+
             quotation.client = client
-        
+
         if payload.due_date:
             # 시간 정보가 포함된 경우와 날짜만 있는 경우 모두 처리
             try:
                 # "YYYY-MM-DD HH:MM" 형식 시도
-                quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d %H:%M").date()
+                quotation.due_date = datetime.strptime(
+                    payload.due_date, "%Y-%m-%d %H:%M"
+                ).date()
             except ValueError:
                 try:
                     # "YYYY-MM-DD" 형식 시도
-                    quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d").date()
+                    quotation.due_date = datetime.strptime(
+                        payload.due_date, "%Y-%m-%d"
+                    ).date()
                 except ValueError:
-                    raise HttpError(400, "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식을 사용하세요.")
-        
+                    raise HttpError(
+                        400,
+                        "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식을 사용하세요.",
+                    )
+
         await sync_to_async(quotation.save)()
-        
+
         project = await sync_to_async(lambda: quotation.project)()
         project.status = Project.ProjectStatus.quotation
         await sync_to_async(project.save)()
-        
+
         if payload.products is not None:
             await QuotationProduct.objects.filter(quotation=quotation).adelete()
-            
+
             if payload.products:
                 for prod in payload.products:
                     # 임시저장에서는 필수 필드가 없을 수 있음
                     if prod.product_id is None:
                         continue  # product_id가 없으면 건너뛰기
-                    
+
                     try:
-                        product = await sync_to_async(get_object_or_404)(Product, id=prod.product_id)
+                        product = await sync_to_async(get_object_or_404)(
+                            Product, id=prod.product_id
+                        )
                     except Http404:
                         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
-                    
+
                     # 기본값 설정
                     quantity = prod.quantity if prod.quantity is not None else 0
                     unit_price = prod.unit_price if prod.unit_price is not None else 0
-                    
+
                     # delivery_date 시간 처리
                     delivery_date = None
                     if prod.delivery_date:
                         try:
                             # "YYYY-MM-DD HH:MM" 형식 시도
-                            delivery_date = datetime.strptime(prod.delivery_date, "%Y-%m-%d %H:%M").date()
+                            delivery_date = datetime.strptime(
+                                prod.delivery_date, "%Y-%m-%d %H:%M"
+                            ).date()
                         except ValueError:
                             try:
                                 # "YYYY-MM-DD" 형식 시도
-                                delivery_date = datetime.strptime(prod.delivery_date, "%Y-%m-%d").date()
+                                delivery_date = datetime.strptime(
+                                    prod.delivery_date, "%Y-%m-%d"
+                                ).date()
                             except ValueError:
-                                raise HttpError(400, "올바르지 않은 납품일자 형식입니다. YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식을 사용하세요.")
-                    
+                                raise HttpError(
+                                    400,
+                                    "올바르지 않은 납품일자 형식입니다. YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식을 사용하세요.",
+                                )
+
                     await QuotationProduct.objects.acreate(
                         quotation=quotation,
                         product=product,
                         quantity=quantity,
                         unit_price=unit_price,
                         is_delivery=prod.is_delivery,
-                        delivery_date=delivery_date
+                        delivery_date=delivery_date,
                     )
-        
+
         return 200, {"quotation_id": quotation.id, "status": "draft_saved"}
-            
+
     except HttpError:
         raise
     except Exception as e:
         raise HttpError(500, f"임시 저장 중 오류가 발생했습니다: {str(e)}")
 
 
-@router.post("/confirmed", summary="생산 대기", description="완성된 견적서로 생산 대기 상태로 변경합니다. 모든 필수 정보가 필요합니다.", response={200: QuotationConfirmedOut, 400: dict, 404: dict, 500: dict})
+@router.post(
+    "/confirmed",
+    summary="생산 대기",
+    description="완성된 견적서로 생산 대기 상태로 변경합니다. 모든 필수 정보가 필요합니다.",
+    response={200: QuotationConfirmedOut, 400: dict, 404: dict, 500: dict},
+)
 async def confirm_order(request, payload: QuotationConfirmedIn):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    
+
     try:
         try:
-            quotation = await sync_to_async(get_object_or_404)(Quotation, id=payload.quotation_id)
+            quotation = await sync_to_async(get_object_or_404)(
+                Quotation, id=payload.quotation_id
+            )
         except Http404:
             raise HttpError(404, "해당 견적서를 찾을 수 없습니다.")
-        
+
         if not payload.quotation_id:
             raise HttpError(400, "견적서 ID는 필수입니다.")
-        
+
         if not payload.client:
             raise HttpError(400, "클라이언트 정보는 필수입니다.")
-        
+
         if not payload.products:
             raise HttpError(400, "품목 정보는 필수입니다.")
-        
+
         client_data = payload.client
         factory = await sync_to_async(lambda: quotation.factory)()
-        
+
         # 클라이언트 ID가 제공된 경우
         if client_data.client_id is not None:
             try:
                 # 기존 클라이언트 조회
-                client = await FactoryClient.objects.aget(id=client_data.client_id, factory=factory)
-                
+                client = await FactoryClient.objects.aget(
+                    id=client_data.client_id, factory=factory
+                )
+
                 # 클라이언트 정보가 변경된 경우 업데이트
                 updated = False
                 if client_data.name != client.name:
                     client.name = client_data.name
                     updated = True
-                if client_data.business_registration_number != client.business_registration_number:
-                    client.business_registration_number = client_data.business_registration_number
+                if (
+                    client_data.business_registration_number
+                    != client.business_registration_number
+                ):
+                    client.business_registration_number = (
+                        client_data.business_registration_number
+                    )
                     updated = True
                 if client_data.representative_name != client.representative_name:
                     client.representative_name = client_data.representative_name
@@ -230,12 +284,14 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 if client_data.fax != client.fax:
                     client.fax = client_data.fax
                     updated = True
-                
+
                 if updated:
                     await sync_to_async(client.save)()
-                    
+
             except FactoryClient.DoesNotExist:
-                raise HttpError(404, f"클라이언트 ID {client_data.client_id}를 찾을 수 없습니다.")
+                raise HttpError(
+                    404, f"클라이언트 ID {client_data.client_id}를 찾을 수 없습니다."
+                )
         else:
             # 클라이언트 ID가 없는 경우 새로 생성
             client = await FactoryClient.objects.acreate(
@@ -250,77 +306,84 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 phone=client_data.phone,
                 fax=client_data.fax,
             )
-        
+
         quotation.client = client
-        
+
         if payload.due_date:
             quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d").date()
             await sync_to_async(quotation.save)()
-        
+
         await QuotationProduct.objects.filter(quotation=quotation).adelete()
-        
+
         for prod in payload.products:
-                try:
-                    product_id = prod.product_id
-                    if not product_id:
-                        raise HttpError(400, "제품 ID는 필수입니다.")
-                    
-                    product = await sync_to_async(get_object_or_404)(Product, id=product_id)
-                except Http404:
-                    raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
-                quotation_product = await QuotationProduct.objects.acreate(
-                    quotation=quotation,
-                    product=product,
-                    quantity=prod.quantity,
-                    unit_price=prod.unit_price
-                )
-        
+            try:
+                product_id = prod.product_id
+                if not product_id:
+                    raise HttpError(400, "제품 ID는 필수입니다.")
+
+                product = await sync_to_async(get_object_or_404)(Product, id=product_id)
+            except Http404:
+                raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
+            quotation_product = await QuotationProduct.objects.acreate(
+                quotation=quotation,
+                product=product,
+                quantity=prod.quantity,
+                unit_price=prod.unit_price,
+            )
+
         project = await sync_to_async(lambda: quotation.project)()
         project.status = Project.ProjectStatus.pending
         await sync_to_async(project.save)()
-        
+
         production_plans = []
-        
+
         for prod in payload.products:
             try:
                 product_id = prod.product_id
                 quotation_product = await QuotationProduct.objects.aget(
-                    quotation=quotation,
-                    product_id=product_id
+                    quotation=quotation, product_id=product_id
                 )
             except QuotationProduct.DoesNotExist:
-                raise HttpError(404, f"제품 ID {product_id}에 해당하는 견적 품목을 찾을 수 없습니다.")
-            
+                raise HttpError(
+                    404,
+                    f"제품 ID {product_id}에 해당하는 견적 품목을 찾을 수 없습니다.",
+                )
+
             try:
-                equipment = await FactoryEquipment.objects.filter(
-                    factory=factory,
-                    status=FactoryEquipment.EquipmentStatus.standby
-                ).order_by('priority').afirst()
+                equipment = (
+                    await FactoryEquipment.objects.filter(
+                        factory=factory, status=FactoryEquipment.EquipmentStatus.standby
+                    )
+                    .order_by("priority")
+                    .afirst()
+                )
                 if not equipment:
                     raise HttpError(400, "해당 공장에 가동 가능한 설비가 없습니다.")
             except Exception as e:
                 raise HttpError(400, f"설비 조회 중 오류가 발생했습니다: {str(e)}")
-            
+
             product = await sync_to_async(lambda: quotation_product.product)()
             buffer_rate = float(product.buffer_rate)
             base_quantity = prod.quantity
             production_quantity = int(base_quantity * (1 + buffer_rate))
-            
+
             # 현재 시간을 기준으로 시작 시간 설정
             start_datetime = datetime.now()
             start_date = start_datetime.strftime("%Y-%m-%d")
-            
+
             # 평균 생산 시간을 반영하여 마감 일자 계산
             # 총 생산 시간 = 생산 수량 * 평균 생산 시간(초)
             avg_production_time = product.average_production_time or 30  # 기본값 30초
             total_production_seconds = production_quantity * avg_production_time
-            
+
             # 총 생산 시간을 일자로 변환
-            production_days = max(1, int(total_production_seconds / (24 * 3600)))  # 24시간 기준
-            
+            production_days = max(
+                1, int(total_production_seconds / (24 * 3600))
+            )  # 24시간 기준
+
             end_datetime = start_datetime + timedelta(days=production_days)
             end_date = end_datetime.strftime("%Y-%m-%d")
-            
+
             # 생산 계획 생성
             project_plan = await ProjectPlan.objects.acreate(
                 project=project,
@@ -329,61 +392,70 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 equipment=equipment,
                 start_date=start_datetime.date(),
                 end_date=end_datetime.date(),
-                avg_production_time=avg_production_time
+                avg_production_time=avg_production_time,
             )
-            
+
             # 원자재 소모 처리
             try:
                 from stock.models import Material, MaterialProduct
-                
+
                 # 제품과 연결된 원자재들 조회
                 material_products = await sync_to_async(list)(
                     MaterialProduct.objects.filter(product=product)
                 )
-                
+
                 for material_product in material_products:
                     # 소모량 계산 = 생산 수량 * 단위 소모량
-                    consumption_quantity = production_quantity * float(material_product.quantity)
-                    
+                    consumption_quantity = production_quantity * float(
+                        material_product.quantity
+                    )
+
                     # 원자재 재고 감소
                     material = material_product.material
                     if material.current_stock >= consumption_quantity:
                         material.current_stock -= consumption_quantity
                         await sync_to_async(material.save)()
-                        
+
                     else:
                         # 재고 부족 시 예외 발생
-                        raise HttpError(400, f"원자재 '{material.name}'의 재고가 부족합니다. 필요: {consumption_quantity}개, 현재: {material.current_stock}개")
-                        
+                        raise HttpError(
+                            400,
+                            f"원자재 '{material.name}'의 재고가 부족합니다. 필요: {consumption_quantity}개, 현재: {material.current_stock}개",
+                        )
+
             except HttpError:
                 # HttpError는 그대로 재발생
                 raise
             except Exception as e:
                 # 기타 예외는 500 에러로 변환
                 print(f"Raw material consumption failed: {str(e)}")
-                raise HttpError(500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}")
-            
+                raise HttpError(
+                    500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}"
+                )
+
             # 생산 계획 정보 저장
-            production_plans.append({
-                "plan_id": project_plan.id,
-                "product_name": product.name,
-                "quantity": production_quantity,
-                "equipment_name": equipment.name,
-                "start_date": start_datetime.strftime("%Y-%m-%d %H:%M"),
-                "end_date": end_datetime.strftime("%Y-%m-%d %H:%M"),
-                "avg_production_time": avg_production_time,
-                "production_days": production_days
-            })
-        
+            production_plans.append(
+                {
+                    "plan_id": project_plan.id,
+                    "product_name": product.name,
+                    "quantity": production_quantity,
+                    "equipment_name": equipment.name,
+                    "start_date": start_datetime.strftime("%Y-%m-%d %H:%M"),
+                    "end_date": end_datetime.strftime("%Y-%m-%d %H:%M"),
+                    "avg_production_time": avg_production_time,
+                    "production_days": production_days,
+                }
+            )
+
         return 200, {
             "quotation_id": quotation.id,
             "project_id": project.id,
             "status": "production_waiting",
             "created_at": datetime.now(),
             "due_date": quotation.due_date.isoformat() if quotation.due_date else None,
-            "production_plans": production_plans
+            "production_plans": production_plans,
         }
-            
+
     except HttpError:
         raise
     except Exception as e:
@@ -392,23 +464,30 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
 
 
 # Quotation Tab
-@router.get("/", summary="[C] 견적서 품목 목록 조회", response={200: list, 400: dict, 404: dict, 500: dict})
+@router.get(
+    "/",
+    summary="[C] 견적서 품목 목록 조회",
+    response={200: list, 400: dict, 404: dict, 500: dict},
+)
 async def list_quotation_products(request, quotation_id: int = Query(None)):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    
+
     try:
         if quotation_id:
-            qps = await sync_to_async(list)(QuotationProduct.objects.filter(
-                quotation_id=quotation_id,
-                quotation__factory_id=int(factory_id)
-            ))
+            qps = await sync_to_async(list)(
+                QuotationProduct.objects.filter(
+                    quotation_id=quotation_id, quotation__factory_id=int(factory_id)
+                )
+            )
         else:
-            qps = await sync_to_async(list)(QuotationProduct.objects.filter(quotation__factory_id=int(factory_id)))
+            qps = await sync_to_async(list)(
+                QuotationProduct.objects.filter(quotation__factory_id=int(factory_id))
+            )
     except Exception as e:
         raise HttpError(500, f"조회 중 오류: {str(e)}")
 
@@ -423,8 +502,9 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
             "quantity": qp.quantity,
             "unit_price": qp.unit_price,
             "is_delivery": qp.is_delivery,
-            "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None
-        } for qp in qps
+            "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None,
+        }
+        for qp in qps
     ]
 
 
@@ -432,56 +512,65 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
     "/undelivered",
     summary="[C] 납품되지 않은 견적서 품목 조회",
     description="프로젝트가 납품 상태이고 납품되지 않은 견적서 품목만 조회합니다. 페이지당 5개씩 반환됩니다.",
-    response={200: list[UndeliveredQuotationProductOut], 400: dict, 404: dict, 500: dict}
+    response={
+        200: list[UndeliveredQuotationProductOut],
+        400: dict,
+        404: dict,
+        500: dict,
+    },
 )
 async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1)):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    
+
     try:
         # 납품되지 않은 견적서 품목 조회
         # 조건: 프로젝트가 납품 상태이고, is_delivery가 False인 품목
         undelivered_products = await sync_to_async(list)(
             QuotationProduct.objects.select_related(
-                'quotation__client',
-                'quotation__project',
-                'product'
-            ).filter(
+                "quotation__client", "quotation__project", "product"
+            )
+            .filter(
                 quotation__factory_id=int(factory_id),
-                quotation__project__status='납품',  # 프로젝트가 납품 상태
-                is_delivery=False  # 납품되지 않음
-            ).order_by('delivery_date')  # 납품일자 순으로 정렬
+                quotation__project__status="납품",  # 프로젝트가 납품 상태
+                is_delivery=False,  # 납품되지 않음
+            )
+            .order_by("delivery_date")  # 납품일자 순으로 정렬
         )
-        
+
         if not undelivered_products:
             raise HttpError(404, "납품되지 않은 견적서 품목이 없습니다.")
-        
+
         # 페이지네이션 (한 페이지에 5개)
         page_size = 5
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
-        
+
         paginated_products = undelivered_products[start_index:end_index]
-        
+
         if not paginated_products:
             raise HttpError(404, f"페이지 {page}에 해당하는 데이터가 없습니다.")
-        
+
         # 응답 데이터 구성
         results = []
         for qp in paginated_products:
-            results.append({
-                "company_name": qp.quotation.client.name,  # 업체명
-                "product_name": qp.product.name,  # 품목명
-                "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None,  # 납품일자
-                "project_id": qp.quotation.project.id  # 프로젝트 ID
-            })
-        
+            results.append(
+                {
+                    "company_name": qp.quotation.client.name,  # 업체명
+                    "product_name": qp.product.name,  # 품목명
+                    "delivery_date": (
+                        qp.delivery_date.isoformat() if qp.delivery_date else None
+                    ),  # 납품일자
+                    "project_id": qp.quotation.project.id,  # 프로젝트 ID
+                }
+            )
+
         return 200, results
-        
+
     except HttpError:
         raise
     except Exception as e:
@@ -493,61 +582,70 @@ async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1
     "/history",
     summary="[C] 견적서 품목 히스토리 조회",
     description="이전에 생산하였던 Quotation Product 항목을 조회합니다.",
-    response={200: dict, 400: dict, 404: dict, 500: dict}
+    response={200: dict, 400: dict, 404: dict, 500: dict},
 )
 async def list_history_quotation_product(request):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    
-    product_ids = request.GET.get('product_ids')
+
+    product_ids = request.GET.get("product_ids")
     if not product_ids:
         raise HttpError(400, "product_ids를 입력해야 합니다.")
-    
+
     try:
-        product_id_list = [int(pid.strip()) for pid in product_ids.split(',') if pid.strip()]
-        
+        product_id_list = [
+            int(pid.strip()) for pid in product_ids.split(",") if pid.strip()
+        ]
+
         if not product_id_list:
             raise HttpError(400, "product_ids를 입력해야 합니다.")
-        
+
         qps = await sync_to_async(list)(
-            QuotationProduct.objects.select_related('product')
+            QuotationProduct.objects.select_related("product")
             .filter(product__id__in=product_id_list)
-            .order_by('-created_at')
+            .order_by("-created_at")
         )
-        
+
         if not qps:
             raise HttpError(404, "해당 제품의 견적 내역이 없습니다.")
-        
+
         results = []
         for qp in qps:
-            results.append({
-                "product_name": qp.product.name,
-                "quantity": qp.quantity,
-                "unit_price": qp.unit_price,
-                "total_amount": qp.quantity * qp.unit_price
-            })
-        
+            results.append(
+                {
+                    "product_name": qp.product.name,
+                    "quantity": qp.quantity,
+                    "unit_price": qp.unit_price,
+                    "total_amount": qp.quantity * qp.unit_price,
+                    "created_at": qp.created_at,
+                }
+            )
+
         return 200, {"results": results}
-        
+
     except ValueError:
         raise HttpError(400, "product_ids는 콤마로 구분된 정수여야 합니다.")
     except Exception as e:
         raise HttpError(500, f"조회 중 오류: {str(e)}")
 
 
-@router.get("/{quotation_product_id}", summary="[C] 견적서 품목 상세 조회", response={200: QuotationProductOut, 404: dict, 500: dict})
+@router.get(
+    "/{quotation_product_id}",
+    summary="[C] 견적서 품목 상세 조회",
+    response={200: QuotationProductOut, 404: dict, 500: dict},
+)
 async def get_quotation_product_detail(request, quotation_product_id: int):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    
+
     try:
         qp = await QuotationProduct.objects.aget(id=quotation_product_id)
     except QuotationProduct.DoesNotExist:
@@ -561,50 +659,60 @@ async def get_quotation_product_detail(request, quotation_product_id: int):
         "quantity": qp.quantity,
         "unit_price": qp.unit_price,
         "is_delivery": qp.is_delivery,
-        "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None
+        "delivery_date": qp.delivery_date.isoformat() if qp.delivery_date else None,
     }
 
 
 @router.patch(
-    "/{quotation_product_id}/delivery", 
-    summary="[C] 견적서 품목 납품 상태 수정", 
+    "/{quotation_product_id}/delivery",
+    summary="[C] 견적서 품목 납품 상태 수정",
     description="견적서 품목의 납품 상태(is_delivery)와 납품일자(delivery_date)를 수정합니다.",
-    response={200: dict, 400: dict, 404: dict, 500: dict}
+    response={200: dict, 400: dict, 404: dict, 500: dict},
 )
-async def update_quotation_product_delivery(request, quotation_product_id: int, payload: QuotationProductDeliveryUpdateIn):
-    factory_id = request.GET.get('factory_id')
+async def update_quotation_product_delivery(
+    request, quotation_product_id: int, payload: QuotationProductDeliveryUpdateIn
+):
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    
+
     try:
         # 견적서 품목 조회
-        quotation_product = await QuotationProduct.objects.select_related('quotation').aget(id=quotation_product_id)
-        
+        quotation_product = await QuotationProduct.objects.select_related(
+            "quotation"
+        ).aget(id=quotation_product_id)
+
         # 해당 공장의 견적서인지 확인
         if quotation_product.quotation.factory_id != int(factory_id):
             raise HttpError(403, "해당 공장의 견적서 품목이 아닙니다.")
-        
+
         # 납품 상태 업데이트
         quotation_product.is_delivery = payload.is_delivered
-        
+
         # 납품일자 업데이트
         if payload.delivery_date:
-            quotation_product.delivery_date = datetime.strptime(payload.delivery_date, "%Y-%m-%d").date()
+            quotation_product.delivery_date = datetime.strptime(
+                payload.delivery_date, "%Y-%m-%d"
+            ).date()
         else:
             quotation_product.delivery_date = None
-        
+
         await sync_to_async(quotation_product.save)()
-        
+
         return 200, {
             "quotation_product_id": quotation_product.id,
             "is_delivered": quotation_product.is_delivery,
-            "delivery_date": quotation_product.delivery_date.isoformat() if quotation_product.delivery_date else None,
-            "message": "납품 상태가 성공적으로 업데이트되었습니다."
+            "delivery_date": (
+                quotation_product.delivery_date.isoformat()
+                if quotation_product.delivery_date
+                else None
+            ),
+            "message": "납품 상태가 성공적으로 업데이트되었습니다.",
         }
-        
+
     except QuotationProduct.DoesNotExist:
         raise HttpError(404, "해당 견적서 품목을 찾을 수 없습니다.")
     except ValueError as e:
