@@ -222,7 +222,9 @@ class FactoryMember(BaseModel):
     )
     invited_by = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
         related_name="invited_factory_members",
         help_text="초대한 사용자",
     )
