@@ -63,9 +63,9 @@ class TestFactoryMember(TestCase):
             headers=headers,
         )
         self.assertEqual(response.status_code, 200)
-        notifications = response.json()
-        self.assertIsInstance(notifications, list)
-        self.assertGreater(len(notifications), 0)
+        data = response.json()
+        data = data.get("data")
+        self.assertGreater(len(data), 0)
 
     async def test_get_notification_detail(self):
         """알림 상세 조회 테스트"""
