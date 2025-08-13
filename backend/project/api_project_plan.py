@@ -1136,7 +1136,7 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         and old_equipment
         and plan.equipment
         and old_equipment.id != plan.equipment.id
-        and plan.status == "가동 중"
+        and plan.status == ProjectPlan.ProductionStatus.production
     ):  # 가동 중 상태 확인
         await ProjectLog.objects.acreate(
             project=plan.project,

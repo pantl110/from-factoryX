@@ -21,6 +21,12 @@ class Project(BaseModel):
         processing = ("processing", "발행 중")
         completed = ("completed", "발행 완료")
 
+    name = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="프로젝트명",
+    )
     status = models.CharField(
         max_length=20,
         choices=ProjectStatus.choices,

@@ -126,7 +126,7 @@ class ProjectRefundAPITestCase(TestCase):
         # 프로젝트 로그도 생성되었는지 확인
         log = ProjectLog.objects.get(id=data["log_id"])
         self.assertEqual(log.project.id, self.project.id)
-        self.assertEqual(log.type, "반품")
+        self.assertEqual(log.type, "refund")
         self.assertEqual(log.title, "반품 접수 현황")
         self.assertEqual(log.content, f"{self.product.name} 5개가 반품되었어요.")
 
