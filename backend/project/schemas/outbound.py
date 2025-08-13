@@ -183,7 +183,6 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     start_date: datetime.date
     end_date: datetime.date
     avg_production_time: int
-    is_refunded: bool
     is_completed: bool
 
 

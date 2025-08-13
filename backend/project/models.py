@@ -77,12 +77,6 @@ class ProjectPlan(BaseModel):
         blank=True,
         help_text="생산 완료 여부",
     )
-    is_refunded = models.BooleanField(
-        null=True,
-        blank=True,
-        default=False,
-        help_text="반품 여부",
-    )
 
 
 # 생산 로그
@@ -109,6 +103,13 @@ class Refund(BaseModel):
     )
     product = models.ForeignKey(
         "stock.Product", related_name="refunds", on_delete=models.CASCADE
+    )
+    plan = models.ForeignKey(
+        ProjectPlan,
+        related_name="refunds",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     amount = models.IntegerField(help_text="반품 수량")
     refund_date = models.DateField(help_text="반품 일자")
