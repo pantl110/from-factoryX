@@ -9,8 +9,8 @@ import usePagination from '@/hooks/use-pagination';
 import TableItem from './table-item';
 import SearchDeleteTable from '@/ui/search-delete-table';
 import DeleteModal from '@/ui/modal/delete-modal';
-// import TaxDetailPanel from '../tax-detail-panel';
-// import { taxData } from '@/mocks/tax-data';
+import TaxDetailPanel from '../tax-detail-panel';
+import { taxData } from '@/mocks/tax-data';
 import useToast from '@/hooks/use-toast';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
@@ -21,7 +21,7 @@ const TaxDraftPage = () => {
     '전체' | '임시 저장' | '발행 대기'
   >('전체');
 
-  // const [isTaxDetailPanelOpen, setIsTaxDetailPanelOpen] = useState(false);
+  const [isTaxDetailPanelOpen, setIsTaxDetailPanelOpen] = useState(false);
 
   // 정렬 상태 관리
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -85,20 +85,19 @@ const TaxDraftPage = () => {
   } = useCheckAll(currentItems.map((item) => item.id));
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const { isToastOpen, isVisible } = useToast(2000);
-  // const { isToastOpen, isVisible, showToast } = useToast();
+  const { isToastOpen, isVisible, showToast } = useToast();
 
-  // const handlePanelClose = () => {
-  //   setIsTaxDetailPanelOpen(false);
-  // };
+  const handlePanelClose = () => {
+    setIsTaxDetailPanelOpen(false);
+  };
 
-  // const handleIssueClick = () => {
-  //   setIsTaxDetailPanelOpen(false);
-  //   // 판넬이 닫힌 후 토스트 나오기 위해 250ms 딜레이
-  //   setTimeout(() => {
-  //     showToast();
-  //   }, 250);
-  // };
+  const handleIssueClick = () => {
+    setIsTaxDetailPanelOpen(false);
+    // 판넬이 닫힌 후 토스트 나오기 위해 250ms 딜레이
+    setTimeout(() => {
+      showToast();
+    }, 250);
+  };
 
   // 발행일자 정렬 핸들러
   const handleDateSort = () => {
@@ -163,9 +162,7 @@ const TaxDraftPage = () => {
                 item={item}
                 isChecked={isChecked(item.id)}
                 onToggle={() => toggleOne(item.id)}
-                // onItemClick={()
-                // => setIsTaxDetailPanelOpen(true)}
-                onItemClick={() => {}}
+                onItemClick={() => setIsTaxDetailPanelOpen(true)}
               />
             ))}
           </div>
@@ -187,14 +184,14 @@ const TaxDraftPage = () => {
           }}
         />
       )}
-      {/* {isTaxDetailPanelOpen && (
+      {isTaxDetailPanelOpen && (
         <TaxDetailPanel
           onClose={handlePanelClose}
           item={taxData[0]}
           isDraft={true}
           onIssueClick={handleIssueClick}
         />
-      )} */}
+      )}
 
       {isToastOpen && (
         <Toast

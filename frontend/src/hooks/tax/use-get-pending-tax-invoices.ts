@@ -11,6 +11,7 @@ interface PendingTaxInvoiceParamsModel {
   size?: number;
 }
 
+// 발행대기 또는 임시저장 상태의 세금계산서를 조회
 const useGetPendingTaxInvoices = () => {
   const { callTaxApi, isLoading, error } = useTaxApi();
 

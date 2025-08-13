@@ -149,3 +149,6 @@ export { useProductionPlanValidation } from './production/use-production-plan-va
 // dashboard related hooks
 export { default as useGetTodayProductionPlans } from './project/use-get-today-production-plans';
 export { default as useGetUndeliveredProducts } from './project/use-get-undelivered-products';
+
+// tax related hooks
+export { useGetCashReceipts } from './tax/cash-receipt/use-get-cash-receipts';

@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import useTaxApi from './use-tax-api';
 import { TaxInvoiceByMaterialResponseModel } from '@/types/data-model';
 
+// material_history_id로 세금계산서(구매) 및 자재정보를 조회
 const useGetTaxInvoiceByMaterialHistory = () => {
   const { callTaxApi, isLoading, error } = useTaxApi();
 

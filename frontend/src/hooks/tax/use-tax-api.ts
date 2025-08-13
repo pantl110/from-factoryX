@@ -16,6 +16,17 @@ interface TaxApiOptionsModel {
   abortSignal?: AbortSignal;
 }
 
+export type TaxApiEndpoint =
+  | 'state'
+  | 'published'
+  | 'pending'
+  | 'unlinked'
+  | 'link'
+  | 'invoice-by-material-history'
+  | 'cash-receipts-sync'
+  | 'cash-receipts-list'
+  | 'cash-receipts-material-history';
+
 const useTaxApi = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,88 +35,85 @@ const useTaxApi = () => {
 
   // 공통 API 호출 함수
   const callTaxApi = useCallback(
-    async <T>(
-      endpoint: string,
-      // 이전 요청이 진행 중이면 취소
+    async <T = unknown>(
+      endpoint: TaxApiEndpoint,
       options: TaxApiOptionsModel = {}
     ): Promise<TaxApiResponseModel<T>> => {
+      // 이전 요청 취소
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
 
       // 새로운 AbortController 생성
-      const abortController = new AbortController();
-      abortControllerRef.current = abortController;
+      abortControllerRef.current = new AbortController();
+      const { signal } = abortControllerRef.current;
 
       setIsLoading(true);
       setError(null);
 
       try {
-        if (!factoryId) {
-          setError('Factory ID를 찾을 수 없습니다.');
-          return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
-        }
+        const { method = 'GET', body, queryParams = {} } = options;
 
-        // 기본 쿼리 파라미터에 factory_id 추가
-        const queryParams = new URLSearchParams();
-        queryParams.append('factory_id', factoryId.toString());
-
-        // 추가 쿼리 파라미터가 있으면 추가
-        if (options.queryParams) {
-          Object.entries(options.queryParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null) {
-              queryParams.append(key, String(value));
-            }
-          });
+        // factoryId를 queryParams에 추가
+        if (factoryId) {
+          queryParams.factory_id = factoryId;
         }
 
         // URL 구성
-        const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${endpoint}?${queryParams}`;
-
-        // fetch 옵션 구성
-        const fetchOptions: RequestInit = {
-          method: options.method || 'GET',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          signal: abortController.signal,
-        };
-
-        // POST/PATCH 요청에 body 추가
-        if (
-          options.body &&
-          (options.method === 'POST' || options.method === 'PATCH')
-        ) {
-          fetchOptions.body = JSON.stringify(options.body);
+        let url = `/v1/tax/${endpoint}`;
+        
+        // 현금영수증 관련 엔드포인트는 다른 URL 패턴 사용
+        if (endpoint === 'cash-receipts-sync') {
+          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/receipt/${factoryId}/sync`;
+        } else if (endpoint === 'cash-receipts-list') {
+          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/receipt`;
+        } else if (endpoint === 'cash-receipts-material-history') {
+          url = `${process.env.NEXT_PUBLIC_API_URL}/v1/receipt/material-history`;
         }
 
-        const response = await fetch(url, fetchOptions);
+        // queryParams를 URL에 추가
+        const queryString = new URLSearchParams();
+        Object.entries(queryParams).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryString.append(key, String(value));
+          }
+        });
 
-        // 요청이 취소되었는지 확인
-        if (abortController.signal.aborted) {
-          return { success: false, error: '요청이 취소되었습니다.' };
+        if (queryString.toString()) {
+          url += `?${queryString.toString()}`;
         }
 
-        if (response.ok) {
-          const result = await response.json();
-          return { success: true, data: result };
-        } else {
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // 쿠키와 인증 정보 전송
+          body: body ? JSON.stringify(body) : undefined,
+          signal,
+        });
+
+        if (signal.aborted) {
+          return { success: false, error: 'Request was aborted' };
+        }
+
+        if (!response.ok) {
           const errorData = await response.json();
-          const errorMessage = errorData.detail || 'API 호출에 실패했습니다.';
-          setError(errorMessage);
-          return { success: false, error: errorMessage };
-        }
-      } catch (err) {
-        // AbortError는 정상적인 취소이므로 에러로 처리하지 않음
-        if (err instanceof Error && err.name === 'AbortError') {
-          return { success: false, error: '요청이 취소되었습니다.' };
+          throw new Error(errorData.message || 'API 요청에 실패했습니다.');
         }
 
-        const errorMessage = '서버 연결에 실패했습니다.';
+        const data = await response.json();
+        return { success: true, data };
+      } catch (err) {
+        if (signal.aborted) {
+          return { success: false, error: 'Request was aborted' };
+        }
+
+        const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       } finally {
-        // 요청이 취소되지 않았을 때만 로딩 상태 해제
-        if (!abortController.signal.aborted) {
+        if (!signal.aborted) {
           setIsLoading(false);
         }
       }

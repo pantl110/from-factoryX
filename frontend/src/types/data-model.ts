@@ -803,11 +803,10 @@ export interface NotificationListResponseModel extends PaginationModel {
 
 //////////////////////
 // 세금계산서 api
-
 // 발행 완료 세금계산서
 export interface PublishedTaxInvoiceResponseModel {
   id: number;
-  tax_invoice_type: string;
+  tax_invoice_type: TaxDocumentType;
   transaction_date: string;
   client_name: string;
   product_names: string[];
@@ -823,7 +822,7 @@ export interface PublishedTaxInvoiceListResponseModel extends PaginationModel {
 // 발행 대기 세금계산서
 interface PendingTaxInvoiceResponseModel {
   id: number;
-  tax_invoice_type: string;
+  tax_invoice_type: TaxDocumentType;
   transaction_date: string;
   client_name: string;
   product_names: string[];
@@ -852,7 +851,7 @@ export interface UnlinkedTaxInvoiceListResponseModel extends PaginationModel {
   data: UnlinkedTaxInvoiceResponseModel[];
 }
 
-///
+// material_history_id로 세금계산서(구매) 및 자재정보를 조회
 export interface TaxInvoiceByMaterialResponseModel {
   client_name: string;
   business_registration_number: string;
@@ -875,6 +874,59 @@ export interface TaxInvoiceByMaterialResponseModel {
 }
 
 //////////////////////
+// 현금영수증 관련 api
+// 현금영수증 목록 조회
+export interface CashReceiptListParamsModel {
+  factory_id: number;
+  q?: string;
+  start_date?: string;
+  end_date?: string;
+  order?: 'desc' | 'asc';
+  page?: number;
+  size?: number;
+}
+
+export interface CashReceiptResponseModel {
+  id: number; // 영수증 id
+  transaction_date: string;
+  client_name: string;
+  product_names: string[];
+  transaction_amount: number;
+  tax_amount: number;
+  total_amount: number;
+}
+
+export interface CashReceiptByMaterialModel {
+  transaction_date: string;
+  approval_number: string;
+  transaction_classification: string;
+  transaction_purpose: string;
+  client_name: string;
+  business_registration_number: string;
+  representative_name: string | null;
+  address: string | null;
+  materials: {
+    material_name: string;
+    unit: string;
+    quantity: number;
+    price: number;
+    transaction_amount: number;
+    tax_amount: number;
+    total_amount: number;
+  }[];
+}
+
+export interface CashReceiptSyncResponseModel {
+  message: string;
+  sales_count: number;
+  purchase_count: number;
+}
+
+export interface CashReceiptListResponseModel extends PaginationModel {
+  data: CashReceiptResponseModel[];
+}
+
+//////////////////////
 import {
   MemberRoleType,
   MemberStatusType,
@@ -885,6 +937,7 @@ import {
   OperationStatusType,
   NotificationType,
   NotificationCaseType,
+  TaxDocumentType,
 } from './status-type';
 
 export type {
