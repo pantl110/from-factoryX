@@ -177,7 +177,7 @@ class TestFactoryEquipment(TestCase):
         self.assertEqual(data["name"], payload["name"])
         self.assertEqual(data["priority"], payload["priority"])
         # 기본값 확인 (한글 값)
-        self.assertEqual(data["status"], "가동 대기")  # 기본값
+        self.assertEqual(data["status"], "standby")  # 기본값
 
     async def test_create_factory_equipment_invalid_factory(self):
         """[C] 존재하지 않는 공장에 설비 생성 시도 테스트"""
