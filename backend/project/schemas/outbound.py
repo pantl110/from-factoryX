@@ -143,6 +143,16 @@ class ProjectPlanDetailOut(Schema):
     avg_production_time: int
 
 
+class ProjectPlanDetailByEquipmentOut(Schema):
+    id: int
+    project_id: int
+    quotation_product_name: str
+    quantity: int
+    start_date: datetime.datetime
+    end_date: datetime.datetime
+    avg_production_time: int
+
+
 # (POST) Project Plan Create
 class ProjectPlansCreateOut(Schema):
     message: str
