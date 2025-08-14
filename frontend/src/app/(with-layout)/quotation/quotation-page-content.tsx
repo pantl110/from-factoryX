@@ -396,7 +396,11 @@ const QuotationPageContent = () => {
     setSelectedProduct(null);
     setActiveTab('quotation'); // 견적요청서탭 활성화
     setIsRightPanelExpanded(false); // 견적요청서탭 활성화 시 오른쪽 패널 다시 축소
-  }, [setIsRightPanelExpanded]);
+
+    // 현재 폼 값을 유지하면서 reset (변경 추적을 위해)
+    const currentValues = watch();
+    reset(currentValues);
+  }, [setIsRightPanelExpanded, watch, reset]);
 
   // 패널 토글 함수
   const toggleRightPanel = () => {
