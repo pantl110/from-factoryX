@@ -12,6 +12,7 @@ from project.schemas.inbound import (
     ProjectStatusUpdateIn,
     ProjectTransactDateUpdateIn,
     ProjectCloneIn,
+    ProjectListFilter,
 )
 from project.schemas.outbound import (
     ProjectCreateOut,
@@ -232,10 +233,7 @@ async def get_project_status(request, project_id: int):
 @paginate
 async def list_project(
     request,
-    status: str = Query(...),
-    search: str = Query(None),
-    order_by: str = Query("start_date"),
-    order_dir: str = Query("asc"),
+    filters: ProjectListFilter = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -245,20 +243,6 @@ async def list_project(
     await is_factory_member(int(factory_id), user)
 
     try:
-        valid_statuses = [
-            "progress",
-            "archived",
-            "suspended",
-            "quotation",
-            "confirmed",
-            "pending",
-            "production",
-            "manufactured",
-            "delivery",
-            "completed",
-        ]
-        if status not in valid_statuses:
-            raise HttpError(400, f"status는 {valid_statuses} 중 하나여야 합니다.")
         if not factory_id:
             raise HttpError(400, "factory_id는 필수입니다.")
         now = date.today()
@@ -297,7 +281,7 @@ async def list_project(
             abandoned_ids = list(abandoned_qs.values_list("pk", flat=True))
 
             # 상태별 분기
-            if status == "progress":
+            if filters.status.value == "progress":
                 # 완료/중단 제외
                 base_qs = factory_projects.exclude(status="completed")
                 base_qs = base_qs.exclude(
@@ -305,7 +289,7 @@ async def list_project(
                 )  # 자동 중단된 프로젝트도 제외
                 if abandoned_ids:
                     base_qs = base_qs.exclude(pk__in=abandoned_ids)
-            elif status == "archived":
+            elif filters.status.value == "archived":
                 # 완료 + 중단 + abandoned
                 completed_qs = factory_projects.filter(status="completed")
                 suspended_qs = factory_projects.filter(status="suspended")
@@ -320,9 +304,9 @@ async def list_project(
                 if abandoned_ids:
                     project_ids.extend(abandoned_ids)
                 base_qs = Project.objects.filter(pk__in=project_ids)
-            elif status == "completed":
+            elif filters.status.value == "completed":
                 base_qs = factory_projects.filter(status="completed")
-            elif status == "suspended":
+            elif filters.status.value == "suspended":
                 # 중단: status가 "suspended"이거나 abandoned_ids에 해당하는 프로젝트만
                 suspended_qs = factory_projects.filter(status="suspended")
                 abandoned_qs = (
@@ -336,14 +320,14 @@ async def list_project(
                 base_qs = Project.objects.filter(pk__in=project_ids)
             else:
                 # 개별 상태별 직접 필터링
-                base_qs = factory_projects.filter(status=status)
+                base_qs = factory_projects.filter(status=filters.status.value)
                 if abandoned_ids:
                     base_qs = base_qs.exclude(pk__in=abandoned_ids)
 
-            if search:
-                qs1 = base_qs.filter(quotations__client__name__icontains=search)
+            if filters.search:
+                qs1 = base_qs.filter(quotations__client__name__icontains=filters.search)
                 qs2 = base_qs.filter(
-                    quotations__products__product__name__icontains=search
+                    quotations__products__product__name__icontains=filters.search
                 )
                 base_qs = qs1.union(qs2)
 
@@ -385,7 +369,7 @@ async def list_project(
                     if project.tax_invoice:
                         publish_status = project.tax_invoice.publish_status
                     is_abandoned = False
-                    if status in ["archived", "suspended"]:
+                    if filters.status.value in ["archived", "suspended"]:
                         is_abandoned = (
                             project.pk in abandoned_ids or project.status == "suspended"
                         )
@@ -410,9 +394,11 @@ async def list_project(
                         )
                     )
             order_field = (
-                order_by if order_by in ["start_date", "due_date"] else "start_date"
+                filters.order_by
+                if filters.order_by in ["start_date", "due_date"]
+                else "start_date"
             )
-            reverse = order_dir == "desc"
+            reverse = filters.order_dir == "desc"
 
             def get_sort_key(item):
                 value = getattr(item, order_field)
