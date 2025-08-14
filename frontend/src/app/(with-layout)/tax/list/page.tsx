@@ -22,9 +22,7 @@ const TaxPageContent = () => {
   const [selectedItem, setSelectedItem] =
     useState<PublishedTaxInvoiceResponseModel | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [sortDirection, setSortDirection] = useState<
-    'transaction_date' | '-transaction_date'
-  >('-transaction_date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showHidden, setShowHidden] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -46,14 +44,15 @@ const TaxPageContent = () => {
   const fetchTaxData = useCallback(
     async (page: number = 1) => {
       const params: {
-        ordering: '-transaction_date' | 'transaction_date';
+        ordering: string;
         page: number;
         size: number;
         q?: string;
         tax_invoice_type?: 'sales' | 'purchase';
         is_hidden?: boolean;
       } = {
-        ordering: sortDirection,
+        ordering:
+          sortDirection === 'desc' ? '-transaction_date' : 'transaction_date',
         page,
         size: itemsPerPage,
       };
@@ -102,9 +101,7 @@ const TaxPageContent = () => {
 
   // 시작일자 정렬 방향 변경 시 데이터 가져오기
   const handleSortClick = () => {
-    setSortDirection((prev) =>
-      prev === 'transaction_date' ? '-transaction_date' : 'transaction_date'
-    );
+    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     setCurrentPage(1); // 정렬 변경 시 페이지 1로 리셋
     fetchTaxData(1); // 정렬 변경 시에도 API 호출
   };

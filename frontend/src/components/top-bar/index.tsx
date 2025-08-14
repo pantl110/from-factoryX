@@ -38,7 +38,7 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   >([]);
 
   // 웹소켓으로 실시간 알림 상태 관리
-  const { status: wsStatus } = useWebSocket({
+  const { status: _wsStatus } = useWebSocket({
     onNewNotification: (notification) => {
       // 새 알림을 목록 맨 위에 추가
       const newNotification: NotificationResponseModel = {

@@ -8,18 +8,18 @@ import { validateEmail } from '@/utils/validation';
 import { useRouter } from 'next/navigation';
 import FactoryXLogo from '@/ui/icons/factory-x-logo';
 import { LoginFormDataModel } from '@/types/data-model';
-import { FactoriesResponseModel } from '@/types/data-model';
+// import { FactoriesResponseModel } from '@/types/data-model';
 import { useLogin } from '@/hooks/users/use-login';
-import { useState } from 'react';
-import FactorySelectModal from './factory-select-modal';
+// import { useState } from 'react';
+// import FactorySelectModal from './factory-select-modal';
 import useFactoryStore from '@/store/factory-store';
 
 const LoginPage = () => {
   const router = useRouter();
   const setFactoryId = useFactoryStore((state) => state.setFactoryId);
   const { login, isLoading } = useLogin();
-  const [showFactorySelectModal, setShowFactorySelectModal] = useState(false);
-  const [factories, setFactories] = useState<FactoriesResponseModel[]>([]);
+  // const [showFactorySelectModal, setShowFactorySelectModal] = useState(false);
+  // const [factories, _setFactories] = useState<FactoriesResponseModel[]>([]);
 
   const {
     register,
@@ -148,13 +148,13 @@ const LoginPage = () => {
           </form>
         </div>
       </div>
-
+      {/* 
       {showFactorySelectModal && (
         <FactorySelectModal
           factories={factories}
           onClose={() => setShowFactorySelectModal(false)}
         />
-      )}
+      )} */}
     </>
   );
 };

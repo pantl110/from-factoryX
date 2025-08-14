@@ -7,7 +7,7 @@ export const ClientNameDropdown = ({
   onSelect,
   onClose,
   width,
-  style,
+  style = {},
 }: {
   items: ClientResponseModel[];
   onSelect: (item: ClientResponseModel) => void;

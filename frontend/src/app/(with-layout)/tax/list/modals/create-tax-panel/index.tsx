@@ -20,7 +20,7 @@ import {
   ClientModel,
   ClientUpdateModel,
 } from '@/types/data-model';
-import { ClientInfoFormData, SellerInfoFormData } from '../../type';
+import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../../type';
 import ProductInfo from './product-info';
 
 interface CreatTaxPanelProps {
@@ -45,7 +45,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
   const [hasSellerInfoRequiredValues, setHasSellerInfoRequiredValues] =
     useState(false);
   const [sellerInfoFormData, setSellerInfoFormData] =
-    useState<SellerInfoFormData | null>(null);
+    useState<SellerInfoFormDataModel | null>(null);
 
   // 거래처 정보 폼 상태
   const [isClientInfoValid, setIsClientInfoValid] = useState(false);
@@ -56,7 +56,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
     number | undefined
   >();
   const [clientInfoFormData, setClientInfoFormData] =
-    useState<ClientInfoFormData | null>(null);
+    useState<ClientInfoFormDataModel | null>(null);
 
   // 저장 중 상태
   const [isSaving, setIsSaving] = useState(false);
@@ -124,7 +124,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
       isDirty: boolean,
       hasRequiredValues: boolean,
       isOtherFieldsDirty: boolean,
-      formData: SellerInfoFormData
+      formData: SellerInfoFormDataModel
     ) => {
       setIsSellerInfoValid(isValid);
       setIsSellerInfoDirty(isDirty);
@@ -142,7 +142,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
       isDirty: boolean,
       hasRequiredValues: boolean,
       clientId?: number,
-      formData?: ClientInfoFormData
+      formData?: ClientInfoFormDataModel
     ) => {
       setIsClientInfoValid(isValid);
       setIsClientInfoDirty(isDirty);
@@ -161,7 +161,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
   }, [showErrors, isSellerInfoValid, isClientInfoValid]);
 
   // 공장 정보 업데이트 함수
-  const updateFactoryInfo = (formData: SellerInfoFormData) => {
+  const updateFactoryInfo = (formData: SellerInfoFormDataModel) => {
     if (factoryId && formData) {
       const updateData: FactoriesUpdateModel = {
         factory_id: factoryId,
@@ -178,7 +178,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
 
   // 거래처 정보 생성 함수
   const createClientInfo = useCallback(
-    async (clientFormData: ClientInfoFormData) => {
+    async (clientFormData: ClientInfoFormDataModel) => {
       if (!factoryId)
         return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
 
@@ -199,7 +199,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
 
   // 거래처 정보 수정 함수
   const updateClientInfo = useCallback(
-    async (clientId: number, clientFormData: ClientInfoFormData) => {
+    async (clientId: number, clientFormData: ClientInfoFormDataModel) => {
       if (!factoryId)
         return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
 

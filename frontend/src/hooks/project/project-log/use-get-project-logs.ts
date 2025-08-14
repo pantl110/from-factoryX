@@ -34,7 +34,7 @@ const useGetProjectLogs = () => {
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/log?project_id=${projectId}&factory_id=${factoryId}&${params}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-log?project_id=${projectId}&factory_id=${factoryId}&${params}`,
           {
             method: 'GET',
             credentials: 'include',

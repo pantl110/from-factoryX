@@ -23,7 +23,7 @@ const useUpdateProjectLog = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/log/${logId}?factory_id=${factoryId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project-log/${logId}?factory_id=${factoryId}`,
         {
           method: 'PATCH',
           credentials: 'include',

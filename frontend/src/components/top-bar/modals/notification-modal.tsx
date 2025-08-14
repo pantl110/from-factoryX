@@ -2,8 +2,7 @@ import Modal from '@/ui/modal/modal';
 import NotificationItem from './notification-item';
 import MiniBtn from '@/ui/mini-btn';
 import { NotificationResponseModel } from '@/types/data-model';
-import { useMarkAllNotificationsRead, useWebSocket } from '@/hooks';
-import { NotificationType, NotificationCaseType } from '@/types/status-type';
+import { useMarkAllNotificationsRead } from '@/hooks';
 
 interface NotificationModalProps {
   onClose: () => void;

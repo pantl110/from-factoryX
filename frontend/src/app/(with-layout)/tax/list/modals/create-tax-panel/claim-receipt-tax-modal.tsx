@@ -29,8 +29,8 @@ const ClaimReceiptTaxModal = ({
     try {
       setIsSubmitting(true);
       // 세금계산서 생성 함수 호출 // 바로빌에 신청까지 연결?
-      const success = await onCreateTaxInvoice();
-      if (success) {
+      const isSuccess = await onCreateTaxInvoice();
+      if (isSuccess) {
         setIsNextModalOpen(true); // 성공 시 다음 모달 보여주기
       }
     } catch {

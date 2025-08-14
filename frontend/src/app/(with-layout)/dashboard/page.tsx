@@ -73,7 +73,9 @@ const DashboardPageContent = () => {
   const [insufficientMaterialData, setInsufficientMaterialData] = useState<
     ShortageMaterialCountModel | undefined
   >(undefined);
-  const [taxInvoicesData, setTaxInvoicesData] = useState<any[]>([]);
+  const [taxInvoicesData, setTaxInvoicesData] = useState<
+    PublishedTaxInvoiceResponseModel[]
+  >([]);
   const { factoryId, initializeFactoryId } = useFactoryStore();
 
   // 모든 데이터 로딩 상태를 통합
@@ -224,7 +226,7 @@ const DashboardPageContent = () => {
     ? projectsData
         .filter(
           (project) =>
-            project.status === '견적 협의중' || project.status === '주문 확정'
+            project.status === 'quotation' || project.status === 'completed'
         )
         .sort(
           (a, b) =>
@@ -238,10 +240,10 @@ const DashboardPageContent = () => {
     ? projectsData
         .filter(
           (project) =>
-            project.status === '생산 대기' ||
-            project.status === '생산 중' ||
-            project.status === '생산 완료' ||
-            project.status === '납품'
+            project.status === 'pending' ||
+            project.status === 'production' ||
+            project.status === 'manufactured' ||
+            project.status === 'delivery'
         )
         .sort(
           (a, b) =>

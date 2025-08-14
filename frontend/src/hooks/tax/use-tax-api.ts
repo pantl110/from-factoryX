@@ -16,7 +16,7 @@ interface TaxApiOptionsModel {
   abortSignal?: AbortSignal;
 }
 
-export type TaxApiEndpoint =
+export type TaxApiEndpointType =
   | 'state'
   | 'published'
   | 'pending'
@@ -36,7 +36,7 @@ const useTaxApi = () => {
   // 공통 API 호출 함수
   const callTaxApi = useCallback(
     async <T = unknown>(
-      endpoint: TaxApiEndpoint,
+      endpoint: TaxApiEndpointType,
       options: TaxApiOptionsModel = {}
     ): Promise<TaxApiResponseModel<T>> => {
       // 이전 요청 취소
@@ -61,7 +61,7 @@ const useTaxApi = () => {
 
         // URL 구성
         let url = `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${endpoint}`;
-        
+
         // 현금영수증 관련 엔드포인트는 다른 URL 패턴 사용
         if (endpoint === 'cash-receipts-sync') {
           url = `${process.env.NEXT_PUBLIC_API_URL}/v1/receipt/${factoryId}/sync`;
@@ -109,7 +109,10 @@ const useTaxApi = () => {
           return { success: false, error: 'Request was aborted' };
         }
 
-        const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : '알 수 없는 오류가 발생했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       } finally {

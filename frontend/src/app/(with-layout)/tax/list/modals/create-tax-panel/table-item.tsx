@@ -3,14 +3,14 @@ import { ArrowLineUpRight, X } from '@phosphor-icons/react/dist/ssr';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
-interface TableItemFormData {
+interface TableItemFormDataModel {
   quantity: number;
   unitPrice: number;
 }
 
 const TableItem = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { register, watch, setValue } = useFormContext<TableItemFormData>();
+  const { watch, setValue } = useFormContext<TableItemFormDataModel>();
 
   // 폼 값 감시
   const quantity = watch('quantity') || 0;

@@ -1,10 +1,10 @@
 import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
 import { formatBusinessNumber, formatDate } from '@/hooks/format-number';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
 import useFactoryStore from '@/store/factory-store';
-import { SellerInfoFormData } from '../../type';
+import { SellerInfoFormDataModel } from '../../type';
 
 interface SellerInfoProps {
   onFormChange: (
@@ -12,7 +12,7 @@ interface SellerInfoProps {
     isDirty: boolean,
     hasRequiredValues: boolean,
     isOtherFieldsDirty: boolean,
-    formData: SellerInfoFormData
+    formData: SellerInfoFormDataModel
   ) => void;
   showErrors?: boolean;
 }
@@ -25,7 +25,7 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
     trigger,
     setValue,
     reset,
-  } = useForm<SellerInfoFormData>({
+  } = useForm<SellerInfoFormDataModel>({
     mode: 'onChange', // 실시간 유효성 검사
     defaultValues: {
       companyName: '',
@@ -66,7 +66,7 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
 
   // 각 필드별로 에러 표시 여부를 추적하는 상태
   const [validatedFields, setValidatedFields] = useState<
-    Set<keyof SellerInfoFormData>
+    Set<keyof SellerInfoFormDataModel>
   >(new Set());
 
   // 폼 데이터 실시간 감시
@@ -123,13 +123,13 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
   }, [showErrors, trigger]);
 
   // showErrors가 true일 때 실시간으로 에러 상태 업데이트
-  const shouldShowError = (fieldName: keyof SellerInfoFormData) => {
+  const shouldShowError = (fieldName: keyof SellerInfoFormDataModel) => {
     // 해당 필드가 검증되었고, 에러가 있을 때만 에러 표시
     return validatedFields.has(fieldName) && !!errors[fieldName];
   };
 
   // 필드 값이 변경될 때 해당 필드를 검증된 것으로 표시
-  const handleFieldChange = (fieldName: keyof SellerInfoFormData) => {
+  const handleFieldChange = (fieldName: keyof SellerInfoFormDataModel) => {
     if (validatedFields.has(fieldName)) {
       setValidatedFields((prev) => {
         const newSet = new Set(prev);
@@ -152,7 +152,7 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
               showError={shouldShowError('companyName')}
               {...register('companyName', {
                 required: '업체명은 필수입니다.',
-                onChange: (e) => {
+                onChange: () => {
                   handleFieldChange('companyName');
                 },
               })}
@@ -191,7 +191,7 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
             showError={shouldShowError('representativeName')}
             {...register('representativeName', {
               required: '대표자명은 필수입니다.',
-              onChange: (e) => {
+              onChange: () => {
                 handleFieldChange('representativeName');
               },
             })}
@@ -206,7 +206,7 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
               showError={shouldShowError('businessType')}
               {...register('businessType', {
                 required: '업태는 필수입니다.',
-                onChange: (e) => {
+                onChange: () => {
                   handleFieldChange('businessType');
                 },
               })}
@@ -220,7 +220,7 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
               showError={shouldShowError('businessCategory')}
               {...register('businessCategory', {
                 required: '종목은 필수입니다.',
-                onChange: (e) => {
+                onChange: () => {
                   handleFieldChange('businessCategory');
                 },
               })}
@@ -232,7 +232,7 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
           placeholder="사업장 주소를 입력하세요."
           showError={shouldShowError('address')}
           {...register('address', {
-            onChange: (e) => {
+            onChange: () => {
               handleFieldChange('address');
             },
           })}

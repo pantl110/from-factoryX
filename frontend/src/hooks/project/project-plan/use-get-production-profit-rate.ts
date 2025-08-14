@@ -29,7 +29,7 @@ const useGetProductionProfitRate = () => {
           search.append('target_date', params.target_date);
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan/profit-rate?${search.toString()}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan/profit-rate?${search.toString()}`,
           {
             method: 'GET',
             credentials: 'include',

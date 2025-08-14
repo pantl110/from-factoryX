@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import useFactoryStore from '@/store/factory-store';
 import { OcrDataModel } from '@/types/data-model';
-import {useUploadFile} from '@/hooks';
+import { useUploadFile } from '@/hooks';
 
 interface OcrUploadModel {
   data: string; // base64 encoded file content
@@ -69,21 +69,21 @@ const useOcrUpload = () => {
 
       if (response.ok) {
         const result = await response.json();
-        
+
         // OCR API는 성공 시 직접 데이터를 반환
         // client_info와 request_items가 있으면 성공으로 간주
         if (result.client_info && result.request_items) {
-          return { 
-            status: 'success', 
+          return {
+            status: 'success',
             data: result,
-            imageUrl: imageUrl,
-            message: 'OCR 처리에 성공했습니다.'
+            imageUrl,
+            message: 'OCR 처리에 성공했습니다.',
           };
         } else {
           // 예상한 데이터 구조가 아닌 경우
-          return { 
-            status: 'error', 
-            message: 'OCR 결과 데이터 형식이 올바르지 않습니다.'
+          return {
+            status: 'error',
+            message: 'OCR 결과 데이터 형식이 올바르지 않습니다.',
           };
         }
       } else {
@@ -97,7 +97,7 @@ const useOcrUpload = () => {
           } else if (errorData.error) {
             errorMessage = errorData.error;
           }
-        } catch (parseError) {
+        } catch {
           // JSON 파싱 실패 시 기본 에러 메시지 사용
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }

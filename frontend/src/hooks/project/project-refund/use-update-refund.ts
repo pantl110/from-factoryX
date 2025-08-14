@@ -37,7 +37,7 @@ const useUpdateRefund = () => {
         queryParams.append('factory_id', factoryId.toString());
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/refund/${refundId}?${queryParams}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-refund/${refundId}?${queryParams}`,
           {
             method: 'PATCH',
             credentials: 'include',

@@ -65,6 +65,28 @@ export type ProjectStatusType =
 // | '납품' // delivery
 // | '프로젝트 완료' // completed
 // | '중단'; // suspended
+
+export const ProjectStatusMap: Record<ProjectStatusType, string> = {
+  quotation: '견적 요청',
+  confirmed: '주문 확정',
+  pending: '생산 대기',
+  production: '생산 중',
+  manufactured: '생산 완료',
+  delivery: '납품',
+  completed: '프로젝트 완료',
+  suspended: '중단',
+  // Korean status mappings
+  '견적 협의중': '견적 협의중',
+  '주문 확정': '주문 확정',
+  '생산 대기': '생산 대기',
+  '생산 중': '생산 중',
+  '생산 완료': '생산 완료',
+  납품: '납품',
+  '프로젝트 완료': '프로젝트 완료',
+  완료: '완료',
+  중단: '중단',
+};
+
 export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
   // 영어 상태
   quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },

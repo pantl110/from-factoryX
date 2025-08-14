@@ -32,7 +32,7 @@ const useGetDailyProductionQuantity = () => {
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan/daily?${queryParams}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan/daily?${queryParams}`,
           {
             method: 'GET',
             credentials: 'include',

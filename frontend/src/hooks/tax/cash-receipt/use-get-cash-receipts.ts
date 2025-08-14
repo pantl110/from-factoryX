@@ -1,23 +1,34 @@
 import { useCallback, useState } from 'react';
 import useTaxApi from '../use-tax-api';
-import { CashReceiptResponseModel, CashReceiptListParamsModel, CashReceiptListResponseModel } from '@/types/data-model';
+import {
+  CashReceiptResponseModel,
+  CashReceiptListParamsModel,
+  CashReceiptListResponseModel,
+} from '@/types/data-model';
 
 export const useGetCashReceipts = () => {
   const { callTaxApi, isLoading, error } = useTaxApi();
-  const [cashReceipts, setCashReceipts] = useState<CashReceiptResponseModel[]>([]);
+  const [cashReceipts, setCashReceipts] = useState<CashReceiptResponseModel[]>(
+    []
+  );
   const [totalPages, setTotalPages] = useState(1);
 
   const getCashReceipts = useCallback(
-    async (params: CashReceiptListParamsModel): Promise<{
+    async (
+      params: CashReceiptListParamsModel
+    ): Promise<{
       success: boolean;
       data?: CashReceiptListResponseModel;
       error?: string;
     }> => {
-      const { factory_id, ...queryParams } = params;
-      
-      const result = await callTaxApi<CashReceiptListResponseModel>('cash-receipts-list', {
-        queryParams,
-      });
+      const { factory_id: _factoryId, ...queryParams } = params;
+
+      const result = await callTaxApi<CashReceiptListResponseModel>(
+        'cash-receipts-list',
+        {
+          queryParams,
+        }
+      );
 
       if (result.success && result.data) {
         setCashReceipts(result.data.data || []);

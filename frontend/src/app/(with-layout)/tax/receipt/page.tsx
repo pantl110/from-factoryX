@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import SearchInput from '@/ui/search-input';
-import TableItem from './table-item';
+// import TableItem from './table-item';
 import { CaretUpDownIcon } from '@phosphor-icons/react';
 import Pagination from '@/components/pagination';
-import ReceiptDetailPanel from './modals/receipt-detail-panel';
+// import ReceiptDetailPanel from './modals/receipt-detail-panel';
 import { useGetCashReceipts } from '@/hooks';
-import { CashReceiptResponseModel } from '@/types/data-model';
+// import { CashReceiptResponseModel } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -16,9 +16,9 @@ const TaxReceiptPage = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 정렬 상태 관리
   const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
-  const [selectedItem, setSelectedItem] =
-    useState<CashReceiptResponseModel | null>(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(false); // 패널 열기/닫기 상태 관리
+  // const [selectedItem, setSelectedItem] =
+  //   useState<CashReceiptResponseModel | null>(null);
+  // const [isPanelOpen, setIsPanelOpen] = useState(false); // 패널 열기/닫기 상태 관리
 
   // 공장 ID 가져오기
   const factoryStore = useFactoryStore();
@@ -39,6 +39,7 @@ const TaxReceiptPage = () => {
         size: 10,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId, sortOrder, currentPage, getCashReceipts]);
 
   // 검색어 입력 완료 후 API 호출 (디바운싱)
@@ -78,16 +79,16 @@ const TaxReceiptPage = () => {
   };
 
   // 테이블 아이템 클릭 핸들러
-  const handleItemClick = (item: CashReceiptResponseModel) => {
-    setSelectedItem(item);
-    setIsPanelOpen(true);
-  };
+  // const handleItemClick = (item: CashReceiptResponseModel) => {
+  //   setSelectedItem(item);
+  //   setIsPanelOpen(true);
+  // };
 
   // 패널 닫기 핸들러
-  const handlePanelClose = () => {
-    setIsPanelOpen(false);
-    setSelectedItem(null);
-  };
+  // const handlePanelClose = () => {
+  //   setIsPanelOpen(false);
+  //   setSelectedItem(null);
+  // };
 
   return (
     <div className="flex flex-col gap-8 pt-10 px-10">
@@ -125,13 +126,13 @@ const TaxReceiptPage = () => {
                     <p className="flex-1 px-3">합계금액</p>
                   </div>
 
-                  {cashReceipts.map((item) => (
+                  {/* {cashReceipts.map((item) => (
                     <TableItem
                       key={item.id}
                       item={item}
                       onClick={() => handleItemClick(item)}
                     />
-                  ))}
+                  ))} */}
                 </div>
                 {totalPages > 1 && (
                   <Pagination
@@ -147,9 +148,9 @@ const TaxReceiptPage = () => {
       </div>
 
       {/* 현금영수증 상세 패널 */}
-      {isPanelOpen && selectedItem && (
+      {/* {isPanelOpen && selectedItem && (
         <ReceiptDetailPanel onClose={handlePanelClose} item={selectedItem} />
-      )}
+      )} */}
     </div>
   );
 };

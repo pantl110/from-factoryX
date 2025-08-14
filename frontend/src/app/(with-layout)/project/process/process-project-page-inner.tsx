@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import MainTitleSec from './main-title-sec';
 import SearchDeleteTable from '@/ui/search-delete-table';
 import { ProjectStatusType } from '@/types/status-type';
@@ -77,8 +77,6 @@ const ProcessProjectPageInner = () => {
     };
 
     loadProjects();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedStatus,
     currentPage,

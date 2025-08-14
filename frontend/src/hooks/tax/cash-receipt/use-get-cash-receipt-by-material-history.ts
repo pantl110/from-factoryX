@@ -6,14 +6,19 @@ export const useGetCashReceiptByMaterialHistory = () => {
   const { callTaxApi, isLoading, error } = useTaxApi();
 
   const getCashReceiptByMaterialHistory = useCallback(
-    async (materialHistoryId: number): Promise<{
+    async (
+      materialHistoryId: number
+    ): Promise<{
       success: boolean;
       data?: CashReceiptByMaterialModel;
       error?: string;
     }> => {
-      const result = await callTaxApi<CashReceiptByMaterialModel>('cash-receipts-material-history', {
-        queryParams: { material_history_id: materialHistoryId },
-      });
+      const result = await callTaxApi<CashReceiptByMaterialModel>(
+        'cash-receipts-material-history',
+        {
+          queryParams: { material_history_id: materialHistoryId },
+        }
+      );
 
       return result;
     },

@@ -45,7 +45,7 @@ const useCreateProjectPlans = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan`,
         {
           method: 'POST',
           credentials: 'include',

@@ -6,7 +6,8 @@ import { TaxInvoiceDetailResponseModel } from '@/types/data-model';
 const useGetTaxInvoiceDetail = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [taxInvoice, setTaxInvoice] = useState<TaxInvoiceDetailResponseModel | null>(null);
+  const [taxInvoice, setTaxInvoice] =
+    useState<TaxInvoiceDetailResponseModel | null>(null);
 
   const getTaxInvoice = useCallback(async (taxId: number) => {
     setIsLoading(true);
@@ -14,8 +15,8 @@ const useGetTaxInvoiceDetail = () => {
     setTaxInvoice(null);
 
     try {
-      const factoryId = useFactoryStore.getState().factoryId;
-      
+      const { factoryId } = useFactoryStore.getState();
+
       if (!factoryId) {
         const errorMessage = '공장 ID가 설정되지 않았습니다.';
         setError(errorMessage);
@@ -43,11 +44,12 @@ const useGetTaxInvoiceDetail = () => {
         return { success: false, error: errorMessage };
       } else {
         const errorData = await response.json();
-        const errorMessage = errorData.detail || '세금계산서 조회에 실패했습니다.';
+        const errorMessage =
+          errorData.detail || '세금계산서 조회에 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }
-    } catch (err) {
+    } catch {
       const errorMessage = '서버 연결에 실패했습니다.';
       setError(errorMessage);
       return { success: false, error: errorMessage };
@@ -56,13 +58,13 @@ const useGetTaxInvoiceDetail = () => {
     }
   }, []);
 
-  return { 
-    getTaxInvoice, 
-    taxInvoice, 
-    isLoading, 
+  return {
+    getTaxInvoice,
+    taxInvoice,
+    isLoading,
     error,
     clearError: () => setError(null),
-    clearTaxInvoice: () => setTaxInvoice(null)
+    clearTaxInvoice: () => setTaxInvoice(null),
   };
 };
 

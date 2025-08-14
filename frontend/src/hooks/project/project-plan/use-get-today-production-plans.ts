@@ -40,7 +40,7 @@ const useGetTodayProductionPlans = () => {
       queryParams.append('page', (params.page || 1).toString());
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/today?${queryParams}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan/today?${queryParams}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -55,14 +55,23 @@ const useGetTodayProductionPlans = () => {
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
+
+        // 404 에러는 데이터가 없는 것이므로 성공으로 처리
+        if (response.status === 404) {
+          return { success: true, data: [] };
+        }
+
+        // 다른 에러는 에러로 처리
         const errorMessage =
           errorData.detail || '오늘의 생산 일정 조회에 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : '서버 연결에 실패했습니다.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }

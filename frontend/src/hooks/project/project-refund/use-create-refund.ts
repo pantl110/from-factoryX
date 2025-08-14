@@ -29,7 +29,7 @@ const useCreateRefund = () => {
       });
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/refund?${queryParams}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project-refund?${queryParams}`,
         {
           method: 'POST',
           headers: {

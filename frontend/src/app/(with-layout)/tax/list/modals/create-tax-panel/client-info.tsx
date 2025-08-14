@@ -1,7 +1,7 @@
 import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { ClientInfoFormData } from '../../type';
+import { ClientInfoFormDataModel } from '../../type';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { ClientResponseModel } from '@/types/data-model';
 import { useGetClient, formatBusinessNumber } from '@/hooks';
@@ -12,7 +12,7 @@ interface ClientInfoProps {
     isDirty: boolean,
     hasRequiredValues: boolean,
     clientId?: number,
-    formData?: ClientInfoFormData
+    formData?: ClientInfoFormDataModel
   ) => void;
   showErrors?: boolean;
 }
@@ -24,7 +24,7 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
     watch,
     trigger,
     setValue,
-  } = useForm<ClientInfoFormData>({
+  } = useForm<ClientInfoFormDataModel>({
     mode: 'onChange', // 실시간 유효성 검사
     defaultValues: {
       companyName: '',
@@ -38,7 +38,7 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
 
   // 각 필드별로 에러 표시 여부를 추적하는 상태
   const [validatedFields, setValidatedFields] = useState<
-    Set<keyof ClientInfoFormData>
+    Set<keyof ClientInfoFormDataModel>
   >(new Set());
 
   // 검색 관련 상태
@@ -108,7 +108,7 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
           setSearchResults([]);
           setIsDropdownOpen(false);
         }
-      } catch (error) {
+      } catch {
         setSearchResults([]);
         setIsDropdownOpen(false);
       }
@@ -204,13 +204,13 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
   }, [showErrors, trigger]);
 
   // showErrors가 true일 때 실시간으로 에러 상태 업데이트
-  const shouldShowError = (fieldName: keyof ClientInfoFormData) => {
+  const shouldShowError = (fieldName: keyof ClientInfoFormDataModel) => {
     // 해당 필드가 검증되었고, 에러가 있을 때만 에러 표시
     return validatedFields.has(fieldName) && !!errors[fieldName];
   };
 
   // 필드 값이 변경될 때 해당 필드를 검증된 것으로 표시
-  const handleFieldChange = (fieldName: keyof ClientInfoFormData) => {
+  const handleFieldChange = (fieldName: keyof ClientInfoFormDataModel) => {
     if (validatedFields.has(fieldName)) {
       setValidatedFields((prev) => {
         const newSet = new Set(prev);
@@ -288,7 +288,7 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
             showError={shouldShowError('representativeName')}
             {...register('representativeName', {
               required: '대표자명은 필수입니다.',
-              onChange: (e) => {
+              onChange: () => {
                 handleFieldChange('representativeName');
               },
             })}
@@ -303,7 +303,7 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
               showError={shouldShowError('businessType')}
               {...register('businessType', {
                 required: '업태는 필수입니다.',
-                onChange: (e) => {
+                onChange: () => {
                   handleFieldChange('businessType');
                 },
               })}
@@ -317,7 +317,7 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
               showError={shouldShowError('businessCategory')}
               {...register('businessCategory', {
                 required: '종목은 필수입니다.',
-                onChange: (e) => {
+                onChange: () => {
                   handleFieldChange('businessCategory');
                 },
               })}
@@ -329,7 +329,7 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
           placeholder="사업장 주소를 입력하세요."
           showError={shouldShowError('address')}
           {...register('address', {
-            onChange: (e) => {
+            onChange: () => {
               handleFieldChange('address');
             },
           })}

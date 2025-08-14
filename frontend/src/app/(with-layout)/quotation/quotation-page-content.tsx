@@ -72,7 +72,9 @@ const QuotationPageContent = () => {
       if (result.success && result.data) {
         setProjectStatus(result.data.status);
       }
-    } catch {}
+    } catch {
+      // 프로젝트 상태 로드 실패 시 무시
+    }
   }, [getProjectStatus, projectId]);
 
   // 컴포넌트 마운트 시 프로젝트 상태 로드
@@ -96,7 +98,9 @@ const QuotationPageContent = () => {
         if (result.success) {
           setProjectStatus(newStatus);
         }
-      } catch {}
+      } catch {
+        // 프로젝트 상태 업데이트 실패 시 무시
+      }
     },
     [updateProjectStatus, projectId]
   );
@@ -278,11 +282,11 @@ const QuotationPageContent = () => {
       // OCR 데이터가 있으면 견적서 탭 활성화
       setActiveTab('quotation');
     }
-  }, [ocrData, quotationData, setValue, setActiveTab]);
+  }, [ocrData, quotationData, setValue, setActiveTab, imageUrl, setOcrData]);
 
   // OCR 데이터 변경 시 폼 초기화 함수
   const handleOcrDataChange = useCallback(
-    (newOcrData: any) => {
+    (newOcrData: OcrDataModel) => {
       // 새로운 OCR 데이터로 폼 초기화
       setValue('name', newOcrData.client_info.company_name || '');
       setValue(
@@ -300,8 +304,8 @@ const QuotationPageContent = () => {
       setValue('due_date', newOcrData.client_info.delivery_date || '');
 
       // OCR 데이터에서 품목 정보 추출하여 quotationProducts 설정
-      if (newOcrData.products && newOcrData.products.length > 0) {
-        const extractedProducts = newOcrData.products.map(
+      if (newOcrData.request_items && newOcrData.request_items.length > 0) {
+        const extractedProducts = newOcrData.request_items.map(
           (product: OcrRequestItemModel) => ({
             productId: null, // OCR에서는 productId가 없으므로 null
             product_code: product.item_code || '',
@@ -458,6 +462,7 @@ const QuotationPageContent = () => {
           (error instanceof Error ? error.message : '알 수 없는 오류')
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saveDraft, watch, quotationId, quotationProducts, factoryId, reset]);
 
   // 생산 시작 버튼 핸들러

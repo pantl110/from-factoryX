@@ -36,7 +36,6 @@ const ImagePreview = ({
   const handleOcrComplete = (ocrData?: OcrDataModel, imageUrl?: string) => {
     if (ocrData) {
       // OCR 데이터가 있으면 견적서 생성 페이지로 이동
-      console.log('OCR 데이터를 받았습니다:', ocrData);
 
       // Zustand store에 OCR 데이터 저장
       setOcrData(ocrData, imageUrl || '');

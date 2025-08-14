@@ -474,6 +474,7 @@ export interface ProjectResponseModel {
   status: ProjectStatusType; // 프로젝트 상태 (영어 or 한글)
   is_abandoned: boolean; // 프로젝트 중단 여부
   quotation_id: number;
+  created_at: string;
 }
 
 export interface ProjectListResponseModel extends PaginationModel {
@@ -499,33 +500,33 @@ export interface ProjectStatusResponseModel {
 
 // OCR 결과 요청 아이템 스키마
 export interface OcrRequestItemModel {
-  item_name: string;  // 품목명
-  item_code?: string;  // 품목코드
-  spec?: string;  // 규격
-  unit: string;  // 단위
-  quantity: string;  // 수량
-  unit_price: string;  // 단가
+  item_name: string; // 품목명
+  item_code?: string; // 품목코드
+  spec?: string; // 규격
+  unit: string; // 단위
+  quantity: string; // 수량
+  unit_price: string; // 단가
 }
 
 // OCR 결과 클라이언트 정보 스키마
 export interface OcrClientInfoModel {
-  company_name: string;  // 업체명
-  registration_number?: string;  // 사업자등록번호
-  ceo_name?: string;  // 대표자명
-  delivery_date?: string;  // 납품일자
-  business_type?: string;  // 업태
-  category?: string;  // 종목
-  address?: string;  // 주소
-  manager_name?: string;  // 담당자명
-  email?: string;  // 이메일
-  fax_number?: string;  // 팩스번호
-  call_number?: string;  // 전화번호
+  company_name: string; // 업체명
+  registration_number?: string; // 사업자등록번호
+  ceo_name?: string; // 대표자명
+  delivery_date?: string; // 납품일자
+  business_type?: string; // 업태
+  category?: string; // 종목
+  address?: string; // 주소
+  manager_name?: string; // 담당자명
+  email?: string; // 이메일
+  fax_number?: string; // 팩스번호
+  call_number?: string; // 전화번호
 }
 
 // OCR 결과 전체 스키마
 export interface OcrDataModel {
-  client_info: OcrClientInfoModel;  // 클라이언트 정보
-  request_items: OcrRequestItemModel[];  // 요청 품목 리스트
+  client_info: OcrClientInfoModel; // 클라이언트 정보
+  request_items: OcrRequestItemModel[]; // 요청 품목 리스트
 }
 
 // 견적서 상세 조회
@@ -895,13 +896,13 @@ export interface UnlinkedTaxInvoiceListResponseModel extends PaginationModel {
 // tax invoice detail 가져오기
 interface TaxServiceItemModel {
   purchase_expiry: string; // YYYYMMDD 형식
-  name: string;            // 품목명
-  information?: string;    // 규격
+  name: string; // 품목명
+  information?: string; // 규격
   chargeable_unit: string; // 수량
-  unit_price: string;      // 단가
-  amount: string;          // 공급가액
-  tax: string;             // 세액
-  description?: string;    // 비고
+  unit_price: string; // 단가
+  amount: string; // 공급가액
+  tax: string; // 세액
+  description?: string; // 비고
 }
 
 export interface TaxInvoiceDetailResponseModel {

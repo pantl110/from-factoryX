@@ -8,7 +8,7 @@ interface ProductInfoProps {
   isProductDetailOpen: boolean;
 }
 
-interface ProductFormData {
+interface ProductFormDataModel {
   quantity: number;
   unitPrice: number;
 }
@@ -17,7 +17,7 @@ const ProductInfo = ({
   setIsProductDetailOpen,
   isProductDetailOpen,
 }: ProductInfoProps) => {
-  const methods = useForm<ProductFormData>({
+  const methods = useForm<ProductFormDataModel>({
     defaultValues: {
       quantity: 0,
       unitPrice: 0,

@@ -15,9 +15,9 @@ const useGetTaxInvoiceState = () => {
     async (
       taxId: number
     ): Promise<{ success: boolean; data?: TaxInvoiceStateResponseModel }> => {
-      const result = await callTaxApi<TaxInvoiceStateResponseModel>(
-        `${taxId}/state`
-      );
+      const result = await callTaxApi<TaxInvoiceStateResponseModel>('state', {
+        queryParams: { tax_id: taxId },
+      });
       return result;
     },
     [callTaxApi]
