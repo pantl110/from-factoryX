@@ -22,7 +22,7 @@ class PublishStatus(models.TextChoices):
 
 
 # 국세청 API 세금계산서 데이터 저장
-class NationalTaxService(BaseModel):
+class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
     # factory? 공장 = 회사
     user = models.ForeignKey(
         "user.User",
@@ -38,6 +38,12 @@ class NationalTaxService(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+    )
+    factory_info = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="공장 정보",
     )
     publish_status = models.CharField(
         max_length=10,
@@ -66,10 +72,22 @@ class NationalTaxService(BaseModel):
         blank=True,
         help_text="거래처",
     )
+    client_info = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="거래처 정보",
+    )
     product = models.ManyToManyField(
         "stock.Product",
         related_name="tax_invoices",
         help_text="품목명",
+    )
+    products_info = models.JSONField(
+        default=list,
+        null=True,
+        blank=True,
+        help_text="품목 리스트 정보",
     )
     transaction_amount = models.IntegerField(help_text="공급 가액")
     tax_amount = models.IntegerField(help_text="세액")
@@ -139,6 +157,12 @@ class CashReceipt(BaseModel):
         null=True,
         blank=True,
     )
+    factory_info = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="공장 정보",
+    )
     cash_receipt_type = models.CharField(
         max_length=10,
         choices=CashReceiptType.choices,
@@ -154,10 +178,22 @@ class CashReceipt(BaseModel):
         blank=True,
         help_text="거래처",
     )
+    client_info = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="거래처 정보",
+    )
     product = models.ManyToManyField(
         "stock.Product",
         related_name="cash_receipts",
         help_text="품목명",
+    )
+    products_info = models.JSONField(
+        default=list,
+        null=True,
+        blank=True,
+        help_text="품목 리스트 정보",
     )
     transaction_amount = models.IntegerField(help_text="공급 가액")
     tax_amount = models.IntegerField(help_text="세액")

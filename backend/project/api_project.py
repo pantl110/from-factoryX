@@ -27,6 +27,7 @@ from factory.models import Factory
 from factory.utils import is_factory_member
 from document.models import Quotation, QuotationProduct
 from project.models import ProjectPlan, ProjectLog
+from factory.schemas.outbound import FactoryRowOut
 
 
 router = Router(tags=["Project"], auth=jwt_auth)
@@ -52,7 +53,9 @@ async def create_project(request):
         new_project = await Project.objects.acreate()
 
         new_quotation = await Quotation.objects.acreate(
-            project=new_project, factory=factory
+            project=new_project,
+            factory=factory,
+            factory_info=FactoryRowOut.from_orm(factory).dict(),
         )
 
         return 201, {"quotation_id": new_quotation.id, "project_id": new_project.id}

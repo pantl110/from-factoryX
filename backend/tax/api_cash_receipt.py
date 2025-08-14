@@ -18,6 +18,9 @@ from datetime import timedelta, date
 from barobill.barobill_error_code import barobill_error_codes
 from datetime import datetime
 from stock.models import MaterialHistory
+from factory.models import FactoryClient
+from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
+from stock.schemas.outbound import ProductRowOut
 
 
 router = Router(tags=["CashReceipts"], auth=jwt_auth)
@@ -118,10 +121,24 @@ async def sync_cash_receipts(request, factory_id: int):
                 )
             )
 
+            # 클라이언트 찾기
+            try:
+                client = await FactoryClient.objects.aget(
+                    factory_id=factory.id,
+                    business_registration_number=cash_receipt_detail.FranchiseCorpNum,
+                )
+            except FactoryClient.DoesNotExist:
+                client = None
+
             sale_cash_receipts.append(
                 CashReceipt(
                     user=user,
                     factory=factory,
+                    factory_info=FactoryRowOut.from_orm(factory).dict(),
+                    client=client,
+                    client_info=(
+                        FactoryClientRowOut.from_orm(client).dict() if client else {}
+                    ),
                     cash_receipt_type="sales",
                     transaction_date=datetime.strptime(
                         cash_receipt.TradeDate, "%Y%m%d"
@@ -167,10 +184,24 @@ async def sync_cash_receipts(request, factory_id: int):
                 )
             )
 
+            # 클라이언트 찾기
+            try:
+                client = await FactoryClient.objects.aget(
+                    factory_id=factory.id,
+                    business_registration_number=cash_receipt_detail.FranchiseCorpNum,
+                )
+            except FactoryClient.DoesNotExist:
+                client = None
+
             purchase_cash_receipts.append(
                 CashReceipt(
                     user=user,
                     factory=factory,
+                    factory_info=FactoryRowOut.from_orm(factory).dict(),
+                    client=client,
+                    client_info=(
+                        FactoryClientRowOut.from_orm(client).dict() if client else {}
+                    ),
                     cash_receipt_type="sales",
                     transaction_date=datetime.strptime(
                         cash_receipt.TradeDate, "%Y%m%d"
