@@ -248,7 +248,6 @@ async def list_project(
         valid_statuses = [
             "progress",
             "archived",
-            "complete",
             "suspended",
             "quotation",
             "confirmed",
@@ -256,6 +255,7 @@ async def list_project(
             "production",
             "manufactured",
             "delivery",
+            "completed",
         ]
         if status not in valid_statuses:
             raise HttpError(400, f"status는 {valid_statuses} 중 하나여야 합니다.")
@@ -266,10 +266,14 @@ async def list_project(
 
         @sync_to_async
         def get_projects():
-            base_qs = Project.objects.filter(quotations__factory_id=int(factory_id))
+            # 공장과 연결된 프로젝트들을 먼저 가져옴
+            factory_projects = Project.objects.filter(
+                quotations__factory_id=int(factory_id)
+            )
+            factory_project_ids = list(factory_projects.values_list("pk", flat=True))
 
             # 2개월간 생산계획이 없는 프로젝트를 자동으로 중단 상태로 변경
-            projects_to_suspend = base_qs.annotate(
+            projects_to_suspend = factory_projects.annotate(
                 has_plan=Exists(ProjectPlan.objects.filter(project=OuterRef("pk")))
             ).filter(
                 status__in=["quotation", "confirmed", "pending", "production"],
@@ -283,7 +287,7 @@ async def list_project(
                 project.save()
 
             # 중단 프로젝트 판별: 견적 협의중 + 2개월간 ProjectPlan 없음 (updated_at 기준)
-            abandoned_qs = base_qs.annotate(
+            abandoned_qs = factory_projects.annotate(
                 has_plan=Exists(ProjectPlan.objects.filter(project=OuterRef("pk")))
             ).filter(
                 status="quotation",
@@ -295,7 +299,7 @@ async def list_project(
             # 상태별 분기
             if status == "progress":
                 # 완료/중단 제외
-                base_qs = base_qs.exclude(status="completed")
+                base_qs = factory_projects.exclude(status="completed")
                 base_qs = base_qs.exclude(
                     status="suspended"
                 )  # 자동 중단된 프로젝트도 제외
@@ -303,8 +307,8 @@ async def list_project(
                     base_qs = base_qs.exclude(pk__in=abandoned_ids)
             elif status == "archived":
                 # 완료 + 중단 + abandoned
-                completed_qs = base_qs.filter(status="completed")
-                suspended_qs = base_qs.filter(status="suspended")
+                completed_qs = factory_projects.filter(status="completed")
+                suspended_qs = factory_projects.filter(status="suspended")
                 abandoned_qs = (
                     Project.objects.filter(pk__in=abandoned_ids)
                     if abandoned_ids
@@ -316,11 +320,11 @@ async def list_project(
                 if abandoned_ids:
                     project_ids.extend(abandoned_ids)
                 base_qs = Project.objects.filter(pk__in=project_ids)
-            elif status == "complete":
-                base_qs = base_qs.filter(status="completed")
+            elif status == "completed":
+                base_qs = factory_projects.filter(status="completed")
             elif status == "suspended":
                 # 중단: status가 "suspended"이거나 abandoned_ids에 해당하는 프로젝트만
-                suspended_qs = base_qs.filter(status="suspended")
+                suspended_qs = factory_projects.filter(status="suspended")
                 abandoned_qs = (
                     Project.objects.filter(pk__in=abandoned_ids)
                     if abandoned_ids
@@ -331,21 +335,10 @@ async def list_project(
                     project_ids.extend(abandoned_ids)
                 base_qs = Project.objects.filter(pk__in=project_ids)
             else:
-                # 개별 상태별 매핑 (영어 값으로 필터링)
-                status_mapping = {
-                    "quotation": "quotation",
-                    "confirmed": "confirmed",
-                    "pending": "pending",
-                    "production": "production",
-                    "manufactured": "manufactured",
-                    "delivery": "delivery",
-                }
-                if status in status_mapping:
-                    base_qs = base_qs.filter(status=status_mapping[status])
-                    if abandoned_ids:
-                        base_qs = base_qs.exclude(pk__in=abandoned_ids)
-                else:
-                    base_qs = Project.objects.none()
+                # 개별 상태별 직접 필터링
+                base_qs = factory_projects.filter(status=status)
+                if abandoned_ids:
+                    base_qs = base_qs.exclude(pk__in=abandoned_ids)
 
             if search:
                 qs1 = base_qs.filter(quotations__client__name__icontains=search)

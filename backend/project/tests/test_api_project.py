@@ -1083,6 +1083,9 @@ class ProjectAPITestCase(TestCase):
         project_complete, _ = self.create_test_project_with_quotation(
             status="completed"
         )
+        # 디버깅: 실제 저장된 상태 확인
+        print(f"Project complete status: {project_complete.status}")
+        print(f"Project complete id: {project_complete.id}")
         # 2. 중단 프로젝트 생성 (견적 협의중 + 2개월 경과 + 생산계획 없음)
         project_abandoned, quotation_abandoned = (
             self.create_test_project_with_quotation(
@@ -1120,13 +1123,13 @@ class ProjectAPITestCase(TestCase):
         self.assertFalse(is_abandoned_map[project_complete.id])
         self.assertNotIn(project_progress.id, ids)
 
-        # 5. 완료(complete)만 조회
-        url = f"/v1/project?factory_id={self.factory.id}&status=complete"
+        # 5. 완료(completed)만 조회
+        url = f"/v1/project?factory_id={self.factory.id}&status=completed"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         ids = [item["project_id"] for item in data["data"]]
-        # API 실제 동작에 맞춤: complete는 완료된 프로젝트만 포함
+        # API 실제 동작에 맞춤: completed는 완료된 프로젝트만 포함
         self.assertIn(project_complete.id, ids)
         self.assertNotIn(project_abandoned.id, ids)
         self.assertNotIn(project_progress.id, ids)
@@ -1227,8 +1230,8 @@ class ProjectAPITestCase(TestCase):
         self.assertIn(project4.id, ids)  # 중단된 프로젝트도 포함됨
         self.assertTrue(is_abandoned_map[project4.id])
         self.assertFalse(is_abandoned_map[project3.id])
-        # 5. 완료(complete) 조회 - 완료된 프로젝트만
-        url = f"/v1/project?factory_id={self.factory.id}&status=complete"
+        # 5. 완료(completed) 조회 - 완료된 프로젝트만
+        url = f"/v1/project?factory_id={self.factory.id}&status=completed"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -1489,8 +1492,12 @@ class ProjectAPITestCase(TestCase):
         print(f"Actual latest_end_date: {data['latest_end_date']}")
 
         # timezone을 고려한 검증 (한국 시간을 UTC로 변환한 값으로 검증)
-        self.assertIn("2025-06-03", data["earliest_start_date"])  # 한국 6/4 00:00 → UTC 6/3 15:00
-        self.assertIn("2025-06-09", data["latest_end_date"])  # 한국 6/10 00:00 → UTC 6/9 15:00
+        self.assertIn(
+            "2025-06-03", data["earliest_start_date"]
+        )  # 한국 6/4 00:00 → UTC 6/3 15:00
+        self.assertIn(
+            "2025-06-09", data["latest_end_date"]
+        )  # 한국 6/10 00:00 → UTC 6/9 15:00
 
     def test_get_project_status_multiple_plans(self):
         """여러 생산 계획이 있는 프로젝트 상태 조회 테스트"""
