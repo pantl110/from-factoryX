@@ -31,6 +31,7 @@ class ListProgressProjectOut(Schema):
     publish_status: Optional[str] = None
     status: str
     is_abandoned: bool = False
+    created_at: str
 
 
 # (GET) Project Status
@@ -41,8 +42,8 @@ class ProjectStatusOut(Schema):
     is_refunded: bool
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    earliest_start_date: Optional[datetime.date] = None
-    latest_end_date: Optional[datetime.date] = None
+    earliest_start_date: Optional[datetime.datetime] = None
+    latest_end_date: Optional[datetime.datetime] = None
     due_date: Optional[datetime.date] = None
 
 
