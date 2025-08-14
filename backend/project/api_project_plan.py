@@ -1094,12 +1094,10 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
                 # 'yyyy-mm-dd HH:MM' 형식
                 plan.start_date = datetime.strptime(
                     payload.start_date, "%Y-%m-%d %H:%M"
-                ).date()
+                )
             else:
-                # 'yyyy-mm-dd' 형식
-                plan.start_date = datetime.strptime(
-                    payload.start_date, "%Y-%m-%d"
-                ).date()
+                # 'yyyy-mm-dd' 형식 - 00:00:00으로 시간 설정
+                plan.start_date = datetime.strptime(payload.start_date, "%Y-%m-%d")
         except ValueError:
             raise HttpError(
                 400,
@@ -1111,12 +1109,10 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
             # 날짜와 시간 정보를 파싱
             if " " in payload.end_date:
                 # 'yyyy-mm-dd HH:MM' 형식
-                plan.end_date = datetime.strptime(
-                    payload.end_date, "%Y-%m-%d %H:%M"
-                ).date()
+                plan.end_date = datetime.strptime(payload.end_date, "%Y-%m-%d %H:%M")
             else:
-                # 'yyyy-mm-dd' 형식
-                plan.end_date = datetime.strptime(payload.end_date, "%Y-%m-%d").date()
+                # 'yyyy-mm-dd' 형식 - 00:00:00으로 시간 설정
+                plan.end_date = datetime.strptime(payload.end_date, "%Y-%m-%d")
         except ValueError:
             raise HttpError(
                 400,
