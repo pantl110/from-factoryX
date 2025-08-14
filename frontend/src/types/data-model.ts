@@ -479,6 +479,7 @@ export interface ProjectStatusResponseModel {
   earliest_start_date?: string;
   latest_end_date?: string;
   due_date?: string;
+  is_refunded: boolean;
 }
 
 //////////////////////
@@ -877,6 +878,15 @@ export interface TaxInvoiceDetailResponseModel {
   nts_send_state?: string;
   created_at: string;
   updated_at: string;
+}
+
+// 세금계산서 생성
+export interface CreateTaxInvoiceModel {
+  factory: number;
+  client: number;
+  product: number[];
+  line_items: TaxServiceItemModel[];
+  transaction_date?: string;
 }
 
 // material_history_id로 세금계산서(구매) 및 자재정보를 조회

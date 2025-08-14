@@ -100,7 +100,8 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
       isOtherFieldsDirty,
       formData
     );
-  }, [isValid, isDirty, hasRequiredValues, isOtherFieldsDirty, onFormChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid, isDirty, hasRequiredValues, isOtherFieldsDirty]); // onFormChange 제거
 
   // triggerValidation이 true가 되면 유효성 검사 실행
   useEffect(() => {

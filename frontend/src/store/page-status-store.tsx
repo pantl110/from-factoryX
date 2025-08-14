@@ -48,6 +48,10 @@ export interface PageStatusModel {
   setHandleChangeStatus: (
     fn: ((status: ProjectStatusType) => Promise<void>) | null
   ) => void;
+
+  // 반품 여부
+  isRefund: boolean;
+  setIsRefund: (isRefund: boolean) => void;
 }
 
 const usePageStatusStore = create<PageStatusModel>((set) => ({
@@ -83,6 +87,10 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   // 프로젝트 상태를 변경하는 전역 함수
   handleChangeStatus: null,
   setHandleChangeStatus: (fn) => set({ handleChangeStatus: fn }),
+
+  // 반품 여부
+  isRefund: false,
+  setIsRefund: (isRefund) => set({ isRefund }),
 }));
 
 export default usePageStatusStore;

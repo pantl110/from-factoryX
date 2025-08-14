@@ -31,7 +31,7 @@ const MemoSection = ({
   const handleMemoSave = async () => {
     try {
       const result = await updateProjectLog(logId, {
-        type: '메모',
+        type: 'memo',
         title: memoTitle,
         content: memoContent,
       });

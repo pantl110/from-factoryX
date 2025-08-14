@@ -32,6 +32,7 @@ const TopBarContent = ({
   const isAllProductionCompleted = usePageStatusStore(
     (state) => state.isAllProductionCompleted
   ); // 모든 품목이 가동 완료 상태인지 여부
+  const isRefund = usePageStatusStore((state) => state.isRefund); // 반품 여부
 
   // store에서 함수들 가져오기
   const handleChangeStatus = usePageStatusStore(
@@ -66,7 +67,7 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '주문서' || productionTab === '생산 현황') {
+  if (productionTab === '주문서') {
     return (
       <MiniBtn
         text="세금계산서 생성"
@@ -77,7 +78,7 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '생산 계획' && pageStatus === '생산 대기') {
+  if (productionTab === '생산 계획' && pageStatus === 'pending') {
     return (
       <div className="flex gap-2">
         <MiniBtn
@@ -98,7 +99,7 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '생산 계획' && pageStatus === '생산 중') {
+  if (productionTab === '생산 계획' && pageStatus === 'production') {
     return (
       <div className="flex gap-2">
         <MiniBtn
@@ -123,16 +124,39 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '생산 내역') {
-    if (pageStatus === '생산 완료') {
-      return (
-        <div className="flex gap-2">
+  if (productionTab === '생산 현황') {
+    return (
+      <div className="flex gap-2">
+        <MiniBtn
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+        />
+
+        {isRefund && (
           <MiniBtn
-            text="세금계산서 생성"
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
+            text="반품 등록"
+            textColor="text-red"
+            bgColor="bg-red-8"
+            hoverColor="hover:bg-red-hover"
+            onClick={() => setAddReturnModalOpen(true)}
           />
+        )}
+      </div>
+    );
+  }
+
+  if (productionTab === '생산 내역') {
+    return (
+      <div className="flex gap-2">
+        <MiniBtn
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+        />
+        {pageStatus === '생산 완료' && (
           <MiniBtn
             text="다음"
             textColor="text-primary"
@@ -144,16 +168,8 @@ const TopBarContent = ({
               }
             }}
           />
-        </div>
-      );
-    }
-    return (
-      <MiniBtn
-        text="세금계산서 생성"
-        textColor="text-dg"
-        borderColor="border-lg"
-        hoverColor="hover:bg-bg"
-      />
+        )}
+      </div>
     );
   }
 
@@ -173,13 +189,15 @@ const TopBarContent = ({
           hoverColor="hover:bg-red-hover"
           onClick={() => setAddReturnModalOpen(true)}
         />
-        <MiniBtn
-          text="보관함으로 이동"
-          textColor="text-primary"
-          bgColor="bg-primary-8"
-          hoverColor="hover:bg-secondary-hover"
-          onClick={onMoveToStorageClick}
-        />
+        {(pageStatus === '납품' || pageStatus === 'delivery') && (
+          <MiniBtn
+            text="보관함으로 이동"
+            textColor="text-primary"
+            bgColor="bg-primary-8"
+            hoverColor="hover:bg-secondary-hover"
+            onClick={onMoveToStorageClick}
+          />
+        )}
       </div>
     );
   }

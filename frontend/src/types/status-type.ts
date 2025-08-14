@@ -113,8 +113,8 @@ export const InventoryStatusColorMap: Record<
 };
 
 // 프로젝트 로그 타입
-export type ProjectLogType = '메모' | '반품' | '계획 변경';
-// memo: 메모 // return: 반품 // plan: 계획 변경
+export type ProjectLogType = 'memo' | 'refund' | 'plan';
+// memo: 메모 // refund: 반품 // plan: 계획 변경
 
 // 알림 타입
 export type NotificationType = 'warning' | 'information' | 'completed';

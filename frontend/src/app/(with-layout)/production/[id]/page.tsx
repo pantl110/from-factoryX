@@ -3,8 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect, Suspense, useCallback } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
-import { useGetProjectStatus } from '@/hooks';
-import useGetDetailQuotation from '@/hooks/document/use-get-quotation';
+import { useGetProjectStatus, useGetDetailQuotation } from '@/hooks';
 import ProductFlowTitle from '../product-flow-title';
 import ProductionPlan from '../production-plan';
 import ProductionMonitor from '../production-monitor';
@@ -18,14 +17,22 @@ import { ProductionTabType } from '@/components/top-bar/types';
 import Spinner from '@/ui/spinner';
 import useUpdateProjectStatus from '@/hooks/project/use-update-project-status';
 import AddReturnModal from '../delivery/modals/add-return-modal/add-return-modal';
+import { ProjectStatusResponseModel } from '@/types/data-model';
 
-const getTabsByStatus = (status: ProjectStatusType): ProductionTabType[] => {
+const getTabsByStatus = (
+  status: ProjectStatusType,
+  isRefund: boolean
+): ProductionTabType[] => {
   if (status === 'pending' || status === '생산 대기')
     return ['생산 계획', '주문서'];
   if (status === 'production' || status === '생산 중')
-    return ['생산 현황', '생산 계획', '주문서'];
+    return isRefund
+      ? ['납품', '생산 현황', '생산 계획', '주문서']
+      : ['생산 현황', '생산 계획', '주문서'];
   if (status === 'manufactured' || status === '생산 완료')
-    return ['생산 현황', '생산 내역', '주문서'];
+    return isRefund
+      ? ['납품', '생산 현황', '생산 내역', '주문서']
+      : ['생산 현황', '생산 내역', '주문서'];
   if (status === 'delivery' || status === '납품')
     return ['납품', '생산 현황', '생산 내역', '주문서'];
   if (status === 'completed' || status === '프로젝트 완료')
@@ -50,18 +57,11 @@ const ProductionPageContent = () => {
   const setProductionTab = usePageStatusStore(
     (state) => state.setProductionTab
   );
+  const setIsRefund = usePageStatusStore((state) => state.setIsRefund);
 
   // 프로젝트 상태 데이터
-  const [projectStatus, setProjectStatus] = useState<{
-    project_id: number;
-    quotation_id: number;
-    status: ProjectStatusType;
-    created_at: string;
-    updated_at: string;
-    earliest_start_date?: string;
-    latest_end_date?: string;
-    due_date?: string;
-  } | null>(null);
+  const [projectStatus, setProjectStatus] =
+    useState<ProjectStatusResponseModel | null>(null);
 
   // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
   const { data: quotationData } = useGetDetailQuotation(
@@ -76,13 +76,17 @@ const ProductionPageContent = () => {
       try {
         const result = await getProjectStatus(projectId);
         if (result.success && result.data) {
-          setProjectStatus(result.data);
+          setProjectStatus(result.data as ProjectStatusResponseModel);
           // 프로젝트 상태를 store에 업데이트
           const projectStatus = result.data.status as ProjectStatusType;
-          const tabs = getTabsByStatus(projectStatus);
+          const tabs = getTabsByStatus(
+            projectStatus,
+            result.data.is_refunded || false
+          );
 
           setPageStatus(projectStatus);
           setProductionTab(tabs[selectedTab]);
+          setIsRefund(result.data.is_refunded || false);
         } else {
           alert('프로젝트 상태 로드 실패');
         }
@@ -102,13 +106,17 @@ const ProductionPageContent = () => {
     try {
       const result = await getProjectStatus(projectId);
       if (result.success && result.data) {
-        setProjectStatus(result.data);
+        setProjectStatus(result.data as ProjectStatusResponseModel);
         // 프로젝트 상태를 store에 업데이트
         const projectStatus = result.data.status as ProjectStatusType;
-        const tabs = getTabsByStatus(projectStatus);
+        const tabs = getTabsByStatus(
+          projectStatus,
+          result.data.is_refunded || false
+        );
 
         setPageStatus(projectStatus);
         setProductionTab(tabs[selectedTab]);
+        setIsRefund(result.data.is_refunded || false);
       }
     } catch {
       alert('프로젝트 상태 리로드 실패');
@@ -156,7 +164,10 @@ const ProductionPageContent = () => {
 
   const projectStatusType =
     (projectStatus?.status as ProjectStatusType) || 'quotation';
-  const tabs = getTabsByStatus(projectStatusType);
+  const tabs = getTabsByStatus(
+    projectStatusType,
+    projectStatus?.is_refunded || false
+  );
 
   if (isLoading) {
     return (

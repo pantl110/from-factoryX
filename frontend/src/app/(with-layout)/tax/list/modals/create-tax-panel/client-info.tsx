@@ -1,14 +1,18 @@
 import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
-import { formatBusinessNumber } from '@/hooks/format-number';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { ClientInfoFormData } from '../../type';
+import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
+import { ClientResponseModel } from '@/types/data-model';
+import { useGetClient, formatBusinessNumber } from '@/hooks';
 
 interface ClientInfoProps {
   onFormChange: (
     isValid: boolean,
     isDirty: boolean,
-    hasRequiredValues: boolean
+    hasRequiredValues: boolean,
+    clientId?: number,
+    formData?: ClientInfoFormData
   ) => void;
   showErrors?: boolean;
 }
@@ -37,6 +41,20 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
     Set<keyof ClientInfoFormData>
   >(new Set());
 
+  // 검색 관련 상태
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<ClientResponseModel[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState<
+    number | undefined
+  >();
+
+  // useGetClient 훅 사용
+  const { searchClients, getClients } = useGetClient();
+
+  // 디바운싱을 위한 타이머 ref
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // 폼 데이터 실시간 감시
   const formData = watch();
 
@@ -49,10 +67,123 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
       formData.businessCategory
   );
 
-  // 폼 상태가 변경될 때마다 부모 컴포넌트에 알림
+  // 검색 함수를 useCallback으로 메모이제이션
+  const performSearch = useCallback(
+    async (query: string) => {
+      if (query.trim().length === 0) {
+        setSearchResults([]);
+        setIsDropdownOpen(false);
+        return;
+      }
+
+      try {
+        // 먼저 totalCnt를 확인하기 위해 page_size=1로 호출
+        const countResult = await searchClients(query);
+        if (!countResult.success || !countResult.data) {
+          setSearchResults([]);
+          setIsDropdownOpen(false);
+          return;
+        }
+
+        const totalCount = countResult.data.totalCnt;
+
+        // totalCnt가 0이면 결과 없음
+        if (totalCount === 0) {
+          setSearchResults([]);
+          setIsDropdownOpen(false);
+          return;
+        }
+
+        // totalCnt만큼 page_size를 설정해서 모든 결과를 한 번에 가져오기
+        const allResultsResult = await getClients({
+          q: query,
+          page: 1,
+          page_size: totalCount,
+        });
+
+        if (allResultsResult.success && allResultsResult.data) {
+          setSearchResults(allResultsResult.data.data || []);
+          setIsDropdownOpen(true);
+        } else {
+          setSearchResults([]);
+          setIsDropdownOpen(false);
+        }
+      } catch (error) {
+        setSearchResults([]);
+        setIsDropdownOpen(false);
+      }
+    },
+    [searchClients, getClients]
+  );
+
+  // 검색어 변경 시 디바운싱 적용
   useEffect(() => {
-    onFormChange(isValid, isDirty, hasRequiredValues);
-  }, [isValid, isDirty, hasRequiredValues, onFormChange]);
+    // 이전 타이머 클리어
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+
+    // 새 타이머 설정 (300ms 디바운싱)
+    searchTimerRef.current = setTimeout(() => {
+      performSearch(searchQuery);
+    }, 300);
+
+    // 클린업 함수
+    return () => {
+      if (searchTimerRef.current) {
+        clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, [searchQuery, performSearch]);
+
+  // 거래처 선택 핸들러
+  const handleClientSelect = (client: ClientResponseModel) => {
+    // 선택된 거래처 ID 저장
+    setSelectedClientId(client.id);
+
+    // 선택된 거래처 정보로 모든 폼 필드 자동 채우기
+    setValue('companyName', client.name, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue('businessNumber', client.business_registration_number || '', {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue('representativeName', client.representative_name || '', {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue('businessType', client.business_type || '', {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue('businessCategory', client.business_category || '', {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue('address', client.address || '', {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
+    // 검색 쿼리와 드롭다운 상태 업데이트
+    setSearchQuery(client.name);
+    setIsDropdownOpen(false);
+    setSearchResults([]);
+  };
+
+  // 폼 상태가 변경될 때마다 부모 컴포넌트에 알림 (의존성 배열에서 onFormChange 제거)
+  useEffect(() => {
+    onFormChange(
+      isValid,
+      isDirty,
+      hasRequiredValues,
+      selectedClientId,
+      formData
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid, isDirty, hasRequiredValues, selectedClientId]); // formData 제거
 
   // showErrors가 true가 되면 유효성 검사 실행
   useEffect(() => {
@@ -94,19 +225,35 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
       <h3 className="Heading-3">거래처 정보</h3>
       <form className="flex flex-col gap-4">
         <div className="flex gap-2">
-          <div className="flex-1">
+          <div className="flex-1 relative">
             <Input
               label="업체명"
               required
               placeholder="업체명을 입력하세요."
               showError={shouldShowError('companyName')}
-              {...register('companyName', {
-                required: '업체명은 필수입니다.',
-                onChange: (e) => {
-                  handleFieldChange('companyName');
-                },
-              })}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setValue('companyName', e.target.value, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+                handleFieldChange('companyName');
+              }}
             />
+            {isDropdownOpen && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 z-10 mt-1">
+                <ClientNameDropdown
+                  items={searchResults}
+                  onSelect={handleClientSelect}
+                  onClose={() => {
+                    setIsDropdownOpen(false);
+                    setSearchResults([]);
+                  }}
+                  width="100%"
+                />
+              </div>
+            )}
           </div>
           <div className="flex-1">
             <Input

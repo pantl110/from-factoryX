@@ -3,18 +3,25 @@ import SellerInfo from './seller-info';
 import ClientInfo from './client-info';
 import MiniBtn from '@/ui/mini-btn';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
-import EmptySpace from '@/ui/empty-space';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AddItemDropdown from './add-item-dropdown';
 import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
 import IssueTypeDropdown from './issue-type-dropdown';
-import { useUpdateFactory, useCreateTaxInvoice } from '@/hooks';
+import {
+  useUpdateFactory,
+  useCreateTaxInvoice,
+  useCreateClient,
+  useUpdateClient,
+} from '@/hooks';
 import useFactoryStore from '@/store/factory-store';
 import {
   FactoriesUpdateModel,
   CreateTaxInvoiceModel,
+  ClientModel,
+  ClientUpdateModel,
 } from '@/types/data-model';
 import { ClientInfoFormData, SellerInfoFormData } from '../../type';
+import ProductInfo from './product-info';
 
 interface CreatTaxPanelProps {
   onClose: () => void;
@@ -45,53 +52,50 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
   const [isClientInfoDirty, setIsClientInfoDirty] = useState(false);
   const [hasClientInfoRequiredValues, setHasClientInfoRequiredValues] =
     useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<
+    number | undefined
+  >();
+  const [clientInfoFormData, setClientInfoFormData] =
+    useState<ClientInfoFormData | null>(null);
+
+  // 저장 중 상태
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 새로운 품목 추가 디테일판넬 상태
+  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
   // 공장 정보 업데이트 훅
-  const { updateFactory, isLoading: isUpdatingFactory } = useUpdateFactory();
+  const { updateFactory } = useUpdateFactory();
+
+  // 거래처 생성/수정 훅
+  const { createClient } = useCreateClient();
+  const { updateClient } = useUpdateClient();
+
   const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 세금계산서 생성 훅
-  const { createTaxInvoice, isLoading: isCreatingTaxInvoice } =
-    useCreateTaxInvoice();
-
-  // 발행방식 선택 버튼 클릭 핸들러
-  const handleIssueTypeDropdownOpen = () => {
-    // 두 폼 모두 유효해야 드롭다운 열기
-    if (!isSellerInfoValid || !isClientInfoValid) {
-      setShowErrors(true);
-      return;
-    }
-
-    // 폼이 유효하면 에러 표시 해제하고 드롭다운 열기
-    setShowErrors(false);
-
-    // 공장 정보 업데이트 실행
-    // if (sellerInfoFormData) {
-    //   updateFactoryInfo(sellerInfoFormData);
-    // }
-
-    setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);
-  };
+  const { createTaxInvoice } = useCreateTaxInvoice();
 
   // 세금계산서 생성 함수
-  const handleCreateTaxInvoice = async (
-    taxInvoiceData: CreateTaxInvoiceModel
-  ) => {
-    try {
-      // 실제 세금계산서 생성 API 호출
-      const result = await createTaxInvoice(taxInvoiceData);
+  const handleCreateTaxInvoice = useCallback(
+    async (taxInvoiceData: CreateTaxInvoiceModel) => {
+      try {
+        // 실제 세금계산서 생성 API 호출
+        const result = await createTaxInvoice(taxInvoiceData);
 
-      if (result.success) {
-        return true;
-      } else {
-        alert(result.error || '세금계산서 생성에 실패했습니다.');
+        if (result.success) {
+          return true;
+        } else {
+          alert(result.error || '세금계산서 생성에 실패했습니다.');
+          return false;
+        }
+      } catch (error) {
+        alert('세금계산서 생성 실패: ' + error);
         return false;
       }
-    } catch (error) {
-      alert('세금계산서 생성 실패: ' + error);
-      return false;
-    }
-  };
+    },
+    [createTaxInvoice]
+  );
 
   // 발행방식 선택 핸들러
   const handleIssueTypeSelect = (issueType: '청구' | '영수') => {
@@ -113,36 +117,41 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
     setSelectedIssueType(null);
   };
 
-  const handleModalConfirm = () => {
-    // 여기서 다음 모달을 띄우거나 다른 처리를 할 수 있습니다
-    // console.log("모달 확인 버튼 클릭됨");
-  };
-
   // 판매처 정보 폼 유효성 및 변경 상태 변경 핸들러
-  const handleSellerInfoChange = (
-    isValid: boolean,
-    isDirty: boolean,
-    hasRequiredValues: boolean,
-    isOtherFieldsDirty: boolean,
-    formData: SellerInfoFormData
-  ) => {
-    setIsSellerInfoValid(isValid);
-    setIsSellerInfoDirty(isDirty);
-    setHasSellerInfoRequiredValues(hasRequiredValues);
-    setIsSellerInfoOtherFieldsDirty(isOtherFieldsDirty);
-    setSellerInfoFormData(formData);
-  };
+  const handleSellerInfoChange = useCallback(
+    (
+      isValid: boolean,
+      isDirty: boolean,
+      hasRequiredValues: boolean,
+      isOtherFieldsDirty: boolean,
+      formData: SellerInfoFormData
+    ) => {
+      setIsSellerInfoValid(isValid);
+      setIsSellerInfoDirty(isDirty);
+      setHasSellerInfoRequiredValues(hasRequiredValues);
+      setIsSellerInfoOtherFieldsDirty(isOtherFieldsDirty);
+      setSellerInfoFormData(formData);
+    },
+    []
+  );
 
   // 거래처 정보 폼 유효성 및 변경 상태 변경 핸들러
-  const handleClientInfoChange = (
-    isValid: boolean,
-    isDirty: boolean,
-    hasRequiredValues: boolean
-  ) => {
-    setIsClientInfoValid(isValid);
-    setIsClientInfoDirty(isDirty);
-    setHasClientInfoRequiredValues(hasRequiredValues);
-  };
+  const handleClientInfoChange = useCallback(
+    (
+      isValid: boolean,
+      isDirty: boolean,
+      hasRequiredValues: boolean,
+      clientId?: number,
+      formData?: ClientInfoFormData
+    ) => {
+      setIsClientInfoValid(isValid);
+      setIsClientInfoDirty(isDirty);
+      setHasClientInfoRequiredValues(hasRequiredValues);
+      setSelectedClientId(clientId);
+      setClientInfoFormData(formData || null);
+    },
+    []
+  );
 
   // showErrors가 true일 때 폼이 모두 유효해지면 자동으로 false로 변경
   useEffect(() => {
@@ -167,32 +176,152 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
     }
   };
 
+  // 거래처 정보 생성 함수
+  const createClientInfo = useCallback(
+    async (clientFormData: ClientInfoFormData) => {
+      if (!factoryId)
+        return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
+
+      const clientData: ClientModel = {
+        factory_id: factoryId,
+        name: clientFormData.companyName || '',
+        business_registration_number: clientFormData.businessNumber || '',
+        representative_name: clientFormData.representativeName || '',
+        business_type: clientFormData.businessType || '',
+        business_category: clientFormData.businessCategory || '',
+        address: clientFormData.address || '',
+      };
+
+      return await createClient(clientData);
+    },
+    [factoryId, createClient]
+  );
+
+  // 거래처 정보 수정 함수
+  const updateClientInfo = useCallback(
+    async (clientId: number, clientFormData: ClientInfoFormData) => {
+      if (!factoryId)
+        return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
+
+      const clientData: ClientUpdateModel = {
+        client_id: clientId,
+        factory_id: factoryId,
+        name: clientFormData.companyName || '',
+        business_registration_number: clientFormData.businessNumber || '',
+        representative_name: clientFormData.representativeName || '',
+        business_type: clientFormData.businessType || '',
+        business_category: clientFormData.businessCategory || '',
+        address: clientFormData.address || '',
+      };
+
+      return await updateClient(clientData);
+    },
+    [factoryId, updateClient]
+  );
+
   // 임시 저장 버튼 클릭 핸들러
-  const handleTemporarySave = () => {
-    // 공장 정보 업데이트
-    if (isSellerInfoOtherFieldsDirty && sellerInfoFormData) {
-      updateFactoryInfo(sellerInfoFormData);
+  const handleTemporarySave = async () => {
+    setIsSaving(true);
+
+    try {
+      // 공장 정보 업데이트
+      if (isSellerInfoOtherFieldsDirty && sellerInfoFormData) {
+        updateFactoryInfo(sellerInfoFormData);
+      }
+
+      // 거래처 정보 처리
+      if (selectedClientId === undefined) {
+        // 새로운 거래처 생성
+        if (clientInfoFormData) {
+          const createResult = await createClientInfo(clientInfoFormData);
+          if (createResult.success && createResult.data) {
+            // 생성된 거래처 ID로 상태 업데이트
+            setSelectedClientId(createResult.data.id);
+          } else {
+            alert(
+              '거래처 생성에 실패했습니다: ' +
+                (createResult.error || '알 수 없는 오류')
+            );
+            setIsSaving(false);
+            return;
+          }
+        }
+      } else {
+        // 기존 거래처 정보 수정
+        if (isClientInfoDirty && clientInfoFormData) {
+          const updateResult = await updateClientInfo(
+            selectedClientId,
+            clientInfoFormData
+          );
+          if (!updateResult.success) {
+            alert(
+              '거래처 정보 수정에 실패했습니다: ' +
+                (updateResult.error || '알 수 없는 오류')
+            );
+            setIsSaving(false);
+            return;
+          }
+        }
+      }
+
+      // 세금계산서 생성
+      if (selectedClientId && factoryId) {
+        const taxInvoiceData: CreateTaxInvoiceModel = {
+          factory: factoryId,
+          client: selectedClientId,
+          product: [],
+          line_items: [],
+          transaction_date: sellerInfoFormData?.writeDate || '',
+        };
+        await handleCreateTaxInvoice(taxInvoiceData);
+      }
+
+      // 판넬 닫기
+      onClose();
+    } catch (error) {
+      alert('저장 중 오류가 발생했습니다: ' + error);
+    } finally {
+      setIsSaving(false);
     }
+  };
 
-    // client_id 없으면 거래처 정보 생성
+  // 발행방식 선택 버튼 클릭 핸들러
+  const handleIssueTypeDropdownOpen = () => {
+    // 두 폼 모두 유효해야 드롭다운 열기
+    if (!isSellerInfoValid || !isClientInfoValid) {
+      setShowErrors(true);
+      return;
+    }
+    // 폼이 유효하면 에러 표시 해제하고 드롭다운 열기
+    setShowErrors(false);
+    setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);
+  };
 
-    // client_id 있으면 거래처 정보 업데이트
-    // if (isClientInfoDirty && clientInfoFormData) {
+  const handleModalConfirm = () => {
+    // 여기서 다음 모달을 띄우거나 다른 처리를 할 수 있습니다
+    // console.log("모달 확인 버튼 클릭됨");
+    // 공장 정보 업데이트 실행
+    // if (sellerInfoFormData) {
+    //   updateFactoryInfo(sellerInfoFormData);
     // }
+  };
 
-    // 세금계산서 생성
+  // ClaimReceiptTaxModal용 래퍼 함수 (매개변수 없이 호출) // ‼️‼️‼️‼️‼️ 수정 필요
+  const handleCreateTaxInvoiceForModal = useCallback(async () => {
     const taxInvoiceData: CreateTaxInvoiceModel = {
       factory: factoryId || 0,
-      client: 1, // TODO: 실제 거래처 ID로 교체 필요
+      client: selectedClientId || 1, // 선택된 거래처 ID 사용, 없으면 기본값 1
       product: [], // TODO: 실제 품목 ID 리스트로 교체 필요
       line_items: [],
       transaction_date: sellerInfoFormData?.writeDate || '',
     };
-    handleCreateTaxInvoice(taxInvoiceData);
-
-    // 판넬 닫기
-    onClose();
-  };
+    return await handleCreateTaxInvoice(taxInvoiceData);
+  }, [
+    factoryId,
+    sellerInfoFormData?.writeDate,
+    handleCreateTaxInvoice,
+    selectedClientId,
+  ]);
 
   // 헤더 버튼 구성
   const headerButton = (
@@ -203,9 +332,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
         bgColor="bg-primary-8"
         hoverColor="hover:bg-secondary-hover"
         onClick={handleTemporarySave}
-        disabled={
-          (!isSellerInfoDirty && !isClientInfoDirty) || isCreatingTaxInvoice
-        }
+        disabled={(!isSellerInfoDirty && !isClientInfoDirty) || isSaving}
       />
       <div className="relative">
         <MiniBtn
@@ -219,7 +346,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
           disabled={
             !hasSellerInfoRequiredValues ||
             !hasClientInfoRequiredValues ||
-            isCreatingTaxInvoice
+            isSaving
           }
         />
         {isIssueTypeDropdownOpen && (
@@ -262,21 +389,20 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
               <div className="absolute top-12 right-0">
                 <AddItemDropdown
                   onClose={() => setIsAddProductDropdownOpen(false)}
-                  onSelect={() => {
+                  onSelect={(action) => {
                     setIsAddProductDropdownOpen(false);
+                    if (action === 'new') {
+                      setIsProductDetailOpen(true);
+                    }
                   }}
                 />
               </div>
             )}
           </div>
-
-          <div>
-            <EmptySpace
-              title="품목이 아직 등록되지 않았어요."
-              description="선발행된 세금계산서에는 추후 품목이 추가될 수 있어요."
-              height="h-50"
-            />
-          </div>
+          <ProductInfo
+            setIsProductDetailOpen={setIsProductDetailOpen}
+            isProductDetailOpen={isProductDetailOpen}
+          />
         </div>
       </Panel>
 
@@ -286,7 +412,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
           onClose={handleModalClose}
           onConfirm={handleModalConfirm}
           issueType={selectedIssueType}
-          onCreateTaxInvoice={handleCreateTaxInvoice}
+          onCreateTaxInvoice={handleCreateTaxInvoiceForModal}
         />
       )}
     </>

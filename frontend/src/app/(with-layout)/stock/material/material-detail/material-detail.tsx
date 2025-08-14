@@ -441,20 +441,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             </div>
 
             <MaterialStockLog
-              // startDate={
-              //   stockLogPeriodSelector.selectedPeriod === '직접 설정'
-              //     ? stockLogPeriodSelector.customStartDate
-              //     : (stockLogPeriodSelector.createFilters(
-              //         stockLogPeriodSelector.selectedPeriod
-              //       ).start_date as string)
-              // }
-              // endDate={
-              //   stockLogPeriodSelector.selectedPeriod === '직접 설정'
-              //     ? stockLogPeriodSelector.customEndDate
-              //     : (stockLogPeriodSelector.createFilters(
-              //         stockLogPeriodSelector.selectedPeriod
-              //       ).end_date as string)
-              // }
               histories={stockHistories?.data}
               isLoading={isStockLoading}
               currentPage={currentPage}

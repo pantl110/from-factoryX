@@ -3,14 +3,17 @@ import DropdownItem from '@/ui/dropdown/dropdown-item';
 
 interface AddItemDropdownProps {
   onClose: () => void;
-  onSelect: () => void;
+  onSelect: (action: 'existing' | 'new') => void;
 }
 
 const AddItemDropdown = ({ onClose, onSelect }: AddItemDropdownProps) => {
   return (
     <Dropdown onClose={onClose} width="w-[180px]">
-      <DropdownItem text="기존 품목 추가" onClick={onSelect} />
-      <DropdownItem text="새로운 품목 추가" onClick={onSelect} />
+      <DropdownItem
+        text="기존 품목 추가"
+        onClick={() => onSelect('existing')}
+      />
+      <DropdownItem text="새로운 품목 추가" onClick={() => onSelect('new')} />
     </Dropdown>
   );
 };
