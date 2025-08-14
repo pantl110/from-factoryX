@@ -50,7 +50,7 @@ const useGetTodayProductionPlans = () => {
         }
       );
 
-      if (response.status === 200) {
+      if (response.ok) {
         const result: TodayProductionPlanModel[] = await response.json();
         return { success: true, data: result };
       } else {

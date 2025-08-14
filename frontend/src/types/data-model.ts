@@ -563,6 +563,7 @@ export interface QuotationProductHistoryItemResponseModel {
   quantity: number; // 제작 수량
   unit_price: number; // 단가
   total_amount: number; // 금액 (수량*단가)
+  created_at: string;
 }
 
 /////////////////////////////
