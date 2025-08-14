@@ -1,10 +1,21 @@
 from datetime import date
 from typing import List, Optional
 from ninja import Schema, ModelSchema
-from tax.models import NationalTaxService
+from tax.models import NationalTaxService, CashReceipt
+from factory.schemas.outbound import FactoryClientOut
+from stock.schemas.outbound import ProductOut, MaterialDetailOut
 
 
 class NationalTaxServiceOut(ModelSchema):
+    class Meta:
+        model = NationalTaxService
+        fields = "__all__"
+
+
+class NationalTaxServiceDetailOut(ModelSchema):
+    client: FactoryClientOut
+    product: ProductOut
+
     class Meta:
         model = NationalTaxService
         fields = "__all__"
@@ -85,3 +96,13 @@ class CashReceiptByMaterialOut(Schema):
     representative_name: Optional[str] = None
     address: Optional[str] = None
     materials: List[CashReceiptMaterialInfoOut]
+
+
+class CashReceiptDetailOut(ModelSchema):
+    client: FactoryClientOut
+    product: List[ProductOut]
+    # material: MaterialDetailOut
+
+    class Meta:
+        model = CashReceipt
+        fields = "__all__"

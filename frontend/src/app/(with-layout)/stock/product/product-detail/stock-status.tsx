@@ -1,41 +1,79 @@
-import StockStatusItem from "./stock-status-item";
+import StockStatusItem from './stock-status-item';
+import {
+  MaterialProductConnectionModel,
+  ProductMaterialConnectionModel,
+  MaterialResponseModel,
+} from '@/types/data-model';
+import NoHistoryBox from '@/ui/no-history-box';
 
-const StockStatus = () => {
+type ConnectionModelType =
+  | MaterialProductConnectionModel
+  | ProductMaterialConnectionModel;
+
+interface StockStatusProps {
+  setIsMaterialDetailPanelOpen: (isOpen: boolean) => void;
+  setMaterialId: (id: number) => void;
+  connections: ConnectionModelType[];
+  materialDetails: Record<number, MaterialResponseModel>;
+  setIsQuantityDirty: (isDirty: boolean) => void;
+  handleQuantityChange: (connectionId: number, newQuantity: number) => void;
+  onDeleteConnection: (connectionId: number) => void;
+  onInvalidQuantity: (message: string, subtext?: string) => void;
+}
+
+const StockStatus = ({
+  setIsMaterialDetailPanelOpen,
+  setMaterialId,
+  connections,
+  materialDetails,
+  setIsQuantityDirty,
+  handleQuantityChange,
+  onDeleteConnection,
+  onInvalidQuantity,
+}: StockStatusProps) => {
   return (
-    <div>
-      <div className="flex items-center h-12 border-t border-b border-[#eeeeee] Me_Body-1">
-        <p className="flex-1 py-1 px-3 text-sv">자재명</p>
-        <p className="flex-1 py-1 px-3 text-sv">자재 코드</p>
-        <p className="flex-1 py-1 px-3 text-sv">투입 수량</p>
-        <p className="w-[80px] py-1 px-3 text-sv">단위</p>
-        <p className="flex-1 py-1 px-3 text-sv">재고 상태</p>
-        <p className="flex-1 py-1 px-3 text-sv">입고 일자</p>
-      </div>
-      <StockStatusItem
-        materialName="알루미늄 시트"
-        materialCode="PRM-001"
-        inputQuantity="2.0"
-        unit="m"
-        status="충분"
-        date="2026-07-09"
-      />{" "}
-      <StockStatusItem
-        materialName="투명 필름지"
-        materialCode="PRM-014"
-        inputQuantity="1.2"
-        unit="m"
-        status="부족"
-        date="2026-07-05"
-      />{" "}
-      <StockStatusItem
-        materialName="고강도 플리카보 고강도 플리카보"
-        materialCode="PRM-001"
-        inputQuantity="3.5"
-        unit="m"
-        status="충분"
-        date="2026-07-01"
-      />
-    </div>
+    <>
+      {connections && Array.isArray(connections) && connections.length > 0 ? (
+        <div>
+          <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+            <p className="flex-1 px-3 text-sv">자재명</p>
+            <p className="flex-1 px-3 text-sv">자재 코드</p>
+            <p className="flex-1 px-3 text-sv">규격</p>
+            <p className="flex-[0.5] px-3 text-sv">단위</p>
+            <p className="flex-[0.5] px-3 text-sv">사용 수량</p>
+            <p className="flex-[0.8] px-3 text-sv">자재 재고 상태</p>
+            <div className="w-9" />
+          </div>
+
+          {connections.map((connection: ConnectionModelType, index: number) => {
+            // MaterialProductConnectionModel인지 확인
+            if ('material_id' in connection) {
+              const materialDetail = materialDetails[connection.material_id];
+
+              return (
+                <StockStatusItem
+                  key={index}
+                  connection={connection as MaterialProductConnectionModel}
+                  materialDetail={materialDetail}
+                  setIsMaterialDetailPanelOpen={setIsMaterialDetailPanelOpen}
+                  setMaterialId={setMaterialId}
+                  setIsQuantityDirty={setIsQuantityDirty}
+                  handleQuantityChange={handleQuantityChange}
+                  onDeleteConnection={onDeleteConnection}
+                  onInvalidQuantity={onInvalidQuantity}
+                />
+              );
+            }
+            return null; // ProductMaterialConnectionModel은 표시하지 않음
+          })}
+        </div>
+      ) : (
+        <NoHistoryBox
+          title="이 품목에 연결된 원자재가 아직 없어요."
+          text="원자재를 연결하면 이곳에서 재고 상태를 확인할 수 있어요."
+        />
+      )}
+    </>
   );
 };
 

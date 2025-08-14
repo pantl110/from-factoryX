@@ -1,0 +1,356 @@
+import MiniBtn from '@/ui/mini-btn';
+import Modal from '@/ui/modal/modal';
+import SearchInput from '@/ui/search-input';
+import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
+import { useState, useEffect } from 'react';
+import ManualAddMaterial from '../../material/modals/manual-add-material';
+import {
+  MaterialItemModel,
+  MaterialResponseModel,
+  MaterialListResponseModel,
+} from '@/types/data-model';
+import {
+  useGetMaterial,
+  useMaterialProduct,
+  useCreateMaterial,
+  useToast,
+} from '@/hooks';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
+import useFactoryStore from '@/store/factory-store';
+import ConnetionItem from '../../modals/connetion-item';
+
+interface ConnectMaterialModalProps {
+  onClose: () => void;
+  productId: number | null;
+  onSuccess?: () => void | Promise<void>;
+}
+
+const ConnectMaterialModal = ({
+  onClose,
+  productId,
+  onSuccess,
+}: ConnectMaterialModalProps) => {
+  const [input, setInput] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [newMaterials, setNewMaterials] = useState<MaterialItemModel[]>([]); // 수동 추가한 새로운 원자재
+  const [isManualAddMode, setIsManualAddMode] = useState(false);
+  const [filteredMaterials, setFilteredMaterials] = useState<
+    MaterialResponseModel[]
+  >([]);
+  const [allMaterialCodes, setAllMaterialCodes] = useState<string[]>([]); // 모든 원자재 코드
+  const { getMaterialList, getAllMaterials } = useGetMaterial();
+  const { createMaterialProduct, isLoading: isConnecting } =
+    useMaterialProduct();
+  const { createMaterial, isLoading: isCreating } = useCreateMaterial();
+  const { isToastOpen, isVisible, showToast } = useToast();
+  const factoryId = useFactoryStore((state) => state.factoryId);
+
+  const [selectedMaterials, setSelectedMaterials] = useState<
+    MaterialItemModel[]
+  >([]);
+
+  // 모든 원자재 정보 가져오기
+  const fetchAllMaterials = async () => {
+    try {
+      const result = await getAllMaterials();
+      if (result.success && result.data) {
+        const codes = result.data.map((material) => material.code);
+        setAllMaterialCodes(codes);
+      }
+    } catch (error) {
+      console.error('원자재 목록 가져오기 실패:', error);
+    }
+  };
+
+  // 컴포넌트 마운트 시 모든 원자재 정보 가져오기
+  useEffect(() => {
+    fetchAllMaterials();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 검색어가 변경될 때 서버에서 검색
+  useEffect(() => {
+    const searchMaterials = async () => {
+      if (input.trim()) {
+        // 첫 페이지를 가져와서 전체 페이지 수 확인
+        const firstPageResult = await getMaterialList({
+          q: input,
+          page: 1,
+          page_size: 10,
+        });
+
+        if (firstPageResult.success && firstPageResult.data) {
+          const { totalCnt } =
+            firstPageResult.data as MaterialListResponseModel;
+
+          // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
+          const allDataResult = await getMaterialList({
+            q: input,
+            page: 1,
+            page_size: totalCnt,
+          });
+
+          if (allDataResult.success && allDataResult.data) {
+            setFilteredMaterials(allDataResult.data.data);
+          }
+        }
+      } else {
+        setFilteredMaterials([]);
+      }
+    };
+
+    const timeoutId = setTimeout(searchMaterials, 150); // 디바운스
+    return () => clearTimeout(timeoutId);
+  }, [input, getMaterialList]);
+
+  // 원자재 선택 시
+  const handleSelectMaterial = (item: MaterialResponseModel) => {
+    setInput('');
+    setSelectedMaterials((prev) => {
+      if (!prev.some((mat) => mat.code === item.code)) {
+        // MaterialResponseModel을 MaterialItemModel로 변환
+        const materialItem: MaterialItemModel = {
+          id: item.id,
+          name: item.name,
+          code: item.code,
+          spec: item.spec,
+          unit: item.unit,
+          quantity: null, // 사용자가 입력할 수량
+          price: null, // 사용자가 입력할 단가
+        };
+        return [...prev, materialItem];
+      }
+      return prev;
+    });
+    setIsDropdownOpen(false);
+  };
+
+  const handleRemoveMaterial = (code: string) => {
+    setSelectedMaterials((prev) => prev.filter((mat) => mat.code !== code));
+  };
+
+  const handleRemoveNewMaterial = (code: string) => {
+    setNewMaterials((prev) => prev.filter((mat) => mat.code !== code));
+  };
+
+  // 원자재 수량 변경
+  const handleMaterialQuantityChange = (code: string, newQuantity: number) => {
+    // 기존 원자재에서 찾기
+    setSelectedMaterials((prev) =>
+      prev.map((mat) =>
+        mat.code === code ? { ...mat, quantity: newQuantity } : mat
+      )
+    );
+
+    // 새로운 원자재에서 찾기
+    setNewMaterials((prev) =>
+      prev.map((mat) =>
+        mat.code === code ? { ...mat, quantity: newQuantity } : mat
+      )
+    );
+  };
+
+  // 선택한 원자재들을 제품과 연결
+  const handleConnectMaterials = async () => {
+    if (
+      (selectedMaterials.length === 0 && newMaterials.length === 0) ||
+      !productId
+    )
+      return;
+
+    try {
+      const allMaterialIds: { id: number; quantity: number }[] = [];
+
+      // 1. 새로운 원자재 생성
+      if (newMaterials.length > 0) {
+        if (!factoryId) {
+          alert('공장 정보가 없습니다.');
+          return;
+        }
+
+        // 새로운 원자재들을 먼저 생성
+        const createPayload = newMaterials.map((material) => ({
+          name: material.name,
+          code: material.code,
+          spec: material.spec,
+          unit: material.unit,
+        }));
+
+        const createResult = await createMaterial(createPayload);
+        if (!createResult.success) {
+          alert('새 원자재 생성 실패: ' + createResult.error);
+          return;
+        }
+
+        // 생성된 원자재 ID들을 가져와서 연결 목록에 추가
+        const createdMaterialIds = createResult.data?.material_ids;
+        if (!createdMaterialIds || createdMaterialIds.length === 0) {
+          alert('새 원자재 ID를 가져올 수 없습니다.');
+          return;
+        }
+
+        // 생성된 원자재들을 연결 목록에 추가
+        allMaterialIds.push(
+          ...createdMaterialIds.map((materialId, index) => ({
+            id: materialId,
+            quantity: newMaterials[index]?.quantity || 0,
+          }))
+        );
+      }
+
+      // 2. 기존 원자재 ID들을 연결 목록에 추가
+      if (selectedMaterials.length > 0) {
+        const existingMaterialIds = selectedMaterials.map((material) => ({
+          id: material.id || 0,
+          quantity: material.quantity || 0,
+        }));
+        allMaterialIds.push(...existingMaterialIds);
+      }
+
+      // 3. 모든 원자재를 한 번에 품목에 연결
+      if (allMaterialIds.length > 0) {
+        const connectPayload = {
+          type: 'product' as const,
+          target_id: productId,
+          connections: allMaterialIds,
+        };
+
+        const connectResult = await createMaterialProduct(connectPayload);
+        if (!connectResult.success) {
+          alert('원자재 연결 실패: ' + connectResult.error);
+          return;
+        }
+      }
+
+      onClose();
+      if (onSuccess) {
+        await onSuccess();
+      }
+    } catch (error) {
+      alert('원자재 연결 중 오류가 발생했습니다. ' + error);
+    }
+  };
+
+  return (
+    <Modal
+      title="품목과 연결할 원자재를 선택하거나 새로 추가해 주세요."
+      subtitle="원자재를 선택하거나 새로 추가한 뒤, 사용수량을 설정해 주세요."
+      width="w-[600px]"
+      onClose={onClose}
+      scroll={true}
+    >
+      <div>
+        <div className="my-4 flex gap-2.5 px-6 relative">
+          <SearchInput
+            placeholder="원자재를 검색하세요."
+            width="flex-1"
+            value={input}
+            onChange={setInput}
+            onFocus={() => setIsDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
+          />
+          <MiniBtn
+            text="직접 추가"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            height="h-12"
+            onClick={() => setIsManualAddMode(true)}
+          />
+
+          {isDropdownOpen && input.trim() && filteredMaterials.length > 0 && (
+            <div className="absolute left-6 top-14 z-10 w-[451px] h-[256px] overflow-y-auto">
+              <MaterialNameDropdown
+                items={filteredMaterials}
+                onSelect={handleSelectMaterial}
+                width="w-full"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col px-6 pb-6 max-h-[calc(85vh-181px)] overflow-y-auto">
+          {/* 직접 추가 모드 */}
+          {isManualAddMode ? (
+            <ManualAddMaterial
+              setIsManualAddMode={setIsManualAddMode}
+              setNewMaterials={setNewMaterials}
+              existingMaterials={allMaterialCodes}
+              selectedMaterials={selectedMaterials}
+              showToast={() => showToast()}
+            />
+          ) : (
+            // 선택한 원자재 list
+            (selectedMaterials.length > 0 || newMaterials.length > 0) && (
+              <div className="flex flex-col gap-3 mb-4">
+                {/* 기존 원자재 */}
+                {selectedMaterials.map((mat) => (
+                  <ConnetionItem
+                    key={mat.code}
+                    name={mat.name}
+                    unit={mat.unit}
+                    quantity={mat.quantity || 0}
+                    onDelete={() => handleRemoveMaterial(mat.code)}
+                    onQuantityChange={(newQuantity) =>
+                      handleMaterialQuantityChange(mat.code, newQuantity)
+                    }
+                  />
+                ))}
+
+                {/* 새로운 원자재 */}
+                {newMaterials.map((mat) => (
+                  <ConnetionItem
+                    key={mat.code}
+                    name={mat.name}
+                    unit={mat.unit}
+                    quantity={mat.quantity || 0}
+                    onDelete={() => handleRemoveNewMaterial(mat.code)}
+                    onQuantityChange={(newQuantity) =>
+                      handleMaterialQuantityChange(mat.code, newQuantity)
+                    }
+                  />
+                ))}
+              </div>
+            )
+          )}
+
+          <div className="flex gap-2.5 justify-end">
+            <MiniBtn
+              text="취소"
+              textColor="text-sv"
+              hoverColor="hover:bg-bg"
+              onClick={onClose}
+            />
+            <MiniBtn
+              text="추가"
+              textColor="text-wh"
+              bgColor="bg-primary"
+              hoverColor="hover:bg-primary-hover"
+              disabled={
+                (selectedMaterials.length === 0 && newMaterials.length === 0) ||
+                isManualAddMode ||
+                isConnecting ||
+                isCreating
+              }
+              onClick={handleConnectMaterials}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 원자재 코드 중복 토스트 */}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text="이미 존재하는 자재코드에요."
+          subtext="다른 자재코드로 수정해주세요."
+          type="red"
+          isVisible={isVisible}
+        />
+      )}
+    </Modal>
+  );
+};
+
+export default ConnectMaterialModal;

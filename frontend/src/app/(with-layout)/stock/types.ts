@@ -1,1 +1,1 @@
-export type StockTabType = "product" | "material";
+export type StockTabType = 'product' | 'material';

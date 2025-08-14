@@ -1,25 +1,65 @@
-import { BellSimple, User, CaretRight } from "@phosphor-icons/react/dist/ssr";
+'use client';
 
-const TopBar = () => {
+import usePageStatusStore, { PageStatusModel } from '@/store/page-status-store';
+import TopBarContent from './top-bar-content';
+import { useState } from 'react';
+import NotificationModal from './modals/notification-modal';
+import TopBarCrumb from './top-bar-crumb';
+
+interface TopBarProps {
+  isSidebarVisible: boolean;
+}
+
+const TopBar = ({ isSidebarVisible }: TopBarProps) => {
+  const pageStatus = usePageStatusStore(
+    (state: PageStatusModel) => state.pageStatus
+  );
+
+  const productionTab = usePageStatusStore((state) => state.productionTab);
+  const stockTab = usePageStatusStore((state) => state.stockTab);
+  const settingTab = usePageStatusStore((state) => state.settingTab);
+  const settingChip = usePageStatusStore((state) => state.settingChip);
+  const setProductionPlanSaveModalOpen = usePageStatusStore(
+    (state) => state.setProductionPlanSaveModalOpen
+  );
+
+  const setMoveToStorageModalOpen = usePageStatusStore(
+    (state) => state.setMoveToStorageModalOpen
+  );
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+
   return (
-    <header className="flex items-center justify-between w-full h-[60px] px-10">
-      <div className="flex items-center gap-1">
-        <p className="Re_Body-1 text-dg">수주관리</p>
-        <CaretRight size={16} className="text-[#8c8c8c]" />
-        <p className="Re_Body-1 text-dg">진행 중인 작업 내역</p>
-      </div>
+    <>
+      <header
+        className={`${
+          isSidebarVisible ? 'w-[calc(100%-256px)]' : 'w-full'
+        } fixed z-40 bg-white border-b border-lg transition-width duration-300`}
+      >
+        <div className="max-w-[1400px] min-w-[1000px] mx-auto px-10 flex items-center justify-between h-[60px]">
+          <TopBarCrumb
+            pageStatus={pageStatus || ''}
+            productionTab={productionTab || undefined}
+            stockTab={stockTab || undefined}
+            settingTab={settingTab || undefined}
+            settingChip={settingChip || undefined}
+          />
 
-      <div className="flex">
-        <div className="flex items-center justify-center w-11 h-11">
-          <BellSimple size={20} className="text-dg" />
+          <TopBarContent
+            pageStatus={pageStatus}
+            productionTab={productionTab}
+            onProductionPlanSaveClick={() =>
+              setProductionPlanSaveModalOpen(true)
+            }
+            onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
+            onNotificationClick={() => setIsNotificationModalOpen(true)}
+          />
         </div>
-        <div className="flex items-center justify-center w-11 h-11">
-          <div className="flex items-center justify-center bg-blue-200 rounded-full w-8 h-8 border-2 border-blue-600">
-            <User size={20} className="text-blue-600" />
-          </div>
-        </div>
-      </div>
-    </header>
+      </header>
+
+      {isNotificationModalOpen && (
+        <NotificationModal onClose={() => setIsNotificationModalOpen(false)} />
+      )}
+    </>
   );
 };
 

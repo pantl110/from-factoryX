@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 interface UseInputProps {
   validate?: (value: string) => string;
@@ -10,13 +10,14 @@ interface UseInputProps {
 
 export const useInput = ({
   validate,
-  initialValue = "",
+  initialValue = '',
   debounceTime = 300,
 }: UseInputProps = {}) => {
   const [value, setValue] = useState(initialValue);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const debounceTimerRef = useRef<number>(-1);
 
+  // 유효성 검사
   const validateValue = useCallback(
     (valueToValidate: string) => {
       if (validate) {
@@ -24,9 +25,10 @@ export const useInput = ({
         setError(errorMessage);
       }
     },
-    [validate],
+    [validate]
   );
 
+  // 입력 값 변경 시 유효성 검사
   const handleChange = useCallback(
     (newValue: string) => {
       setValue(newValue);
@@ -39,7 +41,7 @@ export const useInput = ({
         validateValue(newValue);
       }, debounceTime);
     },
-    [validateValue, debounceTime],
+    [validateValue, debounceTime]
   );
 
   useEffect(() => {

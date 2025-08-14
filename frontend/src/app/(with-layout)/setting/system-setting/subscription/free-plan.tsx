@@ -1,4 +1,4 @@
-import Chip from "@/ui/chip";
+import Chip from '@/ui/chip';
 
 const FreePlan = () => {
   return (
@@ -12,8 +12,8 @@ const FreePlan = () => {
         />
       </div>
       <p className="text-dg Re_Body-1 whitespace-pre-line">
-        모든 문서와 설정에 접근할 수 있어요. <br />
-        사용자 관리, 문서 생성, 권한 설정까지 모두 가능해요.
+        기본적인 기능을 모두 이용할 수 있어요. <br />
+        사용자 관리, 문서 작성, 권한 설정 등 핵심 기능이 모두 포함돼요.
       </p>
     </div>
   );

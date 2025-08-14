@@ -1,30 +1,217 @@
-import MainTitleSec from "./main-title-sec";
-import SearchDeleteTable from "@/ui/search-delete-table";
-import TableHeader from "../table-header";
-import TableItem from "../table-item";
+'use client';
+
+import { useState, useEffect } from 'react';
+import MainTitleSec from './main-title-sec';
+import SearchDeleteTable from '@/ui/search-delete-table';
+import TableHeader from '../process/table-header';
+import TableItem from '../process/table-item';
+import {
+  CompletedProjectStatusType,
+  ProjectStatusType,
+} from '@/types/status-type';
+import Pagination from '@/components/pagination';
+import { useCheckAll, useGetProjects, useDeleteProject } from '@/hooks';
+import DeleteModal from '@/ui/modal/delete-modal';
+import { ProjectListResponseModel } from '@/types/data-model';
+import Spinner from '@/ui/spinner';
 
 const CompletedProjectPage = () => {
+  const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
+  const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
+
+  const [selectedStatus, setSelectedStatus] = useState<
+    '전체' | CompletedProjectStatusType
+  >('전체');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [sortKey, setSortKey] = useState<'startDate' | 'endDate'>('startDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [projectData, setProjectData] =
+    useState<ProjectListResponseModel | null>(null);
+
+  // 초기 데이터 로드
+  useEffect(() => {
+    const loadArchivedProjects = async () => {
+      let status = 'archived'; // 전체 보관된 프로젝트
+
+      // 개별 상태 선택 시
+      if (selectedStatus === '완료') {
+        status = 'complete';
+      } else if (selectedStatus === '중단') {
+        status = 'suspended';
+      }
+
+      const result = await getProjects({
+        status: status as ProjectStatusType,
+        search: searchKeyword,
+        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
+        order_dir: sortOrder,
+        page: currentPage,
+        size: 10,
+      });
+
+      if (result.success && result.data) {
+        setProjectData(result.data);
+      }
+    };
+
+    loadArchivedProjects();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatus, searchKeyword, sortKey, sortOrder, currentPage]);
+
+  const sortedProjects = projectData?.data || [];
+  const currentIds = sortedProjects.map((project) => project.project_id);
+
+  const {
+    checkedCount,
+    isAllChecked,
+    isChecked,
+    toggleAll,
+    toggleOne,
+    setAllChecked,
+    getDeleteButtonText,
+  } = useCheckAll(currentIds);
+
+  const handleStatusChange = (status: '전체' | CompletedProjectStatusType) => {
+    setSelectedStatus(status);
+    setCurrentPage(1); // 상태 변경 시 첫 페이지로 이동
+    setSearchKeyword(''); // 탭 변경시 검색어도 초기화
+  };
+
+  // 검색 핸들러
+  const handleSearch = (keyword: string) => {
+    setSearchKeyword(keyword);
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // 정렬 핸들러
+  const handleSort = (key: 'startDate' | 'endDate') => {
+    const newSortOrder =
+      sortKey === key ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'desc';
+
+    if (sortKey === key) {
+      setSortOrder(newSortOrder);
+    } else {
+      setSortKey(key);
+      setSortOrder('desc');
+    }
+    setCurrentPage(1); // 정렬 변경 시 첫 페이지로 이동
+  };
+
+  // 선택된 프로젝트 삭제 핸들러
+  const handleDeleteProjects = async () => {
+    if (checkedCount === 0) {
+      alert('삭제할 프로젝트를 선택해주세요.');
+      return;
+    }
+
+    try {
+      const checkedIds = currentIds.filter((id) => isChecked(id));
+
+      // 선택된 프로젝트들을 순차적으로 삭제
+      for (const projectId of checkedIds) {
+        await deleteProject(projectId);
+      }
+
+      alert('프로젝트가 삭제되었습니다.');
+      setAllChecked(false); // 선택 해제
+      setIsDeleteModalOpen(false);
+
+      // 프로젝트 목록 새로고침
+      const result = await getProjects({
+        status:
+          selectedStatus === '전체'
+            ? 'archived'
+            : selectedStatus === '완료'
+              ? 'completed'
+              : ('suspended' as ProjectStatusType),
+        search: searchKeyword,
+        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
+        order_dir: sortOrder,
+        page: currentPage,
+        size: 10,
+      });
+
+      if (result.success && result.data) {
+        setProjectData(result.data);
+      }
+    } catch {
+      alert('프로젝트 삭제 중 오류가 발생했습니다.');
+      setIsDeleteModalOpen(false);
+    }
+  };
+
   return (
-    <div>
-      <MainTitleSec />
-      <div className="px-8">
-        <SearchDeleteTable />
-        <div>
-          <TableHeader lastLabel="완료일자" />
-          {[...Array(9)].map((_, index) => (
-            <TableItem
-              key={index}
-              id={index}
-              status="완료"
-              companyName="플라스틱이 좋아"
-              items="플라스틱 컵 외 3개"
-              startDate="2025-06-04"
-              endDate="2025-06-04"
-            />
-          ))}
+    <>
+      <div className="flex flex-col gap-8">
+        <MainTitleSec
+          selectedStatus={selectedStatus}
+          onStatusChange={handleStatusChange}
+        />
+        <div className="px-10 pb-10">
+          <SearchDeleteTable
+            placeholder="업체명이나 품목명을 검색하세요."
+            checkedCount={checkedCount}
+            deleteButtonText={getDeleteButtonText()}
+            onDelete={() => setIsDeleteModalOpen(true)}
+            onCancel={() => setAllChecked(false)}
+            onSearch={handleSearch}
+            searchKeyword={searchKeyword}
+          />
+
+          {isProjectsLoading && !projectData ? (
+            <div className="flex justify-center items-center h-100">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              <div className="overflow-y-auto w-full">
+                <TableHeader
+                  isAllChecked={isAllChecked}
+                  onToggleAll={toggleAll}
+                  onSort={handleSort}
+                  isArchived={true}
+                />
+                {sortedProjects.map((project) => (
+                  <TableItem
+                    key={project.project_id}
+                    project={project}
+                    checked={isChecked(project.project_id)}
+                    onToggle={() => toggleOne(project.project_id)}
+                    isArchived={true}
+                  />
+                ))}
+              </div>
+              {/* 페이지네이션 */}
+              {projectData &&
+                projectData.pageCnt &&
+                projectData.pageCnt > 1 && (
+                  <Pagination
+                    currentPage={projectData.curPage || 1}
+                    totalPages={projectData.pageCnt}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+            </>
+          )}
         </div>
       </div>
-    </div>
+
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleDeleteProjects}
+          isLoading={isDeleteLoading}
+        />
+      )}
+    </>
   );
 };
 

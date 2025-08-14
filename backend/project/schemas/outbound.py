@@ -7,6 +7,7 @@ from typing import Optional, List
 # Project API
 # ------------------------------------------------------------
 
+
 # (POST) Project Create
 class ProjectCreateOut(Schema):
     quotation_id: int
@@ -30,6 +31,7 @@ class ListProgressProjectOut(Schema):
     publish_status: Optional[str] = None
     status: str
     is_abandoned: bool = False
+    created_at: str
 
 
 # (GET) Project Status
@@ -37,10 +39,11 @@ class ProjectStatusOut(Schema):
     project_id: int
     quotation_id: Optional[int] = None
     status: str
+    is_refunded: bool
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    earliest_start_date: Optional[datetime.date] = None
-    latest_end_date: Optional[datetime.date] = None
+    earliest_start_date: Optional[datetime.datetime] = None
+    latest_end_date: Optional[datetime.datetime] = None
     due_date: Optional[datetime.date] = None
 
 
@@ -62,6 +65,7 @@ class ProjectUpdateOut(Schema):
 # ------------------------------------------------------------
 # Project Refund API
 # ------------------------------------------------------------
+
 
 # (POST) Refund Create
 class RefundCreateOut(Schema):
@@ -125,6 +129,7 @@ class RefundProductionRegistrationOut(Schema):
 # Project Plan API
 # ------------------------------------------------------------
 
+
 # (POST) Project Plan Create
 class ProjectPlanDetailOut(Schema):
     id: int
@@ -179,7 +184,6 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     start_date: datetime.date
     end_date: datetime.date
     avg_production_time: int
-    is_refunded: bool
     is_completed: bool
 
 
@@ -196,12 +200,13 @@ class DailyProductionQuantityOut(Schema):
 # Project Log API
 # ------------------------------------------------------------
 
+
 # (POST) Project Log Create
 class ProjectLogCreateOut(Schema):
     message: str
     log_id: int
 
-    
+
 # (GET) Project Log Detail
 class ProjectLogDetailOut(Schema):
     id: int
@@ -222,6 +227,7 @@ class ProjectLogUpdateOut(Schema):
 # ------------------------------------------------------------
 # Production Profit Rate API
 # ------------------------------------------------------------
+
 
 class ProductionProfitRateOut(Schema):
     current_month_profit: int

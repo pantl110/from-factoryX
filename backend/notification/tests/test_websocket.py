@@ -84,6 +84,7 @@ class BasicWebSocketTestCase(TransactionTestCase):
             async def test_save():
                 notification = await sender._save_notification(
                     user_id=self.user1.id,
+                    factory_id=self.factory.id,
                     notification_type="information",
                     notification_case="product_completed",
                     content="저장 테스트",
@@ -177,7 +178,7 @@ class BasicWebSocketTestCase(TransactionTestCase):
 
             async def test_message():
                 await sender._send_websocket_message(
-                    user_id=self.user1.id,
+                    factory_id=self.factory.id,
                     notification=notification,
                     additional_data={"test": "data"},
                 )
