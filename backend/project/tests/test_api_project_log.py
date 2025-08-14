@@ -65,7 +65,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_create_project_log_success(self):
         """프로젝트 로그 생성 성공 테스트"""
-        url = "/v1/project/log"
+        url = "/v1/project-log"
 
         payload = {
             "project_id": self.project.id,
@@ -101,7 +101,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_create_project_log_nonexistent_project(self):
         """존재하지 않는 프로젝트로 로그 생성 시도 테스트"""
-        url = "/v1/project/log"
+        url = "/v1/project-log"
 
         payload = {
             "project_id": 999,
@@ -121,7 +121,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_create_project_log_invalid_type(self):
         """올바르지 않은 로그 타입으로 생성 시도 테스트"""
-        url = "/v1/project/log"
+        url = "/v1/project-log"
 
         payload = {
             "project_id": self.project.id,
@@ -141,7 +141,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_create_project_log_title_too_long(self):
         """제목이 너무 긴 경우 테스트"""
-        url = "/v1/project/log"
+        url = "/v1/project-log"
 
         payload = {
             "project_id": self.project.id,
@@ -161,7 +161,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_create_project_log_without_auth(self):
         """인증 없이 로그 생성 시도 테스트"""
-        url = "/v1/project/log"
+        url = "/v1/project-log"
 
         payload = {
             "project_id": self.project.id,
@@ -195,7 +195,7 @@ class ProjectLogAPITestCase(TestCase):
 
         # 로그 조회
         url = (
-            f"/v1/project/log?project_id={self.project.id}&factory_id={self.factory.id}"
+            f"/v1/project-log?project_id={self.project.id}&factory_id={self.factory.id}"
         )
 
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -227,7 +227,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_list_project_logs_nonexistent_project(self):
         """존재하지 않는 프로젝트로 로그 조회 시도 테스트"""
-        url = f"/v1/project/log?project_id=999&factory_id={self.factory.id}"
+        url = f"/v1/project-log?project_id=999&factory_id={self.factory.id}"
 
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
@@ -236,7 +236,7 @@ class ProjectLogAPITestCase(TestCase):
     def test_list_project_logs_no_logs(self):
         """로그가 없는 프로젝트 조회 시도 테스트"""
         url = (
-            f"/v1/project/log?project_id={self.project.id}&factory_id={self.factory.id}"
+            f"/v1/project-log?project_id={self.project.id}&factory_id={self.factory.id}"
         )
 
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -246,7 +246,7 @@ class ProjectLogAPITestCase(TestCase):
     def test_list_project_logs_without_auth(self):
         """인증 없이 로그 조회 시도 테스트"""
         url = (
-            f"/v1/project/log?project_id={self.project.id}&factory_id={self.factory.id}"
+            f"/v1/project-log?project_id={self.project.id}&factory_id={self.factory.id}"
         )
 
         response = self.client.get(url)
@@ -276,13 +276,16 @@ class ProjectLogAPITestCase(TestCase):
         )
 
         refund = Refund.objects.create(
-            project_log=refund_log,
             product=product,
             amount=10,
             refund_date=date(2024, 1, 15),
             current_stock=5,
             production_amount=5,
         )
+
+        # refund_log에 refund 연결
+        refund_log.refund = refund
+        refund_log.save()
 
         # 일반 로그 생성
         general_log = ProjectLog.objects.create(
@@ -292,7 +295,7 @@ class ProjectLogAPITestCase(TestCase):
             content="테스트 제품 생산 계획이 생성되었습니다.",
         )
 
-        url = f"/v1/project/log?project_id={self.project.id}"
+        url = f"/v1/project-log?project_id={self.project.id}"
 
         response = self.client.get(
             f"{url}&factory_id={self.factory.id}",
@@ -324,7 +327,7 @@ class ProjectLogAPITestCase(TestCase):
         )
 
         # 로그 수정
-        url = f"/v1/project/log/{log.id}"
+        url = f"/v1/project-log/{log.id}"
 
         payload = {"title": "수정된 제목", "content": "수정된 내용"}
 
@@ -350,7 +353,7 @@ class ProjectLogAPITestCase(TestCase):
 
     def test_update_project_log_nonexistent(self):
         """존재하지 않는 로그 수정 시도 테스트"""
-        url = "/v1/project/log/999"
+        url = "/v1/project-log/999"
 
         payload = {"title": "수정된 제목", "content": "수정된 내용"}
 
@@ -371,7 +374,7 @@ class ProjectLogAPITestCase(TestCase):
         )
 
         # 로그 수정
-        url = f"/v1/project/log/{log.id}"
+        url = f"/v1/project-log/{log.id}"
 
         payload = {"type": "잘못된타입"}
 
@@ -392,7 +395,7 @@ class ProjectLogAPITestCase(TestCase):
         )
 
         # 로그 수정
-        url = f"/v1/project/log/{log.id}"
+        url = f"/v1/project-log/{log.id}"
 
         payload = {"title": "A" * 101}  # 101자 제목
 
@@ -413,7 +416,7 @@ class ProjectLogAPITestCase(TestCase):
         )
 
         # 로그 수정
-        url = f"/v1/project/log/{log.id}"
+        url = f"/v1/project-log/{log.id}"
 
         payload = {"title": "수정된 제목"}
 

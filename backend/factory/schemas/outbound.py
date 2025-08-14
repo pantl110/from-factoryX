@@ -1,6 +1,6 @@
 from ninja import Schema
 from typing import Optional, List
-from project.schemas.outbound import ProjectPlanDetailOut
+from project.schemas.outbound import ProjectPlanDetailByEquipmentOut
 
 
 # ------------------------------------------------------------
@@ -54,7 +54,7 @@ class FactoryEqDetailOut(Schema):
     note: Optional[str]
     created_at: str
     updated_at: str
-    history: List[ProjectPlanDetailOut]
+    history: List[ProjectPlanDetailByEquipmentOut]
 
 
 # ------------------------------------------------------------
