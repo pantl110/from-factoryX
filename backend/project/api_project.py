@@ -385,7 +385,9 @@ async def list_project(
                     plans = project.plans.all()
                     if plans:
                         start_dates = [plan.start_date for plan in plans]
-                        start_date = min(start_dates)
+                        start_date = (
+                            min(start_dates).date() if min(start_dates) else None
+                        )
                     publish_status = None
                     if project.tax_invoice:
                         publish_status = project.tax_invoice.publish_status
@@ -407,6 +409,11 @@ async def list_project(
                             publish_status=publish_status,
                             status=project.status,
                             is_abandoned=is_abandoned,
+                            created_at=(
+                                project.created_at.isoformat()
+                                if project.created_at
+                                else ""
+                            ),
                         )
                     )
             order_field = (

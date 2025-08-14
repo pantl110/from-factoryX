@@ -74,8 +74,8 @@ class ProjectPlan(BaseModel):
     equipment = models.ForeignKey(
         FactoryEquipment, related_name="plans", on_delete=models.CASCADE
     )
-    start_date = models.DateField(help_text="생산 일자")
-    end_date = models.DateField(help_text="마감 예정 일자")
+    start_date = models.DateTimeField(help_text="생산 시작 일시")
+    end_date = models.DateTimeField(help_text="마감 예정 일시")
     avg_production_time = models.IntegerField(help_text="평균 생산 시간(초)")
     is_completed = models.BooleanField(
         default=False,
