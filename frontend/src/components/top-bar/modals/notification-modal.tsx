@@ -2,9 +2,8 @@ import Modal from '@/ui/modal/modal';
 import NotificationItem from './notification-item';
 import MiniBtn from '@/ui/mini-btn';
 import { NotificationResponseModel } from '@/types/data-model';
-import { useMarkAllNotificationsRead } from '@/hooks';
-// import { useWebSocket } from '@/hooks/websocket/use-websocket';
-// import { NotificationType, NotificationCaseType } from '@/types/status-type';
+import { useMarkAllNotificationsRead, useWebSocket } from '@/hooks';
+import { NotificationType, NotificationCaseType } from '@/types/status-type';
 
 interface NotificationModalProps {
   onClose: () => void;
@@ -24,24 +23,7 @@ const NotificationModal = ({
   const { markAllAsRead, isLoading: isMarkAllLoading } =
     useMarkAllNotificationsRead();
 
-  // 웹소켓 연결 및 새 알림 처리 (잠시 비활성화)
-  // const { status } = useWebSocket({
-  //   onNewNotification: (notification) => {
-  //     // 새 알림을 목록 맨 위에 추가
-  //     const newNotification: NotificationResponseModel = {
-  //       id: notification.id,
-  //       receiver: 0, // FactoryMember ID (백엔드에서 제공하는 정보에 맞게 수정 필요)
-  //       type: notification.type as NotificationType,
-  //       case: notification.case as NotificationCaseType,
-  //       content: notification.content,
-  //       is_read: false,
-  //       created_at: notification.created_at,
-  //       updated_at: notification.created_at, // 새 알림이므로 created_at과 동일
-  //     };
-
-  //     setNotifications((prev) => [newNotification, ...prev]);
-  //   },
-  // });
+  // 새 알림은 TopBar에서 실시간으로 처리됨
 
   // 모든 알림 읽음 처리
   const handleReadAll = async () => {

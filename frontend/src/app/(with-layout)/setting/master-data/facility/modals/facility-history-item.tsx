@@ -7,8 +7,11 @@ interface FacilityHistoryItemProps {
 const FacilityHistoryItem = ({ history }: FacilityHistoryItemProps) => {
   return (
     <div className="h-14 flex items-center Me_Body-1 text-dg border-b border-lg cursor-pointer">
-      <p className="flex-1 px-3 truncate" title={history.product_name || '-'}>
-        {history.product_name || '-'}
+      <p
+        className="flex-1 px-3 truncate"
+        title={history.quotation_product_name || '-'}
+      >
+        {history.quotation_product_name || '-'}
       </p>
       <p className="flex-1 px-3">{history.quantity.toLocaleString()}</p>
       <p className="flex-1 px-3">

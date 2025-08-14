@@ -12,7 +12,7 @@ import usePageStatusStore from '@/store/page-status-store';
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
   pageStatus: string | null;
-  hasNotifications: boolean;
+  hasUnreadNotifications: boolean;
   onProductionPlanSaveClick?: () => void;
   onMoveToStorageClick?: () => void;
   onNotificationClick?: () => void;
@@ -21,7 +21,7 @@ interface TopBarContentProps {
 const TopBarContent = ({
   productionTab,
   pageStatus,
-  hasNotifications,
+  hasUnreadNotifications,
   onProductionPlanSaveClick,
   onMoveToStorageClick,
   onNotificationClick,
@@ -210,7 +210,7 @@ const TopBarContent = ({
         onClick={onNotificationClick}
       >
         <BellSimple size={20} className="text-dg" />
-        {hasNotifications && (
+        {hasUnreadNotifications && (
           <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full " />
         )}
       </div>

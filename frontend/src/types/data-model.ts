@@ -155,14 +155,11 @@ export interface EquipmentModel {
 export interface FacilityHistoryResponseModel {
   id: number;
   project_id: number;
-  quotation_product_id: number;
-  equipment_id: number;
-  status: string;
+  quotation_product_name: string;
   quantity: number;
   start_date: string;
   end_date: string;
   avg_production_time: number;
-  product_name?: string;
 }
 
 export interface EquipmentResponseModel {

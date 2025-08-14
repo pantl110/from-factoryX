@@ -33,7 +33,8 @@ export const useWebSocket = ({ onNewNotification }: UseWebSocketProps = {}) => {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 5;
-  const reconnectDelay = 3000; // 3초
+  const reconnectDelay = 3000;
+  const isConnectingRef = useRef(false); // 연결 시도 중 중복 방지
 
   const [status, setStatus] = useState<WebSocketStatus>({
     isConnected: false,
@@ -41,9 +42,16 @@ export const useWebSocket = ({ onNewNotification }: UseWebSocketProps = {}) => {
     error: null,
   });
 
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     if (!factoryId) {
-      console.log('🐍 No factory ID available, skipping WebSocket connection');
+      return;
+    }
+
+    if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+      return;
+    }
+
+    if (isConnectingRef.current) {
       return;
     }
 
@@ -51,6 +59,7 @@ export const useWebSocket = ({ onNewNotification }: UseWebSocketProps = {}) => {
       return; // 이미 연결된 경우
     }
 
+    isConnectingRef.current = true;
     setStatus(prev => ({ ...prev, isConnecting: true, error: null }));
 
     try {
@@ -58,7 +67,6 @@ export const useWebSocket = ({ onNewNotification }: UseWebSocketProps = {}) => {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
       if (!apiUrl) {
-        console.error('🐍 NEXT_PUBLIC_API_URL environment variable is not set');
         setStatus(prev => ({ 
           ...prev, 
           isConnecting: false, 
@@ -66,50 +74,52 @@ export const useWebSocket = ({ onNewNotification }: UseWebSocketProps = {}) => {
         }));
         return;
       }
-      
-      // HTTP URL을 WebSocket URL로 변환
-      const wsUrl = apiUrl.replace(/^http/, 'ws') + `/ws/notification/${factoryId}`;
-      
-      console.log('🐍 Attempting to connect to:', wsUrl);
-      
+
+      const wsUrl = `${apiUrl.replace(/^http/, 'ws')}/ws/notification/${factoryId}/`;
       const ws = new WebSocket(wsUrl);
       
       ws.onopen = () => {
-        console.log('🐍 WebSocket connected successfully to factory:', factoryId);
+        isConnectingRef.current = false;
         setStatus({
           isConnected: true,
           isConnecting: false,
           error: null,
         });
-        reconnectAttemptsRef.current = 0; // 연결 성공 시 재시도 횟수 초기화
+        reconnectAttemptsRef.current = 0;
       };
 
       ws.onmessage = (event) => {
         try {
-          const data: NotificationMessage = JSON.parse(event.data);
+          const data = JSON.parse(event.data);
           
-          // 새 알림만 처리
-          if (data.type === 'new_notification' && data.notification) {
-            console.log('🐍 New notification received:', data.notification.content);
+          if (data.type === 'user_connected') {
+            // 연결 확인 메시지 - 조용히 처리
+          } else if (data.type === 'notification_message' && data.notification) {
             onNewNotification?.(data.notification);
           }
         } catch (error) {
-          console.error('🐍 WebSocket message parse error:', error);
+          console.error('WebSocket message parse error:', error);
         }
       };
 
       ws.onclose = (event) => {
-        console.log('🐍 WebSocket disconnected:', event.code, event.reason);
+        if (event.code === 1006) {
+          console.log('WebSocket connection closed unexpectedly (1006)');
+        }
+        
         setStatus(prev => ({ ...prev, isConnected: false }));
         
         // 정상적인 종료가 아닌 경우에만 재연결 시도
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current += 1;
-          console.log(`🐍 Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
+          
+          if (wsRef.current) {
+            wsRef.current = null;
+          }
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
-          }, reconnectDelay * reconnectAttemptsRef.current); // 지수 백오프
+          }, reconnectDelay * reconnectAttemptsRef.current);
         } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
           setStatus(prev => ({ 
             ...prev, 
@@ -119,20 +129,23 @@ export const useWebSocket = ({ onNewNotification }: UseWebSocketProps = {}) => {
       };
 
       ws.onerror = (error) => {
+        isConnectingRef.current = false; // 에러 발생 시 플래그 해제
         console.error('🐍 WebSocket error:', error);
         setStatus(prev => ({ 
           ...prev, 
-          error: '웹소켓 연결 중 오류가 발생했습니다.' 
+          error: 'WebSocket 연결 중 오류가 발생했습니다. 백엔드 WebSocket 엔드포인트를 확인해주세요.' 
         }));
       };
 
       wsRef.current = ws;
+      
     } catch (error) {
+      isConnectingRef.current = false; // 예외 발생 시 플래그 해제
       console.error('🐍 WebSocket connection error:', error);
       setStatus(prev => ({ 
         ...prev, 
         isConnecting: false, 
-        error: '웹소켓 연결을 생성할 수 없습니다.' 
+        error: 'WebSocket 연결을 생성할 수 없습니다.' 
       }));
     }
   }, [factoryId, onNewNotification]);
@@ -155,20 +168,20 @@ export const useWebSocket = ({ onNewNotification }: UseWebSocketProps = {}) => {
     });
     
     reconnectAttemptsRef.current = 0;
+    isConnectingRef.current = false; // 연결 시도 플래그도 해제
   }, []);
 
   // 자동 재연결 (페이지 포커스 시)
   useEffect(() => {
     const handleFocus = () => {
       if (!status.isConnected && !status.isConnecting && !status.error) {
-        console.log('🐍 Page focused, attempting to reconnect...');
         connect();
       }
     };
 
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [status.isConnected, status.isConnecting, status.error, connect]);
+  }, [status.isConnected, status.isConnecting, status.error]);
 
   // 컴포넌트 마운트 시 연결, 언마운트 시 해제
   useEffect(() => {
@@ -179,7 +192,7 @@ export const useWebSocket = ({ onNewNotification }: UseWebSocketProps = {}) => {
     return () => {
       disconnect();
     };
-  }, [factoryId, connect, disconnect]);
+  }, [factoryId]); // connect, disconnect 제거
 
   return {
     status,

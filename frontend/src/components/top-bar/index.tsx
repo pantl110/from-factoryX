@@ -6,7 +6,8 @@ import NotificationModal from './modals/notification-modal';
 import TopBarCrumb from './top-bar-crumb';
 import { useState, useEffect } from 'react';
 import { NotificationResponseModel } from '@/types/data-model';
-import { useGetNotifications } from '@/hooks';
+import { useGetNotifications, useWebSocket } from '@/hooks';
+import { NotificationType, NotificationCaseType } from '@/types/status-type';
 
 interface TopBarProps {
   isSidebarVisible: boolean;
@@ -35,6 +36,25 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   const [notifications, setNotifications] = useState<
     NotificationResponseModel[]
   >([]);
+
+  // 웹소켓으로 실시간 알림 상태 관리
+  const { status: wsStatus } = useWebSocket({
+    onNewNotification: (notification) => {
+      // 새 알림을 목록 맨 위에 추가
+      const newNotification: NotificationResponseModel = {
+        id: notification.id,
+        receiver: 25, // FactoryMember ID
+        type: notification.type as NotificationType,
+        case: notification.case as NotificationCaseType,
+        content: notification.content,
+        is_read: false,
+        created_at: notification.created_at,
+        updated_at: notification.created_at,
+      };
+
+      setNotifications((prev) => [newNotification, ...prev]);
+    },
+  });
 
   // 알림 데이터 로드
   useEffect(() => {
@@ -85,7 +105,9 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
             }
             onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
             onNotificationClick={() => setIsNotificationModalOpen(true)}
-            hasNotifications={notifications.length > 0}
+            hasUnreadNotifications={
+              notifications.find((n) => !n.is_read) !== undefined
+            }
           />
         </div>
       </header>
