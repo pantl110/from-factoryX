@@ -7,6 +7,7 @@ from typing import Optional, List
 # Project API
 # ------------------------------------------------------------
 
+
 # (POST) Project Create
 class ProjectCreateOut(Schema):
     quotation_id: int
@@ -30,14 +31,20 @@ class ListProgressProjectOut(Schema):
     publish_status: Optional[str] = None
     status: str
     is_abandoned: bool = False
+    created_at: str
 
 
 # (GET) Project Status
 class ProjectStatusOut(Schema):
     project_id: int
+    quotation_id: Optional[int] = None
     status: str
+    is_refunded: bool
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    earliest_start_date: Optional[datetime.datetime] = None
+    latest_end_date: Optional[datetime.datetime] = None
+    due_date: Optional[datetime.date] = None
 
 
 # (PATCH) Project Status Update
@@ -59,6 +66,7 @@ class ProjectUpdateOut(Schema):
 # Project Refund API
 # ------------------------------------------------------------
 
+
 # (POST) Refund Create
 class RefundCreateOut(Schema):
     message: str
@@ -70,11 +78,57 @@ class RefundCreateOut(Schema):
 class RefundUpdateOut(Schema):
     message: str
     refund_id: int
+    updated_project_plans: List[int]
+    deleted_project_plans: List[int]
+    created_project_plans: List[int]
+
+
+# (GET) Refund List
+class RefundListOut(Schema):
+    id: int
+    product_name: str
+    product_id: int
+    amount: int
+    current_stock: int
+    production_amount: int
+    refund_date: Optional[datetime.date] = None
+    project_name: str
+    project_id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+
+# (GET) Refund Detail
+class RefundDetailOut(Schema):
+    id: int
+    product: dict
+    project: dict
+    amount: int
+    current_stock: int
+    production_amount: int
+    refund_date: Optional[datetime.date] = None
+    log: dict
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+
+# (POST) Refund Production Registration
+class RefundProductionRegistrationOut(Schema):
+    message: str
+    refund_id: int
+    quotation_id: int
+    quotation_product_id: int
+    project_plan_id: int
+    production_log_id: int
+    product_name: str
+    quantity: int
+    equipment_name: str
 
 
 # ------------------------------------------------------------
 # Project Plan API
 # ------------------------------------------------------------
+
 
 # (POST) Project Plan Create
 class ProjectPlanDetailOut(Schema):
@@ -130,18 +184,29 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     start_date: datetime.date
     end_date: datetime.date
     avg_production_time: int
+    is_completed: bool
+
+
+# (GET) Daily Production Quantity
+class DailyProductionQuantityOut(Schema):
+    production_count: int
+    production_quantity: int
+    previous_month_count: Optional[int] = None
+    previous_month_quantity: Optional[int] = None
+    change_percentage: Optional[float] = None
 
 
 # ------------------------------------------------------------
 # Project Log API
 # ------------------------------------------------------------
 
+
 # (POST) Project Log Create
 class ProjectLogCreateOut(Schema):
     message: str
     log_id: int
 
-    
+
 # (GET) Project Log Detail
 class ProjectLogDetailOut(Schema):
     id: int
@@ -149,6 +214,7 @@ class ProjectLogDetailOut(Schema):
     type: str
     title: str
     content: str
+    refund_id: Optional[int] = None  # 반품 로그인 경우 반품 ID
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
@@ -156,3 +222,16 @@ class ProjectLogDetailOut(Schema):
 # (PATCH) Project Log Update
 class ProjectLogUpdateOut(Schema):
     message: str
+
+
+# ------------------------------------------------------------
+# Production Profit Rate API
+# ------------------------------------------------------------
+
+
+class ProductionProfitRateOut(Schema):
+    current_month_profit: int
+    current_month_count: int
+    previous_month_profit: Optional[int] = None
+    previous_month_count: Optional[int] = None
+    change_percentage: Optional[float] = None

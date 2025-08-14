@@ -27,7 +27,7 @@ class TestFactoryClient(TestCase):
             user=self.user,
             role="manager",
             invited_by=self.user,
-            status="active"
+            status="active",
         )
         self.client_obj = FactoryClient.objects.create(
             factory=self.factory,
@@ -70,7 +70,9 @@ class TestFactoryClient(TestCase):
             "business_type": "도소매",
             "business_category": "전자",
         }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertEqual(data["name"], "거래처2")
@@ -87,7 +89,9 @@ class TestFactoryClient(TestCase):
             "type": "supplier",
             "business_registration_number": "999-99-99999",
         }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 400)
         data = response.json()
         self.assertIn("이미 등록된 거래처입니다", data["detail"])
@@ -102,7 +106,9 @@ class TestFactoryClient(TestCase):
             "type": "invalid_type",  # 잘못된 타입
             "business_registration_number": "333-44-55555",
         }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 400)
         data = response.json()
         self.assertIn("잘못된 거래처 타입입니다", data["detail"])
@@ -112,7 +118,9 @@ class TestFactoryClient(TestCase):
         거래처 목록/검색 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(f"?factory_id={self.factory.id}&q=거래처", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&q=거래처", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
@@ -124,7 +132,9 @@ class TestFactoryClient(TestCase):
         거래처 상세 조회 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(f"/{self.client_obj.id}?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"/{self.client_obj.id}?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], self.client_obj.id)
@@ -140,7 +150,11 @@ class TestFactoryClient(TestCase):
             "name": "거래처1-수정",
             "business_type": "서비스업",
         }
-        response = await self.client.patch(f"/{self.client_obj.id}?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.patch(
+            f"/{self.client_obj.id}?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], self.client_obj.id)
@@ -152,7 +166,9 @@ class TestFactoryClient(TestCase):
         거래처 삭제 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.delete(f"/{self.client_obj.id}?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.delete(
+            f"/{self.client_obj.id}?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 204)
 
     async def test_get_factory_client_not_found(self):
@@ -160,7 +176,9 @@ class TestFactoryClient(TestCase):
         존재하지 않는 거래처 상세 조회 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(f"/99999?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"/99999?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 404)
 
     async def test_update_factory_client_not_found(self):
@@ -169,7 +187,9 @@ class TestFactoryClient(TestCase):
         """
         headers = await self.authenticate()
         payload = {"name": "없는 거래처"}
-        response = await self.client.patch(f"/99999?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.patch(
+            f"/99999?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 404)
 
     async def test_delete_factory_client_not_found(self):
@@ -177,7 +197,9 @@ class TestFactoryClient(TestCase):
         존재하지 않는 거래처 삭제 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.delete(f"/99999?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.delete(
+            f"/99999?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 404)
 
     async def test_search_all_fields(self):
@@ -197,14 +219,16 @@ class TestFactoryClient(TestCase):
         ]
         for field, value in search_cases:
             with self.subTest(field=field):
-                response = await self.client.get(f"?factory_id={self.factory.id}&q={value}", headers=headers)
+                response = await self.client.get(
+                    f"?factory_id={self.factory.id}&q={value}", headers=headers
+                )
                 self.assertEqual(response.status_code, 200)
                 data = response.json()
                 self.assertIn("data", data)
                 # 검색 결과에 해당 필드값이 포함된 객체가 있는지 확인
                 self.assertTrue(
                     any(value in str(item.get(field, "")) for item in data["data"]),
-                    msg=f"{field} 검색 실패: {value}"
+                    msg=f"{field} 검색 실패: {value}",
                 )
                 # 모든 결과에 type 필드가 포함되어 있는지 확인
                 for item in data["data"]:
@@ -215,7 +239,9 @@ class TestFactoryClient(TestCase):
         거래처 목록 조회시 type 필드가 항상 포함되는지 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
@@ -263,14 +289,16 @@ class TestFactoryClient(TestCase):
         ]
         for q, expected_name in search_cases:
             with self.subTest(q=q):
-                response = await self.client.get(f"?factory_id={self.factory.id}&q={q}", headers=headers)
+                response = await self.client.get(
+                    f"?factory_id={self.factory.id}&q={q}", headers=headers
+                )
                 self.assertEqual(response.status_code, 200)
                 data = response.json()
                 self.assertIn("data", data)
                 # 검색 결과에 기대 거래처명이 포함되어 있는지 확인
                 self.assertTrue(
                     any(item["name"] == expected_name for item in data["data"]),
-                    msg=f"q={q} 검색 결과에 {expected_name}이(가) 없음"
+                    msg=f"q={q} 검색 결과에 {expected_name}이(가) 없음",
                 )
                 # type 필드도 항상 포함되어야 함
                 for item in data["data"]:
@@ -317,14 +345,19 @@ class TestFactoryClient(TestCase):
         ]
         for q, expected_name, expected_type in search_cases:
             with self.subTest(q=q):
-                response = await self.client.get(f"?factory_id={self.factory.id}&q={q}", headers=headers)
+                response = await self.client.get(
+                    f"?factory_id={self.factory.id}&q={q}", headers=headers
+                )
                 self.assertEqual(response.status_code, 200)
                 data = response.json()
                 self.assertIn("data", data)
                 # 검색 결과에 기대 거래처명이 포함되어 있고, type도 기대값인지 확인
                 self.assertTrue(
-                    any(item["name"] == expected_name and item["type"] == expected_type for item in data["data"]),
-                    msg=f"q={q} 검색 결과에 {expected_name}({expected_type})이(가) 없음"
+                    any(
+                        item["name"] == expected_name and item["type"] == expected_type
+                        for item in data["data"]
+                    ),
+                    msg=f"q={q} 검색 결과에 {expected_name}({expected_type})이(가) 없음",
                 )
                 # type 필드도 항상 포함되어야 함
                 for item in data["data"]:
@@ -335,7 +368,9 @@ class TestFactoryClient(TestCase):
         q 미입력시 전체 거래처가 반환되는지 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
@@ -351,17 +386,19 @@ class TestFactoryClient(TestCase):
         페이지네이션 응답 구조가 올바른지 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(f"?factory_id={self.factory.id}&page=1&limit=10", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&page=1&limit=10", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        
+
         # 페이지네이션 응답 구조 확인
         self.assertIn("data", data)
         self.assertIn("count", data)
         self.assertIn("totalCnt", data)
         self.assertIn("pageCnt", data)
         self.assertIn("curPage", data)
-        
+
         # 데이터 타입 확인
         self.assertIsInstance(data["data"], list)
         self.assertIsInstance(data["count"], int)
@@ -374,10 +411,12 @@ class TestFactoryClient(TestCase):
         검색 결과가 없을 때도 페이지네이션이 정상 작동하는지 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(f"?factory_id={self.factory.id}&q=존재하지않는거래처", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&q=존재하지않는거래처", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        
+
         # 빈 결과에서도 페이지네이션 구조 확인
         self.assertIn("data", data)
         self.assertIn("count", data)
@@ -389,7 +428,7 @@ class TestFactoryClient(TestCase):
         여러 페이지가 있는 경우 페이지네이션이 정상 작동하는지 테스트
         """
         headers = await self.authenticate()
-        
+
         # 여러 거래처 생성
         for i in range(15):
             await FactoryClient.objects.acreate(
@@ -400,23 +439,29 @@ class TestFactoryClient(TestCase):
                 representative_name=f"대표자{i+2}",
                 email=f"client{i+2}@example.com",
             )
-        
+
         # 첫 번째 페이지 테스트 (기본 page_size=10)
-        response = await self.client.get(f"?factory_id={self.factory.id}&page=1", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&page=1", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["data"]), 10)  # 기본 page_size=10
         self.assertEqual(data["curPage"], 1)
-        
+
         # 두 번째 페이지 테스트
-        response = await self.client.get(f"?factory_id={self.factory.id}&page=2", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&page=2", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["data"]), 6)  # 16개 중 10개는 첫 페이지, 나머지 6개
         self.assertEqual(data["curPage"], 2)
-        
+
         # 세 번째 페이지 테스트 (데이터가 없어야 함)
-        response = await self.client.get(f"?factory_id={self.factory.id}&page=3", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&page=3", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["data"]), 0)  # 더 이상 데이터 없음
@@ -427,21 +472,30 @@ class TestFactoryClient(TestCase):
         반환되는 데이터가 FactoryClientOut 스키마와 호환되는지 테스트
         """
         headers = await self.authenticate()
-        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        
+
         # FactoryClientOut 스키마 필드 확인
         required_fields = [
-            "id", "type", "name", "business_registration_number",
-            "representative_name", "business_type", "business_category",
-            "phone", "email", "note"
+            "id",
+            "type",
+            "name",
+            "business_registration_number",
+            "representative_name",
+            "business_type",
+            "business_category",
+            "phone",
+            "email",
+            "note",
         ]
-        
+
         for item in data["data"]:
             for field in required_fields:
                 self.assertIn(field, item, f"필드 '{field}'가 응답에 없습니다")
-            
+
             # 필드 타입 확인
             self.assertIsInstance(item["id"], int)
             self.assertIsInstance(item["type"], str)
@@ -457,7 +511,9 @@ class TestFactoryClient(TestCase):
             "business_registration_number": "444-55-66666",
             "representative_name": "김철수",
         }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertEqual(data["name"], "거래처4")
@@ -473,7 +529,9 @@ class TestFactoryClient(TestCase):
             "type": None,
             "business_registration_number": "555-66-77777",
         }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertEqual(data["name"], "거래처5")

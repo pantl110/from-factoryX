@@ -41,7 +41,9 @@ from project.api_project_refund import router as projectRefund_router
 from barobill.api import router as barobill_router
 from tax.api import router as tax_router
 from tax.api_cash_receipt import router as cashReceipt_router
+from notification.api import router as notification_router
 from django.contrib.admin.views.decorators import staff_member_required
+from cfehome.views import websocket_test, websocket_test_local
 
 base_api = NinjaAPI(
     title="Factory X API",
@@ -73,15 +75,18 @@ base_api.add_router("v1/factory", factory_router)
 base_api.add_router("v1/location", location_router)
 base_api.add_router("v1/document/quotation/product", quotationProduct_router)
 base_api.add_router("v1/document/quotation", quotation_router)
-base_api.add_router("v1/project/plan", projectPlan_router)
-base_api.add_router("v1/project/log", projectLog_router)
-base_api.add_router("v1/project/refund", projectRefund_router)
+base_api.add_router("v1/project-plan", projectPlan_router)
+base_api.add_router("v1/project-log", projectLog_router)
+base_api.add_router("v1/project-refund", projectRefund_router)
 base_api.add_router("v1/project", project_router)
 base_api.add_router("v1/barobill", barobill_router)
 base_api.add_router("v1/tax", tax_router)
 base_api.add_router("v1/receipt", cashReceipt_router)
+base_api.add_router("v1/notification", notification_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("notification/", websocket_test, name="websocket_test"),
+    path("notification/local", websocket_test_local, name="websocket_test"),
     path("", base_api.urls),
 ]

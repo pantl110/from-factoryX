@@ -12,6 +12,60 @@ async def is_factory_member(factory_id: int, user=None):
         raise HttpError(404, "해당 공장에 멤버가 아닙니다.")
 
 
+async def require_factory_admin(factory_id: int, user=None):
+    """공장 관리자 권한이 필요합니다."""
+    try:
+        member = await FactoryMember.objects.aget(factory_id=factory_id, user=user)
+        if member.role != 'admin':
+            raise HttpError(403, "관리자 권한이 필요합니다.")
+        return member
+    except FactoryMember.DoesNotExist:
+        raise HttpError(404, "해당 공장에 멤버가 아닙니다.")
+
+
+async def require_factory_manager(factory_id: int, user=None):
+    """공장 매니저 이상 권한이 필요합니다."""
+    try:
+        member = await FactoryMember.objects.aget(factory_id=factory_id, user=user)
+        if member.role not in ['admin', 'manager']:
+            raise HttpError(403, "매니저 이상 권한이 필요합니다.")
+        return member
+    except FactoryMember.DoesNotExist:
+        raise HttpError(404, "해당 공장에 멤버가 아닙니다.")
+
+
+async def require_factory_viewer(factory_id: int, user=None):
+    """공장 조회자 이상 권한이 필요합니다."""
+    try:
+        member = await FactoryMember.objects.aget(factory_id=factory_id, user=user)
+        if member.role not in ['admin', 'manager', 'viewer']:
+            raise HttpError(403, "조회자 이상 권한이 필요합니다.")
+        return member
+    except FactoryMember.DoesNotExist:
+        raise HttpError(404, "해당 공장에 멤버가 아닙니다.")
+
+
+def get_factory_permission_level(role: str) -> int:
+    """권한 레벨을 숫자로 반환합니다."""
+    permission_levels = {
+        'viewer': 1,
+        'manager': 2,
+        'admin': 3
+    }
+    return permission_levels.get(role, 0)
+
+
+async def has_factory_permission(factory_id: int, user=None, required_role: str = 'viewer') -> bool:
+    """사용자가 해당 공장에서 필요한 권한을 가지고 있는지 확인합니다."""
+    try:
+        member = await FactoryMember.objects.aget(factory_id=factory_id, user=user)
+        user_level = get_factory_permission_level(member.role)
+        required_level = get_factory_permission_level(required_role)
+        return user_level >= required_level
+    except FactoryMember.DoesNotExist:
+        return False
+
+
 async def get_factory_by_id(factory_id: int, user=None):
     """공장 ID로 공장을 조회하고 소유권을 검증합니다."""
     try:

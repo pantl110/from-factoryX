@@ -157,8 +157,6 @@ async def assign_product(request, payload: AssignProductIn):
         raise HttpError(400, "품목 연결 정보에 오류가 있습니다.")
 
 
-
-
 # Product Tab
 @router.get(
     "",
@@ -178,7 +176,7 @@ async def list_products(request, filters: ProductFilter = Query(None), q: str = 
 
     @sync_to_async
     def get_products():
-        queryset = Product.objects.filter(factory__owner=user).order_by("-created_at")
+        queryset = Product.objects.filter(factory_id=int(factory_id)).order_by("-created_at")
         if q:
             qs1 = queryset.filter(name__icontains=q)
             qs2 = queryset.filter(code__icontains=q)

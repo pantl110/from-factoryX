@@ -6,7 +6,7 @@ from api.security import jwt_auth
 from ninja import Query
 from tax.schemas.outbound import (
     AllCashReceiptOut,
-    CashReceiptByMaterialOut,
+    CashReceiptDetailOut,
 )
 from api.security import jwt_auth
 from ninja import Query
@@ -17,6 +17,7 @@ from django.conf import settings
 from datetime import timedelta, date
 from barobill.barobill_error_code import barobill_error_codes
 from datetime import datetime
+from stock.models import MaterialHistory
 
 
 router = Router(tags=["CashReceipts"], auth=jwt_auth)
@@ -290,72 +291,23 @@ async def list_cash_receipts(
     "/material-history",
     summary="[C] 자재 이력별 현금영수증 및 구매정보 조회",
     description="material_history_id로 현금영수증 및 자재정보를 조회",
-    response={200: CashReceiptByMaterialOut, 404: dict, 500: dict},
+    response=CashReceiptDetailOut,
 )
 async def get_cash_receipt_by_material_history(request, material_history_id: int):
-    """
-    입력 필드(쿼리 파라미터):
-    - material_history_id: 원자재 이력 ID (필수)
-
-    반환 필드(dict):
-    - transaction_date: 거래일자 (date)
-    - approval_number: 승인번호 (str)
-    - transaction_classification: 거래구분 (str)
-    - transaction_purpose: 거래용도 (str)
-    - client_name: 업체명 (str)
-    - business_registration_number: 사업자등록번호 (str)
-    - representative_name: 대표자명 (str/null)
-    - address: 사업장 주소 (str/null)
-    - materials: 구매 자재 정보 리스트(List[dict], 1건)
-      - material_name: 자재명 (str)
-      - unit: 단위 (str)
-      - quantity: 수량 (int)
-      - price: 단가 (int)
-      - transaction_amount: 공급가액 (int)
-      - tax_amount: 세액 (int)
-      - total_amount: 합계금액 (int)
-    """
-    from stock.models import MaterialHistory
 
     try:
-
-        def get_receipt_data(material_history_id):
-            try:
-                h = MaterialHistory.objects.select_related(
-                    "cash_receipt", "material", "client"
-                ).get(id=material_history_id)
-            except MaterialHistory.DoesNotExist:
-                return None
-            receipt = h.cash_receipt
-            if not receipt:
-                return None
-            client = receipt.client
-            total_amount = receipt.transaction_amount + receipt.tax_amount
-            return dict(
-                transaction_date=receipt.transaction_date,
-                approval_number=receipt.approval_number,
-                transaction_classification=receipt.transaction_classification,
-                transaction_purpose=receipt.transaction_purpose,
-                client_name=client.name,
-                business_registration_number=client.business_registration_number,
-                representative_name=client.representative_name,
-                address=client.address,
-                materials=[
-                    dict(
-                        material_name=h.material.name,
-                        unit=h.material.unit,
-                        quantity=h.quantity,
-                        price=h.price or 0,
-                        transaction_amount=receipt.transaction_amount,
-                        tax_amount=receipt.tax_amount,
-                        total_amount=total_amount,
-                    )
-                ],
+        history = (
+            await MaterialHistory.objects.select_related(
+                "cash_receipt__client",
+                "material",
+                "client",
             )
+            .prefetch_related("cash_receipt__product")
+            .aget(id=material_history_id)
+        )
+    except MaterialHistory.DoesNotExist:
+        raise HttpError(404, "자재 이력이 존재하지 않습니다.")
 
-        raw_data = await sync_to_async(get_receipt_data)(material_history_id)
-        if not raw_data:
-            raise HttpError(404, "해당 이력에 연결된 현금영수증이 없습니다.")
-        return CashReceiptByMaterialOut(**raw_data)
-    except Exception as e:
-        raise HttpError(500, f"자재 이력별 현금영수증 조회 중 오류: {e}")
+    if history.cash_receipt is None:
+        raise HttpError(404, "해당 이력에 연결된 현금영수증이 없습니다.")
+    return history.cash_receipt

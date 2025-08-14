@@ -31,7 +31,7 @@ async def register_corp(request, payload: BarobillCorpRegisterIn):
     memberName = factory.representative_name
     id = payload.barobill_id
     pwd = payload.barobill_password
-    grade = "대표자"
+    grade = payload.grade
     tel = factory.manager_phone
     hp = ""
     email = factory.manager_email
@@ -60,7 +60,7 @@ async def register_corp(request, payload: BarobillCorpRegisterIn):
 
     # 바로빌 사용자 ID를 현재 사용자에 저장
     user.barobill_user_id = payload.barobill_id
-    await user.save()
+    await user.asave()
 
     return {"message": "바로빌 기업 회원가입이 성공적으로 완료되었습니다."}
 
@@ -79,7 +79,7 @@ async def add_user_to_corp(request, payload: BarobillCorpRegisterIn):
     memberName = factory.representative_name
     id = payload.barobill_id
     pwd = payload.barobill_password
-    grade = "담당자"
+    grade = payload.grade
     tel = factory.manager_phone
     hp = ""
     email = factory.manager_email

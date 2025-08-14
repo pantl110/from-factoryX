@@ -78,8 +78,8 @@ class Factory(BaseModel):
 
 class FactoryEquipment(BaseModel):
     class EquipmentStatus(models.TextChoices):
-        standby = ("가동 대기", "standby")
-        running = ("가동 중", "running")
+        standby = ("standby", "가동 대기")
+        running = ("running", "가동 중")
 
     factory = models.ForeignKey(
         Factory, related_name="equipments", on_delete=models.CASCADE
@@ -111,8 +111,8 @@ class FactoryEquipment(BaseModel):
 
 class FactoryClient(BaseModel):
     class ClientType(models.TextChoices):
-        customer = ("수주처", "customer")
-        supplier = ("발주처", "supplier")
+        customer = ("customer", "수주처")
+        supplier = ("supplier", "발주처")
 
     factory = models.ForeignKey(
         Factory, related_name="clients", on_delete=models.CASCADE
@@ -191,13 +191,13 @@ class FactoryMember(BaseModel):
     """팩토리 멤버 및 초대 관리 (통합)"""
 
     class FactoryMemberType(models.TextChoices):
-        admin = ("시스템 관리자", "admin")
-        manager = ("운영자", "manager")
-        viewer = ("조회자", "viewer")
+        admin = ("admin", "시스템 관리자")
+        manager = ("manager", "운영자")
+        viewer = ("viewer", "조회자")
 
     class MemberStatus(models.TextChoices):
-        invited = ("초대됨", "invited")
-        active = ("활성", "active")
+        invited = ("invited", "초대됨")
+        active = ("active", "활성")
 
     factory = models.ForeignKey(
         Factory, related_name="members", on_delete=models.CASCADE
@@ -222,7 +222,9 @@ class FactoryMember(BaseModel):
     )
     invited_by = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
         related_name="invited_factory_members",
         help_text="초대한 사용자",
     )

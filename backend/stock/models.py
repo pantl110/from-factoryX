@@ -47,11 +47,11 @@ class Material(BaseModel):
 
 class MaterialHistory(BaseModel):
     class MaterialHistoryType(models.TextChoices):
-        purchase = ("구매", "purchase")
-        consumption = ("소모", "consumption")
+        purchase = ("purchase", "구매")
+        consumption = ("consumption", "소모")
 
     type = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=MaterialHistoryType.choices,
         default=MaterialHistoryType.purchase,
     )
@@ -144,8 +144,8 @@ class Product(BaseModel):
 
 class ProductHistory(BaseModel):
     class ProductHistoryType(models.TextChoices):
-        IN = ("입고", "in")
-        OUT = ("출고", "out")
+        IN = ("in", "입고")
+        OUT = ("out", "출고")
 
     type = models.CharField(
         max_length=10,

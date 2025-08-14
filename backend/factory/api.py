@@ -1,6 +1,6 @@
 from ninja import Router
 from ninja.pagination import paginate
-from api.security import jwt_auth
+from api.security import jwt_auth, jwt_manager_auth, jwt_admin_auth
 from factory.schemas.inbound import FactoryUpdateIn
 from factory.schemas.outbound import FactoryOut
 from factory.models import Factory, FactoryMember
@@ -17,14 +17,17 @@ router = Router(tags=["Factory"])
 @router.post(
     "",
     summary="[C] 공장 등록",
-    description="공장을 등록하고 권한을 관리자로 설정합니다.",
+    description="공장을 등록하고 권한을 관리자로 설정합니다. 이미 다른 공장의 멤버인 경우 기존 멤버십은 모두 삭제됩니다.",
     response={201: dict},
     auth=jwt_auth,
 )
 async def create_factory(request):
     user = request.auth
+    
+    # 새 공장 생성
     factory = await Factory.objects.acreate(owner=user)
 
+    # 새 공장에 관리자로 등록
     await FactoryMember.objects.acreate(
         factory=factory,
         user=user,
@@ -32,6 +35,17 @@ async def create_factory(request):
         status=FactoryMember.MemberStatus.active,
         invited_by=user,
     )
+    
+    # 사용자가 다른 공장의 멤버인 경우 모두 삭제 (새 공장 제외)
+    other_factory_members = await FactoryMember.objects.filter(
+        user=user
+    ).exclude(factory=factory).aexists()
+    
+    if other_factory_members:
+        await FactoryMember.objects.filter(
+            user=user
+        ).exclude(factory=factory).adelete()
+    
     return 201, {"factory_id": factory.id}
 
 
@@ -42,25 +56,25 @@ async def create_factory(request):
     response={200: List[FactoryOut]},
     auth=jwt_auth,
 )
-@paginate
 async def list_factories(request):
     user = request.auth
 
     @sync_to_async
     def get_factories():
+        # FactoryMember 정보를 함께 조회하여 invited_at 포함
         member_factories = FactoryMember.objects.filter(
             user=user, 
             status=FactoryMember.MemberStatus.active
-        ).values_list('factory_id', flat=True)
+        ).select_related('factory').order_by('-invited_at')
         
-        queryset = Factory.objects.filter(id__in=member_factories).order_by("-created_at")
-        return list(queryset)
+        return list(member_factories)
 
-    factories = await get_factories()
+    member_factories = await get_factories()
     
     # 모델 객체를 딕셔너리로 변환
     factory_list = []
-    for factory in factories:
+    for member in member_factories:
+        factory = member.factory
         factory_list.append({
             "id": factory.id,
             "owner": factory.owner_id,
@@ -78,6 +92,9 @@ async def list_factories(request):
             "inviting": factory.inviting,
             "created_at": factory.created_at.isoformat() if factory.created_at else None,
             "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
+            "invited_at": member.invited_at.isoformat() if member.invited_at else None,
+            "role": member.role,
+            "invited_by": member.invited_by_id,
         })
     
     return factory_list
@@ -103,6 +120,17 @@ async def get_factory(request):
     except Factory.DoesNotExist:
         raise HttpError(404, "해당 공장이 존재하지 않습니다.")
     
+    # FactoryMember 정보 조회
+    @sync_to_async
+    def get_factory_member():
+        return FactoryMember.objects.filter(
+            factory=factory, 
+            user=user,
+            status=FactoryMember.MemberStatus.active
+        ).first()
+    
+    member = await get_factory_member()
+    
     return {
         "id": factory.id,
         "owner": factory.owner_id,
@@ -120,6 +148,9 @@ async def get_factory(request):
         "inviting": factory.inviting,
         "created_at": factory.created_at.isoformat() if factory.created_at else None,
         "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
+        "invited_at": member.invited_at.isoformat() if member and member.invited_at else None,
+        "role": member.role if member else None,
+        "invited_by": member.invited_by_id if member else None,
     }
 
 
@@ -152,6 +183,17 @@ async def update_factory(request, payload: FactoryUpdateIn):
     
     await factory.asave()
     
+    # FactoryMember 정보 조회
+    @sync_to_async
+    def get_factory_member():
+        return FactoryMember.objects.filter(
+            factory=factory, 
+            user=user,
+            status=FactoryMember.MemberStatus.active
+        ).first()
+    
+    member = await get_factory_member()
+    
     return {
         "id": factory.id,
         "owner": factory.owner_id,
@@ -169,6 +211,9 @@ async def update_factory(request, payload: FactoryUpdateIn):
         "inviting": factory.inviting,
         "created_at": factory.created_at.isoformat() if factory.created_at else None,
         "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
+        "invited_at": member.invited_at.isoformat() if member and member.invited_at else None,
+        "role": member.role if member else None,
+        "invited_by": member.invited_by_id if member else None,
     }
 
 

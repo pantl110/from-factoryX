@@ -1,10 +1,12 @@
 from ninja import Schema
-from typing import Optional
+from typing import Optional, List
+from project.schemas.outbound import ProjectPlanDetailOut
 
 
 # ------------------------------------------------------------
 # Factory API
 # ------------------------------------------------------------
+
 
 # (GET) Factory
 class FactoryOut(Schema):
@@ -24,11 +26,10 @@ class FactoryOut(Schema):
     inviting: list
     created_at: str
     updated_at: str
+    invited_at: Optional[str]
+    role: Optional[str]
+    invited_by: Optional[int]
 
-
-# ------------------------------------------------------------
-# Factory Member API
-# ------------------------------------------------------------
 
 # (GET) Factory Equipment
 class FactoryEqOut(Schema):
@@ -41,6 +42,24 @@ class FactoryEqOut(Schema):
     note: Optional[str]
     created_at: str
     updated_at: str
+
+
+class FactoryEqDetailOut(Schema):
+    id: int
+    factory: int
+    name: str
+    status: str
+    priority: int
+    location: Optional[str]
+    note: Optional[str]
+    created_at: str
+    updated_at: str
+    history: List[ProjectPlanDetailOut]
+
+
+# ------------------------------------------------------------
+# Factory Member API
+# ------------------------------------------------------------
 
 
 # (GET) Factory Member
@@ -58,6 +77,7 @@ class FactoryMemberOut(Schema):
 # ------------------------------------------------------------
 # Factory Client API
 # ------------------------------------------------------------
+
 
 # (GET) Factory Client
 class FactoryClientOut(Schema):

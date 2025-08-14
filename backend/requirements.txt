@@ -46,3 +46,8 @@ openai
 aiofiles
 zeep
 django-crontab
+channels
+channels-redis
+daphne
+websockets
+uvicorn
