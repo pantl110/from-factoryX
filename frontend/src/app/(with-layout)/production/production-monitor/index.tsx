@@ -119,7 +119,10 @@ const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
                       projectStatus={projectStatus}
                     />
                   ) : selectedLog.type === '반품' ? (
-                    <ReturnSection key={selectedLog.id} />
+                    <ReturnSection
+                      key={selectedLog.id}
+                      refundId={selectedLog.refund_id || 3}
+                    />
                   ) : selectedLog.type === '계획 변경' ? (
                     <PlanChangeSection
                       key={selectedLog.id}

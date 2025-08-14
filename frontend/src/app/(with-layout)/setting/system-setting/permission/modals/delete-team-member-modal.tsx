@@ -17,7 +17,6 @@ const DeleteTeamMemberModal = ({
         '삭제하시면 해당 팀원은 더 이상 팩토리엑스를 이용할 수 없게 돼요.'
       }
       onClose={onClose}
-      sm={true}
     >
       <div className="flex justify-end mt-4 gap-[5px]">
         <MiniBtn

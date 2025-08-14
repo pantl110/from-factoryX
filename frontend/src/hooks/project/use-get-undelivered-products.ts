@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
 
 interface UndeliveredProductModel {
   company_name: string;
@@ -14,6 +15,7 @@ interface GetUndeliveredProductsModel {
 const useGetUndeliveredProducts = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { factoryId } = useFactoryStore();
 
   const getUndeliveredProducts = async (
     params: GetUndeliveredProductsModel
@@ -22,19 +24,18 @@ const useGetUndeliveredProducts = () => {
     setError(null);
 
     try {
-      // localStorage에서 factoryId 가져오기
-      const factoryId = localStorage.getItem('factoryId');
+      // Zustand store에서 factoryId 가져오기
       if (!factoryId) {
         setError('Factory ID를 찾을 수 없습니다.');
         return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
       }
 
       const queryParams = new URLSearchParams();
-      queryParams.append('factory_id', factoryId);
+      queryParams.append('factory_id', factoryId.toString());
       queryParams.append('page', (params.page || 1).toString());
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/quotation/product/undelivered?${queryParams}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/undelivered?${queryParams}`,
         {
           method: 'GET',
           credentials: 'include',

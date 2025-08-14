@@ -6,15 +6,20 @@ interface DeliveryTableItemProps {
   projectName: string;
   productName: string;
   date: string;
+  onClick: () => void;
 }
 
 const DeliveryTableItem = ({
   projectName,
   productName,
   date,
+  onClick,
 }: DeliveryTableItemProps) => {
   return (
-    <div className="group flex w-full h-15 items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200">
+    <div
+      onClick={onClick}
+      className="group flex w-full h-15 items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200"
+    >
       <p className="px-3 w-[150px] truncate" title={projectName}>
         {projectName}
       </p>

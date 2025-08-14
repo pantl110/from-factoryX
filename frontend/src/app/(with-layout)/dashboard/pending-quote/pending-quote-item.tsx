@@ -37,9 +37,11 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
         </div>
       </div>
       <div className="flex items-center">
-        <p className="flex-1 Me_Body-1 text-sv">{project.start_date}</p>
+        <p className="flex-1 Me_Body-1 text-sv">
+          {project.start_date || '날짜 미정'}
+        </p>
         <Chip
-          text={project.status}
+          text={project.status === '견적 협의중' ? '견적 요청' : project.status}
           bgColor={getStatusColor(project.status).bg}
           textColor={getStatusColor(project.status).text}
         />

@@ -460,7 +460,9 @@ export interface ProjectResponseModel {
   start_date: string;
   due_date: string;
   publish_status: TaxStatusType; // 세금계산서 발행 상태
-  status: ProjectStatusType; // 프로젝트 상태 (영어)
+  status: ProjectStatusType; // 프로젝트 상태 (영어 or 한글)
+  is_abandoned: boolean; // 프로젝트 중단 여부
+  quotation_id: number;
 }
 
 export interface ProjectListResponseModel extends PaginationModel {
@@ -583,6 +585,7 @@ export interface ProjectLogResponseModel {
   type: ProjectLogType;
   title: string;
   content: string;
+  refund_id?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -643,7 +646,7 @@ export interface ProjectPlanModel {
   project_id: number;
   quotation_product: QuotationProductForPlanModel;
   equipment: EquipmentForPlanModel;
-  status: OperationStatusType; // 가동 대기, 가동 중, 가동 완료, 가동 불가
+  status: OperationStatusType; // 가동 대기, 가동 중, 가동 완료
   quantity: number; // 생산 수량
   start_date: string; // 생산 시작 일자
   end_date: string; // 생산 종료 일자
@@ -680,17 +683,62 @@ export interface CreateRefundResponseModel {
   log_id: number;
 }
 
-// 반품 수정
-export interface UpdateRefundModel {
-  refund_date?: string;
-  current_stock?: number;
-  production_amount?: number;
+// 반품 가져오기
+export interface RefundModel {
+  id: number;
+  product: {
+    id: number;
+    name: string;
+    code: string;
+    current_stock: number;
+    spec: string;
+    unit: string;
+  };
+  project: {
+    id: number;
+    status: string;
+  };
+  amount: number;
+  current_stock: number;
+  production_amount: number;
+  refund_date?: string | null;
+  log: {
+    id: number;
+    title: string;
+    content: string;
+    created_at: string;
+  };
+  created_at: string;
+  updated_at: string;
 }
 
-export interface UpdateRefundResponseModel {
+// 반품 수정
+export interface UpdateRefundModel {
+  product_id?: number;
+  production_amount?: number;
+  refund_date?: string;
+}
+
+// 반품으로 생산계획 생성하기
+export interface RegisterProductionFromRefundResponseModel {
   message: string;
   refund_id: number;
+  updated_project_plans: number[];
+  deleted_project_plans: number[];
+  created_project_plans: number[];
 }
+
+// export interface RefundProductionRegistrationOutModel {
+//   message: string;
+//   refund_id: number;
+//   quotation_id: number;
+//   quotation_product_id: number;
+//   project_plan_id: number;
+//   production_log_id: number;
+//   product_name: string;
+//   quantity: number;
+//   equipment_name: string;
+// }
 
 //////////////////////
 // Factory Member API

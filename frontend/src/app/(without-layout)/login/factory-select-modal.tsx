@@ -68,7 +68,6 @@ const FactorySelectModal = ({
 
   return (
     <Modal
-      sm={true}
       title="초대된 공장에 참여할까요?"
       subtitle={`현재 사용 중인 계정은 이미 다른 공장에 소속돼 있어요.
 새로운 공장에 참여하면 기존 공장에서 자동으로 탈퇴돼요.`}

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import DeliveryTableItem from './delivery-table-item';
 import Pagination from '@/components/pagination';
-import Spinner from '@/ui/spinner';
+import NoHistoryBox from '@/ui/no-history-box';
+import { usePagination } from '@/hooks';
+import { useRouter } from 'next/navigation';
 
 interface UndeliveredProductModel {
   company_name: string;
@@ -21,39 +22,26 @@ const DeliveryTable = ({
   undeliveredProducts,
   isLoading,
 }: DeliveryTableProps) => {
-  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
-  // 페이지네이션 계산
-  const itemsPerPage = 5;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = undeliveredProducts.slice(startIndex, endIndex);
-  const calculatedTotalPages = Math.ceil(
-    undeliveredProducts.length / itemsPerPage
-  );
+  // usePagination 훅 사용
+  const { currentItems, currentPage, totalPages, setCurrentPage } =
+    usePagination({
+      items: undeliveredProducts,
+      itemsPerPage: 5,
+    });
 
-  if (isLoading) {
+  if (isLoading || undeliveredProducts.length === 0) {
     return (
-      <div className="flex flex-col h-105 justify-between">
-        <div className="flex items-center justify-center h-full">
-          <Spinner />
-        </div>
-      </div>
-    );
-  }
-
-  if (undeliveredProducts.length === 0) {
-    return (
-      <div className="flex flex-col h-105 justify-between">
-        <div className="flex items-center justify-center h-full">
-          <div className="text-gr">납품되지 않은 견적서 품목이 없습니다.</div>
-        </div>
-      </div>
+      <NoHistoryBox
+        title="납품 일정이 없어요."
+        text="가장 가까운 납품 일정부터 순서대로 보여져요."
+      />
     );
   }
 
   return (
-    <div className="flex flex-col h-105 justify-between">
+    <div className="flex flex-col justify-between">
       <div>
         <div className="flex w-full h-12 items-center Me_Body-1 text-sv border-t border-b border-[#eeeeee]">
           <p className="px-3 w-[150px]">업체명</p>
@@ -66,18 +54,19 @@ const DeliveryTable = ({
             key={`${product.project_id}-${index}`}
             projectName={product.company_name}
             productName={product.product_name}
-            date={product.delivery_date || ''}
+            date={product.delivery_date || '-'}
+            onClick={() => {
+              router.push(`/production/${product.project_id}`);
+            }}
           />
         ))}
       </div>
-      {calculatedTotalPages > 1 && (
-        <div className="flex justify-center mt-3">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={calculatedTotalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       )}
     </div>
   );

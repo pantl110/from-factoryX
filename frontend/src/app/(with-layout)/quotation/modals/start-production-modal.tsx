@@ -15,7 +15,6 @@ const StartProductionModal = ({
       onClose={onClose}
       title="이 주문서로 생산을 시작할까요?"
       subtitle={`확정된 주문서가 맞다면 ‘생산 시작’을 눌러주세요.`}
-      sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn

@@ -13,7 +13,6 @@ const SubscribeModal = ({ onClose, planTitle }: SubscribeModalProps) => {
       subtitle={`아직 무료 체험 기간이 8일 남아있어요.\n결제는 체험 종료 후 자동으로 진행됩니다.`}
       // subtitle={`현재 무료 체험 기간이 8일 남아있어요.\n결제 카드를 미리 등록해두시면, 체험 종료 후 자동으로 전환돼요.`}
       onClose={onClose}
-      sm={true}
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn

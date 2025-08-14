@@ -55,11 +55,34 @@ const ProductionLogTableItem = ({
   return (
     <>
       <div className="flex items-center h-14 min-w-[1559px] border-b border-lg group Me_Body-1 text-dg">
-        <p className="flex-2 px-3">{plan.quotation_product.product.name}</p>
-        <p className="flex-1 px-3">{plan.quotation_product.product.code}</p>
-        <p className="flex-1 px-3">{plan.quotation_product.product.spec}</p>
-        <p className="w-[80px] px-3">{plan.quotation_product.product.unit}</p>
-        <p className="flex-1 px-3">
+        <p
+          className="flex-2 px-3 truncate"
+          title={plan.quotation_product.product.name}
+        >
+          {plan.quotation_product.product.name}
+        </p>
+        <p
+          className="flex-1 px-3 truncate"
+          title={plan.quotation_product.product.code}
+        >
+          {plan.quotation_product.product.code}
+        </p>
+        <p
+          className="flex-1 px-3 truncate"
+          title={plan.quotation_product.product.spec}
+        >
+          {plan.quotation_product.product.spec}
+        </p>
+        <p
+          className="w-[80px] px-3 truncate"
+          title={plan.quotation_product.product.unit}
+        >
+          {plan.quotation_product.product.unit}
+        </p>
+        <p
+          className="flex-1 px-3 truncate"
+          title={plan.quotation_product.quantity?.toLocaleString() || '-'}
+        >
           {plan.quotation_product.quantity?.toLocaleString() || '-'}
         </p>
         <div className="flex-1 px-3">
@@ -83,7 +106,9 @@ const ProductionLogTableItem = ({
             )}
           />
         </div>
-        <p className="flex-1 px-3">{plan.equipment.name || '-'}</p>
+        <p className="flex-1 px-3 truncate" title={plan.equipment.name || '-'}>
+          {plan.equipment.name || '-'}
+        </p>
         <div className="w-[200px] px-3">
           <Controller
             name="start_date"

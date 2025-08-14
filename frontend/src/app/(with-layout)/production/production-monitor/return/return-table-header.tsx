@@ -5,7 +5,6 @@ const ReturnTableHeader = () => {
       <p className="flex-1 px-3">품목코드</p>
       <p className="flex-1 px-3">규격</p>
       <p className="w-[80px] px-3">단위</p>
-      <p className="flex-1 px-3">환불액</p>
     </div>
   );
 };

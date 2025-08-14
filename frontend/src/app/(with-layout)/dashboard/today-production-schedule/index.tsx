@@ -67,7 +67,7 @@ const TodayProductionSchedule = ({
                 className="w-10 h-10 flex justify-center items-center cursor-pointer hover:bg-bg rounded-[8px] transition-colors ease-in-out duration-200"
                 onClick={() => setIsPrintOverlayOpen(false)}
               >
-                <X size={16} className="text-sv" />
+                <X size={20} className="text-sv" />
               </button>
             </div>
 

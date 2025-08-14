@@ -28,12 +28,7 @@ const ClaimReceiptTaxModal = ({
 
   return (
     <>
-      <Modal
-        title={getTitle()}
-        subtitle={getSubtitle()}
-        onClose={onClose}
-        sm={true}
-      >
+      <Modal title={getTitle()} subtitle={getSubtitle()} onClose={onClose}>
         <div className="flex justify-end gap-[5px] mt-4">
           <MiniBtn
             text="취소"
@@ -57,7 +52,6 @@ const ClaimReceiptTaxModal = ({
           title="세금계산서가 선택한 방식으로 생성되었어요."
           subtitle="생성된 세금계산서는 문서 형식으로 확인하실 수 있어요."
           onClose={() => setIsNextModalOpen(false)}
-          sm={true}
         >
           <div className="flex justify-end gap-[5px] mt-4">
             <MiniBtn

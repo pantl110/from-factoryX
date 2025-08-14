@@ -32,40 +32,52 @@ export const useLogout = (): UseLogoutReturnModel => {
         }
       );
 
+      let result;
       if (response.ok) {
-        const result = await response.json();
+        result = await response.json();
+      } else {
+        // 로그아웃 실패
+        result = await response.json();
+      }
 
-        // 로그아웃 성공 시 전역 상태 초기화
-        clearAuth();
-        clearFactoryId(); // factoryId도 클리어
+      // API 호출 성공/실패와 관계없이 항상 전역 상태 초기화
+      clearAuth();
+      clearFactoryId(); // factoryId도 클리어
 
-        // localStorage에서 persist 데이터 직접 제거
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('auth-storage');
-          localStorage.removeItem('factory-storage');
-        }
+      // localStorage에서 persist 데이터 직접 제거
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth-storage');
+        localStorage.removeItem('factory-storage');
+      }
 
-        // 쿠키 삭제
-        document.cookie =
-          'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        document.cookie =
-          'refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      // 쿠키 삭제
+      document.cookie =
+        'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie =
+        'refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 
+      if (response.ok) {
         return {
           success: true,
           data: result,
         };
       } else {
-        // 로그아웃 실패
-        const errorData = await response.json();
-
         return {
           success: false,
-          error:
-            errorData.detail || '로그아웃에 실패했습니다. 다시 시도해주세요.',
+          error: result.detail || '로그아웃에 실패했습니다. 다시 시도해주세요.',
         };
       }
     } catch {
+      // 에러가 발생해도 전역 상태는 초기화
+      clearAuth();
+      clearFactoryId();
+
+      // localStorage에서 persist 데이터 직접 제거
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth-storage');
+        localStorage.removeItem('factory-storage');
+      }
+
       return {
         success: false,
         error: '서버 연결에 실패했습니다. 다시 시도해주세요.',

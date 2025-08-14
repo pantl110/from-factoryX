@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import Pagination from '@/components/pagination';
 import ProductionTableHeader from './production-table-header';
 import ProductionTableItem from './production-table-item';
-import Spinner from '@/ui/spinner';
+import NoHistoryBox from '@/ui/no-history-box';
+import { usePagination } from '@/hooks';
+import Pagination from '@/components/pagination';
 
 interface TodayProductionPlanModel {
   company_name: string;
@@ -25,9 +25,6 @@ const ProductionTable = ({
   todayProductionPlans,
   isLoading,
 }: ProductionTableProps) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
   // 생산 시간을 시:분 형식으로 변환
   const formatProductionTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -35,27 +32,20 @@ const ProductionTable = ({
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
-  // 페이지네이션 계산
-  const itemsPerPage = 5;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = todayProductionPlans.slice(startIndex, endIndex);
-  const calculatedTotalPages = Math.ceil(
-    todayProductionPlans.length / itemsPerPage
-  );
+  // usePagination 훅 사용
+  const { currentItems, currentPage, totalPages, setCurrentPage } =
+    usePagination({
+      items: todayProductionPlans,
+      itemsPerPage: 5,
+    });
 
-  if (isLoading) {
+  if (isLoading || todayProductionPlans.length === 0) {
     return (
-      <div className="mt-3 flex items-center justify-center h-[328px]">
-        <Spinner />
-      </div>
-    );
-  }
-
-  if (todayProductionPlans.length === 0) {
-    return (
-      <div className="mt-3 flex items-center justify-center h-[328px]">
-        <div className="text-gr">오늘의 생산 일정이 없습니다.</div>
+      <div className="mt-3">
+        <NoHistoryBox
+          title="히스토리가 아직 없어요."
+          text="오늘 생산할 품목을 여기에서 확인할 수 있어요."
+        />
       </div>
     );
   }
@@ -78,11 +68,11 @@ const ProductionTable = ({
           />
         ))}
       </div>
-      {calculatedTotalPages > 1 && (
+      {totalPages > 1 && (
         <div className="flex justify-center mt-3">
           <Pagination
             currentPage={currentPage}
-            totalPages={calculatedTotalPages}
+            totalPages={totalPages}
             onPageChange={setCurrentPage}
           />
         </div>
