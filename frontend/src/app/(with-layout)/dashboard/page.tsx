@@ -202,7 +202,7 @@ const DashboardPageContent = () => {
       getPublishedTaxInvoices({
         page: 1,
         size: 5,
-        order: 'desc',
+        ordering: '-transaction_date',
       }).then((result) => {
         if (result.success && result.data) {
           // API 응답에서 데이터 배열 추출

@@ -6,10 +6,11 @@ import { PublishedTaxInvoiceListResponseModel } from '@/types/data-model';
 
 interface PublishedTaxInvoiceParamsModel {
   q?: string; // 거래처명 또는 품목명 통합 검색어
-  tax_invoice_type?: 'all' | 'sales' | 'purchase'; // 세금계산서 유형
+  tax_invoice_type?: 'sales' | 'purchase'; // 세금계산서 유형
   start_date?: string; // 시작일 (YYYY-MM-DD)
   end_date?: string; // 종료일 (YYYY-MM-DD)
-  order?: 'desc' | 'asc'; // 정렬 순서
+  ordering?: string; // 정렬 순서: -transaction_date(최신순), transaction_date(오래된순)
+  is_hidden?: boolean; // 숨김 여부
   page?: number;
   size?: number;
 }
@@ -24,12 +25,12 @@ const useGetPublishedTaxInvoices = () => {
       success: boolean;
       data?: PublishedTaxInvoiceListResponseModel;
     }> => {
-      const queryParams: Record<string, string | number> = {};
+      const queryParams: Record<string, string | number | boolean> = {};
 
       if (params.q) {
         queryParams.q = params.q;
       }
-      if (params.tax_invoice_type && params.tax_invoice_type !== 'all') {
+      if (params.tax_invoice_type) {
         queryParams.tax_invoice_type = params.tax_invoice_type;
       }
       if (params.start_date) {
@@ -38,8 +39,11 @@ const useGetPublishedTaxInvoices = () => {
       if (params.end_date) {
         queryParams.end_date = params.end_date;
       }
-      if (params.order) {
-        queryParams.order = params.order;
+      if (params.ordering) {
+        queryParams.ordering = params.ordering;
+      }
+      if (params.is_hidden !== undefined) {
+        queryParams.is_hidden = params.is_hidden;
       }
       if (params.page) {
         queryParams.page = params.page;

@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import useFactoryStore from '@/store/factory-store';
+import { OcrDataModel } from '@/types/data-model';
+import {useUploadFile} from '@/hooks';
 
 interface OcrUploadModel {
   data: string; // base64 encoded file content
@@ -7,18 +10,35 @@ interface OcrUploadModel {
 interface OcrUploadResponseModel {
   status: string;
   message?: string;
+  data?: OcrDataModel; // OCR 결과 데이터
+  imageUrl?: string; // S3에 업로드된 이미지 URL
 }
 
 const useOcrUpload = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { factoryId } = useFactoryStore();
+  const { uploadFile } = useUploadFile();
 
   const uploadOcr = async (file: File): Promise<OcrUploadResponseModel> => {
     setIsLoading(true);
     setError(null);
 
+    if (!factoryId) {
+      setError('공장 ID가 설정되지 않았습니다.');
+      return { status: 'error', message: '공장 ID가 설정되지 않았습니다.' };
+    }
+
     try {
-      // Convert file to base64
+      // 1. 먼저 이미지를 S3에 업로드
+      const uploadResult = await uploadFile(file);
+      if (!uploadResult.success || !uploadResult.object_url) {
+        throw new Error(uploadResult.error || '이미지 업로드에 실패했습니다.');
+      }
+
+      const imageUrl = uploadResult.object_url;
+
+      // 2. Convert file to base64 for OCR
       const base64Data = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -36,7 +56,7 @@ const useOcrUpload = () => {
       };
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/ocr`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/ocr?factory_id=${factoryId}`,
         {
           method: 'POST',
           credentials: 'include',
@@ -49,10 +69,39 @@ const useOcrUpload = () => {
 
       if (response.ok) {
         const result = await response.json();
-        return result;
+        
+        // OCR API는 성공 시 직접 데이터를 반환
+        // client_info와 request_items가 있으면 성공으로 간주
+        if (result.client_info && result.request_items) {
+          return { 
+            status: 'success', 
+            data: result,
+            imageUrl: imageUrl,
+            message: 'OCR 처리에 성공했습니다.'
+          };
+        } else {
+          // 예상한 데이터 구조가 아닌 경우
+          return { 
+            status: 'error', 
+            message: 'OCR 결과 데이터 형식이 올바르지 않습니다.'
+          };
+        }
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'OCR 업로드에 실패했습니다.');
+        let errorMessage = 'OCR 업로드에 실패했습니다.';
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.detail) {
+            errorMessage = errorData.detail;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (parseError) {
+          // JSON 파싱 실패 시 기본 에러 메시지 사용
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
     } catch (err) {
       const errorMessage =

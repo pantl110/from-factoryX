@@ -17,6 +17,7 @@ import StartProductionModal from './modals/start-production-modal';
 import {
   ClientModel,
   OcrDataModel,
+  OcrRequestItemModel,
   QuotationProductDetailResponseModel,
   QuotationResponseModel,
 } from '@/types/data-model';
@@ -30,6 +31,7 @@ import {
 } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
 import useFactoryStore from '@/store/factory-store';
+import useOcrStore from '@/store/ocr-store';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -59,6 +61,7 @@ const QuotationPageContent = () => {
     useGetDetailQuotation(quotationId || 0);
   const factoryId = useFactoryStore((state) => state.factoryId);
   const { showToast, isToastOpen, isVisible } = useToast(3000);
+  const { ocrData, imageUrl, setOcrData } = useOcrStore();
 
   // 프로젝트 상태 로드
   const loadProjectStatus = useCallback(async () => {
@@ -69,10 +72,19 @@ const QuotationPageContent = () => {
       if (result.success && result.data) {
         setProjectStatus(result.data.status);
       }
-    } catch (error) {
-      console.error('프로젝트 상태 로드 실패:', error);
-    }
+    } catch {}
   }, [getProjectStatus, projectId]);
+
+  // 컴포넌트 마운트 시 프로젝트 상태 로드
+  useEffect(() => {
+    loadProjectStatus();
+
+    // 컴포넌트 언마운트 시 Zustand store 정보 초기화
+    return () => {
+      // OCR 데이터 초기화
+      useOcrStore.getState().clearOcrData();
+    };
+  }, [loadProjectStatus]);
 
   // 프로젝트 상태 변경
   const handleProjectStatusChange = useCallback(
@@ -84,17 +96,10 @@ const QuotationPageContent = () => {
         if (result.success) {
           setProjectStatus(newStatus);
         }
-      } catch (error) {
-        console.error('프로젝트 상태 변경 실패:', error);
-      }
+      } catch {}
     },
     [updateProjectStatus, projectId]
   );
-
-  // 컴포넌트 마운트 시 프로젝트 상태 로드
-  useEffect(() => {
-    loadProjectStatus();
-  }, [loadProjectStatus]);
 
   // 거래처 정보 폼
   const { setValue, control, trigger, watch, formState, reset } =
@@ -193,13 +198,14 @@ const QuotationPageContent = () => {
   // 프로젝트 상태 관리
   const [projectStatus, setProjectStatus] = useState<string | null>(null);
 
+  // 선택된 거래처 ID 관리
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+
   // 견적서 & 주문서 상태 관리 (프로젝트 상태에 따라 결정)
   const isOrderStatus =
     projectStatus === 'confirmed' || projectStatus === '주문 확정';
   const isSuspendedStatus =
     projectStatus === 'suspended' || projectStatus === '중단';
-  // OCR 데이터 상태 관리
-  const [ocrData, _setOcrData] = useState<OcrDataModel | null>(null);
 
   // 견적 품목 변경 추적을 위한 상태
   const [initialQuotationProducts, setInitialQuotationProducts] = useState<
@@ -208,8 +214,132 @@ const QuotationPageContent = () => {
 
   // 탭 상태 - ocr데이터가 없으면 히스토리 탭이 활성화
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
-    ocrData ? 'quotation' : 'history'
+    imageUrl ? 'quotation' : 'history'
   );
+
+  // OCR 데이터가 있을 때 폼에 자동으로 설정
+  useEffect(() => {
+    if (ocrData && (!quotationData || !quotationData.factory_name)) {
+      // OCR 데이터를 store에 저장 (백업)
+      setOcrData(ocrData, imageUrl || '');
+
+      // factoryname이 비어있으면 ocrdata로 폼 채우기 // factoryname이 비어있으면 저장 안됨
+      // OCR 데이터로 폼 자동 채우기
+      setValue('name', ocrData.client_info.company_name || '');
+      setValue(
+        'business_registration_number',
+        ocrData.client_info.registration_number || ''
+      );
+      setValue('representative_name', ocrData.client_info.ceo_name || '');
+      setValue('business_type', ocrData.client_info.business_type || '');
+      setValue('business_category', ocrData.client_info.category || '');
+      setValue('address', ocrData.client_info.address || '');
+      setValue('email', ocrData.client_info.email || '');
+      setValue('phone', ocrData.client_info.call_number || '');
+      setValue('fax', ocrData.client_info.fax_number || '');
+      setValue('manager', ocrData.client_info.manager_name || '');
+      setValue('due_date', ocrData.client_info.delivery_date || '');
+
+      // OCR 데이터에서 품목 정보 추출하여 quotationProducts 설정
+      if (
+        (ocrData as OcrDataModel).request_items &&
+        (ocrData as OcrDataModel).request_items.length > 0
+      ) {
+        const extractedProducts = (ocrData as OcrDataModel).request_items.map(
+          (product: OcrRequestItemModel) => ({
+            productId: null, // OCR에서는 productId가 없으므로 null
+            product_code: product.item_code || '',
+            product_name: product.item_name || '',
+            spec: product.spec || '',
+            unit: product.unit || '',
+            quantity: product.quantity ? Number(product.quantity) : null,
+            unit_price: product.unit_price ? Number(product.unit_price) : null,
+            supply_amount: null, // 공급가액은 나중에 계산
+            tax_amount: null, // 세액은 나중에 계산
+          })
+        );
+
+        setQuotationProducts(extractedProducts);
+        setInitialQuotationProducts(extractedProducts);
+
+        // 품목이 있으면 hasQuotationProducts를 true로 설정
+        const hasValidProducts = extractedProducts.every(
+          (product: QuotationProductDetailResponseModel) =>
+            product.product_name &&
+            product.product_code &&
+            product.spec &&
+            product.unit &&
+            product.quantity &&
+            product.unit_price
+        );
+        setHasQuotationProducts(hasValidProducts);
+      }
+
+      // OCR 데이터가 있으면 견적서 탭 활성화
+      setActiveTab('quotation');
+    }
+  }, [ocrData, quotationData, setValue, setActiveTab]);
+
+  // OCR 데이터 변경 시 폼 초기화 함수
+  const handleOcrDataChange = useCallback(
+    (newOcrData: any) => {
+      // 새로운 OCR 데이터로 폼 초기화
+      setValue('name', newOcrData.client_info.company_name || '');
+      setValue(
+        'business_registration_number',
+        newOcrData.client_info.registration_number || ''
+      );
+      setValue('representative_name', newOcrData.client_info.ceo_name || '');
+      setValue('business_type', newOcrData.client_info.business_type || '');
+      setValue('business_category', newOcrData.client_info.category || '');
+      setValue('address', newOcrData.client_info.address || '');
+      setValue('email', newOcrData.client_info.email || '');
+      setValue('phone', newOcrData.client_info.call_number || '');
+      setValue('fax', newOcrData.client_info.fax_number || '');
+      setValue('manager', newOcrData.client_info.manager_name || '');
+      setValue('due_date', newOcrData.client_info.delivery_date || '');
+
+      // OCR 데이터에서 품목 정보 추출하여 quotationProducts 설정
+      if (newOcrData.products && newOcrData.products.length > 0) {
+        const extractedProducts = newOcrData.products.map(
+          (product: OcrRequestItemModel) => ({
+            productId: null, // OCR에서는 productId가 없으므로 null
+            product_code: product.item_code || '',
+            product_name: product.item_name || '',
+            spec: product.spec || '',
+            unit: product.unit || '',
+            quantity: product.quantity ? Number(product.quantity) : 0,
+            unit_price: product.unit_price ? Number(product.unit_price) : 0,
+            supply_amount: null, // 공급가액은 나중에 계산
+            tax_amount: null, // 세액은 나중에 계산
+          })
+        );
+
+        setQuotationProducts(extractedProducts);
+        setInitialQuotationProducts(extractedProducts);
+
+        // 품목이 있으면 hasQuotationProducts를 true로 설정
+        const hasValidProducts = extractedProducts.every(
+          (product: QuotationProductDetailResponseModel) =>
+            product.product_name &&
+            product.product_code &&
+            product.spec &&
+            product.unit &&
+            product.quantity &&
+            product.unit_price
+        );
+        setHasQuotationProducts(hasValidProducts);
+      }
+
+      // 견적서 탭 활성화
+      setActiveTab('quotation');
+
+      // 폼 변경 상태 초기화
+      reset();
+    },
+    [setValue, setActiveTab, reset]
+  );
+
   // 오른쪽 패널 확장 상태
   const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
 
@@ -286,6 +416,7 @@ const QuotationPageContent = () => {
         quotation_id: quotationId || 0,
         client: {
           factory_id: factoryId,
+          client_id: selectedClientId,
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -297,6 +428,7 @@ const QuotationPageContent = () => {
           address: formData.address,
           manager: formData.manager,
           note: formData.note,
+          client_type: 'customer',
         },
         due_date: formData.due_date,
         products: quotationProducts.map((product) => ({
@@ -313,7 +445,9 @@ const QuotationPageContent = () => {
       reset(formData);
       // 견적 품목 변경 추적 초기화
       setInitialQuotationProducts([...quotationProducts]);
-      // 성공 시 토스트 메시지나 다른 피드백 제공
+
+      // 임시저장 성공 시 프로젝트 페이지로 이동
+      router.push('/project/process');
     } catch (error) {
       alert(
         '임시저장에 실패했습니다: ' +
@@ -348,6 +482,7 @@ const QuotationPageContent = () => {
         quotation_id: quotationId || 0,
         client: {
           factory_id: factoryId,
+          client_id: selectedClientId,
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -490,7 +625,11 @@ const QuotationPageContent = () => {
             {selectedProduct ? (
               <History selectedProduct={selectedProduct} />
             ) : ocrData ? (
-              <PreviewImage isOrderStatus={isOrderStatus} />
+              <PreviewImage
+                isOrderStatus={isOrderStatus}
+                imageUrl={imageUrl}
+                onOcrDataChange={handleOcrDataChange}
+              />
             ) : (
               <History selectedProduct={null} />
             )}
@@ -533,6 +672,7 @@ const QuotationPageContent = () => {
                   control={control}
                   setValue={setValue}
                   errors={formState.errors}
+                  onClientSelect={setSelectedClientId}
                 />
               </div>
 

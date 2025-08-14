@@ -152,6 +152,19 @@ export interface EquipmentModel {
   note?: string;
 }
 
+export interface FacilityHistoryResponseModel {
+  id: number;
+  project_id: number;
+  quotation_product_id: number;
+  equipment_id: number;
+  status: string;
+  quantity: number;
+  start_date: string;
+  end_date: string;
+  avg_production_time: number;
+  product_name?: string;
+}
+
 export interface EquipmentResponseModel {
   id: number;
   created_at: string;
@@ -162,6 +175,7 @@ export interface EquipmentResponseModel {
   priority: number;
   location?: string;
   note?: string;
+  history: FacilityHistoryResponseModel[];
 }
 
 // 설비 목록 조회
@@ -189,7 +203,7 @@ export interface ClientModel {
 
 export interface ClientResponseModel {
   id: number;
-  // client_type?: ClientType;
+  client_type?: ClientType;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -485,9 +499,37 @@ export interface ProjectStatusResponseModel {
 //////////////////////
 //// Quotation API
 //// OCR API
+
+// OCR 결과 요청 아이템 스키마
+export interface OcrRequestItemModel {
+  item_name: string;  // 품목명
+  item_code?: string;  // 품목코드
+  spec?: string;  // 규격
+  unit: string;  // 단위
+  quantity: string;  // 수량
+  unit_price: string;  // 단가
+}
+
+// OCR 결과 클라이언트 정보 스키마
+export interface OcrClientInfoModel {
+  company_name: string;  // 업체명
+  registration_number?: string;  // 사업자등록번호
+  ceo_name?: string;  // 대표자명
+  delivery_date?: string;  // 납품일자
+  business_type?: string;  // 업태
+  category?: string;  // 종목
+  address?: string;  // 주소
+  manager_name?: string;  // 담당자명
+  email?: string;  // 이메일
+  fax_number?: string;  // 팩스번호
+  call_number?: string;  // 전화번호
+}
+
+// OCR 결과 전체 스키마
 export interface OcrDataModel {
-  client_data: ClientModel;
-} // 수정 필요
+  client_info: OcrClientInfoModel;  // 클라이언트 정보
+  request_items: OcrRequestItemModel[];  // 요청 품목 리스트
+}
 
 // 견적서 상세 조회
 export interface QuotationProductDetailResponseModel {
@@ -977,6 +1019,7 @@ import {
   NotificationType,
   NotificationCaseType,
   TaxDocumentType,
+  ClientType,
 } from './status-type';
 
 export type {

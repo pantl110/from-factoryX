@@ -91,7 +91,7 @@ const TableItem = ({
 
     if (isQuotationStatus) {
       router.push(
-        `/quotation?quotation_id=${project.project_id}&project_id=${project.project_id}`
+        `/quotation?quotation_id=${project.quotation_id}&project_id=${project.project_id}`
       );
     } else {
       router.push(`/production/${project.project_id}`);

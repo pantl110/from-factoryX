@@ -22,7 +22,9 @@ const TaxPageContent = () => {
   const [selectedItem, setSelectedItem] =
     useState<PublishedTaxInvoiceResponseModel | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [sortDirection, setSortDirection] = useState<
+    'transaction_date' | '-transaction_date'
+  >('-transaction_date');
   const [showHidden, setShowHidden] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -44,13 +46,14 @@ const TaxPageContent = () => {
   const fetchTaxData = useCallback(
     async (page: number = 1) => {
       const params: {
-        order: 'asc' | 'desc';
+        ordering: '-transaction_date' | 'transaction_date';
         page: number;
         size: number;
         q?: string;
         tax_invoice_type?: 'sales' | 'purchase';
+        is_hidden?: boolean;
       } = {
-        order: sortDirection,
+        ordering: sortDirection,
         page,
         size: itemsPerPage,
       };
@@ -64,13 +67,26 @@ const TaxPageContent = () => {
           selectedTaxType === '매출' ? 'sales' : 'purchase';
       }
 
+      // 기본적으로는 숨김 항목 제외, 숨긴 목록 보기 버튼을 누르면 숨김 항목만 표시
+      if (showHidden) {
+        params.is_hidden = true; // 숨김 항목만 표시
+      } else {
+        params.is_hidden = false; // 숨김 항목 제외
+      }
+
       const result = await getPublishedTaxInvoices(params);
       if (result.success && result.data) {
         setTaxData(result.data.data);
         setTotalPages(result.data.pageCnt);
       }
     },
-    [getPublishedTaxInvoices, sortDirection, searchQuery, selectedTaxType]
+    [
+      getPublishedTaxInvoices,
+      sortDirection,
+      searchQuery,
+      selectedTaxType,
+      showHidden,
+    ]
   );
 
   // 컴포넌트 마운트 시 데이터 가져오기
@@ -86,7 +102,9 @@ const TaxPageContent = () => {
 
   // 시작일자 정렬 방향 변경 시 데이터 가져오기
   const handleSortClick = () => {
-    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    setSortDirection((prev) =>
+      prev === 'transaction_date' ? '-transaction_date' : 'transaction_date'
+    );
     setCurrentPage(1); // 정렬 변경 시 페이지 1로 리셋
     fetchTaxData(1); // 정렬 변경 시에도 API 호출
   };
@@ -138,6 +156,8 @@ const TaxPageContent = () => {
     setShowHidden(!showHidden);
     setCurrentPage(1); // 페이지를 1로 리셋
     setAllChecked(false); // 체크박스 상태 리셋
+    // 숨김 상태 변경 시 데이터 다시 가져오기
+    setTimeout(() => fetchTaxData(1), 0);
   };
 
   const handleHideRestore = () => {

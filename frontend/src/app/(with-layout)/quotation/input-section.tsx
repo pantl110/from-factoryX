@@ -27,9 +27,15 @@ interface InputSectionProps {
   setValue: UseFormSetValue<QuotationFormModel>;
   errors: FieldErrors<QuotationFormModel>;
   control: Control<QuotationFormModel>;
+  onClientSelect?: (clientId: number | null) => void;
 }
 
-const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
+const InputSection = ({
+  setValue,
+  errors,
+  control,
+  onClientSelect,
+}: InputSectionProps) => {
   const { clientList, searchClients } = useGetClient();
 
   const {
@@ -60,6 +66,9 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
     setValue('email', item.email || '');
     setValue('phone', formatPhoneNumber(String(item.phone ?? '')));
     setValue('fax', formatFaxNumber(String(item.fax ?? '')));
+
+    // 선택된 거래처 ID를 부모 컴포넌트로 전달
+    onClientSelect?.(item.id);
 
     setIsCompanyNameDropdownOpen(false);
   };
@@ -100,6 +109,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
               <ClientNameDropdown
                 items={filteredClients}
                 onSelect={handleSelectClient}
+                onClose={() => setIsCompanyNameDropdownOpen(false)}
                 width="w-full"
               />
             </div>

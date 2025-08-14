@@ -1,7 +1,6 @@
 import Panel from '@/ui/panel';
 import InfoLabelValue from '@/ui/info-label-value';
 import FacilityHistoryItem from './facility-history-item';
-import EmptySpace from '@/ui/empty-space';
 import TextareaAutosize from 'react-textarea-autosize';
 import { EquipmentResponseModel } from '@/types/data-model';
 import { useCreateEquipment, useUpdateEquipment } from '@/hooks';
@@ -9,10 +8,12 @@ import useFactoryStore from '@/store/factory-store';
 import { EquipmentStatusType } from '@/types/status-type';
 import { Controller, useForm } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import useGetEquipmentDetail from '@/hooks/factory/factory-equipment/use-get-equipment-detail';
+import NoHistoryBox from '@/ui/no-history-box';
 
 interface FacilityDetailPanelProps {
-  facility?: EquipmentResponseModel;
+  facilityId?: number;
   onClose: () => void;
   onSuccess?: () => void;
   showWarningToast?: () => void;
@@ -27,7 +28,7 @@ interface FacilityFormModel {
 }
 
 const FacilityDetailPanel = ({
-  facility,
+  facilityId,
   onClose,
   onSuccess,
   showWarningToast,
@@ -46,6 +47,25 @@ const FacilityDetailPanel = ({
       initializeFactoryId();
     }
   }, [factoryId, initializeFactoryId]);
+
+  // useGetEquipmentDetail 훅 사용
+  const { getEquipmentDetail, isLoading, error } = useGetEquipmentDetail();
+  const [facility, setFacility] = useState<EquipmentResponseModel | null>(null);
+
+  // facilityId가 변경될 때마다 설비 정보 가져오기
+  useEffect(() => {
+    const fetchFacilityDetail = async () => {
+      if (facilityId) {
+        const result = await getEquipmentDetail(facilityId);
+        if (result.success && result.data) {
+          setFacility(result.data);
+        }
+      }
+    };
+
+    fetchFacilityDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [facilityId]);
 
   const {
     handleSubmit,
@@ -256,7 +276,7 @@ const FacilityDetailPanel = ({
         <div className="flex flex-col gap-3">
           <h3 className="Heading-3">생산 히스토리</h3>
           <div className="flex flex-col">
-            {facility && facility.name ? (
+            {facility && facility.history.length > 0 ? (
               <>
                 <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
                   <p className="px-3 flex-1">품목명</p>
@@ -265,26 +285,14 @@ const FacilityDetailPanel = ({
                   <p className="px-3 flex-1">단위당 시간</p>
                   <p className="px-3 flex-1">생산 마감일자</p>
                 </div>
-                <FacilityHistoryItem
-                  productName="플라스틱컵 A"
-                  quantity={100}
-                  date="2025-06-20 11:00"
-                  unitTime="60초"
-                  deadlineTime="2025-06-20 13:00"
-                />
-                <FacilityHistoryItem
-                  productName="플라스틱컵 B"
-                  quantity={120}
-                  date="2025-06-20 11:00"
-                  unitTime="90초"
-                  deadlineTime="2025-06-20 14:00"
-                />
+                {facility.history.map((history) => (
+                  <FacilityHistoryItem key={history.id} history={history} />
+                ))}
               </>
             ) : (
-              <EmptySpace
+              <NoHistoryBox
                 title="생산 기록이 아직 없습니다."
-                description="이 설비로 시작되면 목록이 표시됩니다."
-                height="h-50"
+                text="이 설비로 시작되면 목록이 표시됩니다."
               />
             )}
           </div>

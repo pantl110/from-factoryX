@@ -12,7 +12,7 @@ interface TaxApiResponseModel<T = unknown> {
 interface TaxApiOptionsModel {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
-  queryParams?: Record<string, string | number>;
+  queryParams?: Record<string, string | number | boolean>;
   abortSignal?: AbortSignal;
 }
 

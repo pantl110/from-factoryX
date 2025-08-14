@@ -43,6 +43,8 @@ const LoginPage = () => {
     if (result.success) {
       // 로그인 성공 - 공장 개수에 따라 적절한 페이지로 이동
       if (result.factoryCount === 0) {
+        // 밑에 지우기
+        setFactoryId(3);
         // 공장이 0개일 때 - 온보딩 페이지로 이동
         router.push('/onboarding');
       } else if (result.factoryCount === 1) {
@@ -54,9 +56,9 @@ const LoginPage = () => {
         // router.push('/dashboard');
       } else if (result.factoryCount && result.factoryCount >= 2) {
         // 공장이 2개 이상일 때 - 공장 선택 모달을 보여줌
-        // setFactoryId(3); // ‼️‼️‼️‼️여기 지우고 주석 풀기
-        setFactories(result.factories as FactoriesResponseModel[]);
-        setShowFactorySelectModal(true);
+        setFactoryId(3); // ‼️‼️‼️‼️여기 지우고 주석 풀기
+        // setFactories(result.factories as FactoriesResponseModel[]);
+        // setShowFactorySelectModal(true);
       } else {
         // 기본적으로 대시보드로 이동
         router.push('/dashboard');

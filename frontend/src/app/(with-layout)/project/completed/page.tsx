@@ -14,6 +14,7 @@ import { useCheckAll, useGetProjects, useDeleteProject } from '@/hooks';
 import DeleteModal from '@/ui/modal/delete-modal';
 import { ProjectListResponseModel } from '@/types/data-model';
 import Spinner from '@/ui/spinner';
+import NoHistoryBox from '@/ui/no-history-box';
 
 const CompletedProjectPage = () => {
   const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
@@ -61,8 +62,8 @@ const CompletedProjectPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatus, searchKeyword, sortKey, sortOrder, currentPage]);
 
-  const sortedProjects = projectData?.data || [];
-  const currentIds = sortedProjects.map((project) => project.project_id);
+  const currentIds =
+    projectData?.data.map((project) => project.project_id) || [];
 
   const {
     checkedCount,
@@ -172,33 +173,42 @@ const CompletedProjectPage = () => {
             </div>
           ) : (
             <>
-              <div className="overflow-y-auto w-full">
-                <TableHeader
-                  isAllChecked={isAllChecked}
-                  onToggleAll={toggleAll}
-                  onSort={handleSort}
-                  isArchived={true}
+              {!projectData?.data || projectData?.data?.length === 0 ? (
+                <NoHistoryBox
+                  title="프로젝트가 없습니다."
+                  text="프로젝트를 생성해주세요."
                 />
-                {sortedProjects.map((project) => (
-                  <TableItem
-                    key={project.project_id}
-                    project={project}
-                    checked={isChecked(project.project_id)}
-                    onToggle={() => toggleOne(project.project_id)}
-                    isArchived={true}
-                  />
-                ))}
-              </div>
-              {/* 페이지네이션 */}
-              {projectData &&
-                projectData.pageCnt &&
-                projectData.pageCnt > 1 && (
-                  <Pagination
-                    currentPage={projectData.curPage || 1}
-                    totalPages={projectData.pageCnt}
-                    onPageChange={handlePageChange}
-                  />
-                )}
+              ) : (
+                <>
+                  <div className="overflow-y-auto w-full">
+                    <TableHeader
+                      isAllChecked={isAllChecked}
+                      onToggleAll={toggleAll}
+                      onSort={handleSort}
+                      isArchived={true}
+                    />
+                    {projectData?.data.map((project) => (
+                      <TableItem
+                        key={project.project_id}
+                        project={project}
+                        checked={isChecked(project.project_id)}
+                        onToggle={() => toggleOne(project.project_id)}
+                        isArchived={true}
+                      />
+                    ))}
+                  </div>
+                  {/* 페이지네이션 */}
+                  {projectData &&
+                    projectData.pageCnt &&
+                    projectData.pageCnt > 1 && (
+                      <Pagination
+                        currentPage={projectData.curPage || 1}
+                        totalPages={projectData.pageCnt}
+                        onPageChange={handlePageChange}
+                      />
+                    )}
+                </>
+              )}
             </>
           )}
         </div>

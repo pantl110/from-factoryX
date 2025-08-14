@@ -75,7 +75,7 @@ const Facility = ({
       {/* 설비 상세 판넬 (기존 설비 조회) */}
       {selectedEquipment && (
         <FacilityDetailPanel
-          facility={selectedEquipment}
+          facilityId={selectedEquipment.id}
           onClose={handlePanelClose}
           onSuccess={refetchEquipment}
           showWarningToast={showToast}
