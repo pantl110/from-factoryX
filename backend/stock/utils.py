@@ -31,7 +31,9 @@ def get_product_list_by_ids(product_ids: list, factory_id: int):
     if not product_ids:
         return []
 
-    products = Product.objects.filter(id__in=product_ids, factory_id=factory_id)
+    products = Product.objects.prefetch_related("location").filter(
+        id__in=product_ids, factory_id=factory_id
+    )
 
     return products
 

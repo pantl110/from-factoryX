@@ -39,6 +39,8 @@ from barobill.barobill_state import (
 )
 from datetime import datetime
 from typing import Optional, List
+from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
+from stock.schemas.outbound import ProductRowOut
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
@@ -634,12 +636,18 @@ async def create_tax_invoice(request, payload: NationalTaxServiceCreateIn):
         tax_service = NationalTaxService.objects.create(
             user=user,
             factory=factory,
+            factory_info=FactoryRowOut.from_orm(factory).dict(),
             client=client,
+            client_info=FactoryClientRowOut.from_orm(client).dict(),
             barobill_state="임시저장",
             **data,
         )
         products = get_product_list_by_ids(product_ids, factory_id)
+        tax_service.products_info = [
+            ProductRowOut.from_orm(product).dict() for product in products
+        ]
         tax_service.product.set(products)
+        tax_service.save()
         return tax_service
 
     tax_service = await create_tax_service()
@@ -691,10 +699,16 @@ async def update_tax_invoice(request, tax_id: int, payload: NationalTaxServiceUp
     if client_id is not None:
         client = await get_factory_client_by_id(client_id, factory_id)
         tax_service.client = client
+        tax_service.client_info = FactoryClientRowOut.from_orm(client).dict()
 
     product_ids = data.pop("product", None)
     if product_ids is not None:
-        products = get_product_list_by_ids(product_ids, factory_id)
+        products = await sync_to_async(list)(
+            get_product_list_by_ids(product_ids, factory_id)
+        )
+        tax_service.products_info = [
+            ProductRowOut.from_orm(product).dict() for product in products
+        ]
         await tax_service.product.aset(products)
 
     # line_items는 수정 시에만 업데이트

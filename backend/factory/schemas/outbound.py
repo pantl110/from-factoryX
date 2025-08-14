@@ -1,5 +1,6 @@
-from ninja import Schema
+from ninja import Schema, ModelSchema
 from typing import Optional, List
+from factory.models import Factory, FactoryClient
 from project.schemas.outbound import ProjectPlanDetailByEquipmentOut
 
 
@@ -111,3 +112,22 @@ class FactoryClientDetailOut(Schema):
     address: Optional[str]
     manager: Optional[str]
     note: Optional[str]
+
+
+class FactoryRowOut(ModelSchema):
+    class Meta:
+        model = Factory
+        exclude = [
+            "inviting",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class FactoryClientRowOut(ModelSchema):
+    class Meta:
+        model = FactoryClient
+        exclude = [
+            "created_at",
+            "updated_at",
+        ]

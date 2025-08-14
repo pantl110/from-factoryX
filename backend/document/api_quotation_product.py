@@ -21,6 +21,8 @@ from stock.models import Product
 from project.models import Project, ProjectPlan
 from factory.models import FactoryClient, FactoryEquipment
 from factory.utils import is_factory_member
+from stock.schemas.outbound import ProductRowOut
+from factory.schemas.outbound import FactoryClientRowOut
 
 
 router = Router(tags=["QuotationProduct"], auth=jwt_auth)
@@ -41,10 +43,10 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
 
     try:
         try:
-            quotation = await sync_to_async(get_object_or_404)(
-                Quotation, id=payload.quotation_id
-            )
-        except Http404:
+            quotation = await Quotation.objects.select_related(
+                "project", "factory"
+            ).aget(id=payload.quotation_id)
+        except Quotation.DoesNotExist:
             raise HttpError(404, "해당 견적서를 찾을 수 없습니다.")
 
         if quotation.factory_id != int(factory_id):
@@ -52,7 +54,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
 
         if payload.client:
             client_data = payload.client
-            factory = await sync_to_async(lambda: quotation.factory)()
+            factory = quotation.factory
 
             # 클라이언트 ID가 제공된 경우
             if client_data.client_id is not None:
@@ -101,7 +103,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                         updated = True
 
                     if updated:
-                        await sync_to_async(client.save)()
+                        await client.asave()
 
                 except FactoryClient.DoesNotExist:
                     raise HttpError(
@@ -125,6 +127,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                 )
 
             quotation.client = client
+            quotation.client_info = FactoryClientRowOut.from_orm(client).dict()
 
         if payload.due_date:
             # 시간 정보가 포함된 경우와 날짜만 있는 경우 모두 처리
@@ -144,12 +147,14 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                         400,
                         "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식을 사용하세요.",
                     )
+        if payload.uploaded_file:
+            quotation.uploaded_file = payload.uploaded_file
 
-        await sync_to_async(quotation.save)()
+        await quotation.asave()
 
-        project = await sync_to_async(lambda: quotation.project)()
+        project = quotation.project
         project.status = Project.ProjectStatus.quotation
-        await sync_to_async(project.save)()
+        await project.asave()
 
         if payload.products is not None:
             await QuotationProduct.objects.filter(quotation=quotation).adelete()
@@ -161,10 +166,12 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                         continue  # product_id가 없으면 건너뛰기
 
                     try:
-                        product = await sync_to_async(get_object_or_404)(
-                            Product, id=prod.product_id
+                        product = (
+                            await Product.objects.select_related("factory")
+                            .prefetch_related("location")
+                            .aget(id=prod.product_id)
                         )
-                    except Http404:
+                    except Product.DoesNotExist:
                         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
 
                     # 기본값 설정
@@ -194,6 +201,8 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                     await QuotationProduct.objects.acreate(
                         quotation=quotation,
                         product=product,
+                        # 상품이 변경되어도 변경되지 않는 product의 정보를 저장
+                        product_info=ProductRowOut.from_orm(product).dict(),
                         quantity=quantity,
                         unit_price=unit_price,
                         is_delivery=prod.is_delivery,

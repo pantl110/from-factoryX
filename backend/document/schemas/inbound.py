@@ -1,4 +1,4 @@
-from ninja import Schema
+from ninja import Schema, Field
 from typing import List, Optional
 
 
@@ -40,6 +40,7 @@ class QuotationProductDraftIn(Schema):
 # Quotation API
 # ------------------------------------------------------------
 
+
 # (POST) OCR
 class OcrIn(Schema):
     data: str
@@ -49,12 +50,14 @@ class OcrIn(Schema):
 # Quotation Product API
 # ------------------------------------------------------------
 
+
 # (POST) Quotation Draft
-class QuotationDraftIn(Schema):   
+class QuotationDraftIn(Schema):
     quotation_id: int
     client: Optional[FactoryClientInfoIn] = None
     products: Optional[List[QuotationProductDraftIn]] = None
     due_date: Optional[str] = None
+    uploaded_file: Optional[str] = Field(None, description="업로드 파일 URL")
 
 
 # (POST) Quotation Confirmed
