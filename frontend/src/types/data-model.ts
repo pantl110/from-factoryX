@@ -770,17 +770,19 @@ export interface RegisterProductionFromRefundResponseModel {
   created_project_plans: number[];
 }
 
-// export interface RefundProductionRegistrationOutModel {
-//   message: string;
-//   refund_id: number;
-//   quotation_id: number;
-//   quotation_product_id: number;
-//   project_plan_id: number;
-//   production_log_id: number;
-//   product_name: string;
-//   quantity: number;
-//   equipment_name: string;
-// }
+// 대시보드
+export interface MonthlyProfitModel {
+  month: string;
+  profit: number;
+}
+
+export interface DashboardResponseModel {
+  current_month_projects: number;
+  previous_month_projects: number;
+  shortage_materials_count: number;
+  monthly_profits: MonthlyProfitModel[];
+  last_year_monthly_profits: MonthlyProfitModel[];
+}
 
 //////////////////////
 // Factory Member API

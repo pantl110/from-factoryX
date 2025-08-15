@@ -3,7 +3,7 @@ import ButtonSection from './button-section';
 import QuotationStatusDropdown from './modals/quotation-status-dropdown';
 import { usePortalDropdown, useToast } from '@/hooks';
 import Toast from '@/ui/toast';
-import { UseFormTrigger, UseFormWatch } from 'react-hook-form';
+import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
 import { ClientModel } from '@/types/data-model';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import { useUpdateProjectStatus } from '@/hooks';
@@ -19,6 +19,7 @@ interface TitleSecProps {
   setIsStartProductionModalOpen: (open: boolean) => void;
   trigger: UseFormTrigger<QuotationFormModel>;
   watch: UseFormWatch<QuotationFormModel>;
+  formState: FormState<QuotationFormModel>;
   isOrderStatus: boolean;
   setIsOrderStatus: (status: boolean) => void;
   hasQuotationProducts: boolean;
@@ -36,6 +37,7 @@ const TitleSec = ({
   setIsStartProductionModalOpen,
   trigger,
   watch,
+  formState,
   isOrderStatus,
   setIsOrderStatus,
   hasQuotationProducts,
@@ -168,6 +170,13 @@ const TitleSec = ({
             showToast();
             return;
           }
+
+          // 개별 필드 오류 확인 (입력된 값들 중에 유효하지 않은 것이 있는지)
+          const hasErrors = Object.keys(formState.errors).length > 0;
+          if (hasErrors) {
+            return; // 오류가 있으면 저장하지 않음
+          }
+
           if (onSaveDraft) {
             await onSaveDraft();
           }

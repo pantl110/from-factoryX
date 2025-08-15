@@ -1,6 +1,15 @@
 import Chart from './chart';
+import { MonthlyProfitModel } from '@/types/data-model';
 
-const ProfitGraph = () => {
+interface ProfitGraphProps {
+  monthlyProfits: MonthlyProfitModel[];
+  lastYearMonthlyProfits: MonthlyProfitModel[];
+}
+
+const ProfitGraph = ({
+  monthlyProfits,
+  lastYearMonthlyProfits,
+}: ProfitGraphProps) => {
   return (
     <div className="flex flex-col flex-1 gap-3 min-w-[652px]">
       <h3 className="Heading-3">생산 이익 그래프</h3>
@@ -16,7 +25,10 @@ const ProfitGraph = () => {
               <span className="text-[#888] text-[16px] font-medium">작년</span>
             </div>
           </div>
-          <Chart />
+          <Chart
+            monthlyProfits={monthlyProfits}
+            lastYearMonthlyProfits={lastYearMonthlyProfits}
+          />
         </div>
       </div>
     </div>

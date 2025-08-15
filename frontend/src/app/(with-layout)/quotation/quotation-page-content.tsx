@@ -216,6 +216,9 @@ const QuotationPageContent = () => {
     QuotationProductDetailResponseModel[]
   >([]);
 
+  // 에러 표시 상태 (임시저장 시 유효성 검사 오류 표시용)
+  const [showErrors, setShowErrors] = useState(false);
+
   // 탭 상태 - ocr데이터가 없으면 히스토리 탭이 활성화
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
     imageUrl ? 'quotation' : 'history'
@@ -453,6 +456,8 @@ const QuotationPageContent = () => {
       reset(formData);
       // 견적 품목 변경 추적 초기화
       setInitialQuotationProducts([...quotationProducts]);
+      // 에러 표시 상태 초기화
+      setShowErrors(false);
 
       // 임시저장 성공 시 프로젝트 페이지로 이동
       router.push('/project/process');
@@ -606,6 +611,7 @@ const QuotationPageContent = () => {
           setIsStartProductionModalOpen={setIsStartProductionModalOpen}
           trigger={trigger}
           watch={watch}
+          formState={formState}
           isOrderStatus={isOrderStatus}
           setIsOrderStatus={() => handleProjectStatusChange('confirmed')}
           hasQuotationProducts={hasQuotationProducts}
@@ -682,6 +688,7 @@ const QuotationPageContent = () => {
                   setValue={setValue}
                   errors={formState.errors}
                   onClientSelect={setSelectedClientId}
+                  showErrors={showErrors}
                 />
               </div>
 
