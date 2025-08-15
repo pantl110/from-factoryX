@@ -10,6 +10,7 @@ interface ReturnInfoProps {
   refundData: RefundModel;
   onAmountChange: (newAmount: number) => void;
   onProductionAmountChange: (newProductionAmount: number) => void;
+  productId: number;
 }
 
 interface RefundFormDataModel {
@@ -22,6 +23,7 @@ const ReturnInfo = ({
   refundData,
   onAmountChange,
   onProductionAmountChange,
+  productId,
 }: ReturnInfoProps) => {
   const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
     useState(false);
@@ -249,6 +251,13 @@ const ReturnInfo = ({
         <RegisterProductionModal
           onClose={() => setIsRegisterProductionModalOpen(false)}
           refundId={refundData.id}
+          refundData={{
+            refund_date: watchedRefundDate,
+            amount: watchedAmount,
+            production_amount: watchedProductionAmount,
+            current_stock: refundData.current_stock,
+          }}
+          productId={productId}
         />
       )}
     </>

@@ -8,9 +8,10 @@ import { RefundModel, ProductResponseModel } from '@/types/data-model';
 
 interface ReturnSectionProps {
   refundId: number;
+  productId: number;
 }
 
-const ReturnSection = ({ refundId }: ReturnSectionProps) => {
+const ReturnSection = ({ refundId, productId }: ReturnSectionProps) => {
   const [refundData, setRefundData] = useState<RefundModel | null>(null);
   const [productDetail, setProductDetail] =
     useState<ProductResponseModel | null>(null);
@@ -93,6 +94,7 @@ const ReturnSection = ({ refundId }: ReturnSectionProps) => {
           refundData={refundData}
           onAmountChange={handleAmountChange}
           onProductionAmountChange={handleProductionAmountChange}
+          productId={productId}
         />
         {shouldShowTable && (
           <div>

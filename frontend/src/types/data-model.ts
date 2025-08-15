@@ -627,7 +627,7 @@ export interface ProjectLogResponseModel {
   type: ProjectLogType;
   title: string;
   content: string;
-  refund_id?: number | null;
+  refund?: RefundModel;
   created_at: string;
   updated_at: string;
 }

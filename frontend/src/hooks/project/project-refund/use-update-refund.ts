@@ -7,11 +7,15 @@ interface RefundUpdateInModel {
   refund_date?: string;
   current_stock?: number;
   production_amount?: number;
+  product_id?: number;
 }
 
 interface RefundUpdateOutModel {
   message: string;
   refund_id: number;
+  updated_project_plans: number[];
+  deleted_project_plans: number[];
+  created_project_plans: number[];
 }
 
 const useUpdateRefund = () => {

@@ -1,27 +1,60 @@
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
-import { useRegisterProductionFromRefund, useToast } from '@/hooks';
+import { useToast, useUpdateRefund } from '@/hooks';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 
 interface RegisterProductionModalProps {
   onClose: () => void;
   refundId: number;
+  refundData: {
+    refund_date: string;
+    amount: number;
+    production_amount: number;
+    current_stock: number;
+  };
+  productId: number;
 }
 
 const RegisterProductionModal = ({
   onClose,
   refundId,
+  refundData,
+  productId,
 }: RegisterProductionModalProps) => {
-  const { registerProductionFromRefund, isLoading, error } =
-    useRegisterProductionFromRefund();
+  const { updateRefund, isLoading, error } = useUpdateRefund();
   const { isToastOpen, isVisible, showToast } = useToast();
 
   const handleRegisterProduction = async () => {
-    const result = await registerProductionFromRefund({
-      refund_id: refundId,
+    const result = await updateRefund(refundId, {
+      refund_date: refundData.refund_date,
+      current_stock: refundData.current_stock,
+      production_amount: refundData.production_amount,
+      product_id: productId,
     });
+
     if (result.success) {
+      // 성공 시 프로젝트 계획 변경 사항 확인
+      if (result.data) {
+        const {
+          updated_project_plans,
+          deleted_project_plans,
+          created_project_plans,
+        } = result.data;
+
+        // 프로젝트 계획 변경 사항이 있으면 로그 출력 (디버깅용)
+        if (
+          updated_project_plans.length > 0 ||
+          deleted_project_plans.length > 0 ||
+          created_project_plans.length > 0
+        ) {
+          console.log('프로젝트 계획 변경:', {
+            수정됨: updated_project_plans,
+            삭제됨: deleted_project_plans,
+            생성됨: created_project_plans,
+          });
+        }
+      }
       onClose();
     } else {
       showToast();

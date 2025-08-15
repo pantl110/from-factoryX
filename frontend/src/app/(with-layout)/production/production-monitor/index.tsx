@@ -121,7 +121,8 @@ const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
                   ) : selectedLog.type === 'refund' ? (
                     <ReturnSection
                       key={selectedLog.id}
-                      refundId={selectedLog.refund_id || 4}
+                      refundId={selectedLog.refund?.id || 0}
+                      productId={selectedLog.refund?.product.id || 0}
                     />
                   ) : selectedLog.type === 'plan' ? (
                     <PlanChangeSection
