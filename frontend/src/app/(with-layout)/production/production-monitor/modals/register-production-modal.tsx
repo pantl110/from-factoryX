@@ -37,21 +37,21 @@ const RegisterProductionModal = ({
       // 성공 시 프로젝트 계획 변경 사항 확인
       if (result.data) {
         const {
-          updated_project_plans,
-          deleted_project_plans,
-          created_project_plans,
+          updated_project_plans: updatedProjectPlans,
+          deleted_project_plans: deletedProjectPlans,
+          created_project_plans: createdProjectPlans,
         } = result.data;
 
         // 프로젝트 계획 변경 사항이 있으면 로그 출력 (디버깅용)
         if (
-          updated_project_plans.length > 0 ||
-          deleted_project_plans.length > 0 ||
-          created_project_plans.length > 0
+          updatedProjectPlans.length > 0 ||
+          deletedProjectPlans.length > 0 ||
+          createdProjectPlans.length > 0
         ) {
-          console.log('프로젝트 계획 변경:', {
-            수정됨: updated_project_plans,
-            삭제됨: deleted_project_plans,
-            생성됨: created_project_plans,
+          console.warn('프로젝트 계획 변경:', {
+            수정됨: updatedProjectPlans,
+            삭제됨: deletedProjectPlans,
+            생성됨: createdProjectPlans,
           });
         }
       }

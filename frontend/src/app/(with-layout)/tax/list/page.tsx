@@ -12,27 +12,31 @@ import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import Pagination from '@/components/pagination';
 import EmptySpace from '@/ui/empty-space';
-import { useGetPublishedTaxInvoices, useCheckAll } from '@/hooks';
+import {
+  useGetPublishedTaxInvoices,
+  useCheckAll,
+  useUpdateTaxInvoice,
+} from '@/hooks';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
 const TaxPageContent = () => {
-  const [selectedTaxType, setSelectedTaxType] = useState<
-    TaxDocumentType | '전체'
-  >('전체');
+  const [selectedTaxType, setSelectedTaxType] =
+    useState<TaxDocumentType | null>(null);
   const [selectedItem, setSelectedItem] =
     useState<PublishedTaxInvoiceResponseModel | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showHidden, setShowHidden] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [hasItem, setHasItem] = useState(false); // 세금계산서 데이터 존재 여부
 
-  const { getPublishedTaxInvoices, isLoading, error } =
-    useGetPublishedTaxInvoices();
+  const { getPublishedTaxInvoices, isLoading } = useGetPublishedTaxInvoices();
+  const { updateTaxInvoice: updateTaxInvoiceApi } = useUpdateTaxInvoice();
   const [taxData, setTaxData] = useState<PublishedTaxInvoiceResponseModel[]>(
     []
   );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
 
   // 디바운싱을 위한 ref
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,13 +44,34 @@ const TaxPageContent = () => {
   // 페이지네이션 설정
   const itemsPerPage = 10;
 
+  // 숨긴 데이터 존재 여부 확인
+  const checkHiddenDataExists = async () => {
+    try {
+      const hiddenResult = await getPublishedTaxInvoices({
+        ordering:
+          sortDirection === 'desc' ? '-transaction_date' : 'transaction_date',
+        page: 1,
+        page_size: 1, // 1개만 확인
+        is_hidden: true,
+      });
+
+      if (hiddenResult.success && hiddenResult.data) {
+        setHasItem(hiddenResult.data.data.length > 0);
+      } else {
+        setHasItem(false);
+      }
+    } catch {
+      setHasItem(false);
+    }
+  };
+
   // API에서 세금계산서 데이터 가져오기
   const fetchTaxData = useCallback(
     async (page: number = 1) => {
       const params: {
         ordering: string;
         page: number;
-        size: number;
+        page_size: number;
         q?: string;
         tax_invoice_type?: 'sales' | 'purchase';
         is_hidden?: boolean;
@@ -54,38 +79,44 @@ const TaxPageContent = () => {
         ordering:
           sortDirection === 'desc' ? '-transaction_date' : 'transaction_date',
         page,
-        size: itemsPerPage,
+        page_size: itemsPerPage,
       };
 
       if (searchQuery) {
         params.q = searchQuery;
       }
 
-      if (selectedTaxType !== '전체') {
-        params.tax_invoice_type =
-          selectedTaxType === '매출' ? 'sales' : 'purchase';
+      // 매출/매입 탭에 따른 필터링
+      if (selectedTaxType === 'sales') {
+        params.tax_invoice_type = 'sales';
+      } else if (selectedTaxType === 'purchase') {
+        params.tax_invoice_type = 'purchase';
       }
+      // null(전체 탭)일 때는 tax_invoice_type 파라미터를 보내지 않음
 
       // 기본적으로는 숨김 항목 제외, 숨긴 목록 보기 버튼을 누르면 숨김 항목만 표시
       if (showHidden) {
         params.is_hidden = true; // 숨김 항목만 표시
       } else {
-        params.is_hidden = false; // 숨김 항목 제외
+        params.is_hidden = false; // 숨김 항목 제외 (일반 목록 표시)
       }
 
       const result = await getPublishedTaxInvoices(params);
       if (result.success && result.data) {
         setTaxData(result.data.data);
         setTotalPages(result.data.pageCnt);
+
+        // 데이터가 있으면 hasItem을 true로 설정 (showHidden 상태와 관계없이)
+        setHasItem(result.data.data.length > 0);
+      } else {
+        // is_hidden=false로 요청했을 때만 숨긴 데이터 존재 여부 확인
+        if (!showHidden && result.data?.data?.length === 0) {
+          await checkHiddenDataExists();
+        }
       }
     },
-    [
-      getPublishedTaxInvoices,
-      sortDirection,
-      searchQuery,
-      selectedTaxType,
-      showHidden,
-    ]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [getPublishedTaxInvoices, sortDirection, selectedTaxType, showHidden]
   );
 
   // 컴포넌트 마운트 시 데이터 가져오기
@@ -110,9 +141,19 @@ const TaxPageContent = () => {
   useEffect(() => {
     setCurrentPage(1);
     setAllChecked(false);
+    setSearchQuery(''); // 검색어 초기화
+    // showHidden 상태는 유지 (탭 변경 시에도 숨김 목록 보기 상태 유지)
     fetchTaxData(1); // 탭 변경 시에도 API 호출
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTaxType]);
+
+  // showHidden 상태 변경 시 데이터 새로 가져오기
+  useEffect(() => {
+    setCurrentPage(1);
+    setAllChecked(false);
+    fetchTaxData(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showHidden]);
 
   // 검색어 변경 시 디바운싱 적용하여 데이터 가져오기
   const handleSearchChange = (value: string) => {
@@ -123,11 +164,18 @@ const TaxPageContent = () => {
       clearTimeout(searchTimeoutRef.current);
     }
 
-    // 300ms 후에 검색 실행
+    // 빈 검색어인 경우 즉시 검색 (디바운싱 없음)
+    if (!value.trim()) {
+      setCurrentPage(1);
+      fetchTaxData(1);
+      return;
+    }
+
+    // 500ms 후에 검색 실행 (사용자가 타이핑을 멈춘 후)
     searchTimeoutRef.current = setTimeout(() => {
       setCurrentPage(1); // 검색 시 페이지 1로 리셋
       fetchTaxData(1);
-    }, 300);
+    }, 500);
   };
 
   // 판넬 상태
@@ -150,27 +198,60 @@ const TaxPageContent = () => {
   } = useCheckAll(taxData.map((item) => item.id));
 
   const handleToggleHidden = () => {
+    // "취소" 버튼일 때는 체크박스만 해제
+    if (checkedCount > 0) {
+      setAllChecked(false);
+      return;
+    }
+
     setShowHidden(!showHidden);
     setCurrentPage(1); // 페이지를 1로 리셋
     setAllChecked(false); // 체크박스 상태 리셋
-    // 숨김 상태 변경 시 데이터 다시 가져오기
-    setTimeout(() => fetchTaxData(1), 0);
+    // showHidden 상태 변경 시 useEffect가 자동으로 fetchTaxData를 호출함
   };
 
-  const handleHideRestore = () => {
-    // 체크된 아이템들의 isHidden 상태를 변경
+  const handleHideRestore = async () => {
+    // 체크된 아이템들의 ID 추출
     const checkedIds = taxData
       .filter((item) => isChecked(item.id))
       .map((item) => item.id);
 
-    // 실제로는 API 호출을 통해 서버에서 상태를 변경해야 함 ‼️‼️‼️수정 필요
-    taxData.forEach((item) => {
-      if (checkedIds.includes(item.id)) {
-        // item.isHidden = !showHidden; // API 데이터에는 isHidden 필드가 없으므로 주석 처리
-      }
-    });
+    if (checkedIds.length === 0) return;
 
-    setAllChecked(false); // 체크박스 상태 리셋
+    try {
+      // 체크된 모든 세금계산서의 숨김 상태를 변경
+      const updatePromises = checkedIds.map((taxId) => {
+        const taxItem = taxData.find((item) => item.id === taxId);
+        if (!taxItem)
+          return Promise.resolve({
+            success: false,
+            error: '세금계산서를 찾을 수 없습니다.',
+          });
+
+        return updateTaxInvoiceApi(taxId, {
+          factory: taxItem.factory,
+          transaction_amount: taxItem.transaction_amount, // 필수 필드
+          tax_amount: taxItem.tax_amount, // 필수 필드
+          is_hidden: !showHidden, // 현재 상태와 반대로 변경
+        });
+      });
+
+      // 모든 업데이트 요청을 병렬로 처리
+      const results = await Promise.all(updatePromises);
+
+      // 성공한 요청들 확인
+      const successCount = results.filter((result) => result.success).length;
+
+      if (successCount > 0) {
+        // 성공적으로 업데이트된 경우 데이터 새로고침
+        fetchTaxData(currentPage);
+        setAllChecked(false); // 체크박스 상태 리셋
+      } else {
+        alert('세금계산서 숨김/복구에 실패했습니다.');
+      }
+    } catch (error) {
+      alert('세금계산서 숨김/복구 중 오류 발생: ' + error);
+    }
   };
 
   // 컴포넌트 언마운트 시 타이머 정리
@@ -196,41 +277,46 @@ const TaxPageContent = () => {
               onChange={handleSearchChange}
               placeholder="찾고 싶은 세금계산서의 거래처나 품목명을 입력하세요."
             />
-            <div className="flex gap-1">
-              <MiniBtn
-                text={checkedCount === 0 ? '숨긴 목록 보기' : '취소'}
-                textColor="text-dg"
-                borderColor={showHidden ? 'border-none' : 'border-lg'}
-                bgColor={showHidden ? 'bg-bg' : 'bg-white'}
-                hoverColor="hover:bg-bg"
-                onClick={handleToggleHidden}
-              />
-              <MiniBtn
-                text={
-                  checkedCount === 0
-                    ? showHidden
-                      ? '복구'
-                      : '숨기기'
-                    : checkedCount === taxData.length
+            {hasItem && (
+              <div className="flex gap-1">
+                <MiniBtn
+                  text={checkedCount === 0 ? '숨긴 목록 보기' : '취소'}
+                  textColor="text-dg"
+                  borderColor={showHidden ? 'border-none' : 'border-lg'}
+                  bgColor={showHidden ? 'bg-bg' : 'bg-white'}
+                  hoverColor="hover:bg-bg"
+                  onClick={handleToggleHidden}
+                />
+                <MiniBtn
+                  text={
+                    checkedCount === 0
                       ? showHidden
-                        ? '전체 항목 복구'
-                        : '전체 항목 숨기기'
-                      : showHidden
-                        ? `${checkedCount}개 항목 복구`
-                        : `${checkedCount}개 항목 숨기기`
-                }
-                textColor={checkedCount === 0 ? 'text-dg' : 'text-white'}
-                borderColor={checkedCount === 0 ? 'border-lg' : 'border-none'}
-                bgColor={checkedCount === 0 ? 'bg-white' : 'bg-primary'}
-                hoverColor={
-                  checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-primary-hover'
-                }
-                onClick={handleHideRestore}
-              />
-            </div>
+                        ? '복구'
+                        : '숨기기'
+                      : checkedCount === taxData.length
+                        ? showHidden
+                          ? '전체 항목 복구'
+                          : '전체 항목 숨기기'
+                        : showHidden
+                          ? `${checkedCount}개 항목 복구`
+                          : `${checkedCount}개 항목 숨기기`
+                  }
+                  textColor={checkedCount === 0 ? 'text-dg' : 'text-white'}
+                  borderColor={checkedCount === 0 ? 'border-lg' : 'border-none'}
+                  bgColor={checkedCount === 0 ? 'bg-white' : 'bg-primary'}
+                  hoverColor={
+                    checkedCount === 0
+                      ? 'hover:bg-bg'
+                      : 'hover:bg-primary-hover'
+                  }
+                  onClick={handleHideRestore}
+                  disabled={checkedCount === 0}
+                />
+              </div>
+            )}
           </div>
 
-          {isLoading || error ? (
+          {isLoading ? (
             <div className="flex items-center justify-center h-100">
               <Spinner />
             </div>
@@ -242,16 +328,16 @@ const TaxPageContent = () => {
                   title={
                     showHidden
                       ? '아직 숨긴 세금계산서가 없어요.'
-                      : taxData.length === 0
-                        ? '아직 등록된 세금계산서가 없어요.'
-                        : '세금계산서가 숨겨진 상태예요.'
+                      : hasItem
+                        ? '세금계산서가 숨겨진 상태예요.'
+                        : '아직 등록된 세금계산서가 없어요.'
                   }
                   description={
                     showHidden
                       ? '표시하지 않을 세금계산서를 숨기면 이곳에서 다시 볼 수 있어요.'
-                      : taxData.length === 0
-                        ? '세금계산서를 생성하면 이곳에서 확인할 수 있어요.'
-                        : "숨긴 세금계산서를 다시 보려면, 상단의 '숨긴 목록 보기' 버튼을 눌러 복구해 주세요."
+                      : hasItem
+                        ? "숨긴 세금계산서를 다시 보려면, 상단의 '숨긴 목록 보기' 버튼을 눌러 복구해 주세요."
+                        : '세금계산서를 생성하면 이곳에서 확인할 수 있어요.'
                   }
                   height="h-50"
                   className="mt-2"
@@ -265,7 +351,7 @@ const TaxPageContent = () => {
                     sortDirection={sortDirection}
                     isAllChecked={isAllChecked}
                   />
-                  {taxData.map((item) => (
+                  {taxData?.map((item) => (
                     <TableItem
                       key={item.id}
                       onItemClick={() => handleOpenPanel(item)}
@@ -290,7 +376,7 @@ const TaxPageContent = () => {
 
       {/* 디테일 판넬 */}
       {isPanelOpen && selectedItem && (
-        <TaxDetailPanel item={selectedItem} onClose={handleClosePanel} />
+        <TaxDetailPanel itemId={selectedItem.id} onClose={handleClosePanel} />
       )}
     </>
   );

@@ -205,7 +205,7 @@ const ProductionPageContent = () => {
 
         {tabs[selectedTab] === '세금계산서' && (
           <div className="px-10 pt-5 pb-10">
-            <TaxDocumentView taxType="매출" />
+            <TaxDocumentView taxType="sales" />
           </div>
         )}
         {tabs[selectedTab] === '거래명세서' && quotationData && (

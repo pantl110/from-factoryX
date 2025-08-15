@@ -1,7 +1,19 @@
 import PriceInfo from '@/ui/price-info';
 import OrderTableItem from './order-table-item';
+import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import { TaxDocumentType } from '@/types/status-type';
 
-const OrderItemInfo = () => {
+interface OrderItemInfoProps {
+  productsInfo: PublishedTaxInvoiceResponseModel['products_info'];
+  taxType: TaxDocumentType;
+  transactionAmount: number;
+}
+
+const OrderItemInfo = ({
+  productsInfo,
+  taxType,
+  transactionAmount,
+}: OrderItemInfoProps) => {
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">주문 품목 정보</h3>
@@ -17,13 +29,15 @@ const OrderItemInfo = () => {
           <p className="px-3 flex-1">세액</p>
         </div>
 
-        <OrderTableItem />
-        <OrderTableItem />
-        <OrderTableItem />
-        <OrderTableItem />
+        {productsInfo.map((product) => (
+          <OrderTableItem key={product.id} product={product} />
+        ))}
       </div>
 
-      <PriceInfo />
+      <PriceInfo
+        supplyAmount={transactionAmount}
+        textColor={taxType === 'sales' ? 'text-primary' : 'text-red'}
+      />
     </div>
   );
 };

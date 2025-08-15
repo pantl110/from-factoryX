@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MiniBtn from '@/ui/mini-btn';
-import TaxItem from './tax-item';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
+import TaxItem from './tax-item';
 
 interface TaxProps {
   taxInvoicesData: PublishedTaxInvoiceResponseModel[];
@@ -52,7 +52,7 @@ const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
               <TaxItem
                 key={tax.id}
                 taxType={tax.tax_invoice_type}
-                company={tax.client_name}
+                company={tax.client_info?.name}
                 date={tax.transaction_date}
                 onClick={() => handleTaxClick(tax)}
               />
@@ -62,7 +62,7 @@ const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
       </div>
 
       {selectedTax && (
-        <TaxDetailPanel item={selectedTax} onClose={handleClosePanel} />
+        <TaxDetailPanel itemId={selectedTax.id} onClose={handleClosePanel} />
       )}
     </>
   );

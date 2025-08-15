@@ -25,7 +25,8 @@ export type TaxApiEndpointType =
   | 'invoice-by-material-history'
   | 'cash-receipts-sync'
   | 'cash-receipts-list'
-  | 'cash-receipts-material-history';
+  | 'cash-receipts-material-history'
+  | 'update';
 
 const useTaxApi = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -62,8 +63,16 @@ const useTaxApi = () => {
         // URL 구성
         let url = `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${endpoint}`;
 
-        // 현금영수증 관련 엔드포인트는 다른 URL 패턴 사용
-        if (endpoint === 'cash-receipts-sync') {
+        // 특별한 엔드포인트들에 대한 URL 처리
+        if (endpoint === 'update') {
+          // update 엔드포인트는 tax_id를 path에 포함
+          const taxId = queryParams.tax_id;
+          if (taxId) {
+            url = `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${taxId}`;
+            // tax_id는 queryParams에서 제거 (path parameter로 사용됨)
+            delete queryParams.tax_id;
+          }
+        } else if (endpoint === 'cash-receipts-sync') {
           url = `${process.env.NEXT_PUBLIC_API_URL}/v1/receipt/${factoryId}/sync`;
         } else if (endpoint === 'cash-receipts-list') {
           url = `${process.env.NEXT_PUBLIC_API_URL}/v1/receipt`;

@@ -28,6 +28,7 @@ import {
   DashboardResponseModel,
   ProjectListResponseModel,
   PublishedTaxInvoiceResponseModel,
+  PublishedTaxInvoiceListResponseModel,
 } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 import { TodayProductionPlanModel, UndeliveredProductModel } from './type';
@@ -164,18 +165,19 @@ const DashboardPageContent = () => {
         page: 1,
         page_size: 5,
         ordering: '-transaction_date',
-      }).then((result) => {
-        if (result.success && result.data) {
-          // API 응답에서 데이터 배열 추출
-          const responseData = result.data as {
-            data?: PublishedTaxInvoiceResponseModel[];
-          };
-          const invoices = responseData.data || [];
-          setTaxInvoicesData(Array.isArray(invoices) ? invoices : []);
-        } else {
-          setTaxInvoicesData([]);
+      }).then(
+        (result: {
+          success: boolean;
+          data?: PublishedTaxInvoiceListResponseModel;
+        }) => {
+          if (result.success && result.data) {
+            const invoices = result.data.data || [];
+            setTaxInvoicesData(invoices);
+          } else {
+            setTaxInvoicesData([]);
+          }
         }
-      });
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);

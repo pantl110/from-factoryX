@@ -250,7 +250,7 @@ const TableItem = ({
     <>
       <div
         className={`group flex items-center min-w-[1494px] h-12 border-b border-lg Me_Body-1 bg-whit ${
-          operationStatus === '가동 완료' ? 'text-gr' : 'text-dg'
+          operationStatus === 'completed' ? 'text-gr' : 'text-dg'
         }`}
       >
         {tableHeader.map((header) => (

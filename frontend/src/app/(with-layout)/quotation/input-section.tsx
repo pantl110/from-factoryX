@@ -36,7 +36,6 @@ const InputSection = ({
   errors,
   control,
   onClientSelect,
-  showErrors = false,
 }: InputSectionProps) => {
   const { clientList, searchClients } = useGetClient();
 

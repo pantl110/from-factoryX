@@ -848,15 +848,76 @@ export interface NotificationListResponseModel extends PaginationModel {
 //////////////////////
 // 세금계산서 api
 // 발행 완료 세금계산서
+export interface TaxFactoryInfoModel {
+  id: number;
+  owner: number;
+  name: string;
+  business_registration_number: string;
+  representative_name: string;
+  manager_email: string;
+  manager_phone: string;
+  manager_fax: string;
+  business_type: string;
+  business_category: string;
+  business_address: string;
+  is_trial: boolean;
+  billing_key: string;
+  inviting: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaxClientInfoModel {
+  id: number;
+  type: string;
+  name: string;
+  business_registration_number: string;
+  representative_name: string;
+  business_type: string;
+  business_category: string;
+  phone: string;
+  email: string;
+  fax: string;
+  address: string;
+  manager: string;
+  note: string;
+}
+
+export interface TaxProductInfoModel {
+  id: number;
+  factory: number;
+  name: string;
+  code: string;
+  unit: string;
+  spec: string;
+  current_stock?: number;
+  average_production_time?: number;
+  note?: string;
+}
+
 export interface PublishedTaxInvoiceResponseModel {
   id: number;
+  created_at: string;
+  updated_at: string;
+  user: number;
+  factory: number;
+  factory_info: TaxFactoryInfoModel;
+  publish_status: TaxPublishStatusType;
   tax_invoice_type: TaxDocumentType;
+  transaction_type: TransactionType;
   transaction_date: string;
-  client_name: string;
-  product_names: string[];
+  client: number;
+  client_info: TaxClientInfoModel;
+  product: number[];
+  products_info: TaxProductInfoModel[];
   transaction_amount: number;
   tax_amount: number;
-  total_amount: number;
+  is_hidden: boolean;
+  mgt_key: string;
+  nts_send_key: string;
+  barobill_state: BarobillStateType;
+  nts_send_state: NtsSendStateType;
+  line_items: TaxServiceItemModel[];
 }
 
 export interface PublishedTaxInvoiceListResponseModel extends PaginationModel {
@@ -896,8 +957,8 @@ export interface UnlinkedTaxInvoiceListResponseModel extends PaginationModel {
 }
 
 // tax invoice detail 가져오기
-interface TaxServiceItemModel {
-  purchase_expiry: string; // YYYYMMDD 형식
+export interface TaxServiceItemModel {
+  purchase_expiry: string; // YYYYMMDD 형식 (예: "20241231")
   name: string; // 품목명
   information?: string; // 규격
   chargeable_unit: string; // 수량
@@ -1020,6 +1081,10 @@ import {
   NotificationCaseType,
   TaxDocumentType,
   ClientType,
+  TaxPublishStatusType,
+  TransactionType,
+  BarobillStateType,
+  NtsSendStateType,
 } from './status-type';
 
 export type {

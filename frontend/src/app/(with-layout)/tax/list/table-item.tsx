@@ -49,15 +49,21 @@ const TableItem = ({
       <p className="w-[150px] px-3 text-dg">{item.transaction_date}</p>
       <p
         className="flex-2 px-3 text-dg truncate"
-        title={item.client_name || '-'}
+        title={item.client_info?.name || '-'}
       >
-        {item.client_name || '-'}
+        {item.client_info?.name || '-'}
       </p>
       <p
         className="flex-2 px-3 text-dg truncate"
-        title={getProductNamesDisplay(item.product_names) || '-'}
+        title={
+          getProductNamesDisplay(
+            item.products_info?.map((product) => product.name) || []
+          ) || '-'
+        }
       >
-        {getProductNamesDisplay(item.product_names) || '-'}
+        {getProductNamesDisplay(
+          item.products_info?.map((product) => product.name) || []
+        ) || '-'}
       </p>
       <p
         className="flex-2 px-3 text-dg truncate"
@@ -73,9 +79,11 @@ const TableItem = ({
       </p>
       <p
         className="flex-2 px-3 text-dg truncate"
-        title={item.total_amount?.toLocaleString() || '0'}
+        title={
+          (item.transaction_amount + item.tax_amount)?.toLocaleString() || '0'
+        }
       >
-        {item.total_amount?.toLocaleString() || '0'}
+        {(item.transaction_amount + item.tax_amount)?.toLocaleString() || '0'}
       </p>
     </div>
   );

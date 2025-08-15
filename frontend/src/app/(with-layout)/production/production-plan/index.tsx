@@ -126,7 +126,7 @@ const ProductionPlan = ({
 
   // 모든 품목이 가동 완료 상태인지 확인
   const isAllProductionCompleted = projectPlans.every(
-    (plan) => plan.status === '가동 완료'
+    (plan) => plan.status === 'completed'
   );
   // 모든 품목이 가동 완료 상태일 때 store 업데이트
   useEffect(() => {
@@ -208,7 +208,7 @@ const ProductionPlan = ({
           (plan) =>
             plan.id !== facilityDropdownRowId &&
             plan.equipment.id === equipment.id &&
-            plan.status === '가동 중'
+            plan.status === 'production'
         );
 
         if (hasEquipmentConflict) {

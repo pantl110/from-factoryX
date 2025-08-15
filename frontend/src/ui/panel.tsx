@@ -7,11 +7,10 @@ interface PanelProps {
   title: string;
   onClose: () => void;
   hasSaveButton?: boolean;
-  // 헤더 버튼
-  headerButton?: React.ReactNode;
-  // 세금계산서 임시보관함 관련 props
-  isDraft?: boolean;
-  onIssueClick?: () => void;
+  // 헤더 버튼 (함수로 받아서 handleClose를 전달)
+  headerButton?:
+    | React.ReactNode
+    | ((handleClose: () => void) => React.ReactNode);
 }
 
 const Panel = ({
@@ -19,8 +18,6 @@ const Panel = ({
   title,
   onClose,
   hasSaveButton = false,
-  isDraft = false,
-  onIssueClick,
   headerButton,
 }: PanelProps) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -95,7 +92,9 @@ const Panel = ({
               </button>
             </div>
 
-            {headerButton}
+            {typeof headerButton === 'function'
+              ? headerButton(handleClose)
+              : headerButton}
 
             {/* 나중에 정리하기 */}
             {hasSaveButton && (
@@ -105,27 +104,6 @@ const Panel = ({
                 bgColor="bg-primary-8"
                 hoverColor="bg-secondary-hover"
               />
-            )}
-
-            {isDraft && (
-              <div className="flex gap-2 relative">
-                <MiniBtn
-                  text="수정"
-                  textColor="text-dg"
-                  borderColor="border-lg"
-                  hoverColor="hover:bg-bg"
-                />
-                <MiniBtn
-                  text="발행"
-                  textColor="text-wh"
-                  bgColor="bg-primary"
-                  hoverColor="hover:bg-primary-hover"
-                  onClick={() => {
-                    handleClose();
-                    onIssueClick?.();
-                  }}
-                />
-              </div>
             )}
           </div>
 

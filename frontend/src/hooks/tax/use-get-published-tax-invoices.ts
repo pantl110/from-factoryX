@@ -11,8 +11,8 @@ interface PublishedTaxInvoiceParamsModel {
   end_date?: string; // 종료일 (YYYY-MM-DD)
   ordering?: string; // 정렬 순서: -transaction_date(최신순), transaction_date(오래된순)
   is_hidden?: boolean; // 숨김 여부
-  page?: number;
-  page_size?: number; // 백엔드 pagination과 맞춤
+  page?: number; // 페이지 번호
+  page_size?: number; // 페이지당 항목 수
 }
 
 // 발행된 세금계산서 목록 조회 // 작성일자 정렬 최신순이 default
@@ -40,11 +40,11 @@ const useGetPublishedTaxInvoices = () => {
       if (params.end_date) {
         queryParams.end_date = params.end_date;
       }
-      if (params.ordering) {
-        queryParams.ordering = params.ordering;
-      }
       if (params.is_hidden !== undefined) {
         queryParams.is_hidden = params.is_hidden;
+      }
+      if (params.ordering) {
+        queryParams.ordering = params.ordering;
       }
       if (params.page) {
         queryParams.page = params.page;

@@ -1,5 +1,4 @@
 import { useRouter } from 'next/navigation';
-import { ShortageMaterialCountModel } from '@/app/(with-layout)/dashboard/type';
 
 interface ShortageCountProps {
   shortageMaterialsCount: number;

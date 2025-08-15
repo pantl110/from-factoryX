@@ -164,7 +164,7 @@ export const TaxDocumentTypeColorMap: Record<
   purchase: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
 
-export type TransactionType = '영수' | '청구'; // receipt, invoice
+export type TransactionType = 'receipt' | 'invoice'; // 영수, 청구
 // export const TransactionTypeColorMap: Record<
 //   TransactionType,
 //   StatusColorModel
@@ -173,15 +173,22 @@ export type TransactionType = '영수' | '청구'; // receipt, invoice
 //   청구: { bgColor: 'bg-red-8', textColor: 'text-red' },
 // };
 
-export type TaxPublishStatusType = '임시 저장' | '발행 대기' | '발행 완료'; // temporary, pending, published
+export type TaxPublishStatusType = 'temporary' | 'pending' | 'published'; // 임시 저장, 발행 대기, 발행 완료
 export const TaxPublishStatusColorMap: Record<
   TaxPublishStatusType,
   StatusColorModel
 > = {
-  '임시 저장': { textColor: 'text-primary', bgColor: 'bg-bg' },
-  '발행 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
-  '발행 완료': { textColor: 'text-primary', bgColor: 'bg-primary-8' },
+  temporary: { textColor: 'text-primary', bgColor: 'bg-bg' },
+  pending: { textColor: 'text-dg', bgColor: 'bg-bg' },
+  published: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
 };
+
+// Tax Invoice State Types
+// 바로빌 상태 (백엔드에서 실제로 사용하는 값들만)
+export type BarobillStateType = '임시저장' | '발급완료' | '전송완료';
+
+// 국세청 전송 상태 (백엔드에서 햐실제로 사용하는 값들만)
+export type NtsSendStateType = '전송전' | '전송완료';
 
 ////////////////////
 ////////////////////

@@ -26,9 +26,9 @@ const TaxItem = ({ taxType, company, date, onClick }: TaxItemProps) => {
         </div>
         <p
           className="Me_Body-2 text-dg truncate flex-1 min-w-0"
-          title={`${company} 세금계산서 ${taxType === 'sales' ? '발행' : '수신'}`}
+          title={`${company || '-'} 세금계산서 ${taxType === 'sales' ? '발행' : '수신'}`}
         >
-          {company} 세금계산서 {taxType === 'sales' ? '발행' : '수신'}
+          {company || '-'} 세금계산서 {taxType === 'sales' ? '발행' : '수신'}
         </p>
         <p className="pl-4 Me_Body-2 text-gr flex-shrink-0 w-fit text-right">
           {date}
