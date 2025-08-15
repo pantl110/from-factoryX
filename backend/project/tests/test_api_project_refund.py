@@ -913,7 +913,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 생산 등록
-        url = f"/v1/project-refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
@@ -934,7 +934,7 @@ class ProjectRefundAPITestCase(TestCase):
         self.assertIn("quantity", data)
         self.assertIn("equipment_name", data)
 
-        self.assertEqual(data["message"], "반품 재생산이 성공적으로 등록되었습니다.")
+        self.assertEqual(data["message"], "반품 재생산이 성공적으로 처리되었습니다.")
         self.assertEqual(data["refund_id"], refund.id)
         self.assertEqual(data["product_name"], self.product.name)
         self.assertEqual(data["quantity"], 15)
@@ -1006,8 +1006,8 @@ class ProjectRefundAPITestCase(TestCase):
             self.assertEqual(material.current_stock, expected_stock)
 
     def test_register_production_from_refund_nonexistent(self):
-        """존재하지 않는 반품으로 생산 등록 시도 테스트"""
-        url = "/v1/project-refund/999"
+        """존재하지 않는 로그로 생산 등록 시도 테스트"""
+        url = "/v1/project-refund/log/999/production"
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
@@ -1015,7 +1015,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
-        self.assertIn("해당 반품을 찾을 수 없습니다", response.json().get("detail", ""))
+        self.assertIn("해당 로그를 찾을 수 없습니다", response.json().get("detail", ""))
 
     def test_register_production_from_refund_zero_amount(self):
         """반품 수량이 0인 경우 생산 등록 시도 테스트"""
@@ -1036,7 +1036,7 @@ class ProjectRefundAPITestCase(TestCase):
             refund=refund,
         )
 
-        url = f"/v1/project-refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
@@ -1068,7 +1068,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 장비가 없는 상태에서 생산 등록 시도
-        url = f"/v1/project-refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
@@ -1098,7 +1098,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 인증 없이 생산 등록 시도
-        url = f"/v1/project-refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
 
         response = self.client.post(f"{url}?factory_id={self.factory.id}")
 
@@ -1124,7 +1124,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # factory_id 없이 생산 등록 시도
-        url = f"/v1/project-refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
 
         response = self.client.post(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
@@ -1167,7 +1167,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # QuotationProduct가 없는 상태에서 생산 등록 시도 (이제는 성공해야 함)
-        url = f"/v1/project-refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",

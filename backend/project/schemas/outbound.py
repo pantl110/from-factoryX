@@ -102,11 +102,12 @@ class RefundListOut(Schema):
 class RefundDetailOut(Schema):
     id: int
     product: dict
-    project: dict
+    project: Optional[dict] = None
+    plan: Optional[dict] = None
     amount: int
+    refund_date: Optional[datetime.date] = None
     current_stock: int
     production_amount: int
-    refund_date: Optional[datetime.date] = None
     log: dict
     created_at: datetime.datetime
     updated_at: datetime.datetime
@@ -224,7 +225,7 @@ class ProjectLogDetailOut(Schema):
     type: str
     title: str
     content: str
-    refund_id: Optional[int] = None  # 반품 로그인 경우 반품 ID
+    refund: Optional[RefundDetailOut] = None  # 반품 로그인 경우 반품 ID
     created_at: datetime.datetime
     updated_at: datetime.datetime
 

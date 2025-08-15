@@ -16,6 +16,45 @@ from factory.utils import is_factory_member
 router = Router(tags=["ProjectLog"], auth=jwt_auth)
 
 
+def _serialize_refund(refund, log):
+    plan_data = None
+    if refund.plan:
+        plan_data = {
+            "id": refund.plan.id,
+            "project_id": refund.plan.project_id,
+            "status": refund.plan.status,
+            "quantity": refund.plan.quantity,
+            "start_date": refund.plan.start_date,
+            "end_date": refund.plan.end_date,
+            "avg_production_time": refund.plan.avg_production_time,
+        }
+
+    return {
+        "id": refund.id,
+        "product": {
+            "id": refund.product.id,
+            "name": refund.product.name,
+            "code": refund.product.code,
+            "unit": refund.product.unit,
+            "spec": refund.product.spec,
+            "current_stock": getattr(refund.product, "current_stock", 0),
+        },
+        "plan": plan_data,
+        "amount": refund.amount,
+        "refund_date": refund.refund_date,
+        "current_stock": refund.current_stock,
+        "production_amount": refund.production_amount,
+        "log": {
+            "id": log.id,
+            "title": log.title,
+            "content": log.content,
+            "created_at": log.created_at,
+        },
+        "created_at": refund.created_at,
+        "updated_at": refund.updated_at,
+    }
+
+
 @router.post(
     "",
     summary="[C] 프로젝트 로그 생성",
@@ -89,14 +128,19 @@ async def list_project_logs(request, project_id: int = Query(...)):
 
     @sync_to_async
     def get_project_logs_with_refunds():
-        logs = list(ProjectLog.objects.filter(project=project).order_by("-created_at"))
+        # select_related와 prefetch_related를 사용하여 쿼리 최적화
+        logs = list(
+            ProjectLog.objects.filter(project=project)
+            .select_related("refund", "refund__product", "refund__plan")
+            .order_by("-created_at")
+        )
         logs_detail_list = []
 
         for log in logs:
-            # 반품 로그인 경우 반품 ID 가져오기
-            refund_id = None
+            # 반품 로그인 경우 반품 상세 정보 가져오기
+            refund_data = None
             if log.type == "refund" and log.refund:
-                refund_id = log.refund.id
+                refund_data = _serialize_refund(log.refund, log)
 
             logs_detail_list.append(
                 {
@@ -105,7 +149,7 @@ async def list_project_logs(request, project_id: int = Query(...)):
                     "type": log.type,
                     "title": log.title,
                     "content": log.content,
-                    "refund_id": refund_id,
+                    "refund": refund_data,
                     "created_at": log.created_at,
                     "updated_at": log.updated_at,
                 }
