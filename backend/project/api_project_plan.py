@@ -371,10 +371,10 @@ async def list_completed_project_plans(
 @router.get(
     "/today",
     summary="[C] 오늘 생산 시작인 프로젝트 계획 조회",
-    description="오늘이 생산 시작인 프로젝트 계획을 조회합니다. 페이지당 5개씩 반환됩니다.",
+    description="오늘이 생산 시작인 프로젝트 계획을 조회합니다.",
     response={200: list[TodayProductionPlanOut], 400: dict, 404: dict, 500: dict},
 )
-async def list_today_production_plans(request, page: int = Query(1, ge=1)):
+async def list_today_production_plans(request):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -403,21 +403,11 @@ async def list_today_production_plans(request, page: int = Query(1, ge=1)):
         if not today_plans:
             raise HttpError(404, "오늘 생산 시작인 프로젝트 계획이 없습니다.")
 
-        # 페이지네이션 (한 페이지에 5개)
-        page_size = 5
-        start_index = (page - 1) * page_size
-        end_index = start_index + page_size
-
-        paginated_plans = today_plans[start_index:end_index]
-
-        if not paginated_plans:
-            raise HttpError(404, f"페이지 {page}에 해당하는 데이터가 없습니다.")
-
         # 응답 데이터 구성
         @sync_to_async
         def build_response_data():
             results = []
-            for plan in paginated_plans:
+            for plan in today_plans:
                 results.append(
                     {
                         "company_name": plan.product.quotation.client.name,  # 업체명

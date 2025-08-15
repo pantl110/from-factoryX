@@ -1243,7 +1243,7 @@ class ProjectPlanAPITestCase(TestCase):
         url = "/v1/project-plan/today"
 
         response = self.client.get(
-            f"{url}?factory_id={self.factory.id}&page=1",
+            f"{url}?factory_id={self.factory.id}",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -1263,8 +1263,8 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(item["production_time"], 3600)
         self.assertEqual(item["project_id"], self.project.id)
 
-    def test_list_today_production_plans_pagination(self):
-        """오늘 생산 시작인 프로젝트 계획 조회 페이지네이션 테스트"""
+    def test_list_today_production_plans_multiple_data(self):
+        """오늘 생산 시작인 프로젝트 계획 조회 (여러 데이터) 테스트"""
         # 오늘 날짜로 7개의 프로젝트 계획 생성
         today = date.today()
         for i in range(7):
@@ -1281,40 +1281,22 @@ class ProjectPlanAPITestCase(TestCase):
 
         url = "/v1/project-plan/today"
 
-        # 첫 번째 페이지 (5개)
+        # 모든 데이터 조회 (페이지네이션 없음)
         response = self.client.get(
-            f"{url}?factory_id={self.factory.id}&page=1",
+            f"{url}?factory_id={self.factory.id}",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data), 5)
+        self.assertEqual(len(data), 7)  # 모든 7개 데이터 반환
 
-        # 두 번째 페이지 (2개)
-        response = self.client.get(
-            f"{url}?factory_id={self.factory.id}&page=2",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(len(data), 2)
-
-        # 세 번째 페이지 (없음)
-        response = self.client.get(
-            f"{url}?factory_id={self.factory.id}&page=3",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 404)
-
-    def test_list_today_production_plans_no_data(self):
+    def test_list_today_production_plan_no_data(self):
         """오늘 생산 시작인 프로젝트 계획이 없을 때 테스트"""
         url = "/v1/project-plan/today"
 
         response = self.client.get(
-            f"{url}?factory_id={self.factory.id}&page=1",
+            f"{url}?factory_id={self.factory.id}",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -1324,9 +1306,7 @@ class ProjectPlanAPITestCase(TestCase):
         """factory_id 누락 시 오늘 생산 시작인 프로젝트 계획 조회 테스트"""
         url = "/v1/project-plan/today"
 
-        response = self.client.get(
-            f"{url}?page=1", HTTP_AUTHORIZATION=f"Bearer {self.token}"
-        )
+        response = self.client.get(f"{url}", HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
         self.assertEqual(response.status_code, 400)
 
@@ -1334,6 +1314,6 @@ class ProjectPlanAPITestCase(TestCase):
         """인증 없이 오늘 생산 시작인 프로젝트 계획 조회 테스트"""
         url = "/v1/project-plan/today"
 
-        response = self.client.get(f"{url}?factory_id={self.factory.id}&page=1")
+        response = self.client.get(f"{url}?factory_id={self.factory.id}")
 
         self.assertEqual(response.status_code, 401)
