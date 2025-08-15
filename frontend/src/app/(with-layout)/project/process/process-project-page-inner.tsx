@@ -264,8 +264,8 @@ const ProcessProjectPageInner = () => {
             projectData &&
             (projectData.data.length === 0 ? (
               <NoHistoryBox
-                title="프로젝트가 없습니다."
-                text="프로젝트를 생성해주세요."
+                title="진행 중인 프로젝트가 아직 없어요."
+                text="프로젝트가 생성되면 이곳에 표시돼요. "
               />
             ) : (
               <>

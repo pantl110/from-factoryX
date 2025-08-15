@@ -175,8 +175,8 @@ const CompletedProjectPage = () => {
             <>
               {!projectData?.data || projectData?.data?.length === 0 ? (
                 <NoHistoryBox
-                  title="프로젝트가 없습니다."
-                  text="프로젝트를 생성해주세요."
+                  title="보관된 프로젝트가 아직 없어요."
+                  text="프로젝트가 생성되면 이곳에 표시돼요. "
                 />
               ) : (
                 <>

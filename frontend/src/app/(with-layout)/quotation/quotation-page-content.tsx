@@ -695,6 +695,9 @@ const QuotationPageContent = () => {
                   setHasQuotationProducts={setHasQuotationProducts}
                   onProductsChange={setQuotationProducts}
                   quotationId={quotationId}
+                  ocrRequestData={
+                    ocrData?.request_items as OcrRequestItemModel[]
+                  }
                 />
               </div>
             </div>

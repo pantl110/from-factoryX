@@ -14,7 +14,7 @@ const DailyProductionQuantity = ({ data }: DailyProductionQuantityProps) => {
     data && (
       <div className="pt-5 pb-4 px-5 rounded-lg border border-lg h-[141px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)]">
         <div className="flex flex-col gap-1">
-          <p className="Heading-4 text-sv">오늘 생산량</p>
+          <p className="Heading-4 text-sv">진행 프로젝트 수</p>
           <p className="flex gap-1 Heading-1">
             {data.production_count} <span>건</span>
           </p>

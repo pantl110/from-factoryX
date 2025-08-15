@@ -155,7 +155,7 @@ const TableItem = ({
             }}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={operationStatus !== '가동 대기'}
+            disabled={operationStatus !== 'pending'}
           />
         )}
       />
@@ -165,15 +165,15 @@ const TableItem = ({
         <Chip
           text={materialStatus}
           textColor={
-            operationStatus === '가동 완료'
+            operationStatus === 'completed'
               ? 'text-sv'
               : materialColor.textColor
           }
           bgColor={
-            operationStatus === '가동 완료' ? 'bg-bg' : materialColor.bgColor
+            operationStatus === 'completed' ? 'bg-bg' : materialColor.bgColor
           }
         />
-        {materialStatus === '부족' && operationStatus !== '가동 완료' && (
+        {materialStatus === '부족' && operationStatus !== 'completed' && (
           <div
             className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
             onClick={() => setIsProductDetailOpen(true)}
@@ -186,17 +186,17 @@ const TableItem = ({
     '생산 설비': (
       <div
         className={`flex items-center gap-2.5 ${
-          operationStatus === '가동 완료' ? '' : 'cursor-pointer'
+          operationStatus === 'completed' ? '' : 'cursor-pointer'
         }`}
         onClick={(e) => {
-          if (operationStatus === '가동 대기') {
+          if (operationStatus === 'pending') {
             e.stopPropagation();
             onFacilityClick(e);
           }
         }}
       >
         <p>{selectedEquipment.name}</p>
-        {operationStatus === '가동 대기' && (
+        {operationStatus === 'pending' && (
           <CaretDown size={16} className="text-sv" />
         )}
       </div>
@@ -217,7 +217,7 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={operationStatus !== '가동 대기'}
+            disabled={operationStatus !== 'pending'}
           />
         )}
       />
@@ -239,7 +239,7 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={operationStatus !== '가동 대기'}
+            disabled={operationStatus !== 'pending'}
           />
         )}
       />

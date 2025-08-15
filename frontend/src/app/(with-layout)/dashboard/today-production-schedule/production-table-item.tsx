@@ -1,3 +1,5 @@
+import router from 'next/router';
+
 export interface ProductionTableItemProps {
   companyName: string;
   productName: string;
@@ -7,6 +9,7 @@ export interface ProductionTableItemProps {
   quantity: number;
   machine: string;
   time: string;
+  projectId: number;
 }
 
 const ProductionTableItem = ({
@@ -18,9 +21,15 @@ const ProductionTableItem = ({
   quantity,
   machine,
   time,
+  projectId,
 }: ProductionTableItemProps) => {
   return (
-    <div className="flex min-w-[1324px] h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
+    <div
+      onClick={() => {
+        router.push(`/production/${projectId}`);
+      }}
+      className="flex min-w-[1324px] h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]"
+    >
       <p className="px-3 flex-2 truncate" title={companyName}>
         {companyName}
       </p>

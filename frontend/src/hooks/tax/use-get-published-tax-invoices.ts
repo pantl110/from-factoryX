@@ -15,6 +15,7 @@ interface PublishedTaxInvoiceParamsModel {
   size?: number;
 }
 
+// 발행된 세금계산서 목록 조회 // 작성일자 정렬 최신순이 default
 const useGetPublishedTaxInvoices = () => {
   const { callTaxApi, isLoading, error } = useTaxApi();
 

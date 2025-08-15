@@ -2,12 +2,12 @@ import MiniBtn from '@/ui/mini-btn';
 import ProductItem from './product-item';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { useGetDetailQuotation, useGetProduct } from '@/hooks';
-
 import { useEffect, useState, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import {
   QuotationProductDetailResponseModel,
   ProductResponseModel,
+  OcrRequestItemModel,
 } from '@/types/data-model';
 import ProductEnrollmentDropdown from './modals/product-enrollment-dropdown';
 import ProductDetail from '../stock/product/product-detail';
@@ -19,6 +19,7 @@ interface RequestInfoProps {
   setHasQuotationProducts: (hasQuotationProducts: boolean) => void;
   onProductsChange?: (products: QuotationProductDetailResponseModel[]) => void;
   quotationId?: number;
+  ocrRequestData?: OcrRequestItemModel[];
 }
 
 const RequestInfo = ({
@@ -26,6 +27,7 @@ const RequestInfo = ({
   setHasQuotationProducts,
   onProductsChange,
   quotationId,
+  ocrRequestData,
 }: RequestInfoProps) => {
   const [isProductEnrollmentDropdownOpen, setIsProductEnrollmentDropdownOpen] =
     useState(false);
@@ -41,7 +43,7 @@ const RequestInfo = ({
   const { getProductDetail } = useGetProduct();
 
   // React Hook Form 설정
-  const { control, setValue } = useForm({
+  const { control, setValue, reset } = useForm({
     defaultValues: {
       products: [] as QuotationProductDetailResponseModel[],
     },
@@ -121,6 +123,39 @@ const RequestInfo = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quotationDetail?.products, setValue]);
 
+  // OCR 데이터가 있을 때 초기값 설정
+  useEffect(() => {
+    if (
+      ocrRequestData &&
+      ocrRequestData.length > 0 &&
+      (!quotationDetail?.products || quotationDetail.products.length === 0)
+    ) {
+      const parseNumber = (val?: string | number | null) => {
+        if (val === null || val === undefined) return null;
+        if (typeof val === 'number') return val;
+        const digits = val.toString().replace(/[^0-9]/g, '');
+        if (!digits) return null;
+        const num = parseInt(digits, 10);
+        return Number.isNaN(num) ? null : num;
+      };
+
+      const ocrProducts = ocrRequestData.map((item: OcrRequestItemModel) => ({
+        productId: null,
+        product_code: item.item_code || '',
+        product_name: item.item_name || '',
+        spec: item.spec || '',
+        unit: item.unit || '',
+        quantity: parseNumber(item.quantity),
+        unit_price: parseNumber(item.unit_price),
+        supply_amount: null,
+        tax_amount: null,
+      }));
+
+      // reset을 사용해서 폼을 완전히 초기화
+      reset({ products: ocrProducts });
+    }
+  }, [ocrRequestData, quotationDetail?.products, reset]);
+
   // fields가 변경될 때마다 유효성 검사 해서 hasQuotationProducts 업데이트하여 버튼 disabled 여부 결정
   useEffect(() => {
     const hasValidProducts =
@@ -199,13 +234,9 @@ const RequestInfo = ({
       supply_amount: null,
       tax_amount: null,
     };
-    append(emptyProduct);
 
-    // 부모 컴포넌트에 변경사항 알림
-    if (onProductsChange) {
-      const updatedFields = [...fields, emptyProduct];
-      onProductsChange(updatedFields);
-    }
+    // append로 새 필드 추가
+    append(emptyProduct);
   };
 
   // 새로운 품목 추가 시 품목 디테일 판넬에서 저장버튼 누르면
@@ -227,12 +258,6 @@ const RequestInfo = ({
       };
 
       append(newProduct);
-
-      // 부모 컴포넌트에 변경사항 알림
-      if (onProductsChange) {
-        const updatedFields = [...fields, newProduct];
-        onProductsChange(updatedFields);
-      }
     }
   };
 

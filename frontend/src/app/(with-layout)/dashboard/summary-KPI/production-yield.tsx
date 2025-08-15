@@ -13,7 +13,7 @@ const ProductionYield = ({ data }: ProductionYieldProps) => {
   return (
     <div className="pt-5 pb-4 px-5 rounded-lg border border-[#eeeeee] h-[141px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)]">
       <div className="flex flex-col gap-1">
-        <p className="Heading-4 text-sv">생산 수익률</p>
+        <p className="Heading-4 text-sv">생산 수익</p>
         <p className="flex gap-1 Heading-1">
           {data.current_month_profit || 0} <span>만원</span>
         </p>

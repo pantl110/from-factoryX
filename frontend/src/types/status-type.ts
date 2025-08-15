@@ -201,27 +201,28 @@ export const TransactionStatusColorMap: Record<TransactionStatusType, string> =
   };
 
 // production의 설비 가동 상태
-export type OperationStatusType = '가동 대기' | '가동 중' | '가동 완료';
+export type OperationStatusType = 'pending' | 'production' | 'completed';
 export const OperationStatusColorMap: Record<
   OperationStatusType,
   StatusColorModel
 > = {
-  '가동 대기': {
+  pending: {
     textColor: 'text-dg',
     bgColor: 'bg-bg',
     hover: 'hover:bg-lg',
   },
-  '가동 중': {
+  production: {
     textColor: 'text-purple',
     bgColor: 'bg-purple-8',
     hover: 'hover:bg-purple-hover',
   },
-  '가동 완료': {
+  completed: {
     textColor: 'text-primary',
     bgColor: 'bg-primary-8',
     hover: 'hover:bg-secondary-hover',
   },
 };
+// 가동 대기 // 가동 중 // 가동 완료
 
 // 납품 상태
 export type DeliveryStatusType = '예정' | '완료';

@@ -156,7 +156,7 @@ const DashboardPageContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
 
-  // 오늘 생산량 데이터 가져오기
+  // 오늘 생산량 데이터 가져오기 // 프로젝트 수 조회????
   useEffect(() => {
     if (factoryId) {
       getDailyProductionQuantity({}).then((result) => {
@@ -170,7 +170,7 @@ const DashboardPageContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
 
-  // 생산 수익률 데이터 가져오기
+  // 생산 수익 데이터 가져오기
   useEffect(() => {
     if (factoryId) {
       getProductionProfitRate({}).then((result) => {

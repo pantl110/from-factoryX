@@ -65,6 +65,7 @@ const ProductionTable = ({
             quantity={item.production_quantity}
             machine={item.equipment_name}
             time={formatProductionTime(item.production_time)}
+            projectId={item.project_id}
           />
         ))}
       </div>
