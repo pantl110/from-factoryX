@@ -26,6 +26,7 @@ import {
 import {
   ProjectResponseModel,
   DashboardResponseModel,
+  ProjectListResponseModel,
   PublishedTaxInvoiceResponseModel,
 } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
@@ -44,9 +45,13 @@ const DashboardPageContent = () => {
   const { getPublishedTaxInvoices, isLoading: isTaxInvoicesLoading } =
     useGetPublishedTaxInvoices();
   const [projectsData, setProjectsData] = useState<ProjectResponseModel[]>([]);
-  const [dashboardData, setDashboardData] = useState<DashboardResponseModel>(
-    {}
-  );
+  const [dashboardData, setDashboardData] = useState<DashboardResponseModel>({
+    current_month_projects: 0,
+    previous_month_projects: 0,
+    shortage_materials_count: 0,
+    monthly_profits: [],
+    last_year_monthly_profits: [],
+  });
   const [todayProductionPlans, setTodayProductionPlans] = useState<
     TodayProductionPlanModel[]
   >([]);
@@ -89,26 +94,29 @@ const DashboardPageContent = () => {
         size: 100,
         order_by: 'start_date',
         order_dir: 'desc',
-      }).then((result) => {
-        if (result.success && result.data) {
-          const responseData = result.data as { data?: ProjectResponseModel[] };
-          const projects = responseData.data || [];
-          setProjectsData(Array.isArray(projects) ? projects : []);
-        } else {
-          setProjectsData([]);
+      }).then(
+        (result: { success: boolean; data?: ProjectListResponseModel }) => {
+          if (result.success && result.data) {
+            const projects = result.data.data || [];
+            setProjectsData(Array.isArray(projects) ? projects : []);
+          } else {
+            setProjectsData([]);
+          }
         }
-      });
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
 
   useEffect(() => {
     if (factoryId) {
-      getDashboard().then((result) => {
-        if (result.success && result.data) {
-          setDashboardData(result.data);
+      getDashboard().then(
+        (result: { success: boolean; data?: DashboardResponseModel }) => {
+          if (result.success && result.data) {
+            setDashboardData(result.data);
+          }
         }
-      });
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
@@ -118,13 +126,15 @@ const DashboardPageContent = () => {
     if (factoryId) {
       getTodayProductionPlans({
         page: 1,
-      }).then((result) => {
-        if (result.success && result.data) {
-          setTodayProductionPlans(result.data);
-        } else {
-          setTodayProductionPlans([]);
+      }).then(
+        (result: { success: boolean; data?: TodayProductionPlanModel[] }) => {
+          if (result.success && result.data) {
+            setTodayProductionPlans(result.data);
+          } else {
+            setTodayProductionPlans([]);
+          }
         }
-      });
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
@@ -134,13 +144,15 @@ const DashboardPageContent = () => {
     if (factoryId) {
       getUndeliveredProducts({
         page: 1,
-      }).then((result) => {
-        if (result.success && result.data) {
-          setUndeliveredProducts(result.data);
-        } else {
-          setUndeliveredProducts([]);
+      }).then(
+        (result: { success: boolean; data?: UndeliveredProductModel[] }) => {
+          if (result.success && result.data) {
+            setUndeliveredProducts(result.data);
+          } else {
+            setUndeliveredProducts([]);
+          }
         }
-      });
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
@@ -150,7 +162,7 @@ const DashboardPageContent = () => {
     if (factoryId) {
       getPublishedTaxInvoices({
         page: 1,
-        size: 5,
+        page_size: 5,
         ordering: '-transaction_date',
       }).then((result) => {
         if (result.success && result.data) {

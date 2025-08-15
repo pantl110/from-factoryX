@@ -19,16 +19,16 @@ const TaxItem = ({ taxType, company, date, onClick }: TaxItemProps) => {
       <div className="flex items-center gap-4 w-full">
         <div className="flex items-center justify-center flex-shrink-0">
           <Chip
-            text={taxType}
+            text={taxType === 'sales' ? '매출' : '매입'}
             textColor={color.textColor}
             bgColor={color.bgColor}
           />
         </div>
         <p
           className="Me_Body-2 text-dg truncate flex-1 min-w-0"
-          title={`${company} 세금계산서 ${taxType === '매출' ? '발행' : '수신'}`}
+          title={`${company} 세금계산서 ${taxType === 'sales' ? '발행' : '수신'}`}
         >
-          {company} 세금계산서 {taxType === '매출' ? '발행' : '수신'}
+          {company} 세금계산서 {taxType === 'sales' ? '발행' : '수신'}
         </p>
         <p className="pl-4 Me_Body-2 text-gr flex-shrink-0 w-fit text-right">
           {date}

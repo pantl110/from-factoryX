@@ -98,7 +98,13 @@ const InfoLabelValue = ({
     if (chip && colors) {
       return (
         <Chip
-          text={chip.status}
+          text={
+            chip.status === 'sales'
+              ? '매출'
+              : chip.status === 'purchase'
+                ? '매입'
+                : chip.status
+          }
           bgColor={colors.bgColor}
           textColor={colors.textColor}
         />

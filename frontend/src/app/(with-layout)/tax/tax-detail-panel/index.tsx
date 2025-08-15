@@ -17,7 +17,7 @@ const TaxDetailPanel = ({
 }: TaxDetailPanelProps) => {
   return (
     <Panel
-      title={`${item.tax_invoice_type} 세금계산서`}
+      title={`${item.tax_invoice_type === 'sales' ? '매출' : '매입'} 세금계산서`}
       onClose={onClose}
       isDraft={isDraft}
       onIssueClick={onIssueClick}

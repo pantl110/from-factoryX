@@ -155,13 +155,13 @@ export type NotificationCaseType =
   | 'production_schedule_changed'; // 생산 일정 변경
 
 // 세금계산서 종류
-export type TaxDocumentType = '매출' | '매입'; // sales, purchase
+export type TaxDocumentType = 'sales' | 'purchase'; // 매출, 매입
 export const TaxDocumentTypeColorMap: Record<
   TaxDocumentType,
   StatusColorModel
 > = {
-  매출: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  매입: { bgColor: 'bg-red-8', textColor: 'text-red' },
+  sales: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  purchase: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
 
 export type TransactionType = '영수' | '청구'; // receipt, invoice

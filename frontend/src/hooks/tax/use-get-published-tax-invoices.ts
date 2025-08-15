@@ -12,7 +12,7 @@ interface PublishedTaxInvoiceParamsModel {
   ordering?: string; // 정렬 순서: -transaction_date(최신순), transaction_date(오래된순)
   is_hidden?: boolean; // 숨김 여부
   page?: number;
-  size?: number;
+  page_size?: number; // 백엔드 pagination과 맞춤
 }
 
 // 발행된 세금계산서 목록 조회 // 작성일자 정렬 최신순이 default
@@ -49,8 +49,8 @@ const useGetPublishedTaxInvoices = () => {
       if (params.page) {
         queryParams.page = params.page;
       }
-      if (params.size) {
-        queryParams.size = params.size;
+      if (params.page_size) {
+        queryParams.page_size = params.page_size;
       }
 
       const result = await callTaxApi<PublishedTaxInvoiceListResponseModel>(
