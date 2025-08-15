@@ -246,3 +246,16 @@ class ProductionProfitRateOut(Schema):
     previous_month_profit: Optional[int] = None
     previous_month_count: Optional[int] = None
     change_percentage: Optional[float] = None
+
+
+# ------------------------------------------------------------
+# Dashboard API
+# ------------------------------------------------------------
+
+
+class DashboardOut(Schema):
+    current_month_projects: int  # 이번달에 생성된 프로젝트 건수
+    previous_month_projects: int  # 지난달에 생성된 프로젝트 건수
+    shortage_materials_count: int  # 재고 수량이 안전재고보다 낮은 원자재 개수
+    monthly_profits: List[dict]  # 현재 달로부터 5개월치 월별 생산 수익
+    last_year_monthly_profits: List[dict]  # 작년 동일 기간 월별 생산 수익

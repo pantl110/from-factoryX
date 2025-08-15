@@ -17,6 +17,7 @@ from project.schemas.outbound import (
     QuotationProductDetailOut,
     EquipmentDetailOut,
     DailyProductionQuantityOut,
+    DashboardOut,
 )
 from document.schemas.outbound import TodayProductionPlanOut
 from project.models import Project, ProjectPlan, ProjectLog
@@ -418,6 +419,8 @@ async def list_today_production_plans(request):
                         "production_quantity": plan.quantity,  # 생산 수량
                         "equipment_name": plan.equipment.name,  # 생산 설비
                         "production_time": plan.avg_production_time,  # 생산 시간 (초)
+                        "start_date": plan.start_date,  # 생산 시작일
+                        "end_date": plan.end_date,  # 생산 종료일
                         "project_id": plan.product.quotation.project.id,  # 프로젝트 ID
                     }
                 )
@@ -434,12 +437,12 @@ async def list_today_production_plans(request):
 
 
 @router.get(
-    "/daily",
-    summary="[C] 오늘 생산량 조회",
-    description="오늘 완료된 생산 계획의 품목 수를 조회합니다. 전월 대비 수치도 포함됩니다.",
-    response={200: DailyProductionQuantityOut, 404: dict, 500: dict},
+    "/dashboard",
+    summary="[C] 대시보드 조회",
+    description="대시보드 조회",
+    response={200: DashboardOut, 400: dict, 404: dict, 500: dict},
 )
-async def get_daily_production_quantity(request, target_date: str = Query(None)):
+async def get_dashboard(request):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -448,109 +451,172 @@ async def get_daily_production_quantity(request, target_date: str = Query(None))
     await is_factory_member(int(factory_id), user)
 
     try:
+        today = date.today()
+        current_month_start = today.replace(day=1)
+        current_month_end = (current_month_start + relativedelta(months=1)) - timedelta(
+            days=1
+        )
 
-        # 날짜 파싱 (기본값: 오늘)
-        if target_date:
-            try:
-                target_date_obj = datetime.strptime(target_date, "%Y-%m-%d").date()
-            except ValueError:
-                raise HttpError(
-                    400,
-                    "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식으로 입력해주세요.",
-                )
-        else:
-            target_date_obj = date.today()
+        # 지난달 계산
+        previous_month_start = current_month_start - relativedelta(months=1)
+        previous_month_end = current_month_start - timedelta(days=1)
 
         @sync_to_async
-        def get_production_data():
-            # 해당 공장의 완료된 생산 계획 조회 (품목 기준)
-            completed_plans = ProjectPlan.objects.filter(
-                project__quotations__factory_id=int(factory_id),
-                status="가동 완료",
-                end_date=target_date_obj,
-            )
-
-            # 오늘 생산량 집계 (품목 기준)
-            production_count = completed_plans.count()  # 품목 개수
-            production_quantity = (
-                completed_plans.aggregate(total_quantity=models.Sum("quantity"))[
-                    "total_quantity"
-                ]
-                or 0
-            )
-
-            # 사용자의 첫 공장 멤버 등록 시점 확인
-            user_first_membership = (
-                FactoryMember.objects.filter(user=user).order_by("created_at").first()
-            )
-            if user_first_membership:
-                first_membership_month = user_first_membership.created_at.replace(
-                    day=1
-                ).date()
-                target_month_start = target_date_obj.replace(day=1)
-
-                # 가입 첫 달인지 확인 (첫 멤버 등록 월과 동일한 달)
-                is_first_month = (
-                    first_membership_month.year == target_month_start.year
-                    and first_membership_month.month == target_month_start.month
+        def get_dashboard_data():
+            # 1. 이번달에 생성된 프로젝트 건수 (quotation, confirmed, suspended 제외)
+            current_month_projects = (
+                Project.objects.filter(
+                    quotations__factory_id=int(factory_id),
+                    created_at__date__gte=current_month_start,
+                    created_at__date__lte=current_month_end,
                 )
-            else:
-                is_first_month = True
+                .exclude(
+                    status__in=[
+                        Project.ProjectStatus.quotation,
+                        Project.ProjectStatus.confirmed,
+                        Project.ProjectStatus.suspended,
+                    ]
+                )
+                .count()
+            )
 
-            # 가입 첫 달이 아닌 경우에만 전월 대비 계산
-            previous_month_count = None
-            previous_month_quantity = None
-            change_percentage = None
+            # 2. 지난달에 생성된 프로젝트 건수 (quotation, confirmed, suspended 제외)
+            previous_month_projects = (
+                Project.objects.filter(
+                    quotations__factory_id=int(factory_id),
+                    created_at__date__gte=previous_month_start,
+                    created_at__date__lte=previous_month_end,
+                )
+                .exclude(
+                    status__in=[
+                        Project.ProjectStatus.quotation,
+                        Project.ProjectStatus.confirmed,
+                        Project.ProjectStatus.suspended,
+                    ]
+                )
+                .count()
+            )
 
-            if not is_first_month:
-                # 전월 대비 계산 (한 달 전)
-                previous_month_date = target_date_obj - relativedelta(months=1)
-                previous_month_plans = ProjectPlan.objects.filter(
-                    project__quotations__factory_id=int(factory_id),
-                    status="가동 완료",
-                    end_date=previous_month_date,
+            # 3. 재고 수량이 안전재고보다 낮은 원자재 개수
+            from stock.models import Material
+
+            shortage_materials_count = Material.objects.filter(
+                factory_id=int(factory_id), current_stock__lt=models.F("standard_stock")
+            ).count()
+
+            # 4. 현재 달로부터 5개월치 월별 생산 수익
+            monthly_profits = []
+            for i in range(5):
+                month_start = current_month_start - relativedelta(months=i)
+                month_end = (month_start + relativedelta(months=1)) - timedelta(days=1)
+
+                # 해당 월에 완료된 프로젝트 조회
+                completed_projects = Project.objects.filter(
+                    quotations__factory_id=int(factory_id),
+                    status="완료",
+                    created_at__date__gte=month_start,
+                    created_at__date__lte=month_end,
                 )
 
-                if previous_month_plans.exists():
-                    previous_month_count = previous_month_plans.count()  # 품목 개수
-                    previous_month_quantity = (
-                        previous_month_plans.aggregate(
-                            total_quantity=models.Sum("quantity")
-                        )["total_quantity"]
-                        or 0
+                month_profit = 0
+                for project in completed_projects:
+                    # 프로젝트의 모든 견적서 품목의 수익 계산
+                    quotation_products = QuotationProduct.objects.filter(
+                        quotation__project=project,
+                        quotation__factory_id=int(factory_id),
                     )
 
-                    # 변화율 계산: (이번달 생산량 - 지난달 생산량) / 지난달 생산량 × 100
-                    if previous_month_quantity > 0:
-                        change_percentage = round(
-                            (
-                                (production_quantity - previous_month_quantity)
-                                / previous_month_quantity
-                            )
-                            * 100,
-                            2,
+                    for qp in quotation_products:
+                        # 품목 가격 (수량 * 단가)
+                        product_revenue = qp.quantity * qp.unit_price
+
+                        # 원자재 비용 계산
+                        from stock.models import MaterialProduct
+
+                        material_products = MaterialProduct.objects.filter(
+                            product=qp.product
                         )
-                else:
-                    # 전월 데이터가 없는 경우
-                    previous_month_count = None
-                    previous_month_quantity = None
+
+                        material_cost = 0
+                        for mp in material_products:
+                            # 원자재 단가 (cost_average 필드 사용)
+                            material_unit_cost = mp.material.cost_average
+                            material_cost += mp.quantity * material_unit_cost
+
+                        # 수익 = 품목 가격 - 원자재 비용
+                        profit = product_revenue - material_cost
+                        month_profit += profit
+
+                monthly_profits.append(
+                    {"month": month_start.strftime("%Y-%m"), "profit": month_profit}
+                )
+
+            # 5. 작년 동일 기간 월별 생산 수익
+            last_year_monthly_profits = []
+            for i in range(5):
+                month_start = (
+                    current_month_start
+                    - relativedelta(months=i)
+                    - relativedelta(years=1)
+                )
+                month_end = (month_start + relativedelta(months=1)) - timedelta(days=1)
+
+                # 해당 월에 완료된 프로젝트 조회
+                completed_projects = Project.objects.filter(
+                    quotations__factory_id=int(factory_id),
+                    status="완료",
+                    created_at__date__gte=month_start,
+                    created_at__date__lte=month_end,
+                )
+
+                month_profit = 0
+                for project in completed_projects:
+                    # 프로젝트의 모든 견적서 품목의 수익 계산
+                    quotation_products = QuotationProduct.objects.filter(
+                        quotation__project=project,
+                        quotation__factory_id=int(factory_id),
+                    )
+
+                    for qp in quotation_products:
+                        # 품목 가격 (수량 * 단가)
+                        product_revenue = qp.quantity * qp.unit_price
+
+                        # 원자재 비용 계산
+                        from stock.models import MaterialProduct
+
+                        material_products = MaterialProduct.objects.filter(
+                            product=qp.product
+                        )
+
+                        material_cost = 0
+                        for mp in material_products:
+                            # 원자재 단가 (cost_average 필드 사용)
+                            material_unit_cost = mp.material.cost_average
+                            material_cost += mp.quantity * material_unit_cost
+
+                        # 수익 = 품목 가격 - 원자재 비용
+                        profit = product_revenue - material_cost
+                        month_profit += profit
+
+                last_year_monthly_profits.append(
+                    {"month": month_start.strftime("%Y-%m"), "profit": month_profit}
+                )
 
             return {
-                "production_count": production_count,  # 품목 개수
-                "production_quantity": production_quantity,  # 총 수량
-                "previous_month_count": previous_month_count,  # 전월 품목 개수 (첫 달이면 None)
-                "previous_month_quantity": previous_month_quantity,  # 전월 총 수량 (첫 달이면 None)
-                "change_percentage": change_percentage,  # 변화율 (첫 달이면 None)
-                "is_first_month": is_first_month,  # 가입 첫 달 여부
+                "current_month_projects": current_month_projects,
+                "previous_month_projects": previous_month_projects,
+                "shortage_materials_count": shortage_materials_count,
+                "monthly_profits": monthly_profits,
+                "last_year_monthly_profits": last_year_monthly_profits,
             }
 
-        result = await get_production_data()
-        return 200, DailyProductionQuantityOut(**result)
+        result = await get_dashboard_data()
+        return 200, DashboardOut(**result)
 
     except HttpError:
         raise
     except Exception as e:
-        raise HttpError(500, f"오늘 생산량 조회 중 오류가 발생했습니다: {str(e)}")
+        raise HttpError(500, f"대시보드 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.get(
@@ -613,172 +679,6 @@ async def list_project_plans(request, project_id: int):
         )
 
     return 200, plans_detail_list
-
-
-@router.get(
-    "/profit-rate",
-    summary="[C] 생산 수익률 조회",
-    description="프로젝트 완료 기준, 공급가액 기준으로 생산 수익률을 조회합니다. 가입 다음 달부터 전월 대비 수치를 표시합니다.",
-    response={200: ProductionProfitRateOut, 404: dict, 500: dict},
-)
-async def get_production_profit_rate(request, target_date: str = Query(None)):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-
-    try:
-        # 날짜 파싱 (기본값: 오늘)
-        if target_date:
-            try:
-                target_date_obj = datetime.strptime(target_date, "%Y-%m-%d").date()
-            except ValueError:
-                raise HttpError(
-                    400,
-                    "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식으로 입력해주세요.",
-                )
-        else:
-            target_date_obj = date.today()
-
-        @sync_to_async
-        def get_profit_data():
-            # 해당 공장의 완료된 프로젝트 조회 (해당 월)
-            target_month_start = target_date_obj.replace(day=1)
-            target_month_end = (
-                target_month_start + relativedelta(months=1)
-            ) - timedelta(days=1)
-
-            completed_projects = Project.objects.filter(
-                quotations__factory_id=int(factory_id),
-                status="완료",
-                created_at__date__gte=target_month_start,
-                created_at__date__lte=target_month_end,
-            )
-
-            # 이번 달 수익률 집계 (공급가액 기준)
-            current_month_profit = 0
-            current_month_count = 0
-
-            for project in completed_projects:
-                # 프로젝트의 모든 견적서 품목의 공급가액 합계
-                project_profit = (
-                    QuotationProduct.objects.filter(
-                        quotation__project=project,
-                        quotation__factory_id=int(factory_id),
-                    ).aggregate(
-                        total_profit=models.Sum(
-                            models.F("quantity") * models.F("unit_price")
-                        )
-                    )[
-                        "total_profit"
-                    ]
-                    or 0
-                )
-
-                current_month_profit += project_profit
-                current_month_count += 1
-
-            # 사용자의 첫 공장 멤버 등록 시점 확인
-            user_first_membership = (
-                FactoryMember.objects.filter(user=user).order_by("created_at").first()
-            )
-            if user_first_membership:
-                first_membership_month = user_first_membership.created_at.replace(
-                    day=1
-                ).date()
-                target_month_start_date = target_date_obj.replace(day=1)
-
-                # 가입 첫 달인지 확인 (첫 멤버 등록 월과 동일한 달)
-                is_first_month = (
-                    first_membership_month.year == target_month_start_date.year
-                    and first_membership_month.month == target_month_start_date.month
-                )
-            else:
-                is_first_month = True
-
-            # 전월 대비 계산 (가입 다음 달부터, 전월에 데이터가 일정 기간 누적된 경우만)
-            previous_month_profit = None
-            previous_month_count = None
-            change_percentage = None
-            can_compare = False
-
-            if not is_first_month:
-                # 전월 데이터 확인
-                previous_month_start = target_month_start - relativedelta(months=1)
-                previous_month_end = target_month_start - timedelta(days=1)
-
-                # 전월에 완료된 프로젝트 조회
-                previous_month_projects = Project.objects.filter(
-                    quotations__factory_id=int(factory_id),
-                    status="완료",
-                    created_at__date__gte=previous_month_start,
-                    created_at__date__lte=previous_month_end,
-                )
-
-                if previous_month_projects.exists():
-                    # 전월 수익률 집계
-                    previous_month_profit = 0
-                    previous_month_count = 0
-
-                    for project in previous_month_projects:
-                        project_profit = (
-                            QuotationProduct.objects.filter(
-                                quotation__project=project,
-                                quotation__factory_id=int(factory_id),
-                            ).aggregate(
-                                total_profit=models.Sum(
-                                    models.F("quantity") * models.F("unit_price")
-                                )
-                            )[
-                                "total_profit"
-                            ]
-                            or 0
-                        )
-
-                        previous_month_profit += project_profit
-                        previous_month_count += 1
-
-                    # 전월에 데이터가 일정 기간 누적되었는지 확인 (최소 7일 이상)
-                    first_membership_day = user_first_membership.created_at.day
-                    if first_membership_day <= 7:  # 7일 이전에 가입한 경우
-                        can_compare = True
-                    else:
-                        # 가입일 이후 데이터가 일정 기간 누적되었는지 확인
-                        days_in_previous_month = (
-                            previous_month_end - previous_month_start
-                        ).days + 1
-                        effective_days = (
-                            days_in_previous_month - first_membership_day + 1
-                        )
-                        can_compare = effective_days >= 7  # 최소 7일 이상
-
-                    if can_compare and previous_month_profit > 0:
-                        change_percentage = round(
-                            (
-                                (current_month_profit - previous_month_profit)
-                                / previous_month_profit
-                            )
-                            * 100,
-                            2,
-                        )
-
-            return {
-                "current_month_profit": current_month_profit,
-                "current_month_count": current_month_count,
-                "previous_month_profit": previous_month_profit if can_compare else None,
-                "previous_month_count": previous_month_count if can_compare else None,
-                "change_percentage": change_percentage if can_compare else None,
-            }
-
-        result = await get_profit_data()
-        return 200, ProductionProfitRateOut(**result)
-
-    except HttpError:
-        raise
-    except Exception as e:
-        raise HttpError(500, f"생산 수익률 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.patch(

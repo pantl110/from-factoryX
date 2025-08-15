@@ -81,6 +81,8 @@ class TodayProductionPlanOut(Schema):
     production_quantity: int  # 생산 수량
     equipment_name: str  # 생산 설비
     production_time: int  # 생산 시간 (초)
+    start_date: datetime  # 생산 시작일
+    end_date: datetime  # 생산 종료일
     project_id: int  # 프로젝트 ID
 
 
