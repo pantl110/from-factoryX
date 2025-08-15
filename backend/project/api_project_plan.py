@@ -17,6 +17,7 @@ from project.schemas.outbound import (
     QuotationProductDetailOut,
     EquipmentDetailOut,
     DailyProductionQuantityOut,
+    DashboardOut,
 )
 from document.schemas.outbound import TodayProductionPlanOut
 from project.models import Project, ProjectPlan, ProjectLog
@@ -433,6 +434,189 @@ async def list_today_production_plans(request):
         raise
     except Exception as e:
         raise HttpError(500, f"조회 중 오류가 발생했습니다: {str(e)}")
+
+
+@router.get(
+    "/dashboard",
+    summary="[C] 대시보드 조회",
+    description="대시보드 조회",
+    response={200: DashboardOut, 400: dict, 404: dict, 500: dict},
+)
+async def get_dashboard(request):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        today = date.today()
+        current_month_start = today.replace(day=1)
+        current_month_end = (current_month_start + relativedelta(months=1)) - timedelta(
+            days=1
+        )
+
+        # 지난달 계산
+        previous_month_start = current_month_start - relativedelta(months=1)
+        previous_month_end = current_month_start - timedelta(days=1)
+
+        @sync_to_async
+        def get_dashboard_data():
+            # 1. 이번달에 생성된 프로젝트 건수 (quotation, confirmed, suspended 제외)
+            current_month_projects = (
+                Project.objects.filter(
+                    quotations__factory_id=int(factory_id),
+                    created_at__date__gte=current_month_start,
+                    created_at__date__lte=current_month_end,
+                )
+                .exclude(
+                    status__in=[
+                        Project.ProjectStatus.quotation,
+                        Project.ProjectStatus.confirmed,
+                        Project.ProjectStatus.suspended,
+                    ]
+                )
+                .count()
+            )
+
+            # 2. 지난달에 생성된 프로젝트 건수 (quotation, confirmed, suspended 제외)
+            previous_month_projects = (
+                Project.objects.filter(
+                    quotations__factory_id=int(factory_id),
+                    created_at__date__gte=previous_month_start,
+                    created_at__date__lte=previous_month_end,
+                )
+                .exclude(
+                    status__in=[
+                        Project.ProjectStatus.quotation,
+                        Project.ProjectStatus.confirmed,
+                        Project.ProjectStatus.suspended,
+                    ]
+                )
+                .count()
+            )
+
+            # 3. 재고 수량이 안전재고보다 낮은 원자재 개수
+            from stock.models import Material
+
+            shortage_materials_count = Material.objects.filter(
+                factory_id=int(factory_id), current_stock__lt=models.F("standard_stock")
+            ).count()
+
+            # 4. 현재 달로부터 5개월치 월별 생산 수익
+            monthly_profits = []
+            for i in range(5):
+                month_start = current_month_start - relativedelta(months=i)
+                month_end = (month_start + relativedelta(months=1)) - timedelta(days=1)
+
+                # 해당 월에 완료된 프로젝트 조회
+                completed_projects = Project.objects.filter(
+                    quotations__factory_id=int(factory_id),
+                    status="완료",
+                    created_at__date__gte=month_start,
+                    created_at__date__lte=month_end,
+                )
+
+                month_profit = 0
+                for project in completed_projects:
+                    # 프로젝트의 모든 견적서 품목의 수익 계산
+                    quotation_products = QuotationProduct.objects.filter(
+                        quotation__project=project,
+                        quotation__factory_id=int(factory_id),
+                    )
+
+                    for qp in quotation_products:
+                        # 품목 가격 (수량 * 단가)
+                        product_revenue = qp.quantity * qp.unit_price
+
+                        # 원자재 비용 계산
+                        from stock.models import MaterialProduct
+
+                        material_products = MaterialProduct.objects.filter(
+                            product=qp.product
+                        )
+
+                        material_cost = 0
+                        for mp in material_products:
+                            # 원자재 단가 (cost_average 필드 사용)
+                            material_unit_cost = mp.material.cost_average
+                            material_cost += mp.quantity * material_unit_cost
+
+                        # 수익 = 품목 가격 - 원자재 비용
+                        profit = product_revenue - material_cost
+                        month_profit += profit
+
+                monthly_profits.append(
+                    {"month": month_start.strftime("%Y-%m"), "profit": month_profit}
+                )
+
+            # 5. 작년 동일 기간 월별 생산 수익
+            last_year_monthly_profits = []
+            for i in range(5):
+                month_start = (
+                    current_month_start
+                    - relativedelta(months=i)
+                    - relativedelta(years=1)
+                )
+                month_end = (month_start + relativedelta(months=1)) - timedelta(days=1)
+
+                # 해당 월에 완료된 프로젝트 조회
+                completed_projects = Project.objects.filter(
+                    quotations__factory_id=int(factory_id),
+                    status="완료",
+                    created_at__date__gte=month_start,
+                    created_at__date__lte=month_end,
+                )
+
+                month_profit = 0
+                for project in completed_projects:
+                    # 프로젝트의 모든 견적서 품목의 수익 계산
+                    quotation_products = QuotationProduct.objects.filter(
+                        quotation__project=project,
+                        quotation__factory_id=int(factory_id),
+                    )
+
+                    for qp in quotation_products:
+                        # 품목 가격 (수량 * 단가)
+                        product_revenue = qp.quantity * qp.unit_price
+
+                        # 원자재 비용 계산
+                        from stock.models import MaterialProduct
+
+                        material_products = MaterialProduct.objects.filter(
+                            product=qp.product
+                        )
+
+                        material_cost = 0
+                        for mp in material_products:
+                            # 원자재 단가 (cost_average 필드 사용)
+                            material_unit_cost = mp.material.cost_average
+                            material_cost += mp.quantity * material_unit_cost
+
+                        # 수익 = 품목 가격 - 원자재 비용
+                        profit = product_revenue - material_cost
+                        month_profit += profit
+
+                last_year_monthly_profits.append(
+                    {"month": month_start.strftime("%Y-%m"), "profit": month_profit}
+                )
+
+            return {
+                "current_month_projects": current_month_projects,
+                "previous_month_projects": previous_month_projects,
+                "shortage_materials_count": shortage_materials_count,
+                "monthly_profits": monthly_profits,
+                "last_year_monthly_profits": last_year_monthly_profits,
+            }
+
+        result = await get_dashboard_data()
+        return 200, DashboardOut(**result)
+
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, f"대시보드 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.get(
