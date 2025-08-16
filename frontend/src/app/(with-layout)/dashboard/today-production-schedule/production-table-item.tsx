@@ -10,13 +10,6 @@ export interface ProductionTableItemProps {
 const ProductionTableItem = ({ item }: ProductionTableItemProps) => {
   const router = useRouter();
 
-  // 생산 시간을 시:분 형식으로 변환
-  const formatProductionTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  };
-
   // 날짜를 MM/DD HH:mm 형식으로 변환
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

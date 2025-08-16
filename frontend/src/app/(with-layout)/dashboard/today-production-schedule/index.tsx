@@ -7,18 +7,7 @@ import OverlayView from '@/ui/ovelay-view';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import { useReactToPrint } from 'react-to-print';
 import ProductionTable from './production-table';
-
-interface TodayProductionPlanModel {
-  company_name: string;
-  product_name: string;
-  product_code: string;
-  spec: string;
-  unit: string;
-  production_quantity: number;
-  equipment_name: string;
-  production_time: number;
-  project_id: number;
-}
+import { TodayProductionPlanModel } from '../type';
 
 interface TodayProductionScheduleProps {
   todayProductionPlans: TodayProductionPlanModel[];
@@ -91,7 +80,9 @@ const TodayProductionSchedule = ({
             </div>
 
             <div ref={contentRef}>
-              <ProductionDocumentView />
+              <ProductionDocumentView
+                todayProductionPlans={todayProductionPlans}
+              />
             </div>
           </div>
         </OverlayView>

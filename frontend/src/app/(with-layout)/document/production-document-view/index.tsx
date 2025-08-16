@@ -4,22 +4,29 @@ import CommentItem from './comment-item';
 import ProductionTableItem from './production-table-item';
 import { useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
 
 // 프로젝트명별로 그룹핑 함수
-const groupByProject = (data: typeof productionData) => {
-  return data.reduce<Record<string, typeof productionData>>(
+const groupByProject = (data: TodayProductionPlanModel[]) => {
+  return data.reduce<Record<string, TodayProductionPlanModel[]>>(
     (acc, item) => {
-      if (!acc[item.projectName]) acc[item.projectName] = [];
-      acc[item.projectName].push(item);
+      if (!acc[item.company_name]) acc[item.company_name] = [];
+      acc[item.company_name].push(item);
       return acc;
     },
-    {} as Record<string, typeof productionData>
+    {} as Record<string, TodayProductionPlanModel[]>
   );
 };
 
-const ProductionDocumentView = () => {
+interface ProductionDocumentViewProps {
+  todayProductionPlans: TodayProductionPlanModel[];
+}
+
+const ProductionDocumentView = ({
+  todayProductionPlans,
+}: ProductionDocumentViewProps) => {
   const [value, setValue] = useState('');
-  const grouped = groupByProject(productionData);
+  const grouped = groupByProject(todayProductionPlans);
 
   return (
     <div className="flex flex-col gap-6">
@@ -39,15 +46,15 @@ const ProductionDocumentView = () => {
                 <p className="flex-[0.8] px-3">생산 설비</p>
                 <p className="flex-[0.8] px-3">생산 시간</p>
               </div>
-              {(items as typeof productionData).map((item) => (
+              {items.map((item, index) => (
                 <ProductionTableItem
-                  key={item.id}
-                  productName={item.productName}
-                  standard={item.standard}
+                  key={item.project_id + index}
+                  productName={item.product_name}
+                  spec={item.spec}
                   unit={item.unit}
-                  productionQuantity={item.productionQuantity || 0}
-                  machine={item.machine || '-'}
-                  productionTime={item.productionTime || '-'}
+                  productionQuantity={item.production_quantity || 0}
+                  machine={item.equipment_name || '-'}
+                  productionTime={item.production_time || null}
                 />
               ))}
             </div>

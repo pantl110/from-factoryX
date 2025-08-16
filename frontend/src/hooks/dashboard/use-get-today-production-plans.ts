@@ -13,10 +13,6 @@ interface TodayProductionPlanModel {
   project_id: number;
 }
 
-interface GetTodayProductionPlansModel {
-  page?: number;
-}
-
 // 오늘의 생산 일정 조회 // 생산지시서
 const useGetTodayProductionPlans = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +20,6 @@ const useGetTodayProductionPlans = () => {
   const { factoryId } = useFactoryStore();
 
   const getTodayProductionPlans = async (
-    params: GetTodayProductionPlansModel
   ) => {
     setIsLoading(true);
     setError(null);
@@ -38,7 +33,6 @@ const useGetTodayProductionPlans = () => {
 
       const queryParams = new URLSearchParams();
       queryParams.append('factory_id', factoryId.toString());
-      queryParams.append('page', (params.page || 1).toString());
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan/today?${queryParams}`,
