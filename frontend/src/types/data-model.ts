@@ -690,8 +690,8 @@ export interface ProjectPlanModel {
   equipment: EquipmentForPlanModel;
   status: OperationStatusType; // 가동 대기, 가동 중, 가동 완료
   quantity: number; // 생산 수량
-  start_date: string; // 생산 시작 일자
-  end_date: string; // 생산 종료 일자
+  start_date: string | Date; // 생산 시작 일자
+  end_date: string | Date; // 생산 종료 일자
   avg_production_time: number; // 단위당 소요 시간
 }
 
@@ -948,7 +948,7 @@ export interface PublishedTaxInvoiceResponseModel {
     barobill_state: BarobillStateType; // 바로빌 상태
     nts_send_state: NtsSendStateType; // 국세청 전송 상태
     
-    // 세금계산서 품목 상세
+    // 세금계산서 품목 상세 // 바로빌 API로 세금계산서 발행 후 또는 동기화 시 저장
     line_items: TaxLineItemModel[];
 }
 

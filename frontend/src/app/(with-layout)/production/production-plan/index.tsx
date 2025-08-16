@@ -85,7 +85,7 @@ const ProductionPlan = ({
     (state) => state.setAllProductionCompleted
   );
 
-  // 프로젝트 계획 데이터 로드
+  // 프로젝트 계획 데이터 로드 (초기 로드만)
   useEffect(() => {
     const loadProjectPlans = async () => {
       if (!projectId) return;
@@ -116,10 +116,23 @@ const ProductionPlan = ({
   useEffect(() => {
     return () => {
       Object.values(debounceTimers).forEach((timer) => {
-        clearTimeout(timer);
+        if (timer) clearTimeout(timer);
       });
     };
   }, [debounceTimers]);
+
+  // 디바운스 타이머 정리 함수
+  const clearDebounceTimer = useCallback((planId: number) => {
+    setDebounceTimers((prevTimers) => {
+      if (prevTimers[planId]) {
+        clearTimeout(prevTimers[planId]);
+        const newTimers = { ...prevTimers };
+        delete newTimers[planId];
+        return newTimers;
+      }
+      return prevTimers;
+    });
+  }, []);
 
   // 생산 계획 검증 훅 사용
   useProductionPlanValidation(projectPlans, formChanges);
@@ -160,13 +173,14 @@ const ProductionPlan = ({
         status,
       });
       if (result.success) {
-        // 상태 변경 성공 시 데이터 새로고침
-        if (projectId) {
-          const refreshResult = await getProjectPlans(projectId);
-          if (refreshResult.success && refreshResult.data) {
-            setProjectPlans(refreshResult.data);
-          }
-        }
+        // 상태 변경 성공 시 해당 plan의 상태만 업데이트
+        setProjectPlans((prev) =>
+          prev.map((plan) =>
+            plan.id === operationStatusDropdownRowId
+              ? { ...plan, status }
+              : plan
+          )
+        );
       }
     } catch {
       alert('가동 상태 변경 중 오류가 발생했습니다.');
@@ -219,28 +233,26 @@ const ProductionPlan = ({
       }
 
       // form 데이터에 설비 변경 반영
-      setFormChanges((prev) => ({
-        ...prev,
-        [facilityDropdownRowId]: {
-          ...prev[facilityDropdownRowId],
-          equipment_id: equipment.id,
-          quantity:
-            prev[facilityDropdownRowId]?.quantity ||
-            projectPlans.find((p) => p.id === facilityDropdownRowId)
-              ?.quantity ||
-            0,
-          start_date:
-            prev[facilityDropdownRowId]?.start_date ||
-            projectPlans.find((p) => p.id === facilityDropdownRowId)
-              ?.start_date ||
-            '',
-          end_date:
-            prev[facilityDropdownRowId]?.end_date ||
-            projectPlans.find((p) => p.id === facilityDropdownRowId)
-              ?.end_date ||
-            '',
-        },
-      }));
+      setFormChanges((prev) => {
+        const currentPlan = projectPlans.find(
+          (p) => p.id === facilityDropdownRowId
+        );
+        const updated = {
+          ...prev,
+          [facilityDropdownRowId]: {
+            quantity: currentPlan?.quantity || 0,
+            equipment_id: equipment.id, // 새로운 설비 ID로 명시적 설정
+            start_date: currentPlan?.start_date
+              ? currentPlan.start_date.toString()
+              : '',
+            end_date: currentPlan?.end_date
+              ? currentPlan.end_date.toString()
+              : '',
+          },
+        };
+
+        return updated;
+      });
 
       // 설비 변경 성공 시 드롭다운 닫기
       handleCloseFacilityDropdown();
@@ -248,42 +260,42 @@ const ProductionPlan = ({
   };
 
   // 시간대 충돌 검사 함수
-  const checkTimeConflicts = (
-    planId: number,
-    formData: ProductionPlanFormDataModel
-  ) => {
-    const originalPlan = projectPlans.find((p) => p.id === planId);
-    if (!originalPlan) return false;
+  const checkTimeConflicts = useCallback(
+    (planId: number, formData: ProductionPlanFormDataModel) => {
+      const originalPlan = projectPlans.find((p) => p.id === planId);
+      if (!originalPlan) return false;
 
-    // 시간대 충돌 검사
-    return projectPlans.some((plan) => {
-      if (plan.id === planId) return false; // 자기 자신은 제외
+      // 시간대 충돌 검사
+      return projectPlans.some((plan) => {
+        if (plan.id === planId) return false; // 자기 자신은 제외
 
-      // 같은 설비인지 확인
-      if (plan.equipment.id !== formData.equipment_id) return false;
+        // 같은 설비인지 확인
+        if (plan.equipment.id !== formData.equipment_id) return false;
 
-      // 날짜가 설정되어 있는지 확인
-      if (
-        !formData.start_date ||
-        !formData.end_date ||
-        !plan.start_date ||
-        !plan.end_date
-      )
-        return false;
+        // 날짜가 설정되어 있는지 확인
+        if (
+          !formData.start_date ||
+          !formData.end_date ||
+          !plan.start_date ||
+          !plan.end_date
+        )
+          return false;
 
-      // 날짜 형식을 Date 객체로 변환
-      const newStartDate = new Date(formData.start_date);
-      const newEndDate = new Date(formData.end_date);
-      const existingStartDate = new Date(plan.start_date);
-      const existingEndDate = new Date(plan.end_date);
+        // 날짜 형식을 Date 객체로 변환
+        const newStartDate = new Date(formData.start_date);
+        const newEndDate = new Date(formData.end_date);
+        const existingStartDate = new Date(plan.start_date);
+        const existingEndDate = new Date(plan.end_date);
 
-      // 날짜 범위가 겹치는지 확인
-      const hasOverlap =
-        newStartDate < existingEndDate && newEndDate > existingStartDate;
+        // 날짜 범위가 겹치는지 확인
+        const hasOverlap =
+          newStartDate < existingEndDate && newEndDate > existingStartDate;
 
-      return hasOverlap;
-    });
-  };
+        return hasOverlap;
+      });
+    },
+    [projectPlans]
+  );
 
   // 폼 변경 핸들러 //
   const handleFormChange = useCallback(
@@ -302,62 +314,61 @@ const ProductionPlan = ({
       }
 
       setDebounceTimers((prevTimers) => {
-        if (prevTimers[planId]) clearTimeout(prevTimers[planId]);
+        // 기존 타이머가 있으면 정리
+        if (prevTimers[planId]) {
+          clearTimeout(prevTimers[planId]);
+        }
+
         const newTimer = setTimeout(async () => {
-          // 생산일자나 마감예정일자가 변경된 경우, 두 필드가 모두 완전히 입력되어야 저장
-          const originalPlan = projectPlans.find((p) => p.id === planId);
-          if (!originalPlan) return;
+          try {
+            const originalPlan = projectPlans.find((p) => p.id === planId);
+            if (!originalPlan) return;
 
-          const isDateFieldChanged =
-            formData.start_date !== originalPlan.start_date ||
-            formData.end_date !== originalPlan.end_date;
+            const changes: Record<string, unknown> = {};
 
-          if (
-            isDateFieldChanged &&
-            (!formData.start_date || !formData.end_date)
-          ) {
-            return; // 날짜 필드가 변경되었는데 완전히 입력되지 않으면 저장하지 않음
-          }
+            // 원본과 달라졌는지만 비교, 값은 formData에서 직접 사용
+            if (formData.quantity !== originalPlan.quantity) {
+              changes.quantity = formData.quantity;
+            }
+            if (formData.equipment_id !== originalPlan.equipment.id) {
+              changes.equipment_id = formData.equipment_id;
+            }
+            if (formData.start_date !== originalPlan.start_date) {
+              changes.start_date = formData.start_date;
+            }
+            if (formData.end_date !== originalPlan.end_date) {
+              changes.end_date = formData.end_date;
+            }
 
-          const changes: Record<string, unknown> = {};
-          if (formData.quantity !== originalPlan.quantity)
-            changes.quantity = formData.quantity;
-          if (formData.equipment_id !== originalPlan.equipment.id)
-            changes.equipment_id = formData.equipment_id;
-          if (formData.start_date !== originalPlan.start_date)
-            changes.start_date = formData.start_date;
-          if (formData.end_date !== originalPlan.end_date)
-            changes.end_date = formData.end_date;
-
-          if (Object.keys(changes).length > 0) {
-            const result = await updateProjectPlan(planId, changes);
-            if (result.success) {
-              // 저장 성공 시에만 데이터 새로고침
-              if (projectId) {
-                const refreshResult = await getProjectPlans(projectId);
-                if (refreshResult.success && refreshResult.data) {
-                  setProjectPlans(refreshResult.data);
-                  // formChanges에서 해당 plan의 변경사항 제거 (무한 루프 방지)
-                  setFormChanges((prev) => {
-                    const newChanges = { ...prev };
-                    delete newChanges[planId];
-                    return newChanges;
-                  });
-                }
+            if (Object.keys(changes).length > 0) {
+              const result = await updateProjectPlan(planId, changes);
+              if (result.success) {
+                // formChanges에서 해당 plan의 변경사항 제거
+                setFormChanges((prev) => {
+                  const newChanges = { ...prev };
+                  delete newChanges[planId];
+                  return newChanges;
+                });
               }
             }
+          } catch (error) {
+            console.error(`Error updating plan ${planId}:`, error);
+          } finally {
+            clearDebounceTimer(planId);
           }
-        }, 1000);
+        }, 500);
+
         return { ...prevTimers, [planId]: newTimer };
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      projectPlans,
       updateProjectPlan,
-      getProjectPlans,
       projectId,
-      showEquipmentToast,
+      showTimeToast,
+      projectPlans,
+      checkTimeConflicts,
+      clearDebounceTimer,
     ]
   );
 
@@ -400,13 +411,8 @@ const ProductionPlan = ({
 
       await Promise.all(updatePromises);
 
-      // 저장 후 데이터 새로고침
-      if (projectId) {
-        const result = await getProjectPlans(projectId);
-        if (result.success && result.data) {
-          setProjectPlans(result.data);
-        }
-      }
+      // 저장 후 formChanges 초기화
+      setFormChanges({});
 
       return { success: true };
     } catch {
@@ -484,6 +490,15 @@ const ProductionPlan = ({
               formData={formChanges[item.id]}
               equipments={equipmentList?.data || []}
               projectStatus={projectStatus}
+              onEquipmentChange={(equipmentId) => {
+                setFormChanges((prev) => ({
+                  ...prev,
+                  [item.id]: {
+                    ...prev[item.id],
+                    equipment_id: equipmentId,
+                  },
+                }));
+              }}
             />
           ))}
         </div>

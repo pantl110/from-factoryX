@@ -40,7 +40,7 @@ const OperationStatusDropdown = ({
           hover={color.pending.hover}
         />
       </DropdownItem>
-      <DropdownItem noHover={true} chip={true}>
+      {/* <DropdownItem noHover={true} chip={true}>
         <Chip
           text="가동 중"
           bgColor={color.production.bgColor}
@@ -52,7 +52,7 @@ const OperationStatusDropdown = ({
           }}
           hover={color.production.hover}
         />
-      </DropdownItem>
+      </DropdownItem> */}
       <DropdownItem noHover={true} chip={true}>
         <Chip
           text="가동 완료"

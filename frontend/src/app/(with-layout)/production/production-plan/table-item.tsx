@@ -4,6 +4,7 @@ import {
   InventoryStatusColorMap,
   ProjectStatusType,
   OperationStatusType,
+  InventoryStatusType,
 } from '@/types/status-type';
 import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import { tableHeader } from './types';
@@ -33,6 +34,7 @@ interface TableItemProps {
   formData?: ProductionPlanFormDataModel; // 현재 form 데이터
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
+  onEquipmentChange?: (equipmentId: number) => void; // 설비 변경 시 호출
 }
 
 const TableItem = ({
@@ -43,6 +45,7 @@ const TableItem = ({
   formData: currentFormData,
   equipments,
   projectStatus,
+  onEquipmentChange,
 }: TableItemProps) => {
   // Form 데이터를 메모이제이션하여 불필요한 re-render 방지
   const stableFormData = useMemo(() => {
@@ -50,8 +53,15 @@ const TableItem = ({
       currentFormData || {
         quantity: item.quantity,
         equipment_id: item.equipment.id,
-        start_date: item.start_date,
-        end_date: item.end_date,
+        start_date: item.start_date
+          ? new Date(item.start_date)
+              .toISOString()
+              .slice(0, 16)
+              .replace('T', ' ')
+          : '0000-00-00 00:00',
+        end_date: item.end_date
+          ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+          : '0000-00-00 00:00',
       }
     );
   }, [
@@ -66,21 +76,40 @@ const TableItem = ({
   const operationStatus = item.status as OperationStatusType;
   const { materialStatus } = useMaterialStatus(
     item.quotation_product.product.id
-  ); // 품목과 연결된 자재들의 재고 상태 확인 훅 사용
+  ) as { materialStatus: InventoryStatusType };
   const operationColor = OperationStatusColorMap[operationStatus];
   const materialColor = InventoryStatusColorMap[materialStatus];
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
   // React Hook Form 설정
   const { control, watch, reset } = useForm<ProductionPlanFormDataModel>({
-    defaultValues: stableFormData,
+    defaultValues: {
+      quantity: item.quantity,
+      equipment_id: item.equipment.id,
+      start_date: item.start_date
+        ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
+      end_date: item.end_date
+        ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
+    },
   });
 
-  // currentFormData가 변경되면 form을 리셋 // 변경된 데이터를 React Hook Form과 동기화
+  // 컴포넌트 마운트 시에만 form을 초기화
   useEffect(() => {
-    reset(stableFormData);
+    const formattedData = {
+      quantity: item.quantity,
+      equipment_id: item.equipment.id,
+      start_date: item.start_date
+        ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
+      end_date: item.end_date
+        ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
+    };
+    reset(formattedData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stableFormData]);
+  }, [item.start_date, item.end_date, item.quantity, item.equipment.id]);
 
   // Form 데이터 변경 시 부모 컴포넌트에 알림 (필요한 필드만 감시)
   const watchedQuantity = watch('quantity');
@@ -88,20 +117,102 @@ const TableItem = ({
   const watchedStartDate = watch('start_date');
   const watchedEndDate = watch('end_date');
 
+  // currentFormData.equipment_id가 변경될 때 React Hook Form 업데이트
   useEffect(() => {
-    onFormChange?.(item.id, {
+    if (
+      currentFormData?.equipment_id &&
+      currentFormData.equipment_id !== item.equipment.id
+    ) {
+      reset({
+        quantity: watchedQuantity,
+        equipment_id: currentFormData.equipment_id,
+        start_date: watchedStartDate,
+        end_date: watchedEndDate,
+      });
+    }
+  }, [
+    currentFormData?.equipment_id,
+    item.equipment.id,
+    reset,
+    watchedQuantity,
+    watchedStartDate,
+    watchedEndDate,
+  ]);
+
+  useEffect(() => {
+    // 폼 데이터가 실제로 변경되었을 때만 부모 컴포넌트에 알림
+    const currentFormData = {
       quantity: watchedQuantity,
       equipment_id: watchedEquipmentId,
       start_date: watchedStartDate,
       end_date: watchedEndDate,
-    });
+    };
+
+    // 원본 데이터와 비교하여 실제 변경사항이 있는지 확인
+    const originalStartDate = item.start_date
+      ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
+      : '';
+    const originalEndDate = item.end_date
+      ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+      : '';
+
+    const hasChanges =
+      watchedQuantity !== item.quantity ||
+      watchedEquipmentId !== item.equipment.id ||
+      watchedStartDate !== originalStartDate ||
+      watchedEndDate !== originalEndDate;
+
+    if (hasChanges && onFormChange) {
+      onFormChange(item.id, currentFormData);
+    }
   }, [
     watchedQuantity,
     watchedEquipmentId,
     watchedStartDate,
     watchedEndDate,
     item.id,
+    item.quantity,
+    item.equipment.id,
+    item.start_date,
+    item.end_date,
     onFormChange,
+  ]);
+
+  // currentFormData가 변경될 때마다 onFormChange 호출 (설비 변경 등 외부에서 변경된 경우)
+  // 단, 무한루프 방지를 위해 실제 변경사항이 있을 때만 호출
+  useEffect(() => {
+    if (currentFormData && onFormChange) {
+      // 실제 변경사항이 있는지 확인
+      const hasRealChanges =
+        currentFormData.quantity !== item.quantity ||
+        currentFormData.equipment_id !== item.equipment.id ||
+        currentFormData.start_date !==
+          (item.start_date
+            ? new Date(item.start_date)
+                .toISOString()
+                .slice(0, 16)
+                .replace('T', ' ')
+            : '') ||
+        currentFormData.end_date !==
+          (item.end_date
+            ? new Date(item.end_date)
+                .toISOString()
+                .slice(0, 16)
+                .replace('T', ' ')
+            : '');
+
+      if (hasRealChanges) {
+        onFormChange(item.id, currentFormData);
+      }
+    }
+  }, [
+    currentFormData,
+    item.id,
+    onFormChange,
+    item.quantity,
+    item.equipment.id,
+    item.start_date,
+    item.end_date,
   ]);
 
   // 현재 선택된 설비 정보 (formData의 equipment_id 우선, 없으면 원본 데이터)
@@ -114,7 +225,13 @@ const TableItem = ({
   const itemData = {
     '가동 상태': (
       <Chip
-        text={operationStatus}
+        text={
+          operationStatus === 'pending'
+            ? '가동 대기'
+            : operationStatus === 'production'
+              ? '가동 중'
+              : '가동 완료'
+        }
         textColor={operationColor.textColor}
         bgColor={operationColor.bgColor}
         cursor={
