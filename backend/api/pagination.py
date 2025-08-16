@@ -11,7 +11,7 @@ class CustomPageNumberPagination(PageNumberPagination):
 
     class Input(Schema):
         page: int = Field(1, ge=1)
-        page_size: int = Field(settings.PAGINATION_PER_PAGE, ge=1)
+        page_size: int = Field(5, ge=1)
 
     class Output(Schema):
         count: int
@@ -21,9 +21,7 @@ class CustomPageNumberPagination(PageNumberPagination):
         nextPage: Optional[int]
         previousPage: Optional[int]
 
-    def __init__(
-        self, page_size: int = settings.PAGINATION_PER_PAGE, **kwargs: Any
-    ) -> None:
+    def __init__(self, page_size: int = 5, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.page_size = page_size
 

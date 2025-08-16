@@ -414,6 +414,7 @@ async def list_today_production_plans(request):
                         "company_name": plan.product.quotation.client.name,  # 업체명
                         "product_name": plan.product.product.name,  # 품목명
                         "product_code": plan.product.product.code,  # 품목코드
+                        "product_note": plan.product.product.note,  # 품목 메모
                         "spec": plan.product.product.spec,  # 규격
                         "unit": plan.product.product.unit,  # 단위
                         "production_quantity": plan.quantity,  # 생산 수량
