@@ -83,6 +83,10 @@ class ProjectPlan(BaseModel):
         blank=True,
         help_text="생산 완료 여부",
     )
+    end_notification = models.BooleanField(
+        default=False,
+        help_text="생산 완료 알림 여부",
+    )
 
 
 # 생산 로그
