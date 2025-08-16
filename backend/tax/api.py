@@ -685,26 +685,37 @@ async def update_tax_invoice(request, tax_id: int, payload: NationalTaxServiceUp
     member = await is_factory_member(tax_service.factory.id, user)
     # 멤버 권한 검증 추가해야함
 
-    # 세금계산서가 발행 상태가 아니면 오류
-    if tax_service.publish_status == "published":
-        raise HttpError(400, "발행된 세금계산서는 수정할 수 없습니다.")
-
     data = payload.dict(exclude_unset=True)
-    factory_id = data.pop("factory")
-    # 공장 소유권 검증
-    if factory_id != tax_service.factory.id:
-        raise HttpError(400, "세금계산서의 공장과 요청한 공장이 일치하지 않습니다.")
+
+    # 발행된 세금계산서인 경우 isHidden 필드만 수정 가능
+    if tax_service.publish_status == "published":
+        # isHidden 필드만 허용하고 다른 필드는 제거
+        allowed_fields = {"is_hidden"}
+        data = {k: v for k, v in data.items() if k in allowed_fields}
+
+        if not data:
+            raise HttpError(
+                400, "발행된 세금계산서는 isHidden 필드만 수정할 수 있습니다."
+            )
+
+    factory_id = data.pop("factory", None)
+    if factory_id is not None:
+        # 공장 소유권 검증
+        if factory_id != tax_service.factory.id:
+            raise HttpError(400, "세금계산서의 공장과 요청한 공장이 일치하지 않습니다.")
 
     client_id = data.pop("client", None)
     if client_id is not None:
-        client = await get_factory_client_by_id(client_id, factory_id)
+        client = await get_factory_client_by_id(
+            client_id, factory_id or tax_service.factory.id
+        )
         tax_service.client = client
         tax_service.client_info = FactoryClientRowOut.from_orm(client).dict()
 
     product_ids = data.pop("product", None)
     if product_ids is not None:
         products = await sync_to_async(list)(
-            get_product_list_by_ids(product_ids, factory_id)
+            get_product_list_by_ids(product_ids, factory_id or tax_service.factory.id)
         )
         tax_service.products_info = [
             ProductRowOut.from_orm(product).dict() for product in products
