@@ -587,7 +587,6 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
     response={
         200: list[UndeliveredQuotationProductOut],
         400: dict,
-        404: dict,
         500: dict,
     },
 )
@@ -608,14 +607,11 @@ async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1
             )
             .filter(
                 quotation__factory_id=int(factory_id),
-                quotation__project__status="납품",  # 프로젝트가 납품 상태
+                quotation__project__status="delivery",  # 프로젝트가 납품 상태
                 is_delivery=False,  # 납품되지 않음
             )
             .order_by("delivery_date")  # 납품일자 순으로 정렬
         )
-
-        if not undelivered_products:
-            raise HttpError(404, "납품되지 않은 견적서 품목이 없습니다.")
 
         # 페이지네이션 (한 페이지에 5개)
         page_size = 5
@@ -623,9 +619,6 @@ async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1
         end_index = start_index + page_size
 
         paginated_products = undelivered_products[start_index:end_index]
-
-        if not paginated_products:
-            raise HttpError(404, f"페이지 {page}에 해당하는 데이터가 없습니다.")
 
         # 응답 데이터 구성
         results = []
@@ -641,7 +634,7 @@ async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1
                 }
             )
 
-        return 200, results
+        return results
 
     except HttpError:
         raise

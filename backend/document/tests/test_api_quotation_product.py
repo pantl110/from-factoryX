@@ -1841,7 +1841,7 @@ class QuotationProductAPITestCase(TestCase):
     def test_list_undelivered_quotation_products_success(self):
         """납품되지 않은 견적서 품목 조회 성공 테스트"""
         # 프로젝트를 납품 상태로 변경
-        self.project.status = "납품"
+        self.project.status = "delivery"
         self.project.save()
 
         # 기존 quotation_product1을 납품되지 않은 상태로 유지
@@ -1869,7 +1869,7 @@ class QuotationProductAPITestCase(TestCase):
     def test_list_undelivered_quotation_products_pagination(self):
         """납품되지 않은 견적서 품목 조회 페이지네이션 테스트"""
         # 프로젝트를 납품 상태로 변경
-        self.project.status = "납품"
+        self.project.status = "delivery"
         self.project.save()
 
         # 기존 quotation_product1을 납품되지 않은 상태로 유지
@@ -1913,7 +1913,9 @@ class QuotationProductAPITestCase(TestCase):
             f"{url}?factory_id={self.factory.id}&page=3", **self.get_auth_headers()
         )
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 0)
 
     def test_list_undelivered_quotation_products_no_data(self):
         """납품되지 않은 견적서 품목이 없을 때 테스트"""
@@ -1923,7 +1925,9 @@ class QuotationProductAPITestCase(TestCase):
             f"{url}?factory_id={self.factory.id}&page=1", **self.get_auth_headers()
         )
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 0)
 
     def test_list_undelivered_quotation_products_missing_factory_id(self):
         """factory_id 누락 시 납품되지 않은 견적서 품목 조회 테스트"""
