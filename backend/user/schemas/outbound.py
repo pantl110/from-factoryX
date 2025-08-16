@@ -11,6 +11,15 @@ class UserMeOut(Schema):
     profile_image: Optional[str] = None
 
 
+class UserMeWithMemberOut(Schema):
+    email: str
+    status: str
+    username: Optional[str] = None
+    phone_number: Optional[str] = None
+    profile_image: Optional[str] = None
+    member_id: Optional[int] = None
+
+
 class UserLoginOut(Schema):
     access_token: str
     refresh_token: str
