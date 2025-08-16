@@ -27,14 +27,16 @@ export interface ProductionProfitRateModel {
 // 오늘의 생산 일정
 export interface TodayProductionPlanModel {
   company_name: string;
-  product_name: string;
-  product_code: string;
-  spec: string;
-  unit: string;
-  production_quantity: number;
   equipment_name: string;
+  product_code: string;
+  product_name: string;
+  production_quantity: number;
   production_time: number;
   project_id: number;
+  spec: string;
+  unit: string;
+  start_date: string;
+  end_date: string;
 }
 
 // 납품 예정 현황

@@ -21,7 +21,7 @@ interface RefundUpdateOutModel {
 const useUpdateRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useFactoryStore();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const updateRefund = useCallback(
     async (

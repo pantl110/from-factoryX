@@ -116,14 +116,35 @@ const ProductionPageContent = () => {
         );
 
         setPageStatus(projectStatus);
-        setProductionTab(tabs[selectedTab]);
+
+        // 프로젝트 상태가 'manufactured'로 변경된 경우 '생산 내역' 탭으로 이동
+        if (projectStatus === 'manufactured' || projectStatus === '생산 완료') {
+          const productionHistoryTabIndex = tabs.findIndex(
+            (tab) => tab === '생산 내역'
+          );
+          if (productionHistoryTabIndex !== -1) {
+            setSelectedTab(productionHistoryTabIndex);
+            setProductionTab(tabs[productionHistoryTabIndex]);
+          } else {
+            setProductionTab(tabs[selectedTab]);
+          }
+        } else {
+          setProductionTab(tabs[selectedTab]);
+        }
+
         setIsRefund(result.data.is_refunded || false);
       }
     } catch {
       alert('프로젝트 상태 리로드 실패');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, getProjectStatus, setPageStatus, setProductionTab]);
+  }, [
+    projectId,
+    getProjectStatus,
+    setPageStatus,
+    setProductionTab,
+    selectedTab,
+  ]);
 
   // 프로젝트 상태를 delivery로 변경하는 함수
   const handleChangeStatus = useCallback(
@@ -131,8 +152,8 @@ const ProductionPageContent = () => {
       try {
         const result = await updateProjectStatus(projectId, status);
         if (result.success) {
-          // store의 pageStatus를 delivery로 업데이트
-          setPageStatus('status');
+          // store의 pageStatus를 업데이트
+          setPageStatus(status);
           // 상태 변경 후 프로젝트 상태 리로드
           await reloadProjectStatus();
         } else {
@@ -240,6 +261,7 @@ const ProductionPageContent = () => {
           <ProductionPlan
             handleChangeStatus={handleChangeStatus}
             projectStatus={projectStatus.status as ProjectStatusType}
+            onProjectStatusChange={reloadProjectStatus}
           />
         )}
         {tabs[selectedTab] === '주문서' && quotationData && (
@@ -275,6 +297,14 @@ const ProductionPageContent = () => {
           onClose={() => setAddReturnModalOpen(false)}
           quotationProductData={quotationData?.products || []}
           onProjectStatusChange={handleChangeStatus}
+          onTabChange={(tab) => {
+            // 탭 인덱스 찾기
+            const tabIndex = tabs.findIndex((t) => t === tab);
+            if (tabIndex !== -1) {
+              setSelectedTab(tabIndex);
+              setProductionTab(tabs[tabIndex]);
+            }
+          }}
         />
       )}
     </>

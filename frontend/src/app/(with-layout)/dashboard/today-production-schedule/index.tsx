@@ -1,12 +1,12 @@
 'use client';
 
 import MiniBtn from '@/ui/mini-btn';
-import ProductionTable from './production-table';
 import { useRef, useState } from 'react';
 import ProductionDocumentView from '../../document/production-document-view';
 import OverlayView from '@/ui/ovelay-view';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import { useReactToPrint } from 'react-to-print';
+import ProductionTable from './production-table';
 
 interface TodayProductionPlanModel {
   company_name: string;

@@ -6,17 +6,18 @@ import RegisterProductionModal from '../modals/register-production-modal';
 import { RefundModel } from '@/types/data-model';
 import { formatDate } from '@/hooks/format-number';
 
+interface RefundFormDataModel {
+  refund_date: string;
+  amount: number;
+  production_amount: number;
+}
+
 interface ReturnInfoProps {
   refundData: RefundModel;
   onAmountChange: (newAmount: number) => void;
   onProductionAmountChange: (newProductionAmount: number) => void;
   productId: number;
-}
-
-interface RefundFormDataModel {
-  refund_date: string;
-  amount: number;
-  production_amount: number;
+  logId: number;
 }
 
 const ReturnInfo = ({
@@ -24,6 +25,7 @@ const ReturnInfo = ({
   onAmountChange,
   onProductionAmountChange,
   productId,
+  logId,
 }: ReturnInfoProps) => {
   const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
     useState(false);
@@ -124,6 +126,7 @@ const ReturnInfo = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsEditing(true)}
+                disabled={refundData.plan?.status === 'pending'}
               />
             )}
 
@@ -133,7 +136,10 @@ const ReturnInfo = ({
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={() => setIsRegisterProductionModalOpen(true)}
-              disabled={!isFormValid}
+              disabled={
+                !isFormValid ||
+                (refundData.plan ? refundData.plan.status !== 'pending' : false)
+              }
             />
           </div>
         </div>
@@ -257,6 +263,7 @@ const ReturnInfo = ({
             current_stock: refundData.current_stock,
           }}
           productId={productId}
+          logId={logId}
         />
       )}
     </>

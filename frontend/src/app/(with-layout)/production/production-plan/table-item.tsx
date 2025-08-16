@@ -45,12 +45,25 @@ const TableItem = ({
   equipments,
   projectStatus,
 }: TableItemProps) => {
-  // 백엔드에서 이미 한글 상태값을 반환하므로 그대로 사용
-  const operationStatus = item.status as OperationStatusType;
+  // 백엔드에서 한글 상태값을 반환하므로 영어로 변환
+  const getOperationStatus = (status: string): OperationStatusType => {
+    const statusMap: Record<string, OperationStatusType> = {
+      '가동 대기': 'pending',
+      '가동 중': 'production',
+      '가동 완료': 'completed',
+      pending: 'pending',
+      production: 'production',
+      completed: 'completed',
+    };
+    return statusMap[status] || 'pending';
+  };
+
+  const operationStatus = getOperationStatus(item.status);
   const { materialStatus } = useMaterialStatus(
     item.quotation_product.product.id
   ) as { materialStatus: InventoryStatusType };
-  const operationColor = OperationStatusColorMap[operationStatus];
+  const operationColor =
+    OperationStatusColorMap[operationStatus] || OperationStatusColorMap.pending;
   const materialColor = InventoryStatusColorMap[materialStatus];
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 

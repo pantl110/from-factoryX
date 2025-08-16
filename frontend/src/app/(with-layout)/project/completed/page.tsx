@@ -38,7 +38,7 @@ const CompletedProjectPage = () => {
 
       // 개별 상태 선택 시
       if (selectedStatus === '완료') {
-        status = 'complete';
+        status = 'completed';
       } else if (selectedStatus === '중단') {
         status = 'suspended';
       }

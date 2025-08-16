@@ -694,7 +694,7 @@ export interface ProjectPlanModel {
   start_date: string | Date; // 생산 시작 일자
   end_date: string | Date; // 생산 종료 일자
   avg_production_time: number; // 단위당 소요 시간
-  is_completed: boolean; // 생산 완료 여부
+  is_completed: boolean; // 반품 들어왔을때는 얘는 수정 안되게
 }
 
 export interface ProjectPlanListResponseModel extends PaginationModel {
@@ -752,6 +752,15 @@ export interface RefundModel {
     content: string;
     created_at: string;
   };
+  plan?: {
+    id: number; // project_plan_id
+    project_id: number;
+    quantity: number;
+    status: OperationStatusType;
+    avg_production_time: number;
+    start_date: string;
+    end_date: string;
+  } | null;
   created_at: string;
   updated_at: string;
 }

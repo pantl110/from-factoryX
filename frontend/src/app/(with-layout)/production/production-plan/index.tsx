@@ -30,11 +30,13 @@ import { WarningCircle } from '@phosphor-icons/react';
 interface ProductionPlanProps {
   handleChangeStatus: (status: ProjectStatusType) => void;
   projectStatus?: ProjectStatusType;
+  onProjectStatusChange?: () => void;
 }
 
 const ProductionPlan = ({
   handleChangeStatus,
   projectStatus,
+  onProjectStatusChange,
 }: ProductionPlanProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
@@ -436,7 +438,12 @@ const ProductionPlan = ({
   const changeProjectStatus = async () => {
     try {
       if (projectId) {
-        await handleChangeStatus('production');
+        // 현재 상태에 따라 다음 상태로 변경
+        if (projectStatus === 'pending') {
+          await handleChangeStatus('production');
+        } else if (projectStatus === 'production') {
+          await handleChangeStatus('manufactured');
+        }
       }
       return { success: true };
     } catch {
@@ -468,6 +475,9 @@ const ProductionPlan = ({
       // 3. 변경사항 초기화 및 모달 닫기
       setFormChanges({});
       setProductionPlanSaveModalOpen(false);
+
+      // 4. 전체 페이지 리로드
+      window.location.reload();
     } catch {
       alert('저장 중 오류가 발생했습니다.');
     }

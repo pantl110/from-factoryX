@@ -17,9 +17,9 @@ export const ProductNameDropdown = ({
 }: ProductNameDropdownProps) => {
   return (
     <Dropdown onClose={onClose} width={width} maxHeight={true}>
-      {items.map((item) => (
+      {items.map((item, index) => (
         <DropdownItem
-          key={item.id}
+          key={item.id + index}
           text={item.name}
           onClick={() => onSelect(item)}
           search={true}

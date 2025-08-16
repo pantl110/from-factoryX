@@ -7,7 +7,7 @@ const ProductionTableHeader = () => {
       <div className="py-1 px-3 flex-2">
         <p>품목명</p>
       </div>
-      <div className="py-1 px-3 flex-2">
+      <div className="py-1 px-3 flex-[1.5]">
         <p>품목코드</p>
       </div>
       <div className="py-1 px-3 flex-1">
@@ -19,10 +19,10 @@ const ProductionTableHeader = () => {
       <div className="py-1 px-3 flex-1">
         <p>생산 수량</p>
       </div>
-      <div className="py-1 px-3 flex-2">
+      <div className="py-1 px-3 flex-[1.5]">
         <p>생산 설비</p>
       </div>
-      <div className="py-1 px-3 w-[200px]">
+      <div className="py-1 px-3 flex-2">
         <p>생산시간</p>
       </div>
     </div>

@@ -14,6 +14,7 @@ interface RegisterProductionModalProps {
     current_stock: number;
   };
   productId: number;
+  logId: number;
 }
 
 const RegisterProductionModal = ({
@@ -21,11 +22,15 @@ const RegisterProductionModal = ({
   refundId,
   refundData,
   productId,
+  logId,
 }: RegisterProductionModalProps) => {
+  // const { registerProduction, isLoading, error } =
+  //   useRegisterProductionFromRefund();
   const { updateRefund, isLoading, error } = useUpdateRefund();
   const { isToastOpen, isVisible, showToast } = useToast();
 
   const handleRegisterProduction = async () => {
+    // const result = await registerProduction(logId);
     const result = await updateRefund(refundId, {
       refund_date: refundData.refund_date,
       current_stock: refundData.current_stock,
@@ -34,26 +39,12 @@ const RegisterProductionModal = ({
     });
 
     if (result.success) {
-      // 성공 시 프로젝트 계획 변경 사항 확인
       if (result.data) {
-        const {
-          updated_project_plans: updatedProjectPlans,
-          deleted_project_plans: deletedProjectPlans,
-          created_project_plans: createdProjectPlans,
-        } = result.data;
-
-        // 프로젝트 계획 변경 사항이 있으면 로그 출력 (디버깅용)
-        if (
-          updatedProjectPlans.length > 0 ||
-          deletedProjectPlans.length > 0 ||
-          createdProjectPlans.length > 0
-        ) {
-          console.warn('프로젝트 계획 변경:', {
-            수정됨: updatedProjectPlans,
-            삭제됨: deletedProjectPlans,
-            생성됨: createdProjectPlans,
-          });
-        }
+        console.log('반품 생산 등록 성공:', {
+          updated_project_plans: result.data.updated_project_plans,
+          deleted_project_plans: result.data.deleted_project_plans,
+          created_project_plans: result.data.created_project_plans,
+        });
       }
       onClose();
     } else {
@@ -80,7 +71,7 @@ const RegisterProductionModal = ({
       >
         <div className="flex justify-end gap-[5px]">
           <MiniBtn
-            text="취소하기"
+            text="취소"
             textColor="text-sv"
             hoverColor=""
             onClick={onClose}
