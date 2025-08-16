@@ -1,6 +1,8 @@
 from api.security import jwt_auth
 from ninja import Router, Query
 from ninja.errors import HttpError
+from ninja.pagination import paginate
+from api.pagination import CustomPageNumberPagination
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
@@ -590,7 +592,8 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
         500: dict,
     },
 )
-async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1)):
+@paginate(CustomPageNumberPagination, page_size=5)
+async def list_undelivered_quotation_products(request):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -613,16 +616,9 @@ async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1
             .order_by("delivery_date")  # 납품일자 순으로 정렬
         )
 
-        # 페이지네이션 (한 페이지에 5개)
-        page_size = 5
-        start_index = (page - 1) * page_size
-        end_index = start_index + page_size
-
-        paginated_products = undelivered_products[start_index:end_index]
-
         # 응답 데이터 구성
         results = []
-        for qp in paginated_products:
+        for qp in undelivered_products:
             results.append(
                 {
                     "company_name": qp.quotation.client.name,  # 업체명
