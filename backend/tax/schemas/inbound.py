@@ -66,6 +66,7 @@ class NationalTaxServiceUpdateIn(ModelSchema):
     transaction_date: Optional[date] = Field(
         None, description="거래일자 (YYYY-MM-DD 형식)", example="2023-10-01"
     )
+    is_hidden: Optional[bool] = Field(None, description="숨김 여부")
 
     class Meta:
         model = NationalTaxService

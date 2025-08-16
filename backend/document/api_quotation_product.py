@@ -252,6 +252,8 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
         factory = await sync_to_async(lambda: quotation.factory)()
 
         # 클라이언트 ID가 제공된 경우
+        updated = False  # 기본값 설정
+
         if client_data.client_id is not None:
             try:
                 # 기존 클라이언트 조회
@@ -294,16 +296,15 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                     client.fax = client_data.fax
                     updated = True
 
-                if updated:
-                    await sync_to_async(client.save)()
+                # updated 플래그만 설정하고 아직 저장하지 않음
 
             except FactoryClient.DoesNotExist:
                 raise HttpError(
                     404, f"클라이언트 ID {client_data.client_id}를 찾을 수 없습니다."
                 )
         else:
-            # 클라이언트 ID가 없는 경우 새로 생성
-            client = await FactoryClient.objects.acreate(
+            # 클라이언트 ID가 없는 경우 새로 생성 (아직 저장하지 않음)
+            client = FactoryClient(
                 factory=factory,
                 name=client_data.name,
                 business_registration_number=client_data.business_registration_number,
@@ -320,9 +321,11 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
 
         if payload.due_date:
             quotation.due_date = datetime.strptime(payload.due_date, "%Y-%m-%d").date()
-            await sync_to_async(quotation.save)()
+            # 아직 저장하지 않음
 
         await QuotationProduct.objects.filter(quotation=quotation).adelete()
+
+        quotation_products = []  # 생성된 QuotationProduct 객체들을 저장할 리스트
 
         for prod in payload.products:
             try:
@@ -333,28 +336,29 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 product = await sync_to_async(get_object_or_404)(Product, id=product_id)
             except Http404:
                 raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
-            quotation_product = await QuotationProduct.objects.acreate(
+            quotation_product = QuotationProduct(
                 quotation=quotation,
                 product=product,
                 quantity=prod.quantity,
                 unit_price=prod.unit_price,
             )
+            quotation_products.append(quotation_product)  # 리스트에 추가
+            # 아직 저장하지 않음
 
         project = await sync_to_async(lambda: quotation.project)()
         project.status = Project.ProjectStatus.pending
-        await sync_to_async(project.save)()
+        # 아직 저장하지 않음
 
         production_plans = []
 
-        for prod in payload.products:
+        for i, prod in enumerate(payload.products):
             try:
                 product_id = prod.product_id
-                quotation_product = await QuotationProduct.objects.aget(
-                    quotation=quotation, product_id=product_id
-                )
-            except QuotationProduct.DoesNotExist:
+                # 생성된 QuotationProduct 객체 사용
+                quotation_product = quotation_products[i]
+            except IndexError:
                 raise HttpError(
-                    404,
+                    500,
                     f"제품 ID {product_id}에 해당하는 견적 품목을 찾을 수 없습니다.",
                 )
 
@@ -393,16 +397,16 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             end_datetime = start_datetime + timedelta(days=production_days)
             end_date = end_datetime.strftime("%Y-%m-%d")
 
-            # 생산 계획 생성
-            project_plan = await ProjectPlan.objects.acreate(
-                project=project,
-                product=quotation_product,
-                quantity=production_quantity,
-                equipment=equipment,
-                start_date=start_datetime.date(),
-                end_date=end_datetime.date(),
-                avg_production_time=avg_production_time,
-            )
+            # 생산 계획 데이터 준비 (저장은 나중에)
+            project_plan_data = {
+                "project": project,
+                "product": quotation_product,
+                "quantity": production_quantity,
+                "equipment": equipment,
+                "start_date": start_datetime,
+                "end_date": end_datetime,
+                "avg_production_time": avg_production_time,
+            }
 
             # 원자재 소모 처리
             try:
@@ -442,19 +446,74 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                     500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}"
                 )
 
-            # 생산 계획 정보 저장
-            production_plans.append(
-                {
-                    "plan_id": project_plan.id,
-                    "product_name": product.name,
-                    "quantity": production_quantity,
-                    "equipment_name": equipment.name,
-                    "start_date": start_datetime.strftime("%Y-%m-%d %H:%M"),
-                    "end_date": end_datetime.strftime("%Y-%m-%d %H:%M"),
-                    "avg_production_time": avg_production_time,
-                    "production_days": production_days,
-                }
+            # 생산 계획 데이터 저장 (plan_id는 나중에 추가)
+            production_plan_info = {
+                "project_plan_data": project_plan_data,
+                "product_name": product.name,
+                "quantity": production_quantity,
+                "equipment_name": equipment.name,
+                "start_date": start_datetime.strftime("%Y-%m-%d %H:%M"),
+                "end_date": end_datetime.strftime("%Y-%m-%d %H:%M"),
+                "avg_production_time": avg_production_time,
+                "production_days": production_days,
+            }
+            production_plans.append(production_plan_info)
+
+        # 모든 작업이 성공적으로 완료된 후에만 저장
+        try:
+            print(f"[SAVE] Starting save process...")
+
+            # 1. 클라이언트 저장
+            if updated:
+                print(f"[SAVE] Saving updated client...")
+                await sync_to_async(client.save)()
+            else:
+                print(f"[SAVE] Saving new client...")
+                await sync_to_async(client.save)()
+
+            # 2. quotation 저장
+            print(f"[SAVE] Saving quotation...")
+            await sync_to_async(quotation.save)()
+
+            # 3. quotation_products 저장
+            print(f"[SAVE] Saving {len(quotation_products)} quotation products...")
+            for i, qp in enumerate(quotation_products):
+                print(f"[SAVE] Saving quotation product {i+1}...")
+                await sync_to_async(qp.save)()
+
+            # 4. project 저장
+            print(f"[SAVE] Saving project...")
+            await sync_to_async(project.save)()
+
+            # 5. 생산 계획 저장
+            print(f"[SAVE] Creating production plans...")
+            for i, plan_info in enumerate(production_plans):
+                plan_data = plan_info["project_plan_data"]
+                project_plan = await ProjectPlan.objects.acreate(**plan_data)
+                # 생성된 plan_id 추가
+                plan_info["plan_id"] = project_plan.id
+                print(f"[SAVE] Created production plan {i+1} with ID {project_plan.id}")
+
+            print(f"[SAVE] All saves completed successfully!")
+
+        except Exception as save_error:
+            # 저장 중 에러 발생 시 상세 로깅
+            print(f"[SAVE ERROR] {str(save_error)}")
+            print(f"[SAVE ERROR] Error type: {type(save_error)}")
+            import traceback
+
+            print(f"[SAVE ERROR] Traceback: {traceback.format_exc()}")
+            raise HttpError(
+                500, f"데이터 저장 중 오류가 발생했습니다: {str(save_error)}"
             )
+
+        # production_plans에서 project_plan_data 제거 (응답에 불필요한 데이터)
+        clean_production_plans = []
+        for plan_info in production_plans:
+            clean_plan = {
+                k: v for k, v in plan_info.items() if k != "project_plan_data"
+            }
+            clean_production_plans.append(clean_plan)
 
         return 200, {
             "quotation_id": quotation.id,
@@ -462,13 +521,17 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             "status": "production_waiting",
             "created_at": datetime.now(),
             "due_date": quotation.due_date.isoformat() if quotation.due_date else None,
-            "production_plans": production_plans,
+            "production_plans": clean_production_plans,
         }
 
     except HttpError:
         raise
     except Exception as e:
         print(f"[CONFIRMATION ERROR] {str(e)}")
+        print(f"[CONFIRMATION ERROR] Error type: {type(e)}")
+        import traceback
+
+        print(f"[CONFIRMATION ERROR] Traceback: {traceback.format_exc()}")
         raise HttpError(500, f"주문 확정 중 오류가 발생했습니다: {str(e)}")
 
 
@@ -524,7 +587,6 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
     response={
         200: list[UndeliveredQuotationProductOut],
         400: dict,
-        404: dict,
         500: dict,
     },
 )
@@ -545,14 +607,11 @@ async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1
             )
             .filter(
                 quotation__factory_id=int(factory_id),
-                quotation__project__status="납품",  # 프로젝트가 납품 상태
+                quotation__project__status="delivery",  # 프로젝트가 납품 상태
                 is_delivery=False,  # 납품되지 않음
             )
             .order_by("delivery_date")  # 납품일자 순으로 정렬
         )
-
-        if not undelivered_products:
-            raise HttpError(404, "납품되지 않은 견적서 품목이 없습니다.")
 
         # 페이지네이션 (한 페이지에 5개)
         page_size = 5
@@ -560,9 +619,6 @@ async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1
         end_index = start_index + page_size
 
         paginated_products = undelivered_products[start_index:end_index]
-
-        if not paginated_products:
-            raise HttpError(404, f"페이지 {page}에 해당하는 데이터가 없습니다.")
 
         # 응답 데이터 구성
         results = []
@@ -578,7 +634,7 @@ async def list_undelivered_quotation_products(request, page: int = Query(1, ge=1
                 }
             )
 
-        return 200, results
+        return results
 
     except HttpError:
         raise
