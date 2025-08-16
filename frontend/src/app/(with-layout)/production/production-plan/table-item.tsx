@@ -208,21 +208,21 @@ const TableItem = ({
         textColor={operationColor.textColor}
         bgColor={operationColor.bgColor}
         cursor={
-          projectStatus === 'pending' || projectStatus === '생산 대기'
+          projectStatus === 'pending' || item.is_completed
             ? 'cursor-default'
             : 'cursor-pointer'
         }
-        onClick={(e) => {
-          if (e && onOperationStatusClick) {
-            e.stopPropagation();
-            onOperationStatusClick(e);
-          }
-        }}
-        state={
-          projectStatus === 'pending' || projectStatus === '생산 대기'
-            ? false
-            : true
+        onClick={
+          projectStatus === 'pending' || item.is_completed
+            ? undefined
+            : (e) => {
+                if (e && onOperationStatusClick) {
+                  e.stopPropagation();
+                  onOperationStatusClick(e);
+                }
+              }
         }
+        state={projectStatus === 'pending' || item.is_completed ? false : true}
       />
     ),
     품목명: item.quotation_product.product.name,

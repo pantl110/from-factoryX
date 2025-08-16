@@ -1,8 +1,8 @@
+import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import { TaxDocumentType } from '@/types/status-type';
 import TaxBuyerProviderInfo from './tax-buyer-provider-info';
 import OrderItemInfo from './order-item-info';
 import PurchaseItemInfo from './purchase-item-info';
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
-import { TaxDocumentType } from '@/types/status-type';
 
 interface TaxDocumentViewProps {
   taxType?: TaxDocumentType;

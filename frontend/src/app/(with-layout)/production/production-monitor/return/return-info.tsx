@@ -117,16 +117,15 @@ const ReturnInfo = ({
         <div className="flex justify-between">
           <h3 className="Heading-3 text-dg flex items-center">반품 정보</h3>
           <div className="flex gap-2.5">
-            <div>
+            {!isEditing && (
               <MiniBtn
                 text="수정"
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsEditing(true)}
-                disabled={isEditing}
               />
-            </div>
+            )}
 
             <MiniBtn
               text="생산 등록"

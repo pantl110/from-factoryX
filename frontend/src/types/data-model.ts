@@ -694,6 +694,7 @@ export interface ProjectPlanModel {
   start_date: string | Date; // 생산 시작 일자
   end_date: string | Date; // 생산 종료 일자
   avg_production_time: number; // 단위당 소요 시간
+  is_completed: boolean; // 생산 완료 여부
 }
 
 export interface ProjectPlanListResponseModel extends PaginationModel {

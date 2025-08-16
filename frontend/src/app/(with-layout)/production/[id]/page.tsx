@@ -17,7 +17,10 @@ import { ProductionTabType } from '@/components/top-bar/types';
 import Spinner from '@/ui/spinner';
 import useUpdateProjectStatus from '@/hooks/project/use-update-project-status';
 import AddReturnModal from '../delivery/modals/add-return-modal/add-return-modal';
-import { ProjectStatusResponseModel } from '@/types/data-model';
+import {
+  ProjectStatusResponseModel,
+  QuotationProductDetailResponseModel,
+} from '@/types/data-model';
 
 const getTabsByStatus = (
   status: ProjectStatusType,
@@ -256,7 +259,8 @@ const ProductionPageContent = () => {
               productListInfoTitle="주문 품목 정보"
               productItems={quotationData.products}
               supplyAmount={quotationData.products.reduce(
-                (sum, item) => sum + (item.supply_amount || 0),
+                (sum: number, item: QuotationProductDetailResponseModel) =>
+                  sum + (item.supply_amount || 0),
                 0
               )}
             />
