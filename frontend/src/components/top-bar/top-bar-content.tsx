@@ -6,8 +6,8 @@ import { ProductionTabType } from './types';
 import ProfileImage from '@/ui/profile-image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import ProfileModal from './modals/profile-modal';
 import usePageStatusStore from '@/store/page-status-store';
+import ProfileModal from './modals/profile-modal';
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;

@@ -1,12 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import useFactoryStore from '@/store/factory-store';
-
-interface UndeliveredProductModel {
-  company_name: string;
-  product_name: string;
-  delivery_date: string | null;
-  project_id: number;
-}
+import { UndeliveredProductListResponseModel } from '@/types/data-model';
 
 interface GetUndeliveredProductsModel {
   page?: number;
@@ -17,7 +11,7 @@ const useGetUndeliveredProducts = () => {
   const [error, setError] = useState<string | null>(null);
   const { factoryId } = useFactoryStore();
 
-  const getUndeliveredProducts = async (
+  const getUndeliveredProducts = useCallback(async (
     params: GetUndeliveredProductsModel
   ) => {
     setIsLoading(true);
@@ -46,22 +40,46 @@ const useGetUndeliveredProducts = () => {
       );
 
       if (response.status === 200) {
-        const result: UndeliveredProductModel[] = await response.json();
-        return { success: true, data: result };
+        const result: UndeliveredProductListResponseModel = await response.json();
+        // 백엔드에서 페이지네이션 정보를 받아옴
+        return { 
+          success: true, 
+          data: result
+        };
       } else {
         const errorData = await response.json();
         const errorMessage =
           errorData.detail || '납품되지 않은 견적서 품목 조회에 실패했습니다.';
         setError(errorMessage);
-        return { success: false, error: errorMessage };
+        return { 
+          success: false, 
+          error: errorMessage, 
+          data: {
+            count: 0,
+            totalCnt: 0,
+            pageCnt: 0,
+            curPage: params.page || 1,
+            data: []
+          } as UndeliveredProductListResponseModel
+        };
       }
     } catch {
       setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+      return { 
+        success: false, 
+        error: '서버 연결에 실패했습니다.', 
+        data: {
+          count: 0,
+          totalCnt: 0,
+          pageCnt: 0,
+          curPage: params.page || 1,
+          data: []
+        } as UndeliveredProductListResponseModel
+      };
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [factoryId]);
 
   return { getUndeliveredProducts, isLoading, error };
 };

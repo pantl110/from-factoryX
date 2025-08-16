@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { NotificationResponseModel } from '@/types/data-model';
 import { useGetNotifications, useWebSocket } from '@/hooks';
 import { NotificationType, NotificationCaseType } from '@/types/status-type';
+import useAuthStore from '@/store/auth-store';
 
 interface TopBarProps {
   isSidebarVisible: boolean;
@@ -32,6 +33,9 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   const { getNotifications, isLoading: isLoadingNotifications } =
     useGetNotifications();
 
+  // 사용자 정보에서 memberId 가져오기
+  const userInfo = useAuthStore((state) => state.userInfo);
+
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<
     NotificationResponseModel[]
@@ -43,7 +47,7 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
       // 새 알림을 목록 맨 위에 추가
       const newNotification: NotificationResponseModel = {
         id: notification.id,
-        receiver: 25, // FactoryMember ID
+        receiver: userInfo?.member_id || 0, // 사용자의 memberId 사용
         type: notification.type as NotificationType,
         case: notification.case as NotificationCaseType,
         content: notification.content,
@@ -59,7 +63,6 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   // 알림 데이터 로드
   useEffect(() => {
     const loadNotifications = async () => {
-      // ‼️‼️‼️‼️‼️‼️‼️‼️ 페이지네이션 없는지 확인
       // 먼저 첫 페이지를 작은 크기로 호출하여 totalCount 확인
       const initialResult = await getNotifications(1, 10);
       if (initialResult.success && initialResult.data) {

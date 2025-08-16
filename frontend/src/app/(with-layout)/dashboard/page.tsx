@@ -19,7 +19,6 @@ import {
   useToast,
   useGetProjects,
   useGetTodayProductionPlans,
-  useGetUndeliveredProducts,
   useGetPublishedTaxInvoices,
   useGetDashboard,
 } from '@/hooks';
@@ -31,7 +30,8 @@ import {
   PublishedTaxInvoiceListResponseModel,
 } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
-import { TodayProductionPlanModel, UndeliveredProductModel } from './type';
+import { TodayProductionPlanModel } from './type';
+import { UndeliveredProductListResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
 const DashboardPageContent = () => {
@@ -41,8 +41,7 @@ const DashboardPageContent = () => {
   const { getDashboard, isLoading: isDashboardLoading } = useGetDashboard();
   const { getTodayProductionPlans, isLoading: isTodayPlansLoading } =
     useGetTodayProductionPlans();
-  const { getUndeliveredProducts, isLoading: isUndeliveredLoading } =
-    useGetUndeliveredProducts();
+
   const { getPublishedTaxInvoices, isLoading: isTaxInvoicesLoading } =
     useGetPublishedTaxInvoices();
   const [projectsData, setProjectsData] = useState<ProjectResponseModel[]>([]);
@@ -56,9 +55,7 @@ const DashboardPageContent = () => {
   const [todayProductionPlans, setTodayProductionPlans] = useState<
     TodayProductionPlanModel[]
   >([]);
-  const [undeliveredProducts, setUndeliveredProducts] = useState<
-    UndeliveredProductModel[]
-  >([]);
+
   const [taxInvoicesData, setTaxInvoicesData] = useState<
     PublishedTaxInvoiceResponseModel[]
   >([]);
@@ -69,7 +66,6 @@ const DashboardPageContent = () => {
     isDashboardLoading ||
     isProjectsLoading ||
     isTodayPlansLoading ||
-    isUndeliveredLoading ||
     isTaxInvoicesLoading;
 
   useEffect(() => {
@@ -133,24 +129,6 @@ const DashboardPageContent = () => {
             setTodayProductionPlans(result.data);
           } else {
             setTodayProductionPlans([]);
-          }
-        }
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryId]);
-
-  // 납품되지 않은 견적서 품목 가져오기
-  useEffect(() => {
-    if (factoryId) {
-      getUndeliveredProducts({
-        page: 1,
-      }).then(
-        (result: { success: boolean; data?: UndeliveredProductModel[] }) => {
-          if (result.success && result.data) {
-            setUndeliveredProducts(result.data);
-          } else {
-            setUndeliveredProducts([]);
           }
         }
       );
@@ -287,10 +265,7 @@ const DashboardPageContent = () => {
                 <div className="h-10 flex items-center">
                   <h3 className="Heading-3">납품 예정 현황</h3>
                 </div>
-                <DeliveryTable
-                  undeliveredProducts={undeliveredProducts}
-                  isLoading={isUndeliveredLoading}
-                />
+                <DeliveryTable />
               </div>
 
               {/* 세금계산서 현황 */}

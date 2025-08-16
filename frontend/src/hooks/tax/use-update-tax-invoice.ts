@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import useTaxApi from './use-tax-api';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
 // 세금계산서 수정을 위한 입력 데이터 타입
@@ -36,7 +35,6 @@ export interface TaxInvoiceUpdateResponseModel {
 const useUpdateTaxInvoice = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { callTaxApi } = useTaxApi();
 
   const updateTaxInvoice = useCallback(
     async (
@@ -47,23 +45,26 @@ const useUpdateTaxInvoice = () => {
       setError(null);
 
       try {
-        const result = await callTaxApi<PublishedTaxInvoiceResponseModel>(
-          'update',
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${taxId}`,
           {
             method: 'PATCH',
-            body: updateData,
-            queryParams: { tax_id: taxId },
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateData),
           }
         );
 
-        if (result.success) {
-          return { success: true, data: result.data };
+        if (response.ok) {
+          const data = await response.json();
+          return { success: true, data };
         } else {
-          setError(result.error || '세금계산서 수정에 실패했습니다.');
-          return {
-            success: false,
-            error: result.error || '세금계산서 수정에 실패했습니다.',
-          };
+          const errorData = await response.json();
+          const errorMessage = errorData.detail || '세금계산서 수정에 실패했습니다.';
+          setError(errorMessage);
+          return { success: false, error: errorMessage };
         }
       } catch (err) {
         const errorMessage =
@@ -76,7 +77,7 @@ const useUpdateTaxInvoice = () => {
         setIsLoading(false);
       }
     },
-    [callTaxApi]
+    []
   );
 
   return {

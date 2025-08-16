@@ -76,6 +76,7 @@ export interface UserInfoModel {
   username?: string | null;
   phone_number?: string | null;
   profile_image?: string | null;
+  member_id: number;
 }
 
 // 회원 정보 수정
@@ -556,8 +557,13 @@ export interface QuotationResponseModel {
   products: QuotationProductDetailResponseModel[];
   // 납기일
   due_date?: string;
+  uploaded_file?: string
 }
 
+// 견적서 폼용 확장 모델
+export interface QuotationFormModel extends ClientModel {
+  due_date: string;
+}
 // 견적서 임시 저장 // 생산 시작
 export interface QuotationProductModel {
   product_id: number;
@@ -572,6 +578,65 @@ export interface SaveDraftQuotationModel {
   client?: ClientModel;
   products?: QuotationProductModel[];
   due_date?: string;
+  uploaded_file?: string;
+}
+
+// 생산 시작용 데이터 모델
+export interface ProductionDataModel {
+  quotation_id: number;
+  client: {
+    factory_id: number;
+    client_id: number | null;
+    name: string;
+    business_registration_number?: string;
+    representative_name?: string;
+    email?: string;
+    phone?: string;
+    fax?: string;
+    business_type?: string;
+    business_category?: string;
+    address?: string;
+    manager?: string;
+    note?: string;
+  };
+  due_date?: string;
+  products: Array<{
+    product_id: number;
+    quantity: number;
+    unit_price: number;
+    is_delivery: boolean;
+    delivery_date: null;
+  }>;
+}
+
+// 임시 저장용 데이터 모델
+export interface SaveDraftDataModel {
+  quotation_id: number;
+  client: {
+    factory_id: number;
+    client_id: number | null;
+    name: string;
+    business_registration_number?: string;
+    representative_name?: string;
+    email?: string;
+    phone?: string;
+    fax?: string;
+    business_type?: string;
+    business_category?: string;
+    address?: string;
+    manager?: string;
+    note?: string;
+    client_type: string;
+  };
+  due_date?: string;
+  products: Array<{
+    product_id: number;
+    quantity: number;
+    unit_price: number;
+    is_delivery: boolean;
+    delivery_date: null;
+  }>;
+  uploaded_file?: string;
 }
 
 // 견적서 품목 목록 조회
@@ -583,6 +648,18 @@ export interface QuotationProductResponseModel {
   unit_price: number;
   is_delivery?: boolean;
   delivery_date?: string | null;
+}
+
+// dashboard 납품되지 않은 견적서 품목 조회 응답
+export interface UndeliveredProductModel {
+  company_name: string;
+  product_name: string;
+  delivery_date: string | null;
+  project_id: number;
+}
+
+export interface UndeliveredProductListResponseModel extends PaginationModel {
+  data: UndeliveredProductModel[];
 }
 
 // 견적서 품목 히스토리 조회 // 이전에 생산했던 Quotation Product 항목을 조회
@@ -710,6 +787,8 @@ export interface UpdateProjectPlanModel {
   end_date?: string;
   avg_production_time?: number;
 }
+
+
 
 //////////////////////
 // Project Refund API

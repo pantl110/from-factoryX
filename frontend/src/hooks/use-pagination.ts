@@ -28,11 +28,14 @@ const usePagination = <T>({
   const [currentPage, setCurrentPage] = useState(initialPage);
 
   const paginationData = useMemo(() => {
-    const totalItems = items.length;
+    // items가 배열이 아니거나 undefined/null인 경우 빈 배열로 처리
+    const safeItems = Array.isArray(items) ? items : [];
+    
+    const totalItems = safeItems.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentItems = items.slice(startIndex, endIndex);
+    const currentItems = safeItems.slice(startIndex, endIndex);
 
     return {
       currentItems,

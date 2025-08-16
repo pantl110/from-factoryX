@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Suspense } from 'react';
+import { useDebounce } from 'use-debounce';
 import MainTitleSec from './main-title-sec';
 import TableHeader from './table-header';
 import TableItem from './table-item';
@@ -34,17 +35,18 @@ const TaxPageContent = () => {
 
   const { getPublishedTaxInvoices, isLoading } = useGetPublishedTaxInvoices();
   const { updateTaxInvoice: updateTaxInvoiceApi } = useUpdateTaxInvoice();
+  const [isHideRestoreLoading, setIsHideRestoreLoading] = useState(false); // 숨기기/복구 작업 중 로딩 상태
   const [taxData, setTaxData] = useState<PublishedTaxInvoiceResponseModel[]>(
     []
   );
 
-  // 디바운싱을 위한 ref
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // 디바운싱된 검색어 (500ms 지연)
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
   // 페이지네이션 설정
   const itemsPerPage = 10;
 
-  // 숨긴 데이터 존재 여부 확인
+  // 숨김 데이터 존재 여부 확인 (일반 목록에 데이터가 없을 때만 호출됨)
   const checkHiddenDataExists = async () => {
     try {
       const hiddenResult = await getPublishedTaxInvoices({
@@ -56,7 +58,8 @@ const TaxPageContent = () => {
       });
 
       if (hiddenResult.success && hiddenResult.data) {
-        setHasItem(hiddenResult.data.data.length > 0);
+        const hasHiddenData = hiddenResult.data.data.length > 0;
+        setHasItem(hasHiddenData);
       } else {
         setHasItem(false);
       }
@@ -82,8 +85,8 @@ const TaxPageContent = () => {
         page_size: itemsPerPage,
       };
 
-      if (searchQuery) {
-        params.q = searchQuery;
+      if (debouncedSearchQuery) {
+        params.q = debouncedSearchQuery;
       }
 
       // 매출/매입 탭에 따른 필터링
@@ -106,23 +109,45 @@ const TaxPageContent = () => {
         setTaxData(result.data.data);
         setTotalPages(result.data.pageCnt);
 
-        // 데이터가 있으면 hasItem을 true로 설정 (showHidden 상태와 관계없이)
-        setHasItem(result.data.data.length > 0);
-      } else {
-        // is_hidden=false로 요청했을 때만 숨긴 데이터 존재 여부 확인
-        if (!showHidden && result.data?.data?.length === 0) {
-          await checkHiddenDataExists();
+        if (showHidden) {
+          // 숨김 목록 보기 중일 때는 현재 데이터가 있으면 true
+          setHasItem(result.data.data.length > 0);
+        } else {
+          // 일반 목록 보기 중일 때
+          if (result.data.data.length > 0) {
+            // 일반 목록에 데이터가 있으면 무조건 true
+            setHasItem(true);
+          } else {
+            // 일반 목록에 데이터가 없으면 숨김 목록 확인
+            await checkHiddenDataExists();
+          }
         }
+      } else {
+        // API 요청 실패 시에는 hasItem을 false로 설정
+        setHasItem(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [getPublishedTaxInvoices, sortDirection, selectedTaxType, showHidden]
+    [
+      getPublishedTaxInvoices,
+      sortDirection,
+      selectedTaxType,
+      showHidden,
+      debouncedSearchQuery,
+    ]
   );
 
   // 컴포넌트 마운트 시 데이터 가져오기
   useEffect(() => {
     fetchTaxData(1);
   }, [fetchTaxData]);
+
+  // showHidden 상태 변경 시 데이터 새로 가져오기
+  useEffect(() => {
+    setCurrentPage(1);
+    setAllChecked(false);
+    fetchTaxData(1);
+  }, [showHidden, fetchTaxData]);
 
   // 페이지 변경 시 데이터 가져오기
   const handlePageChange = (page: number) => {
@@ -155,27 +180,10 @@ const TaxPageContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showHidden]);
 
-  // 검색어 변경 시 디바운싱 적용하여 데이터 가져오기
+  // 검색어 변경 시 즉시 상태 업데이트 (디바운싱은 useDebounce에서 처리)
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-
-    // 이전 타이머가 있다면 취소
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    // 빈 검색어인 경우 즉시 검색 (디바운싱 없음)
-    if (!value.trim()) {
-      setCurrentPage(1);
-      fetchTaxData(1);
-      return;
-    }
-
-    // 500ms 후에 검색 실행 (사용자가 타이핑을 멈춘 후)
-    searchTimeoutRef.current = setTimeout(() => {
-      setCurrentPage(1); // 검색 시 페이지 1로 리셋
-      fetchTaxData(1);
-    }, 500);
+    setCurrentPage(1); // 검색 시 페이지 1로 리셋
   };
 
   // 판넬 상태
@@ -218,6 +226,8 @@ const TaxPageContent = () => {
 
     if (checkedIds.length === 0) return;
 
+    setIsHideRestoreLoading(true); // 로딩 시작
+
     try {
       // 체크된 모든 세금계산서의 숨김 상태를 변경
       const updatePromises = checkedIds.map((taxId) => {
@@ -246,22 +256,16 @@ const TaxPageContent = () => {
         // 성공적으로 업데이트된 경우 데이터 새로고침
         fetchTaxData(currentPage);
         setAllChecked(false); // 체크박스 상태 리셋
+        setSearchQuery(''); // 검색어 초기화
       } else {
         alert('세금계산서 숨김/복구에 실패했습니다.');
       }
     } catch (error) {
       alert('세금계산서 숨김/복구 중 오류 발생: ' + error);
+    } finally {
+      setIsHideRestoreLoading(false); // 로딩 종료
     }
   };
-
-  // 컴포넌트 언마운트 시 타이머 정리
-  useEffect(() => {
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, []);
 
   return (
     <>
@@ -277,7 +281,8 @@ const TaxPageContent = () => {
               onChange={handleSearchChange}
               placeholder="찾고 싶은 세금계산서의 거래처나 품목명을 입력하세요."
             />
-            {hasItem && (
+            {/* 숨김 버튼: 숨김 목록 보기 중이거나, 일반 목록에서 데이터가 없고 숨김 데이터도 없을 때 */}
+            {(showHidden || (!showHidden && hasItem)) && (
               <div className="flex gap-1">
                 <MiniBtn
                   text={checkedCount === 0 ? '숨긴 목록 보기' : '취소'}
@@ -310,7 +315,7 @@ const TaxPageContent = () => {
                       : 'hover:bg-primary-hover'
                   }
                   onClick={handleHideRestore}
-                  disabled={checkedCount === 0}
+                  disabled={checkedCount === 0 || isHideRestoreLoading}
                 />
               </div>
             )}
