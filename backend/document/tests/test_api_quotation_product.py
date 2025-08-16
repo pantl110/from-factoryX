@@ -639,6 +639,9 @@ class QuotationProductAPITestCase(TestCase):
             **self.get_auth_headers(),
         )
 
+        if response.status_code != 200:
+            print(f"Error response: {response.content.decode()}")
+            print(f"Status code: {response.status_code}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["quotation_id"], self.quotation.id)
@@ -862,7 +865,7 @@ class QuotationProductAPITestCase(TestCase):
         # end_date는 제품의 average_production_time에 따라 계산됨
         # 11개 * 3600초 = 39600초 = 11시간 = 1일
         expected_end_date = today + timedelta(days=1)
-        self.assertEqual(plan.end_date, expected_end_date)
+        self.assertEqual(plan.end_date.date(), expected_end_date)
 
         self.assertEqual(plan.avg_production_time, 3600)  # 기본값: 3600초 (1시간)
 

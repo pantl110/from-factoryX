@@ -153,6 +153,14 @@ async def register_production_from_refund_log(request, log_id: int):
 
         # 5. 생산 계획 생성 또는 수정
         if existing_plan:
+            # 기존 plan이 생산 중인지 확인
+            plan_status = await sync_to_async(lambda: existing_plan.status)()
+            if plan_status == "production":
+                raise HttpError(
+                    400,
+                    "생산 중인 계획은 수정할 수 없습니다.",
+                )
+
             # 기존 plan이 있는 경우 수정
             project_plan = existing_plan
             project_plan.product = new_quotation_product
