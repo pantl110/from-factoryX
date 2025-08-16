@@ -76,6 +76,7 @@ class TodayProductionPlanOut(Schema):
     company_name: str  # 업체명 (클라이언트명)
     product_name: str  # 품목명
     product_code: Optional[str] = None  # 품목코드
+    product_note: Optional[str] = None  # 품목 메모
     spec: str  # 규격
     unit: str  # 단위
     production_quantity: int  # 생산 수량

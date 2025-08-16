@@ -163,3 +163,18 @@ class MaterialHistoryDetailOut(Schema):
 # (POST) Create Material History
 class MaterialHistoryListOut(Schema):
     materials: List[MaterialHistoryDetailOut]
+
+
+# (GET) Material History List with Details
+class MaterialHistoryItemOut(Schema):
+    id: int
+    type: str
+    client_id: Optional[int]
+    client_name: Optional[str]
+    quantity: int
+    unit_price: Optional[int]
+    amount: int
+    date: Optional[str]
+    total_stock: int
+    purchase_tax_invoice_id: Optional[int]
+    cash_receipt_id: Optional[int]

@@ -8,8 +8,17 @@ from api.security import jwt_auth
 from typing import List
 
 from stock.models import Material, MaterialProduct, Product
-from stock.schemas.inbound import MaterialUpdateIn, AssignMaterialIn, SingleMaterialCreateIn
-from stock.schemas.outbound import MaterialDetailOut, AssignMaterialOut, MaterialSummaryOut, ShortageMaterialCountOut
+from stock.schemas.inbound import (
+    MaterialUpdateIn,
+    AssignMaterialIn,
+    SingleMaterialCreateIn,
+)
+from stock.schemas.outbound import (
+    MaterialDetailOut,
+    AssignMaterialOut,
+    MaterialSummaryOut,
+    ShortageMaterialCountOut,
+)
 from factory.models import Factory
 
 from factory.utils import is_factory_member
@@ -26,10 +35,10 @@ router = Router(tags=["Material"], auth=jwt_auth)
     auth=jwt_auth,
 )
 async def create_materials(request, payload: List[SingleMaterialCreateIn]):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
@@ -44,14 +53,18 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
         raise HttpError(400, "원자재 코드가 중복되었습니다.")
 
     # 기존 코드와 중복 체크
-    existing_codes = await sync_to_async(list)(Material.objects.filter(factory=factory, code__in=codes).values_list('code', flat=True))
+    existing_codes = await sync_to_async(list)(
+        Material.objects.filter(factory=factory, code__in=codes).values_list(
+            "code", flat=True
+        )
+    )
     if existing_codes:
         raise HttpError(400, f"이미 존재하는 원자재 코드: {existing_codes}")
 
     material_ids = []
     for item in payload:
         data = item.dict()
-        
+
         # 기본값 설정
         if "unit" not in data or data["unit"] is None:
             data["unit"] = "EA"
@@ -60,16 +73,13 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
             data.pop("current_stock", None)
         if data.get("standard_stock") is None:
             data.pop("standard_stock", None)
-        
-        material = await Material.objects.acreate(
-            factory=factory,
-            **data
-        )
+
+        material = await Material.objects.acreate(factory=factory, **data)
         material_ids.append(material.id)
-    
+
     return 201, {
         "material_ids": material_ids,
-        "message": f"{len(material_ids)}개의 원자재가 성공적으로 생성되었습니다."
+        "message": f"{len(material_ids)}개의 원자재가 성공적으로 생성되었습니다.",
     }
 
 
@@ -82,10 +92,10 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
     auth=jwt_auth,
 )
 async def assign_material(request, payload: AssignMaterialIn):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
@@ -122,25 +132,25 @@ async def assign_material(request, payload: AssignMaterialIn):
                     "spec": material_info["spec"],
                     "unit": "EA",
                     "current_stock": 0,
-                    "standard_stock": 0
-                }
+                    "standard_stock": 0,
+                },
             )
             material_ids.append(material.id)
             material_codes.append(material.code)
-            
+
             material_product, created = await MaterialProduct.objects.aget_or_create(
                 product=product,
                 material=material,
-                defaults={"quantity": material_info["quantity"]}
+                defaults={"quantity": material_info["quantity"]},
             )
             if not created:
                 material_product.quantity = material_info["quantity"]
                 await material_product.asave()
-        
+
         return 201, AssignMaterialOut(
             material_ids=material_ids,
             material_codes=material_codes,
-            message="원자재가 성공적으로 생성 및 연결되었습니다."
+            message="원자재가 성공적으로 생성 및 연결되었습니다.",
         )
     except IntegrityError:
         raise HttpError(400, "원자재 코드가 중복되거나 연결 정보에 오류가 있습니다.")
@@ -148,17 +158,17 @@ async def assign_material(request, payload: AssignMaterialIn):
 
 # Material Tab
 @router.get(
-    "", 
-    summary="[C] 공장별 원자재 목록 조회", 
+    "",
+    summary="[C] 공장별 원자재 목록 조회",
     description="특정 공장의 모든 원자재 정보를 조회합니다.",
-    response={ 200: List[MaterialSummaryOut], 404: dict, 500: dict }
-    )
+    response={200: List[MaterialSummaryOut], 404: dict, 500: dict},
+)
 @paginate
 async def get_materials_by_factory(request, q: str = None, order: str = "desc"):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
@@ -166,14 +176,17 @@ async def get_materials_by_factory(request, q: str = None, order: str = "desc"):
         factory = await Factory.objects.aget(id=factory_id)
     except Factory.DoesNotExist:
         raise HttpError(404, "공장 정보를 찾을 수 없습니다.")
-    
+
     @sync_to_async
     def get_materials():
         queryset = Material.objects.filter(factory=factory)
         if q:
             qs1 = queryset.filter(name__icontains=q)
             qs2 = queryset.filter(code__icontains=q)
-            ids = set(list(qs1.values_list("id", flat=True)) + list(qs2.values_list("id", flat=True)))
+            ids = set(
+                list(qs1.values_list("id", flat=True))
+                + list(qs2.values_list("id", flat=True))
+            )
             queryset = queryset.filter(id__in=ids)
         if order == "asc":
             queryset = queryset.order_by("current_stock")
@@ -185,16 +198,18 @@ async def get_materials_by_factory(request, q: str = None, order: str = "desc"):
 
     material_list = []
     for material in materials:
-        material_list.append({
-            "id": material.id,
-            "name": material.name,
-            "code": material.code,
-            "spec": material.spec,
-            "unit": material.unit,
-            "current_stock": material.current_stock,
-            "standard_stock": material.standard_stock
-        })
-    
+        material_list.append(
+            {
+                "id": material.id,
+                "name": material.name,
+                "code": material.code,
+                "spec": material.spec,
+                "unit": material.unit,
+                "current_stock": material.current_stock,
+                "standard_stock": material.standard_stock,
+            }
+        )
+
     return material_list
 
 
@@ -202,64 +217,68 @@ async def get_materials_by_factory(request, q: str = None, order: str = "desc"):
     "/shortage",
     summary="[C] 부족한 원자재 수 조회",
     description="현재 재고가 안전 재고보다 적은 원자재의 개수를 조회합니다.",
-    response={200: ShortageMaterialCountOut, 404: dict, 500: dict}
+    response={200: ShortageMaterialCountOut, 404: dict, 500: dict},
 )
 async def get_insufficient_material_count(request):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
     try:
+
         @sync_to_async
         def get_shortage_count():
             # 전체 원자재 수
-            total_materials = Material.objects.filter(factory_id=int(factory_id)).count()
-            
+            total_materials = Material.objects.filter(
+                factory_id=int(factory_id)
+            ).count()
+
             # 부족한 원자재 수 (현재 재고 < 안전 재고)
             shortage_count = Material.objects.filter(
-                factory_id=int(factory_id),
-                current_stock__lt=F('standard_stock')
+                factory_id=int(factory_id), current_stock__lt=F("standard_stock")
             ).count()
-            
+
             # 부족 비율 계산
-            shortage_percentage = (shortage_count / total_materials * 100) if total_materials > 0 else 0
-            
+            shortage_percentage = (
+                (shortage_count / total_materials * 100) if total_materials > 0 else 0
+            )
+
             return {
                 "shortage_count": shortage_count,
                 "total_materials": total_materials,
-                "shortage_percentage": round(shortage_percentage, 2)
+                "shortage_percentage": round(shortage_percentage, 2),
             }
-        
+
         result = await get_shortage_count()
         return 200, ShortageMaterialCountOut(**result)
-        
+
     except Exception as e:
         raise HttpError(500, f"부족한 원자재 수 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 # Material Tab
 @router.get(
-    "{material_id}", 
-    summary="[C] 원자재 상세 조회", 
+    "{material_id}",
+    summary="[C] 원자재 상세 조회",
     description="특정 원자재의 상세 정보를 조회합니다.",
-    response={ 200: MaterialDetailOut, 404: dict, 500: dict }
-    )
+    response={200: MaterialDetailOut, 404: dict, 500: dict},
+)
 async def get_material_detail(request, material_id: int):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    
+
     try:
         material = await Material.objects.aget(id=material_id)
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
-    
+
     return 200, MaterialDetailOut(
         id=material.id,
         name=material.name,
@@ -267,22 +286,22 @@ async def get_material_detail(request, material_id: int):
         spec=material.spec,
         unit=material.unit,
         current_stock=material.current_stock,
-        standard_stock=material.standard_stock
+        standard_stock=material.standard_stock,
     )
 
 
 # Material Tab
 @router.patch(
-    "{material_id}", 
-    summary="[C] 원자재 수정", 
+    "{material_id}",
+    summary="[C] 원자재 수정",
     description="특정 원자재의 정보를 수정합니다.",
-    response={ 200: MaterialDetailOut, 400: dict, 404: dict, 500: dict }
-    )
+    response={200: MaterialDetailOut, 400: dict, 404: dict, 500: dict},
+)
 async def update_material(request, material_id: int, payload: MaterialUpdateIn):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
@@ -298,15 +317,14 @@ async def update_material(request, material_id: int, payload: MaterialUpdateIn):
     for field, value in update_data.items():
         if field not in nullable_fields and value in [None, ""]:
             blank_fields.append(field)
-    
+
     if blank_fields:
         raise HttpError(400, f"공란 또는 null 불가: {', '.join(blank_fields)}")
 
     if "code" in update_data and update_data["code"] != material.code:
         try:
             existing_material = await Material.objects.aget(
-                factory_id=material.factory_id, 
-                code=update_data["code"]
+                factory_id=material.factory_id, code=update_data["code"]
             )
             raise HttpError(400, "이미 존재하는 자재코드입니다.")
         except Material.DoesNotExist:
@@ -323,21 +341,21 @@ async def update_material(request, material_id: int, payload: MaterialUpdateIn):
         spec=material.spec,
         unit=material.unit,
         current_stock=material.current_stock,
-        standard_stock=material.standard_stock
+        standard_stock=material.standard_stock,
     )
 
 
 @router.delete(
-    "{material_id}", 
-    summary="[C] 원자재 삭제", 
+    "{material_id}",
+    summary="[C] 원자재 삭제",
     description="특정 원자재를 삭제합니다.",
-    response={ 200: dict, 404: dict, 500: dict }
-    )
+    response={200: dict, 404: dict, 500: dict},
+)
 async def delete_material(request, material_id: int):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
@@ -345,7 +363,7 @@ async def delete_material(request, material_id: int):
         material = await Material.objects.aget(id=material_id)
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
-    
+
     await sync_to_async(material.delete)()
-    
+
     return 200, {"message": "원자재가 성공적으로 삭제되었습니다."}
