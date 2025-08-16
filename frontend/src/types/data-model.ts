@@ -585,18 +585,6 @@ export interface QuotationProductResponseModel {
   delivery_date?: string | null;
 }
 
-// 견적서 요청정보 데이터 보여줄 때
-// export interface QuotationProductItemModel {
-//   id: number; // product_id
-//   product_name: string;
-//   spec: string;
-//   unit: string;
-//   quantity: number;
-//   unit_price: number;
-//   supply_amount: number;
-
-// }
-
 // 견적서 품목 히스토리 조회 // 이전에 생산했던 Quotation Product 항목을 조회
 export interface QuotationProductHistoryItemResponseModel {
   product_name: string; // 제품 명
@@ -604,6 +592,19 @@ export interface QuotationProductHistoryItemResponseModel {
   unit_price: number; // 단가
   total_amount: number; // 금액 (수량*단가)
   created_at: string;
+}
+
+// 견적서 품목 납품 상태 수정
+export interface QuotationProductDeliveryUpdateModel {
+  is_delivered: boolean;
+  delivery_date?: string; // "YYYY-MM-DD" 형식
+}
+
+export interface QuotationProductDeliveryUpdateResponseModel {
+  quotation_product_id: number;
+  is_delivered: boolean;
+  delivery_date?: string;
+  message: string;
 }
 
 /////////////////////////////
@@ -864,36 +865,37 @@ export interface TaxFactoryInfoModel {
   billing_key: string;
 }
 
-export interface TaxClientInfoModel {  // 거래처 정보 (FactoryClientRowOut 구조)
-  id: number,
-  factory: number,
-  type: ClientType, // "customer"/"supplier"
-  name: string,
-  business_registration_number: string,
-  representative_name: string,
-  email: string,
-  phone: string,
-  fax: string,
-  business_type: string,
-  business_category: string,
-  address: string,
-  manager: string,
-  note: string
+export interface TaxClientInfoModel {
+  // 거래처 정보 (FactoryClientRowOut 구조)
+  id: number;
+  factory: number;
+  type: ClientType; // "customer"/"supplier"
+  name: string;
+  business_registration_number: string;
+  representative_name: string;
+  email: string;
+  phone: string;
+  fax: string;
+  business_type: string;
+  business_category: string;
+  address: string;
+  manager: string;
+  note: string;
 }
 
 export interface TaxProductInfoModel {
-  id: number,
-  factory: number,
-  name: string,
-  code: string,
-  unit: string,
-  spec: string,
-  current_stock: number,
-  average_production_time: number,
-  buffer_rate: number, // Decimal → float 변환
-  note: string,
-  created_at: string, // "YYYY-MM-DD HH:MM:SS" 형식
-  updated_at: string // "YYYY-MM-DD HH:MM:SS" 형식
+  id: number;
+  factory: number;
+  name: string;
+  code: string;
+  unit: string;
+  spec: string;
+  current_stock: number;
+  average_production_time: number;
+  buffer_rate: number; // Decimal → float 변환
+  note: string;
+  created_at: string; // "YYYY-MM-DD HH:MM:SS" 형식
+  updated_at: string; // "YYYY-MM-DD HH:MM:SS" 형식
 }
 
 // tax invoice detail 가져오기
@@ -909,49 +911,46 @@ export interface TaxLineItemModel {
 }
 
 export interface PublishedTaxInvoiceResponseModel {
-  
-    // BaseModel 상속 필드
-    id: number; // Primary Key
-    created_at: string; // 생성일
-    updated_at: string; // 수정일
-    
-    // User 관련
-    user: number; // User ID (ForeignKey)
-    
-    // Factory 관련  
-    factory: number; // Factory ID (ForeignKey)
-    factory_info: TaxFactoryInfoModel; // 공장 정보 (FactoryRowOut 구조)
-        
-    // 세금계산서 기본 정보
-    publish_status: TaxPublishStatusType; // 발행 상태 ("temporary"/"pending"/"published")
-    tax_invoice_type: TaxDocumentType; // 세금계산서 유형 ("sales"/"purchase")
-    transaction_type: TransactionType; // 거래 유형 ("receipt"/"invoice")
-    transaction_date: string;           // 거래 일자
-    
-    // 거래처 관련
-    client: number; // FactoryClient ID (ForeignKey)
-    client_info: TaxClientInfoModel;
-    
-    // 제품 관련 // 세금계산서 생성/수정 시 저장
-    product: number[]; // Product IDs (ManyToMany)
-    products_info: TaxProductInfoModel[]; // 제품 정보 리스트 (ProductRowOut 구조)
-        
-    
-    // 금액 관련
-    transaction_amount: number; // 공급 가액
-    tax_amount: number; // 세액
-    
-    // 세금계산서 관리 정보
-    is_hidden: boolean; // 숨김 여부
-    mgt_key: string; // 관리 키 (20자리 숫자)
-    nts_send_key: string; // 국세청 승인번호
-    barobill_state: BarobillStateType; // 바로빌 상태
-    nts_send_state: NtsSendStateType; // 국세청 전송 상태
-    
-    // 세금계산서 품목 상세 // 바로빌 API로 세금계산서 발행 후 또는 동기화 시 저장
-    line_items: TaxLineItemModel[];
-}
+  // BaseModel 상속 필드
+  id: number; // Primary Key
+  created_at: string; // 생성일
+  updated_at: string; // 수정일
 
+  // User 관련
+  user: number; // User ID (ForeignKey)
+
+  // Factory 관련
+  factory: number; // Factory ID (ForeignKey)
+  factory_info: TaxFactoryInfoModel; // 공장 정보 (FactoryRowOut 구조)
+
+  // 세금계산서 기본 정보
+  publish_status: TaxPublishStatusType; // 발행 상태 ("temporary"/"pending"/"published")
+  tax_invoice_type: TaxDocumentType; // 세금계산서 유형 ("sales"/"purchase")
+  transaction_type: TransactionType; // 거래 유형 ("receipt"/"invoice")
+  transaction_date: string; // 거래 일자
+
+  // 거래처 관련
+  client: number; // FactoryClient ID (ForeignKey)
+  client_info: TaxClientInfoModel;
+
+  // 제품 관련 // 세금계산서 생성/수정 시 저장
+  product: number[]; // Product IDs (ManyToMany)
+  products_info: TaxProductInfoModel[]; // 제품 정보 리스트 (ProductRowOut 구조)
+
+  // 금액 관련
+  transaction_amount: number; // 공급 가액
+  tax_amount: number; // 세액
+
+  // 세금계산서 관리 정보
+  is_hidden: boolean; // 숨김 여부
+  mgt_key: string; // 관리 키 (20자리 숫자)
+  nts_send_key: string; // 국세청 승인번호
+  barobill_state: BarobillStateType; // 바로빌 상태
+  nts_send_state: NtsSendStateType; // 국세청 전송 상태
+
+  // 세금계산서 품목 상세 // 바로빌 API로 세금계산서 발행 후 또는 동기화 시 저장
+  line_items: TaxLineItemModel[];
+}
 
 export interface PublishedTaxInvoiceListResponseModel extends PaginationModel {
   data: PublishedTaxInvoiceResponseModel[];
@@ -988,9 +987,6 @@ interface UnlinkedTaxInvoiceResponseModel {
 export interface UnlinkedTaxInvoiceListResponseModel extends PaginationModel {
   data: UnlinkedTaxInvoiceResponseModel[];
 }
-
-
-
 
 // 세금계산서 생성
 export interface CreateTaxInvoiceModel {
@@ -1076,7 +1072,6 @@ export interface CashReceiptListResponseModel extends PaginationModel {
   data: CashReceiptResponseModel[];
 }
 
-import { string } from 'yup';
 //////////////////////
 import {
   MemberRoleType,

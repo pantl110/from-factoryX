@@ -87,8 +87,6 @@ const ProductionPageContent = () => {
           setPageStatus(projectStatus);
           setProductionTab(tabs[selectedTab]);
           setIsRefund(result.data.is_refunded || false);
-        } else {
-          alert('프로젝트 상태 로드 실패');
         }
       } catch {
         alert('프로젝트 상태 로드 중 오류');

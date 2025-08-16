@@ -41,15 +41,16 @@ const TopBarContent = ({
   const setAddReturnModalOpen = usePageStatusStore(
     (state) => state.setAddReturnModalOpen
   );
+  const deliveryData = usePageStatusStore((state) => state.deliveryData);
 
   const isProductionPlanSaveActive =
     productionTab === '생산 계획' &&
-    (pageStatus === 'pending' || pageStatus === '생산 대기') &&
+    pageStatus === 'pending' &&
     isProductionPlanValid;
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pageStatus === 'completed' || pageStatus === '프로젝트 완료') {
+  if (pageStatus === 'completed') {
     return (
       <div className="flex gap-2">
         <MiniBtn
@@ -156,7 +157,7 @@ const TopBarContent = ({
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
         />
-        {pageStatus === '생산 완료' && (
+        {pageStatus === 'manufactured' && (
           <MiniBtn
             text="다음"
             textColor="text-primary"
@@ -189,13 +190,25 @@ const TopBarContent = ({
           hoverColor="hover:bg-red-hover"
           onClick={() => setAddReturnModalOpen(true)}
         />
-        {(pageStatus === '납품' || pageStatus === 'delivery') && (
+        {pageStatus === 'delivery' && (
           <MiniBtn
             text="보관함으로 이동"
             textColor="text-primary"
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
             onClick={onMoveToStorageClick}
+            disabled={
+              !deliveryData ||
+              deliveryData.some((item) => {
+                // delivery_date가 없거나 불완전한 형식이면 disabled
+                if (!item.delivery_date) return true;
+                // YYYY-MM-DD 형식인지 확인 (정확히 10자리)
+                return (
+                  item.delivery_date.length !== 10 ||
+                  !/^\d{4}-\d{2}-\d{2}$/.test(item.delivery_date)
+                );
+              })
+            }
           />
         )}
       </div>

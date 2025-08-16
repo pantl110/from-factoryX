@@ -4,12 +4,12 @@ import { useState, useCallback } from 'react';
 import useFactoryStore from '@/store/factory-store';
 import {
   CreateTaxInvoiceModel,
-  TaxInvoiceDetailResponseModel,
+  PublishedTaxInvoiceResponseModel,
 } from '@/types/data-model';
 
 interface CreateTaxInvoiceResponseModel {
   success: boolean;
-  data?: TaxInvoiceDetailResponseModel;
+  data?: PublishedTaxInvoiceResponseModel;
   error?: string;
 }
 
@@ -18,7 +18,7 @@ const useCreateTaxInvoice = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdTaxInvoice, setCreatedTaxInvoice] =
-    useState<TaxInvoiceDetailResponseModel | null>(null);
+    useState<PublishedTaxInvoiceResponseModel | null>(null);
 
   const createTaxInvoice = useCallback(
     async (
@@ -53,7 +53,8 @@ const useCreateTaxInvoice = () => {
         );
 
         if (response.ok) {
-          const result: TaxInvoiceDetailResponseModel = await response.json();
+          const result: PublishedTaxInvoiceResponseModel =
+            await response.json();
           setCreatedTaxInvoice(result);
           return { success: true, data: result };
         } else {

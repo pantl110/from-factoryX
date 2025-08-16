@@ -52,6 +52,10 @@ export interface PageStatusModel {
   // 반품 여부
   isRefund: boolean;
   setIsRefund: (isRefund: boolean) => void;
+
+  // 납품 데이터 (보관함으로 이동 버튼 활성화 여부 결정)
+  deliveryData: Array<{ delivery_date?: string }> | null;
+  setDeliveryData: (data: Array<{ delivery_date?: string }> | null) => void;
 }
 
 const usePageStatusStore = create<PageStatusModel>((set) => ({
@@ -91,6 +95,10 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   // 반품 여부
   isRefund: false,
   setIsRefund: (isRefund) => set({ isRefund }),
+
+  // 납품 데이터
+  deliveryData: null,
+  setDeliveryData: (data) => set({ deliveryData: data }),
 }));
 
 export default usePageStatusStore;

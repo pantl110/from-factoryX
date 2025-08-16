@@ -96,12 +96,22 @@ const ProductionPlan = ({
 
         // formChanges를 원본 데이터로 초기화
         const initialFormData: Record<number, ProductionPlanFormDataModel> = {};
-        result.data.forEach((plan) => {
+        result.data.forEach((plan: ProjectPlanModel) => {
           initialFormData[plan.id] = {
             quantity: plan.quantity,
             equipment_id: plan.equipment.id,
-            start_date: plan.start_date,
-            end_date: plan.end_date,
+            start_date: plan.start_date
+              ? new Date(plan.start_date)
+                  .toISOString()
+                  .slice(0, 16)
+                  .replace('T', ' ')
+              : '',
+            end_date: plan.end_date
+              ? new Date(plan.end_date)
+                  .toISOString()
+                  .slice(0, 16)
+                  .replace('T', ' ')
+              : '',
           };
         });
         setFormChanges(initialFormData);
@@ -343,7 +353,8 @@ const ProductionPlan = ({
             if (Object.keys(changes).length > 0) {
               const result = await updateProjectPlan(planId, changes);
               if (result.success) {
-                // formChanges에서 해당 plan의 변경사항 제거
+                // PATCH 성공 후 formChanges에서 해당 plan의 변경사항만 제거
+                // projectPlans는 업데이트하지 않아 무한루프 방지
                 setFormChanges((prev) => {
                   const newChanges = { ...prev };
                   delete newChanges[planId];
@@ -490,15 +501,6 @@ const ProductionPlan = ({
               formData={formChanges[item.id]}
               equipments={equipmentList?.data || []}
               projectStatus={projectStatus}
-              onEquipmentChange={(equipmentId) => {
-                setFormChanges((prev) => ({
-                  ...prev,
-                  [item.id]: {
-                    ...prev[item.id],
-                    equipment_id: equipmentId,
-                  },
-                }));
-              }}
             />
           ))}
         </div>

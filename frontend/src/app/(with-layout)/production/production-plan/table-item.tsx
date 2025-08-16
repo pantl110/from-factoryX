@@ -9,7 +9,7 @@ import {
 import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import { tableHeader } from './types';
 import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react/dist/ssr';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks/format-number';
 import { useMaterialStatus } from '@/hooks';
@@ -34,7 +34,6 @@ interface TableItemProps {
   formData?: ProductionPlanFormDataModel; // 현재 form 데이터
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
-  onEquipmentChange?: (equipmentId: number) => void; // 설비 변경 시 호출
 }
 
 const TableItem = ({
@@ -45,33 +44,7 @@ const TableItem = ({
   formData: currentFormData,
   equipments,
   projectStatus,
-  onEquipmentChange,
 }: TableItemProps) => {
-  // Form 데이터를 메모이제이션하여 불필요한 re-render 방지
-  const stableFormData = useMemo(() => {
-    return (
-      currentFormData || {
-        quantity: item.quantity,
-        equipment_id: item.equipment.id,
-        start_date: item.start_date
-          ? new Date(item.start_date)
-              .toISOString()
-              .slice(0, 16)
-              .replace('T', ' ')
-          : '0000-00-00 00:00',
-        end_date: item.end_date
-          ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
-          : '0000-00-00 00:00',
-      }
-    );
-  }, [
-    currentFormData,
-    item.quantity,
-    item.equipment.id,
-    item.start_date,
-    item.end_date,
-  ]);
-
   // 백엔드에서 이미 한글 상태값을 반환하므로 그대로 사용
   const operationStatus = item.status as OperationStatusType;
   const { materialStatus } = useMaterialStatus(
@@ -264,7 +237,10 @@ const TableItem = ({
         render={({ field }) => (
           <input
             type="text"
-            value={field.value?.toLocaleString() || '0'}
+            value={
+              field.value && field.value > 0 ? field.value.toLocaleString() : ''
+            }
+            placeholder="(필수)"
             onChange={(e) => {
               const value = e.target.value.replace(/,/g, '');
               const numValue = parseInt(value) || 0;
