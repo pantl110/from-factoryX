@@ -862,63 +862,96 @@ export interface TaxFactoryInfoModel {
   business_address: string;
   is_trial: boolean;
   billing_key: string;
-  inviting: string[];
-  created_at: string;
-  updated_at: string;
 }
 
-export interface TaxClientInfoModel {
-  id: number;
-  type: string;
-  name: string;
-  business_registration_number: string;
-  representative_name: string;
-  business_type: string;
-  business_category: string;
-  phone: string;
-  email: string;
-  fax: string;
-  address: string;
-  manager: string;
-  note: string;
+export interface TaxClientInfoModel {  // 거래처 정보 (FactoryClientRowOut 구조)
+  id: number,
+  factory: number,
+  type: ClientType, // "customer"/"supplier"
+  name: string,
+  business_registration_number: string,
+  representative_name: string,
+  email: string,
+  phone: string,
+  fax: string,
+  business_type: string,
+  business_category: string,
+  address: string,
+  manager: string,
+  note: string
 }
 
 export interface TaxProductInfoModel {
-  id: number;
-  factory: number;
-  name: string;
-  code: string;
-  unit: string;
-  spec: string;
-  current_stock?: number;
-  average_production_time?: number;
-  note?: string;
+  id: number,
+  factory: number,
+  name: string,
+  code: string,
+  unit: string,
+  spec: string,
+  current_stock: number,
+  average_production_time: number,
+  buffer_rate: number, // Decimal → float 변환
+  note: string,
+  created_at: string, // "YYYY-MM-DD HH:MM:SS" 형식
+  updated_at: string // "YYYY-MM-DD HH:MM:SS" 형식
+}
+
+// tax invoice detail 가져오기
+export interface TaxLineItemModel {
+  purchase_expiry: string; // YYYYMMDD 형식 (예: "20241231")
+  name: string; // 품목명
+  information?: string; // 규격
+  chargeable_unit: string; // 수량
+  unit_price: string; // 단가
+  amount: string; // 공급가액
+  tax: string; // 세액
+  description?: string; // 비고
 }
 
 export interface PublishedTaxInvoiceResponseModel {
-  id: number;
-  created_at: string;
-  updated_at: string;
-  user: number;
-  factory: number;
-  factory_info: TaxFactoryInfoModel;
-  publish_status: TaxPublishStatusType;
-  tax_invoice_type: TaxDocumentType;
-  transaction_type: TransactionType;
-  transaction_date: string;
-  client: number;
-  client_info: TaxClientInfoModel;
-  product: number[];
-  products_info: TaxProductInfoModel[];
-  transaction_amount: number;
-  tax_amount: number;
-  is_hidden: boolean;
-  mgt_key: string;
-  nts_send_key: string;
-  barobill_state: BarobillStateType;
-  nts_send_state: NtsSendStateType;
-  line_items: TaxServiceItemModel[];
+  
+    // BaseModel 상속 필드
+    id: number; // Primary Key
+    created_at: string; // 생성일
+    updated_at: string; // 수정일
+    
+    // User 관련
+    user: number; // User ID (ForeignKey)
+    
+    // Factory 관련  
+    factory: number; // Factory ID (ForeignKey)
+    factory_info: TaxFactoryInfoModel; // 공장 정보 (FactoryRowOut 구조)
+        
+    // 세금계산서 기본 정보
+    publish_status: TaxPublishStatusType; // 발행 상태 ("temporary"/"pending"/"published")
+    tax_invoice_type: TaxDocumentType; // 세금계산서 유형 ("sales"/"purchase")
+    transaction_type: TransactionType; // 거래 유형 ("receipt"/"invoice")
+    transaction_date: string;           // 거래 일자
+    
+    // 거래처 관련
+    client: number; // FactoryClient ID (ForeignKey)
+    client_info: TaxClientInfoModel;
+    
+    // 제품 관련 // 세금계산서 생성/수정 시 저장
+    product: number[]; // Product IDs (ManyToMany)
+    products_info: TaxProductInfoModel[]; // 제품 정보 리스트 (ProductRowOut 구조)
+        
+    
+    // 금액 관련
+    transaction_amount: number; // 공급 가액
+    tax_amount: number; // 세액
+    
+    // 세금계산서 관리 정보
+    is_hidden: boolean; // 숨김 여부
+    mgt_key: string; // 관리 키 (20자리 숫자)
+    nts_send_key: string; // 국세청 승인번호
+    barobill_state: BarobillStateType; // 바로빌 상태
+    nts_send_state: NtsSendStateType; // 국세청 전송 상태
+    
+    // 세금계산서 품목 상세
+    line_items: TaxLineItemModel[];
 }
+
 
 export interface PublishedTaxInvoiceListResponseModel extends PaginationModel {
   data: PublishedTaxInvoiceResponseModel[];
@@ -956,40 +989,15 @@ export interface UnlinkedTaxInvoiceListResponseModel extends PaginationModel {
   data: UnlinkedTaxInvoiceResponseModel[];
 }
 
-// tax invoice detail 가져오기
-export interface TaxServiceItemModel {
-  purchase_expiry: string; // YYYYMMDD 형식 (예: "20241231")
-  name: string; // 품목명
-  information?: string; // 규격
-  chargeable_unit: string; // 수량
-  unit_price: string; // 단가
-  amount: string; // 공급가액
-  tax: string; // 세액
-  description?: string; // 비고
-}
 
-export interface TaxInvoiceDetailResponseModel {
-  id: number;
-  factory: number;
-  client: number;
-  product: number[];
-  line_items: TaxServiceItemModel[];
-  transaction_date: string;
-  publish_status: string;
-  mgt_key?: string;
-  nts_send_key?: string;
-  barobill_state?: string;
-  nts_send_state?: string;
-  created_at: string;
-  updated_at: string;
-}
+
 
 // 세금계산서 생성
 export interface CreateTaxInvoiceModel {
   factory: number;
   client: number;
   product: number[];
-  line_items: TaxServiceItemModel[];
+  line_items: TaxLineItemModel[];
   transaction_date?: string;
 }
 
@@ -1068,6 +1076,7 @@ export interface CashReceiptListResponseModel extends PaginationModel {
   data: CashReceiptResponseModel[];
 }
 
+import { string } from 'yup';
 //////////////////////
 import {
   MemberRoleType,

@@ -20,15 +20,20 @@ const TaxDocumentView = ({ taxType, item }: TaxDocumentViewProps) => {
           transactionType={item.transaction_type}
         />
       )}
-      {taxType === 'sales' ||
-        (item?.tax_invoice_type === 'sales' && (
-          <OrderItemInfo
-            productsInfo={item.products_info}
-            taxType={taxType || item.tax_invoice_type}
-            transactionAmount={item.transaction_amount}
-          />
-        ))}
-      {item?.tax_invoice_type === 'purchase' && <PurchaseItemInfo />}
+      {item && taxType === 'sales' && (
+        <OrderItemInfo
+          lineItems={item.line_items}
+          transactionAmount={item.transaction_amount}
+          productsInfo={item.products_info}
+        />
+      )}
+      {item && item.tax_invoice_type === 'purchase' && (
+        <PurchaseItemInfo
+          lineItems={item.line_items}
+          transactionAmount={item.transaction_amount}
+          productsInfo={item.products_info}
+        />
+      )}
     </div>
   );
 };

@@ -2,18 +2,32 @@ import PriceInfo from '@/ui/price-info';
 import OrderTableItem from './order-table-item';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import { TaxDocumentType } from '@/types/status-type';
+import NoHistoryBox from '@/ui/no-history-box';
 
 interface OrderItemInfoProps {
+  lineItems: PublishedTaxInvoiceResponseModel['line_items'];
   productsInfo: PublishedTaxInvoiceResponseModel['products_info'];
-  taxType: TaxDocumentType;
   transactionAmount: number;
 }
 
 const OrderItemInfo = ({
+  lineItems,
   productsInfo,
-  taxType,
   transactionAmount,
 }: OrderItemInfoProps) => {
+  // productsInfo가 없으면 렌더링하지 않음
+  if (!lineItems || lineItems.length === 0) {
+    return (
+      <div className="flex flex-col gap-3">
+        <h3 className="Heading-3 h-10 items-center flex">주문 품목 정보</h3>
+        <NoHistoryBox
+          title="주문 품목 정보가 없습니다."
+          text="주문 품목 정보가 없습니다."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">주문 품목 정보</h3>
@@ -29,15 +43,18 @@ const OrderItemInfo = ({
           <p className="px-3 flex-1">세액</p>
         </div>
 
-        {productsInfo.map((product) => (
-          <OrderTableItem key={product.id} product={product} />
+        {lineItems.map((lineItem, index) => (
+          <OrderTableItem
+            key={index}
+            lineItem={lineItem}
+            productInfo={
+              productsInfo && productsInfo[index] ? productsInfo[index] : null
+            }
+          />
         ))}
       </div>
 
-      <PriceInfo
-        supplyAmount={transactionAmount}
-        textColor={taxType === 'sales' ? 'text-primary' : 'text-red'}
-      />
+      <PriceInfo supplyAmount={transactionAmount} textColor={'text-primary'} />
     </div>
   );
 };

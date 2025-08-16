@@ -20,7 +20,7 @@ const useGetTaxInvoiceDetail = (): UseGetTaxInvoiceDetailReturnModel => {
     setError(null);
 
     try {
-      const response = await fetch(`/api/tax/${taxId}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${taxId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
