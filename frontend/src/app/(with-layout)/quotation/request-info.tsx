@@ -20,6 +20,7 @@ interface RequestInfoProps {
   onProductsChange?: (products: QuotationProductDetailResponseModel[]) => void;
   quotationId?: number;
   ocrRequestData?: OcrRequestItemModel[];
+  productList?: ProductResponseModel[]; // 제품 목록 추가
 }
 
 const RequestInfo = ({
@@ -28,6 +29,7 @@ const RequestInfo = ({
   onProductsChange,
   quotationId,
   ocrRequestData,
+  productList,
 }: RequestInfoProps) => {
   const [isProductEnrollmentDropdownOpen, setIsProductEnrollmentDropdownOpen] =
     useState(false);
@@ -68,68 +70,27 @@ const RequestInfo = ({
     QuotationProductDetailResponseModel[] | null
   >(null);
 
-  // quotationDetail이 변경될 때마다 products를 form에 저장 (사용자 입력값 유지)
+  // quotationDetail.products가 변경될 때마다 폼 필드 업데이트
   useEffect(() => {
-    if (
-      quotationDetail &&
-      quotationDetail.products &&
-      quotationDetail.products.length > 0
-    ) {
-      // 이전 products와 현재 products가 다른 경우에만 업데이트
-      const currentProducts = quotationDetail.products;
-      const prevProducts = prevQuotationProductsRef.current;
-
-      // products가 실제로 변경되었는지 확인 (product_id, product_name, product_code, spec, unit만 비교)
-      const hasChanged =
-        !prevProducts ||
-        prevProducts.length !== currentProducts.length ||
-        prevProducts.some((prev, index) => {
-          const current = currentProducts[index];
-          return (
-            prev.productId !== current.productId ||
-            prev.product_name !== current.product_name ||
-            prev.product_code !== current.product_code ||
-            prev.spec !== current.spec ||
-            prev.unit !== current.unit
-          );
-        });
-
-      if (hasChanged) {
-        // 기존 form 값에서 사용자가 입력한 quantity와 unit_price 값을 보존
-        const updatedProducts = currentProducts.map((newProduct, index) => {
-          const existingProduct = currentProducts[index];
-          return {
-            ...newProduct,
-            // 기존에 사용자가 입력한 값이 있으면 유지, 없으면 새 값 사용
-            quantity:
-              existingProduct?.quantity !== null &&
-              existingProduct?.quantity !== undefined
-                ? existingProduct.quantity
-                : newProduct.quantity,
-            unit_price:
-              existingProduct?.unit_price !== null &&
-              existingProduct?.unit_price !== undefined
-                ? existingProduct.unit_price
-                : newProduct.unit_price,
-          };
-        });
-        setValue('products', updatedProducts);
-        prevQuotationProductsRef.current = currentProducts;
-      }
-    } else {
-      setValue('products', []);
-      prevQuotationProductsRef.current = null;
+    if (quotationDetail?.products && quotationDetail.products.length > 0) {
+      quotationDetail.products.forEach((product, index) => {
+        setValue(`products.${index}.productId`, product.productId);
+        setValue(`products.${index}.product_code`, product.product_code);
+        setValue(`products.${index}.product_name`, product.product_name);
+        setValue(`products.${index}.spec`, product.spec);
+        setValue(`products.${index}.unit`, product.unit);
+        setValue(`products.${index}.quantity`, product.quantity);
+        setValue(`products.${index}.unit_price`, product.unit_price);
+        setValue(`products.${index}.supply_amount`, product.supply_amount);
+        setValue(`products.${index}.tax_amount`, product.tax_amount);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quotationDetail?.products, setValue]);
 
-  // OCR 데이터가 있을 때 초기값 설정
+  // OCR 데이터가 있을 때 제품 목록 초기화
   useEffect(() => {
-    if (
-      ocrRequestData &&
-      ocrRequestData.length > 0 &&
-      (!quotationDetail?.products || quotationDetail.products.length === 0)
-    ) {
+    if (ocrRequestData && ocrRequestData.length > 0) {
       const parseNumber = (val?: string | number | null) => {
         if (val === null || val === undefined) return null;
         if (typeof val === 'number') return val;
@@ -139,22 +100,33 @@ const RequestInfo = ({
         return Number.isNaN(num) ? null : num;
       };
 
-      const ocrProducts = ocrRequestData.map((item: OcrRequestItemModel) => ({
-        productId: null,
-        product_code: item.item_code || '',
-        product_name: item.item_name || '',
-        spec: item.spec || '',
-        unit: item.unit || '',
-        quantity: parseNumber(item.quantity),
-        unit_price: parseNumber(item.unit_price),
-        supply_amount: null,
-        tax_amount: null,
-      }));
+      // OCR 데이터로 제품 목록 생성
+      const ocrProducts = ocrRequestData.map((item: OcrRequestItemModel) => {
+        // 품목코드로 기존 제품 찾기
+        const existingProduct = productList?.find(
+          (p) => p.code === item.item_code
+        );
 
-      // reset을 사용해서 폼을 완전히 초기화
+        return {
+          productId: existingProduct?.id || null,
+          product_code: existingProduct?.code || '',
+          product_name: existingProduct?.name || '',
+          spec: existingProduct?.spec || '',
+          unit: existingProduct?.unit || '',
+          quantity: parseNumber(item.quantity),
+          unit_price: parseNumber(item.unit_price),
+          supply_amount: null,
+          tax_amount: null,
+        };
+      });
+
+      // 폼 초기화
       reset({ products: ocrProducts });
+
+      // 상위 컴포넌트에 제품 목록 전달
+      onProductsChange?.(ocrProducts);
     }
-  }, [ocrRequestData, quotationDetail?.products, reset]);
+  }, [ocrRequestData, reset, productList, onProductsChange]);
 
   // fields가 변경될 때마다 유효성 검사 해서 hasQuotationProducts 업데이트하여 버튼 disabled 여부 결정
   useEffect(() => {

@@ -24,6 +24,8 @@ import {
   useGetProjectStatus,
   useUpdateProjectStatus,
   useGetDetailQuotation,
+  useGetClient,
+  useGetProduct,
   useToast,
 } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
@@ -54,13 +56,18 @@ const QuotationPageContent = () => {
     : undefined;
 
   const { saveDraft } = useSaveDraftQuotation();
-  const { startProduction, error } = useStartProduction();
+  const { startProduction } = useStartProduction();
   const { getProjectStatus } = useGetProjectStatus();
   const { updateProjectStatus } = useUpdateProjectStatus();
   const { data: quotationData, isLoading: isQuotationLoading } =
     useGetDetailQuotation(quotationId || 0);
   const { showToast, isToastOpen, isVisible } = useToast();
   const { ocrData, imageUrl, setOcrData } = useOcrStore();
+
+  // 거래처 목록 가져오기
+  const { clientList, getClients } = useGetClient();
+  // 제품 목록 가져오기
+  const { productList, getProductList } = useGetProduct();
 
   // 프로젝트 상태 로드
   const loadProjectStatus = useCallback(async () => {
@@ -80,12 +87,19 @@ const QuotationPageContent = () => {
   useEffect(() => {
     loadProjectStatus();
 
+    // 거래처 목록과 제품 목록 로드
+    if (factoryId) {
+      getClients();
+      getProductList();
+    }
+
     // 컴포넌트 언마운트 시 Zustand store 정보 초기화
     return () => {
       // OCR 데이터 초기화
       useOcrStore.getState().clearOcrData();
     };
-  }, [loadProjectStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadProjectStatus, factoryId]);
 
   // 프로젝트 상태 변경
   const handleProjectStatusChange = useCallback(
@@ -223,119 +237,149 @@ const QuotationPageContent = () => {
     imageUrl ? 'quotation' : 'history'
   );
 
-  // OCR 데이터가 있을 때 폼에 자동으로 설정
+  // OCR 데이터가 있을 때 거래처 정보만 설정 (제품 정보는 request-info.tsx에서 처리)
   useEffect(() => {
     if (ocrData && (!quotationData || !quotationData.factory_name)) {
       // OCR 데이터를 store에 저장 (백업)
       setOcrData(ocrData, imageUrl || '');
 
-      // factoryname이 비어있으면 ocrdata로 폼 채우기 // factoryname이 비어있으면 저장 안됨
-      // OCR 데이터로 폼 자동 채우기
-      setValue('name', ocrData.client_info.company_name || '');
+      // 사업자등록번호로 기존 거래처 찾기
+      const existingClient = clientList?.data?.find(
+        (client) =>
+          client.business_registration_number ===
+          ocrData.client_info.registration_number
+      );
+
+      // 기존 거래처가 있으면 clientId 설정
+      if (existingClient) {
+        setSelectedClientId(existingClient.id);
+      }
+
+      // DB에 저장된 데이터를 우선으로 하고, 없는 값만 OCR 데이터로 채우기
+      setValue(
+        'name',
+        existingClient?.name || ocrData.client_info.company_name || ''
+      );
       setValue(
         'business_registration_number',
-        ocrData.client_info.registration_number || ''
+        existingClient?.business_registration_number ||
+          ocrData.client_info.registration_number ||
+          ''
       );
-      setValue('representative_name', ocrData.client_info.ceo_name || '');
-      setValue('business_type', ocrData.client_info.business_type || '');
-      setValue('business_category', ocrData.client_info.category || '');
-      setValue('address', ocrData.client_info.address || '');
-      setValue('email', ocrData.client_info.email || '');
-      setValue('phone', ocrData.client_info.call_number || '');
-      setValue('fax', ocrData.client_info.fax_number || '');
-      setValue('manager', ocrData.client_info.manager_name || '');
+      setValue(
+        'representative_name',
+        existingClient?.representative_name ||
+          ocrData.client_info.ceo_name ||
+          ''
+      );
+      setValue(
+        'business_type',
+        existingClient?.business_type || ocrData.client_info.business_type || ''
+      );
+      setValue(
+        'business_category',
+        existingClient?.business_category || ocrData.client_info.category || ''
+      );
+      setValue(
+        'address',
+        existingClient?.address || ocrData.client_info.address || ''
+      );
+      setValue(
+        'email',
+        existingClient?.email || ocrData.client_info.email || ''
+      );
+      setValue(
+        'phone',
+        existingClient?.phone || ocrData.client_info.call_number || ''
+      );
+      setValue(
+        'fax',
+        existingClient?.fax || ocrData.client_info.fax_number || ''
+      );
+      setValue(
+        'manager',
+        existingClient?.manager || ocrData.client_info.manager_name || ''
+      );
       setValue('due_date', ocrData.client_info.delivery_date || '');
-
-      // OCR 데이터에서 품목 정보 추출하여 quotationProducts 설정
-      if (
-        (ocrData as OcrDataModel).request_items &&
-        (ocrData as OcrDataModel).request_items.length > 0
-      ) {
-        const extractedProducts = (ocrData as OcrDataModel).request_items.map(
-          (product: OcrRequestItemModel) => ({
-            productId: null, // OCR에서는 productId가 없으므로 null
-            product_code: product.item_code || '',
-            product_name: product.item_name || '',
-            spec: product.spec || '',
-            unit: product.unit || '',
-            quantity: product.quantity ? Number(product.quantity) : null,
-            unit_price: product.unit_price ? Number(product.unit_price) : null,
-            supply_amount: null, // 공급가액은 나중에 계산
-            tax_amount: null, // 세액은 나중에 계산
-          })
-        );
-
-        setQuotationProducts(extractedProducts);
-        setInitialQuotationProducts(extractedProducts);
-
-        // 품목이 있으면 hasQuotationProducts를 true로 설정
-        const hasValidProducts = extractedProducts.every(
-          (product: QuotationProductDetailResponseModel) =>
-            product.product_name &&
-            product.product_code &&
-            product.spec &&
-            product.unit &&
-            product.quantity &&
-            product.unit_price
-        );
-        setHasQuotationProducts(hasValidProducts);
-      }
 
       // OCR 데이터가 있으면 견적서 탭 활성화
       setActiveTab('quotation');
     }
-  }, [ocrData, quotationData, setValue, setActiveTab, imageUrl, setOcrData]);
+  }, [
+    ocrData,
+    quotationData,
+    setValue,
+    setActiveTab,
+    imageUrl,
+    setOcrData,
+    clientList,
+  ]);
 
-  // OCR 데이터 변경 시 폼 초기화 함수
+  // OCR 데이터 변경 시 폼 초기화 함수 (거래처 정보만 처리)
   const handleOcrDataChange = useCallback(
     (newOcrData: OcrDataModel) => {
-      // 새로운 OCR 데이터로 폼 초기화
-      setValue('name', newOcrData.client_info.company_name || '');
+      // 사업자등록번호로 기존 거래처 찾기
+      const existingClient = clientList?.data?.find(
+        (client) =>
+          client.business_registration_number ===
+          newOcrData.client_info.registration_number
+      );
+
+      // 기존 거래처가 있으면 clientId 설정
+      if (existingClient) {
+        setSelectedClientId(existingClient.id);
+      }
+
+      // DB에 저장된 데이터를 우선으로 하고, 없는 값만 OCR 데이터로 채우기
+      setValue(
+        'name',
+        existingClient?.name || newOcrData.client_info.company_name || ''
+      );
       setValue(
         'business_registration_number',
-        newOcrData.client_info.registration_number || ''
+        existingClient?.business_registration_number ||
+          newOcrData.client_info.registration_number ||
+          ''
       );
-      setValue('representative_name', newOcrData.client_info.ceo_name || '');
-      setValue('business_type', newOcrData.client_info.business_type || '');
-      setValue('business_category', newOcrData.client_info.category || '');
-      setValue('address', newOcrData.client_info.address || '');
-      setValue('email', newOcrData.client_info.email || '');
-      setValue('phone', newOcrData.client_info.call_number || '');
-      setValue('fax', newOcrData.client_info.fax_number || '');
-      setValue('manager', newOcrData.client_info.manager_name || '');
+      setValue(
+        'representative_name',
+        existingClient?.representative_name ||
+          newOcrData.client_info.ceo_name ||
+          ''
+      );
+      setValue(
+        'business_type',
+        existingClient?.business_type ||
+          newOcrData.client_info.business_type ||
+          ''
+      );
+      setValue(
+        'business_category',
+        existingClient?.business_category ||
+          newOcrData.client_info.category ||
+          ''
+      );
+      setValue(
+        'address',
+        existingClient?.address || newOcrData.client_info.address || ''
+      );
+      setValue(
+        'email',
+        existingClient?.email || newOcrData.client_info.email || ''
+      );
+      setValue(
+        'phone',
+        existingClient?.phone || newOcrData.client_info.call_number || ''
+      );
+      setValue(
+        'fax',
+        existingClient?.fax || newOcrData.client_info.fax_number || ''
+      );
+      setValue(
+        'manager',
+        existingClient?.manager || newOcrData.client_info.manager_name || ''
+      );
       setValue('due_date', newOcrData.client_info.delivery_date || '');
-
-      // OCR 데이터에서 품목 정보 추출하여 quotationProducts 설정
-      if (newOcrData.request_items && newOcrData.request_items.length > 0) {
-        const extractedProducts = newOcrData.request_items.map(
-          (product: OcrRequestItemModel) => ({
-            productId: null, // OCR에서는 productId가 없으므로 null
-            product_code: product.item_code || '',
-            product_name: product.item_name || '',
-            spec: product.spec || '',
-            unit: product.unit || '',
-            quantity: product.quantity ? Number(product.quantity) : 0,
-            unit_price: product.unit_price ? Number(product.unit_price) : 0,
-            supply_amount: null, // 공급가액은 나중에 계산
-            tax_amount: null, // 세액은 나중에 계산
-          })
-        );
-
-        setQuotationProducts(extractedProducts);
-        setInitialQuotationProducts(extractedProducts);
-
-        // 품목이 있으면 hasQuotationProducts를 true로 설정
-        const hasValidProducts = extractedProducts.every(
-          (product: QuotationProductDetailResponseModel) =>
-            product.product_name &&
-            product.product_code &&
-            product.spec &&
-            product.unit &&
-            product.quantity &&
-            product.unit_price
-        );
-        setHasQuotationProducts(hasValidProducts);
-      }
 
       // 견적서 탭 활성화
       setActiveTab('quotation');
@@ -343,7 +387,7 @@ const QuotationPageContent = () => {
       // 폼 변경 상태 초기화
       reset();
     },
-    [setValue, setActiveTab, reset]
+    [setValue, setActiveTab, reset, clientList]
   );
 
   // 오른쪽 패널 확장 상태
@@ -566,6 +610,7 @@ const QuotationPageContent = () => {
                   ocrRequestData={
                     ocrData?.request_items as OcrRequestItemModel[]
                   }
+                  productList={productList}
                 />
               </div>
             </div>
