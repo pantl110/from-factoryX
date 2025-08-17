@@ -94,10 +94,19 @@ export const useQuotationHandlers = ({
       // 임시저장 성공 시 프로젝트 페이지로 이동
       router.push('/project/process');
     } catch (error) {
-      alert(
-        '임시저장에 실패했습니다: ' +
-          (error instanceof Error ? error.message : '알 수 없는 오류')
-      );
+      // 에러 메시지 설정
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      
+      // 날짜 형식 에러인 경우 다른 토스트 메시지 표시
+      if (errorMessage.includes('올바르지 않은 날짜 형식')) {
+        setToastText('올바르지 않은 날짜 형식입니다.');
+        setToastSubtext('날짜를 YYYY-MM-DD 형식으로 입력해 주세요.');
+      } else {
+        setToastText('임시저장에 실패했습니다');
+        setToastSubtext(errorMessage);
+      }
+      
+      showToast();
     }
   }, [
     watch,
@@ -110,6 +119,9 @@ export const useQuotationHandlers = ({
     saveDraft,
     setInitialQuotationProducts,
     setShowErrors,
+    setToastText,
+    setToastSubtext,
+    showToast,
     router,
   ]);
 
@@ -196,6 +208,9 @@ export const useQuotationHandlers = ({
         } else if (errorText.includes('설비 조회 중 오류가 발생했습니다')) {
           errorText = '설비 조회 중 오류가 발생했습니다.';
           errorSubtext = '다시 시도해 주세요.';
+        } else if (errorText.includes('올바르지 않은 날짜 형식')) {
+          errorText = '올바르지 않은 날짜 형식입니다.';
+          errorSubtext = '날짜를 YYYY-MM-DD 형식으로 입력해 주세요.';
         }
       }
 

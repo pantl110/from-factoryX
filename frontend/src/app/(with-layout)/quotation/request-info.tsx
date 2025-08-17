@@ -20,7 +20,7 @@ interface RequestInfoProps {
   onProductsChange?: (products: QuotationProductDetailResponseModel[]) => void;
   quotationId?: number;
   ocrRequestData?: OcrRequestItemModel[];
-  productList?: ProductResponseModel[]; // 제품 목록 추가
+  productList?: ProductResponseModel[];
 }
 
 const RequestInfo = ({
@@ -40,16 +40,19 @@ const RequestInfo = ({
   const [supplyAmount, setSupplyAmount] = useState<number>(0);
 
   // hook을 항상 호출 (0을 전달하면 hook 내부에서 처리)
-  const { data: quotationDetail, isLoading: isLoadingQuotation } =
-    useGetDetailQuotation(quotationId || 0);
+  const { data: quotationDetail } = useGetDetailQuotation(quotationId || 0);
   const { getProductDetail } = useGetProduct();
 
   // React Hook Form 설정
-  const { control, setValue, reset } = useForm({
+  const { control, reset } = useForm({
     defaultValues: {
       products: [] as QuotationProductDetailResponseModel[],
     },
   });
+
+  // reset 함수의 최신 참조를 유지하기 위한 ref
+  const resetRef = useRef(reset);
+  resetRef.current = reset;
 
   // 드롭다운 상태를 상위에서 관리
   const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(
@@ -65,28 +68,17 @@ const RequestInfo = ({
     name: 'products',
   });
 
-  // 이전 quotationDetail.products를 저장하기 위한 ref
-  const prevQuotationProductsRef = useRef<
-    QuotationProductDetailResponseModel[] | null
-  >(null);
-
   // quotationDetail.products가 변경될 때마다 폼 필드 업데이트
   useEffect(() => {
     if (quotationDetail?.products && quotationDetail.products.length > 0) {
-      quotationDetail.products.forEach((product, index) => {
-        setValue(`products.${index}.productId`, product.productId);
-        setValue(`products.${index}.product_code`, product.product_code);
-        setValue(`products.${index}.product_name`, product.product_name);
-        setValue(`products.${index}.spec`, product.spec);
-        setValue(`products.${index}.unit`, product.unit);
-        setValue(`products.${index}.quantity`, product.quantity);
-        setValue(`products.${index}.unit_price`, product.unit_price);
-        setValue(`products.${index}.supply_amount`, product.supply_amount);
-        setValue(`products.${index}.tax_amount`, product.tax_amount);
-      });
+      // reset을 사용해서 폼을 완전히 초기화
+      resetRef.current({ products: quotationDetail.products });
+
+      // 상위 컴포넌트에 제품 목록 전달
+      onProductsChange?.(quotationDetail.products);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quotationDetail?.products, setValue]);
+  }, [quotationDetail?.products, onProductsChange]);
 
   // OCR 데이터가 있을 때 제품 목록 초기화
   useEffect(() => {
@@ -121,12 +113,12 @@ const RequestInfo = ({
       });
 
       // 폼 초기화
-      reset({ products: ocrProducts });
+      resetRef.current({ products: ocrProducts });
 
       // 상위 컴포넌트에 제품 목록 전달
       onProductsChange?.(ocrProducts);
     }
-  }, [ocrRequestData, reset, productList, onProductsChange]);
+  }, [ocrRequestData, productList, onProductsChange]);
 
   // fields가 변경될 때마다 유효성 검사 해서 hasQuotationProducts 업데이트하여 버튼 disabled 여부 결정
   useEffect(() => {
@@ -264,7 +256,7 @@ const RequestInfo = ({
         )}
       </div>
 
-      {!isLoadingQuotation && fields.length > 0 ? (
+      {fields.length > 0 ? (
         <>
           <div className="w-full overflow-x-auto">
             <table className="w-full min-w-[938px]">
