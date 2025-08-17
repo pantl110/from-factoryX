@@ -894,12 +894,12 @@ export interface InviteMemberResponseModel {
 export interface MemberResponseModel {
   id: number;
   factory: number;
-  user?: number; // 가입된 초대자의 user_id, 미가입 초대자는 none
-  name?: string; // 사용자의 이름, 미가입 초대자는 ""
+  user?: number | null; // 가입된 멤버는 user_id, 미가입 초대자는 null
+  name?: string; // 사용자의 이름, 미가입 초대자는 빈 문자열
   email: string;
   role: MemberRoleType;
   status: MemberStatusType;
-  invited_at: string;
+  invited_at: string | null; // 초대일시 (초대 대기자는 null일 수 있음)
 }
 
 export interface MemberListResponseModel extends PaginationModel {

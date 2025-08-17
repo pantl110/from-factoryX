@@ -14,6 +14,7 @@ import { useGetFactory } from '@/hooks/factory/use-get-factory';
 import useFactoryStore from '@/store/factory-store';
 import Spinner from '@/ui/spinner';
 import Tooltip from '@/ui/tooltip';
+import NoHistoryBox from '@/ui/no-history-box';
 
 const Permission = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -153,29 +154,33 @@ const Permission = () => {
                   </div>
                 )}
               </div>
-              <MiniBtn
-                text="취소"
-                textColor="text-dg"
-                borderColor="border-lg"
-                onClick={() => {
-                  setAllChecked(false);
-                }}
-                hoverColor="hover:bg-bg"
-              />
-              <MiniBtn
-                text={getDeleteButtonText()}
-                textColor={checkedCount === 0 ? 'text-dg' : 'text-red'}
-                bgColor={checkedCount === 0 ? '' : 'bg-red-8'}
-                borderColor={checkedCount === 0 ? 'border-lg' : ''}
-                hoverColor={
-                  checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-red-hover'
-                }
-                onClick={() => {
-                  if (checkedCount > 0) {
-                    setIsDeleteModalOpen(true);
-                  }
-                }}
-              />
+              {members?.data && members.data.length > 1 && (
+                <>
+                  <MiniBtn
+                    text="취소"
+                    textColor="text-dg"
+                    borderColor="border-lg"
+                    onClick={() => {
+                      setAllChecked(false);
+                    }}
+                    hoverColor="hover:bg-bg"
+                  />
+                  <MiniBtn
+                    text={getDeleteButtonText()}
+                    textColor={checkedCount === 0 ? 'text-dg' : 'text-red'}
+                    bgColor={checkedCount === 0 ? '' : 'bg-red-8'}
+                    borderColor={checkedCount === 0 ? 'border-lg' : ''}
+                    hoverColor={
+                      checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-red-hover'
+                    }
+                    onClick={() => {
+                      if (checkedCount > 0) {
+                        setIsDeleteModalOpen(true);
+                      }
+                    }}
+                  />
+                </>
+              )}
             </div>
           </div>
 
@@ -185,6 +190,12 @@ const Permission = () => {
                 <div className="flex justify-center items-center h-100">
                   <Spinner />
                 </div>
+              ) : !members?.data || members.data.length === 1 ? (
+                // 자기 자신은 제외하고 UI로 보여주지 않음
+                <NoHistoryBox
+                  title="초대된 팀원이 없어요."
+                  text="팀원이 초대되면 이곳에 표시돼요."
+                />
               ) : (
                 <>
                   <PermissionTableHeader
