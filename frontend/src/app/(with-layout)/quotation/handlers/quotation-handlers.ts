@@ -190,7 +190,7 @@ export const useQuotationHandlers = ({
         errorText = error.message;
 
         // 특정 에러 메시지에 따른 처리
-        if (errorText.includes('해당 공장에 가동 가능한 설비가 없습니다')) {
+        if (errorText.includes('가동 가능한 설비가 없습니다')) {
           errorText = '가동 가능한 설비가 없습니다.';
           errorSubtext = '설비 등록 후 생산을 다시 시작해 주세요.';
         } else if (errorText.includes('설비 조회 중 오류가 발생했습니다')) {

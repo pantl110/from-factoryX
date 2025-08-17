@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ClientListResponseModel } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 
@@ -92,6 +92,13 @@ const useGetClient = () => {
     },
     [pageSize, getClients, factoryId]
   );
+
+  // 컴포넌트가 마운트될 때 자동으로 데이터 불러오기
+  useEffect(() => {
+    if (factoryId) {
+      getClients();
+    }
+  }, [factoryId, getClients]);
 
   return {
     // 데이터

@@ -977,8 +977,8 @@ export interface TaxProductInfoModel {
   factory: number;
   name: string;
   code: string;
-  unit: string;
   spec: string;
+  unit: string;
   current_stock: number;
   average_production_time: number;
   buffer_rate: number; // Decimal → float 변환

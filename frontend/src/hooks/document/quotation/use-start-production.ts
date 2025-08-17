@@ -84,8 +84,8 @@ const useStartProduction = (): UseStartProductionReturnModel => {
       const errorMessage =
         err instanceof Error ? err.message : '생산 시작에 실패했습니다.';
       setError(errorMessage);
-      // 에러 발생 시 null 반환
-      return null as unknown as StartProductionResponseModel;
+      // 에러 발생 시 에러를 다시 throw
+      throw err;
     } finally {
       setIsLoading(false);
     }

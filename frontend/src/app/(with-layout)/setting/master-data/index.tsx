@@ -315,7 +315,7 @@ const MasterData = () => {
     <div className="w-full">
       <div className="flex gap-1 px-10 pb-5">
         <Chip
-          text={`설비 관리 ${equipmentList?.totalCnt}`}
+          text={`설비 관리${equipmentList?.totalCnt != null ? ` ${equipmentList.totalCnt}` : ''}`}
           textColor={settingChip === 'equipment' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'equipment' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -326,7 +326,7 @@ const MasterData = () => {
           padding="px-4"
         />
         <Chip
-          text={`거래처 정보 ${clientList?.totalCnt}`}
+          text={`거래처 정보${clientList?.totalCnt != null ? ` ${clientList.totalCnt}` : ''}`}
           textColor={settingChip === 'client' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'client' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -369,22 +369,32 @@ const MasterData = () => {
           )}
 
           {/* 삭제 버튼 */}
-          <MiniBtn
-            text="취소"
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
-            onClick={handleClearAllChecked}
-          />
-          <MiniBtn
-            text={getDeleteButtonText()}
-            textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
-            borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
-            bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
-            hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
-            onClick={handleDeleteBtnClick}
-            disabled={isDeleteLoading || isDeleteClientLoading}
-          />
+          {(settingChip === 'equipment' &&
+            equipmentListForFacility.data.length > 0) ||
+            (settingChip === 'client' &&
+              clientList?.data.length != null &&
+              clientList?.data.length > 0 && (
+                <>
+                  <MiniBtn
+                    text="취소"
+                    textColor="text-dg"
+                    borderColor="border-lg"
+                    hoverColor="hover:bg-bg"
+                    onClick={handleClearAllChecked}
+                  />
+                  <MiniBtn
+                    text={getDeleteButtonText()}
+                    textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+                    borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
+                    bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
+                    hoverColor={
+                      checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'
+                    }
+                    onClick={handleDeleteBtnClick}
+                    disabled={isDeleteLoading || isDeleteClientLoading}
+                  />
+                </>
+              ))}
         </div>
       </div>
       {renderContent()}

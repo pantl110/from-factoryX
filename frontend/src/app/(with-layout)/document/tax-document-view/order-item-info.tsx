@@ -15,19 +15,6 @@ const OrderItemInfo = ({
   productsInfo,
   transactionAmount,
 }: OrderItemInfoProps) => {
-  // productsInfo가 없으면 렌더링하지 않음
-  if (!lineItems || lineItems.length === 0) {
-    return (
-      <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 h-10 items-center flex">주문 품목 정보</h3>
-        <NoHistoryBox
-          title="주문 품목 정보가 없습니다."
-          text="주문 품목 정보가 없습니다."
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">주문 품목 정보</h3>
@@ -43,15 +30,23 @@ const OrderItemInfo = ({
           <p className="px-3 flex-1">세액</p>
         </div>
 
-        {lineItems.map((lineItem, index) => (
-          <OrderTableItem
-            key={index}
-            lineItem={lineItem}
-            productInfo={
-              productsInfo && productsInfo[index] ? productsInfo[index] : null
-            }
-          />
-        ))}
+        {lineItems.map((lineItem, index) => {
+          // TaxLineItemModel.name === TaxProductInfoModel.name && TaxLineItemModel.information === TaxProductInfoModel.spec 조건을 만족하는 productInfo 찾기
+          const matchingProductInfo =
+            productsInfo?.find(
+              (product) =>
+                product.name === lineItem.name &&
+                product.spec === lineItem.information
+            ) || null;
+
+          return (
+            <OrderTableItem
+              key={index}
+              lineItem={lineItem}
+              productInfo={matchingProductInfo}
+            />
+          );
+        })}
       </div>
 
       <PriceInfo supplyAmount={transactionAmount} textColor={'text-primary'} />
