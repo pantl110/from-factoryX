@@ -38,14 +38,33 @@ const TableItem = ({
           }
         /> */}
       </div>
-      <p className="px-3 flex-2">{item.tax_invoice_type}</p>
-      <p className="px-3 flex-2">{item.client_name}</p>
-      <p className="px-3 w-[200px]">
+      <p className="px-3 flex-2 truncate" title={item.tax_invoice_type}>
+        {item.tax_invoice_type}
+      </p>
+      <p className="px-3 flex-2 truncate" title={item.client_name}>
+        {item.client_name}
+      </p>
+      <p
+        className="px-3 w-[200px] truncate"
+        title={item.transaction_amount.toLocaleString()}
+      >
         {item.transaction_amount.toLocaleString()}
       </p>
-      <p className="px-3 w-[200px]">{item.tax_amount.toLocaleString()}</p>
-      <p className="px-3 w-[200px]">{item.total_amount.toLocaleString()}</p>
-      <p className="px-3 w-[200px]">{item.transaction_date}</p>
+      <p
+        className="px-3 w-[200px] truncate"
+        title={item.tax_amount.toLocaleString()}
+      >
+        {item.tax_amount.toLocaleString()}
+      </p>
+      <p
+        className="px-3 w-[200px] truncate"
+        title={item.total_amount.toLocaleString()}
+      >
+        {item.total_amount.toLocaleString()}
+      </p>
+      <p className="px-3 w-[200px] truncate" title={item.transaction_date}>
+        {item.transaction_date}
+      </p>
     </div>
   );
 };

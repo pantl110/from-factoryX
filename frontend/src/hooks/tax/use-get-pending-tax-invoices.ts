@@ -8,7 +8,7 @@ interface PendingTaxInvoiceParamsModel {
   q?: string; // 거래처명 또는 품목명 통합 검색어
   publish_status?: 'all' | 'pending' | 'temporary'; // 세금계산서 상태
   page?: number;
-  size?: number;
+  page_size?: number;
 }
 
 // 발행대기 또는 임시저장 상태의 세금계산서를 조회
@@ -33,8 +33,8 @@ const useGetPendingTaxInvoices = () => {
       if (params.page) {
         queryParams.page = params.page;
       }
-      if (params.size) {
-        queryParams.size = params.size;
+      if (params.page_size) {
+        queryParams.page_size = params.page_size;
       }
 
       const result = await callTaxApi<PendingTaxInvoiceListResponseModel>(

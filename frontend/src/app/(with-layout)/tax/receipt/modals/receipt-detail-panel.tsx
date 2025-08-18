@@ -16,11 +16,11 @@ interface ReceiptItemModel {
 
 interface ReceiptDetailPanelProps {
   onClose: () => void;
-  item: ReceiptItemModel | null;
+  itemId: number;
 }
 
-const ReceiptDetailPanel = ({ onClose, item }: ReceiptDetailPanelProps) => {
-  if (!item) return null;
+const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
+  if (!itemId || itemId === 0) return null;
 
   return (
     <Panel title="현금영수증" onClose={onClose}>
@@ -28,7 +28,7 @@ const ReceiptDetailPanel = ({ onClose, item }: ReceiptDetailPanelProps) => {
         <div className="flex flex-col gap-3">
           <h3 className="Heading-3 h-10 items-center flex">거래 정보</h3>
           <div>
-            <InfoLabelValue label="거래일자" value={item.date} />
+            {/* <InfoLabelValue label="거래일자" value={item.date} /> */}
             <InfoLabelValue label="승인번호" value="123456789" />
             <InfoLabelValue label="거래구분" value="승인거래" />
             <InfoLabelValue label="거래용도" value="소득공제" />
@@ -38,7 +38,7 @@ const ReceiptDetailPanel = ({ onClose, item }: ReceiptDetailPanelProps) => {
         <div className="flex flex-col gap-3">
           <h3 className="Heading-3 h-10 items-center flex">구매처 정보</h3>
           <div>
-            <InfoLabelValue label="업체명" value={item.company} />
+            {/* <InfoLabelValue label="업체명" value={item.company} /> */}
             <InfoLabelValue label="사업자등록번호" value="123-45-67890" />
             <InfoLabelValue label="대표자명" value="홍길동" />
             <InfoLabelValue

@@ -360,7 +360,7 @@ export interface MaterialHistoryModel {
 // 업체별 단가 비교 & 원자재 입출고 내역// 원자재 히스토리 조회
 export interface MaterialHistoryResponseModel {
   id: number; // material_history_id
-  type: '구매' | '소모'; // 구매 또는 소비
+  type: 'purchase' | 'consumption'; // 구매 또는 소비
   client_id: number;
   client_name: string; // 거래처명
   quantity: number; // 수량

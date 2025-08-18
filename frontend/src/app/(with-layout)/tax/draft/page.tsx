@@ -11,9 +11,9 @@ import TaxDetailPanel from '../tax-detail-panel';
 import Pagination from '@/components/pagination';
 import { useGetPendingTaxInvoices } from '@/hooks';
 import { PendingTaxInvoiceListResponseModel } from '@/types/data-model';
-import TableItem from './table-item';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
+import TableItem from './table-item';
 
 const TaxDraftPage = () => {
   const [selectedTab, setSelectedTab] = useState<
@@ -41,7 +41,7 @@ const TaxDraftPage = () => {
     const fetchData = async () => {
       const result = await getPendingTaxInvoices({
         page: currentPage,
-        size: 10,
+        page_size: 10,
         q: searchQuery || undefined,
         publish_status:
           selectedTab === '전체'
@@ -98,9 +98,10 @@ const TaxDraftPage = () => {
   // 탭 변경 핸들러
   const handleTabChange = (tab: '전체' | '임시 저장' | '전송 대기') => {
     setSelectedTab(tab);
-    // 탭 변경 시 첫 페이지로 이동하고 체크박스 초기화
+    // 탭 변경 시 첫 페이지로 이동, 체크박스 초기화, 검색어 초기화
     setCurrentPage(1);
     setAllChecked(false);
+    setSearchQuery('');
   };
 
   return (
@@ -120,6 +121,7 @@ const TaxDraftPage = () => {
               setSearchQuery(query);
               setCurrentPage(1); // 검색 시 첫 페이지로 이동
             }}
+            searchKeyword={searchQuery}
             hasData={!!taxInvoices?.data.length}
           />
 
