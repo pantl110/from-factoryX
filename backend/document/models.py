@@ -51,6 +51,9 @@ class Quotation(BaseModel):  # 견적서 -> 주문서(거래 확정시 타입 �
         blank=True,
         help_text="업로드 파일",
     )
+    due_date_notification = models.BooleanField(
+        default=False, help_text="마감일 알림 여부"
+    )
 
 
 class QuotationProduct(BaseModel):
