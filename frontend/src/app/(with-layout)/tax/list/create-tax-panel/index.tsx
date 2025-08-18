@@ -21,7 +21,10 @@ import {
   ClientUpdateModel,
 } from '@/types/data-model';
 import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../type';
-import ProductInfo, { ProductInfoRef } from './product-info';
+import ProductInfo, {
+  ProductInfoRef,
+  ProductFormDataModel,
+} from './product-info';
 
 interface CreatTaxPanelProps {
   onClose: () => void;
@@ -58,6 +61,11 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
   const [clientInfoFormData, setClientInfoFormData] =
     useState<ClientInfoFormDataModel | null>(null);
 
+  // 주문품목 정보 폼 상태
+  const [isProductInfoDirty, setIsProductInfoDirty] = useState(false);
+  const [productInfoFormData, setProductInfoFormData] =
+    useState<ProductFormDataModel | null>(null);
+
   // 저장 중 상태
   const [isSaving, setIsSaving] = useState(false);
 
@@ -78,6 +86,15 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
 
   // 세금계산서 생성 훅
   const { createTaxInvoice } = useCreateTaxInvoice();
+
+  // 주문품목 정보 폼 변경 핸들러
+  const handleProductInfoChange = useCallback(
+    (isDirty: boolean, formData: ProductFormDataModel) => {
+      setIsProductInfoDirty(isDirty);
+      setProductInfoFormData(formData);
+    },
+    []
+  );
 
   // 세금계산서 생성 함수
   const handleCreateTaxInvoice = useCallback(
@@ -347,7 +364,10 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
         bgColor="bg-primary-8"
         hoverColor="hover:bg-secondary-hover"
         onClick={handleTemporarySave}
-        disabled={(!isSellerInfoDirty && !isClientInfoDirty) || isSaving}
+        disabled={
+          (!isSellerInfoDirty && !isClientInfoDirty && !isProductInfoDirty) ||
+          isSaving
+        }
       />
       <div className="relative">
         <MiniBtn
@@ -413,6 +433,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
             ref={productInfoRef}
             setIsProductDetailOpen={setIsProductDetailOpen}
             isProductDetailOpen={isProductDetailOpen}
+            onFormChange={handleProductInfoChange}
           />
         </div>
       </Panel>

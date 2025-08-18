@@ -2,16 +2,17 @@ import NoHistoryBox from '@/ui/no-history-box';
 import TableItem from './table-item';
 import ProductDetail from '@/app/(with-layout)/stock/product/product-detail';
 import { FormProvider, useForm, useFieldArray } from 'react-hook-form';
-import { useImperativeHandle, forwardRef } from 'react';
+import { useImperativeHandle, forwardRef, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
 import { ProductResponseModel } from '@/types/data-model';
 
 interface ProductInfoProps {
   setIsProductDetailOpen: (isOpen: boolean) => void;
   isProductDetailOpen: boolean;
+  onFormChange?: (isDirty: boolean, formData: ProductFormDataModel) => void;
 }
 
-interface ProductFormDataModel {
+export interface ProductFormDataModel {
   products: Array<{
     productId: number;
     quantity: number;
@@ -25,7 +26,7 @@ export interface ProductInfoRef {
 }
 
 const ProductInfo = forwardRef<ProductInfoRef, ProductInfoProps>(
-  ({ setIsProductDetailOpen, isProductDetailOpen }, ref) => {
+  ({ setIsProductDetailOpen, isProductDetailOpen, onFormChange }, ref) => {
     const { getProductDetail } = useGetProduct();
 
     const methods = useForm<ProductFormDataModel>({
@@ -38,6 +39,14 @@ const ProductInfo = forwardRef<ProductInfoRef, ProductInfoProps>(
       control: methods.control,
       name: 'products',
     });
+
+    // 폼 변경 상태를 상위 컴포넌트로 전달
+    useEffect(() => {
+      if (onFormChange) {
+        const formData = methods.watch();
+        onFormChange(methods.formState.isDirty, formData);
+      }
+    }, [methods.formState.isDirty, onFormChange]);
 
     const handleRemoveProduct = (index: number) => {
       remove(index);
