@@ -124,7 +124,7 @@ const ReturnInfo = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsEditing(true)}
-                disabled={refundData.plan?.status === 'pending'}
+                disabled={refundData.plan?.status !== 'pending'}
               />
             )}
 
@@ -134,10 +134,7 @@ const ReturnInfo = ({
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={() => setIsRegisterProductionModalOpen(true)}
-              disabled={
-                !isFormValid ||
-                (refundData.plan ? refundData.plan.status !== 'pending' : false)
-              }
+              disabled={!isFormValid || refundData.plan?.status !== 'pending'}
             />
           </div>
         </div>

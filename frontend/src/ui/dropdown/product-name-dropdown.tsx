@@ -19,7 +19,7 @@ export const ProductNameDropdown = ({
     <Dropdown onClose={onClose} width={width} maxHeight={true}>
       {items.map((item, index) => (
         <DropdownItem
-          key={item.id + index}
+          key={`${item.id}-${index}`}
           text={item.name}
           onClick={() => onSelect(item)}
           search={true}

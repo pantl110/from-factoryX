@@ -158,9 +158,9 @@ const DeliveryTableItem = ({
             text={deliveryStatus}
             bgColor={bgColor}
             textColor={textColor}
-            state={projectStatus === 'delivery' ? true : false}
+            state={projectStatus !== 'completed' ? true : false}
             onClick={
-              projectStatus === 'delivery'
+              projectStatus !== 'completed'
                 ? (e) => e && openDropdown(e)
                 : undefined
             }

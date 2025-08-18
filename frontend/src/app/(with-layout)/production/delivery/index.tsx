@@ -21,6 +21,7 @@ import {
   useGetQuotationProducts,
   useGetProduct,
   useUpdateQuotationProductDelivery,
+  useUpdateProjectPlan,
 } from '@/hooks';
 
 interface DeliveryProps {
@@ -77,6 +78,7 @@ const Delivery = ({
 
   const { updateQuotationProductDelivery } =
     useUpdateQuotationProductDelivery();
+  const { updateProjectPlan } = useUpdateProjectPlan();
 
   // 체크 기능
   const itemIds =
@@ -283,13 +285,6 @@ const Delivery = ({
               onClick={() => setIsCreateTransactionOverlayviewOpen(true)}
               hoverColor="hover:bg-bg"
             />
-            {/* <MiniBtn
-              text="세금계산서 생성"
-              textColor="text-dg"
-              borderColor="border-lg"
-              onClick={() => setIsCreateTaxOverlayviewOpen(true)}
-              hoverColor="hover:bg-bg"
-            /> */}
           </div>
         </div>
         <div className="flex flex-col w-full overflow-x-auto">
