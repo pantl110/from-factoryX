@@ -187,7 +187,7 @@ export const TaxPublishStatusColorMap: Record<
 // 바로빌 상태 (백엔드에서 실제로 사용하는 값들만)
 export type BarobillStateType = '임시저장' | '발급완료' | '전송완료';
 
-// 국세청 전송 상태 (백엔드에서 햐실제로 사용하는 값들만)
+// 국세청 전송 상태 (백엔드에서 실제로 사용하는 값들만)
 export type NtsSendStateType = '전송전' | '전송완료';
 
 ////////////////////
