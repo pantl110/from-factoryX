@@ -3,7 +3,7 @@ import SellerInfo from './seller-info';
 import ClientInfo from './client-info';
 import MiniBtn from '@/ui/mini-btn';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AddItemDropdown from './add-item-dropdown';
 import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
 import IssueTypeDropdown from './issue-type-dropdown';
@@ -20,8 +20,8 @@ import {
   ClientModel,
   ClientUpdateModel,
 } from '@/types/data-model';
-import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../../type';
-import ProductInfo from './product-info';
+import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../type';
+import ProductInfo, { ProductInfoRef } from './product-info';
 
 interface CreatTaxPanelProps {
   onClose: () => void;
@@ -63,6 +63,9 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
 
   // 새로운 품목 추가 디테일판넬 상태
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
+
+  // ProductInfo ref
+  const productInfoRef = useRef<ProductInfoRef>(null);
 
   // 공장 정보 업데이트 훅
   const { updateFactory } = useUpdateFactory();
@@ -323,6 +326,18 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
     selectedClientId,
   ]);
 
+  // 품목 추가 핸들러
+  const handleAddProduct = (action: 'existing' | 'new') => {
+    if (action === 'existing') {
+      // 기존 품목 추가 - ProductInfo에 새로운 행 추가
+      productInfoRef.current?.addProduct();
+    } else if (action === 'new') {
+      // 새로운 품목 추가 - 품목 상세 모달 열기
+      setIsProductDetailOpen(true);
+    }
+    setIsAddProductDropdownOpen(false);
+  };
+
   // 헤더 버튼 구성
   const headerButton = (
     <div className="flex gap-2">
@@ -389,17 +404,13 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
               <div className="absolute top-12 right-0">
                 <AddItemDropdown
                   onClose={() => setIsAddProductDropdownOpen(false)}
-                  onSelect={(action) => {
-                    setIsAddProductDropdownOpen(false);
-                    if (action === 'new') {
-                      setIsProductDetailOpen(true);
-                    }
-                  }}
+                  onSelect={handleAddProduct}
                 />
               </div>
             )}
           </div>
           <ProductInfo
+            ref={productInfoRef}
             setIsProductDetailOpen={setIsProductDetailOpen}
             isProductDetailOpen={isProductDetailOpen}
           />

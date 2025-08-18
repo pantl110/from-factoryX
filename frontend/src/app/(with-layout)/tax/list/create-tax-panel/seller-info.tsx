@@ -4,7 +4,7 @@ import { formatBusinessNumber, formatDate } from '@/hooks/format-number';
 import { useEffect, useState } from 'react';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
 import useFactoryStore from '@/store/factory-store';
-import { SellerInfoFormDataModel } from '../../type';
+import { SellerInfoFormDataModel } from '../type';
 
 interface SellerInfoProps {
   onFormChange: (

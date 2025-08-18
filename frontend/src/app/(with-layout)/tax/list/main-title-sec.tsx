@@ -1,7 +1,7 @@
 import { TaxDocumentType } from '@/types/status-type';
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
-import CreatTaxPanel from './modals/create-tax-panel';
+import CreatTaxPanel from './create-tax-panel';
 
 interface MainTitleSecProps {
   selectedTaxType: TaxDocumentType | null;

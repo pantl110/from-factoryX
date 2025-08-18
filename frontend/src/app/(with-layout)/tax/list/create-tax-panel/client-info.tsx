@@ -1,7 +1,7 @@
 import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { ClientInfoFormDataModel } from '../../type';
+import { ClientInfoFormDataModel } from '../type';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { ClientResponseModel } from '@/types/data-model';
 import { useGetClient, formatBusinessNumber } from '@/hooks';
