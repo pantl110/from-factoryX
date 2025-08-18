@@ -121,7 +121,7 @@ const TableItem = ({
         }}
       >
         <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
-        <div className="px-3 w-[150px]">
+        <div className={`px-3 ${isArchived ? 'w-[150px]' : 'w-[200px]'}`}>
           <Chip
             text={displayText}
             bgColor={chipColors.bgColor}
@@ -171,38 +171,21 @@ const TableItem = ({
               e.stopPropagation();
             }}
           >
-            {taxButtonText === '보기' ? (
-              <MiniBtn
-                text={taxButtonText}
-                bgColor="bg-wh"
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
-                height="h-8"
-                onClick={() => {
-                  router.push(`/tax/list`);
-                }}
-              />
-            ) : taxButtonText === '연결 필요' ? (
-              <MiniBtn
-                text="연결 필요"
-                bgColor="bg-bg"
-                textColor="text-dg"
-                hoverColor="hover:bg-lg"
-                height="h-8"
-              />
-            ) : (
-              <MiniBtn
-                text="미발행"
-                bgColor="bg-bg"
-                textColor="text-dg"
-                hoverColor="hover:bg-lg"
-                height="h-8"
-                disabled
-              />
-            )}
+            <MiniBtn
+              text="연결 필요"
+              bgColor="bg-bg"
+              textColor="text-dg"
+              hoverColor="hover:bg-lg"
+              height="h-8"
+            />
           </div>
         )}
+        {!isArchived && (
+          <p className="w-[200px] px-3 text-dg truncate">
+            {project.publish_status === 'pending' ? '미발행' : '보기'}
+          </p>
+        )}
+
         {isArchived && (
           <div
             onClick={handleCloneProject}

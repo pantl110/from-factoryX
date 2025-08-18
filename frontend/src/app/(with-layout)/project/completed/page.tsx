@@ -33,6 +33,8 @@ const CompletedProjectPage = () => {
 
   // 초기 데이터 로드
   useEffect(() => {
+    if (!getProjects) return;
+
     const loadArchivedProjects = async () => {
       let status = 'archived'; // 전체 보관된 프로젝트
 
@@ -58,9 +60,14 @@ const CompletedProjectPage = () => {
     };
 
     loadArchivedProjects();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedStatus, searchKeyword, sortKey, sortOrder, currentPage]);
+  }, [
+    getProjects,
+    selectedStatus,
+    searchKeyword,
+    sortKey,
+    sortOrder,
+    currentPage,
+  ]);
 
   const currentIds =
     projectData?.data.map((project) => project.project_id) || [];
@@ -165,9 +172,7 @@ const CompletedProjectPage = () => {
             onCancel={() => setAllChecked(false)}
             onSearch={handleSearch}
             searchKeyword={searchKeyword}
-            hasData={
-              !!projectData?.data.length || projectData?.data.length === 0
-            }
+            hasData={!!projectData?.data.length || projectData?.data.length > 0}
           />
 
           {isProjectsLoading && !projectData ? (
