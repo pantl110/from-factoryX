@@ -125,7 +125,9 @@ const PermissionTableItem = ({
                 }}
               />
             </div>
-            <p className="px-3 flex-1">{formatDate(invitedAt)}</p>
+            <p className="px-3 flex-1">
+              {invitedAt ? formatDate(invitedAt) : '-'}
+            </p>
           </div>
 
           {/* 권한 드롭다운 */}

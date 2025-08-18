@@ -16,8 +16,12 @@ interface QuotationHandlersProps {
   factoryId: number | null;
   selectedClientId: number | null;
   imageUrl?: string;
-  saveDraft: (data: SaveDraftDataModel) => Promise<{ success: boolean; error?: string }>;
-  startProduction: (data: ProductionDataModel) => Promise<{ success: boolean; error?: string; project_id?: number }>;
+  saveDraft: (
+    data: SaveDraftDataModel
+  ) => Promise<{ quotation_id: number; status: string }>;
+  startProduction: (
+    data: ProductionDataModel
+  ) => Promise<{ quotation_id: number; project_id: number; status: string }>;
   setInitialQuotationProducts: (
     products: QuotationProductDetailResponseModel[]
   ) => void;
@@ -85,16 +89,20 @@ export const useQuotationHandlers = ({
         uploaded_file: imageUrl || undefined, // OCR 데이터의 imageUrl을 uploaded_file로 전달
       };
 
-      await saveDraft(draftData);
-      // 폼의 isDirty 상태 초기화 - 현재 값으로 reset하여 변경사항 없음으로 표시
-      reset(formData);
-      // 견적 품목 변경 추적 초기화
-      setInitialQuotationProducts([...quotationProducts]);
-      // 에러 표시 상태 초기화
-      setShowErrors(false);
+      const result = await saveDraft(draftData);
 
-      // 임시저장 성공 시 프로젝트 페이지로 이동
-      router.push('/project/process');
+      // 성공 시에만 처리
+      if (result && result.quotation_id) {
+        // 폼의 isDirty 상태 초기화 - 현재 값으로 reset하여 변경사항 없음으로 표시
+        reset(formData);
+        // 견적 품목 변경 추적 초기화
+        setInitialQuotationProducts([...quotationProducts]);
+        // 에러 표시 상태 초기화
+        setShowErrors(false);
+
+        // 임시저장 성공 시 프로젝트 페이지로 이동
+        router.push('/project/process');
+      }
     } catch (error) {
       // 에러 메시지 설정
       const errorMessage =
@@ -193,7 +201,7 @@ export const useQuotationHandlers = ({
       // 성공 시 모달 닫고
       setIsStartProductionModalOpen(false);
       //프로젝트 페이지로 이동
-      if (result.project_id) {
+      if (result && result.project_id) {
         router.push(`/production/${result.project_id}`);
       }
     } catch (error) {

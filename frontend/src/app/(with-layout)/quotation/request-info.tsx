@@ -77,7 +77,6 @@ const RequestInfo = ({
       // 상위 컴포넌트에 제품 목록 전달
       onProductsChange?.(quotationDetail.products);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quotationDetail?.products, onProductsChange]);
 
   // OCR 데이터가 있을 때 제품 목록 초기화
@@ -99,12 +98,13 @@ const RequestInfo = ({
           (p) => p.code === item.item_code
         );
 
+        const { id: productId, code, name, spec, unit } = existingProduct || {};
         return {
-          productId: existingProduct?.id || null,
-          product_code: existingProduct?.code || '',
-          product_name: existingProduct?.name || '',
-          spec: existingProduct?.spec || '',
-          unit: existingProduct?.unit || '',
+          productId: productId || null,
+          product_code: code || '',
+          product_name: name || '',
+          spec: spec || '',
+          unit: unit || '',
           quantity: parseNumber(item.quantity),
           unit_price: parseNumber(item.unit_price),
           supply_amount: null,

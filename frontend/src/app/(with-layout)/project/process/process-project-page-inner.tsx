@@ -252,6 +252,9 @@ const ProcessProjectPageInner = () => {
             onCancel={() => setAllChecked(false)}
             onSearch={handleSearch}
             searchKeyword={searchKeyword}
+            hasData={
+              !!projectData?.data.length || projectData?.data.length === 0
+            }
           />
 
           {isProjectsLoading && (

@@ -16,7 +16,6 @@ interface ReturnInfoProps {
   refundData: RefundModel;
   onAmountChange: (newAmount: number) => void;
   onProductionAmountChange: (newProductionAmount: number) => void;
-  productId: number;
   logId: number;
 }
 
@@ -24,7 +23,6 @@ const ReturnInfo = ({
   refundData,
   onAmountChange,
   onProductionAmountChange,
-  productId,
   logId,
 }: ReturnInfoProps) => {
   const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
@@ -255,14 +253,6 @@ const ReturnInfo = ({
       {isRegisterProductionModalOpen && (
         <RegisterProductionModal
           onClose={() => setIsRegisterProductionModalOpen(false)}
-          refundId={refundData.id}
-          refundData={{
-            refund_date: watchedRefundDate,
-            amount: watchedAmount,
-            production_amount: watchedProductionAmount,
-            current_stock: refundData.current_stock,
-          }}
-          productId={productId}
           logId={logId}
         />
       )}

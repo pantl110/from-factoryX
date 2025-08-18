@@ -8,11 +8,10 @@ import ReturnInfo from './return-info';
 
 interface ReturnSectionProps {
   refundId: number;
-  productId: number;
   logId: number;
 }
 
-const ReturnSection = ({ refundId, productId, logId }: ReturnSectionProps) => {
+const ReturnSection = ({ refundId, logId }: ReturnSectionProps) => {
   const [refundData, setRefundData] = useState<RefundModel | null>(null);
   const [productDetail, setProductDetail] =
     useState<ProductResponseModel | null>(null);
@@ -95,7 +94,6 @@ const ReturnSection = ({ refundId, productId, logId }: ReturnSectionProps) => {
           refundData={refundData}
           onAmountChange={handleAmountChange}
           onProductionAmountChange={handleProductionAmountChange}
-          productId={productId}
           logId={logId}
         />
         {shouldShowTable && (

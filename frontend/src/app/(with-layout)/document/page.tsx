@@ -75,6 +75,7 @@ const DocumentPageContent = () => {
             deleteButtonText={getDeleteButtonText()}
             onDelete={() => setIsDeleteModalOpen(true)}
             onCancel={() => setAllChecked(false)}
+            hasData={pagedData.length > 0}
           />
           <DocumentTable
             data={pagedData}
@@ -132,7 +133,7 @@ const DocumentPageContent = () => {
       )}
       {selectedDocument && selectedDocument.documentType === '생산지시서' && (
         <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
-          <ProductionDocumentView />
+          <ProductionDocumentView todayProductionPlans={[]} />
         </Panel>
       )}
       {selectedDocument && selectedDocument.documentType === '거래명세서' && (

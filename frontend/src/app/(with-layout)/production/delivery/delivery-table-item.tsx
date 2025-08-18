@@ -45,7 +45,18 @@ const DeliveryTableItem = ({
   onDeliveryDateChange,
   onDeliveryStatusChange,
 }: DeliveryTableItemProps) => {
-  const { quantity, delivery_date, is_delivery, id } = data;
+  const {
+    quantity,
+    delivery_date: deliveryDate,
+    is_delivery: isDelivery,
+    id: productId,
+  } = data;
+  const {
+    name: productName,
+    code: productCode,
+    spec: productSpec,
+    unit: productUnit,
+  } = productDetail || {};
   const { isOpen, openDropdown, closeDropdown, anchorRect } =
     usePortalDropdown();
 
@@ -54,36 +65,37 @@ const DeliveryTableItem = ({
 
   const { control, setValue, watch } = useForm<DeliveryFormDataModel>({
     defaultValues: {
-      deliveryDate: data.delivery_date || '',
-      deliveryStatus: data.is_delivery ? '완료' : '예정',
+      deliveryDate: deliveryDate || '',
+      deliveryStatus: isDelivery ? '완료' : '예정',
     },
   });
 
   const deliveryStatus = watch('deliveryStatus');
-  const colors = DeliveryStatusColorMap[deliveryStatus as DeliveryStatusType];
+  const { bgColor, textColor } =
+    DeliveryStatusColorMap[deliveryStatus as DeliveryStatusType];
 
   // 디바운스된 납품일자 변경 함수 (500ms)
   const debouncedDateChange = useDebouncedCallback(async (newDate: string) => {
-    if (newDate !== data.delivery_date && newDate.length === 10) {
+    if (newDate !== deliveryDate && newDate.length === 10) {
       try {
-        const result = await updateQuotationProductDelivery(data.id || 0, {
+        const result = await updateQuotationProductDelivery(productId || 0, {
           delivery_date: newDate,
-          is_delivered: data.is_delivery || false,
+          is_delivered: isDelivery || false,
         });
 
         if (result.success) {
           // 성공 시 부모 컴포넌트에 알림
           if (onDeliveryDateChange) {
-            onDeliveryDateChange(String(data.id || ''), newDate);
+            onDeliveryDateChange(String(productId || ''), newDate);
           }
         } else {
           console.error('납품일자 변경 실패:', result.error);
           // 실패 시 원래 값으로 되돌리기
-          setValue('deliveryDate', data.delivery_date || '');
+          setValue('deliveryDate', deliveryDate || '');
         }
       } catch (error) {
         console.error('납품일자 변경 중 오류:', error);
-        setValue('deliveryDate', data.delivery_date || '');
+        setValue('deliveryDate', deliveryDate || '');
       }
     }
   }, 500);
@@ -91,25 +103,25 @@ const DeliveryTableItem = ({
   // 납품일자 변경 감지
   const watchedDate = watch('deliveryDate');
   useEffect(() => {
-    if (watchedDate && watchedDate !== data.delivery_date) {
+    if (watchedDate && watchedDate !== deliveryDate) {
       debouncedDateChange(watchedDate);
     }
 
     // 폼 상태가 변경될 때마다 부모 컴포넌트에 알림 (즉시 UI 업데이트)
     if (onDeliveryDateChange) {
-      onDeliveryDateChange(String(data.id || ''), watchedDate || '');
+      onDeliveryDateChange(String(productId || ''), watchedDate || '');
     }
   }, [
     watchedDate,
     debouncedDateChange,
-    data.delivery_date,
+    deliveryDate,
     onDeliveryDateChange,
-    data.id,
+    productId,
   ]);
 
   const handleStatusChange = async (newStatus: string) => {
     try {
-      const result = await updateQuotationProductDelivery(data.id || 0, {
+      const result = await updateQuotationProductDelivery(productId || 0, {
         is_delivered: newStatus === '완료',
       });
 
@@ -117,22 +129,22 @@ const DeliveryTableItem = ({
         setValue('deliveryStatus', newStatus);
         // 성공 시 부모 컴포넌트에 알림
         if (onDeliveryStatusChange) {
-          onDeliveryStatusChange(String(data.id || ''), newStatus);
+          onDeliveryStatusChange(String(productId || ''), newStatus);
         }
       } else {
         console.error('납품상태 변경 실패:', result.error);
         // 실패 시 원래 값으로 되돌리기
-        setValue('deliveryStatus', data.is_delivery ? '완료' : '예정');
+        setValue('deliveryStatus', isDelivery ? '완료' : '예정');
       }
     } catch (error) {
       console.error('납품상태 변경 중 오류:', error);
-      setValue('deliveryStatus', data.is_delivery ? '완료' : '예정');
+      setValue('deliveryStatus', isDelivery ? '완료' : '예정');
     }
     closeDropdown();
   };
 
   const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const { value } = e.target;
     const formattedValue = formatDate(value);
     setValue('deliveryDate', formattedValue);
   };
@@ -144,8 +156,8 @@ const DeliveryTableItem = ({
         <div className="w-[150px] flex items-center py-3 px-2">
           <Chip
             text={deliveryStatus}
-            bgColor={colors.bgColor}
-            textColor={colors.textColor}
+            bgColor={bgColor}
+            textColor={textColor}
             state={projectStatus === 'delivery' ? true : false}
             onClick={
               projectStatus === 'delivery'
@@ -158,11 +170,8 @@ const DeliveryTableItem = ({
           className="flex-2 px-3 flex justify-between cursor-pointer group"
           onClick={() => onItemClick(data, productDetail)}
         >
-          <p
-            className=" text-dg Me_Body-1 truncate"
-            title={productDetail?.name || '-'}
-          >
-            {productDetail?.name || '-'}
+          <p className=" text-dg Me_Body-1 truncate" title={productName || '-'}>
+            {productName || '-'}
           </p>
           <p className="shrink-0 Re_Body-1 text-gr opacity-0 group-hover:opacity-100 transition-opacity duration-200 ">
             납품표 보기
@@ -170,21 +179,21 @@ const DeliveryTableItem = ({
         </div>
         <p
           className="flex-1 px-3 text-dg Me_Body-1 truncate"
-          title={productDetail?.code || '-'}
+          title={productCode || '-'}
         >
-          {productDetail?.code || '-'}
+          {productCode || '-'}
         </p>
         <p
           className="flex-1 px-3 text-dg Me_Body-1 truncate"
-          title={productDetail?.spec || '-'}
+          title={productSpec || '-'}
         >
-          {productDetail?.spec || '-'}
+          {productSpec || '-'}
         </p>
         <p
           className="w-[80px] px-3 text-dg Me_Body-1 truncate"
-          title={productDetail?.unit || '-'}
+          title={productUnit || '-'}
         >
-          {productDetail?.unit || '-'}
+          {productUnit || '-'}
         </p>
         <p
           className="flex-1 px-3 text-dg Me_Body-1 truncate"

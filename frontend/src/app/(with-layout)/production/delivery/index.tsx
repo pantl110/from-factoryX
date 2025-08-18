@@ -107,7 +107,7 @@ const Delivery = ({
         setProductDetails(
           details.filter(
             (
-              detail: ProductResponseModel | null
+              detail: ProductResponseModel | null | undefined
             ): detail is ProductResponseModel | null => detail !== undefined
           )
         );
@@ -120,7 +120,11 @@ const Delivery = ({
   // deliveryData를 store에 설정
   useEffect(() => {
     if (deliveryData) {
-      setDeliveryData(deliveryData);
+      setDeliveryData(
+        deliveryData.map((item) => ({
+          delivery_date: item.delivery_date || undefined,
+        }))
+      );
     }
   }, [deliveryData, setDeliveryData]);
 
@@ -174,7 +178,11 @@ const Delivery = ({
           (item: QuotationProductResponseModel) =>
             item.id === Number(id) ? { ...item, delivery_date: newDate } : item
         );
-        setDeliveryData(updatedData);
+        setDeliveryData(
+          updatedData.map((item) => ({
+            delivery_date: item.delivery_date || undefined,
+          }))
+        );
       }
     } catch (error) {
       console.error('납품일자 변경 실패:', error);
