@@ -36,7 +36,6 @@ interface ProductionPlanProps {
 const ProductionPlan = ({
   handleChangeStatus,
   projectStatus,
-  onProjectStatusChange,
 }: ProductionPlanProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;

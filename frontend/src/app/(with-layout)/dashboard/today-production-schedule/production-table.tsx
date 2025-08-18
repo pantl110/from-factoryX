@@ -3,7 +3,7 @@ import ProductionTableItem from './production-table-item';
 import NoHistoryBox from '@/ui/no-history-box';
 import { usePagination } from '@/hooks';
 import Pagination from '@/components/pagination';
-import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
+import { TodayProductionPlanModel } from '../type';
 
 interface ProductionTableProps {
   todayProductionPlans: TodayProductionPlanModel[];

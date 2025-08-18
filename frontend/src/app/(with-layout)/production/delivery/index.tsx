@@ -186,7 +186,9 @@ const Delivery = ({
   const handleDeliveryStatusChange = async (id: string, newStatus: string) => {
     try {
       // API 호출 후 성공 시 데이터 새로고침
-      // await updateDeliveryStatus(Number(id), newStatus === '완료');
+      await updateQuotationProductDelivery(Number(id), {
+        is_delivered: newStatus === '완료',
+      });
     } catch (error) {
       console.error('납품상태 변경 실패:', error);
       alert('납품상태 변경에 실패했습니다.');

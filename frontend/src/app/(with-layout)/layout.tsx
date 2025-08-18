@@ -12,7 +12,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const { initializeAuth } = useAuthStore();
 
-  // useAuthGuard();
+  useAuthGuard();
 
   useEffect(() => {
     initializeAuth();

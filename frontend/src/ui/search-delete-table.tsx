@@ -12,6 +12,7 @@ interface SearchDeleteTableProps {
   onCancel: () => void;
   onSearch?: (query: string) => void;
   searchKeyword?: string;
+  hasData: boolean;
 }
 
 const SearchDeleteTable = ({
@@ -22,6 +23,7 @@ const SearchDeleteTable = ({
   onCancel,
   onSearch,
   searchKeyword = '',
+  hasData,
 }: SearchDeleteTableProps) => {
   const [searchValue, setSearchValue] = useState(searchKeyword);
 
@@ -42,24 +44,26 @@ const SearchDeleteTable = ({
         onChange={handleSearchChange}
         placeholder={placeholder}
       />
-      <div className="flex gap-1">
-        <MiniBtn
-          text="취소"
-          textColor="text-dg"
-          borderColor="border-lg"
-          bgColor="bg-white"
-          hoverColor="hover:bg-bg"
-          onClick={onCancel}
-        />
-        <MiniBtn
-          text={deleteButtonText}
-          textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
-          borderColor={checkedCount > 0 ? '' : 'border-lg'}
-          bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-white'}
-          hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
-          onClick={checkedCount > 0 ? onDelete : () => {}}
-        />
-      </div>
+      {hasData && (
+        <div className="flex gap-1">
+          <MiniBtn
+            text="취소"
+            textColor="text-dg"
+            borderColor="border-lg"
+            bgColor="bg-white"
+            hoverColor="hover:bg-bg"
+            onClick={onCancel}
+          />
+          <MiniBtn
+            text={deleteButtonText}
+            textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+            borderColor={checkedCount > 0 ? '' : 'border-lg'}
+            bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-white'}
+            hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
+            onClick={checkedCount > 0 ? onDelete : () => {}}
+          />
+        </div>
+      )}
     </div>
   );
 };

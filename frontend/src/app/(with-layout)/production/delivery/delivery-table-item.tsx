@@ -30,7 +30,7 @@ interface DeliveryTableItemProps {
   onDeliveryStatusChange?: (id: string, newStatus: string) => void;
 }
 
-interface DeliveryFormData {
+interface DeliveryFormDataModel {
   deliveryDate: string;
   deliveryStatus: string;
 }
@@ -45,13 +45,14 @@ const DeliveryTableItem = ({
   onDeliveryDateChange,
   onDeliveryStatusChange,
 }: DeliveryTableItemProps) => {
+  const { quantity, delivery_date, is_delivery, id } = data;
   const { isOpen, openDropdown, closeDropdown, anchorRect } =
     usePortalDropdown();
 
   const { updateQuotationProductDelivery, isLoading } =
     useUpdateQuotationProductDelivery();
 
-  const { control, setValue, watch } = useForm<DeliveryFormData>({
+  const { control, setValue, watch } = useForm<DeliveryFormDataModel>({
     defaultValues: {
       deliveryDate: data.delivery_date || '',
       deliveryStatus: data.is_delivery ? '완료' : '예정',
@@ -187,9 +188,9 @@ const DeliveryTableItem = ({
         </p>
         <p
           className="flex-1 px-3 text-dg Me_Body-1 truncate"
-          title={data.quantity.toLocaleString()}
+          title={quantity.toLocaleString()}
         >
-          {data.quantity.toLocaleString()}
+          {quantity.toLocaleString()}
         </p>
         <div className="flex-1 px-3">
           <Controller

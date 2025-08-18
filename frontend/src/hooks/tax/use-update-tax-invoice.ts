@@ -62,7 +62,8 @@ const useUpdateTaxInvoice = () => {
           return { success: true, data };
         } else {
           const errorData = await response.json();
-          const errorMessage = errorData.detail || '세금계산서 수정에 실패했습니다.';
+          const errorMessage =
+            errorData.detail || '세금계산서 수정에 실패했습니다.';
           setError(errorMessage);
           return { success: false, error: errorMessage };
         }

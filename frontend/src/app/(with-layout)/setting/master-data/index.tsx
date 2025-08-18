@@ -315,7 +315,7 @@ const MasterData = () => {
     <div className="w-full">
       <div className="flex gap-1 px-10 pb-5">
         <Chip
-          text={`설비 관리${equipmentList?.totalCnt != null ? ` ${equipmentList.totalCnt}` : ''}`}
+          text={`설비 관리${equipmentList?.totalCnt !== null ? ` ${equipmentList.totalCnt}` : ''}`}
           textColor={settingChip === 'equipment' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'equipment' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -326,7 +326,7 @@ const MasterData = () => {
           padding="px-4"
         />
         <Chip
-          text={`거래처 정보${clientList?.totalCnt != null ? ` ${clientList.totalCnt}` : ''}`}
+          text={`거래처 정보${clientList?.totalCnt !== null ? ` ${clientList.totalCnt}` : ''}`}
           textColor={settingChip === 'client' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'client' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -372,7 +372,7 @@ const MasterData = () => {
           {(settingChip === 'equipment' &&
             equipmentListForFacility.data.length > 0) ||
             (settingChip === 'client' &&
-              clientList?.data.length != null &&
+              clientList?.data.length !== null &&
               clientList?.data.length > 0 && (
                 <>
                   <MiniBtn

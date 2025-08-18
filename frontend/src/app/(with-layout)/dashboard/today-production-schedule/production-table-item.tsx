@@ -1,6 +1,6 @@
 'use client';
 
-import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
+import { TodayProductionPlanModel } from '../type';
 import { useRouter } from 'next/navigation';
 
 export interface ProductionTableItemProps {

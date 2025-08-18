@@ -30,7 +30,7 @@ const usePagination = <T>({
   const paginationData = useMemo(() => {
     // items가 배열이 아니거나 undefined/null인 경우 빈 배열로 처리
     const safeItems = Array.isArray(items) ? items : [];
-    
+
     const totalItems = safeItems.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;

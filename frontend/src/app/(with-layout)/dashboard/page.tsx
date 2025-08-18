@@ -31,7 +31,6 @@ import {
 } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
 import { TodayProductionPlanModel } from './type';
-import { UndeliveredProductListResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
 const DashboardPageContent = () => {
@@ -121,10 +120,12 @@ const DashboardPageContent = () => {
   // 오늘의 생산 일정 가져오기
   useEffect(() => {
     if (factoryId) {
-      getTodayProductionPlans({
-        page: 1,
-      }).then(
-        (result: { success: boolean; data?: TodayProductionPlanModel[] }) => {
+      getTodayProductionPlans().then(
+        (result: {
+          success: boolean;
+          data?: TodayProductionPlanModel[];
+          error?: string;
+        }) => {
           if (result.success && result.data) {
             setTodayProductionPlans(result.data);
           } else {

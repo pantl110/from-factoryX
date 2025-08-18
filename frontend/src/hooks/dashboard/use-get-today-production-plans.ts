@@ -1,17 +1,6 @@
 import { useState } from 'react';
 import useFactoryStore from '@/store/factory-store';
-
-interface TodayProductionPlanModel {
-  company_name: string;
-  product_name: string;
-  product_code: string;
-  spec: string;
-  unit: string;
-  production_quantity: number;
-  equipment_name: string;
-  production_time: number;
-  project_id: number;
-}
+import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
 
 // 오늘의 생산 일정 조회 // 생산지시서
 const useGetTodayProductionPlans = () => {
@@ -19,8 +8,7 @@ const useGetTodayProductionPlans = () => {
   const [error, setError] = useState<string | null>(null);
   const { factoryId } = useFactoryStore();
 
-  const getTodayProductionPlans = async (
-  ) => {
+  const getTodayProductionPlans = async () => {
     setIsLoading(true);
     setError(null);
 

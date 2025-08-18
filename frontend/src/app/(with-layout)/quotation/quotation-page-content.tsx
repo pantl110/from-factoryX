@@ -12,7 +12,6 @@ import PreviewImage from './image-preview';
 import History from './history';
 import OverlayView from '@/ui/ovelay-view';
 import {
-  ClientModel,
   OcrDataModel,
   OcrRequestItemModel,
   QuotationProductDetailResponseModel,

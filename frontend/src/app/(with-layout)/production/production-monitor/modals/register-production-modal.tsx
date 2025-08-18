@@ -1,51 +1,34 @@
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
-import { useToast, useUpdateRefund } from '@/hooks';
+import { useToast } from '@/hooks';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
+import useRegisterProductionFromRefund from '@/hooks/project/project-refund/use-register-production-from-refund';
 
 interface RegisterProductionModalProps {
   onClose: () => void;
-  refundId: number;
-  refundData: {
-    refund_date: string;
-    amount: number;
-    production_amount: number;
-    current_stock: number;
-  };
-  productId: number;
   logId: number;
 }
 
 const RegisterProductionModal = ({
   onClose,
-  refundId,
-  refundData,
-  productId,
   logId,
 }: RegisterProductionModalProps) => {
-  // const { registerProduction, isLoading, error } =
-  //   useRegisterProductionFromRefund();
-  const { updateRefund, isLoading, error } = useUpdateRefund();
+  const { registerProduction, isLoading, error } =
+    useRegisterProductionFromRefund();
+  // const { updateRefund, isLoading, error } = useUpdateRefund();
   const { isToastOpen, isVisible, showToast } = useToast();
 
   const handleRegisterProduction = async () => {
-    // const result = await registerProduction(logId);
-    const result = await updateRefund(refundId, {
-      refund_date: refundData.refund_date,
-      current_stock: refundData.current_stock,
-      production_amount: refundData.production_amount,
-      product_id: productId,
-    });
+    const result = await registerProduction(logId);
+    // const result = await updateRefund(refundId, {
+    //   refund_date: refundData.refund_date,
+    //   current_stock: refundData.current_stock,
+    //   production_amount: refundData.production_amount,
+    //   product_id: productId,
+    // });
 
     if (result.success) {
-      if (result.data) {
-        console.log('반품 생산 등록 성공:', {
-          updated_project_plans: result.data.updated_project_plans,
-          deleted_project_plans: result.data.deleted_project_plans,
-          created_project_plans: result.data.created_project_plans,
-        });
-      }
       onClose();
     } else {
       showToast();

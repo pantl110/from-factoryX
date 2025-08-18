@@ -557,7 +557,7 @@ export interface QuotationResponseModel {
   products: QuotationProductDetailResponseModel[];
   // 납기일
   due_date?: string;
-  uploaded_file?: string
+  uploaded_file?: string;
 }
 
 // 견적서 폼용 확장 모델
@@ -787,8 +787,6 @@ export interface UpdateProjectPlanModel {
   end_date?: string;
   avg_production_time?: number;
 }
-
-
 
 //////////////////////
 // Project Refund API
@@ -1046,7 +1044,7 @@ export interface PublishedTaxInvoiceListResponseModel extends PaginationModel {
 }
 
 // 발행 대기 세금계산서
-interface PendingTaxInvoiceResponseModel {
+export interface PendingTaxInvoiceResponseModel {
   id: number;
   tax_invoice_type: TaxDocumentType;
   transaction_date: string;

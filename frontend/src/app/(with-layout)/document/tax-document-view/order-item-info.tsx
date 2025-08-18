@@ -2,8 +2,6 @@ import PriceInfo from '@/ui/price-info';
 import OrderTableItem from './order-table-item';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
-import NoHistoryBox from '@/ui/no-history-box';
-
 interface OrderItemInfoProps {
   lineItems: PublishedTaxInvoiceResponseModel['line_items'];
   productsInfo: PublishedTaxInvoiceResponseModel['products_info'];

@@ -1,4 +1,3 @@
-import { productionData } from '@/mocks/production-data';
 import DocumentViewTitle from '../document-view-title';
 import CommentItem from './comment-item';
 import ProductionTableItem from './production-table-item';

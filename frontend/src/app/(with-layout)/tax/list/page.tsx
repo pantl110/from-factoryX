@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Suspense } from 'react';
 import { useDebounce } from 'use-debounce';
 import MainTitleSec from './main-title-sec';
@@ -147,6 +147,7 @@ const TaxPageContent = () => {
     setCurrentPage(1);
     setAllChecked(false);
     fetchTaxData(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showHidden, fetchTaxData]);
 
   // 페이지 변경 시 데이터 가져오기

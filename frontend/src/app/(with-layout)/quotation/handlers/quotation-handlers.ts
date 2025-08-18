@@ -16,9 +16,11 @@ interface QuotationHandlersProps {
   factoryId: number | null;
   selectedClientId: number | null;
   imageUrl?: string;
-  saveDraft: (data: SaveDraftDataModel) => Promise<any>;
-  startProduction: (data: ProductionDataModel) => Promise<any>;
-  setInitialQuotationProducts: (products: QuotationProductDetailResponseModel[]) => void;
+  saveDraft: (data: SaveDraftDataModel) => Promise<{ success: boolean; error?: string }>;
+  startProduction: (data: ProductionDataModel) => Promise<{ success: boolean; error?: string; project_id?: number }>;
+  setInitialQuotationProducts: (
+    products: QuotationProductDetailResponseModel[]
+  ) => void;
   setShowErrors: (show: boolean) => void;
   setToastText: (text: string) => void;
   setToastSubtext: (subtext: string) => void;
@@ -95,8 +97,9 @@ export const useQuotationHandlers = ({
       router.push('/project/process');
     } catch (error) {
       // 에러 메시지 설정
-      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-      
+      const errorMessage =
+        error instanceof Error ? error.message : '알 수 없는 오류';
+
       // 날짜 형식 에러인 경우 다른 토스트 메시지 표시
       if (errorMessage.includes('올바르지 않은 날짜 형식')) {
         setToastText('올바르지 않은 날짜 형식입니다.');
@@ -105,7 +108,7 @@ export const useQuotationHandlers = ({
         setToastText('임시저장에 실패했습니다');
         setToastSubtext(errorMessage);
       }
-      
+
       showToast();
     }
   }, [
@@ -178,8 +181,8 @@ export const useQuotationHandlers = ({
 
       // 에러가 발생한 경우 (null 반환)
       if (!result) {
-        let toastText = '생산 시작에 실패했습니다.';
-        let toastSubtext = '다시 시도해 주세요.';
+        const toastText = '생산 시작에 실패했습니다.';
+        const toastSubtext = '다시 시도해 주세요.';
 
         setToastText(toastText);
         setToastSubtext(toastSubtext);

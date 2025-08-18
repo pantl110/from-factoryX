@@ -22,7 +22,12 @@ const useRegisterProductionFromRefund = () => {
   const factoryId = useFactoryStore((state) => state.factoryId);
 
   const registerProduction = useCallback(
-    async (logId: number): Promise<{ success: boolean; data?: RegisterProductionFromRefundResponseModel }> => {
+    async (
+      logId: number
+    ): Promise<{
+      success: boolean;
+      data?: RegisterProductionFromRefundResponseModel;
+    }> => {
       setIsLoading(true);
       setError(null);
 
@@ -42,11 +47,13 @@ const useRegisterProductionFromRefund = () => {
         );
 
         if (response.ok) {
-          const result: RegisterProductionFromRefundResponseModel = await response.json();
+          const result: RegisterProductionFromRefundResponseModel =
+            await response.json();
           return { success: true, data: result };
         } else {
           const errorData = await response.json();
-          const errorMessage = errorData.detail || '반품 생산 등록에 실패했습니다.';
+          const errorMessage =
+            errorData.detail || '반품 생산 등록에 실패했습니다.';
           setError(errorMessage);
           return { success: false };
         }
