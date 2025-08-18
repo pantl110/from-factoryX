@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AddItemDropdown from './add-item-dropdown';
 import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
 import IssueTypeDropdown from './issue-type-dropdown';
+import { BarobilRegisterModal } from './modals/barobil-register-modal';
 import {
   useUpdateFactory,
   useCreateTaxInvoice,
@@ -14,6 +15,7 @@ import {
   useUpdateClient,
 } from '@/hooks';
 import useFactoryStore from '@/store/factory-store';
+import useAuthStore from '@/store/auth-store';
 import {
   FactoriesUpdateModel,
   CreateTaxInvoiceModel,
@@ -22,7 +24,7 @@ import {
 } from '@/types/data-model';
 import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../type';
 import ProductInfo, {
-  ProductInfoRef,
+  ProductInfoRefModel,
   ProductFormDataModel,
 } from './product-info';
 
@@ -35,6 +37,8 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
     useState(false);
   const [isIssueTypeDropdownOpen, setIsIssueTypeDropdownOpen] = useState(false);
   const [isClaimTaxModalOpen, setIsClaimTaxModalOpen] = useState(false);
+  const [isBarobilRegisterModalOpen, setIsBarobilRegisterModalOpen] =
+    useState(false);
   const [selectedIssueType, setSelectedIssueType] = useState<
     '청구' | '영수' | null
   >(null);
@@ -63,7 +67,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
 
   // 주문품목 정보 폼 상태
   const [isProductInfoDirty, setIsProductInfoDirty] = useState(false);
-  const [productInfoFormData, setProductInfoFormData] =
+  const [_productInfoFormData, setProductInfoFormData] =
     useState<ProductFormDataModel | null>(null);
 
   // 저장 중 상태
@@ -73,7 +77,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
   // ProductInfo ref
-  const productInfoRef = useRef<ProductInfoRef>(null);
+  const productInfoRef = useRef<ProductInfoRefModel>(null);
 
   // 공장 정보 업데이트 훅
   const { updateFactory } = useUpdateFactory();
@@ -83,6 +87,9 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
   const { updateClient } = useUpdateClient();
 
   const factoryId = useFactoryStore((state) => state.factoryId);
+
+  // 사용자 정보 가져오기 // 바로빌 연동 확인용
+  const userInfo = useAuthStore((state) => state.userInfo);
 
   // 세금계산서 생성 훅
   const { createTaxInvoice } = useCreateTaxInvoice();
@@ -179,6 +186,13 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
       setShowErrors(false);
     }
   }, [showErrors, isSellerInfoValid, isClientInfoValid]);
+
+  // 컴포넌트 마운트 시 바로빌 ID 확인
+  useEffect(() => {
+    if (userInfo && !userInfo.barobill_user_id) {
+      setIsBarobilRegisterModalOpen(true);
+    }
+  }, [userInfo]);
 
   // 공장 정보 업데이트 함수
   const updateFactoryInfo = (formData: SellerInfoFormDataModel) => {
@@ -330,7 +344,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
   const handleCreateTaxInvoiceForModal = useCallback(async () => {
     const taxInvoiceData: CreateTaxInvoiceModel = {
       factory: factoryId || 0,
-      client: selectedClientId || 1, // 선택된 거래처 ID 사용, 없으면 기본값 1
+      client: selectedClientId || 0, // 선택된 거래처 ID 사용, 없으면 기본값 1
       product: [], // TODO: 실제 품목 ID 리스트로 교체 필요
       line_items: [],
       transaction_date: sellerInfoFormData?.writeDate || '',
@@ -445,6 +459,15 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
           onConfirm={handleModalConfirm}
           issueType={selectedIssueType}
           onCreateTaxInvoice={handleCreateTaxInvoiceForModal}
+        />
+      )}
+      {/* 바로빌 등록 모달 */}
+      {isBarobilRegisterModalOpen && (
+        <BarobilRegisterModal
+          onClose={() => {
+            setIsBarobilRegisterModalOpen(false);
+            onClose();
+          }}
         />
       )}
     </>

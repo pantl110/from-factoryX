@@ -1,24 +1,24 @@
 import { useState, useEffect } from 'react';
 
-interface BarobillStatus {
+interface BarobillStatusModel {
   needsRegistration: boolean;
   message: string;
   barobillUserId?: string;
 }
 
 export const useBarobillStatus = () => {
-  const [status, setStatus] = useState<BarobillStatus | null>(null);
+  const [status, setStatus] = useState<BarobillStatusModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const checkBarobillStatus = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch('/v1/auth/me', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem('access') || ''}`,
           'Content-Type': 'application/json',
         },
       });
@@ -28,11 +28,12 @@ export const useBarobillStatus = () => {
       }
 
       const userData = await response.json();
-      
+
       if (!userData.barobill_user_id) {
         setStatus({
           needsRegistration: true,
-          message: '바로빌 회원가입이 필요합니다. 세금계산서 발행을 위해 연동 설정을 진행해주세요.',
+          message:
+            '바로빌 회원가입이 필요합니다. 세금계산서 발행을 위해 연동 설정을 진행해주세요.',
         });
       } else {
         setStatus({
@@ -42,7 +43,8 @@ export const useBarobillStatus = () => {
         });
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '바로빌 상태 확인에 실패했습니다.';
+      const errorMessage =
+        err instanceof Error ? err.message : '바로빌 상태 확인에 실패했습니다.';
       setError(errorMessage);
       setStatus({
         needsRegistration: true,

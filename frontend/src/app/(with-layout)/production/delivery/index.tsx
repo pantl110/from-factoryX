@@ -21,7 +21,6 @@ import {
   useGetQuotationProducts,
   useGetProduct,
   useUpdateQuotationProductDelivery,
-  useUpdateProjectPlan,
 } from '@/hooks';
 
 interface DeliveryProps {
@@ -78,7 +77,6 @@ const Delivery = ({
 
   const { updateQuotationProductDelivery } =
     useUpdateQuotationProductDelivery();
-  const { updateProjectPlan } = useUpdateProjectPlan();
 
   // 체크 기능
   const itemIds =
@@ -123,7 +121,7 @@ const Delivery = ({
   useEffect(() => {
     if (deliveryData) {
       setDeliveryData(
-        deliveryData.map((item) => ({
+        deliveryData.map((item: QuotationProductResponseModel) => ({
           delivery_date: item.delivery_date || undefined,
         }))
       );
@@ -181,7 +179,7 @@ const Delivery = ({
             item.id === Number(id) ? { ...item, delivery_date: newDate } : item
         );
         setDeliveryData(
-          updatedData.map((item) => ({
+          updatedData.map((item: QuotationProductResponseModel) => ({
             delivery_date: item.delivery_date || undefined,
           }))
         );

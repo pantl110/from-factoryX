@@ -86,7 +86,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
         // 먼저 totalCnt를 가져오기 위해 size: 1로 호출
         const countResult = await getProductList({
           q: debouncedProductName,
-          size: 1,
+          page_size: 1,
         });
 
         if (!countResult.success || !countResult.data) {
@@ -103,7 +103,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
         // totalCnt만큼 사이즈로 전체 데이터 가져오기
         const result = await getProductList({
           q: debouncedProductName,
-          size: totalCount,
+          page_size: totalCount,
         });
 
         if (result.success && result.data && result.data.data.length > 0) {
@@ -113,14 +113,14 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
           setProductList([]);
           setIsDropdownOpen(false); // 드롭다운 닫기
         }
-      } catch (error) {
+      } catch {
         setProductList([]);
         setIsDropdownOpen(false); // 에러 시 드롭다운 닫기
       }
     };
 
     fetchProducts();
-  }, [debouncedProductName, getProductList]);
+  }, [debouncedProductName, getProductList, setIsDropdownOpen, setProductList]);
 
   // 품목 선택 핸들러 (productId 설정 포함)
   const handleProductSelectWithId = (product: ProductResponseModel) => {
@@ -232,7 +232,9 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
                   // selectedProduct도 업데이트
                   setSelectedProduct(result.data);
                 }
-              } catch {}
+              } catch {
+                // 에러 무시
+              }
             }
             setIsOpen(false);
           }}

@@ -21,11 +21,11 @@ export interface ProductFormDataModel {
   }>;
 }
 
-export interface ProductInfoRef {
+export interface ProductInfoRefModel {
   addProduct: () => void;
 }
 
-const ProductInfo = forwardRef<ProductInfoRef, ProductInfoProps>(
+const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
   ({ setIsProductDetailOpen, isProductDetailOpen, onFormChange }, ref) => {
     const { getProductDetail } = useGetProduct();
 
@@ -46,7 +46,7 @@ const ProductInfo = forwardRef<ProductInfoRef, ProductInfoProps>(
         const formData = methods.watch();
         onFormChange(methods.formState.isDirty, formData);
       }
-    }, [methods.formState.isDirty, onFormChange]);
+    }, [methods, onFormChange]);
 
     const handleRemoveProduct = (index: number) => {
       remove(index);
@@ -107,7 +107,7 @@ const ProductInfo = forwardRef<ProductInfoRef, ProductInfoProps>(
                   const result = await getProductDetail(productId);
                   if (result.success && result.data) {
                     append({
-                      productId: productId,
+                      productId,
                       quantity: 0,
                       unitPrice: 0,
                       productData: result.data, // 품목 정보를 함께 저장
@@ -116,7 +116,7 @@ const ProductInfo = forwardRef<ProductInfoRef, ProductInfoProps>(
                 } catch {
                   // 조회 실패 시에도 기본 정보로 추가
                   append({
-                    productId: productId,
+                    productId,
                     quantity: 0,
                     unitPrice: 0,
                   });

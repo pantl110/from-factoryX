@@ -28,11 +28,20 @@ const useGetProduct = () => {
       setError(null);
 
       if (!factoryId) {
-        // factoryId가 없으면 빈 데이터를 반환
+        // factoryId가 없으면 빈 데이터를 반환 (일관된 PaginationModel 형태 유지)
+        const emptyResult: ProductListResponseModel = {
+          data: [],
+          count: 0,
+          totalCnt: 0,
+          pageCnt: 0,
+          curPage: 1,
+          nextPage: null,
+          previousPage: null,
+        };
         setProductList([]);
         setPagination(null);
         setIsLoading(false);
-        return { success: true, data: { data: [], count: 0 } };
+        return { success: true, data: emptyResult };
       }
 
       try {
