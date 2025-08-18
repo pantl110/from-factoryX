@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
 import ProfileModal from './modals/profile-modal';
+import CreatTaxPanel from '@/app/(with-layout)/tax/list/create-tax-panel';
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
@@ -33,6 +34,9 @@ const TopBarContent = ({
     (state) => state.isAllProductionCompleted
   ); // 모든 품목이 가동 완료 상태인지 여부
   const isRefund = usePageStatusStore((state) => state.isRefund); // 반품 여부
+
+  // 세금계산서 패널 상태
+  const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
 
   // store에서 함수들 가져오기
   const handleChangeStatus = usePageStatusStore(
@@ -70,94 +74,59 @@ const TopBarContent = ({
 
   if (productionTab === '주문서') {
     return (
-      <MiniBtn
-        text="세금계산서 생성"
-        textColor="text-dg"
-        borderColor="border-lg"
-        hoverColor="hover:bg-bg"
-      />
+      <>
+        <MiniBtn
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+          onClick={() => setIsTaxPanelOpen(true)}
+        />
+        {isTaxPanelOpen && (
+          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+        )}
+      </>
     );
   }
 
   if (productionTab === '생산 계획' && pageStatus === 'pending') {
     return (
-      <div className="flex gap-2">
-        <MiniBtn
-          text="세금계산서 생성"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-        />
-        <MiniBtn
-          text="다음"
-          textColor="text-primary"
-          bgColor="bg-primary-8"
-          hoverColor="hover:bg-secondary-hover"
-          onClick={onProductionPlanSaveClick}
-          disabled={!isProductionPlanSaveActive}
-        />
-      </div>
+      <>
+        <div className="flex gap-2">
+          <MiniBtn
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            onClick={() => setIsTaxPanelOpen(true)}
+          />
+          <MiniBtn
+            text="다음"
+            textColor="text-primary"
+            bgColor="bg-primary-8"
+            hoverColor="hover:bg-secondary-hover"
+            onClick={onProductionPlanSaveClick}
+            disabled={!isProductionPlanSaveActive}
+          />
+        </div>
+        {isTaxPanelOpen && (
+          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+        )}
+      </>
     );
   }
 
   if (productionTab === '생산 계획' && pageStatus === 'production') {
     return (
-      <div className="flex gap-2">
-        <MiniBtn
-          text="세금계산서 생성"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-        />
-        <MiniBtn
-          text="다음"
-          textColor="text-primary"
-          bgColor="bg-primary-8"
-          hoverColor="hover:bg-secondary-hover"
-          onClick={() => {
-            if (handleChangeStatus) {
-              handleChangeStatus('manufactured');
-            }
-          }}
-          disabled={!isAllProductionCompleted}
-        />
-      </div>
-    );
-  }
-
-  if (productionTab === '생산 현황') {
-    return (
-      <div className="flex gap-2">
-        <MiniBtn
-          text="세금계산서 생성"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-        />
-
-        {isRefund && (
+      <>
+        <div className="flex gap-2">
           <MiniBtn
-            text="반품 등록"
-            textColor="text-red"
-            bgColor="bg-red-8"
-            hoverColor="hover:bg-red-hover"
-            onClick={() => setAddReturnModalOpen(true)}
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            onClick={() => setIsTaxPanelOpen(true)}
           />
-        )}
-      </div>
-    );
-  }
-
-  if (productionTab === '생산 내역') {
-    return (
-      <div className="flex gap-2">
-        <MiniBtn
-          text="세금계산서 생성"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-        />
-        {pageStatus === 'manufactured' && (
           <MiniBtn
             text="다음"
             textColor="text-primary"
@@ -165,81 +134,158 @@ const TopBarContent = ({
             hoverColor="hover:bg-secondary-hover"
             onClick={() => {
               if (handleChangeStatus) {
-                handleChangeStatus('delivery');
+                handleChangeStatus('manufactured');
               }
             }}
+            disabled={!isAllProductionCompleted}
           />
+        </div>
+        {isTaxPanelOpen && (
+          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
         )}
-      </div>
+      </>
+    );
+  }
+
+  if (productionTab === '생산 현황') {
+    return (
+      <>
+        <div className="flex gap-2">
+          <MiniBtn
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            onClick={() => setIsTaxPanelOpen(true)}
+          />
+
+          {isRefund && (
+            <MiniBtn
+              text="반품 등록"
+              textColor="text-red"
+              bgColor="bg-red-8"
+              hoverColor="hover:bg-red-hover"
+              onClick={() => setAddReturnModalOpen(true)}
+            />
+          )}
+        </div>
+        {isTaxPanelOpen && (
+          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+        )}
+      </>
+    );
+  }
+
+  if (productionTab === '생산 내역') {
+    return (
+      <>
+        <div className="flex gap-2">
+          <MiniBtn
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            onClick={() => setIsTaxPanelOpen(true)}
+          />
+          {pageStatus === 'manufactured' && (
+            <MiniBtn
+              text="다음"
+              textColor="text-primary"
+              bgColor="bg-primary-8"
+              hoverColor="hover:bg-secondary-hover"
+              onClick={() => {
+                if (handleChangeStatus) {
+                  handleChangeStatus('delivery');
+                }
+              }}
+            />
+          )}
+        </div>
+        {isTaxPanelOpen && (
+          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+        )}
+      </>
     );
   }
 
   if (productionTab === '납품') {
     return (
-      <div className="flex gap-2">
-        <MiniBtn
-          text="세금계산서 생성"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-        />
-        <MiniBtn
-          text="반품 등록"
-          textColor="text-red"
-          bgColor="bg-red-8"
-          hoverColor="hover:bg-red-hover"
-          onClick={() => setAddReturnModalOpen(true)}
-        />
-        {pageStatus === 'delivery' && (
+      <>
+        <div className="flex gap-2">
           <MiniBtn
-            text="보관함으로 이동"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            hoverColor="hover:bg-secondary-hover"
-            onClick={onMoveToStorageClick}
-            disabled={
-              !deliveryData ||
-              deliveryData.some((item) => {
-                // delivery_date가 없거나 불완전한 형식이면 disabled
-                if (!item.delivery_date) return true;
-                // YYYY-MM-DD 형식인지 확인 (정확히 10자리)
-                return (
-                  item.delivery_date.length !== 10 ||
-                  !/^\d{4}-\d{2}-\d{2}$/.test(item.delivery_date)
-                );
-              })
-            }
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            onClick={() => setIsTaxPanelOpen(true)}
           />
+          <MiniBtn
+            text="반품 등록"
+            textColor="text-red"
+            bgColor="bg-red-8"
+            hoverColor="hover:bg-red-hover"
+            onClick={() => setAddReturnModalOpen(true)}
+          />
+          {pageStatus === 'delivery' && (
+            <MiniBtn
+              text="보관함으로 이동"
+              textColor="text-primary"
+              bgColor="bg-primary-8"
+              hoverColor="hover:bg-secondary-hover"
+              onClick={onMoveToStorageClick}
+              disabled={
+                !deliveryData ||
+                deliveryData.some((item) => {
+                  // delivery_date가 없거나 불완전한 형식이면 disabled
+                  if (!item.delivery_date) return true;
+                  // YYYY-MM-DD 형식인지 확인 (정확히 10자리)
+                  return (
+                    item.delivery_date.length !== 10 ||
+                    !/^\d{4}-\d{2}-\d{2}$/.test(item.delivery_date)
+                  );
+                })
+              }
+            />
+          )}
+        </div>
+        {isTaxPanelOpen && (
+          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
         )}
-      </div>
+      </>
     );
   }
 
   // default
   return (
-    <div className="flex items-center gap-1">
-      <div
-        className="flex items-center justify-center w-11 h-11 relative cursor-pointer hover:bg-bg rounded-lg"
-        onClick={onNotificationClick}
-      >
-        <BellSimple size={20} className="text-dg" />
-        {hasUnreadNotifications && (
-          <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full " />
-        )}
-      </div>
-      <div
-        className="flex items-center justify-center w-10 h-10 cursor-pointer relative"
-        onClick={() => setIsProfileModalOpen(true)}
-      >
-        <ProfileImage size="small" />
+    <>
+      <div className="flex items-center gap-1">
+        <div
+          className="flex items-center justify-center w-11 h-11 relative cursor-pointer hover:bg-bg rounded-lg"
+          onClick={onNotificationClick}
+        >
+          <BellSimple size={20} className="text-dg" />
+          {hasUnreadNotifications && (
+            <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full " />
+          )}
+        </div>
+        <div
+          className="flex items-center justify-center w-10 h-10 cursor-pointer relative"
+          onClick={() => setIsProfileModalOpen(true)}
+        >
+          <ProfileImage size="small" />
 
-        {isProfileModalOpen && !pathname.includes('production') && (
-          <div className="absolute top-14.5 right-0">
-            <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
-          </div>
-        )}
+          {isProfileModalOpen && !pathname.includes('production') && (
+            <div className="absolute top-14.5 right-0">
+              <ProfileModal onClose={() => setIsProfileModalOpen(false)} />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {isTaxPanelOpen && (
+        <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+      )}
+    </>
   );
 };
 

@@ -77,6 +77,7 @@ export interface UserInfoModel {
   phone_number?: string | null;
   profile_image?: string | null;
   member_id: number;
+  barobill_user_id: string | null;
 }
 
 // 회원 정보 수정
@@ -1157,6 +1158,22 @@ export interface CashReceiptSyncResponseModel {
 
 export interface CashReceiptListResponseModel extends PaginationModel {
   data: CashReceiptResponseModel[];
+}
+
+////////////
+// 바로빌 관련 api
+export interface BarobillCorpRegisterModel {
+  factory: string; // 공장 ID
+  grade: string; // 회원 등급 (예: 대표자, 담당자)
+  barobill_id: string; // 바로빌 ID
+  barobill_password: string; // 바로빌 비밀번호
+  barobill_password_confirm: string; // 바로빌 비밀번호 확인
+}
+
+export interface BarobillCorpCertModel {
+  factory: string; // 공장 ID
+  barobill_id: string; // 바로빌 ID
+  barobill_password: string; // 바로빌 비밀번호
 }
 
 //////////////////////
