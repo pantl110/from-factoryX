@@ -24,7 +24,10 @@ async def invite_factory_member(request, payload: InviteMemberIn):
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    already_member = await FactoryMember.objects.filter(user=user).aexists()
+
+    if already_member:
+        raise HttpError(400, "이미 팩토리 멤버입니다.")
 
     return await sync_to_async(_invite_member)(factory_id, payload, user)
 
