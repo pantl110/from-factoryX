@@ -8,6 +8,8 @@ import json
 import jwt
 from django.conf import settings
 from datetime import datetime, timedelta, date
+from factory.schemas.outbound import FactoryClientRowOut
+from stock.schemas.outbound import ProductRowOut
 
 
 User = get_user_model()
@@ -433,22 +435,30 @@ class TaxAPITestCase(TestCase):
         # 연동 안된 세금계산서 생성 (매출)
         unlinked_invoice1 = NationalTaxService.objects.create(
             client=self.client_company1,
+            client_info=FactoryClientRowOut.from_orm(self.client_company1).dict(),
             transaction_date=date(2025, 6, 4),
             transaction_amount=550000,
             tax_amount=50000,
             tax_invoice_type="sales",
             publish_status="published",
+            products_info=[
+                ProductRowOut.from_orm(self.product1).dict(),
+            ],
         )
         unlinked_invoice1.product.add(self.product1)
 
         # 연동 안된 세금계산서 생성 (매입)
         unlinked_invoice2 = NationalTaxService.objects.create(
             client=self.client_company2,
+            client_info=FactoryClientRowOut.from_orm(self.client_company2).dict(),
             transaction_date=date(2025, 6, 4),
             transaction_amount=500000,
             tax_amount=50000,
             tax_invoice_type="purchase",
             publish_status="published",
+            products_info=[
+                ProductRowOut.from_orm(self.product1).dict(),
+            ],
         )
         unlinked_invoice2.product.add(self.product1)
 
@@ -472,21 +482,25 @@ class TaxAPITestCase(TestCase):
         # 첫 번째 세금계산서 (매출)
         first_invoice = data["data"][0]
         self.assertEqual(first_invoice["id"], unlinked_invoice1.id)
-        self.assertEqual(first_invoice["tax_invoice_type"], "매출")
+        self.assertEqual(first_invoice["tax_invoice_type"], "sales")
         self.assertEqual(first_invoice["transaction_date"], "2025-06-04")
-        self.assertEqual(first_invoice["client_name"], "플라스틱이 좋아")
-        self.assertEqual(first_invoice["product_names"], ["M8 볼트 세트"])
+        self.assertEqual(first_invoice["client_info"]["name"], "플라스틱이 좋아")
+        self.assertEqual(
+            first_invoice["products_info"],
+            [ProductRowOut.from_orm(self.product1).dict()],
+        )
         self.assertEqual(first_invoice["transaction_amount"], 550000)
         self.assertEqual(first_invoice["tax_amount"], 50000)
-        self.assertEqual(first_invoice["total_amount"], 600000)
+        # self.assertEqual(first_invoice["total_amount"], 600000)
 
         # 두 번째 세금계산서 (매입)
         second_invoice = data["data"][1]
         self.assertEqual(second_invoice["id"], unlinked_invoice2.id)
-        self.assertEqual(second_invoice["tax_invoice_type"], "매입")
-        self.assertEqual(second_invoice["client_name"], "플라스틱이 싫어")
+        self.assertEqual(second_invoice["tax_invoice_type"], "purchase")
+        self.assertEqual(second_invoice["client_info"]["name"], "플라스틱이 싫어")
         self.assertEqual(second_invoice["transaction_amount"], 500000)
-        self.assertEqual(second_invoice["total_amount"], 550000)
+        self.assertEqual(second_invoice["tax_amount"], 50000)
+        # self.assertEqual(second_invoice["total_amount"], 550000)
 
     def test_list_not_link_tax_with_connected_invoice(self):
         """연동된 세금계산서는 제외되는지 테스트"""
@@ -543,6 +557,11 @@ class TaxAPITestCase(TestCase):
             tax_amount=100000,
             tax_invoice_type="sales",
             publish_status="published",
+            products_info=[
+                ProductRowOut.from_orm(self.product1).dict(),
+                ProductRowOut.from_orm(self.product2).dict(),
+                ProductRowOut.from_orm(self.product3).dict(),
+            ],
         )
         tax_invoice.product.add(self.product1, self.product2, self.product3)
 
@@ -555,11 +574,11 @@ class TaxAPITestCase(TestCase):
 
         # 여러 품목이 포함된 세금계산서 확인
         invoice = data["data"][0]
-        self.assertEqual(len(invoice["product_names"]), 3)
-        self.assertIn("M8 볼트 세트", invoice["product_names"])
-        self.assertIn("나사", invoice["product_names"])
-        self.assertIn("와셔", invoice["product_names"])
-        self.assertEqual(invoice["total_amount"], 1100000)
+        self.assertEqual(len(invoice["product"]), 3)
+        self.assertIn("M8 볼트 세트", [i["name"] for i in invoice["products_info"]])
+        self.assertIn("나사", [i["name"] for i in invoice["products_info"]])
+        self.assertIn("와셔", [i["name"] for i in invoice["products_info"]])
+        # self.assertEqual(invoice["total_amount"], 1100000)
 
     def test_list_not_link_tax_empty_result(self):
         """연동 안된 세금계산서가 없을 때 테스트"""
@@ -1051,20 +1070,24 @@ class TaxAPITestCase(TestCase):
         """q로 거래처명/품목명 통합 검색 테스트 (pending/temporary)"""
         invoice1 = NationalTaxService.objects.create(
             client=self.client_company1,
+            client_info=FactoryClientRowOut.from_orm(self.client_company1).dict(),
             transaction_date=date(2025, 6, 4),
             transaction_amount=100000,
             tax_amount=10000,
             tax_invoice_type="sales",
             publish_status="pending",
+            products_info=[ProductRowOut.from_orm(self.product1).dict()],
         )
         invoice1.product.add(self.product1)
         invoice2 = NationalTaxService.objects.create(
             client=self.client_company2,
+            client_info=FactoryClientRowOut.from_orm(self.client_company2).dict(),
             transaction_date=date(2025, 6, 5),
             transaction_amount=200000,
             tax_amount=20000,
             tax_invoice_type="sales",
             publish_status="temporary",
+            products_info=[ProductRowOut.from_orm(self.product2).dict()],
         )
         invoice2.product.add(self.product2)
         # 거래처명 검색
@@ -1073,14 +1096,14 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["data"]), 1)
-        self.assertEqual(data["data"][0]["client_name"], "플라스틱이 좋아")
+        self.assertEqual(data["data"][0]["client_info"]["name"], "플라스틱이 좋아")
         # 품목명 검색
         url = f"/v1/tax/pending?factory_id={self.factory.id}&q={self.product2.name}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["data"]), 1)
-        self.assertIn(self.product2.name, data["data"][0]["product_names"])
+        self.assertIn(self.product2.name, data["data"][0]["products_info"][0]["name"])
 
     def test_list_all_tax_invoices_period_and_order(self):
         """

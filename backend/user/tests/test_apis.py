@@ -422,6 +422,7 @@ class TestUser(TestCase):
         headers = await self.authenticate()
         response = await self.client.get("/me", headers=headers)
         data = response.json()
+        # print("🐍 File: tests/test_apis.py | Line: 425 | setUp ~ data", data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data["email"], self.user.email)
         self.assertEqual(data["status"], self.user.status)

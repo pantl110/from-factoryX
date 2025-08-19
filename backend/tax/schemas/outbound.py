@@ -14,7 +14,7 @@ class NationalTaxServiceOut(ModelSchema):
 
 class NationalTaxServiceDetailOut(ModelSchema):
     client: FactoryClientOut
-    product: ProductOut
+    product: List[ProductOut]
 
     class Meta:
         model = NationalTaxService

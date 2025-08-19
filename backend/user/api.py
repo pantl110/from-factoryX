@@ -472,15 +472,8 @@ async def get_me(request):
         member_id = member.id if member else None
     except:
         member_id = None
-
-    return {
-        "email": user.email,
-        "status": user.status,
-        "username": user.username,
-        "phone_number": user.phone_number,
-        "profile_image": user.profile_image,
-        "member_id": member_id,
-    }
+    user.member_id = member_id
+    return user
 
 
 @router.patch(
