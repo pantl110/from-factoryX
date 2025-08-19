@@ -34,7 +34,7 @@ import useFactoryStore from '@/store/factory-store';
 import useOcrStore from '@/store/ocr-store';
 
 import TabArea from './tab-area';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import TitleSec from './title-sec';
 import InputSection from './input-section';
 import Toast from '@/ui/toast';
@@ -43,6 +43,8 @@ import EmailView from './modals/email-view';
 import StartProductionModal from './modals/start-production-modal';
 import { useQuotationHandlers } from './handlers/quotation-handlers';
 import { QuotationFormModel } from '@/types/data-model';
+import CreateTaxPanel from '../tax/list/create-tax-panel';
+import { ClientDataSyncModel, ProductDataSyncModel } from './type';
 
 const QuotationPageContent = () => {
   const router = useRouter();
@@ -457,7 +459,7 @@ const QuotationPageContent = () => {
   // 필수 폼이 채워져 있는지 검사 - Client data의 required 필드들이 모두 채워져 있는지 확인
   const isFormFilled = useMemo(() => {
     // 견적서 데이터가 아직 로드되지 않았으면 false 반환
-    if (!quotationData || isQuotationLoading) {
+    if (isQuotationLoading) {
       return false;
     }
 
@@ -482,7 +484,18 @@ const QuotationPageContent = () => {
       address.trim() !== '';
 
     return isAllRequiredFieldsFilled;
-  }, [watch, quotationData, isQuotationLoading]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    watch('name'),
+    watch('business_registration_number'),
+    watch('representative_name'),
+    watch('due_date'),
+    watch('business_type'),
+    watch('business_category'),
+    watch('address'),
+    isQuotationLoading,
+  ]);
 
   const watchedClientData = useMemo(() => {
     return {
@@ -498,25 +511,46 @@ const QuotationPageContent = () => {
       address: watch().address,
       manager: watch().manager,
       note: watch().note,
+      due_date: watch().due_date,
     };
-  }, [watch]);
+  }, [
+    watch('factory_id'),
+    watch('name'),
+    watch('business_registration_number'),
+    watch('representative_name'),
+    watch('email'),
+    watch('phone'),
+    watch('fax'),
+    watch('business_type'),
+    watch('business_category'),
+    watch('address'),
+    watch('manager'),
+    watch('note'),
+    watch('due_date'),
+  ]);
+
+  const [isTaxCreatePanelOpen, setIsTaxCreatePanelOpen] = useState(false);
 
   return (
     <>
       <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
         <TitleSec
+          // 버튼 클릭 시
+          setIsTaxCreatePanelOpen={setIsTaxCreatePanelOpen}
           setIsEmailOpen={setIsEmailOpen}
           setIsPrintOpen={setIsPrintOpen}
           setIsStartProductionModalOpen={setIsStartProductionModalOpen}
+          // 폼 상태
           trigger={trigger}
           watch={watch}
           formState={formState}
+          isFormFilled={isFormFilled}
+          isDirty={isDirty}
+          hasQuotationProducts={hasQuotationProducts}
+          // 버튼 클릭 시 함수
           projectStatus={projectStatus}
           onProjectStatusChange={handleProjectStatusChange}
-          hasQuotationProducts={hasQuotationProducts}
           onSaveDraft={handleSaveDraft}
-          isDirty={isDirty}
-          isFormFilled={isFormFilled}
         />
         <TabArea
           projectStatus={projectStatus}
@@ -608,6 +642,25 @@ const QuotationPageContent = () => {
           </div>
         </div>
       </div>
+
+      {/* 세금계산서 생성 버튼 */}
+      {isTaxCreatePanelOpen && (
+        <CreateTaxPanel
+          onClose={() => setIsTaxCreatePanelOpen(false)}
+          initialClientData={watchedClientData}
+          initialProducts={quotationProducts.map((product) => ({
+            productId: product.productId || 0,
+            product_code: product.product_code || '',
+            product_name: product.product_name || '',
+            spec: product.spec || '',
+            unit: product.unit || '',
+            quantity: product.quantity || 0,
+            unit_price: product.unit_price || 0,
+            is_delivery: false,
+            delivery_date: null,
+          }))}
+        />
+      )}
 
       {/* 출력하기 버튼 */}
       {isPrintOpen && (

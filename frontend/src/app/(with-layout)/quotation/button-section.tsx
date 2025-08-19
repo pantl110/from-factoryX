@@ -2,8 +2,10 @@
 
 import MiniBtn from '@/ui/mini-btn';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import router from 'next/router';
 
 interface ButtonSectionProps {
+  setIsTaxCreatePanelOpen: (open: boolean) => void;
   onEmailClick?: () => void;
   onPrintClick?: () => void;
   onStartProductionClick?: () => void;
@@ -16,6 +18,7 @@ interface ButtonSectionProps {
 }
 
 const ButtonSection = ({
+  setIsTaxCreatePanelOpen,
   onEmailClick,
   onPrintClick,
   onStartProductionClick,
@@ -29,13 +32,16 @@ const ButtonSection = ({
   return (
     <>
       <div className="flex gap-1">
-        <MiniBtn
-          text="세금계산서 생성"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-          disabled={!isFormFilled}
-        />
+        {isOrderStatus && (
+          <MiniBtn
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            disabled={!isFormFilled}
+            onClick={() => setIsTaxCreatePanelOpen(true)}
+          />
+        )}
         <MiniBtn
           text="출력"
           textColor="text-dg"
@@ -69,7 +75,14 @@ const ButtonSection = ({
               text="임시 저장"
               textColor="text-primary"
               bgColor="bg-primary-8"
-              onClick={onSaveDraft}
+              onClick={async () => {
+                try {
+                  await onSaveDraft?.();
+                  router.push('/project/process');
+                } catch {
+                  // 에러가 발생하면 페이지 이동하지 않음
+                }
+              }}
               hoverColor="hover:bg-secondary-hover"
               disabled={!isDirty}
             />
@@ -77,7 +90,10 @@ const ButtonSection = ({
               text="주문 확정"
               textColor="text-wh"
               bgColor="bg-primary"
-              onClick={changeToConfirmed}
+              onClick={() => {
+                onSaveDraft?.();
+                changeToConfirmed();
+              }}
               hoverColor="hover:bg-primary-hover"
               disabled={!isFormFilled || !hasQuotationProducts}
             />

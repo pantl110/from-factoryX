@@ -5,11 +5,13 @@ import { FormProvider, useForm, useFieldArray } from 'react-hook-form';
 import { useImperativeHandle, forwardRef, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
 import { ProductResponseModel } from '@/types/data-model';
+import { ProductDataSyncModel } from '../../../quotation/type';
 
 interface ProductInfoProps {
   setIsProductDetailOpen: (isOpen: boolean) => void;
   isProductDetailOpen: boolean;
   onFormChange?: (isDirty: boolean, formData: ProductFormDataModel) => void;
+  initialProducts?: ProductDataSyncModel[];
 }
 
 export interface ProductFormDataModel {
@@ -26,12 +28,25 @@ export interface ProductInfoRefModel {
 }
 
 const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
-  ({ setIsProductDetailOpen, isProductDetailOpen, onFormChange }, ref) => {
+  (
+    {
+      setIsProductDetailOpen,
+      isProductDetailOpen,
+      onFormChange,
+      initialProducts,
+    },
+    ref
+  ) => {
     const { getProductDetail } = useGetProduct();
 
     const methods = useForm<ProductFormDataModel>({
       defaultValues: {
-        products: [],
+        products:
+          initialProducts?.map((product) => ({
+            productId: product.productId,
+            quantity: product.quantity,
+            unitPrice: product.unit_price,
+          })) || [],
       },
     });
 

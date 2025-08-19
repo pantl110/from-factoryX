@@ -102,9 +102,6 @@ export const useQuotationHandlers = ({
         setInitialQuotationProducts([...quotationProducts]);
         // 에러 표시 상태 초기화
         setShowErrors(false);
-
-        // 임시저장 성공 시 프로젝트 페이지로 이동
-        router.push('/project/process');
       }
     } catch (error) {
       // 에러 메시지 설정

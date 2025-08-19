@@ -5,7 +5,6 @@ import { useState } from 'react';
 interface ClaimReceiptTaxModalProps {
   onClose: () => void;
   issueType: '청구' | '영수';
-  onConfirm?: () => void;
   onCreateTaxInvoice: () => Promise<boolean>; // 세금계산서 생성 함수
 }
 

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { ClientInfoFormDataModel } from '../type';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { ClientResponseModel } from '@/types/data-model';
+import { ClientDataSyncModel } from '../../../quotation/type';
 import { useGetClient, formatBusinessNumber } from '@/hooks';
 
 interface ClientInfoProps {
@@ -15,9 +16,14 @@ interface ClientInfoProps {
     formData?: ClientInfoFormDataModel
   ) => void;
   showErrors?: boolean;
+  initialData?: ClientDataSyncModel;
 }
 
-const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
+const ClientInfo = ({
+  onFormChange,
+  showErrors = false,
+  initialData,
+}: ClientInfoProps) => {
   const {
     register,
     formState: { isValid, isDirty, errors },
@@ -27,12 +33,12 @@ const ClientInfo = ({ onFormChange, showErrors = false }: ClientInfoProps) => {
   } = useForm<ClientInfoFormDataModel>({
     mode: 'onChange', // 실시간 유효성 검사
     defaultValues: {
-      companyName: '',
-      businessNumber: '',
-      representativeName: '',
-      businessType: '',
-      businessCategory: '',
-      address: '',
+      companyName: initialData?.name || '',
+      businessNumber: initialData?.business_registration_number || '',
+      representativeName: initialData?.representative_name || '',
+      businessType: initialData?.business_type || '',
+      businessCategory: initialData?.business_category || '',
+      address: initialData?.address || '',
     },
   });
 

@@ -13,6 +13,7 @@ interface QuotationFormModel extends ClientModel {
 }
 
 interface TitleSecProps {
+  setIsTaxCreatePanelOpen: (open: boolean) => void;
   setIsEmailOpen: (open: boolean) => void;
   setIsPrintOpen: (open: boolean) => void;
   setIsStartProductionModalOpen: (open: boolean) => void;
@@ -28,6 +29,7 @@ interface TitleSecProps {
 }
 
 const TitleSec = ({
+  setIsTaxCreatePanelOpen,
   setIsEmailOpen,
   setIsPrintOpen,
   setIsStartProductionModalOpen,
@@ -121,6 +123,7 @@ const TitleSec = ({
       </div>
       <ButtonSection
         hasQuotationProducts={hasQuotationProducts}
+        setIsTaxCreatePanelOpen={setIsTaxCreatePanelOpen}
         onEmailClick={async () => {
           setIsEmailOpen(true);
         }}

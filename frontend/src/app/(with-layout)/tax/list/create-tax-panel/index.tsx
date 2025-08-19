@@ -23,6 +23,10 @@ import {
   ClientUpdateModel,
 } from '@/types/data-model';
 import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../type';
+import {
+  ClientDataSyncModel,
+  ProductDataSyncModel,
+} from '../../../quotation/type';
 import ProductInfo, {
   ProductInfoRefModel,
   ProductFormDataModel,
@@ -30,9 +34,15 @@ import ProductInfo, {
 
 interface CreatTaxPanelProps {
   onClose: () => void;
+  initialClientData?: ClientDataSyncModel;
+  initialProducts?: ProductDataSyncModel[];
 }
 
-const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
+const CreatTaxPanel = ({
+  onClose,
+  initialClientData,
+  initialProducts,
+}: CreatTaxPanelProps) => {
   const [isAddProductDropdownOpen, setIsAddProductDropdownOpen] =
     useState(false);
   const [isIssueTypeDropdownOpen, setIsIssueTypeDropdownOpen] = useState(false);
@@ -331,15 +341,6 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
     setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);
   };
 
-  const handleModalConfirm = () => {
-    // 여기서 다음 모달을 띄우거나 다른 처리를 할 수 있습니다
-    // console.log("모달 확인 버튼 클릭됨");
-    // 공장 정보 업데이트 실행
-    // if (sellerInfoFormData) {
-    //   updateFactoryInfo(sellerInfoFormData);
-    // }
-  };
-
   // ClaimReceiptTaxModal용 래퍼 함수 (매개변수 없이 호출) // ‼️‼️‼️‼️‼️ 수정 필요
   const handleCreateTaxInvoiceForModal = useCallback(async () => {
     const taxInvoiceData: CreateTaxInvoiceModel = {
@@ -419,6 +420,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
           <ClientInfo
             onFormChange={handleClientInfoChange}
             showErrors={showErrors}
+            initialData={initialClientData}
           />
         </div>
 
@@ -448,6 +450,7 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
             setIsProductDetailOpen={setIsProductDetailOpen}
             isProductDetailOpen={isProductDetailOpen}
             onFormChange={handleProductInfoChange}
+            initialProducts={initialProducts}
           />
         </div>
       </Panel>
@@ -456,20 +459,19 @@ const CreatTaxPanel = ({ onClose }: CreatTaxPanelProps) => {
       {isClaimTaxModalOpen && selectedIssueType && (
         <ClaimReceiptTaxModal
           onClose={handleModalClose}
-          onConfirm={handleModalConfirm}
           issueType={selectedIssueType}
           onCreateTaxInvoice={handleCreateTaxInvoiceForModal}
         />
       )}
       {/* 바로빌 등록 모달 */}
-      {isBarobilRegisterModalOpen && (
+      {/* {isBarobilRegisterModalOpen && (
         <BarobilRegisterModal
           onClose={() => {
             setIsBarobilRegisterModalOpen(false);
             onClose();
           }}
         />
-      )}
+      )} */}
     </>
   );
 };
