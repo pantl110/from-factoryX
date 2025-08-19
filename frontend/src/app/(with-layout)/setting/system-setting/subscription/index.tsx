@@ -18,6 +18,14 @@ const Subscription = () => {
 
   return (
     <div className="px-10 pb-10 flex flex-col gap-8">
+      <MiniBtn
+        text="데스트 버튼"
+        textColor="text-red"
+        bgColor="bg-red-8"
+        hoverColor="hover:bg-red-hover"
+        onClick={() => setIsCardDeleteModalOpen(true)}
+      />
+
       <div className="flex flex-col gap-2">
         <FreePlan />
         {planTypes.map((type) => (
@@ -60,48 +68,6 @@ const Subscription = () => {
         <h3 className="Heading-3">결제 내역</h3>
         <div>
           <SubscriptionTableHeader />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
           <SubscriptionTableItem
             date="2025-06-14"
             card="현대카드(**** 4821)"
