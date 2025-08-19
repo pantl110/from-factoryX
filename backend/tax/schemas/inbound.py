@@ -100,3 +100,6 @@ class TaxInvoiceFilter(FilterSchema):
         None, q="transaction_date__lte", description="발급일자 범위 종료일"
     )
     is_hidden: Optional[bool] = Field(None, q="is_hidden", description="숨김 여부")
+    publish_status: Optional[str] = Field(
+        None, q="publish_status", description="발행 상태"
+    )

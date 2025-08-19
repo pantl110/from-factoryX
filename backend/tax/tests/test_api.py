@@ -8,6 +8,8 @@ import json
 import jwt
 from django.conf import settings
 from datetime import datetime, timedelta, date
+from factory.schemas.outbound import FactoryClientRowOut
+from stock.schemas.outbound import ProductRowOut
 
 
 User = get_user_model()
@@ -1051,20 +1053,24 @@ class TaxAPITestCase(TestCase):
         """q로 거래처명/품목명 통합 검색 테스트 (pending/temporary)"""
         invoice1 = NationalTaxService.objects.create(
             client=self.client_company1,
+            client_info=FactoryClientRowOut.from_orm(self.client_company1).dict(),
             transaction_date=date(2025, 6, 4),
             transaction_amount=100000,
             tax_amount=10000,
             tax_invoice_type="sales",
             publish_status="pending",
+            products_info=[ProductRowOut.from_orm(self.product1).dict()],
         )
         invoice1.product.add(self.product1)
         invoice2 = NationalTaxService.objects.create(
             client=self.client_company2,
+            client_info=FactoryClientRowOut.from_orm(self.client_company2).dict(),
             transaction_date=date(2025, 6, 5),
             transaction_amount=200000,
             tax_amount=20000,
             tax_invoice_type="sales",
             publish_status="temporary",
+            products_info=[ProductRowOut.from_orm(self.product2).dict()],
         )
         invoice2.product.add(self.product2)
         # 거래처명 검색
@@ -1073,14 +1079,14 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["data"]), 1)
-        self.assertEqual(data["data"][0]["client_name"], "플라스틱이 좋아")
+        self.assertEqual(data["data"][0]["client_info"]["name"], "플라스틱이 좋아")
         # 품목명 검색
         url = f"/v1/tax/pending?factory_id={self.factory.id}&q={self.product2.name}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["data"]), 1)
-        self.assertIn(self.product2.name, data["data"][0]["product_names"])
+        self.assertIn(self.product2.name, data["data"][0]["products_info"][0]["name"])
 
     def test_list_all_tax_invoices_period_and_order(self):
         """
