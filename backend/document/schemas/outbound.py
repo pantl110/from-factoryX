@@ -25,6 +25,7 @@ class QuotationDetailProductOut(Schema):
 # (GET) Quotation Detail
 class QuotationDetailOut(Schema):
     factory_name: Optional[str] = ""
+    client_id: Optional[int] = None
     business_registration_number: Optional[str] = None
     representative_name: Optional[str] = None
     email: Optional[str] = None
@@ -33,6 +34,7 @@ class QuotationDetailOut(Schema):
     business_type: Optional[str] = None
     business_category: Optional[str] = None
     address: Optional[str] = None
+    uploaded_file: Optional[str] = None
     due_date: Optional[str] = None
     products: List[QuotationDetailProductOut]
 
@@ -74,6 +76,7 @@ class UndeliveredQuotationProductOut(Schema):
 # (GET) Today's Production Plans
 class TodayProductionPlanOut(Schema):
     company_name: str  # 업체명 (클라이언트명)
+    product_id: int  # 품목 ID
     product_name: str  # 품목명
     product_code: Optional[str] = None  # 품목코드
     product_note: Optional[str] = None  # 품목 메모

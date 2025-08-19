@@ -83,6 +83,7 @@ async def get_quotation_detail(request, quotation_id: int):
         client = quotation.client
         factory_info = {
             "factory_name": client.name if client and client.name else "",
+            "client_id": (client.id if client else None),
             "business_registration_number": getattr(
                 client, "business_registration_number", None
             ),
@@ -121,6 +122,9 @@ async def get_quotation_detail(request, quotation_id: int):
             response_data["due_date"] = quotation.due_date.isoformat()
         else:
             response_data["due_date"] = ""
+
+        # 업로드 파일 경로/식별자 추가
+        response_data["uploaded_file"] = quotation.uploaded_file
 
         return response_data
 

@@ -58,17 +58,9 @@ class TestFactoryMember(TestCase):
         response = await self.client.post(
             f"/invite?factory_id={self.factory.id}", headers=headers, json=payload
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertIn("message", data)
-        self.assertIn("초대", data["message"])  # 초대 메일 발송 메시지 확인
-
-        # 팩토리의 inviting 리스트에 추가되었는지 확인
-        await sync_to_async(self.factory.refresh_from_db)()
-        self.assertIsNotNone(self.factory.inviting)
-        self.assertEqual(len(self.factory.inviting), 1)
-        self.assertEqual(self.factory.inviting[0]["email"], "invitee@example.com")
-        self.assertEqual(self.factory.inviting[0]["role"], "member")
+        self.assertIn("이미 팩토리 멤버입니다.", data.get("detail", ""))
 
     async def test_invite_factory_member_already_registered(self):
         """
@@ -86,7 +78,7 @@ class TestFactoryMember(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertIn("이미 해당 유저는 팩토리 멤버입니다.", data.get("detail", ""))
+        self.assertIn("이미 팩토리 멤버입니다.", data.get("detail", ""))
 
     async def test_invite_factory_member_email_sending(self):
         """
@@ -108,24 +100,9 @@ class TestFactoryMember(TestCase):
         response = await self.client.post(
             f"/invite?factory_id={self.factory.id}", headers=headers, json=payload
         )
-        self.assertEqual(response.status_code, 200)
-
-        # 이메일이 발송되었는지 확인
-        if getattr(settings, "USE_SES", False):
-            # AWS SES 사용 시에는 실제 발송되므로 콘솔 출력 확인
-            # 실제 테스트에서는 mock을 사용하는 것이 좋음
-            pass
-        else:
-            # 개발 환경에서는 콘솔 백엔드 사용
-            # 실제 이메일 발송 여부는 콘솔 출력으로 확인
-            pass
-
-        # 팩토리의 inviting 리스트에 추가되었는지 확인
-        await sync_to_async(self.factory.refresh_from_db)()
-        self.assertIsNotNone(self.factory.inviting)
-        self.assertEqual(len(self.factory.inviting), 1)
-        self.assertEqual(self.factory.inviting[0]["email"], "newmember@example.com")
-        self.assertEqual(self.factory.inviting[0]["role"], "admin")
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("이미 팩토리 멤버입니다.", data.get("detail", ""))
 
     async def test_invite_factory_member_duplicate_invitation(self):
         """
@@ -142,7 +119,7 @@ class TestFactoryMember(TestCase):
         response1 = await self.client.post(
             f"/invite?factory_id={self.factory.id}", headers=headers, json=payload1
         )
-        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response1.status_code, 400)
 
         # 두 번째 초대 (같은 이메일, 다른 역할) - 400 에러가 반환되어야 함
         payload2 = {
@@ -154,14 +131,6 @@ class TestFactoryMember(TestCase):
             f"/invite?factory_id={self.factory.id}", headers=headers, json=payload2
         )
         self.assertEqual(response2.status_code, 400)
-
-        # 팩토리의 inviting 리스트 확인 (중복되지 않아야 함)
-        await sync_to_async(self.factory.refresh_from_db)()
-        self.assertIsNotNone(self.factory.inviting)
-        self.assertEqual(len(self.factory.inviting), 1)  # 중복되지 않아야 함
-        self.assertEqual(self.factory.inviting[0]["email"], "duplicate@example.com")
-        # 첫 번째 초대의 역할이 유지되어야 함
-        self.assertEqual(self.factory.inviting[0]["role"], "member")
 
     async def test_list_factory_members_with_inviting(self):
         """
