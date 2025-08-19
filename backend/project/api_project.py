@@ -217,6 +217,7 @@ async def get_project_status(request, project_id: int):
             earliest_start_date=earliest_start_date,
             latest_end_date=latest_end_date,
             due_date=due_date,
+            tax_invoice=(project.tax_invoice.id if project.tax_invoice else None),
         )
 
     except Project.DoesNotExist:

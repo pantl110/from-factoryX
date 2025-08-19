@@ -45,6 +45,7 @@ class ProjectStatusOut(Schema):
     earliest_start_date: Optional[datetime.datetime] = None
     latest_end_date: Optional[datetime.datetime] = None
     due_date: Optional[datetime.date] = None
+    tax_invoice: Optional[int] = None
 
 
 # (PATCH) Project Status Update
