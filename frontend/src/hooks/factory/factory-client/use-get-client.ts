@@ -93,6 +93,90 @@ const useGetClient = () => {
     [pageSize, getClients, factoryId]
   );
 
+  // 전체 거래처 목록을 한 번에 가져오는 함수
+  const getAllClientList = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    if (!factoryId) {
+      setError('공장 ID가 설정되지 않았습니다.');
+      return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
+    }
+
+    try {
+      // 먼저 전체 개수를 조회
+      const countResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client?factory_id=${factoryId}&page=1&page_size=1`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!countResponse.ok) {
+        const errorData = await countResponse.json();
+        const errorMessage =
+          errorData.detail || '거래처 목록을 불러오는데 실패했습니다.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+
+      const countResult = await countResponse.json();
+      const totalCount = countResult.count || 0;
+
+      if (totalCount === 0) {
+        setClientList({
+          count: 0,
+          totalCnt: 0,
+          pageCnt: 1,
+          curPage: 1,
+          nextPage: null,
+          previousPage: null,
+          data: [],
+        });
+        return {
+          success: true,
+          data: {
+            count: 0,
+            totalCnt: 0,
+            pageCnt: 1,
+            curPage: 1,
+            nextPage: null,
+            previousPage: null,
+            data: [],
+          },
+        };
+      }
+
+      // 전체 개수만큼 한 번에 가져오기
+      const allResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client?factory_id=${factoryId}&page=1&page_size=${totalCount}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (allResponse.ok) {
+        const result: ClientListResponseModel = await allResponse.json();
+        setClientList(result);
+        return { success: true, data: result };
+      } else {
+        const errorData = await allResponse.json();
+        const errorMessage =
+          errorData.detail || '거래처 목록을 불러오는데 실패했습니다.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+    } catch {
+      const errorMessage = '서버 연결에 실패했습니다.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [factoryId]);
+
   // 컴포넌트가 마운트될 때 자동으로 데이터 불러오기
   useEffect(() => {
     if (factoryId) {
@@ -114,6 +198,7 @@ const useGetClient = () => {
     // 함수
     getClients,
     searchClients,
+    getAllClientList,
   };
 };
 

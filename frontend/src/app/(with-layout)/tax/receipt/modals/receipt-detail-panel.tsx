@@ -4,15 +4,15 @@ import Panel from '@/ui/panel';
 import React from 'react';
 
 // 현금영수증 아이템 타입 정의
-interface ReceiptItemModel {
-  id: number;
-  date: string;
-  company: string;
-  productName: string;
-  supplyAmount: number;
-  taxAmount: number;
-  totalAmount: number;
-}
+// interface ReceiptItemModel {
+//   id: number;
+//   date: string;
+//   company: string;
+//   productName: string;
+//   supplyAmount: number;
+//   taxAmount: number;
+//   totalAmount: number;
+// }
 
 interface ReceiptDetailPanelProps {
   onClose: () => void;

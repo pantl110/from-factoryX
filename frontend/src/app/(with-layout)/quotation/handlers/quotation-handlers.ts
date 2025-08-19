@@ -102,7 +102,9 @@ export const useQuotationHandlers = ({
         setInitialQuotationProducts([...quotationProducts]);
         // 에러 표시 상태 초기화
         setShowErrors(false);
+        return true; // 성공 시 true 반환
       }
+      return false; // 실패 시 false 반환
     } catch (error) {
       // 에러 메시지 설정
       const errorMessage =
@@ -133,7 +135,6 @@ export const useQuotationHandlers = ({
     setToastText,
     setToastSubtext,
     showToast,
-    router,
   ]);
 
   // 생산 시작 버튼 핸들러

@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AddItemDropdown from './add-item-dropdown';
 import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
 import IssueTypeDropdown from './issue-type-dropdown';
-import { BarobilRegisterModal } from './modals/barobil-register-modal';
+// import { BarobilRegisterModal } from './modals/barobil-register-modal';
 import {
   useUpdateFactory,
   useCreateTaxInvoice,
@@ -47,8 +47,7 @@ const CreatTaxPanel = ({
     useState(false);
   const [isIssueTypeDropdownOpen, setIsIssueTypeDropdownOpen] = useState(false);
   const [isClaimTaxModalOpen, setIsClaimTaxModalOpen] = useState(false);
-  const [isBarobilRegisterModalOpen, setIsBarobilRegisterModalOpen] =
-    useState(false);
+  const [, setIsBarobilRegisterModalOpen] = useState(false);
   const [selectedIssueType, setSelectedIssueType] = useState<
     '청구' | '영수' | null
   >(null);

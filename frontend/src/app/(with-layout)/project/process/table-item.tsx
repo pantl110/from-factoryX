@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Chip from '@/ui/chip';
 import { useRouter } from 'next/navigation';
-import { ProjectStatusColorMap, TaxStatusType } from '@/types/status-type';
+import { ProjectStatusColorMap } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import MiniBtn from '@/ui/mini-btn';
 import { ProjectResponseModel } from '@/types/data-model';
 import { CopySimple } from '@phosphor-icons/react';
 import Tooltip from '@/ui/tooltip';
 import useCloneProject from '@/hooks/project/project-plan/use-clone-project';
+import LinkTaxModal from './modals/link-tax-modal/link-tax-modal';
 
 interface TableItemProps {
   project: ProjectResponseModel;
@@ -29,6 +30,7 @@ const TableItem = ({
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const { cloneProject, isLoading: isCloning } = useCloneProject();
+  const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
 
   // 프로젝트 상태 색상 가져오기 (영어/한글 모두 지원)
   const chipColors =
@@ -98,14 +100,14 @@ const TableItem = ({
     }
   };
 
-  // 세금계산서 발행 상태 표시 텍스트 변환
-  const getPublishStatusText = (status: TaxStatusType | undefined) => {
-    if (status === null || status === undefined) return '연결 필요';
-    if (status === 'pending') return '미발행';
-    if (status === 'published') return '보기';
-    return '';
-  };
-  const taxButtonText = getPublishStatusText(project.publish_status);
+  // // 세금계산서 발행 상태 표시 텍스트 변환
+  // const getPublishStatusText = (status: TaxStatusType | undefined) => {
+  //   if (status === null || status === undefined) return '연결 필요';
+  //   if (status === 'pending') return '미발행';
+  //   if (status === 'published') return '보기';
+  //   return '';
+  // };
+  // const taxButtonText = getPublishStatusText(project.publish_status);
 
   return (
     <>
@@ -177,6 +179,9 @@ const TableItem = ({
               textColor="text-dg"
               hoverColor="hover:bg-lg"
               height="h-8"
+              onClick={() => {
+                setIsLinkTaxModalOpen(true);
+              }}
             />
           </div>
         )}
@@ -224,6 +229,13 @@ const TableItem = ({
           </div>,
           document.body
         )}
+
+      {isLinkTaxModalOpen && (
+        <LinkTaxModal
+          onClose={() => setIsLinkTaxModalOpen(false)}
+          projectId={project.project_id}
+        />
+      )}
     </>
   );
 };

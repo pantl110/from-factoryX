@@ -32,19 +32,17 @@ import {
 import { useSearchParams } from 'next/navigation';
 import useFactoryStore from '@/store/factory-store';
 import useOcrStore from '@/store/ocr-store';
-
 import TabArea from './tab-area';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import TitleSec from './title-sec';
 import InputSection from './input-section';
 import Toast from '@/ui/toast';
-import PrintView from './modals/print-view';
-import EmailView from './modals/email-view';
-import StartProductionModal from './modals/start-production-modal';
-import { useQuotationHandlers } from './handlers/quotation-handlers';
+import PrintView from '@/app/(with-layout)/quotation/modals/print-view';
+import EmailView from '@/app/(with-layout)/quotation/modals/email-view';
+import StartProductionModal from '@/app/(with-layout)/quotation/modals/start-production-modal';
+import { useQuotationHandlers } from '@/app/(with-layout)/quotation/handlers/quotation-handlers';
 import { QuotationFormModel } from '@/types/data-model';
-import CreateTaxPanel from '../tax/list/create-tax-panel';
-import { ClientDataSyncModel, ProductDataSyncModel } from './type';
+import CreateTaxPanel from '@/app/(with-layout)/tax/list/create-tax-panel';
 
 const QuotationPageContent = () => {
   const router = useRouter();
@@ -66,8 +64,8 @@ const QuotationPageContent = () => {
     useGetDetailQuotation(quotationId || 0);
   const { showToast, isToastOpen, isVisible } = useToast();
   const { ocrData, imageUrl, setOcrData } = useOcrStore();
-  const { clientList, getClients } = useGetClient(); // 거래처 목록 가져오기
-  const { productList, getProductList } = useGetProduct(); // 제품 목록 가져오기
+  const { clientList, getAllClientList } = useGetClient(); // 거래처 목록 가져오기
+  const { productList, getAllProductList } = useGetProduct(); // 제품 목록 가져오기
 
   const [projectStatus, setProjectStatus] =
     useState<ProjectStatusType>('quotation'); // 프로젝트 상태 관리
@@ -118,10 +116,10 @@ const QuotationPageContent = () => {
   useEffect(() => {
     loadProjectStatus();
 
-    // 거래처 목록과 제품 목록 로드
-    if (factoryId) {
-      getClients();
-      getProductList();
+    // ocrdata 있으면 거래처 목록과 제품 목록 로드
+    if (factoryId && ocrData) {
+      getAllClientList();
+      getAllProductList();
     }
 
     // 컴포넌트 언마운트 시 Zustand store의 ocr 데이터 초기화
@@ -457,76 +455,76 @@ const QuotationPageContent = () => {
   });
 
   // 필수 폼이 채워져 있는지 검사 - Client data의 required 필드들이 모두 채워져 있는지 확인
+  const watchedName = watch('name') || '';
+  const watchedBusinessRegistrationNumber =
+    watch('business_registration_number') || '';
+  const watchedRepresentativeName = watch('representative_name') || '';
+  const watchedDueDate = watch('due_date') || '';
+  const watchedBusinessType = watch('business_type') || '';
+  const watchedBusinessCategory = watch('business_category') || '';
+  const watchedAddress = watch('address') || '';
+
   const isFormFilled = useMemo(() => {
-    // 견적서 데이터가 아직 로드되지 않았으면 false 반환
-    if (isQuotationLoading) {
-      return false;
-    }
+    if (isQuotationLoading) return false;
 
-    // 실시간으로 특정 필드들을 watch
-    const name = watch('name') || '';
-    const businessRegistrationNumber =
-      watch('business_registration_number') || '';
-    const representativeName = watch('representative_name') || '';
-    const dueDate = watch('due_date') || '';
-    const businessType = watch('business_type') || '';
-    const businessCategory = watch('business_category') || '';
-    const address = watch('address') || '';
-
-    // required 필드들이 모두 채워져 있는지 확인
     const isAllRequiredFieldsFilled =
-      name.trim() !== '' &&
-      businessRegistrationNumber.trim() !== '' &&
-      representativeName.trim() !== '' &&
-      dueDate.trim() !== '' &&
-      businessType.trim() !== '' &&
-      businessCategory.trim() !== '' &&
-      address.trim() !== '';
+      watchedName.trim() !== '' &&
+      watchedBusinessRegistrationNumber.trim() !== '' &&
+      watchedRepresentativeName.trim() !== '' &&
+      watchedDueDate.trim() !== '' &&
+      watchedBusinessType.trim() !== '' &&
+      watchedBusinessCategory.trim() !== '' &&
+      watchedAddress.trim() !== '';
 
     return isAllRequiredFieldsFilled;
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    watch('name'),
-    watch('business_registration_number'),
-    watch('representative_name'),
-    watch('due_date'),
-    watch('business_type'),
-    watch('business_category'),
-    watch('address'),
+    watchedName,
+    watchedBusinessRegistrationNumber,
+    watchedRepresentativeName,
+    watchedDueDate,
+    watchedBusinessType,
+    watchedBusinessCategory,
+    watchedAddress,
     isQuotationLoading,
   ]);
 
+  const watchedFactoryId = watch('factory_id');
+  const watchedEmail = watch('email');
+  const watchedPhone = watch('phone');
+  const watchedFax = watch('fax');
+  const watchedManager = watch('manager');
+  const watchedNote = watch('note');
+
   const watchedClientData = useMemo(() => {
     return {
-      factory_id: watch().factory_id,
-      name: watch().name,
-      business_registration_number: watch().business_registration_number,
-      representative_name: watch().representative_name,
-      email: watch().email,
-      phone: watch().phone,
-      fax: watch().fax,
-      business_type: watch().business_type,
-      business_category: watch().business_category,
-      address: watch().address,
-      manager: watch().manager,
-      note: watch().note,
-      due_date: watch().due_date,
+      factory_id: watchedFactoryId,
+      name: watchedName,
+      business_registration_number: watchedBusinessRegistrationNumber,
+      representative_name: watchedRepresentativeName,
+      email: watchedEmail,
+      phone: watchedPhone,
+      fax: watchedFax,
+      business_type: watchedBusinessType,
+      business_category: watchedBusinessCategory,
+      address: watchedAddress,
+      manager: watchedManager,
+      note: watchedNote,
+      due_date: watchedDueDate,
     };
   }, [
-    watch('factory_id'),
-    watch('name'),
-    watch('business_registration_number'),
-    watch('representative_name'),
-    watch('email'),
-    watch('phone'),
-    watch('fax'),
-    watch('business_type'),
-    watch('business_category'),
-    watch('address'),
-    watch('manager'),
-    watch('note'),
-    watch('due_date'),
+    watchedFactoryId,
+    watchedName,
+    watchedBusinessRegistrationNumber,
+    watchedRepresentativeName,
+    watchedEmail,
+    watchedPhone,
+    watchedFax,
+    watchedBusinessType,
+    watchedBusinessCategory,
+    watchedAddress,
+    watchedManager,
+    watchedNote,
+    watchedDueDate,
   ]);
 
   const [isTaxCreatePanelOpen, setIsTaxCreatePanelOpen] = useState(false);
@@ -550,7 +548,9 @@ const QuotationPageContent = () => {
           // 버튼 클릭 시 함수
           projectStatus={projectStatus}
           onProjectStatusChange={handleProjectStatusChange}
-          onSaveDraft={handleSaveDraft}
+          onSaveDraft={async () => {
+            await handleSaveDraft();
+          }}
         />
         <TabArea
           projectStatus={projectStatus}

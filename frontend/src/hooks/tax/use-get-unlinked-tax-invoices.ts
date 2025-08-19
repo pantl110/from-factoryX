@@ -7,7 +7,7 @@ import { UnlinkedTaxInvoiceListResponseModel } from '@/types/data-model';
 interface UnlinkedTaxInvoiceParamsModel {
   q?: string; // 거래처명 검색어
   page?: number;
-  size?: number;
+  page_size?: number;
 }
 
 const useGetUnlinkedTaxInvoices = () => {
@@ -28,8 +28,8 @@ const useGetUnlinkedTaxInvoices = () => {
       if (params.page) {
         queryParams.page = params.page;
       }
-      if (params.size) {
-        queryParams.size = params.size;
+      if (params.page_size) {
+        queryParams.page_size = params.page_size;
       }
 
       const result = await callTaxApi<UnlinkedTaxInvoiceListResponseModel>(

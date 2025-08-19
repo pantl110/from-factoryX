@@ -51,7 +51,7 @@ const CompletedProjectPage = () => {
         order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
         order_dir: sortOrder,
         page: currentPage,
-        size: 10,
+        page_size: 10,
       });
 
       if (result.success && result.data) {
@@ -144,7 +144,7 @@ const CompletedProjectPage = () => {
         order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
         order_dir: sortOrder,
         page: currentPage,
-        size: 10,
+        page_size: 10,
       });
 
       if (result.success && result.data) {
@@ -172,7 +172,9 @@ const CompletedProjectPage = () => {
             onCancel={() => setAllChecked(false)}
             onSearch={handleSearch}
             searchKeyword={searchKeyword}
-            hasData={!!projectData?.data.length || projectData?.data.length > 0}
+            hasData={
+              !!projectData?.data.length || (projectData?.data.length || 0) > 0
+            }
           />
 
           {isProjectsLoading && !projectData ? (

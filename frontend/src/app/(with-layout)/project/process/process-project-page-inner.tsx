@@ -217,7 +217,7 @@ const ProcessProjectPageInner = () => {
         order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
         order_dir: sortOrder,
         page: currentPage,
-        size: 10,
+        page_size: 10,
       });
 
       if (result.success && result.data) {

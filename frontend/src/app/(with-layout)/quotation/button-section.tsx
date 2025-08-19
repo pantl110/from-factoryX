@@ -2,7 +2,7 @@
 
 import MiniBtn from '@/ui/mini-btn';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
-import router from 'next/router';
+import { useRouter } from 'next/navigation';
 
 interface ButtonSectionProps {
   setIsTaxCreatePanelOpen: (open: boolean) => void;
@@ -29,6 +29,7 @@ const ButtonSection = ({
   hasQuotationProducts,
   isDirty,
 }: ButtonSectionProps) => {
+  const router = useRouter();
   return (
     <>
       <div className="flex gap-1">
@@ -77,8 +78,10 @@ const ButtonSection = ({
               bgColor="bg-primary-8"
               onClick={async () => {
                 try {
-                  await onSaveDraft?.();
-                  router.push('/project/process');
+                  const success = await onSaveDraft?.();
+                  if (success) {
+                    router.push('/project/process');
+                  }
                 } catch {
                   // 에러가 발생하면 페이지 이동하지 않음
                 }

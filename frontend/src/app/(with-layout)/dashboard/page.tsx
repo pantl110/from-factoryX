@@ -87,7 +87,7 @@ const DashboardPageContent = () => {
       getProjects({
         status: 'progress',
         page: 1,
-        size: 100,
+        page_size: 100,
         order_by: 'start_date',
         order_dir: 'desc',
       }).then(

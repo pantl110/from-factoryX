@@ -554,8 +554,8 @@ export interface QuotationResponseModel {
   business_type?: string;
   business_category?: string;
   address?: string;
-  products: QuotationProductDetailResponseModel[];   // 주문 품목 정보
-  due_date?: string;  // 납기일
+  products: QuotationProductDetailResponseModel[]; // 주문 품목 정보
+  due_date?: string; // 납기일
   uploaded_file?: string;
 }
 
@@ -1059,7 +1059,7 @@ export interface PendingTaxInvoiceListResponseModel extends PaginationModel {
 }
 
 // 미연결 세금계산서
-interface UnlinkedTaxInvoiceResponseModel {
+export interface UnlinkedTaxInvoiceResponseModel {
   id: number;
   tax_invoice_type: string;
   transaction_date: string;
