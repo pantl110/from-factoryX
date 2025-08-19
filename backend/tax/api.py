@@ -415,8 +415,8 @@ async def sync_tax_invoices(request, factory_id: int):
                 NationalTaxService(
                     user=user,
                     factory=factory,
-                    publish_status="발행 완료",
-                    tax_invoice_type="매출",
+                    publish_status="published",
+                    tax_invoice_type="sales",
                     transaction_type=barobill_purpose_types.get(
                         invoice_detail.PurposeType
                     ),
@@ -485,8 +485,8 @@ async def sync_tax_invoices(request, factory_id: int):
                 NationalTaxService(
                     user=user,
                     factory=factory,
-                    publish_status="발행 완료",
-                    tax_invoice_type="매입",
+                    publish_status="published",
+                    tax_invoice_type="purchase",
                     transaction_type=barobill_purpose_types.get(
                         invoice_detail.PurposeType
                     ),
