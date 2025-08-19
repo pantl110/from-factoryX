@@ -34,6 +34,7 @@ class QuotationDetailOut(Schema):
     business_type: Optional[str] = None
     business_category: Optional[str] = None
     address: Optional[str] = None
+    uploaded_file: Optional[str] = None
     due_date: Optional[str] = None
     products: List[QuotationDetailProductOut]
 

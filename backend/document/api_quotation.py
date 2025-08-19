@@ -123,6 +123,9 @@ async def get_quotation_detail(request, quotation_id: int):
         else:
             response_data["due_date"] = ""
 
+        # 업로드 파일 경로/식별자 추가
+        response_data["uploaded_file"] = quotation.uploaded_file
+
         return response_data
 
     except HttpError as e:
