@@ -9,7 +9,7 @@ interface GetProjectModel {
   order_by?: 'start_date' | 'due_date';
   order_dir?: 'asc' | 'desc';
   page?: number;
-  size?: number;
+  page_size?: number;
 }
 
 // 각 프로젝트별로 데이터 가공
@@ -50,8 +50,8 @@ const useGetProjects = () => {
         if (params.page) {
           queryParams.append('page', params.page.toString());
         }
-        if (params.size) {
-          queryParams.append('size', params.size.toString());
+        if (params.page_size) {
+          queryParams.append('page_size', params.page_size.toString());
         }
         if (params.search) {
           queryParams.append('search', params.search);

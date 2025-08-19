@@ -16,6 +16,8 @@ import {
   OcrRequestItemModel,
   QuotationProductDetailResponseModel,
   QuotationResponseModel,
+  ClientResponseModel,
+  ProjectStatusType,
 } from '@/types/data-model';
 import {
   useStartProduction,
@@ -62,11 +64,39 @@ const QuotationPageContent = () => {
     useGetDetailQuotation(quotationId || 0);
   const { showToast, isToastOpen, isVisible } = useToast();
   const { ocrData, imageUrl, setOcrData } = useOcrStore();
+  const { clientList, getClients } = useGetClient(); // 거래처 목록 가져오기
+  const { productList, getProductList } = useGetProduct(); // 제품 목록 가져오기
 
-  // 거래처 목록 가져오기
-  const { clientList, getClients } = useGetClient();
-  // 제품 목록 가져오기
-  const { productList, getProductList } = useGetProduct();
+  const [projectStatus, setProjectStatus] =
+    useState<ProjectStatusType>('quotation'); // 프로젝트 상태 관리
+  const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
+    imageUrl ? 'quotation' : 'history'
+  ); // 탭 상태 - ocr데이터가 없으면 히스토리 탭이 활성화
+  const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false); // 오른쪽 패널 확장 상태
+  const [selectedProduct, setSelectedProduct] = useState<number | null>(null); // 선택된 품목 상태 -> 히스토리 보여주기
+
+  // 모달 상태
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
+  const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
+    useState(false);
+
+  // 에러 토스트 상태
+  const [toastText, setToastText] = useState<string>('');
+  const [toastSubtext, setToastSubtext] = useState<string>('');
+
+  // RequestInfo에서 받은 products 데이터
+  const [quotationProducts, setQuotationProducts] = useState<
+    QuotationProductDetailResponseModel[]
+  >([]);
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null); // 선택된 거래처 ID 관리
+
+  // 폼 유효성 검사, 버튼 활성화 관련 상태
+  const [initialQuotationProducts, setInitialQuotationProducts] = useState<
+    QuotationProductDetailResponseModel[]
+  >([]); // 견적 품목 변경 추적을 위한 상태
+  const [hasQuotationProducts, setHasQuotationProducts] = useState(false); // 품목이 하나 이상, 품목의 폼이 다 채워졌는지 확인 -> 버튼 활성화 여부
+  const [showErrors, setShowErrors] = useState(false); // 에러 표시 상태 (임시저장 시 유효성 검사 오류 표시용)
 
   // 프로젝트 상태 로드
   const loadProjectStatus = useCallback(async () => {
@@ -92,9 +122,8 @@ const QuotationPageContent = () => {
       getProductList();
     }
 
-    // 컴포넌트 언마운트 시 Zustand store 정보 초기화
+    // 컴포넌트 언마운트 시 Zustand store의 ocr 데이터 초기화
     return () => {
-      // OCR 데이터 초기화
       useOcrStore.getState().clearOcrData();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -102,9 +131,8 @@ const QuotationPageContent = () => {
 
   // 프로젝트 상태 변경
   const handleProjectStatusChange = useCallback(
-    async (newStatus: string) => {
+    async (newStatus: ProjectStatusType) => {
       if (!projectId) return;
-
       try {
         const result = await updateProjectStatus(projectId, newStatus);
         if (result.success) {
@@ -136,15 +164,12 @@ const QuotationPageContent = () => {
         note: '',
         due_date: '',
       },
-    });
+    }); // 견적서 데이터로 폼 기본값 설정
 
-  // 견적서 데이터로 폼 기본값 설정
+  // db에 저장된 값으로 폼 기본값 설정
   const setFormValuesFromQuotation = useCallback(
     (quotation: QuotationResponseModel) => {
-      // factory_id를 Zustand store에서 가져와서 설정
       setValue('factory_id', factoryId || 0);
-
-      // 백엔드 응답 구조에 맞게 직접 접근
       setValue('name', quotation.factory_name || '');
       setValue(
         'business_registration_number',
@@ -165,7 +190,7 @@ const QuotationPageContent = () => {
     [setValue, factoryId]
   );
 
-  // 견적서 데이터가 로드되면 폼에 설정
+  // 저장된 견적서 데이터가 로드되면 폼에 설정
   useEffect(() => {
     if (quotationData && !isQuotationLoading) {
       setFormValuesFromQuotation(quotationData);
@@ -211,31 +236,6 @@ const QuotationPageContent = () => {
     }
   }, [quotationData, isQuotationLoading]);
 
-  // 프로젝트 상태 관리
-  const [projectStatus, setProjectStatus] = useState<string | null>(null);
-
-  // 선택된 거래처 ID 관리
-  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
-
-  // 견적서 & 주문서 상태 관리 (프로젝트 상태에 따라 결정)
-  const isOrderStatus =
-    projectStatus === 'confirmed' || projectStatus === '주문 확정';
-  const isSuspendedStatus =
-    projectStatus === 'suspended' || projectStatus === '중단';
-
-  // 견적 품목 변경 추적을 위한 상태
-  const [initialQuotationProducts, setInitialQuotationProducts] = useState<
-    QuotationProductDetailResponseModel[]
-  >([]);
-
-  // 에러 표시 상태 (임시저장 시 유효성 검사 오류 표시용)
-  const [showErrors, setShowErrors] = useState(false);
-
-  // 탭 상태 - ocr데이터가 없으면 히스토리 탭이 활성화
-  const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
-    imageUrl ? 'quotation' : 'history'
-  );
-
   // OCR 데이터가 있을 때 거래처 정보만 설정 (제품 정보는 request-info.tsx에서 처리)
   useEffect(() => {
     if (ocrData && (!quotationData || !quotationData.factory_name)) {
@@ -244,7 +244,7 @@ const QuotationPageContent = () => {
 
       // 사업자등록번호로 기존 거래처 찾기
       const existingClient = clientList?.data?.find(
-        (client) =>
+        (client: ClientResponseModel) =>
           client.business_registration_number ===
           ocrData.client_info.registration_number
       );
@@ -319,7 +319,7 @@ const QuotationPageContent = () => {
     (newOcrData: OcrDataModel) => {
       // 사업자등록번호로 기존 거래처 찾기
       const existingClient = clientList?.data?.find(
-        (client) =>
+        (client: ClientResponseModel) =>
           client.business_registration_number ===
           newOcrData.client_info.registration_number
       );
@@ -389,28 +389,6 @@ const QuotationPageContent = () => {
     [setValue, setActiveTab, reset, clientList]
   );
 
-  // 오른쪽 패널 확장 상태
-  const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false);
-
-  // 선택된 품목 상태 -> 히스토리 보여주기
-  const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
-  // 모달 상태
-  const [isEmailOpen, setIsEmailOpen] = useState(false);
-  const [isPrintOpen, setIsPrintOpen] = useState(false);
-  const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
-    useState(false);
-
-  // 에러 토스트 상태
-  const [toastText, setToastText] = useState<string>('');
-  const [toastSubtext, setToastSubtext] = useState<string>('');
-
-  // 요청 사항 목록에 따라 버튼 활성화 여부
-  const [hasQuotationProducts, setHasQuotationProducts] = useState(false);
-  // RequestInfo에서 받은 products 데이터
-  const [quotationProducts, setQuotationProducts] = useState<
-    QuotationProductDetailResponseModel[]
-  >([]);
-
   // 견적 품목이 변경되었는지 확인하는 함수
   const hasQuotationProductsChanged = useMemo(() => {
     if (initialQuotationProducts.length !== quotationProducts.length) {
@@ -456,7 +434,7 @@ const QuotationPageContent = () => {
     setIsRightPanelExpanded((prev) => !prev);
   };
 
-  // 견적서 핸들러 훅 사용 // 임시저장 // 생산시작 함수
+  // 견적서 핸들러 훅 사용 // 임시저장 함수 & 생산시작 함수
   const { handleSaveDraft, handleStartProduction } = useQuotationHandlers({
     watch,
     reset,
@@ -476,8 +454,8 @@ const QuotationPageContent = () => {
     router,
   });
 
-  // 폼 유효성 검사 - required 필드들이 모두 채워져 있는지 확인 (주문 확정용)
-  const isFormValid = useMemo(() => {
+  // 필수 폼이 채워져 있는지 검사 - Client data의 required 필드들이 모두 채워져 있는지 확인
+  const isFormFilled = useMemo(() => {
     // 견적서 데이터가 아직 로드되지 않았으면 false 반환
     if (!quotationData || isQuotationLoading) {
       return false;
@@ -506,6 +484,23 @@ const QuotationPageContent = () => {
     return isAllRequiredFieldsFilled;
   }, [watch, quotationData, isQuotationLoading]);
 
+  const watchedClientData = useMemo(() => {
+    return {
+      factory_id: watch().factory_id,
+      name: watch().name,
+      business_registration_number: watch().business_registration_number,
+      representative_name: watch().representative_name,
+      email: watch().email,
+      phone: watch().phone,
+      fax: watch().fax,
+      business_type: watch().business_type,
+      business_category: watch().business_category,
+      address: watch().address,
+      manager: watch().manager,
+      note: watch().note,
+    };
+  }, [watch]);
+
   return (
     <>
       <div className="pt-7 pl-10 h-[calc(100vh-61px)] flex flex-col">
@@ -516,18 +511,15 @@ const QuotationPageContent = () => {
           trigger={trigger}
           watch={watch}
           formState={formState}
-          isOrderStatus={isOrderStatus}
-          setIsOrderStatus={() => handleProjectStatusChange('confirmed')}
+          projectStatus={projectStatus}
+          onProjectStatusChange={handleProjectStatusChange}
           hasQuotationProducts={hasQuotationProducts}
           onSaveDraft={handleSaveDraft}
           isDirty={isDirty}
-          isSuspendedStatus={isSuspendedStatus}
-          setIsSuspendedStatus={() => handleProjectStatusChange('suspended')}
-          projectId={projectId}
-          isFormValid={isFormValid}
+          isFormFilled={isFormFilled}
         />
         <TabArea
-          isOrderStatus={isOrderStatus}
+          projectStatus={projectStatus}
           activeTab={activeTab}
           activateQuotationTab={activateQuotationTab}
           ocrData={ocrData}
@@ -545,7 +537,7 @@ const QuotationPageContent = () => {
               <History selectedProduct={selectedProduct} />
             ) : ocrData || quotationData?.uploaded_file ? (
               <PreviewImage
-                isOrderStatus={isOrderStatus}
+                projectStatus={projectStatus}
                 imageUrl={imageUrl || quotationData?.uploaded_file}
                 onOcrDataChange={handleOcrDataChange}
               />
@@ -575,7 +567,7 @@ const QuotationPageContent = () => {
                   )}
                 </button>
                 <h2 className="flex-1 Heading-2">
-                  {isOrderStatus ? '주문서' : '견적서'}
+                  {projectStatus === 'confirmed' ? '주문서' : '견적서'}
                 </h2>
               </div>
             </div>
@@ -621,25 +613,13 @@ const QuotationPageContent = () => {
       {isPrintOpen && (
         <OverlayView onClose={() => setIsPrintOpen(false)}>
           <PrintView
-            documentTitle={isOrderStatus ? '주문서' : '견적서'}
-            clientData={{
-              factory_id: watch().factory_id,
-              name: watch().name,
-              business_registration_number:
-                watch().business_registration_number,
-              representative_name: watch().representative_name,
-              email: watch().email,
-              phone: watch().phone,
-              fax: watch().fax,
-              business_type: watch().business_type,
-              business_category: watch().business_category,
-              address: watch().address,
-              manager: watch().manager,
-              note: watch().note,
-            }}
+            documentTitle={projectStatus === 'confirmed' ? '주문서' : '견적서'}
+            clientData={watchedClientData}
             dueDate={watch().due_date}
             productListInfoTitle={
-              isOrderStatus ? '주문 품목 정보' : '견적 품목 정보'
+              projectStatus === 'confirmed'
+                ? '주문 품목 정보'
+                : '견적 품목 정보'
             }
             productItems={quotationProducts}
             supplyAmount={quotationProducts.reduce((total, product) => {
@@ -656,25 +636,13 @@ const QuotationPageContent = () => {
       {isEmailOpen && (
         <OverlayView onClose={() => setIsEmailOpen(false)}>
           <EmailView
-            documentTitle={isOrderStatus ? '주문서' : '견적서'}
-            clientData={{
-              factory_id: watch().factory_id,
-              name: watch().name,
-              business_registration_number:
-                watch().business_registration_number,
-              representative_name: watch().representative_name,
-              email: watch().email,
-              phone: watch().phone,
-              fax: watch().fax,
-              business_type: watch().business_type,
-              business_category: watch().business_category,
-              address: watch().address,
-              manager: watch().manager,
-              note: watch().note,
-            }}
+            documentTitle={projectStatus === 'confirmed' ? '주문서' : '견적서'}
+            clientData={watchedClientData}
             dueDate={watch().due_date}
             productListInfoTitle={
-              isOrderStatus ? '주문 품목 정보' : '견적 품목 정보'
+              projectStatus === 'confirmed'
+                ? '주문 품목 정보'
+                : '견적 품목 정보'
             }
             productItems={quotationProducts}
             supplyAmount={quotationProducts.reduce((total, product) => {

@@ -9,8 +9,8 @@ interface ButtonSectionProps {
   onStartProductionClick?: () => void;
   onSaveDraft?: () => void | Promise<void>;
   isOrderStatus: boolean;
-  setIsOrderStatus: (status: boolean) => void | Promise<void>;
-  isFormValid: boolean;
+  changeToConfirmed: () => void | Promise<void>;
+  isFormFilled: boolean;
   hasQuotationProducts: boolean;
   isDirty: boolean;
 }
@@ -21,8 +21,8 @@ const ButtonSection = ({
   onStartProductionClick,
   onSaveDraft,
   isOrderStatus,
-  setIsOrderStatus,
-  isFormValid,
+  changeToConfirmed,
+  isFormFilled,
   hasQuotationProducts,
   isDirty,
 }: ButtonSectionProps) => {
@@ -34,7 +34,7 @@ const ButtonSection = ({
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
-          disabled={!isFormValid}
+          disabled={!isFormFilled}
         />
         <MiniBtn
           text="출력"
@@ -60,7 +60,7 @@ const ButtonSection = ({
               iconPosition="right"
               onClick={onStartProductionClick}
               hoverColor="hover:bg-primary-hover"
-              disabled={!isFormValid || !hasQuotationProducts}
+              disabled={!isFormFilled || !hasQuotationProducts}
             />
           </>
         ) : (
@@ -77,11 +77,9 @@ const ButtonSection = ({
               text="주문 확정"
               textColor="text-wh"
               bgColor="bg-primary"
-              onClick={() => {
-                setIsOrderStatus(true);
-              }}
+              onClick={changeToConfirmed}
               hoverColor="hover:bg-primary-hover"
-              disabled={!isFormValid || !hasQuotationProducts}
+              disabled={!isFormFilled || !hasQuotationProducts}
             />
           </>
         )}

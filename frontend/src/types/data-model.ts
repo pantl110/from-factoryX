@@ -544,8 +544,8 @@ export interface QuotationProductDetailResponseModel {
   tax_amount?: number | null; // 세액
 }
 export interface QuotationResponseModel {
-  // 거래처 정보 (factory_info로 변경됨)
-  factory_name: string;
+  // 거래처 정보
+  factory_name: string; // factory name이지만 거래처 이름임
   business_registration_number?: string;
   representative_name?: string;
   email?: string;
@@ -554,10 +554,8 @@ export interface QuotationResponseModel {
   business_type?: string;
   business_category?: string;
   address?: string;
-  // 주문 품목 정보
-  products: QuotationProductDetailResponseModel[];
-  // 납기일
-  due_date?: string;
+  products: QuotationProductDetailResponseModel[];   // 주문 품목 정보
+  due_date?: string;  // 납기일
   uploaded_file?: string;
 }
 

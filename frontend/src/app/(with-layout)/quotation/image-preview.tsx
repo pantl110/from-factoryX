@@ -3,19 +3,19 @@ import { useState, useEffect } from 'react';
 import EnlargeImageOverlay from './modals/enlarge-image-overlay';
 import Image from 'next/image';
 import ExcelUploadModal from '../project/process/modals/excel-upload-modal';
-import { OcrDataModel } from '@/types/data-model';
+import { OcrDataModel, ProjectStatusType } from '@/types/data-model';
 import useOcrStore from '@/store/ocr-store';
 
 interface ImagePreviewProps {
   className?: string;
-  isOrderStatus: boolean;
+  projectStatus: ProjectStatusType;
   imageUrl?: string | null;
   onOcrDataChange?: (ocrData: OcrDataModel) => void;
 }
 
 const ImagePreview = ({
   className = '',
-  isOrderStatus,
+  projectStatus,
   imageUrl: propImageUrl,
   onOcrDataChange,
 }: ImagePreviewProps) => {
@@ -54,7 +54,7 @@ const ImagePreview = ({
     >
       <Image
         src={displayImageUrl}
-        alt={isOrderStatus ? '주문서' : '견적서'}
+        alt={projectStatus === 'confirmed' ? '주문서' : '견적서'}
         width={500}
         height={300}
         className="w-[95%] max-h-[95%] object-contain rounded-lg"
@@ -83,7 +83,9 @@ const ImagePreview = ({
       )}
       {isUploadModalOpen && (
         <ExcelUploadModal
-          documentTitle={isOrderStatus ? '주문서' : '견적 요청서'}
+          documentTitle={
+            projectStatus === 'confirmed' ? '주문서' : '견적 요청서'
+          }
           onClose={() => setIsUploadModalOpen(false)}
           onComplete={handleOcrComplete}
         />

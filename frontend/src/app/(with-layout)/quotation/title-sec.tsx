@@ -4,9 +4,8 @@ import QuotationStatusDropdown from './modals/quotation-status-dropdown';
 import { usePortalDropdown, useToast } from '@/hooks';
 import Toast from '@/ui/toast';
 import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
-import { ClientModel } from '@/types/data-model';
+import { ClientModel, ProjectStatusType } from '@/types/data-model';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
-import { useUpdateProjectStatus } from '@/hooks';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -20,15 +19,12 @@ interface TitleSecProps {
   trigger: UseFormTrigger<QuotationFormModel>;
   watch: UseFormWatch<QuotationFormModel>;
   formState: FormState<QuotationFormModel>;
-  isOrderStatus: boolean;
-  setIsOrderStatus: (status: boolean) => void;
+  projectStatus: ProjectStatusType;
+  onProjectStatusChange: (status: ProjectStatusType) => void;
   hasQuotationProducts: boolean;
   onSaveDraft?: () => void | Promise<void>;
   isDirty: boolean;
-  isSuspendedStatus: boolean;
-  setIsSuspendedStatus: (status: boolean) => void;
-  projectId?: number;
-  isFormValid: boolean;
+  isFormFilled: boolean;
 }
 
 const TitleSec = ({
@@ -38,59 +34,26 @@ const TitleSec = ({
   trigger,
   watch,
   formState,
-  isOrderStatus,
-  setIsOrderStatus,
+  projectStatus,
+  onProjectStatusChange,
   hasQuotationProducts,
   onSaveDraft,
   isDirty,
-  isSuspendedStatus,
-  setIsSuspendedStatus,
-  projectId,
-  isFormValid,
+  isFormFilled,
 }: TitleSecProps) => {
-  // 실시간으로 업체명 가져오기
-  const clientName = watch('name');
-
-  // 토스트 훅
-  const { isToastOpen, isVisible, showToast } = useToast();
-
-  // 프로젝트 상태 업데이트 훅
-  const { updateProjectStatus } = useUpdateProjectStatus();
-
-  // 드랍다운 상태
+  const { isToastOpen, isVisible, showToast } = useToast(); // 토스트 훅
   const {
     isOpen: isQuotationStatusDropdownOpen,
     openDropdown: openQuotationStatusDropdown,
     closeDropdown: closeQuotationStatusDropdown,
     anchorRect: quotationStatusAnchorRect,
-  } = usePortalDropdown();
+  } = usePortalDropdown(); // 드랍다운 상태
 
-  // 프로젝트 상태 변경 핸들러
-  const handleStatusChange = async (newStatus: string) => {
-    if (!projectId) {
-      return;
-    }
-
-    try {
-      const result = await updateProjectStatus(projectId, newStatus);
-      if (result.success) {
-        // 상태 변경 성공 시 UI 업데이트
-        if (newStatus === 'quotation') {
-          setIsSuspendedStatus(false);
-          setIsOrderStatus(false);
-        } else if (newStatus === 'suspended') {
-          setIsSuspendedStatus(true);
-          setIsOrderStatus(false);
-        } else if (newStatus === 'order') {
-          setIsOrderStatus(true);
-          setIsSuspendedStatus(false);
-        }
-      }
-    } catch {
-      // 에러 처리 없음
-    }
-    closeQuotationStatusDropdown();
-  };
+  // 실시간으로 업체명 가져오기
+  const clientName = watch('name');
+  // 프로젝트 상태 체크
+  const isOrderStatus = projectStatus === 'confirmed';
+  const isSuspendedStatus = projectStatus === 'suspended';
 
   return (
     <div className="flex gap-1 mb-4 pr-10">
@@ -140,8 +103,14 @@ const TitleSec = ({
               >
                 <QuotationStatusDropdown
                   onClose={closeQuotationStatusDropdown}
-                  onQuotationClick={() => handleStatusChange('quotation')}
-                  onSuspendedClick={() => handleStatusChange('suspended')}
+                  onQuotationClick={() => {
+                    onProjectStatusChange('quotation');
+                    closeQuotationStatusDropdown();
+                  }}
+                  onSuspendedClick={() => {
+                    onProjectStatusChange('suspended');
+                    closeQuotationStatusDropdown();
+                  }}
                 />
               </div>
             )}
@@ -182,13 +151,13 @@ const TitleSec = ({
           }
         }}
         isOrderStatus={isOrderStatus}
-        setIsOrderStatus={async (status: boolean) => {
+        changeToConfirmed={async () => {
           const isValid = await trigger();
           if (isValid) {
-            setIsOrderStatus(status);
+            onProjectStatusChange('confirmed');
           }
         }}
-        isFormValid={isFormValid}
+        isFormFilled={isFormFilled}
         isDirty={isDirty}
       />
 

@@ -60,6 +60,9 @@ export const useQuotationHandlers = ({
         throw new Error('공장 정보가 없습니다.');
       }
 
+      // 임시저장 시 에러 표시 활성화
+      setShowErrors(true);
+
       const draftData: SaveDraftDataModel = {
         quotation_id: quotationId || 0,
         client: {
