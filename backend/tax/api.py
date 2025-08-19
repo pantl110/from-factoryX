@@ -126,72 +126,30 @@ async def list_pending_tax_invoices(
     "/unlinked",
     summary="[C] 연동되지 않은 세금계산서 조회",
     description="연동되지 않은 세금계산서를 모두 조회합니다.",
-    response={200: List[NotLinkedTaxInvoiceOut], 400: dict, 500: dict},
+    response=List[NationalTaxServiceOut],
 )
 @paginate
-async def list_not_link_tax(request):
-    """
-    연동되지 않은 세금계산서를 모두 조회합니다.
+async def list_not_link_tax(
+    request,
+    factory_id: int = Query(..., description="공장 ID"),
+    filters: TaxInvoiceFilter = Query(..., description="검색 필터"),
+    ordering: str = Query(
+        default="-transaction_date",
+        description="작성일자 정렬: -transaction_date(최신순), transaction_date(오래된순)",
+    ),
+):
+    @sync_to_async
+    def get_unlinked_tax_invoices():
+        queryset = NationalTaxService.objects.filter(
+            projects__isnull=True, client__factory_id=factory_id
+        ).prefetch_related("client", "product")
+        queryset = filters.filter(queryset)
+        if ordering:
+            queryset = queryset.order_by(ordering)
+        return list(queryset)
 
-    입력 필드:
-    - factory_id: 공장 ID (필수)
-    - q: 거래처명 검색어 (선택)
-
-    반환 필드:
-    - id: 세금계산서 ID (NationalTaxService.id)
-    - tax_invoice_type: 세금계산서 유형 (NationalTaxService.tax_invoice_type)
-    - transaction_date: 거래일자 (NationalTaxService.transaction_date)
-    - client_name: 거래처명 (NationalTaxService.client.name)
-    - product_names: 품목명 배열 (NationalTaxService.product.name 배열)
-    - transaction_amount: 공급가액 (NationalTaxService.transaction_amount)
-    - tax_amount: 세액 (NationalTaxService.tax_amount)
-    - total_amount: 합계금액 (transaction_amount + tax_amount)
-    """
-    try:
-        q = request.GET.get("q")
-        factory_id = request.GET.get("factory_id")
-        if not factory_id:
-            raise HttpError(400, "factory_id는 필수 입력값입니다.")
-
-        @sync_to_async
-        def get_unlinked_tax_invoices():
-            qs = (
-                NationalTaxService.objects.filter(
-                    projects__isnull=True, client__factory_id=factory_id
-                )
-                .prefetch_related("client", "product")
-                .order_by("-transaction_date")
-            )
-            if q:
-                qs = qs.filter(client__name__icontains=q)
-            return list(qs)
-
-        invoices = await get_unlinked_tax_invoices()
-        result = []
-        for invoice in invoices:
-            product_names = [product.name for product in invoice.product.all()]
-            total_amount = invoice.transaction_amount + invoice.tax_amount
-            tax_invoice_type_map = {"sales": "매출", "purchase": "매입"}
-            tax_invoice_type_kr = tax_invoice_type_map.get(
-                invoice.tax_invoice_type, invoice.tax_invoice_type
-            )
-            result.append(
-                NotLinkedTaxInvoiceOut(
-                    id=invoice.id,
-                    tax_invoice_type=tax_invoice_type_kr,
-                    transaction_date=invoice.transaction_date,
-                    client_name=invoice.client.name,
-                    product_names=product_names,
-                    transaction_amount=invoice.transaction_amount,
-                    tax_amount=invoice.tax_amount,
-                    total_amount=total_amount,
-                )
-            )
-        return result
-    except Exception as e:
-        raise HttpError(
-            500, "연동되지 않은 세금계산서 조회 중 내부 서버 오류가 발생했습니다."
-        )
+    invoices = await get_unlinked_tax_invoices()
+    return invoices
 
 
 # Project Tab
