@@ -83,6 +83,7 @@ async def get_quotation_detail(request, quotation_id: int):
         client = quotation.client
         factory_info = {
             "factory_name": client.name if client and client.name else "",
+            "client_id": (client.id if client else None),
             "business_registration_number": getattr(
                 client, "business_registration_number", None
             ),

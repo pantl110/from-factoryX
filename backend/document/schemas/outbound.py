@@ -25,6 +25,7 @@ class QuotationDetailProductOut(Schema):
 # (GET) Quotation Detail
 class QuotationDetailOut(Schema):
     factory_name: Optional[str] = ""
+    client_id: Optional[int] = None
     business_registration_number: Optional[str] = None
     representative_name: Optional[str] = None
     email: Optional[str] = None
