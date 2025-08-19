@@ -74,6 +74,7 @@ class UndeliveredQuotationProductOut(Schema):
 # (GET) Today's Production Plans
 class TodayProductionPlanOut(Schema):
     company_name: str  # 업체명 (클라이언트명)
+    product_id: int  # 품목 ID
     product_name: str  # 품목명
     product_code: Optional[str] = None  # 품목코드
     product_note: Optional[str] = None  # 품목 메모

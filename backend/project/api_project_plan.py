@@ -394,7 +394,7 @@ async def list_today_production_plans(request):
                 )
                 .filter(
                     product__quotation__factory_id=int(factory_id),
-                    start_date=today,  # 오늘이 시작일
+                    start_date__date=today,  # 오늘 하루(00:00~23:59:59)
                 )
                 .order_by("start_date")  # 시작 시간 순으로 정렬
             )
@@ -412,6 +412,7 @@ async def list_today_production_plans(request):
                 results.append(
                     {
                         "company_name": plan.product.quotation.client.name,  # 업체명
+                        "product_id": plan.product.product.id,  # 품목 ID
                         "product_name": plan.product.product.name,  # 품목명
                         "product_code": plan.product.product.code,  # 품목코드
                         "product_note": plan.product.product.note,  # 품목 메모
