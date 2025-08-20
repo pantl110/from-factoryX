@@ -59,111 +59,115 @@ const TitleSec = ({
 
   return (
     <div className="flex gap-1 mb-4 pr-10">
-      <div className="flex-1 gap-1">
-        <div
-          className={`${isOrderStatus ? 'cursor-default' : 'cursor-pointer'} relative w-fit`}
-        >
-          <Chip
-            text={
-              isOrderStatus
-                ? '주문 확정'
-                : isSuspendedStatus
-                  ? '중단'
-                  : '견적 요청'
-            }
-            bgColor={
-              isOrderStatus
-                ? 'bg-orange-8'
-                : isSuspendedStatus
-                  ? 'bg-red-8'
-                  : 'bg-yellow-8'
-            }
-            textColor={
-              isOrderStatus
-                ? 'text-orange'
-                : isSuspendedStatus
-                  ? 'text-red'
-                  : 'text-yellow'
-            }
-            state={!isOrderStatus}
-            onClick={(e) => {
-              if (isOrderStatus) return;
-              if (e) openQuotationStatusDropdown(e);
+      <div className="flex-1 gap-1 w-full">
+        <div className="flex justify-between">
+          <div
+            className={`${isOrderStatus ? 'cursor-default' : 'cursor-pointer'} relative w-fit`}
+          >
+            <Chip
+              text={
+                isOrderStatus
+                  ? '주문 확정'
+                  : isSuspendedStatus
+                    ? '중단'
+                    : '견적 요청'
+              }
+              bgColor={
+                isOrderStatus
+                  ? 'bg-orange-8'
+                  : isSuspendedStatus
+                    ? 'bg-red-8'
+                    : 'bg-yellow-8'
+              }
+              textColor={
+                isOrderStatus
+                  ? 'text-orange'
+                  : isSuspendedStatus
+                    ? 'text-red'
+                    : 'text-yellow'
+              }
+              state={!isOrderStatus}
+              onClick={(e) => {
+                if (isOrderStatus) return;
+                if (e) openQuotationStatusDropdown(e);
+              }}
+              cursor={isOrderStatus ? 'cursor-default' : 'cursor-pointer'}
+            />
+            {isQuotationStatusDropdownOpen &&
+              quotationStatusAnchorRect &&
+              !isOrderStatus && (
+                <div
+                  style={{
+                    position: 'fixed',
+                    left: quotationStatusAnchorRect.left,
+                    top: quotationStatusAnchorRect.bottom + 8,
+                    zIndex: 10,
+                  }}
+                >
+                  <QuotationStatusDropdown
+                    onClose={closeQuotationStatusDropdown}
+                    onQuotationClick={() => {
+                      onProjectStatusChange('quotation');
+                      closeQuotationStatusDropdown();
+                    }}
+                    onSuspendedClick={() => {
+                      onProjectStatusChange('suspended');
+                      closeQuotationStatusDropdown();
+                    }}
+                  />
+                </div>
+              )}
+          </div>
+
+          {/* 버튼 영역 */}
+          <ButtonSection
+            hasQuotationProducts={hasQuotationProducts}
+            setIsTaxCreatePanelOpen={setIsTaxCreatePanelOpen}
+            onEmailClick={async () => {
+              setIsEmailOpen(true);
             }}
-            cursor={isOrderStatus ? 'cursor-default' : 'cursor-pointer'}
+            onPrintClick={async () => {
+              setIsPrintOpen(true);
+            }}
+            onStartProductionClick={async () => {
+              const isValid = await trigger();
+              if (isValid) {
+                setIsStartProductionModalOpen(true);
+              }
+            }}
+            onSaveDraft={async () => {
+              // 업체명이 입력되지 않았으면 토스트 표시하고 함수 종료
+              if (!clientName || clientName.trim() === '') {
+                showToast();
+                return false;
+              }
+
+              // 개별 필드 오류 확인 (입력된 값들 중에 유효하지 않은 것이 있는지)
+              const hasErrors = Object.keys(formState.errors).length > 0;
+              if (hasErrors) {
+                return false; // 오류가 있으면 저장하지 않음
+              }
+
+              if (onSaveDraft) {
+                return await onSaveDraft();
+              }
+              return false;
+            }}
+            isOrderStatus={isOrderStatus}
+            changeToConfirmed={async () => {
+              const isValid = await trigger();
+              if (isValid) {
+                onProjectStatusChange('confirmed');
+              }
+            }}
+            isFormFilled={isFormFilled}
+            isDirty={isDirty}
           />
-          {isQuotationStatusDropdownOpen &&
-            quotationStatusAnchorRect &&
-            !isOrderStatus && (
-              <div
-                style={{
-                  position: 'fixed',
-                  left: quotationStatusAnchorRect.left,
-                  top: quotationStatusAnchorRect.bottom + 8,
-                  zIndex: 10,
-                }}
-              >
-                <QuotationStatusDropdown
-                  onClose={closeQuotationStatusDropdown}
-                  onQuotationClick={() => {
-                    onProjectStatusChange('quotation');
-                    closeQuotationStatusDropdown();
-                  }}
-                  onSuspendedClick={() => {
-                    onProjectStatusChange('suspended');
-                    closeQuotationStatusDropdown();
-                  }}
-                />
-              </div>
-            )}
         </div>
-        <p className="Heading-1 mt-2">
+        <p className="Heading-1 truncate w-full">
           {clientName || '업체명을 입력해 주세요.'}
         </p>
       </div>
-      <ButtonSection
-        hasQuotationProducts={hasQuotationProducts}
-        setIsTaxCreatePanelOpen={setIsTaxCreatePanelOpen}
-        onEmailClick={async () => {
-          setIsEmailOpen(true);
-        }}
-        onPrintClick={async () => {
-          setIsPrintOpen(true);
-        }}
-        onStartProductionClick={async () => {
-          const isValid = await trigger();
-          if (isValid) {
-            setIsStartProductionModalOpen(true);
-          }
-        }}
-        onSaveDraft={async () => {
-          // 업체명이 입력되지 않았으면 토스트 표시하고 함수 종료
-          if (!clientName || clientName.trim() === '') {
-            showToast();
-            return false;
-          }
-
-          // 개별 필드 오류 확인 (입력된 값들 중에 유효하지 않은 것이 있는지)
-          const hasErrors = Object.keys(formState.errors).length > 0;
-          if (hasErrors) {
-            return false; // 오류가 있으면 저장하지 않음
-          }
-
-          if (onSaveDraft) {
-            return await onSaveDraft();
-          }
-          return false;
-        }}
-        isOrderStatus={isOrderStatus}
-        changeToConfirmed={async () => {
-          const isValid = await trigger();
-          if (isValid) {
-            onProjectStatusChange('confirmed');
-          }
-        }}
-        isFormFilled={isFormFilled}
-        isDirty={isDirty}
-      />
 
       {/* 임지저장 눌렀을 때 토스트 메시지 */}
       {isToastOpen && (

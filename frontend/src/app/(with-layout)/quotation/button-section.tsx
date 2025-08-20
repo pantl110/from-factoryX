@@ -33,16 +33,14 @@ const ButtonSection = ({
   return (
     <>
       <div className="flex gap-1">
-        {isOrderStatus && (
-          <MiniBtn
-            text="세금계산서 생성"
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
-            disabled={!isFormFilled}
-            onClick={() => setIsTaxCreatePanelOpen(true)}
-          />
-        )}
+        <MiniBtn
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+          disabled={!isFormFilled || !isOrderStatus}
+          onClick={() => setIsTaxCreatePanelOpen(true)}
+        />
         <MiniBtn
           text="출력"
           textColor="text-dg"

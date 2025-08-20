@@ -473,7 +473,7 @@ export interface ProjectResponseModel {
   start_date: string;
   due_date: string;
   publish_status: TaxStatusType; // 세금계산서 발행 상태
-  status: ProjectStatusType; // 프로젝트 상태 (영어 or 한글)
+  status: ProjectStatusType; // 프로젝트 상태 (영어)
   is_abandoned: boolean; // 프로젝트 중단 여부
   quotation_id: number;
   created_at: string;

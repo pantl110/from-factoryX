@@ -390,10 +390,11 @@ const QuotationPageContent = () => {
       // 견적서 탭 활성화
       setActiveTab('quotation');
 
-      // 폼 변경 상태 초기화
-      reset();
+      // 폼 변경 상태만 초기화 (입력된 값은 유지)
+      const currentValues = watch();
+      reset(currentValues);
     },
-    [setValue, setActiveTab, reset, clientList]
+    [setValue, setActiveTab, reset, clientList, watch]
   );
 
   // 견적 품목이 변경되었는지 확인하는 함수
