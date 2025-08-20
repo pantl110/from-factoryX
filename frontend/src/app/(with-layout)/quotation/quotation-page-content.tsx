@@ -314,6 +314,13 @@ const QuotationPageContent = () => {
     clientList,
   ]);
 
+  // 저장된 견적서 데이터에 uploaded_file이 있으면 quotation 탭 활성화
+  useEffect(() => {
+    if (quotationData && !isQuotationLoading && quotationData.uploaded_file) {
+      setActiveTab('quotation');
+    }
+  }, [quotationData, isQuotationLoading]);
+
   // OCR 데이터 변경 시 폼 초기화 함수 (거래처 정보만 처리)
   const handleOcrDataChange = useCallback(
     (newOcrData: OcrDataModel) => {
@@ -549,7 +556,8 @@ const QuotationPageContent = () => {
           projectStatus={projectStatus}
           onProjectStatusChange={handleProjectStatusChange}
           onSaveDraft={async () => {
-            await handleSaveDraft();
+            const result = await handleSaveDraft();
+            return result || false;
           }}
         />
         <TabArea
@@ -557,6 +565,7 @@ const QuotationPageContent = () => {
           activeTab={activeTab}
           activateQuotationTab={activateQuotationTab}
           ocrData={ocrData}
+          hasUploadedFile={!!quotationData?.uploaded_file}
         />
 
         {/* 왼쪽 사진미리보기/히스토리 부분 */}

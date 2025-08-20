@@ -23,7 +23,7 @@ interface TitleSecProps {
   projectStatus: ProjectStatusType;
   onProjectStatusChange: (status: ProjectStatusType) => void;
   hasQuotationProducts: boolean;
-  onSaveDraft?: () => void | Promise<void>;
+  onSaveDraft?: () => boolean | Promise<boolean>;
   isDirty: boolean;
   isFormFilled: boolean;
 }
@@ -140,18 +140,19 @@ const TitleSec = ({
           // 업체명이 입력되지 않았으면 토스트 표시하고 함수 종료
           if (!clientName || clientName.trim() === '') {
             showToast();
-            return;
+            return false;
           }
 
           // 개별 필드 오류 확인 (입력된 값들 중에 유효하지 않은 것이 있는지)
           const hasErrors = Object.keys(formState.errors).length > 0;
           if (hasErrors) {
-            return; // 오류가 있으면 저장하지 않음
+            return false; // 오류가 있으면 저장하지 않음
           }
 
           if (onSaveDraft) {
-            await onSaveDraft();
+            return await onSaveDraft();
           }
+          return false;
         }}
         isOrderStatus={isOrderStatus}
         changeToConfirmed={async () => {

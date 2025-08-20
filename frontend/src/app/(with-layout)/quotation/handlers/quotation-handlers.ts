@@ -120,6 +120,7 @@ export const useQuotationHandlers = ({
       }
 
       showToast();
+      return false;
     }
   }, [
     watch,

@@ -9,7 +9,7 @@ interface ButtonSectionProps {
   onEmailClick?: () => void;
   onPrintClick?: () => void;
   onStartProductionClick?: () => void;
-  onSaveDraft?: () => void | Promise<void>;
+  onSaveDraft?: () => boolean | Promise<boolean>;
   isOrderStatus: boolean;
   changeToConfirmed: () => void | Promise<void>;
   isFormFilled: boolean;

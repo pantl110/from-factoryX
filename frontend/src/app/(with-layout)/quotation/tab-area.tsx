@@ -5,6 +5,7 @@ interface TabAreaProps {
   activateQuotationTab: () => void;
   ocrData: OcrDataModel | null;
   projectStatus: ProjectStatusType;
+  hasUploadedFile?: boolean;
 }
 
 const TabArea = ({
@@ -12,10 +13,11 @@ const TabArea = ({
   activateQuotationTab,
   ocrData,
   projectStatus,
+  hasUploadedFile = false,
 }: TabAreaProps) => {
   return (
     <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-[#eeeeee]">
-      {ocrData && (
+      {(ocrData || hasUploadedFile) && (
         <button
           className={`${
             activeTab === 'quotation'
