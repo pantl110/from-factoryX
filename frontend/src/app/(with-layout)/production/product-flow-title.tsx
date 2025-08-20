@@ -53,7 +53,7 @@ const ProductFlowTitle = ({
             <Input
               label="생산시작일"
               type="text"
-              value={startDate}
+              value={startDate.split('T')[0]}
               placeholder="YYYY-MM-DD"
               disabledSetting
             />
@@ -61,7 +61,7 @@ const ProductFlowTitle = ({
             <Input
               label="생산마감일"
               type="text"
-              value={endDate}
+              value={endDate.split('T')[0]}
               placeholder="YYYY-MM-DD"
               disabledSetting
             />

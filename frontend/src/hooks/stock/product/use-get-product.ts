@@ -28,11 +28,20 @@ const useGetProduct = () => {
       setError(null);
 
       if (!factoryId) {
-        // factoryId가 없으면 빈 데이터를 반환
+        // factoryId가 없으면 빈 데이터를 반환 (일관된 PaginationModel 형태 유지)
+        const emptyResult: ProductListResponseModel = {
+          data: [],
+          count: 0,
+          totalCnt: 0,
+          pageCnt: 0,
+          curPage: 1,
+          nextPage: null,
+          previousPage: null,
+        };
         setProductList([]);
         setPagination(null);
         setIsLoading(false);
-        return { success: true, data: { data: [], count: 0 } };
+        return { success: true, data: emptyResult };
       }
 
       try {
@@ -193,10 +202,102 @@ const useGetProduct = () => {
     }
   }, [factoryId]);
 
+  // 전체 품목 목록을 한 번에 가져오는 함수
+  const getAllProductList = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    if (!factoryId) {
+      setError('공장 ID가 설정되지 않았습니다.');
+      return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
+    }
+
+    try {
+      // 먼저 전체 개수를 조회
+      const countResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?factory_id=${factoryId}&page=1&page_size=1`,
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!countResponse.ok) {
+        const errorData = await countResponse.json();
+        const errorMessage =
+          errorData.detail || '품목 목록을 불러오는데 실패했습니다.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+
+      const countResult = await countResponse.json();
+      const totalCount = countResult.totalCnt || 0;
+
+      if (totalCount === 0) {
+        setProductList([]);
+        setPagination({
+          count: 0,
+          totalCnt: 0,
+          pageCnt: 1,
+          curPage: 1,
+          nextPage: null,
+          previousPage: null,
+        });
+        return {
+          success: true,
+          data: {
+            count: 0,
+            totalCnt: 0,
+            pageCnt: 1,
+            curPage: 1,
+            nextPage: null,
+            previousPage: null,
+            data: [],
+          },
+        };
+      }
+
+      // 전체 개수만큼 한 번에 가져오기
+      const allResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?factory_id=${factoryId}&page=1&page_size=${totalCount}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (allResponse.ok) {
+        const result: ProductListResponseModel = await allResponse.json();
+        setProductList(result.data || []);
+        setPagination(result as PaginationModel);
+        return { success: true, data: result };
+      } else {
+        const errorData = await allResponse.json();
+        const errorMessage =
+          errorData.detail || '품목 목록을 불러오는데 실패했습니다.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+    } catch {
+      const errorMessage = '서버 연결에 실패했습니다.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [factoryId]);
+
   return {
     getProductList,
     getProductDetail,
     getAllProductCodes,
+    getAllProductList,
     product,
     productList,
     pagination,

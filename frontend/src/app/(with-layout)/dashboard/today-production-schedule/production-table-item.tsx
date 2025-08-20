@@ -1,52 +1,61 @@
+'use client';
+
+import { TodayProductionPlanModel } from '../type';
+import { useRouter } from 'next/navigation';
+
 export interface ProductionTableItemProps {
-  companyName: string;
-  productName: string;
-  productCode: string;
-  size: string;
-  unit: string;
-  quantity: number;
-  machine: string;
-  time: string;
+  item: TodayProductionPlanModel;
 }
 
-const ProductionTableItem = ({
-  companyName,
-  productName,
-  productCode,
-  size,
-  unit,
-  quantity,
-  machine,
-  time,
-}: ProductionTableItemProps) => {
+const ProductionTableItem = ({ item }: ProductionTableItemProps) => {
+  const router = useRouter();
+
+  // 날짜를 MM/DD HH:mm 형식으로 변환
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${month}/${day} ${hours}:${minutes}`;
+  };
+
   return (
-    <div className="flex min-w-[1324px] h-14 items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <p className="px-3 flex-2 truncate" title={companyName}>
-        {companyName}
+    <div
+      onClick={() => {
+        router.push(`/production/${item.project_id}`);
+      }}
+      className="flex min-w-[1421px] h-14 items-center Me_Body-1 text-dg border-b border-lg cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200"
+    >
+      <p className="px-3 flex-2 truncate" title={item.company_name}>
+        {item.company_name}
       </p>
-      <p className="px-3 flex-2 truncate" title={productName}>
-        {productName}
+      <p className="px-3 flex-2 truncate" title={item.product_name}>
+        {item.product_name}
       </p>
-      <p className="px-3 flex-2 truncate" title={productCode}>
-        {productCode}
+      <p className="px-3 flex-[1.5] truncate" title={item.product_code}>
+        {item.product_code}
       </p>
-      <p className="px-3 flex-1 truncate" title={size}>
-        {size}
+      <p className="px-3 flex-1 truncate" title={item.spec}>
+        {item.spec}
       </p>
-      <p className="px-3 w-[80px] truncate" title={unit}>
-        {unit}
+      <p className="px-3 w-[80px] truncate" title={item.unit}>
+        {item.unit}
       </p>
       <p
         className="flex items-center px-3 flex-1 truncate"
-        title={quantity.toLocaleString()}
+        title={item.production_quantity.toLocaleString()}
       >
-        {quantity.toLocaleString()}
+        {item.production_quantity.toLocaleString()}
       </p>
-      <p className="flex items-center px-3 flex-2 truncate" title={machine}>
-        {machine}
+      <p
+        className="flex items-center px-3 flex-[1.5] truncate"
+        title={item.equipment_name}
+      >
+        {item.equipment_name}
       </p>
-      <p className="px-3 w-[200px]" title={time}>
-        {time}
+      <p className="px-3 flex-2">
+        {formatDate(item.start_date)} - {formatDate(item.end_date)}
       </p>
     </div>
   );

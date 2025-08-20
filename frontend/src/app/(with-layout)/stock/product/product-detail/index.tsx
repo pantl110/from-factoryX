@@ -416,7 +416,8 @@ const ProductDetail = ({
         };
         const result = await updateProduct(productId, payload);
         if (result && result.success) {
-          // 성공 시 처리
+          // 성공 시 onSuccess 호출하여 상위 컴포넌트에 알림
+          onSuccess?.(productId);
           return true;
         } else {
           showToastMessage(

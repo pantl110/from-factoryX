@@ -17,13 +17,18 @@ import {
   useGetProjects,
   useCheckAll,
   useDeleteProject,
+  useUpdateProjectStatus,
 } from '@/hooks';
+import useOcrStore from '@/store/ocr-store';
+import NoHistoryBox from '@/ui/no-history-box';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
   const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
   const { createProject } = useCreateProject();
   const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
+  const { updateProjectStatus } = useUpdateProjectStatus();
+  const { setOcrData } = useOcrStore();
 
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
   const searchParams = useSearchParams();
@@ -63,7 +68,7 @@ const ProcessProjectPageInner = () => {
         order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
         order_dir: sortOrder,
         page: currentPage,
-        size: 10,
+        page_size: 10,
       });
 
       if (result.success && result.data) {
@@ -72,15 +77,13 @@ const ProcessProjectPageInner = () => {
     };
 
     loadProjects();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedStatus,
     currentPage,
     searchKeyword,
     sortKey,
     sortOrder,
-    // getProjects,
+    getProjects,
   ]);
 
   // 검색 핸들러
@@ -108,9 +111,8 @@ const ProcessProjectPageInner = () => {
     setCurrentPage(1); // 정렬 변경 시 첫 페이지로 이동
   };
 
-  const sortedProjects = projectData?.data || [];
-
-  const currentIds = sortedProjects.map((project) => project.project_id);
+  const currentIds =
+    projectData?.data.map((project) => project.project_id) || [];
   const {
     checkedCount,
     isAllChecked,
@@ -142,9 +144,34 @@ const ProcessProjectPageInner = () => {
     setSearchKeyword(''); // 탭 변경시 검색어도 초기화
   };
 
-  const handleDirectInputClick = async (ocrData?: OcrDataModel) => {
+  const handleDirectInputClick = async (
+    ocrData?: OcrDataModel,
+    imageUrl?: string
+  ) => {
     if (ocrData) {
-      // OCR data로 프로젝트와 견적서 생성 후 견적서 아이디와 프로젝트 아이디 기억하고 이동 필요 ‼️‼️‼️‼️
+      // Zustand store에 OCR 데이터 저장
+      setOcrData(ocrData, imageUrl || '');
+
+      try {
+        // 프로젝트와 견적서 생성
+        const result = await createProject();
+
+        if (result.success && result.data) {
+          // 주문서인 경우 프로젝트 상태를 confirmed로 변경
+          if (isOrderUploadModalOpen) {
+            await updateProjectStatus(result.data.project_id, 'confirmed');
+          }
+
+          // 생성된 견적서 ID와 프로젝트 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
+          router.push(
+            `/quotation?quotation_id=${result.data.quotation_id}&project_id=${result.data.project_id}`
+          );
+        } else {
+          alert('프로젝트 생성에 실패했습니다.');
+        }
+      } catch {
+        alert('프로젝트 생성 중 오류가 발생했습니다.');
+      }
     } else {
       // 빈 값으로 프로젝트와 견적서 생성 후 견적서 아이디와 프로젝트 아이디 기억하고 이동
       try {
@@ -190,7 +217,7 @@ const ProcessProjectPageInner = () => {
         order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
         order_dir: sortOrder,
         page: currentPage,
-        size: 10,
+        page_size: 10,
       });
 
       if (result.success && result.data) {
@@ -225,41 +252,53 @@ const ProcessProjectPageInner = () => {
             onCancel={() => setAllChecked(false)}
             onSearch={handleSearch}
             searchKeyword={searchKeyword}
+            hasData={
+              !!projectData?.data.length || projectData?.data.length === 0
+            }
           />
 
-          {isProjectsLoading && !projectData ? (
+          {isProjectsLoading && (
             <div className="flex justify-center items-center h-100">
               <Spinner />
             </div>
-          ) : (
-            <>
-              <div className="overflow-y-auto w-full">
-                <TableHeader
-                  isAllChecked={isAllChecked}
-                  onToggleAll={toggleAll}
-                  onSort={handleSort}
-                />
-                {sortedProjects.map((project) => (
-                  <TableItem
-                    key={project.project_id}
-                    project={project}
-                    checked={isChecked(project.project_id)}
-                    onToggle={() => toggleOne(project.project_id)}
-                  />
-                ))}
-              </div>
-              {/* 페이지네이션 */}
-              {projectData &&
-                projectData.pageCnt &&
-                projectData.pageCnt > 1 && (
-                  <Pagination
-                    currentPage={projectData.curPage || 1}
-                    totalPages={projectData.pageCnt}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-            </>
           )}
+
+          {!isProjectsLoading &&
+            projectData &&
+            (projectData.data.length === 0 ? (
+              <NoHistoryBox
+                title="진행 중인 프로젝트가 아직 없어요."
+                text="프로젝트가 생성되면 이곳에 표시돼요. "
+              />
+            ) : (
+              <>
+                <div className="overflow-y-auto w-full">
+                  <TableHeader
+                    isAllChecked={isAllChecked}
+                    onToggleAll={toggleAll}
+                    onSort={handleSort}
+                  />
+                  {projectData?.data.map((project) => (
+                    <TableItem
+                      key={project.project_id}
+                      project={project}
+                      checked={isChecked(project.project_id)}
+                      onToggle={() => toggleOne(project.project_id)}
+                    />
+                  ))}
+                </div>
+                {/* 페이지네이션 */}
+                {projectData &&
+                  projectData.pageCnt &&
+                  projectData.pageCnt > 1 && (
+                    <Pagination
+                      currentPage={projectData.curPage || 1}
+                      totalPages={projectData.pageCnt}
+                      onPageChange={handlePageChange}
+                    />
+                  )}
+              </>
+            ))}
         </div>
       </div>
 

@@ -1,77 +1,102 @@
 import MiniBtn from '@/ui/mini-btn';
-import { NotificationModel } from '../types';
+import { NotificationResponseModel } from '@/types/data-model';
+import { NotificationCaseType } from '@/types/status-type';
 import { ExclamationMark, CheckSquare, Siren } from '@phosphor-icons/react';
+import { useGetNotificationDetail } from '@/hooks';
 
 interface NotificationItemProps {
-  item: NotificationModel;
-  onRead: () => void;
+  item: NotificationResponseModel;
+  onRead: (notificationId: number) => void;
+  isMarkAllLoading: boolean;
 }
 
-const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
+const NotificationItem = ({
+  item,
+  onRead,
+  isMarkAllLoading,
+}: NotificationItemProps) => {
+  const { getNotificationDetail, isLoading: isDetailLoading } =
+    useGetNotificationDetail();
+
+  // 개별 알림 읽음 처리
+  const handleRead = async () => {
+    const result = await getNotificationDetail(item.id);
+    if (result.success && result.data) {
+      // 읽음 처리 성공 시 부모에게 알림
+      onRead(item.id);
+    }
+  };
+
   // 알림 타입별 아이콘과 색상 매핑
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (notificationCase: NotificationCaseType) => {
     const iconConfig = {
       // 경고/오류 (빨간색)
       warning: { icon: ExclamationMark, color: 'text-red' },
       // 성공/완료 (파란색)
       completed: { icon: CheckSquare, color: 'text-primary' },
       // 정보/알림 (회색)
-      info: { icon: Siren, color: 'text-gr' },
+      information: { icon: Siren, color: 'text-gr' },
     };
 
     // 타입별 그룹 분류
-    const warningTypes = [
-      'materialShortage',
-      'facilityIssue',
-      'productionIssue',
-    ];
+    const warningTypes = ['material_lack', 'project_warning'];
     const completedTypes = [
-      'productionComplete',
-      'salesTaxIssued',
-      'purchaseTaxReceived',
-      'receiptReceived',
+      'product_completed',
+      'sales_tax_invoice_published',
+      'purchase_tax_invoice_published',
+      'cash_receipt_published',
     ];
-    const infoTypes = ['roleChanged', 'deliveryDate', 'productionPlanChanged'];
+    const infoTypes = [
+      'permission_changed',
+      'due_date_approaching',
+      'production_schedule_changed',
+    ];
 
     let config;
-    if (warningTypes.includes(type)) {
+    if (warningTypes.includes(notificationCase)) {
       config = iconConfig.warning;
-    } else if (completedTypes.includes(type)) {
+    } else if (completedTypes.includes(notificationCase)) {
       config = iconConfig.completed;
-    } else if (infoTypes.includes(type)) {
-      config = iconConfig.info;
+    } else if (infoTypes.includes(notificationCase)) {
+      config = iconConfig.information;
     } else {
-      config = iconConfig.info;
+      config = iconConfig.information;
     }
 
     const IconComponent = config.icon;
     return <IconComponent size={24} weight="fill" className={config.color} />;
   };
 
-  const icon = getNotificationIcon(item.type);
+  const icon = getNotificationIcon(item.case);
 
   return (
-    <div className="w-full my-3 rounded">
-      <div className="flex gap-2 items-center">
-        {icon}
-        <p className={`Me_Body-2 ${item.isRead ? 'text-sv' : 'text-dg'}`}>
-          {item.message}
+    <div className="w-full my-3 rounded flex justify-between">
+      <div>
+        <div className="flex gap-2">
+          <div className="h-[29px] flex items-center justify-center">
+            {icon}
+          </div>
+          <p className={`Me_Body-2 ${item.is_read ? 'text-sv' : 'text-dg'}`}>
+            {item.content}
+          </p>
+        </div>
+        <p className="Me_Body-2 text-gr">
+          {new Date(item.created_at).toISOString().split('T')[0]}
         </p>
       </div>
-
-      <div className="flex justify-between pl-8 pr-3 h-8 items-end">
-        <p className="Me_Body-2 text-gr">{item.date}</p>
-        {!item.isRead && (
+      {!item.is_read && (
+        <div className="shrink-0 ml-2">
           <MiniBtn
             text="읽음"
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
             height="h-8"
-            onClick={onRead}
+            onClick={handleRead}
+            disabled={isMarkAllLoading || isDetailLoading}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

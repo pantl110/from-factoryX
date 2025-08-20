@@ -16,6 +16,7 @@
     "@hookform/resolvers": "^5.1.1",
     "@phosphor-icons/react": "^2.1.10",
     "@react-input/mask": "^2.0.4",
+    "@tosspayments/payment-sdk": "^1.9.1",
     "chart.js": "^4.5.0",
     "date-fns": "^4.1.0",
     "next": "15.3.3",
@@ -27,6 +28,8 @@
     "react-hook-form": "^7.60.0",
     "react-textarea-autosize": "^8.5.9",
     "react-to-print": "^3.1.1",
+    "use-debounce": "^10.0.5",
+    "use-debounced-callback": "^1.0.1",
     "yup": "^1.6.1",
     "zustand": "^5.0.5"
   },

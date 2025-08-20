@@ -11,6 +11,7 @@ import Spinner from '@/ui/spinner';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import Pagination from '@/components/pagination';
 import MaterialDetailPanel from './material-detail';
+import { MaterialResponseModel } from '@/types/data-model';
 
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
@@ -44,7 +45,7 @@ const Material = ({
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(materialList.map((m) => m.id));
+  } = useCheckAll(materialList.map((m: MaterialResponseModel) => m.id));
 
   // 정렬 핸들러
   const handleSortChange = (newOrder: 'asc' | 'desc') => {
@@ -55,8 +56,8 @@ const Material = ({
   const handleDelete = async () => {
     // 체크된 자재 id 목록
     const idsToDelete = materialList
-      .filter((m) => isChecked(m.id))
-      .map((m) => m.id);
+      .filter((m: MaterialResponseModel) => isChecked(m.id))
+      .map((m: MaterialResponseModel) => m.id);
     for (const id of idsToDelete) {
       await deleteMaterial(id);
     }
@@ -147,7 +148,7 @@ const Material = ({
             onSortChange={handleSortChange}
           />
           {materialList.length > 0 &&
-            materialList.map((material) => {
+            materialList.map((material: MaterialResponseModel) => {
               return (
                 <TableItem
                   key={material.id}

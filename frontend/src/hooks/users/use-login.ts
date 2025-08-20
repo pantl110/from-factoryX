@@ -88,6 +88,7 @@ export const useLogin = (): UseLoginReturnModel => {
                   };
                 } else {
                   // 공장이 2개 이상일 때 (초대받은 공장이 있다는 뜻) - 공장 선택 모달을 보여줄 수 있도록 반환
+                  // 현재는 공장을 초대받을 수 없으므로 그냥 첫번째 공장이 자동 선택되도록
                   return {
                     success: true,
                     factoryCount,

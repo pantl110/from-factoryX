@@ -27,9 +27,17 @@ interface InputSectionProps {
   setValue: UseFormSetValue<QuotationFormModel>;
   errors: FieldErrors<QuotationFormModel>;
   control: Control<QuotationFormModel>;
+  onClientSelect?: (clientId: number | null) => void;
+  showErrors?: boolean;
 }
 
-const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
+const InputSection = ({
+  setValue,
+  errors,
+  control,
+  onClientSelect,
+  showErrors = false,
+}: InputSectionProps) => {
   const { clientList, searchClients } = useGetClient();
 
   const {
@@ -61,6 +69,9 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
     setValue('phone', formatPhoneNumber(String(item.phone ?? '')));
     setValue('fax', formatFaxNumber(String(item.fax ?? '')));
 
+    // 선택된 거래처 ID를 부모 컴포넌트로 전달
+    onClientSelect?.(item.id);
+
     setIsCompanyNameDropdownOpen(false);
   };
 
@@ -80,7 +91,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
                   label="업체명"
                   placeholder="업체명을 입력하세요."
                   required
-                  showError={!!errors.name}
+                  showError={showErrors && !!errors.name}
                   value={field.value ?? ''}
                   onChange={(e) => {
                     field.onChange(e);
@@ -100,6 +111,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
               <ClientNameDropdown
                 items={filteredClients}
                 onSelect={handleSelectClient}
+                onClose={() => setIsCompanyNameDropdownOpen(false)}
                 width="w-full"
               />
             </div>
@@ -122,7 +134,9 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
                   label="사업자등록번호"
                   placeholder="사업자등록번호를 입력하세요."
                   required
-                  showError={!!errors.business_registration_number}
+                  showError={
+                    showErrors && !!errors.business_registration_number
+                  }
                   value={field.value ?? ''}
                   onChange={(e) => {
                     const formatted = formatBusinessNumber(e.target.value);
@@ -146,7 +160,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
               label="대표자명"
               placeholder="대표자명을 입력하세요."
               required
-              showError={!!errors.representative_name}
+              showError={showErrors && !!errors.representative_name}
               {...field}
             />
           )}
@@ -166,7 +180,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
               label="납기일자"
               placeholder="납기일자를 입력하세요."
               required
-              showError={!!errors.due_date}
+              showError={showErrors && !!errors.due_date}
               value={field.value ?? ''}
               onChange={(e) => {
                 const formatted = formatDate(e.target.value);
@@ -187,7 +201,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
             <Input
               label="업태"
               placeholder="업태를 입력하세요."
-              showError={!!errors.business_type}
+              showError={showErrors && !!errors.business_type}
               required
               {...field}
             />
@@ -202,7 +216,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
               label="종목"
               required
               placeholder="종목을 입력하세요."
-              showError={!!errors.business_category}
+              showError={showErrors && !!errors.business_category}
               {...field}
             />
           )}
@@ -218,7 +232,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
               label="사업장 주소"
               placeholder="사업장 주소를 입력하세요."
               required
-              showError={!!errors.address}
+              showError={showErrors && !!errors.address}
               {...field}
             />
           )}
@@ -249,7 +263,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
             <Input
               label="이메일"
               placeholder="담당자 이메일을 입력하세요."
-              showError={!!errors.email}
+              showError={showErrors && !!errors.email}
               {...field}
             />
           )}
@@ -270,7 +284,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
               <Input
                 placeholder="연락처를 입력하세요."
                 label="연락처"
-                showError={!!errors.phone}
+                showError={showErrors && !!errors.phone}
                 value={field.value ?? ''}
                 onChange={(e) => {
                   const formatted = formatPhoneNumber(e.target.value);
@@ -296,7 +310,7 @@ const InputSection = ({ setValue, errors, control }: InputSectionProps) => {
               <Input
                 label="팩스 번호"
                 placeholder="팩스 번호를 입력하세요."
-                showError={!!errors.fax}
+                showError={showErrors && !!errors.fax}
                 value={field.value ?? ''}
                 onChange={(e) => {
                   const formatted = formatFaxNumber(e.target.value);

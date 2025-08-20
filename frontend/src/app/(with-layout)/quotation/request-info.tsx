@@ -2,12 +2,12 @@ import MiniBtn from '@/ui/mini-btn';
 import ProductItem from './product-item';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { useGetDetailQuotation, useGetProduct } from '@/hooks';
-
 import { useEffect, useState, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import {
   QuotationProductDetailResponseModel,
   ProductResponseModel,
+  OcrRequestItemModel,
 } from '@/types/data-model';
 import ProductEnrollmentDropdown from './modals/product-enrollment-dropdown';
 import ProductDetail from '../stock/product/product-detail';
@@ -19,6 +19,8 @@ interface RequestInfoProps {
   setHasQuotationProducts: (hasQuotationProducts: boolean) => void;
   onProductsChange?: (products: QuotationProductDetailResponseModel[]) => void;
   quotationId?: number;
+  ocrRequestData?: OcrRequestItemModel[];
+  productList?: ProductResponseModel[];
 }
 
 const RequestInfo = ({
@@ -26,6 +28,8 @@ const RequestInfo = ({
   setHasQuotationProducts,
   onProductsChange,
   quotationId,
+  ocrRequestData,
+  productList,
 }: RequestInfoProps) => {
   const [isProductEnrollmentDropdownOpen, setIsProductEnrollmentDropdownOpen] =
     useState(false);
@@ -36,16 +40,19 @@ const RequestInfo = ({
   const [supplyAmount, setSupplyAmount] = useState<number>(0);
 
   // hook을 항상 호출 (0을 전달하면 hook 내부에서 처리)
-  const { data: quotationDetail, isLoading: isLoadingQuotation } =
-    useGetDetailQuotation(quotationId || 0);
+  const { data: quotationDetail } = useGetDetailQuotation(quotationId || 0);
   const { getProductDetail } = useGetProduct();
 
   // React Hook Form 설정
-  const { control, setValue } = useForm({
+  const { control, reset } = useForm({
     defaultValues: {
       products: [] as QuotationProductDetailResponseModel[],
     },
   });
+
+  // reset 함수의 최신 참조를 유지하기 위한 ref
+  const resetRef = useRef(reset);
+  resetRef.current = reset;
 
   // 드롭다운 상태를 상위에서 관리
   const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(
@@ -61,65 +68,57 @@ const RequestInfo = ({
     name: 'products',
   });
 
-  // 이전 quotationDetail.products를 저장하기 위한 ref
-  const prevQuotationProductsRef = useRef<
-    QuotationProductDetailResponseModel[] | null
-  >(null);
-
-  // quotationDetail이 변경될 때마다 products를 form에 저장 (사용자 입력값 유지)
+  // quotationDetail.products가 변경될 때마다 폼 필드 업데이트
   useEffect(() => {
-    if (
-      quotationDetail &&
-      quotationDetail.products &&
-      quotationDetail.products.length > 0
-    ) {
-      // 이전 products와 현재 products가 다른 경우에만 업데이트
-      const currentProducts = quotationDetail.products;
-      const prevProducts = prevQuotationProductsRef.current;
+    if (quotationDetail?.products && quotationDetail.products.length > 0) {
+      // reset을 사용해서 폼을 완전히 초기화
+      resetRef.current({ products: quotationDetail.products });
 
-      // products가 실제로 변경되었는지 확인 (product_id, product_name, product_code, spec, unit만 비교)
-      const hasChanged =
-        !prevProducts ||
-        prevProducts.length !== currentProducts.length ||
-        prevProducts.some((prev, index) => {
-          const current = currentProducts[index];
-          return (
-            prev.productId !== current.productId ||
-            prev.product_name !== current.product_name ||
-            prev.product_code !== current.product_code ||
-            prev.spec !== current.spec ||
-            prev.unit !== current.unit
-          );
-        });
-
-      if (hasChanged) {
-        // 기존 form 값에서 사용자가 입력한 quantity와 unit_price 값을 보존
-        const updatedProducts = currentProducts.map((newProduct, index) => {
-          const existingProduct = currentProducts[index];
-          return {
-            ...newProduct,
-            // 기존에 사용자가 입력한 값이 있으면 유지, 없으면 새 값 사용
-            quantity:
-              existingProduct?.quantity !== null &&
-              existingProduct?.quantity !== undefined
-                ? existingProduct.quantity
-                : newProduct.quantity,
-            unit_price:
-              existingProduct?.unit_price !== null &&
-              existingProduct?.unit_price !== undefined
-                ? existingProduct.unit_price
-                : newProduct.unit_price,
-          };
-        });
-        setValue('products', updatedProducts);
-        prevQuotationProductsRef.current = currentProducts;
-      }
-    } else {
-      setValue('products', []);
-      prevQuotationProductsRef.current = null;
+      // 상위 컴포넌트에 제품 목록 전달
+      onProductsChange?.(quotationDetail.products);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quotationDetail?.products, setValue]);
+  }, [quotationDetail?.products, onProductsChange]);
+
+  // OCR 데이터가 있을 때 제품 목록 초기화
+  useEffect(() => {
+    if (ocrRequestData && ocrRequestData.length > 0) {
+      const parseNumber = (val?: string | number | null) => {
+        if (val === null || val === undefined) return null;
+        if (typeof val === 'number') return val;
+        const digits = val.toString().replace(/[^0-9]/g, '');
+        if (!digits) return null;
+        const num = parseInt(digits, 10);
+        return Number.isNaN(num) ? null : num;
+      };
+
+      // OCR 데이터로 제품 목록 생성
+      const ocrProducts = ocrRequestData.map((item: OcrRequestItemModel) => {
+        // 품목코드로 기존 제품 찾기
+        const existingProduct = productList?.find(
+          (p) => p.code === item.item_code
+        );
+
+        const { id: productId, code, name, spec, unit } = existingProduct || {};
+        return {
+          productId: productId || null,
+          product_code: code || '',
+          product_name: name || '',
+          spec: spec || '',
+          unit: unit || '',
+          quantity: parseNumber(item.quantity),
+          unit_price: parseNumber(item.unit_price),
+          supply_amount: null,
+          tax_amount: null,
+        };
+      });
+
+      // 폼 초기화
+      resetRef.current({ products: ocrProducts });
+
+      // 상위 컴포넌트에 제품 목록 전달
+      onProductsChange?.(ocrProducts);
+    }
+  }, [ocrRequestData, productList, onProductsChange]);
 
   // fields가 변경될 때마다 유효성 검사 해서 hasQuotationProducts 업데이트하여 버튼 disabled 여부 결정
   useEffect(() => {
@@ -199,13 +198,9 @@ const RequestInfo = ({
       supply_amount: null,
       tax_amount: null,
     };
-    append(emptyProduct);
 
-    // 부모 컴포넌트에 변경사항 알림
-    if (onProductsChange) {
-      const updatedFields = [...fields, emptyProduct];
-      onProductsChange(updatedFields);
-    }
+    // append로 새 필드 추가
+    append(emptyProduct);
   };
 
   // 새로운 품목 추가 시 품목 디테일 판넬에서 저장버튼 누르면
@@ -227,12 +222,6 @@ const RequestInfo = ({
       };
 
       append(newProduct);
-
-      // 부모 컴포넌트에 변경사항 알림
-      if (onProductsChange) {
-        const updatedFields = [...fields, newProduct];
-        onProductsChange(updatedFields);
-      }
     }
   };
 
@@ -267,7 +256,7 @@ const RequestInfo = ({
         )}
       </div>
 
-      {!isLoadingQuotation && fields.length > 0 ? (
+      {fields.length > 0 ? (
         <>
           <div className="w-full overflow-x-auto">
             <table className="w-full min-w-[938px]">
@@ -315,12 +304,12 @@ const RequestInfo = ({
               </tbody>
             </table>
           </div>
-          <div className="mb-30 w-full flex justify-between items-center">
+          <div className="mb-22 w-full flex justify-between items-center">
             <PriceInfo supplyAmount={supplyAmount} />
           </div>
         </>
       ) : (
-        <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-[#E4E4E7]">
+        <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-lg mb-22">
           <h4 className="Heading-4 text-dg">요청 정보가 아직 없어요.</h4>
           <p className="R_Body-1 text-gr">
             품목을 추가해서 단가를 측정해 보세요.

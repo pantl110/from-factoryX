@@ -4,11 +4,13 @@ import Modal from '@/ui/modal/modal';
 interface DeleteAccountModalProps {
   onClose: () => void;
   onConfirm: () => void;
+  isLoading?: boolean;
 }
 
 const DeleteAccountModal = ({
   onClose,
   onConfirm,
+  isLoading = false,
 }: DeleteAccountModalProps) => {
   return (
     <Modal
@@ -21,7 +23,7 @@ const DeleteAccountModal = ({
           text="취소"
           textColor="text-sv"
           onClick={onClose}
-          hoverColor=""
+          hoverColor="hover:bg-bg"
         />
         <MiniBtn
           text="삭제"
@@ -29,6 +31,7 @@ const DeleteAccountModal = ({
           textColor="text-red"
           onClick={onConfirm}
           hoverColor="hover:bg-red-hover"
+          disabled={isLoading}
         />
       </div>
     </Modal>

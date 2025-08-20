@@ -4,11 +4,12 @@ import {
   InventoryStatusColorMap,
   ProjectStatusType,
   OperationStatusType,
+  InventoryStatusType,
 } from '@/types/status-type';
 import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import { tableHeader } from './types';
 import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react/dist/ssr';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks/format-number';
 import { useMaterialStatus } from '@/hooks';
@@ -44,43 +45,57 @@ const TableItem = ({
   equipments,
   projectStatus,
 }: TableItemProps) => {
-  // Form 데이터를 메모이제이션하여 불필요한 re-render 방지
-  const stableFormData = useMemo(() => {
-    return (
-      currentFormData || {
-        quantity: item.quantity,
-        equipment_id: item.equipment.id,
-        start_date: item.start_date,
-        end_date: item.end_date,
-      }
-    );
-  }, [
-    currentFormData,
-    item.quantity,
-    item.equipment.id,
-    item.start_date,
-    item.end_date,
-  ]);
+  // 백엔드에서 한글 상태값을 반환하므로 영어로 변환
+  const getOperationStatus = (status: string): OperationStatusType => {
+    const statusMap: Record<string, OperationStatusType> = {
+      '가동 대기': 'pending',
+      '가동 중': 'production',
+      '가동 완료': 'completed',
+      pending: 'pending',
+      production: 'production',
+      completed: 'completed',
+    };
+    return statusMap[status] || 'pending';
+  };
 
-  // 백엔드에서 이미 한글 상태값을 반환하므로 그대로 사용
-  const operationStatus = item.status as OperationStatusType;
+  const operationStatus = getOperationStatus(item.status);
   const { materialStatus } = useMaterialStatus(
     item.quotation_product.product.id
-  ); // 품목과 연결된 자재들의 재고 상태 확인 훅 사용
-  const operationColor = OperationStatusColorMap[operationStatus];
+  ) as { materialStatus: InventoryStatusType };
+  const operationColor =
+    OperationStatusColorMap[operationStatus] || OperationStatusColorMap.pending;
   const materialColor = InventoryStatusColorMap[materialStatus];
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
   // React Hook Form 설정
   const { control, watch, reset } = useForm<ProductionPlanFormDataModel>({
-    defaultValues: stableFormData,
+    defaultValues: {
+      quantity: item.quantity,
+      equipment_id: item.equipment.id,
+      start_date: item.start_date
+        ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
+      end_date: item.end_date
+        ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
+    },
   });
 
-  // currentFormData가 변경되면 form을 리셋 // 변경된 데이터를 React Hook Form과 동기화
+  // 컴포넌트 마운트 시에만 form을 초기화
   useEffect(() => {
-    reset(stableFormData);
+    const formattedData = {
+      quantity: item.quantity,
+      equipment_id: item.equipment.id,
+      start_date: item.start_date
+        ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
+      end_date: item.end_date
+        ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
+    };
+    reset(formattedData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stableFormData]);
+  }, [item.start_date, item.end_date, item.quantity, item.equipment.id]);
 
   // Form 데이터 변경 시 부모 컴포넌트에 알림 (필요한 필드만 감시)
   const watchedQuantity = watch('quantity');
@@ -88,20 +103,102 @@ const TableItem = ({
   const watchedStartDate = watch('start_date');
   const watchedEndDate = watch('end_date');
 
+  // currentFormData.equipment_id가 변경될 때 React Hook Form 업데이트
   useEffect(() => {
-    onFormChange?.(item.id, {
+    if (
+      currentFormData?.equipment_id &&
+      currentFormData.equipment_id !== item.equipment.id
+    ) {
+      reset({
+        quantity: watchedQuantity,
+        equipment_id: currentFormData.equipment_id,
+        start_date: watchedStartDate,
+        end_date: watchedEndDate,
+      });
+    }
+  }, [
+    currentFormData?.equipment_id,
+    item.equipment.id,
+    reset,
+    watchedQuantity,
+    watchedStartDate,
+    watchedEndDate,
+  ]);
+
+  useEffect(() => {
+    // 폼 데이터가 실제로 변경되었을 때만 부모 컴포넌트에 알림
+    const currentFormData = {
       quantity: watchedQuantity,
       equipment_id: watchedEquipmentId,
       start_date: watchedStartDate,
       end_date: watchedEndDate,
-    });
+    };
+
+    // 원본 데이터와 비교하여 실제 변경사항이 있는지 확인
+    const originalStartDate = item.start_date
+      ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
+      : '';
+    const originalEndDate = item.end_date
+      ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+      : '';
+
+    const hasChanges =
+      watchedQuantity !== item.quantity ||
+      watchedEquipmentId !== item.equipment.id ||
+      watchedStartDate !== originalStartDate ||
+      watchedEndDate !== originalEndDate;
+
+    if (hasChanges && onFormChange) {
+      onFormChange(item.id, currentFormData);
+    }
   }, [
     watchedQuantity,
     watchedEquipmentId,
     watchedStartDate,
     watchedEndDate,
     item.id,
+    item.quantity,
+    item.equipment.id,
+    item.start_date,
+    item.end_date,
     onFormChange,
+  ]);
+
+  // currentFormData가 변경될 때마다 onFormChange 호출 (설비 변경 등 외부에서 변경된 경우)
+  // 단, 무한루프 방지를 위해 실제 변경사항이 있을 때만 호출
+  useEffect(() => {
+    if (currentFormData && onFormChange) {
+      // 실제 변경사항이 있는지 확인
+      const hasRealChanges =
+        currentFormData.quantity !== item.quantity ||
+        currentFormData.equipment_id !== item.equipment.id ||
+        currentFormData.start_date !==
+          (item.start_date
+            ? new Date(item.start_date)
+                .toISOString()
+                .slice(0, 16)
+                .replace('T', ' ')
+            : '') ||
+        currentFormData.end_date !==
+          (item.end_date
+            ? new Date(item.end_date)
+                .toISOString()
+                .slice(0, 16)
+                .replace('T', ' ')
+            : '');
+
+      if (hasRealChanges) {
+        onFormChange(item.id, currentFormData);
+      }
+    }
+  }, [
+    currentFormData,
+    item.id,
+    onFormChange,
+    item.quantity,
+    item.equipment.id,
+    item.start_date,
+    item.end_date,
   ]);
 
   // 현재 선택된 설비 정보 (formData의 equipment_id 우선, 없으면 원본 데이터)
@@ -114,25 +211,31 @@ const TableItem = ({
   const itemData = {
     '가동 상태': (
       <Chip
-        text={operationStatus}
+        text={
+          operationStatus === 'pending'
+            ? '가동 대기'
+            : operationStatus === 'production'
+              ? '가동 중'
+              : '가동 완료'
+        }
         textColor={operationColor.textColor}
         bgColor={operationColor.bgColor}
         cursor={
-          projectStatus === 'pending' || projectStatus === '생산 대기'
+          projectStatus === 'pending' || item.is_completed
             ? 'cursor-default'
             : 'cursor-pointer'
         }
-        onClick={(e) => {
-          if (e && onOperationStatusClick) {
-            e.stopPropagation();
-            onOperationStatusClick(e);
-          }
-        }}
-        state={
-          projectStatus === 'pending' || projectStatus === '생산 대기'
-            ? false
-            : true
+        onClick={
+          projectStatus === 'pending' || item.is_completed
+            ? undefined
+            : (e) => {
+                if (e && onOperationStatusClick) {
+                  e.stopPropagation();
+                  onOperationStatusClick(e);
+                }
+              }
         }
+        state={projectStatus === 'pending' || item.is_completed ? false : true}
       />
     ),
     품목명: item.quotation_product.product.name,
@@ -147,7 +250,10 @@ const TableItem = ({
         render={({ field }) => (
           <input
             type="text"
-            value={field.value?.toLocaleString() || '0'}
+            value={
+              field.value && field.value > 0 ? field.value.toLocaleString() : ''
+            }
+            placeholder="(필수)"
             onChange={(e) => {
               const value = e.target.value.replace(/,/g, '');
               const numValue = parseInt(value) || 0;
@@ -155,7 +261,7 @@ const TableItem = ({
             }}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={operationStatus !== '가동 대기'}
+            disabled={operationStatus !== 'pending'}
           />
         )}
       />
@@ -165,15 +271,15 @@ const TableItem = ({
         <Chip
           text={materialStatus}
           textColor={
-            operationStatus === '가동 완료'
+            operationStatus === 'completed'
               ? 'text-sv'
               : materialColor.textColor
           }
           bgColor={
-            operationStatus === '가동 완료' ? 'bg-bg' : materialColor.bgColor
+            operationStatus === 'completed' ? 'bg-bg' : materialColor.bgColor
           }
         />
-        {materialStatus === '부족' && operationStatus !== '가동 완료' && (
+        {materialStatus === '부족' && operationStatus !== 'completed' && (
           <div
             className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
             onClick={() => setIsProductDetailOpen(true)}
@@ -186,17 +292,17 @@ const TableItem = ({
     '생산 설비': (
       <div
         className={`flex items-center gap-2.5 ${
-          operationStatus === '가동 완료' ? '' : 'cursor-pointer'
+          operationStatus === 'completed' ? '' : 'cursor-pointer'
         }`}
         onClick={(e) => {
-          if (operationStatus === '가동 대기') {
+          if (operationStatus === 'pending') {
             e.stopPropagation();
             onFacilityClick(e);
           }
         }}
       >
         <p>{selectedEquipment.name}</p>
-        {operationStatus === '가동 대기' && (
+        {operationStatus === 'pending' && (
           <CaretDown size={16} className="text-sv" />
         )}
       </div>
@@ -217,7 +323,7 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={operationStatus !== '가동 대기'}
+            disabled={operationStatus !== 'pending'}
           />
         )}
       />
@@ -239,7 +345,7 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={operationStatus !== '가동 대기'}
+            disabled={operationStatus !== 'pending'}
           />
         )}
       />
@@ -250,7 +356,7 @@ const TableItem = ({
     <>
       <div
         className={`group flex items-center min-w-[1494px] h-12 border-b border-lg Me_Body-1 bg-whit ${
-          operationStatus === '가동 완료' ? 'text-gr' : 'text-dg'
+          operationStatus === 'completed' ? 'text-gr' : 'text-dg'
         }`}
       >
         {tableHeader.map((header) => (

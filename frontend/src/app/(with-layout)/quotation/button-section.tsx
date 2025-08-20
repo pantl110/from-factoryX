@@ -2,40 +2,47 @@
 
 import MiniBtn from '@/ui/mini-btn';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import { useRouter } from 'next/navigation';
 
 interface ButtonSectionProps {
+  setIsTaxCreatePanelOpen: (open: boolean) => void;
   onEmailClick?: () => void;
   onPrintClick?: () => void;
   onStartProductionClick?: () => void;
-  onSaveDraft?: () => void | Promise<void>;
+  onSaveDraft?: () => boolean | Promise<boolean>;
   isOrderStatus: boolean;
-  setIsOrderStatus: (status: boolean) => void | Promise<void>;
-  isFormValid: boolean;
+  changeToConfirmed: () => void | Promise<void>;
+  isFormFilled: boolean;
   hasQuotationProducts: boolean;
   isDirty: boolean;
 }
 
 const ButtonSection = ({
+  setIsTaxCreatePanelOpen,
   onEmailClick,
   onPrintClick,
   onStartProductionClick,
   onSaveDraft,
   isOrderStatus,
-  setIsOrderStatus,
-  isFormValid,
+  changeToConfirmed,
+  isFormFilled,
   hasQuotationProducts,
   isDirty,
 }: ButtonSectionProps) => {
+  const router = useRouter();
   return (
     <>
       <div className="flex gap-1">
-        <MiniBtn
-          text="세금계산서 생성"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-          disabled={!isFormValid}
-        />
+        {isOrderStatus && (
+          <MiniBtn
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            disabled={!isFormFilled}
+            onClick={() => setIsTaxCreatePanelOpen(true)}
+          />
+        )}
         <MiniBtn
           text="출력"
           textColor="text-dg"
@@ -60,7 +67,7 @@ const ButtonSection = ({
               iconPosition="right"
               onClick={onStartProductionClick}
               hoverColor="hover:bg-primary-hover"
-              disabled={!isFormValid || !hasQuotationProducts}
+              disabled={!isFormFilled || !hasQuotationProducts}
             />
           </>
         ) : (
@@ -69,7 +76,16 @@ const ButtonSection = ({
               text="임시 저장"
               textColor="text-primary"
               bgColor="bg-primary-8"
-              onClick={onSaveDraft}
+              onClick={async () => {
+                try {
+                  const isSuccess = await onSaveDraft?.();
+                  if (isSuccess) {
+                    router.push('/project/process');
+                  }
+                } catch {
+                  // 에러가 발생하면 페이지 이동하지 않음
+                }
+              }}
               hoverColor="hover:bg-secondary-hover"
               disabled={!isDirty}
             />
@@ -78,10 +94,11 @@ const ButtonSection = ({
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={() => {
-                setIsOrderStatus(true);
+                onSaveDraft?.();
+                changeToConfirmed();
               }}
               hoverColor="hover:bg-primary-hover"
-              disabled={!isFormValid || !hasQuotationProducts}
+              disabled={!isFormFilled || !hasQuotationProducts}
             />
           </>
         )}

@@ -1,11 +1,12 @@
 import Chip from '@/ui/chip';
-import { TaxDocumentTypeColorMap } from '@/types/status-type';
+import { TaxDocumentTypeColorMap, TaxDocumentType } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
-import { TaxDataModel } from '@/mocks/tax-data';
+import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import { getProductNamesDisplay } from '@/utils/get-product-names-display';
 
 interface TableItemProps {
   onItemClick?: () => void;
-  item: TaxDataModel;
+  item: PublishedTaxInvoiceResponseModel;
   onToggle: () => void;
   isChecked: boolean;
 }
@@ -16,10 +17,20 @@ const TableItem = ({
   onToggle,
   isChecked,
 }: TableItemProps) => {
-  const { bgColor, textColor } = TaxDocumentTypeColorMap[item.taxType];
+  // Map Korean values to English for color lookup
+  const taxTypeMap: Record<string, TaxDocumentType> = {
+    매출: 'sales',
+    매입: 'purchase',
+    sales: 'sales',
+    purchase: 'purchase',
+  };
+
+  const mappedTaxType = taxTypeMap[item.tax_invoice_type] || 'sales';
+  const { bgColor, textColor } = TaxDocumentTypeColorMap[mappedTaxType];
+
   return (
     <div
-      className="flex items-center border-b border-lg h-14 w-full min-w-[1018px] text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer"
+      className="flex items-center border-b border-lg h-14 w-full min-w-[1192px] text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer"
       onClick={onItemClick}
       role="button"
       tabIndex={0}
@@ -29,14 +40,55 @@ const TableItem = ({
     >
       <Checkbox isChecked={isChecked} onToggle={onToggle} />
       <div className="px-3 flex-1">
-        <Chip text={item.taxType} bgColor={bgColor} textColor={textColor} />
+        <Chip
+          text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}
+          bgColor={bgColor}
+          textColor={textColor}
+        />
       </div>
-      <p className="w-[150px] px-3 text-dg">{item.date}</p>
-      <p className="flex-2 px-3 text-dg">{item.company}</p>
-      <p className="flex-2 px-3 text-dg">{item.productName}</p>
-      <p className="flex-2 px-3 text-dg">{item.supplyAmount}</p>
-      <p className="flex-2 px-3 text-dg">{item.taxAmount}</p>
-      <p className="flex-2 px-3 text-dg">{item.totalAmount}</p>
+      <p className="w-[150px] px-3 text-dg">{item.transaction_date}</p>
+      <p
+        className="flex-2 px-3 text-dg truncate"
+        title={item.client_info?.name || '-'}
+      >
+        {item.client_info?.name || '-'}
+      </p>
+      <p
+        className="flex-2 px-3 text-dg truncate"
+        title={
+          getProductNamesDisplay(
+            item.products_info?.map((product) => product.name) || []
+          ) || '-'
+        }
+      >
+        {getProductNamesDisplay(
+          item.products_info?.map((product) => product.name) || []
+        ) || '-'}
+      </p>
+      <p
+        className="flex-2 px-3 text-dg truncate"
+        title={item.transaction_amount?.toLocaleString() || '0'}
+      >
+        {item.transaction_amount?.toLocaleString() || '0'}
+      </p>
+      <p
+        className="flex-2 px-3 text-dg truncate"
+        title={item.tax_amount?.toLocaleString() || '0'}
+      >
+        {item.tax_amount?.toLocaleString() || '0'}
+      </p>
+      <p
+        className="flex-2 px-3 text-dg truncate"
+        title={
+          (
+            (item.transaction_amount || 0) + (item.tax_amount || 0)
+          )?.toLocaleString() || '-'
+        }
+      >
+        {(
+          (item.transaction_amount || 0) + (item.tax_amount || 0)
+        )?.toLocaleString() || '-'}
+      </p>
     </div>
   );
 };

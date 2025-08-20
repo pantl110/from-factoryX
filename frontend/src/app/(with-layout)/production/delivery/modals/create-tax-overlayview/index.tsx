@@ -1,5 +1,5 @@
 import DocumentViewTitle from '@/app/(with-layout)/document/document-view-title';
-import OrderItemInfo from '@/app/(with-layout)/document/tax-document-view/order-item-info';
+// import OrderItemInfo from '@/app/(with-layout)/document/tax-document-view/order-item-info';
 import MiniBtn from '@/ui/mini-btn';
 import OverlayView from '@/ui/ovelay-view';
 import ProviderInfo from './provider-info';
@@ -41,7 +41,7 @@ const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
             <ProviderInfo />
             <BuyerInfo />
           </div>
-          <OrderItemInfo />
+          {/* <OrderItemInfo /> */}
         </div>
       </div>
     </OverlayView>

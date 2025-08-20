@@ -27,14 +27,14 @@ export const EquipmentStatusColorMap: Record<
 };
 
 // 거래처 유형 // 설정 페이지
-// export type ClientType = 'supplier' | 'customer'; // 발주처 | 수주처
-// export const ClientTypeColorMap: Record<
-//   ClientType,
-//   { bgColor: string; textColor: string }
-// > = {
-//   supplier: { bgColor: 'bg-red-8', textColor: 'text-red' },
-//   customer: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-// };
+export type ClientType = 'supplier' | 'customer'; // 발주처 | 수주처
+export const ClientTypeColorMap: Record<
+  ClientType,
+  { bgColor: string; textColor: string }
+> = {
+  supplier: { bgColor: 'bg-red-8', textColor: 'text-red' },
+  customer: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+};
 
 // 프로젝트 상태
 export type ProjectStatusType =
@@ -65,6 +65,28 @@ export type ProjectStatusType =
 // | '납품' // delivery
 // | '프로젝트 완료' // completed
 // | '중단'; // suspended
+
+export const ProjectStatusMap: Record<ProjectStatusType, string> = {
+  quotation: '견적 요청',
+  confirmed: '주문 확정',
+  pending: '생산 대기',
+  production: '생산 중',
+  manufactured: '생산 완료',
+  delivery: '납품',
+  completed: '프로젝트 완료',
+  suspended: '중단',
+  // Korean status mappings
+  '견적 협의중': '견적 협의중',
+  '주문 확정': '주문 확정',
+  '생산 대기': '생산 대기',
+  '생산 중': '생산 중',
+  '생산 완료': '생산 완료',
+  납품: '납품',
+  '프로젝트 완료': '프로젝트 완료',
+  완료: '완료',
+  중단: '중단',
+};
+
 export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
   // 영어 상태
   quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
@@ -88,6 +110,16 @@ export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
   중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
 
+// 완료된 프로젝트 상태
+export type CompletedProjectStatusType = '완료' | '중단';
+export const CompletedProjectStatusColorMap: Record<
+  CompletedProjectStatusType,
+  StatusColorModel
+> = {
+  완료: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
+};
+
 // 세금계산서 발행 상태
 export type TaxStatusType = null | '' | 'pending' | 'published';
 // 미발행 // 발행 대기 // 발행 완료
@@ -103,8 +135,60 @@ export const InventoryStatusColorMap: Record<
 };
 
 // 프로젝트 로그 타입
-export type ProjectLogType = '메모' | '반품' | '계획 변경';
-// memo: 메모 // return: 반품 // plan: 계획 변경
+export type ProjectLogType = 'memo' | 'refund' | 'plan';
+// memo: 메모 // refund: 반품 // plan: 계획 변경
+
+// 알림 타입
+export type NotificationType = 'warning' | 'information' | 'completed';
+// 경고 // 정보 // 완료
+
+// 알림 사유
+export type NotificationCaseType =
+  | 'material_lack' // 자재 부족
+  | 'project_warning' // 프로젝트 생산 계획 이상
+  | 'product_completed' // 제품 생산 완료
+  | 'sales_tax_invoice_published' // 매출 세금계산서 발행 완료
+  | 'purchase_tax_invoice_published' // 매입 세금계산서 발행 완료
+  | 'cash_receipt_published' // 영수증 발행 완료
+  | 'permission_changed' // 권한 변경
+  | 'due_date_approaching' // 납기일 임박
+  | 'production_schedule_changed'; // 생산 일정 변경
+
+// 세금계산서 종류
+export type TaxDocumentType = 'sales' | 'purchase'; // 매출, 매입
+export const TaxDocumentTypeColorMap: Record<
+  TaxDocumentType,
+  StatusColorModel
+> = {
+  sales: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  purchase: { bgColor: 'bg-red-8', textColor: 'text-red' },
+};
+
+export type TransactionType = 'receipt' | 'invoice'; // 영수, 청구
+// export const TransactionTypeColorMap: Record<
+//   TransactionType,
+//   StatusColorModel
+// > = {
+//   영수: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+//   청구: { bgColor: 'bg-red-8', textColor: 'text-red' },
+// };
+
+export type TaxPublishStatusType = 'temporary' | 'pending' | 'published'; // 임시 저장, 발행 대기, 발행 완료
+export const TaxPublishStatusColorMap: Record<
+  TaxPublishStatusType,
+  StatusColorModel
+> = {
+  temporary: { textColor: 'text-primary', bgColor: 'bg-bg' },
+  pending: { textColor: 'text-dg', bgColor: 'bg-bg' },
+  published: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
+};
+
+// Tax Invoice State Types
+// 바로빌 상태 (백엔드에서 실제로 사용하는 값들만)
+export type BarobillStateType = '임시저장' | '발급완료' | '전송완료';
+
+// 국세청 전송 상태 (백엔드에서 실제로 사용하는 값들만)
+export type NtsSendStateType = '전송전' | '전송완료';
 
 ////////////////////
 ////////////////////
@@ -123,38 +207,29 @@ export const TransactionStatusColorMap: Record<TransactionStatusType, string> =
     '작성 완료': 'text-primary',
   };
 
-// 완료된 프로젝트 상태
-export type CompletedProjectStatusType = '완료' | '중단';
-export const CompletedProjectStatusColorMap: Record<
-  CompletedProjectStatusType,
-  StatusColorModel
-> = {
-  완료: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
-};
-
 // production의 설비 가동 상태
-export type OperationStatusType = '가동 대기' | '가동 중' | '가동 완료';
+export type OperationStatusType = 'pending' | 'production' | 'completed';
 export const OperationStatusColorMap: Record<
   OperationStatusType,
   StatusColorModel
 > = {
-  '가동 대기': {
+  pending: {
     textColor: 'text-dg',
     bgColor: 'bg-bg',
     hover: 'hover:bg-lg',
   },
-  '가동 중': {
+  production: {
     textColor: 'text-purple',
     bgColor: 'bg-purple-8',
     hover: 'hover:bg-purple-hover',
   },
-  '가동 완료': {
+  completed: {
     textColor: 'text-primary',
     bgColor: 'bg-primary-8',
     hover: 'hover:bg-secondary-hover',
   },
 };
+// 가동 대기 // 가동 중 // 가동 완료
 
 // 납품 상태
 export type DeliveryStatusType = '예정' | '완료';
@@ -170,16 +245,6 @@ export const DeliveryStatusColorMap: Record<
     textColor: 'text-primary',
     bgColor: 'bg-primary-8',
   },
-};
-
-// 세금계산서 종류
-export type TaxDocumentType = '매출' | '매입';
-export const TaxDocumentTypeColorMap: Record<
-  TaxDocumentType,
-  StatusColorModel
-> = {
-  매출: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  매입: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
 
 // 세금계산서 임시보관함 상태

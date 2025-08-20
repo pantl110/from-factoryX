@@ -1,18 +1,18 @@
 import { TaxDocumentType } from '@/types/status-type';
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
-import CreatTaxPanel from './modals/create-tax-panel';
+import CreatTaxPanel from './create-tax-panel';
 
 interface MainTitleSecProps {
-  selectedTaxType: TaxDocumentType | '전체';
-  setSelectedTaxType: (type: TaxDocumentType | '전체') => void;
+  selectedTaxType: TaxDocumentType | null;
+  setSelectedTaxType: (type: TaxDocumentType | null) => void;
 }
 
 const MainTitleSec = ({
   selectedTaxType,
   setSelectedTaxType,
 }: MainTitleSecProps) => {
-  const tabs: (TaxDocumentType | '전체')[] = ['전체', '매출', '매입'];
+  const tabs: string[] = ['전체', '매출', '매입'];
 
   const [isCreatTaxPanelOpen, setIsCreatTaxPanelOpen] = useState(false);
 
@@ -36,8 +36,22 @@ const MainTitleSec = ({
           {tabs.map((tab) => (
             <button
               key={tab}
-              className={`${selectedTaxType === tab ? 'text-dg' : 'text-gr'} cursor-pointer`}
-              onClick={() => setSelectedTaxType(tab)}
+              className={`${
+                (tab === '전체' && selectedTaxType === null) ||
+                (tab === '매출' && selectedTaxType === 'sales') ||
+                (tab === '매입' && selectedTaxType === 'purchase')
+                  ? 'text-dg'
+                  : 'text-gr'
+              } cursor-pointer`}
+              onClick={() => {
+                if (tab === '매출') {
+                  setSelectedTaxType('sales');
+                } else if (tab === '매입') {
+                  setSelectedTaxType('purchase');
+                } else {
+                  setSelectedTaxType(null);
+                }
+              }}
             >
               {tab}
             </button>

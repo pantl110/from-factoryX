@@ -27,7 +27,7 @@ const useCreateProjectLog = () => {
 
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/log?factory_id=${factoryId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-log?factory_id=${factoryId}`,
           {
             method: 'POST',
             credentials: 'include',

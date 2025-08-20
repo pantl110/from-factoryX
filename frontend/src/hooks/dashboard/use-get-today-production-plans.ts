@@ -1,25 +1,14 @@
 import { useState } from 'react';
 import useFactoryStore from '@/store/factory-store';
+import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
 
-interface UndeliveredProductModel {
-  company_name: string;
-  product_name: string;
-  delivery_date: string | null;
-  project_id: number;
-}
-
-interface GetUndeliveredProductsModel {
-  page?: number;
-}
-
-const useGetUndeliveredProducts = () => {
+// 오늘의 생산 일정 조회 // 생산지시서
+const useGetTodayProductionPlans = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { factoryId } = useFactoryStore();
 
-  const getUndeliveredProducts = async (
-    params: GetUndeliveredProductsModel
-  ) => {
+  const getTodayProductionPlans = async () => {
     setIsLoading(true);
     setError(null);
 
@@ -32,10 +21,9 @@ const useGetUndeliveredProducts = () => {
 
       const queryParams = new URLSearchParams();
       queryParams.append('factory_id', factoryId.toString());
-      queryParams.append('page', (params.page || 1).toString());
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/undelivered?${queryParams}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan/today?${queryParams}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -45,25 +33,34 @@ const useGetUndeliveredProducts = () => {
         }
       );
 
-      if (response.status === 200) {
-        const result: UndeliveredProductModel[] = await response.json();
+      if (response.ok) {
+        const result: TodayProductionPlanModel[] = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
+
+        // 404 에러는 데이터가 없는 것이므로 성공으로 처리
+        if (response.status === 404) {
+          return { success: true, data: [] };
+        }
+
+        // 다른 에러는 에러로 처리
         const errorMessage =
-          errorData.detail || '납품되지 않은 견적서 품목 조회에 실패했습니다.';
+          errorData.detail || '오늘의 생산 일정 조회에 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : '서버 연결에 실패했습니다.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { getUndeliveredProducts, isLoading, error };
+  return { getTodayProductionPlans, isLoading, error };
 };
 
-export default useGetUndeliveredProducts;
+export default useGetTodayProductionPlans;

@@ -7,7 +7,7 @@ import Spinner from '@/ui/spinner';
 
 interface UploadModalProps {
   onClose: () => void;
-  onComplete: (ocrData?: OcrDataModel) => void;
+  onComplete: (ocrData?: OcrDataModel, imageUrl?: string) => void;
   documentTitle: string;
 }
 
@@ -24,10 +24,8 @@ const ExcelUploadModal = ({
       try {
         const result = await uploadOcr(file);
         if (result.status === 'success') {
-          // OCR 성공 시 데이터 반환 ‼️‼️‼️‼️‼️‼️‼️ 수정 필요
-          // TODO: OCR 결과 데이터를 파싱
-          alert('OCR 처리 성공');
-          onComplete();
+          // OCR 성공 시 데이터 반환
+          onComplete(result.data, result.imageUrl);
           onClose(); // 모달 닫기 추가
         } else {
           // OCR 실패 시 에러 처리

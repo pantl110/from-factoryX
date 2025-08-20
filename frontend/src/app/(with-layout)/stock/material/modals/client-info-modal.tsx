@@ -180,6 +180,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
                   items={clientItems}
                   onSelect={handleSelectClient}
                   width="w-full"
+                  onClose={() => setIsDropdownOpen(false)}
                 />
               </div>
             )}

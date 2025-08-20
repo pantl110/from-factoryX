@@ -6,22 +6,24 @@ import RegisterProductionModal from '../modals/register-production-modal';
 import { RefundModel } from '@/types/data-model';
 import { formatDate } from '@/hooks/format-number';
 
-interface ReturnInfoProps {
-  refundData: RefundModel;
-  onAmountChange: (newAmount: number) => void;
-  onProductionAmountChange: (newProductionAmount: number) => void;
-}
-
 interface RefundFormDataModel {
   refund_date: string;
   amount: number;
   production_amount: number;
 }
 
+interface ReturnInfoProps {
+  refundData: RefundModel;
+  onAmountChange: (newAmount: number) => void;
+  onProductionAmountChange: (newProductionAmount: number) => void;
+  logId: number;
+}
+
 const ReturnInfo = ({
   refundData,
   onAmountChange,
   onProductionAmountChange,
+  logId,
 }: ReturnInfoProps) => {
   const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
     useState(false);
@@ -115,16 +117,16 @@ const ReturnInfo = ({
         <div className="flex justify-between">
           <h3 className="Heading-3 text-dg flex items-center">반품 정보</h3>
           <div className="flex gap-2.5">
-            <div>
+            {!isEditing && (
               <MiniBtn
                 text="수정"
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsEditing(true)}
-                disabled={isEditing}
+                disabled={refundData.plan?.status !== 'pending'}
               />
-            </div>
+            )}
 
             <MiniBtn
               text="생산 등록"
@@ -132,7 +134,7 @@ const ReturnInfo = ({
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={() => setIsRegisterProductionModalOpen(true)}
-              disabled={!isFormValid}
+              disabled={!isFormValid || refundData.plan?.status !== 'pending'}
             />
           </div>
         </div>
@@ -248,7 +250,7 @@ const ReturnInfo = ({
       {isRegisterProductionModalOpen && (
         <RegisterProductionModal
           onClose={() => setIsRegisterProductionModalOpen(false)}
-          refundId={refundData.id}
+          logId={logId}
         />
       )}
     </>

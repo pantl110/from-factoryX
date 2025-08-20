@@ -1,26 +1,33 @@
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
-import { useRegisterProductionFromRefund, useToast } from '@/hooks';
+import { useToast } from '@/hooks';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
+import useRegisterProductionFromRefund from '@/hooks/project/project-refund/use-register-production-from-refund';
 
 interface RegisterProductionModalProps {
   onClose: () => void;
-  refundId: number;
+  logId: number;
 }
 
 const RegisterProductionModal = ({
   onClose,
-  refundId,
+  logId,
 }: RegisterProductionModalProps) => {
-  const { registerProductionFromRefund, isLoading, error } =
+  const { registerProduction, isLoading, error } =
     useRegisterProductionFromRefund();
+  // const { updateRefund, isLoading, error } = useUpdateRefund();
   const { isToastOpen, isVisible, showToast } = useToast();
 
   const handleRegisterProduction = async () => {
-    const result = await registerProductionFromRefund({
-      refund_id: refundId,
-    });
+    const result = await registerProduction(logId);
+    // const result = await updateRefund(refundId, {
+    //   refund_date: refundData.refund_date,
+    //   current_stock: refundData.current_stock,
+    //   production_amount: refundData.production_amount,
+    //   product_id: productId,
+    // });
+
     if (result.success) {
       onClose();
     } else {
@@ -47,7 +54,7 @@ const RegisterProductionModal = ({
       >
         <div className="flex justify-end gap-[5px]">
           <MiniBtn
-            text="취소하기"
+            text="취소"
             textColor="text-sv"
             hoverColor=""
             onClick={onClose}

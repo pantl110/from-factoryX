@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Chip from '@/ui/chip';
 import { useRouter } from 'next/navigation';
-import { ProjectStatusColorMap, TaxStatusType } from '@/types/status-type';
+import { ProjectStatusColorMap } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import MiniBtn from '@/ui/mini-btn';
 import { ProjectResponseModel } from '@/types/data-model';
 import { CopySimple } from '@phosphor-icons/react';
 import Tooltip from '@/ui/tooltip';
 import useCloneProject from '@/hooks/project/project-plan/use-clone-project';
+import LinkTaxModal from './modals/link-tax-modal/link-tax-modal';
 
 interface TableItemProps {
   project: ProjectResponseModel;
@@ -29,6 +30,7 @@ const TableItem = ({
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const { cloneProject, isLoading: isCloning } = useCloneProject();
+  const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
 
   // 프로젝트 상태 색상 가져오기 (영어/한글 모두 지원)
   const chipColors =
@@ -38,7 +40,7 @@ const TableItem = ({
   const getDisplayText = (status: string): string => {
     const displayMap: Record<string, string> = {
       // 영어 상태
-      quotation: '견적 협의',
+      quotation: '견적 요청',
       confirmed: '주문 확정',
       pending: '생산 대기',
       production: '생산 중',
@@ -46,16 +48,6 @@ const TableItem = ({
       delivery: '납품',
       completed: '완료',
       suspended: '중단',
-      // 한글 상태
-      '견적 협의중': '견적 협의',
-      '주문 확정': '주문 확정',
-      '생산 대기': '생산 대기',
-      '생산 중': '생산 중',
-      '생산 완료': '생산 완료',
-      납품: '납품',
-      '프로젝트 완료': '완료',
-      완료: '완료',
-      중단: '중단',
     };
 
     return displayMap[status] || '견적 요청';
@@ -91,21 +83,21 @@ const TableItem = ({
 
     if (isQuotationStatus) {
       router.push(
-        `/quotation?quotation_id=${project.project_id}&project_id=${project.project_id}`
+        `/quotation?quotation_id=${project.quotation_id}&project_id=${project.project_id}`
       );
     } else {
       router.push(`/production/${project.project_id}`);
     }
   };
 
-  // 세금계산서 발행 상태 표시 텍스트 변환
-  const getPublishStatusText = (status: TaxStatusType | undefined) => {
-    if (status === null || status === undefined) return '연결 필요';
-    if (status === 'pending') return '미발행';
-    if (status === 'published') return '보기';
-    return '';
-  };
-  const taxButtonText = getPublishStatusText(project.publish_status);
+  // // 세금계산서 발행 상태 표시 텍스트 변환
+  // const getPublishStatusText = (status: TaxStatusType | undefined) => {
+  //   if (status === null || status === undefined) return '연결 필요';
+  //   if (status === 'pending') return '미발행';
+  //   if (status === 'published') return '보기';
+  //   return '';
+  // };
+  // const taxButtonText = getPublishStatusText(project.publish_status);
 
   return (
     <>
@@ -121,7 +113,7 @@ const TableItem = ({
         }}
       >
         <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
-        <div className="px-3 w-[150px]">
+        <div className={`px-3 ${isArchived ? 'w-[150px]' : 'w-[200px]'}`}>
           <Chip
             text={displayText}
             bgColor={chipColors.bgColor}
@@ -171,38 +163,24 @@ const TableItem = ({
               e.stopPropagation();
             }}
           >
-            {taxButtonText === '보기' ? (
-              <MiniBtn
-                text={taxButtonText}
-                bgColor="bg-wh"
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
-                height="h-8"
-                onClick={() => {
-                  router.push(`/tax/list`);
-                }}
-              />
-            ) : taxButtonText === '연결 필요' ? (
-              <MiniBtn
-                text="연결 필요"
-                bgColor="bg-bg"
-                textColor="text-dg"
-                hoverColor="hover:bg-lg"
-                height="h-8"
-              />
-            ) : (
-              <MiniBtn
-                text="미발행"
-                bgColor="bg-bg"
-                textColor="text-dg"
-                hoverColor="hover:bg-lg"
-                height="h-8"
-                disabled
-              />
-            )}
+            <MiniBtn
+              text="연결 필요"
+              bgColor="bg-bg"
+              textColor="text-dg"
+              hoverColor="hover:bg-lg"
+              height="h-8"
+              onClick={() => {
+                setIsLinkTaxModalOpen(true);
+              }}
+            />
           </div>
         )}
+        {!isArchived && (
+          <p className="w-[200px] px-3 text-dg truncate">
+            {project.publish_status === 'pending' ? '미발행' : '보기'}
+          </p>
+        )}
+
         {isArchived && (
           <div
             onClick={handleCloneProject}
@@ -241,6 +219,13 @@ const TableItem = ({
           </div>,
           document.body
         )}
+
+      {isLinkTaxModalOpen && (
+        <LinkTaxModal
+          onClose={() => setIsLinkTaxModalOpen(false)}
+          projectId={project.project_id}
+        />
+      )}
     </>
   );
 };

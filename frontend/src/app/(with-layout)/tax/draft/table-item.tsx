@@ -1,18 +1,9 @@
-import { TaxDraftStatusColorMap } from '@/types/status-type';
+import { PendingTaxInvoiceResponseModel } from '@/types/data-model';
 import Checkbox from '@/ui/checkbox';
-import Chip from '@/ui/chip';
+// import Chip from '@/ui/chip';
 
 interface TableItemProps {
-  item: {
-    id: number;
-    status: string;
-    type: string;
-    companyName: string;
-    supplyPrice: number;
-    taxPrice: number;
-    totalPrice: number;
-    date: string;
-  };
+  item: PendingTaxInvoiceResponseModel;
   isChecked: boolean;
   onToggle: () => void;
   onItemClick?: () => void;
@@ -33,8 +24,8 @@ const TableItem = ({
         <Checkbox isChecked={isChecked} onToggle={onToggle} />
       </div>
       <div className="px-3 w-[150px]">
-        <Chip
-          text={item.status}
+        {/* <Chip
+          text={item.tax_invoice_type}
           bgColor={
             TaxDraftStatusColorMap[
               item.status as keyof typeof TaxDraftStatusColorMap
@@ -45,14 +36,35 @@ const TableItem = ({
               item.status as keyof typeof TaxDraftStatusColorMap
             ].textColor
           }
-        />
+        /> */}
       </div>
-      <p className="px-3 flex-2">{item.type}</p>
-      <p className="px-3 flex-2">{item.companyName}</p>
-      <p className="px-3 w-[200px]">{item.supplyPrice.toLocaleString()}</p>
-      <p className="px-3 w-[200px]">{item.taxPrice.toLocaleString()}</p>
-      <p className="px-3 w-[200px]">{item.totalPrice.toLocaleString()}</p>
-      <p className="px-3 w-[200px]">{item.date}</p>
+      <p className="px-3 flex-2 truncate" title={item.tax_invoice_type}>
+        {item.tax_invoice_type}
+      </p>
+      <p className="px-3 flex-2 truncate" title={item.client_name}>
+        {item.client_name}
+      </p>
+      <p
+        className="px-3 w-[200px] truncate"
+        title={item.transaction_amount?.toLocaleString() || '-'}
+      >
+        {item.transaction_amount?.toLocaleString() || '-'}
+      </p>
+      <p
+        className="px-3 w-[200px] truncate"
+        title={item.tax_amount?.toLocaleString() || '-'}
+      >
+        {item.tax_amount?.toLocaleString() || '-'}
+      </p>
+      <p
+        className="px-3 w-[200px] truncate"
+        title={item.total_amount?.toLocaleString() || '-'}
+      >
+        {item.total_amount?.toLocaleString() || '-'}
+      </p>
+      <p className="px-3 w-[200px] truncate" title={item.transaction_date}>
+        {item.transaction_date}
+      </p>
     </div>
   );
 };

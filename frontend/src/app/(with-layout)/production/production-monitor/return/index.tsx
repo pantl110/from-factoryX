@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
-import ReturnTableHeader from './return-table-header';
-import ReturnTableItem from './return-table-item';
-import ReturnInfo from './return-info';
 import Spinner from '@/ui/spinner';
 import { useGetRefundDetail, useGetProduct } from '@/hooks';
 import { RefundModel, ProductResponseModel } from '@/types/data-model';
+import ReturnInfo from './return-info';
+import ReturnTableHeader from './return-table-header';
+import ReturnTableItem from './return-table-item';
 
 interface ReturnSectionProps {
   refundId: number;
+  logId: number;
 }
 
-const ReturnSection = ({ refundId }: ReturnSectionProps) => {
+const ReturnSection = ({ refundId, logId }: ReturnSectionProps) => {
   const [refundData, setRefundData] = useState<RefundModel | null>(null);
   const [productDetail, setProductDetail] =
     useState<ProductResponseModel | null>(null);
@@ -93,6 +94,7 @@ const ReturnSection = ({ refundId }: ReturnSectionProps) => {
           refundData={refundData}
           onAmountChange={handleAmountChange}
           onProductionAmountChange={handleProductionAmountChange}
+          logId={logId}
         />
         {shouldShowTable && (
           <div>

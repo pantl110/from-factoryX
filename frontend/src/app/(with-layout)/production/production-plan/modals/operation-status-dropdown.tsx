@@ -30,40 +30,40 @@ const OperationStatusDropdown = ({
       <DropdownItem noHover={true} chip={true}>
         <Chip
           text="가동 대기"
-          bgColor={color['가동 대기'].bgColor}
-          textColor={color['가동 대기'].textColor}
+          bgColor={color.pending.bgColor}
+          textColor={color.pending.textColor}
           onClick={(e) => {
             e?.stopPropagation();
-            onStatusChange('가동 대기');
+            onStatusChange('pending');
             onClose();
           }}
-          hover={color['가동 대기'].hover}
+          hover={color.pending.hover}
         />
       </DropdownItem>
-      <DropdownItem noHover={true} chip={true}>
+      {/* <DropdownItem noHover={true} chip={true}>
         <Chip
           text="가동 중"
-          bgColor={color['가동 중'].bgColor}
-          textColor={color['가동 중'].textColor}
+          bgColor={color.production.bgColor}
+          textColor={color.production.textColor}
           onClick={(e) => {
             e?.stopPropagation();
-            onStatusChange('가동 중');
+            onStatusChange('production');
             onClose();
           }}
-          hover={color['가동 중'].hover}
+          hover={color.production.hover}
         />
-      </DropdownItem>
+      </DropdownItem> */}
       <DropdownItem noHover={true} chip={true}>
         <Chip
           text="가동 완료"
-          bgColor={color['가동 완료'].bgColor}
-          textColor={color['가동 완료'].textColor}
+          bgColor={color.completed.bgColor}
+          textColor={color.completed.textColor}
           onClick={(e) => {
             e?.stopPropagation();
-            onStatusChange('가동 완료');
+            onStatusChange('completed');
             onClose();
           }}
-          hover={color['가동 완료'].hover}
+          hover={color.completed.hover}
         />
       </DropdownItem>
     </Dropdown>

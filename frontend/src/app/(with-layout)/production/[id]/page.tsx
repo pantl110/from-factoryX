@@ -3,8 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect, Suspense, useCallback } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
-import { useGetProjectStatus } from '@/hooks';
-import useGetDetailQuotation from '@/hooks/document/use-get-quotation';
+import { useGetProjectStatus, useGetDetailQuotation } from '@/hooks';
 import ProductFlowTitle from '../product-flow-title';
 import ProductionPlan from '../production-plan';
 import ProductionMonitor from '../production-monitor';
@@ -18,14 +17,26 @@ import { ProductionTabType } from '@/components/top-bar/types';
 import Spinner from '@/ui/spinner';
 import useUpdateProjectStatus from '@/hooks/project/use-update-project-status';
 import AddReturnModal from '../delivery/modals/add-return-modal/add-return-modal';
+import {
+  ProjectStatusResponseModel,
+  QuotationProductDetailResponseModel,
+} from '@/types/data-model';
+import NoHistoryBox from '@/ui/no-history-box';
 
-const getTabsByStatus = (status: ProjectStatusType): ProductionTabType[] => {
+const getTabsByStatus = (
+  status: ProjectStatusType,
+  isRefund: boolean
+): ProductionTabType[] => {
   if (status === 'pending' || status === '생산 대기')
     return ['생산 계획', '주문서'];
   if (status === 'production' || status === '생산 중')
-    return ['생산 현황', '생산 계획', '주문서'];
+    return isRefund
+      ? ['납품', '생산 현황', '생산 계획', '주문서']
+      : ['생산 현황', '생산 계획', '주문서'];
   if (status === 'manufactured' || status === '생산 완료')
-    return ['생산 현황', '생산 내역', '주문서'];
+    return isRefund
+      ? ['납품', '생산 현황', '생산 내역', '주문서']
+      : ['생산 현황', '생산 내역', '주문서'];
   if (status === 'delivery' || status === '납품')
     return ['납품', '생산 현황', '생산 내역', '주문서'];
   if (status === 'completed' || status === '프로젝트 완료')
@@ -50,18 +61,11 @@ const ProductionPageContent = () => {
   const setProductionTab = usePageStatusStore(
     (state) => state.setProductionTab
   );
+  const setIsRefund = usePageStatusStore((state) => state.setIsRefund);
 
   // 프로젝트 상태 데이터
-  const [projectStatus, setProjectStatus] = useState<{
-    project_id: number;
-    quotation_id: number;
-    status: ProjectStatusType;
-    created_at: string;
-    updated_at: string;
-    earliest_start_date?: string;
-    latest_end_date?: string;
-    due_date?: string;
-  } | null>(null);
+  const [projectStatus, setProjectStatus] =
+    useState<ProjectStatusResponseModel | null>(null);
 
   // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
   const { data: quotationData } = useGetDetailQuotation(
@@ -76,15 +80,17 @@ const ProductionPageContent = () => {
       try {
         const result = await getProjectStatus(projectId);
         if (result.success && result.data) {
-          setProjectStatus(result.data);
+          setProjectStatus(result.data as ProjectStatusResponseModel);
           // 프로젝트 상태를 store에 업데이트
           const projectStatus = result.data.status as ProjectStatusType;
-          const tabs = getTabsByStatus(projectStatus);
+          const tabs = getTabsByStatus(
+            projectStatus,
+            result.data.is_refunded || false
+          );
 
           setPageStatus(projectStatus);
           setProductionTab(tabs[selectedTab]);
-        } else {
-          alert('프로젝트 상태 로드 실패');
+          setIsRefund(result.data.is_refunded || false);
         }
       } catch {
         alert('프로젝트 상태 로드 중 오류');
@@ -102,19 +108,44 @@ const ProductionPageContent = () => {
     try {
       const result = await getProjectStatus(projectId);
       if (result.success && result.data) {
-        setProjectStatus(result.data);
+        setProjectStatus(result.data as ProjectStatusResponseModel);
         // 프로젝트 상태를 store에 업데이트
         const projectStatus = result.data.status as ProjectStatusType;
-        const tabs = getTabsByStatus(projectStatus);
+        const tabs = getTabsByStatus(
+          projectStatus,
+          result.data.is_refunded || false
+        );
 
         setPageStatus(projectStatus);
-        setProductionTab(tabs[selectedTab]);
+
+        // 프로젝트 상태가 'manufactured'로 변경된 경우 '생산 내역' 탭으로 이동
+        if (projectStatus === 'manufactured' || projectStatus === '생산 완료') {
+          const productionHistoryTabIndex = tabs.findIndex(
+            (tab) => tab === '생산 내역'
+          );
+          if (productionHistoryTabIndex !== -1) {
+            setSelectedTab(productionHistoryTabIndex);
+            setProductionTab(tabs[productionHistoryTabIndex]);
+          } else {
+            setProductionTab(tabs[selectedTab]);
+          }
+        } else {
+          setProductionTab(tabs[selectedTab]);
+        }
+
+        setIsRefund(result.data.is_refunded || false);
       }
     } catch {
       alert('프로젝트 상태 리로드 실패');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, getProjectStatus, setPageStatus, setProductionTab]);
+  }, [
+    projectId,
+    getProjectStatus,
+    setPageStatus,
+    setProductionTab,
+    selectedTab,
+  ]);
 
   // 프로젝트 상태를 delivery로 변경하는 함수
   const handleChangeStatus = useCallback(
@@ -122,8 +153,8 @@ const ProductionPageContent = () => {
       try {
         const result = await updateProjectStatus(projectId, status);
         if (result.success) {
-          // store의 pageStatus를 delivery로 업데이트
-          setPageStatus('status');
+          // store의 pageStatus를 업데이트
+          setPageStatus(status);
           // 상태 변경 후 프로젝트 상태 리로드
           await reloadProjectStatus();
         } else {
@@ -156,7 +187,10 @@ const ProductionPageContent = () => {
 
   const projectStatusType =
     (projectStatus?.status as ProjectStatusType) || 'quotation';
-  const tabs = getTabsByStatus(projectStatusType);
+  const tabs = getTabsByStatus(
+    projectStatusType,
+    projectStatus?.is_refunded || false
+  );
 
   if (isLoading) {
     return (
@@ -194,7 +228,16 @@ const ProductionPageContent = () => {
 
         {tabs[selectedTab] === '세금계산서' && (
           <div className="px-10 pt-5 pb-10">
-            <TaxDocumentView taxType="매출" />
+            {projectStatus?.tax_invoice ? (
+              <TaxDocumentView taxId={projectStatus?.tax_invoice} />
+            ) : (
+              <NoHistoryBox
+                title="연결된 세금계산서가 없습니다."
+                text="세금계산서를 연결해 주세요"
+                height="h-[calc(100vh-322.43px)]"
+                button="세금계산서 연결"
+              />
+            )}
           </div>
         )}
         {tabs[selectedTab] === '거래명세서' && quotationData && (
@@ -228,6 +271,7 @@ const ProductionPageContent = () => {
           <ProductionPlan
             handleChangeStatus={handleChangeStatus}
             projectStatus={projectStatus.status as ProjectStatusType}
+            onProjectStatusChange={reloadProjectStatus}
           />
         )}
         {tabs[selectedTab] === '주문서' && quotationData && (
@@ -247,7 +291,8 @@ const ProductionPageContent = () => {
               productListInfoTitle="주문 품목 정보"
               productItems={quotationData.products}
               supplyAmount={quotationData.products.reduce(
-                (sum, item) => sum + (item.supply_amount || 0),
+                (sum: number, item: QuotationProductDetailResponseModel) =>
+                  sum + (item.supply_amount || 0),
                 0
               )}
             />
@@ -262,6 +307,14 @@ const ProductionPageContent = () => {
           onClose={() => setAddReturnModalOpen(false)}
           quotationProductData={quotationData?.products || []}
           onProjectStatusChange={handleChangeStatus}
+          onTabChange={(tab) => {
+            // 탭 인덱스 찾기
+            const tabIndex = tabs.findIndex((t) => t === tab);
+            if (tabIndex !== -1) {
+              setSelectedTab(tabIndex);
+              setProductionTab(tabs[tabIndex]);
+            }
+          }}
         />
       )}
     </>

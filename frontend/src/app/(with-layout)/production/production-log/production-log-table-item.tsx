@@ -32,8 +32,12 @@ const ProductionLogTableItem = ({
   const { control, watch } = useForm({
     defaultValues: {
       quantity: plan.quantity || 0,
-      start_date: plan.start_date || '',
-      end_date: plan.end_date || '',
+      start_date: plan.start_date
+        ? new Date(plan.start_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
+      end_date: plan.end_date
+        ? new Date(plan.end_date).toISOString().slice(0, 16).replace('T', ' ')
+        : '',
     },
   });
 
@@ -48,8 +52,12 @@ const ProductionLogTableItem = ({
   ) => {
     onFormChange?.(plan.id, {
       quantity: field === 'quantity' ? (value as number) : watchedQuantity,
-      start_date: field === 'start_date' ? (value as string) : watchedStartDate,
-      end_date: field === 'end_date' ? (value as string) : watchedEndDate,
+      start_date:
+        field === 'start_date'
+          ? (value as string)
+          : String(watchedStartDate || ''),
+      end_date:
+        field === 'end_date' ? (value as string) : String(watchedEndDate || ''),
     });
   };
   return (
@@ -116,7 +124,7 @@ const ProductionLogTableItem = ({
             render={({ field }) => (
               <input
                 type="text"
-                value={field.value}
+                value={String(field.value || '')}
                 onChange={(e) => {
                   const formatted = formatDateTime(e.target.value);
                   field.onChange(formatted);
@@ -164,7 +172,7 @@ const ProductionLogTableItem = ({
             render={({ field }) => (
               <input
                 type="text"
-                value={field.value}
+                value={String(field.value || '')}
                 onChange={(e) => {
                   const formatted = formatDateTime(e.target.value);
                   field.onChange(formatted);

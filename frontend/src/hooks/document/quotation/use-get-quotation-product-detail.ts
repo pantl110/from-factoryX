@@ -22,7 +22,7 @@ const useGetQuotationProductDetail = (
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/${id}`,
         {
           method: 'GET',
           credentials: 'include',

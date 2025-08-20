@@ -5,16 +5,18 @@ import DropdownItem from '@/ui/dropdown/dropdown-item';
 export const ClientNameDropdown = ({
   items,
   onSelect,
+  onClose,
   width,
-  style,
+  style = {},
 }: {
   items: ClientResponseModel[];
   onSelect: (item: ClientResponseModel) => void;
+  onClose: () => void;
   width?: string;
   style?: React.CSSProperties;
 }) => {
   return (
-    <Dropdown onClose={() => {}} width={width} style={style} maxHeight={true}>
+    <Dropdown onClose={onClose} width={width} style={style} maxHeight={true}>
       {items.map((item) => (
         <DropdownItem
           key={item.id}

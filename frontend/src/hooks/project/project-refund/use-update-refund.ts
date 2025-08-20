@@ -7,17 +7,21 @@ interface RefundUpdateInModel {
   refund_date?: string;
   current_stock?: number;
   production_amount?: number;
+  product_id?: number;
 }
 
 interface RefundUpdateOutModel {
   message: string;
   refund_id: number;
+  updated_project_plans: number[];
+  deleted_project_plans: number[];
+  created_project_plans: number[];
 }
 
 const useUpdateRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useFactoryStore();
+  const factoryId = useFactoryStore((state) => state.factoryId);
 
   const updateRefund = useCallback(
     async (
@@ -37,7 +41,7 @@ const useUpdateRefund = () => {
         queryParams.append('factory_id', factoryId.toString());
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/refund/${refundId}?${queryParams}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-refund/${refundId}?${queryParams}`,
           {
             method: 'PATCH',
             credentials: 'include',

@@ -20,6 +20,7 @@ import {
   useUpdateProjectStatus,
   useGetQuotationProducts,
   useGetProduct,
+  useUpdateQuotationProductDelivery,
 } from '@/hooks';
 
 interface DeliveryProps {
@@ -54,6 +55,7 @@ const Delivery = ({
   const setMoveToStorageModalOpen = usePageStatusStore(
     (state) => state.setMoveToStorageModalOpen
   );
+  const setDeliveryData = usePageStatusStore((state) => state.setDeliveryData);
 
   // Zustand store에서 factoryId 가져오기
   const factoryId = useFactoryStore((state) => state.factoryId);
@@ -73,8 +75,12 @@ const Delivery = ({
   const { updateProjectStatus, isLoading: isUpdateLoading } =
     useUpdateProjectStatus();
 
+  const { updateQuotationProductDelivery } =
+    useUpdateQuotationProductDelivery();
+
   // 체크 기능
-  const itemIds = deliveryData?.map((item) => item.id) || [];
+  const itemIds =
+    deliveryData?.map((item: QuotationProductResponseModel) => item.id) || [];
   const { checkedIds, isAllChecked, isChecked, toggleAll, toggleOne } =
     useCheckAll(itemIds);
 
@@ -90,7 +96,7 @@ const Delivery = ({
     const fetchProductDetails = async () => {
       if (deliveryData) {
         const details = await Promise.all(
-          deliveryData.map(async (item) => {
+          deliveryData.map(async (item: QuotationProductResponseModel) => {
             if (item.product) {
               const result = await getProductDetail(item.product);
               return result.success ? result.data : null;
@@ -100,8 +106,9 @@ const Delivery = ({
         );
         setProductDetails(
           details.filter(
-            (detail): detail is ProductResponseModel | null =>
-              detail !== undefined
+            (
+              detail: ProductResponseModel | null | undefined
+            ): detail is ProductResponseModel | null => detail !== undefined
           )
         );
       }
@@ -109,6 +116,17 @@ const Delivery = ({
 
     fetchProductDetails();
   }, [deliveryData, getProductDetail]);
+
+  // deliveryData를 store에 설정
+  useEffect(() => {
+    if (deliveryData) {
+      setDeliveryData(
+        deliveryData.map((item: QuotationProductResponseModel) => ({
+          delivery_date: item.delivery_date || undefined,
+        }))
+      );
+    }
+  }, [deliveryData, setDeliveryData]);
 
   // 아이템 클릭 핸들러
   const handleItemClick = (
@@ -132,7 +150,7 @@ const Delivery = ({
     return checkedIds
       .map((checkedId) => {
         const itemIndex = deliveryData.findIndex(
-          (item) => item.id === checkedId
+          (item: QuotationProductResponseModel) => item.id === checkedId
         );
         if (itemIndex === -1) return null;
 
@@ -150,11 +168,74 @@ const Delivery = ({
       .filter((item): item is NonNullable<typeof item> => item !== null);
   };
 
+  // 납품일자 변경 핸들러
+  const handleDeliveryDateChange = async (id: string, newDate: string) => {
+    try {
+      // API 호출 후 성공 시 데이터 새로고침
+      // deliveryData가 이미 업데이트되었으므로 store만 업데이트
+      if (deliveryData) {
+        const updatedData = deliveryData.map(
+          (item: QuotationProductResponseModel) =>
+            item.id === Number(id) ? { ...item, delivery_date: newDate } : item
+        );
+        setDeliveryData(
+          updatedData.map((item: QuotationProductResponseModel) => ({
+            delivery_date: item.delivery_date || undefined,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('납품일자 변경 실패:', error);
+      alert('납품일자 변경에 실패했습니다.');
+    }
+  };
+
+  // 납품상태 변경 핸들러
+  const handleDeliveryStatusChange = async (id: string, newStatus: string) => {
+    try {
+      // API 호출 후 성공 시 데이터 새로고침
+      await updateQuotationProductDelivery(Number(id), {
+        is_delivered: newStatus === '완료',
+      });
+    } catch (error) {
+      console.error('납품상태 변경 실패:', error);
+      alert('납품상태 변경에 실패했습니다.');
+    }
+  };
+
   // 보관함으로 이동하는 버튼
   const handleMoveToStorage = async () => {
     try {
-      // 1. 품목들 중 상태가 예정인 것은 완료로 바꾸기 (API 아직 없음)
-      // TODO: 품목 상태 변경 API 구현 후 추가
+      // 1. 품목들 중 상태가 예정인 것은 완료로 바꾸기
+      if (deliveryData) {
+        const updatePromises = deliveryData
+          .filter((item: QuotationProductResponseModel) => !item.is_delivery) // 예정 상태인 항목만 필터링
+          .map(async (item: QuotationProductResponseModel) => {
+            try {
+              const result = await updateQuotationProductDelivery(
+                item.id || 0,
+                {
+                  is_delivered: true,
+                  delivery_date: item.delivery_date || undefined, // 납품일자도 함께 업데이트
+                }
+              );
+              return result.success;
+            } catch (error) {
+              console.error(`품목 ${item.id} 상태 변경 실패:`, error);
+              return false;
+            }
+          });
+
+        const updateResults = await Promise.all(updatePromises);
+        const successCount = updateResults.filter(Boolean).length;
+        const totalCount = deliveryData.filter(
+          (item: QuotationProductResponseModel) => !item.is_delivery
+        ).length;
+
+        if (successCount < totalCount) {
+          alert(`일부 품목 상태 변경에 실패했습니다.`);
+        }
+      }
 
       // 2. 프로젝트 상태를 completed로 변경
       const result = await updateProjectStatus(projectId, 'completed');
@@ -196,19 +277,12 @@ const Delivery = ({
           </div>
           <div className="flex gap-2">
             <MiniBtn
-              text="거래명세서 출력 "
+              text="거래명세서 출력"
               textColor="text-dg"
               borderColor="border-lg"
               onClick={() => setIsCreateTransactionOverlayviewOpen(true)}
               hoverColor="hover:bg-bg"
             />
-            {/* <MiniBtn
-              text="세금계산서 생성"
-              textColor="text-dg"
-              borderColor="border-lg"
-              onClick={() => setIsCreateTaxOverlayviewOpen(true)}
-              hoverColor="hover:bg-bg"
-            /> */}
           </div>
         </div>
         <div className="flex flex-col w-full overflow-x-auto">
@@ -224,17 +298,21 @@ const Delivery = ({
               />
               {deliveryData && deliveryData.length > 0 && (
                 <>
-                  {deliveryData.map((data, index) => (
-                    <DeliveryTableItem
-                      key={data.id}
-                      data={data}
-                      productDetail={productDetails[index]}
-                      isChecked={isChecked(data.id)}
-                      onToggle={() => toggleOne(data.id)}
-                      onItemClick={handleItemClick}
-                      projectStatus={projectStatus}
-                    />
-                  ))}
+                  {deliveryData.map(
+                    (data: QuotationProductResponseModel, index: number) => (
+                      <DeliveryTableItem
+                        key={data.id}
+                        data={data}
+                        productDetail={productDetails[index]}
+                        isChecked={isChecked(data.id)}
+                        onToggle={() => toggleOne(data.id)}
+                        onItemClick={handleItemClick}
+                        projectStatus={projectStatus}
+                        onDeliveryDateChange={handleDeliveryDateChange}
+                        onDeliveryStatusChange={handleDeliveryStatusChange}
+                      />
+                    )
+                  )}
                 </>
               )}
             </>
@@ -242,12 +320,6 @@ const Delivery = ({
         </div>
         {/* <TaxInvoice /> */}
       </div>
-
-      {/* {isCreateTaxOverlayviewOpen && (
-        <CreateTaxOverlayview
-          onClose={() => setIsCreateTaxOverlayviewOpen(false)}
-        />
-      )} */}
 
       {/* 아이템 개별 클릭 시 납품표 출력 오버레이 */}
       {isDeliveryOverlayOpen &&
@@ -281,13 +353,15 @@ const Delivery = ({
         deliveryData.length > 0 && (
           <DeliveryOverlay
             onClose={() => setIsPrintAllDeliveryOverlayOpen(false)}
-            data={deliveryData.map((item, index) => ({
-              companyName: quotationData.factory_name,
-              productName: productDetails[index]?.name || '-',
-              spec: productDetails[index]?.spec || '-',
-              unit: productDetails[index]?.unit || '-',
-              quantity: item.quantity,
-            }))}
+            data={deliveryData.map(
+              (item: QuotationProductResponseModel, index: number) => ({
+                companyName: quotationData.factory_name,
+                productName: productDetails[index]?.name || '-',
+                spec: productDetails[index]?.spec || '-',
+                unit: productDetails[index]?.unit || '-',
+                quantity: item.quantity,
+              })
+            )}
           />
         )}
 

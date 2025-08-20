@@ -36,9 +36,9 @@ export const useSignup = (): UseSignupReturnModel => {
             email: data.email,
             password: data.password,
             password_confirm: data.password_confirm,
-            terms_of_service: data.terms_of_service,
-            privacy_policy_agreement: data.privacy_policy_agreement,
-            marketing_agreement: data.marketing_agreement,
+            terms_of_service: true, // 무조건 동의
+            privacy_policy_agreement: true, // 무조건 동의
+            marketing_agreement: false, // 현재 없음
           }),
         }
       );

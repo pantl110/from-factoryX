@@ -19,7 +19,7 @@ const useGetProjectPlans = () => {
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan?project_id=${projectId}&factory_id=${factoryId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan?project_id=${projectId}&factory_id=${factoryId}`,
           {
             method: 'GET',
             credentials: 'include',

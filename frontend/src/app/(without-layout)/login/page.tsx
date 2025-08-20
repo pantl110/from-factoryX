@@ -8,18 +8,15 @@ import { validateEmail } from '@/utils/validation';
 import { useRouter } from 'next/navigation';
 import FactoryXLogo from '@/ui/icons/factory-x-logo';
 import { LoginFormDataModel } from '@/types/data-model';
-import { FactoriesResponseModel } from '@/types/data-model';
 import { useLogin } from '@/hooks/users/use-login';
-import { useState } from 'react';
-import FactorySelectModal from './factory-select-modal';
 import useFactoryStore from '@/store/factory-store';
 
 const LoginPage = () => {
   const router = useRouter();
   const setFactoryId = useFactoryStore((state) => state.setFactoryId);
   const { login, isLoading } = useLogin();
-  const [showFactorySelectModal, setShowFactorySelectModal] = useState(false);
-  const [factories, setFactories] = useState<FactoriesResponseModel[]>([]);
+  // const [showFactorySelectModal, setShowFactorySelectModal] = useState(false);
+  // const [factories, _setFactories] = useState<FactoriesResponseModel[]>([]);
 
   const {
     register,
@@ -47,16 +44,18 @@ const LoginPage = () => {
         router.push('/onboarding');
       } else if (result.factoryCount === 1) {
         // 공장이 1개일 때 - 대시보드로 이동
-        // ‼️‼️‼️‼️주석 풀기
         if (result.factories && result.factories.length > 0) {
           setFactoryId(result.factories[0].id); // persist가 자동으로 localStorage에 저장
         }
         router.push('/dashboard');
       } else if (result.factoryCount && result.factoryCount >= 2) {
+        if (result.factories && result.factories.length > 0) {
+          setFactoryId(result.factories[0].id); // 자동으로 첫번째 공장 선택
+        }
+
         // 공장이 2개 이상일 때 - 공장 선택 모달을 보여줌
-        // setFactoryId(3); // ‼️‼️‼️‼️여기 지우고 주석 풀기
-        setFactories(result.factories as FactoriesResponseModel[]);
-        setShowFactorySelectModal(true);
+        // setFactories(result.factories as FactoriesResponseModel[]);
+        // setShowFactorySelectModal(true);
       } else {
         // 기본적으로 대시보드로 이동
         router.push('/dashboard');
@@ -147,12 +146,13 @@ const LoginPage = () => {
         </div>
       </div>
 
+      {/* 
       {showFactorySelectModal && (
         <FactorySelectModal
           factories={factories}
           onClose={() => setShowFactorySelectModal(false)}
         />
-      )}
+      )} */}
     </>
   );
 };
