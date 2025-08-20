@@ -3,6 +3,8 @@
 import MiniBtn from '@/ui/mini-btn';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { useRouter } from 'next/navigation';
+import Tooltip from '@/ui/tooltip';
+import { useState } from 'react';
 
 interface ButtonSectionProps {
   setIsTaxCreatePanelOpen: (open: boolean) => void;
@@ -30,17 +32,44 @@ const ButtonSection = ({
   isDirty,
 }: ButtonSectionProps) => {
   const router = useRouter();
+  const [showTooltip, setShowTooltip] = useState(false);
+
   return (
     <>
       <div className="flex gap-1">
-        <MiniBtn
-          text="세금계산서 생성"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-          disabled={!isFormFilled || !isOrderStatus}
-          onClick={() => setIsTaxCreatePanelOpen(true)}
-        />
+        <div
+          className="relative"
+          onMouseEnter={() => {
+            if (!isOrderStatus) {
+              setShowTooltip(true);
+            }
+          }}
+          onMouseLeave={() => {
+            setShowTooltip(false);
+          }}
+        >
+          <MiniBtn
+            text="세금계산서 생성"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            disabled={!isFormFilled || !isOrderStatus}
+            onClick={() => setIsTaxCreatePanelOpen(true)}
+          />
+          {showTooltip && (
+            <div className="absolute z-50 -top-2 -left-2">
+              <Tooltip
+                text={
+                  !isOrderStatus
+                    ? '주문 확정 상태에서만 생성할 수 있습니다'
+                    : ''
+                }
+                color="red"
+                position="left"
+              />
+            </div>
+          )}
+        </div>
         <MiniBtn
           text="출력"
           textColor="text-dg"

@@ -2,29 +2,16 @@ import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
 interface PurchaseTableTiemProps {
   lineItem: PublishedTaxInvoiceResponseModel['line_items'][number];
-  productInfo: PublishedTaxInvoiceResponseModel['products_info'][number] | null;
 }
 
-const PurchaseTableTiem = ({
-  lineItem,
-  productInfo,
-}: PurchaseTableTiemProps) => {
+const PurchaseTableTiem = ({ lineItem }: PurchaseTableTiemProps) => {
   return (
     <div className="h-14 w-full flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <p
-        className="flex-2 px-3 truncate"
-        title={productInfo?.name || lineItem.name}
-      >
-        {lineItem.name || productInfo?.name}
+      <p className="flex-2 px-3 truncate" title={lineItem.name}>
+        {lineItem.name}
       </p>
-      <p
-        className="flex-2 px-3 truncate"
-        title={productInfo?.spec || lineItem.information}
-      >
-        {lineItem.information || productInfo?.spec}
-      </p>
-      <p className="w-[80px] px-3 truncate" title={productInfo?.unit || '-'}>
-        {productInfo?.unit || '-'}
+      <p className="flex-2 px-3 truncate" title={lineItem.information}>
+        {lineItem.information}
       </p>
       <p
         className="flex-1 px-3 truncate"

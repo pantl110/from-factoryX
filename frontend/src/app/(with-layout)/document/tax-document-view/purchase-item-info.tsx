@@ -4,13 +4,11 @@ import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
 interface PurchaseItemInfoProps {
   lineItems: PublishedTaxInvoiceResponseModel['line_items'];
-  productsInfo: PublishedTaxInvoiceResponseModel['products_info'];
   transactionAmount: number;
 }
 
 const PurchaseItemInfo = ({
   lineItems,
-  productsInfo,
   transactionAmount,
 }: PurchaseItemInfoProps) => {
   return (
@@ -21,7 +19,6 @@ const PurchaseItemInfo = ({
         <div className="flex items-center h-12 w-full border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
           <p className="px-3 flex-2">자재명</p>
           <p className="px-3 flex-2">규격</p>
-          <p className="px-3 w-[80px]">단위</p>
           <p className="px-3 flex-1">수량</p>
           <p className="px-3 flex-1">단가</p>
           <p className="px-3 flex-1">공급가액</p>
@@ -29,13 +26,7 @@ const PurchaseItemInfo = ({
         </div>
 
         {lineItems.map((lineItem, index) => (
-          <PurchaseTableTiem
-            key={index}
-            lineItem={lineItem}
-            productInfo={
-              productsInfo && productsInfo[index] ? productsInfo[index] : null
-            }
-          />
+          <PurchaseTableTiem key={index} lineItem={lineItem} />
         ))}
       </div>
 

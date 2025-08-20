@@ -183,9 +183,6 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
         <p className="flex-1 px-3 text-dg truncate">
           {displayProduct?.spec || ''}
         </p>
-        <p className="w-[80px] px-3 text-dg truncate">
-          {displayProduct?.unit || ''}
-        </p>
         <div className="flex-1 px-3">
           <input
             type="text"

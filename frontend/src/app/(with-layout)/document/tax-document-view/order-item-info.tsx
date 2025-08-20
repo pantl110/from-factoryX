@@ -4,13 +4,11 @@ import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
 interface OrderItemInfoProps {
   lineItems: PublishedTaxInvoiceResponseModel['line_items'];
-  productsInfo: PublishedTaxInvoiceResponseModel['products_info'];
   transactionAmount: number;
 }
 
 const OrderItemInfo = ({
   lineItems,
-  productsInfo,
   transactionAmount,
 }: OrderItemInfoProps) => {
   return (
@@ -21,30 +19,15 @@ const OrderItemInfo = ({
         <div className="flex items-center h-12 w-full border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
           <p className="px-3 flex-2">품목명</p>
           <p className="px-3 flex-2">규격</p>
-          <p className="px-3 w-[80px]">단위</p>
           <p className="px-3 flex-1">수량</p>
           <p className="px-3 flex-1">단가</p>
           <p className="px-3 flex-1">공급가액</p>
           <p className="px-3 flex-1">세액</p>
         </div>
 
-        {lineItems.map((lineItem, index) => {
-          // TaxLineItemModel.name === TaxProductInfoModel.name && TaxLineItemModel.information === TaxProductInfoModel.spec 조건을 만족하는 productInfo 찾기
-          const matchingProductInfo =
-            productsInfo?.find(
-              (product) =>
-                product.name === lineItem.name &&
-                product.spec === lineItem.information
-            ) || null;
-
-          return (
-            <OrderTableItem
-              key={index}
-              lineItem={lineItem}
-              productInfo={matchingProductInfo}
-            />
-          );
-        })}
+        {lineItems.map((lineItem, index) => (
+          <OrderTableItem key={index} lineItem={lineItem} />
+        ))}
       </div>
 
       <PriceInfo supplyAmount={transactionAmount} textColor={'text-primary'} />

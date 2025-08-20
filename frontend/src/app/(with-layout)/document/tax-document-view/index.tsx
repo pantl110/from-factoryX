@@ -49,14 +49,12 @@ const TaxDocumentView = ({ taxId }: TaxDocumentViewProps) => {
         <OrderItemInfo
           lineItems={item.line_items}
           transactionAmount={item.transaction_amount}
-          productsInfo={item.products_info}
         />
       )}
       {item.tax_invoice_type === 'purchase' && (
         <PurchaseItemInfo
           lineItems={item.line_items}
           transactionAmount={item.transaction_amount}
-          productsInfo={item.products_info}
         />
       )}
     </div>
