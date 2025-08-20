@@ -174,7 +174,7 @@ const DocumentPageContent = () => {
             title="매출 세금계산서"
             onClose={() => setSelectedDocument(null)}
           >
-            <TaxDocumentView taxType="sales" />
+            <TaxDocumentView taxId={1} />
           </Panel>
         )}
       {selectedDocument &&
@@ -183,7 +183,7 @@ const DocumentPageContent = () => {
             title="매입 세금계산서"
             onClose={() => setSelectedDocument(null)}
           >
-            <TaxDocumentView taxType="purchase" />
+            <TaxDocumentView taxId={1} />
           </Panel>
         )}
 

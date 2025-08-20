@@ -1,9 +1,4 @@
-import {
-  InvitationStatusColorMap,
-  InvitationStatusType,
-  PermissionRoleInfo,
-  PermissionRoleType,
-} from './types';
+import { PermissionRoleInfo, PermissionRoleType } from './types';
 import Checkbox from '@/ui/checkbox';
 import Chip from '@/ui/chip';
 import AuthDropdown from './modals/auth-dropdown';

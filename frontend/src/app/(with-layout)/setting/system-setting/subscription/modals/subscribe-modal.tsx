@@ -32,7 +32,7 @@ const SubscribeModal = ({ onClose, planTitle }: SubscribeModalProps) => {
       const amount = planTitle === 'Partners' ? 110000 : 5900; // 가격 설정 필요
 
       await tossPayments.requestPayment('카드', {
-        amount: amount,
+        amount,
         orderId: `sub_${Date.now()}`, // 실제로는 서버에서 생성해야 함
         orderName: `${planTitle} 플랜 구독`,
         customerName: userInfo.username || '사용자',

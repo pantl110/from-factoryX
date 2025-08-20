@@ -78,8 +78,8 @@ const ButtonSection = ({
               bgColor="bg-primary-8"
               onClick={async () => {
                 try {
-                  const success = await onSaveDraft?.();
-                  if (success) {
+                  const isSuccess = await onSaveDraft?.();
+                  if (isSuccess) {
                     router.push('/project/process');
                   }
                 } catch {

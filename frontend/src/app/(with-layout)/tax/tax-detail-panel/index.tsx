@@ -77,7 +77,7 @@ const TaxDetailPanel = ({ itemId, onClose, isDraft }: TaxDetailPanelProps) => {
           ))
         }
       >
-        <TaxDocumentView item={item} />
+        <TaxDocumentView taxId={itemId} />
       </Panel>
 
       {isToastOpen && (

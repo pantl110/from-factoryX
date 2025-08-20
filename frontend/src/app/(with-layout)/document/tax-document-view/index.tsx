@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import useGetTaxInvoiceDetail from '@/hooks/tax/use-get-tax-invoice-detail';
 import Spinner from '@/ui/spinner';
-import NoHistoryBox from '@/ui/no-history-box';
 import TaxBuyerProviderInfo from './tax-buyer-provider-info';
 import OrderItemInfo from './order-item-info';
 import PurchaseItemInfo from './purchase-item-info';
-import MiniBtn from '@/ui/mini-btn';
 
 interface TaxDocumentViewProps {
   taxId: number | null;

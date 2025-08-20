@@ -556,8 +556,8 @@ const QuotationPageContent = () => {
           projectStatus={projectStatus}
           onProjectStatusChange={handleProjectStatusChange}
           onSaveDraft={async () => {
-            const result = await handleSaveDraft();
-            return result || false;
+            const isSuccess = await handleSaveDraft();
+            return isSuccess || false;
           }}
         />
         <TabArea

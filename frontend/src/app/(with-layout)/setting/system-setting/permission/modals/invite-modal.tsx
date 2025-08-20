@@ -34,7 +34,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
   const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 토스트 훅 사용
-  const { isToastOpen, isVisible, showToast, hideToast } = useToast();
+  const { isToastOpen, isVisible, showToast } = useToast();
 
   const {
     control,
