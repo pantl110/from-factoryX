@@ -6,7 +6,7 @@ async def get_tax_service_by_id(tax_service_id: int):
     try:
         tax_service = (
             await NationalTaxService.objects.select_related("client", "factory", "user")
-            .prefetch_related("product")
+            .prefetch_related("product", "projects")
             .aget(id=tax_service_id)
         )
         return tax_service
