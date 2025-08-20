@@ -9,7 +9,11 @@ from barobill.schemas.inbound import (
     BarobillCorpCertIn,
 )
 import re
-from barobill.utils import add_corp_to_barobill, add_user_to_barobill
+from barobill.utils import (
+    add_corp_to_barobill,
+    add_user_to_barobill,
+    check_barobill_cert,
+)
 from factory.utils import is_factory_member
 from factory.models import FactoryMember
 
@@ -146,3 +150,18 @@ async def get_corp_cert_url(request, payload: BarobillCorpCertIn):
         "url": result,
         "message": "바로빌 기업 인증서 등록 URL이 성공적으로 조회되었습니다.",
     }
+
+
+@router.get(
+    "/check/cert/{factory_id}",
+    summary="[C] 바로빌 기업 인증서 등록 여부 확인",
+    description="바로빌 기업 인증서 등록 여부를 확인하는 API입니다.",
+    auth=jwt_auth,
+)
+async def get_check_barobill_cert(request, factory_id: int):
+    user = request.auth
+    factory = await get_factory_by_id(factory_id, user)
+    factory_member = await is_factory_member(factory.id, user)
+
+    result = await check_barobill_cert(factory.business_registration_number)
+    return {"message": "바로빌 기업 인증서 등록 여부 확인", "is_valid": result}

@@ -41,6 +41,7 @@ from datetime import datetime
 from typing import Optional, List
 from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
 from stock.schemas.outbound import ProductRowOut
+from websocket.utils import send_notification_to_factory
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
@@ -668,11 +669,12 @@ async def delete_tax_invoice(request, tax_id: int):
 async def publish_tax_invoice(request, tax_id: int):
     user = request.auth
     tax_service = await get_tax_service_by_id(tax_id)
-    member = await is_factory_member(tax_service.factory.id, user)
+    factory = tax_service.factory
+    member = await is_factory_member(factory.id, user)
     # 멤버 권한 검증 추가해야함
     # 세금계산서가 발행 상태가 아니면 오류
-    # if tax_service.publish_status != "temporary":
-    #     raise HttpError(400, "세금계산서를 발행할 수 있는 상태가 아닙니다.")
+    if tax_service.publish_status != "temporary":
+        raise HttpError(400, "세금계산서를 발행할 수 있는 상태가 아닙니다.")
 
     # 바로빌 API
     issue_barobill_tax_invoice(
@@ -686,6 +688,24 @@ async def publish_tax_invoice(request, tax_id: int):
     tax_service.barobill_state = "발급완료"  # 3014
     tax_service.nts_send_state = "전송전"  # 1
     await tax_service.asave()
+
+    # 웹소켓 알림
+    if tax_service.tax_invoice_type == "sales":
+        result = await send_notification_to_factory(
+            factory_id=factory.id,
+            notification_type="information",
+            notification_case="sales_tax_invoice_published",
+            content=f"{tax_service.project.name} 매출 세금계산서 발행 완료",
+            additional_data={"factory_id": factory.id},
+        )
+    elif tax_service.tax_invoice_type == "purchase":
+        result = await send_notification_to_factory(
+            factory_id=factory.id,
+            notification_type="information",
+            notification_case="purchase_tax_invoice_published",
+            content=f"{tax_service.project.name} 매입 세금계산서 발행 완료",
+            additional_data={"factory_id": factory.id},
+        )
 
     return {"message": "세금계산서가 발행되었습니다."}
 

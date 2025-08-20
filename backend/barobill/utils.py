@@ -2,13 +2,14 @@ import string
 import random
 from django.conf import settings
 from ninja.errors import HttpError
+from barobill.barobill_error_code import barobill_error_codes
 
 
 async def add_corp_to_barobill(
     factory, barobill_id=None, barobill_password=None, grade="대표"
 ):
     if not barobill_id:
-        barobill_id = "factory_" + "".join(
+        barobill_id = f"factory-{factory.id}-" + "".join(
             random.choices(string.ascii_letters + string.digits, k=10)
         )
     if not barobill_password:
@@ -52,7 +53,10 @@ async def add_corp_to_barobill(
     )
 
     if result < 0:
-        raise HttpError(400, f"바로빌 기업 회원가입 실패: {result}")
+        raise HttpError(
+            400,
+            f"바로빌 기업 회원가입 실패: {barobill_error_codes.get(result, 'Unknown error')}",
+        )
 
     return barobill_id, barobill_password
 
@@ -61,7 +65,7 @@ async def add_user_to_barobill(
     factory, barobill_id=None, barobill_password=None, grade="담당자"
 ):
     if not barobill_id:
-        barobill_id = "factory_" + "".join(
+        barobill_id = f"factory-{factory.id}-" + "".join(
             random.choices(string.ascii_letters + string.digits, k=10)
         )
     if not barobill_password:
@@ -91,6 +95,25 @@ async def add_user_to_barobill(
     )
 
     if result < 0:
-        raise HttpError(400, f"바로빌 기업 회원가입 실패: {result}")
+        raise HttpError(
+            400,
+            f"바로빌 기업 회원가입 실패: {barobill_error_codes.get(result, 'Unknown error')}",
+        )
 
     return barobill_id, barobill_password
+
+
+async def check_barobill_cert(factory_business_registration_number):
+    certKey = settings.BAROBILL_CERT_KEY
+    corpNum = factory_business_registration_number
+    result = settings.BAROBILL_CLIENT.service.CheckCERTIsValid(
+        CERTKEY=certKey,
+        CorpNum=corpNum,
+    )
+    if result < 0:
+        raise HttpError(
+            400,
+            f"바로빌 인증서 유효성 검사 실패: {barobill_error_codes.get(result, 'Unknown error')}",
+        )
+
+    return result
