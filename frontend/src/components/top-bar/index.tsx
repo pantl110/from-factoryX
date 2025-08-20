@@ -9,6 +9,7 @@ import { NotificationResponseModel } from '@/types/data-model';
 import { useGetNotifications, useWebSocket } from '@/hooks';
 import { NotificationType, NotificationCaseType } from '@/types/status-type';
 import useAuthStore from '@/store/auth-store';
+import { usePathname } from 'next/navigation';
 
 interface TopBarProps {
   isSidebarVisible: boolean;
@@ -30,11 +31,15 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   const setMoveToStorageModalOpen = usePageStatusStore(
     (state) => state.setMoveToStorageModalOpen
   );
+  const setProductionTab = usePageStatusStore(
+    (state) => state.setProductionTab
+  );
+  const setPageStatus = usePageStatusStore((state) => state.setPageStatus);
   const { getNotifications, isLoading: isLoadingNotifications } =
     useGetNotifications();
 
-  // 사용자 정보에서 memberId 가져오기
   const userInfo = useAuthStore((state) => state.userInfo);
+  const pathname = usePathname();
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<
@@ -83,6 +88,15 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
 
     loadNotifications();
   }, [getNotifications]);
+
+  // 페이지 이동 시 production 관련 상태 초기화
+  useEffect(() => {
+    // production 페이지가 아닐 때 production 관련 상태 초기화
+    if (!pathname.includes('/production/')) {
+      setProductionTab(null);
+      setPageStatus(null);
+    }
+  }, [pathname, setProductionTab, setPageStatus]);
 
   return (
     <>

@@ -304,12 +304,12 @@ const RequestInfo = ({
               </tbody>
             </table>
           </div>
-          <div className="mb-30 w-full flex justify-between items-center">
+          <div className="mb-22 w-full flex justify-between items-center">
             <PriceInfo supplyAmount={supplyAmount} />
           </div>
         </>
       ) : (
-        <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-[#E4E4E7]">
+        <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-lg mb-22">
           <h4 className="Heading-4 text-dg">요청 정보가 아직 없어요.</h4>
           <p className="R_Body-1 text-gr">
             품목을 추가해서 단가를 측정해 보세요.

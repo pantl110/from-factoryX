@@ -40,7 +40,7 @@ const TableItem = ({
   const getDisplayText = (status: string): string => {
     const displayMap: Record<string, string> = {
       // 영어 상태
-      quotation: '견적 협의',
+      quotation: '견적 요청',
       confirmed: '주문 확정',
       pending: '생산 대기',
       production: '생산 중',
@@ -48,16 +48,6 @@ const TableItem = ({
       delivery: '납품',
       completed: '완료',
       suspended: '중단',
-      // 한글 상태
-      '견적 협의중': '견적 협의',
-      '주문 확정': '주문 확정',
-      '생산 대기': '생산 대기',
-      '생산 중': '생산 중',
-      '생산 완료': '생산 완료',
-      납품: '납품',
-      '프로젝트 완료': '완료',
-      완료: '완료',
-      중단: '중단',
     };
 
     return displayMap[status] || '견적 요청';

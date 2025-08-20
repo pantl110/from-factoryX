@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import useGetTaxInvoiceDetail from '@/hooks/tax/use-get-tax-invoice-detail';
 import Spinner from '@/ui/spinner';
+import NoHistoryBox from '@/ui/no-history-box';
 import TaxBuyerProviderInfo from './tax-buyer-provider-info';
 import OrderItemInfo from './order-item-info';
 import PurchaseItemInfo from './purchase-item-info';
-import NoHistoryBox from '@/ui/no-history-box';
+import MiniBtn from '@/ui/mini-btn';
 
 interface TaxDocumentViewProps {
   taxId: number | null;
@@ -30,20 +31,11 @@ const TaxDocumentView = ({ taxId }: TaxDocumentViewProps) => {
     fetchTaxInvoice();
   }, [taxId, getTaxInvoiceDetail]);
 
-  if (isLoading || error) {
+  if (isLoading || error || !item) {
     return (
       <div className="flex items-center justify-center h-100">
         <Spinner />
       </div>
-    );
-  }
-
-  if (!item) {
-    return (
-      <NoHistoryBox
-        title="연결된 세금계산서가 없습니다."
-        text="세금계산서를 연결해 주세요"
-      />
     );
   }
 

@@ -80,10 +80,14 @@ const TableItem = ({
       <p
         className="flex-2 px-3 text-dg truncate"
         title={
-          (item.transaction_amount + item.tax_amount)?.toLocaleString() || '0'
+          (
+            (item.transaction_amount || 0) + (item.tax_amount || 0)
+          )?.toLocaleString() || '-'
         }
       >
-        {(item.transaction_amount + item.tax_amount)?.toLocaleString() || '0'}
+        {(
+          (item.transaction_amount || 0) + (item.tax_amount || 0)
+        )?.toLocaleString() || '-'}
       </p>
     </div>
   );

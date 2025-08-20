@@ -21,6 +21,7 @@ import {
   ProjectStatusResponseModel,
   QuotationProductDetailResponseModel,
 } from '@/types/data-model';
+import NoHistoryBox from '@/ui/no-history-box';
 
 const getTabsByStatus = (
   status: ProjectStatusType,
@@ -227,7 +228,16 @@ const ProductionPageContent = () => {
 
         {tabs[selectedTab] === '세금계산서' && (
           <div className="px-10 pt-5 pb-10">
-            <TaxDocumentView taxId={projectStatus?.tax_invoice || null} />
+            {projectStatus?.tax_invoice ? (
+              <TaxDocumentView taxId={projectStatus?.tax_invoice} />
+            ) : (
+              <NoHistoryBox
+                title="연결된 세금계산서가 없습니다."
+                text="세금계산서를 연결해 주세요"
+                height="h-[calc(100vh-322.43px)]"
+                button="세금계산서 연결"
+              />
+            )}
           </div>
         )}
         {tabs[selectedTab] === '거래명세서' && quotationData && (

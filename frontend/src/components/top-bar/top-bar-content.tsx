@@ -7,8 +7,8 @@ import ProfileImage from '@/ui/profile-image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
-import ProfileModal from './modals/profile-modal';
 import CreatTaxPanel from '@/app/(with-layout)/tax/list/create-tax-panel';
+import ProfileModal from './modals/profile-modal';
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
@@ -57,6 +57,17 @@ const TopBarContent = ({
   if (pageStatus === 'completed') {
     return (
       <div className="flex gap-2">
+        <MiniBtn
+          text="세금계산서 생성"
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+          onClick={() => setIsTaxPanelOpen(true)}
+        />
+        {isTaxPanelOpen && (
+          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+        )}
+
         <MiniBtn
           text="진행 상태로 전환"
           textColor="text-dg"

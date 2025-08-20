@@ -46,21 +46,21 @@ const TableItem = ({
       </p>
       <p
         className="px-3 w-[200px] truncate"
-        title={item.transaction_amount.toLocaleString()}
+        title={item.transaction_amount?.toLocaleString() || '-'}
       >
-        {item.transaction_amount.toLocaleString()}
+        {item.transaction_amount?.toLocaleString() || '-'}
       </p>
       <p
         className="px-3 w-[200px] truncate"
-        title={item.tax_amount.toLocaleString()}
+        title={item.tax_amount?.toLocaleString() || '-'}
       >
-        {item.tax_amount.toLocaleString()}
+        {item.tax_amount?.toLocaleString() || '-'}
       </p>
       <p
         className="px-3 w-[200px] truncate"
-        title={item.total_amount.toLocaleString()}
+        title={item.total_amount?.toLocaleString() || '-'}
       >
-        {item.total_amount.toLocaleString()}
+        {item.total_amount?.toLocaleString() || '-'}
       </p>
       <p className="px-3 w-[200px] truncate" title={item.transaction_date}>
         {item.transaction_date}
