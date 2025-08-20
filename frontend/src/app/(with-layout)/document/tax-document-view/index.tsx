@@ -1,40 +1,74 @@
+import { useState, useEffect } from 'react';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
-import { TaxDocumentType } from '@/types/status-type';
+import useGetTaxInvoiceDetail from '@/hooks/tax/use-get-tax-invoice-detail';
+import Spinner from '@/ui/spinner';
 import TaxBuyerProviderInfo from './tax-buyer-provider-info';
 import OrderItemInfo from './order-item-info';
 import PurchaseItemInfo from './purchase-item-info';
+import NoHistoryBox from '@/ui/no-history-box';
 
 interface TaxDocumentViewProps {
-  taxType?: TaxDocumentType;
-  item?: PublishedTaxInvoiceResponseModel;
+  taxId: number | null;
 }
 
-const TaxDocumentView = ({ taxType, item }: TaxDocumentViewProps) => {
+const TaxDocumentView = ({ taxId }: TaxDocumentViewProps) => {
+  const [item, setItem] = useState<PublishedTaxInvoiceResponseModel | null>(
+    null
+  );
+  const { getTaxInvoiceDetail, isLoading, error } = useGetTaxInvoiceDetail();
+
+  useEffect(() => {
+    const fetchTaxInvoice = async () => {
+      if (taxId) {
+        const result = await getTaxInvoiceDetail(1);
+        if (result.success && result.data) {
+          setItem(result.data);
+        }
+      }
+    };
+
+    fetchTaxInvoice();
+  }, [taxId, getTaxInvoiceDetail]);
+
+  if (isLoading || error) {
+    return (
+      <div className="flex items-center justify-center h-100">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!item) {
+    return (
+      <NoHistoryBox
+        title="연결된 세금계산서가 없습니다."
+        text="세금계산서를 연결해 주세요"
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      {item && (
-        <TaxBuyerProviderInfo
-          taxType={taxType || item.tax_invoice_type}
-          clientInfo={item.client_info}
-          updatedAt={item.updated_at}
-          transactionType={item.transaction_type}
-        />
-      )}
-      {item && (taxType === 'sales' || item.tax_invoice_type === 'sales') && (
+      <TaxBuyerProviderInfo
+        taxType={item.tax_invoice_type}
+        clientInfo={item.client_info}
+        updatedAt={item.updated_at}
+        transactionType={item.transaction_type}
+      />
+      {item.tax_invoice_type === 'sales' && (
         <OrderItemInfo
           lineItems={item.line_items}
           transactionAmount={item.transaction_amount}
           productsInfo={item.products_info}
         />
       )}
-      {item &&
-        (taxType === 'purchase' || item.tax_invoice_type === 'purchase') && (
-          <PurchaseItemInfo
-            lineItems={item.line_items}
-            transactionAmount={item.transaction_amount}
-            productsInfo={item.products_info}
-          />
-        )}
+      {item.tax_invoice_type === 'purchase' && (
+        <PurchaseItemInfo
+          lineItems={item.line_items}
+          transactionAmount={item.transaction_amount}
+          productsInfo={item.products_info}
+        />
+      )}
     </div>
   );
 };

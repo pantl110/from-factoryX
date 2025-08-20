@@ -494,6 +494,7 @@ export interface ProjectStatusResponseModel {
   latest_end_date?: string;
   due_date?: string;
   is_refunded: boolean;
+  tax_invoice: number | null;
 }
 
 //////////////////////

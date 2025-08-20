@@ -64,14 +64,18 @@ const ProductionDocumentView = ({
       {/* 특이사항 */}
       <div className="flex flex-col gap-3">
         <h3 className="Heading-3 h-10 items-center flex">특이사항</h3>
-        <CommentItem
-          title="A 품목"
-          comment="입고 시 포장 파손, 날개 검수 필요"
-        />
-        <CommentItem
-          title="B 품목"
-          comment="입고 시 포장 파손, 날개 검수 필요"
-        />
+        {todayProductionPlans
+          .filter(
+            (item, index, self) =>
+              index === self.findIndex((t) => t.product_id === item.product_id)
+          )
+          .map((item) => (
+            <CommentItem
+              key={item.product_id}
+              title={item.product_name}
+              comment={item.product_note || '-'}
+            />
+          ))}
       </div>
 
       {/* 메모 */}

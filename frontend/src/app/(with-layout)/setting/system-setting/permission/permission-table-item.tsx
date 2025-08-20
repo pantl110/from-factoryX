@@ -36,7 +36,7 @@ const PermissionTableItem = ({
   onUpdate,
 }: PermissionTableItemProps) => {
   const { status, name, email, role, invited_at: invitedAt, factory } = item;
-  const textColor = InvitationStatusColorMap[status];
+  const textColor = status === 'active' ? 'text-primary' : 'text-dg';
   const roleText =
     role === 'admin' || role === '관리자' || role === '시스템 관리자'
       ? '시스템 관리자'
@@ -53,17 +53,6 @@ const PermissionTableItem = ({
     openDropdown: openAuthDropdown,
     closeDropdown: closeAuthDropdown,
   } = usePortalDropdown();
-
-  const getInvitationStatus = (
-    invitationStatus: InvitationStatusType
-  ): string => {
-    switch (invitationStatus) {
-      case 'invited':
-        return '대기 중';
-      case 'active':
-        return '완료';
-    }
-  };
 
   const handleAuthChange = async (newAuth: string) => {
     // 이전과 같으면 return
@@ -108,7 +97,7 @@ const PermissionTableItem = ({
           <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-lg group">
             <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
             <p className={`px-3 flex-1 ${textColor}`}>
-              {getInvitationStatus(status)}
+              {status === 'active' ? '완료' : '-'}
             </p>
             <p className="px-3 flex-1">{name || '-'}</p>
             <p className="px-3 flex-2">{email}</p>

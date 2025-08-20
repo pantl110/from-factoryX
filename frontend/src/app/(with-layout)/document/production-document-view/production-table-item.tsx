@@ -16,7 +16,7 @@ const ProductionTableItem = ({
   productionTime,
 }: ProductionTableItemProps) => {
   return (
-    <div className="w-full py-[19px] flex items-start Me_Body-1 text-dg border-b border-lg print-row-48">
+    <div className="w-full py-[10px] flex items-start Me_Body-1 text-dg border-b border-lg print-row-48">
       <p className="flex-2 px-3 print-break">{productName}</p>
       <p className="flex-1 px-3">{spec}</p>
       <p className="w-[80px] px-3">{unit}</p>

@@ -6,8 +6,8 @@ import ProductionDocumentView from '../../document/production-document-view';
 import OverlayView from '@/ui/ovelay-view';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import { useReactToPrint } from 'react-to-print';
-import ProductionTable from './production-table';
 import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
+import ProductionTable from './production-table';
 
 interface TodayProductionScheduleProps {
   todayProductionPlans: TodayProductionPlanModel[];

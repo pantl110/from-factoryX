@@ -34,7 +34,7 @@ const ProductionTable = ({
 
   return (
     <>
-      <div className="mt-3 overflow-x-auto h-[328px] scrollbar-hide">
+      <div className="mt-3 overflow-x-auto">
         <ProductionTableHeader />
         {currentItems.map((item, index) => (
           <ProductionTableItem
