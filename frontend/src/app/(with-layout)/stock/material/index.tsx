@@ -12,6 +12,7 @@ import { useMaterialReloadStore } from '@/store/material-reload-store';
 import Pagination from '@/components/pagination';
 import MaterialDetailPanel from './material-detail';
 import { MaterialResponseModel } from '@/types/data-model';
+import NoHistoryBox from '@/ui/no-history-box';
 
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
@@ -139,8 +140,13 @@ const Material = ({
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
+      ) : materialList.length === 0 ? (
+        <NoHistoryBox
+          title="자재가 아직 없어요."
+          text="자재가 생성되면 이곳에 표시돼요. "
+        />
       ) : (
-        <div>
+        <>
           <TableHeader
             isAllChecked={isAllChecked}
             onToggleAll={toggleAll}
@@ -171,7 +177,7 @@ const Material = ({
               onPageChange={setPage}
             />
           )}
-        </div>
+        </>
       )}
 
       {isDeleteModalOpen && (

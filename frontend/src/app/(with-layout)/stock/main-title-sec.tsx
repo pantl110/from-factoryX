@@ -39,7 +39,7 @@ const MainTitleSec = ({
         <h1 className="Heading-1 text-dg">재고 관리</h1>
         <div className="flex gap-2.5">
           <MiniBtn
-            text="엑셀 다운로드"
+            text="엑셀 양식 다운로드"
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"

@@ -11,6 +11,7 @@ import Pagination from '@/components/pagination';
 import { ProductResponseModel } from '@/types/data-model';
 import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks';
 import Spinner from '@/ui/spinner';
+import NoHistoryBox from '@/ui/no-history-box';
 
 interface ProductProps {
   setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
@@ -78,7 +79,7 @@ const Product = ({
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(productList.map((item) => item.id));
+  } = useCheckAll(productList.map((item: ProductResponseModel) => item.id));
 
   // 리스트 아이템 클릭 시
   const handleItemClick = (product: ProductResponseModel) => {
@@ -94,8 +95,8 @@ const Product = ({
   // 삭제 처리 함수
   const handleDelete = async () => {
     const checkedIds = productList
-      .filter((item) => isChecked(item.id))
-      .map((item) => item.id);
+      .filter((item: ProductResponseModel) => isChecked(item.id))
+      .map((item: ProductResponseModel) => item.id);
     if (checkedIds.length === 0) return;
     for (const id of checkedIds) {
       await deleteProduct(id);
@@ -138,12 +139,17 @@ const Product = ({
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
+      ) : productList.length === 0 ? (
+        <NoHistoryBox
+          title="품목이 아직 없어요."
+          text="품목이 생성되면 이곳에 표시돼요. "
+        />
       ) : (
         <>
           <div>
             <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
             {productList.length > 0 &&
-              productList.map((product) => (
+              productList.map((product: ProductResponseModel) => (
                 <TableItem
                   key={product.id}
                   product={product}
