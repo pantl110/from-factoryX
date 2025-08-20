@@ -243,3 +243,20 @@ class FactoryMember(BaseModel):
     invitation_message = models.TextField(
         null=True, blank=True, help_text="초대 메시지"
     )
+    # 바로빌 회원정보
+    is_barobill_user = models.BooleanField(
+        default=False,
+        help_text="바로빌 사용자 여부",
+    )
+    barobill_id = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="바로빌 ID",
+    )
+    barobill_password = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="바로빌 비밀번호",
+    )
