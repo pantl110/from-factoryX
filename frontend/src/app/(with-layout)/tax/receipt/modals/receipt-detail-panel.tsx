@@ -48,11 +48,7 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
           </div>
         </div>
 
-        <PurchaseItemInfo
-          lineItems={[]}
-          productsInfo={[]}
-          transactionAmount={0}
-        />
+        <PurchaseItemInfo lineItems={[]} transactionAmount={0} />
 
         {/* <div className="flex flex-col gap-3">
           <h3 className="Heading-3 h-10 items-center flex">구매 자재 정보</h3>
