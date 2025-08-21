@@ -99,7 +99,7 @@ const CreatTaxPanel = ({
   const factoryId = useFactoryStore((state) => state.factoryId);
 
   // 사용자 정보 가져오기 // 바로빌 연동 확인용
-  const userInfo = useAuthStore((state) => state.userInfo);
+  // const userInfo = useAuthStore((state) => state.userInfo);
 
   // 세금계산서 생성 훅
   const { createTaxInvoice } = useCreateTaxInvoice();
@@ -197,12 +197,12 @@ const CreatTaxPanel = ({
     }
   }, [showErrors, isSellerInfoValid, isClientInfoValid]);
 
-  // 컴포넌트 마운트 시 바로빌 ID 확인
-  useEffect(() => {
-    if (userInfo && !userInfo.barobill_user_id) {
-      setIsBarobilRegisterModalOpen(true);
-    }
-  }, [userInfo]);
+  // 컴포넌트 마운트 시 바로빌 ID 확인 -> 이 부분 factory member 정보에서 확인해야 함
+  // useEffect(() => {
+  //   if (userInfo && !userInfo.barobill_user_id) {
+  //     setIsBarobilRegisterModalOpen(true);
+  //   }
+  // }, [userInfo]);
 
   // 공장 정보 업데이트 함수
   const updateFactoryInfo = (formData: SellerInfoFormDataModel) => {

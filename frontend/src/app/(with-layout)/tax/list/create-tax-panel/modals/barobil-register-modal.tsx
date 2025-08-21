@@ -4,7 +4,7 @@ import Modal from '@/ui/modal/modal';
 import { useForm } from 'react-hook-form';
 import { validateEmail } from '@/utils/validation';
 import { BarobillCorpRegisterModel } from '@/types/data-model';
-import { useBarobill } from '@/hooks/use-barobill';
+import { useBarobill } from '@/hooks/tax/use-barobill';
 import useFactoryStore from '@/store/factory-store';
 
 interface BarobilRegisterModalProps {
