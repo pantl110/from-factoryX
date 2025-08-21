@@ -1,6 +1,6 @@
 from ninja import Schema, ModelSchema
 from typing import Optional, List
-from factory.models import Factory, FactoryClient
+from factory.models import Factory, FactoryClient, FactoryMember
 from project.schemas.outbound import ProjectPlanDetailByEquipmentOut
 
 
@@ -73,6 +73,12 @@ class FactoryMemberOut(Schema):
     role: str
     status: str
     invited_at: Optional[str]
+
+
+class FactoryMemberDetailOut(ModelSchema):
+    class Meta:
+        model = FactoryMember
+        fields = "__all__"
 
 
 # ------------------------------------------------------------

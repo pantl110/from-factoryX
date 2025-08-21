@@ -58,9 +58,8 @@ class TestFactoryMember(TestCase):
         response = await self.client.post(
             f"/invite?factory_id={self.factory.id}", headers=headers, json=payload
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIn("이미 팩토리 멤버입니다.", data.get("detail", ""))
 
     async def test_invite_factory_member_already_registered(self):
         """
@@ -100,9 +99,9 @@ class TestFactoryMember(TestCase):
         response = await self.client.post(
             f"/invite?factory_id={self.factory.id}", headers=headers, json=payload
         )
-        self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertIn("이미 팩토리 멤버입니다.", data.get("detail", ""))
+
+        self.assertEqual(response.status_code, 200)
 
     async def test_invite_factory_member_duplicate_invitation(self):
         """
@@ -119,7 +118,7 @@ class TestFactoryMember(TestCase):
         response1 = await self.client.post(
             f"/invite?factory_id={self.factory.id}", headers=headers, json=payload1
         )
-        self.assertEqual(response1.status_code, 400)
+        self.assertEqual(response1.status_code, 200)
 
         # 두 번째 초대 (같은 이메일, 다른 역할) - 400 에러가 반환되어야 함
         payload2 = {
@@ -169,6 +168,21 @@ class TestFactoryMember(TestCase):
         )
         self.assertEqual(invited["id"], 0)  # 초대 대기자는 0부터 시작
         self.assertEqual(invited["name"], "")
+
+    async def test_get_factory_member_detail(self):
+        """
+        멤버 상세 조회 테스트
+        """
+        headers = await self.authenticate()
+        response = await self.client.get(
+            f"/{self.member.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        # print("🐍 File: tests/test_api_member.py | Line: 183 | setUp ~ data", data)
+        self.assertEqual(data["id"], self.member.id)
+        self.assertEqual(data["factory"], self.factory.id)
+        self.assertEqual(data["user"], self.user.id)
 
     async def test_update_factory_member(self):
         """

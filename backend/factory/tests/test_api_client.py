@@ -440,18 +440,18 @@ class TestFactoryClient(TestCase):
                 email=f"client{i+2}@example.com",
             )
 
-        # 첫 번째 페이지 테스트 (기본 page_size=10)
+        # 첫 번째 페이지 테스트 (page_size=10)
         response = await self.client.get(
-            f"?factory_id={self.factory.id}&page=1", headers=headers
+            f"?factory_id={self.factory.id}&page=1&page_size=10", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["data"]), 10)  # 기본 page_size=10
+        self.assertEqual(len(data["data"]), 10)  # page_size=10
         self.assertEqual(data["curPage"], 1)
 
         # 두 번째 페이지 테스트
         response = await self.client.get(
-            f"?factory_id={self.factory.id}&page=2", headers=headers
+            f"?factory_id={self.factory.id}&page=2&page_size=10", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -460,7 +460,7 @@ class TestFactoryClient(TestCase):
 
         # 세 번째 페이지 테스트 (데이터가 없어야 함)
         response = await self.client.get(
-            f"?factory_id={self.factory.id}&page=3", headers=headers
+            f"?factory_id={self.factory.id}&page=3&page_size=10", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()

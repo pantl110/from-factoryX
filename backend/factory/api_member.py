@@ -7,10 +7,11 @@ from api.security import jwt_auth
 from typing import List
 from ninja.pagination import paginate
 from factory.schemas.inbound import InviteMemberIn, FactoryMemberUpdateIn
-from factory.schemas.outbound import FactoryMemberOut
+from factory.schemas.outbound import FactoryMemberOut, FactoryMemberDetailOut
 from datetime import datetime
 from factory.utils import is_factory_member
 from websocket.utils import send_notification
+from typing import Optional
 
 
 router = Router(tags=["FactoryMember"], auth=jwt_auth)
@@ -23,13 +24,7 @@ async def invite_factory_member(request, payload: InviteMemberIn):
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
-    user = request.auth
-    already_member = await FactoryMember.objects.filter(user=user).aexists()
-
-    if already_member:
-        raise HttpError(400, "이미 팩토리 멤버입니다.")
-
-    return await sync_to_async(_invite_member)(factory_id, payload, user)
+    return await sync_to_async(_invite_member)(factory_id, payload, request.auth)
 
 
 def _invite_member(factory_id: str, payload: InviteMemberIn, auth_user):
@@ -38,33 +33,37 @@ def _invite_member(factory_id: str, payload: InviteMemberIn, auth_user):
     email = payload.email
     role = payload.role
 
-    # 1. 이미 FactoryMember에 존재하는지 확인
-    if _is_already_factory_member(factory, email):
-        raise HttpError(400, "이미 해당 유저는 팩토리 멤버입니다.")
+    # 1. 이메일로 사용자 조회
+    invite_user = _get_user_from_email(email)
 
-    # 2. 기존 User인지 확인
-    existing_user = _get_existing_user(email)
-    if existing_user:
-        return _add_existing_user_to_factory(factory, existing_user, role, auth_user)
+    # 2. 이미 FactoryMember에 존재하는지 확인
+    member = _is_already_factory_member(factory, invite_user)
+    if member:
+        raise HttpError(400, "이미 팩토리 멤버입니다.")
 
-    # 3. 새 사용자 초대
-    return _invite_new_user(factory, email, role, auth_user)
-
-
-def _is_already_factory_member(factory, email):
-    """이메일로 이미 팩토리 멤버인지 확인"""
-    try:
-        user = User.objects.get(email=email)
-        return FactoryMember.objects.filter(factory=factory, user=user).exists()
-    except User.DoesNotExist:
-        return False
+    # 3. 기존 User인지 확인
+    if invite_user and member is None:
+        return _add_existing_user_to_factory(
+            factory, invite_user, role, invited_by=auth_user
+        )
+    else:
+        # 3. 새 사용자 초대
+        return _invite_new_user(factory, email, role, invited_by=auth_user)
 
 
-def _get_existing_user(email):
-    """이메일로 기존 사용자 조회"""
+def _get_user_from_email(email: str) -> Optional[User]:
+    """이메일로 사용자 조회"""
     try:
         return User.objects.get(email=email)
     except User.DoesNotExist:
+        return None
+
+
+def _is_already_factory_member(factory, user):
+    """이미 팩토리 멤버인지 확인"""
+    try:
+        return FactoryMember.objects.get(factory=factory, user=user)
+    except FactoryMember.DoesNotExist:
         return None
 
 
@@ -123,16 +122,15 @@ async def list_factory_members(request):
 
     user = request.auth
     await is_factory_member(int(factory_id), user)
-
-    factory = await sync_to_async(Factory.objects.get)(id=int(factory_id))
-    # 가입된 멤버
-    members = await sync_to_async(
-        lambda: list(
-            FactoryMember.objects.filter(factory_id=int(factory_id)).select_related(
-                "user"
-            )
+    try:
+        factory = await Factory.objects.prefetch_related("members__user").aget(
+            id=int(factory_id)
         )
-    )()
+    except Factory.DoesNotExist:
+        raise HttpError(404, "팩토리를 찾을 수 없습니다.")
+
+    # 가입된 멤버
+    members = factory.members.all()
     member_outs = []
     for idx, member in enumerate(members):
         member_out = {
@@ -166,6 +164,22 @@ async def list_factory_members(request):
             }
         )
     return member_outs + inviting_outs
+
+
+@router.get(
+    "/{member_id}",
+    summary="[C] 멤버 상세 조회",
+    description="멤버 상세 조회",
+    response=Optional[FactoryMemberDetailOut],
+)
+async def get_factory_member(request, member_id: int):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    member = await is_factory_member(int(factory_id), user)
+    return member
 
 
 # Factory Member Tab
