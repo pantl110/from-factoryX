@@ -123,7 +123,7 @@ const Permission = () => {
   return (
     <>
       <div className="flex flex-col gap-6 pb-10 px-10">
-        <div className="flex flex-col gap-7 pb-8 border-b border-[#eeeeee]">
+        <div className="flex flex-col gap-7 pb-8 border-b border-lg">
           {permissionRoleTypes.map((type) => (
             <PermissionInfoItem key={type} type={type} />
           ))}

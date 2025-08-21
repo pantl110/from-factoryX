@@ -1,7 +1,7 @@
 import MiniBtn from './mini-btn';
 
 interface NoHistoryBoxProps {
-  title: string;
+  title?: string;
   text: string;
   height?: string;
   button?: string;
@@ -14,7 +14,7 @@ const NoHistoryBox = ({ title, text, height, button }: NoHistoryBoxProps) => {
         height ? `${height}` : 'h-50'
       }`}
     >
-      <h4 className="Heading-4 text-dg">{title}</h4>
+      {title && <h4 className="Heading-4 text-dg">{title}</h4>}
       <p className="Re_Body-1 text-gr">{text}</p>
       {button && (
         <MiniBtn

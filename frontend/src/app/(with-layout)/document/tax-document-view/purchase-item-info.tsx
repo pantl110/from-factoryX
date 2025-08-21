@@ -1,15 +1,24 @@
 import PriceInfo from '@/ui/price-info';
 import PurchaseTableTiem from './purchase-table-tiem';
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import {
+  PublishedTaxInvoiceResponseModel,
+  TaxLineItemModel,
+} from '@/types/data-model';
 
 interface PurchaseItemInfoProps {
   lineItems: PublishedTaxInvoiceResponseModel['line_items'];
   transactionAmount: number;
+  canLink?: boolean;
+  setIsLinkModalOpen?: (isOpen: boolean) => void;
+  setSelectedLineItem?: (lineItem: TaxLineItemModel | null) => void;
 }
 
 const PurchaseItemInfo = ({
   lineItems,
   transactionAmount,
+  canLink,
+  setIsLinkModalOpen,
+  setSelectedLineItem,
 }: PurchaseItemInfoProps) => {
   return (
     <div className="flex flex-col gap-3">
@@ -21,12 +30,21 @@ const PurchaseItemInfo = ({
           <p className="px-3 flex-2">규격</p>
           <p className="px-3 flex-1">수량</p>
           <p className="px-3 flex-1">단가</p>
-          <p className="px-3 flex-1">공급가액</p>
-          <p className="px-3 flex-1">세액</p>
+          <p className={`px-3 ${canLink ? 'flex-[1.5]' : 'flex-1'}`}>
+            공급가액
+          </p>
+          <p className={`px-3 ${canLink ? 'flex-[1.5]' : 'flex-1'}`}>세액</p>
+          {canLink && <p className="px-3 flex-[1.5]">연결하기</p>}
         </div>
 
         {lineItems.map((lineItem, index) => (
-          <PurchaseTableTiem key={index} lineItem={lineItem} />
+          <PurchaseTableTiem
+            key={index}
+            lineItem={lineItem}
+            canLink={canLink}
+            setIsLinkModalOpen={setIsLinkModalOpen}
+            setSelectedLineItem={setSelectedLineItem}
+          />
         ))}
       </div>
 

@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import {
+  PublishedTaxInvoiceResponseModel,
+  TaxLineItemModel,
+} from '@/types/data-model';
 import useGetTaxInvoiceDetail from '@/hooks/tax/use-get-tax-invoice-detail';
 import Spinner from '@/ui/spinner';
 import TaxBuyerProviderInfo from './tax-buyer-provider-info';
@@ -7,27 +10,43 @@ import OrderItemInfo from './order-item-info';
 import PurchaseItemInfo from './purchase-item-info';
 
 interface TaxDocumentViewProps {
-  taxId: number | null;
+  taxId?: number | null;
+  item?: PublishedTaxInvoiceResponseModel | null;
+  canLink?: boolean;
+  setIsLinkModalOpen?: (isOpen: boolean) => void;
+  setSelectedLineItem?: (lineItem: TaxLineItemModel | null) => void;
 }
 
-const TaxDocumentView = ({ taxId }: TaxDocumentViewProps) => {
+const TaxDocumentView = ({
+  taxId,
+  item: propItem,
+  canLink,
+  setIsLinkModalOpen,
+  setSelectedLineItem,
+}: TaxDocumentViewProps) => {
   const [item, setItem] = useState<PublishedTaxInvoiceResponseModel | null>(
-    null
+    propItem || null
   );
   const { getTaxInvoiceDetail, isLoading, error } = useGetTaxInvoiceDetail();
 
   useEffect(() => {
+    // item이 있으면 그대로 사용, 없으면 taxId로 API 호출
+    if (propItem) {
+      setItem(propItem);
+      return;
+    } else if (!taxId) {
+      return;
+    }
+
     const fetchTaxInvoice = async () => {
-      if (taxId) {
-        const result = await getTaxInvoiceDetail(1);
-        if (result.success && result.data) {
-          setItem(result.data);
-        }
+      const result = await getTaxInvoiceDetail(taxId);
+      if (result.success && result.data) {
+        setItem(result.data);
       }
     };
 
     fetchTaxInvoice();
-  }, [taxId, getTaxInvoiceDetail]);
+  }, [taxId, propItem, getTaxInvoiceDetail]);
 
   if (isLoading || error || !item) {
     return (
@@ -55,6 +74,9 @@ const TaxDocumentView = ({ taxId }: TaxDocumentViewProps) => {
         <PurchaseItemInfo
           lineItems={item.line_items}
           transactionAmount={item.transaction_amount}
+          canLink={canLink}
+          setIsLinkModalOpen={setIsLinkModalOpen}
+          setSelectedLineItem={setSelectedLineItem}
         />
       )}
     </div>

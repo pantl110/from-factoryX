@@ -1,4 +1,7 @@
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import {
+  PublishedTaxInvoiceResponseModel,
+  TaxLineItemModel,
+} from '@/types/data-model';
 import Panel from '@/ui/panel';
 import TaxDocumentView from '@/app/(with-layout)/document/tax-document-view';
 import MiniBtn from '@/ui/mini-btn';
@@ -7,17 +10,28 @@ import { useState, useEffect } from 'react';
 import Spinner from '@/ui/spinner';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
+import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-modal';
 
 interface TaxDetailPanelProps {
   itemId: number;
   onClose: () => void;
   isDraft?: boolean;
+  canLink?: boolean;
 }
 
-const TaxDetailPanel = ({ itemId, onClose, isDraft }: TaxDetailPanelProps) => {
+const TaxDetailPanel = ({
+  itemId,
+  onClose,
+  isDraft,
+  canLink,
+}: TaxDetailPanelProps) => {
   const [item, setItem] = useState<PublishedTaxInvoiceResponseModel | null>(
     null
   );
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [selectedLineItem, setSelectedLineItem] =
+    useState<TaxLineItemModel | null>(null); // 선택한 item을 material history에 연결할 때 사용
+
   const { getTaxInvoiceDetail, isLoading } = useGetTaxInvoiceDetail();
   const { isToastOpen, isVisible, showToast } = useToast();
 
@@ -77,8 +91,22 @@ const TaxDetailPanel = ({ itemId, onClose, isDraft }: TaxDetailPanelProps) => {
           ))
         }
       >
-        <TaxDocumentView taxId={itemId} />
+        <TaxDocumentView
+          item={item}
+          canLink={canLink}
+          setIsLinkModalOpen={setIsLinkModalOpen}
+          setSelectedLineItem={setSelectedLineItem}
+        />
       </Panel>
+
+      {canLink && isLinkModalOpen && (
+        <LinkTaxModal
+          onClose={() => setIsLinkModalOpen(false)}
+          linkedItemId={itemId} // 세금계산서 아이디
+          type="tax"
+          selectedLineItem={selectedLineItem || undefined}
+        />
+      )}
 
       {isToastOpen && (
         <Toast

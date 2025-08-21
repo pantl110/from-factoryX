@@ -1,20 +1,17 @@
 import { UnlinkedTaxInvoiceResponseModel } from '@/types/data-model';
 import { TaxDocumentType, TaxDocumentTypeColorMap } from '@/types/status-type';
-import Checkbox from '@/ui/checkbox';
 import Chip from '@/ui/chip';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
 
 interface LinkModalTableItemProps {
   onItemClick: () => void;
-  isChecked: boolean;
-  onToggle: () => void;
+  isSelected: boolean;
   item: UnlinkedTaxInvoiceResponseModel;
 }
 
 const LinkModalTableItem = ({
   onItemClick,
-  isChecked,
-  onToggle,
+  isSelected,
   item,
 }: LinkModalTableItemProps) => {
   const taxTypeMap: Record<string, TaxDocumentType> = {
@@ -29,15 +26,18 @@ const LinkModalTableItem = ({
 
   return (
     <div
-      className="flex items-center border-b border-lg h-14 w-full text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer"
+      className={`flex items-center h-14 w-full text-bl Me_Body-1 transition-colors duration-200 cursor-pointer ${
+        isSelected
+          ? 'border border-primary bg-secondary'
+          : 'border-b border-lg hover:bg-bg'
+      }`}
       onClick={onItemClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onItemClick?.();
+        if (e.key === 'Enter' || e.key === ' ') onItemClick();
       }}
     >
-      <Checkbox isChecked={isChecked} onToggle={onToggle} />
       <div className="px-3 flex-1">
         <Chip
           text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}

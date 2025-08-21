@@ -224,6 +224,7 @@ const TableItem = ({
         <LinkTaxModal
           onClose={() => setIsLinkTaxModalOpen(false)}
           projectId={project.project_id}
+          type="project"
         />
       )}
     </>
