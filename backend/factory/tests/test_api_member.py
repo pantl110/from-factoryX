@@ -170,6 +170,21 @@ class TestFactoryMember(TestCase):
         self.assertEqual(invited["id"], 0)  # 초대 대기자는 0부터 시작
         self.assertEqual(invited["name"], "")
 
+    async def test_get_factory_member_detail(self):
+        """
+        멤버 상세 조회 테스트
+        """
+        headers = await self.authenticate()
+        response = await self.client.get(
+            f"/{self.member.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        # print("🐍 File: tests/test_api_member.py | Line: 183 | setUp ~ data", data)
+        self.assertEqual(data["id"], self.member.id)
+        self.assertEqual(data["factory"], self.factory.id)
+        self.assertEqual(data["user"], self.user.id)
+
     async def test_update_factory_member(self):
         """
         멤버 정보 수정 테스트

@@ -7,10 +7,11 @@ from api.security import jwt_auth
 from typing import List
 from ninja.pagination import paginate
 from factory.schemas.inbound import InviteMemberIn, FactoryMemberUpdateIn
-from factory.schemas.outbound import FactoryMemberOut
+from factory.schemas.outbound import FactoryMemberOut, FactoryMemberDetailOut
 from datetime import datetime
 from factory.utils import is_factory_member
 from websocket.utils import send_notification
+from typing import Optional
 
 
 router = Router(tags=["FactoryMember"], auth=jwt_auth)
@@ -166,6 +167,22 @@ async def list_factory_members(request):
             }
         )
     return member_outs + inviting_outs
+
+
+@router.get(
+    "/{member_id}",
+    summary="[C] 멤버 상세 조회",
+    description="멤버 상세 조회",
+    response=Optional[FactoryMemberDetailOut],
+)
+async def get_factory_member(request, member_id: int):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    member = await is_factory_member(int(factory_id), user)
+    return member
 
 
 # Factory Member Tab
