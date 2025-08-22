@@ -197,11 +197,12 @@ export interface ClientModel {
   address?: string;
   manager?: string;
   note?: string;
+  type?: ClientType; // 거래처 유형 (발주처/수주처)
 }
 
 export interface ClientResponseModel {
   id: number;
-  client_type?: ClientType;
+  type?: ClientType;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -236,6 +237,7 @@ export interface ClientUpdateModel {
   business_category?: string;
   address?: string;
   note?: string;
+  client_type?: ClientType;
 }
 
 //////////////////////

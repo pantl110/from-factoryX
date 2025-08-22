@@ -140,6 +140,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       address,
       business_type: businessType,
       business_category: businessCategory,
+      type: 'supplier', // 자재 추가 시 고객 타입을 supplier로 설정
     });
   };
 

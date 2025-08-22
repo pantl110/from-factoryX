@@ -223,7 +223,7 @@ const TableItem = ({
       {isLinkTaxModalOpen && (
         <LinkTaxModal
           onClose={() => setIsLinkTaxModalOpen(false)}
-          projectId={project.project_id}
+          linkedItemId={project.project_id}
           type="project"
         />
       )}

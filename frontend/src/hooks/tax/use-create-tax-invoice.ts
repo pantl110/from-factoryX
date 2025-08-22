@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import {
   CreateTaxInvoiceModel,
   PublishedTaxInvoiceResponseModel,
@@ -29,7 +29,7 @@ const useCreateTaxInvoice = () => {
       setCreatedTaxInvoice(null);
 
       try {
-        const { factoryId } = useFactoryStore.getState();
+        const { factoryId } = useMemberStore.getState();
 
         if (!factoryId) {
           const errorMessage = '공장 ID가 설정되지 않았습니다.';

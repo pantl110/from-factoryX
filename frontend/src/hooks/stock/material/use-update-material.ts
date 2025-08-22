@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MaterialModel, MaterialResponseModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 const useUpdateMaterial = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -8,7 +8,7 @@ const useUpdateMaterial = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [updatedMaterial, setUpdatedMaterial] =
     useState<MaterialResponseModel | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const updateMaterial = async (
     materialId: number,

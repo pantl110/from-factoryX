@@ -25,8 +25,7 @@ const ProductionLogTableItem = ({
     useMaterialStatus(plan.quotation_product.product.id);
 
   // 생산 완료 상태일 때만 수정 가능
-  const isEditable =
-    projectStatus === '생산 완료' || projectStatus === 'manufactured';
+  const isEditable = projectStatus === 'manufactured';
 
   // React Hook Form 설정
   const { control, watch } = useForm({

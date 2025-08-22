@@ -6,14 +6,7 @@ export interface StatusColorModel {
 }
 
 // 팩토리 멤버 type
-export type MemberRoleType =
-  | 'admin'
-  | 'manager'
-  | 'viewer'
-  | '시스템 관리자'
-  | '운영자'
-  | '조회자'
-  | '관리자'; // 시스템 관리자, 운영자, 조회자
+export type MemberRoleType = 'admin' | 'manager' | 'viewer';
 export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
 
 // 설비 상태 // 설정 페이지
@@ -45,17 +38,17 @@ export type ProjectStatusType =
   | 'manufactured'
   | 'delivery'
   | 'completed'
-  | 'suspended'
-  // 한글 상태 추가
-  | '견적 협의중'
-  | '주문 확정'
-  | '생산 대기'
-  | '생산 중'
-  | '생산 완료'
-  | '납품'
-  | '프로젝트 완료'
-  | '완료'
-  | '중단';
+  | 'suspended';
+// 한글 상태 추가
+// | '견적 협의중'
+// | '주문 확정'
+// | '생산 대기'
+// | '생산 중'
+// | '생산 완료'
+// | '납품'
+// | '프로젝트 완료'
+// | '완료'
+// | '중단';
 
 // | '견적 협의' // quotation
 // | '주문 확정' // confirmed
@@ -75,16 +68,6 @@ export const ProjectStatusMap: Record<ProjectStatusType, string> = {
   delivery: '납품',
   completed: '프로젝트 완료',
   suspended: '중단',
-  // Korean status mappings
-  '견적 협의중': '견적 협의중',
-  '주문 확정': '주문 확정',
-  '생산 대기': '생산 대기',
-  '생산 중': '생산 중',
-  '생산 완료': '생산 완료',
-  납품: '납품',
-  '프로젝트 완료': '프로젝트 완료',
-  완료: '완료',
-  중단: '중단',
 };
 
 export const ProjectStatusColorMap: Record<string, StatusColorModel> = {

@@ -1,5 +1,6 @@
 import useAuthStore from '@/store/auth-store';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 interface ProfileImageProps {
   size?: 'small' | 'large';
@@ -15,6 +16,11 @@ const ProfileImage = ({
   isDeleted = false,
 }: ProfileImageProps) => {
   const { userInfo } = useAuthStore();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // 이메일의 앞 2글자 추출
   const getInitials = (email: string | null | undefined) => {
@@ -37,6 +43,12 @@ const ProfileImage = ({
     return colors[colorIndex];
   };
   const color = text ? getColorClass(text) : getColorClass(userInfo?.email);
+
+  // 서버 사이드 렌더링 중이면 아무것도 렌더링하지 않음
+  // userInfo가 없으면 아무것도 렌더링하지 않음
+  if (!isClient || !userInfo) {
+    return null;
+  }
 
   // text props가 있으면
   if (text) {
@@ -77,7 +89,7 @@ const ProfileImage = ({
         size === 'small' ? 'w-8 h-8 text-[12px]' : 'w-18 h-18 Me_Body-3'
       }`}
     >
-      {getInitials(userInfo?.email)}
+      {getInitials(userInfo.email)}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ClientListResponseModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface GetClientParamsModel {
   q?: string; // 검색어
@@ -17,7 +17,7 @@ const useGetClient = () => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 거래처 목록 조회 함수
   const getClients = useCallback(

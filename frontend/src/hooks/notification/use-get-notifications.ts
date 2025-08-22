@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { NotificationListResponseModel } from '@/types/data-model';
 
 const useGetNotifications = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useFactoryStore();
+  const { factoryId } = useMemberStore();
 
   const getNotifications = useCallback(
     async (

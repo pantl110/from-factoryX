@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { ProjectLogListResponseModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface PaginationParamsModel {
   page?: number;
@@ -10,7 +10,7 @@ interface PaginationParamsModel {
 const useGetProjectLogs = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const getProjectLogs = useCallback(
     async (projectId: number, pagination?: PaginationParamsModel) => {

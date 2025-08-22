@@ -4,7 +4,7 @@ import FacilityHistoryItem from './facility-history-item';
 import TextareaAutosize from 'react-textarea-autosize';
 import { EquipmentResponseModel } from '@/types/data-model';
 import { useCreateEquipment, useUpdateEquipment } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { EquipmentStatusType } from '@/types/status-type';
 import { Controller, useForm } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
@@ -37,8 +37,8 @@ const FacilityDetailPanel = ({
 }: FacilityDetailPanelProps) => {
   const { createEquipment } = useCreateEquipment();
   const { updateEquipment } = useUpdateEquipment();
-  const factoryId = useFactoryStore((state) => state.factoryId);
-  const initializeFactoryId = useFactoryStore(
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const initializeFactoryId = useMemberStore(
     (state) => state.initializeFactoryId
   );
 

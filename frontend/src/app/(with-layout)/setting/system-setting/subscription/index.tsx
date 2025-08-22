@@ -8,12 +8,12 @@ import { PlanType } from './types';
 import MiniBtn from '@/ui/mini-btn';
 import CardChangeModal from './modals/card-change-modal';
 import CardDeleteModal from './modals/card-delete-modal';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { useGetFactory } from '@/hooks';
 import useUpdateFactory from '@/hooks/factory/use-update-factory';
 
 const Subscription = () => {
-  const { factoryId } = useFactoryStore();
+  const { factoryId } = useMemberStore();
   const { getFactory, factory } = useGetFactory();
   const { updateFactory } = useUpdateFactory();
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);

@@ -1,7 +1,7 @@
 import { MonthlyProfitModel } from '@/types/data-model';
 import Chart from './chart';
 import NoHistoryBox from '@/ui/no-history-box';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface ProfitGraphProps {
   monthlyProfits: MonthlyProfitModel[];
@@ -12,7 +12,7 @@ const ProfitGraph = ({
   monthlyProfits,
   lastYearMonthlyProfits,
 }: ProfitGraphProps) => {
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   return (
     <div className="flex flex-col flex-1 gap-3 min-w-[652px]">

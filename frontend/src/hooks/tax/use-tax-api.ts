@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface TaxApiResponseModel<T = unknown> {
   success: boolean;
@@ -31,7 +31,7 @@ export type TaxApiEndpointType =
 const useTaxApi = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useFactoryStore();
+  const { factoryId } = useMemberStore();
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // 공통 API 호출 함수

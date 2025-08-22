@@ -10,7 +10,7 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import SideBarItem from '@/components/side-bar/side-bar-item';
 import FactoryXLogo from '@/ui/icons/factory-x-logo';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 interface SideBarProps {
@@ -18,9 +18,9 @@ interface SideBarProps {
 }
 
 const SideBar = ({ onVisibilityChange }: SideBarProps) => {
+  const router = useRouter();
   const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
-
   const isProductionPage = pathname.startsWith('/production/'); // production 페이지인지 확인
   const shouldHide = isProductionPage && !isHovered; // production 페이지이고 호버되지 않았으면 숨김
 
@@ -48,7 +48,14 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
         onMouseLeave={() => isProductionPage && setIsHovered(false)}
       >
         <div className="flex items-center h-[68px] pt-6 pr-4 pb-5 pl-6">
-          <FactoryXLogo />
+          <div
+            className="cursor-pointer"
+            onClick={() => {
+              router.push('/dashboard');
+            }}
+          >
+            <FactoryXLogo />
+          </div>
         </div>
         <div className="flex flex-col gap-1 px-2">
           <SideBarItem icon={ChartBar} label="대시보드" path="/dashboard" />

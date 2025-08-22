@@ -3,7 +3,7 @@ import {
   MaterialHistoryModel,
   MaterialHistoryResponseModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface CreateMaterialHistoryResponseModel {
   materials: MaterialHistoryResponseModel[];
@@ -15,7 +15,7 @@ const useCreateMaterialHistory = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [createdMaterialHistory, setCreatedMaterialHistory] =
     useState<CreateMaterialHistoryResponseModel | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const createMaterialHistory = async (data: MaterialHistoryModel) => {
     setIsLoading(true);

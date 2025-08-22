@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface RefundUpdateInModel {
   refund_date?: string;
@@ -21,7 +21,7 @@ interface RefundUpdateOutModel {
 const useUpdateRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const updateRefund = useCallback(
     async (

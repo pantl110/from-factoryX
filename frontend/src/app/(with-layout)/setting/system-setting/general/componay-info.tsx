@@ -13,14 +13,14 @@ import {
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 const CompanyInfo = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
 
   const { getFactory, factory, error: _factoryError } = useGetFactory();
   const { updateFactory } = useUpdateFactory();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const {
     register,

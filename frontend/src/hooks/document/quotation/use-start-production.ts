@@ -1,6 +1,6 @@
 import { SaveDraftQuotationModel } from '@/types/data-model';
 import { useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface StartProductionResponseModel {
   quotation_id: number;
@@ -34,7 +34,7 @@ interface UseStartProductionReturnModel {
 const useStartProduction = (): UseStartProductionReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const startProduction = async (
     data: SaveDraftQuotationModel

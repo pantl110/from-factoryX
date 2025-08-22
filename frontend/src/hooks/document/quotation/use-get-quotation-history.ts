@@ -1,6 +1,6 @@
 import { QuotationProductHistoryItemResponseModel } from '@/types/data-model';
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface QuotationHistoryResponseModel {
   results: QuotationProductHistoryItemResponseModel[];
@@ -24,7 +24,7 @@ const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
 
       try {
         // Zustand store에서 factory_id 가져오기
-        const { factoryId } = useFactoryStore.getState();
+        const { factoryId } = useMemberStore.getState();
 
         const productIdsString = productIds.join(',');
         const response = await fetch(

@@ -57,11 +57,6 @@ const ProductionPlan = ({
     Record<number, ProductionPlanFormDataModel>
   >({});
 
-  // 디바운스 타이머 저장
-  const [debounceTimers, setDebounceTimers] = useState<
-    Record<number, NodeJS.Timeout>
-  >({});
-
   // 토스트 훅들
   const {
     isToastOpen: isEquipmentToastOpen,
@@ -122,28 +117,6 @@ const ProductionPlan = ({
     loadProjectPlans();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
-
-  // 컴포넌트 언마운트 시 타이머 정리
-  useEffect(() => {
-    return () => {
-      Object.values(debounceTimers).forEach((timer) => {
-        if (timer) clearTimeout(timer);
-      });
-    };
-  }, [debounceTimers]);
-
-  // 디바운스 타이머 정리 함수
-  const clearDebounceTimer = useCallback((planId: number) => {
-    setDebounceTimers((prevTimers) => {
-      if (prevTimers[planId]) {
-        clearTimeout(prevTimers[planId]);
-        const newTimers = { ...prevTimers };
-        delete newTimers[planId];
-        return newTimers;
-      }
-      return prevTimers;
-    });
-  }, []);
 
   // 생산 계획 검증 훅 사용
   useProductionPlanValidation(projectPlans, formChanges);
@@ -254,10 +227,16 @@ const ProductionPlan = ({
             quantity: currentPlan?.quantity || 0,
             equipment_id: equipment.id, // 새로운 설비 ID로 명시적 설정
             start_date: currentPlan?.start_date
-              ? currentPlan.start_date.toString()
+              ? new Date(currentPlan.start_date)
+                  .toISOString()
+                  .slice(0, 16)
+                  .replace('T', ' ')
               : '',
             end_date: currentPlan?.end_date
-              ? currentPlan.end_date.toString()
+              ? new Date(currentPlan.end_date)
+                  .toISOString()
+                  .slice(0, 16)
+                  .replace('T', ' ')
               : '',
           },
         };
@@ -308,7 +287,7 @@ const ProductionPlan = ({
     [projectPlans]
   );
 
-  // 폼 변경 핸들러 //
+  // 폼 변경 핸들러 (자동 저장 제거, 저장 버튼 클릭 시에만 저장)
   const handleFormChange = useCallback(
     (planId: number, formData: ProductionPlanFormDataModel) => {
       setFormChanges((prev) => ({
@@ -316,71 +295,77 @@ const ProductionPlan = ({
         [planId]: formData,
       }));
 
-      // 시간대 충돌 검사
+      // 시간대 충돌 검사만 수행 (저장은 하지 않음)
       const hasTimeConflict = checkTimeConflicts(planId, formData);
 
       if (hasTimeConflict) {
         showTimeToast();
         return;
       }
+    },
+    [showTimeToast, checkTimeConflicts]
+  );
 
-      setDebounceTimers((prevTimers) => {
-        // 기존 타이머가 있으면 정리
-        if (prevTimers[planId]) {
-          clearTimeout(prevTimers[planId]);
+  // 개별 생산 계획 저장 함수 (저장 버튼 클릭 시)
+  const handleFormSave = useCallback(
+    async (planId: number, formData: ProductionPlanFormDataModel) => {
+      try {
+        // 시간대 충돌 검사
+        const hasTimeConflict = checkTimeConflicts(planId, formData);
+        if (hasTimeConflict) {
+          showTimeToast();
+          return;
         }
 
-        const newTimer = setTimeout(async () => {
-          try {
-            const originalPlan = projectPlans.find((p) => p.id === planId);
-            if (!originalPlan) return;
+        const originalPlan = projectPlans.find((p) => p.id === planId);
+        if (!originalPlan) return;
 
-            const changes: Record<string, unknown> = {};
+        const changes: Record<string, unknown> = {};
 
-            // 원본과 달라졌는지만 비교, 값은 formData에서 직접 사용
-            if (formData.quantity !== originalPlan.quantity) {
-              changes.quantity = formData.quantity;
-            }
-            if (formData.equipment_id !== originalPlan.equipment.id) {
-              changes.equipment_id = formData.equipment_id;
-            }
-            if (formData.start_date !== originalPlan.start_date) {
-              changes.start_date = formData.start_date;
-            }
-            if (formData.end_date !== originalPlan.end_date) {
-              changes.end_date = formData.end_date;
-            }
+        // 원본과 달라졌는지만 비교, 값은 formData에서 직접 사용
+        if (formData.quantity !== originalPlan.quantity) {
+          changes.quantity = formData.quantity;
+        }
+        if (formData.equipment_id !== originalPlan.equipment.id) {
+          changes.equipment_id = formData.equipment_id;
+        }
+        if (formData.start_date !== originalPlan.start_date) {
+          changes.start_date = formData.start_date;
+        }
+        if (formData.end_date !== originalPlan.end_date) {
+          changes.end_date = formData.end_date;
+        }
 
-            if (Object.keys(changes).length > 0) {
-              const result = await updateProjectPlan(planId, changes);
-              if (result.success) {
-                // PATCH 성공 후 formChanges에서 해당 plan의 변경사항만 제거
-                // projectPlans는 업데이트하지 않아 무한루프 방지
-                setFormChanges((prev) => {
-                  const newChanges = { ...prev };
-                  delete newChanges[planId];
-                  return newChanges;
-                });
+        if (Object.keys(changes).length > 0) {
+          const result = await updateProjectPlan(planId, changes);
+          if (result.success) {
+            // PATCH 성공 후 formChanges에서 해당 plan의 변경사항만 제거
+            setFormChanges((prev) => {
+              const newChanges = { ...prev };
+              delete newChanges[planId];
+              return newChanges;
+            });
+
+            // 백엔드에서 최신 데이터를 다시 가져와서 projectPlans 업데이트
+            if (projectId) {
+              const updatedResult = await getProjectPlans(projectId);
+              if (updatedResult.success && updatedResult.data) {
+                setProjectPlans(updatedResult.data);
               }
             }
-          } catch (error) {
-            console.error(`Error updating plan ${planId}:`, error);
-          } finally {
-            clearDebounceTimer(planId);
           }
-        }, 500);
-
-        return { ...prevTimers, [planId]: newTimer };
-      });
+        }
+      } catch (error) {
+        console.error(`Error updating plan ${planId}:`, error);
+      }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       updateProjectPlan,
       projectId,
       showTimeToast,
       projectPlans,
       checkTimeConflicts,
-      clearDebounceTimer,
+      getProjectPlans,
     ]
   );
 
@@ -422,6 +407,14 @@ const ProductionPlan = ({
       );
 
       await Promise.all(updatePromises);
+
+      // 저장 후 백엔드에서 최신 데이터를 다시 가져와서 projectPlans 업데이트
+      if (projectId) {
+        const updatedResult = await getProjectPlans(projectId);
+        if (updatedResult.success && updatedResult.data) {
+          setProjectPlans(updatedResult.data);
+        }
+      }
 
       // 저장 후 formChanges 초기화
       setFormChanges({});
@@ -501,12 +494,13 @@ const ProductionPlan = ({
               key={item.id}
               item={item}
               onOperationStatusClick={
-                projectStatus === 'pending' || projectStatus === '생산 대기'
+                projectStatus === 'pending'
                   ? undefined
                   : (e) => handleOperationStatusClick(e, item.id)
               }
               onFacilityClick={(e) => handleFacilityClick(e, item.id)}
               onFormChange={handleFormChange}
+              onSave={handleFormSave} // 저장 함수 추가
               formData={formChanges[item.id]}
               equipments={equipmentList?.data || []}
               projectStatus={projectStatus}

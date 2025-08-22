@@ -11,7 +11,7 @@ import DeleteTeamMemberModal from './modals/delete-team-member-modal';
 import useGetMembers from '@/hooks/factory/factory-member/use-get-members';
 import useDeleteMember from '@/hooks/factory/factory-member/use-delete-member';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import Spinner from '@/ui/spinner';
 import Tooltip from '@/ui/tooltip';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -20,8 +20,8 @@ const Permission = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const factoryId = useFactoryStore((state) => state.factoryId);
-  const initializeFactoryId = useFactoryStore(
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const initializeFactoryId = useMemberStore(
     (state) => state.initializeFactoryId
   );
   const { getMembers, members, isLoading, error } = useGetMembers();

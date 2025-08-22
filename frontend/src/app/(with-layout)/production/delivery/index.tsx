@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import CreateTransactionOverlayview from './modals/create-transaction-overlayview';
 import usePageStatusStore from '@/store/page-status-store';
 import MoveToStorageModal from './modals/move-to-storage-modal';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import {
   QuotationProductResponseModel,
   ProductResponseModel,
@@ -58,7 +58,7 @@ const Delivery = ({
   const setDeliveryData = usePageStatusStore((state) => state.setDeliveryData);
 
   // Zustand store에서 factoryId 가져오기
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 견적서 품목 데이터 가져오기
   const {

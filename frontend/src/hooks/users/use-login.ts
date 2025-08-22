@@ -2,10 +2,11 @@ import { useState } from 'react';
 import {
   LoginFormDataModel,
   LoginResponseModel,
-  FactoriesResponseModel,
+  MemberRoleType,
 } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
-import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
+import useMemberStore from '@/store/member-store';
+import { useGetMember } from '@/hooks';
 
 interface UseLoginReturnModel {
   login: (data: LoginFormDataModel) => Promise<{
@@ -13,8 +14,9 @@ interface UseLoginReturnModel {
     data?: LoginResponseModel;
     error?: string;
     field?: 'email' | 'password';
-    factoryCount?: number;
-    factories?: FactoriesResponseModel[];
+    factoryId?: number;
+    role?: MemberRoleType;
+    isBarobillUser?: boolean;
   }>;
   isLoading: boolean;
 }
@@ -22,7 +24,8 @@ interface UseLoginReturnModel {
 export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo, setAuthenticated } = useAuthStore();
-  const { getFactoryList } = useGetFactoryList();
+  const { getMember } = useGetMember();
+  const { setFactoryId, setRole, setIsBarobillUser } = useMemberStore();
 
   const login = async (data: LoginFormDataModel) => {
     setIsLoading(true);
@@ -46,7 +49,7 @@ export const useLogin = (): UseLoginReturnModel => {
       if (response.ok) {
         const result = await response.json();
 
-        // 로그인 성공 후 사용자 정보 자동 fetch
+        // 로그인 성공 후 사용자 정보 fetch
         try {
           const userResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/me`,
@@ -67,50 +70,39 @@ export const useLogin = (): UseLoginReturnModel => {
             setAuthenticated(true);
 
             try {
-              const factoryResult = await getFactoryList();
-              if (factoryResult.success && factoryResult.data) {
-                const factories = factoryResult.data; // 공장 리스트
-                const factoryCount = factories.length; // 공장 개수
+              // 사용자의 member 정보를 가져와서 공장 ID와 role 추출
+              // userData.member_id를 사용해서 member 정보 조회
+              const memberResult = await getMember({
+                factory_id: 1, // 임시로 1 사용, 실제로는 사용자가 속한 공장 ID를 알아야 함
+                member_id: userData.member_id,
+              });
 
-                if (factoryCount === 0) {
-                  // 공장이 0개일 때 - 온보딩 페이지로 이동
-                  return {
-                    success: true,
-                    factoryCount: 0,
-                    factories: [],
-                  };
-                } else if (factoryCount === 1) {
-                  // 공장이 1개일 때 - 첫 번째 공장 ID를 저장하고 대시보드로 이동
-                  return {
-                    success: true,
-                    factoryCount: 1,
-                    factories,
-                  };
-                } else {
-                  // 공장이 2개 이상일 때 (초대받은 공장이 있다는 뜻) - 공장 선택 모달을 보여줄 수 있도록 반환
-                  // 현재는 공장을 초대받을 수 없으므로 그냥 첫번째 공장이 자동 선택되도록
-                  return {
-                    success: true,
-                    factoryCount,
-                    factories,
-                  };
-                }
+              if (memberResult.success && memberResult.data) {
+                const member = memberResult.data;
+
+                // 공장 ID, role, isBarobillUser를 store에 저장
+                setFactoryId(member.factory);
+                setRole(member.role);
+                setIsBarobillUser(member.is_barobill_user);
+
+                return {
+                  success: true,
+                  factoryId: member.factory,
+                  role: member.role,
+                  isBarobillUser: member.is_barobill_user,
+                };
               } else {
-                // 공장 리스트 조회 실패 시 - 온보딩 페이지로 이동
+                // member 정보 조회 실패 시
                 return {
                   success: true,
                   data: result,
-                  factoryCount: 0,
-                  factories: [],
                 };
               }
             } catch {
-              // 공장 리스트 조회 실패 시 - 온보딩 페이지로 이동
+              // member 정보 조회 실패 시
               return {
                 success: true,
                 data: result,
-                factoryCount: 0,
-                factories: [],
               };
             }
           } else {

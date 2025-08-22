@@ -2,7 +2,7 @@ import InfoLabelValue from '@/ui/info-label-value';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
 import { useEffect, useState } from 'react';
 import { FactoriesResponseModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface SellerInfoProps {
   startDate: string;
@@ -10,7 +10,7 @@ interface SellerInfoProps {
 
 const SellerInfo = ({ startDate }: SellerInfoProps) => {
   const { getFactory } = useGetFactory();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
   const [factoryData, setFactoryData] = useState<FactoriesResponseModel | null>(
     null
   );

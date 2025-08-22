@@ -2,7 +2,7 @@
 // import { FactoriesResponseModel } from '@/types/data-model';
 // import MiniBtn from '@/ui/mini-btn';
 // import { useDeleteMember, useDeleteFactory } from '@/hooks';
-// import useFactoryStore from '@/store/factory-store';
+// import useMemberStore from '@/store/factory-store';
 // import { useRouter } from 'next/navigation';
 
 // interface FactorySelectModalProps {
@@ -15,7 +15,7 @@
 //   onClose,
 // }: FactorySelectModalProps) => {
 //   const router = useRouter();
-//   const setFactoryId = useFactoryStore((state) => state.setFactoryId);
+//   const setFactoryId = useMemberStore((state) => state.setFactoryId);
 //   const { deleteFactory, isLoading: isDeleteFactoryLoading } =
 //     useDeleteFactory();
 //   const { deleteMember, isLoading: isDeleteMemberLoading } = useDeleteMember();

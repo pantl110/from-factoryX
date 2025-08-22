@@ -31,6 +31,7 @@ interface TableItemProps {
     planId: number,
     formData: ProductionPlanFormDataModel
   ) => void;
+  onSave?: (planId: number, formData: ProductionPlanFormDataModel) => void; // 저장 함수 추가
   formData?: ProductionPlanFormDataModel; // 현재 form 데이터
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
@@ -41,6 +42,7 @@ const TableItem = ({
   onOperationStatusClick,
   onFacilityClick,
   onFormChange,
+  onSave,
   formData: currentFormData,
   equipments,
   projectStatus,
@@ -70,32 +72,52 @@ const TableItem = ({
   // React Hook Form 설정
   const { control, watch, reset } = useForm<ProductionPlanFormDataModel>({
     defaultValues: {
-      quantity: item.quantity,
-      equipment_id: item.equipment.id,
-      start_date: item.start_date
-        ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
-      end_date: item.end_date
-        ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
+      quantity: currentFormData?.quantity ?? item.quantity,
+      equipment_id: currentFormData?.equipment_id ?? item.equipment.id,
+      start_date:
+        currentFormData?.start_date ??
+        (item.start_date
+          ? new Date(item.start_date)
+              .toISOString()
+              .slice(0, 16)
+              .replace('T', ' ')
+          : ''),
+      end_date:
+        currentFormData?.end_date ??
+        (item.end_date
+          ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+          : ''),
     },
   });
 
   // 컴포넌트 마운트 시에만 form을 초기화
   useEffect(() => {
     const formattedData = {
-      quantity: item.quantity,
-      equipment_id: item.equipment.id,
-      start_date: item.start_date
-        ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
-      end_date: item.end_date
-        ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
+      quantity: currentFormData?.quantity ?? item.quantity,
+      equipment_id: currentFormData?.equipment_id ?? item.equipment.id,
+      start_date:
+        currentFormData?.start_date ??
+        (item.start_date
+          ? new Date(item.start_date)
+              .toISOString()
+              .slice(0, 16)
+              .replace('T', ' ')
+          : ''),
+      end_date:
+        currentFormData?.end_date ??
+        (item.end_date
+          ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+          : ''),
     };
     reset(formattedData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.start_date, item.end_date, item.quantity, item.equipment.id]);
+  }, [
+    currentFormData,
+    item.start_date,
+    item.end_date,
+    item.quantity,
+    item.equipment.id,
+  ]);
 
   // Form 데이터 변경 시 부모 컴포넌트에 알림 (필요한 필드만 감시)
   const watchedQuantity = watch('quantity');
@@ -109,6 +131,7 @@ const TableItem = ({
       currentFormData?.equipment_id &&
       currentFormData.equipment_id !== item.equipment.id
     ) {
+      // 설비만 변경하고, 다른 값들은 현재 React Hook Form의 값 유지
       reset({
         quantity: watchedQuantity,
         equipment_id: currentFormData.equipment_id,
@@ -125,9 +148,9 @@ const TableItem = ({
     watchedEndDate,
   ]);
 
-  useEffect(() => {
-    // 폼 데이터가 실제로 변경되었을 때만 부모 컴포넌트에 알림
-    const currentFormData = {
+  // 저장 버튼 클릭 시 호출되는 함수
+  const handleSave = () => {
+    const formData = {
       quantity: watchedQuantity,
       equipment_id: watchedEquipmentId,
       start_date: watchedStartDate,
@@ -148,58 +171,10 @@ const TableItem = ({
       watchedStartDate !== originalStartDate ||
       watchedEndDate !== originalEndDate;
 
-    if (hasChanges && onFormChange) {
-      onFormChange(item.id, currentFormData);
+    if (hasChanges && onSave) {
+      onSave(item.id, formData);
     }
-  }, [
-    watchedQuantity,
-    watchedEquipmentId,
-    watchedStartDate,
-    watchedEndDate,
-    item.id,
-    item.quantity,
-    item.equipment.id,
-    item.start_date,
-    item.end_date,
-    onFormChange,
-  ]);
-
-  // currentFormData가 변경될 때마다 onFormChange 호출 (설비 변경 등 외부에서 변경된 경우)
-  // 단, 무한루프 방지를 위해 실제 변경사항이 있을 때만 호출
-  useEffect(() => {
-    if (currentFormData && onFormChange) {
-      // 실제 변경사항이 있는지 확인
-      const hasRealChanges =
-        currentFormData.quantity !== item.quantity ||
-        currentFormData.equipment_id !== item.equipment.id ||
-        currentFormData.start_date !==
-          (item.start_date
-            ? new Date(item.start_date)
-                .toISOString()
-                .slice(0, 16)
-                .replace('T', ' ')
-            : '') ||
-        currentFormData.end_date !==
-          (item.end_date
-            ? new Date(item.end_date)
-                .toISOString()
-                .slice(0, 16)
-                .replace('T', ' ')
-            : '');
-
-      if (hasRealChanges) {
-        onFormChange(item.id, currentFormData);
-      }
-    }
-  }, [
-    currentFormData,
-    item.id,
-    onFormChange,
-    item.quantity,
-    item.equipment.id,
-    item.start_date,
-    item.end_date,
-  ]);
+  };
 
   // 현재 선택된 설비 정보 (formData의 equipment_id 우선, 없으면 원본 데이터)
   const selectedEquipment =
@@ -258,6 +233,15 @@ const TableItem = ({
               const value = e.target.value.replace(/,/g, '');
               const numValue = parseInt(value) || 0;
               field.onChange(numValue);
+              // 부모 컴포넌트에 변경사항 알림
+              if (onFormChange) {
+                onFormChange(item.id, {
+                  quantity: numValue,
+                  equipment_id: watchedEquipmentId,
+                  start_date: watchedStartDate,
+                  end_date: watchedEndDate,
+                });
+              }
             }}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
@@ -314,10 +298,19 @@ const TableItem = ({
         render={({ field }) => (
           <input
             type="text"
-            value={field.value}
+            value={field.value || ''}
             onChange={(e) => {
               const formatted = formatDateTime(e.target.value);
               field.onChange(formatted);
+              // 부모 컴포넌트에 변경사항 알림
+              if (onFormChange) {
+                onFormChange(item.id, {
+                  quantity: watchedQuantity,
+                  equipment_id: watchedEquipmentId,
+                  start_date: formatted,
+                  end_date: watchedEndDate,
+                });
+              }
             }}
             placeholder="YYYY-MM-DD 00:00"
             maxLength={16}
@@ -336,10 +329,19 @@ const TableItem = ({
         render={({ field }) => (
           <input
             type="text"
-            value={field.value}
+            value={field.value || ''}
             onChange={(e) => {
               const formatted = formatDateTime(e.target.value);
               field.onChange(formatted);
+              // 부모 컴포넌트에 변경사항 알림
+              if (onFormChange) {
+                onFormChange(item.id, {
+                  quantity: watchedQuantity,
+                  equipment_id: watchedEquipmentId,
+                  start_date: watchedStartDate,
+                  end_date: formatted,
+                });
+              }
             }}
             placeholder="YYYY-MM-DD 00:00"
             maxLength={16}
@@ -370,6 +372,13 @@ const TableItem = ({
             {itemData[header.name as keyof typeof itemData]}
           </div>
         ))}
+        <button
+          className="border px-3 py-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handleSave}
+          disabled={operationStatus === 'completed'}
+        >
+          저장
+        </button>
       </div>
 
       {isProductDetailOpen && (

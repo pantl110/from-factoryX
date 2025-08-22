@@ -3,7 +3,7 @@ import { ProjectStatusType } from '@/types/status-type';
 import { CaretDown } from '@phosphor-icons/react';
 import SelectDropdown from './modals/select-modal';
 import { OcrDataModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface MainTitleSecProps {
   onNewQuotation: () => void;
@@ -36,7 +36,7 @@ const MainTitleSec = ({
   onDirectInputClick,
   onOrderUploadClick,
 }: MainTitleSecProps) => {
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">

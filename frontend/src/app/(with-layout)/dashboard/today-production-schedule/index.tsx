@@ -8,7 +8,7 @@ import { X } from '@phosphor-icons/react/dist/ssr';
 import { useReactToPrint } from 'react-to-print';
 import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
 import ProductionTable from './production-table';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface TodayProductionScheduleProps {
   todayProductionPlans: TodayProductionPlanModel[];
@@ -19,7 +19,7 @@ const TodayProductionSchedule = ({
   todayProductionPlans,
   isLoading,
 }: TodayProductionScheduleProps) => {
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
   const [isPrintOverlayOpen, setIsPrintOverlayOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({

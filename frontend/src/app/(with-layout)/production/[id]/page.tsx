@@ -27,19 +27,18 @@ const getTabsByStatus = (
   status: ProjectStatusType,
   isRefund: boolean
 ): ProductionTabType[] => {
-  if (status === 'pending' || status === '생산 대기')
-    return ['생산 계획', '주문서'];
-  if (status === 'production' || status === '생산 중')
+  if (status === 'pending') return ['생산 계획', '주문서'];
+  if (status === 'production')
     return isRefund
       ? ['납품', '생산 현황', '생산 계획', '주문서']
       : ['생산 현황', '생산 계획', '주문서'];
-  if (status === 'manufactured' || status === '생산 완료')
+  if (status === 'manufactured')
     return isRefund
       ? ['납품', '생산 현황', '생산 내역', '주문서']
       : ['생산 현황', '생산 내역', '주문서'];
-  if (status === 'delivery' || status === '납품')
+  if (status === 'delivery')
     return ['납품', '생산 현황', '생산 내역', '주문서'];
-  if (status === 'completed' || status === '프로젝트 완료')
+  if (status === 'completed')
     return [
       '세금계산서',
       '거래명세서',
@@ -119,7 +118,7 @@ const ProductionPageContent = () => {
         setPageStatus(projectStatus);
 
         // 프로젝트 상태가 'manufactured'로 변경된 경우 '생산 내역' 탭으로 이동
-        if (projectStatus === 'manufactured' || projectStatus === '생산 완료') {
+        if (projectStatus === 'manufactured') {
           const productionHistoryTabIndex = tabs.findIndex(
             (tab) => tab === '생산 내역'
           );

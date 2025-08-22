@@ -4,7 +4,7 @@ import ClientTableItem from './client-table-item';
 import ClientDetailPanel from './modals/client-detail-panel';
 import { ClientListResponseModel } from '@/types/data-model';
 import Pagination from '@/components/pagination';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import NoHistoryBox from '@/ui/no-history-box';
 
 interface ClientProps {
@@ -27,7 +27,7 @@ const Client = ({
   refetchClient,
 }: ClientProps) => {
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   return (
     <>

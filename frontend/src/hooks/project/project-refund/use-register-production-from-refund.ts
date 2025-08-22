@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface RegisterProductionFromRefundResponseModel {
   message: string;
@@ -19,7 +19,7 @@ interface RegisterProductionFromRefundResponseModel {
 const useRegisterProductionFromRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const registerProduction = useCallback(
     async (

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { formatBusinessNumber, formatDate } from '@/hooks/format-number';
 import { useEffect, useState } from 'react';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { SellerInfoFormDataModel } from '../type';
 
 interface SellerInfoProps {
@@ -39,7 +39,7 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
   });
 
   const { getFactory, factory } = useGetFactory();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 공장 상세 조회 후 초기값 세팅
   useEffect(() => {

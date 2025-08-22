@@ -14,8 +14,7 @@ import {
   useCreateClient,
   useUpdateClient,
 } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
-import useAuthStore from '@/store/auth-store';
+import useMemberStore from '@/store/member-store';
 import {
   FactoriesUpdateModel,
   CreateTaxInvoiceModel,
@@ -96,7 +95,7 @@ const CreatTaxPanel = ({
   const { createClient } = useCreateClient();
   const { updateClient } = useUpdateClient();
 
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 사용자 정보 가져오기 // 바로빌 연동 확인용
   // const userInfo = useAuthStore((state) => state.userInfo);
@@ -197,13 +196,6 @@ const CreatTaxPanel = ({
     }
   }, [showErrors, isSellerInfoValid, isClientInfoValid]);
 
-  // 컴포넌트 마운트 시 바로빌 ID 확인 -> 이 부분 factory member 정보에서 확인해야 함
-  // useEffect(() => {
-  //   if (userInfo && !userInfo.barobill_user_id) {
-  //     setIsBarobilRegisterModalOpen(true);
-  //   }
-  // }, [userInfo]);
-
   // 공장 정보 업데이트 함수
   const updateFactoryInfo = (formData: SellerInfoFormDataModel) => {
     if (factoryId && formData) {
@@ -234,6 +226,7 @@ const CreatTaxPanel = ({
         business_type: clientFormData.businessType || '',
         business_category: clientFormData.businessCategory || '',
         address: clientFormData.address || '',
+        type: 'customer',
       };
 
       return await createClient(clientData);
@@ -256,6 +249,7 @@ const CreatTaxPanel = ({
         business_type: clientFormData.businessType || '',
         business_category: clientFormData.businessCategory || '',
         address: clientFormData.address || '',
+        client_type: 'customer',
       };
 
       return await updateClient(clientData);
@@ -308,7 +302,7 @@ const CreatTaxPanel = ({
         }
       }
 
-      // 세금계산서 생성
+      // 세금계산서 생성 ‼️‼️‼️‼️‼️ 수정 필요
       if (selectedClientId && factoryId) {
         const taxInvoiceData: CreateTaxInvoiceModel = {
           factory: factoryId,
@@ -341,7 +335,7 @@ const CreatTaxPanel = ({
     setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);
   };
 
-  // ClaimReceiptTaxModal용 래퍼 함수 (매개변수 없이 호출) // ‼️‼️‼️‼️‼️ 수정 필요
+  // ‼️‼️‼️‼️‼️ 수정 필요
   const handleCreateTaxInvoiceForModal = useCallback(async () => {
     const taxInvoiceData: CreateTaxInvoiceModel = {
       factory: factoryId || 0,

@@ -15,11 +15,11 @@ import {
   useDeleteEquipment,
   useDeleteClient,
 } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 const MasterData = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
     useState(false);

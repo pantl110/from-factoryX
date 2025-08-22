@@ -30,7 +30,7 @@ import {
   useToast,
 } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import useOcrStore from '@/store/ocr-store';
 import TabArea from './tab-area';
 import { useForm } from 'react-hook-form';
@@ -48,7 +48,7 @@ const QuotationPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
   const quotationId = searchParams.get('quotation_id')
     ? parseInt(searchParams.get('quotation_id') || '0')
     : undefined;
@@ -420,9 +420,12 @@ const QuotationPageContent = () => {
 
   const handleProductClick = useCallback(
     (productId: number) => {
-      setSelectedProduct(productId);
-      setActiveTab('history'); // 품목 클릭 시 히스토리탭 활성화
-      setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
+      // productId가 있을 때만 히스토리 표시
+      if (productId) {
+        setSelectedProduct(productId);
+        setActiveTab('history'); // 품목 클릭 시 히스토리탭 활성화
+        setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
+      }
     },
     [setIsRightPanelExpanded]
   );

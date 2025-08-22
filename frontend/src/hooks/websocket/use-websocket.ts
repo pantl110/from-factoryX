@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 export interface NotificationDataModel {
   id: number;
@@ -27,7 +27,7 @@ interface UseWebSocketProps {
 }
 
 export const useWebSocket = ({ onNewNotification }: UseWebSocketProps = {}) => {
-  const { factoryId } = useFactoryStore();
+  const { factoryId } = useMemberStore();
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);

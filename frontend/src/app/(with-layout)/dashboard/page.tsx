@@ -29,7 +29,7 @@ import {
   PublishedTaxInvoiceResponseModel,
   PublishedTaxInvoiceListResponseModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { TodayProductionPlanModel } from './type';
 import NoHistoryBox from '@/ui/no-history-box';
 
@@ -58,7 +58,7 @@ const DashboardPageContent = () => {
   const [taxInvoicesData, setTaxInvoicesData] = useState<
     PublishedTaxInvoiceResponseModel[]
   >([]);
-  const { factoryId, initializeFactoryId } = useFactoryStore();
+  const { factoryId, initializeFactoryId } = useMemberStore();
 
   // 모든 데이터 로딩 상태를 통합
   const isLoading =

@@ -1,6 +1,6 @@
 import { CreateMaterialModel } from '@/types/data-model';
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 // 원자재 생성 응답 모델
 export interface CreateMaterialResponseModel {
@@ -23,7 +23,7 @@ export interface UseCreateMaterialReturnModel {
 const useCreateMaterial = (): UseCreateMaterialReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const createMaterial = useCallback(
     async (materials: CreateMaterialModel[]) => {

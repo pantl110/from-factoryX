@@ -5,12 +5,12 @@ import {
   CreateRefundResponseModel,
 } from '@/types/data-model';
 import { useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 const useCreateRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const createRefund = async (
     data: CreateRefundModel

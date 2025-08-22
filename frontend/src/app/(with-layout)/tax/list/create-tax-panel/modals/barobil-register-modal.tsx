@@ -1,7 +1,7 @@
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { BarobillCorpCertModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import {
   useBarobillRegister,
   useBarobillCorpCertUrl,
@@ -15,7 +15,7 @@ interface BarobilRegisterModalProps {
 export const BarobilRegisterModal = ({
   onClose,
 }: BarobilRegisterModalProps) => {
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
   const { register: registerBarobill } = useBarobillRegister();
   const { getCertUrl } = useBarobillCorpCertUrl();
   const { checkCert } = useBarobillCertCheck();

@@ -1,7 +1,7 @@
 import { ProjectListResponseModel } from '@/types/data-model';
 import { ProjectStatusType } from '@/types/status-type';
 import { useState, useCallback, useRef, useEffect } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface GetProjectModel {
   status: ProjectStatusType | 'archived' | 'progress';
@@ -20,7 +20,7 @@ interface GetProjectModel {
 const useGetProjects = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const getProjects = useCallback(

@@ -9,17 +9,22 @@ import { formatPhoneNumber } from '@/hooks/format-number';
 import useToast from '@/hooks/use-toast';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
-import { UserInfoModel, UpdateUserInfoModel } from '@/types/data-model';
+import {
+  UserInfoModel,
+  UpdateUserInfoModel,
+  MemberRoleType,
+} from '@/types/data-model';
 import EditPhotoDropdown from './modals/edit-photo-dropdown';
 import { useMe, useUploadFile } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface ProfileProps {
   userInfo: UserInfoModel | null;
 }
 
 const Profile = ({ userInfo }: ProfileProps) => {
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
   const { isToastOpen, isVisible, showToast } = useToast(2000);
   // const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -132,18 +137,16 @@ const Profile = ({ userInfo }: ProfileProps) => {
   };
 
   // 권한 텍스트 매핑
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case '비활성유저':
+  const getStatusText = (role: MemberRoleType) => {
+    switch (role) {
+      case 'viewer':
         return '조회자';
-      case '활성유저':
+      case 'manager':
         return '운영자';
-      case '관리자':
+      case 'admin':
         return '시스템 관리자';
-      case '탈퇴유저':
-        return '탈퇴 사용자';
       default:
-        return status;
+        return role;
     }
   };
 
@@ -201,7 +204,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
               />
               <Input
                 label="권한"
-                value={userInfo ? getStatusText(userInfo.status) : '-'}
+                value={role ? getStatusText(role as MemberRoleType) : '-'}
                 disabledSetting={true}
                 required
               />

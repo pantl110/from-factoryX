@@ -11,7 +11,9 @@ import Panel from '@/ui/panel';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
+import { ClientType, ClientTypeColorMap } from '@/types/status-type';
+import Chip from '@/ui/chip';
 
 interface ClientDetailPanelProps {
   clientId: number;
@@ -26,7 +28,7 @@ const ClientDetailPanel = ({
 }: ClientDetailPanelProps) => {
   const { getClientDetail, clientDetail } = useGetClientDetail();
   const { updateClient, isLoading: isUpdateLoading } = useUpdateClient();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const {
     handleSubmit,
@@ -45,7 +47,7 @@ const ClientDetailPanel = ({
       business_type: '',
       business_category: '',
       address: '',
-      // client_type: 'customer',
+      client_type: 'customer',
       note: '',
     },
   });
@@ -73,7 +75,7 @@ const ClientDetailPanel = ({
         business_type: clientDetail.business_type || '',
         business_category: clientDetail.business_category || '',
         address: clientDetail.address || '',
-        // client_type: clientDetail.client_type as ClientType,
+        client_type: clientDetail.type as ClientType,
         note: clientDetail.note || '',
       });
     }
@@ -97,6 +99,16 @@ const ClientDetailPanel = ({
       console.error('Error updating client:', error);
     }
   };
+
+  const getClientTypeText = (clientType: ClientType) => {
+    return clientType === 'supplier' ? '발주처' : '수주처';
+  };
+
+  const clientType = clientDetail?.type as ClientType;
+  const clientTypeColor =
+    clientType === 'supplier'
+      ? ClientTypeColorMap.supplier
+      : ClientTypeColorMap.customer;
 
   return (
     <Panel
@@ -274,18 +286,18 @@ const ClientDetailPanel = ({
               )}
             />
           </div>
-          {/* <div className="flex">
+          <div className="flex">
             <InfoLabelValue
               label="거래처"
-              // value={
-              //   <Chip
-              //     text={getClientTypeText(clientType)}
-              //     bgColor={clientTypeColor.bgColor}
-              //     textColor={clientTypeColor.textColor}
-              //   />
-              // }
+              value={
+                <Chip
+                  text={getClientTypeText(clientType)}
+                  bgColor={clientTypeColor.bgColor}
+                  textColor={clientTypeColor.textColor}
+                />
+              }
             />
-          </div> */}
+          </div>
           <div className="flex border-b border-lg w-full">
             <Controller
               name="note"

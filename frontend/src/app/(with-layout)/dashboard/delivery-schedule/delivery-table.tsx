@@ -7,11 +7,11 @@ import NoHistoryBox from '@/ui/no-history-box';
 import { useRouter } from 'next/navigation';
 import { UndeliveredProductListResponseModel } from '@/types/data-model';
 import useGetUndeliveredProducts from '@/hooks/dashboard/use-get-undelivered-products';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 const DeliveryTable = () => {
   const router = useRouter();
-  const { factoryId } = useFactoryStore();
+  const { factoryId } = useMemberStore();
   const { getUndeliveredProducts, isLoading } = useGetUndeliveredProducts();
 
   const [undeliveredProducts, setUndeliveredProducts] =

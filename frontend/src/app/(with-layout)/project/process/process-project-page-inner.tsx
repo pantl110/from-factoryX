@@ -21,7 +21,7 @@ import {
 } from '@/hooks';
 import useOcrStore from '@/store/ocr-store';
 import NoHistoryBox from '@/ui/no-history-box';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
@@ -30,7 +30,7 @@ const ProcessProjectPageInner = () => {
   const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
   const { updateProjectStatus } = useUpdateProjectStatus();
   const { setOcrData } = useOcrStore();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
   const searchParams = useSearchParams();

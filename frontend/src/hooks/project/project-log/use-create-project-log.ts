@@ -3,7 +3,7 @@ import {
   CreateProjectLogResponseModel,
   ProjectLogModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface CreateProjectLogRequestModel extends ProjectLogModel {
   project_id: number;
@@ -12,7 +12,7 @@ interface CreateProjectLogRequestModel extends ProjectLogModel {
 const useCreateProjectLog = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const createProjectLog = useCallback(
     async (data: CreateProjectLogRequestModel) => {

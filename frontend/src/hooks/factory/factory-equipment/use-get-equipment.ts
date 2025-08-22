@@ -3,7 +3,7 @@ import {
   EquipmentListResponseModel,
   EquipmentResponseModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 const useGetEquipment = () => {
   const [equipmentList, setEquipmentList] =
@@ -11,7 +11,7 @@ const useGetEquipment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 전체 설비 목록 불러오기
   const getEquipmentList = useCallback(async () => {

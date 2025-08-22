@@ -19,6 +19,7 @@ import {
   useUpdateTaxInvoice,
 } from '@/hooks';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import NotAllowed from '../not-allowed';
 
 const TaxPageContent = () => {
   const [selectedTaxType, setSelectedTaxType] =
@@ -243,7 +244,9 @@ const TaxPageContent = () => {
       const results = await Promise.all(updatePromises);
 
       // 성공한 요청들 확인
-      const successCount = results.filter((result) => result.success).length;
+      const successCount = results.filter(
+        (result: { success: boolean }) => result.success
+      ).length;
 
       if (successCount > 0) {
         // 성공적으로 업데이트된 경우 데이터 새로고침
@@ -262,6 +265,7 @@ const TaxPageContent = () => {
 
   return (
     <>
+      <NotAllowed />
       <div className="flex flex-col gap-8">
         <MainTitleSec
           selectedTaxType={selectedTaxType}
