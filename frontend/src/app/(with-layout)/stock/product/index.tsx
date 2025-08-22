@@ -12,6 +12,7 @@ import { ProductResponseModel } from '@/types/data-model';
 import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
+import useMemberStore from '@/store/member-store';
 
 interface ProductProps {
   setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
@@ -23,10 +24,10 @@ const Product = ({
   isProductDetailPanelOpen,
   setIsProductDetailPanelOpen,
 }: ProductProps) => {
+  const role = useMemberStore((state) => state.role);
   const { getProductList, productList, pagination, isLoading } =
     useGetProduct();
   const { deleteProduct } = useDeleteProduct();
-
   const [searchKeyword, setSearchKeyword] = useState('');
   const [_currentPage, setCurrentPage] = useState(1);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -122,6 +123,7 @@ const Product = ({
               bgColor="bg-white"
               hoverColor="hover:bg-bg"
               onClick={() => setAllChecked(false)}
+              disabled={role === 'viewer'}
             />
             <MiniBtn
               text={getDeleteButtonText()}
@@ -134,6 +136,7 @@ const Product = ({
               onClick={
                 checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
               }
+              disabled={role === 'viewer'}
             />
           </div>
         )}

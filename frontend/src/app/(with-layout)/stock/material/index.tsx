@@ -13,6 +13,7 @@ import Pagination from '@/components/pagination';
 import MaterialDetailPanel from './material-detail';
 import { MaterialResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
+import useMemberStore from '@/store/member-store';
 
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
@@ -23,6 +24,8 @@ const Material = ({
   setIsMaterialDetailOpen,
   isMaterialDetailOpen,
 }: MaterialProps) => {
+  const role = useMemberStore((state) => state.role);
+
   const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(
     null
   ); // 선택한 자재 정보를 판넬에서 보여주기
@@ -123,6 +126,7 @@ const Material = ({
               bgColor="bg-white"
               hoverColor="hover:bg-bg"
               onClick={() => setAllChecked(false)}
+              disabled={role === 'viewer'}
             />
             <MiniBtn
               text={getDeleteButtonText()}
@@ -135,6 +139,7 @@ const Material = ({
               onClick={
                 checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
               }
+              disabled={role === 'viewer'}
             />
           </div>
         )}

@@ -18,12 +18,13 @@ import {
 import useMemberStore from '@/store/member-store';
 
 const MasterData = () => {
-  const { settingChip, setSettingChip } = usePageStatusStore();
   const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
 
   const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
     useState(false);
 
+  const { settingChip, setSettingChip } = usePageStatusStore();
   // 설비 목록 가져옴 (searchKeyword 상태를 useGetEquipment에 위임)
   const [searchKeyword, setSearchKeyword] = useState('');
   const {
@@ -365,7 +366,7 @@ const MasterData = () => {
               borderColor="border-lg"
               hoverColor="hover:bg-lg"
               onClick={handleAddBtnClick}
-              disabled={!factoryId}
+              disabled={!factoryId || role === 'viewer'}
             />
           )}
 
@@ -382,6 +383,7 @@ const MasterData = () => {
                     borderColor="border-lg"
                     hoverColor="hover:bg-bg"
                     onClick={handleClearAllChecked}
+                    disabled={role === 'viewer'}
                   />
                   <MiniBtn
                     text={getDeleteButtonText()}
@@ -392,7 +394,11 @@ const MasterData = () => {
                       checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'
                     }
                     onClick={handleDeleteBtnClick}
-                    disabled={isDeleteLoading || isDeleteClientLoading}
+                    disabled={
+                      isDeleteLoading ||
+                      isDeleteClientLoading ||
+                      role === 'viewer'
+                    }
                   />
                 </>
               ))}

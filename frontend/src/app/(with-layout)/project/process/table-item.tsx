@@ -12,6 +12,7 @@ import { CopySimple } from '@phosphor-icons/react';
 import Tooltip from '@/ui/tooltip';
 import useCloneProject from '@/hooks/project/project-plan/use-clone-project';
 import LinkTaxModal from './modals/link-tax-modal/link-tax-modal';
+import useMemberStore from '@/store/member-store';
 
 interface TableItemProps {
   project: ProjectResponseModel;
@@ -27,11 +28,11 @@ const TableItem = ({
   isArchived = false,
 }: TableItemProps) => {
   const router = useRouter();
+  const role = useMemberStore((state) => state.role);
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const { cloneProject, isLoading: isCloning } = useCloneProject();
   const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
-
+  const { cloneProject, isLoading: isCloning } = useCloneProject();
   // 프로젝트 상태 색상 가져오기 (영어/한글 모두 지원)
   const chipColors =
     ProjectStatusColorMap[project.status] || ProjectStatusColorMap.quotation;
@@ -172,6 +173,7 @@ const TableItem = ({
               onClick={() => {
                 setIsLinkTaxModalOpen(true);
               }}
+              disabled={role === 'viewer'}
             />
           </div>
         )}
@@ -181,8 +183,8 @@ const TableItem = ({
           </p>
         )}
 
-        {isArchived && (
-          <div
+        {isArchived && role !== 'viewer' && (
+          <button
             onClick={handleCloneProject}
             onMouseEnter={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
@@ -196,7 +198,7 @@ const TableItem = ({
             className="w-9 h-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           >
             <CopySimple size={20} className="text-dg" />
-          </div>
+          </button>
         )}
       </div>
 

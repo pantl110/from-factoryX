@@ -3,6 +3,7 @@ import {
   TaxLineItemModel,
 } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
+import useMemberStore from '@/store/member-store';
 
 interface PurchaseTableTiemProps {
   lineItem: PublishedTaxInvoiceResponseModel['line_items'][number];
@@ -17,6 +18,8 @@ const PurchaseTableTiem = ({
   setIsLinkModalOpen,
   setSelectedLineItem,
 }: PurchaseTableTiemProps) => {
+  const role = useMemberStore((state) => state.role);
+
   return (
     <div className="h-14 w-full flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
       <p className="flex-2 px-3 truncate" title={lineItem.name}>
@@ -60,6 +63,7 @@ const PurchaseTableTiem = ({
               setIsLinkModalOpen?.(true);
               setSelectedLineItem?.(lineItem);
             }}
+            disabled={role === 'viewer'}
           />
         </div>
       )}

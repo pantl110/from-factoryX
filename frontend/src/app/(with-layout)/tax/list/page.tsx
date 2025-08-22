@@ -20,8 +20,11 @@ import {
 } from '@/hooks';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import NotAllowed from '../not-allowed';
+import useMemberStore from '@/store/member-store';
 
 const TaxPageContent = () => {
+  const role = useMemberStore((state) => state.role);
+
   const [selectedTaxType, setSelectedTaxType] =
     useState<TaxDocumentType | null>(null);
   const [selectedItem, setSelectedItem] =
@@ -40,7 +43,6 @@ const TaxPageContent = () => {
   const [taxData, setTaxData] = useState<PublishedTaxInvoiceResponseModel[]>(
     []
   );
-
   // 디바운싱된 검색어 (500ms 지연)
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
@@ -265,7 +267,7 @@ const TaxPageContent = () => {
 
   return (
     <>
-      <NotAllowed />
+      {/* <NotAllowed /> */}
       <div className="flex flex-col gap-8">
         <MainTitleSec
           selectedTaxType={selectedTaxType}
@@ -312,7 +314,11 @@ const TaxPageContent = () => {
                       : 'hover:bg-primary-hover'
                   }
                   onClick={handleHideRestore}
-                  disabled={checkedCount === 0 || isHideRestoreLoading}
+                  disabled={
+                    checkedCount === 0 ||
+                    isHideRestoreLoading ||
+                    role === 'viewer'
+                  }
                 />
               </div>
             )}

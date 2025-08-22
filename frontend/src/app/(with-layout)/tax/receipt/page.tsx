@@ -93,7 +93,7 @@ const TaxReceiptPage = () => {
 
   return (
     <>
-      <NotAllowed />
+      {/* <NotAllowed /> */}
       <div className="flex flex-col gap-8 pt-10 px-10">
         <div className="Heading-1 text-dg">현금영수증</div>
 

@@ -107,7 +107,7 @@ const TaxDraftPage = () => {
 
   return (
     <>
-      <NotAllowed />
+      {/* <NotAllowed /> */}
       <div className={`flex flex-col gap-8`}>
         <MainTitleSec
           selectedTab={selectedTab}

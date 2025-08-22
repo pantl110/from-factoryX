@@ -14,7 +14,9 @@ const MainTitleSec = ({
   setSelectedTaxType,
 }: MainTitleSecProps) => {
   const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
   const tabs: string[] = ['전체', '매출', '매입'];
+
   const [isCreatTaxPanelOpen, setIsCreatTaxPanelOpen] = useState(false);
 
   return (
@@ -30,7 +32,7 @@ const MainTitleSec = ({
             onClick={() => {
               setIsCreatTaxPanelOpen(true);
             }}
-            disabled={!factoryId}
+            disabled={!factoryId || role === 'viewer'}
           />
         </div>
 

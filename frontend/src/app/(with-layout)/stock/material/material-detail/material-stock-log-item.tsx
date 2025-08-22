@@ -3,12 +3,16 @@ import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
+import useMemberStore from '@/store/member-store';
 
 interface MaterialStockLogItemProps {
   data: MaterialHistoryResponseModel;
 }
 
 const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case '출고':
@@ -58,13 +62,16 @@ const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
                 setIsTaxDetailPanelOpen(true);
               }}
             />
+          ) : data.cash_receipt_id ? (
+            '-'
           ) : (
             <MiniBtn
               text="연결 필요"
               textColor="text-dg"
               bgColor="bg-bg"
-              hoverColor="hover:bg-lg"
+              hoverColor="hover:bg-bg"
               height="h-8"
+              disabled={isViewer}
             />
           )
         ) : (
@@ -84,6 +91,8 @@ const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
                 setIsCashReceiptDetailPanelOpen(true);
               }}
             />
+          ) : data.purchase_tax_invoice_id ? (
+            '-'
           ) : (
             <MiniBtn
               text="연결 필요"
@@ -91,6 +100,7 @@ const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
               bgColor="bg-bg"
               hoverColor="hover:bg-lg"
               height="h-8"
+              disabled={isViewer}
             />
           )
         ) : (

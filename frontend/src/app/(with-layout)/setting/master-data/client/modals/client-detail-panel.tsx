@@ -28,7 +28,10 @@ const ClientDetailPanel = ({
 }: ClientDetailPanelProps) => {
   const { getClientDetail, clientDetail } = useGetClientDetail();
   const { updateClient, isLoading: isUpdateLoading } = useUpdateClient();
+
   const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
 
   const {
     handleSubmit,
@@ -139,7 +142,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="거래처명"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="(필수) 거래처명을 입력하세요."
                   required
                   {...field}
@@ -156,7 +159,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="사업자등록번호"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="(필수) 사업자등록번호를 입력하세요."
                   required
                   value={field.value}
@@ -177,7 +180,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="대표자명"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="(필수) 대표자명을 입력하세요."
                   required
                   {...field}
@@ -193,7 +196,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="이메일"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="-"
                   {...field}
                 />
@@ -210,7 +213,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="연락처"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="-"
                   value={field.value}
                   onChange={(e) => {
@@ -228,7 +231,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="팩스 번호"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="-"
                   value={field.value}
                   onChange={(e) => {
@@ -248,7 +251,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="업태"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="(필수) 업태를 입력하세요."
                   required
                   {...field}
@@ -262,7 +265,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="종목"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="(필수) 종목을 입력하세요."
                   required
                   {...field}
@@ -278,7 +281,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="사업장 주소"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="(필수) 사업장 주소를 입력하세요."
                   required
                   {...field}
@@ -305,7 +308,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="비고"
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="-"
                   textarea={true}
                   {...field}

@@ -21,6 +21,8 @@ const CompanyInfo = () => {
   const { getFactory, factory, error: _factoryError } = useGetFactory();
   const { updateFactory } = useUpdateFactory();
   const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
+  const isAdmin = role === 'admin';
 
   const {
     register,
@@ -124,12 +126,14 @@ const CompanyInfo = () => {
               required
               {...register('name')}
               showError={!!errors.name}
+              disabledSetting={!isAdmin}
             />
             <Input
               label="사업자등록번호"
               placeholder="사업자등록번호를 입력하세요."
               required
               showError={!!errors.business_registration_number}
+              disabledSetting={!isAdmin}
               {...register('business_registration_number', {
                 onChange: (e) => {
                   const formatted = formatBusinessNumber(e.target.value);
@@ -147,6 +151,7 @@ const CompanyInfo = () => {
               placeholder="대표자명을 입력하세요."
               label="대표자명"
               required
+              disabledSetting={!isAdmin}
               {...register('representative_name')}
             />
             <Input
@@ -154,6 +159,7 @@ const CompanyInfo = () => {
               label="이메일"
               required
               showError={!!errors.manager_email}
+              disabledSetting={!isAdmin}
               {...register('manager_email', {
                 pattern: {
                   value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -167,6 +173,7 @@ const CompanyInfo = () => {
               placeholder="연락처를 입력하세요."
               label="연락처"
               showError={!!errors.manager_phone}
+              disabledSetting={!isAdmin}
               {...register('manager_phone', {
                 onChange: (e) => {
                   const formatted = formatPhoneNumber(e.target.value);
@@ -182,6 +189,7 @@ const CompanyInfo = () => {
               placeholder="팩스 번호를 입력하세요."
               label="팩스 번호"
               showError={!!errors.manager_fax}
+              disabledSetting={!isAdmin}
               {...register('manager_fax', {
                 onChange: (e) => {
                   const formatted = formatFaxNumber(e.target.value);
@@ -198,29 +206,34 @@ const CompanyInfo = () => {
             <Input
               placeholder="업태를 입력하세요."
               label="업태"
+              disabledSetting={!isAdmin}
               {...register('business_type')}
             />
             <Input
               placeholder="종목을 입력하세요."
               label="종목"
+              disabledSetting={!isAdmin}
               {...register('business_category')}
             />
           </div>
           <Input
             placeholder="사업장 주소를 입력하세요."
             label="사업장 주소"
+            disabledSetting={!isAdmin}
             {...register('business_address')}
           />
-          <div className="flex justify-end">
-            <MiniBtn
-              text="저장"
-              textColor="text-primary"
-              bgColor="bg-primary-8"
-              hoverColor="hover:bg-secondary-hover"
-              type="submit"
-              disabled={isProcessing || !factoryId}
-            />
-          </div>
+          {isAdmin && (
+            <div className="flex justify-end">
+              <MiniBtn
+                text="저장"
+                textColor="text-primary"
+                bgColor="bg-primary-8"
+                hoverColor="hover:bg-secondary-hover"
+                type="submit"
+                disabled={isProcessing || !factoryId}
+              />
+            </div>
+          )}
         </form>
       </div>
 

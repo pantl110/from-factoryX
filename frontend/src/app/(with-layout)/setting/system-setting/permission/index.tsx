@@ -17,6 +17,8 @@ import Tooltip from '@/ui/tooltip';
 import NoHistoryBox from '@/ui/no-history-box';
 
 const Permission = () => {
+  const role = useMemberStore((state) => state.role);
+
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -142,7 +144,7 @@ const Permission = () => {
                     setIsInviteModalOpen(true);
                   }}
                   hoverColor="hover:bg-secondary-hover"
-                  disabled={!isFactoryInfoComplete}
+                  disabled={!isFactoryInfoComplete || role === 'viewer'}
                 />
                 {!isFactoryInfoComplete && (
                   <div className="absolute w-[400px] flex justify-end top-12 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
@@ -164,6 +166,7 @@ const Permission = () => {
                       setAllChecked(false);
                     }}
                     hoverColor="hover:bg-bg"
+                    disabled={role === 'viewer'}
                   />
                   <MiniBtn
                     text={getDeleteButtonText()}
@@ -178,6 +181,7 @@ const Permission = () => {
                         setIsDeleteModalOpen(true);
                       }
                     }}
+                    disabled={role === 'viewer'}
                   />
                 </>
               )}

@@ -73,6 +73,8 @@ const ProductDetail = ({
   } = useMaterialProduct();
   const { getMaterialDetail } = useGetMaterial();
   const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
   const {
     createLocation,
     updateLocation,
@@ -656,6 +658,7 @@ const ProductDetail = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={handleAddStockLocation}
+                disabled={isViewer}
               />
             </div>
             {/* locations가 없을 때 */}
@@ -691,6 +694,7 @@ const ProductDetail = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsMaterialModalOpen(true)}
+                disabled={isViewer}
               />
             </div>
             <StockStatus

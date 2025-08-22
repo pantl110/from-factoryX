@@ -37,6 +37,7 @@ const MainTitleSec = ({
   onOrderUploadClick,
 }: MainTitleSecProps) => {
   const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
 
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
@@ -51,7 +52,7 @@ const MainTitleSec = ({
             hoverColor="hover:bg-primary-hover"
             icon={CaretDown}
             iconPosition="right"
-            disabled={!factoryId}
+            disabled={!factoryId || role === 'viewer'}
           />
           {isSelectDropdownOpen &&
             onSelectDropdownClose &&

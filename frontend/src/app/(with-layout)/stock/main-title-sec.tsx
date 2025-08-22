@@ -31,6 +31,8 @@ const MainTitleSec = ({
   onOpenClientInfoModal,
 }: MainTitleSecProps) => {
   const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
+
   const handleTabClick = (tab: StockTabType) => {
     onTabChange(tab);
   };
@@ -45,7 +47,7 @@ const MainTitleSec = ({
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
-            disabled={!factoryId}
+            disabled={!factoryId || role === 'viewer'}
           />
           <div className="relative">
             <MiniBtn
@@ -63,7 +65,7 @@ const MainTitleSec = ({
                   ? onProductAddDropdownOpen(true)
                   : onMaterialAddDropdownOpen(true)
               }
-              disabled={!factoryId}
+              disabled={!factoryId || role === 'viewer'}
             />
 
             {isProductAddDropdownOpen && (
