@@ -1413,8 +1413,7 @@ class ProjectAPITestCase(TestCase):
         data = response.json()
 
         # 기본 필드 확인
-        self.assertEqual(data["project_id"], project.id)
-        self.assertEqual(data["quotation_id"], quotation.id)  # 견적서 ID 확인
+        self.assertEqual(data["id"], project.id)
         self.assertEqual(data["status"], "생산 대기")
         self.assertIn("created_at", data)
         self.assertIn("updated_at", data)
@@ -1445,9 +1444,6 @@ class ProjectAPITestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-
-        # 견적서 ID 확인
-        self.assertEqual(data["quotation_id"], quotation.id)
 
         # 날짜 필드가 None인지 확인
         self.assertIsNone(data["earliest_start_date"])
@@ -1571,7 +1567,7 @@ class ProjectAPITestCase(TestCase):
 
         self.assertEqual(response.status_code, 404)
         data = response.json()
-        self.assertIn("프로젝트를 찾을 수 없습니다", data["detail"])
+        self.assertIn("해당 프로젝트의 견적서를 찾을 수 없습니다.", data["detail"])
 
     def test_get_project_status_missing_factory_id(self):
         """factory_id 파라미터 누락 테스트"""
@@ -1646,7 +1642,7 @@ class ProjectAPITestCase(TestCase):
         data = response.json()
 
         # 데이터 일관성 확인
-        self.assertEqual(data["project_id"], project.id)
+        self.assertEqual(data["id"], project.id)
         self.assertEqual(data["status"], "생산 완료")
 
         # 디버깅: 실제 반환되는 값 확인

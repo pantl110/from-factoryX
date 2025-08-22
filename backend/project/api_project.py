@@ -20,6 +20,7 @@ from project.schemas.outbound import (
     ProjectDetailOut,
     ProjectUpdateOut,
     ProjectStatusOut,
+    ProjectStatusDetailOut,
     ProjectCloneOut,
 )
 from document.models import Quotation
@@ -28,6 +29,7 @@ from factory.utils import is_factory_member
 from document.models import Quotation, QuotationProduct
 from project.models import ProjectPlan, ProjectLog
 from factory.schemas.outbound import FactoryRowOut
+from project.utils import get_project_by_id
 
 
 router = Router(tags=["Project"], auth=jwt_auth)
@@ -159,10 +161,12 @@ async def clone_project(request, payload: ProjectCloneIn):
     "/{project_id}",
     summary="[C] 프로젝트 상태 조회",
     description="프로젝트 ID로 프로젝트 상태를 조회합니다.",
-    response={200: ProjectStatusOut, 404: dict, 403: dict, 500: dict},
+    response=ProjectStatusDetailOut,
     auth=jwt_auth,
 )
 async def get_project_status(request, project_id: int):
+    from asgiref.sync import sync_to_async
+    
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -170,62 +174,36 @@ async def get_project_status(request, project_id: int):
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
-    try:
-        # 프로젝트가 해당 공장에 속하는지 확인
-        project = await sync_to_async(Project.objects.get)(id=project_id)
+    # 프로젝트가 해당 공장에 속하는지 확인
+    project = await get_project_by_id(project_id)
 
-        # 프로젝트의 견적서가 해당 공장에 속하는지 확인
-        quotation_exists = await sync_to_async(
-            project.quotations.filter(factory_id=int(factory_id)).exists
-        )()
-        if not quotation_exists:
-            raise Project.DoesNotExist
+    # 프로젝트의 견적서가 해당 공장에 속하는지 확인
+    quotation_exists = await project.quotations.filter(factory_id=int(factory_id)).aexists()
+    if not quotation_exists:
+        raise HttpError(404, "해당 프로젝트의 견적서를 찾을 수 없습니다.")
 
-        # 프로젝트 플랜에서 가장 빠른 생산일자와 가장 늦은 마감일자 조회
-        @sync_to_async
-        def get_project_dates():
-            plans = project.plans.all()
-            earliest_start_date = None
-            latest_end_date = None
+    # 필요한 계산된 필드들을 추가
+    @sync_to_async
+    def get_project_details():
+        # 첫 번째 견적서 ID 가져오기
+        first_quotation = project.quotations.first()
+        quotation_id = first_quotation.id if first_quotation else None
+        
+        # 가장 빠른 시작 날짜와 가장 늦은 끝 날짜 계산
+        plans = list(project.plans.all())
+        earliest_start_date = min((plan.start_date for plan in plans), default=None)
+        latest_end_date = max((plan.end_date for plan in plans), default=None)
+        
+        # 납기일 계산 (첫 번째 견적서의 납기일)
+        due_date = first_quotation.due_date if first_quotation else None
+        
+        return earliest_start_date, latest_end_date, due_date, due_date
 
-            if plans:
-                start_dates = [plan.start_date for plan in plans]
-                end_dates = [plan.end_date for plan in plans]
-                earliest_start_date = min(start_dates) if start_dates else None
-                latest_end_date = max(end_dates) if end_dates else None
-
-            return earliest_start_date, latest_end_date
-
-        # 견적서의 납기일자와 ID 조회
-        @sync_to_async
-        def get_quotation_info():
-            quotation = project.quotations.filter(factory_id=int(factory_id)).first()
-            return quotation.due_date if quotation else None, (
-                quotation.id if quotation else None
-            )
-
-        earliest_start_date, latest_end_date = await get_project_dates()
-        due_date, quotation_id = await get_quotation_info()
-
-        return ProjectStatusOut(
-            project_id=project.id,
-            quotation_id=quotation_id,
-            status=project.status,
-            is_refunded=project.is_refunded,
-            created_at=project.created_at,
-            updated_at=project.updated_at,
-            earliest_start_date=earliest_start_date,
-            latest_end_date=latest_end_date,
-            due_date=due_date,
-            tax_invoice=(project.tax_invoice.id if project.tax_invoice else None),
-        )
-
-    except Project.DoesNotExist:
-        raise HttpError(404, "프로젝트를 찾을 수 없습니다.")
-    except Exception as e:
-        raise HttpError(
-            500, f"프로젝트 상태 조회 중 내부 서버 오류가 발생했습니다: {str(e)}"
-        )
+    earliest_start_date, latest_end_date, due_date, tax_invoice = await get_project_details()
+    project.earliest_start_date = earliest_start_date
+    project.latest_end_date = latest_end_date
+    project.due_date = due_date
+    return project
 
 
 @router.get(

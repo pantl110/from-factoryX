@@ -7,6 +7,14 @@ from stock.models import MaterialProduct
 from factory.models import FactoryEquipment
 
 
+async def get_project_by_id(project_id):
+    try:
+        project = await Project.objects.select_related("tax_invoice").prefetch_related("quotations", "plans", "logs").aget(id=project_id)
+        return project
+    except Project.DoesNotExist:
+        raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
+
+
 async def validate_factory_and_get_user(request) -> Tuple[int, object]:
     """팩토리 ID 검증 및 사용자 정보 반환"""
     from api.security import jwt_auth

@@ -1,7 +1,18 @@
 from ninja import Schema, ModelSchema
 from typing import Optional, List
 from factory.models import Factory, FactoryClient, FactoryMember
-from project.schemas.outbound import ProjectPlanDetailByEquipmentOut
+import datetime
+
+
+# 순환 import 방지를 위한 별도 정의
+class ProjectPlanDetailByEquipmentOut(Schema):
+    id: int
+    project_id: int
+    quotation_product_name: str
+    quantity: int
+    start_date: datetime.datetime
+    end_date: datetime.datetime
+    avg_production_time: int
 
 
 # ------------------------------------------------------------
