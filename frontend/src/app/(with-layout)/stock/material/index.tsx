@@ -114,26 +114,30 @@ const Material = ({
           value={search}
           onChange={handleSearch}
         />
-        <div className="flex gap-1">
-          <MiniBtn
-            text="취소"
-            textColor="text-dg"
-            borderColor="border-lg"
-            bgColor="bg-white"
-            hoverColor="hover:bg-bg"
-            onClick={() => setAllChecked(false)}
-          />
-          <MiniBtn
-            text={getDeleteButtonText()}
-            textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
-            borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
-            bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
-            hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
-            onClick={
-              checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
-            }
-          />
-        </div>
+        {materialList.length > 0 && (
+          <div className="flex gap-1">
+            <MiniBtn
+              text="취소"
+              textColor="text-dg"
+              borderColor="border-lg"
+              bgColor="bg-white"
+              hoverColor="hover:bg-bg"
+              onClick={() => setAllChecked(false)}
+            />
+            <MiniBtn
+              text={getDeleteButtonText()}
+              textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+              borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
+              bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
+              hoverColor={
+                checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'
+              }
+              onClick={
+                checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
+              }
+            />
+          </div>
+        )}
       </div>
 
       {isLoading ? (

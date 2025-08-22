@@ -1160,13 +1160,13 @@ export interface CashReceiptListResponseModel extends PaginationModel {
 
 ////////////
 // 바로빌 관련 api
-export interface BarobillCorpRegisterModel {
-  factory: string; // 공장 ID
-  grade: string; // 회원 등급 (예: 대표자, 담당자)
-  barobill_id: string; // 바로빌 ID
-  barobill_password: string; // 바로빌 비밀번호
-  barobill_password_confirm: string; // 바로빌 비밀번호 확인
-}
+// export interface BarobillCorpRegisterModel {
+//   factory: string; // 공장 ID
+//   grade: string; // 회원 등급 (예: 대표자, 담당자)
+//   barobill_id: string; // 바로빌 ID
+//   barobill_password: string; // 바로빌 비밀번호
+//   barobill_password_confirm: string; // 바로빌 비밀번호 확인
+// }
 
 export interface BarobillCorpCertModel {
   factory: string; // 공장 ID

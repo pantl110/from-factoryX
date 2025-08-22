@@ -365,6 +365,7 @@ const MasterData = () => {
               borderColor="border-lg"
               hoverColor="hover:bg-lg"
               onClick={handleAddBtnClick}
+              disabled={!factoryId}
             />
           )}
 

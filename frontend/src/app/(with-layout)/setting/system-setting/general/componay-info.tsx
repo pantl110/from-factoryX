@@ -218,7 +218,7 @@ const CompanyInfo = () => {
               bgColor="bg-primary-8"
               hoverColor="hover:bg-secondary-hover"
               type="submit"
-              disabled={isProcessing}
+              disabled={isProcessing || !factoryId}
             />
           </div>
         </form>

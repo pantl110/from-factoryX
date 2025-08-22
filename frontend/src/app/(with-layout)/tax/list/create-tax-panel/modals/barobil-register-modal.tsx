@@ -1,11 +1,12 @@
-import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
-import { useForm } from 'react-hook-form';
-import { validateEmail } from '@/utils/validation';
-import { BarobillCorpRegisterModel } from '@/types/data-model';
-import { useBarobill } from '@/hooks/tax/use-barobill';
+import { BarobillCorpCertModel } from '@/types/data-model';
 import useFactoryStore from '@/store/factory-store';
+import {
+  useBarobillRegister,
+  useBarobillCorpCertUrl,
+  useBarobillCertCheck,
+} from '@/hooks';
 
 interface BarobilRegisterModalProps {
   onClose: () => void;
@@ -15,74 +16,57 @@ export const BarobilRegisterModal = ({
   onClose,
 }: BarobilRegisterModalProps) => {
   const factoryId = useFactoryStore((state) => state.factoryId);
-  const {
-    registerCorp,
-    addUserToCorp,
-    getCorpCertUrl,
-    isRegisteringCorp,
-    isAddingUser,
-    isGettingCertUrl,
-  } = useBarobill();
+  const { register: registerBarobill } = useBarobillRegister();
+  const { getCertUrl } = useBarobillCorpCertUrl();
+  const { checkCert } = useBarobillCertCheck();
 
-  type FormValuesType = Pick<
-    BarobillCorpRegisterModel,
-    'barobill_id' | 'barobill_password' | 'barobill_password_confirm'
-  >;
+  // 인증서 등록
+  const getCertification = async (data: BarobillCorpCertModel) => {
+    const certRes = await getCertUrl(data);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-    setError,
-    reset,
-  } = useForm<FormValuesType>({
-    mode: 'onSubmit',
-    defaultValues: {
-      barobill_id: '',
-      barobill_password: '',
-      barobill_password_confirm: '',
-    },
-  });
-
-  const watchedValues = watch();
-
-  const onSubmit = async (data: FormValuesType) => {
-    if (!factoryId) {
-      setError('barobill_id', {
-        type: 'manual',
-        message: '공장 정보가 없습니다.',
-      });
+    if (certRes?.url) {
+      window.open(certRes.url, '_blank', 'noopener,noreferrer');
+      // noopener, noreferrer는 새 창에서 원 창에 접근하지 못하게, Referer를 보내지 않도록
+      onClose(); // 모달 닫기
       return;
     }
+  };
+
+  // 인증서 등록 여부 확인
+  const checkCertification = async () => {
+    const certRes = await checkCert();
+    return certRes;
+  };
+
+  const onSubmit = async () => {
+    if (!factoryId) {
+      return;
+    }
+
     try {
-      try {
-        await registerCorp(data);
-      } catch {
-        // 기업이 이미 존재하는 경우 등은 무시하고 다음 단계 진행
+      // 1. 회원가입 안되어있으면 // ‼️‼️‼️ factory member에서 확인하기
+      // 회원가입 진행
+      await registerBarobill();
+
+      // 2. 인증서 등록 여부 확인
+      const certCheckRes = await checkCertification();
+
+      if (certCheckRes?.is_valid) {
+        // 인증서 등록 되어 있으면
+        // 발급 진행 가능
+        onClose();
+        // TODO: 세금계산서 발급 페이지로 이동 또는 발급 진행
+      } else {
+        // 인증서 등록 안되어 있으면
+        await getCertification({
+          factory: factoryId.toString(),
+          barobill_id: '',
+          barobill_password: '',
+        });
       }
-
-      await addUserToCorp(data);
-
-      const certRes = await getCorpCertUrl({
-        barobill_id: data.barobill_id,
-        barobill_password: data.barobill_password,
-      });
-
-      if (certRes?.url) {
-        window.open(certRes.url, '_blank', 'noopener,noreferrer');
-        // noopener, noreferrer는 새 창에서 원 창에 접근하지 못하게, Referer를 보내지 않도록
-        reset(); // 폼 리셋
-        onClose(); // 모달 닫기
-        return;
-      }
-
-      setError('barobill_id', {
-        type: 'manual',
-        message: '인증서 등록 URL을 가져오지 못했습니다.',
-      });
-    } catch {
-      // 훅에서 에러 메시지 관리
+    } catch (error) {
+      console.error('바로빌 등록 중 오류:', error);
+      // TODO: 에러 처리
     }
   };
 
@@ -93,8 +77,7 @@ export const BarobilRegisterModal = ({
       subtitle={`세금계산서 발행 기능을 사용하려면 외부 전자세금계산서 계정이 필요해요.\n처음 한 번만 로그인하면 가입과 연동이 동시에 완료돼요.`}
       width="w-[600px]"
     >
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* 인풋 */}
+      {/* <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col mt-3">
           <div className="flex flex-col">
             <Input
@@ -147,32 +130,27 @@ export const BarobilRegisterModal = ({
               {errors.barobill_password_confirm?.message}
             </p>
           </div>
-        </div>
+        </div> */}
 
-        {/* 버튼 */}
-        <div className="flex gap-[10px] justify-end mt-2">
-          <MiniBtn
-            text="취소"
-            textColor="text-sv"
-            hoverColor="hover:bg-bg"
-            onClick={onClose}
-          />
+      {/* 버튼 */}
+      <div className="flex gap-[10px] justify-end mt-2">
+        <MiniBtn
+          text="취소"
+          textColor="text-sv"
+          hoverColor="hover:bg-bg"
+          onClick={onClose}
+        />
 
-          <MiniBtn
-            text="확인"
-            textColor="text-wh"
-            bgColor="bg-primary"
-            hoverColor="hover:bg-primary-hover"
-            type="submit"
-            disabled={
-              !factoryId ||
-              isRegisteringCorp ||
-              isAddingUser ||
-              isGettingCertUrl
-            }
-          />
-        </div>
-      </form>
+        <MiniBtn
+          text="확인"
+          textColor="text-wh"
+          bgColor="bg-primary"
+          hoverColor="hover:bg-primary-hover"
+          type="submit"
+          onClick={onSubmit}
+        />
+      </div>
+      {/* </form> */}
     </Modal>
   );
 };

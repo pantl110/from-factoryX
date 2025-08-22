@@ -1,6 +1,7 @@
 import { PendingTaxInvoiceResponseModel } from '@/types/data-model';
+import { TaxDocumentTypeColorMap } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
-// import Chip from '@/ui/chip';
+import Chip from '@/ui/chip';
 
 interface TableItemProps {
   item: PendingTaxInvoiceResponseModel;
@@ -38,11 +39,24 @@ const TableItem = ({
           }
         /> */}
       </div>
-      <p className="px-3 flex-2 truncate" title={item.tax_invoice_type}>
-        {item.tax_invoice_type}
-      </p>
-      <p className="px-3 flex-2 truncate" title={item.client_name}>
-        {item.client_name}
+      <div className="px-3 flex-2">
+        <Chip
+          text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}
+          bgColor={
+            TaxDocumentTypeColorMap[
+              item.tax_invoice_type as keyof typeof TaxDocumentTypeColorMap
+            ].bgColor
+          }
+          textColor={
+            TaxDocumentTypeColorMap[
+              item.tax_invoice_type as keyof typeof TaxDocumentTypeColorMap
+            ].textColor
+          }
+        />
+      </div>
+
+      <p className="px-3 flex-2 truncate" title={item.client_name || '-'}>
+        {item.client_name || '-'}
       </p>
       <p
         className="px-3 w-[200px] truncate"

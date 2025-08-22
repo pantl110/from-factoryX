@@ -206,7 +206,7 @@ const DashboardPageContent = () => {
               {/* Summary KPI */}
               <div className="flex flex-col">
                 <h3 className="Heading-3">Summary KPI</h3>
-                {dashboardData ? (
+                {factoryId && dashboardData ? (
                   <div className="flex flex-col gap-3 w-[280px] min-w-[248px] mt-3">
                     <DailyProductionQuantity
                       currentMonthProjects={

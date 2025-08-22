@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LogoutResponseModel } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
 import useFactoryStore from '@/store/factory-store';
+import { clearAllStorage } from '@/utils/storage';
 
 interface UseLogoutReturnModel {
   logout: () => Promise<{
@@ -44,17 +45,8 @@ export const useLogout = (): UseLogoutReturnModel => {
       clearAuth();
       clearFactoryId(); // factoryId도 클리어
 
-      // localStorage에서 persist 데이터 직접 제거
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth-storage');
-        localStorage.removeItem('factory-storage');
-      }
-
-      // 쿠키 삭제
-      document.cookie =
-        'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie =
-        'refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      // 모든 스토리지와 쿠키 정리
+      clearAllStorage();
 
       if (response.ok) {
         return {
@@ -72,11 +64,8 @@ export const useLogout = (): UseLogoutReturnModel => {
       clearAuth();
       clearFactoryId();
 
-      // localStorage에서 persist 데이터 직접 제거
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth-storage');
-        localStorage.removeItem('factory-storage');
-      }
+      // 모든 스토리지와 쿠키 정리
+      clearAllStorage();
 
       return {
         success: false,

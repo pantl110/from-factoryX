@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clearAllStorage } from '@/utils/storage';
 
 export interface UseWithdrawReturnModel {
   withdraw: () => Promise<void>;
@@ -38,15 +39,8 @@ export const useWithdraw = (): UseWithdrawReturnModel => {
 
       setIsSuccess(true);
 
-      // 로컬 스토리지 정리
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-
-      // 쿠키 정리 (필요한 경우)
-      document.cookie =
-        'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie =
-        'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      // 모든 스토리지와 쿠키 정리
+      clearAllStorage();
     } catch {
       setError('회원 탈퇴 중 오류가 발생했습니다.');
     } finally {

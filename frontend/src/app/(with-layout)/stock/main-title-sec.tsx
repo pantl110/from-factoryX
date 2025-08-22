@@ -5,6 +5,7 @@ import { StockTabType } from './types';
 import { CaretDown } from '@phosphor-icons/react';
 import ProductAddDropdown from './product/modals/product-add-dropdown';
 import MaterialAddDropdown from './material/modals/material-add-dropdown';
+import useFactoryStore from '@/store/factory-store';
 
 interface MainTitleSecProps {
   selectedTab: StockTabType;
@@ -29,6 +30,7 @@ const MainTitleSec = ({
   onOpenCreatePanel,
   onOpenClientInfoModal,
 }: MainTitleSecProps) => {
+  const factoryId = useFactoryStore((state) => state.factoryId);
   const handleTabClick = (tab: StockTabType) => {
     onTabChange(tab);
   };
@@ -43,6 +45,7 @@ const MainTitleSec = ({
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
+            disabled={!factoryId}
           />
           <div className="relative">
             <MiniBtn
@@ -60,6 +63,7 @@ const MainTitleSec = ({
                   ? onProductAddDropdownOpen(true)
                   : onMaterialAddDropdownOpen(true)
               }
+              disabled={!factoryId}
             />
 
             {isProductAddDropdownOpen && (

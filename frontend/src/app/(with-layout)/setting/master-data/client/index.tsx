@@ -32,7 +32,7 @@ const Client = ({
   return (
     <>
       <div className="w-full px-10 mb-10">
-        {clientList?.data.length === 0 ? (
+        {!factoryId || clientList?.data.length === 0 ? (
           <NoHistoryBox
             title="거래처정보가 아직 없어요."
             text="거래처 정보를 생성하면 이곳에 표시돼요."
