@@ -1,7 +1,8 @@
-from ninja import Schema
+from ninja import Schema, ModelSchema
 from typing import List, Optional
 from datetime import datetime
 from pydantic import field_validator
+from document.models import Quotation
 
 
 # Quotation Product Detail
@@ -37,6 +38,12 @@ class QuotationDetailOut(Schema):
     uploaded_file: Optional[str] = None
     due_date: Optional[str] = None
     products: List[QuotationDetailProductOut]
+
+
+class QuotationModelOut(ModelSchema):
+    class Meta:
+        model = Quotation
+        fields = '__all__'
 
 
 # (POST) Quotation Confirmed Response

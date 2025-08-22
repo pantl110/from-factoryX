@@ -2,8 +2,24 @@ from datetime import date
 from typing import List, Optional
 from ninja import Schema, ModelSchema
 from tax.models import NationalTaxService, CashReceipt
-from factory.schemas.outbound import FactoryClientOut
 from stock.schemas.outbound import ProductOut, MaterialDetailOut
+
+
+# 순환 import 방지를 위한 별도 정의
+class FactoryClientOut(Schema):
+    id: int
+    type: str
+    name: str
+    business_registration_number: Optional[str]
+    representative_name: Optional[str]
+    business_type: Optional[str]
+    business_category: Optional[str]
+    phone: Optional[str]
+    email: Optional[str]
+    fax: Optional[str]
+    address: Optional[str]
+    manager: Optional[str]
+    note: Optional[str]
 
 
 class NationalTaxServiceOut(ModelSchema):

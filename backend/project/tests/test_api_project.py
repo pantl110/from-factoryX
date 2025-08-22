@@ -1571,7 +1571,7 @@ class ProjectAPITestCase(TestCase):
 
         self.assertEqual(response.status_code, 404)
         data = response.json()
-        self.assertIn("프로젝트를 찾을 수 없습니다", data["detail"])
+        self.assertIn("해당 프로젝트의 견적서를 찾을 수 없습니다.", data["detail"])
 
     def test_get_project_status_missing_factory_id(self):
         """factory_id 파라미터 누락 테스트"""
