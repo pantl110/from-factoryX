@@ -74,21 +74,11 @@ class ProjectStatusOut(Schema):
     tax_invoice: Optional[int] = None
 
 
-class ProjectStatusDetailOut(Schema):
-    # ProjectStatusOut의 모든 필드들
-    project_id: int
-    quotation_id: Optional[int] = None
-    status: str
-    is_refunded: bool
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+class ProjectStatusDetailOut(ModelSchema):
     earliest_start_date: Optional[datetime.datetime] = None
     latest_end_date: Optional[datetime.datetime] = None
     due_date: Optional[datetime.date] = None
-    tax_invoice: Optional[int] = None
-    
-    # 추가 상세 정보
-    tax_invoice_detail: Optional[NationalTaxServiceOut] = Field(None, description="세금계산서 정보")
+    tax_invoice: Optional[NationalTaxServiceOut] = Field(None, description="세금계산서 정보")
     quotations: List[QuotationModelOut] = Field([], description="견적서 정보")
     logs: List[ProjectLogModelOut] = Field([], description="프로젝트 로그 정보")
 

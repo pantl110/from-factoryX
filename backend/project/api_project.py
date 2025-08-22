@@ -197,24 +197,13 @@ async def get_project_status(request, project_id: int):
         # 납기일 계산 (첫 번째 견적서의 납기일)
         due_date = first_quotation.due_date if first_quotation else None
         
-        return {
-            'project_id': project.id,
-            'quotation_id': quotation_id,
-            'status': project.status,
-            'is_refunded': project.is_refunded,
-            'created_at': project.created_at,
-            'updated_at': project.updated_at,
-            'earliest_start_date': earliest_start_date,
-            'latest_end_date': latest_end_date,
-            'due_date': due_date,
-            'tax_invoice': project.tax_invoice_id,
-            'tax_invoice_detail': project.tax_invoice,
-            'quotations': list(project.quotations.all()),
-            'logs': list(project.logs.all()),
-        }
-    
-    project_details = await get_project_details()
-    return project_details
+        return earliest_start_date, latest_end_date, due_date, due_date
+
+    earliest_start_date, latest_end_date, due_date, tax_invoice = await get_project_details()
+    project.earliest_start_date = earliest_start_date
+    project.latest_end_date = latest_end_date
+    project.due_date = due_date
+    return project
 
 
 @router.get(
