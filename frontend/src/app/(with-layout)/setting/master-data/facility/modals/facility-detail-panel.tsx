@@ -35,6 +35,9 @@ const FacilityDetailPanel = ({
   showWarningToast,
   facilityList,
 }: FacilityDetailPanelProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const { createEquipment } = useCreateEquipment();
   const { updateEquipment } = useUpdateEquipment();
   const factoryId = useMemberStore((state) => state.factoryId);
@@ -200,7 +203,7 @@ const FacilityDetailPanel = ({
                   <InfoLabelValue
                     label="설비명"
                     placeholder="(필수) 설비명을 입력하세요."
-                    isEditing={true}
+                    isEditing={!isViewer}
                     required
                     {...field}
                   />
@@ -228,7 +231,7 @@ const FacilityDetailPanel = ({
                   <InfoLabelValue
                     label="자동 배정 순위"
                     placeholder="(필수) 자동 배정 순위를 입력하세요."
-                    isEditing={true}
+                    isEditing={!isViewer}
                     inputType="text"
                     required
                     value={
@@ -253,7 +256,7 @@ const FacilityDetailPanel = ({
                   <InfoLabelValue
                     label="설비위치"
                     placeholder="설비위치를 입력하세요."
-                    isEditing={true}
+                    isEditing={!isViewer}
                     {...field}
                   />
                 )}
@@ -273,6 +276,7 @@ const FacilityDetailPanel = ({
                   className="w-full border border-lg rounded-lg pt-5 px-3 Re_Body-1 text-gr resize-none"
                   placeholder="특이사항을 입력하세요."
                   {...field}
+                  readOnly={isViewer}
                 />
               )}
             />

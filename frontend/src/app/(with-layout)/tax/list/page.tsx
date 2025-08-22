@@ -19,7 +19,7 @@ import {
   useUpdateTaxInvoice,
 } from '@/hooks';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
-import NotAllowed from '../not-allowed';
+// import NotAllowed from '../not-allowed';
 import useMemberStore from '@/store/member-store';
 
 const TaxPageContent = () => {

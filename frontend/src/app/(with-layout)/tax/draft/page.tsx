@@ -14,7 +14,7 @@ import { PendingTaxInvoiceListResponseModel } from '@/types/data-model';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
 import TableItem from './table-item';
-import NotAllowed from '../not-allowed';
+// import NotAllowed from '../not-allowed';
 
 const TaxDraftPage = () => {
   const [selectedTab, setSelectedTab] = useState<

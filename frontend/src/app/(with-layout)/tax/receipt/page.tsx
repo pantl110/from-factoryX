@@ -11,7 +11,7 @@ import { CashReceiptResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
-import NotAllowed from '../not-allowed';
+// import NotAllowed from '../not-allowed';
 
 const TaxReceiptPage = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 정렬 상태 관리
