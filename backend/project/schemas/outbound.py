@@ -159,11 +159,12 @@ class RefundDetailOut(Schema):
 # (POST) Refund Production Registration
 class RefundProductionRegistrationOut(Schema):
     message: str
+    action: str
     refund_id: int
     quotation_id: int
     quotation_product_id: int
     project_plan_id: int
-    production_log_id: int
+    log_id: int
     product_name: str
     quantity: int
     equipment_name: str
