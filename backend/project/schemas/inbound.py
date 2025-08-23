@@ -2,6 +2,9 @@ from ninja import Schema, FilterSchema
 from datetime import date
 from typing import Optional, List
 from enum import Enum
+from datetime import datetime
+from pydantic import field_validator
+from project.models import ProjectPlan
 
 
 # ------------------------------------------------------------
@@ -106,9 +109,23 @@ class ProjectPlanUpdateIn(Schema):
     equipment_id: Optional[int] = None
     quantity: Optional[int] = None
     status: Optional[str] = None
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     avg_production_time: Optional[int] = None
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v):
+        if v not in [value[0] for value in ProjectPlan.ProductionStatus.choices]:
+            raise ValueError("유효하지 않는 상태값입니다.")
+        return v
+
+    @field_validator("avg_production_time")
+    @classmethod
+    def validate_avg_production_time(cls, v):
+        if v is not None and v <= 0:
+            raise ValueError("평균 생산 시간은 0보다 커야 합니다.")
+        return v
 
 
 # ------------------------------------------------------------

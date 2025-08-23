@@ -242,10 +242,10 @@ class ProjectPlanAPITestCase(TestCase):
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
         data = response.json()
-        # print(
-        #     "🐍 File: tests/test_api_project_plan.py | Line: 245 | test_update_project_plan_success ~ data",
-        #     data,
-        # )
+        print(
+            "🐍 File: tests/test_api_project_plan.py | Line: 245 | test_update_project_plan_success ~ data",
+            data,
+        )
 
         self.assertEqual(response.status_code, 200)
 
@@ -302,7 +302,7 @@ class ProjectPlanAPITestCase(TestCase):
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
 
     def test_update_project_plan_invalid_status(self):
         """올바르지 않은 상태값으로 수정 시도 테스트"""
@@ -339,7 +339,7 @@ class ProjectPlanAPITestCase(TestCase):
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 422)
 
     def test_update_project_plan_invalid_quantity(self):
         """올바르지 않은 수량으로 수정 시도 테스트"""
