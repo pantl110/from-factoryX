@@ -845,7 +845,7 @@ async def cancel_tax_invoice(request, tax_id: int):
     # 멤버 권한 검증 추가해야함
 
     # 바로빌 상태 점검
-    result = await get_state_barobill_tax_invoice(
+    result = get_state_barobill_tax_invoice(
         tax_service.factory.business_registration_number,
         tax_service.mgt_key,
     )
