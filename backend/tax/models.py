@@ -18,7 +18,9 @@ class TaxInvoiceType(models.TextChoices):
 class PublishStatus(models.TextChoices):
     temporary = ("temporary", "임시 저장")
     pending = ("pending", "발행 대기")
+    processing = ("processing", "처리중")
     published = ("published", "발행 완료")
+    canceled = ("canceled", "발행 취소")
 
 
 # 국세청 API 세금계산서 데이터 저장

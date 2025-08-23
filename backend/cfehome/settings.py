@@ -322,6 +322,18 @@ CRONJOBS = [
         "0 9 * * *",
         "project.management.commands.update_production_status.Command.handle",
     ),
+    # 매일 오전 6시에 구독 자동 갱신 실행 (1일 후 만료되는 구독)
+    (
+        "0 6 * * *",
+        "subscription.management.commands.renew_subscriptions.Command.handle",
+        "--days=1",
+    ),
+    # 매일 오전 6시 30분에 구독 자동 갱신 실행 (당일 만료되는 구독 - 마지막 기회)
+    (
+        "30 6 * * *",
+        "subscription.management.commands.renew_subscriptions.Command.handle",
+        "--days=0",
+    ),
 ]
 
 # Toss Payments Settings

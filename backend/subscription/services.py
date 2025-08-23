@@ -110,6 +110,63 @@ class TossPaymentsService:
         except requests.exceptions.RequestException as e:
             raise PaymentError(f"결제 요청 오류: {str(e)}")
 
+    def cancel_payment(self, payment_key, cancel_reason, cancel_amount=None):
+        """결제 취소"""
+        url = f"{self.base_url}/v1/payments/{payment_key}/cancel"
+
+        data = {
+            "cancelReason": cancel_reason,
+        }
+
+        if cancel_amount:
+            data["cancelAmount"] = cancel_amount
+
+        try:
+            response = requests.post(url, json=data, headers=self.headers, timeout=30)
+
+            if response.status_code == 200:
+                return response.json()
+
+            # 에러 응답 처리
+            error_data = response.json() if response.content else {}
+            error_code = error_data.get("code")
+            error_message = error_data.get("message", "알 수 없는 오류")
+
+            logger.error(f"토스페이먼츠 취소 API 오류: {error_code} - {error_message}")
+            raise PaymentError(f"결제 취소 실패: {error_message}", error_code)
+
+        except requests.exceptions.Timeout:
+            raise PaymentError("결제 취소 요청 시간 초과")
+        except requests.exceptions.ConnectionError:
+            raise PaymentError("결제 서버 연결 실패")
+        except requests.exceptions.RequestException as e:
+            raise PaymentError(f"결제 취소 요청 오류: {str(e)}")
+
+    def get_payment_info(self, payment_key):
+        """결제 정보 조회"""
+        url = f"{self.base_url}/v1/payments/{payment_key}"
+
+        try:
+            response = requests.get(url, headers=self.headers, timeout=30)
+
+            if response.status_code == 200:
+                return response.json()
+
+            # 에러 응답 처리
+            error_data = response.json() if response.content else {}
+            error_code = error_data.get("code")
+            error_message = error_data.get("message", "알 수 없는 오류")
+
+            logger.error(f"토스페이먼츠 조회 API 오류: {error_code} - {error_message}")
+            raise PaymentError(f"결제 정보 조회 실패: {error_message}", error_code)
+
+        except requests.exceptions.Timeout:
+            raise PaymentError("결제 정보 조회 시간 초과")
+        except requests.exceptions.ConnectionError:
+            raise PaymentError("결제 서버 연결 실패")
+        except requests.exceptions.RequestException as e:
+            raise PaymentError(f"결제 정보 조회 오류: {str(e)}")
+
 
 class SubscriptionBillingService:
 
@@ -117,26 +174,28 @@ class SubscriptionBillingService:
         self.toss_service = TossPaymentsService()
 
     @transaction.atomic
-    def process_subscription_payment(self, subscription):
+    def process_subscription_payment(self, subscription_history):
         """구독 정기 결제 처리 (트랜잭션 적용)"""
-        order_id = f"subscription_{subscription.id}_{int(timezone.now().timestamp())}"
+        order_id = (
+            f"subscription_{subscription_history.id}_{int(timezone.now().timestamp())}"
+        )
 
         # Payment 객체 먼저 생성 (PENDING 상태)
         payment = Payment.objects.create(
-            subscription=subscription,
+            subscription_history=subscription_history,
             order_id=order_id,
-            amount=subscription.plan.price,
+            amount=subscription_history.subscription.price,
             status="PENDING",
         )
 
         try:
             # 토스페이먼츠 API 호출
             payment_result = self.toss_service.request_billing_payment(
-                billing_key=subscription.billing_key,
-                customer_key=subscription.customer_key,
-                amount=int(subscription.plan.price),
+                billing_key=subscription_history.billing_key,
+                customer_key=subscription_history.customer_key,
+                amount=int(subscription_history.subscription.price),
                 order_id=order_id,
-                order_name=f"{subscription.plan.name} 구독료",
+                order_name=f"{subscription_history.subscription.type} 구독료",
             )
 
             # 결제 성공 시 업데이트
@@ -147,9 +206,11 @@ class SubscriptionBillingService:
             payment.save()
 
             # 다음 결제일 업데이트
-            self._update_next_billing_date(subscription)
+            self._update_next_billing_date(subscription_history)
 
-            logger.info(f"구독 결제 성공: {subscription.id} - {payment.payment_key}")
+            logger.info(
+                f"구독 결제 성공: {subscription_history.id} - {payment.payment_key}"
+            )
             return payment
 
         except Exception as e:
@@ -158,11 +219,7 @@ class SubscriptionBillingService:
             payment.failure_message = str(e)
             payment.save()
 
-            # 구독 상태도 업데이트
-            subscription.status = "PAST_DUE"
-            subscription.save()
-
-            logger.error(f"구독 결제 실패: {subscription.id} - {str(e)}")
+            logger.error(f"구독 결제 실패: {subscription_history.id} - {str(e)}")
             raise e
 
     def _update_next_billing_date(self, subscription_history):
