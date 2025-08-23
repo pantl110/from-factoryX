@@ -12,6 +12,7 @@ interface MemberStoreModel {
   clearFactoryId: () => void;
   clearRole: () => void;
   clearIsBarobillUser: () => void;
+  clearAll: () => void;
 }
 
 const useMemberStore = create<MemberStoreModel>()(
@@ -61,13 +62,38 @@ const useMemberStore = create<MemberStoreModel>()(
         }
       },
       clearFactoryId: () => {
+        // persist 저장소를 먼저 제거
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('member-storage');
+        }
         set({ factoryId: null });
       },
       clearRole: () => {
+        // persist 저장소를 먼저 제거
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('member-storage');
+        }
         set({ role: null });
       },
       clearIsBarobillUser: () => {
+        // persist 저장소를 먼저 제거
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('member-storage');
+        }
         set({ isBarobillUser: null });
+      },
+      clearAll: () => {
+        // 1. 먼저 상태 초기화
+        set({ 
+          factoryId: null, 
+          role: null, 
+          isBarobillUser: null 
+        });
+        
+        // 2. 그 다음 localStorage 제거
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('member-storage');
+        }
       },
     }),
     {

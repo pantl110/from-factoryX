@@ -5,6 +5,7 @@ import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { useRouter } from 'next/navigation';
 import Tooltip from '@/ui/tooltip';
 import { useState } from 'react';
+import useMemberStore from '@/store/member-store';
 
 interface ButtonSectionProps {
   setIsTaxCreatePanelOpen: (open: boolean) => void;
@@ -32,6 +33,9 @@ const ButtonSection = ({
   isDirty,
 }: ButtonSectionProps) => {
   const router = useRouter();
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
@@ -53,7 +57,7 @@ const ButtonSection = ({
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
-            disabled={!isFormFilled || !isOrderStatus}
+            disabled={!isFormFilled || !isOrderStatus || isViewer}
             onClick={() => setIsTaxCreatePanelOpen(true)}
           />
           {showTooltip && (
@@ -83,6 +87,7 @@ const ButtonSection = ({
           borderColor="border-lg"
           onClick={onEmailClick}
           hoverColor="hover:bg-bg"
+          disabled={isViewer}
         />
         {isOrderStatus ? (
           <>
@@ -94,7 +99,7 @@ const ButtonSection = ({
               iconPosition="right"
               onClick={onStartProductionClick}
               hoverColor="hover:bg-primary-hover"
-              disabled={!isFormFilled || !hasQuotationProducts}
+              disabled={!isFormFilled || !hasQuotationProducts || isViewer}
             />
           </>
         ) : (
@@ -114,7 +119,7 @@ const ButtonSection = ({
                 }
               }}
               hoverColor="hover:bg-secondary-hover"
-              disabled={!isDirty}
+              disabled={!isDirty || isViewer}
             />
             <MiniBtn
               text="주문 확정"
@@ -125,7 +130,7 @@ const ButtonSection = ({
                 changeToConfirmed();
               }}
               hoverColor="hover:bg-primary-hover"
-              disabled={!isFormFilled || !hasQuotationProducts}
+              disabled={!isFormFilled || !hasQuotationProducts || isViewer}
             />
           </>
         )}

@@ -6,6 +6,7 @@ import Toast from '@/ui/toast';
 import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
 import { ClientModel, ProjectStatusType } from '@/types/data-model';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
+import useMemberStore from '@/store/member-store';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -43,6 +44,9 @@ const TitleSec = ({
   isDirty,
   isFormFilled,
 }: TitleSecProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const { isToastOpen, isVisible, showToast } = useToast(); // 토스트 훅
   const {
     isOpen: isQuotationStatusDropdownOpen,
@@ -62,7 +66,9 @@ const TitleSec = ({
       <div className="flex-1 gap-1 w-full">
         <div className="flex justify-between">
           <div
-            className={`${isOrderStatus ? 'cursor-default' : 'cursor-pointer'} relative w-fit`}
+            className={`${
+              isOrderStatus || isViewer ? 'cursor-default' : 'cursor-pointer'
+            } relative w-fit`}
           >
             <Chip
               text={
@@ -86,12 +92,14 @@ const TitleSec = ({
                     ? 'text-red'
                     : 'text-yellow'
               }
-              state={!isOrderStatus}
+              state={!isOrderStatus ? !isViewer : false}
               onClick={(e) => {
-                if (isOrderStatus) return;
+                if (isOrderStatus || isViewer) return;
                 if (e) openQuotationStatusDropdown(e);
               }}
-              cursor={isOrderStatus ? 'cursor-default' : 'cursor-pointer'}
+              cursor={
+                isOrderStatus || isViewer ? 'cursor-default' : 'cursor-pointer'
+              }
             />
             {isQuotationStatusDropdownOpen &&
               quotationStatusAnchorRect &&

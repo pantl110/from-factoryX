@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { LogoutResponseModel } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
 import useMemberStore from '@/store/member-store';
-import { clearAllStorage } from '@/utils/storage';
+import { clearAuthData } from '@/utils/storage';
 
 interface UseLogoutReturnModel {
   logout: () => Promise<{
@@ -16,7 +16,7 @@ interface UseLogoutReturnModel {
 export const useLogout = (): UseLogoutReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { clearAuth } = useAuthStore();
-  const { clearFactoryId, clearRole, clearIsBarobillUser } = useMemberStore();
+  const { clearAll: clearMember } = useMemberStore();
 
   const logout = async () => {
     setIsLoading(true);
@@ -41,14 +41,16 @@ export const useLogout = (): UseLogoutReturnModel => {
         result = await response.json();
       }
 
-      // API 호출 성공/실패와 관계없이 항상 전역 상태 초기화
+      console.log('=== logout 시작 ===');
+      
+      // 1. 먼저 localStorage에서 저장소 제거
+      clearAuthData();
+      
+      // 2. 그 다음 전역 상태 초기화
       clearAuth();
-      clearFactoryId(); // factoryId도 클리어
-      clearRole(); // role도 클리어
-      clearIsBarobillUser(); // isBarobillUser도 클리어
-
-      // 모든 스토리지와 쿠키 정리
-      clearAllStorage();
+      clearMember(); // member store 전체 클리어
+      
+      console.log('=== logout 완료 ===');
 
       if (response.ok) {
         return {
@@ -62,14 +64,16 @@ export const useLogout = (): UseLogoutReturnModel => {
         };
       }
     } catch {
-      // 에러가 발생해도 전역 상태는 초기화
+      console.log('=== logout 에러 처리 시작 ===');
+      
+      // 에러가 발생해도 1. 먼저 localStorage에서 저장소 제거
+      clearAuthData();
+      
+      // 2. 그 다음 전역 상태 초기화
       clearAuth();
-      clearFactoryId();
-      clearRole();
-      clearIsBarobillUser();
-
-      // 모든 스토리지와 쿠키 정리
-      clearAllStorage();
+      clearMember(); // member store 전체 클리어
+      
+      console.log('=== logout 에러 처리 완료 ===');
 
       return {
         success: false,

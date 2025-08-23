@@ -1,30 +1,48 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '@/store/auth-store';
+import useMemberStore from '@/store/member-store';
 
-// 로그인되어있는지 확인 후 로그인 안되어있으면 로그인 페이지로 리다이렉트
 export const useAuthGuard = () => {
   const router = useRouter();
-  const { userInfo, isAuthenticated, fetchUserInfo } = useAuthStore();
+  const { userInfo, isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const { factoryId, role, isBarobillUser } = useMemberStore();
+
+  // 전체 인증 상태를 확인하는 함수
+  const isFullyAuthenticated = () => {
+    return isAuthenticated && userInfo && factoryId !== null && role !== null && isBarobillUser !== null;
+  };
+
+  // 인증 체크가 완료되었는지 확인
+  const isAuthCheckComplete = !authLoading && (isAuthenticated || !userInfo);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      // 이미 인증된 사용자 정보가 있으면 스킵
-      if (userInfo && isAuthenticated) {
-        return;
-      }
+    // 로딩 중이면 아직 체크하지 않음
+    if (authLoading) return;
 
-      // persist된 상태가 없거나 만료된 경우에만 API 호출
-      try {
-        const isSuccess = await fetchUserInfo();
-        if (!isSuccess) {
-          router.push('/login');
-        }
-      } catch {
-        router.push('/login');
-      }
-    };
+    // 인증되지 않았거나 사용자 정보가 없으면 로그인 페이지로 이동
+    if (!isAuthenticated || !userInfo) {
+      router.push('/login');
+      return;
+    }
 
-    checkAuth();
-  }, [userInfo, isAuthenticated, fetchUserInfo, router]);
+    // 공장 ID나 역할이 없으면 로그인 페이지로 이동
+    if (factoryId === null || role === null || isBarobillUser === null) {
+      router.push('/login');
+      return;
+    }
+  }, [authLoading, isAuthenticated, userInfo, factoryId, role, isBarobillUser, router]);
+
+  // 전체 로딩 상태 (인증 로딩 + 멤버 정보 로딩)
+  const isLoading = authLoading || !isAuthCheckComplete;
+
+  return {
+    isFullyAuthenticated,
+    isLoading,
+    isAuthenticated,
+    userInfo,
+    factoryId,
+    role,
+    isBarobillUser,
+  };
 };

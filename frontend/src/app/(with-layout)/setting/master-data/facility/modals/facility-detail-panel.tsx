@@ -62,7 +62,12 @@ const FacilityDetailPanel = ({
       if (facilityId) {
         const result = await getEquipmentDetail(facilityId);
         if (result.success && result.data) {
-          setFacility(result.data);
+          // Ensure history is always an array
+          const facilityData = {
+            ...result.data,
+            history: result.data.history || [],
+          };
+          setFacility(facilityData);
         }
       }
     };
@@ -286,7 +291,7 @@ const FacilityDetailPanel = ({
           <div className="flex flex-col gap-3">
             <h3 className="Heading-3">생산 히스토리</h3>
             <div className="flex flex-col">
-              {facility && facility.history.length > 0 ? (
+              {facility && facility.history && facility.history.length > 0 ? (
                 <>
                   <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
                     <p className="px-3 flex-1">품목명</p>
@@ -295,7 +300,7 @@ const FacilityDetailPanel = ({
                     <p className="px-3 flex-1">단위당 시간</p>
                     <p className="px-3 flex-1">생산 마감일자</p>
                   </div>
-                  {facility.history.map((history) => (
+                  {facility.history?.map((history) => (
                     <FacilityHistoryItem key={history.id} history={history} />
                   ))}
                 </>
