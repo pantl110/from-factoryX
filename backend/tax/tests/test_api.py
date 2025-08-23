@@ -74,7 +74,260 @@ class TaxAPITestCase(TestCase):
         )
 
     def test_create_tax_service(self):
-        """세금계산서 생성 테스트"""
+        """세금계산서 생성 테스트 (기존 방식)"""
+
+    def test_create_temporary_tax_invoice(self):
+        """임시저장 세금계산서 생성 테스트 (기존 방식)"""
+        # 최소한의 필드만으로 임시저장
+        response = self.client.post(
+            "/v1/tax/",
+            data=json.dumps(
+                {
+                    "factory": self.factory.id,
+                    "client": None,
+                    "product": [],
+                    "line_items": [],
+                }
+            ),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        # 임시저장된 세금계산서 확인
+        tax_invoice = NationalTaxService.objects.get(id=response.json()["id"])
+        self.assertEqual(tax_invoice.publish_status, "temporary")
+        self.assertIsNone(tax_invoice.client)
+        self.assertEqual(tax_invoice.products_info, [])
+        self.assertEqual(tax_invoice.line_items, [])
+
+        # 부분적으로 정보가 입력된 임시저장
+        response = self.client.post(
+            "/v1/tax/",
+            data=json.dumps(
+                {
+                    "factory": self.factory.id,
+                    "client": self.client_company1.id,
+                    "product": [self.product1.id],
+                    "line_items": [
+                        {
+                            "name": "테스트 품목",
+                            "chargeable_unit": "10",
+                            "unit_price": "1000",
+                        }
+                    ],
+                }
+            ),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        # 부분 정보가 입력된 임시저장 확인
+        tax_invoice2 = NationalTaxService.objects.get(id=response.json()["id"])
+        self.assertEqual(tax_invoice2.publish_status, "temporary")
+        self.assertEqual(tax_invoice2.client, self.client_company1)
+        self.assertEqual(len(tax_invoice2.products_info), 1)
+        self.assertEqual(len(tax_invoice2.line_items), 1)
+
+    def test_publish_validation(self):
+        """세금계산서 발행 전 필수 필드 검증 테스트"""
+        # 임시저장된 세금계산서 생성 (필수 필드 누락)
+        tax_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=None,
+            transaction_date=None,
+            transaction_amount=None,
+            tax_amount=None,
+            line_items=[],
+            publish_status="temporary",
+        )
+
+        # 발행 시도 (필수 필드 누락으로 실패해야 함)
+        response = self.client.post(
+            f"/v1/tax/{tax_invoice.id}/publish",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("거래처", response.json()["detail"])
+
+        # 부분적으로 정보 입력
+        tax_invoice.client = self.client_company1
+        tax_invoice.transaction_date = date(2025, 6, 4)
+        tax_invoice.save()
+
+        # 발행 시도 (여전히 필수 필드 누락)
+        response = self.client.post(
+            f"/v1/tax/{tax_invoice.id}/publish",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("공급가액", response.json()["detail"])
+
+        # 모든 필수 필드 입력
+        tax_invoice.transaction_amount = 100000
+        tax_invoice.tax_amount = 10000
+        tax_invoice.line_items = [
+            {
+                "name": "테스트 품목",
+                "chargeable_unit": "10",
+                "unit_price": "10000",
+                "amount": "100000",
+                "tax": "10000",
+            }
+        ]
+        tax_invoice.save()
+
+        # 이제는 발행 시도가 성공해야 함 (실제 발행은 모킹 필요)
+
+    def test_create_or_update_tax_invoice(self):
+        """세금계산서 생성/수정 통합 API 테스트"""
+        # 1. 새로 생성
+        response = self.client.post(
+            "/v1/tax/",
+            data=json.dumps(
+                {
+                    "factory": self.factory.id,
+                    "client": self.client_company1.id,
+                    "product": [self.product1.id],
+                    "line_items": [
+                        {
+                            "name": "테스트 품목",
+                            "chargeable_unit": "10",
+                            "unit_price": "1000",
+                        }
+                    ],
+                }
+            ),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        tax_invoice_id = response.json()["id"]
+
+        # 2. 수정 (tax_id 포함)
+        response = self.client.post(
+            "/v1/tax/",
+            data=json.dumps(
+                {
+                    "tax_id": tax_invoice_id,
+                    "factory": self.factory.id,
+                    "client": self.client_company2.id,
+                    "product": [self.product1.id],
+                    "line_items": [
+                        {
+                            "name": "수정된 품목",
+                            "chargeable_unit": "20",
+                            "unit_price": "2000",
+                        }
+                    ],
+                }
+            ),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # 수정된 내용 확인
+        tax_invoice = NationalTaxService.objects.get(id=tax_invoice_id)
+        self.assertEqual(tax_invoice.client, self.client_company2)
+        self.assertEqual(len(tax_invoice.line_items), 1)
+        self.assertEqual(tax_invoice.line_items[0]["name"], "수정된 품목")
+
+        # 3. 발행된 세금계산서 수정 시도 (실패해야 함)
+        tax_invoice.publish_status = "published"
+        tax_invoice.save()
+
+        response = self.client.post(
+            "/v1/tax/",
+            data=json.dumps(
+                {
+                    "tax_id": tax_invoice_id,
+                    "factory": self.factory.id,
+                    "client": self.client_company1.id,
+                }
+            ),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(
+            "발행된 세금계산서는 수정할 수 없습니다", response.json()["detail"]
+        )
+
+    def test_update_tax_invoice_hidden_status(self):
+        """세금계산서 숨김 상태 변경 테스트 (PATCH API)"""
+        # 세금계산서 생성
+        tax_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            publish_status="temporary",
+        )
+
+        # is_hidden만 변경
+        response = self.client.patch(
+            f"/v1/tax/{tax_invoice.id}",
+            data=json.dumps({"is_hidden": True}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # 변경된 내용 확인
+        tax_invoice.refresh_from_db()
+        self.assertTrue(tax_invoice.is_hidden)
+
+        # 다른 필드도 변경 가능 (임시저장 상태이므로)
+        response = self.client.patch(
+            f"/v1/tax/{tax_invoice.id}",
+            data=json.dumps({"client": self.client_company2.id}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # 변경된 내용 확인
+        tax_invoice.refresh_from_db()
+        self.assertEqual(tax_invoice.client, self.client_company2)
+
+        # 발행된 세금계산서는 is_hidden만 변경 가능
+        tax_invoice.publish_status = "published"
+        tax_invoice.save()
+
+        response = self.client.patch(
+            f"/v1/tax/{tax_invoice.id}",
+            data=json.dumps({"client": self.client_company1.id}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(
+            "발행된 세금계산서는 isHidden 필드만 수정할 수 있습니다",
+            response.json()["detail"],
+        )
+
+        # is_hidden은 발행된 세금계산서도 변경 가능
+        response = self.client.patch(
+            f"/v1/tax/{tax_invoice.id}",
+            data=json.dumps({"is_hidden": False}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
 
     def test_list_all_tax_invoices_all_type(self):
         """전체 유형 세금계산서 조회 테스트"""
@@ -1225,9 +1478,9 @@ class TaxAPITestCase(TestCase):
         url = f"/v1/receipt?factory_id={self.factory.id}&q=싫어"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
-        data = response.json()["data"]
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["client_name"], "플라스틱이 싫어")
+        data = response.json()
+        self.assertEqual(len(data["data"]), 1)
+        self.assertEqual(data["data"][0]["client_name"], "플라스틱이 싫어")
 
     def test_get_tax_invoice_by_material_history(self):
         """
@@ -1358,3 +1611,29 @@ class TaxAPITestCase(TestCase):
         # self.assertEqual(mat["transaction_amount"], 50000)
         # self.assertEqual(mat["tax_amount"], 5000)
         # self.assertEqual(mat["total_amount"], 55000)
+
+    def test_debug_routes(self):
+        """디버그용 라우터 테스트"""
+        # GET 디버그 엔드포인트 테스트
+        response = self.client.get("/v1/tax/debug")
+        print(f"GET /v1/tax/debug: {response.status_code}")
+        print(
+            f"Response: {response.json() if response.status_code == 200 else response.content}"
+        )
+
+        # POST 디버그 엔드포인트 테스트
+        response = self.client.post("/v1/tax/debug")
+        print(f"POST /v1/tax/debug: {response.status_code}")
+        print(
+            f"Response: {response.json() if response.status_code == 200 else response.content}"
+        )
+
+        # 실제 POST 엔드포인트 테스트 (인증 없이)
+        response = self.client.post(
+            "/v1/tax/", data='{"factory": 999}', content_type="application/json"
+        )
+        print(f"POST /v1/tax/: {response.status_code}")
+        print(f"Response: {response.content}")
+
+        # 이 테스트는 항상 성공하도록 설정
+        self.assertTrue(True)

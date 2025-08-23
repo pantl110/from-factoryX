@@ -63,7 +63,7 @@ class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
         default=TransactionType.receipt,
         help_text="거래 유형",
     )
-    transaction_date = models.DateField(help_text="거래 일자")
+    transaction_date = models.DateField(null=True, blank=True, help_text="거래 일자")
     client = models.ForeignKey(
         FactoryClient,
         related_name="tax_invoices",
@@ -89,8 +89,10 @@ class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
         blank=True,
         help_text="품목 리스트 정보",
     )
-    transaction_amount = models.IntegerField(help_text="공급 가액")
-    tax_amount = models.IntegerField(help_text="세액")
+    transaction_amount = models.IntegerField(
+        null=True, blank=True, help_text="공급 가액"
+    )
+    tax_amount = models.IntegerField(null=True, blank=True, help_text="세액")
     is_hidden = models.BooleanField(default=False, help_text="숨김 여부")
     mgt_key = models.CharField(
         max_length=50,
