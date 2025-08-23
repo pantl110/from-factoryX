@@ -21,7 +21,7 @@ from document.schemas.outbound import (
 )
 from stock.models import Product
 from project.models import Project, ProjectPlan
-from factory.models import FactoryClient, FactoryEquipment
+from factory.models import FactoryClient, FactoryEquipment, Factory
 from factory.utils import is_factory_member
 from stock.schemas.outbound import ProductRowOut
 from factory.schemas.outbound import FactoryClientRowOut
@@ -231,6 +231,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
+    factory = await Factory.objects.aget(id=factory_id)
     await is_factory_member(int(factory_id), user)
 
     try:
@@ -251,7 +252,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             raise HttpError(400, "품목 정보는 필수입니다.")
 
         client_data = payload.client
-        factory = await sync_to_async(lambda: quotation.factory)()
+        # factory = await sync_to_async(lambda: quotation.factory)()
 
         # 클라이언트 ID가 제공된 경우
         updated = False  # 기본값 설정
