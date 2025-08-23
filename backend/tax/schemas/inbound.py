@@ -1,5 +1,5 @@
 from ninja import Schema, ModelSchema, Field, FilterSchema
-from tax.models import NationalTaxService
+from tax.models import NationalTaxService, PublishStatus
 from typing import List, Optional
 from datetime import date
 from pydantic import field_validator
@@ -14,6 +14,7 @@ class TaxServiceItem(Schema):
     amount: Optional[str] = Field(None, description="공급가액")
     tax: Optional[str] = Field(None, description="세액")
     description: Optional[str] = Field("", description="비고")
+    material_history: Optional[str] = Field(None, description="자재이력")
 
     @field_validator("purchase_expiry")
     @classmethod
@@ -36,7 +37,9 @@ class NationalTaxServiceCreateIn(ModelSchema):
         default=[],
         description="세금계산서 품목 리스트",
     )
-    publish_status: Optional[str] = Field(None, description="발행 상태")
+    publish_status: Optional[str] = Field(
+        PublishStatus.temporary, description="발행 상태"
+    )
 
     class Meta:
         model = NationalTaxService

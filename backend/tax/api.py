@@ -808,13 +808,15 @@ async def publish_tax_invoice(request, tax_id: int):
     tax_service.nts_send_state = "전송전"  # 1
     await tax_service.asave()
 
+    project = await tax_service.projects.afirst()
+
     # 웹소켓 알림
     if tax_service.tax_invoice_type == "sales":
         result = await send_notification_to_factory(
             factory_id=factory.id,
             notification_type="information",
             notification_case="sales_tax_invoice_published",
-            content=f"{tax_service.project.name} 매출 세금계산서 발행 완료",
+            content=f"{project.name if project else 'Unknown Project'} 매출 세금계산서 발행 완료",
             additional_data={"factory_id": factory.id},
         )
     elif tax_service.tax_invoice_type == "purchase":
@@ -822,7 +824,7 @@ async def publish_tax_invoice(request, tax_id: int):
             factory_id=factory.id,
             notification_type="information",
             notification_case="purchase_tax_invoice_published",
-            content=f"{tax_service.project.name} 매입 세금계산서 발행 완료",
+            content=f"{project.name if project else 'Unknown Project'} 매입 세금계산서 발행 완료",
             additional_data={"factory_id": factory.id},
         )
 
