@@ -16,11 +16,15 @@ class TaxInvoiceType(models.TextChoices):
 
 
 class PublishStatus(models.TextChoices):
-    temporary = ("temporary", "임시 저장")
-    pending = ("pending", "발행 대기")
-    processing = ("processing", "처리중")
-    published = ("published", "발행 완료")
-    canceled = ("canceled", "발행 취소")
+    temporary = ("temporary", "임시 저장")  # 바로빌에 넘기기 전 상태
+    pending = ("pending", "전송 대기")  # 바로빌에만 넘어간 상태
+    processing = ("processing", "처리 중")  # 바로빌에서 국세청 넘어간 상태
+    published = ("published", "발행 완료")  # 국세청에서 데이터 가져온 상태
+    canceled = (
+        "canceled",
+        "발행 취소",
+    )  # 전송 대기일 때만 가능 - 바로빌에서 국세청 가기 전에 한 취소를 의미
+    failed = ("failed", "발행 실패")  # 국세청에서 거부된 상태
 
 
 # 국세청 API 세금계산서 데이터 저장

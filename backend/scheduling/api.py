@@ -7,7 +7,12 @@ from datetime import timedelta
 from websocket.utils import send_notification_to_factory
 from notification.models import Notification
 from document.models import Quotation
-
+from tax.models import NationalTaxService, PublishStatus
+from tax.barobill_utils import get_state_barobill_tax_invoice
+from barobill.barobill_state import (
+    barobill_tax_service_states,
+    nts_tax_service_states,
+)
 
 router = Router(tags=["Scheduling"])
 
@@ -88,3 +93,64 @@ async def project_plan_end_notification(request):
         )
 
     return {"plans": len(plans)}
+
+
+@router.get(
+    "/tax/state",
+    summary="[S] 세금계산서 상태 조회",
+    description="세금계산서의 상태를 조회합니다.",
+)
+@scheduling_only
+async def tax_invoice_state_check(request):
+
+    @sync_to_async
+    def get_tax_invoice():
+        queryset = NationalTaxService.objects.select_related("factory").filter(
+            publish_status__in=[
+                PublishStatus.temporary,
+                PublishStatus.pending,
+                PublishStatus.processing,
+            ]
+        )
+        return list(queryset)
+
+    @sync_to_async
+    def bulk_update_tax_invoices(tax_invoices_to_update):
+        if tax_invoices_to_update:
+            NationalTaxService.objects.bulk_update(
+                tax_invoices_to_update,
+                ["publish_status", "barobill_state", "nts_send_state"],
+            )
+
+    tax_invoices = await get_tax_invoice()
+    tax_invoices_to_update = []
+
+    for tax_invoice in tax_invoices:
+        result = get_state_barobill_tax_invoice(
+            tax_invoice.factory.business_registration_number,
+            tax_invoice.mgt_key,
+        )
+        barobill_state = barobill_tax_service_states.get(result.BarobillState)
+        nts_send_state = nts_tax_service_states.get(result.NTSSendState)
+
+        new_status = None
+        if nts_send_state == "전송완료":
+            new_status = PublishStatus.published
+        elif nts_send_state == "전송실패":
+            new_status = PublishStatus.failed
+        elif nts_send_state == "전송중":
+            new_status = PublishStatus.processing
+        elif nts_send_state == "전송대기":
+            new_status = PublishStatus.pending
+
+        # 상태가 변경된 경우에만 업데이트 목록에 추가
+        if new_status and tax_invoice.publish_status != new_status:
+            tax_invoice.publish_status = new_status
+            tax_invoice.barobill_state = barobill_state
+            tax_invoice.nts_send_state = nts_send_state
+            tax_invoices_to_update.append(tax_invoice)
+
+    # 한 번에 모든 변경사항을 DB에 반영
+    await bulk_update_tax_invoices(tax_invoices_to_update)
+
+    return {"tax_invoices": len(tax_invoices_to_update)}

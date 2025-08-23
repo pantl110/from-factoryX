@@ -8,7 +8,11 @@ from factory.utils import get_factory_by_id, is_factory_member, get_factory_clie
 from stock.utils import get_product_list_by_ids
 from django.db import transaction
 from tax.utils import get_tax_service_by_id
-from tax.barobill_utils import issue_barobill_tax_invoice
+from tax.barobill_utils import (
+    issue_barobill_tax_invoice,
+    get_state_barobill_tax_invoice,
+    cancel_barobill_tax_invoice,
+)
 from tax.schemas.inbound import (
     NationalTaxServiceCreateIn,
     NationalTaxServiceUpdateIn,
@@ -16,10 +20,7 @@ from tax.schemas.inbound import (
 )
 from tax.schemas.outbound import (
     NationalTaxServiceOut,
-    NotLinkedTaxInvoiceOut,
-    AllTaxInvoiceOut,
     TaxInvoiceByMaterialOut,
-    CashReceiptDetailOut,
 )
 from tax.schemas.inbound import LinkTaxInvoiceIn
 from api.security import jwt_auth
@@ -38,7 +39,7 @@ from barobill.barobill_state import (
     barobill_purpose_types,
 )
 from datetime import datetime
-from typing import Optional, List
+from typing import List
 from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
 from stock.schemas.outbound import ProductRowOut
 from websocket.utils import send_notification_to_factory
@@ -843,25 +844,22 @@ async def cancel_tax_invoice(request, tax_id: int):
     member = await is_factory_member(tax_service.factory.id, user)
     # 멤버 권한 검증 추가해야함
 
-    certKey = settings.BAROBILL_CERT_KEY
-    corpNum = tax_service.factory.business_registration_number
-    mgtKey = tax_service.mgt_key
-    procType = "ISSUE_CANCEL"  # 바로빌 상태(발급완료) 된 세금계산서를 공급자가 취소하는 경우 (국세청 전송 전에만 가능)
-    memo = ""
+    # 바로빌 상태 점검
+    result = await get_state_barobill_tax_invoice(
+        tax_service.factory.business_registration_number,
+        tax_service.mgt_key,
+    )
+    barobill_state = barobill_tax_service_states.get(result.BarobillState)
+    nts_send_state = nts_tax_service_states.get(result.NTSSendState)
+    if barobill_state != "발급완료" or nts_send_state != "전송전":
+        raise HttpError(400, "세금계산서 발행을 취소할 수 있는 상태가 아닙니다.")
 
-    result = settings.BAROBILL_CLIENT.service.ProcTaxInvoice(
-        CERTKEY=certKey,
-        CorpNum=corpNum,
-        MgtKey=mgtKey,
-        ProcType=procType,
-        Memo=memo,
+    # 발행 취소
+    result = cancel_barobill_tax_invoice(
+        tax_service.factory.business_registration_number,
+        tax_service.mgt_key,
     )
 
-    if result < 0:  # 호출 실패
-        raise HttpError(
-            400,
-            f"바로빌 API 오류 - 세금계산서 발행 취소: {barobill_error_codes.get(result, 'Unknown Error')}",
-        )
     return {"message": "세금계산서 발행이 취소되었습니다."}
 
 
@@ -875,22 +873,10 @@ async def get_tax_invoice_state_from_barobill(request, tax_id: int):
     user = request.auth
     tax_service = await get_tax_service_by_id(tax_id)
     member = await is_factory_member(tax_service.factory.id, user)
-    certKey = settings.BAROBILL_CERT_KEY
     corpNum = tax_service.factory.business_registration_number
     mgtKey = tax_service.mgt_key
 
-    result = settings.BAROBILL_CLIENT.service.GetTaxInvoiceStateEX(
-        CERTKEY=certKey,
-        CorpNum=corpNum,
-        MgtKey=mgtKey,
-    )
-
-    if result.BarobillState < 0:  # 호출 실패
-        raise HttpError(
-            400,
-            f"바로빌 API 오류 - 세금계산서 상태 조회: {barobill_error_codes.get(result.BarobillState, 'Unknown Error')}",
-        )
-
+    result = get_state_barobill_tax_invoice(corpNum, mgtKey)
     # TODO : 상태조회를 CronJob으로 주기적으로 실행
 
     return {
