@@ -408,7 +408,15 @@ async def login(request, data: UserLoginIn):
 async def logout(request):
     user = request.auth
     await Jwt.objects.filter(user_id=user.id).adelete()
-    return {"detail": "로그아웃 되었어요."}
+
+    # 쿠키 삭제를 위한 응답 생성
+    response = JsonResponse({"detail": "로그아웃 되었어요."})
+
+    # 쿠키 삭제 (만료일을 과거로 설정하여 삭제)
+    response.delete_cookie("access")
+    response.delete_cookie("refresh")
+
+    return response
 
 
 @router.post(
