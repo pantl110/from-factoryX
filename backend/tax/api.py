@@ -52,22 +52,6 @@ router = Router(tags=["Tax"], auth=jwt_auth)
 # PATCH /api/tax/{tax_id} - 발행된 세금계산서는 is_hidden만 수정 가능
 
 
-@router.get("/debug", auth=None)
-def debug_endpoint(request):
-    """디버그용 엔드포인트 - 인증 없이 접근 가능"""
-    return {"message": "Tax router is working!", "path": request.path}
-
-
-@router.post("/debug", auth=None)
-def debug_post_endpoint(request):
-    """디버그용 POST 엔드포인트 - 인증 없이 접근 가능"""
-    return {
-        "message": "Tax POST router is working!",
-        "path": request.path,
-        "method": request.method,
-    }
-
-
 @router.get(
     "/published",
     summary="[C] 발행된 모든 세금계산서 조회",

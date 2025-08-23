@@ -1609,7 +1609,7 @@ class QuotationProductAPITestCase(TestCase):
         """견적서 품목 납품 상태 수정 성공 테스트"""
         url = f"/v1/document/quotation/product/{self.quotation_product1.id}/delivery?factory_id={self.factory.id}"
 
-        payload = {"is_delivered": True, "delivery_date": "2025-06-30"}
+        payload = {"is_delivery": True, "delivery_date": "2025-06-30"}
 
         response = self.client.patch(
             url,
@@ -1622,7 +1622,7 @@ class QuotationProductAPITestCase(TestCase):
         data = response.json()
 
         self.assertEqual(data["quotation_product_id"], self.quotation_product1.id)
-        self.assertTrue(data["is_delivered"])
+        self.assertTrue(data["is_delivery"])
         self.assertEqual(data["delivery_date"], "2025-06-30")
         self.assertIn("성공적으로 업데이트", data["message"])
 
@@ -1635,7 +1635,7 @@ class QuotationProductAPITestCase(TestCase):
         """견적서 품목 납품일자 제거 테스트"""
         url = f"/v1/document/quotation/product/{self.quotation_product2.id}/delivery?factory_id={self.factory.id}"
 
-        payload = {"is_delivered": True, "delivery_date": None}
+        payload = {"is_delivery": True, "delivery_date": None}
 
         response = self.client.patch(
             url,
@@ -1647,7 +1647,7 @@ class QuotationProductAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
-        self.assertTrue(data["is_delivered"])
+        self.assertTrue(data["is_delivery"])
         self.assertIsNone(data["delivery_date"])
 
         # 데이터베이스에서 확인
@@ -1659,7 +1659,7 @@ class QuotationProductAPITestCase(TestCase):
         """견적서 품목 납품 취소 테스트"""
         url = f"/v1/document/quotation/product/{self.quotation_product2.id}/delivery?factory_id={self.factory.id}"
 
-        payload = {"is_delivered": False, "delivery_date": None}
+        payload = {"is_delivery": False, "delivery_date": None}
 
         response = self.client.patch(
             url,
@@ -1671,7 +1671,7 @@ class QuotationProductAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
-        self.assertFalse(data["is_delivered"])
+        self.assertFalse(data["is_delivery"])
         self.assertIsNone(data["delivery_date"])
 
         # 데이터베이스에서 확인
@@ -1683,7 +1683,7 @@ class QuotationProductAPITestCase(TestCase):
         """존재하지 않는 견적서 품목 납품 상태 수정 테스트"""
         url = f"/v1/document/quotation/product/99999/delivery?factory_id={self.factory.id}"
 
-        payload = {"is_delivered": True, "delivery_date": "2025-06-30"}
+        payload = {"is_delivery": True, "delivery_date": "2025-06-30"}
 
         response = self.client.patch(
             url,
@@ -1713,7 +1713,7 @@ class QuotationProductAPITestCase(TestCase):
 
         url = f"/v1/document/quotation/product/{other_quotation_product.id}/delivery?factory_id={self.factory.id}"
 
-        payload = {"is_delivered": True, "delivery_date": "2025-06-30"}
+        payload = {"is_delivery": True, "delivery_date": "2025-06-30"}
 
         response = self.client.patch(
             url,
@@ -1728,7 +1728,7 @@ class QuotationProductAPITestCase(TestCase):
         """잘못된 날짜 형식으로 납품 상태 수정 테스트"""
         url = f"/v1/document/quotation/product/{self.quotation_product1.id}/delivery?factory_id={self.factory.id}"
 
-        payload = {"is_delivered": True, "delivery_date": "2025-13-45"}  # 잘못된 날짜
+        payload = {"is_delivery": True, "delivery_date": "2025-13-45"}  # 잘못된 날짜
 
         response = self.client.patch(
             url,
@@ -1743,7 +1743,7 @@ class QuotationProductAPITestCase(TestCase):
         """factory_id 누락 시 납품 상태 수정 테스트"""
         url = f"/v1/document/quotation/product/{self.quotation_product1.id}/delivery"
 
-        payload = {"is_delivered": True, "delivery_date": "2025-06-30"}
+        payload = {"is_delivery": True, "delivery_date": "2025-06-30"}
 
         response = self.client.patch(
             url,

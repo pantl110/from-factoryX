@@ -77,7 +77,6 @@ class SchedulingAPITestCase(TestCase):
             start_date=timezone.now() - timedelta(days=1),
             end_date=timezone.now() - timedelta(hours=1),  # 1시간 전 마감
             avg_production_time=3600,
-            is_completed=False,
             end_notification=False,
         )
 
@@ -309,7 +308,7 @@ class ProjectPlanEndNotificationTestCase(SchedulingAPITestCase):
     def test_project_plan_end_notification_completed_plan(self):
         """이미 완료된 계획은 알림 대상에서 제외되는 테스트"""
         # 프로젝트 계획을 완료 상태로 변경
-        self.project_plan.is_completed = True
+        self.project_plan.status = ProjectPlan.ProductionStatus.completed
         self.project_plan.save()
 
         url = "/v1/scheduling/project-plan/end"
@@ -559,7 +558,6 @@ class SchedulingIntegrationTestCase(TestCase):
             start_date=timezone.now() - timedelta(days=1),
             end_date=timezone.now() - timedelta(minutes=30),  # 30분 전 마감
             avg_production_time=2400,
-            is_completed=False,
             end_notification=False,
         )
 
@@ -628,7 +626,6 @@ class SchedulingIntegrationTestCase(TestCase):
             start_date=timezone.now() - timedelta(days=1),
             end_date=timezone.now() - timedelta(hours=1),
             avg_production_time=1800,
-            is_completed=False,
             end_notification=False,
         )
 
@@ -641,7 +638,6 @@ class SchedulingIntegrationTestCase(TestCase):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(hours=3),
             avg_production_time=3000,
-            is_completed=False,
             end_notification=False,
         )
 

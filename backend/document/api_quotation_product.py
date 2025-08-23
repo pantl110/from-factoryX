@@ -730,7 +730,7 @@ async def update_quotation_product_delivery(
             raise HttpError(403, "해당 공장의 견적서 품목이 아닙니다.")
 
         # 납품 상태 업데이트
-        quotation_product.is_delivery = payload.is_delivered
+        quotation_product.is_delivery = payload.is_delivery
 
         # 납품일자 업데이트
         if payload.delivery_date:
@@ -744,7 +744,7 @@ async def update_quotation_product_delivery(
 
         return 200, {
             "quotation_product_id": quotation_product.id,
-            "is_delivered": quotation_product.is_delivery,
+            "is_delivery": quotation_product.is_delivery,
             "delivery_date": (
                 quotation_product.delivery_date.isoformat()
                 if quotation_product.delivery_date

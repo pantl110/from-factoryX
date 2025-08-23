@@ -547,16 +547,23 @@ async def update_project_status(
                 project_plans = ProjectPlan.objects.filter(project_id=project_id)
 
                 for plan in project_plans:
-                    # 이미 완료된 계획은 건너뛰기
-                    if plan.is_completed:
+                    # 이미 완료된 계획이나 이미 납품된 제품은 건너뛰기
+                    if (
+                        plan.status == ProjectPlan.ProductionStatus.completed
+                        or plan.product.is_delivery
+                    ):
                         continue
 
                     # 계획을 완료 상태로 변경
-                    plan.is_completed = True
+                    plan.status = ProjectPlan.ProductionStatus.completed
                     plan.save()
 
-                    # 해당 제품에 연결된 원자재 조회
+                    # QuotationProduct의 납품 상태를 True로 설정
                     quotation_product = plan.product
+                    quotation_product.is_delivery = True
+                    quotation_product.save()
+
+                    # 해당 제품에 연결된 원자재 조회
                     material_products = MaterialProduct.objects.filter(
                         product=quotation_product.product
                     )

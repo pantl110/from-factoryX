@@ -70,5 +70,5 @@ class QuotationConfirmedIn(Schema):
 
 # (PATCH) Quotation Product Delivery Update
 class QuotationProductDeliveryUpdateIn(Schema):
-    is_delivered: bool
+    is_delivery: bool
     delivery_date: Optional[str] = None

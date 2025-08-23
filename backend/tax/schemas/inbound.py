@@ -36,6 +36,7 @@ class NationalTaxServiceCreateIn(ModelSchema):
         default=[],
         description="세금계산서 품목 리스트",
     )
+    publish_status: Optional[str] = Field(None, description="발행 상태")
 
     class Meta:
         model = NationalTaxService
