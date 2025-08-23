@@ -1,18 +1,8 @@
-from ninja import Schema, ModelSchema
+from ninja import Schema, ModelSchema, Field
 from typing import Optional, List
-from factory.models import Factory, FactoryClient, FactoryMember
+from factory.models import Factory, FactoryClient, FactoryMember, FactoryEquipment
 import datetime
-
-
-# 순환 import 방지를 위한 별도 정의
-class ProjectPlanDetailByEquipmentOut(Schema):
-    id: int
-    project_id: int
-    quotation_product_name: str
-    quantity: int
-    start_date: datetime.datetime
-    end_date: datetime.datetime
-    avg_production_time: int
+from project.schemas.outbound import ProjectPlanModelOut
 
 
 # ------------------------------------------------------------
@@ -44,29 +34,20 @@ class FactoryOut(Schema):
 
 
 # (GET) Factory Equipment
-class FactoryEqOut(Schema):
-    id: int
-    factory: int
-    name: str
-    status: str
-    priority: int
-    location: Optional[str]
-    note: Optional[str]
-    created_at: str
-    updated_at: str
+class FactoryEqOut(ModelSchema):
+    class Meta:
+        model = FactoryEquipment
+        fields = "__all__"
 
 
-class FactoryEqDetailOut(Schema):
-    id: int
-    factory: int
-    name: str
-    status: str
-    priority: int
-    location: Optional[str]
-    note: Optional[str]
-    created_at: str
-    updated_at: str
-    history: List[ProjectPlanDetailByEquipmentOut]
+class FactoryEqModelOut(ModelSchema):
+    plans: Optional[List[ProjectPlanModelOut]] = Field(
+        [], description="프로젝트 계획 리스트"
+    )
+
+    class Meta:
+        model = FactoryEquipment
+        fields = "__all__"
 
 
 # ------------------------------------------------------------
