@@ -146,3 +146,10 @@ class ProjectLogUpdateIn(Schema):
     type: Optional[str] = None
     title: Optional[str] = None
     content: Optional[str] = None
+
+
+# (POST) Refund Production Registration
+class RefundProductionRegistrationIn(Schema):
+    amount: int
+    production_amount: int
+    refund_date: str
