@@ -6,6 +6,7 @@ from typing import Optional
 # Factory API
 # ------------------------------------------------------------
 
+
 # (PATCH) Factory Update
 class FactoryUpdateIn(Schema):
     name: Optional[str] = None
@@ -25,6 +26,7 @@ class FactoryUpdateIn(Schema):
 # Factory Member API
 # ------------------------------------------------------------
 
+
 # (POST) Factory Member Invite
 class InviteMemberIn(Schema):
     email: str
@@ -40,6 +42,7 @@ class FactoryMemberUpdateIn(Schema):
 # ------------------------------------------------------------
 # Factory Equipment API
 # ------------------------------------------------------------
+
 
 # (POST) Factory Equipment Create
 class FactoryEqCreateIn(Schema):
@@ -71,6 +74,7 @@ class FactoryEqUpdateIn(Schema):
 # ------------------------------------------------------------
 # Factory Client API
 # ------------------------------------------------------------
+
 
 # (POST) Factory Client Create
 class FactoryClientCreateIn(Schema):

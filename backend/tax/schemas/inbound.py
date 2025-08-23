@@ -6,18 +6,20 @@ from pydantic import field_validator
 
 
 class TaxServiceItem(Schema):
-    purchase_expiry: date | str = Field(..., description="공급일자")
-    name: str = Field(..., description="품목")
+    purchase_expiry: Optional[date | str] = Field(None, description="공급일자")
+    name: Optional[str] = Field(None, description="품목")
     information: Optional[str] = Field("", description="규격")
-    chargeable_unit: str = Field(..., description="수량")
-    unit_price: str = Field(..., description="단가")
-    amount: str = Field(..., description="공급가액")
-    tax: str = Field(..., description="세액")
+    chargeable_unit: Optional[str] = Field(None, description="수량")
+    unit_price: Optional[str] = Field(None, description="단가")
+    amount: Optional[str] = Field(None, description="공급가액")
+    tax: Optional[str] = Field(None, description="세액")
     description: Optional[str] = Field("", description="비고")
 
     @field_validator("purchase_expiry")
     @classmethod
     def convert_date_to_string(cls, v):
+        if v is None:
+            return v
         if isinstance(v, date):
             return v.strftime("%Y%m%d")
         if isinstance(v, str):
@@ -26,11 +28,12 @@ class TaxServiceItem(Schema):
 
 
 class NationalTaxServiceCreateIn(ModelSchema):
+    tax_id: Optional[int] = Field(None, description="세금계산서 ID (수정 시에만 사용)")
     factory: int = Field(..., description="공장 ID")
-    client: int = Field(..., description="거래처 ID")
+    client: Optional[int] = Field(None, description="거래처 ID")
     product: List[Optional[int]] = Field(default=[], description="품목 ID 리스트")
-    line_items: List[TaxServiceItem] = Field(
-        ...,
+    line_items: Optional[List[TaxServiceItem]] = Field(
+        default=[],
         description="세금계산서 품목 리스트",
     )
 
@@ -56,7 +59,7 @@ class NationalTaxServiceCreateIn(ModelSchema):
 
 
 class NationalTaxServiceUpdateIn(ModelSchema):
-    factory: int = Field(..., description="공장 ID")
+    factory: Optional[int] = Field(None, description="공장 ID")
     client: Optional[int] = Field(None, description="거래처 ID")
     product: List[Optional[int]] = Field(default=None, description="품목 ID 리스트")
     line_items: Optional[List[TaxServiceItem]] = Field(
