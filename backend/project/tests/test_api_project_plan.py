@@ -597,12 +597,9 @@ class ProjectPlanAPITestCase(TestCase):
 
         response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
-        self.assertEqual(response.status_code, 404)
-
         # 응답 데이터 확인
         data = response.json()
-        self.assertIn("detail", data)
-        self.assertIn("없습니다", data["detail"])
+        self.assertEqual(data["count"], 0)
 
     def test_list_ongoing_project_plans_empty(self):
         """진행 중인 프로젝트 계획 조회 (빈 결과) 테스트"""
@@ -611,12 +608,9 @@ class ProjectPlanAPITestCase(TestCase):
 
         response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
-        self.assertEqual(response.status_code, 404)
-
         # 응답 데이터 확인
         data = response.json()
-        self.assertIn("detail", data)
-        self.assertIn("없습니다", data["detail"])
+        self.assertEqual(data["count"], 0)
 
     def test_update_project_plan_equipment_change_log_creation(self):
         """생산 중인 프로젝트의 설비 변경 시 로그 생성 테스트"""

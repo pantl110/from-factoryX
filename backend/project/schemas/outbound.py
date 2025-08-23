@@ -1,6 +1,6 @@
 from ninja import Schema, ModelSchema, Field
 import datetime
-from typing import Optional, List
+from typing import Optional, List, Literal
 from project.models import Project, ProjectLog, Refund, ProjectPlan
 from document.schemas.outbound import QuotationModelOut
 
@@ -235,6 +235,7 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     end_date: datetime.datetime
     avg_production_time: int
     is_completed: bool
+    material_status: Literal["충분", "부족"]
 
 
 # (GET) Daily Production Quantity

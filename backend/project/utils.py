@@ -9,7 +9,11 @@ from factory.models import FactoryEquipment
 
 async def get_project_by_id(project_id):
     try:
-        project = await Project.objects.select_related("tax_invoice").prefetch_related("quotations", "plans", "logs").aget(id=project_id)
+        project = (
+            await Project.objects.select_related("tax_invoice")
+            .prefetch_related("quotations", "plans", "logs")
+            .aget(id=project_id)
+        )
         return project
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
@@ -101,3 +105,43 @@ async def consume_raw_materials(product, amount: int):
             material.save()
 
     await consume_materials()
+
+
+async def check_material_availability(product_id: int, required_quantity: int) -> str:
+    """
+    제품 생산을 위한 원자재 수량 충분성을 확인합니다.
+
+    Args:
+        product_id: 제품 ID
+        required_quantity: 생산할 제품 수량
+
+    Returns:
+        str: "충분" 또는 "부족"
+    """
+
+    @sync_to_async
+    def check_materials():
+        # 해당 제품에 필요한 모든 원자재 조회
+        material_products = MaterialProduct.objects.filter(
+            product_id=product_id
+        ).select_related("material")
+
+        if not material_products.exists():
+            # 원자재가 필요하지 않은 제품인 경우
+            return "충분"
+
+        # 각 원자재별로 수량 충분성 확인
+        for material_product in material_products:
+            material = material_product.material
+            required_material_quantity = (
+                float(material_product.quantity) * required_quantity
+            )
+
+            # 현재 재고가 필요한 수량보다 적으면 "부족"
+            if material.current_stock < required_material_quantity:
+                return "부족"
+
+        # 모든 원자재가 충분하면 "충분"
+        return "충분"
+
+    return await check_materials()

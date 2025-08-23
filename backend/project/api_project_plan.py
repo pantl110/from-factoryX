@@ -34,6 +34,7 @@ from dateutil.relativedelta import relativedelta
 from project.schemas.outbound import ProductionProfitRateOut
 from document.models import QuotationProduct
 from websocket.utils import send_notification_to_factory
+from project.utils import check_material_availability
 
 router = Router(tags=["ProjectPlan"], auth=jwt_auth)
 
@@ -211,60 +212,70 @@ async def list_ongoing_project_plans(
             Project.ProjectStatus.production,
         ]
 
-        @sync_to_async
-        def get_ongoing_plans():
-            queryset = Project.objects.filter(status__in=ongoing_statuses)
-            if filters:
-                queryset = filters.filter(queryset)
-            ongoing_projects = list(queryset)
+        # 진행 중인 프로젝트 조회
+        ongoing_projects = await sync_to_async(list)(
+            Project.objects.filter(status__in=ongoing_statuses)
+        )
 
-            if not ongoing_projects:
-                return []
+        if filters:
+            ongoing_projects = await sync_to_async(list)(
+                filters.filter(Project.objects.filter(status__in=ongoing_statuses))
+            )
 
-            project_ids = [project.id for project in ongoing_projects]
-            plans = list(ProjectPlan.objects.filter(project_id__in=project_ids))
+        if not ongoing_projects:
+            return []
 
-            if not plans:
-                return []
+        project_ids = [project.id for project in ongoing_projects]
+        plans = await sync_to_async(list)(
+            ProjectPlan.objects.filter(project_id__in=project_ids)
+        )
 
-            plans_detail_list = []
-            for plan in plans:
-                quotation_product = QuotationProduct.objects.get(id=plan.product_id)
-                product = Product.objects.get(id=quotation_product.product_id)
-                equipment = FactoryEquipment.objects.get(id=plan.equipment_id)
+        if not plans:
+            return []
 
-                plans_detail_list.append(
-                    ProjectPlanDetailWithRelationsOut(
-                        id=plan.id,
-                        project_id=plan.project_id,
-                        quotation_product=QuotationProductDetailOut(
-                            id=quotation_product.id,
-                            product=ProductDetailOut(
-                                id=product.id,
-                                name=product.name,
-                                code=product.code,
-                                unit=product.unit,
-                                spec=product.spec,
-                            ),
-                            quantity=quotation_product.quantity,
-                            unit_price=quotation_product.unit_price,
+        plans_detail_list = []
+        for plan in plans:
+            quotation_product = await QuotationProduct.objects.aget(id=plan.product_id)
+            product = await Product.objects.aget(id=quotation_product.product_id)
+            equipment = await FactoryEquipment.objects.aget(id=plan.equipment_id)
+
+            # Material 수량 충분성 확인
+            material_status = await check_material_availability(
+                product.id, plan.quantity
+            )
+
+            plans_detail_list.append(
+                ProjectPlanDetailWithRelationsOut(
+                    id=plan.id,
+                    project_id=plan.project_id,
+                    quotation_product=QuotationProductDetailOut(
+                        id=quotation_product.id,
+                        product=ProductDetailOut(
+                            id=product.id,
+                            name=product.name,
+                            code=product.code,
+                            unit=product.unit,
+                            spec=product.spec,
                         ),
-                        equipment=EquipmentDetailOut(
-                            id=equipment.id,
-                            name=equipment.name,
-                            priority=equipment.priority,
-                        ),
-                        status=plan.status,
-                        quantity=plan.quantity,
-                        start_date=plan.start_date,
-                        end_date=plan.end_date,
-                        avg_production_time=plan.avg_production_time,
-                        is_completed=plan.is_completed,
-                    )
+                        quantity=quotation_product.quantity,
+                        unit_price=quotation_product.unit_price,
+                    ),
+                    equipment=EquipmentDetailOut(
+                        id=equipment.id,
+                        name=equipment.name,
+                        priority=equipment.priority,
+                    ),
+                    status=plan.status,
+                    quantity=plan.quantity,
+                    start_date=plan.start_date,
+                    end_date=plan.end_date,
+                    avg_production_time=plan.avg_production_time,
+                    is_completed=plan.is_completed,
+                    material_status=material_status,
                 )
-            return plans_detail_list
+            )
 
-        plans_detail_list = await get_ongoing_plans()
+        plans_detail_list = plans_detail_list
 
         if not plans_detail_list:
             raise HttpError(404, "진행 중인 프로젝트에 생성된 생산 계획이 없습니다.")
@@ -302,60 +313,70 @@ async def list_completed_project_plans(
             Project.ProjectStatus.completed,
         ]
 
-        @sync_to_async
-        def get_completed_plans():
-            queryset = Project.objects.filter(status__in=completed_statuses)
-            if filters:
-                queryset = filters.filter(queryset)
-            completed_projects = list(queryset)
+        # 완료된 프로젝트 조회
+        completed_projects = await sync_to_async(list)(
+            Project.objects.filter(status__in=completed_statuses)
+        )
 
-            if not completed_projects:
-                return []
+        if filters:
+            completed_projects = await sync_to_async(list)(
+                filters.filter(Project.objects.filter(status__in=completed_statuses))
+            )
 
-            project_ids = [project.id for project in completed_projects]
-            plans = list(ProjectPlan.objects.filter(project_id__in=project_ids))
+        if not completed_projects:
+            return []
 
-            if not plans:
-                return []
+        project_ids = [project.id for project in completed_projects]
+        plans = await sync_to_async(list)(
+            ProjectPlan.objects.filter(project_id__in=project_ids)
+        )
 
-            plans_detail_list = []
-            for plan in plans:
-                quotation_product = QuotationProduct.objects.get(id=plan.product_id)
-                product = Product.objects.get(id=quotation_product.product_id)
-                equipment = FactoryEquipment.objects.get(id=plan.equipment_id)
+        if not plans:
+            return []
 
-                plans_detail_list.append(
-                    ProjectPlanDetailWithRelationsOut(
-                        id=plan.id,
-                        project_id=plan.project_id,
-                        quotation_product=QuotationProductDetailOut(
-                            id=quotation_product.id,
-                            product=ProductDetailOut(
-                                id=product.id,
-                                name=product.name,
-                                code=product.code,
-                                unit=product.unit,
-                                spec=product.spec,
-                            ),
-                            quantity=quotation_product.quantity,
-                            unit_price=quotation_product.unit_price,
+        plans_detail_list = []
+        for plan in plans:
+            quotation_product = await QuotationProduct.objects.aget(id=plan.product_id)
+            product = await Product.objects.get(id=quotation_product.product_id)
+            equipment = await FactoryEquipment.objects.aget(id=plan.equipment_id)
+
+            # Material 수량 충분성 확인
+            material_status = await check_material_availability(
+                product.id, plan.quantity
+            )
+
+            plans_detail_list.append(
+                ProjectPlanDetailWithRelationsOut(
+                    id=plan.id,
+                    project_id=plan.project_id,
+                    quotation_product=QuotationProductDetailOut(
+                        id=quotation_product.id,
+                        product=ProductDetailOut(
+                            id=product.id,
+                            name=product.name,
+                            code=product.code,
+                            unit=product.unit,
+                            spec=product.spec,
                         ),
-                        equipment=EquipmentDetailOut(
-                            id=equipment.id,
-                            name=equipment.name,
-                            priority=equipment.priority,
-                        ),
-                        status=plan.status,
-                        quantity=plan.quantity,
-                        start_date=plan.start_date,
-                        end_date=plan.end_date,
-                        avg_production_time=plan.avg_production_time,
-                        is_completed=plan.is_completed,
-                    )
+                        quantity=quotation_product.quantity,
+                        unit_price=quotation_product.unit_price,
+                    ),
+                    equipment=EquipmentDetailOut(
+                        id=equipment.id,
+                        name=equipment.name,
+                        priority=equipment.priority,
+                    ),
+                    status=plan.status,
+                    quantity=plan.quantity,
+                    start_date=plan.start_date,
+                    end_date=plan.end_date,
+                    avg_production_time=plan.avg_production_time,
+                    is_completed=plan.is_completed,
+                    material_status=material_status,
                 )
-            return plans_detail_list
+            )
 
-        plans_detail_list = await get_completed_plans()
+        plans_detail_list = plans_detail_list
 
         if not plans_detail_list:
             raise HttpError(404, "완료된 프로젝트에 생성된 생산 계획이 없습니다.")
@@ -652,6 +673,9 @@ async def list_project_plans(request, project_id: int):
         product = await Product.objects.aget(id=quotation_product.product_id)
         equipment = await FactoryEquipment.objects.aget(id=plan.equipment_id)
 
+        # Material 수량 충분성 확인
+        material_status = await check_material_availability(product.id, plan.quantity)
+
         plans_detail_list.append(
             ProjectPlanDetailWithRelationsOut(
                 id=plan.id,
@@ -677,6 +701,7 @@ async def list_project_plans(request, project_id: int):
                 end_date=plan.end_date,
                 avg_production_time=plan.avg_production_time,
                 is_completed=plan.is_completed,
+                material_status=material_status,
             )
         )
 
