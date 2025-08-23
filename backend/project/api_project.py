@@ -30,7 +30,7 @@ from document.models import Quotation, QuotationProduct
 from project.models import ProjectPlan, ProjectLog
 from factory.schemas.outbound import FactoryRowOut
 from project.utils import get_project_by_id
-
+from helpers.material_consumption import process_material_consumption
 
 router = Router(tags=["Project"], auth=jwt_auth)
 
@@ -157,6 +157,97 @@ async def clone_project(request, payload: ProjectCloneIn):
         raise HttpError(500, "프로젝트 복제 중 내부 서버 오류가 발생했습니다.")
 
 
+@router.post(
+    "/manufactured-to-delivery/{project_id}",
+    summary="[C] 생산 완료 프로젝트 생산완료 처리",
+    description="생산 완료 프로젝트를 생산완료에서 납품으로 처리합니다.",
+    response={200: dict, 400: dict, 404: dict, 500: dict},
+)
+async def manufactured_to_delivery(request, project_id: int):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        project = await Project.objects.aget(id=project_id)
+
+        # 프로젝트 상태 확인
+        if project.status != "manufactured":
+            raise HttpError(400, "생산 완료 상태의 프로젝트만 납품 처리할 수 있습니다.")
+
+        quotation = await sync_to_async(project.quotations.first)()
+        if not quotation:
+            raise HttpError(404, "해당 프로젝트의 견적서를 찾을 수 없습니다.")
+
+        # quotation_products를 product와 함께 로드
+        quotation_products_list = await sync_to_async(list)(
+            quotation.products.select_related("product").all()
+        )
+
+        if not quotation_products_list:
+            raise HttpError(400, "해당 프로젝트에 견적 품목이 없습니다.")
+
+        # 원자재 소모 처리
+        try:
+            print(f"🔍 원자재 소모 처리 시작...")
+            print(f"🔍 견적 품목 수: {len(quotation_products_list)}")
+
+            for quotation_product in quotation_products_list:
+                print(
+                    f"🔍 처리 중인 제품: {quotation_product.product.name}, 수량: {quotation_product.quantity}"
+                )
+                success, message = await process_material_consumption(
+                    product_id=quotation_product.product.id,
+                    production_quantity=quotation_product.quantity,
+                    factory_id=int(factory_id),
+                )
+
+                if not success:
+                    print(f"❌ 원자재 소모 실패: {message}")
+                    raise HttpError(400, message)
+
+                print(f"✅ 원자재 소모 처리 완료: {message}")
+
+        except HttpError:
+            # HttpError는 그대로 재발생
+            raise
+        except Exception as e:
+            # 기타 예외는 500 에러로 변환
+            print(f"❌ 원자재 소모 처리 예외 발생: {str(e)}")
+            import traceback
+
+            print(f"❌ 원자재 소모 스택 트레이스: {traceback.format_exc()}")
+            raise HttpError(500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}")
+
+        # 프로젝트 상태를 납품으로 변경
+        project.status = "delivery"
+        await project.asave()
+
+        return 200, {
+            "message": "생산 완료 프로젝트가 성공적으로 납품 처리되었습니다.",
+            "project_id": project_id,
+            "status": "delivery",
+            "processed_at": datetime.now().isoformat(),
+        }
+
+    except Project.DoesNotExist:
+        raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
+
+    except Exception as e:
+        print(f"❌ manufactured_to_delivery API 에러: {str(e)}")
+        print(f"❌ 에러 타입: {type(e)}")
+        import traceback
+
+        print(f"❌ 스택 트레이스: {traceback.format_exc()}")
+        raise HttpError(
+            500,
+            f"생산 완료 프로젝트 납품 처리 중 내부 서버 오류가 발생했습니다: {str(e)}",
+        )
+
+
 @router.get(
     "/{project_id}",
     summary="[C] 프로젝트 상태 조회",
@@ -166,7 +257,7 @@ async def clone_project(request, payload: ProjectCloneIn):
 )
 async def get_project_status(request, project_id: int):
     from asgiref.sync import sync_to_async
-    
+
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -178,7 +269,9 @@ async def get_project_status(request, project_id: int):
     project = await get_project_by_id(project_id)
 
     # 프로젝트의 견적서가 해당 공장에 속하는지 확인
-    quotation_exists = await project.quotations.filter(factory_id=int(factory_id)).aexists()
+    quotation_exists = await project.quotations.filter(
+        factory_id=int(factory_id)
+    ).aexists()
     if not quotation_exists:
         raise HttpError(404, "해당 프로젝트의 견적서를 찾을 수 없습니다.")
 
@@ -188,18 +281,20 @@ async def get_project_status(request, project_id: int):
         # 첫 번째 견적서 ID 가져오기
         first_quotation = project.quotations.first()
         quotation_id = first_quotation.id if first_quotation else None
-        
+
         # 가장 빠른 시작 날짜와 가장 늦은 끝 날짜 계산
         plans = list(project.plans.all())
         earliest_start_date = min((plan.start_date for plan in plans), default=None)
         latest_end_date = max((plan.end_date for plan in plans), default=None)
-        
+
         # 납기일 계산 (첫 번째 견적서의 납기일)
         due_date = first_quotation.due_date if first_quotation else None
-        
+
         return earliest_start_date, latest_end_date, due_date, due_date
 
-    earliest_start_date, latest_end_date, due_date, tax_invoice = await get_project_details()
+    earliest_start_date, latest_end_date, due_date, tax_invoice = (
+        await get_project_details()
+    )
     project.earliest_start_date = earliest_start_date
     project.latest_end_date = latest_end_date
     project.due_date = due_date

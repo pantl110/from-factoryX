@@ -54,6 +54,12 @@ class Quotation(BaseModel):  # 견적서 -> 주문서(거래 확정시 타입 �
     due_date_notification = models.BooleanField(
         default=False, help_text="마감일 알림 여부"
     )
+    products_info = models.JSONField(
+        default=list,
+        null=True,
+        blank=True,
+        help_text="주문 확정 시 제품들 정보 (반품 항목은 추가되지 않도록)",
+    )
 
 
 class QuotationProduct(BaseModel):
