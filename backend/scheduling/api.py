@@ -68,7 +68,6 @@ async def project_plan_end_notification(request):
             "equipment__factory", "product__product"
         ).filter(
             status=ProjectPlan.ProductionStatus.production,
-            is_completed=False,
             end_date__lt=timezone.now(),
             end_notification=False,
         )

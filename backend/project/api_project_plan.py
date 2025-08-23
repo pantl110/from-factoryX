@@ -270,7 +270,6 @@ async def list_ongoing_project_plans(
                     start_date=plan.start_date,
                     end_date=plan.end_date,
                     avg_production_time=plan.avg_production_time,
-                    is_completed=plan.is_completed,
                     material_status=material_status,
                 )
             )
@@ -371,7 +370,6 @@ async def list_completed_project_plans(
                     start_date=plan.start_date,
                     end_date=plan.end_date,
                     avg_production_time=plan.avg_production_time,
-                    is_completed=plan.is_completed,
                     material_status=material_status,
                 )
             )
@@ -700,7 +698,6 @@ async def list_project_plans(request, project_id: int):
                 start_date=plan.start_date,
                 end_date=plan.end_date,
                 avg_production_time=plan.avg_production_time,
-                is_completed=plan.is_completed,
                 material_status=material_status,
             )
         )

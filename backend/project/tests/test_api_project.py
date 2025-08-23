@@ -518,7 +518,6 @@ class ProjectAPITestCase(TestCase):
                 datetime.combine(date.today(), datetime.min.time())
             ),
             avg_production_time=30,  # 평균 생산 시간 추가
-            is_completed=False,
         )
 
         plan2 = ProjectPlan.objects.create(
@@ -534,7 +533,6 @@ class ProjectAPITestCase(TestCase):
                 datetime.combine(date.today(), datetime.min.time())
             ),
             avg_production_time=30,  # 평균 생산 시간 추가
-            is_completed=False,
         )
 
         # 프로젝트를 완료 상태로 변경
@@ -557,8 +555,8 @@ class ProjectAPITestCase(TestCase):
         # ProjectPlan 완료 상태 확인
         plan1.refresh_from_db()
         plan2.refresh_from_db()
-        self.assertTrue(plan1.is_completed)
-        self.assertTrue(plan2.is_completed)
+        self.assertEqual(plan1.product.is_delivery, True)
+        self.assertEqual(plan2.product.is_delivery, True)
 
         # 원자재 히스토리 생성 확인
         material_histories = MaterialHistory.objects.filter(
@@ -613,7 +611,7 @@ class ProjectAPITestCase(TestCase):
             project=project,
             product=quotation_product,
             equipment=self.equipment,
-            status="생산 완료",
+            status=ProjectPlan.ProductionStatus.completed,
             quantity=5,
             start_date=timezone.make_aware(
                 datetime.combine(date.today() - timedelta(days=3), datetime.min.time())
@@ -622,8 +620,11 @@ class ProjectAPITestCase(TestCase):
                 datetime.combine(date.today(), datetime.min.time())
             ),
             avg_production_time=30,  # 평균 생산 시간 추가
-            is_completed=True,  # 이미 완료된 상태
         )
+
+        # QuotationProduct를 이미 납품 상태로 설정
+        quotation_product.is_delivery = True
+        quotation_product.save()
 
         # 기존 원자재 히스토리 개수 확인
         initial_history_count = MaterialHistory.objects.count()
@@ -647,7 +648,7 @@ class ProjectAPITestCase(TestCase):
 
         # ProjectPlan 상태는 그대로 유지 (이미 완료된 상태)
         plan.refresh_from_db()
-        self.assertTrue(plan.is_completed)
+        self.assertTrue(plan.product.is_delivery)
 
         # 원자재 히스토리가 추가로 생성되지 않았는지 확인
         final_history_count = MaterialHistory.objects.count()

@@ -236,7 +236,6 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     start_date: datetime.datetime
     end_date: datetime.datetime
     avg_production_time: int
-    is_completed: bool
     material_status: Literal["충분", "부족"]
 
 
