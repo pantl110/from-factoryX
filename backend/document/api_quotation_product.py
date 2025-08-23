@@ -410,44 +410,6 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 "avg_production_time": avg_production_time,
             }
 
-            # 원자재 소모 처리
-            try:
-                from stock.models import Material, MaterialProduct
-
-                # 제품과 연결된 원자재들 조회
-                material_products = await sync_to_async(list)(
-                    MaterialProduct.objects.filter(product=product)
-                )
-
-                for material_product in material_products:
-                    # 소모량 계산 = 생산 수량 * 단위 소모량
-                    consumption_quantity = production_quantity * float(
-                        material_product.quantity
-                    )
-
-                    # 원자재 재고 감소
-                    material = material_product.material
-                    if material.current_stock >= consumption_quantity:
-                        material.current_stock -= consumption_quantity
-                        await sync_to_async(material.save)()
-
-                    else:
-                        # 재고 부족 시 예외 발생
-                        raise HttpError(
-                            400,
-                            f"원자재 '{material.name}'의 재고가 부족합니다. 필요: {consumption_quantity}개, 현재: {material.current_stock}개",
-                        )
-
-            except HttpError:
-                # HttpError는 그대로 재발생
-                raise
-            except Exception as e:
-                # 기타 예외는 500 에러로 변환
-                print(f"Raw material consumption failed: {str(e)}")
-                raise HttpError(
-                    500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}"
-                )
-
             # 생산 계획 데이터 저장 (plan_id는 나중에 추가)
             production_plan_info = {
                 "project_plan_data": project_plan_data,
@@ -482,6 +444,23 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             for i, qp in enumerate(quotation_products):
                 print(f"[SAVE] Saving quotation product {i+1}...")
                 await sync_to_async(qp.save)()
+
+            # 3-1. quotation의 products_info 업데이트
+            print(f"[SAVE] Updating quotation products_info...")
+            products_info = []
+            for qp in quotation_products:
+                product_info = {
+                    "id": qp.product.id,
+                    "name": qp.product.name,
+                    "quantity": qp.quantity,
+                    "unit_price": qp.unit_price,
+                    "total_price": qp.quantity * qp.unit_price,
+                    "quotation_product_id": qp.id,
+                }
+                products_info.append(product_info)
+
+            quotation.products_info = products_info
+            await sync_to_async(quotation.save)()
 
             # 4. project 저장
             print(f"[SAVE] Saving project...")
