@@ -228,7 +228,7 @@ async def update_factory_member(
                 member = members[actual_member_id]
                 if payload.role:
                     member.role = payload.role
-                    await sync_to_async(member.save)()
+                    await member.asave()
                     # 알림 전송
                     await send_notification(
                         user_id=member.user_id,
