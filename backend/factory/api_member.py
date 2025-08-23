@@ -37,7 +37,7 @@ def _invite_member(factory_id: str, payload: InviteMemberIn, auth_user):
     invite_user = _get_user_from_email(email)
 
     # 2. 이미 FactoryMember에 존재하는지 확인
-    member = _is_already_factory_member(factory, invite_user)
+    member = _is_already_factory_member(invite_user)
     if member:
         raise HttpError(400, "이미 팩토리 멤버입니다.")
 
@@ -59,10 +59,10 @@ def _get_user_from_email(email: str) -> Optional[User]:
         return None
 
 
-def _is_already_factory_member(factory, user):
+def _is_already_factory_member(user):
     """이미 팩토리 멤버인지 확인"""
     try:
-        return FactoryMember.objects.get(factory=factory, user=user)
+        return FactoryMember.objects.get(user=user)
     except FactoryMember.DoesNotExist:
         return None
 
