@@ -128,6 +128,7 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     except FactoryClient.DoesNotExist:
         client = await FactoryClient.objects.acreate(
             factory=factory,
+            type=FactoryClient.ClientType.supplier,
             name=payload.client_info.name,
             business_registration_number=payload.client_info.business_registration_number,
             representative_name=payload.client_info.representative_name,
