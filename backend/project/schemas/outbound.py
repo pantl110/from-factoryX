@@ -214,6 +214,8 @@ class QuotationProductDetailOut(Schema):
     product: ProductDetailOut
     quantity: int
     unit_price: int
+    is_delivery: Optional[bool] = None
+    delivery_date: Optional[datetime.date] = None
 
 
 # (GET) Equipment Detail
