@@ -256,7 +256,6 @@ async def manufactured_to_delivery(request, project_id: int):
     auth=jwt_auth,
 )
 async def get_project_status(request, project_id: int):
-    from asgiref.sync import sync_to_async
 
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -290,11 +289,9 @@ async def get_project_status(request, project_id: int):
         # 납기일 계산 (첫 번째 견적서의 납기일)
         due_date = first_quotation.due_date if first_quotation else None
 
-        return earliest_start_date, latest_end_date, due_date, due_date
+        return earliest_start_date, latest_end_date, due_date
 
-    earliest_start_date, latest_end_date, due_date, tax_invoice = (
-        await get_project_details()
-    )
+    earliest_start_date, latest_end_date, due_date = await get_project_details()
     project.earliest_start_date = earliest_start_date
     project.latest_end_date = latest_end_date
     project.due_date = due_date

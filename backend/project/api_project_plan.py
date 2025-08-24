@@ -744,9 +744,8 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         )
 
     # 알림 전송
-    if (
-        payload.start_date.date() == timezone.now().date()
-        or old_start_date.date() == timezone.now().date()
+    if (payload.start_date and payload.start_date.date() == timezone.now().date()) or (
+        old_start_date and old_start_date.date() == timezone.now().date()
     ):
         await send_notification_to_factory(
             factory_id=int(factory_id),
