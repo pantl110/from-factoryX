@@ -14,6 +14,7 @@ interface SearchDeleteTableProps {
   onSearch?: (query: string) => void;
   searchKeyword?: string;
   hasData: boolean;
+  hasDeleteButton?: boolean;
 }
 
 const SearchDeleteTable = ({
@@ -25,6 +26,7 @@ const SearchDeleteTable = ({
   onSearch,
   searchKeyword = '',
   hasData,
+  hasDeleteButton = true,
 }: SearchDeleteTableProps) => {
   const role = useMemberStore((state) => state.role);
   const [searchValue, setSearchValue] = useState(searchKeyword);
@@ -46,7 +48,7 @@ const SearchDeleteTable = ({
         onChange={handleSearchChange}
         placeholder={placeholder}
       />
-      {hasData && (
+      {hasData && hasDeleteButton && (
         <div className="flex gap-1">
           <MiniBtn
             text="취소"

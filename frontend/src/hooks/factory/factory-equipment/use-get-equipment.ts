@@ -11,10 +11,12 @@ const useGetEquipment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; // 페이지 사이즈를 10개로 고정
   const factoryId = useMemberStore((state) => state.factoryId);
 
   // 전체 설비 목록 불러오기
-  const getEquipmentList = useCallback(async () => {
+  const getEquipmentList = useCallback(async (page: number = 1) => {
     setIsLoading(true);
     setError(null);
 
@@ -26,7 +28,7 @@ const useGetEquipment = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}&page=${page}&page_size=${pageSize}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -35,6 +37,7 @@ const useGetEquipment = () => {
       if (response.ok) {
         const result: EquipmentListResponseModel = await response.json();
         setEquipmentList(result);
+        setCurrentPage(page);
       } else {
         const errorData = await response.json();
         setError(errorData.detail || '설비 목록을 불러오지 못했습니다.');
@@ -46,11 +49,11 @@ const useGetEquipment = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [factoryId]);
+  }, [factoryId, pageSize]);
 
-  // 검색어로 모든 필드 검색 (중복 제거)
+  // 검색어로 설비 검색 (백엔드 페이지네이션 활용)
   const searchAllFields = useCallback(
-    async (value: string) => {
+    async (value: string, page: number = 1) => {
       setIsLoading(true);
       setError(null);
 
@@ -61,71 +64,24 @@ const useGetEquipment = () => {
       }
 
       try {
-        const isNumber = !isNaN(Number(value)) && value.trim() !== '';
-        const endpoints = [
-          { qs: `name=${encodeURIComponent(value)}&factory_id=${factoryId}` },
-          { qs: `status=${encodeURIComponent(value)}&factory_id=${factoryId}` },
+        // 백엔드에서 검색과 페이지네이션을 모두 처리하도록 단일 API 호출
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}&q=${encodeURIComponent(value)}&page=${page}&page_size=${pageSize}`,
           {
-            qs: `location=${encodeURIComponent(value)}&factory_id=${factoryId}`,
-          },
-          ...(isNumber
-            ? [{ qs: `priority=${Number(value)}&factory_id=${factoryId}` }]
-            : []),
-        ];
-        const fetches = endpoints.map(({ qs }) =>
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?${qs}`,
-            {
-              method: 'GET',
-              credentials: 'include',
-            }
-          ).then(async (res) => {
-            const data: EquipmentListResponseModel = await res.json();
-            return res.ok
-              ? data
-              : {
-                  data: [],
-                  count: 0,
-                  totalCnt: 0,
-                  pageCnt: 1,
-                  curPage: 1,
-                  nextPage: 1,
-                  previousPage: 1,
-                };
-          })
-        );
-        const resultsArr = await Promise.all(fetches);
-        // 모든 결과를 하나의 배열로 합치고 id 기준으로 중복 제거
-        const allItems: EquipmentResponseModel[] = resultsArr.flatMap(
-          (result: EquipmentListResponseModel) => {
-            if (
-              result &&
-              typeof result === 'object' &&
-              'data' in result &&
-              Array.isArray(result.data)
-            ) {
-              return result.data;
-            }
-            return [];
+            method: 'GET',
+            credentials: 'include',
           }
         );
-        const uniqueMap = new Map<number, EquipmentResponseModel>();
-        allItems.forEach((item) => {
-          if (item && item.id !== undefined) {
-            uniqueMap.set(item.id, item);
-          }
-        });
-        const uniqueItems = Array.from(uniqueMap.values());
-        // EquipmentListResponseModel 형태로 변환
-        setEquipmentList({
-          data: uniqueItems,
-          count: uniqueItems.length,
-          totalCnt: uniqueItems.length,
-          pageCnt: 1,
-          curPage: 1,
-          nextPage: 1,
-          previousPage: 1,
-        });
+
+        if (response.ok) {
+          const result: EquipmentListResponseModel = await response.json();
+          setEquipmentList(result);
+          setCurrentPage(page);
+        } else {
+          const errorData = await response.json();
+          setError(errorData.detail || '검색 결과를 불러오지 못했습니다.');
+          setEquipmentList(null);
+        }
       } catch {
         setError('서버 연결에 실패했습니다.');
         setEquipmentList(null);
@@ -133,15 +89,25 @@ const useGetEquipment = () => {
         setIsLoading(false);
       }
     },
-    [factoryId]
+    [factoryId, pageSize]
   );
 
   // 검색어가 바뀔 때마다 자동으로 fetch
   useEffect(() => {
     if (searchKeyword) {
-      searchAllFields(searchKeyword);
+      searchAllFields(searchKeyword, 1); // 검색 시 첫 페이지로
     } else {
-      getEquipmentList();
+      getEquipmentList(1); // 검색어가 없을 때는 첫 페이지로
+    }
+  }, [searchKeyword, searchAllFields, getEquipmentList]);
+
+  // 페이지 변경 함수
+  const changePage = useCallback(async (page: number) => {
+    if (searchKeyword) {
+      // 검색 중일 때는 검색 결과에서 페이지네이션 처리
+      await searchAllFields(searchKeyword, page);
+    } else {
+      await getEquipmentList(page);
     }
   }, [searchKeyword, searchAllFields, getEquipmentList]);
 
@@ -151,9 +117,12 @@ const useGetEquipment = () => {
     error,
     searchKeyword,
     setSearchKeyword,
+    currentPage,
+    pageSize,
+    changePage,
     refetch: useCallback(
       () =>
-        searchKeyword ? searchAllFields(searchKeyword) : getEquipmentList(),
+        searchKeyword ? searchAllFields(searchKeyword, 1) : getEquipmentList(1),
       [searchKeyword, searchAllFields, getEquipmentList]
     ),
   };

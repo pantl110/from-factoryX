@@ -4,10 +4,7 @@ import {
   DeliveryStatusType,
   ProjectStatusType,
 } from '@/types/status-type';
-import {
-  QuotationProductResponseModel,
-  ProductResponseModel,
-} from '@/types/data-model';
+import { ProjectPlanModel } from '@/types/data-model';
 import Checkbox from '@/ui/checkbox';
 import { usePortalDropdown, formatDate } from '@/hooks';
 import DeliveryStateDropdown from './modals/delivery-state-dropdown';
@@ -17,14 +14,10 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useUpdateQuotationProductDelivery } from '@/hooks/document/quotation/use-update-quotation-product-delivery';
 
 interface DeliveryTableItemProps {
-  data: QuotationProductResponseModel;
-  productDetail: ProductResponseModel | null;
+  data: ProjectPlanModel;
   isChecked: boolean;
   onToggle: () => void;
-  onItemClick: (
-    data: QuotationProductResponseModel,
-    productDetail: ProductResponseModel | null
-  ) => void;
+  onItemClick: (data: ProjectPlanModel) => void;
   projectStatus: ProjectStatusType;
   onDeliveryDateChange?: (id: string, newDate: string) => void;
   onDeliveryStatusChange?: (id: string, newStatus: string) => void;
@@ -37,7 +30,6 @@ interface DeliveryFormDataModel {
 
 const DeliveryTableItem = ({
   data,
-  productDetail,
   isChecked,
   onToggle,
   onItemClick,
@@ -48,15 +40,18 @@ const DeliveryTableItem = ({
   const {
     quantity,
     delivery_date: deliveryDate,
-    is_delivery: isDelivery,
-    id: productId,
+    is_completed: isDelivery,
+    quotation_product: {
+      product: {
+        id: productId,
+        name: productName,
+        code: productCode,
+        spec: productSpec,
+        unit: productUnit,
+      },
+    },
   } = data;
-  const {
-    name: productName,
-    code: productCode,
-    spec: productSpec,
-    unit: productUnit,
-  } = productDetail || {};
+
   const { isOpen, openDropdown, closeDropdown, anchorRect } =
     usePortalDropdown();
 
@@ -168,7 +163,7 @@ const DeliveryTableItem = ({
         </div>
         <div
           className="flex-2 px-3 flex justify-between cursor-pointer group"
-          onClick={() => onItemClick(data, productDetail)}
+          onClick={() => onItemClick(data)}
         >
           <p className=" text-dg Me_Body-1 truncate" title={productName || '-'}>
             {productName || '-'}

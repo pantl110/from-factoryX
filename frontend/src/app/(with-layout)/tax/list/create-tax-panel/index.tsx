@@ -20,54 +20,62 @@ import {
   CreateTaxInvoiceModel,
   ClientModel,
   ClientUpdateModel,
+  TaxClientInfoModel,
 } from '@/types/data-model';
+import { TransactionType } from '@/types/status-type';
 import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../type';
-import {
-  ClientDataSyncModel,
-  ProductDataSyncModel,
-} from '../../../quotation/type';
 import ProductInfo, {
   ProductInfoRefModel,
   ProductFormDataModel,
 } from './product-info';
 
+// 세금계산서 편집용 품목 데이터 타입
+interface TaxProductEditModel {
+  productId: number;
+  quantity: number;
+  unit_price: number;
+  products_info: any[]; // TaxProductInfoModel[]와 호환
+}
+
 interface CreatTaxPanelProps {
   onClose: () => void;
-  initialClientData?: ClientDataSyncModel;
-  initialProducts?: ProductDataSyncModel[];
+  tax_id?: number;
+  initialClientData?: TaxClientInfoModel;
+  initialProducts?: TaxProductEditModel[];
+  setIsEditingMode?: (isEditingMode: boolean) => void;
 }
 
 const CreatTaxPanel = ({
   onClose,
+  tax_id,
   initialClientData,
   initialProducts,
+  setIsEditingMode,
 }: CreatTaxPanelProps) => {
   const [isAddProductDropdownOpen, setIsAddProductDropdownOpen] =
     useState(false);
   const [isIssueTypeDropdownOpen, setIsIssueTypeDropdownOpen] = useState(false);
   const [isClaimTaxModalOpen, setIsClaimTaxModalOpen] = useState(false);
-  const [isBarobilRegisterModalOpen, setIsBarobilRegisterModalOpen] =
-    useState(false);
   const [selectedIssueType, setSelectedIssueType] = useState<
     '청구' | '영수' | null
   >(null);
   const [showErrors, setShowErrors] = useState(false);
 
   // 판매처 정보 폼 상태
-  const [isSellerInfoValid, setIsSellerInfoValid] = useState(false);
-  const [isSellerInfoDirty, setIsSellerInfoDirty] = useState(false);
+  const [isSellerInfoDirty, setIsSellerInfoDirty] = useState(false); // 전체적인 폼 변경 상태(작성일자 포함)
   const [isSellerInfoOtherFieldsDirty, setIsSellerInfoOtherFieldsDirty] =
-    useState(false);
+    useState(false); // 공장 정보를 업데이트 할 때 사용 (작성일자 포함 안함)
   const [hasSellerInfoRequiredValues, setHasSellerInfoRequiredValues] =
-    useState(false);
+    useState(false); // 판매처 정보 폼 필수값 채워져 있는지 확인
+  const [isSellerInfoValid, setIsSellerInfoValid] = useState(false); // 판매처 정보 폼 유효성 상태 (값들이 유효한지)
   const [sellerInfoFormData, setSellerInfoFormData] =
     useState<SellerInfoFormDataModel | null>(null);
 
   // 거래처 정보 폼 상태
-  const [isClientInfoValid, setIsClientInfoValid] = useState(false);
   const [isClientInfoDirty, setIsClientInfoDirty] = useState(false);
   const [hasClientInfoRequiredValues, setHasClientInfoRequiredValues] =
     useState(false);
+  const [isClientInfoValid, setIsClientInfoValid] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<
     number | undefined
   >();
@@ -76,7 +84,8 @@ const CreatTaxPanel = ({
 
   // 주문품목 정보 폼 상태
   const [isProductInfoDirty, setIsProductInfoDirty] = useState(false);
-  const [_productInfoFormData, setProductInfoFormData] =
+  const [isProductInfoValid, setIsProductInfoValid] = useState(false);
+  const [productInfoFormData, setProductInfoFormData] =
     useState<ProductFormDataModel | null>(null);
 
   // 저장 중 상태
@@ -105,8 +114,9 @@ const CreatTaxPanel = ({
 
   // 주문품목 정보 폼 변경 핸들러
   const handleProductInfoChange = useCallback(
-    (isDirty: boolean, formData: ProductFormDataModel) => {
+    (isDirty: boolean, isValid: boolean, formData: ProductFormDataModel) => {
       setIsProductInfoDirty(isDirty);
+      setIsProductInfoValid(isValid);
       setProductInfoFormData(formData);
     },
     []
@@ -196,6 +206,51 @@ const CreatTaxPanel = ({
     }
   }, [showErrors, isSellerInfoValid, isClientInfoValid]);
 
+  // 초기 데이터가 있을 때 폼 상태 자동 업데이트 // 수정 버튼을 눌러서 돌아오면 유효성 검사 하기 위해 사용
+  useEffect(() => {
+    if (sellerInfoFormData) {
+      const hasRequiredSellerValues = !!(
+        sellerInfoFormData.companyName &&
+        sellerInfoFormData.businessNumber &&
+        sellerInfoFormData.representativeName &&
+        sellerInfoFormData.businessType &&
+        sellerInfoFormData.businessCategory
+      );
+      setHasSellerInfoRequiredValues(hasRequiredSellerValues);
+    }
+
+    if (initialClientData) {
+      // 거래처 정보의 필수값들이 실제로 채워져 있는지 확인
+      const hasRequiredClientValues = !!(
+        initialClientData.name &&
+        initialClientData.business_registration_number &&
+        initialClientData.representative_name &&
+        initialClientData.business_type &&
+        initialClientData.business_category
+      );
+
+      if (hasRequiredClientValues) {
+        setHasClientInfoRequiredValues(true);
+      }
+    }
+
+    if (initialProducts && initialProducts.length > 0) {
+      // 주문품목 정보의 유효성을 실제로 검증
+      const hasValidProducts = initialProducts.every(
+        (product) =>
+          product.productId &&
+          product.quantity &&
+          product.unit_price &&
+          product.products_info &&
+          product.products_info.length > 0
+      );
+
+      if (hasValidProducts) {
+        setIsProductInfoValid(true);
+      }
+    }
+  }, [initialClientData, initialProducts, sellerInfoFormData]);
+
   // 공장 정보 업데이트 함수
   const updateFactoryInfo = (formData: SellerInfoFormDataModel) => {
     if (factoryId && formData) {
@@ -258,7 +313,7 @@ const CreatTaxPanel = ({
   );
 
   // 임시 저장 버튼 클릭 핸들러
-  const handleTemporarySave = async () => {
+  const handleTemporarySave = async (transactionType: TransactionType) => {
     setIsSaving(true);
 
     try {
@@ -302,20 +357,55 @@ const CreatTaxPanel = ({
         }
       }
 
-      // 세금계산서 생성 ‼️‼️‼️‼️‼️ 수정 필요
+      // 세금계산서 생성
       if (selectedClientId && factoryId) {
+        // writeDate를 YYYYMMDD 형식으로 변환
+        const formatDateToYYYYMMDD = (dateString: string) => {
+          if (!dateString) return '';
+          // 0000-00-00 형식을 YYYYMMDD로 변환
+          return dateString.replace(/-/g, '');
+        };
+
+        // ProductInfo에서 가져온 데이터 사용
+        const productIds =
+          productInfoFormData?.products
+            ?.map((p) => p.productId)
+            .filter(Boolean) || [];
+        const lineItems =
+          productInfoFormData?.products?.map((p) => ({
+            purchase_expiry: formatDateToYYYYMMDD(
+              sellerInfoFormData?.writeDate || ''
+            ), // YYYYMMDD 형식 (예: "20241231")
+            name: p.productData?.name || '', // 품목명
+            information: p.productData?.spec || '', // 규격
+            chargeable_unit: p.quantity.toString() || '0', // 수량
+            unit_price: p.unitPrice.toString() || '0', // 단가
+            amount: ((p.quantity || 0) * (p.unitPrice || 0)).toString() || '0', // 공급가액
+            tax:
+              ((p.quantity || 0) * (p.unitPrice || 0) * 0.1).toString() || '0', // 세액
+          })) || [];
+
         const taxInvoiceData: CreateTaxInvoiceModel = {
+          tax_id: tax_id,
           factory: factoryId,
           client: selectedClientId,
-          product: [],
-          line_items: [],
+          product: productIds,
+          line_items: lineItems,
+          tax_invoice_type: 'sales', // 항상 매출 세금계산서
+          transaction_type: transactionType,
           transaction_date: sellerInfoFormData?.writeDate || '',
+          transaction_amount: lineItems.reduce(
+            (sum, item) => sum + Number(item.amount),
+            0
+          ),
+          tax_amount: lineItems.reduce(
+            (sum, item) => sum + Number(item.tax),
+            0
+          ),
+          is_hidden: false,
         };
         await handleCreateTaxInvoice(taxInvoiceData);
       }
-
-      // 판넬 닫기
-      onClose();
     } catch (error) {
       alert('저장 중 오류가 발생했습니다: ' + error);
     } finally {
@@ -325,8 +415,8 @@ const CreatTaxPanel = ({
 
   // 발행방식 선택 버튼 클릭 핸들러
   const handleIssueTypeDropdownOpen = () => {
-    // 두 폼 모두 유효해야 드롭다운 열기
-    if (!isSellerInfoValid || !isClientInfoValid) {
+    // 판매처, 거래처, 주문품목 정보 모두 유효해야 드롭다운 열기
+    if (!isSellerInfoValid || !isClientInfoValid || !isProductInfoValid) {
       setShowErrors(true);
       return;
     }
@@ -334,23 +424,6 @@ const CreatTaxPanel = ({
     setShowErrors(false);
     setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);
   };
-
-  // ‼️‼️‼️‼️‼️ 수정 필요
-  const handleCreateTaxInvoiceForModal = useCallback(async () => {
-    const taxInvoiceData: CreateTaxInvoiceModel = {
-      factory: factoryId || 0,
-      client: selectedClientId || 0, // 선택된 거래처 ID 사용, 없으면 기본값 1
-      product: [], // TODO: 실제 품목 ID 리스트로 교체 필요
-      line_items: [],
-      transaction_date: sellerInfoFormData?.writeDate || '',
-    };
-    return await handleCreateTaxInvoice(taxInvoiceData);
-  }, [
-    factoryId,
-    sellerInfoFormData?.writeDate,
-    handleCreateTaxInvoice,
-    selectedClientId,
-  ]);
 
   // 품목 추가 핸들러
   const handleAddProduct = (action: 'existing' | 'new') => {
@@ -372,7 +445,10 @@ const CreatTaxPanel = ({
         textColor="text-primary"
         bgColor="bg-primary-8"
         hoverColor="hover:bg-secondary-hover"
-        onClick={handleTemporarySave}
+        onClick={() => {
+          handleTemporarySave('receipt');
+          onClose();
+        }}
         disabled={
           (!isSellerInfoDirty && !isClientInfoDirty && !isProductInfoDirty) ||
           isSaving
@@ -390,6 +466,7 @@ const CreatTaxPanel = ({
           disabled={
             !hasSellerInfoRequiredValues ||
             !hasClientInfoRequiredValues ||
+            !isProductInfoValid ||
             isSaving
           }
         />
@@ -454,18 +531,19 @@ const CreatTaxPanel = ({
         <ClaimReceiptTaxModal
           onClose={handleModalClose}
           issueType={selectedIssueType}
-          onCreateTaxInvoice={handleCreateTaxInvoiceForModal}
+          handleTemporarySave={handleTemporarySave}
+          setIsEditingMode={setIsEditingMode || (() => {})}
         />
       )}
       {/* 바로빌 등록 모달 */}
-      {isBarobilRegisterModalOpen && (
+      {/* {isBarobilRegisterModalOpen && (
         <BarobilRegisterModal
           onClose={() => {
             setIsBarobilRegisterModalOpen(false);
             onClose();
           }}
         />
-      )}
+      )} */}
     </>
   );
 };

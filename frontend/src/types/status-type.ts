@@ -231,11 +231,11 @@ export const DeliveryStatusColorMap: Record<
 };
 
 // 세금계산서 임시보관함 상태
-export type TaxDraftStatusType = '임시 저장' | '발행 대기';
+export type TaxDraftStatusType = '임시 저장' | '전송 대기';
 export const TaxDraftStatusColorMap: Record<
   TaxDraftStatusType,
   StatusColorModel
 > = {
   '임시 저장': { textColor: 'text-primary', bgColor: 'bg-bg' },
-  '발행 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
+  '전송 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
 };

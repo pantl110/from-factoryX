@@ -7,6 +7,7 @@ import {
 import useAuthStore from '@/store/auth-store';
 import useMemberStore from '@/store/member-store';
 import { useGetMember } from '@/hooks';
+import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
 
 interface UseLoginReturnModel {
   login: (data: LoginFormDataModel) => Promise<{
@@ -24,6 +25,7 @@ interface UseLoginReturnModel {
 export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo, setAuthenticated } = useAuthStore();
+  const { getFactoryList } = useGetFactoryList();
   const { getMember } = useGetMember();
   const { setFactoryId, setRole, setIsBarobillUser } = useMemberStore();
 
@@ -70,36 +72,52 @@ export const useLogin = (): UseLoginReturnModel => {
             setAuthenticated(true);
 
             try {
-              // 사용자의 member 정보를 가져와서 공장 ID와 role 추출
-              // userData.member_id를 사용해서 member 정보 조회
-              const memberResult = await getMember({
-                factory_id: 1, // 임시로 1 사용, 실제로는 사용자가 속한 공장 ID를 알아야 함
-                member_id: userData.member_id,
-              });
+              // 먼저 사용자가 속한 공장 목록을 가져와서 factory ID 설정
+              const factoryResult = await getFactoryList();
+              
+              if (factoryResult.success && factoryResult.data && factoryResult.data.length > 0) {
+                // 첫 번째 공장의 ID를 사용
+                const factoryId = factoryResult.data[0].id;
+                setFactoryId(factoryId);
+                
+                // 공장 ID가 있을 때만 member 정보 조회
+                if (userData.member_id) {
+                  const memberResult = await getMember({
+                    factory_id: factoryId,
+                    member_id: userData.member_id,
+                  });
 
-              if (memberResult.success && memberResult.data) {
-                const member = memberResult.data;
+                  if (memberResult.success && memberResult.data) {
+                    const member = memberResult.data;
 
-                // 공장 ID, role, isBarobillUser를 store에 저장
-                setFactoryId(member.factory);
-                setRole(member.role);
-                setIsBarobillUser(member.is_barobill_user);
+                    // role과 isBarobillUser를 store에 저장
+                    setRole(member.role);
+                    setIsBarobillUser(member.is_barobill_user);
 
+                    return {
+                      success: true,
+                      factoryId: factoryId,
+                      role: member.role,
+                      isBarobillUser: member.is_barobill_user,
+                    };
+                  }
+                }
+                
+                // member 정보가 없어도 factoryId는 설정됨
                 return {
                   success: true,
-                  factoryId: member.factory,
-                  role: member.role,
-                  isBarobillUser: member.is_barobill_user,
+                  factoryId: factoryId,
+                  data: result,
                 };
               } else {
-                // member 정보 조회 실패 시
+                // 공장이 없는 경우
                 return {
                   success: true,
                   data: result,
                 };
               }
             } catch {
-              // member 정보 조회 실패 시
+              // API 호출 실패 시
               return {
                 success: true,
                 data: result,

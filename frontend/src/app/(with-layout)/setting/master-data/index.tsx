@@ -32,6 +32,7 @@ const MasterData = () => {
     isLoading: isEquipmentLoading,
     setSearchKeyword: setEquipmentSearchKeyword,
     refetch: refetchEquipment,
+    changePage: changeEquipmentPage,
   } = useGetEquipment();
 
   // 거래처 목록 가져옴
@@ -291,6 +292,10 @@ const MasterData = () => {
             toggleAll={facilityToggleAll}
             toggleOne={facilityToggleOne}
             refetchEquipment={refetchEquipment}
+            // 페이지네이션 관련
+            currentPage={equipmentListForFacility.curPage || 1}
+            totalPages={equipmentListForFacility.pageCnt || 1}
+            onPageChange={changeEquipmentPage}
           />
         );
       case 'client':
@@ -343,7 +348,7 @@ const MasterData = () => {
           placeholder={
             settingChip === 'client'
               ? '회사명, 대표자명, 연락처 등을 입력해 검색하세요.'
-              : '검색어를 입력하세요.'
+              : '찾고 싶은 설비명을 입력하세요.'
           }
           value={searchKeyword}
           onChange={handleSearchChange}

@@ -24,6 +24,10 @@ import useMemberStore from '@/store/member-store';
 
 const TaxPageContent = () => {
   const role = useMemberStore((state) => state.role);
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const initializeFactoryId = useMemberStore(
+    (state) => state.initializeFactoryId
+  );
 
   const [selectedTaxType, setSelectedTaxType] =
     useState<TaxDocumentType | null>(null);
@@ -132,15 +136,15 @@ const TaxPageContent = () => {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      getPublishedTaxInvoices,
       sortDirection,
       selectedTaxType,
       showHidden,
       debouncedSearchQuery,
+      factoryId,
     ]
   );
 
-  // 컴포넌트 마운트 시 데이터 가져오기
+  // factoryId 초기화
   useEffect(() => {
     fetchTaxData(1);
   }, [fetchTaxData]);

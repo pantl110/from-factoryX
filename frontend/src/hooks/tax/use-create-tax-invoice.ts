@@ -38,7 +38,7 @@ const useCreateTaxInvoice = () => {
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/tax`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/`,
           {
             method: 'POST',
             credentials: 'include',

@@ -44,6 +44,8 @@ const TaxDraftPage = () => {
         page: currentPage,
         page_size: 10,
         q: searchQuery || undefined,
+        ordering:
+          sortOrder === 'desc' ? '-transaction_date' : 'transaction_date',
         publish_status:
           selectedTab === '전체'
             ? 'all'
@@ -58,7 +60,7 @@ const TaxDraftPage = () => {
     };
 
     fetchData();
-  }, [getPendingTaxInvoices, currentPage, searchQuery, selectedTab]);
+  }, [getPendingTaxInvoices, currentPage, searchQuery, selectedTab, sortOrder]);
 
   // useCheckAll 훅 사용 (현재 페이지 데이터 기준)
   const {

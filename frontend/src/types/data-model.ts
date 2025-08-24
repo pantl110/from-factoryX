@@ -754,6 +754,8 @@ export interface QuotationProductForPlanModel {
   product: ProductForPlanModel;
   quantity: number;
   unit_price: number;
+  delivery_date: string;
+  is_delivery: boolean;
 }
 
 export interface EquipmentForPlanModel {
@@ -772,7 +774,7 @@ export interface ProjectPlanModel {
   start_date: string | Date; // 생산 시작 일자
   end_date: string | Date; // 생산 종료 일자
   avg_production_time: number; // 단위당 소요 시간
-  is_completed: boolean; // 반품 들어왔을때는 얘는 수정 안되게
+  material_status: '충분' | '부족'; // 원자재 상태
 }
 
 export interface ProjectPlanListResponseModel extends PaginationModel {
@@ -988,7 +990,7 @@ export interface TaxProductInfoModel {
 
 // tax invoice detail 가져오기
 export interface TaxLineItemModel {
-  purchase_expiry: string; // YYYYMMDD 형식 (예: "20241231")
+  purchase_expiry: string; // YYYYMMDD 형식 (예: "20241231") // 공급일자
   name: string; // 품목명
   information?: string; // 규격
   chargeable_unit: string; // 수량
@@ -1045,19 +1047,19 @@ export interface PublishedTaxInvoiceListResponseModel extends PaginationModel {
 }
 
 // 발행 대기 세금계산서
-export interface PendingTaxInvoiceResponseModel {
-  id: number;
-  tax_invoice_type: TaxDocumentType;
-  transaction_date: string;
-  client_name: string;
-  product_names: string[];
-  transaction_amount: number;
-  tax_amount: number;
-  total_amount: number;
-}
+// export interface PendingTaxInvoiceResponseModel {
+//   id: number;
+//   tax_invoice_type: TaxDocumentType;
+//   transaction_date: string;
+//   client_name: string;
+//   product_names: string[];
+//   transaction_amount: number;
+//   tax_amount: number;
+//   total_amount: number;
+// }
 
 export interface PendingTaxInvoiceListResponseModel extends PaginationModel {
-  data: PendingTaxInvoiceResponseModel[];
+  data: PublishedTaxInvoiceResponseModel[];
 }
 
 // 미연결 세금계산서
@@ -1078,11 +1080,17 @@ export interface UnlinkedTaxInvoiceListResponseModel extends PaginationModel {
 
 // 세금계산서 생성
 export interface CreateTaxInvoiceModel {
+  tax_id?: number; // 세금계산서 ID (임시저장 시 사용)
   factory: number;
   client: number;
-  product: number[];
+  product?: number[]; // 품목 ID 리스트
   line_items: TaxLineItemModel[];
-  transaction_date?: string;
+  tax_invoice_type?: TaxDocumentType;
+  transaction_type?: TransactionType;
+  transaction_date: string;
+  transaction_amount: number; // 공급가액
+  tax_amount: number; // 세액
+  is_hidden: boolean; // 숨김 여부 // default: false
 }
 
 // material_history_id로 세금계산서(구매) 및 자재정보를 조회

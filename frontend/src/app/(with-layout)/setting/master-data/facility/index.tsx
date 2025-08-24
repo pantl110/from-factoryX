@@ -12,6 +12,7 @@ import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useToast from '@/hooks/use-toast';
 import NoHistoryBox from '@/ui/no-history-box';
+import Pagination from '@/components/pagination';
 
 interface FacilityProps {
   equipmentList?: EquipmentListResponseModel;
@@ -24,6 +25,9 @@ interface FacilityProps {
   toggleAll: () => void;
   toggleOne: (id: number) => void;
   refetchEquipment?: () => void;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
 const Facility = ({
@@ -35,6 +39,9 @@ const Facility = ({
   toggleAll,
   toggleOne,
   refetchEquipment,
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange,
 }: FacilityProps) => {
   const [selectedEquipment, setSelectedEquipment] =
     useState<EquipmentResponseModel | null>(null);
@@ -78,6 +85,15 @@ const Facility = ({
                 onToggle={() => toggleOne(item.id)}
               />
             ))}
+
+            {/* 페이지네이션 */}
+            {totalPages >= 2 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={onPageChange || (() => {})}
+              />
+            )}
           </>
         )}
       </div>

@@ -3,8 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { ClientInfoFormDataModel } from '../type';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
-import { ClientResponseModel } from '@/types/data-model';
-import { ClientDataSyncModel } from '../../../quotation/type';
+import { ClientResponseModel, TaxClientInfoModel } from '@/types/data-model';
 import { useGetClient, formatBusinessNumber } from '@/hooks';
 
 interface ClientInfoProps {
@@ -16,7 +15,7 @@ interface ClientInfoProps {
     formData?: ClientInfoFormDataModel
   ) => void;
   showErrors?: boolean;
-  initialData?: ClientDataSyncModel;
+  initialData?: TaxClientInfoModel;
 }
 
 const ClientInfo = ({
@@ -30,17 +29,33 @@ const ClientInfo = ({
     watch,
     trigger,
     setValue,
+    reset,
   } = useForm<ClientInfoFormDataModel>({
     mode: 'onChange', // 실시간 유효성 검사
     defaultValues: {
-      companyName: initialData?.name || '',
-      businessNumber: initialData?.business_registration_number || '',
-      representativeName: initialData?.representative_name || '',
-      businessType: initialData?.business_type || '',
-      businessCategory: initialData?.business_category || '',
-      address: initialData?.address || '',
+      companyName: '',
+      businessNumber: '',
+      representativeName: '',
+      businessType: '',
+      businessCategory: '',
+      address: '',
     },
   });
+
+  // initialData가 변경될 때마다 폼 리셋
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        companyName: initialData.name || '',
+        businessNumber: initialData.business_registration_number || '',
+        representativeName: initialData.representative_name || '',
+        businessType: initialData.business_type || '',
+        businessCategory: initialData.business_category || '',
+        address: initialData.address || '',
+      });
+      setSelectedClientId(initialData.id);
+    }
+  }, [initialData, reset]);
 
   // 각 필드별로 에러 표시 여부를 추적하는 상태
   const [validatedFields, setValidatedFields] = useState<
@@ -173,8 +188,7 @@ const ClientInfo = ({
       shouldDirty: true,
     });
 
-    // 검색 쿼리와 드롭다운 상태 업데이트
-    setSearchQuery(client.name);
+    // 드롭다운 상태만 업데이트 (검색 쿼리는 설정하지 않음)
     setIsDropdownOpen(false);
     setSearchResults([]);
   };
@@ -189,7 +203,18 @@ const ClientInfo = ({
       formData
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid, isDirty, hasRequiredValues, selectedClientId]); // formData 제거
+  }, [
+    isValid,
+    isDirty,
+    hasRequiredValues,
+    selectedClientId,
+    formData.companyName,
+    formData.businessNumber,
+    formData.representativeName,
+    formData.businessType,
+    formData.businessCategory,
+    formData.address,
+  ]);
 
   // showErrors가 true가 되면 유효성 검사 실행
   useEffect(() => {
@@ -237,7 +262,7 @@ const ClientInfo = ({
               required
               placeholder="업체명을 입력하세요."
               showError={shouldShowError('companyName')}
-              value={searchQuery}
+              value={formData.companyName || ''}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setValue('companyName', e.target.value, {

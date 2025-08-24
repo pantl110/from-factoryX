@@ -46,7 +46,8 @@ const TaxDocumentView = ({
     };
 
     fetchTaxInvoice();
-  }, [taxId, propItem, getTaxInvoiceDetail]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taxId, propItem]);
 
   if (isLoading || error || !item) {
     return (
