@@ -105,7 +105,6 @@ export {
   useBarobillCertCheck,
 } from './tax/barobil/use-barobill';
 
-
 // Cash receipt related hooks
 export { useGetCashReceipts } from './tax/cash-receipt/use-get-cash-receipts';
 export { default as useGetCashReceiptDetail } from './tax/cash-receipt/use-get-cash-receipt-detail';

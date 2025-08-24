@@ -1208,7 +1208,6 @@ export interface CashReceiptSyncResponseModel {
   purchase_count: number;
 }
 
-
 ////////////
 // 바로빌 관련 api
 export interface BarobillCorpCertModel {

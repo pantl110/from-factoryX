@@ -48,9 +48,12 @@ export const useBarobillRegister = () => {
         // API 응답에서 에러 메시지 가져오기
         try {
           const errorData = await response.json();
-          const errorMessage = errorData.detail || errorData.message || `HTTP error! status: ${response.status}`;
+          const errorMessage =
+            errorData.detail ||
+            errorData.message ||
+            `HTTP error! status: ${response.status}`;
           throw new Error(errorMessage);
-        } catch (parseError) {
+        } catch {
           // JSON 파싱 실패 시 기본 에러 메시지 사용
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -92,7 +95,7 @@ export const useBarobillCorpCertUrl = () => {
         const response = await fetch(
           `${API_BASE_URL}/v1/barobill/register/corp/cert`,
           {
-            method: 'POST',  // GET → POST로 변경
+            method: 'POST', // GET → POST로 변경
             headers: {
               'Content-Type': 'application/json',
             },
@@ -109,9 +112,12 @@ export const useBarobillCorpCertUrl = () => {
           // API 응답에서 에러 메시지 가져오기
           try {
             const errorData = await response.json();
-            const errorMessage = errorData.detail || errorData.message || `HTTP error! status: ${response.status}`;
+            const errorMessage =
+              errorData.detail ||
+              errorData.message ||
+              `HTTP error! status: ${response.status}`;
             throw new Error(errorMessage);
-          } catch (parseError) {
+          } catch {
             // JSON 파싱 실패 시 기본 에러 메시지 사용
             throw new Error(`HTTP error! status: ${response.status}`);
           }
@@ -165,9 +171,12 @@ export const useBarobillCertCheck = () => {
         // API 응답에서 에러 메시지 가져오기
         try {
           const errorData = await response.json();
-          const errorMessage = errorData.detail || errorData.message || `HTTP error! status: ${response.status}`;
+          const errorMessage =
+            errorData.detail ||
+            errorData.message ||
+            `HTTP error! status: ${response.status}`;
           throw new Error(errorMessage);
-        } catch (parseError) {
+        } catch {
           // JSON 파싱 실패 시 기본 에러 메시지 사용
           throw new Error(`HTTP error! status: ${response.status}`);
         }

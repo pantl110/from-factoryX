@@ -177,7 +177,7 @@ const TaxDetailPanel = ({
           }
         >
           <TaxDocumentView
-            item={item!}
+            item={item}
             canLink={canLink}
             setIsLinkModalOpen={setIsLinkModalOpen}
             setSelectedLineItem={setSelectedLineItem}

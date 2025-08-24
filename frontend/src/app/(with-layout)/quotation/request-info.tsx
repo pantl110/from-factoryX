@@ -42,11 +42,10 @@ const RequestInfo = ({
   >(null);
   const [supplyAmount, setSupplyAmount] = useState<number>(0);
 
-  // hook을 quotationId가 있을 때만 호출
-  const quotationDetailHook =
-    quotationId && quotationId > 0 ? useGetDetailQuotation(quotationId) : null;
-
-  const quotationDetail = quotationDetailHook?.data || null;
+  // hook을 항상 호출하되, quotationId가 없으면 0을 전달
+  const { data: quotationDetail } = useGetDetailQuotation(
+    quotationId && quotationId > 0 ? quotationId : 0
+  );
   const { getProductDetail } = useGetProduct();
 
   // React Hook Form 설정

@@ -22,9 +22,10 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
 
   // TaxProductInfoModel을 TaxLineItemModel[]로 변환하는 함수
   const convertToTaxLineItems = (
-    productsInfo: TaxProductInfoModel | null
+    productsInfo: TaxProductInfoModel | null,
+    cashReceipt: CashReceiptDetailResponseModel | null
   ): TaxLineItemModel[] => {
-    if (!productsInfo) return [];
+    if (!productsInfo || !cashReceipt) return [];
 
     return [
       {
@@ -35,6 +36,7 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
         unit_price: '0', // ‼️‼️‼️‼️단가
         amount: (cashReceipt?.transaction_amount || 0).toString(), // ‼️‼️‼️‼️공급가액
         tax: (cashReceipt?.tax_amount || 0).toString(), // ‼️‼️‼️‼️세액
+        description: productsInfo.note || '', // 비고
       },
     ];
   };
@@ -103,7 +105,8 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
 
             <PurchaseItemInfo
               lineItems={convertToTaxLineItems(
-                cashReceipt?.products_info || null
+                cashReceipt?.products_info || null,
+                cashReceipt
               )}
               transactionAmount={cashReceipt?.transaction_amount || 0}
               canLink={true}

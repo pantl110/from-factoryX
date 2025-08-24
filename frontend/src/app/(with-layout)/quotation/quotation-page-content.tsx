@@ -42,7 +42,6 @@ import EmailView from '@/app/(with-layout)/quotation/modals/email-view';
 import StartProductionModal from '@/app/(with-layout)/quotation/modals/start-production-modal';
 import { useQuotationHandlers } from '@/app/(with-layout)/quotation/handlers/quotation-handlers';
 import { QuotationFormModel } from '@/types/data-model';
-import CreateTaxPanel from '@/app/(with-layout)/tax/list/create-tax-panel';
 import TaxDetailPanel from '../tax/tax-detail-panel';
 
 const QuotationPageContent = () => {
@@ -109,7 +108,6 @@ const QuotationPageContent = () => {
       if (result.success && result.data) {
         setProjectStatus(result.data.status);
         setTaxId(result.data.tax_invoice);
-        console.log('result.data.tax_invoice', result.data.tax_invoice);
       }
     } catch {
       // 프로젝트 상태 로드 실패 시 무시

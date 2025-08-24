@@ -146,9 +146,9 @@ const TaxDraftPage = () => {
       }
 
       // 모든 처리가 성공했는지 확인
-      const allSuccess = results.every((result) => result.success);
+      const isAllSuccess = results.every((result) => result.success);
 
-      if (allSuccess) {
+      if (isAllSuccess) {
         // 성공 시 체크박스 초기화하고 데이터 새로고침
         setAllChecked(false);
         setIsDeleteModalOpen(false);
@@ -298,7 +298,7 @@ const TaxDraftPage = () => {
         <DeleteModal
           onClose={() => setIsDeleteModalOpen(false)}
           onDelete={handleDelete}
-          isLoading={isDeleteLoading}
+          isLoading={isDeleteLoading || isCancelLoading}
         />
       )}
       {isTaxDetailPanelOpen && selectedItemId && (

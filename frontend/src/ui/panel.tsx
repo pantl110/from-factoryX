@@ -19,11 +19,11 @@ interface PanelProps {
     | ((handleClose: () => void) => React.ReactNode);
 }
 
-export interface PanelRef {
+export interface PanelRefModel {
   handleClose: () => void;
 }
 
-const Panel = forwardRef<PanelRef, PanelProps>(
+const Panel = forwardRef<PanelRefModel, PanelProps>(
   ({ children, title, onClose, hasSaveButton = false, headerButton }, ref) => {
     const [isVisible, setIsVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(true);

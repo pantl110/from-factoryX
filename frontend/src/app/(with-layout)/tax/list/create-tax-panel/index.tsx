@@ -32,7 +32,7 @@ import ProductInfo, {
   ProductFormDataModel,
 } from './product-info';
 import Toast from '@/ui/toast';
-import { PanelRef } from '@/ui/panel';
+import { PanelRefModel } from '@/ui/panel';
 
 // 세금계산서 편집용 품목 데이터 타입
 interface TaxProductEditModel {
@@ -104,7 +104,7 @@ const CreatTaxPanel = ({
   // ProductInfo ref
   const productInfoRef = useRef<ProductInfoRefModel>(null);
   // Panel ref (판넬 닫기 함수 전달)
-  const panelRef = useRef<PanelRef>(null);
+  const panelRef = useRef<PanelRefModel>(null);
 
   const { updateFactory } = useUpdateFactory();
   const { createClient } = useCreateClient();
@@ -124,8 +124,8 @@ const CreatTaxPanel = ({
     const checkBarobillStatus = async () => {
       if (factoryId) {
         try {
-          const result = await checkBarobill();
-          if (result) {
+          const isBarobillValid = await checkBarobill();
+          if (isBarobillValid) {
             // 바로빌 연동 성공
           } else {
             // 바로빌 연동 실패 시 에러 메시지 설정 후 토스트 표시
