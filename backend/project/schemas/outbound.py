@@ -207,6 +207,7 @@ class ProductDetailOut(Schema):
     code: str
     unit: str
     spec: str
+    buffer_rate: Optional[float] = None
 
 
 # (GET) Quotation Product Detail
