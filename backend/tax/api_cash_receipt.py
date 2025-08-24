@@ -7,6 +7,7 @@ from ninja import Query
 from tax.schemas.outbound import (
     AllCashReceiptOut,
     CashReceiptDetailOut,
+    CashReceiptDetailWithMaterialOut,
 )
 from api.security import jwt_auth
 from ninja import Query
@@ -319,10 +320,28 @@ async def list_cash_receipts(
 
 
 @router.get(
+    "/{cash_receipt_id}",
+    summary="[C] 현금영수증 상세 조회",
+    description="현금영수증 ID로 현금영수증 상세 조회",
+    response=CashReceiptDetailOut,
+)
+async def get_cash_receipt(request, cash_receipt_id: int):
+    try:
+        cash_receipt = (
+            await CashReceipt.objects.select_related("factory", "client")
+            .prefetch_related("product")
+            .aget(id=cash_receipt_id)
+        )
+    except CashReceipt.DoesNotExist:
+        raise HttpError(404, "해당 현금영수증이 존재하지 않습니다.")
+    return cash_receipt
+
+
+@router.get(
     "/material-history",
     summary="[C] 자재 이력별 현금영수증 및 구매정보 조회",
     description="material_history_id로 현금영수증 및 자재정보를 조회",
-    response=CashReceiptDetailOut,
+    response=CashReceiptDetailWithMaterialOut,
 )
 async def get_cash_receipt_by_material_history(request, material_history_id: int):
 

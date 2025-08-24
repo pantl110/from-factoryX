@@ -115,6 +115,12 @@ class CashReceiptByMaterialOut(Schema):
 
 
 class CashReceiptDetailOut(ModelSchema):
+    class Meta:
+        model = CashReceipt
+        fields = "__all__"
+
+
+class CashReceiptDetailWithMaterialOut(ModelSchema):
     client: FactoryClientOut
     product: List[ProductOut]
     # material: MaterialDetailOut

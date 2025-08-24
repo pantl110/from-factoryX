@@ -5,6 +5,8 @@ from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification
 from factory.models import Factory, FactoryClient, FactoryMember
 from stock.models import Product
+from tax.models import CashReceipt
+from datetime import date
 
 
 class TestTaxService(TestCase):
@@ -73,6 +75,39 @@ class TestTaxService(TestCase):
             factory=self.factory, name="와셔", code="WASHER001", unit="개", spec="M8"
         )
 
+        # 테스트용 현금영수증 생성
+        self.cash_receipt = CashReceipt.objects.create(
+            user=self.user,
+            factory=self.factory,
+            factory_info={
+                "id": self.factory.id,
+                "name": self.factory.name,
+                "business_registration_number": self.factory.business_registration_number,
+            },
+            cash_receipt_type="sales",
+            transaction_date=date.today(),
+            client=self.client_company1,
+            client_info={
+                "id": self.client_company1.id,
+                "name": self.client_company1.name,
+                "business_registration_number": self.client_company1.business_registration_number,
+            },
+            transaction_amount=10000,
+            tax_amount=1000,
+            service_charge=0,
+            nts_confirm_num="TEST123456789",
+            franchise_corp_num="1663301345",
+            franchise_corp_name="다운테크",
+            franchise_ceo_name="전다운",
+            franchise_addr="전남 순천시 선평동선길 36",
+            franchise_tel="010-4136-2245",
+            identity_num="1663301345",
+            trade_type="승인거래",
+            trade_usage="소득공제",
+            trade_method="사업자번호",
+            item_name="M8 볼트 세트",
+        )
+
     async def authenticate(self):
         data = {
             "email": self.user.email,
@@ -109,3 +144,37 @@ class TestTaxService(TestCase):
         print("🐍 File: tests/test_tax_service.py | Line: 240 | setUp ~ data", data)
 
         self.assertEqual(response.status_code, 200)
+
+    async def test_get_cash_receipt_detail(self):
+        """현금영수증 상세 조회 테스트 - 새로운 간단한 API"""
+        headers = await self.authenticate()
+
+        # 현금영수증 상세 조회
+        response = await self.client.get(f"/{self.cash_receipt.id}", headers=headers)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # 기본 필드 검증
+        self.assertEqual(data["id"], self.cash_receipt.id)
+        self.assertEqual(data["cash_receipt_type"], "sales")
+        self.assertEqual(data["transaction_amount"], 10000)
+        self.assertEqual(data["tax_amount"], 1000)
+        self.assertEqual(data["nts_confirm_num"], "TEST123456789")
+
+        print("✅ 현금영수증 상세 조회 테스트 성공!")
+
+    async def test_get_cash_receipt_detail_not_found(self):
+        """존재하지 않는 현금영수증 조회 테스트"""
+        headers = await self.authenticate()
+
+        # 존재하지 않는 ID로 조회
+        response = await self.client.get("/99999", headers=headers)
+
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertIn("detail", data)
+        self.assertEqual(data["detail"], "해당 현금영수증이 존재하지 않습니다.")
+
+        print("✅ 404 에러 테스트 성공!")
