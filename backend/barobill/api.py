@@ -120,7 +120,7 @@ async def add_user_to_corp(request, payload: BarobillCorpRegisterIn):
     return {"message": "바로빌 기업 회원가입이 성공적으로 완료되었습니다."}
 
 
-@router.get(
+@router.post(
     "/register/corp/cert",
     summary="[C] 바로빌 기업 인증서 등록 URL 조회",
     description="바로빌 기업 인증서 등록을 위한 URL을 조회하는 API입니다.",
