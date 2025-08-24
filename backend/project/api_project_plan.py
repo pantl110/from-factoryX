@@ -33,6 +33,7 @@ from websocket.utils import send_notification_to_factory
 from project.utils import check_material_availability
 from factory.eq_utils import get_equipment_by_id
 from project.plan_utils import get_plan_by_id, update_quantity
+from django.utils import timezone
 
 router = Router(tags=["ProjectPlan"], auth=jwt_auth)
 
@@ -743,13 +744,17 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         )
 
     # 알림 전송
-    await send_notification_to_factory(
-        factory_id=int(factory_id),
-        notification_type="information",
-        notification_case="production_schedule_changed",
-        content=f"프로젝트 '{plan.project.name}'의 생산 계획이 수정되었습니다.",
-        additional_data={"plan_id": plan.id},
-    )
+    if (
+        payload.start_date.date() == timezone.now().date()
+        or old_start_date.date() == timezone.now().date()
+    ):
+        await send_notification_to_factory(
+            factory_id=int(factory_id),
+            notification_type="information",
+            notification_case="production_schedule_changed",
+            content=f"'{plan.project.name}'의 생산 일정이 변경되었어요.",
+            additional_data={"plan_id": plan.id},
+        )
 
     # 버퍼 레이트 업데이트
     if payload.quantity is not None:
