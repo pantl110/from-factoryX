@@ -21,6 +21,7 @@ from stock.models import MaterialHistory
 from factory.models import FactoryClient
 from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
 from stock.schemas.outbound import ProductRowOut
+from websocket.utils import send_notification_to_factory
 
 
 router = Router(tags=["CashReceipts"], auth=jwt_auth)
@@ -228,6 +229,17 @@ async def sync_cash_receipts(request, factory_id: int):
         # 매입 현금영수증 저장
         purchase_cash_receipts = await CashReceipt.objects.abulk_create(
             purchase_cash_receipts
+        )
+
+    # 알림 전송
+    receipts = sale_cash_receipts + purchase_cash_receipts
+    for cash_receipt in receipts:
+        await send_notification_to_factory(
+            factory_id=int(factory_id),
+            notification_type="information",
+            notification_case="cash_receipt_published",
+            content=f"새로운 현금영수증이 등록되었습니다.",
+            additional_data={},
         )
 
     return {
