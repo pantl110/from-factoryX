@@ -197,7 +197,7 @@ class ProjectPlanDetailOut(Schema):
 # (POST) Project Plan Create
 class ProjectPlansCreateOut(Schema):
     message: str
-    created_plans: List[ProjectPlanDetailOut]
+    plan: ProjectPlanDetailOut
 
 
 # (GET) Product Detail
@@ -207,6 +207,7 @@ class ProductDetailOut(Schema):
     code: str
     unit: str
     spec: str
+    buffer_rate: Optional[float] = None
 
 
 # (GET) Quotation Product Detail
