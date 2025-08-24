@@ -730,6 +730,10 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         if plan.equipment_id
         else None
     )
+
+    # 생산 일자 변경 감지를 위한 이전 값 저장
+    old_start_date = plan.start_date
+
     equipment_id = data.pop("equipment_id", None)
     if equipment_id:
         equipment = await get_equipment_by_id(equipment_id, factory_id)
@@ -743,6 +747,7 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
 
     await plan.asave()
 
+    # 설비 변경 로그
     if (
         payload.equipment_id is not None
         and old_equipment
@@ -755,6 +760,17 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
             type=ProjectLog.LogType.plan,
             title="생산 설비 변경",
             content=f"사용 설비가 {old_equipment.name}라인에서 {plan.equipment.name}라인으로 변경되었어요",
+        )
+
+    # 생산 일자 변경 로그
+    if payload.start_date is not None and old_start_date != plan.start_date:
+        change_message = f"생산일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
+
+        await ProjectLog.objects.acreate(
+            project=plan.project,
+            type=ProjectLog.LogType.plan,
+            title="생산일자 변경",
+            content=change_message,
         )
 
     # 알림 전송
