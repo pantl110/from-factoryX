@@ -1133,7 +1133,7 @@ export interface CashReceiptListParamsModel {
   end_date?: string;
   order?: 'desc' | 'asc';
   page?: number;
-  size?: number;
+  page_size?: number;
 }
 
 export interface CashReceiptResponseModel {
@@ -1144,6 +1144,42 @@ export interface CashReceiptResponseModel {
   transaction_amount: number;
   tax_amount: number;
   total_amount: number;
+}
+
+export interface CashReceiptListResponseModel extends PaginationModel {
+  data: CashReceiptResponseModel[];
+}
+
+export interface CashReceiptDetailResponseModel {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  user: number;
+  factory: number;
+  factory_info: TaxFactoryInfoModel;
+  cash_receipt_type: TaxDocumentType;
+  transaction_date: string;
+  client: number;
+  client_info: TaxClientInfoModel;
+  product: number[];
+  products_info: TaxProductInfoModel;
+  transaction_amount: number;
+  tax_amount: number;
+  service_charge: number;
+  nts_confirm_num: string;
+  franchise_corp_num: string;
+  franchise_corp_name: string;
+  franchise_ceo_name: string;
+  franchise_addr: string;
+  franchise_tel: string;
+  identity_num: string;
+  trade_type: string;
+  trade_usage: string;
+  trade_method: string;
+  item_name: string;
+  cancel_type: string;
+  cancel_nts_confirm_num: string;
+  cancel_nts_confirm_date: string;
 }
 
 export interface CashReceiptByMaterialModel {
@@ -1172,20 +1208,9 @@ export interface CashReceiptSyncResponseModel {
   purchase_count: number;
 }
 
-export interface CashReceiptListResponseModel extends PaginationModel {
-  data: CashReceiptResponseModel[];
-}
 
 ////////////
 // 바로빌 관련 api
-// export interface BarobillCorpRegisterModel {
-//   factory: string; // 공장 ID
-//   grade: string; // 회원 등급 (예: 대표자, 담당자)
-//   barobill_id: string; // 바로빌 ID
-//   barobill_password: string; // 바로빌 비밀번호
-//   barobill_password_confirm: string; // 바로빌 비밀번호 확인
-// }
-
 export interface BarobillCorpCertModel {
   factory: string; // 공장 ID
   barobill_id: string; // 바로빌 ID

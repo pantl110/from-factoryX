@@ -240,7 +240,13 @@ const TaxDraftPage = () => {
             </div>
           ) : taxInvoices?.data.length === 0 ? (
             <NoHistoryBox
-              title="임시 저장 또는 전송 대기 중인 세금계산서가 없어요."
+              title={
+                selectedTab === '전체'
+                  ? '임시 저장 또는 전송 대기 중인 세금계산서가 없어요.'
+                  : selectedTab === '임시 저장'
+                    ? '아직 임시 저장된 세금계산서가 없어요.'
+                    : '아직 전송 대기 중인 세금계산서가 없어요.'
+              }
               text="세금계산서를 생성하면 이곳에서 확인하실 수 있어요."
             />
           ) : (

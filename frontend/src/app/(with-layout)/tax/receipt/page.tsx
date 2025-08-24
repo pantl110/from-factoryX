@@ -37,7 +37,7 @@ const TaxReceiptPage = () => {
         order: sortOrder,
         q: searchQuery,
         page: currentPage,
-        size: 10,
+        page_size: 10,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,7 +52,7 @@ const TaxReceiptPage = () => {
           order: 'desc',
           q: searchQuery,
           page: 1,
-          size: 10,
+          page_size: 10,
         });
       }
     }, 300); // 300ms 디바운싱
@@ -111,8 +111,8 @@ const TaxReceiptPage = () => {
             <div className="pb-10 mt-6">
               {cashReceipts.length === 0 ? (
                 <NoHistoryBox
-                  title="현금영수증"
-                  text="현금영수증이 없습니다."
+                  title="아직 발급된 현금영수증이 없어요."
+                  text="발급 후 이곳에서 내역을 확인하실 수 있어요."
                 />
               ) : (
                 <>

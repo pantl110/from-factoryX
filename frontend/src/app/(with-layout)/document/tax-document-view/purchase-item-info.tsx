@@ -1,12 +1,9 @@
 import PriceInfo from '@/ui/price-info';
 import PurchaseTableTiem from './purchase-table-tiem';
-import {
-  PublishedTaxInvoiceResponseModel,
-  TaxLineItemModel,
-} from '@/types/data-model';
+import { TaxLineItemModel } from '@/types/data-model';
 
 interface PurchaseItemInfoProps {
-  lineItems: PublishedTaxInvoiceResponseModel['line_items'];
+  lineItems: TaxLineItemModel[];
   transactionAmount: number;
   canLink?: boolean;
   setIsLinkModalOpen?: (isOpen: boolean) => void;
