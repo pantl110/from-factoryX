@@ -196,7 +196,12 @@ class FactoryMemberAdmin(admin.ModelAdmin):
         return qs.select_related("factory", "user", "invited_by")
 
     def has_delete_permission(self, request, obj=None):
-        """삭제 권한 제한 - 관리자만 삭제 가능"""
+        """삭제 권한 제한 - superuser가 아닌 경우 관리자 삭제 불가"""
+        # superuser는 모든 멤버를 삭제할 수 있음
+        if request.user.is_superuser:
+            return super().has_delete_permission(request, obj)
+
+        # 일반 사용자는 관리자 멤버 삭제 불가
         if obj and obj.role == "admin":
             return False  # 관리자는 삭제 불가
         return super().has_delete_permission(request, obj)
