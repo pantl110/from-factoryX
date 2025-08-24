@@ -39,9 +39,9 @@ const DeliveryTableItem = ({
 }: DeliveryTableItemProps) => {
   const {
     quantity,
-    delivery_date: deliveryDate,
-    is_completed: isDelivery,
     quotation_product: {
+      delivery_date: deliveryDate,
+      is_delivery: isDelivery,
       product: {
         id: productId,
         name: productName,

@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  EquipmentListResponseModel,
-  EquipmentResponseModel,
-} from '@/types/data-model';
+import { EquipmentListResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 
 const useGetEquipment = () => {
@@ -16,40 +13,43 @@ const useGetEquipment = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
 
   // 전체 설비 목록 불러오기
-  const getEquipmentList = useCallback(async (page: number = 1) => {
-    setIsLoading(true);
-    setError(null);
+  const getEquipmentList = useCallback(
+    async (page: number = 1) => {
+      setIsLoading(true);
+      setError(null);
 
-    if (!factoryId) {
-      setError('공장 정보가 없습니다.');
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}&page=${page}&page_size=${pageSize}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
-      if (response.ok) {
-        const result: EquipmentListResponseModel = await response.json();
-        setEquipmentList(result);
-        setCurrentPage(page);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || '설비 목록을 불러오지 못했습니다.');
-        setEquipmentList(null);
+      if (!factoryId) {
+        setError('공장 정보가 없습니다.');
+        setIsLoading(false);
+        return;
       }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      setEquipmentList(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [factoryId, pageSize]);
+
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}&page=${page}&page_size=${pageSize}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          }
+        );
+        if (response.ok) {
+          const result: EquipmentListResponseModel = await response.json();
+          setEquipmentList(result);
+          setCurrentPage(page);
+        } else {
+          const errorData = await response.json();
+          setError(errorData.detail || '설비 목록을 불러오지 못했습니다.');
+          setEquipmentList(null);
+        }
+      } catch {
+        setError('서버 연결에 실패했습니다.');
+        setEquipmentList(null);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [factoryId, pageSize]
+  );
 
   // 검색어로 설비 검색 (백엔드 페이지네이션 활용)
   const searchAllFields = useCallback(
@@ -102,14 +102,17 @@ const useGetEquipment = () => {
   }, [searchKeyword, searchAllFields, getEquipmentList]);
 
   // 페이지 변경 함수
-  const changePage = useCallback(async (page: number) => {
-    if (searchKeyword) {
-      // 검색 중일 때는 검색 결과에서 페이지네이션 처리
-      await searchAllFields(searchKeyword, page);
-    } else {
-      await getEquipmentList(page);
-    }
-  }, [searchKeyword, searchAllFields, getEquipmentList]);
+  const changePage = useCallback(
+    async (page: number) => {
+      if (searchKeyword) {
+        // 검색 중일 때는 검색 결과에서 페이지네이션 처리
+        await searchAllFields(searchKeyword, page);
+      } else {
+        await getEquipmentList(page);
+      }
+    },
+    [searchKeyword, searchAllFields, getEquipmentList]
+  );
 
   return {
     equipmentList,

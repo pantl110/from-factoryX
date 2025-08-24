@@ -747,6 +747,7 @@ export interface ProductForPlanModel {
   code: string;
   unit: string;
   spec: string;
+  buffer_rate: number;
 }
 
 export interface QuotationProductForPlanModel {
@@ -771,8 +772,8 @@ export interface ProjectPlanModel {
   equipment: EquipmentForPlanModel;
   status: OperationStatusType; // 가동 대기, 가동 중, 가동 완료
   quantity: number; // 생산 수량
-  start_date: string | Date; // 생산 시작 일자
-  end_date: string | Date; // 생산 종료 일자
+  start_date: string; // 생산 시작 일자
+  end_date: string; // 생산 종료 일자
   avg_production_time: number; // 단위당 소요 시간
   material_status: '충분' | '부족'; // 원자재 상태
 }
@@ -910,11 +911,17 @@ export interface MemberListResponseModel extends PaginationModel {
 // 멤버 수정
 export interface UpdateMemberResponseModel {
   id: number;
-  factory_id: number;
-  user_id: number;
+  factory: number;
+  user: number;
   role: MemberRoleType;
   status: MemberStatusType;
-  invited_by_id: number;
+  invited_by: number;
+  invited_at: string;
+  invitation_token: string;
+  invitation_message: string;
+  is_barobill_user: boolean;
+  barobill_id: string;
+  barobill_password: string;
   created_at: string;
   updated_at: string;
 }
@@ -970,7 +977,7 @@ export interface TaxClientInfoModel {
   business_category: string;
   address: string;
   manager: string;
-  note: string;
+  note?: string;
 }
 
 export interface TaxProductInfoModel {
@@ -980,12 +987,12 @@ export interface TaxProductInfoModel {
   code: string;
   spec: string;
   unit: string;
-  current_stock: number;
-  average_production_time: number;
-  buffer_rate: number; // Decimal → float 변환
-  note: string;
-  created_at: string; // "YYYY-MM-DD HH:MM:SS" 형식
-  updated_at: string; // "YYYY-MM-DD HH:MM:SS" 형식
+  current_stock?: number;
+  average_production_time?: number;
+  buffer_rate?: number; // Decimal → float 변환
+  note?: string;
+  created_at?: string; // "YYYY-MM-DD HH:MM:SS" 형식
+  updated_at?: string; // "YYYY-MM-DD HH:MM:SS" 형식
 }
 
 // tax invoice detail 가져오기

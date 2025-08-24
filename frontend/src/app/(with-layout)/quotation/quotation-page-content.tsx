@@ -660,17 +660,36 @@ const QuotationPageContent = () => {
       {isTaxCreatePanelOpen && (
         <CreateTaxPanel
           onClose={() => setIsTaxCreatePanelOpen(false)}
-          initialClientData={watchedClientData}
+          initialClientData={{
+            id: selectedClientId || 0,
+            factory: factoryId || 0,
+            type: 'customer' as const,
+            name: watchedClientData.name || '',
+            business_registration_number:
+              watchedClientData.business_registration_number || '',
+            representative_name: watchedClientData.representative_name || '',
+            email: watchedClientData.email || '',
+            phone: watchedClientData.phone || '',
+            fax: watchedClientData.fax || '',
+            business_type: watchedClientData.business_type || '',
+            business_category: watchedClientData.business_category || '',
+            address: watchedClientData.address || '',
+            manager: watchedClientData.manager || '',
+          }}
           initialProducts={quotationProducts.map((product) => ({
             productId: product.productId || 0,
-            product_code: product.product_code || '',
-            product_name: product.product_name || '',
-            spec: product.spec || '',
-            unit: product.unit || '',
             quantity: product.quantity || 0,
             unit_price: product.unit_price || 0,
-            is_delivery: false,
-            delivery_date: null,
+            products_info: [
+              {
+                id: product.productId || 0,
+                factory: factoryId || 0,
+                name: product.product_name || '',
+                code: product.product_code || '',
+                spec: product.spec || '',
+                unit: product.unit || '',
+              },
+            ],
           }))}
         />
       )}

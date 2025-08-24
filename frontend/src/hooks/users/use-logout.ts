@@ -41,16 +41,12 @@ export const useLogout = (): UseLogoutReturnModel => {
         result = await response.json();
       }
 
-      console.log('=== logout 시작 ===');
-      
       // 1. 먼저 localStorage에서 저장소 제거
       clearAuthData();
-      
+
       // 2. 그 다음 전역 상태 초기화
       clearAuth();
       clearMember(); // member store 전체 클리어
-      
-      console.log('=== logout 완료 ===');
 
       if (response.ok) {
         return {
@@ -64,16 +60,12 @@ export const useLogout = (): UseLogoutReturnModel => {
         };
       }
     } catch {
-      console.log('=== logout 에러 처리 시작 ===');
-      
       // 에러가 발생해도 1. 먼저 localStorage에서 저장소 제거
       clearAuthData();
-      
+
       // 2. 그 다음 전역 상태 초기화
       clearAuth();
       clearMember(); // member store 전체 클리어
-      
-      console.log('=== logout 에러 처리 완료 ===');
 
       return {
         success: false,

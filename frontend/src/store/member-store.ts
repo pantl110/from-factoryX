@@ -84,12 +84,12 @@ const useMemberStore = create<MemberStoreModel>()(
       },
       clearAll: () => {
         // 1. 먼저 상태 초기화
-        set({ 
-          factoryId: null, 
-          role: null, 
-          isBarobillUser: null 
+        set({
+          factoryId: null,
+          role: null,
+          isBarobillUser: null,
         });
-        
+
         // 2. 그 다음 localStorage 제거
         if (typeof window !== 'undefined') {
           localStorage.removeItem('member-storage');

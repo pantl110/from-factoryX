@@ -55,9 +55,10 @@ const useTaxApi = () => {
       try {
         // factoryId가 없으면 API 호출 차단
         if (!factoryId) {
-          return { 
-            success: false, 
-            error: '공장 정보가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.' 
+          return {
+            success: false,
+            error:
+              '공장 정보가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.',
           };
         }
 

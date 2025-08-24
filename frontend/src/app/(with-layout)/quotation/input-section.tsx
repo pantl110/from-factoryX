@@ -39,7 +39,7 @@ const InputSection = ({
   onClientSelect,
   showErrors = false,
 }: InputSectionProps) => {
-  const { clientList, searchClients } = useGetClient();
+  const { clientList, getAllClientList } = useGetClient();
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
@@ -99,7 +99,7 @@ const InputSection = ({
                   onChange={(e) => {
                     field.onChange(e);
                     setCompanyNameInput(e.target.value);
-                    searchClients(e.target.value);
+                    getAllClientList(e.target.value);
                   }}
                   onFocus={() => setIsCompanyNameDropdownOpen(true)}
                   onBlur={handleCompanyNameBlur}

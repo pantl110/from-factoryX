@@ -16,6 +16,7 @@ export const BarobilRegisterModal = ({
   onClose,
 }: BarobilRegisterModalProps) => {
   const factoryId = useMemberStore((state) => state.factoryId);
+  const isBarobillUser = useMemberStore((state) => state.isBarobillUser);
   const { register: registerBarobill } = useBarobillRegister();
   const { getCertUrl } = useBarobillCorpCertUrl();
   const { checkCert } = useBarobillCertCheck();
@@ -44,18 +45,18 @@ export const BarobilRegisterModal = ({
     }
 
     try {
-      // 1. 회원가입 안되어있으면 // ‼️‼️‼️ factory member에서 확인하기
-      // 회원가입 진행
-      await registerBarobill();
+      // 1. 회원가입 안되어있으면
+      if (!isBarobillUser) {
+        // 회원가입 진행
+        await registerBarobill();
+      }
 
       // 2. 인증서 등록 여부 확인
       const certCheckRes = await checkCertification();
 
       if (certCheckRes?.is_valid) {
         // 인증서 등록 되어 있으면
-        // 발급 진행 가능
-        onClose();
-        // TODO: 세금계산서 발급 페이지로 이동 또는 발급 진행
+        // 사용 가능
       } else {
         // 인증서 등록 안되어 있으면
         await getCertification({
@@ -66,7 +67,6 @@ export const BarobilRegisterModal = ({
       }
     } catch (error) {
       console.error('바로빌 등록 중 오류:', error);
-      // TODO: 에러 처리
     }
   };
 

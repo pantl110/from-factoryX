@@ -22,7 +22,6 @@ import {
 } from '@/hooks';
 
 interface DeliveryProps {
-  quotationId: number;
   quotationData: QuotationResponseModel;
   startDate: string;
   onProjectStatusChange?: () => Promise<void>;
@@ -30,7 +29,6 @@ interface DeliveryProps {
 }
 
 const Delivery = ({
-  quotationId,
   quotationData,
   startDate,
   onProjectStatusChange,
@@ -79,7 +77,9 @@ const Delivery = ({
           if (result.success && result.data) {
             setDeliveryData(result.data);
           }
-        } catch {}
+        } catch {
+          // Error handling can be added here if needed
+        }
       }
     };
 
@@ -101,7 +101,7 @@ const Delivery = ({
     if (deliveryData) {
       setDeliveryDataStore(
         deliveryData.map((item: ProjectPlanModel) => ({
-          delivery_date: item.delivery_date || undefined,
+          delivery_date: item.quotation_product?.delivery_date || undefined,
         }))
       );
     }
@@ -152,7 +152,7 @@ const Delivery = ({
         setDeliveryData(updatedData);
         setDeliveryDataStore(
           updatedData.map((item: ProjectPlanModel) => ({
-            delivery_date: item.delivery_date || undefined,
+            delivery_date: item.quotation_product?.delivery_date || undefined,
           }))
         );
       }
@@ -181,14 +181,16 @@ const Delivery = ({
       // 1. 품목들 중 상태가 예정인 것은 완료로 바꾸기
       if (deliveryData) {
         const updatePromises = deliveryData
-          .filter((item: ProjectPlanModel) => !item.is_completed) // 예정 상태인 항목만 필터링
+          .filter(
+            (item: ProjectPlanModel) => !item.quotation_product?.is_delivery
+          ) // 예정 상태인 항목만 필터링
           .map(async (item: ProjectPlanModel) => {
             try {
               const result = await updateQuotationProductDelivery(
                 item.quotation_product.id,
                 {
                   is_delivered: true,
-                  delivery_date: item.delivery_date, // 납품일자도 함께 업데이트
+                  delivery_date: item.quotation_product.delivery_date, // 납품일자도 함께 업데이트
                 }
               );
               return result.success;
@@ -201,7 +203,7 @@ const Delivery = ({
         const updateResults = await Promise.all(updatePromises);
         const successCount = updateResults.filter(Boolean).length;
         const totalCount = deliveryData.filter(
-          (item: ProjectPlanModel) => !item.is_completed
+          (item: ProjectPlanModel) => !item.quotation_product?.is_delivery
         ).length;
 
         if (successCount < totalCount) {
@@ -270,7 +272,7 @@ const Delivery = ({
               />
               {deliveryData && deliveryData.length > 0 && (
                 <>
-                  {deliveryData.map((data: ProjectPlanModel, index: number) => (
+                  {deliveryData.map((data: ProjectPlanModel) => (
                     <DeliveryTableItem
                       key={data.id}
                       data={data}

@@ -39,7 +39,7 @@ export const useBarobillRegister = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'credential-include': 'include',
         },
         body: JSON.stringify({ factory: factoryId }),
       });
@@ -92,7 +92,7 @@ export const useBarobillCorpCertUrl = () => {
           {
             method: 'GET',
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              'credential-include': 'include',
             },
           }
         );
@@ -142,7 +142,7 @@ export const useBarobillCertCheck = () => {
         {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'credential-include': 'include',
           },
         }
       );

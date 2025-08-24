@@ -7,7 +7,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AddItemDropdown from './add-item-dropdown';
 import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
 import IssueTypeDropdown from './issue-type-dropdown';
-import { BarobilRegisterModal } from './modals/barobil-register-modal';
 import {
   useUpdateFactory,
   useCreateTaxInvoice,
@@ -21,6 +20,7 @@ import {
   ClientModel,
   ClientUpdateModel,
   TaxClientInfoModel,
+  TaxProductInfoModel,
 } from '@/types/data-model';
 import { TransactionType } from '@/types/status-type';
 import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../type';
@@ -34,12 +34,12 @@ interface TaxProductEditModel {
   productId: number;
   quantity: number;
   unit_price: number;
-  products_info: any[]; // TaxProductInfoModel[]와 호환
+  products_info: TaxProductInfoModel[]; // TaxProductInfoModel[]와 호환
 }
 
 interface CreatTaxPanelProps {
   onClose: () => void;
-  tax_id?: number;
+  taxId?: number;
   initialClientData?: TaxClientInfoModel;
   initialProducts?: TaxProductEditModel[];
   setIsEditingMode?: (isEditingMode: boolean) => void;
@@ -47,7 +47,7 @@ interface CreatTaxPanelProps {
 
 const CreatTaxPanel = ({
   onClose,
-  tax_id,
+  taxId,
   initialClientData,
   initialProducts,
   setIsEditingMode,
@@ -105,9 +105,6 @@ const CreatTaxPanel = ({
   const { updateClient } = useUpdateClient();
 
   const factoryId = useMemberStore((state) => state.factoryId);
-
-  // 사용자 정보 가져오기 // 바로빌 연동 확인용
-  // const userInfo = useAuthStore((state) => state.userInfo);
 
   // 세금계산서 생성 훅
   const { createTaxInvoice } = useCreateTaxInvoice();
@@ -386,7 +383,7 @@ const CreatTaxPanel = ({
           })) || [];
 
         const taxInvoiceData: CreateTaxInvoiceModel = {
-          tax_id: tax_id,
+          tax_id: taxId,
           factory: factoryId,
           client: selectedClientId,
           product: productIds,
@@ -535,6 +532,7 @@ const CreatTaxPanel = ({
           setIsEditingMode={setIsEditingMode || (() => {})}
         />
       )}
+
       {/* 바로빌 등록 모달 */}
       {/* {isBarobilRegisterModalOpen && (
         <BarobilRegisterModal

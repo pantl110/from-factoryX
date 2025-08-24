@@ -74,12 +74,16 @@ export const useLogin = (): UseLoginReturnModel => {
             try {
               // 먼저 사용자가 속한 공장 목록을 가져와서 factory ID 설정
               const factoryResult = await getFactoryList();
-              
-              if (factoryResult.success && factoryResult.data && factoryResult.data.length > 0) {
+
+              if (
+                factoryResult.success &&
+                factoryResult.data &&
+                factoryResult.data.length > 0
+              ) {
                 // 첫 번째 공장의 ID를 사용
                 const factoryId = factoryResult.data[0].id;
                 setFactoryId(factoryId);
-                
+
                 // 공장 ID가 있을 때만 member 정보 조회
                 if (userData.member_id) {
                   const memberResult = await getMember({
@@ -96,17 +100,17 @@ export const useLogin = (): UseLoginReturnModel => {
 
                     return {
                       success: true,
-                      factoryId: factoryId,
+                      factoryId,
                       role: member.role,
                       isBarobillUser: member.is_barobill_user,
                     };
                   }
                 }
-                
+
                 // member 정보가 없어도 factoryId는 설정됨
                 return {
                   success: true,
-                  factoryId: factoryId,
+                  factoryId,
                   data: result,
                 };
               } else {

@@ -597,7 +597,13 @@ const ProductDetail = ({
 
   // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
   if (!factoryId) {
-    return null;
+    return (
+      <Panel title="품목 재고관리" onClose={onClose}>
+        <div className="flex flex-col items-center justify-center h-100 gap-3">
+          <Spinner />
+        </div>
+      </Panel>
+    );
   }
 
   return (

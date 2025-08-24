@@ -196,12 +196,12 @@ const TableItem = ({
         textColor={operationColor.textColor}
         bgColor={operationColor.bgColor}
         cursor={
-          projectStatus === 'pending' || item.is_completed
+          projectStatus === 'pending' || item.quotation_product?.is_delivery
             ? 'cursor-default'
             : 'cursor-pointer'
         }
         onClick={
-          projectStatus === 'pending' || item.is_completed
+          projectStatus === 'pending' || item.quotation_product?.is_delivery
             ? undefined
             : (e) => {
                 if (e && onOperationStatusClick) {
@@ -210,7 +210,11 @@ const TableItem = ({
                 }
               }
         }
-        state={projectStatus === 'pending' || item.is_completed ? false : true}
+        state={
+          projectStatus === 'pending' || item.quotation_product?.is_delivery
+            ? false
+            : true
+        }
       />
     ),
     품목명: item.quotation_product.product.name,

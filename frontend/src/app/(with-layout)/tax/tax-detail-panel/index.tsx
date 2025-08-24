@@ -8,12 +8,12 @@ import TaxDocumentView from '@/app/(with-layout)/document/tax-document-view';
 import MiniBtn from '@/ui/mini-btn';
 import { useGetTaxInvoiceDetail, useToast } from '@/hooks';
 import { useState, useEffect } from 'react';
-import Spinner from '@/ui/spinner';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
 import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-modal';
 import CreateTaxPanel from '../list/create-tax-panel';
 import { TaxProductInfoModel } from '@/types/data-model';
+import PublishTaxModal from './publish-tax-modal';
 
 // 세금계산서 편집용 품목 데이터 타입
 interface TaxProductEditModel {
@@ -30,12 +30,16 @@ interface TaxDetailPanelProps {
 }
 
 const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
+  // 모달
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  // 정보
   const [item, setItem] = useState<PublishedTaxInvoiceResponseModel | null>(
     null
   );
-  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [selectedLineItem, setSelectedLineItem] =
     useState<TaxLineItemModel | null>(null); // 선택한 item을 material history에 연결할 때 사용
+  // 생성 판넬/디테일 판넬 구분
   const [isEditingMode, setIsEditingMode] = useState(false);
 
   const { getTaxInvoiceDetail, isLoading } = useGetTaxInvoiceDetail();
@@ -86,7 +90,7 @@ const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
       {isEditingMode ? (
         <CreateTaxPanel
           onClose={onClose}
-          tax_id={item.id || undefined}
+          taxId={item.id || undefined}
           initialClientData={item.client_info as TaxClientInfoModel}
           initialProducts={
             item.products_info?.map((product, index) => ({
@@ -104,8 +108,7 @@ const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
           onClose={onClose}
           headerButton={
             item &&
-            isDraft &&
-            ((handleClose) => (
+            isDraft && (
               <div className="flex gap-2 relative">
                 <MiniBtn
                   text="수정"
@@ -122,15 +125,11 @@ const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
                   bgColor="bg-primary"
                   hoverColor="hover:bg-primary-hover"
                   onClick={() => {
-                    handleClose();
-                    // 판넬이 닫힌 후 토스트 나오기 위해 250ms 딜레이
-                    setTimeout(() => {
-                      showToast();
-                    }, 250);
+                    setIsPublishModalOpen(true);
                   }}
                 />
               </div>
-            ))
+            )
           }
         >
           <TaxDocumentView
@@ -140,6 +139,22 @@ const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
             setSelectedLineItem={setSelectedLineItem}
           />
         </Panel>
+      )}
+      {/* 세금계산서 발행 모달 */}
+      {isPublishModalOpen && (
+        <PublishTaxModal
+          taxId={itemId}
+          onClose={() => setIsPublishModalOpen(false)}
+          onSuccess={() => {
+            // 발행 성공 후 모달과 판넬을 닫고 토스트 표시
+            setIsPublishModalOpen(false); // 모달 닫기
+            onClose(); // 판넬 닫기
+            // 판넬이 닫힌 후 토스트 나오기 위해 250ms 딜레이
+            setTimeout(() => {
+              showToast();
+            }, 250);
+          }}
+        />
       )}
 
       {canLink && isLinkModalOpen && (

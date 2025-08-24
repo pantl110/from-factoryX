@@ -250,7 +250,6 @@ const ProductionPageContent = () => {
         {tabs[selectedTab] === '납품' && quotationData && (
           <Delivery
             quotationData={quotationData}
-            quotationId={projectStatus?.quotation_id || projectId}
             startDate={projectStatus?.earliest_start_date || '-'}
             onProjectStatusChange={reloadProjectStatus}
             projectStatus={projectStatus.status as ProjectStatusType}

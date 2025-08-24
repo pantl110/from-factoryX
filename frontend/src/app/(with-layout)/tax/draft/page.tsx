@@ -193,11 +193,7 @@ const TaxDraftPage = () => {
         />
       )}
       {isTaxDetailPanelOpen && selectedItemId && (
-        <TaxDetailPanel
-          onClose={handlePanelClose}
-          itemId={selectedItemId}
-          isDraft={true}
-        />
+        <TaxDetailPanel onClose={handlePanelClose} itemId={selectedItemId} />
       )}
     </>
   );

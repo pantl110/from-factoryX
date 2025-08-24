@@ -25,9 +25,6 @@ import useMemberStore from '@/store/member-store';
 const TaxPageContent = () => {
   const role = useMemberStore((state) => state.role);
   const factoryId = useMemberStore((state) => state.factoryId);
-  const initializeFactoryId = useMemberStore(
-    (state) => state.initializeFactoryId
-  );
 
   const [selectedTaxType, setSelectedTaxType] =
     useState<TaxDocumentType | null>(null);

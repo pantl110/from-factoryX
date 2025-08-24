@@ -71,7 +71,7 @@ const ClientInfo = ({
   >();
 
   // useGetClient 훅 사용
-  const { searchClients, getClients } = useGetClient();
+  const { getAllClientList } = useGetClient();
 
   // 디바운싱을 위한 타이머 ref
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -98,32 +98,11 @@ const ClientInfo = ({
       }
 
       try {
-        // 먼저 totalCnt를 확인하기 위해 page_size=1로 호출
-        const countResult = await searchClients(query);
-        if (!countResult.success || !countResult.data) {
-          setSearchResults([]);
-          setIsDropdownOpen(false);
-          return;
-        }
+        // getAllClientList를 사용하여 검색 결과 가져오기
+        const searchResult = await getAllClientList(query);
 
-        const totalCount = countResult.data.totalCnt;
-
-        // totalCnt가 0이면 결과 없음
-        if (totalCount === 0) {
-          setSearchResults([]);
-          setIsDropdownOpen(false);
-          return;
-        }
-
-        // totalCnt만큼 page_size를 설정해서 모든 결과를 한 번에 가져오기
-        const allResultsResult = await getClients({
-          q: query,
-          page: 1,
-          page_size: totalCount,
-        });
-
-        if (allResultsResult.success && allResultsResult.data) {
-          setSearchResults(allResultsResult.data.data || []);
+        if (searchResult.success && searchResult.data) {
+          setSearchResults(searchResult.data.data || []);
           setIsDropdownOpen(true);
         } else {
           setSearchResults([]);
@@ -134,7 +113,7 @@ const ClientInfo = ({
         setIsDropdownOpen(false);
       }
     },
-    [searchClients, getClients]
+    [getAllClientList]
   );
 
   // 검색어 변경 시 디바운싱 적용

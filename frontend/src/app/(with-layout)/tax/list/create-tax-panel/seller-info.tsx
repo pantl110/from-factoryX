@@ -46,7 +46,8 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
     if (factoryId) {
       getFactory(factoryId);
     }
-  }, [factoryId, getFactory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
 
   useEffect(() => {
     if (!factory) return;

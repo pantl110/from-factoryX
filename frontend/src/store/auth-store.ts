@@ -40,7 +40,7 @@ const useAuthStore = create<AuthStateProps>()(
           isAuthenticated: false,
           isLoading: false,
         });
-        
+
         // 2. 그 다음 localStorage 제거
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth-storage');
