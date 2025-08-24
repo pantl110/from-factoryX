@@ -43,6 +43,7 @@ import StartProductionModal from '@/app/(with-layout)/quotation/modals/start-pro
 import { useQuotationHandlers } from '@/app/(with-layout)/quotation/handlers/quotation-handlers';
 import { QuotationFormModel } from '@/types/data-model';
 import CreateTaxPanel from '@/app/(with-layout)/tax/list/create-tax-panel';
+import TaxDetailPanel from '../tax/tax-detail-panel';
 
 const QuotationPageContent = () => {
   const router = useRouter();
@@ -61,7 +62,7 @@ const QuotationPageContent = () => {
   const { getProjectStatus } = useGetProjectStatus();
   const { updateProjectStatus } = useUpdateProjectStatus();
   const { data: quotationData, isLoading: isQuotationLoading } =
-    useGetDetailQuotation(quotationId || 0);
+    useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
   const { showToast, isToastOpen, isVisible } = useToast();
   const { ocrData, imageUrl, setOcrData } = useOcrStore();
   const { clientList, getAllClientList } = useGetClient(); // 거래처 목록 가져오기
@@ -69,6 +70,7 @@ const QuotationPageContent = () => {
 
   const [projectStatus, setProjectStatus] =
     useState<ProjectStatusType>('quotation'); // 프로젝트 상태 관리
+  const [taxId, setTaxId] = useState<number | null>(null); // 세금계산서 ID 관리
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
     imageUrl ? 'quotation' : 'history'
   ); // 탭 상태 - ocr데이터가 없으면 히스토리 탭이 활성화
@@ -106,6 +108,8 @@ const QuotationPageContent = () => {
       const result = await getProjectStatus(projectId);
       if (result.success && result.data) {
         setProjectStatus(result.data.status);
+        setTaxId(result.data.tax_invoice);
+        console.log('result.data.tax_invoice', result.data.tax_invoice);
       }
     } catch {
       // 프로젝트 상태 로드 실패 시 무시
@@ -194,6 +198,11 @@ const QuotationPageContent = () => {
   useEffect(() => {
     if (quotationData && !isQuotationLoading) {
       setFormValuesFromQuotation(quotationData);
+
+      // quotationData에서 client_id가 있으면 selectedClientId로 설정
+      if (quotationData.client_id) {
+        setSelectedClientId(quotationData.client_id);
+      }
     }
   }, [quotationData, isQuotationLoading, setFormValuesFromQuotation]);
 
@@ -563,6 +572,7 @@ const QuotationPageContent = () => {
             const isSuccess = await handleSaveDraft();
             return isSuccess || false;
           }}
+          taxId={taxId}
         />
         <TabArea
           projectStatus={projectStatus}
@@ -658,8 +668,44 @@ const QuotationPageContent = () => {
 
       {/* 세금계산서 생성 버튼 */}
       {isTaxCreatePanelOpen && (
-        <CreateTaxPanel
+        // <CreateTaxPanel
+        //   onClose={() => setIsTaxCreatePanelOpen(false)}
+        //   initialClientData={{
+        //     id: selectedClientId || 0,
+        //     factory: factoryId || 0,
+        //     type: 'customer' as const,
+        //     name: watchedClientData.name || '',
+        //     business_registration_number:
+        //       watchedClientData.business_registration_number || '',
+        //     representative_name: watchedClientData.representative_name || '',
+        //     email: watchedClientData.email || '',
+        //     phone: watchedClientData.phone || '',
+        //     fax: watchedClientData.fax || '',
+        //     business_type: watchedClientData.business_type || '',
+        //     business_category: watchedClientData.business_category || '',
+        //     address: watchedClientData.address || '',
+        //     manager: watchedClientData.manager || '',
+        //   }}
+        //   initialProducts={quotationProducts.map((product) => ({
+        //     productId: product.productId || 0,
+        //     quantity: product.quantity || 0,
+        //     unit_price: product.unit_price || 0,
+        //     products_info: [
+        //       {
+        //         id: product.productId || 0,
+        //         factory: factoryId || 0,
+        //         name: product.product_name || '',
+        //         code: product.product_code || '',
+        //         spec: product.spec || '',
+        //         unit: product.unit || '',
+        //       },
+        //     ],
+        //   }))}
+        // />
+
+        <TaxDetailPanel
           onClose={() => setIsTaxCreatePanelOpen(false)}
+          projectId={projectId}
           initialClientData={{
             id: selectedClientId || 0,
             factory: factoryId || 0,

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Tooltip from '@/ui/tooltip';
 import { useState } from 'react';
 import useMemberStore from '@/store/member-store';
+import TaxDetailPanel from '../tax/tax-detail-panel';
 
 interface ButtonSectionProps {
   setIsTaxCreatePanelOpen: (open: boolean) => void;
@@ -18,6 +19,7 @@ interface ButtonSectionProps {
   isFormFilled: boolean;
   hasQuotationProducts: boolean;
   isDirty: boolean;
+  taxId: number | null;
 }
 
 const ButtonSection = ({
@@ -31,13 +33,14 @@ const ButtonSection = ({
   isFormFilled,
   hasQuotationProducts,
   isDirty,
+  taxId,
 }: ButtonSectionProps) => {
   const router = useRouter();
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
   const [showTooltip, setShowTooltip] = useState(false);
-
+  const [isTaxDetailPanelOpen, setIsTaxDetailPanelOpen] = useState(false);
   return (
     <>
       <div className="flex gap-1">
@@ -53,12 +56,24 @@ const ButtonSection = ({
           }}
         >
           <MiniBtn
-            text="세금계산서 생성"
+            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
-            disabled={!isFormFilled || !isOrderStatus || isViewer}
-            onClick={() => setIsTaxCreatePanelOpen(true)}
+            disabled={
+              !taxId &&
+              (!isFormFilled ||
+                !hasQuotationProducts ||
+                !isOrderStatus ||
+                isViewer)
+            }
+            onClick={() => {
+              if (taxId) {
+                setIsTaxDetailPanelOpen(true);
+              } else {
+                setIsTaxCreatePanelOpen(true);
+              }
+            }}
           />
           {showTooltip && (
             <div className="absolute z-50 -top-2 -left-2">
@@ -135,6 +150,13 @@ const ButtonSection = ({
           </>
         )}
       </div>
+
+      {isTaxDetailPanelOpen && taxId && (
+        <TaxDetailPanel
+          itemId={taxId}
+          onClose={() => setIsTaxDetailPanelOpen(false)}
+        />
+      )}
     </>
   );
 };

@@ -35,17 +35,25 @@ export const useBarobillRegister = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/barobill/register`, {
+      const response = await fetch(`${API_BASE_URL}/v1/barobill/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'credential-include': 'include',
         },
+        credentials: 'include',
         body: JSON.stringify({ factory: factoryId }),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // API 응답에서 에러 메시지 가져오기
+        try {
+          const errorData = await response.json();
+          const errorMessage = errorData.detail || errorData.message || `HTTP error! status: ${response.status}`;
+          throw new Error(errorMessage);
+        } catch (parseError) {
+          // JSON 파싱 실패 시 기본 에러 메시지 사용
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
       }
 
       const data = await response.json();
@@ -81,24 +89,32 @@ export const useBarobillCorpCertUrl = () => {
       setError(null);
 
       try {
-        const params = new URLSearchParams({
-          factory: factoryId.toString(),
-          barobill_id: payload.barobill_id,
-          barobill_password: payload.barobill_password,
-        });
-
         const response = await fetch(
-          `${API_BASE_URL}/api/barobill/register/corp/cert?${params}`,
+          `${API_BASE_URL}/v1/barobill/register/corp/cert`,
           {
-            method: 'GET',
+            method: 'POST',  // GET → POST로 변경
             headers: {
-              'credential-include': 'include',
+              'Content-Type': 'application/json',
             },
+            credentials: 'include',
+            body: JSON.stringify({
+              factory: factoryId,
+              barobill_id: payload.barobill_id,
+              barobill_password: payload.barobill_password,
+            }),
           }
         );
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          // API 응답에서 에러 메시지 가져오기
+          try {
+            const errorData = await response.json();
+            const errorMessage = errorData.detail || errorData.message || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMessage);
+          } catch (parseError) {
+            // JSON 파싱 실패 시 기본 에러 메시지 사용
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
         }
 
         const data = await response.json();
@@ -138,17 +154,23 @@ export const useBarobillCertCheck = () => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/barobill/check/cert/${factoryId}`,
+        `${API_BASE_URL}/v1/barobill/check/cert/${factoryId}`,
         {
           method: 'GET',
-          headers: {
-            'credential-include': 'include',
-          },
+          credentials: 'include',
         }
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // API 응답에서 에러 메시지 가져오기
+        try {
+          const errorData = await response.json();
+          const errorMessage = errorData.detail || errorData.message || `HTTP error! status: ${response.status}`;
+          throw new Error(errorMessage);
+        } catch (parseError) {
+          // JSON 파싱 실패 시 기본 에러 메시지 사용
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
       }
 
       const data = await response.json();

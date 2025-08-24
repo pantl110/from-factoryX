@@ -6,7 +6,7 @@ import {
 import Panel from '@/ui/panel';
 import TaxDocumentView from '@/app/(with-layout)/document/tax-document-view';
 import MiniBtn from '@/ui/mini-btn';
-import { useGetTaxInvoiceDetail, useToast } from '@/hooks';
+import { useGetTaxInvoiceDetail, useToast, useCancelTaxInvoice } from '@/hooks';
 import { useState, useEffect } from 'react';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
@@ -24,12 +24,22 @@ interface TaxProductEditModel {
 }
 
 interface TaxDetailPanelProps {
-  itemId: number;
+  itemId?: number;
   onClose: () => void;
   canLink?: boolean;
+  projectId?: number;
+  initialClientData?: TaxClientInfoModel;
+  initialProducts?: TaxProductEditModel[];
 }
 
-const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
+const TaxDetailPanel = ({
+  itemId,
+  onClose,
+  canLink,
+  projectId,
+  initialClientData,
+  initialProducts,
+}: TaxDetailPanelProps) => {
   // 모달
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -41,13 +51,18 @@ const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
     useState<TaxLineItemModel | null>(null); // 선택한 item을 material history에 연결할 때 사용
   // 생성 판넬/디테일 판넬 구분
   const [isEditingMode, setIsEditingMode] = useState(false);
+  // 새로 생성된 세금계산서 ID (임시저장 함수 진행 후 반환된 세금계산서 ID)
+  const [createdTaxId, setCreatedTaxId] = useState<number | null>(null);
 
   const { getTaxInvoiceDetail, isLoading } = useGetTaxInvoiceDetail();
   const { isToastOpen, isVisible, showToast } = useToast();
+  const { cancelTaxInvoice, isLoading: isCancelLoading } =
+    useCancelTaxInvoice();
 
   // 처음 마운트 시에만 데이터 가져오기 & 편집 모드 설정
   useEffect(() => {
     const fetchData = async () => {
+      if (!itemId) return;
       const result = await getTaxInvoiceDetail(itemId);
       if (result.success && result.data) {
         setItem(result.data);
@@ -62,6 +77,7 @@ const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
 
   // 데이터만 다시 로드 (편집 모드 상태 유지)
   const refetchData = async () => {
+    if (!itemId) return;
     const result = await getTaxInvoiceDetail(itemId);
     if (result.success && result.data) {
       setItem(result.data);
@@ -79,71 +95,100 @@ const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
   }, [isEditingMode]);
 
   // 데이터가 로딩 중이거나 없으면 로딩 표시
-  if (isLoading || !item) {
+  // itemId가 없을 때는 item을 기다리지 않음 (새로 생성하는 경우)
+  if (itemId && (isLoading || !item)) {
     return null;
   }
 
-  const isDraft = item.barobill_state === '임시저장';
+  // item이 존재할 때만 isDraft 계산
+  const isDraft = item?.barobill_state === '임시저장';
+  const isPendingTransmission =
+    item?.barobill_state === '발급완료' && item?.nts_send_state === '전송전';
 
   return (
     <>
-      {isEditingMode ? (
+      {isEditingMode || !itemId ? (
         <CreateTaxPanel
           onClose={onClose}
-          taxId={item.id || undefined}
-          initialClientData={item.client_info as TaxClientInfoModel}
+          taxId={item?.id || createdTaxId || undefined}
+          initialClientData={
+            (item?.client_info as TaxClientInfoModel) || initialClientData
+          }
           initialProducts={
-            item.products_info?.map((product, index) => ({
+            (item?.products_info?.map((product, index) => ({
               productId: product.id,
-              quantity: Number(item.line_items?.[index]?.chargeable_unit) || 0,
-              unit_price: Number(item.line_items?.[index]?.unit_price) || 0,
-              products_info: item.products_info, // 모든 품목 상세 정보 포함
-            })) as TaxProductEditModel[]
+              quantity: Number(item?.line_items?.[index]?.chargeable_unit) || 0,
+              unit_price: Number(item?.line_items?.[index]?.unit_price) || 0,
+              products_info: item?.products_info, // 모든 품목 상세 정보 포함
+            })) as TaxProductEditModel[]) || initialProducts
           }
           setIsEditingMode={setIsEditingMode}
+          onTaxCreated={setCreatedTaxId} // 새로 생성된 세금계산서 ID 전달
+          projectId={projectId}
         />
       ) : (
         <Panel
           title={`${item?.tax_invoice_type === 'sales' ? '매출' : '매입'} 세금계산서`}
           onClose={onClose}
           headerButton={
-            item &&
-            isDraft && (
-              <div className="flex gap-2 relative">
+            <>
+              {item && isDraft && (
+                <div className="flex gap-2">
+                  <MiniBtn
+                    text="수정"
+                    textColor="text-dg"
+                    borderColor="border-lg"
+                    hoverColor="hover:bg-bg"
+                    onClick={() => {
+                      setIsEditingMode(true);
+                    }}
+                  />
+                  <MiniBtn
+                    text="발행"
+                    textColor="text-wh"
+                    bgColor="bg-primary"
+                    hoverColor="hover:bg-primary-hover"
+                    onClick={() => {
+                      setIsPublishModalOpen(true);
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* 전송 대기 시 취소 가능 */}
+              {isPendingTransmission && (
                 <MiniBtn
-                  text="수정"
-                  textColor="text-dg"
-                  borderColor="border-lg"
-                  hoverColor="hover:bg-bg"
-                  onClick={() => {
-                    setIsEditingMode(true);
+                  text="발행 취소"
+                  textColor="text-red"
+                  bgColor="bg-red-8"
+                  hoverColor="hover:bg-red-hover"
+                  onClick={async () => {
+                    if (itemId) {
+                      const result = await cancelTaxInvoice(itemId);
+                      if (result.success) {
+                        onClose();
+                      }
+                    }
                   }}
+                  disabled={isCancelLoading}
                 />
-                <MiniBtn
-                  text="발행"
-                  textColor="text-wh"
-                  bgColor="bg-primary"
-                  hoverColor="hover:bg-primary-hover"
-                  onClick={() => {
-                    setIsPublishModalOpen(true);
-                  }}
-                />
-              </div>
-            )
+              )}
+            </>
           }
         >
           <TaxDocumentView
-            item={item}
+            item={item!}
             canLink={canLink}
             setIsLinkModalOpen={setIsLinkModalOpen}
             setSelectedLineItem={setSelectedLineItem}
           />
         </Panel>
       )}
+
       {/* 세금계산서 발행 모달 */}
       {isPublishModalOpen && (
         <PublishTaxModal
-          taxId={itemId}
+          taxId={itemId || createdTaxId || 0}
           onClose={() => setIsPublishModalOpen(false)}
           onSuccess={() => {
             // 발행 성공 후 모달과 판넬을 닫고 토스트 표시
@@ -157,7 +202,7 @@ const TaxDetailPanel = ({ itemId, onClose, canLink }: TaxDetailPanelProps) => {
         />
       )}
 
-      {canLink && isLinkModalOpen && (
+      {canLink && isLinkModalOpen && itemId && (
         <LinkTaxModal
           onClose={() => setIsLinkModalOpen(false)}
           linkedItemId={itemId} // 세금계산서 아이디

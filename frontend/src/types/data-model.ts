@@ -547,6 +547,7 @@ export interface QuotationProductDetailResponseModel {
 }
 export interface QuotationResponseModel {
   // 거래처 정보
+  client_id?: number; // 거래처 ID
   factory_name: string; // factory name이지만 거래처 이름임
   business_registration_number?: string;
   representative_name?: string;

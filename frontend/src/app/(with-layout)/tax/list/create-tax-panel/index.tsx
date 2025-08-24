@@ -2,7 +2,7 @@ import Panel from '@/ui/panel';
 import SellerInfo from './seller-info';
 import ClientInfo from './client-info';
 import MiniBtn from '@/ui/mini-btn';
-import { CaretDown } from '@phosphor-icons/react/dist/ssr';
+import { CaretDown, WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AddItemDropdown from './add-item-dropdown';
 import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
@@ -12,8 +12,11 @@ import {
   useCreateTaxInvoice,
   useCreateClient,
   useUpdateClient,
+  useToast,
+  useLinkTaxInvoice,
 } from '@/hooks';
 import useMemberStore from '@/store/member-store';
+import { useCheckBarobill } from '@/hooks';
 import {
   FactoriesUpdateModel,
   CreateTaxInvoiceModel,
@@ -28,6 +31,8 @@ import ProductInfo, {
   ProductInfoRefModel,
   ProductFormDataModel,
 } from './product-info';
+import Toast from '@/ui/toast';
+import { PanelRef } from '@/ui/panel';
 
 // 세금계산서 편집용 품목 데이터 타입
 interface TaxProductEditModel {
@@ -43,6 +48,8 @@ interface CreatTaxPanelProps {
   initialClientData?: TaxClientInfoModel;
   initialProducts?: TaxProductEditModel[];
   setIsEditingMode?: (isEditingMode: boolean) => void;
+  onTaxCreated?: (taxId: number) => void; // 새로 생성된 세금계산서 ID 전달
+  projectId?: number;
 }
 
 const CreatTaxPanel = ({
@@ -51,6 +58,8 @@ const CreatTaxPanel = ({
   initialClientData,
   initialProducts,
   setIsEditingMode,
+  onTaxCreated,
+  projectId,
 }: CreatTaxPanelProps) => {
   const [isAddProductDropdownOpen, setIsAddProductDropdownOpen] =
     useState(false);
@@ -59,7 +68,7 @@ const CreatTaxPanel = ({
   const [selectedIssueType, setSelectedIssueType] = useState<
     '청구' | '영수' | null
   >(null);
-  const [showErrors, setShowErrors] = useState(false);
+  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false); // 새로운 품목 추가 디테일판넬 상태
 
   // 판매처 정보 폼 상태
   const [isSellerInfoDirty, setIsSellerInfoDirty] = useState(false); // 전체적인 폼 변경 상태(작성일자 포함)
@@ -88,26 +97,66 @@ const CreatTaxPanel = ({
   const [productInfoFormData, setProductInfoFormData] =
     useState<ProductFormDataModel | null>(null);
 
-  // 저장 중 상태
+  // 그 외 폼 관련 상태
   const [isSaving, setIsSaving] = useState(false);
-
-  // 새로운 품목 추가 디테일판넬 상태
-  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
 
   // ProductInfo ref
   const productInfoRef = useRef<ProductInfoRefModel>(null);
+  // Panel ref (판넬 닫기 함수 전달)
+  const panelRef = useRef<PanelRef>(null);
 
-  // 공장 정보 업데이트 훅
   const { updateFactory } = useUpdateFactory();
-
-  // 거래처 생성/수정 훅
   const { createClient } = useCreateClient();
   const { updateClient } = useUpdateClient();
+  const { createTaxInvoice } = useCreateTaxInvoice();
+  const { linkTaxInvoice } = useLinkTaxInvoice();
+  const { checkBarobill } = useCheckBarobill();
+
+  // 바로빌 등록 실패 토스트 훅
+  const { showToast, isToastOpen, isVisible } = useToast();
+  const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지 상태
 
   const factoryId = useMemberStore((state) => state.factoryId);
 
-  // 세금계산서 생성 훅
-  const { createTaxInvoice } = useCreateTaxInvoice();
+  // 판넬에 들어올 때 바로빌 상태 확인 및 회원가입
+  useEffect(() => {
+    const checkBarobillStatus = async () => {
+      if (factoryId) {
+        try {
+          const result = await checkBarobill();
+          if (result) {
+            // 바로빌 연동 성공
+          } else {
+            // 바로빌 연동 실패 시 에러 메시지 설정 후 토스트 표시
+            setErrorMessage(
+              '세금계산서 사용자 확인에 실패했습니다. 다시 시도해 주세요.'
+            );
+            showToast();
+            // 토스트가 표시된 후 2초 뒤에 판넬 닫기
+            setTimeout(() => {
+              panelRef.current?.handleClose();
+            }, 2000);
+          }
+        } catch (error) {
+          // 에러 발생 시 실제 에러 메시지 설정 후 토스트 표시
+          const errorMsg =
+            error instanceof Error
+              ? error.message.split(':')[1].trim()
+              : '세금계산서 사용자 확인에 실패했습니다. 다시 시도해 주세요.';
+          setErrorMessage(errorMsg);
+          showToast();
+          // 토스트가 표시된 후 2초 뒤에 판넬 닫기
+          setTimeout(() => {
+            panelRef.current?.handleClose();
+          }, 2000);
+        }
+      }
+    };
+
+    checkBarobillStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
 
   // 주문품목 정보 폼 변경 핸들러
   const handleProductInfoChange = useCallback(
@@ -127,7 +176,7 @@ const CreatTaxPanel = ({
         const result = await createTaxInvoice(taxInvoiceData);
 
         if (result.success) {
-          return true;
+          return result.data;
         } else {
           alert(result.error || '세금계산서 생성에 실패했습니다.');
           return false;
@@ -310,7 +359,10 @@ const CreatTaxPanel = ({
   );
 
   // 임시 저장 버튼 클릭 핸들러
-  const handleTemporarySave = async (transactionType: TransactionType) => {
+  const handleTemporarySave = async (
+    transactionType: TransactionType,
+    projectId?: number
+  ) => {
     setIsSaving(true);
 
     try {
@@ -401,7 +453,25 @@ const CreatTaxPanel = ({
           ),
           is_hidden: false,
         };
-        await handleCreateTaxInvoice(taxInvoiceData);
+
+        const result = await handleCreateTaxInvoice(taxInvoiceData);
+        if (!result) {
+          setIsSaving(false);
+          return;
+        }
+
+        // 새로 생성된 세금계산서 ID를 부모에게 전달
+        if (onTaxCreated && result.id) {
+          onTaxCreated(result.id);
+        }
+
+        // 프로젝트 ID가 있으면 프로젝트와 세금계산서 연결
+        if (projectId) {
+          await linkTaxInvoice({
+            project_id: projectId,
+            tax_id: result.id,
+          });
+        }
       }
     } catch (error) {
       alert('저장 중 오류가 발생했습니다: ' + error);
@@ -443,11 +513,15 @@ const CreatTaxPanel = ({
         bgColor="bg-primary-8"
         hoverColor="hover:bg-secondary-hover"
         onClick={() => {
-          handleTemporarySave('receipt');
+          handleTemporarySave('receipt', projectId);
           onClose();
         }}
         disabled={
-          (!isSellerInfoDirty && !isClientInfoDirty && !isProductInfoDirty) ||
+          // 견적서에서 세금계산서로 들어왔을 때는 isDirty가 아니어도 저장 가능
+          (taxId &&
+            !isSellerInfoDirty &&
+            !isClientInfoDirty &&
+            !isProductInfoDirty) ||
           isSaving
         }
       />
@@ -479,7 +553,12 @@ const CreatTaxPanel = ({
 
   return (
     <>
-      <Panel title="세금계산서" onClose={onClose} headerButton={headerButton}>
+      <Panel
+        title="세금계산서"
+        onClose={onClose}
+        headerButton={headerButton}
+        ref={panelRef}
+      >
         <div className="flex gap-5">
           <SellerInfo
             onFormChange={handleSellerInfoChange}
@@ -533,15 +612,19 @@ const CreatTaxPanel = ({
         />
       )}
 
-      {/* 바로빌 등록 모달 */}
-      {/* {isBarobilRegisterModalOpen && (
-        <BarobilRegisterModal
-          onClose={() => {
-            setIsBarobilRegisterModalOpen(false);
-            onClose();
-          }}
+      {/* 바로빌 등록 실패 토스트 */}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text="세금계산서 사용자 확인에 실패했습니다."
+          subtext={
+            errorMessage ||
+            '세금계산서 사용자 확인에 실패했습니다. 다시 시도해 주세요.'
+          }
+          type="red"
+          isVisible={isVisible}
         />
-      )} */}
+      )}
     </>
   );
 };

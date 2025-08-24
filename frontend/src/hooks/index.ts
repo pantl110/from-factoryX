@@ -98,11 +98,12 @@ export { default as useGetTaxInvoiceDetail } from './tax/use-get-tax-invoice-det
 export { default as usePublishTaxInvoice } from './tax/use-publish-tax-invoice';
 export { default as useCancelTaxInvoice } from './tax/use-cancel-tax-invoice';
 export { default as useDeleteTaxInvoice } from './tax/use-delete-tax-invoice';
+export { useCheckBarobill } from './tax/barobil/use-check-barobill';
 export {
   useBarobillRegister,
   useBarobillCorpCertUrl,
   useBarobillCertCheck,
-} from './tax/use-barobill';
+} from './tax/barobil/use-barobill';
 
 // AWS related hooks
 export { default as useUploadFile } from './aws/use-upload-file';
