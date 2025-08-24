@@ -197,7 +197,7 @@ class ProjectPlanDetailOut(Schema):
 # (POST) Project Plan Create
 class ProjectPlansCreateOut(Schema):
     message: str
-    created_plans: List[ProjectPlanDetailOut]
+    plan: ProjectPlanDetailOut
 
 
 # (GET) Product Detail

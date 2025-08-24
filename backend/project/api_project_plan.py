@@ -89,8 +89,6 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn):
                 raise HttpError(400, f"설비 ID {equipment_id}를 찾을 수 없습니다.")
 
     # 6. 생산 계획 생성
-    created_plans = []
-
     for i, quotation_product in enumerate(quotation_products):
         # 필수 입력값 검증
         if not payload.production_quantities or i >= len(payload.production_quantities):
@@ -116,8 +114,14 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn):
         if not equipment:
             raise HttpError(400, f"설비 ID {equipment_id}를 찾을 수 없습니다.")
 
-        # 첫 번째 ProjectPlan 생성 (생산 수량)
-        plan1 = await ProjectPlan.objects.acreate(
+        # 버퍼 레이트 업데이트
+        if production_quantity >= quotation_product.quantity:
+            new_buffer_rate = (production_quantity / quotation_product.quantity) - 1
+            quotation_product.product.buffer_rate = new_buffer_rate
+            await quotation_product.product.asave()
+
+        # ProjectPlan 생성 (생산 수량)
+        plan = await ProjectPlan.objects.acreate(
             project=project,
             product=quotation_product,
             equipment=equipment,
@@ -127,62 +131,19 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn):
             avg_production_time=avg_production_time,
         )
 
-        created_plans.append(
-            ProjectPlanDetailOut(
-                id=plan1.id,
-                project_id=plan1.project.id,
-                quotation_product_id=plan1.product.id,
-                equipment_id=plan1.equipment.id,
-                status=plan1.status,
-                quantity=plan1.quantity,
-                start_date=plan1.start_date,
-                end_date=plan1.end_date,
-                avg_production_time=plan1.avg_production_time,
-            )
-        )
-
-        # 남은 수량이 있으면 두 번째 ProjectPlan 생성
-        remaining_quantity = quotation_product.quantity - production_quantity
-        if remaining_quantity > 0:
-            # 두 번째 설비 (기본값: 첫 번째 설비)
-            equipment2 = equipments[0]
-            if payload.equipment_ids and i < len(payload.equipment_ids):
-                equipment_id = payload.equipment_ids[i]
-                equipment2 = next(eq for eq in equipments if eq.id == equipment_id)
-
-            # 두 번째 생산 일정 (기본값: 첫 번째 일정 + 1일)
-            start_date_obj = date.fromisoformat(start_date)
-            end_date_obj = date.fromisoformat(end_date)
-            start_date2 = start_date_obj
-            end_date2 = end_date_obj
-
-            plan2 = await ProjectPlan.objects.acreate(
-                project=project,
-                product=quotation_product,
-                equipment=equipment2,
-                quantity=remaining_quantity,
-                start_date=start_date2,
-                end_date=end_date2,
-                avg_production_time=avg_production_time,
-            )
-
-            created_plans.append(
-                ProjectPlanDetailOut(
-                    id=plan2.id,
-                    project_id=plan2.project.id,
-                    quotation_product_id=plan2.product.id,
-                    equipment_id=plan2.equipment.id,
-                    status=plan2.status,
-                    quantity=plan2.quantity,
-                    start_date=plan2.start_date,
-                    end_date=plan2.end_date,
-                    avg_production_time=plan2.avg_production_time,
-                )
-            )
-
     return 200, ProjectPlansCreateOut(
-        message=f"{len(created_plans)}개의 생산 계획이 성공적으로 생성되었습니다.",
-        created_plans=created_plans,
+        message=f"생산 계획이 성공적으로 생성되었습니다.",
+        plan=ProjectPlanDetailOut(
+            id=plan.id,
+            project_id=plan.project.id,
+            quotation_product_id=plan.product.id,
+            equipment_id=plan.equipment.id,
+            status=plan.status,
+            quantity=plan.quantity,
+            start_date=plan.start_date,
+            end_date=plan.end_date,
+            avg_production_time=plan.avg_production_time,
+        ),
     )
 
 
@@ -225,7 +186,9 @@ async def list_ongoing_project_plans(
 
         project_ids = [project.id for project in ongoing_projects]
         plans = await sync_to_async(list)(
-            ProjectPlan.objects.filter(project_id__in=project_ids)
+            ProjectPlan.objects.filter(project_id__in=project_ids).order_by(
+                "product_id", "created_at"
+            )
         )
 
         if not plans:
@@ -325,7 +288,9 @@ async def list_completed_project_plans(
 
         project_ids = [project.id for project in completed_projects]
         plans = await sync_to_async(list)(
-            ProjectPlan.objects.filter(project_id__in=project_ids)
+            ProjectPlan.objects.filter(project_id__in=project_ids).order_by(
+                "product_id", "created_at"
+            )
         )
 
         if not plans:
@@ -413,7 +378,9 @@ async def list_today_production_plans(request):
                     product__quotation__factory_id=int(factory_id),
                     start_date__date=today,  # 오늘 하루(00:00~23:59:59)
                 )
-                .order_by("start_date")  # 시작 시간 순으로 정렬
+                .order_by(
+                    "product__product__id", "created_at"
+                )  # 품목 순, 생성일 순으로 정렬
             )
 
         today_plans = await get_today_plans()
@@ -657,7 +624,9 @@ async def list_project_plans(request, project_id: int):
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
 
-    plans = await sync_to_async(list)(ProjectPlan.objects.filter(project=project))
+    plans = await sync_to_async(list)(
+        ProjectPlan.objects.filter(project=project).order_by("product_id", "created_at")
+    )
 
     if not plans:
         raise HttpError(404, "해당 프로젝트에 생성된 생산 계획이 없습니다.")
@@ -781,5 +750,12 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         content=f"프로젝트 '{plan.project.name}'의 생산 계획이 수정되었습니다.",
         additional_data={"plan_id": plan.id},
     )
+
+    # 버퍼 레이트 업데이트
+    if payload.quantity is not None:
+        if payload.quantity >= plan.product.quantity:
+            new_buffer_rate = (payload.quantity / plan.product.quantity) - 1
+            plan.product.product.buffer_rate = new_buffer_rate
+            await plan.product.product.asave()
 
     return 200, {"message": "프로젝트 생산 계획이 성공적으로 수정되었습니다."}

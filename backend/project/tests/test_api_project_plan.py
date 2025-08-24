@@ -119,23 +119,14 @@ class ProjectPlanAPITestCase(TestCase):
         # 응답 데이터 확인
         data = response.json()
         self.assertIn("message", data)
-        self.assertIn("created_plans", data)
-        # 생산 수량(8)과 주문 수량(10)이 다르므로 2개의 계획이 생성되어야 함
-        self.assertEqual(len(data["created_plans"]), 2)
+        self.assertIn("plan", data)
 
-        # 첫 번째 계획 확인 (생산 수량)
-        plan1_data = data["created_plans"][0]
-        self.assertEqual(plan1_data["project_id"], self.project.id)
-        self.assertEqual(plan1_data["quotation_product_id"], self.quotation_product.id)
-        self.assertEqual(plan1_data["equipment_id"], self.equipment.id)
-        self.assertEqual(plan1_data["quantity"], 8)  # 생산 수량
-
-        # 두 번째 계획 확인 (남은 수량)
-        plan2_data = data["created_plans"][1]
-        self.assertEqual(plan2_data["project_id"], self.project.id)
-        self.assertEqual(plan2_data["quotation_product_id"], self.quotation_product.id)
-        self.assertEqual(plan2_data["equipment_id"], self.equipment.id)
-        self.assertEqual(plan2_data["quantity"], 92)  # 남은 수량 (100 - 8)
+        # 단일 계획 확인
+        plan_data = data["plan"]
+        self.assertEqual(plan_data["project_id"], self.project.id)
+        self.assertEqual(plan_data["quotation_product_id"], self.quotation_product.id)
+        self.assertEqual(plan_data["equipment_id"], self.equipment.id)
+        self.assertEqual(plan_data["quantity"], 8)  # 생산 수량
 
     def test_create_project_plans_nonexistent_project(self):
         """존재하지 않는 프로젝트로 생산 계획 생성 시도 테스트"""
@@ -225,7 +216,7 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         self.assertEqual(create_response.status_code, 200)
-        plan_id = create_response.json()["created_plans"][0]["id"]
+        plan_id = create_response.json()["plan"]["id"]
 
         # 생산 계획 수정
         update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
@@ -289,7 +280,7 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         self.assertEqual(create_response.status_code, 200)
-        plan_id = create_response.json()["created_plans"][0]["id"]
+        plan_id = create_response.json()["plan"]["id"]
 
         # 존재하지 않는 설비로 수정 시도
         update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
@@ -326,7 +317,7 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         self.assertEqual(create_response.status_code, 200)
-        plan_id = create_response.json()["created_plans"][0]["id"]
+        plan_id = create_response.json()["plan"]["id"]
 
         # 올바르지 않은 상태값으로 수정 시도
         update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
@@ -363,7 +354,7 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         self.assertEqual(create_response.status_code, 200)
-        plan_id = create_response.json()["created_plans"][0]["id"]
+        plan_id = create_response.json()["plan"]["id"]
 
         # 올바르지 않은 수량으로 수정 시도
         update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
@@ -420,17 +411,17 @@ class ProjectPlanAPITestCase(TestCase):
         # 응답 데이터 확인
         data = response.json()
         self.assertIsInstance(data, list)
-        self.assertEqual(len(data), 2)  # 생산 수량(8)과 주문 수량(10)이 다르므로 2개
+        self.assertEqual(len(data), 1)  # 단일 계획만 생성됨
 
-        # 첫 번째 계획 확인
-        plan1 = data[0]
-        self.assertEqual(plan1["id"], 1)
-        self.assertEqual(plan1["project_id"], self.project.id)
-        self.assertEqual(plan1["quantity"], 8)
+        # 계획 확인
+        plan = data[0]
+        self.assertEqual(plan["id"], 1)
+        self.assertEqual(plan["project_id"], self.project.id)
+        self.assertEqual(plan["quantity"], 8)
 
         # 견적서 품목 정보 확인
-        self.assertIn("quotation_product", plan1)
-        quotation_product = plan1["quotation_product"]
+        self.assertIn("quotation_product", plan)
+        quotation_product = plan["quotation_product"]
         self.assertEqual(quotation_product["id"], self.quotation_product.id)
         self.assertEqual(quotation_product["quantity"], self.quotation_product.quantity)
         self.assertEqual(
@@ -447,17 +438,11 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(product["spec"], self.product.spec)
 
         # 설비 정보 확인
-        self.assertIn("equipment", plan1)
-        equipment = plan1["equipment"]
+        self.assertIn("equipment", plan)
+        equipment = plan["equipment"]
         self.assertEqual(equipment["id"], self.equipment.id)
         self.assertEqual(equipment["name"], self.equipment.name)
         self.assertEqual(equipment["priority"], self.equipment.priority)
-
-        # 두 번째 계획 확인
-        plan2 = data[1]
-        self.assertEqual(plan2["id"], 2)
-        self.assertEqual(plan2["project_id"], self.project.id)
-        self.assertEqual(plan2["quantity"], 92)
 
     def test_list_project_plans_nonexistent_project(self):
         """존재하지 않는 프로젝트로 생산 계획 조회 시도 테스트"""
@@ -636,7 +621,7 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 생성된 계획의 ID 가져오기
-        plan_id = response.json()["created_plans"][0]["id"]
+        plan_id = response.json()["plan"]["id"]
 
         # 계획 상태를 "production"으로 변경
         update_status_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
@@ -712,7 +697,7 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 생성된 계획의 ID 가져오기
-        plan_id = response.json()["created_plans"][0]["id"]
+        plan_id = response.json()["plan"]["id"]
 
         # 새로운 설비 생성
         new_equipment = FactoryEquipment.objects.create(
@@ -759,7 +744,7 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 생성된 계획의 ID 가져오기
-        plan_id = response.json()["created_plans"][0]["id"]
+        plan_id = response.json()["plan"]["id"]
 
         # 계획 상태를 "production" : "가동 중"으로 변경
         update_status_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
