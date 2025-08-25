@@ -82,8 +82,8 @@ class ProjectStatusDetailOut(ModelSchema):
     tax_invoice: Optional[NationalTaxServiceOut] = Field(
         None, description="세금계산서 정보"
     )
-    quotations: List[QuotationModelOut] = Field([], description="견적서 정보")
-    logs: List[ProjectLogModelOut] = Field([], description="프로젝트 로그 정보")
+    quotations: Optional[List[QuotationModelOut]] = Field([], description="견적서 정보")
+    logs: Optional[List[ProjectLogModelOut]] = Field([], description="프로젝트 로그 정보")
 
     class Meta:
         model = Project
