@@ -31,13 +31,13 @@ export const useCheckBarobill = () => {
           barobill_password: data.barobill_password,
         });
 
-        if (certUrlResponse && certUrlResponse.cert_url) {
-          window.open(certUrlResponse.cert_url, '_blank');
-          return true;
+        if (certUrlResponse && certUrlResponse.url) {
+          // URL을 반환하고, 새 탭으로 열기는 것은 호출하는 쪽에서 처리
+          return certUrlResponse.url;
         }
-        return false;
+        return null;
       } catch {
-        return false;
+        return null;
       }
     },
     [getCertUrl]
@@ -54,10 +54,15 @@ export const useCheckBarobill = () => {
         if (memberResponse && memberResponse.success && memberResponse.data) {
           const memberData = memberResponse.data as UpdateMemberResponseModel;
           if (memberData.barobill_id && memberData.barobill_password) {
-            await getCertification({
+            const result = await getCertification({
               barobill_id: memberData.barobill_id,
               barobill_password: memberData.barobill_password,
             });
+            
+            // getCertification이 성공하면 URL을 새 탭으로 열기
+            if (result && typeof result === 'string') {
+              window.open(result, '_blank');
+            }
           }
         }
       } catch {
