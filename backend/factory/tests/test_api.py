@@ -789,7 +789,8 @@ class FactoryCreateAPITestCase(TestCase):
         url = f'/v1/factory?factory_id={self.factory.id}'
         payload = {
             'name': '수정된 공장명',
-            'business_address': '서울시 마포구'
+            'business_address': '서울시 마포구',
+            'business_registration_number': '123-45-67890',
         }
         
         response = self.client.patch(
@@ -805,7 +806,8 @@ class FactoryCreateAPITestCase(TestCase):
         self.assertEqual(data['id'], self.factory.id)
         self.assertEqual(data['name'], '수정된 공장명')
         self.assertEqual(data['business_address'], '서울시 마포구')
-        
+        self.assertEqual(data['business_registration_number'], '1234567890')
+
         # 데이터베이스에서도 확인
         self.factory.refresh_from_db()
         self.assertEqual(self.factory.name, '수정된 공장명')
