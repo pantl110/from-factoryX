@@ -3,17 +3,14 @@ import datetime
 from typing import Optional, List, Literal
 from project.models import Project, ProjectLog, Refund, ProjectPlan
 from document.schemas.outbound import QuotationModelOut
+from tax.models import NationalTaxService
 
 
 # 순환 import 방지를 위한 별도 정의
-class NationalTaxServiceOut(Schema):
-    id: int
-    tax_invoice_type: str
-    transaction_date: datetime.date
-    client_name: str
-    transaction_amount: int
-    tax_amount: int
-    total_amount: int
+class NationalTaxServiceOut(ModelSchema):
+    class Meta:
+        model = NationalTaxService
+        fields = "__all__"
 
 
 # ------------------------------------------------------------
