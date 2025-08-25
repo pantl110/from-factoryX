@@ -11,6 +11,7 @@ class NationalTaxServiceOut(ModelSchema):
     class Meta:
         model = NationalTaxService
         fields = "__all__"
+        exclude = ["product"]
 
 
 # ------------------------------------------------------------
@@ -80,7 +81,9 @@ class ProjectStatusDetailOut(ModelSchema):
         None, description="세금계산서 정보"
     )
     quotations: Optional[List[QuotationModelOut]] = Field([], description="견적서 정보")
-    logs: Optional[List[ProjectLogModelOut]] = Field([], description="프로젝트 로그 정보")
+    logs: Optional[List[ProjectLogModelOut]] = Field(
+        [], description="프로젝트 로그 정보"
+    )
 
     class Meta:
         model = Project
