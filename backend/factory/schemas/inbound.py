@@ -1,5 +1,6 @@
 from ninja import Field, FilterSchema, Schema
 from typing import Optional
+from pydantic import field_validator
 
 
 # ------------------------------------------------------------
@@ -20,6 +21,11 @@ class FactoryUpdateIn(Schema):
     business_address: Optional[str] = None
     is_trial: Optional[bool] = None
     billing_key: Optional[str] = None
+
+    @field_validator('business_registration_number')
+    @classmethod
+    def validate_business_registration_number(cls, v):
+        return "".join(filter(str.isdigit, v)) if v else v
 
 
 # ------------------------------------------------------------
