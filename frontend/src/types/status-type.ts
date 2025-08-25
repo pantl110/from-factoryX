@@ -154,7 +154,7 @@ export type TransactionType = 'receipt' | 'invoice'; // 영수, 청구
 
 // 세금계산서 발행 상태
 export type TaxStatusType =
-  | null
+  | null  
   | 'temporary'
   | 'pending'
   | 'processing'
@@ -166,12 +166,12 @@ export const TaxStatusColorMap: Record<
   NonNullable<TaxStatusType>,
   StatusColorModel
 > = {
-  temporary: { textColor: 'text-gr' },
-  pending: { textColor: 'text-yellow' },
-  processing: { textColor: 'text-purple' },
-  published: { textColor: 'text-primary' },
-  cancled: { textColor: 'text-red' },
-  failed: { textColor: 'text-red' },
+  temporary: { textColor: 'text-gr'},
+  pending: { textColor: 'text-yellow'},
+  processing: { textColor: 'text-purple'},
+  published: { textColor: 'text-primary'},
+  cancled: { textColor: 'text-red'},
+  failed: { textColor: 'text-red'},
 };
 
 // Helper function to get status color with null handling
@@ -179,6 +179,7 @@ export const getTaxStatusColor = (status: TaxStatusType): StatusColorModel => {
   if (!status) return { textColor: 'text-dg' };
   return TaxStatusColorMap[status];
 };
+
 
 // Tax Invoice State Types
 // 바로빌 상태 (백엔드에서 실제로 사용하는 값들만)

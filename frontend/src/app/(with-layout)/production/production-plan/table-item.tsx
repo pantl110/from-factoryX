@@ -9,11 +9,12 @@ import {
 import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import { tableHeader } from './types';
 import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react/dist/ssr';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks/format-number';
-import { useMaterialStatus } from '@/hooks';
+
 import { useForm, Controller } from 'react-hook-form';
+import MiniBtn from '@/ui/mini-btn';
 
 // Form 데이터 타입 정의
 interface ProductionPlanFormDataModel {
@@ -26,12 +27,17 @@ interface ProductionPlanFormDataModel {
 interface TableItemProps {
   item: ProjectPlanModel;
   onOperationStatusClick?: (e: React.MouseEvent) => void;
-  onFacilityClick: (e: React.MouseEvent) => void;
+  onFacilityClick: (e: React.MouseEvent, rowId?: number | null) => void;
   onFormChange?: (
     planId: number,
     formData: ProductionPlanFormDataModel
   ) => void;
   onSave?: (planId: number, formData: ProductionPlanFormDataModel) => void; // 저장 함수 추가
+  onAddPlan?: (
+    planData: ProductionPlanFormDataModel,
+    parentPlanId: number
+  ) => void; // 추가 계획 생성 함수
+  onRemoveAdditionalPlan?: (parentPlanId: number) => void; // 추가 계획 제거 함수
   formData?: ProductionPlanFormDataModel; // 현재 form 데이터
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
@@ -43,6 +49,8 @@ const TableItem = ({
   onFacilityClick,
   onFormChange,
   onSave,
+  onAddPlan,
+  onRemoveAdditionalPlan,
   formData: currentFormData,
   equipments,
   projectStatus,
@@ -61,9 +69,8 @@ const TableItem = ({
   };
 
   const operationStatus = getOperationStatus(item.status);
-  const { materialStatus } = useMaterialStatus(
-    item.quotation_product.product.id
-  ) as { materialStatus: InventoryStatusType };
+  // ProjectPlanModel의 material_status 필드 사용
+  const materialStatus = item.material_status as InventoryStatusType;
   const operationColor =
     OperationStatusColorMap[operationStatus] || OperationStatusColorMap.pending;
   const materialColor = InventoryStatusColorMap[materialStatus];
@@ -125,27 +132,35 @@ const TableItem = ({
   const watchedStartDate = watch('start_date');
   const watchedEndDate = watch('end_date');
 
-  // currentFormData.equipment_id가 변경될 때 React Hook Form 업데이트
+  // 생산수량에 따라 추가 계획 동적 관리
   useEffect(() => {
-    if (
-      currentFormData?.equipment_id &&
-      currentFormData.equipment_id !== item.equipment.id
-    ) {
-      // 설비만 변경하고, 다른 값들은 현재 React Hook Form의 값 유지
-      reset({
-        quantity: watchedQuantity,
-        equipment_id: currentFormData.equipment_id,
-        start_date: watchedStartDate,
-        end_date: watchedEndDate,
-      });
+    const orderQuantity = item.quotation_product.quantity || 0;
+
+    if (watchedQuantity > 0 && watchedQuantity < orderQuantity && onAddPlan) {
+      // 생산 수량이 주문 수량보다 작으면 추가 계획 생성
+      const bufferRate = item.quotation_product.product.buffer_rate || 0;
+      const remainingQuantity = orderQuantity - watchedQuantity;
+      const bufferedQuantity = Math.ceil(remainingQuantity * (1 + bufferRate));
+
+      onAddPlan(
+        {
+          quantity: bufferedQuantity,
+          equipment_id: watchedEquipmentId,
+          start_date: watchedStartDate,
+          end_date: watchedEndDate,
+        },
+        item.id
+      );
+    } else if (watchedQuantity >= orderQuantity && onRemoveAdditionalPlan) {
+      // 생산 수량이 주문 수량보다 크거나 같으면 추가 계획 제거
+      onRemoveAdditionalPlan(item.id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    currentFormData?.equipment_id,
-    item.equipment.id,
-    reset,
     watchedQuantity,
-    watchedStartDate,
-    watchedEndDate,
+    item.quotation_product.quantity,
+    item.quotation_product.product.buffer_rate,
+    item.id,
   ]);
 
   // 저장 버튼 클릭 시 호출되는 함수
@@ -175,6 +190,13 @@ const TableItem = ({
       onSave(item.id, formData);
     }
   };
+
+  // 원본 플랜 폼 유효성 검사
+  const isOriginalFormValid =
+    watchedQuantity > 0 &&
+    watchedEquipmentId &&
+    watchedStartDate &&
+    watchedEndDate;
 
   // 현재 선택된 설비 정보 (formData의 equipment_id 우선, 없으면 원본 데이터)
   const selectedEquipment =
@@ -221,7 +243,10 @@ const TableItem = ({
     품목코드: item.quotation_product.product.code,
     규격: item.quotation_product.product.spec,
     단위: item.quotation_product.product.unit,
-    '주문 수량': item.quotation_product.quantity?.toLocaleString() || '0',
+    '주문 수량':
+      item.id < 0
+        ? ''
+        : item.quotation_product.quantity?.toLocaleString() || '0',
     '생산 수량': (
       <Controller
         name="quantity"
@@ -285,7 +310,7 @@ const TableItem = ({
         onClick={(e) => {
           if (operationStatus === 'pending') {
             e.stopPropagation();
-            onFacilityClick(e);
+            onFacilityClick(e, item.id);
           }
         }}
       >
@@ -356,12 +381,23 @@ const TableItem = ({
         )}
       />
     ),
+    '': (
+      <MiniBtn
+        text="저장"
+        onClick={handleSave}
+        disabled={operationStatus === 'completed' || !isOriginalFormValid}
+        hoverColor="hover:bg-bg"
+        textColor="text-dg"
+        borderColor="border-lg"
+        height="h-8"
+      />
+    ),
   };
 
   return (
     <>
       <div
-        className={`group flex items-center min-w-[1494px] h-12 border-b border-lg Me_Body-1 bg-whit ${
+        className={`group flex items-center min-w-[1729px] h-12 border-b border-lg Me_Body-1 bg-whit ${
           operationStatus === 'completed' ? 'text-gr' : 'text-dg'
         }`}
       >
@@ -376,13 +412,6 @@ const TableItem = ({
             {itemData[header.name as keyof typeof itemData]}
           </div>
         ))}
-        <button
-          className="border px-3 py-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={handleSave}
-          disabled={operationStatus === 'completed'}
-        >
-          저장
-        </button>
       </div>
 
       {isProductDetailOpen && (

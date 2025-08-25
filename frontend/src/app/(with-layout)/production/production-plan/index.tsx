@@ -43,8 +43,11 @@ const ProductionPlan = ({
   // API 호출
   const { getProjectPlans, isLoading, error } = useGetProjectPlans();
   const { updateProjectPlan } = useUpdateProjectPlan();
-  const { equipmentList } = useGetEquipment();
+  const { getAllEquipmentList } = useGetEquipment();
   const [projectPlans, setProjectPlans] = useState<ProjectPlanModel[]>([]);
+  const [allEquipments, setAllEquipments] = useState<EquipmentResponseModel[]>(
+    []
+  );
 
   // Form 데이터 저장
   interface ProductionPlanFormDataModel {
@@ -57,12 +60,95 @@ const ProductionPlan = ({
     Record<number, ProductionPlanFormDataModel>
   >({});
 
+  // 추가 생산 계획 생성 함수
+  const handleAddPlan = async (
+    planData: ProductionPlanFormDataModel,
+    parentPlanId: number
+  ) => {
+    try {
+      console.log('새로운 생산 계획 생성:', planData);
+
+      // 고유한 임시 ID 생성 (타임스탬프 + 랜덤 숫자 + 부모 ID)
+      const tempId = -(Date.now() + Math.random() * 1000000 + parentPlanId);
+
+      // 임시 계획 객체 생성
+      const tempPlan = {
+        id: tempId,
+        quantity: planData.quantity,
+        equipment: { id: planData.equipment_id || 0, name: '임시 설비' },
+        start_date: planData.start_date,
+        end_date: planData.end_date,
+        status: 'pending',
+        material_status: '충분',
+        avg_production_time: 0,
+        quotation_product: {
+          quantity: 0,
+          is_delivery: false,
+          product: { name: '', code: '', spec: '', unit: '', buffer_rate: 0 },
+        },
+      } as ProjectPlanModel;
+
+      // projectPlans에 부모 계획 바로 다음에 새로 생성된 플랜 추가
+      setProjectPlans((prev) => {
+        const parentIndex = prev.findIndex((plan) => plan.id === parentPlanId);
+        if (parentIndex === -1) {
+          return [...prev, tempPlan];
+        }
+        const newPlans = [...prev];
+        newPlans.splice(parentIndex + 1, 0, tempPlan);
+        return newPlans;
+      });
+
+      // formChanges에도 추가 (변경사항으로 관리)
+      setFormChanges((prev) => ({
+        ...prev,
+        [tempId]: planData,
+      }));
+
+      // 토스트 메시지 표시 (선택사항)
+      // showToast('추가 생산 계획이 생성되었습니다.');
+    } catch {
+      alert('추가 생산 계획 생성 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 추가 계획 제거 함수
+  const removeAdditionalPlan = (parentPlanId: number) => {
+    setProjectPlans((prev) => {
+      const parentIndex = prev.findIndex((plan) => plan.id === parentPlanId);
+      if (parentIndex === -1) return prev;
+
+      // 부모 계획 다음에 있는 추가 계획(음수 ID) 찾기
+      const additionalPlanIndex = parentIndex + 1;
+      if (
+        additionalPlanIndex < prev.length &&
+        prev[additionalPlanIndex].id < 0
+      ) {
+        const additionalPlanId = prev[additionalPlanIndex].id;
+
+        // 추가 계획 제거
+        const newPlans = prev.filter((plan) => plan.id !== additionalPlanId);
+
+        // formChanges에서도 제거
+        setFormChanges((prevFormChanges) => {
+          const { [additionalPlanId]: removed, ...rest } = prevFormChanges;
+          return rest;
+        });
+
+        console.log('추가 계획이 제거되었습니다.');
+        return newPlans;
+      }
+
+      return prev;
+    });
+  };
+
   // 토스트 훅들
   const {
     isToastOpen: isEquipmentToastOpen,
     isVisible: isEquipmentToastVisible,
     showToast: showEquipmentToast,
-  } = useToast(3000); // 설비 중복 사용 토스트
+  } = useToast(); // 설비 중복 사용 토스트
   const {
     isToastOpen: isTimeToastOpen,
     isVisible: isTimeToastVisible,
@@ -80,6 +166,22 @@ const ProductionPlan = ({
   const setAllProductionCompleted = usePageStatusStore(
     (state) => state.setAllProductionCompleted
   );
+
+  // 전체 설비 목록 로드 (초기 로드만)
+  useEffect(() => {
+    const loadAllEquipments = async () => {
+      try {
+        const result = await getAllEquipmentList();
+        if (result && result.data) {
+          setAllEquipments(result.data);
+        }
+      } catch (error) {
+        console.error('전체 설비 목록 로드 실패:', error);
+      }
+    };
+
+    loadAllEquipments();
+  }, [getAllEquipmentList]);
 
   // 프로젝트 계획 데이터 로드 (초기 로드만)
   useEffect(() => {
@@ -193,60 +295,82 @@ const ProductionPlan = ({
 
   // 설비 선택 핸들러
   const handleEquipmentSelect = (equipment: EquipmentResponseModel) => {
-    if (facilityDropdownRowId) {
-      const currentFormData = formChanges[facilityDropdownRowId];
-      const originalPlan = projectPlans.find(
-        (p) => p.id === facilityDropdownRowId
+    // facilityDropdownRowId가 실제 projectplanid인지 확인
+    const originalPlan = projectPlans.find(
+      (p) => p.id === facilityDropdownRowId
+    );
+
+    if (!originalPlan) {
+      // 새로 생긴 플랜의 설비 선택인 경우 (projectplanid가 없음)
+      console.log('새로 생긴 플랜의 설비 선택 처리');
+      // 새로 생긴 플랜의 설비는 TableItem 컴포넌트에서 직접 처리해야 함
+      // 여기서는 드롭다운만 닫기
+      handleCloseFacilityDropdown();
+      return;
+    }
+
+    // 원본 플랜의 설비 선택인 경우 (projectplanid가 있음)
+    if (!facilityDropdownRowId) return;
+
+    const currentFormData = formChanges[facilityDropdownRowId];
+
+    // 가동중인 설비인지 확인
+    if (currentFormData) {
+      // 설비 충돌 검사 (다른 프로젝트에서 가동 중인지)
+      const hasEquipmentConflict = projectPlans.some(
+        (plan) =>
+          plan.id !== facilityDropdownRowId &&
+          plan.equipment.id === equipment.id &&
+          plan.status === 'production'
       );
 
-      // 가동중인 설비인지 확인
-      if (originalPlan && currentFormData) {
-        // 설비 충돌 검사 (다른 프로젝트에서 가동 중인지)
-        const hasEquipmentConflict = projectPlans.some(
-          (plan) =>
-            plan.id !== facilityDropdownRowId &&
-            plan.equipment.id === equipment.id &&
-            plan.status === 'production'
-        );
-
-        if (hasEquipmentConflict) {
-          showEquipmentToast();
-          handleCloseFacilityDropdown(); // 드롭다운 닫기
-          return; // 충돌이 있으면 설비 변경을 중단
-        }
+      if (hasEquipmentConflict) {
+        showEquipmentToast();
+        handleCloseFacilityDropdown(); // 드롭다운 닫기
+        return; // 충돌이 있으면 설비 변경을 중단
       }
+    }
 
-      // form 데이터에 설비 변경 반영
-      setFormChanges((prev) => {
-        const currentPlan = projectPlans.find(
-          (p) => p.id === facilityDropdownRowId
-        );
-        const updated = {
-          ...prev,
-          [facilityDropdownRowId]: {
-            quantity: currentPlan?.quantity || 0,
-            equipment_id: equipment.id, // 새로운 설비 ID로 명시적 설정
-            start_date: currentPlan?.start_date
+    // form 데이터에 설비 변경 반영
+    setFormChanges((prev) => {
+      if (!facilityDropdownRowId) return prev;
+
+      const currentPlan = projectPlans.find(
+        (p) => p.id === facilityDropdownRowId
+      );
+      const currentFormData = prev[facilityDropdownRowId] || {};
+
+      const updated = {
+        ...prev,
+        [facilityDropdownRowId]: {
+          // 기존 formChanges의 값을 우선 사용하고, 없으면 원본 데이터 사용
+          quantity: currentFormData.quantity ?? currentPlan?.quantity ?? 0,
+          equipment_id: equipment.id, // 새로운 설비 ID로 명시적 설정
+          start_date:
+            currentFormData.start_date ??
+            (currentPlan?.start_date
               ? new Date(currentPlan.start_date)
                   .toISOString()
                   .slice(0, 16)
                   .replace('T', ' ')
-              : '',
-            end_date: currentPlan?.end_date
+              : ''),
+          end_date:
+            currentFormData.end_date ??
+            (currentPlan?.end_date
               ? new Date(currentPlan.end_date)
                   .toISOString()
                   .slice(0, 16)
                   .replace('T', ' ')
-              : '',
-          },
-        };
+              : ''),
+        },
+      };
 
-        return updated;
-      });
+      console.log('formChanges 업데이트:', updated);
+      return updated;
+    });
 
-      // 설비 변경 성공 시 드롭다운 닫기
-      handleCloseFacilityDropdown();
-    }
+    // 설비 변경 성공 시 드롭다운 닫기
+    handleCloseFacilityDropdown();
   };
 
   // 시간대 충돌 검사 함수
@@ -416,8 +540,15 @@ const ProductionPlan = ({
         }
       }
 
-      // 저장 후 formChanges 초기화
-      setFormChanges({});
+      // 저장 후 저장된 플랜들만 formChanges에서 제거
+      setFormChanges((prev) => {
+        const updated = { ...prev };
+        // 저장된 플랜들을 제거
+        Object.keys(formChanges).forEach((planId) => {
+          delete updated[parseInt(planId)];
+        });
+        return updated;
+      });
 
       return { success: true };
     } catch {
@@ -501,8 +632,10 @@ const ProductionPlan = ({
               onFacilityClick={(e) => handleFacilityClick(e, item.id)}
               onFormChange={handleFormChange}
               onSave={handleFormSave} // 저장 함수 추가
+              onAddPlan={handleAddPlan} // 추가 계획 생성 함수
+              onRemoveAdditionalPlan={removeAdditionalPlan} // 추가 계획 제거 함수
               formData={formChanges[item.id]}
-              equipments={equipmentList?.data || []}
+              equipments={allEquipments}
               projectStatus={projectStatus}
             />
           ))}
@@ -533,7 +666,7 @@ const ProductionPlan = ({
         createPortal(
           <FacilityDropdown
             onClose={handleCloseFacilityDropdown}
-            equipments={equipmentList?.data || []}
+            equipments={allEquipments}
             onSelect={handleEquipmentSelect}
             style={{
               position: 'fixed',
