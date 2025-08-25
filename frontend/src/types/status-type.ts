@@ -1,7 +1,7 @@
 // 상태별 색상 모델 인터페이스
 export interface StatusColorModel {
-  bgColor: string;
-  textColor: string;
+  bgColor?: string;
+  textColor?: string;
   hover?: string;
 }
 
@@ -103,10 +103,6 @@ export const CompletedProjectStatusColorMap: Record<
   중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
 
-// 세금계산서 발행 상태
-export type TaxStatusType = null | '' | 'pending' | 'published';
-// 미발행 // 발행 대기 // 발행 완료
-
 // 재고 상태
 export type InventoryStatusType = '충분' | '부족';
 export const InventoryStatusColorMap: Record<
@@ -156,14 +152,32 @@ export type TransactionType = 'receipt' | 'invoice'; // 영수, 청구
 //   청구: { bgColor: 'bg-red-8', textColor: 'text-red' },
 // };
 
-export type TaxPublishStatusType = 'temporary' | 'pending' | 'published'; // 임시 저장, 발행 대기, 발행 완료
-export const TaxPublishStatusColorMap: Record<
-  TaxPublishStatusType,
+// 세금계산서 발행 상태
+export type TaxStatusType =
+  | null
+  | 'temporary'
+  | 'pending'
+  | 'processing'
+  | 'published'
+  | 'cancled'
+  | 'failed';
+// 임시 저장 // 전송 대기 // 처리 중 // 발행 완료 // 발행 취소 // 발행 실패
+export const TaxStatusColorMap: Record<
+  NonNullable<TaxStatusType>,
   StatusColorModel
 > = {
-  temporary: { textColor: 'text-primary', bgColor: 'bg-bg' },
-  pending: { textColor: 'text-dg', bgColor: 'bg-bg' },
-  published: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
+  temporary: { textColor: 'text-gr' },
+  pending: { textColor: 'text-yellow' },
+  processing: { textColor: 'text-purple' },
+  published: { textColor: 'text-primary' },
+  cancled: { textColor: 'text-red' },
+  failed: { textColor: 'text-red' },
+};
+
+// Helper function to get status color with null handling
+export const getTaxStatusColor = (status: TaxStatusType): StatusColorModel => {
+  if (!status) return { textColor: 'text-dg' };
+  return TaxStatusColorMap[status];
 };
 
 // Tax Invoice State Types

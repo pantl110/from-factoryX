@@ -47,7 +47,7 @@ const ButtonSection = ({
         <div
           className="relative"
           onMouseEnter={() => {
-            if (!isOrderStatus) {
+            if (!isOrderStatus && !taxId) {
               setShowTooltip(true);
             }
           }}
@@ -75,7 +75,7 @@ const ButtonSection = ({
               }
             }}
           />
-          {showTooltip && (
+          {showTooltip && !taxId && (
             <div className="absolute z-50 -top-2 -left-2">
               <Tooltip
                 text={

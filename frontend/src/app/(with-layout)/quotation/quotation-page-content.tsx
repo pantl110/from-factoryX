@@ -107,7 +107,7 @@ const QuotationPageContent = () => {
       const result = await getProjectStatus(projectId);
       if (result.success && result.data) {
         setProjectStatus(result.data.status);
-        setTaxId(result.data.tax_invoice);
+        setTaxId(result.data.tax_invoice?.id || null);
       }
     } catch {
       // 프로젝트 상태 로드 실패 시 무시

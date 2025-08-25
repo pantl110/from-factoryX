@@ -17,6 +17,7 @@ interface LinkTaxModalProps {
   type: 'project' | 'tax' | 'receipt';
   linkedItemId: number; // type이 'project'일 때는 프로젝트 아이디, type이 'tax'일 때는 세금계산서 아이디, type이 'receipt'일 때는 영수증 아이디
   selectedLineItem?: TaxLineItemModel; // type이 'tax' 또는 'receipt'일 때 선택한 lineItem
+  onSuccess?: () => void; // 연결 완료 시 호출되는 콜백
 }
 
 const LinkTaxModal = ({
@@ -24,6 +25,7 @@ const LinkTaxModal = ({
   linkedItemId,
   type,
   selectedLineItem,
+  onSuccess,
 }: LinkTaxModalProps) => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<'1' | '6' | '12'>('1');
@@ -110,6 +112,7 @@ const LinkTaxModal = ({
         tax_id: selectedId,
       });
       if (result.success) {
+        onSuccess?.(); // 연결 성공 시 리로드 콜백 호출
         onClose();
       }
     } else if (type === 'tax') {

@@ -294,6 +294,18 @@ const ProcessProjectPageInner = () => {
                       project={project}
                       checked={isChecked(project.project_id)}
                       onToggle={() => toggleOne(project.project_id)}
+                      onReload={() => {
+                        // 세금계산서 연결 후 프로젝트 데이터 리로드
+                        getProjects({
+                          status: selectedStatus,
+                          search: searchKeyword,
+                          order_by:
+                            sortKey === 'startDate' ? 'start_date' : 'due_date',
+                          order_dir: sortOrder,
+                          page: currentPage,
+                          page_size: 10,
+                        });
+                      }}
                     />
                   ))}
                 </div>
