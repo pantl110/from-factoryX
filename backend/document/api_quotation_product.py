@@ -453,6 +453,9 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 product_info = {
                     "id": qp.product.id,
                     "name": qp.product.name,
+                    "code": qp.product.code,
+                    "spec": qp.product.spec,
+                    "unit": qp.product.unit,
                     "quantity": qp.quantity,
                     "unit_price": qp.unit_price,
                     "total_price": qp.quantity * qp.unit_price,

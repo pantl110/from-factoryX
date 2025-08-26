@@ -134,11 +134,13 @@ class ProjectPlanCreateOrUpdateIn(Schema):
     project_id: int
     quotation_product_id: int
     equipment_id: int
-    quantity: int
+    quantity: int  # 생산 수량
     start_date: datetime
     end_date: datetime
     avg_production_time: int
     status: Optional[str] = None
+    total_amount: int  # 총 주문 수량 (buffer_rate 계산 용)
+    total_quantity: int  # 총 생산 수량 (buffer_rate 계산 용)
 
     @field_validator("status")
     @classmethod

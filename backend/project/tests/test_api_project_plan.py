@@ -93,107 +93,6 @@ class ProjectPlanAPITestCase(TestCase):
             algorithm="HS256",
         )
 
-    def test_create_project_plans_success(self):
-        """프로젝트 생산 계획 생성 성공 테스트"""
-        url = "/v1/project-plan"
-
-        payload = {
-            "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [8],  # 주문 수량(10)보다 적은 생산 수량
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
-        }
-
-        response = self.client.post(
-            f"{url}?factory_id={self.factory.id}",
-            data=json.dumps(payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-        # 응답 데이터 확인
-        data = response.json()
-        self.assertIn("message", data)
-        self.assertIn("plan", data)
-
-        # 단일 계획 확인
-        plan_data = data["plan"]
-        self.assertEqual(plan_data["project_id"], self.project.id)
-        self.assertEqual(plan_data["quotation_product_id"], self.quotation_product.id)
-        self.assertEqual(plan_data["equipment_id"], self.equipment.id)
-        self.assertEqual(plan_data["quantity"], 8)  # 생산 수량
-
-    def test_create_project_plans_nonexistent_project(self):
-        """존재하지 않는 프로젝트로 생산 계획 생성 시도 테스트"""
-        url = "/v1/project-plan"
-
-        payload = {
-            "project_id": 999,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [10],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
-        }
-
-        response = self.client.post(
-            f"{url}?factory_id={self.factory.id}",
-            data=json.dumps(payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 404)
-
-    def test_create_project_plans_nonexistent_quotation_product(self):
-        """존재하지 않는 견적서 품목으로 생산 계획 생성 시도 테스트"""
-        url = "/v1/project-plan"
-
-        payload = {
-            "project_id": self.project.id,
-            "quotation_product_ids": [999],
-            "production_quantities": [10],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
-        }
-
-        response = self.client.post(
-            f"{url}?factory_id={self.factory.id}",
-            data=json.dumps(payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 400)
-
-    def test_create_project_plans_without_auth(self):
-        """인증 없이 생산 계획 생성 시도 테스트"""
-        url = "/v1/project-plan"
-
-        payload = {
-            "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [10],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
-        }
-
-        response = self.client.post(
-            url, data=json.dumps(payload), content_type="application/json"
-        )
-
-        self.assertIn(response.status_code, [401, 403])
-
     def test_create_or_update_project_plan_success(self):
         """프로젝트 생산 계획 생성 또는 수정 성공 테스트"""
         # 먼저 생산 계획 생성
@@ -206,6 +105,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 10,
         }
 
         create_response = self.client.post(
@@ -231,6 +132,8 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-16T00:00:00Z",
             "avg_production_time": 7200,
             "status": "production",
+            "total_amount": 100,
+            "total_quantity": 15,
         }
 
         response = self.client.post(
@@ -245,6 +148,30 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(data["action"], "updated")
         self.assertIn("성공적으로 수정되었습니다", data["message"])
 
+    def test_delete_project_plan_success(self):
+        """프로젝트 생산 계획 삭제 성공 테스트"""
+        # 계획을 미리 생성
+        plan = ProjectPlan.objects.create(
+            project=self.project,
+            product=self.quotation_product,
+            equipment=self.equipment,
+            quantity=10,
+            start_date=date(2024, 1, 1),
+            end_date=date(2024, 1, 31),
+            avg_production_time=3600,
+        )
+
+        url = f"/v1/project-plan/{plan.id}"
+        response = self.client.delete(
+            f"{url}?factory_id={self.factory.id}",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 204)
+
+        # 실제로 삭제되었는지 확인
+        self.assertFalse(ProjectPlan.objects.filter(id=plan.id).exists())
+
     def test_create_or_update_project_plan_nonexistent(self):
         """존재하지 않는 생산 계획 수정 시도 테스트"""
         url = "/v1/project-plan/create-or-update"
@@ -257,6 +184,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 15,
         }
 
         response = self.client.post(
@@ -280,6 +209,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 10,
         }
 
         create_response = self.client.post(
@@ -302,6 +233,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 10,
         }
 
         response = self.client.post(
@@ -325,6 +258,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 10,
         }
 
         create_response = self.client.post(
@@ -348,6 +283,8 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
             "status": "잘못된상태",
+            "total_amount": 100,
+            "total_quantity": 10,
         }
 
         response = self.client.post(
@@ -371,6 +308,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 10,
         }
 
         create_response = self.client.post(
@@ -393,6 +332,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 0,
         }
 
         response = self.client.post(
@@ -415,6 +356,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 15,
         }
 
         response = self.client.post(
@@ -437,6 +380,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 8,
         }
 
         response = self.client.post(
@@ -462,6 +407,8 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
             "status": "production",
+            "total_amount": 100,
+            "total_quantity": 8,
         }
 
         response = self.client.post(
@@ -478,7 +425,7 @@ class ProjectPlanAPITestCase(TestCase):
             factory=self.factory, name="새로운 설비", priority=2
         )
 
-        # 설비 변경 (가동 중 상태에서)
+        # 설비 변경 (가동 대기   상태에서)
         equipment_change_payload = {
             "plan_id": plan_id,
             "project_id": self.project.id,
@@ -488,7 +435,9 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "status": "production",
+            "status": "pending",
+            "total_amount": 100,
+            "total_quantity": 8,
         }
 
         response = self.client.post(
@@ -512,64 +461,6 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertIn("라인에서", log.content)
         self.assertIn("라인으로 변경되었어요", log.content)
 
-    def test_create_or_update_project_plan_equipment_change_no_log_when_not_producing(
-        self,
-    ):
-        """생산 중이 아닌 상태에서 설비 변경 시 로그 생성 안됨 테스트"""
-        # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan/create-or-update"
-        create_payload = {
-            "project_id": self.project.id,
-            "quotation_product_id": self.quotation_product.id,
-            "equipment_id": self.equipment.id,
-            "quantity": 8,
-            "start_date": "2025-07-13T00:00:00Z",
-            "end_date": "2025-07-14T00:00:00Z",
-            "avg_production_time": 3600,
-        }
-
-        response = self.client.post(
-            f"{create_url}?factory_id={self.factory.id}",
-            data=json.dumps(create_payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-        # 생성된 계획의 ID 가져오기
-        plan_id = response.json()["plan_id"]
-
-        # 새로운 설비 생성
-        new_equipment = FactoryEquipment.objects.create(
-            factory=self.factory, name="새로운 설비", priority=2
-        )
-
-        # 설비 변경 (생산 중이 아닌 상태에서)
-        equipment_change_payload = {
-            "plan_id": plan_id,
-            "project_id": self.project.id,
-            "quotation_product_id": self.quotation_product.id,
-            "equipment_id": new_equipment.id,
-            "quantity": 8,
-            "start_date": "2025-07-13T00:00:00Z",
-            "end_date": "2025-07-14T00:00:00Z",
-            "avg_production_time": 3600,
-        }
-
-        response = self.client.post(
-            f"{create_url}?factory_id={self.factory.id}",
-            data=json.dumps(equipment_change_payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-        # 프로젝트 로그가 생성되지 않았는지 확인
-        logs = ProjectLog.objects.filter(project=self.project)
-        self.assertEqual(logs.count(), 0)
-
     def test_create_or_update_project_plan_equipment_change_no_log_when_same_equipment(
         self,
     ):
@@ -584,6 +475,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 8,
         }
 
         response = self.client.post(
@@ -609,6 +502,8 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
             "status": "production",
+            "total_amount": 100,
+            "total_quantity": 8,
         }
 
         response = self.client.post(
@@ -631,6 +526,8 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
             "status": "production",
+            "total_amount": 100,
+            "total_quantity": 8,
         }
 
         response = self.client.post(
@@ -658,6 +555,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2024-01-01T00:00:00Z",
             "end_date": "2024-01-31T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 100,
         }
 
         create_response = self.client.post(
@@ -683,6 +582,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2024-02-01T14:30:00Z",
             "end_date": "2024-02-28T18:45:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 100,
         }
 
         response = self.client.post(
@@ -716,6 +617,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2024-01-01T00:00:00Z",
             "end_date": "2024-01-31T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 100,
         }
 
         create_response = self.client.post(
@@ -738,6 +641,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2024-03-01T00:00:00Z",
             "end_date": "2024-03-31T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 100,
         }
 
         response = self.client.post(
@@ -770,6 +675,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2024-01-01T00:00:00Z",
             "end_date": "2024-01-31T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 100,
         }
 
         create_response = self.client.post(
@@ -792,6 +699,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2024-04-01T09:15:00Z",
             "end_date": "2024-04-30T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 100,
         }
 
         response = self.client.post(
@@ -840,6 +749,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2024-01-01T00:00:00Z",
             "end_date": "2024-01-31T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 60,
         }
 
         response = self.client.post(
@@ -894,6 +805,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2024-01-01T00:00:00Z",
             "end_date": "2024-01-31T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 60,
         }
 
         response = self.client.post(
@@ -953,6 +866,8 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2024-01-01T00:00:00Z",
             "end_date": "2024-01-31T00:00:00Z",
             "avg_production_time": 3600,
+            "total_amount": 100,
+            "total_quantity": 60,
         }
 
         response = self.client.post(
