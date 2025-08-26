@@ -9,9 +9,9 @@ import Checkbox from '@/ui/checkbox';
 import { usePortalDropdown, formatDate } from '@/hooks';
 import DeliveryStateDropdown from './modals/delivery-state-dropdown';
 import { useForm, Controller } from 'react-hook-form';
-import { useEffect } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
+import { useState } from 'react';
 import { useUpdateQuotationProductDelivery } from '@/hooks/document/quotation/use-update-quotation-product-delivery';
+import MiniBtn from '@/ui/mini-btn';
 
 interface DeliveryTableItemProps {
   data: ProjectPlanModel;
@@ -58,66 +58,36 @@ const DeliveryTableItem = ({
   const { updateQuotationProductDelivery, isLoading } =
     useUpdateQuotationProductDelivery();
 
-  const { control, setValue, watch } = useForm<DeliveryFormDataModel>({
-    defaultValues: {
-      deliveryDate: deliveryDate || '',
-      deliveryStatus: isDelivery ? '완료' : '예정',
-    },
-  });
+  const { control, setValue, watch, formState } =
+    useForm<DeliveryFormDataModel>({
+      defaultValues: {
+        deliveryDate: deliveryDate || '',
+        deliveryStatus: isDelivery ? '완료' : '예정',
+      },
+      mode: 'onChange',
+    });
+
+  // 저장 여부 판단용 기준 날짜 (저장 성공 시 갱신)
+  const [savedDate, setSavedDate] = useState<string>(deliveryDate || '');
 
   const deliveryStatus = watch('deliveryStatus');
+  const watchedDate = watch('deliveryDate');
   const { bgColor, textColor } =
     DeliveryStatusColorMap[deliveryStatus as DeliveryStatusType];
 
-  // 디바운스된 납품일자 변경 함수 (500ms)
-  const debouncedDateChange = useDebouncedCallback(async (newDate: string) => {
-    if (newDate !== deliveryDate && newDate.length === 10) {
-      try {
-        const result = await updateQuotationProductDelivery(productId || 0, {
-          delivery_date: newDate,
-          is_delivered: isDelivery || false,
-        });
+  // 날짜 입력 핸들러 (포맷만 적용, 저장은 버튼으로)
+  const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const formattedValue = formatDate(value);
+    setValue('deliveryDate', formattedValue, { shouldValidate: true });
+  };
 
-        if (result.success) {
-          // 성공 시 부모 컴포넌트에 알림
-          if (onDeliveryDateChange) {
-            onDeliveryDateChange(String(productId || ''), newDate);
-          }
-        } else {
-          console.error('납품일자 변경 실패:', result.error);
-          // 실패 시 원래 값으로 되돌리기
-          setValue('deliveryDate', deliveryDate || '');
-        }
-      } catch (error) {
-        console.error('납품일자 변경 중 오류:', error);
-        setValue('deliveryDate', deliveryDate || '');
-      }
-    }
-  }, 500);
-
-  // 납품일자 변경 감지
-  const watchedDate = watch('deliveryDate');
-  useEffect(() => {
-    if (watchedDate && watchedDate !== deliveryDate) {
-      debouncedDateChange(watchedDate);
-    }
-
-    // 폼 상태가 변경될 때마다 부모 컴포넌트에 알림 (즉시 UI 업데이트)
-    if (onDeliveryDateChange) {
-      onDeliveryDateChange(String(productId || ''), watchedDate || '');
-    }
-  }, [
-    watchedDate,
-    debouncedDateChange,
-    deliveryDate,
-    onDeliveryDateChange,
-    productId,
-  ]);
-
+  // 상태 변경 시 서버 반영
   const handleStatusChange = async (newStatus: string) => {
     try {
       const result = await updateQuotationProductDelivery(productId || 0, {
-        is_delivered: newStatus === '완료',
+        delivery_date: newStatus === '완료' ? watchedDate : savedDate,
+        is_delivery: newStatus === '완료',
       });
 
       if (result.success) {
@@ -138,10 +108,25 @@ const DeliveryTableItem = ({
     closeDropdown();
   };
 
-  const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    const formattedValue = formatDate(value);
-    setValue('deliveryDate', formattedValue);
+  // 저장 버튼 클릭 시에만 서버 저장
+  const handleSaveClick = async () => {
+    try {
+      const result = await updateQuotationProductDelivery(productId || 0, {
+        delivery_date: watchedDate,
+        is_delivery: isDelivery || false,
+      });
+
+      if (result.success) {
+        setSavedDate(watchedDate);
+        if (onDeliveryDateChange) {
+          onDeliveryDateChange(String(productId || ''), watchedDate || '');
+        }
+      } else {
+        console.error('납품일자 변경 실패:', result.error);
+      }
+    } catch (error) {
+      console.error('납품일자 변경 중 오류:', error);
+    }
   };
 
   return (
@@ -200,6 +185,13 @@ const DeliveryTableItem = ({
           <Controller
             name="deliveryDate"
             control={control}
+            rules={{
+              required: '납품일자를 입력해주세요',
+              pattern: {
+                value: /^\d{4}-\d{2}-\d{2}$/,
+                message: 'YYYY-MM-DD 형식으로 입력해주세요',
+              },
+            }}
             render={({ field }) => (
               <input
                 {...field}
@@ -213,6 +205,21 @@ const DeliveryTableItem = ({
             )}
           />
         </div>
+        {projectStatus !== 'completed' && (
+          <div className="w-[150px] px-3">
+            <MiniBtn
+              text="저장"
+              textColor="text-dg"
+              borderColor="border-lg"
+              hoverColor="hover:bg-bg"
+              height="h-8"
+              onClick={handleSaveClick}
+              disabled={
+                isLoading || !formState.isValid || watchedDate === savedDate
+              }
+            />
+          </div>
+        )}
       </div>
       {isOpen && anchorRect && (
         <DeliveryStateDropdown

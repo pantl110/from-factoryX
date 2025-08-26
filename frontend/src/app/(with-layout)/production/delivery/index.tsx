@@ -141,37 +141,29 @@ const Delivery = ({
       .filter((item): item is NonNullable<typeof item> => item !== null);
   };
 
-  // 납품일자 변경 핸들러
-  // const handleDeliveryDateChange = async (id: string, newDate: string) => {
-  //   try {
-  //     // API 호출 후 성공 시 데이터 새로고침
-  //     // deliveryData가 이미 업데이트되었으므로 store만 업데이트
-  //     if (deliveryData) {
-  //       const updatedData = deliveryData.map((item: ProjectPlanModel) =>
-  //         item.id === Number(id) ? { ...item, delivery_date: newDate } : item
-  //       );
-  //       setDeliveryData(updatedData);
-  //       setDeliveryDataStore(
-  //         updatedData.map((item: ProjectPlanModel) => ({
-  //           delivery_date: item.quotation_product?.delivery_date || undefined,
-  //         }))
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error('납품일자 변경 실패:', error);
-  //     // alert('납품일자 변경에 실패했습니다.');
-  //   }
-  // };
-
   // 납품상태 변경 핸들러
   const handleDeliveryStatusChange = async (id: string, newStatus: string) => {
     try {
       // API 호출 후 성공 시 데이터 새로고침
-      await updateQuotationProductDelivery(Number(id), {
-        is_delivered: newStatus === '완료',
+      const productId = Number(id);
+      const item = deliveryData.find((item) => item.id === productId);
+      const deliveryDate = item?.quotation_product?.delivery_date;
+
+      const result = await updateQuotationProductDelivery(productId, {
+        is_delivery: newStatus === '완료',
+        delivery_date: deliveryDate || undefined,
       });
-    } catch (error) {
-      console.error('납품상태 변경 실패:', error);
+
+      if (result.success) {
+        setDeliveryData(
+          deliveryData.map((item) =>
+            item.id === productId
+              ? { ...item, is_delivery: newStatus === '완료' }
+              : item
+          )
+        );
+      }
+    } catch {
       alert('납품상태 변경에 실패했습니다.');
     }
   };
@@ -190,13 +182,12 @@ const Delivery = ({
               const result = await updateQuotationProductDelivery(
                 item.quotation_product.id,
                 {
-                  is_delivered: true,
+                  is_delivery: true,
                   delivery_date: item.quotation_product.delivery_date, // 납품일자도 함께 업데이트
                 }
               );
               return result.success;
-            } catch (error) {
-              console.error(`품목 ${item.id} 상태 변경 실패:`, error);
+            } catch {
               return false;
             }
           });
@@ -270,6 +261,7 @@ const Delivery = ({
               <DeliveryTableHeader
                 isAllChecked={isAllChecked}
                 onToggleAll={toggleAll}
+                projectStatus={projectStatus}
               />
               {deliveryData && deliveryData.length > 0 && (
                 <>

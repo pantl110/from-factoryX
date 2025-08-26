@@ -16,7 +16,7 @@ import { createPortal } from 'react-dom';
 import FacilityDropdown from './modals/facility-dropdown';
 import {
   useGetProjectPlans,
-  useUpdateProjectPlan,
+  useCreateOrUpdateProjectPlan,
   useGetEquipment,
   usePortalDropdown,
   useProductionPlanValidation,
@@ -36,13 +36,14 @@ interface ProductionPlanProps {
 const ProductionPlan = ({
   handleChangeStatus,
   projectStatus,
+  onProjectStatusChange,
 }: ProductionPlanProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
 
   // API 호출
   const { getProjectPlans, isLoading, error } = useGetProjectPlans();
-  const { updateProjectPlan } = useUpdateProjectPlan();
+  const { createOrUpdateProjectPlan } = useCreateOrUpdateProjectPlan();
   const { getAllEquipmentList } = useGetEquipment();
   const [projectPlans, setProjectPlans] = useState<ProjectPlanModel[]>([]);
   const [allEquipments, setAllEquipments] = useState<EquipmentResponseModel[]>(
@@ -60,6 +61,9 @@ const ProductionPlan = ({
     Record<number, ProductionPlanFormDataModel>
   >({});
 
+  // 저장 중 로딩 상태
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
+
   // 추가 생산 계획 생성 함수
   const handleAddPlan = async (
     planData: ProductionPlanFormDataModel,
@@ -67,6 +71,12 @@ const ProductionPlan = ({
   ) => {
     try {
       console.log('새로운 생산 계획 생성:', planData);
+
+      // 부모 계획 찾기
+      const parentPlan = projectPlans.find((plan) => plan.id === parentPlanId);
+      if (!parentPlan) {
+        throw new Error('부모 계획을 찾을 수 없습니다.');
+      }
 
       // 고유한 임시 ID 생성 (타임스탬프 + 랜덤 숫자 + 부모 ID)
       const tempId = -(Date.now() + Math.random() * 1000000 + parentPlanId);
@@ -79,9 +89,10 @@ const ProductionPlan = ({
         start_date: planData.start_date,
         end_date: planData.end_date,
         status: 'pending',
-        material_status: '충분',
-        avg_production_time: 0,
+        material_status: parentPlan.material_status, // 부모 계획의 값 상속
+        avg_production_time: parentPlan.avg_production_time, // 부모 계획의 값 상속
         quotation_product: {
+          id: parentPlan.quotation_product.id, // 부모 계획의 quotation_product.id 상속
           quantity: 0,
           is_delivery: false,
           product: { name: '', code: '', spec: '', unit: '', buffer_rate: 0 },
@@ -252,11 +263,31 @@ const ProductionPlan = ({
 
   // 가동 상태 변경 핸들러
   const handleOperationStatusChange = async (status: OperationStatusType) => {
-    if (!operationStatusDropdownRowId) return;
+    if (!operationStatusDropdownRowId || !projectId) return;
+
+    // 해당 계획이 존재하는지 확인
+    const targetPlan = projectPlans.find(
+      (plan) => plan.id === operationStatusDropdownRowId
+    );
+    if (!targetPlan) {
+      alert('가동 상태를 변경할 계획을 찾을 수 없습니다.');
+      return;
+    }
 
     try {
-      const result = await updateProjectPlan(operationStatusDropdownRowId, {
-        status,
+      const result = await createOrUpdateProjectPlan({
+        project_id: projectId,
+        quotation_product_id: targetPlan.quotation_product.id,
+        equipment_id: targetPlan.equipment.id,
+        quantity: targetPlan.quantity,
+        start_date: targetPlan.start_date,
+        end_date: targetPlan.end_date,
+        avg_production_time: targetPlan.avg_production_time,
+        status: status, // 가동 상태 추가
+        plan_id:
+          operationStatusDropdownRowId > 0
+            ? operationStatusDropdownRowId
+            : undefined,
       });
       if (result.success) {
         // 상태 변경 성공 시 해당 plan의 상태만 업데이트
@@ -267,6 +298,8 @@ const ProductionPlan = ({
               : plan
           )
         );
+      } else {
+        alert('가동 상태 변경에 실패했습니다.');
       }
     } catch {
       alert('가동 상태 변경 중 오류가 발생했습니다.');
@@ -461,7 +494,16 @@ const ProductionPlan = ({
         }
 
         if (Object.keys(changes).length > 0) {
-          const result = await updateProjectPlan(planId, changes);
+          const result = await createOrUpdateProjectPlan({
+            project_id: projectId!,
+            quotation_product_id: originalPlan.quotation_product.id,
+            equipment_id: formData.equipment_id,
+            quantity: formData.quantity,
+            start_date: formData.start_date,
+            end_date: formData.end_date,
+            avg_production_time: originalPlan.avg_production_time,
+            plan_id: planId > 0 ? planId : undefined,
+          });
           if (result.success) {
             // PATCH 성공 후 formChanges에서 해당 plan의 변경사항만 제거
             setFormChanges((prev) => {
@@ -484,7 +526,7 @@ const ProductionPlan = ({
       }
     },
     [
-      updateProjectPlan,
+      createOrUpdateProjectPlan,
       projectId,
       showTimeToast,
       projectPlans,
@@ -524,31 +566,22 @@ const ProductionPlan = ({
             changes.end_date = formData.end_date;
 
           if (Object.keys(changes).length > 0) {
-            return updateProjectPlan(parseInt(planId), changes);
+            return createOrUpdateProjectPlan({
+              project_id: projectId!,
+              quotation_product_id: originalPlan.quotation_product.id,
+              equipment_id: formData.equipment_id,
+              quantity: formData.quantity,
+              start_date: formData.start_date,
+              end_date: formData.end_date,
+              avg_production_time: originalPlan.avg_production_time,
+              plan_id: parseInt(planId) > 0 ? parseInt(planId) : undefined,
+            });
           }
           return Promise.resolve({ success: true });
         }
       );
 
       await Promise.all(updatePromises);
-
-      // 저장 후 백엔드에서 최신 데이터를 다시 가져와서 projectPlans 업데이트
-      if (projectId) {
-        const updatedResult = await getProjectPlans(projectId);
-        if (updatedResult.success && updatedResult.data) {
-          setProjectPlans(updatedResult.data);
-        }
-      }
-
-      // 저장 후 저장된 플랜들만 formChanges에서 제거
-      setFormChanges((prev) => {
-        const updated = { ...prev };
-        // 저장된 플랜들을 제거
-        Object.keys(formChanges).forEach((planId) => {
-          delete updated[parseInt(planId)];
-        });
-        return updated;
-      });
 
       return { success: true };
     } catch {
@@ -577,6 +610,7 @@ const ProductionPlan = ({
 
   const handleProductionPlanSave = async () => {
     // 다음 버튼 누르면 // 변경된 생산 계획들을 한 번에 저장
+    setIsSaveLoading(true);
     try {
       // 1. 생산 계획 저장
       const saveResult = await saveProjectPlans();
@@ -598,11 +632,10 @@ const ProductionPlan = ({
       // 3. 변경사항 초기화 및 모달 닫기
       setFormChanges({});
       setProductionPlanSaveModalOpen(false);
-
-      // 4. 전체 페이지 리로드
-      window.location.reload();
     } catch {
       alert('저장 중 오류가 발생했습니다.');
+    } finally {
+      setIsSaveLoading(false);
     }
   };
 
@@ -686,6 +719,7 @@ const ProductionPlan = ({
             setProductionPlanSaveModalOpen(false);
           }}
           onSave={handleProductionPlanSave}
+          isLoading={isSaveLoading}
         />
       )}
 

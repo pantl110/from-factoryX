@@ -7,7 +7,7 @@ import useMemberStore from '@/store/member-store';
 
 interface UpdateQuotationProductDeliveryResultModel {
   success: boolean;
-  data?: QuotationProductDeliveryUpdateModel;
+  data?: QuotationProductDeliveryUpdateResponseModel;
   error?: string;
 }
 

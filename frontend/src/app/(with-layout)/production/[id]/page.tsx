@@ -68,7 +68,7 @@ const ProductionPageContent = () => {
 
   // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
   const { data: quotationData } = useGetDetailQuotation(
-    projectStatus?.quotation_id || projectId
+    projectStatus?.quotations[0].id || projectId
   );
 
   // 프로젝트 상태 로드 및 store 업데이트
@@ -117,20 +117,32 @@ const ProductionPageContent = () => {
 
         setPageStatus(projectStatus);
 
-        // 프로젝트 상태가 'manufactured'로 변경된 경우 '생산 내역' 탭으로 이동
+        // 특정 상태 변경에만 탭 자동 변경 (불필요한 탭 변경 방지)
         if (projectStatus === 'manufactured') {
+          // 생산 완료 → 생산 내역 탭으로 이동
           const productionHistoryTabIndex = tabs.findIndex(
             (tab) => tab === '생산 내역'
           );
           if (productionHistoryTabIndex !== -1) {
             setSelectedTab(productionHistoryTabIndex);
             setProductionTab(tabs[productionHistoryTabIndex]);
-          } else {
-            setProductionTab(tabs[selectedTab]);
           }
-        } else {
-          setProductionTab(tabs[selectedTab]);
+        } else if (projectStatus === 'delivery') {
+          // 납품 → 납품 탭으로 이동
+          const deliveryTabIndex = tabs.findIndex((tab) => tab === '납품');
+          if (deliveryTabIndex !== -1) {
+            setSelectedTab(deliveryTabIndex);
+            setProductionTab(tabs[deliveryTabIndex]);
+          }
+        } else if (projectStatus === 'completed') {
+          // 완료 → 납품 탭으로 이동 (완료 상태에서는 납품 탭이 마지막)
+          const deliveryTabIndex = tabs.findIndex((tab) => tab === '납품');
+          if (deliveryTabIndex !== -1) {
+            setSelectedTab(deliveryTabIndex);
+            setProductionTab(tabs[deliveryTabIndex]);
+          }
         }
+        // pending → production, production → manufactured 등은 탭 변경하지 않음
 
         setIsRefund(result.data.is_refunded || false);
       }

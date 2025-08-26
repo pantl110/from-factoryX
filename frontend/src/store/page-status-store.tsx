@@ -35,6 +35,10 @@ export interface PageStatusModel {
   isAllProductionCompleted: boolean;
   setAllProductionCompleted: (completed: boolean) => void;
 
+  // production의 "생산 내역" 탭에서 모든 입력값이 유효한지 여부
+  isProductionLogValid: boolean;
+  setProductionLogValid: (valid: boolean) => void;
+
   // production의 "납품" 상태의 "납품" 탭에서 <반품 등록> 버튼 클릭 시 모달 오픈
   isAddReturnModalOpen: boolean;
   setAddReturnModalOpen: (open: boolean) => void;
@@ -48,6 +52,10 @@ export interface PageStatusModel {
   setHandleChangeStatus: (
     fn: ((status: ProjectStatusType) => Promise<void>) | null
   ) => void;
+
+  // 생산완료 단계에서 생산 내역 저장 후 다음 단계로 진행하는 함수
+  handleProductionLogSave: (() => Promise<void>) | null;
+  setHandleProductionLogSave: (fn: (() => Promise<void>) | null) => void;
 
   // 반품 여부
   isRefund: boolean;
@@ -73,6 +81,8 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   isAllProductionCompleted: false,
   setAllProductionCompleted: (completed) =>
     set({ isAllProductionCompleted: completed }),
+  isProductionLogValid: false,
+  setProductionLogValid: (valid) => set({ isProductionLogValid: valid }),
   isAddReturnModalOpen: false,
   setAddReturnModalOpen: (open) => set({ isAddReturnModalOpen: open }),
   isMoveToStorageModalOpen: false,
@@ -91,6 +101,10 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   // 프로젝트 상태를 변경하는 전역 함수
   handleChangeStatus: null,
   setHandleChangeStatus: (fn) => set({ handleChangeStatus: fn }),
+
+  // 생산완료 단계에서 생산 내역 저장 후 다음 단계로 진행하는 함수
+  handleProductionLogSave: null,
+  setHandleProductionLogSave: (fn) => set({ handleProductionLogSave: fn }),
 
   // 반품 여부
   isRefund: false,

@@ -33,6 +33,9 @@ const TopBarContent = ({
   const isAllProductionCompleted = usePageStatusStore(
     (state) => state.isAllProductionCompleted
   ); // 모든 품목이 가동 완료 상태인지 여부
+  const isProductionLogValid = usePageStatusStore(
+    (state) => state.isProductionLogValid
+  ); // 생산 내역 입력값이 유효한지 여부
   const isRefund = usePageStatusStore((state) => state.isRefund); // 반품 여부
 
   // 세금계산서 패널 상태
@@ -41,6 +44,9 @@ const TopBarContent = ({
   // store에서 함수들 가져오기
   const handleChangeStatus = usePageStatusStore(
     (state) => state.handleChangeStatus
+  );
+  const handleProductionLogSave = usePageStatusStore(
+    (state) => state.handleProductionLogSave
   );
   const setAddReturnModalOpen = usePageStatusStore(
     (state) => state.setAddReturnModalOpen
@@ -204,11 +210,17 @@ const TopBarContent = ({
               textColor="text-primary"
               bgColor="bg-primary-8"
               hoverColor="hover:bg-secondary-hover"
-              onClick={() => {
+              onClick={async () => {
+                // 먼저 생산 내역 저장
+                if (handleProductionLogSave) {
+                  await handleProductionLogSave();
+                }
+                // 저장 완료 후 다음 단계로 진행
                 if (handleChangeStatus) {
-                  handleChangeStatus('delivery');
+                  await handleChangeStatus('delivery');
                 }
               }}
+              disabled={!isProductionLogValid}
             />
           )}
         </div>

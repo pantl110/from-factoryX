@@ -67,11 +67,8 @@ export { default as useGetProjectLogs } from './project/project-log/use-get-proj
 export { default as useUpdateProjectLog } from './project/project-log/use-update-project-log';
 
 // Project plan related hooks
-export { default as useCreateProjectPlans } from './project/project-plan/use-create-project-plans';
+export { default as useCreateOrUpdateProjectPlan } from './project/project-plan/use-create-or-update-project-plan';
 export { default as useGetProjectPlans } from './project/project-plan/use-get-project-plans';
-// export { default as useGetOngoingProjectPlans } from './project/project-plan/use-get-ongoing-project-plans';
-// export { default as useGetCompletedProjectPlans } from './project/project-plan/use-get-completed-project-plans';
-export { default as useUpdateProjectPlan } from './project/project-plan/use-update-project-plan';
 
 // Project refund related hooks
 export { default as useCreateRefund } from './project/project-refund/use-create-refund';

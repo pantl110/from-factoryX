@@ -63,7 +63,6 @@ const RegisterProductionModal = ({
             textColor="text-sv"
             hoverColor="hover:bg-bg"
             onClick={onClose}
-            disabled={isLoading}
           />
           <MiniBtn
             text="생산 시작"

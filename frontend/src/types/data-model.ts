@@ -692,14 +692,14 @@ export interface QuotationProductHistoryItemResponseModel {
 
 // 견적서 품목 납품 상태 수정
 export interface QuotationProductDeliveryUpdateModel {
-  is_delivered: boolean;
+  is_delivery: boolean;
   delivery_date?: string; // "YYYY-MM-DD" 형식
 }
 
 export interface QuotationProductDeliveryUpdateResponseModel {
   quotation_product_id: number;
-  is_delivered: boolean;
-  delivery_date?: string;
+  is_delivery: boolean;
+  delivery_date?: string | null;
   message: string;
 }
 
@@ -801,13 +801,16 @@ export interface ProjectPlanListResponseModel extends PaginationModel {
 }
 
 // 생산 계획 정보 수정
-export interface UpdateProjectPlanModel {
-  equipment_id?: number;
-  quantity?: number;
+export interface CreateOrUpdateProjectPlanModel {
+  equipment_id: number;
+  quantity: number;
+  project_id: number;
+  quotation_product_id: number;
+  start_date: string;
+  end_date: string;
+  avg_production_time: number;
   status?: OperationStatusType;
-  start_date?: string;
-  end_date?: string;
-  avg_production_time?: number;
+  plan_id?: number; // 수정 모드일 때만 사용
 }
 
 //////////////////////
