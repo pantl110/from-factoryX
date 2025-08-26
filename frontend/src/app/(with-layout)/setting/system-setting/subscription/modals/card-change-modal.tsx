@@ -18,7 +18,7 @@ const CardChangeModal = ({ onClose, onConfirm }: CardChangeModalProps) => {
           text="취소"
           textColor="text-sv"
           onClick={onClose}
-          hoverColor=""
+          hoverColor="hover:bg-bg"
         />
         <MiniBtn
           text="결제 카드 변경"

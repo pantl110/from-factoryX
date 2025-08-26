@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { RefundModel } from '@/types/data-model';
 
 interface GetRefundDetailParamsModel {
@@ -9,7 +9,7 @@ interface GetRefundDetailParamsModel {
 const useGetRefundDetail = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useFactoryStore();
+  const { factoryId } = useMemberStore();
 
   const getRefundDetail = useCallback(
     async (params: GetRefundDetailParamsModel) => {
@@ -26,7 +26,7 @@ const useGetRefundDetail = () => {
         queryParams.append('factory_id', factoryId.toString());
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/refund/${params.refund_id}?${queryParams}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-refund/${params.refund_id}?${queryParams}`,
           {
             method: 'GET',
             credentials: 'include',

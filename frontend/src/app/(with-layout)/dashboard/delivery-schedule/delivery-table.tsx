@@ -1,37 +1,60 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import DeliveryTableItem from './delivery-table-item';
 import Pagination from '@/components/pagination';
 import NoHistoryBox from '@/ui/no-history-box';
-import { usePagination } from '@/hooks';
 import { useRouter } from 'next/navigation';
+import { UndeliveredProductListResponseModel } from '@/types/data-model';
+import useGetUndeliveredProducts from '@/hooks/dashboard/use-get-undelivered-products';
+import useMemberStore from '@/store/member-store';
 
-interface UndeliveredProductModel {
-  company_name: string;
-  product_name: string;
-  delivery_date: string | null;
-  project_id: number;
-}
-
-interface DeliveryTableProps {
-  undeliveredProducts: UndeliveredProductModel[];
-  isLoading: boolean;
-}
-
-const DeliveryTable = ({
-  undeliveredProducts,
-  isLoading,
-}: DeliveryTableProps) => {
+const DeliveryTable = () => {
   const router = useRouter();
+  const { factoryId } = useMemberStore();
+  const { getUndeliveredProducts, isLoading } = useGetUndeliveredProducts();
 
-  // usePagination 훅 사용
-  const { currentItems, currentPage, totalPages, setCurrentPage } =
-    usePagination({
-      items: undeliveredProducts,
-      itemsPerPage: 5,
+  const [undeliveredProducts, setUndeliveredProducts] =
+    useState<UndeliveredProductListResponseModel>({
+      count: 0,
+      totalCnt: 0,
+      pageCnt: 0,
+      curPage: 1,
+      data: [],
     });
+  const [currentPage, setCurrentPage] = useState(1);
 
-  if (isLoading || undeliveredProducts.length === 0) {
+  // 데이터 로드
+  useEffect(() => {
+    if (factoryId) {
+      getUndeliveredProducts({ page: currentPage }).then(
+        (result: {
+          success: boolean;
+          data?: UndeliveredProductListResponseModel;
+        }) => {
+          if (result.success && result.data) {
+            setUndeliveredProducts(result.data);
+          } else {
+            setUndeliveredProducts({
+              count: 0,
+              totalCnt: 0,
+              pageCnt: 0,
+              curPage: currentPage,
+              data: [],
+            });
+          }
+        }
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId, currentPage]);
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  if (isLoading || undeliveredProducts.data.length === 0) {
     return (
       <NoHistoryBox
         title="납품 일정이 없어요."
@@ -49,7 +72,7 @@ const DeliveryTable = ({
           <p className="px-3 flex-1">납품일자</p>
           <div className="w-10"></div>
         </div>
-        {currentItems.map((product, index) => (
+        {undeliveredProducts.data.map((product, index) => (
           <DeliveryTableItem
             key={`${product.project_id}-${index}`}
             projectName={product.company_name}
@@ -61,11 +84,12 @@ const DeliveryTable = ({
           />
         ))}
       </div>
-      {totalPages > 1 && (
+      {/* 페이지네이션 - 백엔드 페이지네이션 정보 사용 */}
+      {undeliveredProducts.pageCnt > 1 && (
         <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          currentPage={undeliveredProducts.curPage}
+          totalPages={undeliveredProducts.pageCnt}
+          onPageChange={handlePageChange}
         />
       )}
     </div>

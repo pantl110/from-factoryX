@@ -40,7 +40,7 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
 
     const result = await createProjectLog({
       project_id: projectId,
-      type: '메모',
+      type: 'memo',
       title: data.title,
       content: data.content,
     });
@@ -82,7 +82,7 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
             text="취소"
             textColor="text-sv"
             onClick={onClose}
-            hoverColor=""
+            hoverColor="hover:bg-bg"
             type="button"
           />
           <MiniBtn

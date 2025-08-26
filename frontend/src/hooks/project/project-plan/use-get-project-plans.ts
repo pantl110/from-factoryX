@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { ProjectPlanModel } from '@/types/data-model';
 
 // project_id로 해당 프로젝트의 모든 생산 계획을 조회
 const useGetProjectPlans = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const getProjectPlans = useCallback(
     async (projectId: number) => {
@@ -19,7 +19,7 @@ const useGetProjectPlans = () => {
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/plan?project_id=${projectId}&factory_id=${factoryId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan?project_id=${projectId}&factory_id=${factoryId}`,
           {
             method: 'GET',
             credentials: 'include',

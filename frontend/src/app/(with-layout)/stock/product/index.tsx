@@ -11,6 +11,8 @@ import Pagination from '@/components/pagination';
 import { ProductResponseModel } from '@/types/data-model';
 import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks';
 import Spinner from '@/ui/spinner';
+import NoHistoryBox from '@/ui/no-history-box';
+import useMemberStore from '@/store/member-store';
 
 interface ProductProps {
   setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
@@ -22,10 +24,10 @@ const Product = ({
   isProductDetailPanelOpen,
   setIsProductDetailPanelOpen,
 }: ProductProps) => {
+  const role = useMemberStore((state) => state.role);
   const { getProductList, productList, pagination, isLoading } =
     useGetProduct();
   const { deleteProduct } = useDeleteProduct();
-
   const [searchKeyword, setSearchKeyword] = useState('');
   const [_currentPage, setCurrentPage] = useState(1);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -78,7 +80,7 @@ const Product = ({
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(productList.map((item) => item.id));
+  } = useCheckAll(productList.map((item: ProductResponseModel) => item.id));
 
   // 리스트 아이템 클릭 시
   const handleItemClick = (product: ProductResponseModel) => {
@@ -94,8 +96,8 @@ const Product = ({
   // 삭제 처리 함수
   const handleDelete = async () => {
     const checkedIds = productList
-      .filter((item) => isChecked(item.id))
-      .map((item) => item.id);
+      .filter((item: ProductResponseModel) => isChecked(item.id))
+      .map((item: ProductResponseModel) => item.id);
     if (checkedIds.length === 0) return;
     for (const id of checkedIds) {
       await deleteProduct(id);
@@ -112,38 +114,49 @@ const Product = ({
           onChange={handleSearch}
           placeholder="품목명 또는 품목코드를 검색하세요."
         />
-        <div className="flex gap-1">
-          <MiniBtn
-            text="취소"
-            textColor="text-dg"
-            borderColor="border-lg"
-            bgColor="bg-white"
-            hoverColor="hover:bg-bg"
-            onClick={() => setAllChecked(false)}
-          />
-          <MiniBtn
-            text={getDeleteButtonText()}
-            textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
-            borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
-            bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
-            hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
-            onClick={
-              checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
-            }
-          />
-        </div>
+        {productList.length > 0 && (
+          <div className="flex gap-1">
+            <MiniBtn
+              text="취소"
+              textColor="text-dg"
+              borderColor="border-lg"
+              bgColor="bg-white"
+              hoverColor="hover:bg-bg"
+              onClick={() => setAllChecked(false)}
+              disabled={role === 'viewer'}
+            />
+            <MiniBtn
+              text={getDeleteButtonText()}
+              textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+              borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
+              bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
+              hoverColor={
+                checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'
+              }
+              onClick={
+                checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
+              }
+              disabled={role === 'viewer'}
+            />
+          </div>
+        )}
       </div>
 
       {isLoading ? (
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
+      ) : productList.length === 0 ? (
+        <NoHistoryBox
+          title="품목이 아직 없어요."
+          text="품목이 생성되면 이곳에 표시돼요. "
+        />
       ) : (
         <>
           <div>
             <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
             {productList.length > 0 &&
-              productList.map((product) => (
+              productList.map((product: ProductResponseModel) => (
                 <TableItem
                   key={product.id}
                   product={product}

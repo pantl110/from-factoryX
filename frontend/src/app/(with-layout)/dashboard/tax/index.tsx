@@ -3,17 +3,22 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MiniBtn from '@/ui/mini-btn';
-import { taxData } from '@/mocks/tax-data';
-import TaxItem from './tax-item';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
+import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import NoHistoryBox from '@/ui/no-history-box';
+import TaxItem from './tax-item';
 
-const Tax = () => {
+interface TaxProps {
+  taxInvoicesData: PublishedTaxInvoiceResponseModel[];
+  isLoading: boolean;
+}
+
+const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
   const router = useRouter();
-  const [selectedTax, setSelectedTax] = useState<(typeof taxData)[0] | null>(
-    null
-  );
+  const [selectedTax, setSelectedTax] =
+    useState<PublishedTaxInvoiceResponseModel | null>(null);
 
-  const handleTaxClick = (tax: (typeof taxData)[0]) => {
+  const handleTaxClick = (tax: PublishedTaxInvoiceResponseModel) => {
     setSelectedTax(tax);
   };
 
@@ -37,25 +42,27 @@ const Tax = () => {
           />
         </div>
         <div className="flex flex-col gap-3">
-          {taxData
-            .sort(
-              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-            )
-            .slice(0, 5)
-            .map((tax) => (
+          {isLoading || taxInvoicesData.length === 0 ? (
+            <NoHistoryBox
+              title="아직 발행된 세금계산서가 없어요."
+              text="발행된 세금계산서는 최신순으로 보여져요."
+            />
+          ) : (
+            taxInvoicesData.map((tax) => (
               <TaxItem
                 key={tax.id}
-                taxType={tax.taxType}
-                company={tax.company}
-                date={tax.date}
+                taxType={tax.tax_invoice_type}
+                company={tax.client_info?.name}
+                date={tax.transaction_date}
                 onClick={() => handleTaxClick(tax)}
               />
-            ))}
+            ))
+          )}
         </div>
       </div>
 
       {selectedTax && (
-        <TaxDetailPanel item={selectedTax} onClose={handleClosePanel} />
+        <TaxDetailPanel itemId={selectedTax.id} onClose={handleClosePanel} />
       )}
     </>
   );

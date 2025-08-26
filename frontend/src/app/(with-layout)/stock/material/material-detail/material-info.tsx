@@ -2,6 +2,7 @@ import { useGetMaterial } from '@/hooks';
 import InfoLabelValue from '@/ui/info-label-value';
 import { useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
+import useMemberStore from '@/store/member-store';
 
 interface MaterialInfoProps {
   materialId: number;
@@ -36,6 +37,9 @@ function addComma(num: string | number) {
 
 const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
   ({ materialId, onIsDirtyChange }, ref) => {
+    const role = useMemberStore((state) => state.role);
+    const isViewer = role === 'viewer';
+
     const { getMaterialDetail } = useGetMaterial();
     const {
       control,
@@ -104,6 +108,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="자재명"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
+                isEditing={!isViewer}
               />
             )}
           />
@@ -115,6 +120,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="자재 코드"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
+                isEditing={!isViewer}
               />
             )}
           />
@@ -128,6 +134,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="규격"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
+                isEditing={!isViewer}
               />
             )}
           />
@@ -139,6 +146,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="단위"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
+                isEditing={!isViewer}
               />
             )}
           />
@@ -171,7 +179,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                         ? '0'
                         : addComma(field.value)
                   }
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="현재 재고를 입력하세요."
                   inputType="text"
                   handleChange={handleChangeCurrentStock}
@@ -203,7 +211,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                         ? '0'
                         : addComma(field.value)
                   }
-                  isEditing={true}
+                  isEditing={!isViewer}
                   placeholder="최소 재고를 입력하세요."
                   inputType="text"
                   handleChange={handleChangeMinStock}

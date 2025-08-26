@@ -11,6 +11,8 @@ import FacilityDetailPanel from './modals/facility-detail-panel';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useToast from '@/hooks/use-toast';
+import NoHistoryBox from '@/ui/no-history-box';
+import Pagination from '@/components/pagination';
 
 interface FacilityProps {
   equipmentList?: EquipmentListResponseModel;
@@ -23,6 +25,9 @@ interface FacilityProps {
   toggleAll: () => void;
   toggleOne: (id: number) => void;
   refetchEquipment?: () => void;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
 const Facility = ({
@@ -34,6 +39,9 @@ const Facility = ({
   toggleAll,
   toggleOne,
   refetchEquipment,
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange,
 }: FacilityProps) => {
   const [selectedEquipment, setSelectedEquipment] =
     useState<EquipmentResponseModel | null>(null);
@@ -57,25 +65,43 @@ const Facility = ({
   return (
     <>
       <div className="w-full px-10 pb-10">
-        <FacilityTableHeader
-          isAllChecked={isAllChecked}
-          onToggleAll={toggleAll}
-        />
-        {facilityList.map((item) => (
-          <FacilityTableItem
-            key={item.id}
-            facility={item}
-            onClick={() => handleItemClick(item)}
-            isChecked={isChecked(item.id)}
-            onToggle={() => toggleOne(item.id)}
+        {facilityList.length === 0 ? (
+          <NoHistoryBox
+            title="설비가 아직 없어요."
+            text="설비를 추가하면 이곳에 표시돼요."
           />
-        ))}
+        ) : (
+          <>
+            <FacilityTableHeader
+              isAllChecked={isAllChecked}
+              onToggleAll={toggleAll}
+            />
+            {facilityList.map((item) => (
+              <FacilityTableItem
+                key={item.id}
+                facility={item}
+                onClick={() => handleItemClick(item)}
+                isChecked={isChecked(item.id)}
+                onToggle={() => toggleOne(item.id)}
+              />
+            ))}
+
+            {/* 페이지네이션 */}
+            {totalPages >= 2 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={onPageChange || (() => {})}
+              />
+            )}
+          </>
+        )}
       </div>
 
       {/* 설비 상세 판넬 (기존 설비 조회) */}
       {selectedEquipment && (
         <FacilityDetailPanel
-          facility={selectedEquipment}
+          facilityId={selectedEquipment.id}
           onClose={handlePanelClose}
           onSuccess={refetchEquipment}
           showWarningToast={showToast}

@@ -1,22 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import SideBar from '@/components/side-bar';
 import TopBar from '@/components/top-bar';
 import { usePathname } from 'next/navigation';
-import { useAuthGuard } from '@/hooks';
-import useAuthStore from '@/store/auth-store';
+// import { useAuthGuard } from '@/hooks';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
+  // 인증 가드 적용 - 모든 하위 페이지에 자동으로 적용됨
+  // const { isLoading: isAuthLoading } = useAuthGuard();
+
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const pathname = usePathname();
-  const { initializeAuth } = useAuthStore();
-
-  useAuthGuard();
-
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
 
   const isProductionPage = pathname.startsWith('/production/'); // production 페이지인지 확인
 

@@ -1,13 +1,27 @@
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
 import DeleteAccountModal from './modals/delete-account-modal';
+import { useLogout, useWithdraw } from '@/hooks';
+import { useRouter } from 'next/navigation';
 
 const DeleteAccount = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const { withdraw, isLoading } = useWithdraw();
+  const { logout } = useLogout();
+  const router = useRouter();
 
-  const handleDeleteConfirm = () => {
-    // 실제 계정 삭제 로직 추후 추가
-    setIsDeleteModalOpen(false);
+  const handleDeleteConfirm = async () => {
+    try {
+      await withdraw();
+      // 계정삭제 성공 시 로그아웃 처리
+      await logout();
+      // 성공 시 모달은 자동으로 닫히고 로그인페이지로 이동됨
+    } catch {
+      // 에러는 useWithdraw에서 처리됨
+    } finally {
+      setIsDeleteModalOpen(false);
+      router.push('/');
+    }
   };
 
   return (
@@ -35,8 +49,13 @@ const DeleteAccount = () => {
       {/* 모달 */}
       {isDeleteModalOpen && (
         <DeleteAccountModal
-          onClose={() => setIsDeleteModalOpen(false)}
+          onClose={() => {
+            if (!isLoading) {
+              setIsDeleteModalOpen(false);
+            }
+          }}
           onConfirm={handleDeleteConfirm}
+          isLoading={isLoading}
         />
       )}
     </>

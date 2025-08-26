@@ -1,6 +1,6 @@
 import { QuotationResponseModel } from '@/types/data-model';
 import { useState, useEffect } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface UseGetDetailQuotationReturnModel {
   data: QuotationResponseModel | null;
@@ -16,7 +16,7 @@ const useGetDetailQuotation = (
   const [data, setData] = useState<QuotationResponseModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const fetchQuotation = async () => {
     setIsLoading(true);

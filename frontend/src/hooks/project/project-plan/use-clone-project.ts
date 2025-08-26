@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 //  완료된 프로젝트를 복제하여 생산 대기 상태로 새 프로젝트를 생성
 //  - 거래명세서 발행일 초기화
@@ -9,7 +9,7 @@ import useFactoryStore from '@/store/factory-store';
 const useCloneProject = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const cloneProject = async (projectId: number) => {
     setIsLoading(true);

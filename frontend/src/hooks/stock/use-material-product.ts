@@ -5,7 +5,7 @@ import {
   MaterialProductConnectionModel,
   ProductMaterialConnectionModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 type ConnectionModelType =
   | MaterialProductConnectionModel
@@ -20,7 +20,7 @@ const useMaterialProduct = () => {
   const [data, setData] = useState<
     MaterialProductConnectionResponseModel | ConnectionModelType[] | null
   >(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 연결 생성
   const createMaterialProduct = async (payload: CreateMaterialProductModel) => {

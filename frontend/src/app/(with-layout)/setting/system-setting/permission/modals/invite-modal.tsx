@@ -1,7 +1,7 @@
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
-import { CaretDown, X } from '@phosphor-icons/react/dist/ssr';
+import { CaretDown, WarningCircle, X } from '@phosphor-icons/react/dist/ssr';
 import { useState, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import AuthDropdown from './auth-dropdown';
@@ -12,7 +12,9 @@ import { PermissionRoleInfo, PermissionRoleType } from '../types';
 import { createPortal } from 'react-dom';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import useInviteMember from '@/hooks/factory/factory-member/use-invite-member';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
+import Toast from '@/ui/toast';
+import useToast from '@/hooks/use-toast';
 
 interface InviteModalProps {
   onClose: () => void;
@@ -29,7 +31,10 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
   const [members, setMembers] = useState<MemberFromDataModel[]>([]);
 
   const { inviteMember, isLoading: isInviteLoading } = useInviteMember();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
+
+  // 토스트 훅 사용
+  const { isToastOpen, isVisible, showToast } = useToast();
 
   const {
     control,
@@ -126,12 +131,21 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
           }))
           .filter((item) => !item.success);
 
-        // 구체적인 에러 메시지 생성
-        const errorDetails = failedDetails
-          .map((detail) => `${detail.email}: ${detail.error}`)
-          .join('\n');
+        // "이미 팩토리 멤버입니다" 오류가 있는지 확인
+        const hasAlreadyMemberError = failedDetails.some((detail) =>
+          detail.error.includes('이미 팩토리 멤버입니다')
+        );
 
-        alert(`다음 멤버의 초대에 실패했습니다:\n${errorDetails}`);
+        if (hasAlreadyMemberError) {
+          showToast(); // 토스트 표시
+        } else {
+          // 구체적인 에러 메시지 생성
+          const errorDetails = failedDetails
+            .map((detail) => `${detail.email}: ${detail.error}`)
+            .join('\n');
+
+          alert(`다음 멤버의 초대에 실패했습니다:\n${errorDetails}`);
+        }
       }
     } catch {
       alert('초대 처리 중 오류가 발생했습니다.');
@@ -276,7 +290,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                 text="취소"
                 textColor="text-sv"
                 onClick={onClose}
-                hoverColor=""
+                hoverColor="hover:bg-bg"
               />
               <MiniBtn
                 text="초대"
@@ -302,7 +316,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               text="닫기"
               textColor="text-sv"
               onClick={handleSuccessClose}
-              hoverColor=""
+              hoverColor="hover:bg-bg"
             />
             <MiniBtn
               text="확인"
@@ -313,6 +327,17 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
             />
           </div>
         </Modal>
+      )}
+
+      {/* 이미 팩토리 멤버 토스트 */}
+      {isToastOpen && (
+        <Toast
+          text="초대할 수 없는 유저입니다."
+          subtext="관리자 역할이거나 이미 다른 공장에 소속되어 있어요."
+          type="red"
+          icon={<WarningCircle size={20} className="text-red" />}
+          isVisible={isVisible}
+        />
       )}
     </>
   );

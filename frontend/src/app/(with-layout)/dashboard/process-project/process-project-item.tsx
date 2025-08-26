@@ -2,7 +2,11 @@
 
 import Chip from '@/ui/chip';
 import { ProjectResponseModel } from '@/types/data-model';
-import { ProjectStatusColorMap } from '@/types/status-type';
+import {
+  ProjectStatusColorMap,
+  ProjectStatusMap,
+  ProjectStatusType,
+} from '@/types/status-type';
 import { formatRelativeTime } from '@/utils/format-relative-time';
 
 interface ProcessProjectItemProps {
@@ -38,7 +42,7 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
           {formatRelativeTime(project.start_date)}
         </p>
         <Chip
-          text={project.status}
+          text={ProjectStatusMap[project.status as ProjectStatusType]}
           bgColor={getStatusColor(project.status).bg}
           textColor={getStatusColor(project.status).text}
         />

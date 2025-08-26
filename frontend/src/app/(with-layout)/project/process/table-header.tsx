@@ -21,7 +21,9 @@ const TableHeader = ({
       } border-t border-b border-lg Me_Body-1`}
     >
       <Checkbox isChecked={isAllChecked} onToggle={onToggleAll || (() => {})} />
-      <p className="w-[150px] px-3 text-sv">진행상태</p>
+      <p className={`${isArchived ? 'w-[150px]' : 'w-[200px]'} px-3 text-sv`}>
+        진행상태
+      </p>
       <p className="flex-2 px-3 text-sv">업체명</p>
       <p className="flex-2 px-3 text-sv">품목명</p>
       {!isArchived && (
@@ -40,7 +42,8 @@ const TableHeader = ({
         <p className=" text-sv">{isArchived ? '완료일자' : '납기일자'}</p>
         <CaretUpDown size={21} className="text-sv" />
       </div>
-      {!isArchived && <p className="w-[200px] px-3 text-sv">세금계산서</p>}
+      {!isArchived && <p className="w-[200px] px-3 text-sv">세금계산서 연결</p>}
+      {!isArchived && <p className="w-[200px] px-3 text-sv">발행 여부</p>}
       {isArchived && <div className="w-9" />}
     </div>
   );

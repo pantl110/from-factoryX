@@ -1,24 +1,14 @@
 'use client';
 
 import MiniBtn from '@/ui/mini-btn';
-import ProductionTable from './production-table';
 import { useRef, useState } from 'react';
 import ProductionDocumentView from '../../document/production-document-view';
 import OverlayView from '@/ui/ovelay-view';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import { useReactToPrint } from 'react-to-print';
-
-interface TodayProductionPlanModel {
-  company_name: string;
-  product_name: string;
-  product_code: string;
-  spec: string;
-  unit: string;
-  production_quantity: number;
-  equipment_name: string;
-  production_time: number;
-  project_id: number;
-}
+import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
+import ProductionTable from './production-table';
+import useMemberStore from '@/store/member-store';
 
 interface TodayProductionScheduleProps {
   todayProductionPlans: TodayProductionPlanModel[];
@@ -29,6 +19,7 @@ const TodayProductionSchedule = ({
   todayProductionPlans,
   isLoading,
 }: TodayProductionScheduleProps) => {
+  const factoryId = useMemberStore((state) => state.factoryId);
   const [isPrintOverlayOpen, setIsPrintOverlayOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
@@ -49,6 +40,7 @@ const TodayProductionSchedule = ({
               setIsPrintOverlayOpen(true);
             }}
             hoverColor="hover:bg-bg"
+            disabled={!factoryId}
           />
         </div>
         <ProductionTable
@@ -91,7 +83,9 @@ const TodayProductionSchedule = ({
             </div>
 
             <div ref={contentRef}>
-              <ProductionDocumentView />
+              <ProductionDocumentView
+                todayProductionPlans={todayProductionPlans}
+              />
             </div>
           </div>
         </OverlayView>

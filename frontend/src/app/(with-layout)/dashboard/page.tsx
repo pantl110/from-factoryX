@@ -19,65 +19,53 @@ import {
   useToast,
   useGetProjects,
   useGetTodayProductionPlans,
-  useGetUndeliveredProducts,
-  useGetDailyProductionQuantity,
-  useGetProductionProfitRate,
-  useGetInsufficientMaterialCount,
+  useGetPublishedTaxInvoices,
+  useGetDashboard,
 } from '@/hooks';
-import { ProjectResponseModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
 import {
-  DailyProductionQuantityModel,
-  ProductionProfitRateModel,
-  TodayProductionPlanModel,
-  UndeliveredProductModel,
-  ShortageMaterialCountModel,
-} from './type';
+  ProjectResponseModel,
+  DashboardResponseModel,
+  ProjectListResponseModel,
+  PublishedTaxInvoiceResponseModel,
+  PublishedTaxInvoiceListResponseModel,
+} from '@/types/data-model';
+import useMemberStore from '@/store/member-store';
+import { TodayProductionPlanModel } from './type';
 import NoHistoryBox from '@/ui/no-history-box';
 
 const DashboardPageContent = () => {
   const { isToastOpen, isVisible, showToast } = useToast();
   const searchParams = useSearchParams();
   const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
+  const { getDashboard, isLoading: isDashboardLoading } = useGetDashboard();
   const { getTodayProductionPlans, isLoading: isTodayPlansLoading } =
     useGetTodayProductionPlans();
-  const { getUndeliveredProducts, isLoading: isUndeliveredLoading } =
-    useGetUndeliveredProducts();
-  const { getDailyProductionQuantity, isLoading: isDailyProductionLoading } =
-    useGetDailyProductionQuantity();
-  const { getProductionProfitRate, isLoading: isProductionProfitLoading } =
-    useGetProductionProfitRate();
-  const {
-    getInsufficientMaterialCount,
-    isLoading: isInsufficientMaterialLoading,
-  } = useGetInsufficientMaterialCount();
 
+  const { getPublishedTaxInvoices, isLoading: isTaxInvoicesLoading } =
+    useGetPublishedTaxInvoices();
   const [projectsData, setProjectsData] = useState<ProjectResponseModel[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardResponseModel>({
+    current_month_projects: 0,
+    previous_month_projects: 0,
+    shortage_materials_count: 0,
+    monthly_profits: [],
+    last_year_monthly_profits: [],
+  });
   const [todayProductionPlans, setTodayProductionPlans] = useState<
     TodayProductionPlanModel[]
   >([]);
-  const [undeliveredProducts, setUndeliveredProducts] = useState<
-    UndeliveredProductModel[]
+
+  const [taxInvoicesData, setTaxInvoicesData] = useState<
+    PublishedTaxInvoiceResponseModel[]
   >([]);
-  const [dailyProductionData, setDailyProductionData] = useState<
-    DailyProductionQuantityModel | undefined
-  >(undefined);
-  const [productionProfitData, setProductionProfitData] = useState<
-    ProductionProfitRateModel | undefined
-  >(undefined);
-  const [insufficientMaterialData, setInsufficientMaterialData] = useState<
-    ShortageMaterialCountModel | undefined
-  >(undefined);
-  const { factoryId, initializeFactoryId } = useFactoryStore();
+  const { factoryId, initializeFactoryId } = useMemberStore();
 
   // 모든 데이터 로딩 상태를 통합
   const isLoading =
-    isDailyProductionLoading ||
+    isDashboardLoading ||
     isProjectsLoading ||
     isTodayPlansLoading ||
-    isUndeliveredLoading ||
-    isProductionProfitLoading ||
-    isInsufficientMaterialLoading;
+    isTaxInvoicesLoading;
 
   useEffect(() => {
     const from = searchParams.get('from');
@@ -99,18 +87,32 @@ const DashboardPageContent = () => {
       getProjects({
         status: 'progress',
         page: 1,
-        size: 100,
+        page_size: 100,
         order_by: 'start_date',
         order_dir: 'desc',
-      }).then((result) => {
-        if (result.success && result.data) {
-          const responseData = result.data as { data?: ProjectResponseModel[] };
-          const projects = responseData.data || [];
-          setProjectsData(Array.isArray(projects) ? projects : []);
-        } else {
-          setProjectsData([]);
+      }).then(
+        (result: { success: boolean; data?: ProjectListResponseModel }) => {
+          if (result.success && result.data) {
+            const projects = result.data.data || [];
+            setProjectsData(Array.isArray(projects) ? projects : []);
+          } else {
+            setProjectsData([]);
+          }
         }
-      });
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
+
+  useEffect(() => {
+    if (factoryId) {
+      getDashboard().then(
+        (result: { success: boolean; data?: DashboardResponseModel }) => {
+          if (result.success && result.data) {
+            setDashboardData(result.data);
+          }
+        }
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
@@ -118,73 +120,43 @@ const DashboardPageContent = () => {
   // 오늘의 생산 일정 가져오기
   useEffect(() => {
     if (factoryId) {
-      getTodayProductionPlans({
+      getTodayProductionPlans().then(
+        (result: {
+          success: boolean;
+          data?: TodayProductionPlanModel[];
+          error?: string;
+        }) => {
+          if (result.success && result.data) {
+            setTodayProductionPlans(result.data);
+          } else {
+            setTodayProductionPlans([]);
+          }
+        }
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
+
+  // 세금계산서 데이터 가져오기 (최신 5개)
+  useEffect(() => {
+    if (factoryId) {
+      getPublishedTaxInvoices({
         page: 1,
-      }).then((result) => {
-        if (result.success && result.data) {
-          setTodayProductionPlans(result.data);
-        } else {
-          setTodayProductionPlans([]);
+        page_size: 5,
+        ordering: '-transaction_date',
+      }).then(
+        (result: {
+          success: boolean;
+          data?: PublishedTaxInvoiceListResponseModel;
+        }) => {
+          if (result.success && result.data) {
+            const invoices = result.data.data || [];
+            setTaxInvoicesData(invoices);
+          } else {
+            setTaxInvoicesData([]);
+          }
         }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryId]);
-
-  // 납품되지 않은 견적서 품목 가져오기
-  useEffect(() => {
-    if (factoryId) {
-      getUndeliveredProducts({
-        page: 1,
-      }).then((result) => {
-        if (result.success && result.data) {
-          setUndeliveredProducts(result.data);
-        } else {
-          setUndeliveredProducts([]);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryId]);
-
-  // 오늘 생산량 데이터 가져오기
-  useEffect(() => {
-    if (factoryId) {
-      getDailyProductionQuantity({}).then((result) => {
-        if (result.success && result.data) {
-          setDailyProductionData(result.data);
-        } else {
-          setDailyProductionData(undefined);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryId]);
-
-  // 생산 수익률 데이터 가져오기
-  useEffect(() => {
-    if (factoryId) {
-      getProductionProfitRate({}).then((result) => {
-        if (result.success && result.data) {
-          setProductionProfitData(result.data);
-        } else {
-          setProductionProfitData(undefined);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryId]);
-
-  // 부족한 원자재 수 데이터 가져오기
-  useEffect(() => {
-    if (factoryId) {
-      getInsufficientMaterialCount().then((result) => {
-        if (result.success && result.data) {
-          setInsufficientMaterialData(result.data);
-        } else {
-          setInsufficientMaterialData(undefined);
-        }
-      });
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
@@ -194,7 +166,7 @@ const DashboardPageContent = () => {
     ? projectsData
         .filter(
           (project) =>
-            project.status === '견적 협의중' || project.status === '주문 확정'
+            project.status === 'quotation' || project.status === 'completed'
         )
         .sort(
           (a, b) =>
@@ -208,10 +180,10 @@ const DashboardPageContent = () => {
     ? projectsData
         .filter(
           (project) =>
-            project.status === '생산 대기' ||
-            project.status === '생산 중' ||
-            project.status === '생산 완료' ||
-            project.status === '납품'
+            project.status === 'pending' ||
+            project.status === 'production' ||
+            project.status === 'manufactured' ||
+            project.status === 'delivery'
         )
         .sort(
           (a, b) =>
@@ -219,7 +191,6 @@ const DashboardPageContent = () => {
         )
         .slice(0, 4)
     : [];
-
   return (
     <>
       <MainTitleSec />
@@ -235,13 +206,24 @@ const DashboardPageContent = () => {
               {/* Summary KPI */}
               <div className="flex flex-col">
                 <h3 className="Heading-3">Summary KPI</h3>
-                {dailyProductionData &&
-                productionProfitData &&
-                insufficientMaterialData ? (
+                {factoryId && dashboardData ? (
                   <div className="flex flex-col gap-3 w-[280px] min-w-[248px] mt-3">
-                    <DailyProductionQuantity data={dailyProductionData} />
-                    <ShortageCount data={insufficientMaterialData} />
-                    <ProductionYield data={productionProfitData} />
+                    <DailyProductionQuantity
+                      currentMonthProjects={
+                        dashboardData.current_month_projects
+                      }
+                      previousMonthProjects={
+                        dashboardData.previous_month_projects
+                      }
+                    />
+                    <ShortageCount
+                      shortageMaterialsCount={
+                        dashboardData.shortage_materials_count
+                      }
+                    />
+                    <ProductionYield
+                      monthlyProfits={dashboardData.monthly_profits}
+                    />
                   </div>
                 ) : (
                   <div className="w-100 mt-3">
@@ -254,7 +236,10 @@ const DashboardPageContent = () => {
               </div>
 
               {/* 생산 이익 그래프 */}
-              <ProfitGraph />
+              <ProfitGraph
+                monthlyProfits={dashboardData.monthly_profits}
+                lastYearMonthlyProfits={dashboardData.last_year_monthly_profits}
+              />
             </div>
 
             {/* 견적 및 주문 현황 */}
@@ -281,14 +266,14 @@ const DashboardPageContent = () => {
                 <div className="h-10 flex items-center">
                   <h3 className="Heading-3">납품 예정 현황</h3>
                 </div>
-                <DeliveryTable
-                  undeliveredProducts={undeliveredProducts}
-                  isLoading={isUndeliveredLoading}
-                />
+                <DeliveryTable />
               </div>
 
               {/* 세금계산서 현황 */}
-              <Tax />
+              <Tax
+                taxInvoicesData={taxInvoicesData}
+                isLoading={isTaxInvoicesLoading}
+              />
             </div>
           </div>
         </>

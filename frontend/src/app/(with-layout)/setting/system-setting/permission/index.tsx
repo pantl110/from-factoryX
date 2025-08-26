@@ -11,16 +11,19 @@ import DeleteTeamMemberModal from './modals/delete-team-member-modal';
 import useGetMembers from '@/hooks/factory/factory-member/use-get-members';
 import useDeleteMember from '@/hooks/factory/factory-member/use-delete-member';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import Spinner from '@/ui/spinner';
 import Tooltip from '@/ui/tooltip';
+import NoHistoryBox from '@/ui/no-history-box';
 
 const Permission = () => {
+  const role = useMemberStore((state) => state.role);
+
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const factoryId = useFactoryStore((state) => state.factoryId);
-  const initializeFactoryId = useFactoryStore(
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const initializeFactoryId = useMemberStore(
     (state) => state.initializeFactoryId
   );
   const { getMembers, members, isLoading, error } = useGetMembers();
@@ -122,7 +125,7 @@ const Permission = () => {
   return (
     <>
       <div className="flex flex-col gap-6 pb-10 px-10">
-        <div className="flex flex-col gap-7 pb-8 border-b border-[#eeeeee]">
+        <div className="flex flex-col gap-7 pb-8 border-b border-lg">
           {permissionRoleTypes.map((type) => (
             <PermissionInfoItem key={type} type={type} />
           ))}
@@ -141,7 +144,7 @@ const Permission = () => {
                     setIsInviteModalOpen(true);
                   }}
                   hoverColor="hover:bg-secondary-hover"
-                  disabled={!isFactoryInfoComplete}
+                  disabled={!isFactoryInfoComplete || role === 'viewer'}
                 />
                 {!isFactoryInfoComplete && (
                   <div className="absolute w-[400px] flex justify-end top-12 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
@@ -153,29 +156,35 @@ const Permission = () => {
                   </div>
                 )}
               </div>
-              <MiniBtn
-                text="취소"
-                textColor="text-dg"
-                borderColor="border-lg"
-                onClick={() => {
-                  setAllChecked(false);
-                }}
-                hoverColor="hover:bg-bg"
-              />
-              <MiniBtn
-                text={getDeleteButtonText()}
-                textColor={checkedCount === 0 ? 'text-dg' : 'text-red'}
-                bgColor={checkedCount === 0 ? '' : 'bg-red-8'}
-                borderColor={checkedCount === 0 ? 'border-lg' : ''}
-                hoverColor={
-                  checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-red-hover'
-                }
-                onClick={() => {
-                  if (checkedCount > 0) {
-                    setIsDeleteModalOpen(true);
-                  }
-                }}
-              />
+              {members?.data && members.data.length > 1 && (
+                <>
+                  <MiniBtn
+                    text="취소"
+                    textColor="text-dg"
+                    borderColor="border-lg"
+                    onClick={() => {
+                      setAllChecked(false);
+                    }}
+                    hoverColor="hover:bg-bg"
+                    disabled={role === 'viewer'}
+                  />
+                  <MiniBtn
+                    text={getDeleteButtonText()}
+                    textColor={checkedCount === 0 ? 'text-dg' : 'text-red'}
+                    bgColor={checkedCount === 0 ? '' : 'bg-red-8'}
+                    borderColor={checkedCount === 0 ? 'border-lg' : ''}
+                    hoverColor={
+                      checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-red-hover'
+                    }
+                    onClick={() => {
+                      if (checkedCount > 0) {
+                        setIsDeleteModalOpen(true);
+                      }
+                    }}
+                    disabled={role === 'viewer'}
+                  />
+                </>
+              )}
             </div>
           </div>
 
@@ -185,6 +194,12 @@ const Permission = () => {
                 <div className="flex justify-center items-center h-100">
                   <Spinner />
                 </div>
+              ) : !members?.data || members.data.length === 1 ? (
+                // 자기 자신은 제외하고 UI로 보여주지 않음
+                <NoHistoryBox
+                  title="초대된 팀원이 없어요."
+                  text="팀원이 초대되면 이곳에 표시돼요."
+                />
               ) : (
                 <>
                   <PermissionTableHeader

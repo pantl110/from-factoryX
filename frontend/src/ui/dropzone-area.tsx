@@ -184,7 +184,7 @@ const DropzoneArea = ({
               <MiniBtn
                 text="추가"
                 textColor="text-sv"
-                hoverColor=""
+                hoverColor="hover:bg-bg"
                 onClick={() => {
                   if (fileInputRef.current && files.length < fileCount) {
                     fileInputRef.current.click();

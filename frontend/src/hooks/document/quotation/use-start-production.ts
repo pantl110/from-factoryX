@@ -1,6 +1,6 @@
 import { SaveDraftQuotationModel } from '@/types/data-model';
 import { useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface StartProductionResponseModel {
   quotation_id: number;
@@ -34,7 +34,7 @@ interface UseStartProductionReturnModel {
 const useStartProduction = (): UseStartProductionReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const startProduction = async (
     data: SaveDraftQuotationModel
@@ -84,8 +84,8 @@ const useStartProduction = (): UseStartProductionReturnModel => {
       const errorMessage =
         err instanceof Error ? err.message : '생산 시작에 실패했습니다.';
       setError(errorMessage);
-      // 에러 발생 시 null 반환
-      return null as unknown as StartProductionResponseModel;
+      // 에러 발생 시 에러를 다시 throw
+      throw err;
     } finally {
       setIsLoading(false);
     }

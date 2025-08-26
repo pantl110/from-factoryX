@@ -2,7 +2,7 @@ import Image from 'next/image';
 import onboardingImage from '@/assets/onboarding.png';
 import MiniBtn from '@/ui/mini-btn';
 import useCreateFactory from '@/hooks/factory/use-create-factory';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
 
 interface WelcomeProps {
@@ -13,7 +13,7 @@ interface WelcomeProps {
 const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
   const { createFactory, isLoading } = useCreateFactory();
   const { getFactoryList } = useGetFactoryList();
-  const setFactoryId = useFactoryStore((state) => state.setFactoryId);
+  const setFactoryId = useMemberStore((state) => state.setFactoryId);
 
   const handleFactoryOwnerStart = async () => {
     try {

@@ -1,21 +1,23 @@
-import { OcrDataModel } from '@/types/data-model';
+import { OcrDataModel, ProjectStatusType } from '@/types/data-model';
 
 interface TabAreaProps {
   activeTab: 'quotation' | 'history';
   activateQuotationTab: () => void;
   ocrData: OcrDataModel | null;
-  isOrderStatus: boolean;
+  projectStatus: ProjectStatusType;
+  hasUploadedFile?: boolean;
 }
 
 const TabArea = ({
   activeTab,
   activateQuotationTab,
   ocrData,
-  isOrderStatus,
+  projectStatus,
+  hasUploadedFile = false,
 }: TabAreaProps) => {
   return (
     <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-[#eeeeee]">
-      {ocrData && (
+      {(ocrData || hasUploadedFile) && (
         <button
           className={`${
             activeTab === 'quotation'
@@ -24,7 +26,7 @@ const TabArea = ({
           } cursor-pointer`}
           onClick={activateQuotationTab}
         >
-          {isOrderStatus ? '주문서' : '견적요청서'}
+          {projectStatus === 'confirmed' ? '주문서' : '견적요청서'}
         </button>
       )}
       <div
