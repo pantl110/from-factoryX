@@ -302,3 +302,10 @@ class DashboardOut(Schema):
     shortage_materials_count: int  # 재고 수량이 안전재고보다 낮은 원자재 개수
     monthly_profits: List[dict]  # 현재 달로부터 5개월치 월별 생산 수익
     last_year_monthly_profits: List[dict]  # 작년 동일 기간 월별 생산 수익
+
+
+# (POST) Project Plan Create or Update Response
+class ProjectPlanCreateOrUpdateOut(Schema):
+    message: str
+    plan_id: int
+    action: str  # "created" 또는 "updated"

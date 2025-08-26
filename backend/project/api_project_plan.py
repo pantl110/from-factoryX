@@ -7,6 +7,7 @@ from django.db import models
 from project.schemas.inbound import (
     ProjectPlanCreateIn,
     ProjectPlanUpdateIn,
+    ProjectPlanCreateOrUpdateIn,
     ProjectPlanListFilter,
 )
 from project.schemas.outbound import (
@@ -17,6 +18,7 @@ from project.schemas.outbound import (
     QuotationProductDetailOut,
     EquipmentDetailOut,
     DashboardOut,
+    ProjectPlanCreateOrUpdateOut,
 )
 from document.schemas.outbound import TodayProductionPlanOut
 from project.models import Project, ProjectPlan, ProjectLog
@@ -146,6 +148,192 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn):
             avg_production_time=plan.avg_production_time,
         ),
     )
+
+
+@router.post(
+    "/create-or-update",
+    summary="[C] 프로젝트 생산 계획 생성 또는 수정",
+    description="plan_id가 있으면 생산 계획을 수정하고, 없으면 새로 생성합니다. 수량 수정 시 견적서 수량과 일치하도록 자동으로 분할됩니다.",
+    response={200: ProjectPlanCreateOrUpdateOut, 400: dict, 404: dict, 500: dict},
+)
+async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpdateIn):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    # 프로젝트 검증
+    try:
+        project = await Project.objects.aget(id=payload.project_id)
+    except Project.DoesNotExist:
+        raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
+
+    # 견적서 품목 검증
+    try:
+        quotation_product = await QuotationProduct.objects.aget(
+            id=payload.quotation_product_id
+        )
+
+        # 견적서 정보를 async로 가져오기
+        quotation = await Quotation.objects.aget(id=quotation_product.quotation_id)
+        if quotation.project_id != payload.project_id:
+            raise HttpError(400, "견적서 품목이 해당 프로젝트에 속하지 않습니다.")
+    except QuotationProduct.DoesNotExist:
+        raise HttpError(404, "해당 견적서 품목을 찾을 수 없습니다.")
+    except Quotation.DoesNotExist:
+        raise HttpError(404, "해당 견적서를 찾을 수 없습니다.")
+
+    # 설비 검증
+    equipment = await get_equipment_by_id(payload.equipment_id, factory_id)
+
+    # 수량 검증
+    if payload.quantity <= 0:
+        raise HttpError(400, "생산 수량은 0보다 커야 합니다.")
+
+    if payload.plan_id:
+        # 수정 모드
+        try:
+            plan = await get_plan_by_id(payload.plan_id)
+
+            # 완료된 생산 계획은 수정 불가
+            if plan.status == ProjectPlan.ProductionStatus.completed:
+                raise HttpError(400, "완료된 생산 계획은 수정할 수 없습니다.")
+
+            old_equipment = (
+                await FactoryEquipment.objects.aget(id=plan.equipment_id)
+                if plan.equipment_id
+                else None
+            )
+
+            # 생산 일자 변경 감지를 위한 이전 값 저장
+            old_start_date = plan.start_date
+
+            # 값 수정
+            plan.equipment = equipment
+            plan.quantity = payload.quantity
+            plan.start_date = payload.start_date
+            plan.end_date = payload.end_date
+            plan.avg_production_time = payload.avg_production_time
+            if payload.status:
+                plan.status = payload.status
+
+            await plan.asave()
+
+            # 수량이 주문 수량보다 작을 때 자동 분할 처리
+            if payload.quantity < quotation_product.quantity:
+                remaining_quantity = quotation_product.quantity - payload.quantity
+                buffer_quantity = int(remaining_quantity * 1.1)  # 10% 버퍼 적용
+
+                # 대체 설비가 있는지 확인
+                alternative_equipment = await sync_to_async(list)(
+                    FactoryEquipment.objects.filter(factory_id=factory_id)
+                    .exclude(id=equipment.id)
+                    .order_by("priority")
+                )
+
+                if alternative_equipment:
+                    # 다른 설비로 추가 계획 생성
+                    new_equipment = alternative_equipment[0]
+                else:
+                    # 같은 설비로 추가 계획 생성
+                    new_equipment = equipment
+
+                # 추가 계획 생성
+                await ProjectPlan.objects.acreate(
+                    project=project,
+                    product=quotation_product,
+                    equipment=new_equipment,
+                    quantity=buffer_quantity,
+                    start_date=payload.start_date,
+                    end_date=payload.end_date,
+                    avg_production_time=payload.avg_production_time,
+                    status=payload.status or ProjectPlan.ProductionStatus.pending,
+                )
+
+            # 설비 변경 로그
+            if (
+                old_equipment
+                and old_equipment.id != equipment.id
+                and plan.status == ProjectPlan.ProductionStatus.production
+            ):
+                await ProjectLog.objects.acreate(
+                    project=plan.project,
+                    type=ProjectLog.LogType.plan,
+                    title="생산 설비 변경",
+                    content=f"사용 설비가 {old_equipment.name}라인에서 {equipment.name}라인으로 변경되었어요",
+                )
+
+            # 생산 일자 변경 로그
+            if old_start_date != plan.start_date:
+                change_message = f"생산일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
+                await ProjectLog.objects.acreate(
+                    project=plan.project,
+                    type=ProjectLog.LogType.plan,
+                    title="생산일자 변경",
+                    content=change_message,
+                )
+
+            # 알림 전송
+            if (
+                payload.start_date
+                and payload.start_date.date() == timezone.now().date()
+            ) or (old_start_date and old_start_date.date() == timezone.now().date()):
+                await send_notification_to_factory(
+                    factory_id=int(factory_id),
+                    notification_type="information",
+                    notification_case="production_schedule_changed",
+                    content=f"'{plan.project.name}'의 생산 일정이 변경되었어요.",
+                    additional_data={"plan_id": plan.id},
+                )
+
+            # 버퍼 레이트 업데이트
+            if payload.quantity >= quotation_product.quantity:
+                new_buffer_rate = (payload.quantity / quotation_product.quantity) - 1
+                # 관계 필드 접근을 async로 처리
+                product_obj = await Product.objects.aget(
+                    id=quotation_product.product_id
+                )
+                product_obj.buffer_rate = new_buffer_rate
+                await product_obj.asave()
+
+            return 200, ProjectPlanCreateOrUpdateOut(
+                message="프로젝트 생산 계획이 성공적으로 수정되었습니다.",
+                plan_id=plan.id,
+                action="updated",
+            )
+
+        except Exception as e:
+            raise HttpError(404, f"생산 계획을 찾을 수 없습니다: {str(e)}")
+
+    else:
+        # 생성 모드
+        # 버퍼 레이트 업데이트
+        if payload.quantity >= quotation_product.quantity:
+            new_buffer_rate = (payload.quantity / quotation_product.quantity) - 1
+            # 관계 필드 접근을 async로 처리
+            product_obj = await Product.objects.aget(id=quotation_product.product_id)
+            product_obj.buffer_rate = new_buffer_rate
+            await product_obj.asave()
+
+        # ProjectPlan 생성
+        plan = await ProjectPlan.objects.acreate(
+            project=project,
+            product=quotation_product,
+            equipment=equipment,
+            quantity=payload.quantity,
+            start_date=payload.start_date,
+            end_date=payload.end_date,
+            avg_production_time=payload.avg_production_time,
+            status=payload.status or ProjectPlan.ProductionStatus.pending,
+        )
+
+        return 200, ProjectPlanCreateOrUpdateOut(
+            message="프로젝트 생산 계획이 성공적으로 생성되었습니다.",
+            plan_id=plan.id,
+            action="created",
+        )
 
 
 @router.get(
@@ -673,93 +861,93 @@ async def list_project_plans(request, project_id: int):
     return 200, plans_detail_list
 
 
-@router.patch(
-    "/{plan_id}",
-    summary="[C] 프로젝트 생산 계획 수정",
-    description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다. 수량 수정 시 견적서 수량과 일치하도록 자동으로 분할됩니다.",
-    response={200: dict, 400: dict, 404: dict, 500: dict},
-)
-async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
+# @router.patch(
+#     "/{plan_id}",
+#     summary="[C] 프로젝트 생산 계획 수정",
+#     description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다. 수량 수정 시 견적서 수량과 일치하도록 자동으로 분할됩니다.",
+#     response={200: dict, 400: dict, 404: dict, 500: dict},
+# )
+# async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn):
+#     factory_id = request.GET.get("factory_id")
+#     if not factory_id:
+#         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
+#     user = request.auth
+#     await is_factory_member(int(factory_id), user)
 
-    plan = await get_plan_by_id(plan_id)
+#     plan = await get_plan_by_id(plan_id)
 
-    data = payload.dict(exclude_unset=True)
+#     data = payload.dict(exclude_unset=True)
 
-    # 완료된 생산 계획은 수정 불가
-    if plan.status == ProjectPlan.ProductionStatus.completed:
-        raise HttpError(400, "완료된 생산 계획은 수정할 수 없습니다.")
+#     # 완료된 생산 계획은 수정 불가
+#     if plan.status == ProjectPlan.ProductionStatus.completed:
+#         raise HttpError(400, "완료된 생산 계획은 수정할 수 없습니다.")
 
-    old_equipment = (
-        await FactoryEquipment.objects.aget(id=plan.equipment_id)
-        if plan.equipment_id
-        else None
-    )
+#     old_equipment = (
+#         await FactoryEquipment.objects.aget(id=plan.equipment_id)
+#         if plan.equipment_id
+#         else None
+#     )
 
-    # 생산 일자 변경 감지를 위한 이전 값 저장
-    old_start_date = plan.start_date
+#     # 생산 일자 변경 감지를 위한 이전 값 저장
+#     old_start_date = plan.start_date
 
-    equipment_id = data.pop("equipment_id", None)
-    if equipment_id:
-        equipment = await get_equipment_by_id(equipment_id, factory_id)
-        plan.equipment = equipment
+#     equipment_id = data.pop("equipment_id", None)
+#     if equipment_id:
+#         equipment = await get_equipment_by_id(equipment_id, factory_id)
+#         plan.equipment = equipment
 
-    await update_quantity(plan, payload, factory_id)
+#     await update_quantity(plan, payload, factory_id)
 
-    # 값 수정
-    for field, value in data.items():
-        setattr(plan, field, value)
+#     # 값 수정
+#     for field, value in data.items():
+#         setattr(plan, field, value)
 
-    await plan.asave()
+#     await plan.asave()
 
-    # 설비 변경 로그
-    if (
-        payload.equipment_id is not None
-        and old_equipment
-        and plan.equipment
-        and old_equipment.id != plan.equipment.id
-        and plan.status == ProjectPlan.ProductionStatus.production
-    ):  # 가동 중 상태 확인
-        await ProjectLog.objects.acreate(
-            project=plan.project,
-            type=ProjectLog.LogType.plan,
-            title="생산 설비 변경",
-            content=f"사용 설비가 {old_equipment.name}라인에서 {plan.equipment.name}라인으로 변경되었어요",
-        )
+#     # 설비 변경 로그
+#     if (
+#         payload.equipment_id is not None
+#         and old_equipment
+#         and plan.equipment
+#         and old_equipment.id != plan.equipment.id
+#         and plan.status == ProjectPlan.ProductionStatus.production
+#     ):  # 가동 중 상태 확인
+#         await ProjectLog.objects.acreate(
+#             project=plan.project,
+#             type=ProjectLog.LogType.plan,
+#             title="생산 설비 변경",
+#             content=f"사용 설비가 {old_equipment.name}라인에서 {plan.equipment.name}라인으로 변경되었어요",
+#         )
 
-    # 생산 일자 변경 로그
-    if payload.start_date is not None and old_start_date != plan.start_date:
-        change_message = f"생산일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
+#     # 생산 일자 변경 로그
+#     if payload.start_date is not None and old_start_date != plan.start_date:
+#         change_message = f"생산일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
 
-        await ProjectLog.objects.acreate(
-            project=plan.project,
-            type=ProjectLog.LogType.plan,
-            title="생산일자 변경",
-            content=change_message,
-        )
+#         await ProjectLog.objects.acreate(
+#             project=plan.project,
+#             type=ProjectLog.LogType.plan,
+#             title="생산일자 변경",
+#             content=change_message,
+#         )
 
-    # 알림 전송
-    if (payload.start_date and payload.start_date.date() == timezone.now().date()) or (
-        old_start_date and old_start_date.date() == timezone.now().date()
-    ):
-        await send_notification_to_factory(
-            factory_id=int(factory_id),
-            notification_type="information",
-            notification_case="production_schedule_changed",
-            content=f"'{plan.project.name}'의 생산 일정이 변경되었어요.",
-            additional_data={"plan_id": plan.id},
-        )
+#     # 알림 전송
+#     if (payload.start_date and payload.start_date.date() == timezone.now().date()) or (
+#         old_start_date and old_start_date.date() == timezone.now().date()
+#     ):
+#         await send_notification_to_factory(
+#             factory_id=int(factory_id),
+#             notification_type="information",
+#             notification_case="production_schedule_changed",
+#             content=f"'{plan.project.name}'의 생산 일정이 변경되었어요.",
+#             additional_data={"plan_id": plan.id},
+#         )
 
-    # 버퍼 레이트 업데이트
-    if payload.quantity is not None:
-        if payload.quantity >= plan.product.quantity:
-            new_buffer_rate = (payload.quantity / plan.product.quantity) - 1
-            plan.product.product.buffer_rate = new_buffer_rate
-            await plan.product.product.asave()
+#     # 버퍼 레이트 업데이트
+#     if payload.quantity is not None:
+#         if payload.quantity >= plan.product.quantity:
+#             new_buffer_rate = (payload.quantity / plan.product.quantity) - 1
+#             plan.product.product.buffer_rate = new_buffer_rate
+#             await plan.product.product.asave()
 
-    return 200, {"message": "프로젝트 생산 계획이 성공적으로 수정되었습니다."}
+#     return 200, {"message": "프로젝트 생산 계획이 성공적으로 수정되었습니다."}
