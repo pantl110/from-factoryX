@@ -7,8 +7,8 @@ import ProfileImage from '@/ui/profile-image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
-import CreatTaxPanel from '@/app/(with-layout)/tax/list/create-tax-panel';
 import ProfileModal from './modals/profile-modal';
+import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
@@ -36,8 +36,11 @@ const TopBarContent = ({
   const isProductionLogValid = usePageStatusStore(
     (state) => state.isProductionLogValid
   ); // 생산 내역 입력값이 유효한지 여부
-  const isRefund = usePageStatusStore((state) => state.isRefund); // 반품 여부
-
+  const projectStatusData = usePageStatusStore(
+    (state) => state.projectStatusData
+  );
+  const isRefund = !!projectStatusData?.is_refunded; // 반품 여부
+  const taxId = projectStatusData?.tax_invoice?.id || null; // 세금계산서 ID
   // 세금계산서 패널 상태
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
 
@@ -59,21 +62,14 @@ const TopBarContent = ({
     isProductionPlanValid;
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const pathname = usePathname();
+  const projectId = (() => {
+    const match = pathname.match(/\/production\/(\d+)/);
+    return match ? Number(match[1]) : undefined;
+  })();
 
   if (pageStatus === 'completed') {
     return (
       <div className="flex gap-2">
-        <MiniBtn
-          text="세금계산서 생성"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-          onClick={() => setIsTaxPanelOpen(true)}
-        />
-        {isTaxPanelOpen && (
-          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
-        )}
-
         <MiniBtn
           text="진행 상태로 전환"
           textColor="text-dg"
@@ -93,14 +89,27 @@ const TopBarContent = ({
     return (
       <>
         <MiniBtn
-          text="세금계산서 생성"
+          text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
           onClick={() => setIsTaxPanelOpen(true)}
         />
         {isTaxPanelOpen && (
-          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+          <TaxDetailPanel
+            onClose={() => setIsTaxPanelOpen(false)}
+            itemId={taxId || undefined}
+            projectId={projectId}
+            initialClientData={projectStatusData?.quotations[0].client_info}
+            initialProducts={projectStatusData?.quotations[0].products_info
+              ?.filter((p) => p.productId != null)
+              .map((p) => ({
+                productId: Number(p.productId),
+                quantity: Number(p.quantity ?? 0),
+                unit_price: Number(p.unit_price ?? 0),
+                products_info: [],
+              }))}
+          />
         )}
       </>
     );
@@ -111,7 +120,7 @@ const TopBarContent = ({
       <>
         <div className="flex gap-2">
           <MiniBtn
-            text="세금계산서 생성"
+            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
@@ -127,7 +136,11 @@ const TopBarContent = ({
           />
         </div>
         {isTaxPanelOpen && (
-          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+          <TaxDetailPanel
+            onClose={() => setIsTaxPanelOpen(false)}
+            itemId={taxId || undefined}
+            projectId={projectId}
+          />
         )}
       </>
     );
@@ -138,7 +151,7 @@ const TopBarContent = ({
       <>
         <div className="flex gap-2">
           <MiniBtn
-            text="세금계산서 생성"
+            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
@@ -158,7 +171,11 @@ const TopBarContent = ({
           />
         </div>
         {isTaxPanelOpen && (
-          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+          <TaxDetailPanel
+            onClose={() => setIsTaxPanelOpen(false)}
+            itemId={taxId || undefined}
+            projectId={projectId}
+          />
         )}
       </>
     );
@@ -169,7 +186,7 @@ const TopBarContent = ({
       <>
         <div className="flex gap-2">
           <MiniBtn
-            text="세금계산서 생성"
+            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
@@ -187,7 +204,11 @@ const TopBarContent = ({
           )}
         </div>
         {isTaxPanelOpen && (
-          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+          <TaxDetailPanel
+            onClose={() => setIsTaxPanelOpen(false)}
+            itemId={taxId || undefined}
+            projectId={projectId}
+          />
         )}
       </>
     );
@@ -198,7 +219,7 @@ const TopBarContent = ({
       <>
         <div className="flex gap-2">
           <MiniBtn
-            text="세금계산서 생성"
+            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
@@ -225,7 +246,11 @@ const TopBarContent = ({
           )}
         </div>
         {isTaxPanelOpen && (
-          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+          <TaxDetailPanel
+            onClose={() => setIsTaxPanelOpen(false)}
+            itemId={taxId || undefined}
+            projectId={projectId}
+          />
         )}
       </>
     );
@@ -236,7 +261,7 @@ const TopBarContent = ({
       <>
         <div className="flex gap-2">
           <MiniBtn
-            text="세금계산서 생성"
+            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
@@ -272,7 +297,11 @@ const TopBarContent = ({
           )}
         </div>
         {isTaxPanelOpen && (
-          <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
+          <TaxDetailPanel
+            onClose={() => setIsTaxPanelOpen(false)}
+            itemId={taxId || undefined}
+            projectId={projectId}
+          />
         )}
       </>
     );
@@ -305,9 +334,13 @@ const TopBarContent = ({
         </div>
       </div>
 
-      {isTaxPanelOpen && (
-        <CreatTaxPanel onClose={() => setIsTaxPanelOpen(false)} />
-      )}
+      {/* {isTaxPanelOpen && (
+        <TaxDetailPanel
+          onClose={() => setIsTaxPanelOpen(false)}
+          itemId={taxId || undefined}
+          projectId={projectId}
+        />
+      )} */}
     </>
   );
 };

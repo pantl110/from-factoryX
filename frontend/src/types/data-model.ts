@@ -511,7 +511,7 @@ export interface ProjectStatusResponseModel {
   }[];
   status: ProjectStatusType;
   updated_at: string;
-  tax_invoice: number | null;
+  tax_invoice: PublishedTaxInvoiceResponseModel | null;
   transaction_date: string;
 }
 
@@ -1042,7 +1042,7 @@ export interface PublishedTaxInvoiceResponseModel {
   factory_info: TaxFactoryInfoModel; // 공장 정보 (FactoryRowOut 구조)
 
   // 세금계산서 기본 정보
-  publish_status: TaxPublishStatusType; // 발행 상태 ("temporary"/"pending"/"published")
+  publish_status: TaxStatusType; // 발행 상태 ("temporary"/"pending"/"published")
   tax_invoice_type: TaxDocumentType; // 세금계산서 유형 ("sales"/"purchase")
   transaction_type: TransactionType; // 거래 유형 ("receipt"/"invoice")
   transaction_date: string; // 거래 일자

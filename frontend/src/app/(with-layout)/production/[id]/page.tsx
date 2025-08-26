@@ -60,7 +60,9 @@ const ProductionPageContent = () => {
   const setProductionTab = usePageStatusStore(
     (state) => state.setProductionTab
   );
-  const setIsRefund = usePageStatusStore((state) => state.setIsRefund);
+  const setProjectStatusData = usePageStatusStore(
+    (state) => state.setProjectStatusData
+  );
 
   // 프로젝트 상태 데이터
   const [projectStatus, setProjectStatus] =
@@ -80,6 +82,7 @@ const ProductionPageContent = () => {
         const result = await getProjectStatus(projectId);
         if (result.success && result.data) {
           setProjectStatus(result.data as ProjectStatusResponseModel);
+          setProjectStatusData(result.data as ProjectStatusResponseModel);
           // 프로젝트 상태를 store에 업데이트
           const projectStatus = result.data.status as ProjectStatusType;
           const tabs = getTabsByStatus(
@@ -89,7 +92,6 @@ const ProductionPageContent = () => {
 
           setPageStatus(projectStatus);
           setProductionTab(tabs[selectedTab]);
-          setIsRefund(result.data.is_refunded || false);
         }
       } catch {
         alert('프로젝트 상태 로드 중 오류');
@@ -108,6 +110,7 @@ const ProductionPageContent = () => {
       const result = await getProjectStatus(projectId);
       if (result.success && result.data) {
         setProjectStatus(result.data as ProjectStatusResponseModel);
+        setProjectStatusData(result.data as ProjectStatusResponseModel);
         // 프로젝트 상태를 store에 업데이트
         const projectStatus = result.data.status as ProjectStatusType;
         const tabs = getTabsByStatus(
@@ -143,8 +146,6 @@ const ProductionPageContent = () => {
           }
         }
         // pending → production, production → manufactured 등은 탭 변경하지 않음
-
-        setIsRefund(result.data.is_refunded || false);
       }
     } catch {
       alert('프로젝트 상태 리로드 실패');
