@@ -97,7 +97,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
             text="프로필 관리"
             borderColor="border-lg"
             textColor="text-dg"
-            hoverColor="bg-bg"
+            hoverColor="hover:bg-bg"
             width="w-full"
             onClick={() => {
               router.push('/setting');
@@ -110,7 +110,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
             text="로그아웃"
             borderColor="border-lg"
             textColor="text-dg"
-            hoverColor="bg-bg"
+            hoverColor="hover:bg-bg"
             width="w-full"
             onClick={async () => {
               const result = await logout();

@@ -443,7 +443,7 @@ const MaterialEnrollmentModal = ({
           text="취소"
           textColor="text-sv"
           onClick={onClose}
-          hoverColor=""
+          hoverColor="hover:bg-bg"
         />
         <MiniBtn
           text={isSuccessModalOpen ? '확인' : '추가'}

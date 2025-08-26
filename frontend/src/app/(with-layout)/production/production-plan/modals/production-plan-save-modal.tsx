@@ -19,13 +19,13 @@ const ProductionPlanSaveModal = ({
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn
-          text="취소하기"
+          text="취소"
           textColor="text-sv"
           onClick={onClose}
-          hoverColor=""
+          hoverColor="hover:bg-bg"
         />
         <MiniBtn
-          text="저장하기"
+          text="저장"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"

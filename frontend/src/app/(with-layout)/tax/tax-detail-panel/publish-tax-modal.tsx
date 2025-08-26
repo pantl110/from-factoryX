@@ -35,7 +35,7 @@ const PublishTaxModal = ({
         <MiniBtn
           text="취소"
           textColor="text-sv"
-          hoverColor=""
+          hoverColor="hover:bg-bg"
           onClick={onClose}
         />
         <MiniBtn

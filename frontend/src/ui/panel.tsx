@@ -116,7 +116,7 @@ const Panel = forwardRef<PanelRefModel, PanelProps>(
                   text="저장"
                   textColor="text-primary"
                   bgColor="bg-primary-8"
-                  hoverColor="bg-secondary-hover"
+                  hoverColor="hover:bg-secondary-hover"
                 />
               )}
             </div>

@@ -84,7 +84,8 @@ const Delivery = ({
     };
 
     loadProjectPlans();
-  }, [factoryId, projectId, getProjectPlans]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId, projectId]); // getProjectPlans 제거
 
   // 체크 기능
   const itemIds = deliveryData?.map((item: ProjectPlanModel) => item.id) || [];
@@ -105,7 +106,7 @@ const Delivery = ({
         }))
       );
     }
-  }, [deliveryData, setDeliveryDataStore]);
+  }, [deliveryData]); // setDeliveryDataStore 제거
 
   // 아이템 클릭 핸들러
   const handleItemClick = (data: ProjectPlanModel) => {
@@ -141,26 +142,26 @@ const Delivery = ({
   };
 
   // 납품일자 변경 핸들러
-  const handleDeliveryDateChange = async (id: string, newDate: string) => {
-    try {
-      // API 호출 후 성공 시 데이터 새로고침
-      // deliveryData가 이미 업데이트되었으므로 store만 업데이트
-      if (deliveryData) {
-        const updatedData = deliveryData.map((item: ProjectPlanModel) =>
-          item.id === Number(id) ? { ...item, delivery_date: newDate } : item
-        );
-        setDeliveryData(updatedData);
-        setDeliveryDataStore(
-          updatedData.map((item: ProjectPlanModel) => ({
-            delivery_date: item.quotation_product?.delivery_date || undefined,
-          }))
-        );
-      }
-    } catch (error) {
-      console.error('납품일자 변경 실패:', error);
-      // alert('납품일자 변경에 실패했습니다.');
-    }
-  };
+  // const handleDeliveryDateChange = async (id: string, newDate: string) => {
+  //   try {
+  //     // API 호출 후 성공 시 데이터 새로고침
+  //     // deliveryData가 이미 업데이트되었으므로 store만 업데이트
+  //     if (deliveryData) {
+  //       const updatedData = deliveryData.map((item: ProjectPlanModel) =>
+  //         item.id === Number(id) ? { ...item, delivery_date: newDate } : item
+  //       );
+  //       setDeliveryData(updatedData);
+  //       setDeliveryDataStore(
+  //         updatedData.map((item: ProjectPlanModel) => ({
+  //           delivery_date: item.quotation_product?.delivery_date || undefined,
+  //         }))
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error('납품일자 변경 실패:', error);
+  //     // alert('납품일자 변경에 실패했습니다.');
+  //   }
+  // };
 
   // 납품상태 변경 핸들러
   const handleDeliveryStatusChange = async (id: string, newStatus: string) => {
@@ -280,7 +281,8 @@ const Delivery = ({
                       onToggle={() => toggleOne(data.id)}
                       onItemClick={handleItemClick}
                       projectStatus={projectStatus}
-                      onDeliveryDateChange={handleDeliveryDateChange}
+                      // onDeliveryDateChange={handleDeliveryDateChange}
+                      onDeliveryDateChange={() => {}}
                       onDeliveryStatusChange={handleDeliveryStatusChange}
                     />
                   ))}

@@ -10,13 +10,13 @@ export type MemberRoleType = 'admin' | 'manager' | 'viewer';
 export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
 
 // 설비 상태 // 설정 페이지
-export type EquipmentStatusType = '가동 대기' | '가동 중';
+export type EquipmentStatusType = 'standby' | 'running'; // 가동 대기 / 가동 중  
 export const EquipmentStatusColorMap: Record<
   EquipmentStatusType,
   StatusColorModel
 > = {
-  '가동 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
-  '가동 중': { textColor: 'text-purple', bgColor: 'bg-purple-8' },
+  standby: { textColor: 'text-dg', bgColor: 'bg-bg' },
+  running: { textColor: 'text-purple', bgColor: 'bg-purple-8' },
 };
 
 // 거래처 유형 // 설정 페이지

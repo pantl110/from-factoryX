@@ -21,7 +21,7 @@ const StartProductionModal = ({
           text="취소"
           textColor="text-sv"
           onClick={onClose}
-          hoverColor=""
+          hoverColor="hover:bg-bg"
         />
         <MiniBtn
           text="생산 시작"

@@ -21,11 +21,11 @@ const FacilityTableItem = ({
 }: FacilityTableItemProps) => {
   const statusColor = facility.status
     ? EquipmentStatusColorMap[facility.status as EquipmentStatusType]
-    : EquipmentStatusColorMap['가동 대기'];
+    : EquipmentStatusColorMap['standby'];
 
   return (
     <div
-      className="flex h-14 items-center px-3 w-full border-b border-[#eeeeee] Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer"
+      className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer"
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -39,7 +39,7 @@ const FacilityTableItem = ({
       />
       <div className="flex-1 px-3">
         <Chip
-          text={facility.status as EquipmentStatusType}
+          text={facility.status === 'standby' ? '가동 대기' : '가동 중'}
           bgColor={statusColor?.bgColor}
           textColor={statusColor?.textColor}
           radius="rounded-sm"

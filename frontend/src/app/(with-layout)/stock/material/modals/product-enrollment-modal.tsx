@@ -157,7 +157,7 @@ const ProductEnrollmentModal = ({
           text="직접 추가"
           textColor="text-dg"
           borderColor="border-lg"
-          hoverColor="bg-bg"
+          hoverColor="hover:bg-bg"
           height="h-12"
           onClick={() => setIsManualAddMode(true)}
         />
@@ -209,7 +209,7 @@ const ProductEnrollmentModal = ({
           <MiniBtn
             text="취소"
             textColor="text-sv"
-            hoverColor="bg-bg"
+            hoverColor="hover:bg-bg"
             onClick={onClose}
           />
           <MiniBtn

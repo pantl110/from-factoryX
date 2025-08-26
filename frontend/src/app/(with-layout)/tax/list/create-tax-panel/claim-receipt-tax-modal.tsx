@@ -33,7 +33,7 @@ const ClaimReceiptTaxModal = ({
           <MiniBtn
             text="취소"
             textColor="text-sv"
-            hoverColor=""
+            hoverColor="hover:bg-bg"
             onClick={onClose}
           />
           <MiniBtn
@@ -70,7 +70,7 @@ const ClaimReceiptTaxModal = ({
             <MiniBtn
               text="취소"
               textColor="text-sv"
-              hoverColor=""
+              hoverColor="hover:bg-bg"
               onClick={() => setIsNextModalOpen(false)}
             />
             <MiniBtn

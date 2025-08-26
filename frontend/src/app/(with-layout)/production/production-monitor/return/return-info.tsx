@@ -251,6 +251,9 @@ const ReturnInfo = ({
         <RegisterProductionModal
           onClose={() => setIsRegisterProductionModalOpen(false)}
           logId={logId}
+          currentAmount={watchedAmount}
+          currentProductionAmount={watchedProductionAmount}
+          currentRefundDate={watchedRefundDate}
         />
       )}
     </>

@@ -486,16 +486,33 @@ export interface ProjectListResponseModel extends PaginationModel {
 
 // 프로젝트 상태 조회 응답
 export interface ProjectStatusResponseModel {
-  project_id: number;
-  quotation_id: number;
-  status: ProjectStatusType;
   created_at: string;
-  updated_at: string;
-  earliest_start_date?: string;
-  latest_end_date?: string;
   due_date?: string;
+  earliest_start_date?: string;
+  id: number; // project_id
   is_refunded: boolean;
+  latest_end_date?: string;
+  logs: ProjectLogResponseModel[];
+  name: string; // 뭐지?
+  quotations: {
+    id: number; // quotation_id
+    client: number; // client_id
+    client_info: TaxClientInfoModel;
+    created_at: string;
+    due_date: string;
+    due_date_notice: boolean;
+    factory: number; // factory_id
+    factory_info:TaxFactoryInfoModel;
+    products_info: TaxProductInfoModel[];
+    project: number; // project_id
+    type: string;
+    updated_at: string;
+    uploaded_file: string;
+  }[];
+  status: ProjectStatusType;
+  updated_at: string;
   tax_invoice: number | null;
+  transaction_date: string;
 }
 
 //////////////////////
@@ -849,9 +866,9 @@ export interface RefundModel {
 
 // 반품 수정
 export interface UpdateRefundModel {
-  product_id?: number;
-  production_amount?: number;
-  refund_date?: string;
+  amount: number;
+  production_amount: number;
+  refund_date: string;
 }
 
 // 반품으로 생산계획 생성하기
@@ -1229,7 +1246,6 @@ import {
   NotificationCaseType,
   TaxDocumentType,
   ClientType,
-  TaxPublishStatusType,
   TransactionType,
   BarobillStateType,
   NtsSendStateType,

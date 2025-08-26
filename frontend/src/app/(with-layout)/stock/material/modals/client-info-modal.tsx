@@ -234,7 +234,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
             text="취소"
             textColor="text-sv"
             onClick={onClose}
-            hoverColor=""
+            hoverColor="hover:bg-bg"
           />
           <MiniBtn
             text="다음"

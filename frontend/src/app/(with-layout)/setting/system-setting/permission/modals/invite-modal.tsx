@@ -290,7 +290,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                 text="취소"
                 textColor="text-sv"
                 onClick={onClose}
-                hoverColor=""
+                hoverColor="hover:bg-bg"
               />
               <MiniBtn
                 text="초대"
@@ -316,7 +316,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               text="닫기"
               textColor="text-sv"
               onClick={handleSuccessClose}
-              hoverColor=""
+              hoverColor="hover:bg-bg"
             />
             <MiniBtn
               text="확인"

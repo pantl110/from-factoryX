@@ -21,7 +21,7 @@ const MoveToStorageModal = ({
         <MiniBtn
           text="닫기"
           textColor="text-sv"
-          hoverColor=""
+          hoverColor="hover:bg-bg"
           onClick={onClose}
         />
         <MiniBtn

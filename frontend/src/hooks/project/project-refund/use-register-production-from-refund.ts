@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import useMemberStore from '@/store/member-store';
+import { UpdateRefundModel } from '@/types/data-model';
 
 interface RegisterProductionFromRefundResponseModel {
   message: string;
@@ -23,7 +24,8 @@ const useRegisterProductionFromRefund = () => {
 
   const registerProduction = useCallback(
     async (
-      logId: number
+      logId: number,
+      payload: UpdateRefundModel
     ): Promise<{
       success: boolean;
       data?: RegisterProductionFromRefundResponseModel;
@@ -43,6 +45,7 @@ const useRegisterProductionFromRefund = () => {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
           }
         );
 
