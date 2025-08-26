@@ -6,6 +6,7 @@ from typing import List, Tuple
 from django.core.exceptions import ObjectDoesNotExist
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
+from websocket.utils import send_notification_to_factory
 
 
 async def process_material_consumption(
@@ -67,6 +68,15 @@ async def process_material_consumption(
             if material.current_stock >= consumption_quantity:
                 material.current_stock -= consumption_quantity
                 await sync_to_async(material.save)()
+
+                if material.current_stock < material.standard_stock:
+                    await send_notification_to_factory(
+                        factory_id=int(factory_id),
+                        notification_type="warning",
+                        notification_case="material_lack",
+                        content=f"{material.name} 원자재 부족",
+                        additional_data={"material_id": material.id},
+                    )
 
                 consumed_materials.append(
                     {

@@ -137,7 +137,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -178,7 +178,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -207,7 +207,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -226,7 +226,7 @@ class QuotationProductAPITestCase(TestCase):
         draft_data = {"quotation_id": 99999, "client": {"name": "테스트"}}
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -242,7 +242,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -259,7 +259,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -282,7 +282,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -312,7 +312,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -336,7 +336,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -360,7 +360,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -376,7 +376,7 @@ class QuotationProductAPITestCase(TestCase):
         draft_data = {"quotation_id": self.quotation.id, "client": {"name": "테스트"}}
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={other_factory.id}",  # 권한이 없는 공장
+            f"/v1/document/quotation/product/save?factory_id={other_factory.id}",  # 권한이 없는 공장
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -390,7 +390,7 @@ class QuotationProductAPITestCase(TestCase):
         draft_data = {"quotation_id": self.quotation.id, "client": {"name": "테스트"}}
 
         response = self.client.post(
-            "/v1/document/quotation/product/draft",  # factory_id 쿼리 파라미터 누락
+            "/v1/document/quotation/product/save",  # factory_id 쿼리 파라미터 누락
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -406,13 +406,13 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
         )
 
-        self.assertEqual(response.status_code, 422)  # Validation error
+        self.assertEqual(response.status_code, 200)
 
     def test_save_draft_quotation_client_creation(self):
         """새로운 클라이언트 생성 테스트"""
@@ -433,7 +433,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -469,7 +469,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -512,7 +512,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -546,7 +546,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -587,7 +587,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1297,7 +1297,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1328,7 +1328,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1364,7 +1364,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1397,7 +1397,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1425,7 +1425,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1452,7 +1452,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1474,7 +1474,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1500,7 +1500,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1525,7 +1525,7 @@ class QuotationProductAPITestCase(TestCase):
             }
 
             response = self.client.post(
-                f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+                f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
                 data=json.dumps(draft_data),
                 content_type="application/json",
                 **self.get_auth_headers(),
@@ -1544,7 +1544,7 @@ class QuotationProductAPITestCase(TestCase):
         )
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=malformed_data,
             content_type="application/json",
             **self.get_auth_headers(),
@@ -1555,20 +1555,20 @@ class QuotationProductAPITestCase(TestCase):
     def test_save_draft_quotation_empty_json(self):
         """빈 JSON 테스트"""
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data="{}",
             content_type="application/json",
             **self.get_auth_headers(),
         )
 
-        self.assertEqual(response.status_code, 422)  # Validation error
+        self.assertEqual(response.status_code, 200)
 
     def test_save_draft_quotation_wrong_content_type(self):
         """잘못된 Content-Type 테스트"""
         draft_data = {"quotation_id": self.quotation.id, "client": {"name": "테스트"}}
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="text/plain",  # 잘못된 Content-Type
             **self.get_auth_headers(),
@@ -1592,7 +1592,7 @@ class QuotationProductAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            f"/v1/document/quotation/product/draft?factory_id={self.factory.id}",
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
             data=json.dumps(draft_data),
             content_type="application/json",
             **self.get_auth_headers(),

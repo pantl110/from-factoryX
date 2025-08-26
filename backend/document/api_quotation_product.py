@@ -24,16 +24,16 @@ from project.models import Project, ProjectPlan
 from factory.models import FactoryClient, FactoryEquipment, Factory
 from factory.utils import is_factory_member
 from stock.schemas.outbound import ProductRowOut
-from factory.schemas.outbound import FactoryClientRowOut
+from factory.schemas.outbound import FactoryClientRowOut, FactoryRowOut
 
 
 router = Router(tags=["QuotationProduct"], auth=jwt_auth)
 
 
 @router.post(
-    "/draft",
-    summary="견적서 임시 저장",
-    description="견적서를 임시로 저장합니다. 필수 필드가 비어있어도 저장됩니다.",
+    "/save",
+    summary="견적서 생성 & 임시 저장 & 주문 확정",
+    description="견적서를 생성하거나 임시로 저장합니다. 필수 필드가 비어있어도 저장되며, 입력이 완료되면 주문 확정할 수 있습니다.",
 )
 async def save_draft_quotation(request, payload: QuotationDraftIn):
     factory_id = request.GET.get("factory_id")
@@ -44,15 +44,31 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
     await is_factory_member(int(factory_id), user)
 
     try:
-        try:
-            quotation = await Quotation.objects.select_related(
-                "project", "factory"
-            ).aget(id=payload.quotation_id)
-        except Quotation.DoesNotExist:
-            raise HttpError(404, "해당 견적서를 찾을 수 없습니다.")
+        factory = await Factory.objects.aget(id=int(factory_id))
 
-        if quotation.factory_id != int(factory_id):
-            raise HttpError(403, "해당 공장의 견적서가 아닙니다.")
+        # 주문 확정(is_confirm=True) 시에는 quotation_id가 필수
+        if payload.is_confirm and payload.quotation_id is None:
+            raise HttpError(400, "is_confirm가 True일 때는 quotation_id가 필요합니다.")
+
+        if payload.quotation_id is None:
+            # 새 프로젝트와 견적서 생성 (project 생성 API 로직 참고)
+            new_project = await Project.objects.acreate()
+            quotation = await Quotation.objects.acreate(
+                project=new_project,
+                factory=factory,
+                factory_info=FactoryRowOut.from_orm(factory).dict(),
+            )
+        else:
+            # 기존 견적서 조회 및 검증
+            try:
+                quotation = await Quotation.objects.select_related(
+                    "project", "factory"
+                ).aget(id=payload.quotation_id)
+            except Quotation.DoesNotExist:
+                raise HttpError(404, "해당 견적서를 찾을 수 없습니다.")
+
+            if quotation.factory_id != int(factory_id):
+                raise HttpError(403, "해당 공장의 견적서가 아닙니다.")
 
         if payload.client:
             client_data = payload.client
@@ -66,43 +82,25 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                         id=client_data.client_id, factory=factory
                     )
 
-                    # 클라이언트 정보가 변경된 경우 업데이트
+                    # 클라이언트 정보가 변경된 경우 업데이트 (간결화)
                     updated = False
-                    if client_data.name != client.name:
-                        client.name = client_data.name
-                        updated = True
-                    if (
-                        client_data.business_registration_number
-                        != client.business_registration_number
-                    ):
-                        client.business_registration_number = (
-                            client_data.business_registration_number
-                        )
-                        updated = True
-                    if client_data.representative_name != client.representative_name:
-                        client.representative_name = client_data.representative_name
-                        updated = True
-                    if client_data.business_type != client.business_type:
-                        client.business_type = client_data.business_type
-                        updated = True
-                    if client_data.business_category != client.business_category:
-                        client.business_category = client_data.business_category
-                        updated = True
-                    if client_data.address != client.address:
-                        client.address = client_data.address
-                        updated = True
-                    if client_data.manager != client.manager:
-                        client.manager = client_data.manager
-                        updated = True
-                    if client_data.email != client.email:
-                        client.email = client_data.email
-                        updated = True
-                    if client_data.phone != client.phone:
-                        client.phone = client_data.phone
-                        updated = True
-                    if client_data.fax != client.fax:
-                        client.fax = client_data.fax
-                        updated = True
+                    updatable_fields = [
+                        "name",
+                        "business_registration_number",
+                        "representative_name",
+                        "business_type",
+                        "business_category",
+                        "address",
+                        "manager",
+                        "email",
+                        "phone",
+                        "fax",
+                    ]
+                    for field_name in updatable_fields:
+                        new_value = getattr(client_data, field_name, None)
+                        if new_value != getattr(client, field_name):
+                            setattr(client, field_name, new_value)
+                            updated = True
 
                     if updated:
                         await client.asave()
@@ -155,7 +153,10 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         await quotation.asave()
 
         project = quotation.project
-        project.status = Project.ProjectStatus.quotation
+        if payload.is_confirm:
+            project.status = Project.ProjectStatus.confirmed
+        else:
+            project.status = Project.ProjectStatus.quotation
         await project.asave()
 
         if payload.products is not None:
@@ -211,12 +212,15 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                         delivery_date=delivery_date,
                     )
 
-        return 200, {"quotation_id": quotation.id, "status": "draft_saved"}
+        return 200, {
+            "quotation_id": quotation.id,
+            "status": "confirmed" if payload.is_confirm else "draft_saved",
+        }
 
     except HttpError:
         raise
     except Exception as e:
-        raise HttpError(500, f"임시 저장 중 오류가 발생했습니다: {str(e)}")
+        raise HttpError(500, f"생성 또는 임시 저장 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.post(

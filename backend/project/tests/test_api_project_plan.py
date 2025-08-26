@@ -105,7 +105,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 10,
             "total_quantity": 10,
         }
 
@@ -132,7 +132,7 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-16T00:00:00Z",
             "avg_production_time": 7200,
             "status": "production",
-            "total_amount": 100,
+            "total_amount": 15,
             "total_quantity": 15,
         }
 
@@ -184,7 +184,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 15,
             "total_quantity": 15,
         }
 
@@ -209,7 +209,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 10,
             "total_quantity": 10,
         }
 
@@ -233,7 +233,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 10,
             "total_quantity": 10,
         }
 
@@ -258,7 +258,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 10,
             "total_quantity": 10,
         }
 
@@ -283,7 +283,7 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
             "status": "잘못된상태",
-            "total_amount": 100,
+            "total_amount": 10,
             "total_quantity": 10,
         }
 
@@ -308,7 +308,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 10,
             "total_quantity": 10,
         }
 
@@ -332,7 +332,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 0,
             "total_quantity": 0,
         }
 
@@ -356,7 +356,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 15,
             "total_quantity": 15,
         }
 
@@ -380,7 +380,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 8,
             "total_quantity": 8,
         }
 
@@ -407,7 +407,7 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
             "status": "production",
-            "total_amount": 100,
+            "total_amount": 8,
             "total_quantity": 8,
         }
 
@@ -436,7 +436,7 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
             "status": "pending",
-            "total_amount": 100,
+            "total_amount": 8,
             "total_quantity": 8,
         }
 
@@ -475,7 +475,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 100,
+            "total_amount": 8,
             "total_quantity": 8,
         }
 
@@ -502,7 +502,7 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
             "status": "production",
-            "total_amount": 100,
+            "total_amount": 8,
             "total_quantity": 8,
         }
 
@@ -526,7 +526,7 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
             "status": "production",
-            "total_amount": 100,
+            "total_amount": 8,
             "total_quantity": 8,
         }
 
@@ -750,7 +750,7 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2024-01-31T00:00:00Z",
             "avg_production_time": 3600,
             "total_amount": 100,
-            "total_quantity": 60,
+            "total_quantity": 100,
         }
 
         response = self.client.post(
@@ -806,7 +806,7 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2024-01-31T00:00:00Z",
             "avg_production_time": 3600,
             "total_amount": 100,
-            "total_quantity": 60,
+            "total_quantity": 100,
         }
 
         response = self.client.post(
@@ -867,7 +867,7 @@ class ProjectPlanAPITestCase(TestCase):
             "end_date": "2024-01-31T00:00:00Z",
             "avg_production_time": 3600,
             "total_amount": 100,
-            "total_quantity": 60,
+            "total_quantity": 100,
         }
 
         response = self.client.post(

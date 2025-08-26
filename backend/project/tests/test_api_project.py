@@ -165,77 +165,13 @@ class ProjectAPITestCase(TestCase):
 
         return project, quotation, [quotation_product1, quotation_product2]
 
-    def test_create_project_success(self):
-        """프로젝트 생성 성공 테스트"""
-        url = f"/v1/project?factory_id={self.factory.id}"
+    # 생성 API 제거로 관련 테스트 삭제
 
-        response = self.client.post(
-            url,
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
+    # 생성 API 제거로 관련 테스트 삭제
 
-        self.assertEqual(response.status_code, 201)
+    # 생성 API 제거로 관련 테스트 삭제
 
-        # 응답 데이터 확인
-        data = response.json()
-        self.assertIn("quotation_id", data)
-        self.assertIn("project_id", data)
-        self.assertIsInstance(data["quotation_id"], int)
-        self.assertIsInstance(data["project_id"], int)
-
-        # 데이터베이스에 프로젝트와 견적서가 생성되었는지 확인
-        project_count = Project.objects.count()
-        quotation_count = Quotation.objects.count()
-
-        self.assertEqual(project_count, 1)
-        self.assertEqual(quotation_count, 1)
-
-        # 생성된 프로젝트와 견적서의 관계 확인
-        project = Project.objects.first()
-        quotation = Quotation.objects.first()
-
-        self.assertEqual(quotation.project, project)
-        self.assertEqual(quotation.id, data["quotation_id"])
-        self.assertEqual(project.id, data["project_id"])
-
-        # 프로젝트의 기본 상태 확인
-        self.assertEqual(project.status, Project.ProjectStatus.quotation)
-
-    def test_create_project_without_auth(self):
-        """인증 없이 프로젝트 생성 시도 테스트"""
-        url = f"/v1/project?factory_id={self.factory.id}"
-
-        response = self.client.post(url, content_type="application/json")
-
-        # 인증이 필요하므로 401 또는 403이 반환되어야 함
-        self.assertIn(response.status_code, [401, 403])
-
-    def test_create_project_invalid_token(self):
-        """잘못된 토큰으로 프로젝트 생성 시도 테스트"""
-        url = f"/v1/project?factory_id={self.factory.id}"
-
-        response = self.client.post(
-            url,
-            content_type="application/json",
-            HTTP_AUTHORIZATION="Bearer invalid_token",
-        )
-
-        # 잘못된 토큰이므로 401이 반환되어야 함
-        self.assertEqual(response.status_code, 401)
-
-    def test_create_project_missing_factory_id(self):
-        """factory_id 파라미터 누락 테스트"""
-        url = "/v1/project"
-
-        response = self.client.post(
-            url,
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        # factory_id가 필수이므로 400이 반환되어야 함
-        self.assertEqual(response.status_code, 400)
+    # 생성 API 제거로 관련 테스트 삭제
 
     def test_create_multiple_projects(self):
         """여러 프로젝트 생성 테스트"""
