@@ -479,3 +479,75 @@ class QuotationDetailAPITestCase(TestCase):
         # productId는 있어야 하고, product_code는 빈 문자열이어야 함
         self.assertIsInstance(product_without_code_data["productId"], int)
         self.assertEqual(product_without_code_data["product_code"], "")
+
+    async def test_quotation_send_email_with_pdf(self):
+        """견적서 이메일 전송 테스트 (PDF 데이터 포함)"""
+        import base64
+        import json
+
+        # 실제 PDF 헤더를 가진 최소한의 PDF 데이터 생성
+        minimal_pdf = b"""%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 44
+>>
+stream
+BT
+/F1 12 Tf
+100 700 Td
+(Test PDF) Tj
+ET
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000010 00000 n 
+0000000053 00000 n 
+0000000108 00000 n 
+0000000205 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+297
+%%EOF"""
+
+        payload = {
+            "email": "testuser@example.com",
+            "pdf_data": base64.b64encode(minimal_pdf).decode("utf-8"),
+        }
+
+        response = await self.client.post(
+            f"/v1/document/quotation/{self.quotation.id}/send-email?factory_id={self.factory.id}",
+            data=json.dumps(payload),
+            content_type="application/json",
+            **self.get_auth_headers(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("message", response.json())
+        self.assertEqual(response.json()["message"], "이메일이 전송되었습니다.")

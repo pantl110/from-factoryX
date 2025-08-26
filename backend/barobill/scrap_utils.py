@@ -23,3 +23,9 @@ async def regist_tax_invoice_scrap(factory_business_registration_number):
         )
 
     return result
+
+
+async def stop_tax_invoice_scrap(factory_business_registration_number):
+    """
+    홈택스 스크랩 해지
+    """

@@ -72,3 +72,10 @@ class QuotationConfirmedIn(Schema):
 class QuotationProductDeliveryUpdateIn(Schema):
     is_delivery: bool
     delivery_date: Optional[str] = None
+
+
+class QuotationEmailSendIn(Schema):
+    email: str = Field(..., description="받는 사람 이메일")
+    pdf_data: Optional[str] = Field(
+        None, description="Base64로 인코딩된 PDF 파일 데이터"
+    )
