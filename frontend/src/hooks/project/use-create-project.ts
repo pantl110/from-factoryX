@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface CreateProjectResponseModel {
   quotation_id: number;
@@ -12,7 +12,7 @@ interface CreateProjectResponseModel {
 const useCreateProject = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const createProject = async () => {
     setIsLoading(true);

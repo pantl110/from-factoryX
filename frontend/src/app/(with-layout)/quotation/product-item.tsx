@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import { ArrowLineUpRight } from '@phosphor-icons/react/dist/ssr';
+import useMemberStore from '@/store/member-store';
 
 interface ProductItemProps {
   data?: QuotationProductDetailResponseModel;
@@ -31,6 +32,9 @@ const ProductItem = ({
   onProductDetailClick,
   onlyRead = false,
 }: ProductItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const [searchTerm, setSearchTerm] = useState('');
   const { getProductList } = useGetProduct();
   const { isOpen, openDropdown, anchorRect } = usePortalDropdown();
@@ -63,10 +67,10 @@ const ProductItem = ({
   return (
     <>
       <tr
-        className={`h-14 flex items-center Me_Body-1 text-dg border-b border-lg transition-all duration-200 ease-in-out ${
+        className={`flex Me_Body-1 text-dg border-b border-lg transition-all duration-200 ease-in-out ${
           !onlyRead
-            ? 'group hover:border hover:border-primary cursor-pointer'
-            : ''
+            ? 'group hover:border hover:border-primary cursor-pointer h-14 items-center'
+            : 'items-start py-[15px]'
         }`}
         onClick={!onlyRead ? onClick : undefined}
       >
@@ -108,21 +112,31 @@ const ProductItem = ({
               onChange={(e) => {
                 setSearchTerm(e.target.value);
               }}
+              disabled={isViewer}
             />
           )}
         </td>
         <td className="flex-1 px-3">
-          <p className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}>
+          <p
+            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
+            title={data?.product_code || ''}
+          >
             {data?.product_code || ''}
           </p>
         </td>
         <td className="flex-1 px-3">
-          <p className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}>
+          <p
+            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
+            title={data?.spec || ''}
+          >
             {data?.spec || ''}
           </p>
         </td>
         <td className="w-[80px] px-3">
-          <p className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}>
+          <p
+            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
+            title={data?.unit || ''}
+          >
             {data?.unit || ''}
           </p>
         </td>
@@ -131,7 +145,10 @@ const ProductItem = ({
           onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
         >
           {onlyRead ? (
-            <p className="w-full break-words">
+            <p
+              className="w-full break-words"
+              title={data?.quantity?.toLocaleString() || ''}
+            >
               {data?.quantity?.toLocaleString() || ''}
             </p>
           ) : (
@@ -146,6 +163,7 @@ const ProductItem = ({
                 const numericValue = value.replace(/[^0-9]/g, '');
                 onChange?.('quantity', numericValue);
               }}
+              disabled={isViewer}
             />
           )}
         </td>
@@ -154,7 +172,10 @@ const ProductItem = ({
           onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
         >
           {onlyRead ? (
-            <p className="w-full break-words">
+            <p
+              className="w-full break-words"
+              title={data?.unit_price?.toLocaleString() || ''}
+            >
               {data?.unit_price?.toLocaleString() || ''}
             </p>
           ) : (
@@ -169,19 +190,25 @@ const ProductItem = ({
                 const numericValue = value.replace(/[^0-9]/g, '');
                 onChange?.('unit_price', numericValue);
               }}
+              disabled={isViewer}
             />
           )}
         </td>
         <td className="flex-1 px-3 min-w-0">
           <p
             className={`w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap ${onlyRead ? 'break-words' : 'truncate'}`}
+            title={
+              data?.quantity && data?.unit_price
+                ? (data.quantity * data.unit_price).toLocaleString()
+                : ''
+            }
           >
             {data?.quantity && data?.unit_price
               ? (data.quantity * data.unit_price).toLocaleString()
               : ''}
           </p>
         </td>
-        {canDelete && !onlyRead && (
+        {canDelete && !onlyRead && !isViewer && (
           <td className="w-9 h-full flex justify-center items-center">
             <button
               className="flex items-center justify-center w-full h-9 rounded-[8px] hover:bg-bg cursor-pointer"

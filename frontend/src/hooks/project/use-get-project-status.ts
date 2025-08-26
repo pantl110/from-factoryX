@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { ProjectStatusResponseModel } from '@/types/data-model';
 
 // 프로젝트 상태 조회 훅
 const useGetProjectStatus = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const getProjectStatus = useCallback(
     async (projectId: number) => {

@@ -1,12 +1,32 @@
+'use client';
+
+import { useState } from 'react';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 
 interface SubscribeModalProps {
   onClose: () => void;
   planTitle: string;
+  onSubscribe: () => Promise<void> | void;
 }
 
-const SubscribeModal = ({ onClose, planTitle }: SubscribeModalProps) => {
+const SubscribeModal = ({
+  onClose,
+  planTitle,
+  onSubscribe,
+}: SubscribeModalProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubscribe = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await onSubscribe();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Modal
       title={`${planTitle} 플랜을 구독하시겠어요?`}
@@ -19,14 +39,15 @@ const SubscribeModal = ({ onClose, planTitle }: SubscribeModalProps) => {
           text="취소"
           textColor="text-sv"
           onClick={onClose}
-          hoverColor=""
+          hoverColor="hover:bg-bg"
         />
         <MiniBtn
-          text="결제 카드 등록"
+          text="구독하기"
           bgColor="bg-primary"
           textColor="text-wh"
-          onClick={onClose}
+          onClick={handleSubscribe}
           hoverColor="hover:bg-primary-hover"
+          disabled={isSubmitting}
         />
       </div>
     </Modal>

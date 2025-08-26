@@ -6,32 +6,30 @@ import RegisterProductionModal from '../modals/register-production-modal';
 import { RefundModel } from '@/types/data-model';
 import { formatDate } from '@/hooks/format-number';
 
-interface ReturnInfoProps {
-  refundData: RefundModel;
-  onAmountChange: (newAmount: number) => void;
-  onProductionAmountChange: (newProductionAmount: number) => void;
-}
-
 interface RefundFormDataModel {
   refund_date: string;
   amount: number;
   production_amount: number;
 }
 
+interface ReturnInfoProps {
+  refundData: RefundModel;
+  onAmountChange: (newAmount: number) => void;
+  onProductionAmountChange: (newProductionAmount: number) => void;
+  logId: number;
+}
+
 const ReturnInfo = ({
   refundData,
   onAmountChange,
   onProductionAmountChange,
+  logId,
 }: ReturnInfoProps) => {
   const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
     useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const {
-    watch,
-    setValue,
-    formState: { isValid },
-  } = useForm<RefundFormDataModel>({
+  const { watch, setValue } = useForm<RefundFormDataModel>({
     defaultValues: {
       refund_date: refundData.refund_date || '',
       amount: refundData.amount,
@@ -43,14 +41,6 @@ const ReturnInfo = ({
   const watchedAmount = watch('amount');
   const watchedProductionAmount = watch('production_amount');
   const watchedRefundDate = watch('refund_date');
-
-  // 폼 유효성 검사
-  const isFormValid =
-    watchedAmount > 0 &&
-    watchedProductionAmount > 0 &&
-    watchedRefundDate &&
-    watchedRefundDate.length === 10 && // YYYY-MM-DD 형식이 완성되어야 함
-    isValid;
 
   // 숫자를 000,000 형식으로 포맷팅하는 함수
   const formatNumber = (value: number): string => {
@@ -115,16 +105,16 @@ const ReturnInfo = ({
         <div className="flex justify-between">
           <h3 className="Heading-3 text-dg flex items-center">반품 정보</h3>
           <div className="flex gap-2.5">
-            <div>
+            {!isEditing && (
               <MiniBtn
                 text="수정"
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsEditing(true)}
-                disabled={isEditing}
+                // disabled={refundData.plan?.status !== 'pending'}
               />
-            </div>
+            )}
 
             <MiniBtn
               text="생산 등록"
@@ -132,7 +122,7 @@ const ReturnInfo = ({
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={() => setIsRegisterProductionModalOpen(true)}
-              disabled={!isFormValid}
+              // disabled={!isFormValid || refundData.plan?.status !== 'pending'}
             />
           </div>
         </div>
@@ -248,7 +238,10 @@ const ReturnInfo = ({
       {isRegisterProductionModalOpen && (
         <RegisterProductionModal
           onClose={() => setIsRegisterProductionModalOpen(false)}
-          refundId={refundData.id}
+          logId={logId}
+          currentAmount={watchedAmount}
+          currentProductionAmount={watchedProductionAmount}
+          currentRefundDate={watchedRefundDate}
         />
       )}
     </>

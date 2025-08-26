@@ -5,11 +5,18 @@ import SubscribeModal from './modals/subscribe-modal';
 
 interface PlanItemProps {
   type: PlanType;
+  registerCard: () => Promise<void> | void;
 }
 
-const PlanItem = ({ type }: PlanItemProps) => {
+const PlanItem = ({ type, registerCard }: PlanItemProps) => {
   const info = PLAN_INFO[type];
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+
+  const handleSubscribe = async () => {
+    await registerCard();
+    // ‼️‼️‼️‼️카드 등록 후 결제/구독 시작까지 추가해야 함‼️‼️‼️‼️
+    setIsSubscribeModalOpen(false);
+  };
 
   return (
     <>
@@ -33,6 +40,7 @@ const PlanItem = ({ type }: PlanItemProps) => {
         <SubscribeModal
           onClose={() => setIsSubscribeModalOpen(false)}
           planTitle={info.title}
+          onSubscribe={handleSubscribe}
         />
       )}
     </>

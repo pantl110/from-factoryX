@@ -54,6 +54,22 @@ const Dropdown = ({
     };
   }, [onClose]);
 
+  // 외부 스크롤 시 닫기
+  useEffect(() => {
+    const handleScroll = () => {
+      onClose();
+    };
+
+    // document와 window 모두에 스크롤 이벤트 리스너 등록
+    document.addEventListener('scroll', handleScroll, true); // capture phase로 등록
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      document.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [onClose]);
+
   return (
     <div
       ref={dropdownRef}

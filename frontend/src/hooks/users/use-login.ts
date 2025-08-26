@@ -2,9 +2,11 @@ import { useState } from 'react';
 import {
   LoginFormDataModel,
   LoginResponseModel,
-  FactoriesResponseModel,
+  MemberRoleType,
 } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
+import useMemberStore from '@/store/member-store';
+import { useGetMember } from '@/hooks';
 import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
 
 interface UseLoginReturnModel {
@@ -13,8 +15,9 @@ interface UseLoginReturnModel {
     data?: LoginResponseModel;
     error?: string;
     field?: 'email' | 'password';
-    factoryCount?: number;
-    factories?: FactoriesResponseModel[];
+    factoryId?: number;
+    role?: MemberRoleType;
+    isBarobillUser?: boolean;
   }>;
   isLoading: boolean;
 }
@@ -23,6 +26,8 @@ export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo, setAuthenticated } = useAuthStore();
   const { getFactoryList } = useGetFactoryList();
+  const { getMember } = useGetMember();
+  const { setFactoryId, setRole, setIsBarobillUser } = useMemberStore();
 
   const login = async (data: LoginFormDataModel) => {
     setIsLoading(true);
@@ -46,7 +51,7 @@ export const useLogin = (): UseLoginReturnModel => {
       if (response.ok) {
         const result = await response.json();
 
-        // 로그인 성공 후 사용자 정보 자동 fetch
+        // 로그인 성공 후 사용자 정보 fetch
         try {
           const userResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/me`,
@@ -67,49 +72,59 @@ export const useLogin = (): UseLoginReturnModel => {
             setAuthenticated(true);
 
             try {
+              // 먼저 사용자가 속한 공장 목록을 가져와서 factory ID 설정
               const factoryResult = await getFactoryList();
-              if (factoryResult.success && factoryResult.data) {
-                const factories = factoryResult.data; // 공장 리스트
-                const factoryCount = factories.length; // 공장 개수
 
-                if (factoryCount === 0) {
-                  // 공장이 0개일 때 - 온보딩 페이지로 이동
-                  return {
-                    success: true,
-                    factoryCount: 0,
-                    factories: [],
-                  };
-                } else if (factoryCount === 1) {
-                  // 공장이 1개일 때 - 첫 번째 공장 ID를 저장하고 대시보드로 이동
-                  return {
-                    success: true,
-                    factoryCount: 1,
-                    factories,
-                  };
-                } else {
-                  // 공장이 2개 이상일 때 (초대받은 공장이 있다는 뜻) - 공장 선택 모달을 보여줄 수 있도록 반환
-                  return {
-                    success: true,
-                    factoryCount,
-                    factories,
-                  };
+              if (
+                factoryResult.success &&
+                factoryResult.data &&
+                factoryResult.data.length > 0
+              ) {
+                // 첫 번째 공장의 ID를 사용
+                const factoryId = factoryResult.data[0].id;
+                setFactoryId(factoryId);
+
+                // 공장 ID가 있을 때만 member 정보 조회
+                if (userData.member_id) {
+                  const memberResult = await getMember({
+                    factory_id: factoryId,
+                    member_id: userData.member_id,
+                  });
+
+                  if (memberResult.success && memberResult.data) {
+                    const member = memberResult.data;
+
+                    // role과 isBarobillUser를 store에 저장
+                    setRole(member.role);
+                    setIsBarobillUser(member.is_barobill_user);
+
+                    return {
+                      success: true,
+                      factoryId,
+                      role: member.role,
+                      isBarobillUser: member.is_barobill_user,
+                    };
+                  }
                 }
+
+                // member 정보가 없어도 factoryId는 설정됨
+                return {
+                  success: true,
+                  factoryId,
+                  data: result,
+                };
               } else {
-                // 공장 리스트 조회 실패 시 - 온보딩 페이지로 이동
+                // 공장이 없는 경우
                 return {
                   success: true,
                   data: result,
-                  factoryCount: 0,
-                  factories: [],
                 };
               }
             } catch {
-              // 공장 리스트 조회 실패 시 - 온보딩 페이지로 이동
+              // API 호출 실패 시
               return {
                 success: true,
                 data: result,
-                factoryCount: 0,
-                factories: [],
               };
             }
           } else {

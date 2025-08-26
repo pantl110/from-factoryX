@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { loadTossPayments } from '@tosspayments/payment-sdk';
 import FreePlan from './free-plan';
 import PlanItem from './plan-item';
 import SubscriptionTableHeader from './subscription-table-header';
@@ -7,21 +8,88 @@ import { PlanType } from './types';
 import MiniBtn from '@/ui/mini-btn';
 import CardChangeModal from './modals/card-change-modal';
 import CardDeleteModal from './modals/card-delete-modal';
+import useMemberStore from '@/store/member-store';
+import { useGetFactory } from '@/hooks';
+import useUpdateFactory from '@/hooks/factory/use-update-factory';
 
 const Subscription = () => {
-  const planTypes: PlanType[] = ['BASIC', 'PARTNERS'];
+  const { factoryId } = useMemberStore();
+  const { getFactory, factory } = useGetFactory();
+  const { updateFactory } = useUpdateFactory();
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
-  // const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
   const [isCardDeleteModalOpen, setIsCardDeleteModalOpen] = useState(false);
 
-  const btnText = '카드 변경'; // 카드 변경, 카드 추가 // 사용자 상황에 따라 변경 필요
+  const planTypes: PlanType[] = ['BASIC', 'PARTNERS'];
+
+  useEffect(() => {
+    if (factoryId) {
+      getFactory(factoryId);
+    }
+  }, [factoryId, getFactory]);
+
+  const registerCard = async () => {
+    try {
+      if (!factoryId) {
+        alert('공장을 선택해주세요.');
+        return;
+      }
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+      if (!clientKey) {
+        alert('결제 설정이 완료되지 않았습니다. 클라이언트 키가 없습니다.');
+        return;
+      }
+      const toss = await loadTossPayments(clientKey);
+      const customerKey = `factory-${factoryId}`; // customerKey는 동일 고객에 대해 항상 동일해야함
+
+      await toss.requestBillingAuth('카드', {
+        customerKey,
+        successUrl: `${window.location.origin}/setting?tab=subscription`,
+        failUrl: `${window.location.origin}/setting?tab=subscription`,
+      });
+    } catch (error: unknown) {
+      const code =
+        typeof error === 'object' && error !== null && 'code' in error
+          ? String((error as { code?: string }).code)
+          : undefined;
+      // 사용자가 창을 닫거나 결제를 취소한 경우에는 무시
+      if (code === 'USER_CANCEL') return;
+      alert('카드 등록을 시작하지 못했습니다. 다시 시도해주세요.');
+    }
+
+    // ‼️‼️‼️‼️성공하면 빌링키 저장해야 함‼️‼️‼️‼️
+  };
+
+  const handleDeleteCard = async () => {
+    if (!factoryId || !factory) return;
+    try {
+      await updateFactory({
+        factory_id: factoryId,
+        name: factory.name,
+        business_registration_number: factory.business_registration_number,
+        representative_name: factory.representative_name,
+        manager_email: factory.manager_email,
+        manager_phone: factory.manager_phone,
+        manager_fax: factory.manager_fax,
+        business_type: factory.business_type,
+        business_category: factory.business_category,
+        business_address: factory.business_address,
+        is_trial: factory.is_trial,
+        billing_key: '',
+      });
+      await getFactory(factoryId);
+    } finally {
+      setIsCardDeleteModalOpen(false);
+    }
+
+    // ‼️‼️‼️‼️서버에서 카드 삭제 요청도 필요 // 토스 빌링키 해지 api‼️‼️‼️‼️
+  };
 
   return (
     <div className="px-10 pb-10 flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <FreePlan />
         {planTypes.map((type) => (
-          <PlanItem key={type} type={type} />
+          <PlanItem key={type} type={type} registerCard={registerCard} />
         ))}
       </div>
 
@@ -30,15 +98,14 @@ const Subscription = () => {
         <div className="flex justify-between">
           <h3 className="Heading-3">결제 카드 설정</h3>
           <MiniBtn
-            text={btnText}
+            text={factory?.billing_key ? '카드 변경 ' : '카드 추가'}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
             onClick={
-              btnText === '카드 변경'
+              factory?.billing_key
                 ? () => setIsChangeModalOpen(true)
-                : // : () => setIsEnrollModalOpen(true) 카드 등록으로 넘어가도록
-                  () => {}
+                : registerCard
             }
           />
         </div>
@@ -66,48 +133,6 @@ const Subscription = () => {
             amount="19,900원"
             plan="Basic"
           />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
-          />
         </div>
       </div>
 
@@ -116,6 +141,7 @@ const Subscription = () => {
         <CardChangeModal
           onClose={() => setIsChangeModalOpen(false)}
           onConfirm={() => {
+            registerCard();
             setIsChangeModalOpen(false);
           }}
         />
@@ -128,9 +154,7 @@ const Subscription = () => {
       {isCardDeleteModalOpen && (
         <CardDeleteModal
           onClose={() => setIsCardDeleteModalOpen(false)}
-          onConfirm={() => {
-            setIsCardDeleteModalOpen(false);
-          }}
+          onConfirm={handleDeleteCard}
         />
       )}
     </div>

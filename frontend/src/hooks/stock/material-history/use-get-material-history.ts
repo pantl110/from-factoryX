@@ -3,7 +3,7 @@ import {
   MaterialHistoryResponseModel,
   MaterialHistoryListResponseModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface GetMaterialHistoryOptionModel {
   start_date?: string;
@@ -20,7 +20,7 @@ const useGetMaterialHistory = () => {
   const [error, setError] = useState<string | null>(null);
   const [histories, setHistories] =
     useState<MaterialHistoryListResponseModel | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const getMaterialHistory = async (
     materialId: number,

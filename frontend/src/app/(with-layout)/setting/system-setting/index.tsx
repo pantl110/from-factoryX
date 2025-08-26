@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import usePageStatusStore from '@/store/page-status-store';
 import Chip from '@/ui/chip';
 import General from './general';
@@ -7,9 +8,15 @@ import Subscription from './subscription';
 
 const SystemSetting = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (
+    // URL 파라미터에서 tab 값 확인
+    const tab = searchParams.get('tab');
+
+    if (tab === 'subscription') {
+      setSettingChip('subscription');
+    } else if (
       !settingChip ||
       (settingChip !== 'general' &&
         settingChip !== 'permission' &&
@@ -17,7 +24,7 @@ const SystemSetting = () => {
     ) {
       setSettingChip('general'); // 초기 칩을 일반으로 설정
     }
-  }, [settingChip, setSettingChip]);
+  }, [settingChip, setSettingChip, searchParams]);
 
   const renderContent = () => {
     switch (settingChip) {

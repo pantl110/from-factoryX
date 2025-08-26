@@ -11,6 +11,9 @@ import Spinner from '@/ui/spinner';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import Pagination from '@/components/pagination';
 import MaterialDetailPanel from './material-detail';
+import { MaterialResponseModel } from '@/types/data-model';
+import NoHistoryBox from '@/ui/no-history-box';
+import useMemberStore from '@/store/member-store';
 
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
@@ -21,6 +24,8 @@ const Material = ({
   setIsMaterialDetailOpen,
   isMaterialDetailOpen,
 }: MaterialProps) => {
+  const role = useMemberStore((state) => state.role);
+
   const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(
     null
   ); // 선택한 자재 정보를 판넬에서 보여주기
@@ -44,7 +49,7 @@ const Material = ({
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(materialList.map((m) => m.id));
+  } = useCheckAll(materialList.map((m: MaterialResponseModel) => m.id));
 
   // 정렬 핸들러
   const handleSortChange = (newOrder: 'asc' | 'desc') => {
@@ -55,8 +60,8 @@ const Material = ({
   const handleDelete = async () => {
     // 체크된 자재 id 목록
     const idsToDelete = materialList
-      .filter((m) => isChecked(m.id))
-      .map((m) => m.id);
+      .filter((m: MaterialResponseModel) => isChecked(m.id))
+      .map((m: MaterialResponseModel) => m.id);
     for (const id of idsToDelete) {
       await deleteMaterial(id);
     }
@@ -112,34 +117,45 @@ const Material = ({
           value={search}
           onChange={handleSearch}
         />
-        <div className="flex gap-1">
-          <MiniBtn
-            text="취소"
-            textColor="text-dg"
-            borderColor="border-lg"
-            bgColor="bg-white"
-            hoverColor="hover:bg-bg"
-            onClick={() => setAllChecked(false)}
-          />
-          <MiniBtn
-            text={getDeleteButtonText()}
-            textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
-            borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
-            bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
-            hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
-            onClick={
-              checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
-            }
-          />
-        </div>
+        {materialList.length > 0 && (
+          <div className="flex gap-1">
+            <MiniBtn
+              text="취소"
+              textColor="text-dg"
+              borderColor="border-lg"
+              bgColor="bg-white"
+              hoverColor="hover:bg-bg"
+              onClick={() => setAllChecked(false)}
+              disabled={role === 'viewer'}
+            />
+            <MiniBtn
+              text={getDeleteButtonText()}
+              textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+              borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
+              bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
+              hoverColor={
+                checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'
+              }
+              onClick={
+                checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
+              }
+              disabled={role === 'viewer'}
+            />
+          </div>
+        )}
       </div>
 
       {isLoading ? (
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
+      ) : materialList.length === 0 ? (
+        <NoHistoryBox
+          title="자재가 아직 없어요."
+          text="자재가 생성되면 이곳에 표시돼요. "
+        />
       ) : (
-        <div>
+        <>
           <TableHeader
             isAllChecked={isAllChecked}
             onToggleAll={toggleAll}
@@ -147,7 +163,7 @@ const Material = ({
             onSortChange={handleSortChange}
           />
           {materialList.length > 0 &&
-            materialList.map((material) => {
+            materialList.map((material: MaterialResponseModel) => {
               return (
                 <TableItem
                   key={material.id}
@@ -170,7 +186,7 @@ const Material = ({
               onPageChange={setPage}
             />
           )}
-        </div>
+        </>
       )}
 
       {isDeleteModalOpen && (

@@ -1,27 +1,28 @@
+import { FacilityHistoryResponseModel } from '@/types/data-model';
+
 interface FacilityHistoryItemProps {
-  productName: string;
-  quantity: number;
-  date: string;
-  unitTime: string;
-  deadlineTime: string;
+  history: FacilityHistoryResponseModel;
 }
 
-const FacilityHistoryItem = ({
-  productName,
-  quantity,
-  date,
-  unitTime,
-  deadlineTime,
-}: FacilityHistoryItemProps) => {
+const FacilityHistoryItem = ({ history }: FacilityHistoryItemProps) => {
   return (
-    <div className="h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer">
-      <p className="flex-1 px-3 truncate" title={productName}>
-        {productName}
+    <div className="h-14 flex items-center Me_Body-1 text-dg border-b border-lg cursor-pointer">
+      <p
+        className="flex-1 px-3 truncate"
+        title={history.quotation_product_name || '-'}
+      >
+        {history.quotation_product_name || '-'}
       </p>
-      <p className="flex-1 px-3">{quantity.toLocaleString()}</p>
-      <p className="flex-1 px-3">{date}</p>
-      <p className="flex-1 px-3">{unitTime}</p>
-      <p className="flex-1 px-3">{deadlineTime}</p>
+      <p className="flex-1 px-3">{history.quantity.toLocaleString()}</p>
+      <p className="flex-1 px-3">
+        {history.start_date.split('T')[0]}{' '}
+        {history.start_date.split('T')[1]?.split('.')[0]?.slice(0, 5)}
+      </p>
+      <p className="flex-1 px-3">{history.avg_production_time}초</p>
+      <p className="flex-1 px-3">
+        {history.end_date.split('T')[0]}{' '}
+        {history.end_date.split('T')[1]?.split('.')[0]?.slice(0, 5)}
+      </p>
     </div>
   );
 };

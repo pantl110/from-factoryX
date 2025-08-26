@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ProjectLogModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface UpdateProjectLogResponseModel {
   message: string;
@@ -9,7 +9,7 @@ interface UpdateProjectLogResponseModel {
 const useUpdateProjectLog = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const updateProjectLog = async (logId: number, data: ProjectLogModel) => {
     setIsLoading(true);
@@ -23,7 +23,7 @@ const useUpdateProjectLog = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/project/log/${logId}?factory_id=${factoryId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project-log/${logId}?factory_id=${factoryId}`,
         {
           method: 'PATCH',
           credentials: 'include',

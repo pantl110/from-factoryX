@@ -70,7 +70,7 @@ const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
             {/* 왼쪽 영역 */}
             <div className={`w-[50%] h-full flex flex-col gap-4 flex-1 pt-5`}>
               <div className="flex flex-col gap-4 h-full min-h-0">
-                {projectStatus !== '프로젝트 완료' && (
+                {projectStatus !== 'completed' && (
                   <div>
                     <MiniBtn
                       text="메모 작성"
@@ -109,7 +109,7 @@ const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
             {logData.data.length > 0 && (
               <div className="w-[50%] flex-1 pt-5 pb-10">
                 {selectedLog ? (
-                  selectedLog.type === '메모' ? (
+                  selectedLog.type === 'memo' ? (
                     <MemoSection
                       key={selectedLog.id} // 강제 리렌더링을 위한 key
                       logId={selectedLog.id}
@@ -118,12 +118,13 @@ const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
                       onUpdate={loadProjectLogs}
                       projectStatus={projectStatus}
                     />
-                  ) : selectedLog.type === '반품' ? (
+                  ) : selectedLog.type === 'refund' ? (
                     <ReturnSection
                       key={selectedLog.id}
-                      refundId={selectedLog.refund_id || 3}
+                      refundId={selectedLog.refund?.id || 0}
+                      logId={selectedLog.id}
                     />
-                  ) : selectedLog.type === '계획 변경' ? (
+                  ) : selectedLog.type === 'plan' ? (
                     <PlanChangeSection
                       key={selectedLog.id}
                       title={selectedLog.title}

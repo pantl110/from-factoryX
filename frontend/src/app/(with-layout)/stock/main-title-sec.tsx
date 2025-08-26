@@ -5,6 +5,7 @@ import { StockTabType } from './types';
 import { CaretDown } from '@phosphor-icons/react';
 import ProductAddDropdown from './product/modals/product-add-dropdown';
 import MaterialAddDropdown from './material/modals/material-add-dropdown';
+import useMemberStore from '@/store/member-store';
 
 interface MainTitleSecProps {
   selectedTab: StockTabType;
@@ -29,6 +30,9 @@ const MainTitleSec = ({
   onOpenCreatePanel,
   onOpenClientInfoModal,
 }: MainTitleSecProps) => {
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
+
   const handleTabClick = (tab: StockTabType) => {
     onTabChange(tab);
   };
@@ -39,10 +43,11 @@ const MainTitleSec = ({
         <h1 className="Heading-1 text-dg">재고 관리</h1>
         <div className="flex gap-2.5">
           <MiniBtn
-            text="엑셀 다운로드"
+            text="엑셀 양식 다운로드"
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
+            disabled={!factoryId || role === 'viewer'}
           />
           <div className="relative">
             <MiniBtn
@@ -60,6 +65,7 @@ const MainTitleSec = ({
                   ? onProductAddDropdownOpen(true)
                   : onMaterialAddDropdownOpen(true)
               }
+              disabled={!factoryId || role === 'viewer'}
             />
 
             {isProductAddDropdownOpen && (

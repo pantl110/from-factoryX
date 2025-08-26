@@ -6,6 +6,14 @@ interface HistoryItemProps {
   totalPrice: number;
 }
 
+// 날짜를 MM/DD 형식으로 포맷팅하는 함수
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${month}/${day}`;
+};
+
 const HistoryItem = ({
   date,
   productName,
@@ -16,7 +24,7 @@ const HistoryItem = ({
   return (
     <div className="flex items-center w-full h-14 Me_Body-1 text-dg border-b border-lg">
       <p className="flex-[1.2] py-1 px-3 truncate" title={date}>
-        {date}
+        {formatDate(date)}
       </p>
       <p className="flex-2 py-1 px-3 truncate" title={productName}>
         {productName}

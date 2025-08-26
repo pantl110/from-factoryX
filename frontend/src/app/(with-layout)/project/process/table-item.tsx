@@ -4,19 +4,22 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Chip from '@/ui/chip';
 import { useRouter } from 'next/navigation';
-import { ProjectStatusColorMap, TaxStatusType } from '@/types/status-type';
+import { getTaxStatusColor, ProjectStatusColorMap } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import MiniBtn from '@/ui/mini-btn';
 import { ProjectResponseModel } from '@/types/data-model';
 import { CopySimple } from '@phosphor-icons/react';
 import Tooltip from '@/ui/tooltip';
 import useCloneProject from '@/hooks/project/project-plan/use-clone-project';
+import LinkTaxModal from './modals/link-tax-modal/link-tax-modal';
+import useMemberStore from '@/store/member-store';
 
 interface TableItemProps {
   project: ProjectResponseModel;
   checked?: boolean;
   onToggle?: () => void;
   isArchived?: boolean;
+  onReload?: () => void; // 세금계산서 연결 후 리로드 콜백
 }
 
 const TableItem = ({
@@ -24,12 +27,14 @@ const TableItem = ({
   checked = false,
   onToggle,
   isArchived = false,
+  onReload,
 }: TableItemProps) => {
   const router = useRouter();
+  const role = useMemberStore((state) => state.role);
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
   const { cloneProject, isLoading: isCloning } = useCloneProject();
-
   // 프로젝트 상태 색상 가져오기 (영어/한글 모두 지원)
   const chipColors =
     ProjectStatusColorMap[project.status] || ProjectStatusColorMap.quotation;
@@ -38,7 +43,7 @@ const TableItem = ({
   const getDisplayText = (status: string): string => {
     const displayMap: Record<string, string> = {
       // 영어 상태
-      quotation: '견적 협의',
+      quotation: '견적 요청',
       confirmed: '주문 확정',
       pending: '생산 대기',
       production: '생산 중',
@@ -46,16 +51,6 @@ const TableItem = ({
       delivery: '납품',
       completed: '완료',
       suspended: '중단',
-      // 한글 상태
-      '견적 협의중': '견적 협의',
-      '주문 확정': '주문 확정',
-      '생산 대기': '생산 대기',
-      '생산 중': '생산 중',
-      '생산 완료': '생산 완료',
-      납품: '납품',
-      '프로젝트 완료': '완료',
-      완료: '완료',
-      중단: '중단',
     };
 
     return displayMap[status] || '견적 요청';
@@ -84,28 +79,16 @@ const TableItem = ({
     const isQuotationStatus =
       project.status === 'quotation' ||
       project.status === 'confirmed' ||
-      project.status === 'suspended' ||
-      (project.status as string) === '견적 협의중' ||
-      (project.status as string) === '주문 확정' ||
-      (project.status as string) === '중단';
+      project.status === 'suspended';
 
     if (isQuotationStatus) {
       router.push(
-        `/quotation?quotation_id=${project.project_id}&project_id=${project.project_id}`
+        `/quotation?quotation_id=${project.quotation_id}&project_id=${project.project_id}`
       );
     } else {
       router.push(`/production/${project.project_id}`);
     }
   };
-
-  // 세금계산서 발행 상태 표시 텍스트 변환
-  const getPublishStatusText = (status: TaxStatusType | undefined) => {
-    if (status === null || status === undefined) return '연결 필요';
-    if (status === 'pending') return '미발행';
-    if (status === 'published') return '보기';
-    return '';
-  };
-  const taxButtonText = getPublishStatusText(project.publish_status);
 
   return (
     <>
@@ -121,7 +104,7 @@ const TableItem = ({
         }}
       >
         <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
-        <div className="px-3 w-[150px]">
+        <div className={`px-3 ${isArchived ? 'w-[150px]' : 'w-[200px]'}`}>
           <Chip
             text={displayText}
             bgColor={chipColors.bgColor}
@@ -171,40 +154,47 @@ const TableItem = ({
               e.stopPropagation();
             }}
           >
-            {taxButtonText === '보기' ? (
-              <MiniBtn
-                text={taxButtonText}
-                bgColor="bg-wh"
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
-                height="h-8"
-                onClick={() => {
-                  router.push(`/tax/list`);
-                }}
-              />
-            ) : taxButtonText === '연결 필요' ? (
+            {project.publish_status === null ? (
               <MiniBtn
                 text="연결 필요"
                 bgColor="bg-bg"
                 textColor="text-dg"
                 hoverColor="hover:bg-lg"
                 height="h-8"
+                onClick={() => {
+                  setIsLinkTaxModalOpen(true);
+                }}
+                disabled={role === 'viewer'}
               />
             ) : (
-              <MiniBtn
-                text="미발행"
-                bgColor="bg-bg"
-                textColor="text-dg"
-                hoverColor="hover:bg-lg"
-                height="h-8"
-                disabled
-              />
+              <p className="text-dg px-4">연결 완료</p>
             )}
           </div>
         )}
-        {isArchived && (
-          <div
+        {!isArchived && (
+          <p
+            className={`w-[200px] px-3 ${getTaxStatusColor(project.publish_status).textColor}`}
+          >
+            {project.publish_status === 'temporary'
+              ? '임시 저장'
+              : project.publish_status === 'pending'
+                ? '전송 대기'
+                : project.publish_status === 'processing'
+                  ? '처리 중'
+                  : project.publish_status === 'published'
+                    ? '발행 완료'
+                    : project.publish_status === 'cancled'
+                      ? '발행 취소'
+                      : project.publish_status === 'failed'
+                        ? '발행 실패'
+                        : project.publish_status === null
+                          ? '-'
+                          : '-'}
+          </p>
+        )}
+
+        {isArchived && role !== 'viewer' && (
+          <button
             onClick={handleCloneProject}
             onMouseEnter={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
@@ -218,7 +208,7 @@ const TableItem = ({
             className="w-9 h-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           >
             <CopySimple size={20} className="text-dg" />
-          </div>
+          </button>
         )}
       </div>
 
@@ -241,6 +231,15 @@ const TableItem = ({
           </div>,
           document.body
         )}
+
+      {isLinkTaxModalOpen && (
+        <LinkTaxModal
+          onClose={() => setIsLinkTaxModalOpen(false)}
+          linkedItemId={project.project_id}
+          type="project"
+          onSuccess={onReload} // 연결 완료 시 리로드 콜백 호출
+        />
+      )}
     </>
   );
 };

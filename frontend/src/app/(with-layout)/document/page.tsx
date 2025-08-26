@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
 import SearchDeleteTable from '@/ui/search-delete-table';
 import MainTitleSec from './main-title-sec';
 import DocumentTable from './document-table';
@@ -11,29 +12,98 @@ import documentData, { DocumentDataModel } from '@/mocks/document-data';
 import Panel from '@/ui/panel';
 import ProductionDocumentView from './production-document-view';
 import TransactionDocumentView from './transaction-document-view';
-import TaxDocumentView from './tax-document-view';
 import Spinner from '@/ui/spinner';
 import { useCheckAll } from '@/hooks/use-check-all';
 import DeleteModal from '@/ui/modal/delete-modal';
-import usePagination from '@/hooks/use-pagination';
+
+import { useGetPublishedTaxInvoices } from '@/hooks';
+import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
 const DocumentPageContent = () => {
   const [selectedType, setSelectedType] = useState<DocumentType>('주문서');
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentDataModel | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  // 세금계산서 정렬 필드, 방향
+  const [taxSortField, setTaxSortField] = useState<
+    'created_at' | 'transaction_date'
+  >('transaction_date');
+  const [taxSortDirection, setTaxSortDirection] = useState<'asc' | 'desc'>(
+    'desc'
+  );
 
+  // 디바운스된 검색어 (500ms)
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+
+  // 세금계산서 API 훅
+  const { getPublishedTaxInvoices, isLoading: isTaxDataLoading } =
+    useGetPublishedTaxInvoices();
+  // 세금계산서 데이터 상태
+  const [taxInvoices, setTaxInvoices] = useState<
+    PublishedTaxInvoiceResponseModel[]
+  >([]);
+  const [taxInvoicesTotalPages, setTaxInvoicesTotalPages] = useState(0);
+
+  // 일반 문서 데이터 (기존 mock 데이터)
   const filteredData = documentData.filter(
     (item) => item.documentType === selectedType
   );
 
-  const {
-    currentItems: pagedData,
-    currentPage,
-    totalPages,
-    setCurrentPage,
-  } = usePagination({ items: filteredData, itemsPerPage: 10 });
+  // 세금계산서 데이터 가져오기
+  useEffect(() => {
+    if (
+      selectedType === '매출 세금계산서' ||
+      selectedType === '매입 세금계산서'
+    ) {
+      const fetchTaxData = async () => {
+        // 정렬 파라미터 구성
+        let ordering = '';
+        if (taxSortField === 'transaction_date') {
+          ordering =
+            taxSortDirection === 'asc'
+              ? 'transaction_date'
+              : '-transaction_date';
+        } else {
+          ordering = taxSortDirection === 'asc' ? 'created_at' : '-created_at';
+        }
 
+        const result = await getPublishedTaxInvoices({
+          page: currentPage,
+          page_size: 10,
+          q: debouncedSearchQuery || undefined,
+          tax_invoice_type:
+            selectedType === '매출 세금계산서' ? 'sales' : 'purchase',
+          ordering,
+        });
+
+        if (result.success && result.data) {
+          setTaxInvoices(result.data.data || []);
+          setTaxInvoicesTotalPages(result.data.pageCnt || 1);
+        }
+      };
+
+      fetchTaxData();
+    }
+  }, [
+    selectedType,
+    currentPage,
+    debouncedSearchQuery,
+    taxSortField,
+    taxSortDirection,
+    getPublishedTaxInvoices,
+  ]);
+
+  // 현재 표시할 데이터 결정
+  const isTaxDocument =
+    selectedType === '매출 세금계산서' || selectedType === '매입 세금계산서';
+  const currentData = isTaxDocument ? taxInvoices : filteredData;
+  const totalPages = isTaxDocument
+    ? taxInvoicesTotalPages
+    : Math.ceil(filteredData.length / 10);
+
+  // 체크박스 관리
   const {
     checkedCount,
     isAllChecked,
@@ -42,7 +112,7 @@ const DocumentPageContent = () => {
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(pagedData.map((item) => item.id));
+  } = useCheckAll(currentData.map((item) => item.id));
 
   const handleDocumentClick = (document: DocumentDataModel) => {
     setSelectedDocument(document);
@@ -56,9 +126,10 @@ const DocumentPageContent = () => {
   // 탭 변경 핸들러
   const handleTabChange = (type: DocumentType) => {
     setSelectedType(type);
-    // 탭 변경 시 첫 페이지로 이동하고 체크박스 초기화
+    // 탭 변경 시 첫 페이지로 이동하고 체크박스 초기화, 검색어 초기화
     setCurrentPage(1);
     setAllChecked(false);
+    setSearchQuery('');
   };
 
   return (
@@ -75,16 +146,37 @@ const DocumentPageContent = () => {
             deleteButtonText={getDeleteButtonText()}
             onDelete={() => setIsDeleteModalOpen(true)}
             onCancel={() => setAllChecked(false)}
+            onSearch={(query) => {
+              setSearchQuery(query);
+              setCurrentPage(1); // 검색 시 첫 페이지로 이동
+            }}
+            searchKeyword={searchQuery}
+            hasData={currentData.length > 0}
+            hasDeleteButton={!isTaxDocument}
           />
-          <DocumentTable
-            data={pagedData}
-            onDocumentClick={handleDocumentClick}
-            isAllChecked={isAllChecked}
-            onToggleAll={toggleAll}
-            isChecked={isChecked}
-            toggleOne={toggleOne}
-            selectedType={selectedType}
-          />
+          {isTaxDocument && isTaxDataLoading ? (
+            <div className="flex justify-center items-center h-100">
+              <Spinner />
+            </div>
+          ) : (
+            <DocumentTable
+              data={currentData}
+              onDocumentClick={isTaxDocument ? () => {} : handleDocumentClick}
+              isAllChecked={isAllChecked}
+              onToggleAll={toggleAll}
+              isChecked={isChecked}
+              toggleOne={toggleOne}
+              selectedType={selectedType}
+              // 세금계산서
+              onTaxSortChange={(field, direction) => {
+                setTaxSortField(field);
+                setTaxSortDirection(direction);
+                setCurrentPage(1); // 정렬 변경 시 첫 페이지로 이동
+              }}
+              taxSortField={taxSortField}
+              taxSortDirection={taxSortDirection}
+            />
+          )}
           {totalPages >= 2 && (
             <Pagination
               currentPage={currentPage}
@@ -132,7 +224,7 @@ const DocumentPageContent = () => {
       )}
       {selectedDocument && selectedDocument.documentType === '생산지시서' && (
         <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
-          <ProductionDocumentView />
+          <ProductionDocumentView todayProductionPlans={[]} />
         </Panel>
       )}
       {selectedDocument && selectedDocument.documentType === '거래명세서' && (
@@ -167,24 +259,6 @@ const DocumentPageContent = () => {
           />
         </Panel>
       )}
-      {selectedDocument &&
-        selectedDocument.documentType === '매출 세금계산서' && (
-          <Panel
-            title="매출 세금계산서"
-            onClose={() => setSelectedDocument(null)}
-          >
-            <TaxDocumentView taxType="매출" />
-          </Panel>
-        )}
-      {selectedDocument &&
-        selectedDocument.documentType === '매입 세금계산서' && (
-          <Panel
-            title="매입 세금계산서"
-            onClose={() => setSelectedDocument(null)}
-          >
-            <TaxDocumentView taxType="매입" />
-          </Panel>
-        )}
 
       {isDeleteModalOpen && (
         <DeleteModal

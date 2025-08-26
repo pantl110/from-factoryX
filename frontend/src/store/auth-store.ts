@@ -34,11 +34,17 @@ const useAuthStore = create<AuthStateProps>()(
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 
       clearAuth: () => {
+        // 1. 먼저 상태 초기화
         set({
           userInfo: null,
           isAuthenticated: false,
           isLoading: false,
         });
+
+        // 2. 그 다음 localStorage 제거
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth-storage');
+        }
       },
 
       initializeAuth: () => {
@@ -93,12 +99,6 @@ const useAuthStore = create<AuthStateProps>()(
         userInfo: state.userInfo,
         isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
-        // 상태 복원 후 로딩 상태 해제
-        if (state) {
-          state.isLoading = false;
-        }
-      },
     }
   )
 );

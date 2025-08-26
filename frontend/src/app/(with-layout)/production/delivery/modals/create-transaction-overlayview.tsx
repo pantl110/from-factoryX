@@ -37,7 +37,7 @@ const CreateTransactionOverlayview = ({
               text="취소"
               textColor="text-sv"
               onClick={onClose}
-              hoverColor=""
+              hoverColor="hover:bg-bg"
             />
             <MiniBtn
               text="거래명세서 출력"

@@ -1,37 +1,51 @@
-import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
-import { RegisterProductionFromRefundResponseModel } from '@/types/data-model';
+'use client';
 
-interface RegisterProductionFromRefundParamsModel {
+import { useState, useCallback } from 'react';
+import useMemberStore from '@/store/member-store';
+import { UpdateRefundModel } from '@/types/data-model';
+
+interface RegisterProductionFromRefundResponseModel {
+  message: string;
+  action: string;
   refund_id: number;
+  quotation_id: number;
+  quotation_product_id: number;
+  project_plan_id: number;
+  production_log_id: number;
+  product_name: string;
+  quantity: number;
+  equipment_name: string;
 }
 
-// 반품 정보를 기반으로 quotation product와 생산 계획을 생성
 const useRegisterProductionFromRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useFactoryStore();
+  const factoryId = useMemberStore((state) => state.factoryId);
 
-  const registerProductionFromRefund = useCallback(
-    async (params: RegisterProductionFromRefundParamsModel) => {
+  const registerProduction = useCallback(
+    async (
+      logId: number,
+      payload: UpdateRefundModel
+    ): Promise<{
+      success: boolean;
+      data?: RegisterProductionFromRefundResponseModel;
+    }> => {
       setIsLoading(true);
       setError(null);
 
       try {
         if (!factoryId) {
           setError('Factory ID를 찾을 수 없습니다.');
-          return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
+          return { success: false };
         }
 
-        const queryParams = new URLSearchParams();
-        queryParams.append('factory_id', factoryId.toString());
-
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/refund/${params.refund_id}?${queryParams}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-refund/log/${logId}/production?factory_id=${factoryId}`,
           {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
           }
         );
 
@@ -44,12 +58,12 @@ const useRegisterProductionFromRefund = () => {
           const errorMessage =
             errorData.detail || '반품 생산 등록에 실패했습니다.';
           setError(errorMessage);
-          return { success: false, error: errorMessage };
+          return { success: false };
         }
       } catch {
         const errorMessage = '서버 연결에 실패했습니다.';
         setError(errorMessage);
-        return { success: false, error: errorMessage };
+        return { success: false };
       } finally {
         setIsLoading(false);
       }
@@ -57,7 +71,7 @@ const useRegisterProductionFromRefund = () => {
     [factoryId]
   );
 
-  return { registerProductionFromRefund, isLoading, error };
+  return { registerProduction, isLoading, error };
 };
 
 export default useRegisterProductionFromRefund;

@@ -2,30 +2,38 @@ import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
 import { CameraIcon, Pencil } from '@phosphor-icons/react';
-import { useState, useEffect } from 'react';
-import PhotoUploadModal from './modals/photo-upload-modal';
+import { useState, useEffect, useRef } from 'react';
+// import PhotoUploadModal from './modals/photo-upload-modal';
 import ProfileImage from '@/ui/profile-image';
 import { formatPhoneNumber } from '@/hooks/format-number';
 import useToast from '@/hooks/use-toast';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
-import { UserInfoModel, UpdateUserInfoModel } from '@/types/data-model';
+import {
+  UserInfoModel,
+  UpdateUserInfoModel,
+  MemberRoleType,
+} from '@/types/data-model';
 import EditPhotoDropdown from './modals/edit-photo-dropdown';
 import { useMe, useUploadFile } from '@/hooks';
+import useMemberStore from '@/store/member-store';
 
 interface ProfileProps {
   userInfo: UserInfoModel | null;
 }
 
 const Profile = ({ userInfo }: ProfileProps) => {
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
   const { isToastOpen, isVisible, showToast } = useToast(2000);
-  const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
+  // const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isEditPhotoDropdownOpen, setIsEditPhotoDropdownOpen] = useState(false);
   const [isImageDeleted, setIsImageDeleted] = useState(false);
   const { updateMe, isLoading } = useMe();
   const { uploadFile } = useUploadFile();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -62,6 +70,22 @@ const Profile = ({ userInfo }: ProfileProps) => {
     const previewUrl = URL.createObjectURL(file);
     setSelectedImageUrl(previewUrl);
     setIsImageDeleted(false); // 새 이미지 선택 시 삭제 상태 해제
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleImageSelected(file);
+    }
+  };
+
+  const handlePhotoClick = () => {
+    if (hasImage) {
+      setIsEditPhotoDropdownOpen(true);
+    } else {
+      // 파일 선택 다이얼로그 바로 열기
+      fileInputRef.current?.click();
+    }
   };
 
   const onSubmit = async (data: UpdateUserInfoModel) => {
@@ -113,18 +137,16 @@ const Profile = ({ userInfo }: ProfileProps) => {
   };
 
   // 권한 텍스트 매핑
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case '비활성유저':
+  const getStatusText = (role: MemberRoleType) => {
+    switch (role) {
+      case 'viewer':
         return '조회자';
-      case '활성유저':
+      case 'manager':
         return '운영자';
-      case '관리자':
+      case 'admin':
         return '시스템 관리자';
-      case '탈퇴유저':
-        return '탈퇴 사용자';
       default:
-        return status;
+        return role;
     }
   };
 
@@ -146,11 +168,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
               isDeleted={isImageDeleted}
             />
             <div
-              onClick={
-                hasImage
-                  ? () => setIsEditPhotoDropdownOpen(true)
-                  : () => setIsPhotoUploadModalOpen(true)
-              }
+              onClick={handlePhotoClick}
               className="cursor-pointer absolute top-11 left-11 flex items-center justify-center w-[33px] h-[33px] rounded-full border border-lg text-sv bg-white z-20"
             >
               {hasImage ? (
@@ -163,7 +181,10 @@ const Profile = ({ userInfo }: ProfileProps) => {
               <div className="absolute top-11 left-[94px] z-20">
                 <EditPhotoDropdown
                   onClose={() => setIsEditPhotoDropdownOpen(false)}
-                  onChangePhoto={() => setIsPhotoUploadModalOpen(true)}
+                  onChangePhoto={() => {
+                    fileInputRef.current?.click();
+                    setIsEditPhotoDropdownOpen(false);
+                  }}
                   onDeletePhoto={() => {
                     setSelectedImage(null);
                     setSelectedImageUrl(null);
@@ -183,7 +204,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
               />
               <Input
                 label="권한"
-                value={userInfo ? getStatusText(userInfo.status) : '-'}
+                value={role ? getStatusText(role as MemberRoleType) : '-'}
                 disabledSetting={true}
                 required
               />
@@ -222,7 +243,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
             type="submit"
-            disabled={isSubmitting || isLoading}
+            disabled={isSubmitting || isLoading || !factoryId}
           />
         </div>
       </form>
@@ -237,12 +258,19 @@ const Profile = ({ userInfo }: ProfileProps) => {
           isVisible={isVisible}
         />
       )}
-      {isPhotoUploadModalOpen && (
+      {/* 파일 선택 다이얼로그 */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+      {/* {isPhotoUploadModalOpen && (
         <PhotoUploadModal
           onClose={() => setIsPhotoUploadModalOpen(false)}
           onImageSelected={handleImageSelected}
         />
-      )}
+      )} */}
     </>
   );
 };

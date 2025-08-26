@@ -1,9 +1,4 @@
-import {
-  InvitationStatusColorMap,
-  InvitationStatusType,
-  PermissionRoleInfo,
-  PermissionRoleType,
-} from './types';
+import { PermissionRoleInfo, PermissionRoleType } from './types';
 import Checkbox from '@/ui/checkbox';
 import Chip from '@/ui/chip';
 import AuthDropdown from './modals/auth-dropdown';
@@ -36,11 +31,11 @@ const PermissionTableItem = ({
   onUpdate,
 }: PermissionTableItemProps) => {
   const { status, name, email, role, invited_at: invitedAt, factory } = item;
-  const textColor = InvitationStatusColorMap[status];
+  const textColor = status === 'active' ? 'text-primary' : 'text-dg';
   const roleText =
-    role === 'admin' || role === '관리자' || role === '시스템 관리자'
+    role === 'admin'
       ? '시스템 관리자'
-      : role === 'manager' || role === '운영자'
+      : role === 'manager'
         ? '운영자'
         : '조회자';
   const authColors = PermissionRoleInfo[roleText as PermissionRoleType];
@@ -53,17 +48,6 @@ const PermissionTableItem = ({
     openDropdown: openAuthDropdown,
     closeDropdown: closeAuthDropdown,
   } = usePortalDropdown();
-
-  const getInvitationStatus = (
-    invitationStatus: InvitationStatusType
-  ): string => {
-    switch (invitationStatus) {
-      case 'invited':
-        return '대기 중';
-      case 'active':
-        return '완료';
-    }
-  };
 
   const handleAuthChange = async (newAuth: string) => {
     // 이전과 같으면 return
@@ -108,7 +92,7 @@ const PermissionTableItem = ({
           <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-lg group">
             <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
             <p className={`px-3 flex-1 ${textColor}`}>
-              {getInvitationStatus(status)}
+              {status === 'active' ? '완료' : '-'}
             </p>
             <p className="px-3 flex-1">{name || '-'}</p>
             <p className="px-3 flex-2">{email}</p>
@@ -125,7 +109,9 @@ const PermissionTableItem = ({
                 }}
               />
             </div>
-            <p className="px-3 flex-1">{formatDate(invitedAt)}</p>
+            <p className="px-3 flex-1">
+              {invitedAt ? formatDate(invitedAt) : '-'}
+            </p>
           </div>
 
           {/* 권한 드롭다운 */}

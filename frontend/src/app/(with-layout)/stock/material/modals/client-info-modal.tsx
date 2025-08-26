@@ -2,7 +2,8 @@ import MiniBtn from '@/ui/mini-btn';
 import Input from '@/ui/input';
 import Modal from '@/ui/modal/modal';
 import { ClientModel } from '@/types/data-model';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 import useGetClient from '@/hooks/factory/factory-client/use-get-client';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { useForm } from 'react-hook-form';
@@ -44,52 +45,28 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     },
   });
 
-  const { clientList, getClients, searchClients } = useGetClient();
+  const { clientList, getClients, getAllClientList } = useGetClient();
 
   // 드롭다운 상태 관리
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(
-    null
-  );
+
+  // 디바운스된 검색어 (300ms)
+  const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
 
   // 초기 거래처 목록 로드
   useEffect(() => {
     getClients();
   }, [getClients]);
 
-  // 검색어 변경 시 debounce 적용
-  const handleSearchChange = useCallback(
-    (keyword: string) => {
-      setSearchKeyword(keyword);
-
-      // 이전 타이머 클리어
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-      }
-
-      // 새 타이머 설정 (300ms debounce)
-      const timer = setTimeout(() => {
-        if (keyword.trim()) {
-          searchClients(keyword);
-        } else {
-          getClients();
-        }
-      }, 300);
-
-      setDebounceTimer(timer);
-    },
-    [debounceTimer, searchClients, getClients]
-  );
-
-  // 컴포넌트 언마운트 시 타이머 클리어
+  // 디바운스된 검색어가 변경될 때 검색 실행
   useEffect(() => {
-    return () => {
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-      }
-    };
-  }, [debounceTimer]);
+    if (debouncedSearchKeyword.trim()) {
+      getAllClientList(debouncedSearchKeyword);
+    } else {
+      getAllClientList();
+    }
+  }, [debouncedSearchKeyword, getAllClientList]);
 
   const handleSelectClient = (item: ClientModel | ClientResponseModel) => {
     setSearchKeyword(item.name ?? '');
@@ -140,6 +117,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       address,
       business_type: businessType,
       business_category: businessCategory,
+      type: 'supplier', // 자재 추가 시 고객 타입을 supplier 발주처로 설정
     });
   };
 
@@ -167,7 +145,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               onChange={(e) => {
                 const { value } = e.target;
                 setValue('name', value);
-                handleSearchChange(value);
+                setSearchKeyword(value);
                 setIsDropdownOpen(true);
               }}
               onFocus={() => setIsDropdownOpen(true)}
@@ -180,6 +158,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
                   items={clientItems}
                   onSelect={handleSelectClient}
                   width="w-full"
+                  onClose={() => setIsDropdownOpen(false)}
                 />
               </div>
             )}
@@ -255,7 +234,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
             text="취소"
             textColor="text-sv"
             onClick={onClose}
-            hoverColor=""
+            hoverColor="hover:bg-bg"
           />
           <MiniBtn
             text="다음"

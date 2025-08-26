@@ -254,7 +254,7 @@ const ManualAddMaterial = ({
           <MiniBtn
             text="취소"
             textColor="text-sv"
-            hoverColor=""
+            hoverColor="hover:bg-bg"
             onClick={() => setIsManualAddMode(false)}
           />
           <MiniBtn

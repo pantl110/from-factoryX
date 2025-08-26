@@ -4,7 +4,7 @@
 // import SearchOrderTableItem from './search-order-table-item';
 // import { useState, useEffect } from 'react';
 // import { useGetProjects } from '@/hooks';
-// import useFactoryStore from '@/store/factory-store';
+// import useMemberStore from '@/store/factory-store';
 // import Pagination from '@/components/pagination';
 // import { ProjectResponseModel } from '@/types/data-model';
 
@@ -19,7 +19,7 @@
 //   );
 //   const [currentPage, setCurrentPage] = useState(1);
 //   const [totalPages, setTotalPages] = useState(1);
-//   const factoryId = useFactoryStore((state) => state.factoryId);
+//   const factoryId = useMemberStore((state) => state.factoryId);
 //   const { getProjects, isLoading } = useGetProjects(); // 프로젝트가 아니라 문서함에서 가져와야함.
 
 //   // 검색어나 페이지가 변경될 때마다 주문서 상태의 프로젝트 조회

@@ -1,9 +1,5 @@
 // 설정의 권한 초대 상태
 export type InvitationStatusType = 'invited' | 'active';
-export const InvitationStatusColorMap: Record<InvitationStatusType, string> = {
-  active: 'text-primary',
-  invited: 'text-yellow',
-};
 
 // 설정의 권한 종류
 export type PermissionRoleType = '시스템 관리자' | '운영자' | '조회자';

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { EquipmentResponseModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 const useUpdateEquipment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const updateEquipment = async (
     factoryEqId: number,

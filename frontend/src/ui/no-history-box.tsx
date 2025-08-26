@@ -1,13 +1,37 @@
+import MiniBtn from './mini-btn';
+
 interface NoHistoryBoxProps {
-  title: string;
+  title?: string;
   text: string;
+  height?: string;
+  button?: string;
+  onClick?: () => void;
 }
 
-const NoHistoryBox = ({ title, text }: NoHistoryBoxProps) => {
+const NoHistoryBox = ({
+  title,
+  text,
+  height,
+  button,
+  onClick,
+}: NoHistoryBoxProps) => {
   return (
-    <div className="flex flex-col items-center justify-center h-50 gap-2 rounded-sm border border-lg w-full">
-      <h4 className="Heading-4 text-dg">{title}</h4>
+    <div
+      className={`flex flex-col items-center justify-center gap-2 rounded-sm border border-lg w-full ${
+        height ? `${height}` : 'h-50'
+      }`}
+    >
+      {title && <h4 className="Heading-4 text-dg">{title}</h4>}
       <p className="Re_Body-1 text-gr">{text}</p>
+      {button && (
+        <MiniBtn
+          text={button}
+          textColor="text-dg"
+          borderColor="border-lg"
+          hoverColor="hover:bg-bg"
+          onClick={onClick}
+        />
+      )}
     </div>
   );
 };

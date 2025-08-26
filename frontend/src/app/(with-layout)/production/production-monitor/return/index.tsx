@@ -1,19 +1,18 @@
 import { useEffect, useState } from 'react';
+import Spinner from '@/ui/spinner';
+import { useGetRefundDetail } from '@/hooks';
+import { RefundModel } from '@/types/data-model';
+import ReturnInfo from './return-info';
 import ReturnTableHeader from './return-table-header';
 import ReturnTableItem from './return-table-item';
-import ReturnInfo from './return-info';
-import Spinner from '@/ui/spinner';
-import { useGetRefundDetail, useGetProduct } from '@/hooks';
-import { RefundModel, ProductResponseModel } from '@/types/data-model';
 
 interface ReturnSectionProps {
   refundId: number;
+  logId: number;
 }
 
-const ReturnSection = ({ refundId }: ReturnSectionProps) => {
+const ReturnSection = ({ refundId, logId }: ReturnSectionProps) => {
   const [refundData, setRefundData] = useState<RefundModel | null>(null);
-  const [productDetail, setProductDetail] =
-    useState<ProductResponseModel | null>(null);
 
   // 실시간 입력값을 추적하기 위한 상태 추가
   const [currentAmount, setCurrentAmount] = useState<number>(0);
@@ -25,11 +24,6 @@ const ReturnSection = ({ refundId }: ReturnSectionProps) => {
     isLoading: isRefundLoading,
     error: isRefundError,
   } = useGetRefundDetail();
-  const {
-    getProductDetail,
-    isLoading: isProductLoading,
-    error: isProductError,
-  } = useGetProduct();
 
   useEffect(() => {
     const fetchRefundData = async () => {
@@ -47,18 +41,6 @@ const ReturnSection = ({ refundId }: ReturnSectionProps) => {
     fetchRefundData();
   }, [refundId, getRefundDetail]);
 
-  useEffect(() => {
-    const fetchProductDetail = async () => {
-      if (!refundData?.product.id) return;
-      const result = await getProductDetail(refundData.product.id);
-      if (result.success && result.data) {
-        setProductDetail(result.data);
-      }
-    };
-
-    fetchProductDetail();
-  }, [refundData?.product.id, getProductDetail, refundData]);
-
   // 입력값 변경 핸들러
   const handleAmountChange = (newAmount: number) => {
     setCurrentAmount(newAmount);
@@ -67,14 +49,7 @@ const ReturnSection = ({ refundId }: ReturnSectionProps) => {
     setCurrentProductionAmount(newProductionAmount);
   };
 
-  if (
-    isRefundLoading ||
-    isProductLoading ||
-    isRefundError ||
-    isProductError ||
-    !refundData ||
-    !productDetail
-  ) {
+  if (isRefundLoading || isRefundError || !refundData) {
     return (
       <div className="flex-1 h-100 min-h-0 flex items-center justify-center">
         <Spinner />
@@ -93,11 +68,12 @@ const ReturnSection = ({ refundId }: ReturnSectionProps) => {
           refundData={refundData}
           onAmountChange={handleAmountChange}
           onProductionAmountChange={handleProductionAmountChange}
+          logId={logId}
         />
         {shouldShowTable && (
           <div>
             <ReturnTableHeader />
-            <ReturnTableItem productDetail={productDetail} />
+            <ReturnTableItem productDetail={refundData.product} />
           </div>
         )}
       </div>

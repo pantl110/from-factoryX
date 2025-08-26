@@ -17,7 +17,7 @@ import {
 } from '@/hooks';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import ConnetionItem from '../../modals/connetion-item';
 
 interface ConnectMaterialModalProps {
@@ -44,7 +44,7 @@ const ConnectMaterialModal = ({
     useMaterialProduct();
   const { createMaterial, isLoading: isCreating } = useCreateMaterial();
   const { isToastOpen, isVisible, showToast } = useToast();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const [selectedMaterials, setSelectedMaterials] = useState<
     MaterialItemModel[]
