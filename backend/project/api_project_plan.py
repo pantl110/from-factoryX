@@ -192,6 +192,9 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
     if payload.quantity <= 0:
         raise HttpError(400, "생산 수량은 0보다 커야 합니다.")
 
+    if payload.total_quantity < payload.total_amount:
+        raise HttpError(400, "해당 품목의 생산 수량 총합이 주문 수량보다 작습니다.")
+
     if payload.plan_id:
         # 수정 모드
         try:
