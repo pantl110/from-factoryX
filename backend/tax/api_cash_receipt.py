@@ -267,39 +267,18 @@ async def list_cash_receipts(
         "desc", description="작성일자 정렬: desc(최신순), asc(오래된순)"
     ),
 ):
-    """
-    입력 필드(쿼리 파라미터):
-    - factory_id: 공장 ID (필수)
-    - q: 거래처명 또는 품목명 통합 검색어 (선택)
-    - start_date: 조회 시작일 (YYYY-MM-DD, 선택)
-    - end_date: 조회 종료일 (YYYY-MM-DD, 선택)
-    - order: 작성일자 정렬(desc: 최신순, asc: 오래된순, 기본값 desc)
-
-    반환 필드(각 영수증별 dict):
-    - id: 영수증 ID (int)
-    - transaction_date: 거래일자 (str, ISO8601)
-    - client_name: 업체명 (str)
-    - product_names: 품목명 리스트 (List[str])
-    - transaction_amount: 공급가액 (int)
-    - tax_amount: 세액 (int)
-    - total_amount: 합계금액 (int)
-    """
     try:
 
         @sync_to_async
         def get_filtered_receipts():
             qs = CashReceipt.objects.filter(
                 client__factory_id=factory_id
-            ).prefetch_related("client", "product")
+            ).prefetch_related("client")
             if q:
                 ids_client = list(
                     qs.filter(client__name__icontains=q).values_list("id", flat=True)
                 )
-                ids_product = list(
-                    qs.filter(product__name__icontains=q).values_list("id", flat=True)
-                )
-                ids = set(ids_client) | set(ids_product)
-                qs = qs.filter(id__in=ids)
+                qs = qs.filter(id__in=ids_client)
             if start_date:
                 qs = qs.filter(transaction_date__gte=start_date)
             if end_date:
@@ -313,14 +292,12 @@ async def list_cash_receipts(
         receipts = await get_filtered_receipts()
         result = []
         for receipt in receipts:
-            product_names = [product.name for product in receipt.product.all()]
             total_amount = receipt.transaction_amount + receipt.tax_amount
             result.append(
                 AllCashReceiptOut(
                     id=receipt.id,
                     transaction_date=receipt.transaction_date,
                     client_name=receipt.client.name,
-                    product_names=product_names,
                     transaction_amount=receipt.transaction_amount,
                     tax_amount=receipt.tax_amount,
                     total_amount=total_amount,
@@ -329,24 +306,6 @@ async def list_cash_receipts(
         return result
     except Exception as e:
         raise HttpError(500, f"현금영수증 검색 중 오류: {e}")
-
-
-@router.get(
-    "/{cash_receipt_id}",
-    summary="[C] 현금영수증 상세 조회",
-    description="현금영수증 ID로 현금영수증 상세 조회",
-    response=CashReceiptDetailOut,
-)
-async def get_cash_receipt(request, cash_receipt_id: int):
-    try:
-        cash_receipt = (
-            await CashReceipt.objects.select_related("factory", "client")
-            .prefetch_related("product")
-            .aget(id=cash_receipt_id)
-        )
-    except CashReceipt.DoesNotExist:
-        raise HttpError(404, "해당 현금영수증이 존재하지 않습니다.")
-    return cash_receipt
 
 
 @router.get(
@@ -364,7 +323,7 @@ async def get_cash_receipt_by_material_history(request, material_history_id: int
                 "material",
                 "client",
             )
-            .prefetch_related("cash_receipt__product")
+            .prefetch_related("cash_receipt")
             .aget(id=material_history_id)
         )
     except MaterialHistory.DoesNotExist:
@@ -373,3 +332,19 @@ async def get_cash_receipt_by_material_history(request, material_history_id: int
     if history.cash_receipt is None:
         raise HttpError(404, "해당 이력에 연결된 현금영수증이 없습니다.")
     return history.cash_receipt
+
+
+@router.get(
+    "/{cash_receipt_id}",
+    summary="[C] 현금영수증 상세 조회",
+    description="현금영수증 ID로 현금영수증 상세 조회",
+    response=CashReceiptDetailOut,
+)
+async def get_cash_receipt(request, cash_receipt_id: int):
+    try:
+        cash_receipt = await CashReceipt.objects.select_related(
+            "factory", "client"
+        ).aget(id=cash_receipt_id)
+    except CashReceipt.DoesNotExist:
+        raise HttpError(404, "해당 현금영수증이 존재하지 않습니다.")
+    return cash_receipt
