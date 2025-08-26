@@ -25,7 +25,7 @@ const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
               text="취소하기"
               textColor="text-sv"
               onClick={onClose}
-              hoverColor=""
+              hoverColor="hover:bg-bg"
             />
             <MiniBtn
               text="발행하기 "

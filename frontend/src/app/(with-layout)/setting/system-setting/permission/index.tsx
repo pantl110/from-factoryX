@@ -11,17 +11,19 @@ import DeleteTeamMemberModal from './modals/delete-team-member-modal';
 import useGetMembers from '@/hooks/factory/factory-member/use-get-members';
 import useDeleteMember from '@/hooks/factory/factory-member/use-delete-member';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import Spinner from '@/ui/spinner';
 import Tooltip from '@/ui/tooltip';
 import NoHistoryBox from '@/ui/no-history-box';
 
 const Permission = () => {
+  const role = useMemberStore((state) => state.role);
+
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const factoryId = useFactoryStore((state) => state.factoryId);
-  const initializeFactoryId = useFactoryStore(
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const initializeFactoryId = useMemberStore(
     (state) => state.initializeFactoryId
   );
   const { getMembers, members, isLoading, error } = useGetMembers();
@@ -123,7 +125,7 @@ const Permission = () => {
   return (
     <>
       <div className="flex flex-col gap-6 pb-10 px-10">
-        <div className="flex flex-col gap-7 pb-8 border-b border-[#eeeeee]">
+        <div className="flex flex-col gap-7 pb-8 border-b border-lg">
           {permissionRoleTypes.map((type) => (
             <PermissionInfoItem key={type} type={type} />
           ))}
@@ -142,7 +144,7 @@ const Permission = () => {
                     setIsInviteModalOpen(true);
                   }}
                   hoverColor="hover:bg-secondary-hover"
-                  disabled={!isFactoryInfoComplete}
+                  disabled={!isFactoryInfoComplete || role === 'viewer'}
                 />
                 {!isFactoryInfoComplete && (
                   <div className="absolute w-[400px] flex justify-end top-12 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
@@ -164,6 +166,7 @@ const Permission = () => {
                       setAllChecked(false);
                     }}
                     hoverColor="hover:bg-bg"
+                    disabled={role === 'viewer'}
                   />
                   <MiniBtn
                     text={getDeleteButtonText()}
@@ -178,6 +181,7 @@ const Permission = () => {
                         setIsDeleteModalOpen(true);
                       }
                     }}
+                    disabled={role === 'viewer'}
                   />
                 </>
               )}

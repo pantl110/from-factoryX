@@ -21,6 +21,7 @@ import {
 } from '@/hooks';
 import useOcrStore from '@/store/ocr-store';
 import NoHistoryBox from '@/ui/no-history-box';
+import useMemberStore from '@/store/member-store';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
@@ -29,6 +30,7 @@ const ProcessProjectPageInner = () => {
   const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
   const { updateProjectStatus } = useUpdateProjectStatus();
   const { setOcrData } = useOcrStore();
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
   const searchParams = useSearchParams();
@@ -252,9 +254,7 @@ const ProcessProjectPageInner = () => {
             onCancel={() => setAllChecked(false)}
             onSearch={handleSearch}
             searchKeyword={searchKeyword}
-            hasData={
-              !!projectData?.data.length || projectData?.data.length === 0
-            }
+            hasData={!projectData || projectData.data.length > 0}
           />
 
           {isProjectsLoading && (
@@ -263,7 +263,15 @@ const ProcessProjectPageInner = () => {
             </div>
           )}
 
+          {!isProjectsLoading && !factoryId && (
+            <NoHistoryBox
+              title="진행 중인 프로젝트가 아직 없어요."
+              text="프로젝트가 생성되면 이곳에 표시돼요. "
+            />
+          )}
+
           {!isProjectsLoading &&
+            factoryId &&
             projectData &&
             (projectData.data.length === 0 ? (
               <NoHistoryBox
@@ -284,6 +292,18 @@ const ProcessProjectPageInner = () => {
                       project={project}
                       checked={isChecked(project.project_id)}
                       onToggle={() => toggleOne(project.project_id)}
+                      onReload={() => {
+                        // 세금계산서 연결 후 프로젝트 데이터 리로드
+                        getProjects({
+                          status: selectedStatus,
+                          search: searchKeyword,
+                          order_by:
+                            sortKey === 'startDate' ? 'start_date' : 'due_date',
+                          order_dir: sortOrder,
+                          page: currentPage,
+                          page_size: 10,
+                        });
+                      }}
                     />
                   ))}
                 </div>

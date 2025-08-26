@@ -4,7 +4,7 @@ import FacilityHistoryItem from './facility-history-item';
 import TextareaAutosize from 'react-textarea-autosize';
 import { EquipmentResponseModel } from '@/types/data-model';
 import { useCreateEquipment, useUpdateEquipment } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { EquipmentStatusType } from '@/types/status-type';
 import { Controller, useForm } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
@@ -35,10 +35,13 @@ const FacilityDetailPanel = ({
   showWarningToast,
   facilityList,
 }: FacilityDetailPanelProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const { createEquipment } = useCreateEquipment();
   const { updateEquipment } = useUpdateEquipment();
-  const factoryId = useFactoryStore((state) => state.factoryId);
-  const initializeFactoryId = useFactoryStore(
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const initializeFactoryId = useMemberStore(
     (state) => state.initializeFactoryId
   );
 
@@ -59,7 +62,12 @@ const FacilityDetailPanel = ({
       if (facilityId) {
         const result = await getEquipmentDetail(facilityId);
         if (result.success && result.data) {
-          setFacility(result.data);
+          // Ensure history is always an array
+          const facilityData = {
+            ...result.data,
+            history: result.data.history || [],
+          };
+          setFacility(facilityData);
         }
       }
     };
@@ -200,7 +208,7 @@ const FacilityDetailPanel = ({
                   <InfoLabelValue
                     label="설비명"
                     placeholder="(필수) 설비명을 입력하세요."
-                    isEditing={true}
+                    isEditing={!isViewer}
                     required
                     {...field}
                   />
@@ -228,7 +236,7 @@ const FacilityDetailPanel = ({
                   <InfoLabelValue
                     label="자동 배정 순위"
                     placeholder="(필수) 자동 배정 순위를 입력하세요."
-                    isEditing={true}
+                    isEditing={!isViewer}
                     inputType="text"
                     required
                     value={
@@ -253,7 +261,7 @@ const FacilityDetailPanel = ({
                   <InfoLabelValue
                     label="설비위치"
                     placeholder="설비위치를 입력하세요."
-                    isEditing={true}
+                    isEditing={!isViewer}
                     {...field}
                   />
                 )}
@@ -273,6 +281,7 @@ const FacilityDetailPanel = ({
                   className="w-full border border-lg rounded-lg pt-5 px-3 Re_Body-1 text-gr resize-none"
                   placeholder="특이사항을 입력하세요."
                   {...field}
+                  readOnly={isViewer}
                 />
               )}
             />
@@ -282,7 +291,7 @@ const FacilityDetailPanel = ({
           <div className="flex flex-col gap-3">
             <h3 className="Heading-3">생산 히스토리</h3>
             <div className="flex flex-col">
-              {facility && facility.history.length > 0 ? (
+              {facility && facility.history && facility.history.length > 0 ? (
                 <>
                   <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
                     <p className="px-3 flex-1">품목명</p>
@@ -291,7 +300,7 @@ const FacilityDetailPanel = ({
                     <p className="px-3 flex-1">단위당 시간</p>
                     <p className="px-3 flex-1">생산 마감일자</p>
                   </div>
-                  {facility.history.map((history) => (
+                  {facility.history?.map((history) => (
                     <FacilityHistoryItem key={history.id} history={history} />
                   ))}
                 </>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
+import { UpdateRefundModel } from '@/types/data-model';
 
 interface RegisterProductionFromRefundResponseModel {
   message: string;
@@ -19,11 +20,12 @@ interface RegisterProductionFromRefundResponseModel {
 const useRegisterProductionFromRefund = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const registerProduction = useCallback(
     async (
-      logId: number
+      logId: number,
+      payload: UpdateRefundModel
     ): Promise<{
       success: boolean;
       data?: RegisterProductionFromRefundResponseModel;
@@ -43,6 +45,7 @@ const useRegisterProductionFromRefund = () => {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
           }
         );
 

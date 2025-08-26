@@ -2,6 +2,7 @@ import { ProductModel } from '@/types/data-model';
 import InfoLabelValue from '@/ui/info-label-value';
 import { useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import useMemberStore from '@/store/member-store';
 
 interface ProductInfoProps {
   formData: ProductModel;
@@ -16,6 +17,9 @@ export interface ProductInfoModel {
 
 const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
   ({ formData, productId, onIsDirtyChange, onIsValidChange }, ref) => {
+    const role = useMemberStore((state) => state.role);
+    const isViewer = role === 'viewer';
+
     const {
       control,
       reset,
@@ -69,7 +73,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="품목명"
                 placeholder="(필수) 품목명을 입력하세요."
-                isEditing={true}
+                isEditing={!isViewer}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -86,7 +90,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="품목 코드"
                 placeholder="(필수) 품목 코드를 입력하세요."
-                isEditing={true}
+                isEditing={!isViewer}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -105,7 +109,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="규격"
                 placeholder="(필수) 규격을 입력하세요."
-                isEditing={true}
+                isEditing={!isViewer}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -122,7 +126,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="단위"
                 placeholder="(필수) 단위를 입력하세요."
-                isEditing={true}
+                isEditing={!isViewer}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -148,7 +152,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                           .toString()
                           .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                 }
-                isEditing={true}
+                isEditing={!isViewer}
                 placeholder="현재 재고 수량을 입력하세요."
                 inputType="text"
                 onChange={(e) => {
@@ -193,7 +197,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
             <InfoLabelValue
               label="특이사항"
               value={field.value || ''}
-              isEditing={true}
+              isEditing={!isViewer}
               textarea={true}
               placeholder="특이사항을 입력하세요."
               onChange={(e) => {

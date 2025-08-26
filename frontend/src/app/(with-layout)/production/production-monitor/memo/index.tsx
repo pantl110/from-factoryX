@@ -72,7 +72,7 @@ const MemoSection = ({
             readOnly={!isEditMode}
           />
         </div>
-        {projectStatus !== '프로젝트 완료' && (
+        {projectStatus !== 'completed' && (
           <div className="flex gap-2.5 justify-end">
             {!isEditMode ? (
               <MiniBtn

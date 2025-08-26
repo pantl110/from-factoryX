@@ -1,4 +1,12 @@
-const ProductionLogTableHeader = () => {
+import { ProjectStatusType } from '@/types/status-type';
+
+interface ProductionLogTableHeaderProps {
+  projectStatus: ProjectStatusType;
+}
+
+const ProductionLogTableHeader = ({
+  projectStatus,
+}: ProductionLogTableHeaderProps) => {
   return (
     <div className="flex items-center h-12 min-w-[1559px] Me_Body-1 text-sv rounded bg-lg-table">
       {/* //  sticky top-[113px] */}
@@ -13,6 +21,7 @@ const ProductionLogTableHeader = () => {
       <p className="w-[140px] px-3">단위당 소요 시간</p>
       <p className="w-[150px] px-3">자재 상태</p>
       <p className="w-[200px] px-3">마감일자</p>
+      {projectStatus === 'manufactured' && <div className="w-[150px]" />}
     </div>
   );
 };

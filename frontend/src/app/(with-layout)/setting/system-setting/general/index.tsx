@@ -22,9 +22,7 @@ const General = () => {
       <Profile userInfo={userInfo} />
 
       {/* 회사정보  */}
-      {/* {userInfo?.status === '관리자' && ( */}
       <CompanyInfo />
-      {/* )} */}
 
       {/* 계정 삭제 */}
       <DeleteAccount />

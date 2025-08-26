@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { UndeliveredProductListResponseModel } from '@/types/data-model';
 
 interface GetUndeliveredProductsModel {
@@ -9,7 +9,7 @@ interface GetUndeliveredProductsModel {
 const useGetUndeliveredProducts = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useFactoryStore();
+  const { factoryId } = useMemberStore();
 
   const getUndeliveredProducts = useCallback(
     async (params: GetUndeliveredProductsModel) => {

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import ExcelUploadModal from '../project/process/modals/excel-upload-modal';
 import { OcrDataModel, ProjectStatusType } from '@/types/data-model';
 import useOcrStore from '@/store/ocr-store';
+import useMemberStore from '@/store/member-store';
 
 interface ImagePreviewProps {
   className?: string;
@@ -22,7 +23,7 @@ const ImagePreview = ({
   const [isEnlargeOpen, setIsEnlargeOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const { imageUrl: storeImageUrl, setOcrData, ocrData } = useOcrStore();
-
+  const role = useMemberStore((state) => state.role);
   // prop으로 전달된 imageUrl이 있으면 사용, 없으면 store에서 가져온 것 사용
   const displayImageUrl = propImageUrl || storeImageUrl || '';
 
@@ -62,12 +63,14 @@ const ImagePreview = ({
         unoptimized={true}
       />
       <div className="flex absolute top-0 right-0 ">
-        <button
-          className="w-10 h-10 flex items-center justify-center bg-[#cfcfcf] rounded-bl-lg hover:bg-gr transition-colors duration-200 z-1"
-          onClick={() => setIsUploadModalOpen(true)}
-        >
-          <PencilSimple size={20} className="text-sv" />
-        </button>
+        {role !== 'viewer' && (
+          <button
+            className="w-10 h-10 flex items-center justify-center bg-[#cfcfcf] rounded-bl-lg hover:bg-gr transition-colors duration-200 z-1"
+            onClick={() => setIsUploadModalOpen(true)}
+          >
+            <PencilSimple size={20} className="text-sv" />
+          </button>
+        )}
         <button
           className="w-10 h-10 flex items-center justify-center bg-[#cfcfcf] rounded-tr-lg  hover:bg-gr transition-colors duration-200 z-1"
           onClick={() => setIsEnlargeOpen(true)}

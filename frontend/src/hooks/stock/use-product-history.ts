@@ -4,7 +4,7 @@ import {
   ProductHistoryResponseModel,
 } from '@/types/data-model';
 import { useState, useCallback } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 export interface ProductHistoryFilterModel {
   product_id?: number; // 제품 ID (product -> product_id로 변경)
@@ -20,7 +20,7 @@ const useProductHistory = () => {
   const [data, setData] = useState<
     ProductHistoryResponseModel | ProductHistoryListResponseModel | null
   >(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // Create product history 제품 입출고 내역 등록
   const createProductHistory = useCallback(

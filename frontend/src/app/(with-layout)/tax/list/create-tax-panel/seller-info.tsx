@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { formatBusinessNumber, formatDate } from '@/hooks/format-number';
 import { useEffect, useState } from 'react';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { SellerInfoFormDataModel } from '../type';
 
 interface SellerInfoProps {
@@ -39,14 +39,15 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
   });
 
   const { getFactory, factory } = useGetFactory();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 공장 상세 조회 후 초기값 세팅
   useEffect(() => {
     if (factoryId) {
       getFactory(factoryId);
     }
-  }, [factoryId, getFactory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId]);
 
   useEffect(() => {
     if (!factory) return;
@@ -88,7 +89,8 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
       formData.businessNumber &&
       formData.representativeName &&
       formData.businessType &&
-      formData.businessCategory
+      formData.businessCategory &&
+      formData.writeDate
   );
 
   // 폼 상태가 변경될 때마다 부모 컴포넌트에 알림
@@ -240,9 +242,11 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
         <div>
           <Input
             label="작성일자"
+            required
             placeholder="YYYY-MM-DD"
             showError={shouldShowError('writeDate')}
             {...register('writeDate', {
+              required: '작성일자는 필수입니다.',
               pattern: {
                 value: /^\d{4}-\d{2}-\d{2}$/,
                 message: '올바른 날짜 형식입니다. (예: 2024-01-01)',

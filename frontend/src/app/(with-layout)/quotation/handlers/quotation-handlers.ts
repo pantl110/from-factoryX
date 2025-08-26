@@ -1,5 +1,5 @@
 import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { UseFormWatch, UseFormReset } from 'react-hook-form';
 import {
   QuotationProductDetailResponseModel,
@@ -51,9 +51,14 @@ export const useQuotationHandlers = ({
   setIsStartProductionModalOpen,
   router,
 }: QuotationHandlersProps) => {
+  const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
+  const [isStartProductionLoading, setIsStartProductionLoading] =
+    useState(false);
+
   // 임시 저장 버튼 핸들러
   const handleSaveDraft = useCallback(async () => {
     try {
+      setIsSaveDraftLoading(true);
       const formData = watch();
 
       if (!factoryId) {
@@ -121,6 +126,8 @@ export const useQuotationHandlers = ({
 
       showToast();
       return false;
+    } finally {
+      setIsSaveDraftLoading(false);
     }
   }, [
     watch,
@@ -141,6 +148,7 @@ export const useQuotationHandlers = ({
   // 생산 시작 버튼 핸들러
   const handleStartProduction = useCallback(async () => {
     try {
+      setIsStartProductionLoading(true);
       const formData = watch();
 
       if (!factoryId) {
@@ -231,6 +239,8 @@ export const useQuotationHandlers = ({
       setToastText(errorText);
       setToastSubtext(errorSubtext);
       showToast();
+    } finally {
+      setIsStartProductionLoading(false);
     }
   }, [
     watch,
@@ -249,5 +259,7 @@ export const useQuotationHandlers = ({
   return {
     handleSaveDraft,
     handleStartProduction,
+    isSaveDraftLoading,
+    isStartProductionLoading,
   };
 };

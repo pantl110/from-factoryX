@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useDebounce } from 'use-debounce';
 import usePageStatusStore from '@/store/page-status-store';
 import { SettingChipType } from '@/components/top-bar/types';
 import Chip from '@/ui/chip';
@@ -15,15 +16,16 @@ import {
   useDeleteEquipment,
   useDeleteClient,
 } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 const MasterData = () => {
-  const { settingChip, setSettingChip } = usePageStatusStore();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
 
   const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
     useState(false);
 
+  const { settingChip, setSettingChip } = usePageStatusStore();
   // 설비 목록 가져옴 (searchKeyword 상태를 useGetEquipment에 위임)
   const [searchKeyword, setSearchKeyword] = useState('');
   const {
@@ -31,17 +33,18 @@ const MasterData = () => {
     isLoading: isEquipmentLoading,
     setSearchKeyword: setEquipmentSearchKeyword,
     refetch: refetchEquipment,
+    changePage: changeEquipmentPage,
   } = useGetEquipment();
 
   // 거래처 목록 가져옴
-  const {
-    clientList,
-    isLoading: isClientLoading,
-    searchKeyword: clientSearchKeyword,
-    pageSize: clientPageSize,
-    searchClients,
-    getClients,
-  } = useGetClient();
+  const { clientList, isLoading: isClientLoading, getClients } = useGetClient();
+
+  // 현재 거래처 검색어 상태 추가
+  const [currentClientSearchKeyword, setCurrentClientSearchKeyword] =
+    useState('');
+
+  // 디바운스된 검색어 (300ms)
+  const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
 
   // 삭제 훅
   const { deleteEquipment, isLoading: isDeleteLoading } = useDeleteEquipment(); // 설비 삭제 훅
@@ -52,9 +55,6 @@ const MasterData = () => {
     equipmentList?.data?.map((item) => item.id) ?? []; // 설비 id 배열
   const clientIds: number[] = clientList?.data?.map((item) => item.id) ?? []; // 거래처 id 배열
 
-  // 디바운싱 타이머 ref
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-
   // setter 함수들을 useMemo로 메모이제이션
   const memoizedSetEquipmentSearchKeyword = useMemo(
     () => setEquipmentSearchKeyword,
@@ -64,53 +64,43 @@ const MasterData = () => {
   // 거래처 검색 함수
   const handleClientSearch = useMemo(
     () => (keyword: string) => {
-      searchClients(keyword);
+      setCurrentClientSearchKeyword(keyword);
+      getClients({
+        q: keyword,
+        page: 1,
+        page_size: 10,
+      });
     },
-    [searchClients]
+    [getClients]
   );
 
-  // 검색어 변경 시 debounce 적용
-  const handleSearchChange = useCallback(
-    (keyword: string) => {
-      setSearchKeyword(keyword);
+  // 검색어 변경 시 즉시 처리 (디바운스는 useDebounce에서 처리)
+  const handleSearchChange = useCallback((keyword: string) => {
+    setSearchKeyword(keyword);
+  }, []);
 
-      // 이전 타이머 클리어
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-
-      // 새 타이머 설정 (300ms debounce)
-      const timer = setTimeout(() => {
-        if (keyword.trim()) {
-          searchClients(keyword);
-        } else {
-          getClients();
-        }
-      }, 300);
-
-      debounceTimer.current = timer;
-    },
-    [debounceTimer, searchClients, getClients]
-  );
-
-  // 검색어 상태 동기화 (디바운싱)
+  // 디바운스된 검색어가 변경될 때 검색 실행
   useEffect(() => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
-      if (settingChip === 'equipment') {
-        memoizedSetEquipmentSearchKeyword(searchKeyword);
-      } else if (settingChip === 'client') {
-        handleClientSearch(searchKeyword);
+    if (settingChip === 'equipment') {
+      memoizedSetEquipmentSearchKeyword(debouncedSearchKeyword);
+    } else if (settingChip === 'client') {
+      if (debouncedSearchKeyword.trim()) {
+        setCurrentClientSearchKeyword(debouncedSearchKeyword);
+        getClients({
+          q: debouncedSearchKeyword,
+          page: 1,
+          page_size: 10,
+        });
+      } else {
+        setCurrentClientSearchKeyword('');
+        getClients();
       }
-    }, 500);
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    };
+    }
   }, [
-    searchKeyword,
-    memoizedSetEquipmentSearchKeyword,
-    handleClientSearch,
+    debouncedSearchKeyword,
     settingChip,
+    memoizedSetEquipmentSearchKeyword,
+    getClients,
   ]);
 
   // 체크박스 상태 관리
@@ -162,6 +152,7 @@ const MasterData = () => {
   useEffect(() => {
     if (previousChip !== null && previousChip !== settingChip) {
       setSearchKeyword('');
+      setCurrentClientSearchKeyword('');
     }
     setPreviousChip(settingChip);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -259,9 +250,9 @@ const MasterData = () => {
   // 페이지네이션 변경 핸들러 (Client용)
   const handleClientPageChange = async (page: number) => {
     await getClients({
-      q: clientSearchKeyword,
+      q: currentClientSearchKeyword,
       page,
-      page_size: clientPageSize,
+      page_size: 10,
     });
   };
 
@@ -290,6 +281,10 @@ const MasterData = () => {
             toggleAll={facilityToggleAll}
             toggleOne={facilityToggleOne}
             refetchEquipment={refetchEquipment}
+            // 페이지네이션 관련
+            currentPage={equipmentListForFacility.curPage || 1}
+            totalPages={equipmentListForFacility.pageCnt || 1}
+            onPageChange={changeEquipmentPage}
           />
         );
       case 'client':
@@ -342,13 +337,12 @@ const MasterData = () => {
           placeholder={
             settingChip === 'client'
               ? '회사명, 대표자명, 연락처 등을 입력해 검색하세요.'
-              : '검색어를 입력하세요.'
+              : '찾고 싶은 설비명을 입력하세요.'
           }
           value={searchKeyword}
           onChange={handleSearchChange}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              if (debounceTimer.current) clearTimeout(debounceTimer.current);
               if (settingChip === 'equipment') {
                 memoizedSetEquipmentSearchKeyword(searchKeyword);
               } else if (settingChip === 'client') {
@@ -365,6 +359,7 @@ const MasterData = () => {
               borderColor="border-lg"
               hoverColor="hover:bg-lg"
               onClick={handleAddBtnClick}
+              disabled={!factoryId || role === 'viewer'}
             />
           )}
 
@@ -381,6 +376,7 @@ const MasterData = () => {
                     borderColor="border-lg"
                     hoverColor="hover:bg-bg"
                     onClick={handleClearAllChecked}
+                    disabled={role === 'viewer'}
                   />
                   <MiniBtn
                     text={getDeleteButtonText()}
@@ -391,7 +387,11 @@ const MasterData = () => {
                       checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'
                     }
                     onClick={handleDeleteBtnClick}
-                    disabled={isDeleteLoading || isDeleteClientLoading}
+                    disabled={
+                      isDeleteLoading ||
+                      isDeleteClientLoading ||
+                      role === 'viewer'
+                    }
                   />
                 </>
               ))}

@@ -12,7 +12,7 @@ import { PermissionRoleInfo, PermissionRoleType } from '../types';
 import { createPortal } from 'react-dom';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import useInviteMember from '@/hooks/factory/factory-member/use-invite-member';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import Toast from '@/ui/toast';
 import useToast from '@/hooks/use-toast';
 
@@ -31,7 +31,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
   const [members, setMembers] = useState<MemberFromDataModel[]>([]);
 
   const { inviteMember, isLoading: isInviteLoading } = useInviteMember();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 토스트 훅 사용
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -290,7 +290,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                 text="취소"
                 textColor="text-sv"
                 onClick={onClose}
-                hoverColor=""
+                hoverColor="hover:bg-bg"
               />
               <MiniBtn
                 text="초대"
@@ -316,7 +316,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               text="닫기"
               textColor="text-sv"
               onClick={handleSuccessClose}
-              hoverColor=""
+              hoverColor="hover:bg-bg"
             />
             <MiniBtn
               text="확인"

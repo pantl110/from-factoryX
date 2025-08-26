@@ -1,29 +1,22 @@
 // 상태별 색상 모델 인터페이스
 export interface StatusColorModel {
-  bgColor: string;
-  textColor: string;
+  bgColor?: string;
+  textColor?: string;
   hover?: string;
 }
 
 // 팩토리 멤버 type
-export type MemberRoleType =
-  | 'admin'
-  | 'manager'
-  | 'viewer'
-  | '시스템 관리자'
-  | '운영자'
-  | '조회자'
-  | '관리자'; // 시스템 관리자, 운영자, 조회자
+export type MemberRoleType = 'admin' | 'manager' | 'viewer';
 export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
 
 // 설비 상태 // 설정 페이지
-export type EquipmentStatusType = '가동 대기' | '가동 중';
+export type EquipmentStatusType = 'standby' | 'running'; // 가동 대기 / 가동 중
 export const EquipmentStatusColorMap: Record<
   EquipmentStatusType,
   StatusColorModel
 > = {
-  '가동 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
-  '가동 중': { textColor: 'text-purple', bgColor: 'bg-purple-8' },
+  standby: { textColor: 'text-dg', bgColor: 'bg-bg' },
+  running: { textColor: 'text-purple', bgColor: 'bg-purple-8' },
 };
 
 // 거래처 유형 // 설정 페이지
@@ -45,17 +38,17 @@ export type ProjectStatusType =
   | 'manufactured'
   | 'delivery'
   | 'completed'
-  | 'suspended'
-  // 한글 상태 추가
-  | '견적 협의중'
-  | '주문 확정'
-  | '생산 대기'
-  | '생산 중'
-  | '생산 완료'
-  | '납품'
-  | '프로젝트 완료'
-  | '완료'
-  | '중단';
+  | 'suspended';
+// 한글 상태 추가
+// | '견적 협의중'
+// | '주문 확정'
+// | '생산 대기'
+// | '생산 중'
+// | '생산 완료'
+// | '납품'
+// | '프로젝트 완료'
+// | '완료'
+// | '중단';
 
 // | '견적 협의' // quotation
 // | '주문 확정' // confirmed
@@ -75,16 +68,6 @@ export const ProjectStatusMap: Record<ProjectStatusType, string> = {
   delivery: '납품',
   completed: '프로젝트 완료',
   suspended: '중단',
-  // Korean status mappings
-  '견적 협의중': '견적 협의중',
-  '주문 확정': '주문 확정',
-  '생산 대기': '생산 대기',
-  '생산 중': '생산 중',
-  '생산 완료': '생산 완료',
-  납품: '납품',
-  '프로젝트 완료': '프로젝트 완료',
-  완료: '완료',
-  중단: '중단',
 };
 
 export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
@@ -119,10 +102,6 @@ export const CompletedProjectStatusColorMap: Record<
   완료: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
   중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
-
-// 세금계산서 발행 상태
-export type TaxStatusType = null | '' | 'pending' | 'published';
-// 미발행 // 발행 대기 // 발행 완료
 
 // 재고 상태
 export type InventoryStatusType = '충분' | '부족';
@@ -173,14 +152,32 @@ export type TransactionType = 'receipt' | 'invoice'; // 영수, 청구
 //   청구: { bgColor: 'bg-red-8', textColor: 'text-red' },
 // };
 
-export type TaxPublishStatusType = 'temporary' | 'pending' | 'published'; // 임시 저장, 발행 대기, 발행 완료
-export const TaxPublishStatusColorMap: Record<
-  TaxPublishStatusType,
+// 세금계산서 발행 상태
+export type TaxStatusType =
+  | null
+  | 'temporary'
+  | 'pending'
+  | 'processing'
+  | 'published'
+  | 'cancled'
+  | 'failed';
+// 임시 저장 // 전송 대기 // 처리 중 // 발행 완료 // 발행 취소 // 발행 실패
+export const TaxStatusColorMap: Record<
+  NonNullable<TaxStatusType>,
   StatusColorModel
 > = {
-  temporary: { textColor: 'text-primary', bgColor: 'bg-bg' },
-  pending: { textColor: 'text-dg', bgColor: 'bg-bg' },
-  published: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
+  temporary: { textColor: 'text-gr' },
+  pending: { textColor: 'text-yellow' },
+  processing: { textColor: 'text-purple' },
+  published: { textColor: 'text-primary' },
+  cancled: { textColor: 'text-red' },
+  failed: { textColor: 'text-red' },
+};
+
+// Helper function to get status color with null handling
+export const getTaxStatusColor = (status: TaxStatusType): StatusColorModel => {
+  if (!status) return { textColor: 'text-dg' };
+  return TaxStatusColorMap[status];
 };
 
 // Tax Invoice State Types
@@ -248,11 +245,11 @@ export const DeliveryStatusColorMap: Record<
 };
 
 // 세금계산서 임시보관함 상태
-export type TaxDraftStatusType = '임시 저장' | '발행 대기';
+export type TaxDraftStatusType = '임시 저장' | '전송 대기';
 export const TaxDraftStatusColorMap: Record<
   TaxDraftStatusType,
   StatusColorModel
 > = {
   '임시 저장': { textColor: 'text-primary', bgColor: 'bg-bg' },
-  '발행 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
+  '전송 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
 };

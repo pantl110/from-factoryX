@@ -82,7 +82,7 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
             text="취소"
             textColor="text-sv"
             onClick={onClose}
-            hoverColor=""
+            hoverColor="hover:bg-bg"
             type="button"
           />
           <MiniBtn

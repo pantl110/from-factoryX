@@ -19,8 +19,13 @@ import {
   useUpdateTaxInvoice,
 } from '@/hooks';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+// import NotAllowed from '../not-allowed';
+import useMemberStore from '@/store/member-store';
 
 const TaxPageContent = () => {
+  const role = useMemberStore((state) => state.role);
+  const factoryId = useMemberStore((state) => state.factoryId);
+
   const [selectedTaxType, setSelectedTaxType] =
     useState<TaxDocumentType | null>(null);
   const [selectedItem, setSelectedItem] =
@@ -39,7 +44,6 @@ const TaxPageContent = () => {
   const [taxData, setTaxData] = useState<PublishedTaxInvoiceResponseModel[]>(
     []
   );
-
   // 디바운싱된 검색어 (500ms 지연)
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
@@ -129,39 +133,18 @@ const TaxPageContent = () => {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      getPublishedTaxInvoices,
       sortDirection,
       selectedTaxType,
       showHidden,
       debouncedSearchQuery,
+      factoryId,
     ]
   );
 
-  // 컴포넌트 마운트 시 데이터 가져오기
+  // factoryId 초기화
   useEffect(() => {
     fetchTaxData(1);
   }, [fetchTaxData]);
-
-  // showHidden 상태 변경 시 데이터 새로 가져오기
-  useEffect(() => {
-    setCurrentPage(1);
-    setAllChecked(false);
-    fetchTaxData(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showHidden, fetchTaxData]);
-
-  // 페이지 변경 시 데이터 가져오기
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    fetchTaxData(page);
-  };
-
-  // 시작일자 정렬 방향 변경 시 데이터 가져오기
-  const handleSortClick = () => {
-    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    setCurrentPage(1); // 정렬 변경 시 페이지 1로 리셋
-    fetchTaxData(1); // 정렬 변경 시에도 API 호출
-  };
 
   // 탭 변경 시 페이지와 체크박스 상태 리셋
   useEffect(() => {
@@ -181,7 +164,20 @@ const TaxPageContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showHidden]);
 
-  // 검색어 변경 시 즉시 상태 업데이트 (디바운싱은 useDebounce에서 처리)
+  // 페이지 변경 시
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchTaxData(page);
+  };
+
+  // 시작일자 정렬 방향 변경
+  const handleSortClick = () => {
+    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    setCurrentPage(1); // 정렬 변경 시 페이지 1로 리셋
+    fetchTaxData(1); // 정렬 변경 시에도 API 호출
+  };
+
+  // 검색어 변경 시
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     setCurrentPage(1); // 검색 시 페이지 1로 리셋
@@ -251,7 +247,9 @@ const TaxPageContent = () => {
       const results = await Promise.all(updatePromises);
 
       // 성공한 요청들 확인
-      const successCount = results.filter((result) => result.success).length;
+      const successCount = results.filter(
+        (result: { success: boolean }) => result.success
+      ).length;
 
       if (successCount > 0) {
         // 성공적으로 업데이트된 경우 데이터 새로고침
@@ -270,6 +268,7 @@ const TaxPageContent = () => {
 
   return (
     <>
+      {/* <NotAllowed /> */}
       <div className="flex flex-col gap-8">
         <MainTitleSec
           selectedTaxType={selectedTaxType}
@@ -316,7 +315,11 @@ const TaxPageContent = () => {
                       : 'hover:bg-primary-hover'
                   }
                   onClick={handleHideRestore}
-                  disabled={checkedCount === 0 || isHideRestoreLoading}
+                  disabled={
+                    checkedCount === 0 ||
+                    isHideRestoreLoading ||
+                    role === 'viewer'
+                  }
                 />
               </div>
             )}
@@ -382,7 +385,11 @@ const TaxPageContent = () => {
 
       {/* 디테일 판넬 */}
       {isPanelOpen && selectedItem && (
-        <TaxDetailPanel itemId={selectedItem.id} onClose={handleClosePanel} />
+        <TaxDetailPanel
+          itemId={selectedItem.id}
+          onClose={handleClosePanel}
+          canLink={true}
+        />
       )}
     </>
   );

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { LogoutResponseModel } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
+import { clearAuthData } from '@/utils/storage';
 
 interface UseLogoutReturnModel {
   logout: () => Promise<{
@@ -15,7 +16,7 @@ interface UseLogoutReturnModel {
 export const useLogout = (): UseLogoutReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { clearAuth } = useAuthStore();
-  const { clearFactoryId } = useFactoryStore();
+  const { clearAll: clearMember } = useMemberStore();
 
   const logout = async () => {
     setIsLoading(true);
@@ -40,21 +41,12 @@ export const useLogout = (): UseLogoutReturnModel => {
         result = await response.json();
       }
 
-      // API 호출 성공/실패와 관계없이 항상 전역 상태 초기화
+      // 1. 먼저 localStorage에서 저장소 제거
+      clearAuthData();
+
+      // 2. 그 다음 전역 상태 초기화
       clearAuth();
-      clearFactoryId(); // factoryId도 클리어
-
-      // localStorage에서 persist 데이터 직접 제거
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth-storage');
-        localStorage.removeItem('factory-storage');
-      }
-
-      // 쿠키 삭제
-      document.cookie =
-        'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie =
-        'refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      clearMember(); // member store 전체 클리어
 
       if (response.ok) {
         return {
@@ -68,15 +60,12 @@ export const useLogout = (): UseLogoutReturnModel => {
         };
       }
     } catch {
-      // 에러가 발생해도 전역 상태는 초기화
-      clearAuth();
-      clearFactoryId();
+      // 에러가 발생해도 1. 먼저 localStorage에서 저장소 제거
+      clearAuthData();
 
-      // localStorage에서 persist 데이터 직접 제거
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth-storage');
-        localStorage.removeItem('factory-storage');
-      }
+      // 2. 그 다음 전역 상태 초기화
+      clearAuth();
+      clearMember(); // member store 전체 클리어
 
       return {
         success: false,

@@ -70,7 +70,7 @@ const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
             {/* 왼쪽 영역 */}
             <div className={`w-[50%] h-full flex flex-col gap-4 flex-1 pt-5`}>
               <div className="flex flex-col gap-4 h-full min-h-0">
-                {projectStatus !== '프로젝트 완료' && (
+                {projectStatus !== 'completed' && (
                   <div>
                     <MiniBtn
                       text="메모 작성"

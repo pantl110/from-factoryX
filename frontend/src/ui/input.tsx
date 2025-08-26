@@ -18,6 +18,7 @@ interface InputProps {
   onBlur?: (() => void) | ((e: React.FocusEvent<HTMLInputElement>) => void);
   name?: string;
   disabledSetting?: boolean;
+  disabledReadOnly?: boolean;
   step?: string;
 }
 
@@ -40,6 +41,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       onBlur,
       name,
       disabledSetting = false,
+      disabledReadOnly = false,
       step,
     },
     ref
@@ -60,15 +62,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       }
 
       if (disabled) {
-        className += ' bg-lg text-dg cursor-not-allowed border-[#e4e4e7]';
-      } else if (disabledSetting) {
-        className += ' text-bl border-[#e4e4e7] ';
+        className += ' bg-lg text-dg cursor-not-allowed border-lg';
+      } else if (disabledSetting || disabledReadOnly) {
+        className += disabledSetting
+          ? ' text-sv border-lg '
+          : ' text-bl border-lg ';
       } else if (showError) {
         className +=
           ' border-red hover:border-primary focus:border-primary focus:text-bl';
       } else {
         className +=
-          ' border-[#e4e4e7] hover:border-primary focus:border-primary focus:text-bl';
+          ' border-lg hover:border-primary focus:border-primary focus:text-bl';
       }
 
       if (type === 'date') {
@@ -124,7 +128,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             onFocus={onFocus}
             onBlur={handleBlur}
             placeholder={placeholder}
-            disabled={disabled || disabledSetting}
+            disabled={disabled || disabledSetting || disabledReadOnly}
             className={getInputClassName()}
             onWheel={type === 'number' ? (e) => e.preventDefault() : undefined}
             pattern={type === 'number' ? '[0-9.]*' : undefined}

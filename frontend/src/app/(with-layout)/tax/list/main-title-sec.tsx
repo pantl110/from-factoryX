@@ -2,6 +2,7 @@ import { TaxDocumentType } from '@/types/status-type';
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
 import CreatTaxPanel from './create-tax-panel';
+import useMemberStore from '@/store/member-store';
 
 interface MainTitleSecProps {
   selectedTaxType: TaxDocumentType | null;
@@ -12,6 +13,8 @@ const MainTitleSec = ({
   selectedTaxType,
   setSelectedTaxType,
 }: MainTitleSecProps) => {
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
   const tabs: string[] = ['전체', '매출', '매입'];
 
   const [isCreatTaxPanelOpen, setIsCreatTaxPanelOpen] = useState(false);
@@ -29,6 +32,7 @@ const MainTitleSec = ({
             onClick={() => {
               setIsCreatTaxPanelOpen(true);
             }}
+            disabled={!factoryId || role === 'viewer'}
           />
         </div>
 

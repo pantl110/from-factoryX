@@ -1,9 +1,13 @@
-import { PendingTaxInvoiceResponseModel } from '@/types/data-model';
+import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import {
+  TaxDocumentTypeColorMap,
+  TaxDraftStatusColorMap,
+} from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
-// import Chip from '@/ui/chip';
+import Chip from '@/ui/chip';
 
 interface TableItemProps {
-  item: PendingTaxInvoiceResponseModel;
+  item: PublishedTaxInvoiceResponseModel;
   isChecked: boolean;
   onToggle: () => void;
   onItemClick?: () => void;
@@ -15,6 +19,9 @@ const TableItem = ({
   onToggle,
   onItemClick,
 }: TableItemProps) => {
+  const chipText =
+    item.barobill_state === '임시저장' ? '임시 저장' : '전송 대기';
+
   return (
     <div
       className="flex items-center h-14 min-w-[1272px] border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
@@ -24,25 +31,38 @@ const TableItem = ({
         <Checkbox isChecked={isChecked} onToggle={onToggle} />
       </div>
       <div className="px-3 w-[150px]">
-        {/* <Chip
-          text={item.tax_invoice_type}
+        <Chip
+          text={chipText}
           bgColor={
             TaxDraftStatusColorMap[
-              item.status as keyof typeof TaxDraftStatusColorMap
+              chipText as keyof typeof TaxDraftStatusColorMap
             ].bgColor
           }
           textColor={
             TaxDraftStatusColorMap[
-              item.status as keyof typeof TaxDraftStatusColorMap
+              chipText as keyof typeof TaxDraftStatusColorMap
             ].textColor
           }
-        /> */}
+        />
       </div>
-      <p className="px-3 flex-2 truncate" title={item.tax_invoice_type}>
-        {item.tax_invoice_type}
-      </p>
-      <p className="px-3 flex-2 truncate" title={item.client_name}>
-        {item.client_name}
+      <div className="px-3 flex-2">
+        <Chip
+          text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}
+          bgColor={
+            TaxDocumentTypeColorMap[
+              item.tax_invoice_type as keyof typeof TaxDocumentTypeColorMap
+            ].bgColor
+          }
+          textColor={
+            TaxDocumentTypeColorMap[
+              item.tax_invoice_type as keyof typeof TaxDocumentTypeColorMap
+            ].textColor
+          }
+        />
+      </div>
+
+      <p className="px-3 flex-2 truncate" title={item.client_info?.name || '-'}>
+        {item.client_info?.name || '-'}
       </p>
       <p
         className="px-3 w-[200px] truncate"
@@ -58,9 +78,9 @@ const TableItem = ({
       </p>
       <p
         className="px-3 w-[200px] truncate"
-        title={item.total_amount?.toLocaleString() || '-'}
+        title={`${(item.transaction_amount || 0) + (item.tax_amount || 0)}`.toLocaleString()}
       >
-        {item.total_amount?.toLocaleString() || '-'}
+        {`${(item.transaction_amount || 0) + (item.tax_amount || 0)}`.toLocaleString()}
       </p>
       <p className="px-3 w-[200px] truncate" title={item.transaction_date}>
         {item.transaction_date}

@@ -8,11 +8,17 @@ import useRegisterProductionFromRefund from '@/hooks/project/project-refund/use-
 interface RegisterProductionModalProps {
   onClose: () => void;
   logId: number;
+  currentAmount: number;
+  currentProductionAmount: number;
+  currentRefundDate: string;
 }
 
 const RegisterProductionModal = ({
   onClose,
   logId,
+  currentAmount,
+  currentProductionAmount,
+  currentRefundDate,
 }: RegisterProductionModalProps) => {
   const { registerProduction, isLoading, error } =
     useRegisterProductionFromRefund();
@@ -20,13 +26,11 @@ const RegisterProductionModal = ({
   const { isToastOpen, isVisible, showToast } = useToast();
 
   const handleRegisterProduction = async () => {
-    const result = await registerProduction(logId);
-    // const result = await updateRefund(refundId, {
-    //   refund_date: refundData.refund_date,
-    //   current_stock: refundData.current_stock,
-    //   production_amount: refundData.production_amount,
-    //   product_id: productId,
-    // });
+    const result = await registerProduction(logId, {
+      amount: currentAmount,
+      production_amount: currentProductionAmount,
+      refund_date: currentRefundDate,
+    });
 
     if (result.success) {
       onClose();
@@ -56,9 +60,8 @@ const RegisterProductionModal = ({
           <MiniBtn
             text="취소"
             textColor="text-sv"
-            hoverColor=""
+            hoverColor="hover:bg-bg"
             onClick={onClose}
-            disabled={isLoading}
           />
           <MiniBtn
             text="생산 시작"

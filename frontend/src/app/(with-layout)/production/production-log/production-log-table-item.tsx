@@ -1,35 +1,41 @@
 import { ProjectPlanModel, ProjectStatusType } from '@/types/data-model';
 import Chip from '@/ui/chip';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { useMaterialStatus, formatDateTime } from '@/hooks';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 import { useForm, Controller } from 'react-hook-form';
+import MiniBtn from '@/ui/mini-btn';
 
 interface ProductionLogTableItemProps {
   plan: ProjectPlanModel;
   projectStatus: ProjectStatusType;
   onFormChange?: (
     planId: number,
-    formData: { quantity: number; start_date: string; end_date: string }
+    formState: { quantity: number; start_date: string; end_date: string }
   ) => void;
+  onSave?: () => void;
+  hasChanges?: boolean;
+  onValidityChange?: (planId: number, isValid: boolean) => void;
 }
 
 const ProductionLogTableItem = ({
   plan,
   projectStatus,
   onFormChange,
+  onSave,
+  hasChanges,
+  onValidityChange,
 }: ProductionLogTableItemProps) => {
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
   const { materialStatus, isLoading: isMaterialStatusLoading } =
     useMaterialStatus(plan.quotation_product.product.id);
 
   // 생산 완료 상태일 때만 수정 가능
-  const isEditable =
-    projectStatus === '생산 완료' || projectStatus === 'manufactured';
+  const isEditable = projectStatus === 'manufactured';
 
   // React Hook Form 설정
-  const { control, watch } = useForm({
+  const { control, watch, formState } = useForm({
     defaultValues: {
       quantity: plan.quantity || 0,
       start_date: plan.start_date
@@ -39,7 +45,13 @@ const ProductionLogTableItem = ({
         ? new Date(plan.end_date).toISOString().slice(0, 16).replace('T', ' ')
         : '',
     },
+    mode: 'onChange', // 입력 시마다 유효성 검사
   });
+
+  // 부모에 유효성 변경 알림
+  useEffect(() => {
+    onValidityChange?.(plan.id, formState.isValid);
+  }, [formState.isValid, onValidityChange, plan.id]);
 
   // Form 데이터 변경 시 부모 컴포넌트에 알림
   const watchedQuantity = watch('quantity');
@@ -60,6 +72,7 @@ const ProductionLogTableItem = ({
         field === 'end_date' ? (value as string) : String(watchedEndDate || ''),
     });
   };
+
   return (
     <>
       <div className="flex items-center h-14 min-w-[1559px] border-b border-lg group Me_Body-1 text-dg">
@@ -97,6 +110,10 @@ const ProductionLogTableItem = ({
           <Controller
             name="quantity"
             control={control}
+            rules={{
+              required: '생산수량을 입력해주세요',
+              min: { value: 1, message: '생산수량은 1 이상이어야 합니다' },
+            }}
             render={({ field }) => (
               <input
                 type="text"
@@ -121,6 +138,13 @@ const ProductionLogTableItem = ({
           <Controller
             name="start_date"
             control={control}
+            rules={{
+              required: '시작일을 입력해주세요',
+              pattern: {
+                value: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/,
+                message: 'YYYY-MM-DD HH:MM 형식으로 입력해주세요',
+              },
+            }}
             render={({ field }) => (
               <input
                 type="text"
@@ -169,6 +193,23 @@ const ProductionLogTableItem = ({
           <Controller
             name="end_date"
             control={control}
+            rules={{
+              required: '종료일을 입력해주세요',
+              pattern: {
+                value: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/,
+                message: 'YYYY-MM-DD HH:MM 형식으로 입력해주세요',
+              },
+              validate: (value) => {
+                const startDate = watch('start_date');
+                if (startDate && value) {
+                  return (
+                    new Date(value) > new Date(startDate) ||
+                    '종료일은 시작일보다 이후여야 합니다'
+                  );
+                }
+                return true;
+              },
+            }}
             render={({ field }) => (
               <input
                 type="text"
@@ -187,6 +228,19 @@ const ProductionLogTableItem = ({
             )}
           />
         </div>
+        {isEditable && (
+          <div className="w-[150px] px-3">
+            <MiniBtn
+              text="저장"
+              textColor="text-dg"
+              borderColor="border-lg"
+              hoverColor="hover:bg-bg"
+              height="h-8"
+              onClick={onSave}
+              disabled={!hasChanges || !formState.isValid}
+            />
+          </div>
+        )}
 
         {/* 품목 디테일 판넬 보기 */}
         {isProductDetailOpen && (

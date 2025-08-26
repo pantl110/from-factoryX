@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import { ArrowLineUpRight } from '@phosphor-icons/react/dist/ssr';
+import useMemberStore from '@/store/member-store';
 
 interface ProductItemProps {
   data?: QuotationProductDetailResponseModel;
@@ -31,6 +32,9 @@ const ProductItem = ({
   onProductDetailClick,
   onlyRead = false,
 }: ProductItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const [searchTerm, setSearchTerm] = useState('');
   const { getProductList } = useGetProduct();
   const { isOpen, openDropdown, anchorRect } = usePortalDropdown();
@@ -108,6 +112,7 @@ const ProductItem = ({
               onChange={(e) => {
                 setSearchTerm(e.target.value);
               }}
+              disabled={isViewer}
             />
           )}
         </td>
@@ -158,6 +163,7 @@ const ProductItem = ({
                 const numericValue = value.replace(/[^0-9]/g, '');
                 onChange?.('quantity', numericValue);
               }}
+              disabled={isViewer}
             />
           )}
         </td>
@@ -184,6 +190,7 @@ const ProductItem = ({
                 const numericValue = value.replace(/[^0-9]/g, '');
                 onChange?.('unit_price', numericValue);
               }}
+              disabled={isViewer}
             />
           )}
         </td>
@@ -201,7 +208,7 @@ const ProductItem = ({
               : ''}
           </p>
         </td>
-        {canDelete && !onlyRead && (
+        {canDelete && !onlyRead && !isViewer && (
           <td className="w-9 h-full flex justify-center items-center">
             <button
               className="flex items-center justify-center w-full h-9 rounded-[8px] hover:bg-bg cursor-pointer"

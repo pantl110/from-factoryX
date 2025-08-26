@@ -20,8 +20,17 @@ import { usePeriodSelector } from '@/hooks/use-period-selector';
 import { ProductRequiringMaterialRefModel } from './product-requiring-material';
 import CustomDateSelector from '@/ui/dropdown/select-period-dropdown/custom-date-selector';
 import { useGetMaterialHistory } from '@/hooks';
+import useMemberStore from '@/store/member-store';
 
 export type { MaterialInfoModel } from './material-info';
+
+interface LocationFormModel {
+  locations: {
+    id?: number;
+    location: string;
+    images: (string | File)[];
+  }[];
+}
 
 interface MaterialDetailProps {
   materialId: number;
@@ -32,14 +41,6 @@ interface MaterialDetailProps {
   setIsClinetDetailPanelOpen: (clientId: number) => void;
   handleOpenDeleteModal: (connectionId: number) => void;
   onProductClick?: (productId: number) => void;
-}
-
-interface LocationFormModel {
-  locations: {
-    id?: number;
-    location: string;
-    images: (string | File)[];
-  }[];
 }
 
 const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
@@ -71,6 +72,9 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       control,
       name: 'locations',
     });
+
+    const role = useMemberStore((state) => state.role);
+    const isViewer = role === 'viewer';
 
     // isDirty 상태 추적 (MaterialInfo, StockLocation 각각)
     const [isDirtyMaterialInfo, setIsDirtyMaterialInfo] = useState(false);
@@ -281,6 +285,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={handleAddStockLocation}
+                disabled={isViewer}
               />
             </div>
             {fields.length === 0 ? (
@@ -371,6 +376,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsProductEnrollmentModalOpen(true)}
+                disabled={isViewer}
               />
             </div>
             <ProductRequiringMaterial

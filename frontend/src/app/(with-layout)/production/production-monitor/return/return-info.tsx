@@ -29,11 +29,7 @@ const ReturnInfo = ({
     useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const {
-    watch,
-    setValue,
-    formState: { isValid },
-  } = useForm<RefundFormDataModel>({
+  const { watch, setValue } = useForm<RefundFormDataModel>({
     defaultValues: {
       refund_date: refundData.refund_date || '',
       amount: refundData.amount,
@@ -45,14 +41,6 @@ const ReturnInfo = ({
   const watchedAmount = watch('amount');
   const watchedProductionAmount = watch('production_amount');
   const watchedRefundDate = watch('refund_date');
-
-  // 폼 유효성 검사
-  const isFormValid =
-    watchedAmount > 0 &&
-    watchedProductionAmount > 0 &&
-    watchedRefundDate &&
-    watchedRefundDate.length === 10 && // YYYY-MM-DD 형식이 완성되어야 함
-    isValid;
 
   // 숫자를 000,000 형식으로 포맷팅하는 함수
   const formatNumber = (value: number): string => {
@@ -124,7 +112,7 @@ const ReturnInfo = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsEditing(true)}
-                disabled={refundData.plan?.status !== 'pending'}
+                // disabled={refundData.plan?.status !== 'pending'}
               />
             )}
 
@@ -134,7 +122,7 @@ const ReturnInfo = ({
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={() => setIsRegisterProductionModalOpen(true)}
-              disabled={!isFormValid || refundData.plan?.status !== 'pending'}
+              // disabled={!isFormValid || refundData.plan?.status !== 'pending'}
             />
           </div>
         </div>
@@ -251,6 +239,9 @@ const ReturnInfo = ({
         <RegisterProductionModal
           onClose={() => setIsRegisterProductionModalOpen(false)}
           logId={logId}
+          currentAmount={watchedAmount}
+          currentProductionAmount={watchedProductionAmount}
+          currentRefundDate={watchedRefundDate}
         />
       )}
     </>

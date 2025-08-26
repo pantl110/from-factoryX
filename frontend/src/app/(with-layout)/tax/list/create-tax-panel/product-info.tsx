@@ -4,14 +4,24 @@ import ProductDetail from '@/app/(with-layout)/stock/product/product-detail';
 import { FormProvider, useForm, useFieldArray } from 'react-hook-form';
 import { useImperativeHandle, forwardRef, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
-import { ProductResponseModel } from '@/types/data-model';
-import { ProductDataSyncModel } from '../../../quotation/type';
+import { ProductResponseModel, TaxProductInfoModel } from '@/types/data-model';
+// 세금계산서 편집용 품목 데이터 타입
+interface TaxProductEditModel {
+  productId: number;
+  quantity: number;
+  unit_price: number;
+  products_info: TaxProductInfoModel[]; // TaxProductInfoModel[]와 호환
+}
 
 interface ProductInfoProps {
   setIsProductDetailOpen: (isOpen: boolean) => void;
   isProductDetailOpen: boolean;
-  onFormChange?: (isDirty: boolean, formData: ProductFormDataModel) => void;
-  initialProducts?: ProductDataSyncModel[];
+  onFormChange?: (
+    isDirty: boolean,
+    isValid: boolean,
+    formData: ProductFormDataModel
+  ) => void;
+  initialProducts?: TaxProductEditModel[];
 }
 
 export interface ProductFormDataModel {
@@ -41,14 +51,25 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
 
     const methods = useForm<ProductFormDataModel>({
       defaultValues: {
-        products:
-          initialProducts?.map((product) => ({
-            productId: product.productId,
-            quantity: product.quantity,
-            unitPrice: product.unit_price,
-          })) || [],
+        products: [],
       },
     });
+
+    // initialProducts가 변경될 때마다 폼 리셋
+    useEffect(() => {
+      if (initialProducts && initialProducts.length > 0) {
+        methods.reset({
+          products: initialProducts.map((product) => ({
+            productId: product.productId,
+            quantity: product.quantity,
+            unitPrice: product.unit_price, // snake_case → camelCase로 매핑
+            productData:
+              product.products_info?.find((p) => p.id === product.productId) ||
+              undefined, // productId에 해당하는 품목 상세 정보 찾기
+          })),
+        });
+      }
+    }, [initialProducts, methods]);
 
     const { fields, append, remove } = useFieldArray({
       control: methods.control,
@@ -58,8 +79,31 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
     // 폼 변경 상태를 상위 컴포넌트로 전달
     useEffect(() => {
       if (onFormChange) {
-        const formData = methods.watch();
-        onFormChange(methods.formState.isDirty, formData);
+        const subscription = methods.watch((formData) => {
+          // 폼 유효성 검사: 모든 필수 필드가 채워져 있는지 확인
+          const isValid = Boolean(
+            methods.formState.isValid &&
+              formData.products &&
+              formData.products.length > 0 &&
+              formData.products.every(
+                (product) =>
+                  product &&
+                  typeof product.productId === 'number' &&
+                  product.productId > 0 &&
+                  typeof product.quantity === 'number' &&
+                  product.quantity > 0 &&
+                  typeof product.unitPrice === 'number' &&
+                  product.unitPrice > 0
+              )
+          );
+
+          onFormChange(
+            methods.formState.isDirty,
+            isValid,
+            formData as ProductFormDataModel
+          );
+        });
+        return () => subscription.unsubscribe();
       }
     }, [methods, onFormChange]);
 
@@ -92,7 +136,6 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                 <p className="flex-1 py-1 px-3 text-sv">품목명</p>
                 <p className="flex-1 py-1 px-3 text-sv">품목 코드</p>
                 <p className="flex-1 py-1 px-3 text-sv">규격</p>
-                <p className="w-[80px] py-1 px-3 text-sv">단위</p>
                 <p className="flex-1 py-1 px-3 text-sv">제작 수량</p>
                 <p className="w-[100px] py-1 px-3 text-sv">단가</p>
                 <p className="flex-1 py-1 px-3 text-sv">금액</p>

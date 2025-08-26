@@ -4,7 +4,7 @@ import {
   ProductListResponseModel,
   PaginationModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface GetProductListModel {
   q?: string;
@@ -19,7 +19,7 @@ const useGetProduct = () => {
   const [productList, setProductList] = useState<ProductResponseModel[]>([]);
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
   const [allProductCodes, setAllProductCodes] = useState<string[]>([]);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 제품 목록 조회 (q, page, page_size)
   const getProductList = useCallback(

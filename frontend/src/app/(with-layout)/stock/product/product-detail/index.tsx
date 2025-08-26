@@ -37,7 +37,7 @@ import MaterialDetailPanel from '../../material/material-detail';
 import DeleteModal from '@/ui/modal/delete-modal';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -72,7 +72,9 @@ const ProductDetail = ({
     isLoading: isMaterialProductLoading,
   } = useMaterialProduct();
   const { getMaterialDetail } = useGetMaterial();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
   const {
     createLocation,
     updateLocation,
@@ -656,6 +658,7 @@ const ProductDetail = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={handleAddStockLocation}
+                disabled={isViewer}
               />
             </div>
             {/* locations가 없을 때 */}
@@ -691,6 +694,7 @@ const ProductDetail = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsMaterialModalOpen(true)}
+                disabled={isViewer}
               />
             </div>
             <StockStatus

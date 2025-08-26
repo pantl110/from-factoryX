@@ -1,7 +1,12 @@
-import { ProductResponseModel } from '@/types/data-model';
-
 interface ReturnTableItemProps {
-  productDetail: ProductResponseModel;
+  productDetail: {
+    id: number;
+    name: string;
+    code: string;
+    current_stock: number;
+    spec: string;
+    unit: string;
+  };
 }
 
 const ReturnTableItem = ({ productDetail }: ReturnTableItemProps) => {

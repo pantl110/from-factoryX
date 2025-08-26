@@ -18,7 +18,7 @@ const CardDeleteModal = ({ onClose, onConfirm }: CardDeleteModalProps) => {
           text="취소"
           textColor="text-sv"
           onClick={onClose}
-          hoverColor=""
+          hoverColor="hover:bg-bg"
         />
         <MiniBtn
           text="삭제"

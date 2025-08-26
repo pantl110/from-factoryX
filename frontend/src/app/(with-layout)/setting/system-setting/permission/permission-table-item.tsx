@@ -33,9 +33,9 @@ const PermissionTableItem = ({
   const { status, name, email, role, invited_at: invitedAt, factory } = item;
   const textColor = status === 'active' ? 'text-primary' : 'text-dg';
   const roleText =
-    role === 'admin' || role === '관리자' || role === '시스템 관리자'
+    role === 'admin'
       ? '시스템 관리자'
-      : role === 'manager' || role === '운영자'
+      : role === 'manager'
         ? '운영자'
         : '조회자';
   const authColors = PermissionRoleInfo[roleText as PermissionRoleType];

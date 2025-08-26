@@ -4,7 +4,7 @@ import {
   MaterialResponseModel,
   PaginationModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface MaterialFilterModel {
   page?: number;
@@ -20,7 +20,7 @@ const useGetMaterial = () => {
   const [material, setMaterial] = useState<MaterialResponseModel | null>(null);
   const [materialList, setMaterialList] = useState<MaterialResponseModel[]>([]);
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 원자재 목록 조회
   const getMaterialList = useCallback(

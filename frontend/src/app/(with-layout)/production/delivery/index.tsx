@@ -6,25 +6,22 @@ import { useParams } from 'next/navigation';
 import CreateTransactionOverlayview from './modals/create-transaction-overlayview';
 import usePageStatusStore from '@/store/page-status-store';
 import MoveToStorageModal from './modals/move-to-storage-modal';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import {
-  QuotationProductResponseModel,
-  ProductResponseModel,
   QuotationResponseModel,
   ProjectStatusType,
+  ProjectPlanModel,
 } from '@/types/data-model';
 import Spinner from '@/ui/spinner';
 import DeliveryOverlay from './modals/delevery-overlay';
 import {
   useCheckAll,
   useUpdateProjectStatus,
-  useGetQuotationProducts,
-  useGetProduct,
+  useGetProjectPlans,
   useUpdateQuotationProductDelivery,
 } from '@/hooks';
 
 interface DeliveryProps {
-  quotationId: number;
   quotationData: QuotationResponseModel;
   startDate: string;
   onProjectStatusChange?: () => Promise<void>;
@@ -32,7 +29,6 @@ interface DeliveryProps {
 }
 
 const Delivery = ({
-  quotationId,
   quotationData,
   startDate,
   onProjectStatusChange,
@@ -55,86 +51,67 @@ const Delivery = ({
   const setMoveToStorageModalOpen = usePageStatusStore(
     (state) => state.setMoveToStorageModalOpen
   );
-  const setDeliveryData = usePageStatusStore((state) => state.setDeliveryData);
+  const setDeliveryDataStore = usePageStatusStore(
+    (state) => state.setDeliveryData
+  );
 
   // Zustand store에서 factoryId 가져오기
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
-  // 견적서 품목 데이터 가져오기
-  const {
-    data: deliveryData,
-    isLoading,
-    error,
-  } = useGetQuotationProducts(quotationId, factoryId || undefined);
+  // 프로젝트 플랜에서 납품 정보 가져오기
+  const { getProjectPlans, isLoading, error } = useGetProjectPlans();
+  const [deliveryData, setDeliveryData] = useState<ProjectPlanModel[]>([]);
 
-  // 제품 상세 정보 배열
-  const [productDetails, setProductDetails] = useState<
-    (ProductResponseModel | null)[]
-  >([]);
-  const { getProductDetail } = useGetProduct();
   const { updateProjectStatus, isLoading: isUpdateLoading } =
     useUpdateProjectStatus();
 
   const { updateQuotationProductDelivery } =
     useUpdateQuotationProductDelivery();
 
+  // 프로젝트 플랜 데이터 로드
+  useEffect(() => {
+    const loadProjectPlans = async () => {
+      if (factoryId && projectId) {
+        try {
+          const result = await getProjectPlans(projectId);
+          if (result.success && result.data) {
+            setDeliveryData(result.data);
+          }
+        } catch {
+          // Error handling can be added here if needed
+        }
+      }
+    };
+
+    loadProjectPlans();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factoryId, projectId]); // getProjectPlans 제거
+
   // 체크 기능
-  const itemIds =
-    deliveryData?.map((item: QuotationProductResponseModel) => item.id) || [];
+  const itemIds = deliveryData?.map((item: ProjectPlanModel) => item.id) || [];
   const { checkedIds, isAllChecked, isChecked, toggleAll, toggleOne } =
     useCheckAll(itemIds);
 
   // 오버레이 상태
   const [isDeliveryOverlayOpen, setIsDeliveryOverlayOpen] = useState(false);
   const [selectedDeliveryData, setSelectedDeliveryData] =
-    useState<QuotationProductResponseModel | null>(null);
-  const [selectedProductDetail, setSelectedProductDetail] =
-    useState<ProductResponseModel | null>(null);
-
-  // 제품 상세 정보 가져오기
-  useEffect(() => {
-    const fetchProductDetails = async () => {
-      if (deliveryData) {
-        const details = await Promise.all(
-          deliveryData.map(async (item: QuotationProductResponseModel) => {
-            if (item.product) {
-              const result = await getProductDetail(item.product);
-              return result.success ? result.data : null;
-            }
-            return null;
-          })
-        );
-        setProductDetails(
-          details.filter(
-            (
-              detail: ProductResponseModel | null | undefined
-            ): detail is ProductResponseModel | null => detail !== undefined
-          )
-        );
-      }
-    };
-
-    fetchProductDetails();
-  }, [deliveryData, getProductDetail]);
+    useState<ProjectPlanModel | null>(null);
 
   // deliveryData를 store에 설정
   useEffect(() => {
     if (deliveryData) {
-      setDeliveryData(
-        deliveryData.map((item: QuotationProductResponseModel) => ({
-          delivery_date: item.delivery_date || undefined,
+      setDeliveryDataStore(
+        deliveryData.map((item: ProjectPlanModel) => ({
+          delivery_date: item.quotation_product?.delivery_date || undefined,
         }))
       );
     }
-  }, [deliveryData, setDeliveryData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deliveryData]); // setDeliveryDataStore 제거
 
   // 아이템 클릭 핸들러
-  const handleItemClick = (
-    data: QuotationProductResponseModel,
-    productDetail: ProductResponseModel | null
-  ) => {
+  const handleItemClick = (data: ProjectPlanModel) => {
     setSelectedDeliveryData(data);
-    setSelectedProductDetail(productDetail);
     setIsDeliveryOverlayOpen(true);
   };
 
@@ -145,60 +122,49 @@ const Delivery = ({
 
   // 체크된 품목들의 데이터 가져오기
   const getCheckedItemsData = () => {
-    if (!deliveryData || !productDetails) return [];
+    if (!deliveryData) return [];
 
     return checkedIds
       .map((checkedId) => {
-        const itemIndex = deliveryData.findIndex(
-          (item: QuotationProductResponseModel) => item.id === checkedId
+        const item = deliveryData.find(
+          (item: ProjectPlanModel) => item.id === checkedId
         );
-        if (itemIndex === -1) return null;
-
-        const item = deliveryData[itemIndex];
-        const productDetail = productDetails[itemIndex];
+        if (!item) return null;
 
         return {
           companyName: quotationData.factory_name,
-          productName: productDetail?.name || '-',
-          spec: productDetail?.spec || '-',
-          unit: productDetail?.unit || '-',
+          productName: item.quotation_product?.product?.name || '-',
+          spec: item.quotation_product?.product?.spec || '-',
+          unit: item.quotation_product?.product?.unit || '-',
           quantity: item.quantity,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null);
   };
 
-  // 납품일자 변경 핸들러
-  const handleDeliveryDateChange = async (id: string, newDate: string) => {
-    try {
-      // API 호출 후 성공 시 데이터 새로고침
-      // deliveryData가 이미 업데이트되었으므로 store만 업데이트
-      if (deliveryData) {
-        const updatedData = deliveryData.map(
-          (item: QuotationProductResponseModel) =>
-            item.id === Number(id) ? { ...item, delivery_date: newDate } : item
-        );
-        setDeliveryData(
-          updatedData.map((item: QuotationProductResponseModel) => ({
-            delivery_date: item.delivery_date || undefined,
-          }))
-        );
-      }
-    } catch (error) {
-      console.error('납품일자 변경 실패:', error);
-      alert('납품일자 변경에 실패했습니다.');
-    }
-  };
-
   // 납품상태 변경 핸들러
   const handleDeliveryStatusChange = async (id: string, newStatus: string) => {
     try {
       // API 호출 후 성공 시 데이터 새로고침
-      await updateQuotationProductDelivery(Number(id), {
-        is_delivered: newStatus === '완료',
+      const productId = Number(id);
+      const item = deliveryData.find((item) => item.id === productId);
+      const deliveryDate = item?.quotation_product?.delivery_date;
+
+      const result = await updateQuotationProductDelivery(productId, {
+        is_delivery: newStatus === '완료',
+        delivery_date: deliveryDate || undefined,
       });
-    } catch (error) {
-      console.error('납품상태 변경 실패:', error);
+
+      if (result.success) {
+        setDeliveryData(
+          deliveryData.map((item) =>
+            item.id === productId
+              ? { ...item, is_delivery: newStatus === '완료' }
+              : item
+          )
+        );
+      }
+    } catch {
       alert('납품상태 변경에 실패했습니다.');
     }
   };
@@ -209,19 +175,20 @@ const Delivery = ({
       // 1. 품목들 중 상태가 예정인 것은 완료로 바꾸기
       if (deliveryData) {
         const updatePromises = deliveryData
-          .filter((item: QuotationProductResponseModel) => !item.is_delivery) // 예정 상태인 항목만 필터링
-          .map(async (item: QuotationProductResponseModel) => {
+          .filter(
+            (item: ProjectPlanModel) => !item.quotation_product?.is_delivery
+          ) // 예정 상태인 항목만 필터링
+          .map(async (item: ProjectPlanModel) => {
             try {
               const result = await updateQuotationProductDelivery(
-                item.id || 0,
+                item.quotation_product.id,
                 {
-                  is_delivered: true,
-                  delivery_date: item.delivery_date || undefined, // 납품일자도 함께 업데이트
+                  is_delivery: true,
+                  delivery_date: item.quotation_product.delivery_date, // 납품일자도 함께 업데이트
                 }
               );
               return result.success;
-            } catch (error) {
-              console.error(`품목 ${item.id} 상태 변경 실패:`, error);
+            } catch {
               return false;
             }
           });
@@ -229,7 +196,7 @@ const Delivery = ({
         const updateResults = await Promise.all(updatePromises);
         const successCount = updateResults.filter(Boolean).length;
         const totalCount = deliveryData.filter(
-          (item: QuotationProductResponseModel) => !item.is_delivery
+          (item: ProjectPlanModel) => !item.quotation_product?.is_delivery
         ).length;
 
         if (successCount < totalCount) {
@@ -295,24 +262,22 @@ const Delivery = ({
               <DeliveryTableHeader
                 isAllChecked={isAllChecked}
                 onToggleAll={toggleAll}
+                projectStatus={projectStatus}
               />
               {deliveryData && deliveryData.length > 0 && (
                 <>
-                  {deliveryData.map(
-                    (data: QuotationProductResponseModel, index: number) => (
-                      <DeliveryTableItem
-                        key={data.id}
-                        data={data}
-                        productDetail={productDetails[index]}
-                        isChecked={isChecked(data.id)}
-                        onToggle={() => toggleOne(data.id)}
-                        onItemClick={handleItemClick}
-                        projectStatus={projectStatus}
-                        onDeliveryDateChange={handleDeliveryDateChange}
-                        onDeliveryStatusChange={handleDeliveryStatusChange}
-                      />
-                    )
-                  )}
+                  {deliveryData.map((data: ProjectPlanModel) => (
+                    <DeliveryTableItem
+                      key={data.id}
+                      data={data}
+                      isChecked={isChecked(data.id)}
+                      onToggle={() => toggleOne(data.id)}
+                      onItemClick={handleItemClick}
+                      projectStatus={projectStatus}
+                      onDeliveryDateChange={() => {}}
+                      onDeliveryStatusChange={handleDeliveryStatusChange}
+                    />
+                  ))}
                 </>
               )}
             </>
@@ -322,22 +287,23 @@ const Delivery = ({
       </div>
 
       {/* 아이템 개별 클릭 시 납품표 출력 오버레이 */}
-      {isDeliveryOverlayOpen &&
-        selectedDeliveryData &&
-        selectedProductDetail && (
-          <DeliveryOverlay
-            onClose={() => setIsDeliveryOverlayOpen(false)}
-            data={[
-              {
-                companyName: quotationData.factory_name,
-                productName: selectedProductDetail.name,
-                spec: selectedProductDetail.spec,
-                unit: selectedProductDetail.unit,
-                quantity: selectedDeliveryData.quantity,
-              },
-            ]}
-          />
-        )}
+      {isDeliveryOverlayOpen && selectedDeliveryData && (
+        <DeliveryOverlay
+          onClose={() => setIsDeliveryOverlayOpen(false)}
+          data={[
+            {
+              companyName: quotationData.factory_name,
+              productName:
+                selectedDeliveryData.quotation_product?.product?.name || '-',
+              spec:
+                selectedDeliveryData.quotation_product?.product?.spec || '-',
+              unit:
+                selectedDeliveryData.quotation_product?.product?.unit || '-',
+              quantity: selectedDeliveryData.quantity,
+            },
+          ]}
+        />
+      )}
 
       {/* 체크된 아이템들의 납품표 출력 오버레이 */}
       {isPrintDeliveryOverlayOpen && checkedIds.length > 0 && (
@@ -353,15 +319,13 @@ const Delivery = ({
         deliveryData.length > 0 && (
           <DeliveryOverlay
             onClose={() => setIsPrintAllDeliveryOverlayOpen(false)}
-            data={deliveryData.map(
-              (item: QuotationProductResponseModel, index: number) => ({
-                companyName: quotationData.factory_name,
-                productName: productDetails[index]?.name || '-',
-                spec: productDetails[index]?.spec || '-',
-                unit: productDetails[index]?.unit || '-',
-                quantity: item.quantity,
-              })
-            )}
+            data={deliveryData.map((item: ProjectPlanModel) => ({
+              companyName: quotationData.factory_name,
+              productName: item.quotation_product?.product?.name || '-',
+              spec: item.quotation_product?.product?.spec || '-',
+              unit: item.quotation_product?.product?.unit || '-',
+              quantity: item.quantity,
+            }))}
           />
         )}
 

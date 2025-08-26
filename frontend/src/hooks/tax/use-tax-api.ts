@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface TaxApiResponseModel<T = unknown> {
   success: boolean;
@@ -31,7 +31,7 @@ export type TaxApiEndpointType =
 const useTaxApi = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useFactoryStore();
+  const { factoryId } = useMemberStore();
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // 공통 API 호출 함수
@@ -53,12 +53,19 @@ const useTaxApi = () => {
       setError(null);
 
       try {
+        // factoryId가 없으면 API 호출 차단
+        if (!factoryId) {
+          return {
+            success: false,
+            error:
+              '공장 정보가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.',
+          };
+        }
+
         const { method = 'GET', body, queryParams = {} } = options;
 
         // factoryId를 queryParams에 추가
-        if (factoryId) {
-          queryParams.factory_id = factoryId;
-        }
+        queryParams.factory_id = factoryId;
 
         // URL 구성
         let url = `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${endpoint}`;

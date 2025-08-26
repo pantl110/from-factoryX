@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import Pagination from '@/components/pagination';
-import Checkbox from '@/ui/checkbox';
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr';
 import LinkModalTableItem from './link-modal-table-item';
 import { UnlinkedTaxInvoiceResponseModel } from '@/types/data-model';
@@ -12,9 +11,10 @@ interface LinkModalTableProps {
   currentPage?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
+  onOrderingToggle: () => void;
   isLoading?: boolean;
   selectedId: number | null;
-  setSelectedId: (id: number) => void;
+  setSelectedId: (id: number | null) => void;
 }
 
 const LinkModalTable = ({
@@ -22,21 +22,25 @@ const LinkModalTable = ({
   currentPage = 1,
   totalPages = 1,
   onPageChange,
+  onOrderingToggle,
   isLoading,
   selectedId,
   setSelectedId,
 }: LinkModalTableProps) => {
-  const handleToggle = useCallback(
+  const handleItemClick = useCallback(
     (id: number) => {
-      setSelectedId(id);
+      // 이미 선택된 항목을 클릭하면 선택 해제, 아니면 선택
+      setSelectedId(selectedId === id ? null : id);
     },
-    [setSelectedId]
+    [setSelectedId, selectedId]
   );
-  const handleRowClick = useCallback(
-    (id: number) => {
-      setSelectedId(id);
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setSelectedId(null); // 페이지 변경 시 선택 초기화
+      onPageChange?.(page);
     },
-    [setSelectedId]
+    [setSelectedId, onPageChange]
   );
 
   return (
@@ -48,11 +52,11 @@ const LinkModalTable = ({
       ) : items && items.length > 0 ? (
         <>
           <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1">
-            <div className="opacity-0">
-              <Checkbox isChecked={false} onToggle={() => {}} />
-            </div>
             <p className="flex-1 px-3">구분</p>
-            <div className="px-3 w-[150px] h-full flex items-center gap-1 hover:bg-bg cursor-pointer">
+            <div
+              className="px-3 w-[150px] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
+              onClick={onOrderingToggle}
+            >
               <p className="">작성일자</p>
               <CaretUpDownIcon size={21} className="text-sv" />
             </div>
@@ -65,23 +69,21 @@ const LinkModalTable = ({
           {items.map((item, index) => (
             <LinkModalTableItem
               key={item.id || index}
-              onItemClick={() => handleRowClick(item.id)}
-              isChecked={selectedId === item.id}
-              onToggle={() => handleToggle(item.id)}
+              onItemClick={() => handleItemClick(item.id)}
+              isSelected={selectedId === item.id}
               item={item}
             />
           ))}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange || (() => {})}
-          />
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       ) : (
-        <NoHistoryBox
-          title="연결할 세금계산서가 없습니다."
-          text="연결할 세금계산서가 없습니다."
-        />
+        <NoHistoryBox text="세금계산서가 생성되면 이곳에서 확인 후, 프로젝트를 연결 할 수  있어요." />
       )}
     </div>
   );

@@ -22,6 +22,7 @@ import {
   formatDate,
 } from '@/hooks/format-number';
 import useGetClient from '@/hooks/factory/factory-client/use-get-client';
+import useMemberStore from '@/store/member-store';
 
 interface InputSectionProps {
   setValue: UseFormSetValue<QuotationFormModel>;
@@ -38,7 +39,9 @@ const InputSection = ({
   onClientSelect,
   showErrors = false,
 }: InputSectionProps) => {
-  const { clientList, searchClients } = useGetClient();
+  const { clientList, getAllClientList } = useGetClient();
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
 
   const {
     setInput: setCompanyNameInput,
@@ -96,12 +99,13 @@ const InputSection = ({
                   onChange={(e) => {
                     field.onChange(e);
                     setCompanyNameInput(e.target.value);
-                    searchClients(e.target.value);
+                    getAllClientList(e.target.value);
                   }}
                   onFocus={() => setIsCompanyNameDropdownOpen(true)}
                   onBlur={handleCompanyNameBlur}
                   ref={field.ref}
                   name={field.name}
+                  disabledReadOnly={isViewer}
                 />
               );
             }}
@@ -144,6 +148,7 @@ const InputSection = ({
                   }}
                   ref={field.ref}
                   name={field.name}
+                  disabledReadOnly={isViewer}
                 />
               );
             }}
@@ -161,6 +166,7 @@ const InputSection = ({
               placeholder="대표자명을 입력하세요."
               required
               showError={showErrors && !!errors.representative_name}
+              disabledReadOnly={isViewer}
               {...field}
             />
           )}
@@ -188,6 +194,7 @@ const InputSection = ({
               }}
               ref={field.ref}
               name={field.name}
+              disabledReadOnly={isViewer}
             />
           )}
         />
@@ -203,6 +210,7 @@ const InputSection = ({
               placeholder="업태를 입력하세요."
               showError={showErrors && !!errors.business_type}
               required
+              disabledReadOnly={isViewer}
               {...field}
             />
           )}
@@ -217,6 +225,7 @@ const InputSection = ({
               required
               placeholder="종목을 입력하세요."
               showError={showErrors && !!errors.business_category}
+              disabledReadOnly={isViewer}
               {...field}
             />
           )}
@@ -233,6 +242,7 @@ const InputSection = ({
               placeholder="사업장 주소를 입력하세요."
               required
               showError={showErrors && !!errors.address}
+              disabledReadOnly={isViewer}
               {...field}
             />
           )}
@@ -246,6 +256,7 @@ const InputSection = ({
             <Input
               label="담당자명"
               placeholder="담당자명을 입력하세요."
+              disabledReadOnly={isViewer}
               {...field}
             />
           )}
@@ -264,6 +275,7 @@ const InputSection = ({
               label="이메일"
               placeholder="담당자 이메일을 입력하세요."
               showError={showErrors && !!errors.email}
+              disabledReadOnly={isViewer}
               {...field}
             />
           )}
@@ -292,6 +304,7 @@ const InputSection = ({
                 }}
                 ref={field.ref}
                 name={field.name}
+                disabledReadOnly={isViewer}
               />
             );
           }}
@@ -318,6 +331,7 @@ const InputSection = ({
                 }}
                 ref={field.ref}
                 name={field.name}
+                disabledReadOnly={isViewer}
               />
             );
           }}

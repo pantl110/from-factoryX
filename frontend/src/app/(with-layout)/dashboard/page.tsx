@@ -29,7 +29,7 @@ import {
   PublishedTaxInvoiceResponseModel,
   PublishedTaxInvoiceListResponseModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { TodayProductionPlanModel } from './type';
 import NoHistoryBox from '@/ui/no-history-box';
 
@@ -58,7 +58,7 @@ const DashboardPageContent = () => {
   const [taxInvoicesData, setTaxInvoicesData] = useState<
     PublishedTaxInvoiceResponseModel[]
   >([]);
-  const { factoryId, initializeFactoryId } = useFactoryStore();
+  const { factoryId, initializeFactoryId } = useMemberStore();
 
   // 모든 데이터 로딩 상태를 통합
   const isLoading =
@@ -206,7 +206,7 @@ const DashboardPageContent = () => {
               {/* Summary KPI */}
               <div className="flex flex-col">
                 <h3 className="Heading-3">Summary KPI</h3>
-                {dashboardData ? (
+                {factoryId && dashboardData ? (
                   <div className="flex flex-col gap-3 w-[280px] min-w-[248px] mt-3">
                     <DailyProductionQuantity
                       currentMonthProjects={

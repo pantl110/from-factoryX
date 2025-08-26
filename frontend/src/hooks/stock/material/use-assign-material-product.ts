@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface AssignMaterialProductModel {
   product_id: number;
@@ -17,7 +17,7 @@ interface AssignMaterialProductModel {
 const useAssignMaterialProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const assignMaterialProduct = async (data: AssignMaterialProductModel) => {
     setIsLoading(true);

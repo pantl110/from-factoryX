@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { ClientListResponseModel } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface GetClientParamsModel {
   q?: string; // 검색어
@@ -14,10 +14,8 @@ const useGetClient = () => {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchKeyword, setSearchKeyword] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   // 거래처 목록 조회 함수
   const getClients = useCallback(
@@ -73,70 +71,50 @@ const useGetClient = () => {
     [factoryId]
   );
 
-  // 검색 함수
-  const searchClients = useCallback(
-    async (keyword: string) => {
+  // 전체 거래처 목록을 한 번에 가져오는 함수 // 검색 가능
+  const getAllClientList = useCallback(
+    async (searchQuery?: string) => {
+      setIsLoading(true);
+      setError(null);
+
       if (!factoryId) {
         setError('공장 ID가 설정되지 않았습니다.');
         return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
       }
 
-      setSearchKeyword(keyword);
-      setCurrentPage(1); // 검색 시 첫 페이지로 리셋
-
-      return await getClients({
-        q: keyword,
-        page: 1,
-        page_size: pageSize,
-      });
-    },
-    [pageSize, getClients, factoryId]
-  );
-
-  // 전체 거래처 목록을 한 번에 가져오는 함수
-  const getAllClientList = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    if (!factoryId) {
-      setError('공장 ID가 설정되지 않았습니다.');
-      return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
-    }
-
-    try {
-      // 먼저 전체 개수를 조회
-      const countResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client?factory_id=${factoryId}&page=1&page_size=1`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
-
-      if (!countResponse.ok) {
-        const errorData = await countResponse.json();
-        const errorMessage =
-          errorData.detail || '거래처 목록을 불러오는데 실패했습니다.';
-        setError(errorMessage);
-        return { success: false, error: errorMessage };
-      }
-
-      const countResult = await countResponse.json();
-      const totalCount = countResult.count || 0;
-
-      if (totalCount === 0) {
-        setClientList({
-          count: 0,
-          totalCnt: 0,
-          pageCnt: 1,
-          curPage: 1,
-          nextPage: null,
-          previousPage: null,
-          data: [],
+      try {
+        // 먼저 전체 개수를 조회
+        const countQueryParams = new URLSearchParams({
+          factory_id: factoryId.toString(),
+          page: '1',
+          page_size: '1',
         });
-        return {
-          success: true,
-          data: {
+
+        if (searchQuery && searchQuery.trim()) {
+          countQueryParams.append('q', searchQuery.trim());
+        }
+
+        const countResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client?${countQueryParams}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          }
+        );
+
+        if (!countResponse.ok) {
+          const errorData = await countResponse.json();
+          const errorMessage =
+            errorData.detail || '거래처 목록을 불러오는데 실패했습니다.';
+          setError(errorMessage);
+          return { success: false, error: errorMessage };
+        }
+
+        const countResult = await countResponse.json();
+        const totalCount = countResult.totalCnt || 0;
+
+        if (totalCount === 0) {
+          setClientList({
             count: 0,
             totalCnt: 0,
             pageCnt: 1,
@@ -144,45 +122,61 @@ const useGetClient = () => {
             nextPage: null,
             previousPage: null,
             data: [],
-          },
-        };
-      }
-
-      // 전체 개수만큼 한 번에 가져오기
-      const allResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client?factory_id=${factoryId}&page=1&page_size=${totalCount}`,
-        {
-          method: 'GET',
-          credentials: 'include',
+          });
+          return {
+            success: true,
+            data: {
+              count: 0,
+              totalCnt: 0,
+              pageCnt: 1,
+              curPage: 1,
+              nextPage: null,
+              previousPage: null,
+              data: [],
+            },
+          };
         }
-      );
 
-      if (allResponse.ok) {
-        const result: ClientListResponseModel = await allResponse.json();
-        setClientList(result);
-        return { success: true, data: result };
-      } else {
-        const errorData = await allResponse.json();
-        const errorMessage =
-          errorData.detail || '거래처 목록을 불러오는데 실패했습니다.';
+        // 전체 개수만큼 한 번에 가져오기
+        const allQueryParams = new URLSearchParams({
+          factory_id: factoryId.toString(),
+          page: '1',
+          page_size: totalCount.toString(),
+        });
+
+        if (searchQuery && searchQuery.trim()) {
+          allQueryParams.append('q', searchQuery.trim());
+        }
+
+        const allResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client?${allQueryParams}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          }
+        );
+
+        if (allResponse.ok) {
+          const result: ClientListResponseModel = await allResponse.json();
+          setClientList(result);
+          return { success: true, data: result };
+        } else {
+          const errorData = await allResponse.json();
+          const errorMessage =
+            errorData.detail || '거래처 목록을 불러오는데 실패했습니다.';
+          setError(errorMessage);
+          return { success: false, error: errorMessage };
+        }
+      } catch {
+        const errorMessage = '서버 연결에 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      const errorMessage = '서버 연결에 실패했습니다.';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setIsLoading(false);
-    }
-  }, [factoryId]);
-
-  // 컴포넌트가 마운트될 때 자동으로 데이터 불러오기
-  useEffect(() => {
-    if (factoryId) {
-      getClients();
-    }
-  }, [factoryId, getClients]);
+    },
+    [factoryId]
+  );
 
   return {
     // 데이터
@@ -191,13 +185,10 @@ const useGetClient = () => {
     error,
 
     // 상태
-    searchKeyword,
-    currentPage,
     pageSize,
 
     // 함수
     getClients,
-    searchClients,
     getAllClientList,
   };
 };

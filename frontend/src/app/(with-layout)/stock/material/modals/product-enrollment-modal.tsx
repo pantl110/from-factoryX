@@ -10,7 +10,7 @@ import {
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import ManualAddProduct from './manual-add-product';
 import { useGetProduct, useAssignProduct } from '@/hooks';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import ConnetionItem from '../../modals/connetion-item';
 
 interface ProductEnrollmentModalProps {
@@ -38,7 +38,7 @@ const ProductEnrollmentModal = ({
   >([]);
   const { getProductList } = useGetProduct();
   const { assignProduct, isLoading: isAssignLoading } = useAssignProduct();
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const [selectedProducts, setSelectedProducts] = useState<MaterialItemModel[]>(
     []
@@ -157,7 +157,7 @@ const ProductEnrollmentModal = ({
           text="직접 추가"
           textColor="text-dg"
           borderColor="border-lg"
-          hoverColor="bg-bg"
+          hoverColor="hover:bg-bg"
           height="h-12"
           onClick={() => setIsManualAddMode(true)}
         />
@@ -209,7 +209,7 @@ const ProductEnrollmentModal = ({
           <MiniBtn
             text="취소"
             textColor="text-sv"
-            hoverColor="bg-bg"
+            hoverColor="hover:bg-bg"
             onClick={onClose}
           />
           <MiniBtn

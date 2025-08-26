@@ -4,7 +4,9 @@ import { X } from '@phosphor-icons/react';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '@/store/auth-store';
+import useMemberStore from '@/store/member-store';
 import { useLogout } from '@/hooks';
+import { MemberRoleType } from '@/types/data-model';
 
 interface ProfileModalProps {
   onClose: () => void;
@@ -14,6 +16,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
   const profileModalRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { userInfo } = useAuthStore();
+  const role = useMemberStore((state) => state.role);
   const { logout, isLoading: isLogoutLoading } = useLogout();
 
   // 외부 클릭 시 닫기
@@ -35,18 +38,16 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
   }, [onClose]);
 
   // 권한 텍스트 매핑
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case '비활성유저':
+  const getStatusText = (role: MemberRoleType) => {
+    switch (role) {
+      case 'viewer':
         return '조회자';
-      case '활성유저':
+      case 'manager':
         return '운영자';
-      case '관리자':
+      case 'admin':
         return '시스템 관리자';
-      case '탈퇴유저':
-        return '탈퇴 사용자';
       default:
-        return status;
+        return role;
     }
   };
 
@@ -76,7 +77,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
           <div className="flex flex-col gap-4">
             <div className="flex gap-2 items-center">
               <p className="Me_Body-1 text-sv">
-                {getStatusText(userInfo?.status || '-')}
+                {role ? getStatusText(role as MemberRoleType) : '-'}
               </p>
               {userInfo?.username && (
                 <>
@@ -96,7 +97,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
             text="프로필 관리"
             borderColor="border-lg"
             textColor="text-dg"
-            hoverColor="bg-bg"
+            hoverColor="hover:bg-bg"
             width="w-full"
             onClick={() => {
               router.push('/setting');
@@ -109,7 +110,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
             text="로그아웃"
             borderColor="border-lg"
             textColor="text-dg"
-            hoverColor="bg-bg"
+            hoverColor="hover:bg-bg"
             width="w-full"
             onClick={async () => {
               const result = await logout();

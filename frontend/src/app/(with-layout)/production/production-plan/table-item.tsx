@@ -12,8 +12,9 @@ import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { useState, useEffect } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks/format-number';
-import { useMaterialStatus } from '@/hooks';
+
 import { useForm, Controller } from 'react-hook-form';
+import MiniBtn from '@/ui/mini-btn';
 
 // Form 데이터 타입 정의
 interface ProductionPlanFormDataModel {
@@ -26,11 +27,17 @@ interface ProductionPlanFormDataModel {
 interface TableItemProps {
   item: ProjectPlanModel;
   onOperationStatusClick?: (e: React.MouseEvent) => void;
-  onFacilityClick: (e: React.MouseEvent) => void;
+  onFacilityClick: (e: React.MouseEvent, rowId?: number | null) => void;
   onFormChange?: (
     planId: number,
     formData: ProductionPlanFormDataModel
   ) => void;
+  onSave?: (planId: number, formData: ProductionPlanFormDataModel) => void; // 저장 함수 추가
+  onAddPlan?: (
+    planData: ProductionPlanFormDataModel,
+    parentPlanId: number
+  ) => void; // 추가 계획 생성 함수
+  onRemoveAdditionalPlan?: (parentPlanId: number) => void; // 추가 계획 제거 함수
   formData?: ProductionPlanFormDataModel; // 현재 form 데이터
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
@@ -41,6 +48,9 @@ const TableItem = ({
   onOperationStatusClick,
   onFacilityClick,
   onFormChange,
+  onSave,
+  onAddPlan,
+  onRemoveAdditionalPlan,
   formData: currentFormData,
   equipments,
   projectStatus,
@@ -59,9 +69,8 @@ const TableItem = ({
   };
 
   const operationStatus = getOperationStatus(item.status);
-  const { materialStatus } = useMaterialStatus(
-    item.quotation_product.product.id
-  ) as { materialStatus: InventoryStatusType };
+  // ProjectPlanModel의 material_status 필드 사용
+  const materialStatus = item.material_status as InventoryStatusType;
   const operationColor =
     OperationStatusColorMap[operationStatus] || OperationStatusColorMap.pending;
   const materialColor = InventoryStatusColorMap[materialStatus];
@@ -70,32 +79,52 @@ const TableItem = ({
   // React Hook Form 설정
   const { control, watch, reset } = useForm<ProductionPlanFormDataModel>({
     defaultValues: {
-      quantity: item.quantity,
-      equipment_id: item.equipment.id,
-      start_date: item.start_date
-        ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
-      end_date: item.end_date
-        ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
+      quantity: currentFormData?.quantity ?? item.quantity,
+      equipment_id: currentFormData?.equipment_id ?? item.equipment.id,
+      start_date:
+        currentFormData?.start_date ??
+        (item.start_date
+          ? new Date(item.start_date)
+              .toISOString()
+              .slice(0, 16)
+              .replace('T', ' ')
+          : ''),
+      end_date:
+        currentFormData?.end_date ??
+        (item.end_date
+          ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+          : ''),
     },
   });
 
   // 컴포넌트 마운트 시에만 form을 초기화
   useEffect(() => {
     const formattedData = {
-      quantity: item.quantity,
-      equipment_id: item.equipment.id,
-      start_date: item.start_date
-        ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
-      end_date: item.end_date
-        ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
+      quantity: currentFormData?.quantity ?? item.quantity,
+      equipment_id: currentFormData?.equipment_id ?? item.equipment.id,
+      start_date:
+        currentFormData?.start_date ??
+        (item.start_date
+          ? new Date(item.start_date)
+              .toISOString()
+              .slice(0, 16)
+              .replace('T', ' ')
+          : ''),
+      end_date:
+        currentFormData?.end_date ??
+        (item.end_date
+          ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
+          : ''),
     };
     reset(formattedData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.start_date, item.end_date, item.quantity, item.equipment.id]);
+  }, [
+    currentFormData,
+    item.start_date,
+    item.end_date,
+    item.quantity,
+    item.equipment.id,
+  ]);
 
   // Form 데이터 변경 시 부모 컴포넌트에 알림 (필요한 필드만 감시)
   const watchedQuantity = watch('quantity');
@@ -103,31 +132,40 @@ const TableItem = ({
   const watchedStartDate = watch('start_date');
   const watchedEndDate = watch('end_date');
 
-  // currentFormData.equipment_id가 변경될 때 React Hook Form 업데이트
+  // 생산수량에 따라 추가 계획 동적 관리
   useEffect(() => {
-    if (
-      currentFormData?.equipment_id &&
-      currentFormData.equipment_id !== item.equipment.id
-    ) {
-      reset({
-        quantity: watchedQuantity,
-        equipment_id: currentFormData.equipment_id,
-        start_date: watchedStartDate,
-        end_date: watchedEndDate,
-      });
+    const orderQuantity = item.quotation_product.quantity || 0;
+
+    if (watchedQuantity > 0 && watchedQuantity < orderQuantity && onAddPlan) {
+      // 생산 수량이 주문 수량보다 작으면 추가 계획 생성
+      const bufferRate = item.quotation_product.product.buffer_rate || 0;
+      const remainingQuantity = orderQuantity - watchedQuantity;
+      const bufferedQuantity = Math.ceil(remainingQuantity * (1 + bufferRate));
+
+      onAddPlan(
+        {
+          quantity: bufferedQuantity,
+          equipment_id: watchedEquipmentId,
+          start_date: watchedStartDate,
+          end_date: watchedEndDate,
+        },
+        item.id
+      );
+    } else if (watchedQuantity >= orderQuantity && onRemoveAdditionalPlan) {
+      // 생산 수량이 주문 수량보다 크거나 같으면 추가 계획 제거
+      onRemoveAdditionalPlan(item.id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    currentFormData?.equipment_id,
-    item.equipment.id,
-    reset,
     watchedQuantity,
-    watchedStartDate,
-    watchedEndDate,
+    item.quotation_product.quantity,
+    item.quotation_product.product.buffer_rate,
+    item.id,
   ]);
 
-  useEffect(() => {
-    // 폼 데이터가 실제로 변경되었을 때만 부모 컴포넌트에 알림
-    const currentFormData = {
+  // 저장 버튼 클릭 시 호출되는 함수
+  const handleSave = () => {
+    const formData = {
       quantity: watchedQuantity,
       equipment_id: watchedEquipmentId,
       start_date: watchedStartDate,
@@ -148,58 +186,17 @@ const TableItem = ({
       watchedStartDate !== originalStartDate ||
       watchedEndDate !== originalEndDate;
 
-    if (hasChanges && onFormChange) {
-      onFormChange(item.id, currentFormData);
+    if (hasChanges && onSave) {
+      onSave(item.id, formData);
     }
-  }, [
-    watchedQuantity,
-    watchedEquipmentId,
-    watchedStartDate,
-    watchedEndDate,
-    item.id,
-    item.quantity,
-    item.equipment.id,
-    item.start_date,
-    item.end_date,
-    onFormChange,
-  ]);
+  };
 
-  // currentFormData가 변경될 때마다 onFormChange 호출 (설비 변경 등 외부에서 변경된 경우)
-  // 단, 무한루프 방지를 위해 실제 변경사항이 있을 때만 호출
-  useEffect(() => {
-    if (currentFormData && onFormChange) {
-      // 실제 변경사항이 있는지 확인
-      const hasRealChanges =
-        currentFormData.quantity !== item.quantity ||
-        currentFormData.equipment_id !== item.equipment.id ||
-        currentFormData.start_date !==
-          (item.start_date
-            ? new Date(item.start_date)
-                .toISOString()
-                .slice(0, 16)
-                .replace('T', ' ')
-            : '') ||
-        currentFormData.end_date !==
-          (item.end_date
-            ? new Date(item.end_date)
-                .toISOString()
-                .slice(0, 16)
-                .replace('T', ' ')
-            : '');
-
-      if (hasRealChanges) {
-        onFormChange(item.id, currentFormData);
-      }
-    }
-  }, [
-    currentFormData,
-    item.id,
-    onFormChange,
-    item.quantity,
-    item.equipment.id,
-    item.start_date,
-    item.end_date,
-  ]);
+  // 원본 플랜 폼 유효성 검사
+  const isOriginalFormValid =
+    watchedQuantity > 0 &&
+    watchedEquipmentId &&
+    watchedStartDate &&
+    watchedEndDate;
 
   // 현재 선택된 설비 정보 (formData의 equipment_id 우선, 없으면 원본 데이터)
   const selectedEquipment =
@@ -221,12 +218,12 @@ const TableItem = ({
         textColor={operationColor.textColor}
         bgColor={operationColor.bgColor}
         cursor={
-          projectStatus === 'pending' || item.is_completed
+          projectStatus === 'pending' || item.quotation_product?.is_delivery
             ? 'cursor-default'
             : 'cursor-pointer'
         }
         onClick={
-          projectStatus === 'pending' || item.is_completed
+          projectStatus === 'pending' || item.quotation_product?.is_delivery
             ? undefined
             : (e) => {
                 if (e && onOperationStatusClick) {
@@ -235,14 +232,21 @@ const TableItem = ({
                 }
               }
         }
-        state={projectStatus === 'pending' || item.is_completed ? false : true}
+        state={
+          projectStatus === 'pending' || item.quotation_product?.is_delivery
+            ? false
+            : true
+        }
       />
     ),
     품목명: item.quotation_product.product.name,
     품목코드: item.quotation_product.product.code,
     규격: item.quotation_product.product.spec,
     단위: item.quotation_product.product.unit,
-    '주문 수량': item.quotation_product.quantity?.toLocaleString() || '0',
+    '주문 수량':
+      item.id < 0
+        ? ''
+        : item.quotation_product.quantity?.toLocaleString() || '0',
     '생산 수량': (
       <Controller
         name="quantity"
@@ -258,6 +262,15 @@ const TableItem = ({
               const value = e.target.value.replace(/,/g, '');
               const numValue = parseInt(value) || 0;
               field.onChange(numValue);
+              // 부모 컴포넌트에 변경사항 알림
+              if (onFormChange) {
+                onFormChange(item.id, {
+                  quantity: numValue,
+                  equipment_id: watchedEquipmentId,
+                  start_date: watchedStartDate,
+                  end_date: watchedEndDate,
+                });
+              }
             }}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
@@ -297,7 +310,7 @@ const TableItem = ({
         onClick={(e) => {
           if (operationStatus === 'pending') {
             e.stopPropagation();
-            onFacilityClick(e);
+            onFacilityClick(e, item.id);
           }
         }}
       >
@@ -314,10 +327,19 @@ const TableItem = ({
         render={({ field }) => (
           <input
             type="text"
-            value={field.value}
+            value={field.value || ''}
             onChange={(e) => {
               const formatted = formatDateTime(e.target.value);
               field.onChange(formatted);
+              // 부모 컴포넌트에 변경사항 알림
+              if (onFormChange) {
+                onFormChange(item.id, {
+                  quantity: watchedQuantity,
+                  equipment_id: watchedEquipmentId,
+                  start_date: formatted,
+                  end_date: watchedEndDate,
+                });
+              }
             }}
             placeholder="YYYY-MM-DD 00:00"
             maxLength={16}
@@ -336,10 +358,19 @@ const TableItem = ({
         render={({ field }) => (
           <input
             type="text"
-            value={field.value}
+            value={field.value || ''}
             onChange={(e) => {
               const formatted = formatDateTime(e.target.value);
               field.onChange(formatted);
+              // 부모 컴포넌트에 변경사항 알림
+              if (onFormChange) {
+                onFormChange(item.id, {
+                  quantity: watchedQuantity,
+                  equipment_id: watchedEquipmentId,
+                  start_date: watchedStartDate,
+                  end_date: formatted,
+                });
+              }
             }}
             placeholder="YYYY-MM-DD 00:00"
             maxLength={16}
@@ -350,12 +381,23 @@ const TableItem = ({
         )}
       />
     ),
+    '': (
+      <MiniBtn
+        text="저장"
+        onClick={handleSave}
+        disabled={operationStatus === 'completed' || !isOriginalFormValid}
+        hoverColor="hover:bg-bg"
+        textColor="text-dg"
+        borderColor="border-lg"
+        height="h-8"
+      />
+    ),
   };
 
   return (
     <>
       <div
-        className={`group flex items-center min-w-[1494px] h-12 border-b border-lg Me_Body-1 bg-whit ${
+        className={`group flex items-center min-w-[1729px] h-12 border-b border-lg Me_Body-1 bg-whit ${
           operationStatus === 'completed' ? 'text-gr' : 'text-dg'
         }`}
       >

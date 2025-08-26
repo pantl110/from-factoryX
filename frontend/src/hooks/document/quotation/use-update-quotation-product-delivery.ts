@@ -3,17 +3,17 @@ import {
   QuotationProductDeliveryUpdateModel,
   QuotationProductDeliveryUpdateResponseModel,
 } from '@/types/data-model';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 
 interface UpdateQuotationProductDeliveryResultModel {
   success: boolean;
-  data?: QuotationProductDeliveryUpdateModel;
+  data?: QuotationProductDeliveryUpdateResponseModel;
   error?: string;
 }
 
 export const useUpdateQuotationProductDelivery = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const factoryId = useFactoryStore((state) => state.factoryId);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const updateQuotationProductDelivery = async (
     quotationProductId: number,

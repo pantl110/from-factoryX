@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import useFactoryStore from '@/store/factory-store';
+import useMemberStore from '@/store/member-store';
 import { OcrDataModel } from '@/types/data-model';
 import { useUploadFile } from '@/hooks';
 
@@ -17,7 +17,7 @@ interface OcrUploadResponseModel {
 const useOcrUpload = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useFactoryStore();
+  const { factoryId } = useMemberStore();
   const { uploadFile } = useUploadFile();
 
   const uploadOcr = async (file: File): Promise<OcrUploadResponseModel> => {

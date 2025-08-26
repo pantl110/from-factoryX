@@ -3,6 +3,7 @@
 import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import { useState, useEffect } from 'react';
+import useMemberStore from '@/store/member-store';
 
 interface SearchDeleteTableProps {
   placeholder?: string;
@@ -13,6 +14,7 @@ interface SearchDeleteTableProps {
   onSearch?: (query: string) => void;
   searchKeyword?: string;
   hasData: boolean;
+  hasDeleteButton?: boolean;
 }
 
 const SearchDeleteTable = ({
@@ -24,7 +26,9 @@ const SearchDeleteTable = ({
   onSearch,
   searchKeyword = '',
   hasData,
+  hasDeleteButton = true,
 }: SearchDeleteTableProps) => {
+  const role = useMemberStore((state) => state.role);
   const [searchValue, setSearchValue] = useState(searchKeyword);
 
   // 외부에서 searchKeyword가 변경되면 내부 state 동기화
@@ -44,7 +48,7 @@ const SearchDeleteTable = ({
         onChange={handleSearchChange}
         placeholder={placeholder}
       />
-      {hasData && (
+      {hasData && hasDeleteButton && (
         <div className="flex gap-1">
           <MiniBtn
             text="취소"
@@ -53,6 +57,7 @@ const SearchDeleteTable = ({
             bgColor="bg-white"
             hoverColor="hover:bg-bg"
             onClick={onCancel}
+            disabled={role === 'viewer'}
           />
           <MiniBtn
             text={deleteButtonText}
@@ -61,6 +66,7 @@ const SearchDeleteTable = ({
             bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-white'}
             hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
             onClick={checkedCount > 0 ? onDelete : () => {}}
+            disabled={role === 'viewer'}
           />
         </div>
       )}

@@ -1,30 +1,32 @@
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import {
+  PublishedTaxInvoiceResponseModel,
+  TaxLineItemModel,
+} from '@/types/data-model';
+import MiniBtn from '@/ui/mini-btn';
+import useMemberStore from '@/store/member-store';
 
 interface PurchaseTableTiemProps {
   lineItem: PublishedTaxInvoiceResponseModel['line_items'][number];
-  productInfo: PublishedTaxInvoiceResponseModel['products_info'][number] | null;
+  canLink?: boolean;
+  setIsLinkModalOpen?: (isOpen: boolean) => void;
+  setSelectedLineItem?: (lineItem: TaxLineItemModel | null) => void;
 }
 
 const PurchaseTableTiem = ({
   lineItem,
-  productInfo,
+  canLink,
+  setIsLinkModalOpen,
+  setSelectedLineItem,
 }: PurchaseTableTiemProps) => {
+  const role = useMemberStore((state) => state.role);
+
   return (
     <div className="h-14 w-full flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <p
-        className="flex-2 px-3 truncate"
-        title={productInfo?.name || lineItem.name}
-      >
-        {lineItem.name || productInfo?.name}
+      <p className="flex-2 px-3 truncate" title={lineItem.name}>
+        {lineItem.name}
       </p>
-      <p
-        className="flex-2 px-3 truncate"
-        title={productInfo?.spec || lineItem.information}
-      >
-        {lineItem.information || productInfo?.spec}
-      </p>
-      <p className="w-[80px] px-3 truncate" title={productInfo?.unit || '-'}>
-        {productInfo?.unit || '-'}
+      <p className="flex-2 px-3 truncate" title={lineItem.information}>
+        {lineItem.information}
       </p>
       <p
         className="flex-1 px-3 truncate"
@@ -39,17 +41,32 @@ const PurchaseTableTiem = ({
         {Number(lineItem.unit_price).toLocaleString()}
       </p>
       <p
-        className="flex-1 px-3 truncate"
+        className={`${canLink ? 'flex-[1.5]' : 'flex-1'} px-3 truncate`}
         title={Number(lineItem.amount).toLocaleString()}
       >
         {Number(lineItem.amount).toLocaleString()}
       </p>
       <p
-        className="flex-1 px-3 truncate"
+        className={`${canLink ? 'flex-[1.5]' : 'flex-1'} px-3 truncate`}
         title={Number(lineItem.tax).toLocaleString()}
       >
         {Number(lineItem.tax).toLocaleString()}
       </p>
+      {canLink && (
+        <div className="px-3 flex-[1.5]">
+          <MiniBtn
+            text="연결"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            onClick={() => {
+              setIsLinkModalOpen?.(true);
+              setSelectedLineItem?.(lineItem);
+            }}
+            disabled={role === 'viewer'}
+          />
+        </div>
+      )}
     </div>
   );
 };
