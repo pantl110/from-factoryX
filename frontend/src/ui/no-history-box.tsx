@@ -5,9 +5,16 @@ interface NoHistoryBoxProps {
   text: string;
   height?: string;
   button?: string;
+  onClick?: () => void;
 }
 
-const NoHistoryBox = ({ title, text, height, button }: NoHistoryBoxProps) => {
+const NoHistoryBox = ({
+  title,
+  text,
+  height,
+  button,
+  onClick,
+}: NoHistoryBoxProps) => {
   return (
     <div
       className={`flex flex-col items-center justify-center gap-2 rounded-sm border border-lg w-full ${
@@ -22,6 +29,7 @@ const NoHistoryBox = ({ title, text, height, button }: NoHistoryBoxProps) => {
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
+          onClick={onClick}
         />
       )}
     </div>

@@ -9,7 +9,7 @@ import {
 import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import { tableHeader } from './types';
 import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react/dist/ssr';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks/format-number';
 

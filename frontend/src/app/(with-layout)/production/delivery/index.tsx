@@ -106,6 +106,7 @@ const Delivery = ({
         }))
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deliveryData]); // setDeliveryDataStore 제거
 
   // 아이템 클릭 핸들러
@@ -273,7 +274,6 @@ const Delivery = ({
                       onToggle={() => toggleOne(data.id)}
                       onItemClick={handleItemClick}
                       projectStatus={projectStatus}
-                      // onDeliveryDateChange={handleDeliveryDateChange}
                       onDeliveryDateChange={() => {}}
                       onDeliveryStatusChange={handleDeliveryStatusChange}
                     />

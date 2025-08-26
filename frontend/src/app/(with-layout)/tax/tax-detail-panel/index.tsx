@@ -35,7 +35,7 @@ interface TaxDetailPanelProps {
 const TaxDetailPanel = ({
   itemId,
   onClose,
-  canLink,
+  canLink = false,
   projectId,
   initialClientData,
   initialProducts,

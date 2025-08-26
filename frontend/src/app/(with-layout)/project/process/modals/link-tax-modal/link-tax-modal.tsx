@@ -9,6 +9,7 @@ import useLinkTaxInvoice from '@/hooks/tax/use-link-tax-invoice';
 import {
   UnlinkedTaxInvoiceListResponseModel,
   TaxLineItemModel,
+  ProjectStatusResponseModel,
 } from '@/types/data-model';
 import MaterialInfoTable from './material-info-table';
 
@@ -18,6 +19,9 @@ interface LinkTaxModalProps {
   linkedItemId: number; // type이 'project'일 때는 프로젝트 아이디, type이 'tax'일 때는 세금계산서 아이디, type이 'receipt'일 때는 영수증 아이디
   selectedLineItem?: TaxLineItemModel; // type이 'tax' 또는 'receipt'일 때 선택한 lineItem
   onSuccess?: () => void; // 연결 완료 시 호출되는 콜백
+  canCreate?: boolean; // 세금계산서 생성 가능 여부
+  projectStatus?: ProjectStatusResponseModel; // 세금계산서 생성 시 보여줄 초기값을 위함
+  setIsTaxPanelOpen?: (isOpen: boolean) => void; // 세금계산서 생성 시 보여줄 초기값을 위함
 }
 
 const LinkTaxModal = ({
@@ -26,6 +30,8 @@ const LinkTaxModal = ({
   type,
   selectedLineItem,
   onSuccess,
+  canCreate = false,
+  setIsTaxPanelOpen,
 }: LinkTaxModalProps) => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<'1' | '6' | '12'>('1');
@@ -223,21 +229,39 @@ const LinkTaxModal = ({
             setSelectedId={setSelectedId}
           />
 
-          <div className="flex gap-4 justify-end">
+          <div
+            className={`flex gap-2.5 pt-2 ${
+              canCreate ? 'justify-between' : 'justify-end'
+            }`}
+          >
             <MiniBtn
               text="취소"
               hoverColor="hover:bg-bg"
               textColor="text-sv"
               onClick={onClose}
             />
-            <MiniBtn
-              text="내역연결"
-              hoverColor="hover:bg-primary-hover"
-              bgColor="bg-primary"
-              textColor="text-wh"
-              disabled={!selectedId || isLinking}
-              onClick={handleLinkButtonClick}
-            />
+            <div className="flex gap-2.5">
+              {canCreate && (
+                <MiniBtn
+                  text="세금계산서 생성"
+                  hoverColor="hover:bg-bg"
+                  borderColor="border-lg"
+                  textColor="text-dg"
+                  onClick={() => {
+                    setIsTaxPanelOpen?.(true);
+                    onClose();
+                  }}
+                />
+              )}
+              <MiniBtn
+                text="내역연결"
+                hoverColor="hover:bg-primary-hover"
+                bgColor="bg-primary"
+                textColor="text-wh"
+                disabled={!selectedId || isLinking}
+                onClick={handleLinkButtonClick}
+              />
+            </div>
           </div>
         </div>
       </div>

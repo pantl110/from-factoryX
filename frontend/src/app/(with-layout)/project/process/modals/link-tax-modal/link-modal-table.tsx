@@ -74,11 +74,13 @@ const LinkModalTable = ({
               item={item}
             />
           ))}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       ) : (
         <NoHistoryBox text="세금계산서가 생성되면 이곳에서 확인 후, 프로젝트를 연결 할 수  있어요." />

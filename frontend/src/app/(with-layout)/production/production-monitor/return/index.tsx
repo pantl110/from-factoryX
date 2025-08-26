@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Spinner from '@/ui/spinner';
-import { useGetRefundDetail, useGetProduct } from '@/hooks';
-import { RefundModel, ProductResponseModel } from '@/types/data-model';
+import { useGetRefundDetail } from '@/hooks';
+import { RefundModel } from '@/types/data-model';
 import ReturnInfo from './return-info';
 import ReturnTableHeader from './return-table-header';
 import ReturnTableItem from './return-table-item';

@@ -73,7 +73,8 @@ const useGetEquipment = () => {
       );
 
       if (countResponse.ok) {
-        const countResult: EquipmentListResponseModel = await countResponse.json();
+        const countResult: EquipmentListResponseModel =
+          await countResponse.json();
         const totalCount = countResult.totalCnt || 0;
 
         if (totalCount > 0) {
@@ -87,18 +88,27 @@ const useGetEquipment = () => {
           );
 
           if (allDataResponse.ok) {
-            const allDataResult: EquipmentListResponseModel = await allDataResponse.json();
+            const allDataResult: EquipmentListResponseModel =
+              await allDataResponse.json();
             setEquipmentList(allDataResult);
             setCurrentPage(1);
             return allDataResult; // 데이터 반환
           } else {
             const errorData = await allDataResponse.json();
-            setError(errorData.detail || '전체 설비 목록을 불러오지 못했습니다.');
+            setError(
+              errorData.detail || '전체 설비 목록을 불러오지 못했습니다.'
+            );
             return null;
           }
         } else {
           // 데이터가 없는 경우
-          const emptyResult = { data: [], count: 0, totalCnt: 0, curPage: 1, pageCnt: 1 };
+          const emptyResult = {
+            data: [],
+            count: 0,
+            totalCnt: 0,
+            curPage: 1,
+            pageCnt: 1,
+          };
           setEquipmentList(emptyResult);
           return emptyResult; // 빈 데이터 반환
         }

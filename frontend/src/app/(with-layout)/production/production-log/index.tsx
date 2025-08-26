@@ -145,7 +145,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
         if (result.success) {
           // 저장 성공 시 해당 행의 변경사항 제거
           setFormChanges((prev) => {
-            const { [planId]: removed, ...rest } = prev;
+            const { [planId]: _removed, ...rest } = prev;
             return rest;
           });
 
@@ -154,7 +154,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
         } else {
           alert('저장에 실패했습니다.');
         }
-      } catch (error) {
+      } catch {
         alert('저장 중 오류가 발생했습니다.');
       }
     },
@@ -232,13 +232,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       alert('저장 중 오류가 발생했습니다.');
       throw error; // 상위에서 처리할 수 있도록 에러 전파
     }
-  }, [
-    projectId,
-    formChanges,
-    projectPlans,
-    createOrUpdateProjectPlan,
-    rowValidityMap,
-  ]);
+  }, [projectId, formChanges, projectPlans, createOrUpdateProjectPlan]);
 
   // store에 전체 저장 함수 등록
   useEffect(() => {
@@ -257,8 +251,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
   // rowValidityMap 변경 시 전역 유효성 반영
   useEffect(() => {
     if (!projectPlans.length) return;
-    const allValid = Object.values(rowValidityMap).every((v) => v);
-    setProductionLogValid(allValid);
+    const isAllValid = Object.values(rowValidityMap).every((v) => v);
+    setProductionLogValid(isAllValid);
   }, [rowValidityMap, projectPlans.length, setProductionLogValid]);
 
   if (isLoading) {

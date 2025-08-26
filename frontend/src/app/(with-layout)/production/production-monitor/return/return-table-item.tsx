@@ -1,5 +1,3 @@
-import { ProductResponseModel } from '@/types/data-model';
-
 interface ReturnTableItemProps {
   productDetail: {
     id: number;

@@ -58,7 +58,7 @@ export const useCheckBarobill = () => {
               barobill_id: memberData.barobill_id,
               barobill_password: memberData.barobill_password,
             });
-            
+
             // getCertification이 성공하면 URL을 새 탭으로 열기
             if (result && typeof result === 'string') {
               window.open(result, '_blank');
@@ -86,7 +86,7 @@ export const useCheckBarobill = () => {
               // 인증서가 없으면 인증서 등록 진행
               await registerCertification();
             }
-          } catch (error) {
+          } catch {
             // certCheckResponse에서 오류가 나면 인증서 등록 진행
             await registerCertification();
           }
@@ -102,7 +102,7 @@ export const useCheckBarobill = () => {
           } else if (certCheckResponse && certCheckResponse.has_cert) {
             return true;
           }
-        } catch (error) {
+        } catch {
           // certCheckResponse에서 오류가 나면 인증서 등록 진행
           await registerCertification();
         }
@@ -112,6 +112,7 @@ export const useCheckBarobill = () => {
     } catch {
       return false;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     registerBarobill,
     checkCert,

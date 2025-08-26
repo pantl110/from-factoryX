@@ -4,7 +4,6 @@ import { useToast } from '@/hooks';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useRegisterProductionFromRefund from '@/hooks/project/project-refund/use-register-production-from-refund';
-import { RefundModel } from '@/types/data-model';
 
 interface RegisterProductionModalProps {
   onClose: () => void;

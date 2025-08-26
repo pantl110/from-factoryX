@@ -485,6 +485,35 @@ export interface ProjectListResponseModel extends PaginationModel {
 }
 
 // 프로젝트 상태 조회 응답
+
+export interface ProjectQuotationProductsInfoModel {
+  id: number;
+  name: string;
+  code: string;
+  spec: string;
+  unit: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  quotation_product_id: number;
+}
+
+export interface ProjectQuotationModel {
+  id: number; // quotation_id
+  client: number; // client_id
+  client_info: TaxClientInfoModel;
+  created_at: string;
+  due_date: string;
+  due_date_notice: boolean;
+  factory: number; // factory_id
+  factory_info: TaxFactoryInfoModel;
+  products_info: ProjectQuotationProductsInfoModel[];
+  project: number; // project_id
+  type: string;
+  updated_at: string;
+  uploaded_file: string;
+}
+
 export interface ProjectStatusResponseModel {
   created_at: string;
   due_date?: string;
@@ -494,21 +523,7 @@ export interface ProjectStatusResponseModel {
   latest_end_date?: string;
   logs: ProjectLogResponseModel[];
   name: string; // 뭐지?
-  quotations: {
-    id: number; // quotation_id
-    client: number; // client_id
-    client_info: TaxClientInfoModel;
-    created_at: string;
-    due_date: string;
-    due_date_notice: boolean;
-    factory: number; // factory_id
-    factory_info:TaxFactoryInfoModel;
-    products_info: TaxProductInfoModel[];
-    project: number; // project_id
-    type: string;
-    updated_at: string;
-    uploaded_file: string;
-  }[];
+  quotations: ProjectQuotationModel[];
   status: ProjectStatusType;
   updated_at: string;
   tax_invoice: PublishedTaxInvoiceResponseModel | null;

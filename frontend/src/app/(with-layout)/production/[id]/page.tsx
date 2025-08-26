@@ -18,10 +18,12 @@ import Spinner from '@/ui/spinner';
 import useUpdateProjectStatus from '@/hooks/project/use-update-project-status';
 import AddReturnModal from '../delivery/modals/add-return-modal/add-return-modal';
 import {
+  ProjectQuotationProductsInfoModel,
   ProjectStatusResponseModel,
-  QuotationProductDetailResponseModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
+import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-modal';
+import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 
 const getTabsByStatus = (
   status: ProjectStatusType,
@@ -63,6 +65,10 @@ const ProductionPageContent = () => {
   const setProjectStatusData = usePageStatusStore(
     (state) => state.setProjectStatusData
   );
+
+  const [isLinkTaxInvoiceModalOpen, setIsLinkTaxInvoiceModalOpen] =
+    useState(false);
+  const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
 
   // 프로젝트 상태 데이터
   const [projectStatus, setProjectStatus] =
@@ -241,14 +247,57 @@ const ProductionPageContent = () => {
         {tabs[selectedTab] === '세금계산서' && (
           <div className="px-10 pt-5 pb-10">
             {projectStatus?.tax_invoice ? (
-              <TaxDocumentView taxId={projectStatus?.tax_invoice} />
+              <TaxDocumentView taxId={projectStatus?.tax_invoice.id || 0} />
             ) : (
-              <NoHistoryBox
-                title="연결된 세금계산서가 없습니다."
-                text="세금계산서를 연결해 주세요"
-                height="h-[calc(100vh-322.43px)]"
-                button="세금계산서 연결"
-              />
+              <>
+                <NoHistoryBox
+                  title="연결된 세금계산서가 없습니다."
+                  text="세금계산서를 연결해 주세요"
+                  height="h-[calc(100vh-322.43px)]"
+                  button="세금계산서 연결"
+                  onClick={() => {
+                    setIsLinkTaxInvoiceModalOpen(true);
+                  }}
+                />
+                {isLinkTaxInvoiceModalOpen && (
+                  <LinkTaxModal
+                    onClose={() => setIsLinkTaxInvoiceModalOpen(false)}
+                    type="project"
+                    linkedItemId={projectId}
+                    canCreate={true}
+                    onSuccess={() => {
+                      reloadProjectStatus();
+                    }}
+                    projectStatus={projectStatus}
+                    setIsTaxPanelOpen={setIsTaxPanelOpen}
+                  />
+                )}
+                {isTaxPanelOpen && (
+                  <TaxDetailPanel
+                    onClose={() => setIsTaxPanelOpen(false)}
+                    projectId={projectId}
+                    initialClientData={projectStatus?.quotations[0].client_info}
+                    initialProducts={projectStatus?.quotations[0].products_info.map(
+                      (p) => ({
+                        productId: p.id,
+                        quantity: p.quantity,
+                        unit_price: p.unit_price,
+                        products_info: [
+                          {
+                            id: p.id,
+                            factory:
+                              projectStatus?.quotations[0].factory_info?.id,
+                            name: p.name,
+                            code: p.code,
+                            spec: p.spec,
+                            unit: p.unit,
+                          },
+                        ],
+                      })
+                    )}
+                  />
+                )}
+              </>
             )}
           </div>
         )}
@@ -282,30 +331,33 @@ const ProductionPageContent = () => {
           <ProductionPlan
             handleChangeStatus={handleChangeStatus}
             projectStatus={projectStatus.status as ProjectStatusType}
-            onProjectStatusChange={reloadProjectStatus}
           />
         )}
         {tabs[selectedTab] === '주문서' && quotationData && (
           <div className="px-10 pt-5 pb-10">
             <OrderDocumentView
               documentTitle="주문서"
-              clientData={{
-                name: quotationData.factory_name,
-                business_registration_number:
-                  quotationData.business_registration_number,
-                representative_name: quotationData.representative_name,
-                address: quotationData.address,
-                business_type: quotationData.business_type,
-                business_category: quotationData.business_category,
-              }}
-              dueDate={quotationData.due_date || '-'}
+              clientData={projectStatus?.quotations[0].client_info}
+              dueDate={projectStatus?.quotations[0].due_date || '-'}
               productListInfoTitle="주문 품목 정보"
-              productItems={quotationData.products}
-              supplyAmount={quotationData.products.reduce(
-                (sum: number, item: QuotationProductDetailResponseModel) =>
-                  sum + (item.supply_amount || 0),
-                0
+              productItems={projectStatus?.quotations[0].products_info.map(
+                (p) => ({
+                  productId: p.id,
+                  product_code: p.code,
+                  product_name: p.name,
+                  spec: p.spec,
+                  unit: p.unit,
+                  quantity: p.quantity,
+                  unit_price: p.unit_price,
+                })
               )}
+              supplyAmount={
+                projectStatus?.quotations[0].products_info.reduce(
+                  (sum: number, item: ProjectQuotationProductsInfoModel) =>
+                    sum + (item.unit_price * item.quantity || 0),
+                  0
+                ) || 0
+              }
             />
           </div>
         )}

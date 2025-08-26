@@ -2,15 +2,13 @@
 
 import { useState, useCallback } from 'react';
 import useMemberStore from '@/store/member-store';
-import {
-  CreateOrUpdateProjectPlanModel,
-} from '@/types/data-model';
+import { CreateOrUpdateProjectPlanModel } from '@/types/data-model';
 
 export interface CreateOrUpdateProjectPlanResponseModel {
-    message: string;
-    plan_id: number;
-    action: 'created' | 'updated';
-  }
+  message: string;
+  plan_id: number;
+  action: 'created' | 'updated';
+}
 
 const useCreateOrUpdateProjectPlan = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +18,10 @@ const useCreateOrUpdateProjectPlan = () => {
   const createOrUpdateProjectPlan = useCallback(
     async (
       payload: CreateOrUpdateProjectPlanModel
-    ): Promise<{ success: boolean; data?: CreateOrUpdateProjectPlanResponseModel }> => {
+    ): Promise<{
+      success: boolean;
+      data?: CreateOrUpdateProjectPlanResponseModel;
+    }> => {
       setIsLoading(true);
       setError(null);
 
@@ -44,12 +45,14 @@ const useCreateOrUpdateProjectPlan = () => {
         );
 
         if (response.ok) {
-          const result: CreateOrUpdateProjectPlanResponseModel = await response.json();
+          const result: CreateOrUpdateProjectPlanResponseModel =
+            await response.json();
           return { success: true, data: result };
         } else {
           const errorData = await response.json();
           const errorMessage =
-            errorData.detail || '프로젝트 생산 계획 생성 또는 수정에 실패했습니다.';
+            errorData.detail ||
+            '프로젝트 생산 계획 생성 또는 수정에 실패했습니다.';
           setError(errorMessage);
           return { success: false };
         }

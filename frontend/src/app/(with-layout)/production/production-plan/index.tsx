@@ -30,13 +30,11 @@ import { WarningCircle } from '@phosphor-icons/react';
 interface ProductionPlanProps {
   handleChangeStatus: (status: ProjectStatusType) => void;
   projectStatus?: ProjectStatusType;
-  onProjectStatusChange?: () => void;
 }
 
 const ProductionPlan = ({
   handleChangeStatus,
   projectStatus,
-  onProjectStatusChange,
 }: ProductionPlanProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
@@ -70,8 +68,6 @@ const ProductionPlan = ({
     parentPlanId: number
   ) => {
     try {
-      console.log('새로운 생산 계획 생성:', planData);
-
       // 부모 계획 찾기
       const parentPlan = projectPlans.find((plan) => plan.id === parentPlanId);
       if (!parentPlan) {
@@ -142,11 +138,10 @@ const ProductionPlan = ({
 
         // formChanges에서도 제거
         setFormChanges((prevFormChanges) => {
-          const { [additionalPlanId]: removed, ...rest } = prevFormChanges;
+          const { [additionalPlanId]: _removed, ...rest } = prevFormChanges;
           return rest;
         });
 
-        console.log('추가 계획이 제거되었습니다.');
         return newPlans;
       }
 
@@ -283,7 +278,7 @@ const ProductionPlan = ({
         start_date: targetPlan.start_date,
         end_date: targetPlan.end_date,
         avg_production_time: targetPlan.avg_production_time,
-        status: status, // 가동 상태 추가
+        status, // 가동 상태 추가
         plan_id:
           operationStatusDropdownRowId > 0
             ? operationStatusDropdownRowId
@@ -335,7 +330,7 @@ const ProductionPlan = ({
 
     if (!originalPlan) {
       // 새로 생긴 플랜의 설비 선택인 경우 (projectplanid가 없음)
-      console.log('새로 생긴 플랜의 설비 선택 처리');
+      // console.log('새로 생긴 플랜의 설비 선택 처리');
       // 새로 생긴 플랜의 설비는 TableItem 컴포넌트에서 직접 처리해야 함
       // 여기서는 드롭다운만 닫기
       handleCloseFacilityDropdown();
@@ -398,7 +393,6 @@ const ProductionPlan = ({
         },
       };
 
-      console.log('formChanges 업데이트:', updated);
       return updated;
     });
 
@@ -476,6 +470,7 @@ const ProductionPlan = ({
 
         const originalPlan = projectPlans.find((p) => p.id === planId);
         if (!originalPlan) return;
+        if (projectId === null) return;
 
         const changes: Record<string, unknown> = {};
 
@@ -495,7 +490,7 @@ const ProductionPlan = ({
 
         if (Object.keys(changes).length > 0) {
           const result = await createOrUpdateProjectPlan({
-            project_id: projectId!,
+            project_id: projectId,
             quotation_product_id: originalPlan.quotation_product.id,
             equipment_id: formData.equipment_id,
             quantity: formData.quantity,
@@ -538,6 +533,9 @@ const ProductionPlan = ({
   // 변경된 모든 생산 계획들을 한 번에 저장하는 함수
   const saveProjectPlans = async () => {
     try {
+      if (projectId === null) {
+        return { success: false };
+      }
       // 저장 전에 시간대 충돌만 검사 (설비 충돌은 선택 시점에서 이미 검사됨)
       for (const [planId, formData] of Object.entries(formChanges)) {
         const hasTimeConflict = checkTimeConflicts(parseInt(planId), formData);
@@ -567,7 +565,7 @@ const ProductionPlan = ({
 
           if (Object.keys(changes).length > 0) {
             return createOrUpdateProjectPlan({
-              project_id: projectId!,
+              project_id: projectId,
               quotation_product_id: originalPlan.quotation_product.id,
               equipment_id: formData.equipment_id,
               quantity: formData.quantity,

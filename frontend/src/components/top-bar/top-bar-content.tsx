@@ -101,14 +101,23 @@ const TopBarContent = ({
             itemId={taxId || undefined}
             projectId={projectId}
             initialClientData={projectStatusData?.quotations[0].client_info}
-            initialProducts={projectStatusData?.quotations[0].products_info
-              ?.filter((p) => p.productId != null)
-              .map((p) => ({
-                productId: Number(p.productId),
-                quantity: Number(p.quantity ?? 0),
-                unit_price: Number(p.unit_price ?? 0),
-                products_info: [],
-              }))}
+            initialProducts={projectStatusData?.quotations[0].products_info.map(
+              (p) => ({
+                productId: p.id,
+                quantity: p.quantity,
+                unit_price: p.unit_price,
+                products_info: [
+                  {
+                    id: p.id,
+                    factory: projectStatusData?.quotations[0].factory_info?.id,
+                    name: p.name,
+                    code: p.code,
+                    spec: p.spec,
+                    unit: p.unit,
+                  },
+                ],
+              })
+            )}
           />
         )}
       </>
@@ -140,6 +149,24 @@ const TopBarContent = ({
             onClose={() => setIsTaxPanelOpen(false)}
             itemId={taxId || undefined}
             projectId={projectId}
+            initialClientData={projectStatusData?.quotations[0].client_info}
+            initialProducts={projectStatusData?.quotations[0].products_info.map(
+              (p) => ({
+                productId: p.id,
+                quantity: p.quantity,
+                unit_price: p.unit_price,
+                products_info: [
+                  {
+                    id: p.id,
+                    factory: projectStatusData?.quotations[0].factory_info?.id,
+                    name: p.name,
+                    code: p.code,
+                    spec: p.spec,
+                    unit: p.unit,
+                  },
+                ],
+              })
+            )}
           />
         )}
       </>
@@ -175,6 +202,24 @@ const TopBarContent = ({
             onClose={() => setIsTaxPanelOpen(false)}
             itemId={taxId || undefined}
             projectId={projectId}
+            initialClientData={projectStatusData?.quotations[0].client_info}
+            initialProducts={projectStatusData?.quotations[0].products_info.map(
+              (p) => ({
+                productId: p.id,
+                quantity: p.quantity,
+                unit_price: p.unit_price,
+                products_info: [
+                  {
+                    id: p.id,
+                    factory: projectStatusData?.quotations[0].factory_info?.id,
+                    name: p.name,
+                    code: p.code,
+                    spec: p.spec,
+                    unit: p.unit,
+                  },
+                ],
+              })
+            )}
           />
         )}
       </>
@@ -208,6 +253,24 @@ const TopBarContent = ({
             onClose={() => setIsTaxPanelOpen(false)}
             itemId={taxId || undefined}
             projectId={projectId}
+            initialClientData={projectStatusData?.quotations[0].client_info}
+            initialProducts={projectStatusData?.quotations[0].products_info.map(
+              (p) => ({
+                productId: p.id,
+                quantity: p.quantity,
+                unit_price: p.unit_price,
+                products_info: [
+                  {
+                    id: p.id,
+                    factory: projectStatusData?.quotations[0].factory_info?.id,
+                    name: p.name,
+                    code: p.code,
+                    spec: p.spec,
+                    unit: p.unit,
+                  },
+                ],
+              })
+            )}
           />
         )}
       </>
@@ -250,6 +313,24 @@ const TopBarContent = ({
             onClose={() => setIsTaxPanelOpen(false)}
             itemId={taxId || undefined}
             projectId={projectId}
+            initialClientData={projectStatusData?.quotations[0].client_info}
+            initialProducts={projectStatusData?.quotations[0].products_info.map(
+              (p) => ({
+                productId: p.id,
+                quantity: p.quantity,
+                unit_price: p.unit_price,
+                products_info: [
+                  {
+                    id: p.id,
+                    factory: projectStatusData?.quotations[0].factory_info?.id,
+                    name: p.name,
+                    code: p.code,
+                    spec: p.spec,
+                    unit: p.unit,
+                  },
+                ],
+              })
+            )}
           />
         )}
       </>
@@ -301,6 +382,24 @@ const TopBarContent = ({
             onClose={() => setIsTaxPanelOpen(false)}
             itemId={taxId || undefined}
             projectId={projectId}
+            initialClientData={projectStatusData?.quotations[0].client_info}
+            initialProducts={projectStatusData?.quotations[0].products_info.map(
+              (p) => ({
+                productId: p.id,
+                quantity: p.quantity,
+                unit_price: p.unit_price,
+                products_info: [
+                  {
+                    id: p.id,
+                    factory: projectStatusData?.quotations[0].factory_info?.id,
+                    name: p.name,
+                    code: p.code,
+                    spec: p.spec,
+                    unit: p.unit,
+                  },
+                ],
+              })
+            )}
           />
         )}
       </>
