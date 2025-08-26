@@ -1,7 +1,6 @@
 from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
-from api.pagination import CustomPageNumberPagination
 from asgiref.sync import sync_to_async
 from typing import List
 from api.security import jwt_auth
@@ -124,7 +123,7 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
                 setattr(client, field, new_value)
                 updated = True
         if updated:
-            await sync_to_async(client.save)()
+            await client.asave()
     except FactoryClient.DoesNotExist:
         client = await FactoryClient.objects.acreate(
             factory=factory,
@@ -241,8 +240,6 @@ async def get_material_history(
                         history.created_at.isoformat() if history.created_at else None
                     ),
                     "total_stock": history.total_stock,
-                    "purchase_tax_invoice_id": history.purchase_tax_invoice_id,
-                    "cash_receipt_id": history.cash_receipt_id,
                 }
             )
 
