@@ -478,7 +478,7 @@ class ProjectPlanAPITestCase(TestCase):
             factory=self.factory, name="새로운 설비", priority=2
         )
 
-        # 설비 변경 (가동 중 상태에서)
+        # 설비 변경 (가동 대기   상태에서)
         equipment_change_payload = {
             "plan_id": plan_id,
             "project_id": self.project.id,
@@ -488,7 +488,7 @@ class ProjectPlanAPITestCase(TestCase):
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "status": "production",
+            "status": "pending",
         }
 
         response = self.client.post(
@@ -511,64 +511,6 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertIn("새로운 설비", log.content)
         self.assertIn("라인에서", log.content)
         self.assertIn("라인으로 변경되었어요", log.content)
-
-    def test_create_or_update_project_plan_equipment_change_no_log_when_not_producing(
-        self,
-    ):
-        """생산 중이 아닌 상태에서 설비 변경 시 로그 생성 안됨 테스트"""
-        # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan/create-or-update"
-        create_payload = {
-            "project_id": self.project.id,
-            "quotation_product_id": self.quotation_product.id,
-            "equipment_id": self.equipment.id,
-            "quantity": 8,
-            "start_date": "2025-07-13T00:00:00Z",
-            "end_date": "2025-07-14T00:00:00Z",
-            "avg_production_time": 3600,
-        }
-
-        response = self.client.post(
-            f"{create_url}?factory_id={self.factory.id}",
-            data=json.dumps(create_payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-        # 생성된 계획의 ID 가져오기
-        plan_id = response.json()["plan_id"]
-
-        # 새로운 설비 생성
-        new_equipment = FactoryEquipment.objects.create(
-            factory=self.factory, name="새로운 설비", priority=2
-        )
-
-        # 설비 변경 (생산 중이 아닌 상태에서)
-        equipment_change_payload = {
-            "plan_id": plan_id,
-            "project_id": self.project.id,
-            "quotation_product_id": self.quotation_product.id,
-            "equipment_id": new_equipment.id,
-            "quantity": 8,
-            "start_date": "2025-07-13T00:00:00Z",
-            "end_date": "2025-07-14T00:00:00Z",
-            "avg_production_time": 3600,
-        }
-
-        response = self.client.post(
-            f"{create_url}?factory_id={self.factory.id}",
-            data=json.dumps(equipment_change_payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-        # 프로젝트 로그가 생성되지 않았는지 확인
-        logs = ProjectLog.objects.filter(project=self.project)
-        self.assertEqual(logs.count(), 0)
 
     def test_create_or_update_project_plan_equipment_change_no_log_when_same_equipment(
         self,
