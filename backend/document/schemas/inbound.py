@@ -53,11 +53,12 @@ class OcrIn(Schema):
 
 # (POST) Quotation Draft
 class QuotationDraftIn(Schema):
-    quotation_id: int
+    quotation_id: Optional[int] = None
     client: Optional[FactoryClientInfoIn] = None
     products: Optional[List[QuotationProductDraftIn]] = None
     due_date: Optional[str] = None
     uploaded_file: Optional[str] = Field(None, description="업로드 파일 URL")
+    is_confirm: bool = False
 
 
 # (POST) Quotation Confirmed
