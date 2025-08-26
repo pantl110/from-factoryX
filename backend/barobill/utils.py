@@ -1,8 +1,11 @@
+import re
 import string
 import random
 from django.conf import settings
 from ninja.errors import HttpError
 from barobill.barobill_error_code import barobill_error_codes
+from django.utils import timezone
+from datetime import datetime
 
 
 async def add_corp_to_barobill(
@@ -115,5 +118,27 @@ async def check_barobill_cert(factory_business_registration_number):
             400,
             f"바로빌 인증서 유효성 검사 실패: {barobill_error_codes.get(result, 'Unknown error')}",
         )
+
+    return result
+
+
+async def check_barobill_expire_date(factory_business_registration_number):
+    certKey = settings.BAROBILL_CERT_KEY
+    corpNum = factory_business_registration_number
+    result = settings.BAROBILL_CLIENT.service.GetCertificateExpireDate(
+        CERTKEY=certKey,
+        CorpNum=corpNum,
+    )
+    if re.compile("^-[0-9]{5}$").match(result) is not None:
+        raise HttpError(
+            400,
+            f"바로빌 인증서 만료일 확인 실패: {barobill_error_codes.get(result, 'Unknown error')}",
+        )
+
+    # result 예시 2026-02-13
+    now = timezone.now().date()
+    expire_date = datetime.strptime(result, "%Y-%m-%d").date()
+    if expire_date < now:
+        raise HttpError(400, "바로빌 인증서가 만료되었습니다.")
 
     return result
