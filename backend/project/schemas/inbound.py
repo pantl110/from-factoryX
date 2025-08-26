@@ -128,6 +128,35 @@ class ProjectPlanUpdateIn(Schema):
         return v
 
 
+# (POST) Project Plan Create or Update
+class ProjectPlanCreateOrUpdateIn(Schema):
+    plan_id: Optional[int] = None
+    project_id: int
+    quotation_product_id: int
+    equipment_id: int
+    quantity: int
+    start_date: datetime
+    end_date: datetime
+    avg_production_time: int
+    status: Optional[str] = None
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v):
+        if v is not None and v not in [
+            value[0] for value in ProjectPlan.ProductionStatus.choices
+        ]:
+            raise ValueError("유효하지 않는 상태값입니다.")
+        return v
+
+    @field_validator("avg_production_time")
+    @classmethod
+    def validate_avg_production_time(cls, v):
+        if v <= 0:
+            raise ValueError("평균 생산 시간은 0보다 커야 합니다.")
+        return v
+
+
 # ------------------------------------------------------------
 # Project Log API
 # ------------------------------------------------------------

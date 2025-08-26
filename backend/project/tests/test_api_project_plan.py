@@ -194,18 +194,18 @@ class ProjectPlanAPITestCase(TestCase):
 
         self.assertIn(response.status_code, [401, 403])
 
-    def test_update_project_plan_success(self):
-        """프로젝트 생산 계획 수정 성공 테스트"""
+    def test_create_or_update_project_plan_success(self):
+        """프로젝트 생산 계획 생성 또는 수정 성공 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
+        create_url = "/v1/project-plan/create-or-update"
         create_payload = {
             "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [10],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 10,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
         }
 
         create_response = self.client.post(
@@ -216,41 +216,51 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         self.assertEqual(create_response.status_code, 200)
-        plan_id = create_response.json()["plan"]["id"]
+        data = create_response.json()
+        self.assertEqual(data["action"], "created")
+        plan_id = data["plan_id"]
 
         # 생산 계획 수정
-        update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
         update_payload = {
-            "quantity": 10,
-            "status": "production",
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 15,
+            "start_date": "2025-07-15T00:00:00Z",
+            "end_date": "2025-07-16T00:00:00Z",
             "avg_production_time": 7200,
+            "status": "production",
         }
 
-        response = self.client.patch(
-            update_url,
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(update_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
-        data = response.json()
-        print(
-            "🐍 File: tests/test_api_project_plan.py | Line: 245 | test_update_project_plan_success ~ data",
-            data,
-        )
 
         self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["action"], "updated")
+        self.assertIn("성공적으로 수정되었습니다", data["message"])
 
-        # 응답 데이터 확인
-        self.assertIn("message", data)
-        self.assertIn("성공", data["message"])
-
-    def test_update_project_plan_nonexistent(self):
+    def test_create_or_update_project_plan_nonexistent(self):
         """존재하지 않는 생산 계획 수정 시도 테스트"""
-        url = f"/v1/project-plan/999?factory_id={self.factory.id}"
-        payload = {"quantity": 15}
+        url = "/v1/project-plan/create-or-update"
+        payload = {
+            "plan_id": 999,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 15,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
-            url,
+        response = self.client.post(
+            f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
@@ -258,18 +268,18 @@ class ProjectPlanAPITestCase(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
-    def test_update_project_plan_invalid_equipment(self):
+    def test_create_or_update_project_plan_invalid_equipment(self):
         """존재하지 않는 설비로 수정 시도 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
+        create_url = "/v1/project-plan/create-or-update"
         create_payload = {
             "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [10],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 10,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
         }
 
         create_response = self.client.post(
@@ -280,14 +290,22 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         self.assertEqual(create_response.status_code, 200)
-        plan_id = create_response.json()["plan"]["id"]
+        plan_id = create_response.json()["plan_id"]
 
         # 존재하지 않는 설비로 수정 시도
-        update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
-        update_payload = {"equipment_id": 999}
+        update_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": 999,
+            "quantity": 10,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
-            update_url,
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(update_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
@@ -295,18 +313,18 @@ class ProjectPlanAPITestCase(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
-    def test_update_project_plan_invalid_status(self):
+    def test_create_or_update_project_plan_invalid_status(self):
         """올바르지 않은 상태값으로 수정 시도 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
+        create_url = "/v1/project-plan/create-or-update"
         create_payload = {
             "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [10],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 10,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
         }
 
         create_response = self.client.post(
@@ -317,14 +335,23 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         self.assertEqual(create_response.status_code, 200)
-        plan_id = create_response.json()["plan"]["id"]
+        plan_id = create_response.json()["plan_id"]
 
         # 올바르지 않은 상태값으로 수정 시도
-        update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
-        update_payload = {"status": "잘못된상태"}
+        update_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 10,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+            "status": "잘못된상태",
+        }
 
-        response = self.client.patch(
-            update_url,
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(update_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
@@ -332,18 +359,18 @@ class ProjectPlanAPITestCase(TestCase):
 
         self.assertEqual(response.status_code, 422)
 
-    def test_update_project_plan_invalid_quantity(self):
+    def test_create_or_update_project_plan_invalid_quantity(self):
         """올바르지 않은 수량으로 수정 시도 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
+        create_url = "/v1/project-plan/create-or-update"
         create_payload = {
             "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [10],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 10,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
         }
 
         create_response = self.client.post(
@@ -354,14 +381,22 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         self.assertEqual(create_response.status_code, 200)
-        plan_id = create_response.json()["plan"]["id"]
+        plan_id = create_response.json()["plan_id"]
 
         # 올바르지 않은 수량으로 수정 시도
-        update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
-        update_payload = {"quantity": 0}
+        update_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 0,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
-            update_url,
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(update_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
@@ -369,246 +404,39 @@ class ProjectPlanAPITestCase(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_update_project_plan_without_auth(self):
-        """인증 없이 생산 계획 수정 시도 테스트"""
-        url = "/v1/project-plan/1"
-        payload = {"quantity": 15}
+    def test_create_or_update_project_plan_without_auth(self):
+        """인증 없이 생산 계획 생성/수정 시도 테스트"""
+        url = "/v1/project-plan/create-or-update"
+        payload = {
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 15,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
-            url, data=json.dumps(payload), content_type="application/json"
+        response = self.client.post(
+            f"{url}?factory_id={self.factory.id}",
+            data=json.dumps(payload),
+            content_type="application/json",
         )
 
         self.assertIn(response.status_code, [401, 403])
 
-    def test_list_project_plans_success(self):
-        """프로젝트 생산 계획 조회 성공 테스트"""
-        # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
-        create_payload = {
-            "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [8],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
-        }
-
-        self.client.post(
-            f"{create_url}?factory_id={self.factory.id}",
-            data=json.dumps(create_payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        # 프로젝트 생산 계획 조회
-        list_url = f"/v1/project-plan?project_id={self.project.id}&factory_id={self.factory.id}"
-
-        response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
-
-        self.assertEqual(response.status_code, 200)
-
-        # 응답 데이터 확인
-        data = response.json()
-        self.assertIsInstance(data, list)
-        self.assertEqual(len(data), 1)  # 단일 계획만 생성됨
-
-        # 계획 확인
-        plan = data[0]
-        self.assertEqual(plan["id"], 1)
-        self.assertEqual(plan["project_id"], self.project.id)
-        self.assertEqual(plan["quantity"], 8)
-
-        # 견적서 품목 정보 확인
-        self.assertIn("quotation_product", plan)
-        quotation_product = plan["quotation_product"]
-        self.assertEqual(quotation_product["id"], self.quotation_product.id)
-        self.assertEqual(quotation_product["quantity"], self.quotation_product.quantity)
-        self.assertEqual(
-            quotation_product["unit_price"], self.quotation_product.unit_price
-        )
-
-        # 제품 정보 확인
-        self.assertIn("product", quotation_product)
-        product = quotation_product["product"]
-        self.assertEqual(product["id"], self.product.id)
-        self.assertEqual(product["name"], self.product.name)
-        self.assertEqual(product["code"], self.product.code)
-        self.assertEqual(product["unit"], self.product.unit)
-        self.assertEqual(product["spec"], self.product.spec)
-
-        # 설비 정보 확인
-        self.assertIn("equipment", plan)
-        equipment = plan["equipment"]
-        self.assertEqual(equipment["id"], self.equipment.id)
-        self.assertEqual(equipment["name"], self.equipment.name)
-        self.assertEqual(equipment["priority"], self.equipment.priority)
-
-    def test_list_project_plans_nonexistent_project(self):
-        """존재하지 않는 프로젝트로 생산 계획 조회 시도 테스트"""
-        url = f"/v1/project-plan?project_id=999&factory_id={self.factory.id}"
-
-        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
-
-        self.assertEqual(response.status_code, 404)
-
-    def test_list_project_plans_no_plans(self):
-        """생산 계획이 없는 프로젝트 조회 시도 테스트"""
-        # 새로운 프로젝트 생성 (생산 계획 없음)
-        new_project = Project.objects.create()
-
-        url = (
-            f"/v1/project-plan?project_id={new_project.id}&factory_id={self.factory.id}"
-        )
-
-        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
-
-        self.assertEqual(response.status_code, 404)
-
-    def test_list_project_plans_without_auth(self):
-        """인증 없이 생산 계획 조회 시도 테스트"""
-        url = "/v1/project-plan?project_id=1"
-
-        response = self.client.get(url)
-
-        self.assertIn(response.status_code, [401, 403])
-
-    def test_list_ongoing_project_plans_success(self):
-        """진행 중인 프로젝트 계획 조회 성공 테스트"""
-        # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
-        create_payload = {
-            "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [8],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
-        }
-
-        self.client.post(
-            f"{create_url}?factory_id={self.factory.id}",
-            data=json.dumps(create_payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        # 진행 중인 프로젝트 계획 조회 (쿼리 파라미터 없이)
-        list_url = f"/v1/project-plan/ongoing?factory_id={self.factory.id}"
-
-        response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
-
-        self.assertEqual(response.status_code, 200)
-
-        # 응답 데이터 확인 (페이지네이션 형식)
-        data = response.json()
-        self.assertIsInstance(data, dict)
-        self.assertIn("data", data)
-        self.assertIn("count", data)
-        self.assertIn("totalCnt", data)
-        self.assertIn("curPage", data)
-
-        plans = data["data"]
-        self.assertIsInstance(plans, list)
-        self.assertGreater(len(plans), 0)
-
-        # 첫 번째 계획 확인
-        plan = plans[0]
-        self.assertEqual(plan["project_id"], self.project.id)
-        self.assertEqual(plan["quantity"], 8)
-
-        # 견적서 품목 정보 확인
-        self.assertIn("quotation_product", plan)
-        quotation_product = plan["quotation_product"]
-        self.assertEqual(quotation_product["id"], self.quotation_product.id)
-
-        # 제품 정보 확인
-        self.assertIn("product", quotation_product)
-        product = quotation_product["product"]
-        self.assertEqual(product["id"], self.product.id)
-        self.assertEqual(product["name"], self.product.name)
-
-        # 설비 정보 확인
-        self.assertIn("equipment", plan)
-        equipment = plan["equipment"]
-        self.assertEqual(equipment["id"], self.equipment.id)
-        self.assertEqual(equipment["name"], self.equipment.name)
-
-    def test_list_ongoing_project_plans_with_search(self):
-        """진행 중인 프로젝트 계획 조회 (고객사 회사명 검색) 테스트"""
-        # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
-        create_payload = {
-            "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [8],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
-        }
-
-        self.client.post(
-            f"{create_url}?factory_id={self.factory.id}",
-            data=json.dumps(create_payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        # 고객사 회사명으로 검색
-        list_url = f"/v1/project-plan/ongoing?client_name={self.client_company.name}&factory_id={self.factory.id}"
-
-        response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
-
-        self.assertEqual(response.status_code, 200)
-
-        # 응답 데이터 확인 (페이지네이션 형식)
-        data = response.json()
-        self.assertIsInstance(data, dict)
-        self.assertIn("data", data)
-        self.assertIn("count", data)
-        self.assertIn("totalCnt", data)
-        self.assertIn("curPage", data)
-
-        plans = data["data"]
-        self.assertIsInstance(plans, list)
-        self.assertGreater(len(plans), 0)
-
-    def test_list_completed_project_plans_empty(self):
-        """완료된 프로젝트 계획 조회 (빈 결과) 테스트"""
-        # 완료된 프로젝트 계획 조회 (쿼리 파라미터 없이)
-        list_url = f"/v1/project-plan/completed?factory_id={self.factory.id}"
-
-        response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
-
-        # 응답 데이터 확인
-        data = response.json()
-        self.assertEqual(data["count"], 0)
-
-    def test_list_ongoing_project_plans_empty(self):
-        """진행 중인 프로젝트 계획 조회 (빈 결과) 테스트"""
-        # 존재하지 않는 프로젝트가 없으므로 쿼리 파라미터 없이 호출
-        list_url = f"/v1/project-plan/ongoing?factory_id={self.factory.id}"
-
-        response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
-
-        # 응답 데이터 확인
-        data = response.json()
-        self.assertEqual(data["count"], 0)
-
-    def test_update_project_plan_equipment_change_log_creation(self):
+    def test_create_or_update_project_plan_equipment_change_log_creation(self):
         """생산 중인 프로젝트의 설비 변경 시 로그 생성 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
+        create_url = "/v1/project-plan/create-or-update"
         create_payload = {
             "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [8],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 8,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
         }
 
         response = self.client.post(
@@ -621,23 +449,28 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 생성된 계획의 ID 가져오기
-        plan_id = response.json()["plan"]["id"]
+        plan_id = response.json()["plan_id"]
 
         # 계획 상태를 "production"으로 변경
-        update_status_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
-        status_payload = {"status": "production"}
+        status_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 8,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+            "status": "production",
+        }
 
-        response = self.client.patch(
-            update_status_url,
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(status_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
-        data = response.json()
-        # print(
-        #     "🐍 File: tests/test_api_project_plan.py | Line: 658 | test_update_project_plan_equipment_change_log_creation ~ data",
-        #     data,
-        # )
+
         self.assertEqual(response.status_code, 200)
 
         # 새로운 설비 생성
@@ -646,19 +479,25 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         # 설비 변경 (가동 중 상태에서)
-        equipment_change_payload = {"equipment_id": new_equipment.id}
+        equipment_change_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": new_equipment.id,
+            "quantity": 8,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+            "status": "production",
+        }
 
-        response = self.client.patch(
-            update_status_url,
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(equipment_change_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
-        data = response.json()
-        # print(
-        #     "🐍 File: tests/test_api_project_plan.py | Line: 679 | test_update_project_plan_equipment_change_log_creation ~ data",
-        #     data,
-        # )
+
         self.assertEqual(response.status_code, 200)
 
         # 프로젝트 로그가 생성되었는지 확인
@@ -673,18 +512,20 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertIn("라인에서", log.content)
         self.assertIn("라인으로 변경되었어요", log.content)
 
-    def test_update_project_plan_equipment_change_no_log_when_not_producing(self):
+    def test_create_or_update_project_plan_equipment_change_no_log_when_not_producing(
+        self,
+    ):
         """생산 중이 아닌 상태에서 설비 변경 시 로그 생성 안됨 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
+        create_url = "/v1/project-plan/create-or-update"
         create_payload = {
             "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [8],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 8,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
         }
 
         response = self.client.post(
@@ -697,7 +538,7 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 생성된 계획의 ID 가져오기
-        plan_id = response.json()["plan"]["id"]
+        plan_id = response.json()["plan_id"]
 
         # 새로운 설비 생성
         new_equipment = FactoryEquipment.objects.create(
@@ -705,10 +546,19 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         # 설비 변경 (생산 중이 아닌 상태에서)
-        equipment_change_payload = {"equipment_id": new_equipment.id}
+        equipment_change_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": new_equipment.id,
+            "quantity": 8,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
-            f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}",
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(equipment_change_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
@@ -720,18 +570,20 @@ class ProjectPlanAPITestCase(TestCase):
         logs = ProjectLog.objects.filter(project=self.project)
         self.assertEqual(logs.count(), 0)
 
-    def test_update_project_plan_equipment_change_no_log_when_same_equipment(self):
+    def test_create_or_update_project_plan_equipment_change_no_log_when_same_equipment(
+        self,
+    ):
         """같은 설비로 변경 시 로그 생성 안됨 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project-plan"
+        create_url = "/v1/project-plan/create-or-update"
         create_payload = {
             "project_id": self.project.id,
-            "quotation_product_ids": [self.quotation_product.id],
-            "production_quantities": [8],
-            "equipment_ids": [self.equipment.id],
-            "start_dates": ["2025-07-13"],
-            "end_dates": ["2025-07-14"],
-            "avg_production_times": [3600],
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 8,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
         }
 
         response = self.client.post(
@@ -744,14 +596,23 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 생성된 계획의 ID 가져오기
-        plan_id = response.json()["plan"]["id"]
+        plan_id = response.json()["plan_id"]
 
         # 계획 상태를 "production" : "가동 중"으로 변경
-        update_status_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
-        status_payload = {"status": "production"}
+        status_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 8,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+            "status": "production",
+        }
 
-        response = self.client.patch(
-            update_status_url,
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(status_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
@@ -760,10 +621,20 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 같은 설비로 변경 (실제로는 변경되지 않음)
-        equipment_change_payload = {"equipment_id": self.equipment.id}
+        equipment_change_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 8,
+            "start_date": "2025-07-13T00:00:00Z",
+            "end_date": "2025-07-14T00:00:00Z",
+            "avg_production_time": 3600,
+            "status": "production",
+        }
 
-        response = self.client.patch(
-            update_status_url,
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
             data=json.dumps(equipment_change_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
@@ -775,60 +646,103 @@ class ProjectPlanAPITestCase(TestCase):
         logs = ProjectLog.objects.filter(project=self.project)
         self.assertEqual(logs.count(), 0)
 
-    def test_update_project_plan_date_with_time_format(self):
+    def test_create_or_update_project_plan_date_with_time_format(self):
         """날짜에 시간 정보가 포함된 형식으로 수정하는 테스트"""
-        # 먼저 프로젝트 계획 생성
-        plan = ProjectPlan.objects.create(
-            project=self.project,
-            product=self.quotation_product,
-            equipment=self.equipment,
-            status="가동 대기",
-            quantity=100,
-            start_date=date(2024, 1, 1),
-            end_date=date(2024, 1, 31),
-            avg_production_time=3600,
-        )
+        # 먼저 API를 통해 프로젝트 계획 생성
+        create_url = "/v1/project-plan/create-or-update"
+        create_payload = {
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 100,
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-01-31T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        url = f"/v1/project-plan/{plan.id}"
-
-        payload = {"start_date": "2024-02-01 14:30", "end_date": "2024-02-28 18:45"}
-
-        response = self.client.patch(
-            f"{url}?factory_id={self.factory.id}",
-            data=json.dumps(payload),
+        create_response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
+            data=json.dumps(create_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
+        self.assertEqual(create_response.status_code, 200)
+        plan_id = create_response.json()["plan_id"]
+
+        # 생성된 계획 확인
+        print(f"생성된 계획 ID: {plan_id}")
+
+        # 날짜 수정
+        update_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 100,
+            "start_date": "2024-02-01T14:30:00Z",
+            "end_date": "2024-02-28T18:45:00Z",
+            "avg_production_time": 3600,
+        }
+
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
+            data=json.dumps(update_payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        print(f"응답 상태 코드: {response.status_code}")
+        if response.status_code != 200:
+            print(f"응답 내용: {response.content}")
+
         self.assertEqual(response.status_code, 200)
 
         # 데이터베이스 확인
-        plan.refresh_from_db()
+        plan = ProjectPlan.objects.get(id=plan_id)
         # 시간대 변환으로 인해 날짜 부분만 비교
         self.assertEqual(plan.start_date.date(), date(2024, 2, 1))
         self.assertEqual(plan.end_date.date(), date(2024, 2, 28))
 
-    def test_update_project_plan_date_without_time_format(self):
+    def test_create_or_update_project_plan_date_without_time_format(self):
         """날짜만 있는 형식으로 수정하는 테스트"""
-        # 먼저 프로젝트 계획 생성
-        plan = ProjectPlan.objects.create(
-            project=self.project,
-            product=self.quotation_product,
-            equipment=self.equipment,
-            status="가동 대기",
-            quantity=100,
-            start_date=date(2024, 1, 1),
-            end_date=date(2024, 1, 31),
-            avg_production_time=3600,
+        # 먼저 API를 통해 프로젝트 계획 생성
+        create_url = "/v1/project-plan/create-or-update"
+        create_payload = {
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 100,
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-01-31T00:00:00Z",
+            "avg_production_time": 3600,
+        }
+
+        create_response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
+            data=json.dumps(create_payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
-        url = f"/v1/project-plan/{plan.id}"
+        self.assertEqual(create_response.status_code, 200)
+        plan_id = create_response.json()["plan_id"]
 
-        payload = {"start_date": "2024-03-01", "end_date": "2024-03-31"}
+        # 날짜 수정
+        update_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 100,
+            "start_date": "2024-03-01T00:00:00Z",
+            "end_date": "2024-03-31T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
-            f"{url}?factory_id={self.factory.id}",
-            data=json.dumps(payload),
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
+            data=json.dumps(update_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
@@ -836,7 +750,7 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 데이터베이스 확인
-        plan.refresh_from_db()
+        plan = ProjectPlan.objects.get(id=plan_id)
         # 시간대 변환으로 인해 날짜 부분만 비교
         # UTC 변환으로 인해 1일 차이가 날 수 있으므로 허용
         from datetime import timedelta
@@ -844,27 +758,45 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertIn(plan.start_date.date(), [date(2024, 3, 1), date(2024, 2, 29)])
         self.assertIn(plan.end_date.date(), [date(2024, 3, 31), date(2024, 3, 30)])
 
-    def test_update_project_plan_date_mixed_format(self):
+    def test_create_or_update_project_plan_date_mixed_format(self):
         """시작일은 시간 포함, 마감일은 시간 없는 혼합 형식 테스트"""
-        # 먼저 프로젝트 계획 생성
-        plan = ProjectPlan.objects.create(
-            project=self.project,
-            product=self.quotation_product,
-            equipment=self.equipment,
-            status="가동 대기",
-            quantity=100,
-            start_date=date(2024, 1, 1),
-            end_date=date(2024, 1, 31),
-            avg_production_time=3600,
+        # 먼저 API를 통해 프로젝트 계획 생성
+        create_url = "/v1/project-plan/create-or-update"
+        create_payload = {
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 100,
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-01-31T00:00:00Z",
+            "avg_production_time": 3600,
+        }
+
+        create_response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
+            data=json.dumps(create_payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
-        url = f"/v1/project-plan/{plan.id}"
+        self.assertEqual(create_response.status_code, 200)
+        plan_id = create_response.json()["plan_id"]
 
-        payload = {"start_date": "2024-04-01 09:15", "end_date": "2024-04-30"}
+        # 날짜 수정
+        update_payload = {
+            "plan_id": plan_id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 100,
+            "start_date": "2024-04-01T09:15:00Z",
+            "end_date": "2024-04-30T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
-            f"{url}?factory_id={self.factory.id}",
-            data=json.dumps(payload),
+        response = self.client.post(
+            f"{create_url}?factory_id={self.factory.id}",
+            data=json.dumps(update_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
@@ -872,13 +804,13 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 데이터베이스 확인
-        plan.refresh_from_db()
+        plan = ProjectPlan.objects.get(id=plan_id)
         # 시간대 변환으로 인해 날짜 부분만 비교
         # UTC 변환으로 인해 1일 차이가 날 수 있으므로 허용
         self.assertIn(plan.start_date.date(), [date(2024, 4, 1), date(2024, 3, 31)])
         self.assertIn(plan.end_date.date(), [date(2024, 4, 30), date(2024, 4, 29)])
 
-    def test_update_project_plan_quantity_less_than_quotation(self):
+    def test_create_or_update_project_plan_quantity_less_than_quotation(self):
         """생산수량을 주문수량보다 작게 수정하는 테스트 (다른 설비로 계획 생성)"""
         # 두 번째 설비 생성
         equipment2 = FactoryEquipment.objects.create(
@@ -897,11 +829,20 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = f"/v1/project-plan/{plan.id}"
+        url = "/v1/project-plan/create-or-update"
 
-        payload = {"quantity": 60}  # 주문수량(100)보다 작음
+        payload = {
+            "plan_id": plan.id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 60,  # 주문수량(100)보다 작음
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-01-31T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
+        response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type="application/json",
@@ -926,7 +867,7 @@ class ProjectPlanAPITestCase(TestCase):
             additional_plan.quantity, 44
         )  # (100-60) * 1.1 = 44 (buffer rate 적용)
 
-    def test_update_project_plan_quantity_less_than_quotation_no_alternative_equipment(
+    def test_create_or_update_project_plan_quantity_less_than_quotation_no_alternative_equipment(
         self,
     ):
         """대체 설비가 없을 때 생산수량을 주문수량보다 작게 수정하는 테스트"""
@@ -942,11 +883,20 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = f"/v1/project-plan/{plan.id}"
+        url = "/v1/project-plan/create-or-update"
 
-        payload = {"quantity": 60}  # 주문수량(100)보다 작음
+        payload = {
+            "plan_id": plan.id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 60,  # 주문수량(100)보다 작음
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-01-31T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
+        response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type="application/json",
@@ -973,7 +923,7 @@ class ProjectPlanAPITestCase(TestCase):
             additional_plan.quantity, 44
         )  # (100-60) * 1.1 = 44 (buffer rate 적용)
 
-    def test_update_project_plan_quantity_less_than_quotation_refund(self):
+    def test_create_or_update_project_plan_quantity_less_than_quotation_refund(self):
         """반품인 경우 생산수량을 주문수량보다 작게 수정하는 테스트 (buffer rate 적용)"""
         # 두 번째 설비 생성
         equipment2 = FactoryEquipment.objects.create(
@@ -992,20 +942,24 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = f"/v1/project-plan/{plan.id}"
+        url = "/v1/project-plan/create-or-update"
 
-        payload = {"quantity": 60}  # 주문수량(100)보다 작음
+        payload = {
+            "plan_id": plan.id,
+            "project_id": self.project.id,
+            "quotation_product_id": self.quotation_product.id,
+            "equipment_id": self.equipment.id,
+            "quantity": 60,  # 주문수량(100)보다 작음
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-01-31T00:00:00Z",
+            "avg_production_time": 3600,
+        }
 
-        response = self.client.patch(
+        response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
             data=json.dumps(payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-        data = response.json()
-        print(
-            "🐍 File: tests/test_api_project_plan.py | Line: 1198 | test_update_project_plan_quantity_less_than_quotation_refund ~ data",
-            data,
         )
 
         self.assertEqual(response.status_code, 200)
