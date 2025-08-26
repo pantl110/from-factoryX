@@ -30,7 +30,6 @@ class NationalTaxServiceOut(ModelSchema):
 
 class NationalTaxServiceDetailOut(ModelSchema):
     client: FactoryClientOut
-    product: List[ProductOut]
 
     class Meta:
         model = NationalTaxService
@@ -42,7 +41,6 @@ class NotLinkedTaxInvoiceOut(Schema):
     tax_invoice_type: str
     transaction_date: date
     client_name: str
-    product_names: List[str]
     transaction_amount: int
     tax_amount: int
     total_amount: int
@@ -53,7 +51,6 @@ class AllTaxInvoiceOut(Schema):
     tax_invoice_type: str
     transaction_date: date
     client_name: str
-    product_names: List[str]
     transaction_amount: int
     tax_amount: int
     total_amount: int
@@ -63,7 +60,6 @@ class AllCashReceiptOut(Schema):
     id: int
     transaction_date: date
     client_name: str
-    product_names: List[str]
     transaction_amount: int
     tax_amount: int
     total_amount: int
@@ -122,8 +118,6 @@ class CashReceiptDetailOut(ModelSchema):
 
 class CashReceiptDetailWithMaterialOut(ModelSchema):
     client: FactoryClientOut
-    product: List[ProductOut]
-    # material: MaterialDetailOut
 
     class Meta:
         model = CashReceipt

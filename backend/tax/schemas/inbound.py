@@ -14,7 +14,9 @@ class TaxServiceItem(Schema):
     amount: Optional[str] = Field(None, description="공급가액")
     tax: Optional[str] = Field(None, description="세액")
     description: Optional[str] = Field("", description="비고")
-    material_history: Optional[str | int] = Field(None, description="자재이력 (매입 세금계산서에서 활용)")
+    material_history: Optional[str | int] = Field(
+        None, description="자재이력 (매입 세금계산서에서 활용)"
+    )
 
     @field_validator("purchase_expiry")
     @classmethod
@@ -32,7 +34,6 @@ class NationalTaxServiceCreateIn(ModelSchema):
     tax_id: Optional[int] = Field(None, description="세금계산서 ID (수정 시에만 사용)")
     factory: int = Field(..., description="공장 ID")
     client: Optional[int] = Field(None, description="거래처 ID")
-    product: List[Optional[int]] = Field(default=[], description="품목 ID 리스트")
     line_items: Optional[List[TaxServiceItem]] = Field(
         default=[],
         description="세금계산서 품목 리스트",
@@ -50,8 +51,6 @@ class NationalTaxServiceCreateIn(ModelSchema):
             "factory_info",
             "client",
             "client_info",
-            "product",
-            "products_info",
             "publish_status",
             "mgt_key",
             "nts_send_key",
@@ -65,7 +64,6 @@ class NationalTaxServiceCreateIn(ModelSchema):
 class NationalTaxServiceUpdateIn(ModelSchema):
     factory: Optional[int] = Field(None, description="공장 ID")
     client: Optional[int] = Field(None, description="거래처 ID")
-    product: List[Optional[int]] = Field(default=None, description="품목 ID 리스트")
     line_items: Optional[List[TaxServiceItem]] = Field(
         None,
         description="세금계산서 품목 리스트",
@@ -93,7 +91,7 @@ class LinkTaxInvoiceIn(Schema):
 class TaxInvoiceFilter(FilterSchema):
     q: Optional[str] = Field(
         None,
-        q=["client__name__icontains", "product__name__icontains"],
+        q=["client__name__icontains"],
         description="거래처명 또는 품목명 통합 검색어",
         expression_connector="OR",
     )
