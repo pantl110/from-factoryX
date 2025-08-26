@@ -284,6 +284,9 @@ def _send_email_via_ses(email, subject, html_message, text_message, factory):
     return True
 
 
+#
+
+
 def _send_email_via_django(email, subject, html_message, text_message, factory):
     """Django 기본 이메일 백엔드를 통한 이메일 발송"""
     from django.core.mail import send_mail
@@ -300,6 +303,280 @@ def _send_email_via_django(email, subject, html_message, text_message, factory):
     return True
 
 
+def send_email_with_attachments(
+    to_emails,
+    subject,
+    html_message=None,
+    text_message=None,
+    attachments=None,
+    cc_emails=None,
+    bcc_emails=None,
+    from_email=None,
+):
+    """
+    첨부파일을 포함한 이메일 발송 함수
+
+    Args:
+        to_emails (list): 수신자 이메일 주소 목록
+        subject (str): 메일 제목
+        html_message (str, optional): HTML 메시지 내용
+        text_message (str, optional): 텍스트 메시지 내용
+        attachments (list, optional): 첨부파일 리스트
+            - dict 형태: {'filename': '파일명', 'content': bytes데이터, 'mimetype': 'MIME타입'}
+            - 또는 파일 경로 문자열
+        cc_emails (list, optional): 참조 이메일 주소 목록
+        bcc_emails (list, optional): 숨은 참조 이메일 주소 목록
+        from_email (str, optional): 발신자 이메일 (기본값: settings.DEFAULT_FROM_EMAIL)
+
+    Returns:
+        bool: 발송 성공 여부
+    """
+    from django.core.mail import EmailMultiAlternatives
+    import os
+    import mimetypes
+
+    if not to_emails:
+        print("수신자 이메일 주소가 없습니다.")
+        return False
+
+    if not isinstance(to_emails, list):
+        to_emails = [to_emails]
+
+    if not from_email:
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@factory-x.com")
+
+    try:
+        # AWS SES 사용 여부 확인
+        if getattr(settings, "USE_SES", False):
+            return _send_email_with_attachments_via_ses(
+                to_emails,
+                subject,
+                html_message,
+                text_message,
+                attachments,
+                cc_emails,
+                bcc_emails,
+                from_email,
+            )
+        else:
+            return _send_email_with_attachments_via_django(
+                to_emails,
+                subject,
+                html_message,
+                text_message,
+                attachments,
+                cc_emails,
+                bcc_emails,
+                from_email,
+            )
+    except Exception as e:
+        print(f"첨부파일 이메일 발송 실패: {to_emails}, 오류: {e}")
+        return False
+
+
+def _send_email_with_attachments_via_django(
+    to_emails,
+    subject,
+    html_message,
+    text_message,
+    attachments,
+    cc_emails,
+    bcc_emails,
+    from_email,
+):
+    """Django 기본 이메일 백엔드를 통한 첨부파일 포함 이메일 발송"""
+    from django.core.mail import EmailMultiAlternatives
+    import os
+    import mimetypes
+
+    # HTML만 있고 텍스트가 없는 경우 빈 텍스트 사용 (중복 방지)
+    if html_message and not text_message:
+        text_message = ""  # 빈 문자열로 설정하여 중복 방지
+    elif not text_message and html_message:
+        # HTML에서 텍스트 생성이 필요한 경우에만 생성
+        import re
+
+        text_message = re.sub("<[^<]+?>", "", html_message)
+        text_message = re.sub(r"\n\s*\n", "\n\n", text_message).strip()
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_message or "",
+        from_email=from_email,
+        to=to_emails,
+        cc=cc_emails or [],
+        bcc=bcc_emails or [],
+    )
+
+    # HTML 메시지 추가
+    if html_message:
+        email.attach_alternative(html_message, "text/html")
+
+    # 첨부파일 처리
+    if attachments:
+        for attachment in attachments:
+            if isinstance(attachment, dict):
+                # dict 형태: {'filename': '파일명', 'content': bytes, 'mimetype': 'MIME타입'}
+                filename = attachment.get("filename")
+                content = attachment.get("content")
+                mimetype = attachment.get("mimetype")
+
+                if not all([filename, content]):
+                    print(f"첨부파일 정보 부족: {attachment}")
+                    continue
+
+                if not mimetype:
+                    mimetype, _ = mimetypes.guess_type(filename)
+                    if not mimetype:
+                        mimetype = "application/octet-stream"
+
+                email.attach(filename, content, mimetype)
+
+            elif isinstance(attachment, str):
+                # 파일 경로 문자열
+                if os.path.exists(attachment):
+                    with open(attachment, "rb") as f:
+                        content = f.read()
+                    filename = os.path.basename(attachment)
+                    mimetype, _ = mimetypes.guess_type(attachment)
+                    if not mimetype:
+                        mimetype = "application/octet-stream"
+
+                    email.attach(filename, content, mimetype)
+                else:
+                    print(f"첨부파일을 찾을 수 없습니다: {attachment}")
+
+    email.send()
+    print(f"첨부파일 포함 이메일 발송 완료 (Django): {to_emails}")
+    return True
+
+
+def _send_email_with_attachments_via_ses(
+    to_emails,
+    subject,
+    html_message,
+    text_message,
+    attachments,
+    cc_emails,
+    bcc_emails,
+    from_email,
+):
+    """AWS SES를 통한 첨부파일 포함 이메일 발송"""
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.application import MIMEApplication
+    from email.mime.base import MIMEBase
+    from email import encoders
+    from user.backends import SESEmailService
+    import os
+    import mimetypes
+
+    # 기본 텍스트 메시지가 없으면 HTML에서 생성
+    if not text_message and html_message:
+        import re
+
+        text_message = re.sub("<[^<]+?>", "", html_message)
+        text_message = re.sub(r"\n\s*\n", "\n\n", text_message).strip()
+
+    # MIME 메시지 생성
+    msg = MIMEMultipart()
+    msg["From"] = from_email
+    msg["To"] = ", ".join(to_emails)
+    msg["Subject"] = subject
+
+    if cc_emails:
+        msg["Cc"] = ", ".join(cc_emails)
+
+    # 텍스트 내용 추가
+    # if text_message:
+    #     msg.attach(MIMEText(text_message, "plain", "utf-8"))
+
+    # HTML 내용 추가
+    if html_message:
+        msg.attach(MIMEText(html_message, "html", "utf-8"))
+
+    # 첨부파일 처리
+    if attachments:
+        for attachment in attachments:
+            if isinstance(attachment, dict):
+                # dict 형태: {'filename': '파일명', 'content': bytes, 'mimetype': 'MIME타입'}
+                filename = attachment.get("filename")
+                content = attachment.get("content")
+                mimetype = attachment.get("mimetype")
+
+                if not all([filename, content]):
+                    print(f"첨부파일 정보 부족: {attachment}")
+                    continue
+
+                if not mimetype:
+                    mimetype, _ = mimetypes.guess_type(filename)
+                    if not mimetype:
+                        mimetype = "application/octet-stream"
+
+                # MIME 타입에 따라 적절한 첨부파일 생성
+                maintype, subtype = mimetype.split("/", 1)
+
+                if maintype == "text":
+                    part = MIMEText(content.decode("utf-8"), subtype)
+                elif maintype == "application":
+                    part = MIMEApplication(content, subtype)
+                else:
+                    part = MIMEBase(maintype, subtype)
+                    part.set_payload(content)
+                    encoders.encode_base64(part)
+
+                part.add_header(
+                    "Content-Disposition", f'attachment; filename="{filename}"'
+                )
+                msg.attach(part)
+
+            elif isinstance(attachment, str):
+                # 파일 경로 문자열
+                if os.path.exists(attachment):
+                    with open(attachment, "rb") as f:
+                        content = f.read()
+                    filename = os.path.basename(attachment)
+                    mimetype, _ = mimetypes.guess_type(attachment)
+                    if not mimetype:
+                        mimetype = "application/octet-stream"
+
+                    maintype, subtype = mimetype.split("/", 1)
+
+                    if maintype == "text":
+                        part = MIMEText(content.decode("utf-8"), subtype)
+                    elif maintype == "application":
+                        part = MIMEApplication(content, subtype)
+                    else:
+                        part = MIMEBase(maintype, subtype)
+                        part.set_payload(content)
+                        encoders.encode_base64(part)
+
+                    part.add_header(
+                        "Content-Disposition", f'attachment; filename="{filename}"'
+                    )
+                    msg.attach(part)
+                else:
+                    print(f"첨부파일을 찾을 수 없습니다: {attachment}")
+
+    # SES를 통해 원시 이메일 발송
+    ses_service = SESEmailService()
+
+    destinations = to_emails.copy()
+    if cc_emails:
+        destinations.extend(cc_emails)
+    if bcc_emails:
+        destinations.extend(bcc_emails)
+
+    response = ses_service.ses_client.send_raw_email(
+        Source=from_email,
+        Destinations=destinations,
+        RawMessage={"Data": msg.as_string()},
+    )
+
+    print(f"첨부파일 포함 이메일 발송 완료 (SES): {to_emails}")
+    return True
+
+
 def create_inviting_data(email, role, invited_by):
     """초대 데이터 생성"""
     return {
@@ -308,3 +585,110 @@ def create_inviting_data(email, role, invited_by):
         "invited_by": get_user_id(invited_by),
         "invited_at": datetime.now().isoformat(),
     }
+
+
+# 사용 예제 함수들
+def send_report_email_example(factory, report_data, recipients):
+    """보고서 이메일 발송 예제"""
+    import json
+    from io import BytesIO
+    import csv
+
+    # CSV 보고서 생성 예제
+    csv_buffer = BytesIO()
+    writer = csv.writer(csv_buffer.getvalue().decode("utf-8").splitlines())
+    writer.writerow(["항목", "값", "날짜"])
+    for item in report_data:
+        writer.writerow([item.get("name"), item.get("value"), item.get("date")])
+
+    csv_content = csv_buffer.getvalue()
+
+    # HTML 메시지 생성
+    html_message = f"""
+    <html>
+    <body>
+        <h2>{factory.name} 월간 보고서</h2>
+        <p>안녕하세요,</p>
+        <p>첨부된 파일에서 {factory.name}의 월간 보고서를 확인하실 수 있습니다.</p>
+        <p>문의사항이 있으시면 언제든지 연락 주시기 바랍니다.</p>
+        <br>
+        <p>감사합니다.</p>
+        <p>Factory X 팀</p>
+    </body>
+    </html>
+    """
+
+    # 첨부파일 리스트
+    attachments = [
+        {
+            "filename": f"{factory.name}_monthly_report.csv",
+            "content": csv_content,
+            "mimetype": "text/csv",
+        }
+    ]
+
+    return send_email_with_attachments(
+        to_emails=recipients,
+        subject=f"[Factory X] {factory.name} 월간 보고서",
+        html_message=html_message,
+        attachments=attachments,
+    )
+
+
+def send_document_email_example(to_email, document_path, message):
+    """문서 첨부 이메일 발송 예제"""
+    html_message = f"""
+    <html>
+    <body>
+        <h2>문서 전송</h2>
+        <p>{message}</p>
+        <p>첨부된 문서를 확인해 주세요.</p>
+        <br>
+        <p>감사합니다.</p>
+        <p>Factory X 팀</p>
+    </body>
+    </html>
+    """
+
+    return send_email_with_attachments(
+        to_emails=[to_email],
+        subject="[Factory X] 문서 전송",
+        html_message=html_message,
+        attachments=[document_path],  # 파일 경로 직접 전달
+    )
+
+
+def send_multi_attachment_email_example(recipients, files_data):
+    """여러 첨부파일 이메일 발송 예제"""
+    html_message = """
+    <html>
+    <body>
+        <h2>여러 문서 전송</h2>
+        <p>안녕하세요,</p>
+        <p>요청하신 여러 문서들을 첨부하여 보내드립니다.</p>
+        <ul>
+    """
+
+    attachments = []
+    for file_data in files_data:
+        filename = file_data.get("filename")
+        html_message += f"<li>{filename}</li>"
+        attachments.append(file_data)
+
+    html_message += """
+        </ul>
+        <p>검토 후 피드백 부탁드립니다.</p>
+        <br>
+        <p>감사합니다.</p>
+        <p>Factory X 팀</p>
+    </body>
+    </html>
+    """
+
+    return send_email_with_attachments(
+        to_emails=recipients,
+        subject="[Factory X] 문서 패키지 전송",
+        html_message=html_message,
+        attachments=attachments,
+        cc_emails=["manager@factory-x.com"],  # 매니저에게 참조
+    )
