@@ -414,6 +414,7 @@ async def sync_tax_invoices(request, factory_id: int):
                         "amount": item.Amount,
                         "tax": item.Tax,
                         "description": item.Description,
+                        "material_history": None,
                     }
                 )
 
@@ -484,6 +485,7 @@ async def sync_tax_invoices(request, factory_id: int):
                         "amount": item.Amount,
                         "tax": item.Tax,
                         "description": item.Description,
+                        "material_history": None,
                     }
                 )
 

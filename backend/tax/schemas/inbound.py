@@ -14,7 +14,7 @@ class TaxServiceItem(Schema):
     amount: Optional[str] = Field(None, description="공급가액")
     tax: Optional[str] = Field(None, description="세액")
     description: Optional[str] = Field("", description="비고")
-    # material_history: Optional[str] = Field(None, description="자재이력")
+    material_history: Optional[str | int] = Field(None, description="자재이력")
 
     @field_validator("purchase_expiry")
     @classmethod
