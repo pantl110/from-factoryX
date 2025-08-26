@@ -84,17 +84,6 @@ class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
         blank=True,
         help_text="거래처 정보",
     )
-    product = models.ManyToManyField(
-        "stock.Product",
-        related_name="tax_invoices",
-        help_text="품목명",
-    )
-    products_info = models.JSONField(
-        default=list,
-        null=True,
-        blank=True,
-        help_text="품목 리스트 정보",
-    )
     transaction_amount = models.IntegerField(
         null=True, blank=True, help_text="공급 가액"
     )
@@ -191,17 +180,6 @@ class CashReceipt(BaseModel):
         null=True,
         blank=True,
         help_text="거래처 정보",
-    )
-    product = models.ManyToManyField(
-        "stock.Product",
-        related_name="cash_receipts",
-        help_text="품목명",
-    )
-    products_info = models.JSONField(
-        default=list,
-        null=True,
-        blank=True,
-        help_text="품목 리스트 정보",
     )
     transaction_amount = models.IntegerField(help_text="공급 가액")
     tax_amount = models.IntegerField(help_text="세액")
