@@ -11,7 +11,6 @@ class NationalTaxServiceOut(ModelSchema):
     class Meta:
         model = NationalTaxService
         fields = "__all__"
-        exclude = ["product"]
 
 
 # ------------------------------------------------------------

@@ -5,7 +5,6 @@ from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from tax.models import NationalTaxService
 from factory.utils import get_factory_by_id, is_factory_member, get_factory_client_by_id
-from stock.utils import get_product_list_by_ids
 from django.db import transaction
 from tax.utils import get_tax_service_by_id
 from tax.barobill_utils import (
@@ -78,7 +77,7 @@ async def list_published_tax_invoices(
     def get_all_tax_invoices():
         queryset = NationalTaxService.objects.filter(
             factory_id=factory_id, publish_status="published"
-        ).prefetch_related("client", "product")
+        ).prefetch_related("client")
         queryset = filters.filter(queryset)
         if ordering:
             queryset = queryset.order_by(ordering)
@@ -116,7 +115,7 @@ async def list_pending_tax_invoices(
         queryset = (
             NationalTaxService.objects.filter(client__factory_id=factory_id)
             .exclude(publish_status="published")
-            .prefetch_related("client", "product")
+            .prefetch_related("client")
         )
         queryset = filters.filter(queryset)
         if ordering:
@@ -149,7 +148,7 @@ async def list_not_link_tax(
     def get_unlinked_tax_invoices():
         queryset = NationalTaxService.objects.filter(
             projects__isnull=True, client__factory_id=factory_id
-        ).prefetch_related("client", "product")
+        ).prefetch_related("client")
         queryset = filters.filter(queryset)
         if ordering:
             queryset = queryset.order_by(ordering)
@@ -556,8 +555,6 @@ async def create_or_update_tax_invoice(request, payload: NationalTaxServiceCreat
         client = await get_factory_client_by_id(client_id, factory_id)
         client_info = FactoryClientRowOut.from_orm(client).dict()
 
-    product_ids = data.pop("product", [])
-
     if tax_id:
         # 수정 모드
         tax_service = await get_tax_service_by_id(tax_id)
@@ -578,20 +575,6 @@ async def create_or_update_tax_invoice(request, payload: NationalTaxServiceCreat
             tax_service.client = client
             tax_service.client_info = client_info
 
-        if product_ids is not None:
-            if product_ids:
-                products = await sync_to_async(get_product_list_by_ids)(
-                    product_ids, factory_id
-                )
-                # QuerySet을 리스트로 변환하여 메모리에 로드
-                products_list = await sync_to_async(list)(products)
-                tax_service.products_info = [
-                    ProductRowOut.from_orm(product).dict() for product in products_list
-                ]
-                await tax_service.product.aset(products_list)
-            else:
-                tax_service.products_info = []
-
         # line_items 업데이트
         line_items = data.pop("line_items", None)
         if line_items is not None:
@@ -604,7 +587,7 @@ async def create_or_update_tax_invoice(request, payload: NationalTaxServiceCreat
         await tax_service.asave()
 
         # 업데이트된 세금계산서 조회
-        tax_service = await NationalTaxService.objects.prefetch_related("product").aget(
+        tax_service = await NationalTaxService.objects.aget(
             id=tax_service.id,
         )
 
@@ -624,21 +607,12 @@ async def create_or_update_tax_invoice(request, payload: NationalTaxServiceCreat
                 **data,
             )
 
-            if product_ids:
-                products = get_product_list_by_ids(product_ids, factory_id)
-                tax_service.products_info = [
-                    ProductRowOut.from_orm(product).dict() for product in products
-                ]
-                tax_service.product.set(products)
-            else:
-                tax_service.products_info = []
-
             tax_service.save()
             return tax_service
 
         tax_service = await create_tax_service()
 
-        tax_service = await NationalTaxService.objects.prefetch_related("product").aget(
+        tax_service = await NationalTaxService.objects.aget(
             id=tax_service.id,
         )
 
@@ -698,16 +672,6 @@ async def update_tax_invoice(request, tax_id: int, payload: NationalTaxServiceUp
         tax_service.client = client
         tax_service.client_info = FactoryClientRowOut.from_orm(client).dict()
 
-    product_ids = data.pop("product", None)
-    if product_ids is not None:
-        products = await sync_to_async(list)(
-            get_product_list_by_ids(product_ids, factory_id or tax_service.factory.id)
-        )
-        tax_service.products_info = [
-            ProductRowOut.from_orm(product).dict() for product in products
-        ]
-        await tax_service.product.aset(products)
-
     # line_items는 수정 시에만 업데이트
     line_items = data.pop("line_items", None)
     if line_items is not None:
@@ -718,7 +682,7 @@ async def update_tax_invoice(request, tax_id: int, payload: NationalTaxServiceUp
 
     await tax_service.asave()
 
-    tax_service = await NationalTaxService.objects.prefetch_related("product").aget(
+    tax_service = await NationalTaxService.objects.aget(
         id=tax_service.id,
     )
 

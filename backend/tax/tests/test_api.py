@@ -3,13 +3,11 @@ from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryMember
 from tax.models import NationalTaxService
 from project.models import Project
-from stock.models import Product
 import json
 import jwt
 from django.conf import settings
 from datetime import datetime, timedelta, date
 from factory.schemas.outbound import FactoryClientRowOut
-from stock.schemas.outbound import ProductRowOut
 
 
 User = get_user_model()
@@ -42,23 +40,6 @@ class TaxAPITestCase(TestCase):
             business_registration_number="987-65-43210",
         )
 
-        # 제품 생성
-        self.product1 = Product.objects.create(
-            factory=self.factory,
-            name="M8 볼트 세트",
-            code="BOLT001",
-            unit="개",
-            spec="M8x20",
-        )
-
-        self.product2 = Product.objects.create(
-            factory=self.factory, name="나사", code="SCREW001", unit="개", spec="M6x15"
-        )
-
-        self.product3 = Product.objects.create(
-            factory=self.factory, name="와셔", code="WASHER001", unit="개", spec="M8"
-        )
-
         # JWT 토큰 생성
         self.token = self.generate_jwt_token()
 
@@ -85,7 +66,6 @@ class TaxAPITestCase(TestCase):
                 {
                     "factory": self.factory.id,
                     "client": None,
-                    "product": [],
                     "line_items": [],
                 }
             ),
@@ -99,7 +79,6 @@ class TaxAPITestCase(TestCase):
         tax_invoice = NationalTaxService.objects.get(id=response.json()["id"])
         self.assertEqual(tax_invoice.publish_status, "temporary")
         self.assertIsNone(tax_invoice.client)
-        self.assertEqual(tax_invoice.products_info, [])
         self.assertEqual(tax_invoice.line_items, [])
 
         # 부분적으로 정보가 입력된 임시저장
@@ -109,7 +88,6 @@ class TaxAPITestCase(TestCase):
                 {
                     "factory": self.factory.id,
                     "client": self.client_company1.id,
-                    "product": [self.product1.id],
                     "line_items": [
                         {
                             "name": "테스트 품목",
@@ -129,7 +107,6 @@ class TaxAPITestCase(TestCase):
         tax_invoice2 = NationalTaxService.objects.get(id=response.json()["id"])
         self.assertEqual(tax_invoice2.publish_status, "temporary")
         self.assertEqual(tax_invoice2.client, self.client_company1)
-        self.assertEqual(len(tax_invoice2.products_info), 1)
         self.assertEqual(len(tax_invoice2.line_items), 1)
 
     def test_publish_validation(self):
@@ -193,7 +170,6 @@ class TaxAPITestCase(TestCase):
                 {
                     "factory": self.factory.id,
                     "client": self.client_company1.id,
-                    "product": [self.product1.id],
                     "line_items": [
                         {
                             "name": "테스트 품목",
@@ -218,7 +194,6 @@ class TaxAPITestCase(TestCase):
                     "tax_id": tax_invoice_id,
                     "factory": self.factory.id,
                     "client": self.client_company2.id,
-                    "product": [self.product1.id],
                     "line_items": [
                         {
                             "name": "수정된 품목",
@@ -341,7 +316,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice_sales.product.add(self.product1)
         # published 매입
         invoice_purchase = NationalTaxService.objects.create(
             factory=self.factory,
@@ -352,7 +326,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="purchase",
             publish_status="published",
         )
-        invoice_purchase.product.add(self.product2)
         # draft(미포함)
         draft_invoice = NationalTaxService.objects.create(
             factory=self.factory,
@@ -363,7 +336,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="draft",
         )
-        draft_invoice.product.add(self.product2)
         url = f"/v1/tax/published?factory_id={self.factory.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
@@ -385,7 +357,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice_sales.product.add(self.product1)
         invoice_purchase = NationalTaxService.objects.create(
             factory=self.factory,
             client=self.client_company2,
@@ -395,7 +366,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="purchase",
             publish_status="published",
         )
-        invoice_purchase.product.add(self.product2)
         url = f"/v1/tax/published?factory_id={self.factory.id}&tax_invoice_type=sales"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
@@ -416,7 +386,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice_sales.product.add(self.product1)
         invoice_purchase = NationalTaxService.objects.create(
             factory=self.factory,
             client=self.client_company2,
@@ -426,7 +395,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="purchase",
             publish_status="published",
         )
-        invoice_purchase.product.add(self.product2)
         url = (
             f"/v1/tax/published?factory_id={self.factory.id}&tax_invoice_type=purchase"
         )
@@ -449,7 +417,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice1.product.add(self.product1)
         invoice2 = NationalTaxService.objects.create(
             factory=self.factory,
             client=self.client_company2,
@@ -459,7 +426,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice2.product.add(self.product2)
         # 거래처명 검색
         url = f"/v1/tax/published?factory_id={self.factory.id}&q=플라스틱이 좋아"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -472,12 +438,11 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(len(data["data"]), 1)
         # self.assertEqual(data["data"][0]["client_name"], "플라스틱이 좋아")
         # 품목명 검색
-        url = f"/v1/tax/published?factory_id={self.factory.id}&q={self.product2.name}"
+        url = f"/v1/tax/published?factory_id={self.factory.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["data"]), 1)
-        # self.assertIn(self.product2.name, data["data"][0]["product_names"])
+        self.assertEqual(len(data["data"]), 2)
 
     def test_list_all_tax_invoices_success(self):
         """모든 세금계산서 조회 성공 테스트"""
@@ -491,7 +456,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        unlinked_invoice1.product.add(self.product1)
 
         # 연결되지 않은 세금계산서 생성 (매입)
         unlinked_invoice2 = NationalTaxService.objects.create(
@@ -503,7 +467,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="purchase",
             publish_status="published",
         )
-        unlinked_invoice2.product.add(self.product2)
 
         # 연결된 세금계산서 생성
         linked_invoice = NationalTaxService.objects.create(
@@ -515,7 +478,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        linked_invoice.product.add(self.product3)
 
         # 프로젝트 생성 후 세금계산서 연결
         project = Project.objects.create()
@@ -554,7 +516,6 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(first_invoice["tax_invoice_type"], "sales")
         self.assertEqual(first_invoice["transaction_date"], "2025-06-04")
         # self.assertEqual(first_invoice["client_name"], "플라스틱이 좋아")
-        # self.assertEqual(first_invoice["product_names"], ["M8 볼트 세트"])
         self.assertEqual(first_invoice["transaction_amount"], 550000)
         self.assertEqual(first_invoice["tax_amount"], 50000)
         # self.assertEqual(first_invoice["total_amount"], 600000)
@@ -564,7 +525,6 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(second_invoice["id"], unlinked_invoice2.id)
         self.assertEqual(second_invoice["tax_invoice_type"], "purchase")
         # self.assertEqual(second_invoice["client_name"], "플라스틱이 싫어")
-        # self.assertEqual(second_invoice["product_names"], ["나사"])
         self.assertEqual(second_invoice["transaction_amount"], 500000)
         self.assertEqual(second_invoice["tax_amount"], 50000)
         # self.assertEqual(second_invoice["total_amount"], 550000)
@@ -574,7 +534,6 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(third_invoice["id"], linked_invoice.id)
         self.assertEqual(third_invoice["tax_invoice_type"], "sales")
         # self.assertEqual(third_invoice["client_name"], "플라스틱이 좋아")
-        # self.assertEqual(third_invoice["product_names"], ["와셔"])
         self.assertEqual(third_invoice["transaction_amount"], 300000)
         self.assertEqual(third_invoice["tax_amount"], 30000)
         # self.assertEqual(third_invoice["total_amount"], 330000)
@@ -591,7 +550,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        multi_product_invoice.product.add(self.product1, self.product2, self.product3)
 
         # API 호출
         url = f"/v1/tax/published?factory_id={self.factory.id}"
@@ -603,10 +561,6 @@ class TaxAPITestCase(TestCase):
         # 여러 품목이 올바르게 반환되는지 확인
         self.assertEqual(len(data["data"]), 1)
         invoice = data["data"][0]
-        # self.assertEqual(len(invoice["product_names"]), 3)
-        # self.assertIn("M8 볼트 세트", invoice["product_names"])
-        # self.assertIn("나사", invoice["product_names"])
-        # self.assertIn("와셔", invoice["product_names"])
 
     def test_list_all_tax_invoices_empty_result(self):
         """세금계산서가 없을 때 빈 결과 테스트"""
@@ -648,8 +602,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        published_invoice.product.add(self.product1)
-
         # draft 상태
         draft_invoice = NationalTaxService.objects.create(
             factory=self.factory,
@@ -660,7 +612,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="purchase",
             publish_status="draft",
         )
-        draft_invoice.product.add(self.product2)
 
         # API 호출
         url = f"/v1/tax/published?factory_id={self.factory.id}"
@@ -694,11 +645,7 @@ class TaxAPITestCase(TestCase):
             tax_amount=50000,
             tax_invoice_type="sales",
             publish_status="published",
-            products_info=[
-                ProductRowOut.from_orm(self.product1).dict(),
-            ],
         )
-        unlinked_invoice1.product.add(self.product1)
 
         # 연동 안된 세금계산서 생성 (매입)
         unlinked_invoice2 = NationalTaxService.objects.create(
@@ -709,11 +656,7 @@ class TaxAPITestCase(TestCase):
             tax_amount=50000,
             tax_invoice_type="purchase",
             publish_status="published",
-            products_info=[
-                ProductRowOut.from_orm(self.product1).dict(),
-            ],
         )
-        unlinked_invoice2.product.add(self.product1)
 
         # API 호출
         url = f"/v1/tax/unlinked?factory_id={self.factory.id}"
@@ -738,10 +681,6 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(first_invoice["tax_invoice_type"], "sales")
         self.assertEqual(first_invoice["transaction_date"], "2025-06-04")
         self.assertEqual(first_invoice["client_info"]["name"], "플라스틱이 좋아")
-        self.assertEqual(
-            first_invoice["products_info"],
-            [ProductRowOut.from_orm(self.product1).dict()],
-        )
         self.assertEqual(first_invoice["transaction_amount"], 550000)
         self.assertEqual(first_invoice["tax_amount"], 50000)
         # self.assertEqual(first_invoice["total_amount"], 600000)
@@ -766,8 +705,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        unlinked_invoice.product.add(self.product1)
-
         # 연동된 세금계산서 생성
         linked_invoice = NationalTaxService.objects.create(
             client=self.client_company1,
@@ -777,8 +714,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        linked_invoice.product.add(self.product2)
-
         # 프로젝트 생성 후 세금계산서 연결
         project = Project.objects.create()
         project.tax_invoice = linked_invoice
@@ -810,13 +745,7 @@ class TaxAPITestCase(TestCase):
             tax_amount=100000,
             tax_invoice_type="sales",
             publish_status="published",
-            products_info=[
-                ProductRowOut.from_orm(self.product1).dict(),
-                ProductRowOut.from_orm(self.product2).dict(),
-                ProductRowOut.from_orm(self.product3).dict(),
-            ],
         )
-        tax_invoice.product.add(self.product1, self.product2, self.product3)
 
         # API 호출
         url = f"/v1/tax/unlinked?factory_id={self.factory.id}"
@@ -827,10 +756,6 @@ class TaxAPITestCase(TestCase):
 
         # 여러 품목이 포함된 세금계산서 확인
         invoice = data["data"][0]
-        self.assertEqual(len(invoice["product"]), 3)
-        self.assertIn("M8 볼트 세트", [i["name"] for i in invoice["products_info"]])
-        self.assertIn("나사", [i["name"] for i in invoice["products_info"]])
-        self.assertIn("와셔", [i["name"] for i in invoice["products_info"]])
         # self.assertEqual(invoice["total_amount"], 1100000)
 
     def test_list_not_link_tax_empty_result(self):
@@ -844,8 +769,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        tax_invoice.product.add(self.product1)
-
         project = Project.objects.create()
         project.tax_invoice = tax_invoice
         project.save()
@@ -890,7 +813,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="temporary",
         )
-        temp_invoice.product.add(self.product1)
 
         # 발행 대기 상태
         pending_invoice = NationalTaxService.objects.create(
@@ -901,7 +823,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="pending",
         )
-        pending_invoice.product.add(self.product2)
 
         # 발행 완료 상태
         published_invoice = NationalTaxService.objects.create(
@@ -912,7 +833,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        published_invoice.product.add(self.product3)
 
         # API 호출
         url = f"/v1/tax/unlinked?factory_id={self.factory.id}"
@@ -942,7 +862,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        old_invoice.product.add(self.product1)
 
         # 최신 날짜의 세금계산서
         new_invoice = NationalTaxService.objects.create(
@@ -953,7 +872,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        new_invoice.product.add(self.product2)
 
         # API 호출
         url = f"/v1/tax/unlinked?factory_id={self.factory.id}"
@@ -982,7 +900,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        tax_invoice.product.add(self.product1)
 
         # API 호출
         url = "/v1/tax/link"
@@ -1058,7 +975,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        connected_invoice.product.add(self.product1)
 
         # 다른 프로젝트에 연결
         other_project = Project.objects.create()
@@ -1094,7 +1010,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        old_invoice.product.add(self.product1)
 
         project.tax_invoice = old_invoice
         project.save()
@@ -1108,7 +1023,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="purchase",
             publish_status="published",
         )
-        new_invoice.product.add(self.product2)
 
         # 새로운 세금계산서로 교체
         payload = {"project_id": project.id, "tax_id": new_invoice.id}
@@ -1169,7 +1083,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice1.product.add(self.product1)
         invoice2 = NationalTaxService.objects.create(
             factory=self.factory,
             client=self.client_company2,
@@ -1179,7 +1092,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice2.product.add(self.product2)
         # API 호출 (거래처명으로 검색)
         url = f"/v1/tax/published?factory_id={self.factory.id}&q=플라스틱이 좋아"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -1200,7 +1112,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice1.product.add(self.product1)
         invoice2 = NationalTaxService.objects.create(
             factory=self.factory,
             client=self.client_company2,
@@ -1210,14 +1121,12 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice2.product.add(self.product2)
         # API 호출 (품목명으로 검색)
-        url = f"/v1/tax/published?factory_id={self.factory.id}&q={self.product2.name}"
+        url = f"/v1/tax/published?factory_id={self.factory.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["data"]), 1)
-        # self.assertIn(self.product2.name, data["data"][0]["product_names"])
+        self.assertEqual(len(data["data"]), 2)
 
     def test_list_pending_tax_invoices_all_status(self):
         """발행대기+임시저장 전체 조회 테스트"""
@@ -1230,7 +1139,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="pending",
         )
-        invoice_pending.product.add(self.product1)
         # temporary
         invoice_temporary = NationalTaxService.objects.create(
             client=self.client_company2,
@@ -1240,7 +1148,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="purchase",
             publish_status="temporary",
         )
-        invoice_temporary.product.add(self.product2)
         # published(미포함)
         invoice_published = NationalTaxService.objects.create(
             client=self.client_company2,
@@ -1250,7 +1157,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice_published.product.add(self.product2)
         url = f"/v1/tax/pending?factory_id={self.factory.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
@@ -1271,7 +1177,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="pending",
         )
-        invoice_pending.product.add(self.product1)
         invoice_temporary = NationalTaxService.objects.create(
             client=self.client_company2,
             transaction_date=date(2025, 6, 5),
@@ -1280,7 +1185,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="purchase",
             publish_status="temporary",
         )
-        invoice_temporary.product.add(self.product2)
         url = f"/v1/tax/pending?factory_id={self.factory.id}&publish_status=pending"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
@@ -1300,7 +1204,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="pending",
         )
-        invoice_pending.product.add(self.product1)
         invoice_temporary = NationalTaxService.objects.create(
             client=self.client_company2,
             transaction_date=date(2025, 6, 5),
@@ -1309,7 +1212,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="purchase",
             publish_status="temporary",
         )
-        invoice_temporary.product.add(self.product2)
         url = f"/v1/tax/pending?factory_id={self.factory.id}&publish_status=temporary"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
@@ -1329,9 +1231,7 @@ class TaxAPITestCase(TestCase):
             tax_amount=10000,
             tax_invoice_type="sales",
             publish_status="pending",
-            products_info=[ProductRowOut.from_orm(self.product1).dict()],
         )
-        invoice1.product.add(self.product1)
         invoice2 = NationalTaxService.objects.create(
             client=self.client_company2,
             client_info=FactoryClientRowOut.from_orm(self.client_company2).dict(),
@@ -1340,9 +1240,7 @@ class TaxAPITestCase(TestCase):
             tax_amount=20000,
             tax_invoice_type="sales",
             publish_status="temporary",
-            products_info=[ProductRowOut.from_orm(self.product2).dict()],
         )
-        invoice2.product.add(self.product2)
         # 거래처명 검색
         url = f"/v1/tax/pending?factory_id={self.factory.id}&q=플라스틱이 좋아"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -1351,12 +1249,11 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(len(data["data"]), 1)
         self.assertEqual(data["data"][0]["client_info"]["name"], "플라스틱이 좋아")
         # 품목명 검색
-        url = f"/v1/tax/pending?factory_id={self.factory.id}&q={self.product2.name}"
+        url = f"/v1/tax/pending?factory_id={self.factory.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["data"]), 1)
-        self.assertIn(self.product2.name, data["data"][0]["products_info"][0]["name"])
+        self.assertEqual(len(data["data"]), 2)
 
     def test_list_all_tax_invoices_period_and_order(self):
         """
@@ -1372,7 +1269,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice1.product.add(self.product1)
         invoice2 = NationalTaxService.objects.create(
             factory=self.factory,
             client=self.client_company1,
@@ -1382,7 +1278,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice2.product.add(self.product2)
         invoice3 = NationalTaxService.objects.create(
             factory=self.factory,
             client=self.client_company1,
@@ -1392,7 +1287,6 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
-        invoice3.product.add(self.product3)
         # 전체 조회(최신순)
         url = f"/v1/tax/published?factory_id={self.factory.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -1433,7 +1327,6 @@ class TaxAPITestCase(TestCase):
             cash_receipt_type="매입",
             item_name="구매",
         )
-        receipt1.product.add(self.product1)
         receipt2 = CashReceipt.objects.create(
             client=self.client_company1,
             transaction_date=date(2025, 6, 2),
@@ -1442,7 +1335,6 @@ class TaxAPITestCase(TestCase):
             cash_receipt_type="매입",
             item_name="구매",
         )
-        receipt2.product.add(self.product2)
         receipt3 = CashReceipt.objects.create(
             client=self.client_company2,
             transaction_date=date(2025, 6, 3),
@@ -1451,7 +1343,6 @@ class TaxAPITestCase(TestCase):
             cash_receipt_type="매입",
             item_name="구매",
         )
-        receipt3.product.add(self.product3)
         # 전체 조회(최신순)
         url = f"/v1/receipt?factory_id={self.factory.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -1589,7 +1480,7 @@ class TaxAPITestCase(TestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         data = response.json()
         # print(
-        #     "🐍 File: tests/test_api.py | Line: 1315 | test_get_cash_receipt_by_material_history ~ data",
+        #     "🐍 File: tests/test_api.py | Line: 1482 | test_get_cash_receipt_by_material_history ~ data",
         #     data,
         # )
         self.assertEqual(response.status_code, 200)

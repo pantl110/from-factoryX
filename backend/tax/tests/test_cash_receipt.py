@@ -4,7 +4,6 @@ from tax.api_cash_receipt import router
 from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification
 from factory.models import Factory, FactoryClient, FactoryMember
-from stock.models import Product
 from tax.models import CashReceipt
 from datetime import date
 
@@ -56,23 +55,6 @@ class TestTaxService(TestCase):
             business_type="정보통신업",
             business_category="정보통신자문",
             manager="김태원",
-        )
-
-        # 제품 생성
-        self.product1 = Product.objects.create(
-            factory=self.factory,
-            name="M8 볼트 세트",
-            code="BOLT001",
-            unit="개",
-            spec="M8x20",
-        )
-
-        self.product2 = Product.objects.create(
-            factory=self.factory, name="나사", code="SCREW001", unit="개", spec="M6x15"
-        )
-
-        self.product3 = Product.objects.create(
-            factory=self.factory, name="와셔", code="WASHER001", unit="개", spec="M8"
         )
 
         # 테스트용 현금영수증 생성

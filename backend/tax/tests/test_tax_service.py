@@ -4,9 +4,6 @@ from tax.api import router
 from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification
 from factory.models import Factory, FactoryClient, FactoryMember
-from asgiref.sync import sync_to_async
-from stock.models import Product
-from datetime import date
 from django.utils import timezone
 from tax.models import NationalTaxService
 
@@ -60,23 +57,6 @@ class TestTaxService(TestCase):
             manager="김태원",
         )
 
-        # 제품 생성
-        self.product1 = Product.objects.create(
-            factory=self.factory,
-            name="M8 볼트 세트",
-            code="BOLT001",
-            unit="개",
-            spec="M8x20",
-        )
-
-        self.product2 = Product.objects.create(
-            factory=self.factory, name="나사", code="SCREW001", unit="개", spec="M6x15"
-        )
-
-        self.product3 = Product.objects.create(
-            factory=self.factory, name="와셔", code="WASHER001", unit="개", spec="M8"
-        )
-
     async def authenticate(self):
         data = {
             "email": self.user.email,
@@ -113,7 +93,6 @@ class TestTaxService(TestCase):
             "transaction_type": "receipt",
             "transaction_date": timezone.now().date().strftime("%Y-%m-%d"),
             "client": self.client_company1.id,
-            "product": [self.product1.id, self.product2.id],
             "transaction_amount": 70000,
             "tax_amount": 7000,
             "line_items": [
@@ -186,7 +165,6 @@ class TestTaxService(TestCase):
         data = {
             "factory": self.factory.id,
             "client": self.client_company1.id,
-            "product": [self.product1.id, self.product2.id],
             "transaction_amount": 80000,
             "tax_amount": 8000,
             "line_items": [
