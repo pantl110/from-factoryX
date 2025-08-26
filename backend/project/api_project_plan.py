@@ -40,114 +40,114 @@ from django.utils import timezone
 router = Router(tags=["ProjectPlan"], auth=jwt_auth)
 
 
-@router.post(
-    "",
-    summary="[C] 프로젝트 생산 계획 생성",
-    description="프로젝트에 연결된 견적서 품목들을 기반으로 생산 계획을 생성합니다.",
-    response={200: ProjectPlansCreateOut, 400: dict, 404: dict, 500: dict},
-)
-async def create_project_plans(request, payload: ProjectPlanCreateIn):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
+# @router.post(
+#     "",
+#     summary="[C] 프로젝트 생산 계획 생성",
+#     description="프로젝트에 연결된 견적서 품목들을 기반으로 생산 계획을 생성합니다.",
+#     response={200: ProjectPlansCreateOut, 400: dict, 404: dict, 500: dict},
+# )
+# async def create_project_plans(request, payload: ProjectPlanCreateIn):
+#     factory_id = request.GET.get("factory_id")
+#     if not factory_id:
+#         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
+#     user = request.auth
+#     await is_factory_member(int(factory_id), user)
 
-    try:
-        project = await Project.objects.aget(id=payload.project_id)
-    except Project.DoesNotExist:
-        raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
+#     try:
+#         project = await Project.objects.aget(id=payload.project_id)
+#     except Project.DoesNotExist:
+#         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
 
-    try:
-        quotation = await Quotation.objects.aget(project=project)
-    except Quotation.DoesNotExist:
-        raise HttpError(404, "해당 프로젝트에 연결된 견적서를 찾을 수 없습니다.")
+#     try:
+#         quotation = await Quotation.objects.aget(project=project)
+#     except Quotation.DoesNotExist:
+#         raise HttpError(404, "해당 프로젝트에 연결된 견적서를 찾을 수 없습니다.")
 
-    quotation_products = await sync_to_async(list)(
-        QuotationProduct.objects.filter(
-            id__in=payload.quotation_product_ids, quotation=quotation
-        )
-    )
+#     quotation_products = await sync_to_async(list)(
+#         QuotationProduct.objects.filter(
+#             id__in=payload.quotation_product_ids, quotation=quotation
+#         )
+#     )
 
-    if len(quotation_products) != len(payload.quotation_product_ids):
-        raise HttpError(400, "일부 견적서 품목을 찾을 수 없습니다.")
+#     if len(quotation_products) != len(payload.quotation_product_ids):
+#         raise HttpError(400, "일부 견적서 품목을 찾을 수 없습니다.")
 
-    factory_id = quotation.factory_id
-    if not factory_id:
-        raise HttpError(400, "견적서에 연결된 공장 정보가 없습니다.")
-    factory = await Factory.objects.aget(id=factory_id)
+#     factory_id = quotation.factory_id
+#     if not factory_id:
+#         raise HttpError(400, "견적서에 연결된 공장 정보가 없습니다.")
+#     factory = await Factory.objects.aget(id=factory_id)
 
-    equipments = await sync_to_async(list)(
-        FactoryEquipment.objects.filter(factory=factory)
-    )
+#     equipments = await sync_to_async(list)(
+#         FactoryEquipment.objects.filter(factory=factory)
+#     )
 
-    if not equipments:
-        raise HttpError(400, "해당 공장에 등록된 설비가 없습니다.")
+#     if not equipments:
+#         raise HttpError(400, "해당 공장에 등록된 설비가 없습니다.")
 
-    if payload.equipment_ids:
-        valid_equipment_ids = [eq.id for eq in equipments]
-        for equipment_id in payload.equipment_ids:
-            if equipment_id not in valid_equipment_ids:
-                raise HttpError(400, f"설비 ID {equipment_id}를 찾을 수 없습니다.")
+#     if payload.equipment_ids:
+#         valid_equipment_ids = [eq.id for eq in equipments]
+#         for equipment_id in payload.equipment_ids:
+#             if equipment_id not in valid_equipment_ids:
+#                 raise HttpError(400, f"설비 ID {equipment_id}를 찾을 수 없습니다.")
 
-    # 6. 생산 계획 생성
-    for i, quotation_product in enumerate(quotation_products):
-        # 필수 입력값 검증
-        if not payload.production_quantities or i >= len(payload.production_quantities):
-            raise HttpError(400, f"품목 {i+1}의 생산 수량이 필요합니다.")
-        if not payload.equipment_ids or i >= len(payload.equipment_ids):
-            raise HttpError(400, f"품목 {i+1}의 설비 ID가 필요합니다.")
-        if not payload.start_dates or i >= len(payload.start_dates):
-            raise HttpError(400, f"품목 {i+1}의 시작일이 필요합니다.")
-        if not payload.end_dates or i >= len(payload.end_dates):
-            raise HttpError(400, f"품목 {i+1}의 종료일이 필요합니다.")
-        if not payload.avg_production_times or i >= len(payload.avg_production_times):
-            raise HttpError(400, f"품목 {i+1}의 평균 생산 시간이 필요합니다.")
+#     # 6. 생산 계획 생성
+#     for i, quotation_product in enumerate(quotation_products):
+#         # 필수 입력값 검증
+#         if not payload.production_quantities or i >= len(payload.production_quantities):
+#             raise HttpError(400, f"품목 {i+1}의 생산 수량이 필요합니다.")
+#         if not payload.equipment_ids or i >= len(payload.equipment_ids):
+#             raise HttpError(400, f"품목 {i+1}의 설비 ID가 필요합니다.")
+#         if not payload.start_dates or i >= len(payload.start_dates):
+#             raise HttpError(400, f"품목 {i+1}의 시작일이 필요합니다.")
+#         if not payload.end_dates or i >= len(payload.end_dates):
+#             raise HttpError(400, f"품목 {i+1}의 종료일이 필요합니다.")
+#         if not payload.avg_production_times or i >= len(payload.avg_production_times):
+#             raise HttpError(400, f"품목 {i+1}의 평균 생산 시간이 필요합니다.")
 
-        # 사용자 입력값 사용
-        production_quantity = payload.production_quantities[i]
-        equipment_id = payload.equipment_ids[i]
-        start_date = payload.start_dates[i]
-        end_date = payload.end_dates[i]
-        avg_production_time = payload.avg_production_times[i]
+#         # 사용자 입력값 사용
+#         production_quantity = payload.production_quantities[i]
+#         equipment_id = payload.equipment_ids[i]
+#         start_date = payload.start_dates[i]
+#         end_date = payload.end_dates[i]
+#         avg_production_time = payload.avg_production_times[i]
 
-        # 설비 검증
-        equipment = next((eq for eq in equipments if eq.id == equipment_id), None)
-        if not equipment:
-            raise HttpError(400, f"설비 ID {equipment_id}를 찾을 수 없습니다.")
+#         # 설비 검증
+#         equipment = next((eq for eq in equipments if eq.id == equipment_id), None)
+#         if not equipment:
+#             raise HttpError(400, f"설비 ID {equipment_id}를 찾을 수 없습니다.")
 
-        # 버퍼 레이트 업데이트
-        if production_quantity >= quotation_product.quantity:
-            new_buffer_rate = (production_quantity / quotation_product.quantity) - 1
-            quotation_product.product.buffer_rate = new_buffer_rate
-            await quotation_product.product.asave()
+#         # 버퍼 레이트 업데이트
+#         if production_quantity >= quotation_product.quantity:
+#             new_buffer_rate = (production_quantity / quotation_product.quantity) - 1
+#             quotation_product.product.buffer_rate = new_buffer_rate
+#             await quotation_product.product.asave()
 
-        # ProjectPlan 생성 (생산 수량)
-        plan = await ProjectPlan.objects.acreate(
-            project=project,
-            product=quotation_product,
-            equipment=equipment,
-            quantity=production_quantity,
-            start_date=start_date,
-            end_date=end_date,
-            avg_production_time=avg_production_time,
-        )
+#         # ProjectPlan 생성 (생산 수량)
+#         plan = await ProjectPlan.objects.acreate(
+#             project=project,
+#             product=quotation_product,
+#             equipment=equipment,
+#             quantity=production_quantity,
+#             start_date=start_date,
+#             end_date=end_date,
+#             avg_production_time=avg_production_time,
+#         )
 
-    return 200, ProjectPlansCreateOut(
-        message=f"생산 계획이 성공적으로 생성되었습니다.",
-        plan=ProjectPlanDetailOut(
-            id=plan.id,
-            project_id=plan.project.id,
-            quotation_product_id=plan.product.id,
-            equipment_id=plan.equipment.id,
-            status=plan.status,
-            quantity=plan.quantity,
-            start_date=plan.start_date,
-            end_date=plan.end_date,
-            avg_production_time=plan.avg_production_time,
-        ),
-    )
+#     return 200, ProjectPlansCreateOut(
+#         message=f"생산 계획이 성공적으로 생성되었습니다.",
+#         plan=ProjectPlanDetailOut(
+#             id=plan.id,
+#             project_id=plan.project.id,
+#             quotation_product_id=plan.product.id,
+#             equipment_id=plan.equipment.id,
+#             status=plan.status,
+#             quantity=plan.quantity,
+#             start_date=plan.start_date,
+#             end_date=plan.end_date,
+#             avg_production_time=plan.avg_production_time,
+#         ),
+#     )
 
 
 @router.post(
@@ -292,8 +292,9 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 )
 
             # 버퍼 레이트 업데이트
-            if payload.quantity >= quotation_product.quantity:
-                new_buffer_rate = (payload.quantity / quotation_product.quantity) - 1
+            if payload.total_quantity >= payload.total_amount:
+                new_buffer_rate = (payload.total_quantity / payload.total_amount) - 1
+
                 # 관계 필드 접근을 async로 처리
                 product_obj = await Product.objects.aget(
                     id=quotation_product.product_id
@@ -313,8 +314,9 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
     else:
         # 생성 모드
         # 버퍼 레이트 업데이트
-        if payload.quantity >= quotation_product.quantity:
-            new_buffer_rate = (payload.quantity / quotation_product.quantity) - 1
+        if payload.total_quantity >= payload.total_amount:
+            new_buffer_rate = (payload.total_quantity / payload.total_amount) - 1
+
             # 관계 필드 접근을 async로 처리
             product_obj = await Product.objects.aget(id=quotation_product.product_id)
             product_obj.buffer_rate = new_buffer_rate
@@ -954,3 +956,27 @@ async def list_project_plans(request, project_id: int):
 #             await plan.product.product.asave()
 
 #     return 200, {"message": "프로젝트 생산 계획이 성공적으로 수정되었습니다."}
+
+
+@router.delete(
+    "/{plan_id}",
+    summary="[C] 프로젝트 생산 계획 삭제",
+    description="생산 계획을 삭제합니다.",
+    response={204: None, 400: dict, 404: dict, 500: dict},
+)
+async def delete_project_plan(request, plan_id: int):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        plan = await ProjectPlan.objects.aget(id=plan_id)
+    except ProjectPlan.DoesNotExist:
+        raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
+
+    await plan.adelete()
+
+    return 204, None
