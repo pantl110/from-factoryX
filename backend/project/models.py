@@ -86,7 +86,8 @@ class ProjectPlan(BaseModel):
 # 생산 로그
 class ProjectLog(BaseModel):
     class LogType(models.TextChoices):
-        plan = ("plan", "계획 변경")
+        date = ("date", "생산 일자 변경")
+        equipment = ("equipment", "생산 설비 변경")
         memo = ("memo", "메모")
         refund = ("refund", "반품")
 
@@ -94,7 +95,7 @@ class ProjectLog(BaseModel):
     type = models.CharField(
         max_length=20,
         choices=LogType.choices,
-        default=LogType.plan,
+        default=LogType.date,
     )
     title = models.CharField(max_length=100, help_text="로그 제목")
     content = models.TextField(help_text="로그 내용")

@@ -248,17 +248,24 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                     status=payload.status or ProjectPlan.ProductionStatus.pending,
                 )
 
-            # 설비 변경 로그
-            if (
-                old_equipment
-                and old_equipment.id != equipment.id
-                and plan.status == ProjectPlan.ProductionStatus.production
-            ):
-                await ProjectLog.objects.acreate(
-                    project=plan.project,
-                    type=ProjectLog.LogType.plan,
-                    title="생산 설비 변경",
-                    content=f"사용 설비가 {old_equipment.name}라인에서 {equipment.name}라인으로 변경되었어요",
+            # 설비 변경 로그/알림
+            if old_equipment and old_equipment.id != equipment.id:
+                # 로그 기록 (가동 대기 상태일 때만)
+                if plan.status == ProjectPlan.ProductionStatus.pending:
+                    await ProjectLog.objects.acreate(
+                        project=plan.project,
+                        type=ProjectLog.LogType.equipment,
+                        title="생산 설비 변경",
+                        content=f"사용설비가 {old_equipment.name}라인에서 {equipment.name}라인으로 변경되었어요",
+                    )
+
+                # 공장 알림 전송 (상태와 무관하게 설비가 바뀌면 알림)
+                await send_notification_to_factory(
+                    factory_id=int(factory_id),
+                    notification_type="information",
+                    notification_case="production_schedule_changed",
+                    content=f"'{plan.project.name}'의 생산 설비가 {old_equipment.name}라인에서 {equipment.name}라인으로 변경되었어요.",
+                    additional_data={"plan_id": plan.id},
                 )
 
             # 생산 일자 변경 로그
@@ -266,7 +273,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 change_message = f"생산일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
                 await ProjectLog.objects.acreate(
                     project=plan.project,
-                    type=ProjectLog.LogType.plan,
+                    type=ProjectLog.LogType.date,
                     title="생산일자 변경",
                     content=change_message,
                 )
@@ -911,7 +918,7 @@ async def list_project_plans(request, project_id: int):
 #     ):  # 가동 중 상태 확인
 #         await ProjectLog.objects.acreate(
 #             project=plan.project,
-#             type=ProjectLog.LogType.plan,
+#             type=ProjectLog.LogType.date,
 #             title="생산 설비 변경",
 #             content=f"사용 설비가 {old_equipment.name}라인에서 {plan.equipment.name}라인으로 변경되었어요",
 #         )
@@ -922,7 +929,7 @@ async def list_project_plans(request, project_id: int):
 
 #         await ProjectLog.objects.acreate(
 #             project=plan.project,
-#             type=ProjectLog.LogType.plan,
+#             type=ProjectLog.LogType.date,
 #             title="생산일자 변경",
 #             content=change_message,
 #         )

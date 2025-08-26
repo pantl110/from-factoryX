@@ -505,7 +505,7 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(logs.count(), 1)
 
         log = logs.first()
-        self.assertEqual(log.type, ProjectLog.LogType.plan)
+        self.assertEqual(log.type, ProjectLog.LogType.equipment)
         self.assertEqual(log.title, "생산 설비 변경")
         self.assertIn("테스트 설비", log.content)
         self.assertIn("새로운 설비", log.content)
