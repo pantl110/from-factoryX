@@ -79,22 +79,6 @@ class MaterialHistory(BaseModel):
     total_stock = models.IntegerField(
         help_text="재고 변동 후 재고",
     )
-    purchase_tax_invoice = models.ForeignKey(
-        "tax.NationalTaxService",
-        related_name="material_histories",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        help_text="구매 세금계산서",
-    )
-    cash_receipt = models.ForeignKey(
-        "tax.CashReceipt",
-        related_name="material_histories",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        help_text="현금영수증",
-    )
 
     def save(self, *args, **kwargs):
         # total_stock 자동 계산 (값이 없는 경우)
