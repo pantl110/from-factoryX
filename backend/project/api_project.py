@@ -36,36 +36,36 @@ router = Router(tags=["Project"], auth=jwt_auth)
 
 
 # Project Tab
-@router.post(
-    "",
-    summary="[C] 프로젝트 생성",
-    description="프로젝트와 견적서를 동시에 생성합니다.",
-    response={201: ProjectCreateOut, 500: dict},
-)
-async def create_project(request):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
+# @router.post(
+#     "",
+#     summary="[C] 프로젝트 생성",
+#     description="프로젝트와 견적서를 동시에 생성합니다.",
+#     response={201: ProjectCreateOut, 500: dict},
+# )
+# async def create_project(request):
+#     factory_id = request.GET.get("factory_id")
+#     if not factory_id:
+#         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
+#     user = request.auth
+#     await is_factory_member(int(factory_id), user)
 
-    try:
-        factory = await Factory.objects.aget(id=int(factory_id))
-        new_project = await Project.objects.acreate()
+#     try:
+#         factory = await Factory.objects.aget(id=int(factory_id))
+#         new_project = await Project.objects.acreate()
 
-        new_quotation = await Quotation.objects.acreate(
-            project=new_project,
-            factory=factory,
-            factory_info=FactoryRowOut.from_orm(factory).dict(),
-        )
+#         new_quotation = await Quotation.objects.acreate(
+#             project=new_project,
+#             factory=factory,
+#             factory_info=FactoryRowOut.from_orm(factory).dict(),
+#         )
 
-        return 201, {"quotation_id": new_quotation.id, "project_id": new_project.id}
+#         return 201, {"quotation_id": new_quotation.id, "project_id": new_project.id}
 
-    except Exception as e:
-        raise HttpError(
-            500, "프로젝트 및 견적서 생성 중 내부 서버 오류가 발생했습니다."
-        )
+#     except Exception as e:
+#         raise HttpError(
+#             500, "프로젝트 및 견적서 생성 중 내부 서버 오류가 발생했습니다."
+#         )
 
 
 # Archived Project Tab
