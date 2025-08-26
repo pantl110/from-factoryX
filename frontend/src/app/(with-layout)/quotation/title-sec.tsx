@@ -28,6 +28,7 @@ interface TitleSecProps {
   isDirty: boolean;
   isFormFilled: boolean;
   taxId: number | null;
+  isSaveDraftLoading?: boolean;
 }
 
 const TitleSec = ({
@@ -45,6 +46,7 @@ const TitleSec = ({
   isDirty,
   isFormFilled,
   taxId,
+  isSaveDraftLoading,
 }: TitleSecProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -173,6 +175,7 @@ const TitleSec = ({
             isFormFilled={isFormFilled}
             isDirty={isDirty}
             taxId={taxId}
+            isSaveDraftLoading={isSaveDraftLoading}
           />
         </div>
         <p className="Heading-1 truncate w-full">

@@ -20,6 +20,7 @@ interface ButtonSectionProps {
   hasQuotationProducts: boolean;
   isDirty: boolean;
   taxId: number | null;
+  isSaveDraftLoading?: boolean;
 }
 
 const ButtonSection = ({
@@ -34,6 +35,7 @@ const ButtonSection = ({
   hasQuotationProducts,
   isDirty,
   taxId,
+  isSaveDraftLoading,
 }: ButtonSectionProps) => {
   const router = useRouter();
   const role = useMemberStore((state) => state.role);
@@ -134,7 +136,7 @@ const ButtonSection = ({
                 }
               }}
               hoverColor="hover:bg-secondary-hover"
-              disabled={!isDirty || isViewer}
+              disabled={!isDirty || isViewer || isSaveDraftLoading}
             />
             <MiniBtn
               text="주문 확정"
@@ -145,7 +147,12 @@ const ButtonSection = ({
                 changeToConfirmed();
               }}
               hoverColor="hover:bg-primary-hover"
-              disabled={!isFormFilled || !hasQuotationProducts || isViewer}
+              disabled={
+                !isFormFilled ||
+                !hasQuotationProducts ||
+                isViewer ||
+                isSaveDraftLoading
+              }
             />
           </>
         )}

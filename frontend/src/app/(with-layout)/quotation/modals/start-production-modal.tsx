@@ -4,11 +4,13 @@ import Modal from '@/ui/modal/modal';
 interface StartProductionModalProps {
   onClose?: () => void;
   onClick?: () => void;
+  isLoading?: boolean;
 }
 
 const StartProductionModal = ({
   onClose,
   onClick,
+  isLoading = false,
 }: StartProductionModalProps) => {
   return (
     <Modal
@@ -29,6 +31,7 @@ const StartProductionModal = ({
           bgColor="bg-primary"
           onClick={onClick}
           hoverColor="hover:bg-primary-hover"
+          disabled={isLoading}
         />
       </div>
     </Modal>

@@ -453,7 +453,12 @@ const QuotationPageContent = () => {
   };
 
   // 견적서 핸들러 훅 사용 // 임시저장 함수 & 생산시작 함수
-  const { handleSaveDraft, handleStartProduction } = useQuotationHandlers({
+  const {
+    handleSaveDraft,
+    handleStartProduction,
+    isSaveDraftLoading,
+    isStartProductionLoading,
+  } = useQuotationHandlers({
     watch,
     reset,
     quotationId,
@@ -571,6 +576,7 @@ const QuotationPageContent = () => {
             return isSuccess || false;
           }}
           taxId={taxId}
+          isSaveDraftLoading={isSaveDraftLoading}
         />
         <TabArea
           projectStatus={projectStatus}
@@ -666,41 +672,6 @@ const QuotationPageContent = () => {
 
       {/* 세금계산서 생성 버튼 */}
       {isTaxCreatePanelOpen && (
-        // <CreateTaxPanel
-        //   onClose={() => setIsTaxCreatePanelOpen(false)}
-        //   initialClientData={{
-        //     id: selectedClientId || 0,
-        //     factory: factoryId || 0,
-        //     type: 'customer' as const,
-        //     name: watchedClientData.name || '',
-        //     business_registration_number:
-        //       watchedClientData.business_registration_number || '',
-        //     representative_name: watchedClientData.representative_name || '',
-        //     email: watchedClientData.email || '',
-        //     phone: watchedClientData.phone || '',
-        //     fax: watchedClientData.fax || '',
-        //     business_type: watchedClientData.business_type || '',
-        //     business_category: watchedClientData.business_category || '',
-        //     address: watchedClientData.address || '',
-        //     manager: watchedClientData.manager || '',
-        //   }}
-        //   initialProducts={quotationProducts.map((product) => ({
-        //     productId: product.productId || 0,
-        //     quantity: product.quantity || 0,
-        //     unit_price: product.unit_price || 0,
-        //     products_info: [
-        //       {
-        //         id: product.productId || 0,
-        //         factory: factoryId || 0,
-        //         name: product.product_name || '',
-        //         code: product.product_code || '',
-        //         spec: product.spec || '',
-        //         unit: product.unit || '',
-        //       },
-        //     ],
-        //   }))}
-        // />
-
         <TaxDetailPanel
           onClose={() => setIsTaxCreatePanelOpen(false)}
           projectId={projectId}
@@ -789,6 +760,7 @@ const QuotationPageContent = () => {
         <StartProductionModal
           onClose={() => setIsStartProductionModalOpen(false)}
           onClick={handleStartProduction}
+          isLoading={isStartProductionLoading}
         />
       )}
       {/* 에러 토스트 */}
