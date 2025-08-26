@@ -197,10 +197,6 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
         try:
             plan = await get_plan_by_id(payload.plan_id)
 
-            # 완료된 생산 계획은 수정 불가
-            if plan.status == ProjectPlan.ProductionStatus.completed:
-                raise HttpError(400, "완료된 생산 계획은 수정할 수 없습니다.")
-
             old_equipment = (
                 await FactoryEquipment.objects.aget(id=plan.equipment_id)
                 if plan.equipment_id
@@ -276,10 +272,10 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 )
 
             # 알림 전송
-            if (
-                payload.start_date
-                and payload.start_date.date() == timezone.now().date()
-            ) or (old_start_date and old_start_date.date() == timezone.now().date()):
+            kst_now = timezone.localtime(timezone.now())
+            if (payload.start_date and payload.start_date.date() == kst_now.date()) or (
+                old_start_date and old_start_date.date() == kst_now.date()
+            ):
                 await send_notification_to_factory(
                     factory_id=int(factory_id),
                     notification_type="information",
