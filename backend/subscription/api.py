@@ -33,6 +33,7 @@ from datetime import timedelta
 from django.db import transaction
 import uuid
 import logging
+from subscription.barobill_utils import handle_barobill_scrap_for_subscription
 
 logger = logging.getLogger(__name__)
 router = Router(tags=["Subscription"])
@@ -235,6 +236,17 @@ async def process_subscription_payment(
 
         updated_payment = await update_payment_success()
 
+        # basic, partners 구독에 대해 바로빌 홈택스 스크랩 등록
+        try:
+            await handle_barobill_scrap_for_subscription(
+                factory, subscription.type, "activate"
+            )
+        except Exception as e:
+            logger.error(
+                f"바로빌 홈택스 스크랩 등록 실패: factory_id={factory_id}, error={str(e)}"
+            )
+            # 스크랩 등록 실패해도 결제는 성공으로 처리
+
         result = PaymentResultOut(
             payment_key=payment_result.get("paymentKey"),
             order_id=order_id,
@@ -375,6 +387,19 @@ async def cancel_payment(request, payment_id: int, payload: PaymentCancelIn):
 
         await update_payment_canceled()
 
+        # basic, partners 구독 취소 시 바로빌 홈택스 스크랩 정지
+        subscription = subscription_history.subscription
+        factory = subscription_history.factory
+        try:
+            await handle_barobill_scrap_for_subscription(
+                factory, subscription.type, "deactivate"
+            )
+        except Exception as e:
+            logger.error(
+                f"바로빌 홈택스 스크랩 정지 실패: factory_id={factory.id}, error={str(e)}"
+            )
+            # 스크랩 정지 실패해도 결제 취소는 성공으로 처리
+
         result = PaymentCancelOut(
             payment_key=payment.payment_key,
             cancel_amount=payload.cancel_amount or int(payment.amount),
@@ -422,6 +447,18 @@ async def renew_subscription(request, factory_id: int):
 
     try:
         payment = billing_service.process_subscription_payment(current_subscription)
+
+        # basic, partners 구독 갱신 시 바로빌 홈택스 스크랩 상태 확인 및 등록
+        subscription = current_subscription.subscription
+        try:
+            await handle_barobill_scrap_for_subscription(
+                factory, subscription.type, "renew"
+            )
+        except Exception as e:
+            logger.warning(
+                f"바로빌 홈택스 스크랩 갱신 등록 실패: factory_id={factory_id}, error={str(e)}"
+            )
+            # 스크랩 등록 실패해도 구독 갱신은 성공으로 처리
 
         result = PaymentResultOut(
             payment_key=payment.payment_key,
@@ -476,6 +513,8 @@ async def toss_payments_webhook(request):
                 if event_type == "PAYMENT_STATUS_CHANGED":
                     # 결제 상태 변경 처리
                     new_status = webhook_data.get("data", {}).get("status")
+                    old_status = payment.status
+
                     if new_status == "DONE":
                         payment.status = "DONE"
                         payment.approved_at = timezone.now()
@@ -493,6 +532,28 @@ async def toss_payments_webhook(request):
                         )
 
                     payment.save()
+
+                    # 상태 변경에 따른 바로빌 스크랩 처리는 별도 태스크로 처리
+                    subscription_history = payment.subscription_history
+                    factory = subscription_history.factory
+                    subscription = subscription_history.subscription
+
+                    # 결제 완료 -> 스크랩 활성화
+                    if old_status != "DONE" and new_status == "DONE":
+                        payment._webhook_scrap_action = (
+                            "activate",
+                            factory,
+                            subscription.type,
+                        )
+
+                    # 결제 취소 -> 스크랩 비활성화
+                    elif old_status == "DONE" and new_status == "CANCELED":
+                        payment._webhook_scrap_action = (
+                            "deactivate",
+                            factory,
+                            subscription.type,
+                        )
+
                     return payment
 
             except Payment.DoesNotExist:
@@ -507,6 +568,21 @@ async def toss_payments_webhook(request):
             logger.info(
                 f"웹훅 처리 완료: payment_key={payment_key}, status={payment.status}"
             )
+
+            # 바로빌 스크랩 처리가 필요한 경우 별도 처리
+            if hasattr(payment, "_webhook_scrap_action"):
+                action, factory, subscription_type = payment._webhook_scrap_action
+                try:
+                    await handle_barobill_scrap_for_subscription(
+                        factory, subscription_type, action
+                    )
+                    logger.info(
+                        f"웹훅 바로빌 스크랩 {action} 처리 성공: payment_key={payment_key}"
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"웹훅 바로빌 스크랩 {action} 처리 실패: payment_key={payment_key}, error={str(e)}"
+                    )
 
         return {"status": "success"}
 
