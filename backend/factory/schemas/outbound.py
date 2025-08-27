@@ -1,8 +1,8 @@
 from ninja import Schema, ModelSchema, Field
 from typing import Optional, List
 from factory.models import Factory, FactoryClient, FactoryMember, FactoryEquipment
-import datetime
 from project.schemas.outbound import ProjectPlanModelOut
+from subscription.models import Subscription, SubscriptionHistory
 
 
 # ------------------------------------------------------------
@@ -129,3 +129,40 @@ class FactoryClientRowOut(ModelSchema):
             "created_at",
             "updated_at",
         ]
+
+
+class FactoryModelOut(ModelSchema):
+    members: List[FactoryMemberDetailOut] = Field(..., description="공장 멤버 리스트")
+    member: FactoryMemberDetailOut = Field(..., description="현재 로그인 한 멤버 정보")
+
+    class Meta:
+        model = Factory
+        fields = "__all__"
+
+
+class SubscriptionOut(ModelSchema):
+    class Meta:
+        model = Subscription
+        fields = "__all__"
+
+
+class SubscriptionHistoryOut(ModelSchema):
+    subscription: SubscriptionOut
+
+    class Meta:
+        model = SubscriptionHistory
+        exclude = [
+            "factory",
+        ]
+
+
+class FactoryModelDetailOut(ModelSchema):
+    members: List[FactoryMemberDetailOut] = Field(..., description="공장 멤버 리스트")
+    member: FactoryMemberDetailOut = Field(..., description="현재 로그인 한 멤버 정보")
+    subscription_histories: Optional[List[SubscriptionHistoryOut]] = Field(
+        [], description="구독 이력 리스트"
+    )
+
+    class Meta:
+        model = Factory
+        fields = "__all__"

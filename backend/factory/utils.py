@@ -70,13 +70,13 @@ async def get_factory_by_id(factory_id: int, user=None):
     """공장 ID로 공장을 조회하고 소유권을 검증합니다."""
     try:
         if user is None:
-            factory = await Factory.objects.prefetch_related("members").aget(
-                id=factory_id
-            )
+            factory = await Factory.objects.prefetch_related(
+                "members", "subscription_histories__subscription"
+            ).aget(id=factory_id)
         else:
-            factory = await Factory.objects.prefetch_related("members").aget(
-                id=factory_id, owner=user
-            )
+            factory = await Factory.objects.prefetch_related(
+                "members", "subscription_histories__subscription"
+            ).aget(id=factory_id, owner=user)
         return factory
     except Factory.DoesNotExist:
         raise HttpError(404, "해당 공장이 존재하지 않습니다.")

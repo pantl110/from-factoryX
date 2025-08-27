@@ -4,6 +4,8 @@ from datetime import timedelta
 from subscription.models import SubscriptionHistory, Payment
 from subscription.services import SubscriptionBillingService
 from subscription.exceptions import PaymentError, BillingKeyError
+from subscription.barobill_utils import handle_barobill_scrap_for_subscription
+import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
@@ -72,6 +74,29 @@ class Command(BaseCommand):
                 )
 
                 payment = billing_service.process_subscription_payment(subscription)
+
+                # basic, partners 구독 갱신 시 바로빌 홈택스 스크랩 등록
+                try:
+                    # async 함수를 동기적으로 호출
+                    asyncio.run(
+                        handle_barobill_scrap_for_subscription(
+                            subscription.factory,
+                            subscription.subscription.type,
+                            "renew",
+                        )
+                    )
+                    self.stdout.write(
+                        f"✅ 바로빌 홈택스 스크랩 갱신 등록 성공: {subscription.factory.name}"
+                    )
+                except Exception as e:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"⚠️ 바로빌 홈택스 스크랩 갱신 등록 실패: {subscription.factory.name} - {str(e)}"
+                        )
+                    )
+                    logger.warning(
+                        f"바로빌 홈택스 스크랩 갱신 등록 실패: factory_id={subscription.factory.id}, error={str(e)}"
+                    )
 
                 self.stdout.write(
                     self.style.SUCCESS(
