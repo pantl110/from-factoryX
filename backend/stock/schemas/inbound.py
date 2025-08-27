@@ -191,3 +191,4 @@ class MaterialHistoryCreateIn(Schema):
 class MaterialHistoryDetailFilter(FilterSchema):
     start_date: Optional[str] = Field(default=None, q="created_at__date__gte")
     end_date: Optional[str] = Field(default=None, q="created_at__date__lte")
+    is_cash_receipt: Optional[bool] = Field(default=None, q="cash_receipt__isnull")
