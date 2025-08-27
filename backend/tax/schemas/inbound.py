@@ -6,6 +6,7 @@ from pydantic import field_validator
 
 
 class TaxServiceItem(Schema):
+    id: Optional[int] = Field(None, description="품목 식별자(순번)")
     purchase_expiry: Optional[date | str] = Field(None, description="공급일자")
     name: Optional[str] = Field(None, description="품목")
     information: Optional[str] = Field("", description="규격")
@@ -108,3 +109,12 @@ class TaxInvoiceFilter(FilterSchema):
     publish_status: Optional[str] = Field(
         None, q="publish_status", description="발행 상태"
     )
+
+
+class CashToMaterialHistoryIn(Schema):
+    material_history_id: List[int]
+
+
+class TaxToMaterialHistoryIn(Schema):
+    line_item_id: int
+    material_history_id: int

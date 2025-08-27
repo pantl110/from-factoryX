@@ -76,6 +76,14 @@ class MaterialHistory(BaseModel):
         blank=True,
         help_text="구매 단가 (원자재 구매 시에만 입력)",
     )
+    cash_receipt = models.ForeignKey(
+        "tax.CashReceipt",
+        related_name="material_histories",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="연결된 현금영수증",
+    )
     total_stock = models.IntegerField(
         help_text="재고 변동 후 재고",
     )

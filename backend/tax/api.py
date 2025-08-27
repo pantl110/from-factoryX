@@ -16,6 +16,7 @@ from tax.schemas.inbound import (
     NationalTaxServiceCreateIn,
     NationalTaxServiceUpdateIn,
     TaxInvoiceFilter,
+    TaxToMaterialHistoryIn,
 )
 from tax.schemas.outbound import (
     NationalTaxServiceOut,
@@ -42,6 +43,7 @@ from typing import List
 from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
 from stock.schemas.outbound import ProductRowOut
 from websocket.utils import send_notification_to_factory
+from stock.models import MaterialHistory
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
@@ -402,9 +404,12 @@ async def sync_tax_invoices(request, factory_id: int):
                 )
 
             line_items = []
-            for item in invoice_detail.TaxInvoiceTradeLineItems.TaxInvoiceTradeLineItem:
+            for idx, item in enumerate(
+                invoice_detail.TaxInvoiceTradeLineItems.TaxInvoiceTradeLineItem, start=1
+            ):
                 line_items.append(
                     {
+                        "id": idx,
                         "purchase_expiry": item.PurchaseExpiry,
                         "name": item.Name,
                         "information": item.Information,
@@ -474,9 +479,12 @@ async def sync_tax_invoices(request, factory_id: int):
                 )
 
             line_items = []
-            for item in invoice_detail.TaxInvoiceTradeLineItems.TaxInvoiceTradeLineItem:
+            for idx, item in enumerate(
+                invoice_detail.TaxInvoiceTradeLineItems.TaxInvoiceTradeLineItem, start=1
+            ):
                 line_items.append(
                     {
+                        "id": idx,
                         "purchase_expiry": item.PurchaseExpiry,
                         "name": item.Name,
                         "information": item.Information,
@@ -852,3 +860,59 @@ async def get_tax_invoice_state_from_barobill(request, tax_id: int):
         or "Unknown State",
         "nts_state": nts_tax_service_states.get(result.NTSSendState) or "Unknown State",
     }
+
+
+@router.patch(
+    "/{tax_id}/connect-material-history",
+    summary="[C] NEW! 세금계산서와 자재 이력 연동",
+    description="세금계산서와 자재 이력을 연동합니다.",
+    response={200: dict, 400: dict, 500: dict},
+)
+async def connect_material_history(
+    request, tax_id: int, payload: TaxToMaterialHistoryIn
+):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    member = await is_factory_member(tax_service.factory.id, user)
+
+    if not member:
+        raise HttpError(403, "권한이 없습니다.")
+
+    # line_items 중 요청한 line_item_id가 존재하는지 확인
+    line_items = tax_service.line_items or []
+    matched_item = next(
+        (item for item in line_items if item.get("id") == payload.line_item_id),
+        None,
+    )
+
+    if not matched_item:
+        raise HttpError(404, f"line_item_id {payload.line_item_id}를 찾을 수 없습니다.")
+
+    # 이미 다른 material_history가 연동되어 있는지 확인
+    if (
+        matched_item.get("material_history")
+        and matched_item.get("material_history") != payload.material_history_id
+    ):
+        raise HttpError(400, "해당 품목에는 이미 다른 자재 이력이 연동되어 있습니다.")
+
+    # material_history 존재 여부 및 공장 일치 검증
+    try:
+        material_history = await MaterialHistory.objects.select_related(
+            "material"
+        ).aget(id=payload.material_history_id)
+    except MaterialHistory.DoesNotExist:
+        raise HttpError(
+            404,
+            f"material_history_id {payload.material_history_id}를 찾을 수 없습니다.",
+        )
+
+    if material_history.material.factory_id != tax_service.factory_id:
+        raise HttpError(
+            400, "자재 이력의 공장과 세금계산서의 공장이 일치하지 않습니다."
+        )
+
+    matched_item["material_history"] = payload.material_history_id
+    tax_service.line_items = line_items
+    await tax_service.asave()
+
+    return {"message": "세금계산서와 자재 이력 연동이 완료되었습니다."}
