@@ -55,6 +55,7 @@ const QuotationPageContent = () => {
   const projectId = searchParams.get('project_id')
     ? parseInt(searchParams.get('project_id') || '0')
     : undefined;
+  const statusParam = searchParams.get('status'); // status 파라미터 추가
 
   const { saveDraft } = useSaveDraftQuotation();
   const { startProduction } = useStartProduction();
@@ -68,7 +69,7 @@ const QuotationPageContent = () => {
   const { productList, getAllProductList } = useGetProduct(); // 제품 목록 가져오기
 
   const [projectStatus, setProjectStatus] =
-    useState<ProjectStatusType>('quotation'); // 프로젝트 상태 관리
+    useState<ProjectStatusType>('quotation'); // 기본값은 quotation
   const [taxId, setTaxId] = useState<number | null>(null); // 세금계산서 ID 관리
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
     imageUrl ? 'quotation' : 'history'
@@ -116,7 +117,14 @@ const QuotationPageContent = () => {
 
   // 컴포넌트 마운트 시 프로젝트 상태 로드
   useEffect(() => {
-    loadProjectStatus();
+    if (projectId) {
+      // projectId가 있으면 해당 프로젝트의 상태를 가져옴
+      loadProjectStatus();
+    } else if (statusParam === 'confirmed') {
+      // projectId가 없고 status 파라미터가 confirmed면 confirmed로 설정
+      setProjectStatus('confirmed');
+    }
+    // projectId도 없고 status 파라미터도 없으면 기본값 'quotation' 유지
 
     // ocrdata 있으면 거래처 목록과 제품 목록 로드
     if (factoryId && ocrData) {
@@ -129,7 +137,7 @@ const QuotationPageContent = () => {
       useOcrStore.getState().clearOcrData();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadProjectStatus, factoryId]);
+  }, [loadProjectStatus, factoryId, projectId, statusParam]);
 
   // 프로젝트 상태 변경
   const handleProjectStatusChange = useCallback(
