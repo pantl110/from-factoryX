@@ -12,13 +12,7 @@ import Pagination from '@/components/pagination';
 import { OcrDataModel, ProjectListResponseModel } from '@/types/data-model';
 import DeleteModal from '@/ui/modal/delete-modal';
 import Spinner from '@/ui/spinner';
-import {
-  useCreateProject,
-  useGetProjects,
-  useCheckAll,
-  useDeleteProject,
-  useUpdateProjectStatus,
-} from '@/hooks';
+import { useGetProjects, useCheckAll, useDeleteProject } from '@/hooks';
 import useOcrStore from '@/store/ocr-store';
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
@@ -26,9 +20,7 @@ import useMemberStore from '@/store/member-store';
 const ProcessProjectPageInner = () => {
   const router = useRouter();
   const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
-  const { createProject } = useCreateProject();
   const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
-  const { updateProjectStatus } = useUpdateProjectStatus();
   const { setOcrData } = useOcrStore();
   const factoryId = useMemberStore((state) => state.factoryId);
 
@@ -154,43 +146,14 @@ const ProcessProjectPageInner = () => {
       // Zustand store에 OCR 데이터 저장
       setOcrData(ocrData, imageUrl || '');
 
-      try {
-        // 프로젝트와 견적서 생성
-        const result = await createProject();
-
-        if (result.success && result.data) {
-          // 주문서인 경우 프로젝트 상태를 confirmed로 변경
-          if (isOrderUploadModalOpen) {
-            await updateProjectStatus(result.data.project_id, 'confirmed');
-          }
-
-          // 생성된 견적서 ID와 프로젝트 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
-          router.push(
-            `/quotation?quotation_id=${result.data.quotation_id}&project_id=${result.data.project_id}`
-          );
-        } else {
-          alert('프로젝트 생성에 실패했습니다.');
-        }
-      } catch {
-        alert('프로젝트 생성 중 오류가 발생했습니다.');
+      // 주문서인 경우 프로젝트 상태를 confirmed로 변경
+      if (isOrderUploadModalOpen) {
+        router.push(`/quotation?status=confirmed`);
+      } else {
+        router.push(`/quotation`);
       }
     } else {
-      // 빈 값으로 프로젝트와 견적서 생성 후 견적서 아이디와 프로젝트 아이디 기억하고 이동
-      try {
-        // 프로젝트와 견적서 생성
-        const result = await createProject();
-
-        if (result.success && result.data) {
-          // 생성된 견적서 ID와 프로젝트 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
-          router.push(
-            `/quotation?quotation_id=${result.data.quotation_id}&project_id=${result.data.project_id}`
-          );
-        } else {
-          alert('프로젝트 생성에 실패했습니다.');
-        }
-      } catch {
-        alert('프로젝트 생성 중 오류가 발생했습니다.');
-      }
+      router.push(`/quotation`);
     }
   };
 
