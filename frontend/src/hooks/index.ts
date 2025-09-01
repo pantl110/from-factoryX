@@ -155,6 +155,7 @@ export { default as useGetQuotationProducts } from './document/quotation/use-get
 export { default as useGetQuotationProductDetail } from './document/quotation/use-get-quotation-product-detail';
 export { default as useGetQuotationHistory } from './document/quotation/use-get-quotation-history';
 export { useUpdateQuotationProductDelivery } from './document/quotation/use-update-quotation-product-delivery';
+export { default as useSendQuotationEmail } from './document/quotation/use-send-quotation-email';
 
 // Production related hooks // 생산계획에서 form 유효성 검사 훅
 export { useProductionPlanValidation } from './production/use-production-plan-validation';

@@ -98,7 +98,7 @@ const ButtonSection = ({
           borderColor="border-lg"
           onClick={onEmailClick}
           hoverColor="hover:bg-bg"
-          disabled={isViewer}
+          disabled={!isFormFilled || !hasQuotationProducts || isViewer}
         />
         {isOrderStatus ? (
           <>

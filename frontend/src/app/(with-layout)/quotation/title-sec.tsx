@@ -29,6 +29,7 @@ interface TitleSecProps {
   isFormFilled: boolean;
   taxId: number | null;
   isSaveDraftLoading?: boolean;
+  setShowErrors: (show: boolean) => void;
 }
 
 const TitleSec = ({
@@ -47,6 +48,7 @@ const TitleSec = ({
   isFormFilled,
   taxId,
   isSaveDraftLoading,
+  setShowErrors,
 }: TitleSecProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -136,6 +138,12 @@ const TitleSec = ({
             hasQuotationProducts={hasQuotationProducts}
             setIsTaxCreatePanelOpen={setIsTaxCreatePanelOpen}
             onEmailClick={async () => {
+              // 폼 유효성 검사
+              const hasErrors = Object.keys(formState.errors).length > 0;
+              if (hasErrors) {
+                setShowErrors(true); // 에러 표시 활성화
+                return; // 유효성 검사 실패 시 이메일 모달 열지 않음
+              }
               setIsEmailOpen(true);
             }}
             onPrintClick={async () => {
@@ -145,6 +153,8 @@ const TitleSec = ({
               const isValid = await trigger();
               if (isValid) {
                 setIsStartProductionModalOpen(true);
+              } else {
+                setShowErrors(true); // 에러 표시 활성화
               }
             }}
             onSaveDraft={async (isConfirm: boolean) => {
@@ -157,6 +167,7 @@ const TitleSec = ({
               // 개별 필드 오류 확인 (입력된 값들 중에 유효하지 않은 것이 있는지)
               const hasErrors = Object.keys(formState.errors).length > 0;
               if (hasErrors) {
+                setShowErrors(true); // 에러 표시 활성화
                 return false; // 오류가 있으면 저장하지 않음
               }
 

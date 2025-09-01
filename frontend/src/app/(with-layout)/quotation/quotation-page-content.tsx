@@ -499,6 +499,8 @@ const QuotationPageContent = () => {
   const watchedBusinessType = watch('business_type') || '';
   const watchedBusinessCategory = watch('business_category') || '';
   const watchedAddress = watch('address') || '';
+  const watchedManager = watch('manager') || '';
+  const watchedEmail = watch('email') || '';
 
   const isFormFilled = useMemo(() => {
     if (isQuotationLoading) return false;
@@ -510,7 +512,9 @@ const QuotationPageContent = () => {
       watchedDueDate.trim() !== '' &&
       watchedBusinessType.trim() !== '' &&
       watchedBusinessCategory.trim() !== '' &&
-      watchedAddress.trim() !== '';
+      watchedAddress.trim() !== '' &&
+      watchedManager.trim() !== '' &&
+      watchedEmail.trim() !== '';
 
     return isAllRequiredFieldsFilled;
   }, [
@@ -521,14 +525,14 @@ const QuotationPageContent = () => {
     watchedBusinessType,
     watchedBusinessCategory,
     watchedAddress,
+    watchedManager,
+    watchedEmail,
     isQuotationLoading,
   ]);
 
   const watchedFactoryId = watch('factory_id');
-  const watchedEmail = watch('email');
   const watchedPhone = watch('phone');
   const watchedFax = watch('fax');
-  const watchedManager = watch('manager');
   const watchedNote = watch('note');
 
   const watchedClientData = useMemo(() => {
@@ -590,6 +594,7 @@ const QuotationPageContent = () => {
           }}
           taxId={taxId}
           isSaveDraftLoading={isSaveDraftLoading}
+          setShowErrors={setShowErrors}
         />
         <TabArea
           projectStatus={projectStatus}
@@ -764,6 +769,7 @@ const QuotationPageContent = () => {
               }
               return total;
             }, 0)}
+            quotationId={quotationId || null}
             onClose={() => setIsEmailOpen(false)}
           />
         </OverlayView>

@@ -7,10 +7,11 @@ import {
   QuotationProductDetailResponseModel,
   ClientModel,
 } from '@/types/data-model';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import OrderDocumentPDFView from '@/components/pdf/OrderDocumentPDFView';
+import { useSendQuotationEmail } from '@/hooks';
 
 interface EmailViewProps {
   onClose?: () => void;
@@ -20,6 +21,7 @@ interface EmailViewProps {
   productListInfoTitle: string;
   productItems: QuotationProductDetailResponseModel[];
   supplyAmount: number;
+  quotationId: number | null;
 }
 
 const EmailView = ({
@@ -30,11 +32,14 @@ const EmailView = ({
   productListInfoTitle,
   productItems,
   supplyAmount,
+  quotationId,
 }: EmailViewProps) => {
+  const [isEmailSending, setIsEmailSending] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
+  const { sendQuotationEmail, isLoading } = useSendQuotationEmail();
 
-  const generatePDF = async () => {
-    if (!pdfRef.current) return;
+  const generatePDFBase64 = async (): Promise<string | null> => {
+    if (!pdfRef.current) return null;
 
     try {
       const canvas = await html2canvas(pdfRef.current, {
@@ -67,8 +72,6 @@ const EmailView = ({
       const availableHeight = pageHeight - marginMm * 2;
       let heightLeft = imgHeight;
 
-      let position = 0;
-
       // 여백을 적용하여 이미지 삽입 (좌우 여백: marginMm, 위쪽 여백: 0)
       pdf.addImage(
         imgData,
@@ -81,7 +84,6 @@ const EmailView = ({
       heightLeft -= availableHeight; // 아래쪽 여백을 고려한 높이만큼 감소
 
       while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
         pdf.addPage();
         // 여백을 적용하여 이미지 삽입 (좌우 여백: marginMm, 위쪽 여백: 0)
         pdf.addImage(
@@ -95,10 +97,46 @@ const EmailView = ({
         heightLeft -= availableHeight; // 아래쪽 여백을 고려한 높이만큼 감소
       }
 
-      const fileName = `${clientData.name}_${documentTitle}_${new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(fileName);
+      // data URI -> base64 string
+      const dataUri = pdf.output('datauristring');
+      const base64 = dataUri.split(',')[1] || '';
+      return base64;
     } catch (error) {
       alert('PDF 생성 중 오류가 발생했습니다.' + error);
+      return null;
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (isLoading || !quotationId) return;
+
+    if (!clientData?.email) {
+      alert(
+        '거래처 이메일이 입력되지 않았습니다. 거래처 정보에서 이메일을 확인해 주세요.'
+      );
+      return;
+    }
+
+    setIsEmailSending(true);
+    const base64Pdf = await generatePDFBase64();
+    if (!base64Pdf) {
+      setIsEmailSending(false);
+      return;
+    }
+
+    try {
+      await sendQuotationEmail(quotationId, {
+        email: clientData.email,
+        pdf_data: base64Pdf,
+      });
+      alert('이메일이 전송되었습니다.');
+      onClose?.();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : '이메일 전송에 실패했습니다.';
+      alert(message);
+    } finally {
+      setIsEmailSending(false);
     }
   };
 
@@ -129,10 +167,11 @@ const EmailView = ({
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"
-            onClick={generatePDF}
+            onClick={handleSendEmail}
+            disabled={isLoading || isEmailSending}
           />
         </div>
-      </div>{' '}
+      </div>
       {/* 화면 표시용 */}
       {/* <div ref={pdfRef}> */}
       <OrderDocumentView
@@ -144,6 +183,7 @@ const EmailView = ({
         supplyAmount={supplyAmount}
       />
       {/* </div> */}
+
       {/* PDF 생성을 위한 전용 뷰 (화면 밖에 배치) */}
       <div
         ref={pdfRef}

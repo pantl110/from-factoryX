@@ -256,6 +256,8 @@ const InputSection = ({
             <Input
               label="담당자명"
               placeholder="담당자명을 입력하세요."
+              required
+              showError={showErrors && !!errors.manager}
               disabledReadOnly={isViewer}
               {...field}
             />
@@ -274,6 +276,7 @@ const InputSection = ({
             <Input
               label="이메일"
               placeholder="담당자 이메일을 입력하세요."
+              required
               showError={showErrors && !!errors.email}
               disabledReadOnly={isViewer}
               {...field}
