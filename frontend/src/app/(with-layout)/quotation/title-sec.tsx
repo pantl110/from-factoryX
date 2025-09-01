@@ -3,7 +3,7 @@ import ButtonSection from './button-section';
 import QuotationStatusDropdown from './modals/quotation-status-dropdown';
 import { usePortalDropdown, useToast } from '@/hooks';
 import Toast from '@/ui/toast';
-import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
+import { UseFormTrigger, UseFormWatch } from 'react-hook-form';
 import { ClientModel, ProjectStatusType } from '@/types/data-model';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import useMemberStore from '@/store/member-store';
@@ -20,7 +20,6 @@ interface TitleSecProps {
   setIsStartProductionModalOpen: (open: boolean) => void;
   trigger: UseFormTrigger<QuotationFormModel>;
   watch: UseFormWatch<QuotationFormModel>;
-  formState: FormState<QuotationFormModel>;
   projectStatus: ProjectStatusType;
   onProjectStatusChange: (status: ProjectStatusType) => void;
   hasQuotationProducts: boolean;
@@ -30,6 +29,7 @@ interface TitleSecProps {
   taxId: number | null;
   isSaveDraftLoading?: boolean;
   setShowErrors: (show: boolean) => void;
+  refresh: () => void;
 }
 
 const TitleSec = ({
@@ -39,7 +39,6 @@ const TitleSec = ({
   setIsStartProductionModalOpen,
   trigger,
   watch,
-  formState,
   projectStatus,
   onProjectStatusChange,
   hasQuotationProducts,
@@ -49,6 +48,7 @@ const TitleSec = ({
   taxId,
   isSaveDraftLoading,
   setShowErrors,
+  refresh,
 }: TitleSecProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -139,8 +139,8 @@ const TitleSec = ({
             setIsTaxCreatePanelOpen={setIsTaxCreatePanelOpen}
             onEmailClick={async () => {
               // 폼 유효성 검사
-              const hasErrors = Object.keys(formState.errors).length > 0;
-              if (hasErrors) {
+              const isValid = await trigger();
+              if (!isValid) {
                 setShowErrors(true); // 에러 표시 활성화
                 return; // 유효성 검사 실패 시 이메일 모달 열지 않음
               }
@@ -165,8 +165,8 @@ const TitleSec = ({
               }
 
               // 개별 필드 오류 확인 (입력된 값들 중에 유효하지 않은 것이 있는지)
-              const hasErrors = Object.keys(formState.errors).length > 0;
-              if (hasErrors) {
+              const isValid = await trigger();
+              if (!isValid) {
                 setShowErrors(true); // 에러 표시 활성화
                 return false; // 오류가 있으면 저장하지 않음
               }
@@ -181,6 +181,7 @@ const TitleSec = ({
             isDirty={isDirty}
             taxId={taxId}
             isSaveDraftLoading={isSaveDraftLoading}
+            refresh={refresh}
           />
         </div>
         <p className="Heading-1 truncate w-full">

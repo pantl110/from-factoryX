@@ -20,6 +20,7 @@ interface ButtonSectionProps {
   isDirty: boolean;
   taxId: number | null;
   isSaveDraftLoading?: boolean;
+  refresh?: () => void;
 }
 
 const ButtonSection = ({
@@ -34,6 +35,7 @@ const ButtonSection = ({
   isDirty,
   taxId,
   isSaveDraftLoading,
+  refresh,
 }: ButtonSectionProps) => {
   const router = useRouter();
   const role = useMemberStore((state) => state.role);
@@ -136,8 +138,16 @@ const ButtonSection = ({
               text="주문 확정"
               textColor="text-wh"
               bgColor="bg-primary"
-              onClick={() => {
-                onSaveDraft?.(true);
+              onClick={async () => {
+                try {
+                  const isSuccess = await onSaveDraft?.(true);
+                  if (isSuccess) {
+                    // 성공 시 refresh 콜백 호출하여 부모 컴포넌트 상태 업데이트
+                    refresh?.();
+                  }
+                } catch {
+                  // 에러가 발생하면 페이지 이동하지 않음
+                }
               }}
               hoverColor="hover:bg-primary-hover"
               disabled={

@@ -581,7 +581,6 @@ const QuotationPageContent = () => {
           // 폼 상태
           trigger={trigger}
           watch={watch}
-          formState={formState}
           isFormFilled={isFormFilled}
           isDirty={isDirty}
           hasQuotationProducts={hasQuotationProducts}
@@ -595,6 +594,27 @@ const QuotationPageContent = () => {
           taxId={taxId}
           isSaveDraftLoading={isSaveDraftLoading}
           setShowErrors={setShowErrors}
+          refresh={() => {
+            // 주문확정 완료 후 상태 업데이트
+            if (quotationId) {
+              // 1. 프로젝트 상태 새로고침
+              loadProjectStatus();
+
+              // 2. 견적서 데이터 재조회
+              if (quotationId > 0) {
+                // 견적서 데이터 새로고침을 위한 상태 초기화
+                setQuotationProducts([]);
+                setInitialQuotationProducts([]);
+                setHasQuotationProducts(false);
+
+                // 폼 리셋
+                reset();
+
+                // 에러 상태 초기화
+                setShowErrors(false);
+              }
+            }
+          }}
         />
         <TabArea
           projectStatus={projectStatus}

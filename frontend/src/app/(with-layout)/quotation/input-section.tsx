@@ -132,26 +132,22 @@ const InputSection = ({
                 message: '올바른 사업자등록번호 형식이 아닙니다.',
               },
             }}
-            render={({ field }) => {
-              return (
-                <Input
-                  label="사업자등록번호"
-                  placeholder="사업자등록번호를 입력하세요."
-                  required
-                  showError={
-                    showErrors && !!errors.business_registration_number
-                  }
-                  value={field.value ?? ''}
-                  onChange={(e) => {
-                    const formatted = formatBusinessNumber(e.target.value);
-                    field.onChange(formatted);
-                  }}
-                  ref={field.ref}
-                  name={field.name}
-                  disabledReadOnly={isViewer}
-                />
-              );
-            }}
+            render={({ field }) => (
+              <Input
+                label="사업자등록번호"
+                placeholder="사업자등록번호를 입력하세요."
+                required
+                showError={showErrors && !!errors.business_registration_number}
+                disabledReadOnly={isViewer}
+                value={field.value ?? ''}
+                onChange={(e) => {
+                  const formatted = formatBusinessNumber(e.target.value);
+                  field.onChange(formatted);
+                }}
+                ref={field.ref}
+                name={field.name}
+              />
+            )}
           />
         </div>
       </div>
