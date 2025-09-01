@@ -13,9 +13,8 @@ interface ButtonSectionProps {
   onEmailClick?: () => void;
   onPrintClick?: () => void;
   onStartProductionClick?: () => void;
-  onSaveDraft?: () => boolean | Promise<boolean>;
+  onSaveDraft?: (isConfirm: boolean) => boolean | Promise<boolean>;
   isOrderStatus: boolean;
-  changeToConfirmed: () => void | Promise<void>;
   isFormFilled: boolean;
   hasQuotationProducts: boolean;
   isDirty: boolean;
@@ -30,7 +29,6 @@ const ButtonSection = ({
   onStartProductionClick,
   onSaveDraft,
   isOrderStatus,
-  changeToConfirmed,
   isFormFilled,
   hasQuotationProducts,
   isDirty,
@@ -77,15 +75,11 @@ const ButtonSection = ({
               }
             }}
           />
-          {showTooltip && !taxId && (
-            <div className="absolute z-50 -top-2 -left-2">
+          {showTooltip && !taxId && !isOrderStatus && (
+            <div className="absolute z-50 top-12 left-0 w-[350px]">
               <Tooltip
-                text={
-                  !isOrderStatus
-                    ? '주문 확정 상태에서만 생성할 수 있습니다'
-                    : ''
-                }
-                color="red"
+                text={'세금계산서는 주문을 확정한 후에 생성할 수 있어요.'}
+                color="white"
                 position="left"
               />
             </div>
@@ -127,7 +121,7 @@ const ButtonSection = ({
               bgColor="bg-primary-8"
               onClick={async () => {
                 try {
-                  const isSuccess = await onSaveDraft?.();
+                  const isSuccess = await onSaveDraft?.(false);
                   if (isSuccess) {
                     router.push('/project/process');
                   }
@@ -143,8 +137,7 @@ const ButtonSection = ({
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={() => {
-                onSaveDraft?.();
-                changeToConfirmed();
+                onSaveDraft?.(true);
               }}
               hoverColor="hover:bg-primary-hover"
               disabled={

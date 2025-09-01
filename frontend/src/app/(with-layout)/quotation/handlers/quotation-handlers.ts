@@ -56,7 +56,7 @@ export const useQuotationHandlers = ({
     useState(false);
 
   // 임시 저장 버튼 핸들러
-  const handleSaveDraft = useCallback(async () => {
+  const handleSaveDraft = useCallback(async (isConfirm: boolean) => {
     try {
       setIsSaveDraftLoading(true);
       const formData = watch();
@@ -69,10 +69,10 @@ export const useQuotationHandlers = ({
       setShowErrors(true);
 
       const draftData: SaveDraftDataModel = {
-        quotation_id: quotationId || 0,
+        quotation_id: quotationId || null,
         client: {
           factory_id: factoryId,
-          client_id: selectedClientId,
+          client_id: selectedClientId || null,
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -88,13 +88,14 @@ export const useQuotationHandlers = ({
         },
         due_date: formData.due_date,
         products: quotationProducts.map((product) => ({
-          product_id: product.productId || 0,
+          product_id: product.productId || null,
           quantity: product.quantity || 0,
           unit_price: product.unit_price || 0,
           is_delivery: false,
           delivery_date: null,
         })),
         uploaded_file: imageUrl || undefined, // OCR 데이터의 imageUrl을 uploaded_file로 전달
+        is_confirm: isConfirm, // 임시저장은 false 주문확정은 true
       };
 
       const result = await saveDraft(draftData);
@@ -145,8 +146,8 @@ export const useQuotationHandlers = ({
     showToast,
   ]);
 
-  // 생산 시작 버튼 핸들러
-  const handleStartProduction = useCallback(async () => {
+   // 생산 시작 버튼 핸들러 (기존 startProduction API 사용)
+   const handleStartProduction = useCallback(async () => {
     try {
       setIsStartProductionLoading(true);
       const formData = watch();
@@ -255,6 +256,7 @@ export const useQuotationHandlers = ({
     setIsStartProductionModalOpen,
     router,
   ]);
+
 
   return {
     handleSaveDraft,

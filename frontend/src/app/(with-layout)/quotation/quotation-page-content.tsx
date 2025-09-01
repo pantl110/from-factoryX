@@ -579,8 +579,8 @@ const QuotationPageContent = () => {
           // 버튼 클릭 시 함수
           projectStatus={projectStatus}
           onProjectStatusChange={handleProjectStatusChange}
-          onSaveDraft={async () => {
-            const isSuccess = await handleSaveDraft();
+          onSaveDraft={async (isConfirm: boolean) => {
+            const isSuccess = await handleSaveDraft(isConfirm);
             return isSuccess || false;
           }}
           taxId={taxId}

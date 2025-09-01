@@ -24,7 +24,7 @@ interface TitleSecProps {
   projectStatus: ProjectStatusType;
   onProjectStatusChange: (status: ProjectStatusType) => void;
   hasQuotationProducts: boolean;
-  onSaveDraft?: () => boolean | Promise<boolean>;
+  onSaveDraft?: (isConfirm: boolean) => boolean | Promise<boolean>;
   isDirty: boolean;
   isFormFilled: boolean;
   taxId: number | null;
@@ -147,7 +147,7 @@ const TitleSec = ({
                 setIsStartProductionModalOpen(true);
               }
             }}
-            onSaveDraft={async () => {
+            onSaveDraft={async (isConfirm: boolean) => {
               // 업체명이 입력되지 않았으면 토스트 표시하고 함수 종료
               if (!clientName || clientName.trim() === '') {
                 showToast();
@@ -161,17 +161,11 @@ const TitleSec = ({
               }
 
               if (onSaveDraft) {
-                return await onSaveDraft();
+                return await onSaveDraft(isConfirm); // isConfirm = true 주문확정, false = 임시저장
               }
               return false;
             }}
             isOrderStatus={isOrderStatus}
-            changeToConfirmed={async () => {
-              const isValid = await trigger();
-              if (isValid) {
-                onProjectStatusChange('confirmed');
-              }
-            }}
             isFormFilled={isFormFilled}
             isDirty={isDirty}
             taxId={taxId}

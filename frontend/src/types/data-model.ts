@@ -607,13 +607,14 @@ export interface QuotationProductModel {
   delivery_date?: string | null;
 }
 
-export interface SaveDraftQuotationModel {
-  quotation_id: number;
-  client?: ClientModel;
-  products?: QuotationProductModel[];
-  due_date?: string;
-  uploaded_file?: string;
-}
+// export interface SaveDraftQuotationModel {
+//   quotation_id: number;
+//   client?: ClientModel;
+//   products?: QuotationProductModel[];
+//   due_date?: string;
+//   uploaded_file?: string;
+//   is_confirm: boolean;
+// }
 
 // 생산 시작용 데이터 모델
 export interface ProductionDataModel {
@@ -633,7 +634,6 @@ export interface ProductionDataModel {
     manager?: string;
     note?: string;
   };
-  due_date?: string;
   products: Array<{
     product_id: number;
     quantity: number;
@@ -641,11 +641,12 @@ export interface ProductionDataModel {
     is_delivery: boolean;
     delivery_date: null;
   }>;
+  due_date?: string;
 }
 
 // 임시 저장용 데이터 모델
 export interface SaveDraftDataModel {
-  quotation_id: number;
+  quotation_id: number | null;
   client: {
     factory_id: number;
     client_id: number | null;
@@ -662,15 +663,16 @@ export interface SaveDraftDataModel {
     note?: string;
     client_type: string;
   };
-  due_date?: string;
   products: Array<{
-    product_id: number;
+    product_id: number | null;
     quantity: number;
     unit_price: number;
     is_delivery: boolean;
-    delivery_date: null;
+    delivery_date: string | null;
   }>;
+  due_date?: string;
   uploaded_file?: string;
+  is_confirm: boolean;
 }
 
 // 견적서 품목 목록 조회

@@ -10,7 +10,7 @@ const Tooltip = ({ text, color, position }: TooltipProps) => {
   const colorMap = {
     red: 'text-red bg-[#FFF0F5]',
     primary: 'text-primary bg-primary-8',
-    white: 'text-white',
+    white: 'text-dg bg-wh',
   };
   const positionMap = {
     left: 'left-[15px] top-[-4px]',
