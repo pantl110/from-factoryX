@@ -43,6 +43,7 @@ import StartProductionModal from '@/app/(with-layout)/quotation/modals/start-pro
 import { useQuotationHandlers } from '@/app/(with-layout)/quotation/handlers/quotation-handlers';
 import { QuotationFormModel } from '@/types/data-model';
 import TaxDetailPanel from '../tax/tax-detail-panel';
+import usePageStatusStore, { PageStatusModel } from '@/store/page-status-store';
 
 const QuotationPageContent = () => {
   const router = useRouter();
@@ -61,6 +62,9 @@ const QuotationPageContent = () => {
   const { startProduction } = useStartProduction();
   const { getProjectStatus } = useGetProjectStatus();
   const { updateProjectStatus } = useUpdateProjectStatus();
+  const setProjectStatusData = usePageStatusStore(
+    (state: PageStatusModel) => state.setProjectStatusData
+  );
   const { data: quotationData, isLoading: isQuotationLoading } =
     useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
   const { showToast, isToastOpen, isVisible } = useToast();
@@ -108,12 +112,13 @@ const QuotationPageContent = () => {
       const result = await getProjectStatus(projectId);
       if (result.success && result.data) {
         setProjectStatus(result.data.status);
+        setProjectStatusData(result.data); // 스토어에 프로젝트 상태 데이터 저장
         setTaxId(result.data.tax_invoice?.id || null);
       }
     } catch {
       // 프로젝트 상태 로드 실패 시 무시
     }
-  }, [getProjectStatus, projectId]);
+  }, [getProjectStatus, projectId, setProjectStatusData]);
 
   // 컴포넌트 마운트 시 프로젝트 상태 로드
   useEffect(() => {

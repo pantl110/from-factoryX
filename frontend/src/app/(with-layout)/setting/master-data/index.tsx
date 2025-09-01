@@ -31,9 +31,10 @@ const MasterData = () => {
   const {
     equipmentList,
     isLoading: isEquipmentLoading,
-    setSearchKeyword: setEquipmentSearchKeyword,
     refetch: refetchEquipment,
     changePage: changeEquipmentPage,
+    searchAllFields: searchEquipment,
+    getEquipmentList,
   } = useGetEquipment();
 
   // 거래처 목록 가져옴
@@ -55,10 +56,16 @@ const MasterData = () => {
     equipmentList?.data?.map((item) => item.id) ?? []; // 설비 id 배열
   const clientIds: number[] = clientList?.data?.map((item) => item.id) ?? []; // 거래처 id 배열
 
-  // setter 함수들을 useMemo로 메모이제이션
-  const memoizedSetEquipmentSearchKeyword = useMemo(
-    () => setEquipmentSearchKeyword,
-    [setEquipmentSearchKeyword]
+  // 설비 검색 함수
+  const handleEquipmentSearch = useMemo(
+    () => (keyword: string) => {
+      if (keyword.trim()) {
+        searchEquipment(keyword, 1);
+      } else {
+        getEquipmentList(1);
+      }
+    },
+    [searchEquipment, getEquipmentList]
   );
 
   // 거래처 검색 함수
@@ -82,7 +89,7 @@ const MasterData = () => {
   // 디바운스된 검색어가 변경될 때 검색 실행
   useEffect(() => {
     if (settingChip === 'equipment') {
-      memoizedSetEquipmentSearchKeyword(debouncedSearchKeyword);
+      handleEquipmentSearch(debouncedSearchKeyword);
     } else if (settingChip === 'client') {
       if (debouncedSearchKeyword.trim()) {
         setCurrentClientSearchKeyword(debouncedSearchKeyword);
@@ -96,12 +103,7 @@ const MasterData = () => {
         getClients();
       }
     }
-  }, [
-    debouncedSearchKeyword,
-    settingChip,
-    memoizedSetEquipmentSearchKeyword,
-    getClients,
-  ]);
+  }, [debouncedSearchKeyword, settingChip, handleEquipmentSearch, getClients]);
 
   // 체크박스 상태 관리
   const {
@@ -135,6 +137,20 @@ const MasterData = () => {
       : getClientDeleteButtonText;
   const setAllChecked =
     settingChip === 'equipment' ? facilitySetAllChecked : clientSetAllChecked;
+
+  // 페이지 로드 시 설비와 거래처 데이터 초기 로딩
+  useEffect(() => {
+    if (factoryId) {
+      // 설비 데이터 로딩
+      if (!equipmentList) {
+        refetchEquipment();
+      }
+      // 거래처 데이터 로딩
+      if (!clientList) {
+        getClients();
+      }
+    }
+  }, [factoryId, equipmentList, clientList, refetchEquipment, getClients]);
 
   // 탭 선택 관련
   useEffect(() => {
@@ -344,7 +360,7 @@ const MasterData = () => {
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               if (settingChip === 'equipment') {
-                memoizedSetEquipmentSearchKeyword(searchKeyword);
+                handleEquipmentSearch(searchKeyword);
               } else if (settingChip === 'client') {
                 handleClientSearch(searchKeyword);
               }

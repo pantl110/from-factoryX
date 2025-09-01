@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { EquipmentListResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 
@@ -166,14 +166,7 @@ const useGetEquipment = () => {
     [factoryId, pageSize]
   );
 
-  // 검색어가 바뀔 때마다 자동으로 fetch
-  useEffect(() => {
-    if (searchKeyword) {
-      searchAllFields(searchKeyword, 1); // 검색 시 첫 페이지로
-    } else {
-      getEquipmentList(1); // 검색어가 없을 때는 첫 페이지로
-    }
-  }, [searchKeyword, searchAllFields, getEquipmentList]);
+
 
   // 페이지 변경 함수
   const changePage = useCallback(
@@ -198,6 +191,8 @@ const useGetEquipment = () => {
     pageSize,
     changePage,
     getAllEquipmentList,
+    searchAllFields,
+    getEquipmentList,
     refetch: useCallback(
       () =>
         searchKeyword ? searchAllFields(searchKeyword, 1) : getEquipmentList(1),

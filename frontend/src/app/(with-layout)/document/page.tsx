@@ -15,7 +15,6 @@ import TransactionDocumentView from './transaction-document-view';
 import Spinner from '@/ui/spinner';
 import { useCheckAll } from '@/hooks/use-check-all';
 import DeleteModal from '@/ui/modal/delete-modal';
-
 import { useGetPublishedTaxInvoices } from '@/hooks';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
@@ -231,6 +230,7 @@ const DocumentPageContent = () => {
         <Panel title="거래명세서" onClose={() => setSelectedDocument(null)}>
           <TransactionDocumentView
             quotationData={{
+              client_id: 2,
               factory_name: '플라스틱이 좋아',
               business_registration_number: '123-45-67890',
               representative_name: '플라스틱',

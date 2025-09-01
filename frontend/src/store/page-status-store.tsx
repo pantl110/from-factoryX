@@ -64,17 +64,9 @@ export interface PageStatusModel {
   handleProductionLogSave: (() => Promise<void>) | null;
   setHandleProductionLogSave: (fn: (() => Promise<void>) | null) => void;
 
-  // // 반품 여부
-  // isRefund: boolean;
-  // setIsRefund: (isRefund: boolean) => void;
-
   // 납품 데이터 (보관함으로 이동 버튼 활성화 여부 결정)
   deliveryData: Array<{ delivery_date?: string }> | null;
   setDeliveryData: (data: Array<{ delivery_date?: string }> | null) => void;
-
-  // // 세금계산서 id
-  // taxId: number | null;
-  // setTaxId: (id: number | null) => void;
 }
 
 const usePageStatusStore = create<PageStatusModel>((set) => ({
