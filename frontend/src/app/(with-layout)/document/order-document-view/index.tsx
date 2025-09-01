@@ -25,11 +25,7 @@ const OrderDocumentView = ({
 }: OrderDocumentViewProps) => {
   return (
     <div className="flex flex-col gap-6">
-      <DocumentViewTitle
-        title={`[${clientData.name}]건 ${documentTitle}`}
-        // dateLabel="발송일자"
-        // date="2025-07-31"
-      />
+      <DocumentViewTitle title={`[${clientData.name}]건 ${documentTitle}`} />
       <SupplierInfo clientData={clientData} dueDate={dueDate} />
       <ProductListInfo
         productListInfoTitle={productListInfoTitle}

@@ -35,6 +35,8 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
 
   // 토스트 훅 사용
   const { isToastOpen, isVisible, showToast } = useToast();
+  const [toastText, setToastText] = useState('');
+  const [toastSubtext, setToastSubtext] = useState('');
 
   const {
     control,
@@ -137,18 +139,26 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
         );
 
         if (hasAlreadyMemberError) {
-          showToast(); // 토스트 표시
+          setToastText('초대할 수 없는 유저입니다.');
+          setToastSubtext(
+            '관리자 역할이거나 이미 다른 공장에 소속되어 있어요.'
+          );
+          showToast();
         } else {
           // 구체적인 에러 메시지 생성
           const errorDetails = failedDetails
             .map((detail) => `${detail.email}: ${detail.error}`)
             .join('\n');
 
-          alert(`다음 멤버의 초대에 실패했습니다:\n${errorDetails}`);
+          setToastText('초대에 실패했습니다.');
+          setToastSubtext(errorDetails);
+          showToast();
         }
       }
     } catch {
-      alert('초대 처리 중 오류가 발생했습니다.');
+      setToastText('초대 처리 중 오류가 발생했습니다.');
+      setToastSubtext('잠시 후 다시 시도해 주세요.');
+      showToast();
     }
   };
 
@@ -329,11 +339,11 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
         </Modal>
       )}
 
-      {/* 이미 팩토리 멤버 토스트 */}
+      {/* 초대 실패 토스트 */}
       {isToastOpen && (
         <Toast
-          text="초대할 수 없는 유저입니다."
-          subtext="관리자 역할이거나 이미 다른 공장에 소속되어 있어요."
+          text={toastText}
+          subtext={toastSubtext}
           type="red"
           icon={<WarningCircle size={20} className="text-red" />}
           isVisible={isVisible}
