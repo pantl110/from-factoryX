@@ -15,40 +15,50 @@ const MaterialInfoTable = ({ lineItem }: MaterialInfoTableProps) => {
         <p className="flex-1 px-3">단가</p>
         <p className="flex-[1.5] px-3">공급가액</p>
         <p className="flex-[1.5] px-3">세액</p>
+        <p className="flex-[1.5] px-3">금액</p>
       </div>
       <div className="flex items-center h-14 w-full text-bl Me_Body-1 border-b border-lg">
         <p className="flex-2 px-3 text-dg truncate" title={lineItem.name}>
-          {lineItem.name}
+          {lineItem.name || '-'}
         </p>
         <p
           className="flex-2 px-3 text-dg truncate"
           title={lineItem.information}
         >
-          {lineItem.information}
+          {lineItem.information || '-'}
         </p>
         <p
           className="flex-1 px-3 text-dg truncate"
           title={lineItem.chargeable_unit}
         >
-          {lineItem.chargeable_unit}
+          {lineItem.chargeable_unit || '-'}
         </p>
         <p
           className="flex-1 px-3 text-dg truncate"
           title={Number(lineItem.unit_price).toLocaleString()}
         >
-          {Number(lineItem.unit_price).toLocaleString()}
+          {Number(lineItem.unit_price).toLocaleString() || '-'}
         </p>
         <p
           className="flex-[1.5] px-3 text-dg truncate"
           title={Number(lineItem.amount).toLocaleString()}
         >
-          {Number(lineItem.amount).toLocaleString()}
+          {Number(lineItem.amount).toLocaleString() || '-'}
         </p>
         <p
           className="flex-[1.5] px-3 text-dg truncate"
           title={Number(lineItem.tax).toLocaleString()}
         >
-          {Number(lineItem.tax).toLocaleString()}
+          {Number(lineItem.tax).toLocaleString() || '-'}
+        </p>
+        <p
+          className="flex-[1.5] px-3 text-dg truncate"
+          title={(
+            Number(lineItem.amount) + Number(lineItem.tax)
+          ).toLocaleString()}
+        >
+          {(Number(lineItem.amount) + Number(lineItem.tax)).toLocaleString() ||
+            '-'}
         </p>
       </div>
     </div>

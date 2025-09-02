@@ -95,6 +95,7 @@ export { default as useGetTaxInvoiceDetail } from './tax/use-get-tax-invoice-det
 export { default as usePublishTaxInvoice } from './tax/use-publish-tax-invoice';
 export { default as useCancelTaxInvoice } from './tax/use-cancel-tax-invoice';
 export { default as useDeleteTaxInvoice } from './tax/use-delete-tax-invoice';
+export { default as useConnectMaterialHistory } from './tax/use-connect-material-history';
 export { useCheckBarobill } from './tax/barobil/use-check-barobill';
 export {
   useBarobillRegister,

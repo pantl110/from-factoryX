@@ -1079,7 +1079,9 @@ export interface TaxProductInfoModel {
 
 // tax invoice detail 가져오기
 export interface TaxLineItemModel {
+  id: number; //품목 식별자(순번)
   purchase_expiry: string; // YYYYMMDD 형식 (예: "20241231") // 공급일자
+  // product?: number; // 연동된 제품 ID
   name: string; // 품목명
   information?: string; // 규격
   chargeable_unit: string; // 수량
@@ -1087,6 +1089,7 @@ export interface TaxLineItemModel {
   amount: string; // 공급가액
   tax: string; // 세액
   description?: string; // 비고
+  material_history?: number; // 연동된 자재 이력 ID 
 }
 
 export interface PublishedTaxInvoiceResponseModel {

@@ -145,6 +145,20 @@ const LinkTaxModal = ({
       scroll={true}
     >
       <div className="flex flex-col gap-4 mt-4 px-6">
+        {/* material history 연결 시 연결할 line item 보여주기 */}
+        {type !== 'project' && (
+          <div className="flex flex-col gap-3">
+            <h4 className="Heading-4 text-dg">
+              {type === 'tax'
+                ? '매입 세금계산서에서 선택한 원자재'
+                : '현금영수증에서 선택한 원자재'}
+            </h4>
+            {selectedLineItem && (
+              <MaterialInfoTable lineItem={selectedLineItem} />
+            )}
+          </div>
+        )}
+
         <SearchInput
           placeholder={
             type === 'project'
@@ -187,20 +201,6 @@ const LinkTaxModal = ({
               bgColor={selectedPeriod === '12' ? 'bg-primary-8' : 'bg-white'}
               onClick={() => setSelectedPeriod('12')}
             />
-          </div>
-        )}
-
-        {/* material history 연결 시 연결할 line item 보여주기 */}
-        {type !== 'project' && (
-          <div className="flex flex-col gap-3">
-            <h4 className="Heading-4 text-dg">
-              {type === 'tax'
-                ? '매입 세금계산서에서 선택한 원자재'
-                : '현금영수증에서 선택한 원자재'}
-            </h4>
-            {selectedLineItem && (
-              <MaterialInfoTable lineItem={selectedLineItem} />
-            )}
           </div>
         )}
 
