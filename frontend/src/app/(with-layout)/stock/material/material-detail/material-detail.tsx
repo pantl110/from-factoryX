@@ -41,6 +41,7 @@ interface MaterialDetailProps {
   setIsClinetDetailPanelOpen: (clientId: number) => void;
   handleOpenDeleteModal: (connectionId: number) => void;
   onProductClick?: (productId: number) => void;
+  onRequiredFilledChange?: (filled: boolean) => void;
 }
 
 const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
@@ -54,6 +55,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       setIsClinetDetailPanelOpen,
       handleOpenDeleteModal,
       onProductClick,
+      onRequiredFilledChange,
     },
     ref
   ) => {
@@ -270,6 +272,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               materialId={materialId}
               ref={materialInfoRef}
               onIsDirtyChange={setIsDirtyMaterialInfo}
+              onRequiredFilledChange={onRequiredFilledChange}
             />
           </div>
 
