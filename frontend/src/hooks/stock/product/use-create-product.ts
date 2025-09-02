@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { ProductModel, ProductResponseModel } from '@/types/data-model';
+import { ProductCreateExcelModel, ProductCreateExcelResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 
+// 엑셀 대량등록 품목 생성 훅
 const useCreateProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const factoryId = useMemberStore((state) => state.factoryId);
 
-  const createProduct = async (data: ProductModel) => {
+  const createProduct = async (data: ProductCreateExcelModel[]) => {
     setIsLoading(true);
     setError(null);
 
@@ -29,12 +30,13 @@ const useCreateProduct = () => {
       });
 
       if (response.status === 201) {
-        const result: ProductResponseModel = await response.json();
+        const result: ProductCreateExcelResponseModel[] = await response.json();
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '품목 등록에 실패했습니다.');
-        return { success: false, error: errorData.detail };
+        const errorMessage = errorData.detail || '품목 등록에 실패했습니다.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
       }
     } catch {
       setError('서버 연결에 실패했습니다.');

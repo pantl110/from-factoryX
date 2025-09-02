@@ -16,6 +16,7 @@ import useMemberStore from '@/store/member-store';
 
 interface ProductProps {
   setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
+  setReloadFunctionToParent?: (setter: () => void) => void;
   isProductDetailPanelOpen?: boolean;
   setIsProductDetailPanelOpen?: (open: boolean) => void;
 }
@@ -23,6 +24,7 @@ interface ProductProps {
 const Product = ({
   isProductDetailPanelOpen,
   setIsProductDetailPanelOpen,
+  setReloadFunctionToParent,
 }: ProductProps) => {
   const role = useMemberStore((state) => state.role);
   const { getProductList, productList, pagination, isLoading } =
@@ -58,6 +60,18 @@ const Product = ({
   useEffect(() => {
     loadProducts();
   }, [loadProducts]); // loadProducts 의존성 추가
+
+  // 부모에게 리로드 함수 전달
+  useEffect(() => {
+    if (setReloadFunctionToParent) {
+      setReloadFunctionToParent(() => {
+        // 검색어 초기화하고 첫 페이지로 이동
+        setSearchKeyword('');
+        setCurrentPage(1);
+        loadProducts(1, '');
+      });
+    }
+  }, [setReloadFunctionToParent, loadProducts]);
 
   // 검색 처리
   const handleSearch = (term: string) => {

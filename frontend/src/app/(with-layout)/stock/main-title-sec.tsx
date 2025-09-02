@@ -37,6 +37,26 @@ const MainTitleSec = ({
     onTabChange(tab);
   };
 
+  const handleExcelDownload = () => {
+    try {
+      const filename =
+        selectedTab === 'product' ? 'product-excel.csv' : 'material-excel.csv';
+
+      const downloadName =
+        selectedTab === 'product' ? '품목_등록_양식.csv' : '자재_등록_양식.csv';
+
+      // 파일 다운로드
+      const link = document.createElement('a'); // 다운로드 링크 생성
+      link.href = `/${filename}`;
+      link.download = downloadName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch {
+      alert('파일 다운로드에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
       <div className="flex items-center justify-between">
@@ -48,6 +68,7 @@ const MainTitleSec = ({
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
             disabled={!factoryId || role === 'viewer'}
+            onClick={handleExcelDownload}
           />
           <div className="relative">
             <MiniBtn

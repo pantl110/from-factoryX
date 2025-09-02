@@ -1,17 +1,19 @@
 import { useState } from 'react';
+import useMemberStore from '@/store/member-store';
 
 const useDeleteMaterial = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-
+  const factoryId = useMemberStore((state) => state.factoryId);
+  
   const deleteMaterial = async (materialId: number) => {
     setIsLoading(true);
     setError(null);
     setIsSuccess(false);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/${materialId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/${materialId}?factory_id=${factoryId}`,
         {
           method: 'DELETE',
           credentials: 'include',

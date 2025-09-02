@@ -276,6 +276,34 @@ export interface ProductResponseModel {
 export interface ProductListResponseModel extends PaginationModel {
   data: ProductResponseModel[];
 }
+
+// 엑셀 대량등록 제품 등록
+export interface ProductCreateExcelModel {
+  name: string;
+  code: string;
+  unit: string;
+  spec: string;
+  current_stock?: number;
+  average_production_time?: number;
+  buffer_rate: number;
+  note?: string;
+}
+
+export interface ProductCreateExcelResponseModel {
+  id: number;
+  factory: number;
+  name: string;
+  code: string;
+  unit: string;
+  spec?: string;
+  current_stock: number;
+  average_production_time: number;
+  buffer_rate: number;
+  note?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 //////////////////////
 // Product History API
 export interface ProductHistoryModel {
@@ -377,6 +405,22 @@ export interface MaterialHistoryListResponseModel extends PaginationModel {
   data: MaterialHistoryResponseModel[];
 }
 
+// 원자재 엑셀 대량등록
+export interface MaterialCreateExcelModel {
+  name: string;
+  code: string;
+  unit: string;
+  spec: string;
+  current_stock?: number;
+  standard_stock?: number;
+}
+
+// export interface MaterialCreateExcelResponseModel {
+//   id: number;
+//   factory: number;
+//   name: string;
+//   code: string;
+// }
 //////////////////////
 // Material Product API
 export interface CreateMaterialProductModel {

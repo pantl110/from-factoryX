@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import MiniBtn from './mini-btn';
+import Spinner from './spinner';
 import {
   Image,
   FilePdf,
@@ -203,6 +204,7 @@ const DropzoneArea = ({
           </div>
         </>
       )}
+
       <input
         type="file"
         ref={fileInputRef}
