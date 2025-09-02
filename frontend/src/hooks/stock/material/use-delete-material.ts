@@ -6,7 +6,7 @@ const useDeleteMaterial = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const factoryId = useMemberStore((state) => state.factoryId);
-  
+
   const deleteMaterial = async (materialId: number) => {
     setIsLoading(true);
     setError(null);

@@ -235,14 +235,14 @@ const MaterialDetailPanel = ({
 
     // 필수값 검증: 저장 전에 현재 값 확인
     const currentValues = refObj.getValues ? refObj.getValues() : undefined;
-    const requiredFilled = !!(
+    const isRequiredFilled = !!(
       currentValues &&
       String(currentValues.materialName || '').trim() !== '' &&
       String(currentValues.materialCode || '').trim() !== '' &&
       String(currentValues.unit || '').trim() !== '' &&
       String(currentValues.size || '').trim() !== ''
     );
-    if (!requiredFilled) {
+    if (!isRequiredFilled) {
       return;
     }
 

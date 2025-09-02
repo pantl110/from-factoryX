@@ -72,12 +72,12 @@ const useSendQuotationEmail = (): UseSendQuotationEmailReturnModel => {
           (response.status === 400
             ? '요청이 올바르지 않습니다.'
             : response.status === 403
-            ? '이 견적서를 보낼 권한이 없습니다.'
-            : response.status === 404
-            ? '견적서 또는 파일을 찾을 수 없습니다.'
-            : response.status === 500
-            ? '이메일 전송 중 서버 오류가 발생했습니다.'
-            : '이메일 전송에 실패했습니다.');
+              ? '이 견적서를 보낼 권한이 없습니다.'
+              : response.status === 404
+                ? '견적서 또는 파일을 찾을 수 없습니다.'
+                : response.status === 500
+                  ? '이메일 전송 중 서버 오류가 발생했습니다.'
+                  : '이메일 전송에 실패했습니다.');
         throw new Error(errorMessage);
       }
     } catch (err) {
@@ -94,5 +94,3 @@ const useSendQuotationEmail = (): UseSendQuotationEmailReturnModel => {
 };
 
 export default useSendQuotationEmail;
-
-

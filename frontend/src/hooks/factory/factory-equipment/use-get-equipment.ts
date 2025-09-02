@@ -166,8 +166,6 @@ const useGetEquipment = () => {
     [factoryId, pageSize]
   );
 
-
-
   // 페이지 변경 함수
   const changePage = useCallback(
     async (page: number) => {

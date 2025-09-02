@@ -10,7 +10,7 @@ import {
 import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import OrderDocumentPDFView from '@/components/pdf/OrderDocumentPDFView';
+import OrderDocumentPDFView from '@/components/pdf/order-document-pdf-view';
 import { useSendQuotationEmail } from '@/hooks';
 
 interface EmailViewProps {

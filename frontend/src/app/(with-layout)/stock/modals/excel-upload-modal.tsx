@@ -1,7 +1,7 @@
 import Modal from '@/ui/modal/modal';
 import DropzoneArea from '@/ui/dropzone-area';
 import { useState } from 'react';
-import { parseExcelFile, ExcelRow } from '@/utils/excel-parser';
+import { parseExcelFile, ExcelRowModel } from '@/utils/excel-parser';
 import { ProductCreateExcelModel } from '@/types/data-model';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
@@ -54,12 +54,12 @@ const ExcelUploadModal = ({
     setHasFiles(hasFiles);
   };
 
-  const handleUpload = async (data: ExcelRow[]) => {
+  const handleUpload = async (data: ExcelRowModel[]) => {
     const dataToProcess = data;
 
     try {
       // 숫자 추출 함수
-      const extractNumber = (value: any): number => {
+      const extractNumber = (value: unknown): number => {
         if (typeof value === 'number') return value;
         if (typeof value === 'string') {
           // 문자열에서 숫자만 추출 (소수점 포함)
@@ -102,10 +102,10 @@ const ExcelUploadModal = ({
             type === 'material' ? extractNumber(row['최소 재고']) : null;
 
           return {
-            name: name,
-            code: code,
-            unit: unit || '개',
-            spec: spec,
+            name,
+            code,
+            unit,
+            spec,
             ...(currentStock > 0 && {
               current_stock: currentStock,
             }),

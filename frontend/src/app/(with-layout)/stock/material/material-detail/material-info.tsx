@@ -76,12 +76,12 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
       if (onRequiredFilledChange) {
         const [materialName, materialCode, unit, size] =
           watchedRequired as string[];
-        const filled =
+        const isFilled =
           String(materialName || '').trim() !== '' &&
           String(materialCode || '').trim() !== '' &&
           String(unit || '').trim() !== '' &&
           String(size || '').trim() !== '';
-        onRequiredFilledChange(filled);
+        onRequiredFilledChange(isFilled);
       }
     }, [watchedRequired, onRequiredFilledChange]);
 

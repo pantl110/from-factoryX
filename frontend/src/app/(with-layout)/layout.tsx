@@ -4,7 +4,6 @@ import { useState } from 'react';
 import SideBar from '@/components/side-bar';
 import TopBar from '@/components/top-bar';
 import { usePathname } from 'next/navigation';
-import Spinner from '@/ui/spinner';
 // import { useAuthGuard } from '@/hooks';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {

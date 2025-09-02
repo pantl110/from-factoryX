@@ -55,9 +55,7 @@ const useSaveDraftQuotation = (): UseSaveDraftQuotationReturnModel => {
       } else {
         const errorData = await response.json();
         throw new Error(
-          errorData.message ||
-            errorData.detail ||
-            '견적서 저장에 실패했습니다.'
+          errorData.message || errorData.detail || '견적서 저장에 실패했습니다.'
         );
       }
     } catch (err) {
