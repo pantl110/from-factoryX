@@ -15,9 +15,9 @@ import MaterialInfoTable from './material-info-table';
 
 interface LinkTaxModalProps {
   onClose: () => void;
-  type: 'project' | 'tax' | 'receipt';
-  linkedItemId: number; // type이 'project'일 때는 프로젝트 아이디, type이 'tax'일 때는 세금계산서 아이디, type이 'receipt'일 때는 영수증 아이디
-  selectedLineItem?: TaxLineItemModel; // type이 'tax' 또는 'receipt'일 때 선택한 lineItem
+  type: 'project' | 'tax';
+  linkedItemId: number; // type이 'project'일 때는 프로젝트 아이디, type이 'tax'일 때는 세금계산서 아이디
+  selectedLineItem?: TaxLineItemModel; // type이 'tax'일 때 선택한 lineItem
   onSuccess?: () => void; // 연결 완료 시 호출되는 콜백
   canCreate?: boolean; // 세금계산서 생성 가능 여부
   projectStatus?: ProjectStatusResponseModel; // 세금계산서 생성 시 보여줄 초기값을 위함
