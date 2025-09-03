@@ -84,94 +84,105 @@ const ProductionPlan = ({
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   // 추가 생산 계획 생성 함수 (바로 DB에 저장)
-  const handleAddPlan = async (
-    planData: ProductionPlanFormDataModel,
-    parentPlanId: number
-  ) => {
-    try {
-      if (!projectId) return;
+  const handleAddPlan = useCallback(
+    async (planData: ProductionPlanFormDataModel, parentPlanId: number) => {
+      try {
+        if (!projectId) return;
 
-      // 부모 계획 찾기
-      const parentPlan = projectPlans.find((plan) => plan.id === parentPlanId);
-      if (!parentPlan) {
-        throw new Error('부모 계획을 찾을 수 없습니다.');
-      }
+        // 부모 계획 찾기
+        const parentPlan = projectPlans.find(
+          (plan) => plan.id === parentPlanId
+        );
+        if (!parentPlan) {
+          throw new Error('부모 계획을 찾을 수 없습니다.');
+        }
 
-      // 바로 DB에 새로운 plan 생성
-      const result = await createOrUpdateProjectPlan({
-        project_id: projectId,
-        quotation_product_id: parentPlan.quotation_product.id,
-        equipment_id: planData.equipment_id,
-        quantity: planData.quantity,
-        start_date: planData.start_date,
-        end_date: planData.end_date,
-        avg_production_time: parentPlan.avg_production_time,
-        plan_id: undefined, // 새로운 plan 생성
-        total_amount: parentPlan.quotation_product.quantity,
-        total_quantity:
-          projectPlans
-            .filter(
-              (plan) =>
-                plan.quotation_product.product.id ===
-                parentPlan.quotation_product.product.id
-            )
-            .reduce((sum, plan) => {
-              // formChanges에 변경사항이 있으면 그 값 사용
-              const planFormData = formChanges[plan.id];
-              const quantity = planFormData?.quantity ?? plan.quantity;
-              return sum + quantity;
-            }, 0) + planData.quantity, // 새로 생성할 plan의 수량도 포함
-      });
-
-      if (result.success && result.data) {
-        // 새로 생성된 plan 객체 생성 (DB에서 받은 ID 사용)
-        const newPlan = {
-          id: result.data.plan_id, // DB에서 받은 실제 ID
+        // 바로 DB에 새로운 plan 생성
+        const result = await createOrUpdateProjectPlan({
+          project_id: projectId,
+          quotation_product_id: parentPlan.quotation_product.id,
+          equipment_id: planData.equipment_id,
           quantity: planData.quantity,
-          equipment: {
-            id: planData.equipment_id || 0,
-            name:
-              allEquipments.find((eq) => eq.id === planData.equipment_id)
-                ?.name || '설비',
-          },
           start_date: planData.start_date,
           end_date: planData.end_date,
-          status: 'pending',
-          material_status: parentPlan.material_status,
           avg_production_time: parentPlan.avg_production_time,
-          quotation_product: {
-            id: parentPlan.quotation_product.id,
-            quantity: parentPlan.quotation_product.quantity,
-            is_delivery: false,
-            product: parentPlan.quotation_product.product,
-          },
-        } as ProjectPlanModel;
-
-        // projectPlans에 부모 계획 바로 다음에 새로 생성된 플랜 추가
-        setProjectPlans((prev) => {
-          const parentIndex = prev.findIndex(
-            (plan) => plan.id === parentPlanId
-          );
-          if (parentIndex === -1) {
-            return [...prev, newPlan];
-          }
-          const newPlans = [...prev];
-          newPlans.splice(parentIndex + 1, 0, newPlan);
-          return newPlans;
+          plan_id: undefined, // 새로운 plan 생성
+          total_amount: parentPlan.quotation_product.quantity,
+          total_quantity:
+            projectPlans
+              .filter(
+                (plan) =>
+                  plan.quotation_product.product.id ===
+                  parentPlan.quotation_product.product.id
+              )
+              .reduce((sum, plan) => {
+                // formChanges에 변경사항이 있으면 그 값 사용
+                const planFormData = formChanges[plan.id];
+                const quantity = planFormData?.quantity ?? plan.quantity;
+                return sum + quantity;
+              }, 0) + planData.quantity, // 새로 생성할 plan의 수량도 포함
         });
 
-        // formChanges에도 추가 (초기값으로 설정)
-        setFormChanges((prev) => ({
-          ...prev,
-          [result.data!.plan_id]: planData,
-        }));
-      } else {
-        alert('생산 계획 생성에 실패했습니다.');
+        if (result.success && result.data) {
+          // 새로 생성된 plan 객체 생성 (DB에서 받은 ID 사용)
+          const newPlan = {
+            id: result.data.plan_id, // DB에서 받은 실제 ID
+            quantity: planData.quantity,
+            equipment: {
+              id: planData.equipment_id || 0,
+              name:
+                allEquipments.find((eq) => eq.id === planData.equipment_id)
+                  ?.name || '설비',
+            },
+            start_date: planData.start_date,
+            end_date: planData.end_date,
+            status: 'pending',
+            material_status: parentPlan.material_status,
+            avg_production_time: parentPlan.avg_production_time,
+            quotation_product: {
+              id: parentPlan.quotation_product.id,
+              quantity: parentPlan.quotation_product.quantity,
+              is_delivery: false,
+              product: parentPlan.quotation_product.product,
+            },
+          } as ProjectPlanModel;
+
+          // projectPlans에 부모 계획 바로 다음에 새로 생성된 플랜 추가
+          setProjectPlans((prev) => {
+            const parentIndex = prev.findIndex(
+              (plan) => plan.id === parentPlanId
+            );
+            if (parentIndex === -1) {
+              return [...prev, newPlan];
+            }
+            const newPlans = [...prev];
+            newPlans.splice(parentIndex + 1, 0, newPlan);
+            return newPlans;
+          });
+
+          // formChanges에도 추가 (초기값으로 설정)
+          const planId = result.data?.plan_id;
+          if (planId) {
+            setFormChanges((prev) => ({
+              ...prev,
+              [planId]: planData,
+            }));
+          }
+        } else {
+          alert('생산 계획 생성에 실패했습니다.');
+        }
+      } catch {
+        alert('추가 생산 계획 생성 중 오류가 발생했습니다.');
       }
-    } catch {
-      alert('추가 생산 계획 생성 중 오류가 발생했습니다.');
-    }
-  };
+    },
+    [
+      projectId,
+      projectPlans,
+      formChanges,
+      allEquipments,
+      createOrUpdateProjectPlan,
+    ]
+  );
 
   // 토스트 훅들
   const {
@@ -691,6 +702,7 @@ const ProductionPlan = ({
       showTimeToast,
       showEquipmentToast,
       showDateToast,
+      showSaveToast,
       projectPlans,
       formChanges,
       checkTimeConflicts,

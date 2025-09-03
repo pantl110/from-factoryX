@@ -10,7 +10,6 @@ import {
 import { ArrowLineUpRight, X } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback } from 'react';
-import useMaterialProduct from '@/hooks/stock/use-material-product';
 import {
   handleNumberKeyDown,
   handleQuantityInput,

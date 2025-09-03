@@ -30,7 +30,7 @@ const useOcrUpload = () => {
     }
 
     let imageUrl: string | undefined;
-    
+
     try {
       // 1. 먼저 이미지를 S3에 업로드
       const uploadResult = await uploadFile(file);
@@ -110,10 +110,10 @@ const useOcrUpload = () => {
       const errorMessage =
         err instanceof Error ? err.message : 'OCR 업로드에 실패했습니다.';
       setError(errorMessage);
-      return { 
-        status: 'error', 
+      return {
+        status: 'error',
         message: errorMessage,
-        imageUrl // OCR API 실패 시에도 S3 업로드된 이미지 URL 포함
+        imageUrl, // OCR API 실패 시에도 S3 업로드된 이미지 URL 포함
       };
     } finally {
       setIsLoading(false);

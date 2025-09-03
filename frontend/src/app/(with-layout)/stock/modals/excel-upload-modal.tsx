@@ -70,7 +70,7 @@ const ExcelUploadModal = ({
       };
 
       // 엑셀 데이터를 ProductCreateExcelModel 형식으로 변환
-      const productData: ProductCreateExcelModel[] = dataToProcess
+      const productData = dataToProcess
         .filter((row) => {
           // 필수 필드가 비어있지 않은 행만 필터링
           const name = String(
@@ -106,26 +106,21 @@ const ExcelUploadModal = ({
             code,
             unit,
             spec,
-            ...(currentStock > 0 && {
-              current_stock: currentStock,
-            }),
+            ...(currentStock > 0 ? { current_stock: currentStock } : {}),
             ...(type === 'product' &&
-              avgProductionTime !== null &&
-              avgProductionTime > 0 && {
-                average_production_time: avgProductionTime,
-              }),
-            ...(type === 'product' &&
-              bufferRate !== null &&
-              bufferRate > 0 && {
-                buffer_rate: bufferRate / 100,
-              }),
-            ...(type === 'material' &&
-              minStock !== null &&
-              minStock > 0 && {
-                min_stock: minStock,
-              }),
-            ...(type === 'product' &&
-              row['특이 사항'] && { note: String(row['특이 사항']).trim() }),
+            avgProductionTime !== null &&
+            avgProductionTime > 0
+              ? { average_production_time: avgProductionTime }
+              : {}),
+            ...(type === 'product' && bufferRate !== null && bufferRate > 0
+              ? { buffer_rate: bufferRate / 100 }
+              : {}),
+            ...(type === 'material' && minStock !== null && minStock > 0
+              ? { min_stock: minStock }
+              : {}),
+            ...(type === 'product' && row['특이 사항']
+              ? { note: String(row['특이 사항']).trim() }
+              : {}),
           };
         });
 
@@ -142,8 +137,8 @@ const ExcelUploadModal = ({
 
       const result =
         type === 'product'
-          ? await createProduct(productData)
-          : await createMaterial(productData);
+          ? await createProduct(productData as ProductCreateExcelModel[])
+          : await createMaterial(productData as ProductCreateExcelModel[]);
 
       if (result.success) {
         onClose();

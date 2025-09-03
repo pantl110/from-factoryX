@@ -397,8 +397,10 @@ export interface MaterialHistoryResponseModel {
   amount: number; // 금액(수량x단가)
   date: string; // 거래일자 (ISO8601)
   total_stock: number; // 거래 후 총 재고
-  // purchase_tax_invoice_id?: number | null; // 매입 세금계산서 연결 ID (null 가능)
-  // cash_receipt_id?: number | null; // 현금영수증 연결 ID (null 가능)
+
+  // 아직 db에는 없음
+  purchase_tax_invoice_id?: number | null; // 매입 세금계산서 연결 ID (null 가능)
+  cash_receipt_id?: number | null; // 현금영수증 연결 ID (null 가능)
 }
 
 export interface MaterialHistoryListResponseModel extends PaginationModel {
@@ -677,6 +679,7 @@ export interface ProductionDataModel {
     address?: string;
     manager?: string;
     note?: string;
+    client_type: string;
   };
   products: Array<{
     product_id: number;
@@ -1091,7 +1094,7 @@ export interface TaxLineItemModel {
   amount: string; // 공급가액
   tax: string; // 세액
   description?: string; // 비고
-  material_history?: number; // 연동된 자재 이력 ID 
+  material_history?: number; // 연동된 자재 이력 ID
 }
 
 export interface PublishedTaxInvoiceResponseModel {

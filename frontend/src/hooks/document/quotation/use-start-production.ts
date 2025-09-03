@@ -1,4 +1,4 @@
-import { SaveDraftQuotationModel } from '@/types/data-model';
+import { ProductionDataModel } from '@/types/data-model';
 import { useState } from 'react';
 import useMemberStore from '@/store/member-store';
 
@@ -10,7 +10,7 @@ interface StartProductionResponseModel {
 
 interface UseStartProductionReturnModel {
   startProduction: (
-    data: SaveDraftQuotationModel
+    data: ProductionDataModel
   ) => Promise<StartProductionResponseModel>;
   isLoading: boolean;
   error: string | null;
@@ -37,7 +37,7 @@ const useStartProduction = (): UseStartProductionReturnModel => {
   const factoryId = useMemberStore((state) => state.factoryId);
 
   const startProduction = async (
-    data: SaveDraftQuotationModel
+    data: ProductionDataModel
   ): Promise<StartProductionResponseModel> => {
     setIsLoading(true);
     setError(null);

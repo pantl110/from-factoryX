@@ -8,6 +8,12 @@ import {
   QuotationFormModel,
 } from '@/types/data-model';
 
+interface StartProductionResponseModel {
+  quotation_id: number;
+  project_id: number;
+  status: string;
+}
+
 interface QuotationHandlersProps {
   watch: UseFormWatch<QuotationFormModel>;
   reset: UseFormReset<QuotationFormModel>;
@@ -21,7 +27,7 @@ interface QuotationHandlersProps {
   ) => Promise<{ quotation_id: number; status: string }>;
   startProduction: (
     data: ProductionDataModel
-  ) => Promise<{ quotation_id: number; project_id: number; status: string }>;
+  ) => Promise<StartProductionResponseModel>;
   setInitialQuotationProducts: (
     products: QuotationProductDetailResponseModel[]
   ) => void;
@@ -188,6 +194,7 @@ export const useQuotationHandlers = ({
           address: formData.address,
           manager: formData.manager,
           note: formData.note,
+          client_type: 'customer',
         },
         due_date: formData.due_date,
         products: quotationProducts.map((product) => ({

@@ -132,7 +132,7 @@ const Delivery = ({
         if (!item) return null;
 
         return {
-          companyName: quotationData.factory_name,
+          companyName: quotationData.factory_info.name,
           productName: item.quotation_product?.product?.name || '-',
           spec: item.quotation_product?.product?.spec || '-',
           unit: item.quotation_product?.product?.unit || '-',

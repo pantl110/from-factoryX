@@ -2,7 +2,7 @@
  * 생산 계획 폼 데이터의 날짜 유효성을 검사하는 유틸리티 함수
  */
 
-interface DateFormData {
+interface DateFormDataModel {
   start_date: string;
   end_date: string;
 }
@@ -12,7 +12,7 @@ interface DateFormData {
  * @param formData - 시작일과 종료일을 포함한 폼 데이터
  * @returns 유효한 날짜면 true, 그렇지 않으면 false
  */
-export const checkDateValidity = (formData: DateFormData): boolean => {
+export const checkDateValidity = (formData: DateFormDataModel): boolean => {
   // 날짜 형식 검증 (YYYY-MM-DD HH:mm)
   const dateRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
 
