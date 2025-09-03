@@ -537,12 +537,15 @@ startxref
 %%EOF"""
 
         payload = {
+            # "email": "updowney@daum.net",
             "email": "testuser@example.com",
+            "factory_id": self.factory.id,
+            "client_name": "테스트 고객",
             "pdf_data": base64.b64encode(minimal_pdf).decode("utf-8"),
         }
 
         response = await self.client.post(
-            f"/v1/document/quotation/{self.quotation.id}/send-email?factory_id={self.factory.id}",
+            f"/v1/document/quotation/send-email",
             data=json.dumps(payload),
             content_type="application/json",
             **self.get_auth_headers(),
