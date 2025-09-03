@@ -334,7 +334,7 @@ const TableItem = ({
           borderColor="border-lg"
           height="h-8"
         />
-        {!isFirstOfProduct && (
+        {!isFirstOfProduct && operationStatus !== 'completed' && (
           <button
             className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-all duration-200 ease-in-out"
             onClick={() => onDelete?.(item.id)}
