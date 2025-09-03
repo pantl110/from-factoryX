@@ -863,15 +863,17 @@ export interface ProjectPlanListResponseModel extends PaginationModel {
 
 // 생산 계획 정보 수정
 export interface CreateOrUpdateProjectPlanModel {
-  equipment_id: number;
-  quantity: number;
+  plan_id?: number; // 수정 모드일 때만 사용
   project_id: number;
   quotation_product_id: number;
+  equipment_id: number;
+  quantity: number;
   start_date: string;
   end_date: string;
   avg_production_time: number;
   status?: OperationStatusType;
-  plan_id?: number; // 수정 모드일 때만 사용
+  total_amount: number; // 총 주문 수량 (buffer_rate 계산 용)
+  total_quantity: number; // 총 생산 수량 (buffer_rate 계산 용)
 }
 
 //////////////////////

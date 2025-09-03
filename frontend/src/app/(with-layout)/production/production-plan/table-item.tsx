@@ -8,7 +8,11 @@ import {
 } from '@/types/status-type';
 import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import { tableHeader } from './types';
-import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react/dist/ssr';
+import {
+  ArrowLineUpRight,
+  CaretDown,
+  Trash,
+} from '@phosphor-icons/react/dist/ssr';
 import { useState, useEffect } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks/format-number';
@@ -33,14 +37,11 @@ interface TableItemProps {
     formData: ProductionPlanFormDataModel
   ) => void;
   onSave?: (planId: number, formData: ProductionPlanFormDataModel) => void; // 저장 함수 추가
-  onAddPlan?: (
-    planData: ProductionPlanFormDataModel,
-    parentPlanId: number
-  ) => void; // 추가 계획 생성 함수
-  onRemoveAdditionalPlan?: (parentPlanId: number) => void; // 추가 계획 제거 함수
+  onDelete?: (planId: number) => void; // 삭제 함수
   formData?: ProductionPlanFormDataModel; // 현재 form 데이터
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
+  isFirstOfProduct?: boolean; // 같은 품목의 첫 번째 plan인지 여부
 }
 
 const TableItem = ({
@@ -49,11 +50,11 @@ const TableItem = ({
   onFacilityClick,
   onFormChange,
   onSave,
-  onAddPlan,
-  onRemoveAdditionalPlan,
+  onDelete,
   formData: currentFormData,
   equipments,
   projectStatus,
+  isFirstOfProduct = true,
 }: TableItemProps) => {
   // 백엔드에서 한글 상태값을 반환하므로 영어로 변환
   const getOperationStatus = (status: string): OperationStatusType => {
@@ -132,37 +133,6 @@ const TableItem = ({
   const watchedStartDate = watch('start_date');
   const watchedEndDate = watch('end_date');
 
-  // 생산수량에 따라 추가 계획 동적 관리
-  useEffect(() => {
-    const orderQuantity = item.quotation_product.quantity || 0;
-
-    if (watchedQuantity > 0 && watchedQuantity < orderQuantity && onAddPlan) {
-      // 생산 수량이 주문 수량보다 작으면 추가 계획 생성
-      const bufferRate = item.quotation_product.product.buffer_rate || 0;
-      const remainingQuantity = orderQuantity - watchedQuantity;
-      const bufferedQuantity = Math.ceil(remainingQuantity * (1 + bufferRate));
-
-      onAddPlan(
-        {
-          quantity: bufferedQuantity,
-          equipment_id: watchedEquipmentId,
-          start_date: watchedStartDate,
-          end_date: watchedEndDate,
-        },
-        item.id
-      );
-    } else if (watchedQuantity >= orderQuantity && onRemoveAdditionalPlan) {
-      // 생산 수량이 주문 수량보다 크거나 같으면 추가 계획 제거
-      onRemoveAdditionalPlan(item.id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    watchedQuantity,
-    item.quotation_product.quantity,
-    item.quotation_product.product.buffer_rate,
-    item.id,
-  ]);
-
   // 저장 버튼 클릭 시 호출되는 함수
   const handleSave = () => {
     const formData = {
@@ -239,14 +209,13 @@ const TableItem = ({
         }
       />
     ),
-    품목명: item.quotation_product.product.name,
-    품목코드: item.quotation_product.product.code,
-    규격: item.quotation_product.product.spec,
-    단위: item.quotation_product.product.unit,
-    '주문 수량':
-      item.id < 0
-        ? ''
-        : item.quotation_product.quantity?.toLocaleString() || '0',
+    품목명: isFirstOfProduct ? item.quotation_product.product.name : '',
+    품목코드: isFirstOfProduct ? item.quotation_product.product.code : '',
+    규격: isFirstOfProduct ? item.quotation_product.product.spec : '',
+    단위: isFirstOfProduct ? item.quotation_product.product.unit : '',
+    '주문 수량': isFirstOfProduct
+      ? item.quotation_product.quantity?.toLocaleString() || '0'
+      : '',
     '생산 수량': (
       <Controller
         name="quantity"
@@ -382,15 +351,25 @@ const TableItem = ({
       />
     ),
     '': (
-      <MiniBtn
-        text="저장"
-        onClick={handleSave}
-        disabled={operationStatus === 'completed' || !isOriginalFormValid}
-        hoverColor="hover:bg-bg"
-        textColor="text-dg"
-        borderColor="border-lg"
-        height="h-8"
-      />
+      <div className="w-full h-full flex justify-between items-center">
+        <MiniBtn
+          text="저장"
+          onClick={handleSave}
+          disabled={operationStatus === 'completed' || !isOriginalFormValid}
+          hoverColor="hover:bg-bg"
+          textColor="text-dg"
+          borderColor="border-lg"
+          height="h-8"
+        />
+        {!isFirstOfProduct && (
+          <button
+            className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-all duration-200 ease-in-out"
+            onClick={() => onDelete?.(item.id)}
+          >
+            <Trash size={20} className="text-sv" />
+          </button>
+        )}
+      </div>
     ),
   };
 
@@ -416,7 +395,7 @@ const TableItem = ({
 
       {isProductDetailOpen && (
         <ProductDetail
-          productId={item.id}
+          productId={item.quotation_product.product.id}
           onClose={() => setIsProductDetailOpen(false)}
         />
       )}

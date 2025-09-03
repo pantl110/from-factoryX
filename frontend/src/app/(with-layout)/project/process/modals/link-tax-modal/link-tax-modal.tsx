@@ -254,7 +254,7 @@ const LinkTaxModal = ({
                 />
               )}
               <MiniBtn
-                text="내역연결"
+                text="내역 연결"
                 hoverColor="hover:bg-primary-hover"
                 bgColor="bg-primary"
                 textColor="text-wh"
