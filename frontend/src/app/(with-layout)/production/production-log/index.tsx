@@ -2,11 +2,35 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import ProductionLogTableHeader from './production-log-table-header';
 import ProductionLogTableItem from './production-log-table-item';
-import { useCreateOrUpdateProjectPlan, useGetProjectPlans } from '@/hooks';
+import {
+  useCreateOrUpdateProjectPlan,
+  useGetProjectPlans,
+  useToast,
+} from '@/hooks';
 import { ProjectPlanModel } from '@/types/data-model';
 import { ProjectStatusType } from '@/types/status-type';
 import Spinner from '@/ui/spinner';
 import usePageStatusStore from '@/store/page-status-store';
+import Toast from '@/ui/toast';
+import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
+import { checkDateValidity } from '@/utils/date-validation';
+
+// UTC 시간을 한국 시간(+9시간)으로 변환하는 함수 (표시용만)
+const convertUTCToKST = (utcDateString: string | null): string => {
+  if (!utcDateString) return '';
+
+  // ISO 형식(2025-08-24T04:13:00Z) 또는 일반 형식 모두 처리
+  const utcDate = new Date(utcDateString);
+
+  // 유효한 날짜인지 확인
+  if (isNaN(utcDate.getTime())) return '';
+
+  // 9시간(9 * 60 * 60 * 1000ms) 추가
+  const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+
+  // YYYY-MM-DD HH:mm 형식으로 반환
+  return kstDate.toISOString().slice(0, 16).replace('T', ' ');
+};
 
 interface ProductionLogProps {
   projectStatus: ProjectStatusType;
@@ -38,33 +62,42 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
     {}
   );
 
+  // 토스트
+  const {
+    isToastOpen: isSaveToastOpen,
+    isVisible: isSaveToastVisible,
+    showToast: showSaveToast,
+  } = useToast(); // 생산 계획 저장 토스트
+  const {
+    isToastOpen: isDateToastOpen,
+    isVisible: isDateToastVisible,
+    showToast: showDateToast,
+  } = useToast(); // 유효한 날짜 토스트
+
   const loadProjectPlans = useCallback(async () => {
     if (!projectId) return;
 
     const result = await getProjectPlans(projectId);
     if (result.success && result.data) {
-      setProjectPlans(result.data);
+      // DB에서 받은 날짜 데이터를 +9시간(KST)으로 변환해서 저장
+      const plansWithKSTDates = result.data.map((plan: ProjectPlanModel) => ({
+        ...plan,
+        start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
+        end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
+      }));
 
-      // formChanges를 원본 데이터로 초기화
+      setProjectPlans(plansWithKSTDates);
+
+      // formChanges를 변환된 데이터로 초기화
       const initialFormData: Record<
         number,
         { quantity: number; start_date: string; end_date: string }
       > = {};
-      result.data.forEach((plan: ProjectPlanModel) => {
+      plansWithKSTDates.forEach((plan: ProjectPlanModel) => {
         initialFormData[plan.id] = {
           quantity: plan.quantity,
-          start_date: plan.start_date
-            ? new Date(plan.start_date)
-                .toISOString()
-                .slice(0, 16)
-                .replace('T', ' ')
-            : '',
-          end_date: plan.end_date
-            ? new Date(plan.end_date)
-                .toISOString()
-                .slice(0, 16)
-                .replace('T', ' ')
-            : '',
+          start_date: plan.start_date || '',
+          end_date: plan.end_date || '',
         };
       });
       setFormChanges(initialFormData);
@@ -111,15 +144,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       // 원본 데이터와 비교하여 실제로 변경되었는지 확인
       const originalData = {
         quantity: plan.quantity,
-        start_date: plan.start_date
-          ? new Date(plan.start_date)
-              .toISOString()
-              .slice(0, 16)
-              .replace('T', ' ')
-          : '',
-        end_date: plan.end_date
-          ? new Date(plan.end_date).toISOString().slice(0, 16).replace('T', ' ')
-          : '',
+        start_date: plan.start_date || '',
+        end_date: plan.end_date || '',
       };
 
       if (
@@ -131,6 +157,31 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       }
 
       try {
+        // 날짜 유효성 검사
+        const isDateValid = checkDateValidity(formData);
+        if (!isDateValid) {
+          showDateToast();
+          return;
+        }
+
+        // 같은 품목에 대한 총 생산수량 계산 (formChanges 반영)
+        const totalQuantity = projectPlans
+          .filter(
+            (p) =>
+              p.quotation_product.product.id ===
+              plan.quotation_product.product.id
+          )
+          .reduce((sum, p) => {
+            if (p.id === planId) {
+              // 현재 수정 중인 plan은 새로운 수량 사용
+              return sum + formData.quantity;
+            }
+            // 다른 plan은 formChanges가 있으면 그 값, 없으면 원본 값 사용
+            const planFormData = formChanges[p.id];
+            const quantity = planFormData?.quantity ?? p.quantity;
+            return sum + quantity;
+          }, 0);
+
         const result = await createOrUpdateProjectPlan({
           project_id: projectId,
           quotation_product_id: plan.quotation_product.id,
@@ -140,6 +191,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
           end_date: formData.end_date,
           avg_production_time: plan.avg_production_time,
           plan_id: planId > 0 ? planId : undefined,
+          total_amount: plan.quotation_product.quantity,
+          total_quantity: totalQuantity,
         });
 
         if (result.success) {
@@ -148,9 +201,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
             const { [planId]: _removed, ...rest } = prev;
             return rest;
           });
-
-          // 데이터 새로고침
-          await loadProjectPlans();
+          // 저장 성공 토스트 표시
+          showSaveToast();
         } else {
           alert('저장에 실패했습니다.');
         }
@@ -163,7 +215,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       formChanges,
       projectPlans,
       createOrUpdateProjectPlan,
-      loadProjectPlans,
+      showSaveToast,
+      showDateToast,
     ]
   );
 
@@ -186,18 +239,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
           // 변경된 것만 업데이트
           const originalData = {
             quantity: plan.quantity,
-            start_date: plan.start_date
-              ? new Date(plan.start_date)
-                  .toISOString()
-                  .slice(0, 16)
-                  .replace('T', ' ')
-              : '',
-            end_date: plan.end_date
-              ? new Date(plan.end_date)
-                  .toISOString()
-                  .slice(0, 16)
-                  .replace('T', ' ')
-              : '',
+            start_date: plan.start_date || '',
+            end_date: plan.end_date || '',
           };
 
           // 실제로 변경되었는지 확인
@@ -209,6 +252,24 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
             return Promise.resolve();
           }
 
+          // 같은 품목에 대한 총 생산수량 계산 (formChanges 반영)
+          const totalQuantity = projectPlans
+            .filter(
+              (p) =>
+                p.quotation_product.product.id ===
+                plan.quotation_product.product.id
+            )
+            .reduce((sum, p) => {
+              if (p.id === parseInt(planId)) {
+                // 현재 수정 중인 plan은 새로운 수량 사용
+                return sum + formData.quantity;
+              }
+              // 다른 plan은 formChanges가 있으면 그 값, 없으면 원본 값 사용
+              const planFormData = formChanges[p.id];
+              const quantity = planFormData?.quantity ?? p.quantity;
+              return sum + quantity;
+            }, 0);
+
           return createOrUpdateProjectPlan({
             project_id: projectId,
             quotation_product_id: plan.quotation_product.id,
@@ -218,6 +279,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
             end_date: formData.end_date,
             avg_production_time: plan.avg_production_time,
             plan_id: parseInt(planId) > 0 ? parseInt(planId) : undefined,
+            total_amount: plan.quotation_product.quantity,
+            total_quantity: totalQuantity,
           });
         }
       );
@@ -269,19 +332,49 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
         <div className="flex flex-col w-full overflow-x-auto">
           <ProductionLogTableHeader projectStatus={projectStatus} />
           {projectPlans.length > 0 &&
-            projectPlans.map((plan) => (
-              <ProductionLogTableItem
-                key={plan.id}
-                plan={plan}
-                onFormChange={handleFormChange}
-                projectStatus={projectStatus}
-                onSave={() => handleRowSave(plan.id)}
-                hasChanges={!!formChanges[plan.id]}
-                onValidityChange={handleValidityChange}
-              />
-            ))}
+            projectPlans.map((plan, index) => {
+              // 같은 품목의 첫 번째 plan인지 판단
+              const isFirstOfProduct =
+                index === 0 ||
+                projectPlans[index - 1].quotation_product.product.id !==
+                  plan.quotation_product.product.id;
+
+              return (
+                <ProductionLogTableItem
+                  key={plan.id}
+                  plan={plan}
+                  onFormChange={handleFormChange}
+                  projectStatus={projectStatus}
+                  onSave={() => handleRowSave(plan.id)}
+                  hasChanges={!!formChanges[plan.id]}
+                  onValidityChange={handleValidityChange}
+                  isFirstOfProduct={isFirstOfProduct}
+                />
+              );
+            })}
         </div>
       </div>
+
+      {/* 생산 계획 저장 토스트 */}
+      {isSaveToastOpen && (
+        <Toast
+          text="생산 계획이 저장되었어요."
+          subtext="변경된 내용이 반영되었어요."
+          icon={<CheckCircle size={20} className="text-primary" />}
+          type="primary"
+          isVisible={isSaveToastVisible}
+        />
+      )}
+      {/* 유효한 날짜로 입력 토스트 */}
+      {isDateToastOpen && (
+        <Toast
+          text="유효한 일자를 입력해 주세요."
+          subtext="생산일자와 마감 예정일자를 확인해 주세요."
+          icon={<WarningCircle size={20} className="text-red" />}
+          type="red"
+          isVisible={isDateToastVisible}
+        />
+      )}
     </>
   );
 };

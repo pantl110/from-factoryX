@@ -143,7 +143,6 @@ export { default as useGetMaterialHistory } from './stock/material-history/use-g
 
 // Material product related hooks
 export { default as useMaterialProduct } from './stock/use-material-product';
-export { useMaterialStatus } from './stock/use-material-status';
 
 // Location related hooks
 export { default as useLocation } from './stock/use-location';
