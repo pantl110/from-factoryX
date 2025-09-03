@@ -1,7 +1,7 @@
 'use client';
 
 import MiniBtn from '@/ui/mini-btn';
-import { X } from '@phosphor-icons/react/dist/ssr';
+import { X, Eye } from '@phosphor-icons/react/dist/ssr';
 import OrderDocumentView from '../../document/order-document-view';
 import {
   QuotationProductDetailResponseModel,
@@ -35,6 +35,7 @@ const EmailView = ({
   quotationId,
 }: EmailViewProps) => {
   const [isEmailSending, setIsEmailSending] = useState(false);
+  const [isPDFGenerating, setIsPDFGenerating] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
   const { sendQuotationEmail, isLoading } = useSendQuotationEmail();
 
@@ -107,6 +108,57 @@ const EmailView = ({
     }
   };
 
+  // PDF 미리보기 함수
+  const handlePreviewPDF = async () => {
+    if (!pdfRef.current || isPDFGenerating) return;
+
+    setIsPDFGenerating(true);
+    try {
+      const canvas = await html2canvas(pdfRef.current, {
+        scale: 2,
+        useCORS: false,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+
+      const imgWidth = 210; // A4 너비 (mm)
+      const pageHeight = 295; // A4 높이 (mm)
+      const marginPx = 32;
+      const marginMm = marginPx * 0.264583;
+      const availableWidth = imgWidth - marginMm * 2;
+      const imgHeight = (canvas.height * availableWidth) / canvas.width;
+      const availableHeight = pageHeight - marginMm * 2;
+      let heightLeft = imgHeight;
+
+      // 첫 번째 페이지
+      pdf.addImage(imgData, 'PNG', marginMm, 0, availableWidth, imgHeight);
+      heightLeft -= availableHeight;
+
+      // 추가 페이지가 필요한 경우
+      while (heightLeft >= 0) {
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', marginMm, 0, availableWidth, imgHeight);
+        heightLeft -= availableHeight;
+      }
+
+      // PDF를 새 탭에서 열기
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+
+      // 메모리 정리
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+    } catch (error) {
+      alert('PDF 미리보기 중 오류가 발생했습니다: ' + error);
+    } finally {
+      setIsPDFGenerating(false);
+    }
+  };
+
   const handleSendEmail = async () => {
     if (isLoading || !quotationId) return;
 
@@ -162,14 +214,29 @@ const EmailView = ({
               받는 사람과 제목을 확인한 후, 이메일을 전송해 주세요.
             </div>
           </div>
-          <MiniBtn
-            text={`${documentTitle} 전송`}
-            textColor="text-wh"
-            bgColor="bg-primary"
-            hoverColor="hover:bg-primary-hover"
-            onClick={handleSendEmail}
-            disabled={isLoading || isEmailSending}
-          />
+          <div className="flex gap-2">
+            {/* PDF 미리보기 버튼 */}
+            <button
+              onClick={handlePreviewPDF}
+              disabled={isPDFGenerating}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Eye size={16} />
+              <span className="Me_Body-2">
+                {isPDFGenerating ? 'PDF 생성 중...' : 'PDF 미리보기'}
+              </span>
+            </button>
+
+            {/* 이메일 전송 버튼 */}
+            <MiniBtn
+              text={`${documentTitle} 전송`}
+              textColor="text-wh"
+              bgColor="bg-primary"
+              hoverColor="hover:bg-primary-hover"
+              onClick={handleSendEmail}
+              disabled={isLoading || isEmailSending}
+            />
+          </div>
         </div>
       </div>
       {/* 화면 표시용 */}

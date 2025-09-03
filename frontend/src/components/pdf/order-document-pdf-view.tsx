@@ -1,8 +1,8 @@
-import DocumentViewTitle from '../../app/(with-layout)/document/document-view-title';
 import {
   QuotationProductDetailResponseModel,
   ClientModel,
 } from '@/types/data-model';
+import './pdf-styles.css';
 
 interface OrderDocumentPDFViewProps {
   documentTitle: string;
@@ -22,118 +22,117 @@ const OrderDocumentPDFView = ({
   supplyAmount,
 }: OrderDocumentPDFViewProps) => {
   return (
-    <div className="flex flex-col gap-6">
-      <DocumentViewTitle title={`[${clientData.name}]건 ${documentTitle}`} />
+    <div className="pdf-container">
+      {/* 문서 제목 */}
+      <h2 className="pdf-title">
+        [{clientData.name}]건 {documentTitle}
+      </h2>
 
       {/* 거래처 정보 섹션 */}
-      <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 h-10 items-center flex">거래처 정보</h3>
-        <div className="width-full border-b border-lg">
-          <div className="flex">
-            <div className="flex w-full Me_Body-1 border-t border-lg">
-              <div className="w-[137px] bg-lg-table flex gap-2 p-3 items-center">
-                <div className="text-sv Me_Body-1">회사명</div>
+      <div className="pdf-section">
+        <h3 className="pdf-section-title">거래처 정보</h3>
+
+        <div className="pdf-table">
+          {/* 첫 번째 행 */}
+          <div className="pdf-table-row">
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>회사명</p>
               </div>
-              <div className="flex-1 flex items-center">
-                <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                  {clientData.name}
-                </div>
+              <div className="content">
+                <p>{clientData.name}</p>
               </div>
             </div>
-            <div className="flex w-full Me_Body-1 border-t border-lg">
-              <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                <div className="text-sv Me_Body-1">사업자등록번호</div>
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>사업자등록번호</p>
               </div>
-              <div className="flex-1 flex items-center">
-                <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                  {clientData.business_registration_number}
-                </div>
+              <div className="content">
+                <p>{clientData.business_registration_number}</p>
               </div>
             </div>
           </div>
-          <div className="flex">
-            <div className="flex w-full Me_Body-1 border-t border-lg">
-              <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                <div className="text-sv Me_Body-1">대표자명</div>
+
+          {/* 두 번째 행 */}
+          <div className="pdf-table-row">
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>대표자명</p>
               </div>
-              <div className="flex-1 flex items-center">
-                <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                  {clientData.representative_name}
-                </div>
+              <div className="content">
+                <p>{clientData.representative_name}</p>
               </div>
             </div>
-            <div className="flex w-full Me_Body-1 border-t border-lg">
-              <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                <div className="text-sv Me_Body-1">납기일자</div>
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>납기일자</p>
               </div>
-              <div className="flex-1 flex items-center">
-                <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                  {dueDate}
-                </div>
+              <div className="content">
+                <p>{dueDate}</p>
               </div>
             </div>
           </div>
-          <div className="flex">
-            <div className="flex w-full Me_Body-1 border-t border-lg">
-              <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                <div className="text-sv Me_Body-1">업태</div>
+
+          {/* 세 번째 행 */}
+          <div className="pdf-table-row">
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>업태</p>
               </div>
-              <div className="flex-1 flex items-center">
-                <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                  {clientData.business_type}
-                </div>
+              <div className="content">
+                <p>{clientData.business_type}</p>
               </div>
             </div>
-            <div className="flex w-full Me_Body-1 border-t border-lg">
-              <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                <div className="text-sv Me_Body-1">종목</div>
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>종목</p>
               </div>
-              <div className="flex-1 flex items-center">
-                <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                  {clientData.business_category}
-                </div>
+              <div className="content">
+                <p>{clientData.business_category}</p>
               </div>
             </div>
           </div>
-          <div className="flex">
-            <div className="flex w-full Me_Body-1 border-t border-lg">
-              <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                <div className="text-sv Me_Body-1">이메일</div>
+
+          {/* 네 번째 행 */}
+          <div className="pdf-table-row">
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>이메일</p>
               </div>
-              <div className="flex-1 flex items-center">
-                <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                  {clientData.email}
-                </div>
+              <div className="content">
+                <p>{clientData.email}</p>
               </div>
             </div>
-            <div className="flex w-full Me_Body-1 border-t border-lg">
-              <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                <div className="text-sv Me_Body-1">연락처</div>
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>연락처</p>
               </div>
-              <div className="flex-1 flex items-center">
-                <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                  {clientData.phone}
-                </div>
+              <div className="content">
+                <p>{clientData.phone}</p>
               </div>
             </div>
           </div>
-          <div className="flex w-full Me_Body-1 border-t border-lg">
-            <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-              <div className="text-sv Me_Body-1">팩스 번호</div>
-            </div>
-            <div className="flex-1 flex items-center">
-              <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                {clientData.fax || '-'}
+
+          {/* 다섯 번째 행 */}
+          <div className="pdf-table-row">
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>팩스 번호</p>
+              </div>
+              <div className="content">
+                <p>{clientData.fax || '-'}</p>
               </div>
             </div>
           </div>
-          <div className="flex w-full Me_Body-1 border-t border-lg">
-            <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-              <div className="text-sv Me_Body-1">사업장 주소</div>
-            </div>
-            <div className="flex-1 flex items-center">
-              <div className="text-dg px-3 flex-1 flex items-center Me_Body-1">
-                {clientData.address}
+
+          {/* 여섯 번째 행 */}
+          <div className="pdf-table-row">
+            <div className="pdf-table-cell">
+              <div className="label">
+                <p>사업장 주소</p>
+              </div>
+              <div className="content">
+                <p>{clientData.address}</p>
               </div>
             </div>
           </div>
@@ -141,73 +140,90 @@ const OrderDocumentPDFView = ({
       </div>
 
       {/* 제품 목록 정보 섹션 */}
-      <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 h-10 items-center flex">
-          {productListInfoTitle}
-        </h3>
+      <div className="pdf-section">
+        <h3 className="pdf-section-title">{productListInfoTitle}</h3>
 
-        <table>
-          <thead>
-            <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-              <th className="text-left px-3 flex-1">품목명</th>
-              <th className="text-left px-3 flex-1">품목코드</th>
-              <th className="text-left px-3 flex-1">수량</th>
-              <th className="text-left px-3 w-[100px]">단가</th>
-              <th className="text-left px-3 flex-1">금액</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div className="pdf-product-table">
+          <div className="pdf-product-table-header">
+            <div style={{ flex: 1 }}>
+              <p>품목명</p>
+            </div>
+            <div style={{ flex: 1 }}>
+              <p>품목코드</p>
+            </div>
+            <div style={{ flex: 1 }}>
+              <p>규격</p>
+            </div>
+            <div style={{ width: '80px' }}>
+              <p>단위</p>
+            </div>
+            <div style={{ flex: 1 }}>
+              <p>제작 수량</p>
+            </div>
+            <div style={{ width: '100px' }}>
+              <p>단가</p>
+            </div>
+            <div style={{ flex: 1 }}>
+              <p>금액</p>
+            </div>
+          </div>
+          <div>
             {productItems.map((item, index) => (
-              <tr
-                key={index}
-                className="flex items-center h-12 border-b border-lg"
-              >
-                <td className="text-left px-3 flex-1 flex items-center">
-                  {item.product_name}
-                </td>
-                <td className="text-left px-3 flex-1 flex items-center">
-                  {item.product_code || '-'}
-                </td>
-                <td className="text-left px-3 flex-1 flex items-center">
-                  {item.quantity}
-                </td>
-                <td className="text-left px-3 w-[100px] flex items-center">
-                  {item.unit_price?.toLocaleString()}원
-                </td>
-                <td className="text-left px-3 flex-1 flex items-center">
-                  {item.supply_amount?.toLocaleString()}원
-                </td>
-              </tr>
+              <div key={index} className="pdf-product-table-body">
+                <p style={{ flex: 1 }}>{item.product_name || '-'}</p>
+                <p style={{ flex: 1 }}>{item.product_code || '-'}</p>
+                <p style={{ flex: 1 }}>{item.spec || '-'}</p>
+                <p style={{ width: '80px' }}>{item.unit || '-'}</p>
+                <p style={{ flex: 1 }}>
+                  {item.quantity?.toLocaleString() || '-'}
+                </p>
+                <p style={{ width: '100px' }}>
+                  {item.unit_price?.toLocaleString() || '-'}
+                </p>
+                <p style={{ flex: 1 }}>
+                  {item.quantity && item.unit_price
+                    ? (item.quantity * item.unit_price).toLocaleString()
+                    : '-'}
+                </p>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </div>
 
         {/* 총 금액 정보 */}
-        <div className="flex flex-col gap-4 bg-lg-table px-4 py-4 rounded-lg w-full">
-          <div className="flex w-full justify-between items-center">
-            <span className="w-[150px] Me_Body-1 text-sv">공급가액</span>
-            <span className="text-primary Me_Body-3">
-              {supplyAmount?.toLocaleString() || 0}
-              <span className="text-sv Me_Body-2">원</span>
-            </span>
+        <div className="pdf-summary">
+          <div className="pdf-summary-row">
+            <div className="pdf-summary-label">공급가액</div>
+            <div className="pdf-summary-value-wrapper">
+              <p className="pdf-summary-value">
+                {supplyAmount?.toLocaleString() || 0}
+              </p>
+              <p className="pdf-summary-unit">원</p>
+            </div>
           </div>
-          <div className="flex w-full justify-between items-center">
-            <span className="w-[150px] Me_Body-1 text-sv">세액(VAT 10%)</span>
-            <span className="text-primary Me_Body-3">
-              {(
-                supplyAmount && Math.floor(supplyAmount / 10)
-              )?.toLocaleString() || 0}
-              <span className="text-sv Me_Body-2">원</span>
-            </span>
+
+          <div className="pdf-summary-row">
+            <div className="pdf-summary-label">세액(VAT 10%)</div>
+            <div className="pdf-summary-value-wrapper">
+              <p className="pdf-summary-value">
+                {(
+                  supplyAmount && Math.floor(supplyAmount / 10)
+                )?.toLocaleString() || 0}
+              </p>
+              <p className="pdf-summary-unit">원</p>
+            </div>
           </div>
-          <div className="flex w-full justify-between items-center">
-            <span className="w-[150px] Me_Body-1 text-sv">합계금액</span>
-            <span className="text-primary Me_Body-3">
-              {(
-                supplyAmount && Math.floor(supplyAmount / 10) + supplyAmount
-              )?.toLocaleString() || 0}
-              <span className="text-sv Me_Body-2">원</span>
-            </span>
+
+          <div className="pdf-summary-row">
+            <div className="pdf-summary-label">합계금액</div>
+            <div className="pdf-summary-value-wrapper">
+              <p className="pdf-summary-value">
+                {(
+                  supplyAmount && Math.floor(supplyAmount / 10) + supplyAmount
+                )?.toLocaleString() || 0}
+              </p>
+              <p className="pdf-summary-unit">원</p>
+            </div>
           </div>
         </div>
       </div>
