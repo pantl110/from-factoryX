@@ -80,6 +80,7 @@ const MaterialDetailPanel = ({
 
   // MaterialDetail 컴포넌트 리마운트를 위한 key 상태
   const [materialDetailKey, setMaterialDetailKey] = useState(0);
+  const [isRequiredFilled, setIsRequiredFilled] = useState(false); // material Detail 필수값 충족 여부
 
   // 품목 디테일 패널이 닫힐 때 원자재 데이터 새로고침
   const handleProductDetailClose = () => {
@@ -232,18 +233,48 @@ const MaterialDetailPanel = ({
     const refObj = materialDetailRef.current;
     if (!refObj) return;
 
+    // 필수값 검증: 저장 전에 현재 값 확인
+    const currentValues = refObj.getValues ? refObj.getValues() : undefined;
+    const isRequiredFilled = !!(
+      currentValues &&
+      String(currentValues.materialName || '').trim() !== '' &&
+      String(currentValues.materialCode || '').trim() !== '' &&
+      String(currentValues.unit || '').trim() !== '' &&
+      String(currentValues.size || '').trim() !== ''
+    );
+    if (!isRequiredFilled) {
+      return;
+    }
+
     let hasSaved = false;
 
     // 1. 원자재 정보 저장
     if (refObj.isDirty) {
       const values = refObj.getValues();
-      const payload: Record<string, number> = {};
+      const payload: Record<string, string | number> = {};
+
+      // 필수 필드들 추가
+      if (values.materialName !== undefined && values.materialName !== '') {
+        payload.name = values.materialName;
+      }
+      if (values.materialCode !== undefined && values.materialCode !== '') {
+        payload.code = values.materialCode;
+      }
+      if (values.size !== undefined && values.size !== '') {
+        payload.spec = values.size;
+      }
+      if (values.unit !== undefined && values.unit !== '') {
+        payload.unit = values.unit;
+      }
+
+      // 숫자 필드들 추가
       if (values.currentStock !== undefined && values.currentStock !== '') {
         payload.current_stock = Number(values.currentStock);
       }
       if (values.minStock !== undefined && values.minStock !== '') {
         payload.standard_stock = Number(values.minStock);
       }
+
       if (Object.keys(payload).length > 0) {
         const result = await updateMaterial(selectedMaterialId, payload);
         if (!result || !result.success) {
@@ -329,6 +360,7 @@ const MaterialDetailPanel = ({
               hoverColor="hover:bg-secondary-hover"
               textColor="text-primary"
               bgColor="bg-primary-8"
+              disabled={!isRequiredFilled}
             />
           )
         }
@@ -341,6 +373,7 @@ const MaterialDetailPanel = ({
           setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
           handleOpenUploadModal={handleOpenUploadModal}
           onIsDirtyChange={setIsMaterialDetailDirty}
+          onRequiredFilledChange={setIsRequiredFilled}
           setIsClinetDetailPanelOpen={setIsClinetDetailPanelOpen}
           handleOpenDeleteModal={handleOpenDeleteModal}
           onProductClick={(productId) => {

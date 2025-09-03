@@ -276,6 +276,34 @@ export interface ProductResponseModel {
 export interface ProductListResponseModel extends PaginationModel {
   data: ProductResponseModel[];
 }
+
+// 엑셀 대량등록 제품 등록
+export interface ProductCreateExcelModel {
+  name: string;
+  code: string;
+  unit: string;
+  spec: string;
+  current_stock?: number;
+  average_production_time?: number;
+  buffer_rate: number;
+  note?: string;
+}
+
+export interface ProductCreateExcelResponseModel {
+  id: number;
+  factory: number;
+  name: string;
+  code: string;
+  unit: string;
+  spec?: string;
+  current_stock: number;
+  average_production_time: number;
+  buffer_rate: number;
+  note?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 //////////////////////
 // Product History API
 export interface ProductHistoryModel {
@@ -369,6 +397,8 @@ export interface MaterialHistoryResponseModel {
   amount: number; // 금액(수량x단가)
   date: string; // 거래일자 (ISO8601)
   total_stock: number; // 거래 후 총 재고
+
+  // 아직 db에는 없음
   purchase_tax_invoice_id?: number | null; // 매입 세금계산서 연결 ID (null 가능)
   cash_receipt_id?: number | null; // 현금영수증 연결 ID (null 가능)
 }
@@ -377,6 +407,22 @@ export interface MaterialHistoryListResponseModel extends PaginationModel {
   data: MaterialHistoryResponseModel[];
 }
 
+// 원자재 엑셀 대량등록
+export interface MaterialCreateExcelModel {
+  name: string;
+  code: string;
+  unit: string;
+  spec: string;
+  current_stock?: number;
+  standard_stock?: number;
+}
+
+// export interface MaterialCreateExcelResponseModel {
+//   id: number;
+//   factory: number;
+//   name: string;
+//   code: string;
+// }
 //////////////////////
 // Material Product API
 export interface CreateMaterialProductModel {
@@ -579,7 +625,7 @@ export interface QuotationProductDetailResponseModel {
 }
 export interface QuotationResponseModel {
   // 거래처 정보
-  client_id?: number; // 거래처 ID
+  client_id: number | null; // 거래처 ID
   factory_name: string; // factory name이지만 거래처 이름임
   business_registration_number?: string;
   representative_name?: string;
@@ -589,7 +635,7 @@ export interface QuotationResponseModel {
   business_type?: string;
   business_category?: string;
   address?: string;
-  products: QuotationProductDetailResponseModel[]; // 주문 품목 정보
+  products?: QuotationProductDetailResponseModel[]; // 주문 품목 정보
   due_date?: string; // 납기일
   uploaded_file?: string;
 }
@@ -607,13 +653,14 @@ export interface QuotationProductModel {
   delivery_date?: string | null;
 }
 
-export interface SaveDraftQuotationModel {
-  quotation_id: number;
-  client?: ClientModel;
-  products?: QuotationProductModel[];
-  due_date?: string;
-  uploaded_file?: string;
-}
+// export interface SaveDraftQuotationModel {
+//   quotation_id: number;
+//   client?: ClientModel;
+//   products?: QuotationProductModel[];
+//   due_date?: string;
+//   uploaded_file?: string;
+//   is_confirm: boolean;
+// }
 
 // 생산 시작용 데이터 모델
 export interface ProductionDataModel {
@@ -632,8 +679,8 @@ export interface ProductionDataModel {
     address?: string;
     manager?: string;
     note?: string;
+    client_type: string;
   };
-  due_date?: string;
   products: Array<{
     product_id: number;
     quantity: number;
@@ -641,11 +688,12 @@ export interface ProductionDataModel {
     is_delivery: boolean;
     delivery_date: null;
   }>;
+  due_date?: string;
 }
 
 // 임시 저장용 데이터 모델
 export interface SaveDraftDataModel {
-  quotation_id: number;
+  quotation_id: number | null;
   client: {
     factory_id: number;
     client_id: number | null;
@@ -662,15 +710,16 @@ export interface SaveDraftDataModel {
     note?: string;
     client_type: string;
   };
-  due_date?: string;
   products: Array<{
-    product_id: number;
+    product_id: number | null;
     quantity: number;
     unit_price: number;
     is_delivery: boolean;
-    delivery_date: null;
+    delivery_date: string | null;
   }>;
+  due_date?: string;
   uploaded_file?: string;
+  is_confirm: boolean;
 }
 
 // 견적서 품목 목록 조회
@@ -817,15 +866,17 @@ export interface ProjectPlanListResponseModel extends PaginationModel {
 
 // 생산 계획 정보 수정
 export interface CreateOrUpdateProjectPlanModel {
-  equipment_id: number;
-  quantity: number;
+  plan_id?: number; // 수정 모드일 때만 사용
   project_id: number;
   quotation_product_id: number;
+  equipment_id: number;
+  quantity: number;
   start_date: string;
   end_date: string;
   avg_production_time: number;
   status?: OperationStatusType;
-  plan_id?: number; // 수정 모드일 때만 사용
+  total_amount: number; // 총 주문 수량 (buffer_rate 계산 용)
+  total_quantity: number; // 총 생산 수량 (buffer_rate 계산 용)
 }
 
 //////////////////////
@@ -1033,7 +1084,9 @@ export interface TaxProductInfoModel {
 
 // tax invoice detail 가져오기
 export interface TaxLineItemModel {
+  id: number; //품목 식별자(순번)
   purchase_expiry: string; // YYYYMMDD 형식 (예: "20241231") // 공급일자
+  // product?: number; // 연동된 제품 ID
   name: string; // 품목명
   information?: string; // 규격
   chargeable_unit: string; // 수량
@@ -1041,6 +1094,7 @@ export interface TaxLineItemModel {
   amount: string; // 공급가액
   tax: string; // 세액
   description?: string; // 비고
+  material_history?: number; // 연동된 자재 이력 ID
 }
 
 export interface PublishedTaxInvoiceResponseModel {

@@ -7,6 +7,7 @@ import useMemberStore from '@/store/member-store';
 interface MaterialInfoProps {
   materialId: number;
   onIsDirtyChange?: (isDirty: boolean) => void;
+  onRequiredFilledChange?: (filled: boolean) => void;
 }
 
 export interface MaterialInfoModel {
@@ -36,7 +37,7 @@ function addComma(num: string | number) {
 }
 
 const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
-  ({ materialId, onIsDirtyChange }, ref) => {
+  ({ materialId, onIsDirtyChange, onRequiredFilledChange }, ref) => {
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
 
@@ -45,6 +46,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
       control,
       reset,
       getValues,
+      watch,
       formState: { isDirty },
     } = useForm<MaterialInfoFormModel>({
       defaultValues: {
@@ -62,6 +64,26 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
         onIsDirtyChange(isDirty);
       }
     }, [isDirty, onIsDirtyChange]);
+
+    // 필수값 충족 여부 변경 시 콜백
+    const watchedRequired = watch([
+      'materialName',
+      'materialCode',
+      'unit',
+      'size',
+    ]);
+    useEffect(() => {
+      if (onRequiredFilledChange) {
+        const [materialName, materialCode, unit, size] =
+          watchedRequired as string[];
+        const isFilled =
+          String(materialName || '').trim() !== '' &&
+          String(materialCode || '').trim() !== '' &&
+          String(unit || '').trim() !== '' &&
+          String(size || '').trim() !== '';
+        onRequiredFilledChange(isFilled);
+      }
+    }, [watchedRequired, onRequiredFilledChange]);
 
     useImperativeHandle(
       ref,
@@ -109,6 +131,8 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer}
+                required
+                placeholder="(필수) 자재명을 입력하세요."
               />
             )}
           />
@@ -121,6 +145,8 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer}
+                required
+                placeholder="(필수) 자재 코드를 입력하세요."
               />
             )}
           />
@@ -135,6 +161,8 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer}
+                required
+                placeholder="(필수) 규격을 입력하세요."
               />
             )}
           />
@@ -147,6 +175,8 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer}
+                required
+                placeholder="(필수) 단위를 입력하세요."
               />
             )}
           />
@@ -180,7 +210,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                         : addComma(field.value)
                   }
                   isEditing={!isViewer}
-                  placeholder="현재 재고를 입력하세요."
+                  placeholder="현재 재고 수량을 입력하세요."
                   inputType="text"
                   handleChange={handleChangeCurrentStock}
                 />

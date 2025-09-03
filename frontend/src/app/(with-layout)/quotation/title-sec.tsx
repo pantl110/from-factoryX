@@ -3,10 +3,11 @@ import ButtonSection from './button-section';
 import QuotationStatusDropdown from './modals/quotation-status-dropdown';
 import { usePortalDropdown, useToast } from '@/hooks';
 import Toast from '@/ui/toast';
-import { UseFormTrigger, UseFormWatch, FormState } from 'react-hook-form';
+import { UseFormTrigger, UseFormWatch } from 'react-hook-form';
 import { ClientModel, ProjectStatusType } from '@/types/data-model';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import useMemberStore from '@/store/member-store';
+import { useSearchParams } from 'next/navigation';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -20,15 +21,16 @@ interface TitleSecProps {
   setIsStartProductionModalOpen: (open: boolean) => void;
   trigger: UseFormTrigger<QuotationFormModel>;
   watch: UseFormWatch<QuotationFormModel>;
-  formState: FormState<QuotationFormModel>;
   projectStatus: ProjectStatusType;
   onProjectStatusChange: (status: ProjectStatusType) => void;
   hasQuotationProducts: boolean;
-  onSaveDraft?: () => boolean | Promise<boolean>;
+  onSaveDraft?: (isConfirm: boolean) => boolean | Promise<boolean>;
   isDirty: boolean;
   isFormFilled: boolean;
   taxId: number | null;
   isSaveDraftLoading?: boolean;
+  setShowErrors: (show: boolean) => void;
+  refresh: () => void;
 }
 
 const TitleSec = ({
@@ -38,7 +40,6 @@ const TitleSec = ({
   setIsStartProductionModalOpen,
   trigger,
   watch,
-  formState,
   projectStatus,
   onProjectStatusChange,
   hasQuotationProducts,
@@ -47,9 +48,16 @@ const TitleSec = ({
   isFormFilled,
   taxId,
   isSaveDraftLoading,
+  setShowErrors,
+  refresh,
 }: TitleSecProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+
+  // URL에서 projectId 확인
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project_id');
+  const hasProjectId = !!projectId;
 
   const { isToastOpen, isVisible, showToast } = useToast(); // 토스트 훅
   const {
@@ -71,7 +79,9 @@ const TitleSec = ({
         <div className="flex justify-between">
           <div
             className={`${
-              isOrderStatus || isViewer ? 'cursor-default' : 'cursor-pointer'
+              isOrderStatus || isViewer || !hasProjectId
+                ? 'cursor-default'
+                : 'cursor-pointer'
             } relative w-fit`}
           >
             <Chip
@@ -96,18 +106,21 @@ const TitleSec = ({
                     ? 'text-red'
                     : 'text-yellow'
               }
-              state={!isOrderStatus ? !isViewer : false}
+              state={!isOrderStatus && hasProjectId ? !isViewer : false}
               onClick={(e) => {
-                if (isOrderStatus || isViewer) return;
+                if (isOrderStatus || isViewer || !hasProjectId) return;
                 if (e) openQuotationStatusDropdown(e);
               }}
               cursor={
-                isOrderStatus || isViewer ? 'cursor-default' : 'cursor-pointer'
+                isOrderStatus || isViewer || !hasProjectId
+                  ? 'cursor-default'
+                  : 'cursor-pointer'
               }
             />
             {isQuotationStatusDropdownOpen &&
               quotationStatusAnchorRect &&
-              !isOrderStatus && (
+              !isOrderStatus &&
+              hasProjectId && (
                 <div
                   style={{
                     position: 'fixed',
@@ -136,6 +149,12 @@ const TitleSec = ({
             hasQuotationProducts={hasQuotationProducts}
             setIsTaxCreatePanelOpen={setIsTaxCreatePanelOpen}
             onEmailClick={async () => {
+              // 폼 유효성 검사
+              const isValid = await trigger();
+              if (!isValid) {
+                setShowErrors(true); // 에러 표시 활성화
+                return; // 유효성 검사 실패 시 이메일 모달 열지 않음
+              }
               setIsEmailOpen(true);
             }}
             onPrintClick={async () => {
@@ -145,9 +164,11 @@ const TitleSec = ({
               const isValid = await trigger();
               if (isValid) {
                 setIsStartProductionModalOpen(true);
+              } else {
+                setShowErrors(true); // 에러 표시 활성화
               }
             }}
-            onSaveDraft={async () => {
+            onSaveDraft={async (isConfirm: boolean) => {
               // 업체명이 입력되지 않았으면 토스트 표시하고 함수 종료
               if (!clientName || clientName.trim() === '') {
                 showToast();
@@ -155,27 +176,23 @@ const TitleSec = ({
               }
 
               // 개별 필드 오류 확인 (입력된 값들 중에 유효하지 않은 것이 있는지)
-              const hasErrors = Object.keys(formState.errors).length > 0;
-              if (hasErrors) {
+              const isValid = await trigger();
+              if (!isValid) {
+                setShowErrors(true); // 에러 표시 활성화
                 return false; // 오류가 있으면 저장하지 않음
               }
 
               if (onSaveDraft) {
-                return await onSaveDraft();
+                return await onSaveDraft(isConfirm); // isConfirm = true 주문확정, false = 임시저장
               }
               return false;
             }}
             isOrderStatus={isOrderStatus}
-            changeToConfirmed={async () => {
-              const isValid = await trigger();
-              if (isValid) {
-                onProjectStatusChange('confirmed');
-              }
-            }}
             isFormFilled={isFormFilled}
             isDirty={isDirty}
             taxId={taxId}
             isSaveDraftLoading={isSaveDraftLoading}
+            refresh={refresh}
           />
         </div>
         <p className="Heading-1 truncate w-full">

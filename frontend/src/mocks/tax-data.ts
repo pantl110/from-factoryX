@@ -69,6 +69,7 @@ export const taxData: PublishedTaxInvoiceResponseModel[] = [
     nts_send_state: '전송전',
     line_items: [
       {
+        id: 1,
         purchase_expiry: '20251231',
         name: '플라스틱 판',
         information: '1000x500x2mm',

@@ -1,5 +1,5 @@
 import TransactionDocumentView from '@/app/(with-layout)/document/transaction-document-view';
-import { QuotationResponseModel } from '@/types/data-model';
+import { ProjectQuotationModel } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
 import OverlayView from '@/ui/ovelay-view';
 import { useRef } from 'react';
@@ -7,7 +7,7 @@ import { useReactToPrint } from 'react-to-print';
 
 interface CreateTransactionOverlayviewProps {
   onClose: () => void;
-  quotationData: QuotationResponseModel;
+  quotationData: ProjectQuotationModel;
   startDate: string;
 }
 

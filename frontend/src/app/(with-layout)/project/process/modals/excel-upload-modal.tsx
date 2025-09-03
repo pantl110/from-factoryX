@@ -30,7 +30,7 @@ const ExcelUploadModal = ({
         } else {
           // OCR 실패 시 에러 처리
           alert('OCR 처리에 실패했습니다.' + result.message);
-          onComplete();
+          onComplete(undefined, result.imageUrl); // OCR 실패 시에도 업로드된 이미지 URL 전달
           onClose(); // 모달 닫기 추가
         }
       } catch (err) {

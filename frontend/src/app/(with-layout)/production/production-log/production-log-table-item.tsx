@@ -2,7 +2,7 @@ import { ProjectPlanModel, ProjectStatusType } from '@/types/data-model';
 import Chip from '@/ui/chip';
 import { useEffect, useState } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
-import { useMaterialStatus, formatDateTime } from '@/hooks';
+import { formatDateTime } from '@/hooks';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
@@ -17,6 +17,7 @@ interface ProductionLogTableItemProps {
   onSave?: () => void;
   hasChanges?: boolean;
   onValidityChange?: (planId: number, isValid: boolean) => void;
+  isFirstOfProduct?: boolean; // 같은 품목의 첫 번째 plan인지 여부
 }
 
 const ProductionLogTableItem = ({
@@ -26,10 +27,9 @@ const ProductionLogTableItem = ({
   onSave,
   hasChanges,
   onValidityChange,
+  isFirstOfProduct,
 }: ProductionLogTableItemProps) => {
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
-  const { materialStatus, isLoading: isMaterialStatusLoading } =
-    useMaterialStatus(plan.quotation_product.product.id);
 
   // 생산 완료 상태일 때만 수정 가능
   const isEditable = projectStatus === 'manufactured';
@@ -38,12 +38,8 @@ const ProductionLogTableItem = ({
   const { control, watch, formState } = useForm({
     defaultValues: {
       quantity: plan.quantity || 0,
-      start_date: plan.start_date
-        ? new Date(plan.start_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
-      end_date: plan.end_date
-        ? new Date(plan.end_date).toISOString().slice(0, 16).replace('T', ' ')
-        : '',
+      start_date: plan.start_date || '',
+      end_date: plan.end_date || '',
     },
     mode: 'onChange', // 입력 시마다 유효성 검사
   });
@@ -78,46 +74,51 @@ const ProductionLogTableItem = ({
       <div className="flex items-center h-14 min-w-[1559px] border-b border-lg group Me_Body-1 text-dg">
         <p
           className="flex-2 px-3 truncate"
-          title={plan.quotation_product.product.name}
+          title={isFirstOfProduct ? plan.quotation_product.product.name : ''}
         >
-          {plan.quotation_product.product.name}
+          {isFirstOfProduct ? plan.quotation_product.product.name : ''}
         </p>
         <p
           className="flex-1 px-3 truncate"
-          title={plan.quotation_product.product.code}
+          title={isFirstOfProduct ? plan.quotation_product.product.code : ''}
         >
-          {plan.quotation_product.product.code}
+          {isFirstOfProduct ? plan.quotation_product.product.code : ''}
         </p>
         <p
           className="flex-1 px-3 truncate"
-          title={plan.quotation_product.product.spec}
+          title={isFirstOfProduct ? plan.quotation_product.product.spec : ''}
         >
-          {plan.quotation_product.product.spec}
+          {isFirstOfProduct ? plan.quotation_product.product.spec : ''}
         </p>
         <p
           className="w-[80px] px-3 truncate"
-          title={plan.quotation_product.product.unit}
+          title={isFirstOfProduct ? plan.quotation_product.product.unit : ''}
         >
-          {plan.quotation_product.product.unit}
+          {isFirstOfProduct ? plan.quotation_product.product.unit : ''}
         </p>
         <p
           className="flex-1 px-3 truncate"
-          title={plan.quotation_product.quantity?.toLocaleString() || '-'}
+          title={
+            isFirstOfProduct
+              ? plan.quotation_product.quantity?.toLocaleString() || '-'
+              : ''
+          }
         >
-          {plan.quotation_product.quantity?.toLocaleString() || '-'}
+          {isFirstOfProduct
+            ? plan.quotation_product.quantity?.toLocaleString() || '-'
+            : ''}
         </p>
         <div className="flex-1 px-3">
           <Controller
             name="quantity"
             control={control}
             rules={{
-              required: '생산수량을 입력해주세요',
-              min: { value: 1, message: '생산수량은 1 이상이어야 합니다' },
+              validate: (value) => value > 0 || '생산수량을 입력해주세요',
             }}
             render={({ field }) => (
               <input
                 type="text"
-                value={field.value?.toLocaleString() || '0'}
+                value={field.value > 0 ? field.value.toLocaleString() : ''}
                 onChange={(e) => {
                   const value = e.target.value.replace(/,/g, '');
                   const numValue = parseInt(value) || 0;
@@ -127,6 +128,7 @@ const ProductionLogTableItem = ({
                 className="w-full h-8 text-left border-none bg-transparent p-0"
                 style={{ outline: 'none' }}
                 disabled={!isEditable}
+                placeholder="(필수)"
               />
             )}
           />
@@ -140,10 +142,6 @@ const ProductionLogTableItem = ({
             control={control}
             rules={{
               required: '시작일을 입력해주세요',
-              pattern: {
-                value: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/,
-                message: 'YYYY-MM-DD HH:MM 형식으로 입력해주세요',
-              },
             }}
             render={({ field }) => (
               <input
@@ -167,27 +165,25 @@ const ProductionLogTableItem = ({
           {plan.avg_production_time ? `${plan.avg_production_time}초` : '-'}
         </p>
         <div className="w-[150px] px-3">
-          {!isMaterialStatusLoading && materialStatus && (
-            <div className="flex justify-between">
-              <Chip
-                text={materialStatus}
-                textColor={
-                  materialStatus === '충분' ? 'text-primary' : 'text-red'
-                }
-                bgColor={
-                  materialStatus === '충분' ? 'bg-primary-8' : 'bg-red-8'
-                }
-              />
-              {materialStatus === '부족' && (
-                <div
-                  className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
-                  onClick={() => setIsProductDetailOpen(true)}
-                >
-                  <ArrowLineUpRight size={16} className="text-dg" />
-                </div>
-              )}
-            </div>
-          )}
+          <div className="flex justify-between">
+            <Chip
+              text={plan.material_status}
+              textColor={
+                plan.material_status === '충분' ? 'text-primary' : 'text-red'
+              }
+              bgColor={
+                plan.material_status === '충분' ? 'bg-primary-8' : 'bg-red-8'
+              }
+            />
+            {plan.material_status === '부족' && (
+              <div
+                className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
+                onClick={() => setIsProductDetailOpen(true)}
+              >
+                <ArrowLineUpRight size={16} className="text-dg" />
+              </div>
+            )}
+          </div>
         </div>
         <div className="w-[200px] px-3">
           <Controller
@@ -195,20 +191,6 @@ const ProductionLogTableItem = ({
             control={control}
             rules={{
               required: '종료일을 입력해주세요',
-              pattern: {
-                value: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/,
-                message: 'YYYY-MM-DD HH:MM 형식으로 입력해주세요',
-              },
-              validate: (value) => {
-                const startDate = watch('start_date');
-                if (startDate && value) {
-                  return (
-                    new Date(value) > new Date(startDate) ||
-                    '종료일은 시작일보다 이후여야 합니다'
-                  );
-                }
-                return true;
-              },
             }}
             render={({ field }) => (
               <input

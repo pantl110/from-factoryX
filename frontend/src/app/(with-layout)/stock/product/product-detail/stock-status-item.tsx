@@ -10,7 +10,6 @@ import {
 import { ArrowLineUpRight, X } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback } from 'react';
-import useMaterialProduct from '@/hooks/stock/use-material-product';
 import {
   handleNumberKeyDown,
   handleQuantityInput,
@@ -25,6 +24,8 @@ interface StockStatusItemProps {
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
   onDeleteConnection: (connectionId: number) => void;
   onInvalidQuantity: (message: string, subtext?: string) => void;
+  isStagedMode?: boolean;
+  onStagedQuantityChange?: (materialId: number, qty: number) => void;
 }
 
 const StockStatusItem = ({
@@ -36,6 +37,8 @@ const StockStatusItem = ({
   handleQuantityChange,
   onDeleteConnection,
   onInvalidQuantity,
+  isStagedMode,
+  onStagedQuantityChange,
 }: StockStatusItemProps) => {
   // 각 아이템별로 독립적인 form 생성
   const materialQuantityForm = useForm<{
@@ -45,14 +48,17 @@ const StockStatusItem = ({
       quantity: connection.quantity || 0,
     },
   });
-
-  const { updateMaterialProductConnection } = useMaterialProduct();
-  const [isSaving, setIsSaving] = useState(false);
   const [displayValue, setDisplayValue] = useState('');
 
   // 재고 상태를 판단
   const getStockStatus = (currentStock?: number, standardStock?: number) => {
-    if (!currentStock || !standardStock) return '-';
+    if (
+      currentStock === undefined ||
+      currentStock === null ||
+      standardStock === undefined ||
+      standardStock === null
+    )
+      return '-';
     if (currentStock >= standardStock) return '충분';
     return '부족';
   };
@@ -125,35 +131,15 @@ const StockStatusItem = ({
       return;
     }
 
-    setIsSaving(true);
-    try {
-      const result = await updateMaterialProductConnection(
-        connection.connection_id,
-        newQuantity
-      );
-      if (result.success) {
-        materialQuantityForm.setValue('quantity', newQuantity);
-        setIsQuantityDirty(false); // 저장 성공 시 dirty 상태 해제
-      } else {
-        onInvalidQuantity(
-          '사용 수량 수정에 실패했습니다: ' + result.error,
-          '잠시 후 다시 시도해주세요.'
-        );
-        // 저장 실패 시 원래 값으로 되돌리기
-        materialQuantityForm.setValue('quantity', connection.quantity || 0);
-        setIsQuantityDirty(false);
-      }
-    } catch {
-      onInvalidQuantity(
-        '사용 수량 수정 중 오류가 발생했습니다.',
-        '잠시 후 다시 시도해주세요.'
-      );
-      // 오류 시 원래 값으로 되돌리기
-      materialQuantityForm.setValue('quantity', connection.quantity || 0);
-      setIsQuantityDirty(false);
-    } finally {
-      setIsSaving(false);
+    // 생성 모드: 로컬 상태만 업데이트 (API 호출 없음)
+    if (isStagedMode && onStagedQuantityChange) {
+      onStagedQuantityChange(connection.material_id, newQuantity);
+      materialQuantityForm.setValue('quantity', newQuantity);
+      return;
     }
+
+    // 수정 모드: 즉시 저장하지 않음. 값만 반영하고 dirty 유지
+    materialQuantityForm.setValue('quantity', newQuantity);
   };
 
   // 연결 삭제 핸들러
@@ -217,7 +203,6 @@ const StockStatusItem = ({
           setDisplayValue(formatNumberWithCommas(numberValue));
         }}
         onKeyDown={handleNumberKeyDown}
-        disabled={isSaving}
       />
       <div className="flex-[0.8] px-3 text-dg flex justify-between">
         {status === '부족' || status === '충분' ? (

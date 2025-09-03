@@ -19,6 +19,8 @@ interface StockStatusProps {
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
   onDeleteConnection: (connectionId: number) => void;
   onInvalidQuantity: (message: string, subtext?: string) => void;
+  isStagedMode?: boolean;
+  onStagedQuantityChange?: (materialId: number, qty: number) => void;
 }
 
 const StockStatus = ({
@@ -30,6 +32,8 @@ const StockStatus = ({
   handleQuantityChange,
   onDeleteConnection,
   onInvalidQuantity,
+  isStagedMode,
+  onStagedQuantityChange,
 }: StockStatusProps) => {
   return (
     <>
@@ -61,6 +65,8 @@ const StockStatus = ({
                   handleQuantityChange={handleQuantityChange}
                   onDeleteConnection={onDeleteConnection}
                   onInvalidQuantity={onInvalidQuantity}
+                  isStagedMode={isStagedMode}
+                  onStagedQuantityChange={onStagedQuantityChange}
                 />
               );
             }

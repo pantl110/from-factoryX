@@ -18,11 +18,13 @@ import useMemberStore from '@/store/member-store';
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
   isMaterialDetailOpen: boolean;
+  setReloadFunctionToParent?: (setter: () => void) => void;
 }
 
 const Material = ({
   setIsMaterialDetailOpen,
   isMaterialDetailOpen,
+  setReloadFunctionToParent,
 }: MaterialProps) => {
   const role = useMemberStore((state) => state.role);
 
@@ -75,6 +77,24 @@ const Material = ({
     getMaterialList({ order, page, page_size: pageSize });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, order]);
+
+  // Pass reload function to parent
+  useEffect(() => {
+    if (setReloadFunctionToParent) {
+      setReloadFunctionToParent(() => {
+        // Reset search and go to first page
+        setSearch('');
+        setPage(1);
+        setOrder('desc');
+        getMaterialList({
+          order: 'desc',
+          q: undefined,
+          page: 1,
+          page_size: pageSize,
+        });
+      });
+    }
+  }, [setReloadFunctionToParent, getMaterialList, pageSize]);
 
   // shouldReload가 true일 때 목록 새로고침
   useEffect(() => {

@@ -63,7 +63,11 @@ const PurchaseTableTiem = ({
               setIsLinkModalOpen?.(true);
               setSelectedLineItem?.(lineItem);
             }}
-            disabled={role === 'viewer'}
+            disabled={
+              role === 'viewer' ||
+              !!(lineItem as TaxLineItemModel).material_history
+            }
+            height="h-8"
           />
         </div>
       )}

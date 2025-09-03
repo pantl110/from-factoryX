@@ -24,12 +24,24 @@ interface ConnectMaterialModalProps {
   onClose: () => void;
   productId: number | null;
   onSuccess?: () => void | Promise<void>;
+  // 생성 모드일 때 선택/추가한 원자재를 상위로 전달하기 위한 콜백
+  onStage?: (
+    materials: Array<{
+      id: number;
+      name: string;
+      code: string;
+      spec: string;
+      unit: string;
+      quantity: number;
+    }>
+  ) => void;
 }
 
 const ConnectMaterialModal = ({
   onClose,
   productId,
   onSuccess,
+  onStage,
 }: ConnectMaterialModalProps) => {
   const [input, setInput] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -153,11 +165,77 @@ const ConnectMaterialModal = ({
 
   // 선택한 원자재들을 제품과 연결
   const handleConnectMaterials = async () => {
-    if (
-      (selectedMaterials.length === 0 && newMaterials.length === 0) ||
-      !productId
-    )
+    if (selectedMaterials.length === 0 && newMaterials.length === 0) return;
+
+    // 품목 생성 모드일 때: productId가 없으면 서버 호출 대신 상위로 전달하여 임시 반영
+    if (!productId) {
+      const staged: Array<{
+        id: number;
+        name: string;
+        code: string;
+        spec: string;
+        unit: string;
+        quantity: number;
+      }> = [];
+
+      // 1) 기존 선택 원자재는 그대로 포함 (이미 id 보유)
+      if (selectedMaterials.length > 0) {
+        staged.push(
+          ...selectedMaterials
+            .filter((m) => typeof m.id === 'number')
+            .map((m) => ({
+              id: m.id as number,
+              name: m.name,
+              code: m.code,
+              spec: m.spec,
+              unit: m.unit,
+              quantity: m.quantity ?? 0,
+            }))
+        );
+      }
+
+      // 2) 수동 추가 원자재는 먼저 생성하여 id 확보
+      if (newMaterials.length > 0) {
+        if (!factoryId) {
+          alert('공장 정보가 없습니다.');
+          return;
+        }
+
+        const createPayload = newMaterials.map((material) => ({
+          name: material.name,
+          code: material.code,
+          spec: material.spec,
+          unit: material.unit,
+        }));
+
+        const createResult = await createMaterial(createPayload);
+        if (!createResult.success) {
+          alert('새 원자재 생성 실패: ' + createResult.error);
+          return;
+        }
+        const createdMaterialIds = createResult.data?.material_ids;
+        if (!createdMaterialIds || createdMaterialIds.length === 0) {
+          alert('새 원자재 ID를 가져올 수 없습니다.');
+          return;
+        }
+
+        createdMaterialIds.forEach((id, index) => {
+          const src = newMaterials[index];
+          staged.push({
+            id,
+            name: src.name,
+            code: src.code,
+            spec: src.spec,
+            unit: src.unit,
+            quantity: src.quantity ?? 0,
+          });
+        });
+      }
+
+      onStage?.(staged);
+      onClose();
       return;
+    }
 
     try {
       const allMaterialIds: { id: number; quantity: number }[] = [];

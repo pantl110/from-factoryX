@@ -94,8 +94,12 @@ const PermissionTableItem = ({
             <p className={`px-3 flex-1 ${textColor}`}>
               {status === 'active' ? '완료' : '-'}
             </p>
-            <p className="px-3 flex-1">{name || '-'}</p>
-            <p className="px-3 flex-2">{email}</p>
+            <p className="px-3 flex-1 truncate" title={name || '-'}>
+              {name || '-'}
+            </p>
+            <p className="px-3 flex-2 truncate" title={email || '-'}>
+              {email || '-'}
+            </p>
             <div className="px-3 flex-1">
               <Chip
                 text={roleText}

@@ -18,7 +18,7 @@ const useAuthStore = create<AuthStateProps>()(
   persist(
     (set) => ({
       userInfo: null,
-      isLoading: true,
+      isLoading: false,
       isAuthenticated: false,
 
       setUserInfo: (userInfo) => {
@@ -98,6 +98,7 @@ const useAuthStore = create<AuthStateProps>()(
         // 민감하지 않은 정보만 저장
         userInfo: state.userInfo,
         isAuthenticated: state.isAuthenticated,
+        isLoading: false, // 새로고침 시 로딩 상태 해제
       }),
     }
   )

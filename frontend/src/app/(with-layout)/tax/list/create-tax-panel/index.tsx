@@ -421,7 +421,8 @@ const CreatTaxPanel = ({
             ?.map((p) => p.productId)
             .filter(Boolean) || [];
         const lineItems =
-          productInfoFormData?.products?.map((p) => ({
+          productInfoFormData?.products?.map((p, index) => ({
+            id: index + 1, // 순번 ID
             purchase_expiry: formatDateToYYYYMMDD(
               sellerInfoFormData?.writeDate || ''
             ), // YYYYMMDD 형식 (예: "20241231")

@@ -203,6 +203,7 @@ const DropzoneArea = ({
           </div>
         </>
       )}
+
       <input
         type="file"
         ref={fileInputRef}

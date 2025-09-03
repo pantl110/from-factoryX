@@ -101,31 +101,32 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   return (
     <>
       <header
-        className={`${
-          isSidebarVisible ? 'w-[calc(100%-256px)]' : 'w-full'
-        } fixed z-40 bg-white border-b border-lg transition-width duration-300`}
+        className={`fixed top-0 z-40 bg-white border-b border-lg transition-all duration-300 ease-in-out ${
+          isSidebarVisible ? 'left-64 right-0' : 'left-0 right-0'
+        }`}
       >
-        <div className="max-w-[1400px] min-w-[1000px] mx-auto px-10 flex items-center justify-between h-[60px]">
-          <TopBarCrumb
-            pageStatus={pageStatus || ''}
-            productionTab={productionTab || undefined}
-            stockTab={stockTab || undefined}
-            settingTab={settingTab || undefined}
-            settingChip={settingChip || undefined}
-          />
+        <div className="relative h-[60px]">
+          <div className="max-w-[1400px] min-w-[1000px] mx-auto px-10 flex items-center justify-between h-full">
+            <TopBarCrumb
+              pageStatus={pageStatus || ''}
+              stockTab={stockTab || undefined}
+              settingTab={settingTab || undefined}
+              settingChip={settingChip || undefined}
+            />
 
-          <TopBarContent
-            pageStatus={pageStatus}
-            productionTab={productionTab}
-            onProductionPlanSaveClick={() =>
-              setProductionPlanSaveModalOpen(true)
-            }
-            onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
-            onNotificationClick={() => setIsNotificationModalOpen(true)}
-            hasUnreadNotifications={
-              notifications.find((n) => !n.is_read) !== undefined
-            }
-          />
+            <TopBarContent
+              pageStatus={pageStatus}
+              productionTab={productionTab}
+              onProductionPlanSaveClick={() =>
+                setProductionPlanSaveModalOpen(true)
+              }
+              onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
+              onNotificationClick={() => setIsNotificationModalOpen(true)}
+              hasUnreadNotifications={
+                notifications.find((n) => !n.is_read) !== undefined
+              }
+            />
+          </div>
         </div>
       </header>
 

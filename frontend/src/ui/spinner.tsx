@@ -4,7 +4,7 @@ const Spinner = () => {
   const size = 52;
   const color = 'var(--color-primary)';
   const bgColor = 'var(--color-secondary-hover)';
-  const strokeWidth = 9;
+  const strokeWidth = 5;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const arc = circumference * 0.75; // 75%만 파란색

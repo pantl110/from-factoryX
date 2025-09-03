@@ -15,9 +15,9 @@ import MaterialInfoTable from './material-info-table';
 
 interface LinkTaxModalProps {
   onClose: () => void;
-  type: 'project' | 'tax' | 'receipt';
-  linkedItemId: number; // type이 'project'일 때는 프로젝트 아이디, type이 'tax'일 때는 세금계산서 아이디, type이 'receipt'일 때는 영수증 아이디
-  selectedLineItem?: TaxLineItemModel; // type이 'tax' 또는 'receipt'일 때 선택한 lineItem
+  type: 'project' | 'tax';
+  linkedItemId: number; // type이 'project'일 때는 프로젝트 아이디, type이 'tax'일 때는 세금계산서 아이디
+  selectedLineItem?: TaxLineItemModel; // type이 'tax'일 때 선택한 lineItem
   onSuccess?: () => void; // 연결 완료 시 호출되는 콜백
   canCreate?: boolean; // 세금계산서 생성 가능 여부
   projectStatus?: ProjectStatusResponseModel; // 세금계산서 생성 시 보여줄 초기값을 위함
@@ -145,6 +145,20 @@ const LinkTaxModal = ({
       scroll={true}
     >
       <div className="flex flex-col gap-4 mt-4 px-6">
+        {/* material history 연결 시 연결할 line item 보여주기 */}
+        {type !== 'project' && (
+          <div className="flex flex-col gap-3">
+            <h4 className="Heading-4 text-dg">
+              {type === 'tax'
+                ? '매입 세금계산서에서 선택한 원자재'
+                : '현금영수증에서 선택한 원자재'}
+            </h4>
+            {selectedLineItem && (
+              <MaterialInfoTable lineItem={selectedLineItem} />
+            )}
+          </div>
+        )}
+
         <SearchInput
           placeholder={
             type === 'project'
@@ -187,20 +201,6 @@ const LinkTaxModal = ({
               bgColor={selectedPeriod === '12' ? 'bg-primary-8' : 'bg-white'}
               onClick={() => setSelectedPeriod('12')}
             />
-          </div>
-        )}
-
-        {/* material history 연결 시 연결할 line item 보여주기 */}
-        {type !== 'project' && (
-          <div className="flex flex-col gap-3">
-            <h4 className="Heading-4 text-dg">
-              {type === 'tax'
-                ? '매입 세금계산서에서 선택한 원자재'
-                : '현금영수증에서 선택한 원자재'}
-            </h4>
-            {selectedLineItem && (
-              <MaterialInfoTable lineItem={selectedLineItem} />
-            )}
           </div>
         )}
 
@@ -254,7 +254,7 @@ const LinkTaxModal = ({
                 />
               )}
               <MiniBtn
-                text="내역연결"
+                text="내역 연결"
                 hoverColor="hover:bg-primary-hover"
                 bgColor="bg-primary"
                 textColor="text-wh"

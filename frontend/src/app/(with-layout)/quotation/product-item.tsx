@@ -147,15 +147,25 @@ const ProductItem = ({
           {onlyRead ? (
             <p
               className="w-full break-words"
-              title={data?.quantity?.toLocaleString() || ''}
+              title={
+                data?.quantity === 0
+                  ? ''
+                  : data?.quantity?.toLocaleString() || ''
+              }
             >
-              {data?.quantity?.toLocaleString() || ''}
+              {data?.quantity === 0
+                ? ''
+                : data?.quantity?.toLocaleString() || ''}
             </p>
           ) : (
             <input
               type="text"
               placeholder="(필수)"
-              value={data?.quantity?.toLocaleString() || ''}
+              value={
+                data?.quantity === 0
+                  ? ''
+                  : data?.quantity?.toLocaleString() || ''
+              }
               className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
               style={{ width: '100%', maxWidth: '100%' }}
               onChange={(e) => {
@@ -174,15 +184,25 @@ const ProductItem = ({
           {onlyRead ? (
             <p
               className="w-full break-words"
-              title={data?.unit_price?.toLocaleString() || ''}
+              title={
+                data?.unit_price === 0
+                  ? ''
+                  : data?.unit_price?.toLocaleString() || ''
+              }
             >
-              {data?.unit_price?.toLocaleString() || ''}
+              {data?.unit_price === 0
+                ? ''
+                : data?.unit_price?.toLocaleString() || ''}
             </p>
           ) : (
             <input
               type="text"
               placeholder="(필수)"
-              value={data?.unit_price?.toLocaleString() || ''}
+              value={
+                data?.unit_price === 0
+                  ? ''
+                  : data?.unit_price?.toLocaleString() || ''
+              }
               className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
               style={{ width: '100%', maxWidth: '100%' }}
               onChange={(e) => {

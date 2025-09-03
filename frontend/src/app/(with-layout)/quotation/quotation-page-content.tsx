@@ -43,6 +43,7 @@ import StartProductionModal from '@/app/(with-layout)/quotation/modals/start-pro
 import { useQuotationHandlers } from '@/app/(with-layout)/quotation/handlers/quotation-handlers';
 import { QuotationFormModel } from '@/types/data-model';
 import TaxDetailPanel from '../tax/tax-detail-panel';
+import usePageStatusStore, { PageStatusModel } from '@/store/page-status-store';
 
 const QuotationPageContent = () => {
   const router = useRouter();
@@ -55,11 +56,15 @@ const QuotationPageContent = () => {
   const projectId = searchParams.get('project_id')
     ? parseInt(searchParams.get('project_id') || '0')
     : undefined;
+  const statusParam = searchParams.get('status'); // status 파라미터 추가
 
   const { saveDraft } = useSaveDraftQuotation();
   const { startProduction } = useStartProduction();
   const { getProjectStatus } = useGetProjectStatus();
   const { updateProjectStatus } = useUpdateProjectStatus();
+  const setProjectStatusData = usePageStatusStore(
+    (state: PageStatusModel) => state.setProjectStatusData
+  );
   const { data: quotationData, isLoading: isQuotationLoading } =
     useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
   const { showToast, isToastOpen, isVisible } = useToast();
@@ -68,7 +73,7 @@ const QuotationPageContent = () => {
   const { productList, getAllProductList } = useGetProduct(); // 제품 목록 가져오기
 
   const [projectStatus, setProjectStatus] =
-    useState<ProjectStatusType>('quotation'); // 프로젝트 상태 관리
+    useState<ProjectStatusType>('quotation'); // 기본값은 quotation
   const [taxId, setTaxId] = useState<number | null>(null); // 세금계산서 ID 관리
   const [activeTab, setActiveTab] = useState<'quotation' | 'history'>(
     imageUrl ? 'quotation' : 'history'
@@ -107,16 +112,24 @@ const QuotationPageContent = () => {
       const result = await getProjectStatus(projectId);
       if (result.success && result.data) {
         setProjectStatus(result.data.status);
+        setProjectStatusData(result.data); // 스토어에 프로젝트 상태 데이터 저장
         setTaxId(result.data.tax_invoice?.id || null);
       }
     } catch {
       // 프로젝트 상태 로드 실패 시 무시
     }
-  }, [getProjectStatus, projectId]);
+  }, [getProjectStatus, projectId, setProjectStatusData]);
 
   // 컴포넌트 마운트 시 프로젝트 상태 로드
   useEffect(() => {
-    loadProjectStatus();
+    if (projectId) {
+      // projectId가 있으면 해당 프로젝트의 상태를 가져옴
+      loadProjectStatus();
+    } else if (statusParam === 'confirmed') {
+      // projectId가 없고 status 파라미터가 confirmed면 confirmed로 설정
+      setProjectStatus('confirmed');
+    }
+    // projectId도 없고 status 파라미터도 없으면 기본값 'quotation' 유지
 
     // ocrdata 있으면 거래처 목록과 제품 목록 로드
     if (factoryId && ocrData) {
@@ -129,7 +142,7 @@ const QuotationPageContent = () => {
       useOcrStore.getState().clearOcrData();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadProjectStatus, factoryId]);
+  }, [loadProjectStatus, factoryId, projectId, statusParam]);
 
   // 프로젝트 상태 변경
   const handleProjectStatusChange = useCallback(
@@ -486,6 +499,8 @@ const QuotationPageContent = () => {
   const watchedBusinessType = watch('business_type') || '';
   const watchedBusinessCategory = watch('business_category') || '';
   const watchedAddress = watch('address') || '';
+  const watchedManager = watch('manager') || '';
+  const watchedEmail = watch('email') || '';
 
   const isFormFilled = useMemo(() => {
     if (isQuotationLoading) return false;
@@ -497,7 +512,9 @@ const QuotationPageContent = () => {
       watchedDueDate.trim() !== '' &&
       watchedBusinessType.trim() !== '' &&
       watchedBusinessCategory.trim() !== '' &&
-      watchedAddress.trim() !== '';
+      watchedAddress.trim() !== '' &&
+      watchedManager.trim() !== '' &&
+      watchedEmail.trim() !== '';
 
     return isAllRequiredFieldsFilled;
   }, [
@@ -508,14 +525,14 @@ const QuotationPageContent = () => {
     watchedBusinessType,
     watchedBusinessCategory,
     watchedAddress,
+    watchedManager,
+    watchedEmail,
     isQuotationLoading,
   ]);
 
   const watchedFactoryId = watch('factory_id');
-  const watchedEmail = watch('email');
   const watchedPhone = watch('phone');
   const watchedFax = watch('fax');
-  const watchedManager = watch('manager');
   const watchedNote = watch('note');
 
   const watchedClientData = useMemo(() => {
@@ -564,19 +581,40 @@ const QuotationPageContent = () => {
           // 폼 상태
           trigger={trigger}
           watch={watch}
-          formState={formState}
           isFormFilled={isFormFilled}
           isDirty={isDirty}
           hasQuotationProducts={hasQuotationProducts}
           // 버튼 클릭 시 함수
           projectStatus={projectStatus}
           onProjectStatusChange={handleProjectStatusChange}
-          onSaveDraft={async () => {
-            const isSuccess = await handleSaveDraft();
+          onSaveDraft={async (isConfirm: boolean) => {
+            const isSuccess = await handleSaveDraft(isConfirm);
             return isSuccess || false;
           }}
           taxId={taxId}
           isSaveDraftLoading={isSaveDraftLoading}
+          setShowErrors={setShowErrors}
+          refresh={() => {
+            // 주문확정 완료 후 상태 업데이트
+            if (quotationId) {
+              // 1. 프로젝트 상태 새로고침
+              loadProjectStatus();
+
+              // 2. 견적서 데이터 재조회
+              if (quotationId > 0) {
+                // 견적서 데이터 새로고침을 위한 상태 초기화
+                setQuotationProducts([]);
+                setInitialQuotationProducts([]);
+                setHasQuotationProducts(false);
+
+                // 폼 리셋
+                reset();
+
+                // 에러 상태 초기화
+                setShowErrors(false);
+              }
+            }
+          }}
         />
         <TabArea
           projectStatus={projectStatus}
@@ -751,6 +789,7 @@ const QuotationPageContent = () => {
               }
               return total;
             }, 0)}
+            quotationId={quotationId || null}
             onClose={() => setIsEmailOpen(false)}
           />
         </OverlayView>

@@ -15,7 +15,6 @@ import TransactionDocumentView from './transaction-document-view';
 import Spinner from '@/ui/spinner';
 import { useCheckAll } from '@/hooks/use-check-all';
 import DeleteModal from '@/ui/modal/delete-modal';
-
 import { useGetPublishedTaxInvoices } from '@/hooks';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 
@@ -231,29 +230,59 @@ const DocumentPageContent = () => {
         <Panel title="거래명세서" onClose={() => setSelectedDocument(null)}>
           <TransactionDocumentView
             quotationData={{
-              factory_name: '플라스틱이 좋아',
-              business_registration_number: '123-45-67890',
-              representative_name: '플라스틱',
-              email: 'plastic@gmail.com',
-              phone: '010-1234-5678',
-              fax: '02-123-4567',
-              business_type: '소프트웨어',
-              business_category: '소프트웨어',
-              address: '서울시 강남구 역삼동',
-              products: [
+              id: 1,
+              client: 1,
+              created_at: '2025-01-01T00:00:00Z',
+              due_date: '2025-08-01',
+              due_date_notice: false,
+              factory: 1,
+              project: 1,
+              type: 'quotation',
+              updated_at: '2025-01-01T00:00:00Z',
+              uploaded_file: '',
+              client_info: {
+                id: 1,
+                name: '플라스틱이 좋아',
+                business_registration_number: '123-45-67890',
+                representative_name: '플라스틱',
+                factory: 1,
+                type: 'customer' as const,
+                email: 'plastic@gmail.com',
+                phone: '010-1234-5678',
+                fax: '02-123-4567',
+                business_type: '소프트웨어',
+                business_category: '소프트웨어',
+                address: '서울시 강남구 역삼동',
+                manager: '플라스틱',
+              },
+              factory_info: {
+                id: 1,
+                name: '플라스틱이 좋아',
+                business_registration_number: '123-45-67890',
+                representative_name: '플라스틱',
+                owner: 1,
+                manager_email: 'plastic@gmail.com',
+                manager_phone: '010-1234-5678',
+                manager_fax: '02-123-4567',
+                business_type: '소프트웨어',
+                business_category: '소프트웨어',
+                business_address: '서울시 강남구 역삼동',
+                is_trial: false,
+                billing_key: '1234567890',
+              },
+              products_info: [
                 {
-                  productId: 1,
-                  product_code: '1234567890',
-                  product_name: '플라스틱',
+                  id: 1,
+                  code: '1234567890',
+                  name: '플라스틱',
                   spec: '100x100x100',
                   unit: '개',
                   quantity: 10,
                   unit_price: 50000,
-                  supply_amount: 500000,
-                  tax_amount: 50000,
+                  total_price: 500000,
+                  quotation_product_id: 1,
                 },
               ],
-              due_date: '2025-08-01',
             }}
             startDate={'2025-08-01'}
           />

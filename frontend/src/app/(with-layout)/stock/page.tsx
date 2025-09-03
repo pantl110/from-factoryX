@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import MainTitleSec from './main-title-sec';
 import Product from './product/index';
@@ -47,6 +47,10 @@ const StockPageContent = () => {
   const [clientInfo, setClientInfo] = useState<ClientModel | null>(null); // 자재 추가 시 저장해 둘 거래처 정보
   const [isMaterialEnrollmentModalOpen, setIsMaterialEnrollmentModalOpen] =
     useState(false);
+
+  // 품목 엑셀 업로드 후 새로고침 함수
+  const productReloadRef = useRef<(() => void) | null>(null);
+  const materialReloadRef = useRef<(() => void) | null>(null);
 
   // 토스트 훅 사용
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -101,6 +105,9 @@ const StockPageContent = () => {
           {stockTab === 'product' ? (
             <Product
               setSelectedProductIdToParent={setProductSetSelectedProductId}
+              setReloadFunctionToParent={(fn) =>
+                (productReloadRef.current = fn)
+              }
               isProductDetailPanelOpen={isProductDetailPanelOpen}
               setIsProductDetailPanelOpen={setIsProductDetailPanelOpen}
             />
@@ -108,6 +115,9 @@ const StockPageContent = () => {
             <Material
               setIsMaterialDetailOpen={setIsMaterialDetailOpen}
               isMaterialDetailOpen={isMaterialDetailOpen}
+              setReloadFunctionToParent={(fn) =>
+                (materialReloadRef.current = fn)
+              }
             />
           )}
         </div>
@@ -115,7 +125,19 @@ const StockPageContent = () => {
 
       {/* 품목 추가, 자재 추가 관련 모달 */}
       {isExcelModalOpen && (
-        <ExcelUploadModal onClose={() => setIsExcelModalOpen(false)} />
+        <ExcelUploadModal
+          type={stockTab}
+          onClose={() => setIsExcelModalOpen(false)}
+          onSuccess={() => {
+            // 리로드 함수 호출
+            if (stockTab === 'product' && productReloadRef.current) {
+              productReloadRef.current();
+            }
+            if (stockTab === 'material' && materialReloadRef.current) {
+              materialReloadRef.current();
+            }
+          }}
+        />
       )}
       {isClientInfoModalOpen && (
         <ClientInfoModal

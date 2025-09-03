@@ -1,3 +1,5 @@
+'use client';
+
 import MiniBtn from '@/ui/mini-btn';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import OrderDocumentView from '../../document/order-document-view';
@@ -5,6 +7,11 @@ import {
   QuotationProductDetailResponseModel,
   ClientModel,
 } from '@/types/data-model';
+import { useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import OrderDocumentPDFView from '@/components/pdf/order-document-pdf-view';
+import { useSendQuotationEmail } from '@/hooks';
 
 interface EmailViewProps {
   onClose?: () => void;
@@ -14,6 +21,7 @@ interface EmailViewProps {
   productListInfoTitle: string;
   productItems: QuotationProductDetailResponseModel[];
   supplyAmount: number;
+  quotationId: number | null;
 }
 
 const EmailView = ({
@@ -24,7 +32,114 @@ const EmailView = ({
   productListInfoTitle,
   productItems,
   supplyAmount,
+  quotationId,
 }: EmailViewProps) => {
+  const [isEmailSending, setIsEmailSending] = useState(false);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const { sendQuotationEmail, isLoading } = useSendQuotationEmail();
+
+  const generatePDFBase64 = async (): Promise<string | null> => {
+    if (!pdfRef.current) return null;
+
+    try {
+      const canvas = await html2canvas(pdfRef.current, {
+        scale: 2,
+        useCORS: false,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+      });
+
+      const imgData = canvas.toDataURL('image/png'); // 캔버스를 PNG 이미지로 변환 // PDF에 이미지를 삽입하기 위한 데이터
+      const pdf = new jsPDF('p', 'mm', 'a4'); // PDF 문서 생성
+      // p: portrait (세로 방향)
+      // mm: 단위를 밀리미터로 설정
+      // a4: A4 크기
+
+      const imgWidth = 210; // A4 너비 (mm)
+      const pageHeight = 295; // A4 높이 (mm)
+
+      // 32px 여백을 mm로 변환 (1px ≈ 0.264583mm)
+      const marginPx = 32;
+      const marginMm = marginPx * 0.264583;
+
+      // 여백을 제외한 실제 이미지 너비
+      const availableWidth = imgWidth - marginMm * 2;
+
+      // 이미지 높이 계산 (여백을 제외한 너비에 맞춤)
+      const imgHeight = (canvas.height * availableWidth) / canvas.width;
+
+      // 아래쪽 여백을 고려한 실제 이미지 높이
+      const availableHeight = pageHeight - marginMm * 2;
+      let heightLeft = imgHeight;
+
+      // 여백을 적용하여 이미지 삽입 (좌우 여백: marginMm, 위쪽 여백: 0)
+      pdf.addImage(
+        imgData,
+        'PNG',
+        marginMm,
+        0, // 위쪽 여백 없음
+        availableWidth,
+        imgHeight
+      );
+      heightLeft -= availableHeight; // 아래쪽 여백을 고려한 높이만큼 감소
+
+      while (heightLeft >= 0) {
+        pdf.addPage();
+        // 여백을 적용하여 이미지 삽입 (좌우 여백: marginMm, 위쪽 여백: 0)
+        pdf.addImage(
+          imgData,
+          'PNG',
+          marginMm,
+          0, // 위쪽 여백 없음
+          availableWidth,
+          imgHeight
+        );
+        heightLeft -= availableHeight; // 아래쪽 여백을 고려한 높이만큼 감소
+      }
+
+      // data URI -> base64 string
+      const dataUri = pdf.output('datauristring');
+      const base64 = dataUri.split(',')[1] || '';
+      return base64;
+    } catch (error) {
+      alert('PDF 생성 중 오류가 발생했습니다.' + error);
+      return null;
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (isLoading || !quotationId) return;
+
+    if (!clientData?.email) {
+      alert(
+        '거래처 이메일이 입력되지 않았습니다. 거래처 정보에서 이메일을 확인해 주세요.'
+      );
+      return;
+    }
+
+    setIsEmailSending(true);
+    const base64Pdf = await generatePDFBase64();
+    if (!base64Pdf) {
+      setIsEmailSending(false);
+      return;
+    }
+
+    try {
+      await sendQuotationEmail(quotationId, {
+        email: clientData.email,
+        pdf_data: base64Pdf,
+      });
+      alert('이메일이 전송되었습니다.');
+      onClose?.();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : '이메일 전송에 실패했습니다.';
+      alert(message);
+    } finally {
+      setIsEmailSending(false);
+    }
+  };
+
   return (
     <div className="w-full flex flex-col gap-6 px-8 pb-8">
       <div className="sticky pt-8 top-0 bg-wh">
@@ -52,10 +167,13 @@ const EmailView = ({
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"
+            onClick={handleSendEmail}
+            disabled={isLoading || isEmailSending}
           />
         </div>
       </div>
-
+      {/* 화면 표시용 */}
+      {/* <div ref={pdfRef}> */}
       <OrderDocumentView
         documentTitle={documentTitle}
         clientData={clientData}
@@ -64,6 +182,28 @@ const EmailView = ({
         productItems={productItems}
         supplyAmount={supplyAmount}
       />
+      {/* </div> */}
+
+      {/* PDF 생성을 위한 전용 뷰 (화면 밖에 배치) */}
+      <div
+        ref={pdfRef}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: '-9999px',
+          width: '800px',
+          backgroundColor: 'white',
+        }}
+      >
+        <OrderDocumentPDFView
+          documentTitle={documentTitle}
+          clientData={clientData}
+          dueDate={dueDate}
+          productListInfoTitle={productListInfoTitle}
+          productItems={productItems}
+          supplyAmount={supplyAmount}
+        />
+      </div>
     </div>
   );
 };

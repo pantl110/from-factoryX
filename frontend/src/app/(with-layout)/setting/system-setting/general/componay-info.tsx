@@ -59,7 +59,9 @@ const CompanyInfo = () => {
       setValue('name', factory.name || '');
       setValue(
         'business_registration_number',
-        factory.business_registration_number || ''
+        factory.business_registration_number
+          ? formatBusinessNumber(factory.business_registration_number)
+          : ''
       );
       setValue('representative_name', factory.representative_name || '');
       setValue('manager_email', factory.manager_email || '');

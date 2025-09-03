@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { EquipmentListResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 
@@ -140,7 +140,7 @@ const useGetEquipment = () => {
       try {
         // 백엔드에서 검색과 페이지네이션을 모두 처리하도록 단일 API 호출
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}&q=${encodeURIComponent(value)}&page=${page}&page_size=${pageSize}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}&name=${encodeURIComponent(value)}&page=${page}&page_size=${pageSize}`,
           {
             method: 'GET',
             credentials: 'include',
@@ -166,15 +166,6 @@ const useGetEquipment = () => {
     [factoryId, pageSize]
   );
 
-  // 검색어가 바뀔 때마다 자동으로 fetch
-  useEffect(() => {
-    if (searchKeyword) {
-      searchAllFields(searchKeyword, 1); // 검색 시 첫 페이지로
-    } else {
-      getEquipmentList(1); // 검색어가 없을 때는 첫 페이지로
-    }
-  }, [searchKeyword, searchAllFields, getEquipmentList]);
-
   // 페이지 변경 함수
   const changePage = useCallback(
     async (page: number) => {
@@ -198,6 +189,8 @@ const useGetEquipment = () => {
     pageSize,
     changePage,
     getAllEquipmentList,
+    searchAllFields,
+    getEquipmentList,
     refetch: useCallback(
       () =>
         searchKeyword ? searchAllFields(searchKeyword, 1) : getEquipmentList(1),

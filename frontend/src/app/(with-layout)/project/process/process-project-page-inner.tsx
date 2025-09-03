@@ -12,13 +12,7 @@ import Pagination from '@/components/pagination';
 import { OcrDataModel, ProjectListResponseModel } from '@/types/data-model';
 import DeleteModal from '@/ui/modal/delete-modal';
 import Spinner from '@/ui/spinner';
-import {
-  useCreateProject,
-  useGetProjects,
-  useCheckAll,
-  useDeleteProject,
-  useUpdateProjectStatus,
-} from '@/hooks';
+import { useGetProjects, useCheckAll, useDeleteProject } from '@/hooks';
 import useOcrStore from '@/store/ocr-store';
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
@@ -26,10 +20,8 @@ import useMemberStore from '@/store/member-store';
 const ProcessProjectPageInner = () => {
   const router = useRouter();
   const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
-  const { createProject } = useCreateProject();
   const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
-  const { updateProjectStatus } = useUpdateProjectStatus();
-  const { setOcrData } = useOcrStore();
+  const { setOcrData, clearOcrData } = useOcrStore();
   const factoryId = useMemberStore((state) => state.factoryId);
 
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
@@ -150,47 +142,44 @@ const ProcessProjectPageInner = () => {
     ocrData?: OcrDataModel,
     imageUrl?: string
   ) => {
+    // OCR 데이터나 이미지 URL이 있는 경우 저장
     if (ocrData) {
-      // Zustand store에 OCR 데이터 저장
+      // OCR 데이터가 있는 경우 저장
       setOcrData(ocrData, imageUrl || '');
+    } else if (imageUrl) {
+      // 이미지만 있는 경우 기존 데이터 클리어 후 이미지 URL만 설정
+      clearOcrData();
+      setOcrData(
+        {
+          client_info: {
+            company_name: '',
+            registration_number: '',
+            ceo_name: '',
+            delivery_date: '',
+            business_type: '',
+            category: '',
+            address: '',
+            manager_name: '',
+            email: '',
+            fax_number: '',
+            call_number: '',
+          },
+          request_items: [],
+        },
+        imageUrl
+      );
+    }
 
-      try {
-        // 프로젝트와 견적서 생성
-        const result = await createProject();
-
-        if (result.success && result.data) {
-          // 주문서인 경우 프로젝트 상태를 confirmed로 변경
-          if (isOrderUploadModalOpen) {
-            await updateProjectStatus(result.data.project_id, 'confirmed');
-          }
-
-          // 생성된 견적서 ID와 프로젝트 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
-          router.push(
-            `/quotation?quotation_id=${result.data.quotation_id}&project_id=${result.data.project_id}`
-          );
-        } else {
-          alert('프로젝트 생성에 실패했습니다.');
-        }
-      } catch {
-        alert('프로젝트 생성 중 오류가 발생했습니다.');
+    if (ocrData || imageUrl) {
+      // 주문서인 경우 프로젝트 상태를 confirmed로
+      if (isOrderUploadModalOpen) {
+        router.push(`/quotation?status=confirmed`);
+      } else {
+        router.push(`/quotation`);
       }
     } else {
-      // 빈 값으로 프로젝트와 견적서 생성 후 견적서 아이디와 프로젝트 아이디 기억하고 이동
-      try {
-        // 프로젝트와 견적서 생성
-        const result = await createProject();
-
-        if (result.success && result.data) {
-          // 생성된 견적서 ID와 프로젝트 ID를 URL 파라미터로 전달하여 견적서 페이지로 이동
-          router.push(
-            `/quotation?quotation_id=${result.data.quotation_id}&project_id=${result.data.project_id}`
-          );
-        } else {
-          alert('프로젝트 생성에 실패했습니다.');
-        }
-      } catch {
-        alert('프로젝트 생성 중 오류가 발생했습니다.');
-      }
+      // OCR 데이터도 이미지도 없는 경우
+      router.push(`/quotation`);
     }
   };
 

@@ -65,6 +65,7 @@ const ProductDetail = ({
   const { updateProduct, isLoading: isProductUpdating } = useUpdateProduct();
   const {
     getMaterialProductConnections,
+    createMaterialProduct,
     data: connections,
     updateMaterialProductConnection,
     deleteMaterialProductConnection,
@@ -128,6 +129,17 @@ const ProductDetail = ({
   const [isValid, setIsValid] = useState(false);
   const productInfoRef = useRef<ProductInfoModel>(null);
   const [isQuantityDirty, setIsQuantityDirty] = useState(false); // 자재 수량 변경 감지를 위한 상태
+  // 생성 모드에서 임시로 담아둘 원자재 연결 정보
+  const [stagedMaterials, setStagedMaterials] = useState<
+    Array<{
+      id: number;
+      name: string;
+      code: string;
+      spec: string;
+      unit: string;
+      quantity: number;
+    }>
+  >([]);
 
   // 수량 변경 추적 함수
   const handleQuantityChange = (connectionId: number, newQuantity: number) => {
@@ -358,7 +370,10 @@ const ProductDetail = ({
   };
 
   // ProductInfo 저장 함수
-  const handleSaveProductInfo = async (): Promise<boolean> => {
+  const handleSaveProductInfo = async (): Promise<{
+    success: boolean;
+    productId?: number;
+  }> => {
     try {
       // ProductInfo에서 현재 폼 값 가져오기
       const currentFormData = productInfoRef.current?.getValues() || formData;
@@ -391,7 +406,7 @@ const ProductDetail = ({
           checkCodeDuplicate(currentFormData.code, productId)
         ) {
           showToastMessage('이미 존재하는 품목코드에요.');
-          return false;
+          return { success: false };
         }
 
         // factory 필드는 수정 시 제외 (서버에서 Factory 인스턴스를 기대함)
@@ -420,13 +435,13 @@ const ProductDetail = ({
         if (result && result.success) {
           // 성공 시 onSuccess 호출하여 상위 컴포넌트에 알림
           onSuccess?.(productId);
-          return true;
+          return { success: true, productId };
         } else {
           showToastMessage(
             '품목 수정에 실패하였습니다. ' +
               (result?.error || '알 수 없는 오류')
           );
-          return false;
+          return { success: false };
         }
       } else {
         // 생성 모드 - 중복 코드 검증
@@ -435,14 +450,14 @@ const ProductDetail = ({
             '이미 존재하는 품목코드에요.',
             '다른 품목코드로 수정해주세요.'
           );
-          return false;
+          return { success: false };
         }
 
         // 로컬스토리지에서 factoryId 가져오기
         const storedFactoryId = factoryId;
         if (!storedFactoryId) {
           showToastMessage('공장 ID가 설정되지 않았습니다.');
-          return false;
+          return { success: false };
         }
 
         // 데이터 변환
@@ -468,19 +483,20 @@ const ProductDetail = ({
           // 새로운 제품이 생성되었을 때 product_id를 onSuccess로 전달
           if (result.data && result.data.product_id) {
             onSuccess?.(result.data.product_id);
+            return { success: true, productId: result.data.product_id };
           }
-          return true;
+          return { success: true };
         } else {
           showToastMessage(
             '품목 생성에 실패하였습니다. ' +
               (result?.error || '알 수 없는 오류')
           );
-          return false;
+          return { success: false };
         }
       }
     } catch (error) {
       showToastMessage('저장 중 오류가 발생했습니다. ' + error);
-      return false;
+      return { success: false };
     }
   };
 
@@ -564,19 +580,30 @@ const ProductDetail = ({
 
     // 품목 정보와 위치 정보 저장
     if (isProductInfoChanged && isLocationsChanged) {
-      const isSuccess = await handleSaveProductInfo();
-      if (isSuccess) {
-        await handleSaveLocations(
-          getValues('locations'),
-          prevLocations,
-          productId
-        );
+      const result = await handleSaveProductInfo();
+      if (result.success) {
+        const effectiveProductId = productId || result.productId || null;
+        if (effectiveProductId) {
+          await handleSaveLocations(
+            getValues('locations'),
+            prevLocations,
+            effectiveProductId
+          );
+          // 생성 모드에서 임시로 추가한 원자재 연결 저장
+          if (stagedMaterials.length > 0) {
+            await persistStagedConnections(effectiveProductId);
+          }
+        }
         onSuccess?.();
         onClose();
       }
     } else if (isProductInfoChanged) {
-      const isSuccess = await handleSaveProductInfo();
-      if (isSuccess) {
+      const result = await handleSaveProductInfo();
+      if (result.success) {
+        const effectiveProductId = productId || result.productId || null;
+        if (effectiveProductId && stagedMaterials.length > 0) {
+          await persistStagedConnections(effectiveProductId);
+        }
         onSuccess?.();
         onClose();
       }
@@ -593,6 +620,21 @@ const ProductDetail = ({
       onSuccess?.();
       onClose();
     }
+  };
+
+  // 생성 모드에서 임시로 담아둔 원자재 연결을 실제로 생성
+  const persistStagedConnections = async (newProductId: number) => {
+    if (stagedMaterials.length === 0) return;
+    const connections = stagedMaterials.map((m) => ({
+      id: m.id,
+      quantity: m.quantity ?? 0,
+    }));
+    await createMaterialProduct({
+      type: 'product',
+      target_id: newProductId,
+      connections,
+    });
+    setStagedMaterials([]);
   };
 
   // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
@@ -699,9 +741,19 @@ const ProductDetail = ({
             </div>
             <StockStatus
               connections={
-                connections && Array.isArray(connections)
-                  ? (connections as ConnectionModelType[])
-                  : []
+                productId
+                  ? connections && Array.isArray(connections)
+                    ? (connections as ConnectionModelType[])
+                    : []
+                  : (stagedMaterials.map((m, idx) => ({
+                      connection_id: -(idx + 1),
+                      material_id: m.id,
+                      material_name: m.name,
+                      material_code: m.code,
+                      material_spec: m.spec,
+                      material_unit: m.unit,
+                      quantity: m.quantity,
+                    })) as unknown as ConnectionModelType[])
               }
               materialDetails={materialDetails}
               setIsMaterialDetailPanelOpen={setIsMaterialDetailPanelOpen}
@@ -710,6 +762,14 @@ const ProductDetail = ({
               handleQuantityChange={handleQuantityChange}
               onDeleteConnection={handleDeleteConnection}
               onInvalidQuantity={showToastMessage}
+              isStagedMode={!productId}
+              onStagedQuantityChange={(materialId, qty) => {
+                setStagedMaterials((prev) =>
+                  prev.map((m) =>
+                    m.id === materialId ? { ...m, quantity: qty } : m
+                  )
+                );
+              }}
             />
           </div>
 
@@ -728,6 +788,36 @@ const ProductDetail = ({
             if (productId) {
               await getMaterialProductConnections(productId, 'product');
             }
+          }}
+          onStage={(
+            materials: Array<{
+              id: number;
+              name: string;
+              code: string;
+              spec: string;
+              unit: string;
+              quantity: number;
+            }>
+          ) => {
+            // 생성 모드: 임시로 보관
+            setStagedMaterials((prev) => {
+              // 코드 기준 중복 제거 후 합치기
+              const map = new Map<
+                string,
+                {
+                  id: number;
+                  name: string;
+                  code: string;
+                  spec: string;
+                  unit: string;
+                  quantity: number;
+                }
+              >();
+              [...prev, ...materials].forEach((m) => {
+                map.set(m.code, m);
+              });
+              return Array.from(map.values());
+            });
           }}
         />
       )}
