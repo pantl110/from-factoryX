@@ -29,6 +29,8 @@ const useOcrUpload = () => {
       return { status: 'error', message: '공장 ID가 설정되지 않았습니다.' };
     }
 
+    let imageUrl: string | undefined;
+    
     try {
       // 1. 먼저 이미지를 S3에 업로드
       const uploadResult = await uploadFile(file);
@@ -36,7 +38,7 @@ const useOcrUpload = () => {
         throw new Error(uploadResult.error || '이미지 업로드에 실패했습니다.');
       }
 
-      const imageUrl = uploadResult.object_url;
+      imageUrl = uploadResult.object_url;
 
       // 2. Convert file to base64 for OCR
       const base64Data = await new Promise<string>((resolve, reject) => {
@@ -84,6 +86,7 @@ const useOcrUpload = () => {
           return {
             status: 'error',
             message: 'OCR 결과 데이터 형식이 올바르지 않습니다.',
+            imageUrl, // OCR 실패 시에도 업로드된 이미지 URL 포함
           };
         }
       } else {
@@ -107,7 +110,11 @@ const useOcrUpload = () => {
       const errorMessage =
         err instanceof Error ? err.message : 'OCR 업로드에 실패했습니다.';
       setError(errorMessage);
-      return { status: 'error', message: errorMessage };
+      return { 
+        status: 'error', 
+        message: errorMessage,
+        imageUrl // OCR API 실패 시에도 S3 업로드된 이미지 URL 포함
+      };
     } finally {
       setIsLoading(false);
     }

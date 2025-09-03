@@ -7,6 +7,7 @@ import { UseFormTrigger, UseFormWatch } from 'react-hook-form';
 import { ClientModel, ProjectStatusType } from '@/types/data-model';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import useMemberStore from '@/store/member-store';
+import { useSearchParams } from 'next/navigation';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -53,6 +54,11 @@ const TitleSec = ({
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
+  // URL에서 projectId 확인
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project_id');
+  const hasProjectId = !!projectId;
+
   const { isToastOpen, isVisible, showToast } = useToast(); // 토스트 훅
   const {
     isOpen: isQuotationStatusDropdownOpen,
@@ -73,7 +79,9 @@ const TitleSec = ({
         <div className="flex justify-between">
           <div
             className={`${
-              isOrderStatus || isViewer ? 'cursor-default' : 'cursor-pointer'
+              isOrderStatus || isViewer || !hasProjectId
+                ? 'cursor-default'
+                : 'cursor-pointer'
             } relative w-fit`}
           >
             <Chip
@@ -98,18 +106,21 @@ const TitleSec = ({
                     ? 'text-red'
                     : 'text-yellow'
               }
-              state={!isOrderStatus ? !isViewer : false}
+              state={!isOrderStatus && hasProjectId ? !isViewer : false}
               onClick={(e) => {
-                if (isOrderStatus || isViewer) return;
+                if (isOrderStatus || isViewer || !hasProjectId) return;
                 if (e) openQuotationStatusDropdown(e);
               }}
               cursor={
-                isOrderStatus || isViewer ? 'cursor-default' : 'cursor-pointer'
+                isOrderStatus || isViewer || !hasProjectId
+                  ? 'cursor-default'
+                  : 'cursor-pointer'
               }
             />
             {isQuotationStatusDropdownOpen &&
               quotationStatusAnchorRect &&
-              !isOrderStatus && (
+              !isOrderStatus &&
+              hasProjectId && (
                 <div
                   style={{
                     position: 'fixed',
