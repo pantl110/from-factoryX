@@ -16,7 +16,6 @@ import {
 import { useState, useEffect } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks/format-number';
-
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 
@@ -82,19 +81,8 @@ const TableItem = ({
     defaultValues: {
       quantity: currentFormData?.quantity ?? item.quantity,
       equipment_id: currentFormData?.equipment_id ?? item.equipment.id,
-      start_date:
-        currentFormData?.start_date ??
-        (item.start_date
-          ? new Date(item.start_date)
-              .toISOString()
-              .slice(0, 16)
-              .replace('T', ' ')
-          : ''),
-      end_date:
-        currentFormData?.end_date ??
-        (item.end_date
-          ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
-          : ''),
+      start_date: currentFormData?.start_date ?? item.start_date ?? '', // 이미 KST로 변환된 값 사용
+      end_date: currentFormData?.end_date ?? item.end_date ?? '', // 이미 KST로 변환된 값 사용
     },
   });
 
@@ -103,19 +91,8 @@ const TableItem = ({
     const formattedData = {
       quantity: currentFormData?.quantity ?? item.quantity,
       equipment_id: currentFormData?.equipment_id ?? item.equipment.id,
-      start_date:
-        currentFormData?.start_date ??
-        (item.start_date
-          ? new Date(item.start_date)
-              .toISOString()
-              .slice(0, 16)
-              .replace('T', ' ')
-          : ''),
-      end_date:
-        currentFormData?.end_date ??
-        (item.end_date
-          ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
-          : ''),
+      start_date: currentFormData?.start_date ?? item.start_date ?? '', // 이미 KST로 변환된 값 사용
+      end_date: currentFormData?.end_date ?? item.end_date ?? '', // 이미 KST로 변환된 값 사용
     };
     reset(formattedData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -142,13 +119,9 @@ const TableItem = ({
       end_date: watchedEndDate,
     };
 
-    // 원본 데이터와 비교하여 실제 변경사항이 있는지 확인
-    const originalStartDate = item.start_date
-      ? new Date(item.start_date).toISOString().slice(0, 16).replace('T', ' ')
-      : '';
-    const originalEndDate = item.end_date
-      ? new Date(item.end_date).toISOString().slice(0, 16).replace('T', ' ')
-      : '';
+    // 원본 데이터와 비교하여 실제 변경사항이 있는지 확인 (이미 KST로 변환된 값)
+    const originalStartDate = item.start_date || '';
+    const originalEndDate = item.end_date || '';
 
     const hasChanges =
       watchedQuantity !== item.quantity ||

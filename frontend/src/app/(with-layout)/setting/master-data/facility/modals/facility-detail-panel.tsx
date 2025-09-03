@@ -156,7 +156,6 @@ const FacilityDetailPanel = ({
       const payload = {
         factory: factoryId,
         name: data.name,
-        status: '가동 대기' as EquipmentStatusType,
         priority: Number(data.priority),
         location: data.location || '',
         note: data.note || '',

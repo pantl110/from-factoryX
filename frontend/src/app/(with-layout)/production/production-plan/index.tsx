@@ -29,6 +29,23 @@ import Toast from '@/ui/toast';
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import { useDebouncedCallback } from 'use-debounce';
 
+// UTC 시간을 한국 시간(+9시간)으로 변환하는 함수 (표시용만)
+const convertUTCToKST = (utcDateString: string | null): string => {
+  if (!utcDateString) return '';
+
+  // ISO 형식(2025-08-24T04:13:00Z) 또는 일반 형식 모두 처리
+  const utcDate = new Date(utcDateString);
+
+  // 유효한 날짜인지 확인
+  if (isNaN(utcDate.getTime())) return '';
+
+  // 9시간(9 * 60 * 60 * 1000ms) 추가
+  const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+
+  // YYYY-MM-DD HH:mm 형식으로 반환
+  return kstDate.toISOString().slice(0, 16).replace('T', ' ');
+};
+
 interface ProductionPlanProps {
   handleChangeStatus: (status: ProjectStatusType) => void;
   projectStatus?: ProjectStatusType;
@@ -176,26 +193,23 @@ const ProductionPlan = ({
 
       const result = await getProjectPlans(projectId);
       if (result.success && result.data) {
-        setProjectPlans(result.data);
+        // DB에서 받은 날짜 데이터를 +9시간(KST)으로 변환해서 저장
+        const plansWithKSTDates = result.data.map((plan: ProjectPlanModel) => ({
+          ...plan,
+          start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
+          end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
+        }));
 
-        // formChanges를 원본 데이터로 초기화
+        setProjectPlans(plansWithKSTDates);
+
+        // formChanges를 변환된 데이터로 초기화
         const initialFormData: Record<number, ProductionPlanFormDataModel> = {};
-        result.data.forEach((plan: ProjectPlanModel) => {
+        plansWithKSTDates.forEach((plan: ProjectPlanModel) => {
           initialFormData[plan.id] = {
             quantity: plan.quantity,
             equipment_id: plan.equipment.id,
-            start_date: plan.start_date
-              ? new Date(plan.start_date)
-                  .toISOString()
-                  .slice(0, 16)
-                  .replace('T', ' ')
-              : '',
-            end_date: plan.end_date
-              ? new Date(plan.end_date)
-                  .toISOString()
-                  .slice(0, 16)
-                  .replace('T', ' ')
-              : '',
+            start_date: plan.start_date || '',
+            end_date: plan.end_date || '',
           };
         });
         setFormChanges(initialFormData);
@@ -270,7 +284,12 @@ const ProductionPlan = ({
               plan.quotation_product.product.id ===
               targetPlan.quotation_product.product.id
           )
-          .reduce((sum, plan) => sum + plan.quantity, 0),
+          .reduce((sum, plan) => {
+            // formChanges에 변경사항이 있으면 그 값 사용
+            const planFormData = formChanges[plan.id];
+            const quantity = planFormData?.quantity ?? plan.quantity;
+            return sum + quantity;
+          }, 0),
       });
       if (result.success) {
         // 상태 변경 성공 시 해당 plan의 상태만 업데이트
@@ -413,27 +432,33 @@ const ProductionPlan = ({
       const originalPlan = projectPlans.find((p) => p.id === planId);
       if (!originalPlan) return false;
 
-      // 시간대 충돌 검사
+      // 시간대 충돌 검사 (formChanges 반영)
       return projectPlans.some((plan) => {
         if (plan.id === planId) return false; // 자기 자신은 제외
 
+        // 해당 plan의 formChanges가 있으면 그 값 사용, 없으면 원본 사용
+        const planFormData = formChanges[plan.id];
+        const equipmentId = planFormData?.equipment_id ?? plan.equipment.id;
+        const startDate = planFormData?.start_date ?? plan.start_date;
+        const endDate = planFormData?.end_date ?? plan.end_date;
+
         // 같은 설비인지 확인
-        if (plan.equipment.id !== formData.equipment_id) return false;
+        if (equipmentId !== formData.equipment_id) return false;
 
         // 날짜가 설정되어 있는지 확인
         if (
           !formData.start_date ||
           !formData.end_date ||
-          !plan.start_date ||
-          !plan.end_date
+          !startDate ||
+          !endDate
         )
           return false;
 
         // 날짜 형식을 Date 객체로 변환
         const newStartDate = new Date(formData.start_date);
         const newEndDate = new Date(formData.end_date);
-        const existingStartDate = new Date(plan.start_date);
-        const existingEndDate = new Date(plan.end_date);
+        const existingStartDate = new Date(startDate);
+        const existingEndDate = new Date(endDate);
 
         // 날짜 범위가 겹치는지 확인
         const hasOverlap =
@@ -442,32 +467,37 @@ const ProductionPlan = ({
         return hasOverlap;
       });
     },
-    [projectPlans]
+    [projectPlans, formChanges]
   );
 
   // 설비 중복 검사 함수
   const checkEquipmentConflicts = useCallback(
     (planId: number, formData: ProductionPlanFormDataModel) => {
-      // 다른 프로젝트에서 가동 중인 설비인지 확인
-      const hasEquipmentConflict = projectPlans.some(
-        (plan) =>
-          plan.id !== planId &&
-          plan.equipment.id === formData.equipment_id &&
-          plan.status === 'production'
-      );
+      // 다른 프로젝트에서 가동 중인 설비인지 확인 (formChanges 반영)
+      const hasEquipmentConflict = projectPlans.some((plan) => {
+        if (plan.id === planId) return false; // 자기 자신은 제외
+
+        // 해당 plan의 formChanges가 있으면 그 값 사용, 없으면 원본 사용
+        const planFormData = formChanges[plan.id];
+        const equipmentId = planFormData?.equipment_id ?? plan.equipment.id;
+
+        return (
+          equipmentId === formData.equipment_id && plan.status === 'production'
+        );
+      });
 
       return hasEquipmentConflict;
     },
-    [projectPlans]
+    [projectPlans, formChanges]
   );
 
-  // 생산수량 변경 감지를 위한 디바운스 콜백 // 새로운 plan 추가를 위함
-  const debouncedQuantityCheck = useDebouncedCallback(
+  // 생산수량 체크 로직 (디바운스 적용 전)
+  const checkQuantityAndCreatePlan = useCallback(
     (planId: number, formData: ProductionPlanFormDataModel) => {
       const currentPlan = projectPlans.find((p) => p.id === planId); // 현재 plan이 존재하는지
       if (!currentPlan || formData.quantity === currentPlan.quantity) return; // 수량이 실제로 변경되었는지 확인
 
-      // 같은 품목의 총 생산수량 계산 (현재 변경된 수량 포함)
+      // 같은 품목의 총 생산수량 계산 (현재 변경된 수량 및 formChanges 반영)
       const totalQuantity = projectPlans
         .filter(
           (plan) =>
@@ -479,7 +509,10 @@ const ProductionPlan = ({
           if (plan.id === planId) {
             return sum + formData.quantity;
           }
-          return sum + plan.quantity;
+          // 다른 plan도 formChanges에 변경사항이 있으면 그 값 사용
+          const planFormData = formChanges[plan.id];
+          const quantity = planFormData?.quantity ?? plan.quantity;
+          return sum + quantity;
         }, 0);
 
       // 주문수량 (현재 plan에서 바로 가져오기)
@@ -531,6 +564,12 @@ const ProductionPlan = ({
         handleAddPlan(newPlanData, targetParentId);
       }
     },
+    [projectPlans, formChanges, allEquipments, handleAddPlan]
+  );
+
+  // 생산수량 변경 감지를 위한 디바운스 콜백
+  const debouncedQuantityCheck = useDebouncedCallback(
+    checkQuantityAndCreatePlan,
     1000, // 1000ms 디바운스 (타이핑 완료 후 체크)
     {
       leading: false,
@@ -599,7 +638,10 @@ const ProductionPlan = ({
               if (plan.id === planId) {
                 return sum + formData.quantity;
               }
-              return sum + plan.quantity;
+              // 다른 plan도 formChanges에 변경사항이 있으면 그 값 사용
+              const planFormData = formChanges[plan.id];
+              const quantity = planFormData?.quantity ?? plan.quantity;
+              return sum + quantity;
             }, 0),
         });
 
@@ -616,6 +658,7 @@ const ProductionPlan = ({
       showTimeToast,
       showEquipmentToast,
       projectPlans,
+      formChanges,
       checkTimeConflicts,
       checkEquipmentConflicts,
     ]
@@ -674,7 +717,10 @@ const ProductionPlan = ({
                 if (plan.id === parseInt(planId)) {
                   return sum + formData.quantity;
                 }
-                return sum + plan.quantity;
+                // 다른 plan도 formChanges에 변경사항이 있으면 그 값 사용
+                const planFormData = formChanges[plan.id];
+                const quantity = planFormData?.quantity ?? plan.quantity;
+                return sum + quantity;
               }, 0),
           });
         }
