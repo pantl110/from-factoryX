@@ -18,6 +18,7 @@ from stock.schemas.outbound import (
 )
 from factory.models import Factory, FactoryClient
 from factory.utils import is_factory_member
+from tax.models import NationalTaxService
 
 
 router = Router(tags=["MaterialHistory"], auth=jwt_auth)
@@ -185,13 +186,12 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
 @router.get(
     "",
     summary="[C] 원자재 히스토리 조회",
-    description="특정 원자재의 히스토리를 조회합니다. 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회합니다.",
+    description="원자재 히스토리를 조회합니다. material_id가 제공되면 특정 원자재의 히스토리를, 제공되지 않으면 전체 원자재 히스토리를 조회합니다. 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회합니다.",
     response=List[MaterialHistoryItemOut],
 )
 @paginate
 async def get_material_history(
     request,
-    material_id: int,
     filters: MaterialHistoryDetailFilter = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
@@ -201,36 +201,75 @@ async def get_material_history(
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
-    try:
-        material = await Material.objects.aget(id=material_id)
-    except Material.DoesNotExist:
-        raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
+    # material_id 필터가 제공된 경우 해당 원자재 존재 여부 확인
+    if filters.material_id:
+        try:
+            material = await Material.objects.aget(id=filters.material_id)
+        except Material.DoesNotExist:
+            raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
 
     @sync_to_async
     def get_histories():
-        queryset = MaterialHistory.objects.filter(material=material).select_related(
-            "client"
-        )
+        # factory_id로 필터링하여 해당 공장의 원자재 히스토리 조회
+        queryset = MaterialHistory.objects.filter(
+            material__factory_id=factory_id
+        ).select_related("client", "material")
         # type 파라미터 영어→한글 변환 지원
-        type_param = request.GET.get("type")
-        type_map = {"purchase": "구매", "consumption": "소모"}
-        if type_param in type_map:
-            queryset = queryset.filter(type=type_map[type_param])
-        elif type_param:
-            queryset = queryset.filter(type=type_param)
-        queryset = filters.filter(queryset)
+        if filters.type:
+            type_map = {"purchase": "구매", "consumption": "소모"}
+            if filters.type in type_map:
+                queryset = queryset.filter(type=type_map[filters.type])
+            else:
+                queryset = queryset.filter(type=filters.type)
+
+        # material_name으로 부분 일치 검색
+        if filters.material_name:
+            queryset = queryset.filter(material__name__icontains=filters.material_name)
+
+        # client_id 필터링
+        if filters.client_id:
+            queryset = queryset.filter(client_id=filters.client_id)
+
+        # material_id를 제외한 다른 필터들 적용 (start_date, end_date, is_cash_receipt)
+        if filters.start_date:
+            queryset = queryset.filter(created_at__date__gte=filters.start_date)
+        if filters.end_date:
+            queryset = queryset.filter(created_at__date__lte=filters.end_date)
+        if filters.is_cash_receipt is not None:
+            queryset = queryset.filter(cash_receipt__isnull=not filters.is_cash_receipt)
 
         # @paginate 데코레이터가 자동으로 페이지네이션을 처리하므로
         # 각 히스토리를 딕셔너리로 변환해서 반환합니다
         histories = list(queryset.order_by("-created_at"))
 
+        # material_id 필터가 있을 때만 NationalTaxService 조회
+        national_tax_service_id = None
+        if filters.material_id:
+            # SQLite에서 JSON contains lookup이 지원되지 않으므로 다른 방법 사용
+            tax_services = NationalTaxService.objects.filter(factory_id=factory_id)
+            for tax_service in tax_services:
+                if tax_service.line_items:
+                    for item in tax_service.line_items:
+                        if (
+                            isinstance(item, dict)
+                            and item.get("material_history") == filters.material_id
+                        ):
+                            national_tax_service_id = tax_service.id
+                            break
+                if national_tax_service_id:
+                    break
+
         result = []
         for history in histories:
             client_name = history.client.name if history.client else None
+
             result.append(
                 {
                     "id": history.id,
                     "type": history.type,
+                    "material_id": history.material.id,
+                    "material_name": history.material.name,
+                    "material_code": history.material.code,
                     "client_id": history.client_id,
                     "client_name": client_name,
                     "quantity": history.quantity,
@@ -240,6 +279,8 @@ async def get_material_history(
                         history.created_at.isoformat() if history.created_at else None
                     ),
                     "total_stock": history.total_stock,
+                    "cash_receipt": history.cash_receipt_id,
+                    "national_tax_service_id": national_tax_service_id,
                 }
             )
 

@@ -169,6 +169,9 @@ class MaterialHistoryListOut(Schema):
 class MaterialHistoryItemOut(Schema):
     id: int
     type: str
+    material_id: int
+    material_name: str
+    material_code: str
     client_id: Optional[int]
     client_name: Optional[str]
     quantity: int
@@ -176,3 +179,5 @@ class MaterialHistoryItemOut(Schema):
     amount: int
     date: Optional[str]
     total_stock: int
+    cash_receipt: Optional[int]
+    national_tax_service_id: Optional[int]
