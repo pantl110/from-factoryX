@@ -29,6 +29,7 @@ class QuotationDetailOut(Schema):
     client_id: Optional[int] = None
     business_registration_number: Optional[str] = None
     representative_name: Optional[str] = None
+    manager_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     fax: Optional[str] = None
@@ -43,7 +44,7 @@ class QuotationDetailOut(Schema):
 class QuotationModelOut(ModelSchema):
     class Meta:
         model = Quotation
-        fields = '__all__'
+        fields = "__all__"
 
 
 # (POST) Quotation Confirmed Response
