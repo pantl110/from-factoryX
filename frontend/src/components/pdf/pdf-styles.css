@@ -1,20 +1,25 @@
 /* PDF 생성용 전용 스타일 */
 
 .pdf-container {
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-family:
+    'Pretendard',
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    sans-serif;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
- .pdf-title {
+.pdf-title {
   font-size: 28px;
   line-height: 1.5;
   font-weight: 600; /* bold */
-  color: #18181B;
+  color: #18181b;
   height: 42px;
 }
-
 
 .pdf-section {
   display: flex;
@@ -23,11 +28,11 @@
 }
 
 .pdf-section-title {
-    height: 40px;
+  height: 40px;
   font-size: 22px;
   line-height: 1.2;
   font-weight: 600; /* bold */
-  color: #18181B;
+  color: #18181b;
 }
 
 .pdf-table {
@@ -48,26 +53,26 @@
 }
 
 .pdf-table-cell .label {
-    width: 137px;
-    min-width: 137px;
-    max-width: 137px;
-    padding: 2px 12px;
-    background-color: #f4f4f5;
-    display: flex;
-    align-items: top;
+  width: 137px;
+  min-width: 137px;
+  max-width: 137px;
+  padding: 2px 12px;
+  background-color: #f4f4f5;
+  display: flex;
+  align-items: top;
 }
 
 .pdf-table-cell .label p {
-    font-size: 16px;
-    font-weight: 400; /* medium */
-    color: #949494;
-    white-space: pre-wrap;
-    word-break: break-all;
-    overflow-wrap: break-word;
+  font-size: 16px;
+  font-weight: 400; /* medium */
+  color: #949494;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .pdf-table-cell .content {
-    padding: 2px 12px;
+  padding: 2px 12px;
   display: flex;
   align-items: top;
 }
@@ -85,16 +90,16 @@
  제품 목록 테이블
 */
 .pdf-product-table {
-    width: 100%;
-    border-top: 1px solid #e3e3e3;
+  width: 100%;
+  border-top: 1px solid #e3e3e3;
 }
 
 .pdf-product-table-header {
-    height: 48px;
-    border-bottom: 1px solid #e3e3e3;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  height: 48px;
+  border-bottom: 1px solid #e3e3e3;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .pdf-product-table-header p {
@@ -105,12 +110,12 @@
 }
 
 .pdf-product-table-body {
-    border-bottom: 1px solid #e3e3e3;
-    display: flex;
-    flex-direction: row;
-    align-items: start;
+  border-bottom: 1px solid #e3e3e3;
+  display: flex;
+  flex-direction: row;
+  align-items: start;
 }
-    
+
 .pdf-product-table-body p {
   font-size: 16px;
   font-weight: 400; /* medium */
@@ -120,7 +125,6 @@
   word-break: break-all;
   overflow-wrap: break-word;
 }
-
 
 /* 총 금액 정보 */
 .pdf-summary {
@@ -134,26 +138,25 @@
 }
 
 .pdf-summary-row {
-    height: 48px;
+  height: 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .pdf-summary-label {
-    height: 100%;
+  height: 100%;
   font-size: 16px;
   font-weight: 300; /* medium */
   color: #949494;
   padding-top: 4px;
-
 }
 
 .pdf-summary-value-wrapper {
-    height: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
-  justify-content: center;  
+  justify-content: center;
 }
 
 .pdf-summary-value {
