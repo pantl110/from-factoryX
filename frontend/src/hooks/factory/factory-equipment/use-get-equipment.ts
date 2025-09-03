@@ -140,7 +140,7 @@ const useGetEquipment = () => {
       try {
         // 백엔드에서 검색과 페이지네이션을 모두 처리하도록 단일 API 호출
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}&q=${encodeURIComponent(value)}&page=${page}&page_size=${pageSize}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}&name=${encodeURIComponent(value)}&page=${page}&page_size=${pageSize}`,
           {
             method: 'GET',
             credentials: 'include',
