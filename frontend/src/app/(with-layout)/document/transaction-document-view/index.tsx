@@ -1,12 +1,11 @@
-import { QuotationResponseModel } from '@/types/data-model';
+import { ProjectQuotationModel } from '@/types/data-model';
 import DocumentViewTitle from '../document-view-title';
-// import ProductListInfo from '../product-list-info';
 import BuyerInfo from './buyer-info';
 import SellerInfo from './seller-info';
 import ProductListInfo from '../product-list-info';
 
 interface TransactionDocumentViewProps {
-  quotationData: QuotationResponseModel;
+  quotationData: ProjectQuotationModel;
   startDate: string;
 }
 
@@ -17,17 +16,37 @@ const TransactionDocumentView = ({
   return (
     <div className="flex flex-col gap-6">
       <DocumentViewTitle
-        title={`[${quotationData.factory_name}]건 거래명세서`}
-        // dateLabel="작성일자"
-        // date="2025-07-31"
+        title={`[${quotationData.client_info.name}]건 거래명세서`}
       />
       <SellerInfo startDate={startDate} />
-      <BuyerInfo quotationData={quotationData} />
+      <BuyerInfo
+        quotationData={{
+          client_id: quotationData.client_info.id,
+          factory_name: quotationData.client_info.name,
+          business_registration_number:
+            quotationData.client_info.business_registration_number,
+          representative_name: quotationData.client_info.representative_name,
+          business_type: quotationData.factory_info.business_type,
+          business_category: quotationData.factory_info.business_category,
+          address: quotationData.factory_info.business_address,
+          email: quotationData.client_info.email,
+          phone: quotationData.client_info.phone,
+          fax: quotationData.client_info.fax,
+        }}
+      />
       <ProductListInfo
-        productListInfoTitle="주문 품목 정보"
-        productItems={quotationData.products}
-        supplyAmount={quotationData.products.reduce(
-          (sum, item) => sum + (item.supply_amount || 0),
+        productListInfoTitle="거래 품목 정보"
+        productItems={quotationData.products_info.map((item) => ({
+          productId: item.id,
+          product_code: item.code,
+          product_name: item.name,
+          spec: item.spec,
+          unit: item.unit,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+        }))}
+        supplyAmount={quotationData.products_info.reduce(
+          (sum, item) => sum + (item.unit_price * item.quantity || 0),
           0
         )}
       />

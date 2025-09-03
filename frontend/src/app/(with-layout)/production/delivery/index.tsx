@@ -8,7 +8,7 @@ import usePageStatusStore from '@/store/page-status-store';
 import MoveToStorageModal from './modals/move-to-storage-modal';
 import useMemberStore from '@/store/member-store';
 import {
-  QuotationResponseModel,
+  ProjectQuotationModel,
   ProjectStatusType,
   ProjectPlanModel,
 } from '@/types/data-model';
@@ -22,7 +22,7 @@ import {
 } from '@/hooks';
 
 interface DeliveryProps {
-  quotationData: QuotationResponseModel;
+  quotationData: ProjectQuotationModel;
   startDate: string;
   onProjectStatusChange?: () => Promise<void>;
   projectStatus: ProjectStatusType;
@@ -292,7 +292,7 @@ const Delivery = ({
           onClose={() => setIsDeliveryOverlayOpen(false)}
           data={[
             {
-              companyName: quotationData.factory_name,
+              companyName: quotationData.client_info.name,
               productName:
                 selectedDeliveryData.quotation_product?.product?.name || '-',
               spec:
@@ -320,7 +320,7 @@ const Delivery = ({
           <DeliveryOverlay
             onClose={() => setIsPrintAllDeliveryOverlayOpen(false)}
             data={deliveryData.map((item: ProjectPlanModel) => ({
-              companyName: quotationData.factory_name,
+              companyName: quotationData.client_info.name,
               productName: item.quotation_product?.product?.name || '-',
               spec: item.quotation_product?.product?.spec || '-',
               unit: item.quotation_product?.product?.unit || '-',

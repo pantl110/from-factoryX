@@ -304,14 +304,14 @@ const ProductionPageContent = () => {
         {tabs[selectedTab] === '거래명세서' && quotationData && (
           <div className="px-10 pt-5 pb-10">
             <TransactionDocumentView
-              quotationData={quotationData}
+              quotationData={projectStatus?.quotations[0]}
               startDate={projectStatus?.earliest_start_date || '-'}
             />
           </div>
         )}
         {tabs[selectedTab] === '납품' && quotationData && (
           <Delivery
-            quotationData={quotationData}
+            quotationData={projectStatus?.quotations[0]}
             startDate={projectStatus?.earliest_start_date || '-'}
             onProjectStatusChange={reloadProjectStatus}
             projectStatus={projectStatus.status as ProjectStatusType}

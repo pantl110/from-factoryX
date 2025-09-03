@@ -12,19 +12,13 @@ const LogItem = ({ onClick, isSelected, log }: LogItemProps) => {
   // Korean and English type to icon key mapping
   const getIconKey = (type: string) => {
     switch (type) {
-      // Korean types
-      case '메모':
-        return 'memo';
-      case '반품':
-        return 'return';
-      case '계획 변경':
-        return 'planChange';
-      // English types
       case 'memo':
         return 'memo';
       case 'refund':
         return 'return';
       case 'plan':
+        return 'planChange';
+      case 'date':
         return 'planChange';
       default:
         return 'memo';

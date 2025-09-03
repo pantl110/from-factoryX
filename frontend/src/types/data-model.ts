@@ -633,7 +633,7 @@ export interface QuotationResponseModel {
   business_type?: string;
   business_category?: string;
   address?: string;
-  products: QuotationProductDetailResponseModel[]; // 주문 품목 정보
+  products?: QuotationProductDetailResponseModel[]; // 주문 품목 정보
   due_date?: string; // 납기일
   uploaded_file?: string;
 }
