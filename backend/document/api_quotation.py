@@ -192,6 +192,7 @@ async def get_quotation_detail(request, quotation_id: int):
                 client, "business_registration_number", None
             ),
             "representative_name": getattr(client, "representative_name", None),
+            "manager_name": getattr(client, "manager", None),
             "email": getattr(client, "email", None),
             "phone": getattr(client, "phone", None),
             "fax": getattr(client, "fax", None),

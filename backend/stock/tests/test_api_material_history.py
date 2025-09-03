@@ -598,6 +598,9 @@ class TestMaterialHistoryAPI(TestCase):
             for field in [
                 "id",
                 "type",
+                "material_id",
+                "material_name",
+                "material_code",
                 "client_id",
                 "client_name",
                 "quantity",
@@ -605,14 +608,23 @@ class TestMaterialHistoryAPI(TestCase):
                 "amount",
                 "date",
                 "total_stock",
+                "cash_receipt",
+                "national_tax_service_id",
             ]:
                 self.assertIn(field, history)
 
             # 필드 값 검증
             self.assertIsInstance(history["total_stock"], int)
+            self.assertIsInstance(history["material_id"], int)
+            self.assertIsInstance(history["material_name"], str)
+            self.assertIsInstance(history["material_code"], str)
 
             # client_id 검증
             self.assertIsInstance(history["client_id"], (int, type(None)))
+
+            # cash_receipt와 national_tax_service_id는 Optional[int]
+            self.assertIsInstance(history["cash_receipt"], (int, type(None)))
+            self.assertIsInstance(history["national_tax_service_id"], (int, type(None)))
 
     async def test_get_material_history_by_type_filter(self):
         """원자재 히스토리 타입별 필터링 테스트"""

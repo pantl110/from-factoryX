@@ -192,3 +192,11 @@ class MaterialHistoryDetailFilter(FilterSchema):
     start_date: Optional[str] = Field(default=None, q="created_at__date__gte")
     end_date: Optional[str] = Field(default=None, q="created_at__date__lte")
     is_cash_receipt: Optional[bool] = Field(default=None, q="cash_receipt__isnull")
+    material_id: Optional[int] = Field(default=None, q="material_id")
+    material_name: Optional[str] = Field(
+        default=None, description="원자재명으로 검색 (부분 일치)"
+    )
+    client_id: Optional[int] = Field(default=None, q="client_id")
+    type: Optional[str] = Field(
+        default=None, description="히스토리 타입 (purchase/구매, consumption/소모)"
+    )
