@@ -13,7 +13,7 @@ export const clientData: ClientResponseModel[] = [
     email: 'purchasing@hansolchem.com',
     address: '서울특별시 강남구 역삼동 123-45 10층',
     note: '주문 횟수가 많은 거래처입니다.',
-    manager: '김한솔',
+    manager_name: '김한솔',
     fax: '0234567890',
   },
   {
@@ -28,7 +28,7 @@ export const clientData: ClientResponseModel[] = [
     email: 'sales@ecoplastic.co.kr',
     address: '경기도 성남시 분당구 정자동 123-45 5층',
     note: '주문 횟수가 많은 거래처입니다.',
-    manager: '박환경',
+    manager_name: '박환경',
   },
   {
     id: 3,
@@ -41,7 +41,7 @@ export const clientData: ClientResponseModel[] = [
     phone: '0529876543',
     email: 'rnd@miraemotors.com',
     address: '부산광역시 해운대구 우동 123-45 3층',
-    manager: '최미래',
+    manager_name: '최미래',
   },
   {
     id: 4,
@@ -54,7 +54,7 @@ export const clientData: ClientResponseModel[] = [
     phone: '0542805000',
     email: 'info@steelkorea.com',
     address: '부산광역시 해운대구 우동 123-45 3층',
-    manager: '이강철',
+    manager_name: '이강철',
   },
   {
     id: 5,
@@ -69,7 +69,7 @@ export const clientData: ClientResponseModel[] = [
     address: '서울특별시 마포구 합정동 456-78 7층',
     note: '플라스틱 전문 제조업체입니다.',
     fax: '0212345678',
-    manager: '정플라스틱',
+    manager_name: '정플라스틱',
   },
   {
     id: 6,
@@ -83,7 +83,7 @@ export const clientData: ClientResponseModel[] = [
     email: 'contact@pluschemical.com',
     address: '인천광역시 연수구 송도동 789-12 12층',
     note: '고품질 화학 원료 공급업체입니다.',
-    manager: '김플러스',
+    manager_name: '김플러스',
   },
   {
     id: 7,
@@ -97,6 +97,6 @@ export const clientData: ClientResponseModel[] = [
     email: 'sales@flexindustry.kr',
     address: '충청남도 천안시 동남구 111-22 4층',
     note: '유연 소재 전문 제조업체입니다.',
-    manager: '박플렉스',
+    manager_name: '박플렉스',
   },
 ];

@@ -11,7 +11,7 @@ import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import OrderDocumentPDFView from '@/components/pdf/order-document-pdf-view';
-import { useSendQuotationEmail, useToast } from '@/hooks';
+import { useSendQuotationEmail } from '@/hooks';
 import Spinner from '@/ui/spinner';
 import OverlayView from '@/ui/ovelay-view';
 

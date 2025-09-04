@@ -3,7 +3,6 @@ import Panel from '@/ui/panel';
 import { useGetCashReceiptDetail } from '@/hooks';
 import { useEffect, useState } from 'react';
 import { CashReceiptDetailResponseModel } from '@/types/data-model';
-import Spinner from '@/ui/spinner';
 import PriceInfo from '@/ui/price-info';
 import MiniBtn from '@/ui/mini-btn';
 import LinkReceiptModal from './link-receipt-modal';

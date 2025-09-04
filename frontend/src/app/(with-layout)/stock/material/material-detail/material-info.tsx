@@ -45,7 +45,6 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
       control,
       reset,
       getValues,
-      watch,
       formState: { isDirty },
     } = useForm<MaterialInfoFormModel>({
       defaultValues: {

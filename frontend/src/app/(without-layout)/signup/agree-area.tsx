@@ -7,9 +7,16 @@ import { SignupFormDataModel } from '@/types/data-model';
 interface AgreeAreaProps {
   watchedValues: SignupFormDataModel;
   setValue: UseFormSetValue<SignupFormDataModel>;
+  // setIsTermsOfServiceOpen: (value: boolean) => void;
+  setIsPrivacyPolicyOpen: (value: boolean) => void;
 }
 
-const AgreeArea = ({ watchedValues, setValue }: AgreeAreaProps) => {
+const AgreeArea = ({
+  watchedValues,
+  setValue,
+  // setIsTermsOfServiceOpen,
+  setIsPrivacyPolicyOpen,
+}: AgreeAreaProps) => {
   // 모두 동의 체크박스 상태
   const isAllChecked =
     watchedValues.terms_of_service && watchedValues.privacy_policy_agreement;
@@ -46,7 +53,12 @@ const AgreeArea = ({ watchedValues, setValue }: AgreeAreaProps) => {
           />
           <p className="text-sv Me_Body-1">서비스 이용약관 (필수)</p>
         </div>
-        <p className="text-sv Me_Body-1">약관 보기</p>
+        <button
+          className="text-sv Me_Body-1"
+          // onClick={() => setIsTermsOfServiceOpen(true)}
+        >
+          약관 보기
+        </button>
       </div>
       <div className="flex justify-between">
         <div className="flex gap-2">
@@ -56,7 +68,12 @@ const AgreeArea = ({ watchedValues, setValue }: AgreeAreaProps) => {
           />
           <p className="text-sv Me_Body-1">개인정보 수집 및 이용 동의 (필수)</p>
         </div>
-        <p className="text-sv Me_Body-1">약관 보기</p>
+        <button
+          className="text-sv Me_Body-1"
+          onClick={() => setIsPrivacyPolicyOpen(true)}
+        >
+          약관 보기
+        </button>
       </div>
     </div>
   );

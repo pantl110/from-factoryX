@@ -389,7 +389,7 @@ export interface MaterialHistoryModel {
 // 업체별 단가 비교 & 원자재 입출고 내역// 원자재 히스토리 조회
 export interface MaterialHistoryResponseModel {
   id: number; // material_history_id
-  type: 'purchase' | 'consumption'; // 구매 또는 소모 
+  type: 'purchase' | 'consumption'; // 구매 또는 소모
   material_id: number; // 원자재 ID
   material_name: string; // 원자재명
   material_code: string; // 원자재 코드

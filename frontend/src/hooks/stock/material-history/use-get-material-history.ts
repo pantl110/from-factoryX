@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import {
-  MaterialHistoryListResponseModel,
-} from '@/types/data-model';
+import { MaterialHistoryListResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 
 interface GetMaterialHistoryOptionModel {
@@ -42,7 +40,7 @@ const useGetMaterialHistory = () => {
 
       // factory_id를 query parameter로
       params.append('factory_id', factoryId.toString());
-      
+
       // material_id를 query parameter로 추가 (옵션)
       if (options?.material_id) {
         params.append('material_id', options.material_id.toString());
@@ -55,12 +53,12 @@ const useGetMaterialHistory = () => {
       if (options?.end_date) {
         params.append('end_date', options.end_date);
       }
-      
+
       // 타입 필터 파라미터
       if (options?.type) {
         params.append('type', options.type);
       }
-      
+
       // 그 외 파라미터들
       if (options?.is_cash_receipt !== undefined) {
         params.append('is_cash_receipt', options.is_cash_receipt.toString());
@@ -71,7 +69,7 @@ const useGetMaterialHistory = () => {
       if (options?.client_id) {
         params.append('client_id', options.client_id.toString());
       }
-      
+
       // 페이지네이션 파라미터
       const page = options?.page || 1;
       const pageSize = options?.page_size || 5;

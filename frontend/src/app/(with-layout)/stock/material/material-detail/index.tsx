@@ -63,7 +63,7 @@ const MaterialDetailPanel = ({
 
   // ClientDetailPanel 관련 상태
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
-  const [clientWasModified, setClientWasModified] = useState(false);
+  const [hasClientBeenModified, setHasClientBeenModified] = useState(false);
 
   // 품목 코드 중복 검사를 위한 상태
   const [existingProductCodes, setExistingProductCodes] = useState<string[]>(
@@ -81,7 +81,7 @@ const MaterialDetailPanel = ({
     null
   );
 
-  const [productWasModified, setProductWasModified] = useState(false); // 품목이 실제로 수정/삭제되었는지
+  const [hasProductBeenModified, setHasProductBeenModified] = useState(false); // 품목이 실제로 수정/삭제되었는지
 
   // 필수값 검증 함수
   const checkRequiredFilled = (): boolean => {
@@ -124,7 +124,7 @@ const MaterialDetailPanel = ({
         const result =
           await deleteMaterialProductConnection(deleteConnectionId);
         if (result.success) {
-          setProductWasModified(true);
+          setHasProductBeenModified(true);
         }
       } catch {
         // 삭제 실패 시 에러 처리
@@ -372,8 +372,8 @@ const MaterialDetailPanel = ({
           onProductClick={(productId) => {
             setSelectedProductId(productId);
           }}
-          clientWasModified={clientWasModified}
-          productWasModified={productWasModified}
+          clientWasModified={hasClientBeenModified}
+          productWasModified={hasProductBeenModified}
         />
       </Panel>
       {openUploadModals.map((open, idx) =>
@@ -411,11 +411,11 @@ const MaterialDetailPanel = ({
           onClose={() => {
             setSelectedClientId(null);
             // 패널이 닫힐 때 수정 상태 리셋 (잠시 후에)
-            setTimeout(() => setClientWasModified(false), 100);
+            setTimeout(() => setHasClientBeenModified(false), 100);
           }}
           refetchClient={() => {
             // 저장 버튼을 눌렀을 때 (수정이 발생했을 때) 호출됨
-            setClientWasModified(true);
+            setHasClientBeenModified(true);
           }}
           clientId={selectedClientId}
         />
@@ -426,7 +426,7 @@ const MaterialDetailPanel = ({
           materialId={selectedMaterialId}
           onClose={() => setIsProductEnrollmentModalOpen(false)}
           onSuccess={() => {
-            setProductWasModified(true);
+            setHasProductBeenModified(true);
           }}
           checkDuplicateProductCode={checkDuplicateProductCode}
           showDuplicateProductToast={showDuplicateProductToast}
@@ -455,11 +455,11 @@ const MaterialDetailPanel = ({
           onClose={() => {
             setSelectedProductId(null);
             // 잠시 후 수정 상태 리셋
-            setTimeout(() => setProductWasModified(false), 100);
+            setTimeout(() => setHasProductBeenModified(false), 100);
           }}
           onSuccess={() => {
             // 품목이 성공적으로 저장되었을 때
-            setProductWasModified(true);
+            setHasProductBeenModified(true);
           }}
           productId={selectedProductId}
         />

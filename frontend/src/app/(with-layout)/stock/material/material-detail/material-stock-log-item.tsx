@@ -71,7 +71,6 @@ const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
             height="h-8"
             onClick={() => {
               setIsCashReceiptDetailPanelOpen(true);
-              console.log('data.cash_receipt', isCashReceiptDetailPanelOpen);
             }}
           />
         ) : (

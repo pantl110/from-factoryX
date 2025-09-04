@@ -42,8 +42,8 @@ const QuotationHistory = ({
         <QuotationHistoryItem
           key={history.id}
           onClick={
-            history.client_id !== null
-              ? () => setIsClinetDetailPanelOpen(history.client_id!)
+            history.client_id !== null && history.client_id !== undefined
+              ? () => setIsClinetDetailPanelOpen(history.client_id as number)
               : () => {}
           }
           data={history}
