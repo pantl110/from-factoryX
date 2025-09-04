@@ -389,18 +389,19 @@ export interface MaterialHistoryModel {
 // 업체별 단가 비교 & 원자재 입출고 내역// 원자재 히스토리 조회
 export interface MaterialHistoryResponseModel {
   id: number; // material_history_id
-  type: 'purchase' | 'consumption'; // 구매 또는 소비
-  client_id: number;
-  client_name: string; // 거래처명
+  type: '구매' | '소모'; // 구매 또는 소모 (한글)
+  material_id: number; // 원자재 ID
+  material_name: string; // 원자재명
+  material_code: string; // 원자재 코드
+  client_id: number | null; // 거래처 ID
+  client_name: string | null; // 거래처명
   quantity: number; // 수량
   unit_price: number; // 구매 단가
   amount: number; // 금액(수량x단가)
   date: string; // 거래일자 (ISO8601)
   total_stock: number; // 거래 후 총 재고
-
-  // 아직 db에는 없음
-  purchase_tax_invoice_id?: number | null; // 매입 세금계산서 연결 ID (null 가능)
-  cash_receipt_id?: number | null; // 현금영수증 연결 ID (null 가능)
+  cash_receipt: number | null; // 현금영수증 ID
+  national_tax_service_id: number | null; // 국세청 신고 ID
 }
 
 export interface MaterialHistoryListResponseModel extends PaginationModel {

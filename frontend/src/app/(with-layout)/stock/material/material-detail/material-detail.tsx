@@ -42,6 +42,7 @@ interface MaterialDetailProps {
   handleOpenDeleteModal: (connectionId: number) => void;
   onProductClick?: (productId: number) => void;
   onRequiredFilledChange?: (filled: boolean) => void;
+  clientWasModified?: boolean; // 클라이언트가 실제로 수정되어 저장되었는지
 }
 
 const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
@@ -56,6 +57,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       handleOpenDeleteModal,
       onProductClick,
       onRequiredFilledChange,
+      clientWasModified,
     },
     ref
   ) => {
@@ -122,12 +124,13 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       pageSize,
       onPeriodChange: async (filters) => {
         if (materialId) {
-          await getPriceHistory(materialId, {
+          await getPriceHistory({
+            material_id: materialId,
             start_date: filters.start_date as string | undefined,
             end_date: filters.end_date as string | undefined,
             page: filters.page as number,
             page_size: pageSize,
-            type: '구매',
+            // type: 'purchase',
           });
         }
       },
@@ -140,7 +143,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       pageSize,
       onPeriodChange: async (filters) => {
         if (materialId) {
-          await getStockHistory(materialId, {
+          await getStockHistory({
+            material_id: materialId,
             start_date: filters.start_date as string | undefined,
             end_date: filters.end_date as string | undefined,
             page: filters.page as number,
@@ -156,14 +160,16 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       // 페이지 변경 시에도 API 호출
       if (materialId) {
         // 업체별 단가 비교 (타입: 구매만)
-        getPriceHistory(materialId, {
+        getPriceHistory({
+          material_id: materialId,
           page,
           page_size: pageSize,
-          type: '구매',
+          // type: 'purchase',
         });
 
         // 재고 이력 (타입: 전체)
-        getStockHistory(materialId, {
+        getStockHistory({
+          material_id: materialId,
           page,
           page_size: pageSize,
         });
@@ -254,6 +260,35 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
         reset({ locations });
       }
     }, [locations, reset]);
+
+    // 클라이언트가 수정되어 저장되었을 때 업체별 단가 비교 재조회
+    useEffect(() => {
+      if (clientWasModified && materialId) {
+        // pricePeriodSelector의 createFilters를 사용해서 현재 기간에 맞는 필터 생성
+        const filters = pricePeriodSelector.createFilters(
+          pricePeriodSelector.selectedPeriod,
+          currentPage // 현재 페이지 유지
+        );
+
+        if (filters) {
+          getPriceHistory({
+            material_id: materialId,
+            start_date: filters.start_date as string | undefined,
+            end_date: filters.end_date as string | undefined,
+            page: filters.page as number,
+            page_size: pageSize,
+            // type: 'purchase',
+          });
+        }
+      }
+    }, [
+      clientWasModified,
+      materialId,
+      currentPage,
+      pageSize,
+      getPriceHistory,
+      pricePeriodSelector,
+    ]);
 
     // StockLocationItem 추가 함수
     const handleAddStockLocation = () => {

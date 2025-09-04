@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import {
-  MaterialHistoryResponseModel,
   MaterialHistoryListResponseModel,
 } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 
 interface GetMaterialHistoryOptionModel {
+  type?: 'purchase' | 'consumption';
   start_date?: string;
   end_date?: string;
-  type?: '구매' | '소모';
+  is_cash_receipt?: boolean;
+  material_id?: number;
+  material_name?: string;
+  client_id?: number;
   page?: number;
   page_size?: number;
 }
 
-// 특정 원자재의 히스토리를 조회 // 업체별 단가 비교
-// 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회
+// 원자재 히스토리를 조회합니다. material_id가 제공되면 특정 원자재의 히스토리를, 제공되지 않으면 전체 원자재 히스토리를 조회합니다.
+// 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회합니다.
 const useGetMaterialHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +26,6 @@ const useGetMaterialHistory = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
 
   const getMaterialHistory = async (
-    materialId: number,
     options?: GetMaterialHistoryOptionModel
   ) => {
     setIsLoading(true);
@@ -40,8 +42,11 @@ const useGetMaterialHistory = () => {
 
       // factory_id를 query parameter로
       params.append('factory_id', factoryId.toString());
-      // material_id를 query parameter로 추가
-      params.append('material_id', materialId.toString());
+      
+      // material_id를 query parameter로 추가 (옵션)
+      if (options?.material_id) {
+        params.append('material_id', options.material_id.toString());
+      }
 
       // 기간 필터 파라미터
       if (options?.start_date) {
@@ -50,10 +55,23 @@ const useGetMaterialHistory = () => {
       if (options?.end_date) {
         params.append('end_date', options.end_date);
       }
+      
       // 타입 필터 파라미터
       if (options?.type) {
         params.append('type', options.type);
       }
+      
+      // 그 외 파라미터들
+      if (options?.is_cash_receipt !== undefined) {
+        params.append('is_cash_receipt', options.is_cash_receipt.toString());
+      }
+      if (options?.material_name) {
+        params.append('material_name', options.material_name);
+      }
+      if (options?.client_id) {
+        params.append('client_id', options.client_id.toString());
+      }
+      
       // 페이지네이션 파라미터
       const page = options?.page || 1;
       const pageSize = options?.page_size || 5;
@@ -75,18 +93,7 @@ const useGetMaterialHistory = () => {
       if (response.ok) {
         const result: MaterialHistoryListResponseModel = await response.json();
 
-        // API 응답을 그대로 사용 (백엔드에서 올바른 구조로 보내줄 것으로 예상)
-        const transformedData: MaterialHistoryListResponseModel = {
-          ...result,
-          data:
-            result.data?.map((item: MaterialHistoryResponseModel) => ({
-              ...item,
-              type: item.type,
-              client_name: item.client_name || '',
-              unit_price: item.unit_price || 0,
-              date: item.date || '',
-            })) || [],
-        };
+        const transformedData: MaterialHistoryListResponseModel = result;
 
         setHistories(transformedData);
         return { success: true, data: transformedData };

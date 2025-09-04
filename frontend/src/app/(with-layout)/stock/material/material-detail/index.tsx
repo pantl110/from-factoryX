@@ -61,6 +61,7 @@ const MaterialDetailPanel = ({
 
   // ClientDetailPanel 관련 상태
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [clientWasModified, setClientWasModified] = useState(false);
 
   // 품목 코드 중복 검사를 위한 상태
   const [existingProductCodes, setExistingProductCodes] = useState<string[]>(
@@ -379,6 +380,7 @@ const MaterialDetailPanel = ({
           onProductClick={(productId) => {
             setSelectedProductId(productId);
           }}
+          clientWasModified={clientWasModified}
         />
       </Panel>
       {openUploadModals.map((open, idx) =>
@@ -413,8 +415,15 @@ const MaterialDetailPanel = ({
       {/* MaterialDetail의 거래처 정보 디테일 판넬 */}
       {selectedClientId && (
         <ClientDetailPanel
-          onClose={() => setSelectedClientId(null)}
-          refetchClient={() => {}}
+          onClose={() => {
+            setSelectedClientId(null);
+            // 패널이 닫힐 때 수정 상태 리셋 (잠시 후에)
+            setTimeout(() => setClientWasModified(false), 100);
+          }}
+          refetchClient={() => {
+            // 저장 버튼을 눌렀을 때 (수정이 발생했을 때) 호출됨
+            setClientWasModified(true);
+          }}
           clientId={selectedClientId}
         />
       )}
