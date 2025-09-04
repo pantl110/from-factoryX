@@ -3,6 +3,7 @@ import useMemberStore from '@/store/member-store';
 
 interface SendQuotationEmailPayloadModel {
   email: string;
+  client_name?: string;
   pdf_data?: string; // base64 string
 }
 
@@ -13,7 +14,6 @@ interface SendQuotationEmailResponseModel {
 
 interface UseSendQuotationEmailReturnModel {
   sendQuotationEmail: (
-    quotationId: number,
     payload: SendQuotationEmailPayloadModel
   ) => Promise<SendQuotationEmailResponseModel>;
   isLoading: boolean;
@@ -27,7 +27,6 @@ const useSendQuotationEmail = (): UseSendQuotationEmailReturnModel => {
   const factoryId = useMemberStore((state) => state.factoryId);
 
   const sendQuotationEmail = async (
-    quotationId: number,
     payload: SendQuotationEmailPayloadModel
   ): Promise<SendQuotationEmailResponseModel> => {
     setIsLoading(true);
@@ -39,14 +38,13 @@ const useSendQuotationEmail = (): UseSendQuotationEmailReturnModel => {
       throw new Error(errorMessage);
     }
 
-    if (!quotationId || quotationId <= 0) {
-      const errorMessage = '유효하지 않은 견적서 ID입니다.';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    }
-
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/${quotationId}/send-email?factory_id=${factoryId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/send-email`;
+
+      const requestPayload = {
+        ...payload,
+        factory_id: factoryId,
+      };
 
       const response = await fetch(url, {
         method: 'POST',
@@ -54,7 +52,7 @@ const useSendQuotationEmail = (): UseSendQuotationEmailReturnModel => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(requestPayload),
       });
 
       const contentType = response.headers.get('content-type') || '';

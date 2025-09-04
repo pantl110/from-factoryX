@@ -176,8 +176,9 @@ const EmailView = ({
     }
 
     try {
-      await sendQuotationEmail(quotationId, {
+      await sendQuotationEmail({
         email: clientData.email,
+        client_name: clientData.name,
         pdf_data: base64Pdf,
       });
       alert('이메일이 전송되었습니다.');
