@@ -65,8 +65,11 @@ const QuotationPageContent = () => {
   const setProjectStatusData = usePageStatusStore(
     (state: PageStatusModel) => state.setProjectStatusData
   );
-  const { data: quotationData, isLoading: isQuotationLoading } =
-    useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
+  const {
+    data: quotationData,
+    isLoading: isQuotationLoading,
+    refetch: refetchQuotation,
+  } = useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
   const { showToast, isToastOpen, isVisible } = useToast();
   const { ocrData, imageUrl, setOcrData } = useOcrStore();
   const { clientList, getAllClientList } = useGetClient(); // 거래처 목록 가져오기
@@ -615,16 +618,11 @@ const QuotationPageContent = () => {
               // 1. 프로젝트 상태 새로고침
               loadProjectStatus();
 
-              // 2. 견적서 데이터 재조회
+              // 2. 견적서 데이터 재조회 (로컬 상태는 유지하여 버튼 비활성화 방지)
               if (quotationId > 0) {
-                // 견적서 데이터 새로고침을 위한 상태 초기화
-                setQuotationProducts([]);
-                setInitialQuotationProducts([]);
-                setHasQuotationProducts(false);
-
-                // 폼 리셋
-                reset();
-
+                refetchQuotation?.();
+                // 즉시 UI 반영을 위해 상태를 confirmed로 설정
+                setProjectStatus('confirmed');
                 // 에러 상태 초기화
                 setShowErrors(false);
               }
