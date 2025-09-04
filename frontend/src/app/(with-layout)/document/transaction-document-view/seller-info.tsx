@@ -1,33 +1,12 @@
 import InfoLabelValue from '@/ui/info-label-value';
-import { useGetFactory } from '@/hooks/factory/use-get-factory';
-import { useEffect, useState } from 'react';
-import { FactoriesResponseModel } from '@/types/data-model';
-import useMemberStore from '@/store/member-store';
+import { TaxFactoryInfoModel } from '@/types/data-model';
 
 interface SellerInfoProps {
   startDate: string;
+  factoryData: TaxFactoryInfoModel;
 }
 
-const SellerInfo = ({ startDate }: SellerInfoProps) => {
-  const { getFactory } = useGetFactory();
-  const factoryId = useMemberStore((state) => state.factoryId);
-  const [factoryData, setFactoryData] = useState<FactoriesResponseModel | null>(
-    null
-  );
-
-  useEffect(() => {
-    const fetchFactoryData = async () => {
-      if (factoryId) {
-        const result = await getFactory(factoryId);
-        if (result.success && result.data) {
-          setFactoryData(result.data);
-        }
-      }
-    };
-
-    fetchFactoryData();
-  }, [getFactory, factoryId]);
-
+const SellerInfo = ({ startDate, factoryData }: SellerInfoProps) => {
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">판매처 정보</h3>

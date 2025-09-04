@@ -1,19 +1,29 @@
 import { DocumentDataModel } from '@/mocks/document-data';
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import {
+  PublishedTaxInvoiceResponseModel,
+  ProjectResponseModel,
+  ProjectStatusResponseModel,
+} from '@/types/data-model';
 import Chip from '@/ui/chip';
 import { DocumentTypeColorMap } from './types';
 import Checkbox from '@/ui/checkbox';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Panel from '@/ui/panel';
 import TaxDocumentView from './tax-document-view';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
+import TransactionDocumentView from './transaction-document-view';
+import { useGetProjectStatus } from '@/hooks';
 
 interface DocumentTableItemProps {
-  data: DocumentDataModel | PublishedTaxInvoiceResponseModel;
+  data:
+    | DocumentDataModel
+    | PublishedTaxInvoiceResponseModel
+    | ProjectResponseModel;
   onClick?: () => void;
   checked: boolean;
   onToggle: () => void;
   isTaxDocument?: boolean;
+  isTransactionDocument?: boolean;
 }
 
 const DocumentTableItem = ({
@@ -22,20 +32,42 @@ const DocumentTableItem = ({
   checked,
   onToggle,
   isTaxDocument = false,
+  isTransactionDocument = false,
 }: DocumentTableItemProps) => {
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
+  const [isTransactionPanelOpen, setIsTransactionPanelOpen] = useState(false);
+  const [projectStatusData, setProjectStatusData] =
+    useState<ProjectStatusResponseModel | null>(null);
+
+  const { getProjectStatus, isLoading: isProjectStatusLoading } =
+    useGetProjectStatus();
 
   // 타입 가드 함수
   const isDocumentData = (
-    item: DocumentDataModel | PublishedTaxInvoiceResponseModel
+    item:
+      | DocumentDataModel
+      | PublishedTaxInvoiceResponseModel
+      | ProjectResponseModel
   ): item is DocumentDataModel => {
     return 'documentType' in item;
   };
 
   const isTaxData = (
-    item: DocumentDataModel | PublishedTaxInvoiceResponseModel
+    item:
+      | DocumentDataModel
+      | PublishedTaxInvoiceResponseModel
+      | ProjectResponseModel
   ): item is PublishedTaxInvoiceResponseModel => {
     return 'tax_invoice_type' in item; // sales, purchase
+  };
+
+  const isTransactionData = (
+    item:
+      | DocumentDataModel
+      | PublishedTaxInvoiceResponseModel
+      | ProjectResponseModel
+  ): item is DocumentDataModel => {
+    return 'documentType' in item && item.documentType === '거래명세서';
   };
 
   // DocumentDataModel 타입일 때의 데이터 // 주문서, 생산지시서, 거래명세서
@@ -51,17 +83,47 @@ const DocumentTableItem = ({
     }
   };
 
+  // 거래명세서 클릭 핸들러
+  const handleTransactionDocumentClick = () => {
+    if (isTransactionDocument && isTransactionData(data)) {
+      setIsTransactionPanelOpen(true);
+    }
+  };
+
+  // 거래명세서 패널이 열릴 때 프로젝트 상태 데이터 가져오기
+  useEffect(() => {
+    const fetchProjectStatus = async () => {
+      if (isTransactionPanelOpen && isTransactionData(data)) {
+        const projectId = parseInt(data.id);
+        const result = await getProjectStatus(projectId);
+        if (result.success && result.data) {
+          setProjectStatusData(result.data);
+        }
+      }
+    };
+
+    fetchProjectStatus();
+  }, [isTransactionPanelOpen, data, getProjectStatus]);
+
   return (
     <>
       <div
         className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
         role="button"
         tabIndex={0}
-        onClick={isTaxDocument ? handleTaxDocumentClick : onClick}
+        onClick={
+          isTaxDocument
+            ? handleTaxDocumentClick
+            : isTransactionDocument
+              ? handleTransactionDocumentClick
+              : onClick
+        }
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             if (isTaxDocument) {
               handleTaxDocumentClick();
+            } else if (isTransactionDocument) {
+              handleTransactionDocumentClick();
             } else {
               onClick?.();
             }
@@ -141,6 +203,23 @@ const DocumentTableItem = ({
           onClose={() => setIsTaxPanelOpen(false)}
         >
           <TaxDocumentView taxId={data.id} />
+        </Panel>
+      )}
+      {isTransactionPanelOpen && isTransactionData(data) && (
+        <Panel
+          title="거래명세서"
+          onClose={() => setIsTransactionPanelOpen(false)}
+        >
+          {isProjectStatusLoading ? (
+            <></>
+          ) : projectStatusData && projectStatusData.quotations.length > 0 ? (
+            <TransactionDocumentView
+              quotationData={projectStatusData.quotations[0]}
+              startDate={projectStatusData.quotations[0].due_date} // 납기일자로 임의로 설정
+            />
+          ) : (
+            <></>
+          )}
         </Panel>
       )}
     </>

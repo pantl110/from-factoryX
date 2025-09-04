@@ -1,13 +1,20 @@
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr';
 import DocumentTableItem from './document-table-item';
 import { DocumentDataModel } from '@/mocks/document-data';
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import {
+  PublishedTaxInvoiceResponseModel,
+  ProjectResponseModel,
+} from '@/types/data-model';
 import Checkbox from '@/ui/checkbox';
 import { useState } from 'react';
 import NoHistoryBox from '@/ui/no-history-box';
+import { getProductNamesDisplay } from '@/utils/get-product-names-display';
 
 interface DocumentTableProps {
-  data: DocumentDataModel[] | PublishedTaxInvoiceResponseModel[];
+  data:
+    | DocumentDataModel[]
+    | PublishedTaxInvoiceResponseModel[]
+    | ProjectResponseModel[];
   onDocumentClick?: (document: DocumentDataModel) => void;
   isAllChecked: boolean;
   onToggleAll: () => void;
@@ -67,6 +74,18 @@ const DocumentTable = ({
 
   // 세금계산서는 백엔드에서 정렬된 데이터를 가져오므로 정렬하지 않음
   const taxData = data as PublishedTaxInvoiceResponseModel[];
+
+  // 프로젝트 데이터를 DocumentDataModel 형태로 변환
+  const projectData =
+    selectedType === '거래명세서'
+      ? (data as ProjectResponseModel[]).map((project) => ({
+          id: project.project_id.toString(),
+          documentType: '거래명세서' as const,
+          companyName: project.client_name,
+          productName: getProductNamesDisplay(project.product_names),
+          date: project.start_date, // 현재는 가장 빠른 생산 시작일로 임시 적용
+        }))
+      : [];
 
   return (
     <>
@@ -134,15 +153,26 @@ const DocumentTable = ({
                   isTaxDocument={true}
                 />
               ))
-            : sortedData.map((item, index) => (
-                <DocumentTableItem
-                  key={index}
-                  data={item}
-                  onClick={() => onDocumentClick?.(item)}
-                  checked={isChecked(item.id)}
-                  onToggle={() => toggleOne(item.id)}
-                />
-              ))}
+            : selectedType === '거래명세서'
+              ? projectData.map((item, index) => (
+                  <DocumentTableItem
+                    key={index}
+                    data={item}
+                    onClick={() => onDocumentClick?.(item)}
+                    checked={isChecked(item.id)}
+                    onToggle={() => toggleOne(item.id)}
+                    isTransactionDocument={true}
+                  />
+                ))
+              : sortedData.map((item, index) => (
+                  <DocumentTableItem
+                    key={index}
+                    data={item}
+                    onClick={() => onDocumentClick?.(item)}
+                    checked={isChecked(item.id)}
+                    onToggle={() => toggleOne(item.id)}
+                  />
+                ))}
         </>
       )}
     </>

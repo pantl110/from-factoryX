@@ -518,7 +518,7 @@ export interface ProjectResponseModel {
   project_id: number;
   client_name: string;
   product_names: string[];
-  start_date: string;
+  start_date: string; // 가장 빠른 생산 시작일
   due_date: string;
   publish_status: TaxStatusType; // 세금계산서 발행 상태
   status: ProjectStatusType; // 프로젝트 상태 (영어)
