@@ -11,6 +11,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  margin-top: 8px;
 }
 
 .pdf-title {
@@ -170,7 +171,6 @@
   color: #949494;
   font-size: 18px;
   font-weight: 400;
-  padding-top: 2px;
 }
 
 /* 컬럼 너비 조정 */

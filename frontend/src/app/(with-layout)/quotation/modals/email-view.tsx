@@ -11,10 +11,13 @@ import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import OrderDocumentPDFView from '@/components/pdf/order-document-pdf-view';
-import { useSendQuotationEmail } from '@/hooks';
+import { useSendQuotationEmail, useToast } from '@/hooks';
+import Spinner from '@/ui/spinner';
+import OverlayView from '@/ui/ovelay-view';
 
 interface EmailViewProps {
   onClose?: () => void;
+  onEmailSent?: () => void; // 이메일 전송 성공 시 호출되는 콜백
   documentTitle: string;
   clientData: ClientModel;
   dueDate: string;
@@ -26,6 +29,7 @@ interface EmailViewProps {
 
 const EmailView = ({
   onClose,
+  onEmailSent,
   documentTitle,
   clientData,
   dueDate,
@@ -35,6 +39,7 @@ const EmailView = ({
   quotationId,
 }: EmailViewProps) => {
   const [isEmailSending, setIsEmailSending] = useState(false);
+  // const [isPDFGenerating, setIsPDFGenerating] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
   const { sendQuotationEmail, isLoading } = useSendQuotationEmail();
 
@@ -43,7 +48,7 @@ const EmailView = ({
 
     try {
       const canvas = await html2canvas(pdfRef.current, {
-        scale: 2,
+        scale: 1,
         useCORS: false,
         allowTaint: false,
         backgroundColor: '#ffffff',
@@ -181,97 +186,110 @@ const EmailView = ({
         client_name: clientData.name,
         pdf_data: base64Pdf,
       });
-      alert('이메일이 전송되었습니다.');
-      onClose?.();
+      setIsEmailSending(false); // 성공 시 먼저 로딩 오버레이 닫기
+      onClose?.(); // 모달 닫기
+      onEmailSent?.(); // 토스트 표시를 위한 콜백 호출
     } catch (err) {
       const message =
         err instanceof Error ? err.message : '이메일 전송에 실패했습니다.';
       alert(message);
-    } finally {
-      setIsEmailSending(false);
+      setIsEmailSending(false); // 에러 시에도 오버레이 닫기
     }
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 px-8 pb-8">
-      <div className="sticky pt-8 top-0 bg-wh">
-        <div className="flex justify-between h-13 border-b border-lg">
-          <h3 className="Heading-3">{documentTitle}</h3>
-          <button
-            className="w-10 h-10 flex justify-center items-center cursor-pointer rounded-[8px] hover:bg-bg transition-colors duration-200 ease-in-out"
-            onClick={onClose}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="py-6 w-full flex justify-between border-b border-lg">
-          <div>
-            <h2 className="Heading-2">
-              이메일로 {documentTitle}를 보내시겠어요?
-            </h2>
-            <div className="mt-2.5 Me_Body-3 text-gr">
-              받는 사람과 제목을 확인한 후, 이메일을 전송해 주세요.
-            </div>
+    <>
+      <div className="w-full flex flex-col gap-6 px-8 pb-8">
+        <div className="sticky pt-8 top-0 bg-wh">
+          <div className="flex justify-between h-13 border-b border-lg">
+            <h3 className="Heading-3">{documentTitle}</h3>
+            <button
+              className="w-10 h-10 flex justify-center items-center cursor-pointer rounded-[8px] hover:bg-bg transition-colors duration-200 ease-in-out"
+              onClick={onClose}
+            >
+              <X size={20} />
+            </button>
           </div>
-          <div className="flex gap-2">
-            {/* PDF 미리보기 버튼 */}
-            {/* <button
+
+          <div className="py-6 w-full flex justify-between border-b border-lg mb-6">
+            <div>
+              <h2 className="Heading-2">
+                이메일로 {documentTitle}를 보내시겠어요?
+              </h2>
+              <div className="mt-2.5 Me_Body-3 text-gr">
+                받는 사람과 제목을 확인한 후, 이메일을 전송해 주세요.
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {/* PDF 미리보기 버튼 */}
+              {/* <button
               onClick={handlePreviewPDF}
               disabled={isPDFGenerating}
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Eye size={16} />
               <span className="Me_Body-2">
                 {isPDFGenerating ? 'PDF 생성 중...' : 'PDF 미리보기'}
               </span>
             </button> */}
 
-            {/* 이메일 전송 버튼 */}
-            <MiniBtn
-              text={`${documentTitle} 전송`}
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="hover:bg-primary-hover"
-              onClick={handleSendEmail}
-              disabled={isLoading || isEmailSending}
-            />
+              {/* 이메일 전송 버튼 */}
+              <MiniBtn
+                text={`${documentTitle} 전송`}
+                textColor="text-wh"
+                bgColor="bg-primary"
+                hoverColor="hover:bg-primary-hover"
+                onClick={handleSendEmail}
+                disabled={isLoading || isEmailSending}
+              />
+            </div>
           </div>
+
+          {/* 화면 표시용 */}
+          <OrderDocumentView
+            documentTitle={documentTitle}
+            clientData={clientData}
+            dueDate={dueDate}
+            productListInfoTitle={productListInfoTitle}
+            productItems={productItems}
+            supplyAmount={supplyAmount}
+          />
+        </div>
+
+        {/* PDF 생성을 위한 전용 뷰 (화면 밖에 배치) */}
+        <div
+          ref={pdfRef}
+          style={{
+            position: 'absolute',
+            left: '-9999px',
+            top: '-9999px',
+            width: '800px',
+            backgroundColor: 'white',
+          }}
+        >
+          <OrderDocumentPDFView
+            documentTitle={documentTitle}
+            clientData={clientData}
+            dueDate={dueDate}
+            productListInfoTitle={productListInfoTitle}
+            productItems={productItems}
+            supplyAmount={supplyAmount}
+          />
         </div>
       </div>
-      {/* 화면 표시용 */}
-      {/* <div ref={pdfRef}> */}
-      <OrderDocumentView
-        documentTitle={documentTitle}
-        clientData={clientData}
-        dueDate={dueDate}
-        productListInfoTitle={productListInfoTitle}
-        productItems={productItems}
-        supplyAmount={supplyAmount}
-      />
-      {/* </div> */}
 
-      {/* PDF 생성을 위한 전용 뷰 (화면 밖에 배치) */}
-      <div
-        ref={pdfRef}
-        style={{
-          position: 'absolute',
-          left: '-9999px',
-          top: '-9999px',
-          width: '800px',
-          backgroundColor: 'white',
-        }}
-      >
-        <OrderDocumentPDFView
-          documentTitle={documentTitle}
-          clientData={clientData}
-          dueDate={dueDate}
-          productListInfoTitle={productListInfoTitle}
-          productItems={productItems}
-          supplyAmount={supplyAmount}
-        />
-      </div>
-    </div>
+      {isEmailSending && (
+        <OverlayView
+          onClose={() => setIsEmailSending(false)}
+          bgColor=""
+          pageColor="bg-black/30"
+          blockExit={true}
+        >
+          <div className="flex items-center justify-center h-[calc(85vh)]">
+            <Spinner />
+          </div>
+        </OverlayView>
+      )}
+    </>
   );
 };
 

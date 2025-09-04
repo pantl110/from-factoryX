@@ -87,9 +87,16 @@ const QuotationPageContent = () => {
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
 
-  // 에러 토스트 상태
-  const [toastText, setToastText] = useState<string>('');
-  const [toastSubtext, setToastSubtext] = useState<string>('');
+  // 토스트 상태
+  const [toastContent, setToastContent] = useState<{
+    text: string;
+    subtext: string;
+    type: 'red' | 'primary';
+  }>({
+    text: '',
+    subtext: '',
+    type: 'red',
+  });
 
   // RequestInfo에서 받은 products 데이터
   const [quotationProducts, setQuotationProducts] = useState<
@@ -483,9 +490,14 @@ const QuotationPageContent = () => {
     startProduction,
     setInitialQuotationProducts,
     setShowErrors,
-    setToastText,
-    setToastSubtext,
-    showToast,
+    toast: {
+      setText: (text: string) => setToastContent((prev) => ({ ...prev, text })),
+      setSubtext: (subtext: string) =>
+        setToastContent((prev) => ({ ...prev, subtext })),
+      setType: (type: 'red' | 'primary') =>
+        setToastContent((prev) => ({ ...prev, type })),
+      show: showToast,
+    },
     setIsStartProductionModalOpen,
     router,
   });
@@ -791,6 +803,14 @@ const QuotationPageContent = () => {
             }, 0)}
             quotationId={quotationId || null}
             onClose={() => setIsEmailOpen(false)}
+            onEmailSent={() => {
+              setToastContent({
+                text: '이메일이 성공적으로 전송되었습니다.',
+                subtext: '견적서가 이메일로 전송되었습니다.',
+                type: 'primary',
+              });
+              showToast();
+            }}
           />
         </OverlayView>
       )}
@@ -802,13 +822,20 @@ const QuotationPageContent = () => {
           isLoading={isStartProductionLoading}
         />
       )}
-      {/* 에러 토스트 */}
+      {/* 토스트 */}
       {isToastOpen && (
         <Toast
-          icon={<CheckCircleIcon size={20} className="text-red" />}
-          text={toastText}
-          subtext={toastSubtext}
-          type="red"
+          icon={
+            <CheckCircleIcon
+              size={20}
+              className={
+                toastContent.type === 'primary' ? 'text-primary' : 'text-red'
+              }
+            />
+          }
+          text={toastContent.text}
+          subtext={toastContent.subtext}
+          type={toastContent.type}
           isVisible={isVisible}
         />
       )}

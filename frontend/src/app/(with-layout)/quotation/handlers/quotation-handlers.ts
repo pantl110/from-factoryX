@@ -32,9 +32,12 @@ interface QuotationHandlersProps {
     products: QuotationProductDetailResponseModel[]
   ) => void;
   setShowErrors: (show: boolean) => void;
-  setToastText: (text: string) => void;
-  setToastSubtext: (subtext: string) => void;
-  showToast: () => void;
+  toast: {
+    setText: (text: string) => void;
+    setSubtext: (subtext: string) => void;
+    setType: (type: 'red' | 'primary') => void;
+    show: () => void;
+  };
   setIsStartProductionModalOpen: (open: boolean) => void;
   router: ReturnType<typeof useRouter>;
 }
@@ -51,9 +54,7 @@ export const useQuotationHandlers = ({
   startProduction,
   setInitialQuotationProducts,
   setShowErrors,
-  setToastText,
-  setToastSubtext,
-  showToast,
+  toast,
   setIsStartProductionModalOpen,
   router,
 }: QuotationHandlersProps) => {
@@ -125,14 +126,15 @@ export const useQuotationHandlers = ({
 
         // 날짜 형식 에러인 경우 다른 토스트 메시지 표시
         if (errorMessage.includes('올바르지 않은 날짜 형식')) {
-          setToastText('올바르지 않은 날짜 형식입니다.');
-          setToastSubtext('날짜를 YYYY-MM-DD 형식으로 입력해 주세요.');
+          toast.setText('올바르지 않은 날짜 형식입니다.');
+          toast.setSubtext('날짜를 YYYY-MM-DD 형식으로 입력해 주세요.');
         } else {
-          setToastText('임시저장에 실패했습니다');
-          setToastSubtext(errorMessage);
+          toast.setText('임시저장에 실패했습니다');
+          toast.setSubtext(errorMessage);
         }
-
-        showToast();
+        
+        toast.setType('red');
+        toast.show();
         return false;
       } finally {
         setIsSaveDraftLoading(false);
@@ -149,9 +151,7 @@ export const useQuotationHandlers = ({
       saveDraft,
       setInitialQuotationProducts,
       setShowErrors,
-      setToastText,
-      setToastSubtext,
-      showToast,
+      toast,
     ]
   );
 
@@ -213,9 +213,10 @@ export const useQuotationHandlers = ({
         const toastText = '생산 시작에 실패했습니다.';
         const toastSubtext = '다시 시도해 주세요.';
 
-        setToastText(toastText);
-        setToastSubtext(toastSubtext);
-        showToast();
+        toast.setText(toastText);
+        toast.setSubtext(toastSubtext);
+        toast.setType('red');
+        toast.show();
         return;
       }
 
@@ -247,9 +248,10 @@ export const useQuotationHandlers = ({
       }
 
       // 에러 토스트 표시
-      setToastText(errorText);
-      setToastSubtext(errorSubtext);
-      showToast();
+      toast.setText(errorText);
+      toast.setSubtext(errorSubtext);
+      toast.setType('red');
+      toast.show();
     } finally {
       setIsStartProductionLoading(false);
     }
@@ -260,9 +262,7 @@ export const useQuotationHandlers = ({
     factoryId,
     selectedClientId,
     startProduction,
-    setToastText,
-    setToastSubtext,
-    showToast,
+    toast,
     setIsStartProductionModalOpen,
     router,
   ]);
