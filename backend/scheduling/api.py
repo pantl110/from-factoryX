@@ -13,6 +13,8 @@ from barobill.barobill_state import (
     barobill_tax_service_states,
     nts_tax_service_states,
 )
+from stock.models import MaterialProduct, Material
+from django.db.models import F, OuterRef, Exists, Q
 
 router = Router(tags=["Scheduling"])
 
@@ -58,6 +60,64 @@ async def project_deadline_notification(request):
             content=f"{quotation.project.name} 납기일이 3일 남았어요.",
         )
     return {"quotations": len(quotations)}
+
+
+@router.get(
+    "/project-plan/start",
+    summary="[S] 프로젝트 생산 계획 시작 상태변경(매분 실행)",
+    description="프로젝트 생산 계획의 시작 예정일이 지난 경우 상태를 '가동 중'으로 변경합니다.",
+)
+@scheduling_only
+async def project_plan_start_status_change(request):
+    @sync_to_async
+    def update_start_project_plans():
+        now = timezone.now()
+        # 가동 대기 상태이면서 시작 예정일 지난 플랜 조회
+        plans = list(
+            ProjectPlan.objects.select_related(
+                "equipment__factory",
+                "product__product",
+                "project",
+            ).filter(
+                project__status=Project.ProjectStatus.production,
+                status=ProjectPlan.ProductionStatus.pending,
+                start_date__lt=now,
+            )
+        )
+
+        if not plans:
+            return 0
+
+        # 관련 MaterialProduct, Material들을 플랜의 product에 대해 모두 가져오기
+        product_ids = [plan.product.product.id for plan in plans]
+        material_products = (
+            MaterialProduct.objects.select_related("material")
+            .filter(product_id__in=product_ids)
+            .all()
+        )
+
+        # product별 material 리스트 사전 생성
+        product_material_map = {}
+        for mp in material_products:
+            product_material_map.setdefault(mp.product_id, []).append(mp)
+
+        update_count = 0
+        for plan in plans:
+            materials = product_material_map.get(plan.product.product.id, [])
+            for mp in materials:
+                required_qty = mp.quantity * plan.quantity
+                if mp.material.current_stock < required_qty:
+                    break
+            else:  # for문이 break 없이 끝났으면 재고 충분
+                plan.status = ProjectPlan.ProductionStatus.production
+                plan.save(update_fields=["status"])
+                update_count += 1
+
+        return update_count
+
+    updated = await update_start_project_plans()
+
+    return {"plans": updated}
 
 
 @router.get(
