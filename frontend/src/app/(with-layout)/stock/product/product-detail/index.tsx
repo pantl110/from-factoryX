@@ -6,7 +6,6 @@ import MiniBtn from '@/ui/mini-btn';
 import StockStatus from './stock-status';
 import ProductHistory from './product-history';
 import Panel from '@/ui/panel';
-import Spinner from '@/ui/spinner';
 import {
   ProductModel,
   LocationModel,
@@ -156,25 +155,32 @@ const ProductDetail = ({
 
   // 해당 원자재 클릭 시 보여줄 원자재 id와 해당 디테일 판넬
   const [materialId, setMaterialId] = useState<number | null>(null);
-  const [isMaterialDetailPanelOpen, setIsMaterialDetailPanelOpen] =
-    useState(false);
+  // 패널 열림 여부는 materialId로만 제어
 
-  // 원자재 디테일 패널이 닫힐 때 데이터 새로고침
+  // 원자재 디테일 패널이 닫힐 때: 연결 정보와 해당 원자재 상세만 갱신
   const handleMaterialDetailClose = async () => {
-    setIsMaterialDetailPanelOpen(false);
+    const closedMaterialId = materialId; // 현재 열려있던 원자재 id 보관
     setMaterialId(null);
 
-    // 품목 데이터와 연결된 원자재 데이터 다시 로드
     if (productId) {
-      // 1. 품목 상세 정보 다시 로드
-      await getProductDetail(productId);
-
-      // 2. 연결된 원자재 정보 다시 로드
-      resetData(); // 기존 연결 데이터 초기화
+      // 연결된 자재 목록만 갱신 (StockStatus가 사용하는 데이터)
+      resetData();
       await getMaterialProductConnections(productId, 'product');
+    }
 
-      // 3. 원자재 상세 정보도 다시 로드 (재고량 업데이트 반영)
-      setMaterialDetails({});
+    // 닫힌 원자재의 상세만 갱신하여 materialDetails 상태 업데이트
+    if (closedMaterialId) {
+      try {
+        const result = await getMaterialDetail(closedMaterialId);
+        if (result.success && result.data) {
+          setMaterialDetails((prev) => ({
+            ...prev,
+            [closedMaterialId]: result.data,
+          }));
+        }
+      } catch {
+        // noop
+      }
     }
   };
 
@@ -641,9 +647,7 @@ const ProductDetail = ({
   if (!factoryId) {
     return (
       <Panel title="품목 재고관리" onClose={onClose}>
-        <div className="flex flex-col items-center justify-center h-100 gap-3">
-          <Spinner />
-        </div>
+        <></>
       </Panel>
     );
   }
@@ -755,8 +759,8 @@ const ProductDetail = ({
                       quantity: m.quantity,
                     })) as unknown as ConnectionModelType[])
               }
+              quantityOverrides={quantityChanges}
               materialDetails={materialDetails}
-              setIsMaterialDetailPanelOpen={setIsMaterialDetailPanelOpen}
               setMaterialId={setMaterialId}
               setIsQuantityDirty={setIsQuantityDirty}
               handleQuantityChange={handleQuantityChange}
@@ -823,10 +827,30 @@ const ProductDetail = ({
       )}
 
       {/* 자재 디테일 판넬 */}
-      {isMaterialDetailPanelOpen && materialId && (
+      {materialId && (
         <MaterialDetailPanel
-          setIsMaterialDetailOpen={handleMaterialDetailClose}
+          setIsMaterialDetailOpen={() => setMaterialId(null)}
           selectedMaterialId={materialId}
+          onSuccess={async () => {
+            // 저장 성공시에만 연결 목록과 해당 자재 상세를 갱신
+            const closedMaterialId = materialId;
+            if (productId) {
+              await getMaterialProductConnections(productId, 'product');
+            }
+            if (closedMaterialId) {
+              try {
+                const result = await getMaterialDetail(closedMaterialId);
+                if (result.success && result.data) {
+                  setMaterialDetails((prev) => ({
+                    ...prev,
+                    [closedMaterialId]: result.data,
+                  }));
+                }
+              } catch {}
+            }
+            // 마지막에 닫기
+            setMaterialId(null);
+          }}
         />
       )}
 

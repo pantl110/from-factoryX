@@ -49,10 +49,12 @@ interface MaterialDetailRefModel extends MaterialInfoModel {
 interface MaterialDetailPanelProps {
   setIsMaterialDetailOpen: (isOpen: boolean) => void;
   selectedMaterialId: number;
+  onSuccess?: () => void;
 }
 const MaterialDetailPanel = ({
   setIsMaterialDetailOpen,
   selectedMaterialId,
+  onSuccess,
 }: MaterialDetailPanelProps) => {
   const [isMaterialDetailDirty, setIsMaterialDetailDirty] = useState(false); // 원자재 디테일 판넬 수정 상태
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
@@ -79,16 +81,21 @@ const MaterialDetailPanel = ({
     null
   );
 
-  // MaterialDetail 컴포넌트 리마운트를 위한 key 상태
-  const [materialDetailKey, setMaterialDetailKey] = useState(0);
-  const [isRequiredFilled, setIsRequiredFilled] = useState(false); // material Detail 필수값 충족 여부
+  const [productWasModified, setProductWasModified] = useState(false); // 품목이 실제로 수정/삭제되었는지
 
-  // 품목 디테일 패널이 닫힐 때 원자재 데이터 새로고침
-  const handleProductDetailClose = () => {
-    setSelectedProductId(null);
+  // 필수값 검증 함수
+  const checkRequiredFilled = (): boolean => {
+    const refObj = materialDetailRef.current;
+    if (!refObj) return false;
 
-    // MaterialDetail 컴포넌트를 리마운트하여 모든 데이터 새로고침
-    setMaterialDetailKey((prev) => prev + 1);
+    const currentValues = refObj.getValues ? refObj.getValues() : undefined;
+    return !!(
+      currentValues &&
+      String(currentValues.materialName || '').trim() !== '' &&
+      String(currentValues.materialCode || '').trim() !== '' &&
+      String(currentValues.unit || '').trim() !== '' &&
+      String(currentValues.size || '').trim() !== ''
+    );
   };
 
   // ClientDetailPanel 열기 함수
@@ -117,13 +124,7 @@ const MaterialDetailPanel = ({
         const result =
           await deleteMaterialProductConnection(deleteConnectionId);
         if (result.success) {
-          // MaterialDetail의 productRequiringMaterialRef를 통해 refresh 호출
-          const materialDetailRefObj = materialDetailRef.current;
-          if (
-            materialDetailRefObj?.productRequiringMaterialRef?.current?.refresh
-          ) {
-            materialDetailRefObj.productRequiringMaterialRef.current.refresh();
-          }
+          setProductWasModified(true);
         }
       } catch {
         // 삭제 실패 시 에러 처리
@@ -235,15 +236,7 @@ const MaterialDetailPanel = ({
     if (!refObj) return;
 
     // 필수값 검증: 저장 전에 현재 값 확인
-    const currentValues = refObj.getValues ? refObj.getValues() : undefined;
-    const isRequiredFilled = !!(
-      currentValues &&
-      String(currentValues.materialName || '').trim() !== '' &&
-      String(currentValues.materialCode || '').trim() !== '' &&
-      String(currentValues.unit || '').trim() !== '' &&
-      String(currentValues.size || '').trim() !== ''
-    );
-    if (!isRequiredFilled) {
+    if (!checkRequiredFilled()) {
       return;
     }
 
@@ -344,6 +337,7 @@ const MaterialDetailPanel = ({
 
     if (hasSaved) {
       setShouldReload(true); // 원자재 목록 렌더링
+      onSuccess?.(); // 상위에 저장 성공 알림
       setIsMaterialDetailOpen(false); // 판넬 닫기
     }
   };
@@ -361,26 +355,25 @@ const MaterialDetailPanel = ({
               hoverColor="hover:bg-secondary-hover"
               textColor="text-primary"
               bgColor="bg-primary-8"
-              disabled={!isRequiredFilled}
+              disabled={!checkRequiredFilled()}
             />
           )
         }
       >
         <MaterialDetail
-          key={materialDetailKey}
           ref={materialDetailRef}
           materialId={selectedMaterialId}
           locations={prevLocations}
           setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
           handleOpenUploadModal={handleOpenUploadModal}
           onIsDirtyChange={setIsMaterialDetailDirty}
-          onRequiredFilledChange={setIsRequiredFilled}
           setIsClinetDetailPanelOpen={setIsClinetDetailPanelOpen}
           handleOpenDeleteModal={handleOpenDeleteModal}
           onProductClick={(productId) => {
             setSelectedProductId(productId);
           }}
           clientWasModified={clientWasModified}
+          productWasModified={productWasModified}
         />
       </Panel>
       {openUploadModals.map((open, idx) =>
@@ -433,14 +426,7 @@ const MaterialDetailPanel = ({
           materialId={selectedMaterialId}
           onClose={() => setIsProductEnrollmentModalOpen(false)}
           onSuccess={() => {
-            // MaterialDetail의 productRequiringMaterialRef를 통해 refresh 호출
-            const materialDetailRefObj = materialDetailRef.current;
-            if (
-              materialDetailRefObj?.productRequiringMaterialRef?.current
-                ?.refresh
-            ) {
-              materialDetailRefObj.productRequiringMaterialRef.current.refresh();
-            }
+            setProductWasModified(true);
           }}
           checkDuplicateProductCode={checkDuplicateProductCode}
           showDuplicateProductToast={showDuplicateProductToast}
@@ -466,7 +452,15 @@ const MaterialDetailPanel = ({
       {/* 연결된 품목 클릭 시 품목 디테일 판넬 열기 */}
       {selectedProductId && (
         <ProductDetailPanel
-          onClose={handleProductDetailClose}
+          onClose={() => {
+            setSelectedProductId(null);
+            // 잠시 후 수정 상태 리셋
+            setTimeout(() => setProductWasModified(false), 100);
+          }}
+          onSuccess={() => {
+            // 품목이 성공적으로 저장되었을 때
+            setProductWasModified(true);
+          }}
           productId={selectedProductId}
         />
       )}

@@ -48,11 +48,7 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
           />
         }
       >
-        {isLoading || error ? (
-          <div className="flex justify-center items-center h-100">
-            <Spinner />
-          </div>
-        ) : (
+        {isLoading || error ? null : (
           <>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
