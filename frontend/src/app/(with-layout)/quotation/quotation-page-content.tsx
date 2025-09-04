@@ -204,6 +204,7 @@ const QuotationPageContent = () => {
       setValue('email', quotation.email || '');
       setValue('phone', quotation.phone || '');
       setValue('fax', quotation.fax || '');
+      setValue('manager', quotation.manager_name || '');
 
       if (quotation?.due_date) {
         setValue('due_date', quotation.due_date);
@@ -324,7 +325,7 @@ const QuotationPageContent = () => {
       );
       setValue(
         'manager',
-        existingClient?.manager || ocrData.client_info.manager_name || ''
+        existingClient?.manager_name || ocrData.client_info.manager_name || ''
       );
       setValue('due_date', ocrData.client_info.delivery_date || '');
 
@@ -410,7 +411,9 @@ const QuotationPageContent = () => {
       );
       setValue(
         'manager',
-        existingClient?.manager || newOcrData.client_info.manager_name || ''
+        existingClient?.manager_name ||
+          newOcrData.client_info.manager_name ||
+          ''
       );
       setValue('due_date', newOcrData.client_info.delivery_date || '');
 

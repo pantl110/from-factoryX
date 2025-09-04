@@ -212,7 +212,7 @@ export interface ClientResponseModel {
   email?: string;
   note?: string;
   address?: string;
-  manager?: string;
+  manager_name?: string;
   fax?: string;
   created_at?: string;
   updated_at?: string;
@@ -635,6 +635,7 @@ export interface QuotationResponseModel {
   business_type?: string;
   business_category?: string;
   address?: string;
+  manager_name?: string; // 담당자명
   products?: QuotationProductDetailResponseModel[]; // 주문 품목 정보
   due_date?: string; // 납기일
   uploaded_file?: string;
