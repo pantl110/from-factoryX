@@ -198,5 +198,5 @@ class MaterialHistoryDetailFilter(FilterSchema):
     )
     client_id: Optional[int] = Field(default=None, q="client_id")
     type: Optional[str] = Field(
-        default=None, description="히스토리 타입 (purchase/구매, consumption/소모)"
+        default=None, description="히스토리 타입 (purchase, consumption)"
     )
