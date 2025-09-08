@@ -5,6 +5,7 @@ from typing import Tuple
 from project.models import Refund, Project, ProjectLog
 from stock.models import MaterialProduct
 from factory.models import FactoryEquipment
+from django.db.models import Max
 
 
 async def get_project_by_id(project_id):
@@ -16,6 +17,9 @@ async def get_project_by_id(project_id):
                 "quotations__client",
                 "plans",
                 "logs",
+            )
+            .annotate(
+                max_delivery_date=Max("quotations__products__delivery_date"),
             )
             .aget(id=project_id)
         )

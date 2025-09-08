@@ -526,6 +526,8 @@ async def update_project_status(
         project = await Project.objects.aget(id=project_id)
 
         project.status = payload.status
+        if payload.status == "pending":
+            project.confirmed_at = timezone.now()
         if payload.is_printed is True:
             project.printed_at = timezone.now()
         await project.asave()

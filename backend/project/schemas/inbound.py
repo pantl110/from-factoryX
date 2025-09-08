@@ -102,6 +102,11 @@ class ProjectFilter(FilterSchema):
         expression_connector="OR",
         description="검색 키워드",
     )
+    printed_at__isnull: Optional[bool] = Field(
+        None,
+        q="printed_at__isnull",
+        description="거래명세서 출력 여부 (printed_at 필드 기준 True: 출력 안됨, False: 출력됨)",
+    )
 
     def filter_status(self, value):
         q = Q()

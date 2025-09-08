@@ -54,6 +54,11 @@ class Project(BaseModel):
         blank=True,
         help_text="거래명세서 출력 일시",
     )
+    confirmed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="주문 확정 일시",
+    )
 
 
 # 생산 계획(내역)

@@ -28,7 +28,10 @@ router = Router(
 async def list_projects(
     request,
     filters: ProjectFilter = Query(...),
-    order_by: Optional[str] = Query("start_date", description="정렬 필드(-start_date)"),
+    order_by: Optional[str] = Query(
+        "start_date",
+        description="정렬 필드(-start_date, -printed_at, -confirmed_at 등)",
+    ),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -52,6 +55,7 @@ async def list_projects(
             .annotate(
                 start_date=Min("plans__start_date"),
                 due_date=F("quotations__due_date"),
+                client_name=F("quotations__client__name"),
             )
             .filter(quotations__factory_id=factory_id)
         )
