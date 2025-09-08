@@ -172,6 +172,8 @@ class MaterialHistoryItemOut(Schema):
     material_id: int
     material_name: str
     material_code: str
+    material_spec: str
+    material_unit: str
     client_id: Optional[int]
     client_name: Optional[str]
     quantity: int
