@@ -126,6 +126,7 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
         <LinkReceiptModal
           onClose={() => setIsLinkReceiptModalOpen(false)}
           supplyAmount={cashReceipt?.transaction_amount || 0}
+          taxAmount={cashReceipt?.tax_amount || 0}
         />
       )}
     </>

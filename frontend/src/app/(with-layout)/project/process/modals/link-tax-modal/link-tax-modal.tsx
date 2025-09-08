@@ -110,7 +110,7 @@ const LinkTaxModal = ({
         page: currentPage,
         page_size: 5,
         type: 'purchase', // 구매 내역만 조회
-        is_cash_receipt: false, // 세금계산서나 현금영수증이 연결 안된 내역만 조회
+        is_linked: false, // 세금계산서나 현금영수증이 연결 안된 내역만 조회
       });
 
       if (result.success && result.data) {

@@ -1256,8 +1256,8 @@ export interface CashReceiptDetailResponseModel {
   client_info: TaxClientInfoModel;
   product: number[];
   products_info: TaxProductInfoModel;
-  transaction_amount: number;
-  tax_amount: number;
+  transaction_amount: number; // 공급가액
+  tax_amount: number; // 세액
   service_charge: number;
   nts_confirm_num: string;
   franchise_corp_num: string;

@@ -6,7 +6,7 @@ interface GetMaterialHistoryOptionModel {
   type?: 'purchase' | 'consumption';
   start_date?: string;
   end_date?: string;
-  is_cash_receipt?: boolean;
+  is_linked?: boolean;
   material_id?: number;
   material_name?: string;
   client_id?: number;
@@ -61,8 +61,8 @@ const useGetMaterialHistory = () => {
       }
 
       // 그 외 파라미터들
-      if (options?.is_cash_receipt !== undefined) {
-        params.append('is_cash_receipt', options.is_cash_receipt.toString());
+      if (options?.is_linked !== undefined) {
+        params.append('is_linked', options.is_linked.toString());
       }
       if (options?.material_name) {
         params.append('material_name', options.material_name);

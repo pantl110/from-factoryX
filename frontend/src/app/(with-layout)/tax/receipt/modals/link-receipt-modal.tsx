@@ -1,15 +1,38 @@
+import { useEffect, useState } from 'react';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
 import PriceInfoSection from './price-info-section';
 import SelectedItem from './selected-item';
+import { useGetMaterialHistory } from '@/hooks';
 
 interface LinkTaxModalProps {
   onClose: () => void;
   supplyAmount: number;
+  taxAmount: number;
 }
 
-const LinkReceiptModal = ({ onClose, supplyAmount }: LinkTaxModalProps) => {
+const LinkReceiptModal = ({
+  onClose,
+  supplyAmount,
+  taxAmount,
+}: LinkTaxModalProps) => {
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const { getMaterialHistory, isLoading, error } = useGetMaterialHistory();
+
+  // 초기 로드 및 검색어 변경 시 데이터 가져오기 (표시는 아직 하지 않음)
+  useEffect(() => {
+    const fetchData = async () => {
+      await getMaterialHistory({
+        material_name: searchKeyword || undefined,
+        type: 'purchase',
+        page: 1,
+        page_size: 8,
+      });
+    };
+    fetchData();
+  }, [searchKeyword, getMaterialHistory]);
+
   return (
     <Modal
       width="w-[1000px]"
@@ -19,7 +42,7 @@ const LinkReceiptModal = ({ onClose, supplyAmount }: LinkTaxModalProps) => {
       scroll={true}
     >
       <div className="flex flex-col gap-4 mt-4 px-6">
-        <PriceInfoSection supplyAmount={supplyAmount} />
+        <PriceInfoSection supplyAmount={supplyAmount} taxAmount={taxAmount} />
 
         <div className="border-t border-lg" />
 
@@ -31,7 +54,7 @@ const LinkReceiptModal = ({ onClose, supplyAmount }: LinkTaxModalProps) => {
             <div className="flex-2 flex flex-col gap-3">
               <SearchInput
                 placeholder="연결할 내역에 대한 원자재를 검색하세요."
-                //   onChange={(value) => setSearchKeyword(value)}
+                onChange={(value) => setSearchKeyword(value)}
               />
             </div>
 
