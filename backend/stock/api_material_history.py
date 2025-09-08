@@ -230,13 +230,29 @@ async def get_material_history(
         if filters.client_id:
             queryset = queryset.filter(client_id=filters.client_id)
 
-        # 기타 필터들 적용 (start_date, end_date, is_cash_receipt)
+        # 기타 필터들 적용 (start_date, end_date)
         if filters.start_date:
             queryset = queryset.filter(created_at__date__gte=filters.start_date)
         if filters.end_date:
             queryset = queryset.filter(created_at__date__lte=filters.end_date)
-        if filters.is_cash_receipt is not None:
-            queryset = queryset.filter(cash_receipt__isnull=not filters.is_cash_receipt)
+
+        # is_linked 필터 처리 (False만 사용)
+        if filters.is_linked is False:
+            # NTS(세금계산서)에 연결된 material_history 수집
+            nts_linked_ids = set()
+            tax_services = NationalTaxService.objects.filter(factory_id=factory_id)
+            for tax_service in tax_services:
+                if tax_service.line_items:
+                    for item in tax_service.line_items:
+                        if isinstance(item, dict):
+                            material_history_id = item.get("material_history")
+                            if material_history_id:
+                                nts_linked_ids.add(material_history_id)
+
+            # 둘 다 미연결만: cash_receipt 없고 NTS에도 미연결
+            queryset = queryset.filter(cash_receipt__isnull=True) # 현금영수증 미연결만 남김
+            if nts_linked_ids:
+                queryset = queryset.exclude(id__in=list(nts_linked_ids)) # NTS에 연결된 것 제외
 
         # @paginate 데코레이터가 자동으로 페이지네이션을 처리하므로
         # 각 히스토리를 딕셔너리로 변환해서 반환합니다
@@ -270,6 +286,8 @@ async def get_material_history(
                     "material_id": history.material.id,
                     "material_name": history.material.name,
                     "material_code": history.material.code,
+                    "material_spec": history.material.spec,
+                    "material_unit": history.material.unit,
                     "client_id": history.client_id,
                     "client_name": client_name,
                     "quantity": history.quantity,
