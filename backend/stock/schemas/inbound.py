@@ -191,12 +191,13 @@ class MaterialHistoryCreateIn(Schema):
 class MaterialHistoryDetailFilter(FilterSchema):
     start_date: Optional[str] = Field(default=None, q="created_at__date__gte")
     end_date: Optional[str] = Field(default=None, q="created_at__date__lte")
-    is_linked: Optional[bool] = Field(default=None) # 둘 다 미연결(현금영수증/세금계산서) 조회하려면 True로 전달
     material_id: Optional[int] = Field(default=None, q="material_id")
     material_name: Optional[str] = Field(
         default=None, description="원자재명으로 검색 (부분 일치)"
     )
-    client_id: Optional[int] = Field(default=None, q="client_id")
     type: Optional[str] = Field(
         default=None, description="히스토리 타입 (purchase, consumption)"
     )
+    client_id: Optional[int] = Field(default=None, q="client_id")
+    is_linked: Optional[bool] = Field(default=None, description="(현금영수증/세금계산서) 모두 미연결 조회하려면 false 전달")
+    receipt_id: Optional[int] = Field(default=None, q="cash_receipt_id")

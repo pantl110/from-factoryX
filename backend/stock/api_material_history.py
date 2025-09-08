@@ -230,6 +230,10 @@ async def get_material_history(
         if filters.client_id:
             queryset = queryset.filter(client_id=filters.client_id)
 
+        # receipt_id 필터링
+        if filters.receipt_id:
+            queryset = queryset.filter(cash_receipt_id=filters.receipt_id)
+
         # 기타 필터들 적용 (start_date, end_date)
         if filters.start_date:
             queryset = queryset.filter(created_at__date__gte=filters.start_date)
