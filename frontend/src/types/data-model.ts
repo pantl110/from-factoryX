@@ -1323,11 +1323,11 @@ export interface BarobillCorpCertModel {
 // export interface SubscriptionResponseModel extends SubscriptionModel {
 //   subscription: SubscriptionModel[];
 //   id: number;
-//   created_at: string;  
+//   created_at: string;
 //   updated_at: string;
 //   start_date: string;
 //   end_date: string;
-//   billing_key: string;    
+//   billing_key: string;
 //   customer_key: string;
 // }
 

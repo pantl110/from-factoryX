@@ -105,7 +105,7 @@ const LinkTaxModal = ({
       if (!clientId) return;
 
       const result = await getMaterialHistory({
-        // client_id: clientId,
+        client_id: clientId,
         material_name: debouncedSearchKeyword || undefined,
         page: currentPage,
         page_size: 5,
