@@ -15,22 +15,18 @@ from project.schemas.inbound import (
     ProjectListFilter,
 )
 from project.schemas.outbound import (
-    ProjectCreateOut,
     ListProgressProjectOut,
     ProjectDetailOut,
     ProjectUpdateOut,
-    ProjectStatusOut,
     ProjectStatusDetailOut,
     ProjectCloneOut,
 )
-from document.models import Quotation
-from factory.models import Factory
 from factory.utils import is_factory_member
 from document.models import Quotation, QuotationProduct
 from project.models import ProjectPlan, ProjectLog
-from factory.schemas.outbound import FactoryRowOut
 from project.utils import get_project_by_id
 from helpers.material_consumption import process_material_consumption
+from django.utils import timezone
 
 router = Router(tags=["Project"], auth=jwt_auth)
 
@@ -530,6 +526,8 @@ async def update_project_status(
         project = await Project.objects.aget(id=project_id)
 
         project.status = payload.status
+        if payload.is_printed is True:
+            project.printed_at = timezone.now()
         await project.asave()
 
         # 프로젝트 완료 처리

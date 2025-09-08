@@ -58,6 +58,26 @@ class ListProgressProjectOut(Schema):
     created_at: str
 
 
+class ProjectPlanModelOut(ModelSchema):
+    class Meta:
+        model = ProjectPlan
+        fields = "__all__"
+
+
+class ProjectModelOut(ModelSchema):
+    quotations: Optional[List[QuotationModelOut]] = Field([], description="견적서 정보")
+    tax_invoice: Optional[NationalTaxServiceOut] = Field(
+        None, description="세금계산서 정보"
+    )
+    plans: Optional[List[ProjectPlanModelOut]] = Field(
+        [], description="프로젝트 계획 정보"
+    )
+
+    class Meta:
+        model = Project
+        fields = "__all__"
+
+
 # (GET) Project Status
 class ProjectStatusOut(Schema):
     project_id: int
@@ -172,12 +192,6 @@ class RefundProductionRegistrationOut(Schema):
 # ------------------------------------------------------------
 # Project Plan API
 # ------------------------------------------------------------
-
-
-class ProjectPlanModelOut(ModelSchema):
-    class Meta:
-        model = ProjectPlan
-        fields = "__all__"
 
 
 # (POST) Project Plan Create

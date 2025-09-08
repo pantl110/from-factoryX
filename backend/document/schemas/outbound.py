@@ -1,8 +1,10 @@
-from ninja import Schema, ModelSchema
+from ninja import Schema, ModelSchema, Field
 from typing import List, Optional
 from datetime import datetime
 from pydantic import field_validator
-from document.models import Quotation
+from document.models import Quotation, QuotationProduct
+from stock.models import Product
+from factory.models import FactoryClient
 
 
 # Quotation Product Detail
@@ -41,7 +43,37 @@ class QuotationDetailOut(Schema):
     products: List[QuotationDetailProductOut]
 
 
+class ProductModelOut(ModelSchema):
+    class Meta:
+        model = Product
+        # fields = "__all__"
+        exclude = [
+            "location",
+        ]
+
+
+class QuotationProductModelOut(ModelSchema):
+    product: Optional[ProductModelOut] = Field(None, description="품목 정보")
+
+    class Meta:
+        model = QuotationProduct
+        fields = "__all__"
+
+
+class FactoryClientModelOut(ModelSchema):
+    class Meta:
+        model = FactoryClient
+        exclude = [
+            "factory",
+        ]
+
+
 class QuotationModelOut(ModelSchema):
+    products: Optional[List[QuotationProductModelOut]] = Field(
+        [], description="견적서 품목 정보"
+    )
+    client: Optional[FactoryClientModelOut] = Field(None, description="클라이언트 정보")
+
     class Meta:
         model = Quotation
         fields = "__all__"

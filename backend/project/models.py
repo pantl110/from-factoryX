@@ -49,6 +49,11 @@ class Project(BaseModel):
         blank=True,
         help_text="세금계산서",
     )
+    printed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="거래명세서 출력 일시",
+    )
 
 
 # 생산 계획(내역)

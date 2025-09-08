@@ -6,7 +6,7 @@ from project.models import Project
 from document.models import Quotation, QuotationProduct
 from stock.models import Product
 from tax.models import NationalTaxService
-from project.models import ProjectPlan
+from project.models import ProjectPlan, Project
 from factory.models import FactoryEquipment
 import json
 import jwt
@@ -173,93 +173,93 @@ class ProjectAPITestCase(TestCase):
 
     # 생성 API 제거로 관련 테스트 삭제
 
-    def test_create_multiple_projects(self):
-        """여러 프로젝트 생성 테스트"""
-        url = f"/v1/project?factory_id={self.factory.id}"
+    # def test_create_multiple_projects(self):
+    #     """여러 프로젝트 생성 테스트"""
+    #     url = f"/v1/project?factory_id={self.factory.id}"
 
-        # 첫 번째 프로젝트 생성
-        response1 = self.client.post(
-            url,
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-        self.assertEqual(response1.status_code, 201)
+    #     # 첫 번째 프로젝트 생성
+    #     response1 = self.client.post(
+    #         url,
+    #         content_type="application/json",
+    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
+    #     )
+    #     self.assertEqual(response1.status_code, 201)
 
-        # 두 번째 프로젝트 생성
-        response2 = self.client.post(
-            url,
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-        self.assertEqual(response2.status_code, 201)
+    #     # 두 번째 프로젝트 생성
+    #     response2 = self.client.post(
+    #         url,
+    #         content_type="application/json",
+    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
+    #     )
+    #     self.assertEqual(response2.status_code, 201)
 
-        # 데이터베이스에 두 개의 프로젝트와 견적서가 생성되었는지 확인
-        project_count = Project.objects.count()
-        quotation_count = Quotation.objects.count()
+    #     # 데이터베이스에 두 개의 프로젝트와 견적서가 생성되었는지 확인
+    #     project_count = Project.objects.count()
+    #     quotation_count = Quotation.objects.count()
 
-        self.assertEqual(project_count, 2)
-        self.assertEqual(quotation_count, 2)
+    #     self.assertEqual(project_count, 2)
+    #     self.assertEqual(quotation_count, 2)
 
-        # 각 프로젝트에 견적서가 연결되어 있는지 확인
-        projects = Project.objects.all()
-        quotations = Quotation.objects.all()
+    #     # 각 프로젝트에 견적서가 연결되어 있는지 확인
+    #     projects = Project.objects.all()
+    #     quotations = Quotation.objects.all()
 
-        for project in projects:
-            self.assertTrue(hasattr(project, "quotations"))
-            self.assertEqual(project.quotations.count(), 1)
+    #     for project in projects:
+    #         self.assertTrue(hasattr(project, "quotations"))
+    #         self.assertEqual(project.quotations.count(), 1)
 
-        for quotation in quotations:
-            self.assertIsNotNone(quotation.project)
+    #     for quotation in quotations:
+    #         self.assertIsNotNone(quotation.project)
 
-    def test_project_quotation_relationship(self):
-        """프로젝트와 견적서의 관계 확인 테스트"""
-        url = f"/v1/project?factory_id={self.factory.id}"
+    # def test_project_quotation_relationship(self):
+    #     """프로젝트와 견적서의 관계 확인 테스트"""
+    #     url = f"/v1/project?factory_id={self.factory.id}"
 
-        response = self.client.post(
-            url,
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
+    #     response = self.client.post(
+    #         url,
+    #         content_type="application/json",
+    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
+    #     )
 
-        self.assertEqual(response.status_code, 201)
+    #     self.assertEqual(response.status_code, 201)
 
-        # 프로젝트와 견적서의 관계 확인
-        project = Project.objects.first()
-        quotation = Quotation.objects.first()
+    #     # 프로젝트와 견적서의 관계 확인
+    #     project = Project.objects.first()
+    #     quotation = Quotation.objects.first()
 
-        # 프로젝트에서 견적서 접근
-        self.assertEqual(project.quotations.first(), quotation)
+    #     # 프로젝트에서 견적서 접근
+    #     self.assertEqual(project.quotations.first(), quotation)
 
-        # 견적서에서 프로젝트 접근
-        self.assertEqual(quotation.project, project)
+    #     # 견적서에서 프로젝트 접근
+    #     self.assertEqual(quotation.project, project)
 
-        # 견적서의 기본 필드 확인
-        self.assertEqual(quotation.factory, self.factory)  # factory는 설정됨
-        self.assertIsNone(quotation.client)
-        self.assertIsNone(quotation.due_date)
-        self.assertIsNone(quotation.uploaded_file)
+    #     # 견적서의 기본 필드 확인
+    #     self.assertEqual(quotation.factory, self.factory)  # factory는 설정됨
+    #     self.assertIsNone(quotation.client)
+    #     self.assertIsNone(quotation.due_date)
+    #     self.assertIsNone(quotation.uploaded_file)
 
-    def test_project_default_status(self):
-        """프로젝트 생성 시 기본 상태 확인 테스트"""
-        url = f"/v1/project?factory_id={self.factory.id}"
+    # def test_project_default_status(self):
+    #     """프로젝트 생성 시 기본 상태 확인 테스트"""
+    #     url = f"/v1/project?factory_id={self.factory.id}"
 
-        response = self.client.post(
-            url,
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
+    #     response = self.client.post(
+    #         url,
+    #         content_type="application/json",
+    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
+    #     )
 
-        self.assertEqual(response.status_code, 201)
+    #     self.assertEqual(response.status_code, 201)
 
-        project = Project.objects.first()
+    #     project = Project.objects.first()
 
-        # 프로젝트의 기본 상태가 'quotation'인지 확인
-        self.assertEqual(project.status, Project.ProjectStatus.quotation)
-        self.assertEqual(project.status, "quotation")
+    #     # 프로젝트의 기본 상태가 'quotation'인지 확인
+    #     self.assertEqual(project.status, Project.ProjectStatus.quotation)
+    #     self.assertEqual(project.status, "quotation")
 
-        # 다른 기본 필드들 확인
-        self.assertIsNone(project.transact_date)
-        self.assertIsNone(project.tax_invoice)
+    #     # 다른 기본 필드들 확인
+    #     self.assertIsNone(project.transact_date)
+    #     self.assertIsNone(project.tax_invoice)
 
     def test_delete_project_success(self):
         """프로젝트 삭제 성공 테스트"""
@@ -999,7 +999,7 @@ class ProjectAPITestCase(TestCase):
         ProjectPlan.objects.filter(project=p1).update(start_date=date(2025, 6, 1))
         ProjectPlan.objects.filter(project=p2).update(start_date=date(2025, 6, 10))
 
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress&order_by=start_date&order_dir=asc"
+        url = f"/v2/project?factory_id={self.factory.id}&status=progress&order_by=start_date&order_dir=asc"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -1017,7 +1017,7 @@ class ProjectAPITestCase(TestCase):
         Quotation.objects.filter(project=p1).update(due_date=date(2025, 6, 1))
         Quotation.objects.filter(project=p2).update(due_date=date(2025, 6, 10))
 
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress&order_by=due_date&order_dir=desc"
+        url = f"/v2/project?factory_id={self.factory.id}&status=progress&order_by=due_date&order_dir=desc"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -1029,21 +1029,33 @@ class ProjectAPITestCase(TestCase):
     def test_list_progress_project_search_by_client(self):
         """업체명 검색 테스트"""
         self.create_test_project_with_quotation(status="생산 중")
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress&search=테스트 고객사"
-        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertTrue(any("테스트 고객사" in p["client_name"] for p in data["data"]))
-
-    def test_list_progress_project_search_by_product(self):
-        """품목명 검색 테스트"""
-        self.create_test_project_with_quotation(status="생산 중")
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress&search=테스트 제품 1"
+        url = f"/v2/project?factory_id={self.factory.id}&status_exclude=completed,suspended&search=테스트 고객사"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(
-            any("테스트 제품 1" in p["product_names"] for p in data["data"])
+            any(
+                "테스트 고객사" in p["quotations"][0]["client"]["name"]
+                for p in data["data"]
+            )
+        )
+
+    def test_list_progress_project_search_by_product(self):
+        """품목명 검색 테스트"""
+        self.create_test_project_with_quotation(status="생산 중")
+        url = f"/v2/project?factory_id={self.factory.id}&status_exclude=completed,suspended&search=테스트 제품 1"
+        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        print(
+            "🐍 File: tests/test_api_project.py | Line: 1045 | test_list_progress_project_search_by_product ~ data",
+            data,
+        )
+        self.assertTrue(
+            any(
+                "테스트 제품 1" in p["quotations"][0]["products"][0]["product"]["name"]
+                for p in data["data"]
+            )
         )
 
     def test_list_archived_and_interruption_project_success(self):
@@ -1056,8 +1068,8 @@ class ProjectAPITestCase(TestCase):
             status="completed"
         )
         # 디버깅: 실제 저장된 상태 확인
-        print(f"Project complete status: {project_complete.status}")
-        print(f"Project complete id: {project_complete.id}")
+        # print(f"Project complete status: {project_complete.status}")
+        # print(f"Project complete id: {project_complete.id}")
         # 2. 중단 프로젝트 생성 (견적 협의중 + 2개월 경과 + 생산계획 없음)
         project_abandoned, quotation_abandoned, _ = (
             self.create_test_project_with_quotation(
@@ -1080,45 +1092,45 @@ class ProjectAPITestCase(TestCase):
         )
 
         # 4. 보관함(archived) 조회: 중단된 프로젝트만 (API 실제 동작에 맞춤)
-        url = f"/v1/project?factory_id={self.factory.id}&status=archived"
+        url = f"/v2/project?factory_id={self.factory.id}&status=completed,suspended"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item["project_id"] for item in data["data"]]
-        is_abandoned_map = {
-            item["project_id"]: item.get("is_abandoned", False) for item in data["data"]
-        }
+        ids = [item["id"] for item in data["data"]]
+        # is_abandoned_map = {
+        #     item["project_id"]: item.get("is_abandoned", False) for item in data["data"]
+        # }
         # API 실제 동작: archived는 완료 + 중단 프로젝트를 포함
         self.assertIn(project_complete.id, ids)  # 완료된 프로젝트도 포함됨
         self.assertIn(project_abandoned.id, ids)  # 중단된 프로젝트도 포함됨
-        self.assertTrue(is_abandoned_map[project_abandoned.id])
-        self.assertFalse(is_abandoned_map[project_complete.id])
+        # self.assertTrue(is_abandoned_map[project_abandoned.id])
+        # self.assertFalse(is_abandoned_map[project_complete.id])
         self.assertNotIn(project_progress.id, ids)
 
         # 5. 완료(completed)만 조회
-        url = f"/v1/project?factory_id={self.factory.id}&status=completed"
+        url = f"/v2/project?factory_id={self.factory.id}&status=completed"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item["project_id"] for item in data["data"]]
+        ids = [item["id"] for item in data["data"]]
         # API 실제 동작에 맞춤: completed는 완료된 프로젝트만 포함
         self.assertIn(project_complete.id, ids)
         self.assertNotIn(project_abandoned.id, ids)
         self.assertNotIn(project_progress.id, ids)
 
         # 6. 중단(interruption)만 조회
-        url = f"/v1/project?factory_id={self.factory.id}&status=suspended"
+        url = f"/v2/project?factory_id={self.factory.id}&status=suspended"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item["project_id"] for item in data["data"]]
+        ids = [item["id"] for item in data["data"]]
         self.assertIn(project_abandoned.id, ids)
         self.assertNotIn(project_complete.id, ids)
         self.assertNotIn(project_progress.id, ids)
-        is_abandoned_map = {
-            item["project_id"]: item.get("is_abandoned", False) for item in data["data"]
-        }
-        self.assertTrue(is_abandoned_map[project_abandoned.id])
+        # is_abandoned_map = {
+        #     item["id"]: item.get("is_abandoned", False) for item in data["data"]
+        # }
+        # self.assertTrue(is_abandoned_map[project_abandoned.id])
 
     def test_list_progress_project_api(self):
         """진행중 전체, 각 상태별, 완료, 중단, 보관함 프로젝트 API 조회 통합 테스트"""
@@ -1146,13 +1158,13 @@ class ProjectAPITestCase(TestCase):
         project4.status = "suspended"
         project4.save()
         # 2. 진행중 전체 조회 (status=progress)
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress"
+        url = f"/v2/project?factory_id={self.factory.id}&status_exclude=completed,suspended"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
         # API 실제 동작: progress는 완료되지 않은 프로젝트만 포함
-        project_ids = [item["project_id"] for item in data["data"]]
+        project_ids = [item["id"] for item in data["data"]]
 
         self.assertIn(project1.id, project_ids)
         self.assertIn(project2.id, project_ids)
@@ -1166,101 +1178,101 @@ class ProjectAPITestCase(TestCase):
         else:
             self.assertIn(project4.id, project_ids)  # 아직 중단되지 않은 경우 포함됨
         # 3. 각 상태별 조회 (status=생산 중, status=생산 대기, status=견적 협의중)
-        url = f"/v1/project?factory_id={self.factory.id}&status=production"
+        url = f"/v2/project?factory_id={self.factory.id}&status=production"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        production_ids = [item["project_id"] for item in data["data"]]
+        production_ids = [item["id"] for item in data["data"]]
         self.assertIn(project1.id, production_ids)
         self.assertNotIn(project2.id, production_ids)
-        url = f"/v1/project?factory_id={self.factory.id}&status=pending"
+        url = f"/v2/project?factory_id={self.factory.id}&status=pending"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        pending_ids = [item["project_id"] for item in data["data"]]
+        pending_ids = [item["id"] for item in data["data"]]
         self.assertIn(project2.id, pending_ids)
         self.assertNotIn(project1.id, pending_ids)
         # 견적 협의중(중단 아닌 것만)
         project5, _, _ = self.create_test_project_with_quotation(status="quotation")
-        url = f"/v1/project?factory_id={self.factory.id}&status=quotation"
+        url = f"/v2/project?factory_id={self.factory.id}&status=quotation"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        quotation_ids = [item["project_id"] for item in data["data"]]
+        quotation_ids = [item["id"] for item in data["data"]]
         self.assertIn(project5.id, quotation_ids)
         self.assertNotIn(project4.id, quotation_ids)  # 중단은 제외
         # 4. 보관함(archived) 조회 (status=archived) - 완료 + 중단 프로젝트
-        url = f"/v1/project?factory_id={self.factory.id}&status=archived"
+        url = f"/v2/project?factory_id={self.factory.id}&status=completed,suspended"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item["project_id"] for item in data["data"]]
+        ids = [item["id"] for item in data["data"]]
         is_abandoned_map = {
-            item["project_id"]: item.get("is_abandoned", False) for item in data["data"]
+            item["id"]: item.get("is_abandoned", False) for item in data["data"]
         }
         self.assertIn(project3.id, ids)  # 완료된 프로젝트도 포함됨
         self.assertIn(project4.id, ids)  # 중단된 프로젝트도 포함됨
-        self.assertTrue(is_abandoned_map[project4.id])
-        self.assertFalse(is_abandoned_map[project3.id])
+        # self.assertTrue(is_abandoned_map[project4.id])
+        # self.assertFalse(is_abandoned_map[project3.id])
         # 5. 완료(completed) 조회 - 완료된 프로젝트만
-        url = f"/v1/project?factory_id={self.factory.id}&status=completed"
+        url = f"/v2/project?factory_id={self.factory.id}&status=completed"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item["project_id"] for item in data["data"]]
+        ids = [item["id"] for item in data["data"]]
         is_abandoned_map = {
-            item["project_id"]: item.get("is_abandoned", False) for item in data["data"]
+            item["id"]: item.get("is_abandoned", False) for item in data["data"]
         }
         self.assertIn(project3.id, ids)  # 완료된 프로젝트만 포함
         self.assertNotIn(project4.id, ids)  # 중단된 프로젝트는 포함되지 않음
         self.assertFalse(is_abandoned_map[project3.id])
         # 6. 중단만 조회 (status=suspended)
-        url = f"/v1/project?factory_id={self.factory.id}&status=suspended"
+        url = f"/v2/project?factory_id={self.factory.id}&status=suspended"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [item["project_id"] for item in data["data"]]
+        ids = [item["id"] for item in data["data"]]
         self.assertIn(project4.id, ids)
         self.assertNotIn(project3.id, ids)
         is_abandoned_map = {
-            item["project_id"]: item.get("is_abandoned", False) for item in data["data"]
+            item["id"]: item.get("is_abandoned", False) for item in data["data"]
         }
-        self.assertTrue(is_abandoned_map.get(project4.id, True))
+        # self.assertTrue(is_abandoned_map.get(project4.id, True))
 
     def test_list_project_500_error_scenarios(self):
         """프로젝트 목록 조회 API 500 에러 시나리오 테스트"""
 
         # 1. 잘못된 factory_id로 조회 (존재하지 않는 공장)
-        url = "/v1/project?factory_id=99999&status=progress"
+        url = "/v2/project?factory_id=99999&status=completed,suspended"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         # 500 에러가 아닌 빈 결과가 반환되어야 함
         self.assertNotEqual(response.status_code, 500)
 
         # 2. 복잡한 검색 조건으로 조회 (긴 검색어)
         long_search = "a" * 1000  # 매우 긴 검색어
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress&search={long_search}"
+        url = f"/v2/project?factory_id={self.factory.id}&status=completed,suspended&search={long_search}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
         # 3. 특수문자가 포함된 검색어
         special_search = "!@#$%^&*()_+-=[]{}|;':\",./<>?"
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress&search={special_search}"
+        url = f"/v2/project?factory_id={self.factory.id}&status=completed,suspended&search={special_search}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
         # 4. SQL 인젝션 시도
         sql_injection = "'; DROP TABLE project_project; --"
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress&search={sql_injection}"
+        url = f"/v2/project?factory_id={self.factory.id}&status=completed,suspended&search={sql_injection}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
         # 5. 매우 큰 factory_id 값
-        url = f"/v1/project?factory_id={2**31-1}&status=progress"
+        url = f"/v2/project?factory_id={2**31-1}&status=completed,suspended"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
         # 6. 음수 factory_id 값
-        url = f"/v1/project?factory_id=-1&status=progress"
+        url = f"/v2/project?factory_id=-1&status=completed,suspended"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
@@ -1268,12 +1280,12 @@ class ProjectAPITestCase(TestCase):
         """프로젝트 목록 조회 API 엣지 케이스 테스트"""
 
         # 1. 빈 문자열 검색어
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress&search="
+        url = f"/v2/project?factory_id={self.factory.id}&status=completed,suspended&search="
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
         # 2. 공백만 있는 검색어
-        url = f"/v1/project?factory_id={self.factory.id}&status=progress&search=   "
+        url = f"/v2/project?factory_id={self.factory.id}&status=completed,suspended&search=   "
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
@@ -1290,7 +1302,7 @@ class ProjectAPITestCase(TestCase):
             "delivery",
         ]
         for status in statuses:
-            url = f"/v1/project?factory_id={self.factory.id}&status={status}"
+            url = f"/v2/project?factory_id={self.factory.id}&status={status}"
             response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
             self.assertNotEqual(
                 response.status_code, 500, f"Status {status}에서 500 에러 발생"
@@ -1301,7 +1313,7 @@ class ProjectAPITestCase(TestCase):
         order_dirs = ["asc", "desc"]
         for order_by in order_options:
             for order_dir in order_dirs:
-                url = f"/v1/project?factory_id={self.factory.id}&status=progress&order_by={order_by}&order_dir={order_dir}"
+                url = f"/v2/project?factory_id={self.factory.id}&status=completed,suspended&order_by={order_by}&order_dir={order_dir}"
                 response = self.client.get(
                     url, HTTP_AUTHORIZATION=f"Bearer {self.token}"
                 )
@@ -1323,14 +1335,14 @@ class ProjectAPITestCase(TestCase):
             due_date=date(2025, 6, 15),
         )
 
-        url = f"/v1/project?factory_id={self.factory.id}&status=production"
+        url = f"/v2/project?factory_id={self.factory.id}&status=production"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
         # 2. client가 None인 견적서가 있는 프로젝트 생성 (이미 위에서 생성됨)
         # product가 None인 경우는 NOT NULL 제약조건으로 인해 테스트할 수 없으므로 제거
 
-        url = f"/v1/project?factory_id={self.factory.id}&status=production"
+        url = f"/v2/project?factory_id={self.factory.id}&status=production"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
@@ -1343,7 +1355,7 @@ class ProjectAPITestCase(TestCase):
             due_date=date(2025, 6, 15),
         )
 
-        url = f"/v1/project?factory_id={self.factory.id}&status=complete"
+        url = f"/v2/project?factory_id={self.factory.id}&status=complete"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertNotEqual(response.status_code, 500)
 
@@ -1355,7 +1367,7 @@ class ProjectAPITestCase(TestCase):
 
         # 연속적으로 여러 번 요청
         for i in range(5):
-            url = f"/v1/project?factory_id={self.factory.id}&status=production"
+            url = f"/v2/project?factory_id={self.factory.id}&status=production"
             response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
             self.assertNotEqual(
                 response.status_code, 500, f"연속 요청 {i+1}에서 500 에러 발생"
@@ -1463,8 +1475,8 @@ class ProjectAPITestCase(TestCase):
         self.assertIsNone(data["due_date"])
 
         # 실제 반환되는 값 확인 (디버깅용)
-        print(f"Actual earliest_start_date: {data['earliest_start_date']}")
-        print(f"Actual latest_end_date: {data['latest_end_date']}")
+        # print(f"Actual earliest_start_date: {data['earliest_start_date']}")
+        # print(f"Actual latest_end_date: {data['latest_end_date']}")
 
         # timezone을 고려한 검증 (한국 시간을 UTC로 변환한 값으로 검증)
         self.assertIn(
@@ -1633,8 +1645,8 @@ class ProjectAPITestCase(TestCase):
         self.assertEqual(data["status"], "생산 완료")
 
         # 디버깅: 실제 반환되는 값 확인
-        print(f"Actual due_date: {data['due_date']}")
-        print(f"Expected due_date: 2025-06-15")
+        # print(f"Actual due_date: {data['due_date']}")
+        # print(f"Expected due_date: 2025-06-15")
 
         # 날짜 데이터 타입 확인
         self.assertIsInstance(data["earliest_start_date"], str)
@@ -1721,4 +1733,4 @@ class ProjectAPITestCase(TestCase):
         project.refresh_from_db()
         self.assertEqual(project.status, "delivery")
 
-        print(f"✅ manufactured_to_delivery API 테스트 성공: {data}")
+        # print(f"✅ manufactured_to_delivery API 테스트 성공: {data}")

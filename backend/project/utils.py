@@ -11,7 +11,12 @@ async def get_project_by_id(project_id):
     try:
         project = (
             await Project.objects.select_related("tax_invoice")
-            .prefetch_related("quotations", "plans", "logs")
+            .prefetch_related(
+                "quotations__products__product",
+                "quotations__client",
+                "plans",
+                "logs",
+            )
             .aget(id=project_id)
         )
         return project
