@@ -3,21 +3,27 @@ import { useDebounce } from 'use-debounce';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
-import LinkModalTable from './link-modal-table';
+import LinkModalProjectTable from './link-modal-project-table';
 import { useGetUnlinkedTaxInvoices } from '@/hooks';
-import useLinkTaxInvoice from '@/hooks/tax/use-link-tax-invoice';
+import {
+  useLinkTaxInvoice,
+  useGetMaterialHistory,
+  useConnectMaterialHistory,
+} from '@/hooks';
 import {
   UnlinkedTaxInvoiceListResponseModel,
   TaxLineItemModel,
   ProjectStatusResponseModel,
 } from '@/types/data-model';
 import MaterialInfoTable from './material-info-table';
+import LinkModalTaxTable from './link-modal-tax-table';
 
 interface LinkTaxModalProps {
   onClose: () => void;
   type: 'project' | 'tax';
   linkedItemId: number; // type이 'project'일 때는 프로젝트 아이디, type이 'tax'일 때는 세금계산서 아이디
   selectedLineItem?: TaxLineItemModel; // type이 'tax'일 때 선택한 lineItem
+  clientId?: number; // type이 'tax'일 때 세금계산서의 거래처 ID
   onSuccess?: () => void; // 연결 완료 시 호출되는 콜백
   canCreate?: boolean; // 세금계산서 생성 가능 여부
   projectStatus?: ProjectStatusResponseModel; // 세금계산서 생성 시 보여줄 초기값을 위함
@@ -29,6 +35,7 @@ const LinkTaxModal = ({
   linkedItemId,
   type,
   selectedLineItem,
+  clientId,
   onSuccess,
   canCreate = false,
   setIsTaxPanelOpen,
@@ -39,14 +46,20 @@ const LinkTaxModal = ({
   const [ordering, setOrdering] = useState<string>('-transaction_date');
   const [taxInvoiceData, setTaxInvoiceData] =
     useState<UnlinkedTaxInvoiceListResponseModel | null>(null);
+  const [materialHistoryData, setMaterialHistoryData] = useState<any>(null);
   const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
 
   // 선택한 세금계산서 아이디 선택 관련
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const { getUnlinkedTaxInvoices, isLoading } = useGetUnlinkedTaxInvoices();
+  const { getUnlinkedTaxInvoices, isLoading: isUnlinkedTaxLoading } =
+    useGetUnlinkedTaxInvoices();
+  const { getMaterialHistory, isLoading: isMaterialHistoryLoading } =
+    useGetMaterialHistory();
   const { linkTaxInvoice, isLoading: isLinking } = useLinkTaxInvoice();
+  const { connectMaterialHistory, isLoading: isConnecting } =
+    useConnectMaterialHistory();
 
-  // ‼️‼️‼️‼️‼️ type이 'project'일 때만 연결되지 않은 세금계산서 데이터 가져오기
+  // type이 'project'일 때 연결되지 않은 세금계산서 데이터 가져오기
   const loadUnlinkedTaxInvoices = useCallback(async () => {
     try {
       // 기간 계산
@@ -86,10 +99,37 @@ const LinkTaxModal = ({
     getUnlinkedTaxInvoices,
   ]);
 
+  // type이 'tax'일 때 원자재 히스토리 데이터 가져오기
+  const loadMaterialHistory = useCallback(async () => {
+    try {
+      if (!clientId) return;
+
+      const result = await getMaterialHistory({
+        // client_id: clientId,
+        material_name: debouncedSearchKeyword || undefined,
+        page: currentPage,
+        page_size: 5,
+        type: 'purchase', // 구매 내역만 조회
+        is_cash_receipt: false, // 세금계산서나 현금영수증이 연결 안된 내역만 조회
+      });
+
+      if (result.success && result.data) {
+        setMaterialHistoryData(result.data);
+      }
+    } catch {
+      // 오류
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientId, debouncedSearchKeyword, currentPage]);
+
   // 컴포넌트 마운트 시와 검색어 변경 시 데이터 로드
   useEffect(() => {
-    loadUnlinkedTaxInvoices();
-  }, [loadUnlinkedTaxInvoices]);
+    if (type === 'project') {
+      loadUnlinkedTaxInvoices();
+    } else if (type === 'tax') {
+      loadMaterialHistory();
+    }
+  }, [type, loadUnlinkedTaxInvoices, loadMaterialHistory]);
 
   // 페이지 변경 핸들러
   const handlePageChange = useCallback((page: number) => {
@@ -122,9 +162,20 @@ const LinkTaxModal = ({
         onClose();
       }
     } else if (type === 'tax') {
-      // ‼️‼️‼️‼️‼️api 생기면 연결
-    } else if (type === 'receipt') {
-      // ‼️‼️‼️‼️‼️api 생기면 연결
+      if (!selectedLineItem?.id) {
+        alert('연결할 세금계산서 품목을 선택해주세요.');
+        return;
+      }
+
+      const result = await connectMaterialHistory(linkedItemId, {
+        line_item_id: selectedLineItem.id,
+        material_history_id: selectedId,
+      });
+
+      if (result.success) {
+        onSuccess?.(); // 연결 성공 시 리로드 콜백 호출
+        onClose();
+      }
     }
   };
 
@@ -149,9 +200,7 @@ const LinkTaxModal = ({
         {type !== 'project' && (
           <div className="flex flex-col gap-3">
             <h4 className="Heading-4 text-dg">
-              {type === 'tax'
-                ? '매입 세금계산서에서 선택한 원자재'
-                : '현금영수증에서 선택한 원자재'}
+              매입 세금계산서에서 선택한 원자재
             </h4>
             {selectedLineItem && (
               <MaterialInfoTable lineItem={selectedLineItem} />
@@ -212,23 +261,34 @@ const LinkTaxModal = ({
               : 'max-h-[calc(85vh-332.2px)]'
           }`}
         >
-          <LinkModalTable
-            items={taxInvoiceData?.data || []}
-            currentPage={currentPage}
-            totalPages={taxInvoiceData?.pageCnt || 1}
-            onPageChange={handlePageChange}
-            onOrderingToggle={() => {
-              setOrdering(
-                ordering === '-transaction_date'
-                  ? 'transaction_date'
-                  : '-transaction_date'
-              );
-            }}
-            isLoading={isLoading}
-            selectedId={selectedId}
-            setSelectedId={setSelectedId}
-          />
-
+          {type === 'project' ? (
+            <LinkModalProjectTable
+              items={taxInvoiceData?.data || []}
+              currentPage={currentPage}
+              totalPages={taxInvoiceData?.pageCnt || 1}
+              onPageChange={handlePageChange}
+              onOrderingToggle={() => {
+                setOrdering(
+                  ordering === '-transaction_date'
+                    ? 'transaction_date'
+                    : '-transaction_date'
+                );
+              }}
+              isLoading={isUnlinkedTaxLoading}
+              selectedId={selectedId}
+              setSelectedId={setSelectedId}
+            />
+          ) : (
+            <LinkModalTaxTable
+              items={materialHistoryData?.data || []}
+              currentPage={currentPage}
+              totalPages={materialHistoryData?.pageCnt || 1}
+              onPageChange={handlePageChange}
+              isLoading={isMaterialHistoryLoading}
+              selectedId={selectedId}
+              setSelectedId={setSelectedId}
+            />
+          )}
           <div
             className={`flex gap-2.5 pt-2 ${
               canCreate ? 'justify-between' : 'justify-end'
@@ -258,7 +318,7 @@ const LinkTaxModal = ({
                 hoverColor="hover:bg-primary-hover"
                 bgColor="bg-primary"
                 textColor="text-wh"
-                disabled={!selectedId || isLinking}
+                disabled={!selectedId || isLinking || isConnecting}
                 onClick={handleLinkButtonClick}
               />
             </div>

@@ -393,6 +393,8 @@ export interface MaterialHistoryResponseModel {
   material_id: number; // 원자재 ID
   material_name: string; // 원자재명
   material_code: string; // 원자재 코드
+  material_spec: string; // 원자재 규격
+  material_unit: string; // 원자재 단위
   client_id: number | null; // 거래처 ID
   client_name: string | null; // 거래처명
   quantity: number; // 수량
@@ -1308,6 +1310,90 @@ export interface BarobillCorpCertModel {
 }
 
 //////////////////////
+// Subscription API
+// export interface SubscriptionModel {
+//   id: number;
+//   type: 'trial' | 'basic' | 'partners';
+//   price: number;
+//   tax_invoice_count: number; // 세금계산서 발행 제한 개수 // 플랜 별 횟수 차별 제공
+//   created_at: string;
+//   updated_at: string;
+// }
+
+// export interface SubscriptionResponseModel extends SubscriptionModel {
+//   subscription: SubscriptionModel[];
+//   id: number;
+//   created_at: string;  
+//   updated_at: string;
+//   start_date: string;
+//   end_date: string;
+//   billing_key: string;    
+//   customer_key: string;
+// }
+
+// export interface SubscriptionListResponseModel extends PaginationModel {
+//   data: SubscriptionResponseModel[];
+// }
+
+// export interface SubscriptionHistoryResponseModel {
+//   id: number;
+//   subscription: SubscriptionResponseModel;
+//   start_date: string; // 시작일
+//   end_date: string; // 종료일 (다음 결제일)
+//   created_at: string;
+//   updated_at: string;
+// }
+
+export interface PaymentResponseModel {
+  id: number; // 결제 아이디
+  payment_key: string; // 토스페이먼츠 결제 키
+  order_id: string; // // 주문 ID (가맹점에서 생성한 주문 식별자)
+  amount: number; // 결제 금액
+  status: SubscriptionStatusType; // 결제 상태
+  method: string; // 카드 정보
+  approved_at: string | null; // 결제 승인 시간 (ISO 8601 형식, null이면 미승인)
+  failure_code: string | null;
+  failure_message: string | null;
+  created_at: string; // 결제 요청 생성 시간 (ISO 8601 형식)
+  updated_at: string;
+}
+
+export interface PaymentListResponseModel extends PaginationModel {
+  data: PaymentResponseModel[];
+}
+
+// export interface BillingKeyIssueResponseModel {
+//   billing_key: string;
+//   customer_key: string;
+//   card_company: string | null;
+//   card_type: string | null;
+//   card_number: string | null;
+// }
+
+// export interface PaymentResultResponseModel {
+//   payment_key: string;
+//   order_id: string;
+//   amount: number;
+//   status: string;
+//   approved_at: string | null;
+//   method: string | null;
+// }
+
+// export interface PaymentCancelResponseModel {
+//   payment_key: string;
+//   cancel_amount: number;
+//   cancel_reason: string;
+//   canceled_at: string;
+// }
+
+// export interface SubscriptionStatusResponseModel {
+//   subscription_history: SubscriptionHistoryResponseModel;
+//   current_payment: PaymentResponseModel | null;
+//   next_billing_date: string | null;
+//   is_active: boolean;
+// }
+
+//////////////////////
 import {
   MemberRoleType,
   MemberStatusType,
@@ -1323,6 +1409,7 @@ import {
   TransactionType,
   BarobillStateType,
   NtsSendStateType,
+  SubscriptionStatusType,
 } from './status-type';
 
 export type {

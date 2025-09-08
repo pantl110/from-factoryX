@@ -187,6 +187,13 @@ export type BarobillStateType = '임시저장' | '발급완료' | '전송완료'
 // 국세청 전송 상태 (백엔드에서 실제로 사용하는 값들만)
 export type NtsSendStateType = '전송전' | '전송완료';
 
+// 구독 관련
+export type SubscriptionStatusType = 'PENDING' | 'DONE' | 'CANCELED' | 'FAILED';
+// ("PENDING", "대기중"),
+// ("DONE", "완료"),
+// ("CANCELED", "취소"),
+// ("FAILED", "실패"),
+
 ////////////////////
 ////////////////////
 ////////////////////

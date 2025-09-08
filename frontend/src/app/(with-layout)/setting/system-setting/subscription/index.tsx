@@ -43,8 +43,8 @@ const Subscription = () => {
 
       await toss.requestBillingAuth('카드', {
         customerKey,
-        successUrl: `${window.location.origin}/setting?tab=subscription`,
-        failUrl: `${window.location.origin}/setting?tab=subscription`,
+        successUrl: `${window.location.origin}/billing?status=success`,
+        failUrl: `${window.location.origin}/billing?status=fail`,
       });
     } catch (error: unknown) {
       const code =

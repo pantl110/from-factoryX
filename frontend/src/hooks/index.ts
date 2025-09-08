@@ -168,3 +168,6 @@ export { default as useGetDashboard } from './dashboard/use-get-dashboard';
 
 // websocket related hooks
 export { useWebSocket } from './websocket/use-websocket';
+
+// subscription related hooks
+export { default as useGetSubscriptions } from './subscription/use-get-subscriptions';

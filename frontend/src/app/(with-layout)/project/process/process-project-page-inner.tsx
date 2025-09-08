@@ -281,9 +281,9 @@ const ProcessProjectPageInner = () => {
                       project={project}
                       checked={isChecked(project.project_id)}
                       onToggle={() => toggleOne(project.project_id)}
-                      onReload={() => {
+                      onReload={async () => {
                         // 세금계산서 연결 후 프로젝트 데이터 리로드
-                        getProjects({
+                        const result = await getProjects({
                           status: selectedStatus,
                           search: searchKeyword,
                           order_by:
@@ -292,6 +292,10 @@ const ProcessProjectPageInner = () => {
                           page: currentPage,
                           page_size: 10,
                         });
+
+                        if (result.success && result.data) {
+                          setProjectData(result.data);
+                        }
                       }}
                     />
                   ))}

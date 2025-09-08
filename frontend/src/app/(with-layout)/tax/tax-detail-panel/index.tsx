@@ -207,7 +207,19 @@ const TaxDetailPanel = ({
           onClose={() => setIsLinkModalOpen(false)}
           linkedItemId={itemId} // 세금계산서 아이디
           type="tax"
+          clientId={item?.client} // client 필드 사용
           selectedLineItem={selectedLineItem || undefined}
+          onSuccess={() => {
+            // 선택된 lineItem의 material_history 필드만 업데이트
+            if (selectedLineItem && item) {
+              const updatedLineItems = item.line_items.map((lineItem) =>
+                lineItem.id === selectedLineItem.id
+                  ? { ...lineItem, material_history: 1 } // 연결됨 표시 위해 임시로 1로 설정
+                  : lineItem
+              );
+              setItem({ ...item, line_items: updatedLineItems });
+            }
+          }}
         />
       )}
 

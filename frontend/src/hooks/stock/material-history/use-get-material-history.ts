@@ -16,6 +16,7 @@ interface GetMaterialHistoryOptionModel {
 
 // 원자재 히스토리를 조회합니다. material_id가 제공되면 특정 원자재의 히스토리를, 제공되지 않으면 전체 원자재 히스토리를 조회합니다.
 // 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회합니다.
+// client_id 필터가 추가되어 특정 거래처의 원자재 히스토리만 조회할 수 있습니다.
 const useGetMaterialHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,11 +91,8 @@ const useGetMaterialHistory = () => {
 
       if (response.ok) {
         const result: MaterialHistoryListResponseModel = await response.json();
-
-        const transformedData: MaterialHistoryListResponseModel = result;
-
-        setHistories(transformedData);
-        return { success: true, data: transformedData };
+        setHistories(result);
+        return { success: true, data: result };
       } else {
         const errorData = await response.json();
         const errorMessage =
