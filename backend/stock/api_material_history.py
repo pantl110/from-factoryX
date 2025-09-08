@@ -214,13 +214,13 @@ async def get_material_history(
         queryset = MaterialHistory.objects.filter(
             material__factory_id=factory_id
         ).select_related("client", "material")
-        # type 파라미터 영어→한글 변환 지원
+        # type 파라미터 필터링 (영어 값으로 저장되어 있음)
         if filters.type:
-            type_map = {"purchase": "구매", "consumption": "소모"}
-            if filters.type in type_map:
-                queryset = queryset.filter(type=type_map[filters.type])
-            else:
-                queryset = queryset.filter(type=filters.type)
+            queryset = queryset.filter(type=filters.type)
+
+        # material_id 필터링
+        if filters.material_id:
+            queryset = queryset.filter(material_id=filters.material_id)
 
         # material_name으로 부분 일치 검색
         if filters.material_name:
@@ -230,7 +230,7 @@ async def get_material_history(
         if filters.client_id:
             queryset = queryset.filter(client_id=filters.client_id)
 
-        # material_id를 제외한 다른 필터들 적용 (start_date, end_date)
+        # 기타 필터들 적용 (start_date, end_date)
         if filters.start_date:
             queryset = queryset.filter(created_at__date__gte=filters.start_date)
         if filters.end_date:

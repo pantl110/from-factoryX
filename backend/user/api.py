@@ -189,6 +189,10 @@ async def signup(request, data: UserSignupIn):
     except User.DoesNotExist:
         pass
 
+    # 탈퇴 유저 체크를 먼저 수행
+    if user and user.status == User.UserStatusChoice.withdraw:
+        raise HttpError(400, "탈퇴한 회원입니다. 고객센터에 문의해주세요.")
+
     if user and user.status == User.UserStatusChoice.active:
         raise HttpError(400, "이미 가입된 이메일입니다.")
 
@@ -244,16 +248,15 @@ async def signup(request, data: UserSignupIn):
             raise HttpError(400, "존재하지 않는 팩토리입니다.")
         except Exception as e:
             raise e
-
-    if user and user.status == User.UserStatusChoice.withdraw:
-        user.status = User.UserStatusChoice.inactive
-        await user.asave()
     else:
         # 신규 사용자 생성
         try:
             user = await sync_to_async(User.objects.create_user)(
                 email=data.email,
                 password=data.password,
+                terms_of_service=data.terms_of_service,
+                privacy_policy_agreement=data.privacy_policy_agreement,
+                marketing_agreement=data.marketing_agreement,
             )
 
             user = await User.objects.aget(id=user.id)
