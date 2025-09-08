@@ -1,10 +1,11 @@
-from ninja import Schema, FilterSchema
+from ninja import Schema, FilterSchema, Field
 from datetime import date
 from typing import Optional, List
 from enum import Enum
 from datetime import datetime
 from pydantic import field_validator
 from project.models import ProjectPlan
+from django.db.models import Q
 
 
 # ------------------------------------------------------------
@@ -20,6 +21,9 @@ class ProjectCloneIn(Schema):
 # (PATCH) Project Status Update
 class ProjectStatusUpdateIn(Schema):
     status: str
+    is_printed: Optional[bool] = Field(
+        None, description="거래명세서 출력 여부 (printed_at 업데이트 용)"
+    )
 
 
 # (PATCH) Project Transact Date Update
@@ -78,15 +82,61 @@ class ProjectStatusEnum(str, Enum):
     completed = "completed"
 
 
+class ProjectFilter(FilterSchema):
+    status: Optional[str] = Field(
+        None,
+        description="ProjectStatusEnum",
+        example=",".join([e.value for e in ProjectStatusEnum]),
+    )
+    status_exclude: Optional[str] = Field(
+        None,
+        description="ProjectStatusEnum",
+        example=",".join([e.value for e in ProjectStatusEnum]),
+    )
+    search: Optional[str] = Field(
+        None,
+        q=[
+            "quotations__client__name__icontains",
+            "quotations__products__product__name__icontains",
+        ],
+        expression_connector="OR",
+        description="검색 키워드",
+    )
+    printed_at__isnull: Optional[bool] = Field(
+        None,
+        q="printed_at__isnull",
+        description="거래명세서 출력 여부 (printed_at 필드 기준 True: 출력 안됨, False: 출력됨)",
+    )
+
+    def filter_status(self, value):
+        q = Q()
+        if value:
+            status_filter = value.split(",")
+            q &= Q(status__in=status_filter)
+        return q
+
+    def filter_status_exclude(self, value):
+        q = Q()
+        if value:
+            status_exclude_filter = value.split(",")
+            q &= ~Q(status__in=status_exclude_filter)
+        return q
+
+
 class ProjectListFilter(FilterSchema):
-    status: ProjectStatusEnum
+    status: Optional[str] = Field(
+        None,
+        description="ProjectStatusEnum",
+        example="".join([e.value for e in ProjectStatusEnum]),
+    )
     search: Optional[str] = None
     order_by: Optional[str] = "start_date"
     order_dir: Optional[str] = "asc"
 
     def filter(self, qs):
         if self.status:
-            qs = qs.filter(status=self.status.value)
+            status_filter = self.status.split(",")
+            qs = qs.filter(status__in=status_filter)
         if self.search:
             qs = qs.filter(quotations__client__name__icontains=self.search) | qs.filter(
                 quotations__products__product__name__icontains=self.search

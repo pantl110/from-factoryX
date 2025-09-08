@@ -58,6 +58,27 @@ class ListProgressProjectOut(Schema):
     created_at: str
 
 
+class ProjectPlanModelOut(ModelSchema):
+    class Meta:
+        model = ProjectPlan
+        fields = "__all__"
+
+
+class ProjectModelOut(ModelSchema):
+    client_name: Optional[str] = Field(None, description="클라이언트 이름")
+    quotations: Optional[List[QuotationModelOut]] = Field([], description="견적서 정보")
+    tax_invoice: Optional[NationalTaxServiceOut] = Field(
+        None, description="세금계산서 정보"
+    )
+    plans: Optional[List[ProjectPlanModelOut]] = Field(
+        [], description="프로젝트 계획 정보"
+    )
+
+    class Meta:
+        model = Project
+        fields = "__all__"
+
+
 # (GET) Project Status
 class ProjectStatusOut(Schema):
     project_id: int
@@ -82,6 +103,9 @@ class ProjectStatusDetailOut(ModelSchema):
     quotations: Optional[List[QuotationModelOut]] = Field([], description="견적서 정보")
     logs: Optional[List[ProjectLogModelOut]] = Field(
         [], description="프로젝트 로그 정보"
+    )
+    max_delivery_date: Optional[datetime.date] = Field(
+        None, description="최대 납기일 (quotation_product의 delivery_date 중 최대값)"
     )
 
     class Meta:
@@ -172,12 +196,6 @@ class RefundProductionRegistrationOut(Schema):
 # ------------------------------------------------------------
 # Project Plan API
 # ------------------------------------------------------------
-
-
-class ProjectPlanModelOut(ModelSchema):
-    class Meta:
-        model = ProjectPlan
-        fields = "__all__"
 
 
 # (POST) Project Plan Create

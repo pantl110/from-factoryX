@@ -5,13 +5,22 @@ from typing import Tuple
 from project.models import Refund, Project, ProjectLog
 from stock.models import MaterialProduct
 from factory.models import FactoryEquipment
+from django.db.models import Max
 
 
 async def get_project_by_id(project_id):
     try:
         project = (
             await Project.objects.select_related("tax_invoice")
-            .prefetch_related("quotations", "plans", "logs")
+            .prefetch_related(
+                "quotations__products__product",
+                "quotations__client",
+                "plans",
+                "logs",
+            )
+            .annotate(
+                max_delivery_date=Max("quotations__products__delivery_date"),
+            )
             .aget(id=project_id)
         )
         return project
