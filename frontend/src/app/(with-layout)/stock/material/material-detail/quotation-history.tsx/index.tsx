@@ -41,7 +41,11 @@ const QuotationHistory = ({
       {histories.map((history) => (
         <QuotationHistoryItem
           key={history.id}
-          onClick={() => setIsClinetDetailPanelOpen(history.client_id)}
+          onClick={
+            history.client_id !== null && history.client_id !== undefined
+              ? () => setIsClinetDetailPanelOpen(history.client_id as number)
+              : () => {}
+          }
           data={history}
         />
       ))}

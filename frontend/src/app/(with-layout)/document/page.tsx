@@ -11,12 +11,15 @@ import OrderDocumentView from './order-document-view';
 import documentData, { DocumentDataModel } from '@/mocks/document-data';
 import Panel from '@/ui/panel';
 import ProductionDocumentView from './production-document-view';
-import TransactionDocumentView from './transaction-document-view';
 import Spinner from '@/ui/spinner';
 import { useCheckAll } from '@/hooks/use-check-all';
 import DeleteModal from '@/ui/modal/delete-modal';
 import { useGetPublishedTaxInvoices } from '@/hooks';
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import {
+  PublishedTaxInvoiceResponseModel,
+  ProjectResponseModel,
+} from '@/types/data-model';
+import useGetProjects from '@/hooks/project/use-get-projects';
 
 const DocumentPageContent = () => {
   const [selectedType, setSelectedType] = useState<DocumentType>('주문서');
@@ -39,11 +42,27 @@ const DocumentPageContent = () => {
   // 세금계산서 API 훅
   const { getPublishedTaxInvoices, isLoading: isTaxDataLoading } =
     useGetPublishedTaxInvoices();
+  // 프로젝트 API 훅
+  const { getProjects, isLoading: isProjectDataLoading } = useGetProjects();
+
   // 세금계산서 데이터 상태
   const [taxInvoices, setTaxInvoices] = useState<
     PublishedTaxInvoiceResponseModel[]
   >([]);
-  const [taxInvoicesTotalPages, setTaxInvoicesTotalPages] = useState(0);
+  const [taxInvoicesPageInfo, setTaxInvoicesPageInfo] = useState({
+    pageCnt: 1,
+    currentPage: 1,
+  });
+
+  // 거래명세서 데이터 상태
+  const [transactionDocuments, setTransactionDocuments] = useState<
+    ProjectResponseModel[]
+  >([]);
+  const [transactionDocumentsPageInfo, setTransactionDocumentsPageInfo] =
+    useState({
+      pageCnt: 1,
+      currentPage: 1,
+    });
 
   // 일반 문서 데이터 (기존 mock 데이터)
   const filteredData = documentData.filter(
@@ -79,11 +98,36 @@ const DocumentPageContent = () => {
 
         if (result.success && result.data) {
           setTaxInvoices(result.data.data || []);
-          setTaxInvoicesTotalPages(result.data.pageCnt || 1);
+          setTaxInvoicesPageInfo({
+            pageCnt: result.data.pageCnt || 1,
+            currentPage,
+          });
         }
       };
 
       fetchTaxData();
+    } else if (selectedType === '거래명세서') {
+      // 거래명세서일 때 프로젝트 완료 상태인 프로젝트 가져오기
+      const fetchProjectData = async () => {
+        const result = await getProjects({
+          status: 'completed',
+          search: debouncedSearchQuery || undefined,
+          page: currentPage,
+          page_size: 10,
+          order_by: 'start_date',
+          order_dir: 'desc',
+        });
+
+        if (result.success && result.data) {
+          setTransactionDocuments(result.data.data || []);
+          setTransactionDocumentsPageInfo({
+            pageCnt: result.data.pageCnt || 1,
+            currentPage,
+          });
+        }
+      };
+
+      fetchProjectData();
     }
   }, [
     selectedType,
@@ -92,15 +136,23 @@ const DocumentPageContent = () => {
     taxSortField,
     taxSortDirection,
     getPublishedTaxInvoices,
+    getProjects,
   ]);
 
   // 현재 표시할 데이터 결정
   const isTaxDocument =
     selectedType === '매출 세금계산서' || selectedType === '매입 세금계산서';
-  const currentData = isTaxDocument ? taxInvoices : filteredData;
+  const isTransactionDocument = selectedType === '거래명세서';
+  const currentData = isTaxDocument
+    ? taxInvoices
+    : isTransactionDocument
+      ? transactionDocuments
+      : filteredData;
   const totalPages = isTaxDocument
-    ? taxInvoicesTotalPages
-    : Math.ceil(filteredData.length / 10);
+    ? taxInvoicesPageInfo.pageCnt
+    : isTransactionDocument
+      ? transactionDocumentsPageInfo.pageCnt
+      : Math.ceil(filteredData.length / 10);
 
   // 체크박스 관리
   const {
@@ -111,7 +163,16 @@ const DocumentPageContent = () => {
     toggleOne,
     setAllChecked,
     getDeleteButtonText,
-  } = useCheckAll(currentData.map((item) => item.id));
+  } = useCheckAll(
+    currentData.map((item) => {
+      if ('id' in item) {
+        return item.id;
+      } else if ('project_id' in item) {
+        return item.project_id; // ‼️‼️‼️‼️‼️‼️‼️세금계산서 일때는 삭제가 필요하지 않을 수 있음
+      }
+      return '';
+    })
+  );
 
   const handleDocumentClick = (document: DocumentDataModel) => {
     setSelectedDocument(document);
@@ -151,16 +212,22 @@ const DocumentPageContent = () => {
             }}
             searchKeyword={searchQuery}
             hasData={currentData.length > 0}
-            hasDeleteButton={!isTaxDocument}
+            hasDeleteButton={!isTaxDocument && !isTransactionDocument}
+            // ‼️‼️‼️‼️‼️‼️‼️세금계산서 일때는 삭제가 필요하지 않을 수 있음 일단 삭제 버튼 없애둠
           />
-          {isTaxDocument && isTaxDataLoading ? (
+          {(isTaxDocument && isTaxDataLoading) ||
+          (isTransactionDocument && isProjectDataLoading) ? (
             <div className="flex justify-center items-center h-100">
               <Spinner />
             </div>
           ) : (
             <DocumentTable
               data={currentData}
-              onDocumentClick={isTaxDocument ? () => {} : handleDocumentClick}
+              onDocumentClick={
+                isTaxDocument || isTransactionDocument
+                  ? () => {}
+                  : handleDocumentClick
+              }
               isAllChecked={isAllChecked}
               onToggleAll={toggleAll}
               isChecked={isChecked}
@@ -224,68 +291,6 @@ const DocumentPageContent = () => {
       {selectedDocument && selectedDocument.documentType === '생산지시서' && (
         <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
           <ProductionDocumentView todayProductionPlans={[]} />
-        </Panel>
-      )}
-      {selectedDocument && selectedDocument.documentType === '거래명세서' && (
-        <Panel title="거래명세서" onClose={() => setSelectedDocument(null)}>
-          <TransactionDocumentView
-            quotationData={{
-              id: 1,
-              client: 1,
-              created_at: '2025-01-01T00:00:00Z',
-              due_date: '2025-08-01',
-              due_date_notice: false,
-              factory: 1,
-              project: 1,
-              type: 'quotation',
-              updated_at: '2025-01-01T00:00:00Z',
-              uploaded_file: '',
-              client_info: {
-                id: 1,
-                name: '플라스틱이 좋아',
-                business_registration_number: '123-45-67890',
-                representative_name: '플라스틱',
-                factory: 1,
-                type: 'customer' as const,
-                email: 'plastic@gmail.com',
-                phone: '010-1234-5678',
-                fax: '02-123-4567',
-                business_type: '소프트웨어',
-                business_category: '소프트웨어',
-                address: '서울시 강남구 역삼동',
-                manager: '플라스틱',
-              },
-              factory_info: {
-                id: 1,
-                name: '플라스틱이 좋아',
-                business_registration_number: '123-45-67890',
-                representative_name: '플라스틱',
-                owner: 1,
-                manager_email: 'plastic@gmail.com',
-                manager_phone: '010-1234-5678',
-                manager_fax: '02-123-4567',
-                business_type: '소프트웨어',
-                business_category: '소프트웨어',
-                business_address: '서울시 강남구 역삼동',
-                is_trial: false,
-                billing_key: '1234567890',
-              },
-              products_info: [
-                {
-                  id: 1,
-                  code: '1234567890',
-                  name: '플라스틱',
-                  spec: '100x100x100',
-                  unit: '개',
-                  quantity: 10,
-                  unit_price: 50000,
-                  total_price: 500000,
-                  quotation_product_id: 1,
-                },
-              ],
-            }}
-            startDate={'2025-08-01'}
-          />
         </Panel>
       )}
 

@@ -3,19 +3,15 @@ import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
-import useMemberStore from '@/store/member-store';
 
 interface MaterialStockLogItemProps {
   data: MaterialHistoryResponseModel;
 }
 
 const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
-  const role = useMemberStore((state) => state.role);
-  const isViewer = role === 'viewer';
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case '출고':
+      case 'consumption':
         return 'text-red';
       case 'purchase':
         return 'text-primary';
@@ -50,89 +46,55 @@ const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
       </p>
       <p className="flex-1 px-3 text-dg">{data.total_stock.toLocaleString()}</p>
       <p className="flex-1 px-3 text-dg">
-        {data.type === 'purchase' ? (
-          data.purchase_tax_invoice_id ? (
-            <MiniBtn
-              text="연결 완료"
-              textColor="text-dg"
-              bgColor="bg-wh"
-              hoverColor="hover:bg-bg"
-              height="h-8"
-              onClick={() => {
-                setIsTaxDetailPanelOpen(true);
-              }}
-            />
-          ) : data.cash_receipt_id ? (
-            '-'
-          ) : (
-            <MiniBtn
-              text="연결 필요"
-              textColor="text-dg"
-              bgColor="bg-bg"
-              hoverColor="hover:bg-bg"
-              height="h-8"
-              disabled={isViewer}
-            />
-          )
+        {data.type === 'purchase' && data.national_tax_service_id ? (
+          <MiniBtn
+            text="보기"
+            textColor="text-dg"
+            hoverColor="hover:bg-bg"
+            borderColor="border-lg"
+            height="h-8"
+            onClick={() => {
+              setIsTaxDetailPanelOpen(true);
+            }}
+          />
         ) : (
           '-'
         )}
       </p>
       <p className="flex-1 px-3 text-sv">
-        {data.type === 'purchase' ? (
-          data.cash_receipt_id ? (
-            <MiniBtn
-              text="연결 완료"
-              textColor="text-dg"
-              bgColor="bg-wh"
-              hoverColor="hover:bg-bg"
-              height="h-8"
-              onClick={() => {
-                setIsCashReceiptDetailPanelOpen(true);
-              }}
-            />
-          ) : data.purchase_tax_invoice_id ? (
-            '-'
-          ) : (
-            <MiniBtn
-              text="연결 필요"
-              textColor="text-dg"
-              bgColor="bg-bg"
-              hoverColor="hover:bg-lg"
-              height="h-8"
-              disabled={isViewer}
-            />
-          )
+        {data.type === 'purchase' && data.cash_receipt ? (
+          <MiniBtn
+            text="보기"
+            textColor="text-dg"
+            borderColor="border-lg"
+            hoverColor="hover:bg-bg"
+            height="h-8"
+            onClick={() => {
+              setIsCashReceiptDetailPanelOpen(true);
+            }}
+          />
         ) : (
           '-'
         )}
       </p>
 
-      {isTaxDetailPanelOpen && data.purchase_tax_invoice_id && (
+      {isTaxDetailPanelOpen && data.national_tax_service_id && (
         <TaxDetailPanel
-          itemId={data.purchase_tax_invoice_id}
+          itemId={data.national_tax_service_id}
           onClose={() => {
             setIsTaxDetailPanelOpen(false);
           }}
         />
       )}
 
-      {isCashReceiptDetailPanelOpen && data.cash_receipt_id && (
+      {isCashReceiptDetailPanelOpen && data.cash_receipt && (
         <ReceiptDetailPanel
-          itemId={data.cash_receipt_id}
+          itemId={data.cash_receipt}
           onClose={() => {
             setIsCashReceiptDetailPanelOpen(false);
           }}
         />
       )}
-
-      {/* <p className="w-[150px] px-3 text-dg">{date}</p>
-      <p className={`w-[150px] px-3 ${getStatusColor(status)}`}>{status}</p>
-      <p className={`flex-1 px-3 ${getStatusColor(status)}`}>
-        {getQuantityDisplay(status, quantity)}
-      </p>
-      <p className="flex-1 px-3 text-dg">{productName}</p>
-      <p className="flex-1 px-3 text-dg">{currentStock.toLocaleString()}</p> */}
     </div>
   );
 };

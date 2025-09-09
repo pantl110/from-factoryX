@@ -3,7 +3,6 @@ import Panel from '@/ui/panel';
 import { useGetCashReceiptDetail } from '@/hooks';
 import { useEffect, useState } from 'react';
 import { CashReceiptDetailResponseModel } from '@/types/data-model';
-import Spinner from '@/ui/spinner';
 import PriceInfo from '@/ui/price-info';
 import MiniBtn from '@/ui/mini-btn';
 import LinkReceiptModal from './link-receipt-modal';
@@ -37,7 +36,7 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
         onClose={onClose}
         headerButton={
           <MiniBtn
-            text="구매 내역 연결"
+            text="내역 연결"
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
@@ -48,11 +47,7 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
           />
         }
       >
-        {isLoading || error ? (
-          <div className="flex justify-center items-center h-100">
-            <Spinner />
-          </div>
-        ) : (
+        {isLoading || error ? null : (
           <>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
@@ -131,6 +126,8 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
         <LinkReceiptModal
           onClose={() => setIsLinkReceiptModalOpen(false)}
           supplyAmount={cashReceipt?.transaction_amount || 0}
+          taxAmount={cashReceipt?.tax_amount || 0}
+          receiptId={cashReceipt?.id || 0}
         />
       )}
     </>

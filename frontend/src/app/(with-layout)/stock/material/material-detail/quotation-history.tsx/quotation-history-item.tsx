@@ -11,9 +11,9 @@ const QuotationHistoryItem = ({ onClick, data }: QuotationHistoryItemProps) => {
     <div className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer hover:border hover:border-primary transition-colors duration-200 group">
       <div
         className="flex-1 px-3 flex items-center gap-1 min-w-0"
-        title={data.client_name}
+        title={data.client_name || '-'}
       >
-        <p className="text-dg truncate">{data.client_name}</p>
+        <p className="text-dg truncate">{data.client_name || '-'}</p>
         <button
           className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-colors duration-200 group-hover:opacity-100 opacity-0"
           onClick={onClick}

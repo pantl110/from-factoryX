@@ -41,7 +41,8 @@ interface MaterialDetailProps {
   setIsClinetDetailPanelOpen: (clientId: number) => void;
   handleOpenDeleteModal: (connectionId: number) => void;
   onProductClick?: (productId: number) => void;
-  onRequiredFilledChange?: (filled: boolean) => void;
+  clientWasModified?: boolean; // 클라이언트가 실제로 수정되어 저장되었는지
+  productWasModified?: boolean; // 품목이 실제로 연결/삭제되었는지
 }
 
 const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
@@ -55,7 +56,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       setIsClinetDetailPanelOpen,
       handleOpenDeleteModal,
       onProductClick,
-      onRequiredFilledChange,
+      clientWasModified,
+      productWasModified,
     },
     ref
   ) => {
@@ -111,23 +113,25 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       isLoading: isStockLoading,
     } = useGetMaterialHistory();
 
-    // 페이지네이션 상태
-    const [currentPage, setCurrentPage] = useState(1);
+    // 페이지네이션 상태 (각 섹션별로 독립적)
+    const [priceCurrentPage, setPriceCurrentPage] = useState(1);
+    const [stockCurrentPage, setStockCurrentPage] = useState(1);
     const pageSize = 5;
 
     // 업체별 단가 비교 기간 선택 훅
     const pricePeriodSelector = usePeriodSelector({
       materialId,
-      page: currentPage,
+      page: priceCurrentPage,
       pageSize,
       onPeriodChange: async (filters) => {
         if (materialId) {
-          await getPriceHistory(materialId, {
+          await getPriceHistory({
+            material_id: materialId,
             start_date: filters.start_date as string | undefined,
             end_date: filters.end_date as string | undefined,
             page: filters.page as number,
             page_size: pageSize,
-            type: '구매',
+            type: 'purchase',
           });
         }
       },
@@ -136,11 +140,12 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     // 재고 이력 기간 선택 훅
     const stockLogPeriodSelector = usePeriodSelector({
       materialId,
-      page: currentPage,
+      page: stockCurrentPage,
       pageSize,
       onPeriodChange: async (filters) => {
         if (materialId) {
-          await getStockHistory(materialId, {
+          await getStockHistory({
+            material_id: materialId,
             start_date: filters.start_date as string | undefined,
             end_date: filters.end_date as string | undefined,
             page: filters.page as number,
@@ -150,20 +155,26 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       },
     });
 
-    // 페이지 변경 핸들러
-    const handlePageChange = (page: number) => {
-      setCurrentPage(page);
-      // 페이지 변경 시에도 API 호출
+    // 업체별 단가 비교 페이지 변경 핸들러
+    const handlePricePageChange = (page: number) => {
+      setPriceCurrentPage(page);
       if (materialId) {
         // 업체별 단가 비교 (타입: 구매만)
-        getPriceHistory(materialId, {
+        getPriceHistory({
+          material_id: materialId,
           page,
           page_size: pageSize,
-          type: '구매',
+          type: 'purchase',
         });
+      }
+    };
 
-        // 재고 이력 (타입: 전체)
-        getStockHistory(materialId, {
+    // 재고 이력 페이지 변경 핸들러 (타입: 전체)
+    const handleStockPageChange = (page: number) => {
+      setStockCurrentPage(page);
+      if (materialId) {
+        getStockHistory({
+          material_id: materialId,
           page,
           page_size: pageSize,
         });
@@ -255,6 +266,45 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       }
     }, [locations, reset]);
 
+    // 클라이언트가 수정되어 저장되었을 때 업체별 단가 비교 재조회
+    useEffect(() => {
+      if (clientWasModified && materialId) {
+        // pricePeriodSelector의 createFilters를 사용해서 현재 기간에 맞는 필터 생성
+        const filters = pricePeriodSelector.createFilters(
+          pricePeriodSelector.selectedPeriod,
+          priceCurrentPage // 업체별 단가 비교의 현재 페이지 유지
+        );
+
+        if (filters) {
+          getPriceHistory({
+            material_id: materialId,
+            start_date: filters.start_date as string | undefined,
+            end_date: filters.end_date as string | undefined,
+            page: filters.page as number,
+            page_size: pageSize,
+            type: 'purchase',
+          });
+        }
+      }
+    }, [
+      clientWasModified,
+      materialId,
+      priceCurrentPage,
+      pageSize,
+      getPriceHistory,
+      pricePeriodSelector,
+    ]);
+
+    // 품목이 연결/삭제되었을 때 ProductRequiringMaterial 재렌더링
+    useEffect(() => {
+      if (productWasModified) {
+        // ref를 통해 refresh 메서드 호출
+        if (productRequiringMaterialRef.current?.refresh) {
+          productRequiringMaterialRef.current.refresh();
+        }
+      }
+    }, [productWasModified]);
+
     // StockLocationItem 추가 함수
     const handleAddStockLocation = () => {
       append({ location: '', images: [] });
@@ -272,7 +322,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               materialId={materialId}
               ref={materialInfoRef}
               onIsDirtyChange={setIsDirtyMaterialInfo}
-              onRequiredFilledChange={onRequiredFilledChange}
             />
           </div>
 
@@ -363,9 +412,9 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               setIsClinetDetailPanelOpen={setIsClinetDetailPanelOpen}
               histories={priceHistories?.data}
               isLoading={priceHistories === null}
-              currentPage={currentPage}
+              currentPage={priceCurrentPage}
               totalPages={priceHistories?.pageCnt || 1}
-              onPageChange={handlePageChange}
+              onPageChange={handlePricePageChange}
             />
           </div>
 
@@ -452,9 +501,9 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             <MaterialStockLog
               histories={stockHistories?.data}
               isLoading={isStockLoading}
-              currentPage={currentPage}
+              currentPage={stockCurrentPage}
               totalPages={stockHistories?.pageCnt || 1}
-              onPageChange={handlePageChange}
+              onPageChange={handleStockPageChange}
             />
           </div>
         </div>

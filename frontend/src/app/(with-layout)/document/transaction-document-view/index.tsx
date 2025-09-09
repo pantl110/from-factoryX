@@ -18,7 +18,10 @@ const TransactionDocumentView = ({
       <DocumentViewTitle
         title={`[${quotationData.client_info.name}]건 거래명세서`}
       />
-      <SellerInfo startDate={startDate} />
+      <SellerInfo
+        startDate={startDate}
+        factoryData={quotationData.factory_info}
+      />
       <BuyerInfo
         quotationData={{
           client_id: quotationData.client_info.id,

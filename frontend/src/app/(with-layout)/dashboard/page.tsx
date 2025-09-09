@@ -32,6 +32,7 @@ import {
 import useMemberStore from '@/store/member-store';
 import { TodayProductionPlanModel } from './type';
 import NoHistoryBox from '@/ui/no-history-box';
+import Footer from '@/components/footer';
 
 const DashboardPageContent = () => {
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -276,6 +277,8 @@ const DashboardPageContent = () => {
               />
             </div>
           </div>
+
+          <Footer />
         </>
       )}
 

@@ -7,7 +7,7 @@ interface TableHeaderProps {
 
 const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
   return (
-    <div className="flex items-center h-12 border-t border-b border-[#eeeeee] Me_Body-1">
+    <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
       <Checkbox isChecked={isAllChecked} onToggle={onToggleAll || (() => {})} />
       <p className="flex-1 px-3 text-sv">품목명</p>
       <p className="flex-1 px-3 text-sv">품목 코드</p>

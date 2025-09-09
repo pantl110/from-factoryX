@@ -11,7 +11,6 @@ import MiniBtn from '@/ui/mini-btn';
 import { useEffect, useState } from 'react';
 import useGetEquipmentDetail from '@/hooks/factory/factory-equipment/use-get-equipment-detail';
 import NoHistoryBox from '@/ui/no-history-box';
-import Spinner from '@/ui/spinner';
 
 interface FacilityDetailPanelProps {
   facilityId?: number;
@@ -189,11 +188,7 @@ const FacilityDetailPanel = ({
         )
       }
     >
-      {isLoading ? (
-        <div className="flex justify-center items-center h-full">
-          <Spinner />
-        </div>
-      ) : (
+      {isLoading ? null : (
         <div className="flex flex-col gap-10">
           {/* 설비 정보 */}
           <div className="flex flex-col gap-3 border-b border-lg">

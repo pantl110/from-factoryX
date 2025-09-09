@@ -190,7 +190,7 @@ const MaterialEnrollmentModal = ({
           : '입력한 거래처로부터 실제로 구매한 원자재 정보를 입력해 주세요.'
       }
       onClose={onClose}
-      width="w-[600px]"
+      width="w-[520px]"
     >
       {!isSuccessModalOpen && (
         <>

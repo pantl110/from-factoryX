@@ -11,10 +11,10 @@ type ConnectionModelType =
   | ProductMaterialConnectionModel;
 
 interface StockStatusProps {
-  setIsMaterialDetailPanelOpen: (isOpen: boolean) => void;
-  setMaterialId: (id: number) => void;
+  setMaterialId: (id: number | null) => void;
   connections: ConnectionModelType[];
   materialDetails: Record<number, MaterialResponseModel>;
+  quantityOverrides?: Record<number, number>;
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
   onDeleteConnection: (connectionId: number) => void;
@@ -24,10 +24,10 @@ interface StockStatusProps {
 }
 
 const StockStatus = ({
-  setIsMaterialDetailPanelOpen,
   setMaterialId,
   connections,
   materialDetails,
+  quantityOverrides,
   setIsQuantityDirty,
   handleQuantityChange,
   onDeleteConnection,
@@ -53,13 +53,17 @@ const StockStatus = ({
             // MaterialProductConnectionModel인지 확인
             if ('material_id' in connection) {
               const materialDetail = materialDetails[connection.material_id];
+              const overrideQuantity =
+                quantityOverrides?.[
+                  (connection as MaterialProductConnectionModel).connection_id
+                ];
 
               return (
                 <StockStatusItem
                   key={index}
                   connection={connection as MaterialProductConnectionModel}
+                  overrideQuantity={overrideQuantity}
                   materialDetail={materialDetail}
-                  setIsMaterialDetailPanelOpen={setIsMaterialDetailPanelOpen}
                   setMaterialId={setMaterialId}
                   setIsQuantityDirty={setIsQuantityDirty}
                   handleQuantityChange={handleQuantityChange}

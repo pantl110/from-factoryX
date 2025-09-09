@@ -3,17 +3,17 @@ import { TaxDocumentType, TaxDocumentTypeColorMap } from '@/types/status-type';
 import Chip from '@/ui/chip';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
 
-interface LinkModalTableItemProps {
+interface LinkModalProjectTableItemProps {
   onItemClick: () => void;
   isSelected: boolean;
   item: UnlinkedTaxInvoiceResponseModel;
 }
 
-const LinkModalTableItem = ({
+const LinkModalProjectTableItem = ({
   onItemClick,
   isSelected,
   item,
-}: LinkModalTableItemProps) => {
+}: LinkModalProjectTableItemProps) => {
   const taxTypeMap: Record<string, TaxDocumentType> = {
     매출: 'sales',
     매입: 'purchase',
@@ -80,4 +80,4 @@ const LinkModalTableItem = ({
   );
 };
 
-export default LinkModalTableItem;
+export default LinkModalProjectTableItem;

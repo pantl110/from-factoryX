@@ -67,7 +67,7 @@ const InputSection = ({
     setValue('business_type', item.business_type || '');
     setValue('business_category', item.business_category || '');
     setValue('address', item.address || '');
-    setValue('manager', item.manager || '');
+    setValue('manager', item.manager_name || '');
     setValue('email', item.email || '');
     setValue('phone', formatPhoneNumber(String(item.phone ?? '')));
     setValue('fax', formatFaxNumber(String(item.fax ?? '')));

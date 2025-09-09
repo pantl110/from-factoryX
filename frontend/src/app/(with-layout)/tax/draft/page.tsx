@@ -238,7 +238,7 @@ const TaxDraftPage = () => {
             <div className="flex justify-center items-center h-100">
               <Spinner />
             </div>
-          ) : taxInvoices?.data.length === 0 ? (
+          ) : !taxInvoices || taxInvoices?.data.length === 0 ? (
             <NoHistoryBox
               title={
                 selectedTab === '전체'

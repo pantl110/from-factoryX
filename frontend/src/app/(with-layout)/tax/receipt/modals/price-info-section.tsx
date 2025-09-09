@@ -1,8 +1,12 @@
 interface PriceInfoSectionProps {
   supplyAmount: number;
+  taxAmount: number;
 }
 
-const PriceInfoSection = ({ supplyAmount }: PriceInfoSectionProps) => {
+const PriceInfoSection = ({
+  supplyAmount,
+  taxAmount,
+}: PriceInfoSectionProps) => {
   return (
     <div className="flex flex-col gap-4">
       <h4 className="Heading-4">거래 금액</h4>
@@ -16,12 +20,12 @@ const PriceInfoSection = ({ supplyAmount }: PriceInfoSectionProps) => {
           </div>
           <div className="flex-1 px-3 py-2 flex flex-col items-center justify-center border-x border-lg">
             <p className="Re_Body-2 text-sv">세액(VAT 10%)</p>
-            <p className="Me_Body-3">{(supplyAmount / 10).toLocaleString()}</p>
+            <p className="Me_Body-3">{taxAmount.toLocaleString()}</p>
           </div>
           <div className="flex-1 px-3 py-2 flex flex-col items-center justify-center">
             <p className="Re_Body-2 text-sv">합계 금액</p>
             <p className="Me_Body-3">
-              {((supplyAmount * 110) / 100).toLocaleString()}
+              {(supplyAmount + taxAmount).toLocaleString()}
             </p>
           </div>
         </div>

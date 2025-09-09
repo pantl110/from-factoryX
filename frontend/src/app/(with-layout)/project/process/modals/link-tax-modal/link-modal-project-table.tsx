@@ -1,12 +1,11 @@
-import { useCallback } from 'react';
 import Pagination from '@/components/pagination';
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr';
-import LinkModalTableItem from './link-modal-table-item';
+import LinkModalProjectTableItem from './link-modal-project-table-item';
 import { UnlinkedTaxInvoiceResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import Spinner from '@/ui/spinner';
 
-interface LinkModalTableProps {
+interface LinkModalProjectTableProps {
   items: UnlinkedTaxInvoiceResponseModel[];
   currentPage?: number;
   totalPages?: number;
@@ -17,7 +16,7 @@ interface LinkModalTableProps {
   setSelectedId: (id: number | null) => void;
 }
 
-const LinkModalTable = ({
+const LinkModalProjectTable = ({
   items,
   currentPage = 1,
   totalPages = 1,
@@ -26,27 +25,11 @@ const LinkModalTable = ({
   isLoading,
   selectedId,
   setSelectedId,
-}: LinkModalTableProps) => {
-  const handleItemClick = useCallback(
-    (id: number) => {
-      // 이미 선택된 항목을 클릭하면 선택 해제, 아니면 선택
-      setSelectedId(selectedId === id ? null : id);
-    },
-    [setSelectedId, selectedId]
-  );
-
-  const handlePageChange = useCallback(
-    (page: number) => {
-      setSelectedId(null); // 페이지 변경 시 선택 초기화
-      onPageChange?.(page);
-    },
-    [setSelectedId, onPageChange]
-  );
-
+}: LinkModalProjectTableProps) => {
   return (
     <div>
       {isLoading ? (
-        <div className="flex justify-center items-center h-[272px]">
+        <div className="flex justify-center items-center h-50">
           <Spinner />
         </div>
       ) : items && items.length > 0 ? (
@@ -67,18 +50,20 @@ const LinkModalTable = ({
             <p className="flex-2 px-3">합계금액</p>
           </div>
           {items.map((item, index) => (
-            <LinkModalTableItem
+            <LinkModalProjectTableItem
               key={item.id || index}
-              onItemClick={() => handleItemClick(item.id)}
+              onItemClick={() =>
+                setSelectedId(selectedId === item.id ? null : item.id)
+              }
               isSelected={selectedId === item.id}
               item={item}
             />
           ))}
-          {totalPages > 1 && (
+          {totalPages > 1 && onPageChange && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={handlePageChange}
+              onPageChange={onPageChange}
             />
           )}
         </>
@@ -89,4 +74,4 @@ const LinkModalTable = ({
   );
 };
 
-export default LinkModalTable;
+export default LinkModalProjectTable;

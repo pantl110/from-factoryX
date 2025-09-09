@@ -20,7 +20,11 @@ const TableItem = ({
   onItemClick,
 }: TableItemProps) => {
   const chipText =
-    item.barobill_state === '임시저장' ? '임시 저장' : '전송 대기';
+    item.publish_status === 'temporary'
+      ? '임시 저장'
+      : item.publish_status === 'pending'
+        ? '전송 대기'
+        : '-';
 
   return (
     <div
@@ -31,19 +35,23 @@ const TableItem = ({
         <Checkbox isChecked={isChecked} onToggle={onToggle} />
       </div>
       <div className="px-3 w-[150px]">
-        <Chip
-          text={chipText}
-          bgColor={
-            TaxDraftStatusColorMap[
-              chipText as keyof typeof TaxDraftStatusColorMap
-            ].bgColor
-          }
-          textColor={
-            TaxDraftStatusColorMap[
-              chipText as keyof typeof TaxDraftStatusColorMap
-            ].textColor
-          }
-        />
+        {chipText === '-' ? (
+          <span className="text-dg">-</span>
+        ) : (
+          <Chip
+            text={chipText}
+            bgColor={
+              TaxDraftStatusColorMap[
+                chipText as keyof typeof TaxDraftStatusColorMap
+              ].bgColor
+            }
+            textColor={
+              TaxDraftStatusColorMap[
+                chipText as keyof typeof TaxDraftStatusColorMap
+              ].textColor
+            }
+          />
+        )}
       </div>
       <div className="px-3 flex-2">
         <Chip

@@ -17,9 +17,10 @@ import {
 
 interface StockStatusItemProps {
   connection: MaterialProductConnectionModel;
+  // 상위에서 전달되는 수량 override (사용자가 입력한 최신값)
+  overrideQuantity?: number;
   materialDetail?: MaterialResponseModel;
-  setIsMaterialDetailPanelOpen: (isOpen: boolean) => void;
-  setMaterialId: (id: number) => void;
+  setMaterialId: (id: number | null) => void;
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
   onDeleteConnection: (connectionId: number) => void;
@@ -30,8 +31,8 @@ interface StockStatusItemProps {
 
 const StockStatusItem = ({
   connection,
+  overrideQuantity,
   materialDetail,
-  setIsMaterialDetailPanelOpen,
   setMaterialId,
   setIsQuantityDirty,
   handleQuantityChange,
@@ -45,7 +46,7 @@ const StockStatusItem = ({
     quantity: number;
   }>({
     defaultValues: {
-      quantity: connection.quantity || 0,
+      quantity: (overrideQuantity ?? connection.quantity) || 0,
     },
   });
   const [displayValue, setDisplayValue] = useState('');
@@ -83,15 +84,24 @@ const StockStatusItem = ({
   useEffect(() => {
     const formValue = materialQuantityForm.watch('quantity');
     const valueToFormat =
-      formValue !== undefined ? formValue : connection.quantity;
+      formValue !== undefined
+        ? formValue
+        : (overrideQuantity ?? connection.quantity);
     setDisplayValue(formatNumberWithCommas(valueToFormat));
-  }, [materialQuantityForm, connection.quantity, formatNumberWithCommas]);
+  }, [
+    materialQuantityForm,
+    connection.quantity,
+    overrideQuantity,
+    formatNumberWithCommas,
+  ]);
 
   // 초기값 설정
   useEffect(() => {
-    setDisplayValue(formatNumberWithCommas(connection.quantity));
+    const effective = overrideQuantity ?? connection.quantity;
+    setDisplayValue(formatNumberWithCommas(effective));
+    materialQuantityForm.setValue('quantity', effective || 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connection.quantity]);
+  }, [connection.quantity, overrideQuantity]);
 
   // 수량 변경 처리
   const handleQuantityChangeLocal = (inputValue: string) => {
@@ -158,7 +168,6 @@ const StockStatusItem = ({
           className="w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 ease-in-out rounded-[8px] hover:bg-bg"
           onClick={() => {
             setMaterialId(connection.material_id);
-            setIsMaterialDetailPanelOpen(true);
           }}
         >
           <ArrowLineUpRight size={16} className="text-dg" />

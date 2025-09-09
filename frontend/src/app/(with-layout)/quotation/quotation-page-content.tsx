@@ -65,8 +65,11 @@ const QuotationPageContent = () => {
   const setProjectStatusData = usePageStatusStore(
     (state: PageStatusModel) => state.setProjectStatusData
   );
-  const { data: quotationData, isLoading: isQuotationLoading } =
-    useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
+  const {
+    data: quotationData,
+    isLoading: isQuotationLoading,
+    refetch: refetchQuotation,
+  } = useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
   const { showToast, isToastOpen, isVisible } = useToast();
   const { ocrData, imageUrl, setOcrData } = useOcrStore();
   const { clientList, getAllClientList } = useGetClient(); // 거래처 목록 가져오기
@@ -87,9 +90,16 @@ const QuotationPageContent = () => {
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
 
-  // 에러 토스트 상태
-  const [toastText, setToastText] = useState<string>('');
-  const [toastSubtext, setToastSubtext] = useState<string>('');
+  // 토스트 상태
+  const [toastContent, setToastContent] = useState<{
+    text: string;
+    subtext: string;
+    type: 'red' | 'primary';
+  }>({
+    text: '',
+    subtext: '',
+    type: 'red',
+  });
 
   // RequestInfo에서 받은 products 데이터
   const [quotationProducts, setQuotationProducts] = useState<
@@ -197,6 +207,7 @@ const QuotationPageContent = () => {
       setValue('email', quotation.email || '');
       setValue('phone', quotation.phone || '');
       setValue('fax', quotation.fax || '');
+      setValue('manager', quotation.manager_name || '');
 
       if (quotation?.due_date) {
         setValue('due_date', quotation.due_date);
@@ -317,7 +328,7 @@ const QuotationPageContent = () => {
       );
       setValue(
         'manager',
-        existingClient?.manager || ocrData.client_info.manager_name || ''
+        existingClient?.manager_name || ocrData.client_info.manager_name || ''
       );
       setValue('due_date', ocrData.client_info.delivery_date || '');
 
@@ -403,7 +414,9 @@ const QuotationPageContent = () => {
       );
       setValue(
         'manager',
-        existingClient?.manager || newOcrData.client_info.manager_name || ''
+        existingClient?.manager_name ||
+          newOcrData.client_info.manager_name ||
+          ''
       );
       setValue('due_date', newOcrData.client_info.delivery_date || '');
 
@@ -483,9 +496,14 @@ const QuotationPageContent = () => {
     startProduction,
     setInitialQuotationProducts,
     setShowErrors,
-    setToastText,
-    setToastSubtext,
-    showToast,
+    toast: {
+      setText: (text: string) => setToastContent((prev) => ({ ...prev, text })),
+      setSubtext: (subtext: string) =>
+        setToastContent((prev) => ({ ...prev, subtext })),
+      setType: (type: 'red' | 'primary') =>
+        setToastContent((prev) => ({ ...prev, type })),
+      show: showToast,
+    },
     setIsStartProductionModalOpen,
     router,
   });
@@ -600,16 +618,11 @@ const QuotationPageContent = () => {
               // 1. 프로젝트 상태 새로고침
               loadProjectStatus();
 
-              // 2. 견적서 데이터 재조회
+              // 2. 견적서 데이터 재조회 (로컬 상태는 유지하여 버튼 비활성화 방지)
               if (quotationId > 0) {
-                // 견적서 데이터 새로고침을 위한 상태 초기화
-                setQuotationProducts([]);
-                setInitialQuotationProducts([]);
-                setHasQuotationProducts(false);
-
-                // 폼 리셋
-                reset();
-
+                refetchQuotation?.();
+                // 즉시 UI 반영을 위해 상태를 confirmed로 설정
+                setProjectStatus('confirmed');
                 // 에러 상태 초기화
                 setShowErrors(false);
               }
@@ -791,6 +804,14 @@ const QuotationPageContent = () => {
             }, 0)}
             quotationId={quotationId || null}
             onClose={() => setIsEmailOpen(false)}
+            onEmailSent={() => {
+              setToastContent({
+                text: '이메일이 성공적으로 전송되었습니다.',
+                subtext: '견적서가 이메일로 전송되었습니다.',
+                type: 'primary',
+              });
+              showToast();
+            }}
           />
         </OverlayView>
       )}
@@ -802,13 +823,20 @@ const QuotationPageContent = () => {
           isLoading={isStartProductionLoading}
         />
       )}
-      {/* 에러 토스트 */}
+      {/* 토스트 */}
       {isToastOpen && (
         <Toast
-          icon={<CheckCircleIcon size={20} className="text-red" />}
-          text={toastText}
-          subtext={toastSubtext}
-          type="red"
+          icon={
+            <CheckCircleIcon
+              size={20}
+              className={
+                toastContent.type === 'primary' ? 'text-primary' : 'text-red'
+              }
+            />
+          }
+          text={toastContent.text}
+          subtext={toastContent.subtext}
+          type={toastContent.type}
           isVisible={isVisible}
         />
       )}
