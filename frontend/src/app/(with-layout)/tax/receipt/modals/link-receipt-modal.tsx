@@ -27,11 +27,11 @@ const LinkReceiptModal = ({
     MaterialHistoryResponseModel[]
   >([]);
   const [unlinkedPage, setUnlinkedPage] = useState(1);
-  const [unlinkedHasMore, setUnlinkedHasMore] = useState(true);
-  const [linkedMaterialHistory, setLinkedMaterialHistory] = useState<
-    MaterialHistoryResponseModel[]
-  >([]);
-  const { getMaterialHistory, isLoading, error } = useGetMaterialHistory();
+  const [hasMoreUnlinked, setHasMoreUnlinked] = useState(true);
+  // const [linkedMaterialHistory, setLinkedMaterialHistory] = useState<
+  //   MaterialHistoryResponseModel[]
+  // >([]);
+  const { getMaterialHistory } = useGetMaterialHistory();
 
   // 초기 로드 및 검색어 변경 시 데이터 가져오기 (표시는 아직 하지 않음)
   useEffect(() => {
@@ -47,7 +47,7 @@ const LinkReceiptModal = ({
         setUnlinkedPage(1);
         // 첫 페이지에서 더 많은 데이터가 있는지 확인
         const hasMore = !!result.data.nextPage;
-        setUnlinkedHasMore(hasMore);
+        setHasMoreUnlinked(hasMore);
       }
     };
     const fetchLinkedData = async () => {
@@ -64,10 +64,10 @@ const LinkReceiptModal = ({
             page_size: result.data.totalCnt,
           });
           if (newResult.success && newResult.data) {
-            setLinkedMaterialHistory(newResult.data.data);
+            // setLinkedMaterialHistory(newResult.data.data);
           }
         } else {
-          setLinkedMaterialHistory(result.data.data);
+          // setLinkedMaterialHistory(result.data.data);
         }
       }
     };
@@ -77,7 +77,7 @@ const LinkReceiptModal = ({
   }, [searchKeyword, receiptId]);
 
   const handleLoadMoreUnlinked = async () => {
-    if (!unlinkedHasMore) return;
+    if (!hasMoreUnlinked) return;
 
     const nextPage = unlinkedPage + 1;
 
@@ -97,7 +97,7 @@ const LinkReceiptModal = ({
 
       // 더 가져올 데이터가 있는지 확인 // nextPage가 있으면 더 가져올 데이터가 있는 것
       const hasMore = !!result.data.nextPage;
-      setUnlinkedHasMore(hasMore);
+      setHasMoreUnlinked(hasMore);
     }
   };
 

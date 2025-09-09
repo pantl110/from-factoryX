@@ -170,4 +170,4 @@ export { default as useGetDashboard } from './dashboard/use-get-dashboard';
 export { useWebSocket } from './websocket/use-websocket';
 
 // subscription related hooks
-export { default as useGetSubscriptions } from './subscription/use-get-subscriptions';
+// export { default as useGetSubscriptions } from './subscription/use-get-subscriptions';

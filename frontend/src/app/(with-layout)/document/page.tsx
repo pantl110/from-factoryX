@@ -100,7 +100,7 @@ const DocumentPageContent = () => {
           setTaxInvoices(result.data.data || []);
           setTaxInvoicesPageInfo({
             pageCnt: result.data.pageCnt || 1,
-            currentPage: currentPage,
+            currentPage,
           });
         }
       };
@@ -122,7 +122,7 @@ const DocumentPageContent = () => {
           setTransactionDocuments(result.data.data || []);
           setTransactionDocumentsPageInfo({
             pageCnt: result.data.pageCnt || 1,
-            currentPage: currentPage,
+            currentPage,
           });
         }
       };

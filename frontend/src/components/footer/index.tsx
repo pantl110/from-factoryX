@@ -22,12 +22,6 @@ const Footer = () => {
           />
         </div>
         <div className="pb-4">
-          {/* <img
-            src="/factoryx-logo.png"
-            alt="factoryx-logo"
-            width={95}
-            height={18}
-          /> */}
           <FactoryXLogo width={95} />
         </div>
       </div>

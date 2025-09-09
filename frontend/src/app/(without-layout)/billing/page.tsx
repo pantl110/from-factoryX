@@ -1,25 +1,26 @@
 'use client';
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import MiniBtn from '@/ui/mini-btn';
 import Spinner from '@/ui/spinner';
 import { useRouter } from 'next/navigation';
 
-const BillingPage = () => {
+const BillingPageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const status = searchParams.get('status') || 'loading';
-  const billingKey = searchParams.get('billingKey');
-  const customerKey = searchParams.get('customerKey');
+  // const billingKey = searchParams.get('billingKey');
+  // const customerKey = searchParams.get('customerKey');
   //   const amount = searchParams.get('amount');
   //   const orderId = searchParams.get('orderId');
   //   const paymentKey = searchParams.get('paymentKey');
   //   const errorCode = searchParams.get('code');
   //   const errorMessage = searchParams.get('message');
-  const amount = '10000';
-  const orderId = '1234567890';
-  const errorCode = '1234567890';
-  const errorMessage = '1234567890';
+  // const amount = '10000';
+  // const orderId = '1234567890';
+  // const errorCode = '1234567890';
+  // const errorMessage = '1234567890';
 
   const handleConfirm = () => {
     // 구독 설정 페이지로 이동
@@ -85,6 +86,20 @@ const BillingPage = () => {
         )}
       </div>
     </div>
+  );
+};
+
+const BillingPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <Spinner />
+        </div>
+      }
+    >
+      <BillingPageContent />
+    </Suspense>
   );
 };
 

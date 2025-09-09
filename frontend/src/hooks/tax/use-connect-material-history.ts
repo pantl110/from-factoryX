@@ -1,34 +1,34 @@
 'use client';
 import { useState, useCallback } from 'react';
 
-interface ConnectMaterialHistoryRequest {
+interface ConnectMaterialHistoryRequestModel {
   line_item_id: number;
   material_history_id: number;
 }
 
-interface ConnectMaterialHistoryResponse {
+interface ConnectMaterialHistoryResponseModel {
   message: string;
 }
 
-interface UseConnectMaterialHistoryReturn {
+interface UseConnectMaterialHistoryReturnModel {
   connectMaterialHistory: (
     taxId: number,
-    payload: ConnectMaterialHistoryRequest
+    payload: ConnectMaterialHistoryRequestModel
   ) => Promise<{
     success: boolean;
-    data?: ConnectMaterialHistoryResponse;
+    data?: ConnectMaterialHistoryResponseModel;
     error?: string;
   }>;
   isLoading: boolean;
   error: string | null;
 }
 
-const useConnectMaterialHistory = (): UseConnectMaterialHistoryReturn => {
+const useConnectMaterialHistory = (): UseConnectMaterialHistoryReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const connectMaterialHistory = useCallback(
-    async (taxId: number, payload: ConnectMaterialHistoryRequest) => {
+    async (taxId: number, payload: ConnectMaterialHistoryRequestModel) => {
       setIsLoading(true);
       setError(null);
 
@@ -46,7 +46,8 @@ const useConnectMaterialHistory = (): UseConnectMaterialHistoryReturn => {
         );
 
         if (response.ok) {
-          const result: ConnectMaterialHistoryResponse = await response.json();
+          const result: ConnectMaterialHistoryResponseModel =
+            await response.json();
           return { success: true, data: result };
         } else {
           const errorData = await response.json();
@@ -55,7 +56,7 @@ const useConnectMaterialHistory = (): UseConnectMaterialHistoryReturn => {
           setError(errorMessage);
           return { success: false, error: errorMessage };
         }
-      } catch (err) {
+      } catch {
         const errorMessage = '서버 연결에 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };

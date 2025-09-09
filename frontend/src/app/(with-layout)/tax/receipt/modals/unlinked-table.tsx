@@ -24,9 +24,7 @@ const UnlinkedTable = ({
     const el = containerRef.current;
     if (!el || !onLoadMoreRef.current) return;
 
-    const scrollTop = el.scrollTop;
-    const clientHeight = el.clientHeight;
-    const scrollHeight = el.scrollHeight;
+    const { scrollTop, clientHeight, scrollHeight } = el;
 
     // 하단에 닿았는지 확인
     const isAtBottom = scrollTop + clientHeight >= scrollHeight;

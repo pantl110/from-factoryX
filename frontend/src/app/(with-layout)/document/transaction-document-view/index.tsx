@@ -1,4 +1,4 @@
-import { ProjectQuotationModel, TaxFactoryInfoModel } from '@/types/data-model';
+import { ProjectQuotationModel } from '@/types/data-model';
 import DocumentViewTitle from '../document-view-title';
 import BuyerInfo from './buyer-info';
 import SellerInfo from './seller-info';

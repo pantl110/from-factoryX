@@ -14,6 +14,7 @@ import {
   UnlinkedTaxInvoiceListResponseModel,
   TaxLineItemModel,
   ProjectStatusResponseModel,
+  MaterialHistoryListResponseModel,
 } from '@/types/data-model';
 import MaterialInfoTable from './material-info-table';
 import LinkModalTaxTable from './link-modal-tax-table';
@@ -46,7 +47,8 @@ const LinkTaxModal = ({
   const [ordering, setOrdering] = useState<string>('-transaction_date');
   const [taxInvoiceData, setTaxInvoiceData] =
     useState<UnlinkedTaxInvoiceListResponseModel | null>(null);
-  const [materialHistoryData, setMaterialHistoryData] = useState<any>(null);
+  const [materialHistoryData, setMaterialHistoryData] =
+    useState<MaterialHistoryListResponseModel | null>(null);
   const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
 
   // 선택한 세금계산서 아이디 선택 관련
