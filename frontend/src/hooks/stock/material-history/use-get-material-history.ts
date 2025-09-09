@@ -10,6 +10,7 @@ interface GetMaterialHistoryOptionModel {
   material_id?: number;
   material_name?: string;
   client_id?: number;
+  receipt_id?: number;
   page?: number;
   page_size?: number;
 }
@@ -55,12 +56,9 @@ const useGetMaterialHistory = () => {
         params.append('end_date', options.end_date);
       }
 
-      // 타입 필터 파라미터
       if (options?.type) {
         params.append('type', options.type);
       }
-
-      // 그 외 파라미터들
       if (options?.is_linked !== undefined) {
         params.append('is_linked', options.is_linked.toString());
       }
@@ -69,6 +67,9 @@ const useGetMaterialHistory = () => {
       }
       if (options?.client_id) {
         params.append('client_id', options.client_id.toString());
+      }
+      if (options?.receipt_id) {
+        params.append('receipt_id', options.receipt_id.toString());
       }
 
       // 페이지네이션 파라미터
