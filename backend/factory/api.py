@@ -1,13 +1,13 @@
 from ninja import Router
-from ninja.pagination import paginate
-from api.security import jwt_auth, jwt_manager_auth, jwt_admin_auth
+from api.security import jwt_auth
 from factory.schemas.inbound import FactoryUpdateIn
-from factory.schemas.outbound import FactoryOut
+from factory.schemas.outbound import FactoryModelOut, FactoryModelDetailOut
 from factory.models import Factory, FactoryMember
 from typing import List
 from ninja.errors import HttpError
-from factory.utils import is_factory_member
+from factory.utils import get_factory_by_id, is_factory_member
 from asgiref.sync import sync_to_async
+from django.db.models import Prefetch
 
 
 router = Router(tags=["Factory"])
@@ -23,7 +23,7 @@ router = Router(tags=["Factory"])
 )
 async def create_factory(request):
     user = request.auth
-    
+
     # 새 공장 생성
     factory = await Factory.objects.acreate(owner=user)
 
@@ -35,17 +35,15 @@ async def create_factory(request):
         status=FactoryMember.MemberStatus.active,
         invited_by=user,
     )
-    
+
     # 사용자가 다른 공장의 멤버인 경우 모두 삭제 (새 공장 제외)
-    other_factory_members = await FactoryMember.objects.filter(
-        user=user
-    ).exclude(factory=factory).aexists()
-    
+    other_factory_members = (
+        await FactoryMember.objects.filter(user=user).exclude(factory=factory).aexists()
+    )
+
     if other_factory_members:
-        await FactoryMember.objects.filter(
-            user=user
-        ).exclude(factory=factory).adelete()
-    
+        await FactoryMember.objects.filter(user=user).exclude(factory=factory).adelete()
+
     return 201, {"factory_id": factory.id}
 
 
@@ -53,7 +51,7 @@ async def create_factory(request):
     "",
     summary="[C] 본인의 공장 목록 조회",
     description="사용자가 멤버로 등록된 공장 목록을 조회합니다.",
-    response={200: List[FactoryOut]},
+    response={200: List[FactoryModelOut]},
     auth=jwt_auth,
 )
 async def list_factories(request):
@@ -61,160 +59,82 @@ async def list_factories(request):
 
     @sync_to_async
     def get_factories():
-        # FactoryMember 정보를 함께 조회하여 invited_at 포함
-        member_factories = FactoryMember.objects.filter(
-            user=user, 
-            status=FactoryMember.MemberStatus.active
-        ).select_related('factory').order_by('-invited_at')
-        
-        return list(member_factories)
+        # 현재 사용자의 활성 멤버십만 미리 로드
+        user_member_prefetch = Prefetch(
+            "members",
+            queryset=FactoryMember.objects.filter(
+                user=user, status=FactoryMember.MemberStatus.active
+            ),
+            to_attr="user_members",
+        )
 
-    member_factories = await get_factories()
-    
-    # 모델 객체를 딕셔너리로 변환
-    factory_list = []
-    for member in member_factories:
-        factory = member.factory
-        factory_list.append({
-            "id": factory.id,
-            "owner": factory.owner_id,
-            "name": factory.name,
-            "business_registration_number": factory.business_registration_number,
-            "representative_name": factory.representative_name,
-            "manager_email": factory.manager_email,
-            "manager_phone": factory.manager_phone,
-            "manager_fax": factory.manager_fax,
-            "business_type": factory.business_type,
-            "business_category": factory.business_category,
-            "business_address": factory.business_address,
-            "is_trial": factory.is_trial,
-            "billing_key": factory.billing_key,
-            "inviting": factory.inviting,
-            "created_at": factory.created_at.isoformat() if factory.created_at else None,
-            "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
-            "invited_at": member.invited_at.isoformat() if member.invited_at else None,
-            "role": member.role,
-            "invited_by": member.invited_by_id,
-        })
-    
-    return factory_list
+        factories = list(
+            Factory.objects.prefetch_related("members", user_member_prefetch)
+            .filter(
+                members__user=user, members__status=FactoryMember.MemberStatus.active
+            )
+            .order_by("-members__invited_at")
+            .distinct()
+        )
+
+        # 각 공장에 멤버 정보 설정 (user_members 리스트의 첫 번째 요소)
+        for factory in factories:
+            if factory.user_members:
+                factory.member = factory.user_members[0]
+
+        return factories
+
+    factories = await get_factories()
+
+    return factories
 
 
 @router.get(
     "/detail",
     summary="[C] 공장 상세 조회",
     description="공장 ID로 공장 정보를 조회합니다.",
-    response={200: FactoryOut},
+    response={200: FactoryModelDetailOut},
     auth=jwt_auth,
 )
 async def get_factory(request):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
 
-    try:
-        factory = await Factory.objects.aget(id=int(factory_id))
-    except Factory.DoesNotExist:
-        raise HttpError(404, "해당 공장이 존재하지 않습니다.")
-    
-    # FactoryMember 정보 조회
-    @sync_to_async
-    def get_factory_member():
-        return FactoryMember.objects.filter(
-            factory=factory, 
-            user=user,
-            status=FactoryMember.MemberStatus.active
-        ).first()
-    
-    member = await get_factory_member()
-    
-    return {
-        "id": factory.id,
-        "owner": factory.owner_id,
-        "name": factory.name,
-        "business_registration_number": factory.business_registration_number,
-        "representative_name": factory.representative_name,
-        "manager_email": factory.manager_email,
-        "manager_phone": factory.manager_phone,
-        "manager_fax": factory.manager_fax,
-        "business_type": factory.business_type,
-        "business_category": factory.business_category,
-        "business_address": factory.business_address,
-        "is_trial": factory.is_trial,
-        "billing_key": factory.billing_key,
-        "inviting": factory.inviting,
-        "created_at": factory.created_at.isoformat() if factory.created_at else None,
-        "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
-        "invited_at": member.invited_at.isoformat() if member and member.invited_at else None,
-        "role": member.role if member else None,
-        "invited_by": member.invited_by_id if member else None,
-    }
+    user = request.auth
+
+    factory = await get_factory_by_id(int(factory_id))
+    member = await is_factory_member(int(factory_id), user)
+    factory.member = member
+    return factory
 
 
 @router.patch(
     "",
     summary="[C] 공장 정보 수정",
     description="공장 ID로 공장 정보를 수정합니다.",
-    response={200: FactoryOut},
+    response={200: FactoryModelOut},
     auth=jwt_auth,
 )
 async def update_factory(request, payload: FactoryUpdateIn):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
 
-    try:
-        factory = await Factory.objects.aget(id=int(factory_id))
-    except Factory.DoesNotExist:
-        raise HttpError(404, "해당 공장이 존재하지 않습니다.")
+    user = request.auth
+    member = await is_factory_member(int(factory_id), user)
+    factory = await get_factory_by_id(int(factory_id))
 
     # None이 아닌 값만 업데이트
-    update_data = payload.dict(exclude_unset=True)
-    update_data = {k: v for k, v in update_data.items() if v is not None}
-    
-    for field, value in update_data.items():
+    data = payload.dict(exclude_unset=True)
+
+    for field, value in data.items():
         setattr(factory, field, value)
-    
+
     await factory.asave()
-    
-    # FactoryMember 정보 조회
-    @sync_to_async
-    def get_factory_member():
-        return FactoryMember.objects.filter(
-            factory=factory, 
-            user=user,
-            status=FactoryMember.MemberStatus.active
-        ).first()
-    
-    member = await get_factory_member()
-    
-    return {
-        "id": factory.id,
-        "owner": factory.owner_id,
-        "name": factory.name,
-        "business_registration_number": factory.business_registration_number,
-        "representative_name": factory.representative_name,
-        "manager_email": factory.manager_email,
-        "manager_phone": factory.manager_phone,
-        "manager_fax": factory.manager_fax,
-        "business_type": factory.business_type,
-        "business_category": factory.business_category,
-        "business_address": factory.business_address,
-        "is_trial": factory.is_trial,
-        "billing_key": factory.billing_key,
-        "inviting": factory.inviting,
-        "created_at": factory.created_at.isoformat() if factory.created_at else None,
-        "updated_at": factory.updated_at.isoformat() if factory.updated_at else None,
-        "invited_at": member.invited_at.isoformat() if member and member.invited_at else None,
-        "role": member.role if member else None,
-        "invited_by": member.invited_by_id if member else None,
-    }
+
+    factory.member = member
+    return factory
 
 
 @router.delete(
@@ -225,17 +145,14 @@ async def update_factory(request, payload: FactoryUpdateIn):
     auth=jwt_auth,
 )
 async def delete_factory(request):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    
-    try:
-        factory = await Factory.objects.aget(id=int(factory_id))
-    except Factory.DoesNotExist:
-        raise HttpError(404, "해당 공장이 존재하지 않습니다.")
-    
+
+    factory = await get_factory_by_id(int(factory_id))
+
     await factory.adelete()
     return 204, None

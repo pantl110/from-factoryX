@@ -2,8 +2,24 @@ from datetime import date
 from typing import List, Optional
 from ninja import Schema, ModelSchema
 from tax.models import NationalTaxService, CashReceipt
-from factory.schemas.outbound import FactoryClientOut
 from stock.schemas.outbound import ProductOut, MaterialDetailOut
+
+
+# 순환 import 방지를 위한 별도 정의
+class FactoryClientOut(Schema):
+    id: int
+    type: str
+    name: str
+    business_registration_number: Optional[str]
+    representative_name: Optional[str]
+    business_type: Optional[str]
+    business_category: Optional[str]
+    phone: Optional[str]
+    email: Optional[str]
+    fax: Optional[str]
+    address: Optional[str]
+    manager: Optional[str]
+    note: Optional[str]
 
 
 class NationalTaxServiceOut(ModelSchema):
@@ -14,7 +30,6 @@ class NationalTaxServiceOut(ModelSchema):
 
 class NationalTaxServiceDetailOut(ModelSchema):
     client: FactoryClientOut
-    product: ProductOut
 
     class Meta:
         model = NationalTaxService
@@ -26,7 +41,6 @@ class NotLinkedTaxInvoiceOut(Schema):
     tax_invoice_type: str
     transaction_date: date
     client_name: str
-    product_names: List[str]
     transaction_amount: int
     tax_amount: int
     total_amount: int
@@ -37,7 +51,6 @@ class AllTaxInvoiceOut(Schema):
     tax_invoice_type: str
     transaction_date: date
     client_name: str
-    product_names: List[str]
     transaction_amount: int
     tax_amount: int
     total_amount: int
@@ -47,7 +60,6 @@ class AllCashReceiptOut(Schema):
     id: int
     transaction_date: date
     client_name: str
-    product_names: List[str]
     transaction_amount: int
     tax_amount: int
     total_amount: int
@@ -99,9 +111,13 @@ class CashReceiptByMaterialOut(Schema):
 
 
 class CashReceiptDetailOut(ModelSchema):
+    class Meta:
+        model = CashReceipt
+        fields = "__all__"
+
+
+class CashReceiptDetailWithMaterialOut(ModelSchema):
     client: FactoryClientOut
-    product: List[ProductOut]
-    # material: MaterialDetailOut
 
     class Meta:
         model = CashReceipt

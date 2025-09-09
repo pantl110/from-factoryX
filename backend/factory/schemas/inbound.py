@@ -1,10 +1,12 @@
 from ninja import Field, FilterSchema, Schema
 from typing import Optional
+from pydantic import field_validator
 
 
 # ------------------------------------------------------------
 # Factory API
 # ------------------------------------------------------------
+
 
 # (PATCH) Factory Update
 class FactoryUpdateIn(Schema):
@@ -20,10 +22,16 @@ class FactoryUpdateIn(Schema):
     is_trial: Optional[bool] = None
     billing_key: Optional[str] = None
 
+    @field_validator('business_registration_number')
+    @classmethod
+    def validate_business_registration_number(cls, v):
+        return "".join(filter(str.isdigit, v)) if v else v
+
 
 # ------------------------------------------------------------
 # Factory Member API
 # ------------------------------------------------------------
+
 
 # (POST) Factory Member Invite
 class InviteMemberIn(Schema):
@@ -40,6 +48,7 @@ class FactoryMemberUpdateIn(Schema):
 # ------------------------------------------------------------
 # Factory Equipment API
 # ------------------------------------------------------------
+
 
 # (POST) Factory Equipment Create
 class FactoryEqCreateIn(Schema):
@@ -71,6 +80,7 @@ class FactoryEqUpdateIn(Schema):
 # ------------------------------------------------------------
 # Factory Client API
 # ------------------------------------------------------------
+
 
 # (POST) Factory Client Create
 class FactoryClientCreateIn(Schema):

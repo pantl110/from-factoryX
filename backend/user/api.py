@@ -8,6 +8,7 @@ from user.schemas.outbound import (
     UserRefreshTokenOut,
     EmailVerificationOut,
     EmailVerificationCodeOut,
+    UserMeWithMemberOut,
 )
 from user.schemas.inbound import (
     UserSignupIn,
@@ -188,6 +189,10 @@ async def signup(request, data: UserSignupIn):
     except User.DoesNotExist:
         pass
 
+    # 탈퇴 유저 체크를 먼저 수행
+    if user and user.status == User.UserStatusChoice.withdraw:
+        raise HttpError(400, "탈퇴한 회원입니다. 고객센터에 문의해주세요.")
+
     if user and user.status == User.UserStatusChoice.active:
         raise HttpError(400, "이미 가입된 이메일입니다.")
 
@@ -211,49 +216,47 @@ async def signup(request, data: UserSignupIn):
     # 초대 처리
     target_factory = None
     invite_info = None
-    
+
     if data.factory_id:
         try:
             # 팩토리 존재 확인
             target_factory = await Factory.objects.aget(id=data.factory_id)
-            
+
             # 해당 팩토리의 inviting에서 이메일 확인
             inviting = target_factory.inviting or []
             for item in inviting:
                 if item["email"] == data.email:
                     invite_info = item
                     break
-            
+
             if not invite_info:
                 raise HttpError(400, "해당 팩토리에서 초대받지 않은 이메일입니다.")
-            
+
             # 역할 일치 확인
             if invite_info["role"] != data.invite_role:
                 raise HttpError(400, "초대받은 역할과 일치하지 않습니다.")
-            
+
             # 추가 보안 검사: 이미 가입된 사용자인지 확인
             existing_member = await FactoryMember.objects.filter(
-                factory=target_factory,
-                user__email=data.email
+                factory=target_factory, user__email=data.email
             ).aexists()
-            
+
             if existing_member:
                 raise HttpError(400, "이미 해당 팩토리의 멤버입니다.")
-                
+
         except Factory.DoesNotExist:
             raise HttpError(400, "존재하지 않는 팩토리입니다.")
         except Exception as e:
             raise e
-
-    if user and user.status == User.UserStatusChoice.withdraw:
-        user.status = User.UserStatusChoice.inactive
-        await user.asave()
     else:
         # 신규 사용자 생성
         try:
             user = await sync_to_async(User.objects.create_user)(
                 email=data.email,
                 password=data.password,
+                terms_of_service=data.terms_of_service,
+                privacy_policy_agreement=data.privacy_policy_agreement,
+                marketing_agreement=data.marketing_agreement,
             )
 
             user = await User.objects.aget(id=user.id)
@@ -278,23 +281,25 @@ async def signup(request, data: UserSignupIn):
                     invited_by=invited_by_user,
                     invited_at=invite_info.get("invited_at"),
                 )
-                
+
                 # 해당 팩토리의 inviting에서 해당 항목 삭제
                 inviting = target_factory.inviting or []
-                inviting = [
-                    item for item in inviting if item["email"] != user.email
-                ]
+                inviting = [item for item in inviting if item["email"] != user.email]
                 target_factory.inviting = inviting
                 await sync_to_async(target_factory.save)()
-                
+
                 # 다른 모든 공장의 inviting에서도 해당 이메일 제거
                 other_factories = await sync_to_async(list)(
-                    Factory.objects.exclude(id=target_factory.id).filter(inviting__isnull=False)
+                    Factory.objects.exclude(id=target_factory.id).filter(
+                        inviting__isnull=False
+                    )
                 )
                 for factory in other_factories:
                     if factory.inviting:
                         factory.inviting = [
-                            item for item in factory.inviting if item["email"] != user.email
+                            item
+                            for item in factory.inviting
+                            if item["email"] != user.email
                         ]
                         await sync_to_async(factory.save)()
             else:
@@ -302,17 +307,17 @@ async def signup(request, data: UserSignupIn):
                 factories_with_invites = await sync_to_async(list)(
                     Factory.objects.filter(inviting__isnull=False)
                 )
-                
+
                 for factory in factories_with_invites:
                     inviting = factory.inviting or []
                     matched_invite = None
-                    
+
                     # 해당 이메일로 초대된 항목 찾기
                     for item in inviting:
                         if item["email"] == user.email:
                             matched_invite = item
                             break
-                    
+
                     if matched_invite:
                         # invited_by User 인스턴스 찾기
                         invited_by_user = None
@@ -330,13 +335,13 @@ async def signup(request, data: UserSignupIn):
                             invited_by=invited_by_user,
                             invited_at=matched_invite.get("invited_at"),
                         )
-                        
+
                         # inviting에서 해당 항목 삭제
                         factory.inviting = [
                             item for item in inviting if item["email"] != user.email
                         ]
                         await sync_to_async(factory.save)()
-                
+
                 # 초대를 받지 않았어도 회원가입은 성공 (멤버 등록 없음)
 
             return user
@@ -406,7 +411,15 @@ async def login(request, data: UserLoginIn):
 async def logout(request):
     user = request.auth
     await Jwt.objects.filter(user_id=user.id).adelete()
-    return {"detail": "로그아웃 되었어요."}
+
+    # 쿠키 삭제를 위한 응답 생성
+    response = JsonResponse({"detail": "로그아웃 되었어요."})
+
+    # 쿠키 삭제 (만료일을 과거로 설정하여 삭제)
+    response.delete_cookie("access")
+    response.delete_cookie("refresh")
+
+    return response
 
 
 @router.post(
@@ -459,11 +472,18 @@ async def refresh_token(request, data: RefreshTokenIn):
     "/me",
     summary="[C] 내 정보 조회",
     description="내 정보를 조회합니다.",
-    response={200: UserMeOut},
+    response={200: UserMeWithMemberOut},
     auth=jwt_auth,
 )
 async def get_me(request):
     user = request.auth
+
+    try:
+        member = await FactoryMember.objects.filter(user=user).afirst()
+        member_id = member.id if member else None
+    except:
+        member_id = None
+    user.member_id = member_id
     return user
 
 
@@ -471,7 +491,7 @@ async def get_me(request):
     "/me",
     summary="[C] 회원 정보 수정",
     description="회원 정보를 수정합니다.",
-    response={200: UserMeOut},
+    response={200: UserMeWithMemberOut},
     auth=jwt_auth,
 )
 async def update_user(request, payload: UserUpdateIn):
@@ -480,7 +500,21 @@ async def update_user(request, payload: UserUpdateIn):
     for attr, value in data.items():
         setattr(user, attr, value)
     await user.asave()
-    return user
+
+    try:
+        member = await FactoryMember.objects.filter(user=user).afirst()
+        member_id = member.id if member else None
+    except:
+        member_id = None
+
+    return {
+        "email": user.email,
+        "status": user.status,
+        "username": user.username,
+        "phone_number": user.phone_number,
+        "profile_image": user.profile_image,
+        "member_id": member_id,
+    }
 
 
 @router.post(
@@ -492,6 +526,22 @@ async def update_user(request, payload: UserUpdateIn):
 )
 async def withdraw(request):
     user = request.auth
+
+    # 1. 사용자 상태를 탈퇴로 변경
     user.status = User.UserStatusChoice.withdraw
     await user.asave()
-    return {"detail": "회원 탈퇴가 완료되었습니다."}
+
+    # 2. Factory Member 삭제
+    await FactoryMember.objects.filter(user=user).adelete()
+
+    # 3. 해당 사용자의 모든 JWT 토큰 삭제 (로그아웃 처리)
+    await Jwt.objects.filter(user_id=user.id).adelete()
+
+    # 4. 쿠키 삭제를 위한 응답 생성
+    response = JsonResponse({"detail": "회원 탈퇴가 완료되었습니다."})
+
+    # 5. 쿠키 삭제 (만료일을 과거로 설정하여 삭제)
+    response.delete_cookie("access")
+    response.delete_cookie("refresh")
+
+    return response

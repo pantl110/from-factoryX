@@ -100,3 +100,46 @@ def issue_barobill_tax_invoice(tax_service, factory, client, user):
         )
 
     return result
+
+
+def get_state_barobill_tax_invoice(business_registration_number, mgt_key):
+    certKey = settings.BAROBILL_CERT_KEY
+    corpNum = business_registration_number
+    mgtKey = mgt_key
+
+    result = settings.BAROBILL_CLIENT.service.GetTaxInvoiceStateEX(
+        CERTKEY=certKey,
+        CorpNum=corpNum,
+        MgtKey=mgtKey,
+    )
+
+    if result.BarobillState < 0:  # 호출 실패
+        raise HttpError(
+            400,
+            f"바로빌 API 오류 - 세금계산서 상태 조회: {barobill_error_codes.get(result.BarobillState, 'Unknown Error')}",
+        )
+
+    return result
+
+
+def cancel_barobill_tax_invoice(business_registration_number, mgt_key):
+    certKey = settings.BAROBILL_CERT_KEY
+    corpNum = business_registration_number
+    mgtKey = mgt_key
+    procType = "ISSUE_CANCEL"  # 바로빌 상태(발급완료) 된 세금계산서를 공급자가 취소하는 경우 (국세청 전송 전에만 가능)
+    memo = ""
+
+    result = settings.BAROBILL_CLIENT.service.ProcTaxInvoice(
+        CERTKEY=certKey,
+        CorpNum=corpNum,
+        MgtKey=mgtKey,
+        ProcType=procType,
+        Memo=memo,
+    )
+
+    if result < 0:  # 호출 실패
+        raise HttpError(
+            400,
+            f"바로빌 API 오류 - 세금계산서 발행 취소: {barobill_error_codes.get(result, 'Unknown Error')}",
+        )
+    return result

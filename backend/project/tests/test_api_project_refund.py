@@ -85,7 +85,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_create_refund_success(self):
         """반품 생성 성공 테스트"""
-        url = "/v1/project/refund"
+        url = "/v1/project-refund"
 
         payload = {
             "project_id": self.project.id,
@@ -136,7 +136,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_create_refund_nonexistent_project(self):
         """존재하지 않는 프로젝트로 반품 생성 시도 테스트"""
-        url = "/v1/project/refund"
+        url = "/v1/project-refund"
 
         payload = {
             "project_id": 999,
@@ -159,7 +159,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_create_refund_nonexistent_product(self):
         """존재하지 않는 제품으로 반품 생성 시도 테스트"""
-        url = "/v1/project/refund"
+        url = "/v1/project-refund"
 
         payload = {
             "project_id": self.project.id,
@@ -180,7 +180,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_create_refund_zero_amount(self):
         """반품 수량이 0인 경우 테스트"""
-        url = "/v1/project/refund"
+        url = "/v1/project-refund"
 
         payload = {
             "project_id": self.project.id,
@@ -203,7 +203,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_create_refund_negative_amount(self):
         """반품 수량이 음수인 경우 테스트"""
-        url = "/v1/project/refund"
+        url = "/v1/project-refund"
 
         payload = {
             "project_id": self.project.id,
@@ -226,7 +226,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_create_refund_invalid_date_format(self):
         """올바르지 않은 날짜 형식 테스트"""
-        url = "/v1/project/refund"
+        url = "/v1/project-refund"
 
         payload = {
             "project_id": self.project.id,
@@ -249,7 +249,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_create_refund_without_auth(self):
         """인증 없이 반품 생성 시도 테스트"""
-        url = "/v1/project/refund"
+        url = "/v1/project-refund"
 
         payload = {
             "project_id": self.project.id,
@@ -284,7 +284,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 수정
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"refund_date": "2024-01-20", "production_amount": 8}
 
@@ -337,7 +337,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 날짜만 수정
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"refund_date": "2024-01-25"}
 
@@ -361,7 +361,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_update_refund_nonexistent(self):
         """존재하지 않는 반품 수정 시도 테스트"""
-        url = "/v1/project/refund/999"
+        url = "/v1/project-refund/999"
 
         payload = {"refund_date": "2024-01-20", "production_amount": 8}
 
@@ -395,7 +395,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 잘못된 날짜 형식으로 수정
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"refund_date": "2024/01/20"}  # 잘못된 형식
 
@@ -431,7 +431,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 수정
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"production_amount": -10}
 
@@ -467,7 +467,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 수정
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"production_amount": -20}
 
@@ -503,7 +503,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 인증 없이 수정
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"refund_date": "2024-01-20", "production_amount": 8}
 
@@ -515,7 +515,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_create_refund_with_production_amount_null(self):
         """production_amount가 null인 경우 반품 생성 테스트"""
-        url = "/v1/project/refund"
+        url = "/v1/project-refund"
 
         payload = {
             "project_id": self.project.id,
@@ -561,7 +561,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # current_stock만 수정 (실제로는 수정되지 않음)
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"current_stock": 20}
 
@@ -604,7 +604,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # production_amount만 수정
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"production_amount": 15}
 
@@ -647,7 +647,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 상세 조회
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         response = self.client.get(
             f"{url}?factory_id={self.factory.id}",
@@ -689,7 +689,7 @@ class ProjectRefundAPITestCase(TestCase):
 
     def test_get_refund_detail_nonexistent(self):
         """존재하지 않는 반품 상세 조회 테스트"""
-        url = "/v1/project/refund/999"
+        url = "/v1/project-refund/999"
 
         response = self.client.get(
             f"{url}?factory_id={self.factory.id}",
@@ -732,7 +732,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 현재 팩토리로 다른 팩토리의 반품 조회 시도
-        url = f"/v1/project/refund/{other_refund.id}"
+        url = f"/v1/project-refund/{other_refund.id}"
 
         response = self.client.get(
             f"{url}?factory_id={self.factory.id}",
@@ -762,7 +762,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # factory_id 없이 조회
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
@@ -789,7 +789,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 인증 없이 조회
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         response = self.client.get(f"{url}?factory_id={self.factory.id}")
 
@@ -817,7 +817,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 상세 조회
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         response = self.client.get(
             f"{url}?factory_id={self.factory.id}",
@@ -862,7 +862,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 상세 조회
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         response = self.client.get(
             f"{url}?factory_id={self.factory.id}",
@@ -913,10 +913,14 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 생산 등록
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
+
+        payload = {"amount": 15, "production_amount": 5, "refund_date": "2024-01-15"}
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
+            data=payload,
+            content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -929,12 +933,12 @@ class ProjectRefundAPITestCase(TestCase):
         self.assertIn("quotation_id", data)
         self.assertIn("quotation_product_id", data)
         self.assertIn("project_plan_id", data)
-        self.assertIn("production_log_id", data)
+        self.assertIn("log_id", data)
         self.assertIn("product_name", data)
         self.assertIn("quantity", data)
         self.assertIn("equipment_name", data)
 
-        self.assertEqual(data["message"], "반품 재생산이 성공적으로 등록되었습니다.")
+        self.assertEqual(data["message"], "반품 재생산이 성공적으로 처리되었습니다.")
         self.assertEqual(data["refund_id"], refund.id)
         self.assertEqual(data["product_name"], self.product.name)
         self.assertEqual(data["quantity"], 15)
@@ -974,10 +978,19 @@ class ProjectRefundAPITestCase(TestCase):
         expected_production_days = int(expected_avg_time * 15 / (24 * 3600))
         if expected_production_days == 0:
             expected_production_days = 1
-        expected_end_date = datetime.now().date() + timedelta(
-            days=expected_production_days
+
+        # 현재 시간을 기준으로 예상 마감일 계산 (UTC 시간대 고려)
+        from django.utils import timezone
+
+        current_date = timezone.now().date()
+        expected_end_date = current_date + timedelta(days=expected_production_days)
+
+        # DateTimeField이므로 datetime 객체와 비교하되, 날짜 부분만 비교
+        # 시간대 변환으로 인해 1일 차이가 날 수 있으므로 허용 범위 설정
+        actual_end_date = project_plan.end_date.date()
+        self.assertIn(
+            actual_end_date, [expected_end_date, expected_end_date - timedelta(days=1)]
         )
-        self.assertEqual(project_plan.end_date, expected_end_date)
 
         # 기존 QuotationProduct는 그대로 유지되는지 확인
         original_quotation_products = QuotationProduct.objects.filter(
@@ -997,16 +1010,20 @@ class ProjectRefundAPITestCase(TestCase):
             self.assertEqual(material.current_stock, expected_stock)
 
     def test_register_production_from_refund_nonexistent(self):
-        """존재하지 않는 반품으로 생산 등록 시도 테스트"""
-        url = "/v1/project/refund/999"
+        """존재하지 않는 로그로 생산 등록 시도 테스트"""
+        url = "/v1/project-refund/log/999/production"
+
+        payload = {"amount": 15, "production_amount": 5, "refund_date": "2024-01-15"}
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
+            data=payload,
+            content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
         self.assertEqual(response.status_code, 404)
-        self.assertIn("해당 반품을 찾을 수 없습니다", response.json().get("detail", ""))
+        self.assertIn("해당 로그를 찾을 수 없습니다", response.json().get("detail", ""))
 
     def test_register_production_from_refund_zero_amount(self):
         """반품 수량이 0인 경우 생산 등록 시도 테스트"""
@@ -1027,10 +1044,14 @@ class ProjectRefundAPITestCase(TestCase):
             refund=refund,
         )
 
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
+
+        payload = {"amount": 0, "production_amount": 0, "refund_date": "2024-01-15"}
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
+            data=payload,
+            content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -1059,10 +1080,14 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 장비가 없는 상태에서 생산 등록 시도
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
+
+        payload = {"amount": 15, "production_amount": 5, "refund_date": "2024-01-15"}
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
+            data=payload,
+            content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -1089,9 +1114,15 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 인증 없이 생산 등록 시도
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
 
-        response = self.client.post(f"{url}?factory_id={self.factory.id}")
+        payload = {"amount": 15, "production_amount": 5, "refund_date": "2024-01-15"}
+
+        response = self.client.post(
+            f"{url}?factory_id={self.factory.id}",
+            data=payload,
+            content_type="application/json",
+        )
 
         self.assertIn(response.status_code, [401, 403])
 
@@ -1115,9 +1146,16 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # factory_id 없이 생산 등록 시도
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
 
-        response = self.client.post(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        payload = {"amount": 15, "production_amount": 5, "refund_date": "2024-01-15"}
+
+        response = self.client.post(
+            url,
+            data=payload,
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("factory_id를 입력해야 합니다", response.json().get("detail", ""))
@@ -1158,10 +1196,14 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # QuotationProduct가 없는 상태에서 생산 등록 시도 (이제는 성공해야 함)
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/log/{log.id}/production"
+
+        payload = {"amount": 15, "production_amount": 5, "refund_date": "2024-01-15"}
 
         response = self.client.post(
             f"{url}?factory_id={self.factory.id}",
+            data=payload,
+            content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -1234,7 +1276,7 @@ class ProjectRefundAPITestCase(TestCase):
         refund.save()
 
         # 반품 수정 (production_amount를 8로 변경)
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"production_amount": 8}
 
@@ -1326,7 +1368,7 @@ class ProjectRefundAPITestCase(TestCase):
         refund.save()
 
         # 반품 수정 (제품 변경)
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"product_id": new_product.id, "production_amount": 8}
 
@@ -1388,7 +1430,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 날짜만 수정
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"refund_date": "2024-01-25"}
 
@@ -1436,7 +1478,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         # 반품 수정
-        url = f"/v1/project/refund/{refund.id}"
+        url = f"/v1/project-refund/{refund.id}"
 
         payload = {"production_amount": 8}
 

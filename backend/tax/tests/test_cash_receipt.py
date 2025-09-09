@@ -4,7 +4,10 @@ from tax.api_cash_receipt import router
 from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification
 from factory.models import Factory, FactoryClient, FactoryMember
-from stock.models import Product
+from tax.models import CashReceipt
+from stock.models import Material, MaterialHistory
+from asgiref.sync import sync_to_async
+from datetime import date
 
 
 class TestTaxService(TestCase):
@@ -56,21 +59,37 @@ class TestTaxService(TestCase):
             manager="김태원",
         )
 
-        # 제품 생성
-        self.product1 = Product.objects.create(
+        # 테스트용 현금영수증 생성
+        self.cash_receipt = CashReceipt.objects.create(
+            user=self.user,
             factory=self.factory,
-            name="M8 볼트 세트",
-            code="BOLT001",
-            unit="개",
-            spec="M8x20",
-        )
-
-        self.product2 = Product.objects.create(
-            factory=self.factory, name="나사", code="SCREW001", unit="개", spec="M6x15"
-        )
-
-        self.product3 = Product.objects.create(
-            factory=self.factory, name="와셔", code="WASHER001", unit="개", spec="M8"
+            factory_info={
+                "id": self.factory.id,
+                "name": self.factory.name,
+                "business_registration_number": self.factory.business_registration_number,
+            },
+            cash_receipt_type="sales",
+            transaction_date=date.today(),
+            client=self.client_company1,
+            client_info={
+                "id": self.client_company1.id,
+                "name": self.client_company1.name,
+                "business_registration_number": self.client_company1.business_registration_number,
+            },
+            transaction_amount=10000,
+            tax_amount=1000,
+            service_charge=0,
+            nts_confirm_num="TEST123456789",
+            franchise_corp_num="1663301345",
+            franchise_corp_name="다운테크",
+            franchise_ceo_name="전다운",
+            franchise_addr="전남 순천시 선평동선길 36",
+            franchise_tel="010-4136-2245",
+            identity_num="1663301345",
+            trade_type="승인거래",
+            trade_usage="소득공제",
+            trade_method="사업자번호",
+            item_name="M8 볼트 세트",
         )
 
     async def authenticate(self):
@@ -109,3 +128,138 @@ class TestTaxService(TestCase):
         print("🐍 File: tests/test_tax_service.py | Line: 240 | setUp ~ data", data)
 
         self.assertEqual(response.status_code, 200)
+
+    async def test_get_cash_receipt_detail(self):
+        """현금영수증 상세 조회 테스트 - 새로운 간단한 API"""
+        headers = await self.authenticate()
+
+        # 현금영수증 상세 조회
+        response = await self.client.get(f"/{self.cash_receipt.id}", headers=headers)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # 기본 필드 검증
+        self.assertEqual(data["id"], self.cash_receipt.id)
+        self.assertEqual(data["cash_receipt_type"], "sales")
+        self.assertEqual(data["transaction_amount"], 10000)
+        self.assertEqual(data["tax_amount"], 1000)
+        self.assertEqual(data["nts_confirm_num"], "TEST123456789")
+
+        print("✅ 현금영수증 상세 조회 테스트 성공!")
+
+    async def test_get_cash_receipt_detail_not_found(self):
+        """존재하지 않는 현금영수증 조회 테스트"""
+        headers = await self.authenticate()
+
+        # 존재하지 않는 ID로 조회
+        response = await self.client.get("/99999", headers=headers)
+
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertIn("detail", data)
+        self.assertEqual(data["detail"], "해당 현금영수증이 존재하지 않습니다.")
+
+        print("✅ 404 에러 테스트 성공!")
+
+    async def test_cash_to_material_links_histories(self):
+        """cash-to-material PATCH가 자재 이력을 현금영수증에 연결한다"""
+        headers = await self.authenticate()
+
+        # 자재 및 자재 이력 생성
+        material = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="볼트",
+            code="M8-BOLT",
+            unit="EA",
+            spec="M8",
+        )
+
+        mh1 = await sync_to_async(MaterialHistory.objects.create)(
+            material=material,
+            client=self.client_company1,
+            quantity=10,
+            price=100,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            total_stock=10,
+        )
+        mh2 = await sync_to_async(MaterialHistory.objects.create)(
+            material=material,
+            client=self.client_company1,
+            quantity=5,
+            price=120,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            total_stock=15,
+        )
+
+        payload = {"material_history_id": [mh1.id, mh2.id]}
+        resp = await self.client.patch(
+            f"/{self.cash_receipt.id}/cash-to-material",
+            headers=headers,
+            json=payload,
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        await sync_to_async(mh1.refresh_from_db)()
+        await sync_to_async(mh2.refresh_from_db)()
+        self.assertEqual(mh1.cash_receipt_id, self.cash_receipt.id)
+        self.assertEqual(mh2.cash_receipt_id, self.cash_receipt.id)
+
+    async def test_update_material_history_link_and_unlink(self):
+        """update-material-history가 비교 후 연결/해제를 수행한다"""
+        headers = await self.authenticate()
+
+        material = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="너트",
+            code="M8-NUT",
+            unit="EA",
+            spec="M8",
+        )
+
+        # 기존 링크 2개, 신규 대상 1개 준비
+        linked1 = await sync_to_async(MaterialHistory.objects.create)(
+            material=material,
+            client=self.client_company1,
+            quantity=3,
+            price=90,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            total_stock=3,
+            cash_receipt=self.cash_receipt,
+        )
+        linked2 = await sync_to_async(MaterialHistory.objects.create)(
+            material=material,
+            client=self.client_company1,
+            quantity=7,
+            price=110,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            total_stock=10,
+            cash_receipt=self.cash_receipt,
+        )
+        new_candidate = await sync_to_async(MaterialHistory.objects.create)(
+            material=material,
+            client=self.client_company1,
+            quantity=4,
+            price=95,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            total_stock=14,
+        )
+
+        # payload에는 linked1과 new_candidate만 포함 (linked2는 해제 대상)
+        payload = {"material_history_id": [linked1.id, new_candidate.id]}
+        resp = await self.client.patch(
+            f"/{self.cash_receipt.id}/update-material-history",
+            headers=headers,
+            json=payload,
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        await sync_to_async(linked1.refresh_from_db)()
+        await sync_to_async(linked2.refresh_from_db)()
+        await sync_to_async(new_candidate.refresh_from_db)()
+
+        # linked1은 유지, linked2는 해제, new_candidate는 새로 연결
+        self.assertEqual(linked1.cash_receipt_id, self.cash_receipt.id)
+        self.assertIsNone(linked2.cash_receipt_id)
+        self.assertEqual(new_candidate.cash_receipt_id, self.cash_receipt.id)

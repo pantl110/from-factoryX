@@ -4,9 +4,6 @@ from tax.api import router
 from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification
 from factory.models import Factory, FactoryClient, FactoryMember
-from asgiref.sync import sync_to_async
-from stock.models import Product
-from datetime import date
 from django.utils import timezone
 from tax.models import NationalTaxService
 
@@ -60,23 +57,6 @@ class TestTaxService(TestCase):
             manager="김태원",
         )
 
-        # 제품 생성
-        self.product1 = Product.objects.create(
-            factory=self.factory,
-            name="M8 볼트 세트",
-            code="BOLT001",
-            unit="개",
-            spec="M8x20",
-        )
-
-        self.product2 = Product.objects.create(
-            factory=self.factory, name="나사", code="SCREW001", unit="개", spec="M6x15"
-        )
-
-        self.product3 = Product.objects.create(
-            factory=self.factory, name="와셔", code="WASHER001", unit="개", spec="M8"
-        )
-
     async def authenticate(self):
         data = {
             "email": self.user.email,
@@ -113,7 +93,6 @@ class TestTaxService(TestCase):
             "transaction_type": "receipt",
             "transaction_date": timezone.now().date().strftime("%Y-%m-%d"),
             "client": self.client_company1.id,
-            "product": [self.product1.id, self.product2.id],
             "transaction_amount": 70000,
             "tax_amount": 7000,
             "line_items": [
@@ -186,7 +165,6 @@ class TestTaxService(TestCase):
         data = {
             "factory": self.factory.id,
             "client": self.client_company1.id,
-            "product": [self.product1.id, self.product2.id],
             "transaction_amount": 80000,
             "tax_amount": 8000,
             "line_items": [
@@ -288,3 +266,64 @@ class TestTaxService(TestCase):
         response = await self.client.post(f"/{tax_service_id}/cancel", headers=headers)
         data = response.json()
         print("🐍 File: tests/test_tax_service.py | Line: 270 | setUp ~ data", data)
+
+    async def test_connect_material_history(self):
+        """세금계산서 품목과 자재 이력 연동 API 테스트"""
+        headers = await self.authenticate()
+        tax_service_id = await self.test_create_tax_service()
+
+        # 생성된 세금계산서의 line_items에 순번 id 부여
+        resp = await self.client.get(f"/{tax_service_id}", headers=headers)
+        tax_data = resp.json()
+        self.assertEqual(resp.status_code, 200)
+        line_items = tax_data.get("line_items", [])
+        self.assertTrue(len(line_items) > 0)
+
+        for idx, item in enumerate(line_items, start=1):
+            item["id"] = idx
+
+        patch_payload = {
+            "line_items": line_items,
+        }
+        resp = await self.client.patch(
+            f"/{tax_service_id}", json=patch_payload, headers=headers
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # 자재 및 자재 이력 생성 (동일 공장 소속)
+        from stock.models import Material, MaterialHistory
+
+        material = await Material.objects.acreate(
+            factory=self.factory,
+            name="강판",
+            code="MAT-001",
+            unit="EA",
+            spec="SUS304",
+            current_stock=0,
+            standard_stock=0,
+            cost_average=0,
+        )
+
+        mh = await MaterialHistory.objects.acreate(
+            material=material,
+            client=self.client_company1,
+            quantity=10,
+            price=1000,
+            total_stock=None,
+        )
+
+        # 연동 API 호출
+        payload = {
+            "line_item_id": 1,
+            "material_history_id": mh.id,
+        }
+        resp = await self.client.patch(
+            f"/{tax_service_id}/connect-material-history", json=payload, headers=headers
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # 반영 확인
+        resp = await self.client.get(f"/{tax_service_id}", headers=headers)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["line_items"][0]["material_history"], mh.id)

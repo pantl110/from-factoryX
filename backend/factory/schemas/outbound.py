@@ -1,6 +1,8 @@
-from ninja import Schema
+from ninja import Schema, ModelSchema, Field
 from typing import Optional, List
-from project.schemas.outbound import ProjectPlanDetailOut
+from factory.models import Factory, FactoryClient, FactoryMember, FactoryEquipment
+from project.schemas.outbound import ProjectPlanModelOut
+from subscription.models import Subscription, SubscriptionHistory
 
 
 # ------------------------------------------------------------
@@ -32,29 +34,20 @@ class FactoryOut(Schema):
 
 
 # (GET) Factory Equipment
-class FactoryEqOut(Schema):
-    id: int
-    factory: int
-    name: str
-    status: str
-    priority: int
-    location: Optional[str]
-    note: Optional[str]
-    created_at: str
-    updated_at: str
+class FactoryEqOut(ModelSchema):
+    class Meta:
+        model = FactoryEquipment
+        fields = "__all__"
 
 
-class FactoryEqDetailOut(Schema):
-    id: int
-    factory: int
-    name: str
-    status: str
-    priority: int
-    location: Optional[str]
-    note: Optional[str]
-    created_at: str
-    updated_at: str
-    history: List[ProjectPlanDetailOut]
+class FactoryEqModelOut(ModelSchema):
+    plans: Optional[List[ProjectPlanModelOut]] = Field(
+        [], description="프로젝트 계획 리스트"
+    )
+
+    class Meta:
+        model = FactoryEquipment
+        fields = "__all__"
 
 
 # ------------------------------------------------------------
@@ -72,6 +65,12 @@ class FactoryMemberOut(Schema):
     role: str
     status: str
     invited_at: Optional[str]
+
+
+class FactoryMemberDetailOut(ModelSchema):
+    class Meta:
+        model = FactoryMember
+        fields = "__all__"
 
 
 # ------------------------------------------------------------
@@ -111,3 +110,59 @@ class FactoryClientDetailOut(Schema):
     address: Optional[str]
     manager: Optional[str]
     note: Optional[str]
+
+
+class FactoryRowOut(ModelSchema):
+    class Meta:
+        model = Factory
+        exclude = [
+            "inviting",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class FactoryClientRowOut(ModelSchema):
+    class Meta:
+        model = FactoryClient
+        exclude = [
+            "created_at",
+            "updated_at",
+        ]
+
+
+class FactoryModelOut(ModelSchema):
+    members: List[FactoryMemberDetailOut] = Field(..., description="공장 멤버 리스트")
+    member: FactoryMemberDetailOut = Field(..., description="현재 로그인 한 멤버 정보")
+
+    class Meta:
+        model = Factory
+        fields = "__all__"
+
+
+class SubscriptionOut(ModelSchema):
+    class Meta:
+        model = Subscription
+        fields = "__all__"
+
+
+class SubscriptionHistoryOut(ModelSchema):
+    subscription: SubscriptionOut
+
+    class Meta:
+        model = SubscriptionHistory
+        exclude = [
+            "factory",
+        ]
+
+
+class FactoryModelDetailOut(ModelSchema):
+    members: List[FactoryMemberDetailOut] = Field(..., description="공장 멤버 리스트")
+    member: FactoryMemberDetailOut = Field(..., description="현재 로그인 한 멤버 정보")
+    subscription_histories: Optional[List[SubscriptionHistoryOut]] = Field(
+        [], description="구독 이력 리스트"
+    )
+
+    class Meta:
+        model = Factory
+        fields = "__all__"

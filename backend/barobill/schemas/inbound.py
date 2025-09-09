@@ -5,8 +5,12 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+class BarobillRegisterIn(Schema):
+    factory: int = Field(..., description="공장 ID")
+
+
 class BarobillCorpRegisterIn(Schema):
-    factory: str = Field(..., description="공장 ID")
+    factory: int = Field(..., description="공장 ID")
     grade: str = Field(..., description="회원 등급 (예: 대표자, 담당자)")
     barobill_id: str = Field(..., description="바로빌 ID")
     barobill_password: str = Field(..., description="바로빌 비밀번호")
@@ -21,13 +25,13 @@ class BarobillCorpRegisterIn(Schema):
 
 
 class BarobillCorpCertIn(Schema):
-    factory: str = Field(..., description="공장 ID")
+    factory: int = Field(..., description="공장 ID")
     barobill_id: str = Field(..., description="바로빌 ID")
     barobill_password: str = Field(..., description="바로빌 비밀번호")
 
 
 class BarobillGetPeriodIn(Schema):
-    factory: str = Field(..., description="공장 ID")
+    factory: int = Field(..., description="공장 ID")
     start_date: date = Field(
         default=timezone.now() - timedelta(days=30), description="조회 시작 날짜"
     )
@@ -37,7 +41,7 @@ class BarobillGetPeriodIn(Schema):
 
 
 class BarobillTaxInvoiceIssueIn(Schema):
-    factory: str = Field(..., description="공장 ID")
+    factory: int = Field(..., description="공장 ID")
     purpose_type: int = Field(
         default=1,
         ge=1,
@@ -59,7 +63,7 @@ class BarobillTaxInvoiceIssueIn(Schema):
 
 
 class BarobillCashBillIssueIn(Schema):
-    factory: str = Field(..., description="공장 ID")
+    factory: int = Field(..., description="공장 ID")
     identity_num: str = Field(..., description="발행자 번호")
     trade_date: date = Field(..., description="거래 날짜")
     trade_method: str = Field(

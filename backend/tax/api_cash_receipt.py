@@ -7,7 +7,9 @@ from ninja import Query
 from tax.schemas.outbound import (
     AllCashReceiptOut,
     CashReceiptDetailOut,
+    CashReceiptDetailWithMaterialOut,
 )
+from tax.schemas.inbound import CashToMaterialHistoryIn
 from api.security import jwt_auth
 from ninja import Query
 from tax.models import CashReceipt
@@ -18,7 +20,11 @@ from datetime import timedelta, date
 from barobill.barobill_error_code import barobill_error_codes
 from datetime import datetime
 from stock.models import MaterialHistory
-
+from factory.models import FactoryClient
+from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
+from stock.schemas.outbound import ProductRowOut
+from websocket.utils import send_notification_to_factory
+from factory.utils import is_factory_member
 
 router = Router(tags=["CashReceipts"], auth=jwt_auth)
 
@@ -118,10 +124,24 @@ async def sync_cash_receipts(request, factory_id: int):
                 )
             )
 
+            # 클라이언트 찾기
+            try:
+                client = await FactoryClient.objects.aget(
+                    factory_id=factory.id,
+                    business_registration_number=cash_receipt_detail.FranchiseCorpNum,
+                )
+            except FactoryClient.DoesNotExist:
+                client = None
+
             sale_cash_receipts.append(
                 CashReceipt(
                     user=user,
                     factory=factory,
+                    factory_info=FactoryRowOut.from_orm(factory).dict(),
+                    client=client,
+                    client_info=(
+                        FactoryClientRowOut.from_orm(client).dict() if client else {}
+                    ),
                     cash_receipt_type="sales",
                     transaction_date=datetime.strptime(
                         cash_receipt.TradeDate, "%Y%m%d"
@@ -167,10 +187,24 @@ async def sync_cash_receipts(request, factory_id: int):
                 )
             )
 
+            # 클라이언트 찾기
+            try:
+                client = await FactoryClient.objects.aget(
+                    factory_id=factory.id,
+                    business_registration_number=cash_receipt_detail.FranchiseCorpNum,
+                )
+            except FactoryClient.DoesNotExist:
+                client = None
+
             purchase_cash_receipts.append(
                 CashReceipt(
                     user=user,
                     factory=factory,
+                    factory_info=FactoryRowOut.from_orm(factory).dict(),
+                    client=client,
+                    client_info=(
+                        FactoryClientRowOut.from_orm(client).dict() if client else {}
+                    ),
                     cash_receipt_type="sales",
                     transaction_date=datetime.strptime(
                         cash_receipt.TradeDate, "%Y%m%d"
@@ -199,6 +233,17 @@ async def sync_cash_receipts(request, factory_id: int):
             purchase_cash_receipts
         )
 
+    # 알림 전송
+    receipts = sale_cash_receipts + purchase_cash_receipts
+    for cash_receipt in receipts:
+        await send_notification_to_factory(
+            factory_id=int(factory_id),
+            notification_type="information",
+            notification_case="cash_receipt_published",
+            content=f"새로운 현금영수증이 등록되었습니다.",
+            additional_data={},
+        )
+
     return {
         "message": "현금영수증 동기화가 완료되었습니다.",
         "sales_count": len(sale_cash_receipts),
@@ -223,39 +268,18 @@ async def list_cash_receipts(
         "desc", description="작성일자 정렬: desc(최신순), asc(오래된순)"
     ),
 ):
-    """
-    입력 필드(쿼리 파라미터):
-    - factory_id: 공장 ID (필수)
-    - q: 거래처명 또는 품목명 통합 검색어 (선택)
-    - start_date: 조회 시작일 (YYYY-MM-DD, 선택)
-    - end_date: 조회 종료일 (YYYY-MM-DD, 선택)
-    - order: 작성일자 정렬(desc: 최신순, asc: 오래된순, 기본값 desc)
-
-    반환 필드(각 영수증별 dict):
-    - id: 영수증 ID (int)
-    - transaction_date: 거래일자 (str, ISO8601)
-    - client_name: 업체명 (str)
-    - product_names: 품목명 리스트 (List[str])
-    - transaction_amount: 공급가액 (int)
-    - tax_amount: 세액 (int)
-    - total_amount: 합계금액 (int)
-    """
     try:
 
         @sync_to_async
         def get_filtered_receipts():
             qs = CashReceipt.objects.filter(
                 client__factory_id=factory_id
-            ).prefetch_related("client", "product")
+            ).prefetch_related("client")
             if q:
                 ids_client = list(
                     qs.filter(client__name__icontains=q).values_list("id", flat=True)
                 )
-                ids_product = list(
-                    qs.filter(product__name__icontains=q).values_list("id", flat=True)
-                )
-                ids = set(ids_client) | set(ids_product)
-                qs = qs.filter(id__in=ids)
+                qs = qs.filter(id__in=ids_client)
             if start_date:
                 qs = qs.filter(transaction_date__gte=start_date)
             if end_date:
@@ -269,14 +293,12 @@ async def list_cash_receipts(
         receipts = await get_filtered_receipts()
         result = []
         for receipt in receipts:
-            product_names = [product.name for product in receipt.product.all()]
             total_amount = receipt.transaction_amount + receipt.tax_amount
             result.append(
                 AllCashReceiptOut(
                     id=receipt.id,
                     transaction_date=receipt.transaction_date,
                     client_name=receipt.client.name,
-                    product_names=product_names,
                     transaction_amount=receipt.transaction_amount,
                     tax_amount=receipt.tax_amount,
                     total_amount=total_amount,
@@ -291,7 +313,7 @@ async def list_cash_receipts(
     "/material-history",
     summary="[C] 자재 이력별 현금영수증 및 구매정보 조회",
     description="material_history_id로 현금영수증 및 자재정보를 조회",
-    response=CashReceiptDetailOut,
+    response=CashReceiptDetailWithMaterialOut,
 )
 async def get_cash_receipt_by_material_history(request, material_history_id: int):
 
@@ -302,7 +324,7 @@ async def get_cash_receipt_by_material_history(request, material_history_id: int
                 "material",
                 "client",
             )
-            .prefetch_related("cash_receipt__product")
+            .prefetch_related("cash_receipt")
             .aget(id=material_history_id)
         )
     except MaterialHistory.DoesNotExist:
@@ -311,3 +333,103 @@ async def get_cash_receipt_by_material_history(request, material_history_id: int
     if history.cash_receipt is None:
         raise HttpError(404, "해당 이력에 연결된 현금영수증이 없습니다.")
     return history.cash_receipt
+
+
+@router.get(
+    "/{cash_receipt_id}",
+    summary="[C] 현금영수증 상세 조회",
+    description="현금영수증 ID로 현금영수증 상세 조회",
+    response=CashReceiptDetailOut,
+)
+async def get_cash_receipt(request, cash_receipt_id: int):
+    try:
+        cash_receipt = await CashReceipt.objects.select_related(
+            "factory", "client"
+        ).aget(id=cash_receipt_id)
+    except CashReceipt.DoesNotExist:
+        raise HttpError(404, "해당 현금영수증이 존재하지 않습니다.")
+    return cash_receipt
+
+
+@router.patch(
+    "/{cash_receipt_id}/cash-to-material",
+    summary="[C] 현금영수증과 자재 이력 연동",
+    description="현금영수증과 자재 이력을 연동합니다.",
+    response={200: dict, 400: dict, 500: dict},
+)
+async def cash_to_material(
+    request, cash_receipt_id: int, payload: CashToMaterialHistoryIn
+):
+    user = request.auth
+    cash_receipt = await CashReceipt.objects.aget(id=cash_receipt_id)
+    member = await is_factory_member(cash_receipt.factory_id, user)
+    if not member:
+        raise HttpError(403, "권한이 없습니다.")
+
+    material_history_ids = payload.material_history_id
+    material_histories = await sync_to_async(list)(
+        MaterialHistory.objects.filter(id__in=material_history_ids)
+    )
+
+    for material_history in material_histories:
+        material_history.cash_receipt = cash_receipt
+        await material_history.asave()
+
+    return {"message": "현금영수증과 자재 이력 연동이 완료되었습니다."}
+
+
+@router.patch(
+    "/{cash_receipt_id}/update-material-history",
+    summary="[C] 현금영수증과 자재 이력 연동 수정",
+    description="현금영수증과 자재 이력 연동을 수정합니다.",
+    response={200: dict, 400: dict, 500: dict},
+)
+async def update_material_history(
+    request, cash_receipt_id: int, payload: CashToMaterialHistoryIn
+):
+    user = request.auth
+    cash_receipt = await CashReceipt.objects.aget(id=cash_receipt_id)
+    member = await is_factory_member(cash_receipt.factory_id, user)
+    if not member:
+        raise HttpError(403, "권한이 없습니다.")
+
+    # 기존 연동된 자재 이력 조회
+    existing_material_histories = await sync_to_async(list)(
+        MaterialHistory.objects.filter(cash_receipt=cash_receipt)
+    )
+    existing_material_history_ids = [
+        material_history.id for material_history in existing_material_histories
+    ]
+
+    # 새로운 자재 이력 조회
+    material_history_ids = payload.material_history_id
+    new_material_histories = await sync_to_async(list)(
+        MaterialHistory.objects.filter(id__in=material_history_ids)
+    )
+    new_material_history_ids = [mh.id for mh in new_material_histories]
+
+    # 비교하여 해제 및 신규 연결 처리
+    to_unlink_ids = set(existing_material_history_ids) - set(new_material_history_ids)
+    to_link_ids = set(new_material_history_ids) - set(existing_material_history_ids)
+
+    # 해제: 기존에는 있었지만 새로운 payload에는 없는 자재 이력 -> cash_receipt = None
+    if to_unlink_ids:
+        unlink_histories = await sync_to_async(list)(
+            MaterialHistory.objects.filter(id__in=list(to_unlink_ids))
+        )
+        for history in unlink_histories:
+            history.cash_receipt = None
+            await history.asave(update_fields=["cash_receipt"])
+
+    # 연결: 새로운 payload에 포함된 자재 이력 -> cash_receipt = 현재 현금영수증
+    if to_link_ids:
+        link_histories = await sync_to_async(list)(
+            MaterialHistory.objects.filter(id__in=list(to_link_ids))
+        )
+        for history in link_histories:
+            history.cash_receipt = cash_receipt
+            await history.asave(update_fields=["cash_receipt"])
+
+    return {
+        "message": "현금영수증과 자재 이력 연동 수정이 완료되었습니다.",
+    }

@@ -1,4 +1,4 @@
-from ninja import Schema
+from ninja import Schema, Field
 from typing import List, Optional
 
 
@@ -40,6 +40,7 @@ class QuotationProductDraftIn(Schema):
 # Quotation API
 # ------------------------------------------------------------
 
+
 # (POST) OCR
 class OcrIn(Schema):
     data: str
@@ -49,12 +50,15 @@ class OcrIn(Schema):
 # Quotation Product API
 # ------------------------------------------------------------
 
+
 # (POST) Quotation Draft
-class QuotationDraftIn(Schema):   
-    quotation_id: int
+class QuotationDraftIn(Schema):
+    quotation_id: Optional[int] = None
     client: Optional[FactoryClientInfoIn] = None
     products: Optional[List[QuotationProductDraftIn]] = None
     due_date: Optional[str] = None
+    uploaded_file: Optional[str] = Field(None, description="업로드 파일 URL")
+    is_confirm: bool = False
 
 
 # (POST) Quotation Confirmed
@@ -67,5 +71,14 @@ class QuotationConfirmedIn(Schema):
 
 # (PATCH) Quotation Product Delivery Update
 class QuotationProductDeliveryUpdateIn(Schema):
-    is_delivered: bool
+    is_delivery: bool
     delivery_date: Optional[str] = None
+
+
+class QuotationEmailSendIn(Schema):
+    email: str = Field(..., description="받는 사람 이메일")
+    factory_id: int = Field(..., description="공장 ID")
+    client_name: Optional[str] = Field(None, description="고객 이름")
+    pdf_data: Optional[str] = Field(
+        None, description="Base64로 인코딩된 PDF 파일 데이터"
+    )

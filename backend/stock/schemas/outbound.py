@@ -1,6 +1,9 @@
-from ninja import Schema
+from ninja import Schema, ModelSchema
 from typing import Optional, List
 import datetime
+from stock.models import Product
+from pydantic import field_validator
+from decimal import Decimal
 
 
 # Material Product Info
@@ -16,6 +19,7 @@ class MaterialProductConnectionOut(Schema):
 # ------------------------------------------------------------
 # Product API
 # ------------------------------------------------------------
+
 
 # (POST) Create Single Product
 class SingleProductCreateOut(Schema):
@@ -47,9 +51,34 @@ class ProductOut(Schema):
     note: Optional[str]
 
 
+class ProductRowOut(ModelSchema):
+    created_at: str | datetime.datetime
+    updated_at: str | datetime.datetime
+    buffer_rate: Decimal | float
+
+    class Meta:
+        model = Product
+        fields = "__all__"
+
+    @field_validator("created_at", "updated_at", mode="after", check_fields=False)
+    @classmethod
+    def convert_dates(cls, value):
+        if isinstance(value, datetime.datetime):
+            return value.strftime("%Y-%m-%d %H:%M:%S")
+        return value
+
+    @field_validator("buffer_rate", mode="after", check_fields=False)
+    @classmethod
+    def convert_buffer_rate(cls, value):
+        if isinstance(value, Decimal):
+            return float(value)
+        return value
+
+
 # ------------------------------------------------------------
 # Product History API
 # ------------------------------------------------------------
+
 
 # (GET) List Product History
 class ProductHistoryOut(Schema):
@@ -65,6 +94,7 @@ class ProductHistoryOut(Schema):
 # ------------------------------------------------------------
 # Material API
 # ------------------------------------------------------------
+
 
 # (POST) Assign Material
 class AssignMaterialOut(Schema):
@@ -106,6 +136,7 @@ class ShortageMaterialCountOut(Schema):
 # Material Product API
 # ------------------------------------------------------------
 
+
 # (POST) Create Material Product Connection
 class MaterialProductConnectOut(Schema):
     message: str
@@ -116,6 +147,7 @@ class MaterialProductConnectOut(Schema):
 # ------------------------------------------------------------
 # Material History API
 # ------------------------------------------------------------
+
 
 # (POST) Create Single Material History
 class MaterialHistoryDetailOut(Schema):
@@ -131,3 +163,23 @@ class MaterialHistoryDetailOut(Schema):
 # (POST) Create Material History
 class MaterialHistoryListOut(Schema):
     materials: List[MaterialHistoryDetailOut]
+
+
+# (GET) Material History List with Details
+class MaterialHistoryItemOut(Schema):
+    id: int
+    type: str
+    material_id: int
+    material_name: str
+    material_code: str
+    material_spec: str
+    material_unit: str
+    client_id: Optional[int]
+    client_name: Optional[str]
+    quantity: int
+    unit_price: Optional[int]
+    amount: int
+    date: Optional[str]
+    total_stock: int
+    cash_receipt: Optional[int]
+    national_tax_service_id: Optional[int]

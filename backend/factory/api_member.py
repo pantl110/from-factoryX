@@ -7,10 +7,11 @@ from api.security import jwt_auth
 from typing import List
 from ninja.pagination import paginate
 from factory.schemas.inbound import InviteMemberIn, FactoryMemberUpdateIn
-from factory.schemas.outbound import FactoryMemberOut
+from factory.schemas.outbound import FactoryMemberOut, FactoryMemberDetailOut
 from datetime import datetime
 from factory.utils import is_factory_member
 from websocket.utils import send_notification
+from typing import Optional
 
 
 router = Router(tags=["FactoryMember"], auth=jwt_auth)
@@ -23,185 +24,93 @@ async def invite_factory_member(request, payload: InviteMemberIn):
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
+    return await sync_to_async(_invite_member)(factory_id, payload, request.auth)
 
-    def send_invite_email(email, factory, role, invited_by_user):
-        """팩토리 멤버 초대 이메일 발송"""
-        from django.conf import settings
 
-        subject = f"[Factory X] {factory.name} 팩토리 초대"
+def _invite_member(factory_id: str, payload: InviteMemberIn, auth_user):
+    """팩토리 멤버 초대 처리"""
+    factory = Factory.objects.get(id=int(factory_id))
+    email = payload.email
+    role = payload.role
 
-        # 초대 링크 생성 (프론트엔드 URL + 쿼리 파라미터)
-        invite_url = f"{settings.FRONTEND_URL}/invite?factory_id={factory.id}&email={email}&role={role}"
+    # 1. 이메일로 사용자 조회
+    invite_user = _get_user_from_email(email)
 
-        # HTML 템플릿
-        html_message = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Factory X 팩토리 초대</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #2c3e50;">Factory X 팩토리 초대</h2>
-                <p>안녕하세요! Factory X입니다.</p>
-                <p><strong>{invited_by_user.email}</strong>님이 <strong>{factory.name}</strong> 팩토리에 초대했습니다.</p>
-                
-                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-                    <h3 style="color: #007bff; margin-top: 0;">초대 정보</h3>
-                    <ul style="list-style: none; padding: 0;">
-                        <li style="margin-bottom: 10px;"><strong>팩토리명:</strong> {factory.name}</li>
-                        <li style="margin-bottom: 10px;"><strong>역할:</strong> {role}</li>
-                        <li style="margin-bottom: 10px;"><strong>초대자:</strong> {invited_by_user.email}</li>
-                    </ul>
-                </div>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{invite_url}" 
-                       style="background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                        가입하기
-                    </a>
-                </div>
-                
-                <p style="color: #6c757d; font-size: 14px;">
-                    위 버튼을 클릭하거나 아래 링크를 복사하여 브라우저에 붙여넣어주세요:<br>
-                    <a href="{invite_url}" style="color: #007bff;">{invite_url}</a>
-                </p>
-                
-                <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
-                <p style="color: #6c757d; font-size: 12px;">
-                    Factory X 팀<br>
-                    이 이메일은 자동으로 발송된 메일입니다.
-                </p>
-            </div>
-        </body>
-        </html>
-        """
+    if invite_user.status == User.UserStatusChoice.withdraw:
+        raise HttpError(400, "탈퇴한 사용자입니다.")
 
-        # 텍스트 버전
-        text_message = f"""
-안녕하세요! Factory X입니다.
+    # 2. 이미 FactoryMember에 존재하는지 확인
+    member = _is_already_factory_member(invite_user)
+    if member:
+        raise HttpError(400, "이미 팩토리 멤버입니다.")
 
-{invited_by_user.email}님이 {factory.name} 팩토리에 초대했습니다.
+    # 3. 기존 User인지 확인
+    if invite_user and member is None:
+        return _add_existing_user_to_factory(
+            factory, invite_user, role, invited_by=auth_user
+        )
+    else:
+        # 3. 새 사용자 초대
+        return _invite_new_user(factory, email, role, invited_by=auth_user)
 
-초대 정보:
-- 팩토리명: {factory.name}
-- 역할: {role}
-- 초대자: {invited_by_user.email}
 
-아래 링크를 클릭하여 가입을 완료해주세요:
-{invite_url}
+def _get_user_from_email(email: str) -> Optional[User]:
+    """이메일로 사용자 조회"""
+    try:
+        return User.objects.get(email=email)
+    except User.DoesNotExist:
+        return None
 
-감사합니다.
-Factory X 팀
-        """
 
-        try:
-            # AWS SES 사용 여부 확인
-            if getattr(settings, "USE_SES", False):
-                from user.backends import SESEmailService
+def _is_already_factory_member(user):
+    """이미 팩토리 멤버인지 확인"""
+    try:
+        return FactoryMember.objects.get(user=user)
+    except FactoryMember.DoesNotExist:
+        return None
 
-                ses_service = SESEmailService()
 
-                # SES를 통한 HTML 이메일 발송
-                success = ses_service.ses_client.send_email(
-                    Source=settings.DEFAULT_FROM_EMAIL,
-                    Destination={"ToAddresses": [email]},
-                    Message={
-                        "Subject": {"Data": subject, "Charset": "UTF-8"},
-                        "Body": {
-                            "Html": {"Data": html_message, "Charset": "UTF-8"},
-                            "Text": {"Data": text_message, "Charset": "UTF-8"},
-                        },
-                    },
-                )
-                print(f"초대 이메일 발송 완료 (SES): {email} -> {factory.name}")
-                return True
-            else:
-                # Django 기본 이메일 백엔드 사용
-                from django.core.mail import send_mail
+def _add_existing_user_to_factory(factory, user, role, invited_by):
+    """기존 사용자를 팩토리에 바로 추가"""
+    FactoryMember.objects.create(
+        factory=factory,
+        user=user,
+        role=role,
+        status=FactoryMember.MemberStatus.active,
+        invited_by=invited_by,
+    )
+    return {"message": "기존 회원을 바로 멤버로 추가했습니다."}
 
-                send_mail(
-                    subject,
-                    text_message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [email],
-                    fail_silently=False,
-                    html_message=html_message,
-                )
-                print(f"초대 이메일 발송 완료 (Console): {email} -> {factory.name}")
-                return True
 
-        except Exception as e:
-            print(f"초대 이메일 발송 실패: {email} -> {factory.name}, 오류: {e}")
-            return False
+def _invite_new_user(factory, email, role, invited_by):
+    """새 사용자 초대 처리"""
+    from factory.utils import send_invite_email, create_inviting_data
 
-    def get_user_id(user):
-        try:
-            if hasattr(user, "id"):
-                return int(user.id)
-            elif hasattr(user, "pk"):
-                return int(user.pk)
-            else:
-                return 0
-        except Exception:
-            return 0
+    # inviting 구조에 추가
+    inviting = factory.inviting or []
+    already_invited = any(item["email"] == email for item in inviting)
 
-    def _invite_member():
-        factory = Factory.objects.get(id=int(factory_id))
-        email = payload.email
-        role = payload.role
-        try:
-            user = User.objects.get(email=email)
-            exists = FactoryMember.objects.filter(factory=factory, user=user).exists()
-            if exists:
-                raise HttpError(400, "이미 해당 유저는 팩토리 멤버입니다.")
-            # invited_by는 User 인스턴스여야 함
-            invited_by = user  # 기존 사용자를 invited_by로 설정
-            if not invited_by or not hasattr(invited_by, "id"):
-                raise HttpError(400, "초대한 사용자를 확인할 수 없습니다.")
-            FactoryMember.objects.create(
-                factory=factory,
-                user=user,
-                role=role,
-                status=FactoryMember.MemberStatus.active,
-                invited_by=invited_by,
-            )
-            return {"message": "기존 회원을 바로 멤버로 추가했습니다."}
-        except User.DoesNotExist:
-            # inviting 구조 확장: [{email, role, invited_by, invited_at}]
-            inviting = factory.inviting or []
-            already = any(item["email"] == email for item in inviting)
-            if not already:
-                inviting.append(
-                    {
-                        "email": email,
-                        "role": role,
-                        "invited_by": get_user_id(request.auth),
-                        "invited_at": datetime.now().isoformat(),
-                    }
-                )
-                factory.inviting = inviting
-                factory.save()
-            email_sent = send_invite_email(email, factory, role, request.auth)
-            if email_sent:
-                return {
-                    "message": "초대 메일을 발송했습니다.",
-                    "invited_user": {"email": email, "role": role},
-                }
-            else:
-                # 이메일 발송 실패 시 inviting에서 제거
-                factory.inviting = [
-                    item for item in factory.inviting if item["email"] != email
-                ]
-                factory.save()
-                raise HttpError(500, "초대 메일 발송에 실패했습니다.")
-        except Exception as e:
-            raise HttpError(400, f"멤버 초대 중 오류: {str(e)}")
+    if already_invited:
+        raise HttpError(400, "이미 초대된 이메일입니다.")
 
-    return await sync_to_async(_invite_member)()
+    # 초대 정보 추가
+    inviting.append(create_inviting_data(email, role, invited_by))
+    factory.inviting = inviting
+    factory.save()
+
+    # 이메일 발송
+    email_sent = send_invite_email(email, factory, role, invited_by)
+
+    if email_sent:
+        return {
+            "message": "초대 메일을 발송했습니다.",
+            "invited_user": {"email": email, "role": role},
+        }
+    else:
+        # 이메일 발송 실패 시 inviting에서 제거
+        factory.inviting = [item for item in factory.inviting if item["email"] != email]
+        factory.save()
+        raise HttpError(500, "초대 메일 발송에 실패했습니다.")
 
 
 # Factory Member Tab
@@ -216,16 +125,15 @@ async def list_factory_members(request):
 
     user = request.auth
     await is_factory_member(int(factory_id), user)
-
-    factory = await sync_to_async(Factory.objects.get)(id=int(factory_id))
-    # 가입된 멤버
-    members = await sync_to_async(
-        lambda: list(
-            FactoryMember.objects.filter(factory_id=int(factory_id)).select_related(
-                "user"
-            )
+    try:
+        factory = await Factory.objects.prefetch_related("members__user").aget(
+            id=int(factory_id)
         )
-    )()
+    except Factory.DoesNotExist:
+        raise HttpError(404, "팩토리를 찾을 수 없습니다.")
+
+    # 가입된 멤버
+    members = factory.members.all()
     member_outs = []
     for idx, member in enumerate(members):
         member_out = {
@@ -259,6 +167,22 @@ async def list_factory_members(request):
             }
         )
     return member_outs + inviting_outs
+
+
+@router.get(
+    "/{member_id}",
+    summary="[C] 멤버 상세 조회",
+    description="멤버 상세 조회",
+    response=Optional[FactoryMemberDetailOut],
+)
+async def get_factory_member(request, member_id: int):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    member = await is_factory_member(int(factory_id), user)
+    return member
 
 
 # Factory Member Tab
@@ -307,7 +231,7 @@ async def update_factory_member(
                 member = members[actual_member_id]
                 if payload.role:
                     member.role = payload.role
-                    await sync_to_async(member.save)()
+                    await member.asave()
                     # 알림 전송
                     await send_notification(
                         user_id=member.user_id,

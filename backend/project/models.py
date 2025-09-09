@@ -49,6 +49,16 @@ class Project(BaseModel):
         blank=True,
         help_text="세금계산서",
     )
+    printed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="거래명세서 출력 일시",
+    )
+    confirmed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="주문 확정 일시",
+    )
 
 
 # 생산 계획(내역)
@@ -77,18 +87,17 @@ class ProjectPlan(BaseModel):
     start_date = models.DateTimeField(help_text="생산 시작 일시")
     end_date = models.DateTimeField(help_text="마감 예정 일시")
     avg_production_time = models.IntegerField(help_text="평균 생산 시간(초)")
-    is_completed = models.BooleanField(
+    end_notification = models.BooleanField(
         default=False,
-        null=True,
-        blank=True,
-        help_text="생산 완료 여부",
+        help_text="생산 완료 알림 여부",
     )
 
 
 # 생산 로그
 class ProjectLog(BaseModel):
     class LogType(models.TextChoices):
-        plan = ("plan", "계획 변경")
+        date = ("date", "생산 일자 변경")
+        equipment = ("equipment", "생산 설비 변경")
         memo = ("memo", "메모")
         refund = ("refund", "반품")
 
@@ -96,7 +105,7 @@ class ProjectLog(BaseModel):
     type = models.CharField(
         max_length=20,
         choices=LogType.choices,
-        default=LogType.plan,
+        default=LogType.date,
     )
     title = models.CharField(max_length=100, help_text="로그 제목")
     content = models.TextField(help_text="로그 내용")

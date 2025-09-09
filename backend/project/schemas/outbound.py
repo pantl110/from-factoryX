@@ -1,6 +1,16 @@
-from ninja import Schema
+from ninja import Schema, ModelSchema, Field
 import datetime
-from typing import Optional, List
+from typing import Optional, List, Literal
+from project.models import Project, ProjectLog, Refund, ProjectPlan
+from document.schemas.outbound import QuotationModelOut
+from tax.models import NationalTaxService
+
+
+# 순환 import 방지를 위한 별도 정의
+class NationalTaxServiceOut(ModelSchema):
+    class Meta:
+        model = NationalTaxService
+        fields = "__all__"
 
 
 # ------------------------------------------------------------
@@ -20,6 +30,20 @@ class ProjectCloneOut(Schema):
     message: str
 
 
+# ProjectLogModel
+class ProjectLogModelOut(ModelSchema):
+    class Meta:
+        model = ProjectLog
+        fields = "__all__"
+
+
+# Refund
+class RefundModelOut(Schema):
+    class Meta:
+        model = Refund
+        fields = "__all__"
+
+
 # (GET) List Progress Project
 class ListProgressProjectOut(Schema):
     project_id: int
@@ -34,6 +58,27 @@ class ListProgressProjectOut(Schema):
     created_at: str
 
 
+class ProjectPlanModelOut(ModelSchema):
+    class Meta:
+        model = ProjectPlan
+        fields = "__all__"
+
+
+class ProjectModelOut(ModelSchema):
+    client_name: Optional[str] = Field(None, description="클라이언트 이름")
+    quotations: Optional[List[QuotationModelOut]] = Field([], description="견적서 정보")
+    tax_invoice: Optional[NationalTaxServiceOut] = Field(
+        None, description="세금계산서 정보"
+    )
+    plans: Optional[List[ProjectPlanModelOut]] = Field(
+        [], description="프로젝트 계획 정보"
+    )
+
+    class Meta:
+        model = Project
+        fields = "__all__"
+
+
 # (GET) Project Status
 class ProjectStatusOut(Schema):
     project_id: int
@@ -45,6 +90,27 @@ class ProjectStatusOut(Schema):
     earliest_start_date: Optional[datetime.datetime] = None
     latest_end_date: Optional[datetime.datetime] = None
     due_date: Optional[datetime.date] = None
+    tax_invoice: Optional[int] = None
+
+
+class ProjectStatusDetailOut(ModelSchema):
+    earliest_start_date: Optional[datetime.datetime] = None
+    latest_end_date: Optional[datetime.datetime] = None
+    due_date: Optional[datetime.date] = None
+    tax_invoice: Optional[NationalTaxServiceOut] = Field(
+        None, description="세금계산서 정보"
+    )
+    quotations: Optional[List[QuotationModelOut]] = Field([], description="견적서 정보")
+    logs: Optional[List[ProjectLogModelOut]] = Field(
+        [], description="프로젝트 로그 정보"
+    )
+    max_delivery_date: Optional[datetime.date] = Field(
+        None, description="최대 납기일 (quotation_product의 delivery_date 중 최대값)"
+    )
+
+    class Meta:
+        model = Project
+        fields = "__all__"
 
 
 # (PATCH) Project Status Update
@@ -102,11 +168,12 @@ class RefundListOut(Schema):
 class RefundDetailOut(Schema):
     id: int
     product: dict
-    project: dict
+    project: Optional[dict] = None
+    plan: Optional[dict] = None
     amount: int
+    refund_date: Optional[datetime.date] = None
     current_stock: int
     production_amount: int
-    refund_date: Optional[datetime.date] = None
     log: dict
     created_at: datetime.datetime
     updated_at: datetime.datetime
@@ -115,11 +182,12 @@ class RefundDetailOut(Schema):
 # (POST) Refund Production Registration
 class RefundProductionRegistrationOut(Schema):
     message: str
+    action: str
     refund_id: int
     quotation_id: int
     quotation_product_id: int
     project_plan_id: int
-    production_log_id: int
+    log_id: int
     product_name: str
     quantity: int
     equipment_name: str
@@ -138,15 +206,15 @@ class ProjectPlanDetailOut(Schema):
     equipment_id: int
     status: str
     quantity: int
-    start_date: datetime.date
-    end_date: datetime.date
+    start_date: datetime.datetime
+    end_date: datetime.datetime
     avg_production_time: int
 
 
 # (POST) Project Plan Create
 class ProjectPlansCreateOut(Schema):
     message: str
-    created_plans: List[ProjectPlanDetailOut]
+    plan: ProjectPlanDetailOut
 
 
 # (GET) Product Detail
@@ -156,6 +224,7 @@ class ProductDetailOut(Schema):
     code: str
     unit: str
     spec: str
+    buffer_rate: Optional[float] = None
 
 
 # (GET) Quotation Product Detail
@@ -164,6 +233,8 @@ class QuotationProductDetailOut(Schema):
     product: ProductDetailOut
     quantity: int
     unit_price: int
+    is_delivery: Optional[bool] = None
+    delivery_date: Optional[datetime.date] = None
 
 
 # (GET) Equipment Detail
@@ -181,10 +252,10 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     equipment: EquipmentDetailOut
     status: str
     quantity: int
-    start_date: datetime.date
-    end_date: datetime.date
+    start_date: datetime.datetime
+    end_date: datetime.datetime
     avg_production_time: int
-    is_completed: bool
+    material_status: Literal["충분", "부족"]
 
 
 # (GET) Daily Production Quantity
@@ -214,7 +285,7 @@ class ProjectLogDetailOut(Schema):
     type: str
     title: str
     content: str
-    refund_id: Optional[int] = None  # 반품 로그인 경우 반품 ID
+    refund: Optional[RefundDetailOut] = None  # 반품 로그인 경우 반품 ID
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
@@ -235,3 +306,23 @@ class ProductionProfitRateOut(Schema):
     previous_month_profit: Optional[int] = None
     previous_month_count: Optional[int] = None
     change_percentage: Optional[float] = None
+
+
+# ------------------------------------------------------------
+# Dashboard API
+# ------------------------------------------------------------
+
+
+class DashboardOut(Schema):
+    current_month_projects: int  # 이번달에 생성된 프로젝트 건수
+    previous_month_projects: int  # 지난달에 생성된 프로젝트 건수
+    shortage_materials_count: int  # 재고 수량이 안전재고보다 낮은 원자재 개수
+    monthly_profits: List[dict]  # 현재 달로부터 5개월치 월별 생산 수익
+    last_year_monthly_profits: List[dict]  # 작년 동일 기간 월별 생산 수익
+
+
+# (POST) Project Plan Create or Update Response
+class ProjectPlanCreateOrUpdateOut(Schema):
+    message: str
+    plan_id: int
+    action: str  # "created" 또는 "updated"

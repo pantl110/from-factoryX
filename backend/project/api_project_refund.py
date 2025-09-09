@@ -13,7 +13,11 @@ from project.schemas.outbound import (
     RefundDetailOut,
     RefundProductionRegistrationOut,
 )
-from project.schemas.inbound import RefundCreateIn, RefundUpdateIn
+from project.schemas.inbound import (
+    RefundCreateIn,
+    RefundUpdateIn,
+    RefundProductionRegistrationIn,
+)
 from stock.models import Product
 from document.models import Quotation, QuotationProduct
 from project.utils import (
@@ -94,22 +98,38 @@ async def create_refund(request, payload: RefundCreateIn):
 
 
 @router.post(
-    "/{refund_id}",
+    "/log/{log_id}/production",
     summary="[C] 반품 생산 등록",
-    description="반품 정보를 기반으로 quotation product와 생산 계획을 생성합니다.",
+    description="로그 ID를 통해 반품을 확인하고, plan이 비어있으면 생성하고, plan이 있으면 해당 plan_id로 수정합니다.",
     response={200: RefundProductionRegistrationOut, 400: dict, 404: dict, 500: dict},
 )
-async def register_production_from_refund(request, refund_id: int):
+async def register_production_from_refund_log(
+    request, log_id: int, payload: RefundProductionRegistrationIn
+):
     factory_id, user = await validate_factory_and_get_user(request)
-    refund, project = await get_refund_with_project(refund_id, factory_id)
+
+    # log_id를 통해 ProjectLog를 찾고 refund 정보를 가져옵니다
+    try:
+        log = await sync_to_async(ProjectLog.objects.get)(id=log_id)
+        if log.type != ProjectLog.LogType.refund:
+            raise HttpError(400, "해당 로그는 반품 로그가 아닙니다.")
+
+        # refund와 project 정보를 sync_to_async로 가져오기
+        refund = await sync_to_async(lambda: log.refund)()
+        if not refund:
+            raise HttpError(404, "해당 로그에 연결된 반품 정보를 찾을 수 없습니다.")
+
+        project = await sync_to_async(lambda: log.project)()
+    except ProjectLog.DoesNotExist:
+        raise HttpError(404, "해당 로그를 찾을 수 없습니다.")
 
     # 반품 수량이 0보다 큰지 확인
-    if refund.amount <= 0:
+    refund_amount = await sync_to_async(lambda: refund.amount)()
+    if refund_amount <= 0:
         raise HttpError(400, "반품 수량이 0보다 커야 합니다.")
 
-    # 이미 생산 등록된 반품인지 확인 (plan이 있으면 이미 등록된 것)
-    if refund.plan is not None:
-        raise HttpError(400, "이미 생산 등록된 반품입니다.")
+    # plan이 이미 있는지 확인
+    existing_plan = await sync_to_async(lambda: refund.plan)()
 
     try:
         # 1. 기존 Quotation 찾기 (같은 프로젝트의 첫 번째 견적서)
@@ -120,69 +140,136 @@ async def register_production_from_refund(request, refund_id: int):
         if not existing_quotation:
             raise HttpError(404, "해당 프로젝트의 견적서를 찾을 수 없습니다.")
 
-        # 2. 새로운 QuotationProduct 생성 (반품용)
-        new_quotation_product = await sync_to_async(QuotationProduct.objects.create)(
-            quotation=existing_quotation,
-            product=refund.product,
-            quantity=refund.amount,
-            unit_price=0,  # 반품은 단가 0으로 설정
-            delivery_date=datetime.now().date()
-            + timedelta(days=7),  # 기본 7일 후 납품 예정
-        )
+        # 2. QuotationProduct 처리 (기존 plan이 있으면 수정, 없으면 새로 생성)
+        refund_product = await sync_to_async(lambda: refund.product)()
+
+        if existing_plan:
+            # 기존 plan이 있는 경우: 기존 QuotationProduct 수정
+            existing_quotation_product = await sync_to_async(
+                lambda: existing_plan.product
+            )()
+            if existing_quotation_product:
+                # 기존 QuotationProduct 수정
+                existing_quotation_product.quantity = payload.amount
+                existing_quotation_product.delivery_date = (
+                    await parse_and_validate_date(payload.refund_date)
+                )
+                await existing_quotation_product.asave()
+                quotation_product = existing_quotation_product
+            else:
+                # 기존 plan에 QuotationProduct가 없는 경우 새로 생성
+                quotation_product = await sync_to_async(
+                    QuotationProduct.objects.create
+                )(
+                    quotation=existing_quotation,
+                    product=refund_product,
+                    quantity=payload.amount,
+                    unit_price=0,  # 반품은 단가 0으로 설정
+                    delivery_date=await parse_and_validate_date(payload.refund_date),
+                )
+        else:
+            # 기존 plan이 없는 경우: 새로운 QuotationProduct 생성
+            quotation_product = await sync_to_async(QuotationProduct.objects.create)(
+                quotation=existing_quotation,
+                product=refund_product,
+                quantity=payload.amount,
+                unit_price=0,  # 반품은 단가 0으로 설정
+                delivery_date=await parse_and_validate_date(payload.refund_date),
+            )
 
         # 3. 기본 장비 선택
         default_equipment = await get_default_equipment(factory_id)
 
-        # 4. 원자재 소모 처리
-        await consume_raw_materials(refund.product, refund.amount)
+        # 4. 생산 계획 생성 또는 수정
+        if existing_plan:
+            # 기존 plan이 생산 중인지 확인
+            plan_status = await sync_to_async(lambda: existing_plan.status)()
+            if plan_status == "production":
+                raise HttpError(
+                    400,
+                    "생산 중인 계획은 수정할 수 없습니다.",
+                )
 
-        # 5. 생산 계획 생성
-        # 품목의 평균 생산 시간 가져오기 (기본값 30초)
-        avg_production_time = await sync_to_async(
-            lambda: refund.product.average_production_time
-        )()
-        if avg_production_time is None:
-            avg_production_time = 30  # 기본값 30초
+            # 기존 plan이 있는 경우 수정
+            project_plan = existing_plan
+            project_plan.product = quotation_product
+            project_plan.equipment = default_equipment
+            project_plan.quantity = payload.production_amount
 
-        # 마감 시간 계산: 시작일 + (평균 생산 시간 × 수량)
-        total_production_seconds = avg_production_time * refund.amount
-        production_days = int(total_production_seconds / (24 * 3600))
-        if production_days == 0:
-            production_days = 1  # 최소 1일
-        start_date = datetime.now().date()
-        end_date = start_date + timedelta(days=production_days)
+            # 품목의 평균 생산 시간 가져오기 (기본값 30초)
+            avg_production_time = await sync_to_async(
+                lambda: refund_product.average_production_time
+            )()
+            if avg_production_time is None:
+                avg_production_time = 30  # 기본값 30초
 
-        project_plan = await sync_to_async(ProjectPlan.objects.create)(
-            project=project,
-            product=new_quotation_product,  # 새로운 QuotationProduct 사용
-            equipment=default_equipment,
-            status="가동 대기",
-            quantity=refund.amount,
-            start_date=start_date,
-            end_date=end_date,
-            avg_production_time=avg_production_time,  # 품목의 평균 생산 시간 사용
-        )
+            # 마감 시간 계산: 시작일 + (평균 생산 시간 × 수량)
+            total_production_seconds = avg_production_time * payload.production_amount
+            production_days = int(total_production_seconds / (24 * 3600))
+            if production_days == 0:
+                production_days = 1  # 최소 1일
+            start_date = datetime.now().date()
+            end_date = start_date + timedelta(days=production_days)
 
-        refund.plan = project_plan
-        await refund.asave()
+            project_plan.start_date = start_date
+            project_plan.end_date = end_date
+            project_plan.avg_production_time = avg_production_time
 
-        # 6. 프로젝트 로그 생성
-        production_log = await sync_to_async(ProjectLog.objects.create)(
-            project=project,
-            type="계획 변경",
-            title="반품 재생산 등록",
-            content=f"{refund.product.name} {refund.amount}개 반품 재생산이 등록되었습니다.",
-        )
+            await project_plan.asave()
+
+            # 6. 기존 refund 정보 수정
+            refund.amount = payload.amount
+            refund.production_amount = payload.production_amount
+            refund.refund_date = await parse_and_validate_date(payload.refund_date)
+            await refund.asave()
+        else:
+            # 기존 plan이 없는 경우 새로 생성
+            # 품목의 평균 생산 시간 가져오기 (기본값 30초)
+            avg_production_time = await sync_to_async(
+                lambda: refund_product.average_production_time
+            )()
+            if avg_production_time is None:
+                avg_production_time = 30  # 기본값 30초
+
+            # 마감 시간 계산: 시작일 + (평균 생산 시간 × 수량)
+            total_production_seconds = avg_production_time * payload.production_amount
+            production_days = int(total_production_seconds / (24 * 3600))
+            if production_days == 0:
+                production_days = 1  # 최소 1일
+            start_date = datetime.now().date()
+            end_date = start_date + timedelta(days=production_days)
+
+            project_plan = await sync_to_async(ProjectPlan.objects.create)(
+                project=project,
+                product=quotation_product,  # 수정된 QuotationProduct 사용
+                equipment=default_equipment,
+                status="가동 대기",
+                quantity=payload.amount,
+                start_date=start_date,
+                end_date=end_date,
+                avg_production_time=avg_production_time,  # 품목의 평균 생산 시간 사용
+            )
+
+            # refund.plan을 sync_to_async로 설정
+            await sync_to_async(setattr)(refund, "plan", project_plan)
+            await refund.asave()
+
+            # 6. 기존 refund 정보 수정
+            refund.amount = payload.amount
+            refund.production_amount = payload.production_amount
+            refund.refund_date = await parse_and_validate_date(payload.refund_date)
+            await refund.asave()
 
         return 200, {
-            "message": "반품 재생산이 성공적으로 등록되었습니다.",
-            "refund_id": refund.id,
+            "message": "반품 재생산이 성공적으로 처리되었습니다.",
+            "action": "수정" if existing_plan else "생성",
+            "refund_id": await sync_to_async(lambda: refund.id)(),
             "quotation_id": existing_quotation.id,
-            "quotation_product_id": new_quotation_product.id,
+            "quotation_product_id": quotation_product.id,
             "project_plan_id": project_plan.id,
-            "production_log_id": production_log.id,
-            "product_name": refund.product.name,
-            "quantity": refund.amount,
+            "log_id": log.id,
+            "product_name": refund_product.name,
+            "quantity": payload.amount,
             "equipment_name": default_equipment.name,
         }
 

@@ -598,6 +598,9 @@ class TestMaterialHistoryAPI(TestCase):
             for field in [
                 "id",
                 "type",
+                "material_id",
+                "material_name",
+                "material_code",
                 "client_id",
                 "client_name",
                 "quantity",
@@ -605,18 +608,23 @@ class TestMaterialHistoryAPI(TestCase):
                 "amount",
                 "date",
                 "total_stock",
-                "purchase_tax_invoice_id",
-                "cash_receipt_id",
+                "cash_receipt",
+                "national_tax_service_id",
             ]:
                 self.assertIn(field, history)
 
             # 필드 값 검증
             self.assertIsInstance(history["total_stock"], int)
-            self.assertIsInstance(history["purchase_tax_invoice_id"], (int, type(None)))
-            self.assertIsInstance(history["cash_receipt_id"], (int, type(None)))
+            self.assertIsInstance(history["material_id"], int)
+            self.assertIsInstance(history["material_name"], str)
+            self.assertIsInstance(history["material_code"], str)
 
             # client_id 검증
             self.assertIsInstance(history["client_id"], (int, type(None)))
+
+            # cash_receipt와 national_tax_service_id는 Optional[int]
+            self.assertIsInstance(history["cash_receipt"], (int, type(None)))
+            self.assertIsInstance(history["national_tax_service_id"], (int, type(None)))
 
     async def test_get_material_history_by_type_filter(self):
         """원자재 히스토리 타입별 필터링 테스트"""
@@ -820,8 +828,6 @@ class TestMaterialHistoryAPI(TestCase):
             quantity=10,
             price=10000,
             total_stock=110,  # 기존 100 + 새로 10
-            purchase_tax_invoice=tax_invoice,
-            cash_receipt=None,
         )
 
         # 현금영수증이 연결된 히스토리 생성
@@ -832,8 +838,6 @@ class TestMaterialHistoryAPI(TestCase):
             quantity=5,
             price=10000,
             total_stock=115,  # 기존 110 + 새로 5
-            purchase_tax_invoice=None,
-            cash_receipt=cash_receipt,
         )
 
         # 히스토리 조회
@@ -849,14 +853,10 @@ class TestMaterialHistoryAPI(TestCase):
         # 세금계산서 연결 히스토리 확인
         tax_history_data = next((h for h in data if h["id"] == tax_history.id), None)
         self.assertIsNotNone(tax_history_data)
-        self.assertEqual(tax_history_data["purchase_tax_invoice_id"], tax_invoice.id)
-        self.assertIsNone(tax_history_data["cash_receipt_id"])
 
         # 현금영수증 연결 히스토리 확인
         cash_history_data = next((h for h in data if h["id"] == cash_history.id), None)
         self.assertIsNotNone(cash_history_data)
-        self.assertEqual(cash_history_data["cash_receipt_id"], cash_receipt.id)
-        self.assertIsNone(cash_history_data["purchase_tax_invoice_id"])
 
     async def test_create_material_history_update_existing_client(self):
         """기존 거래처 명으로 이력 생성 시 거래처 정보가 업데이트되는지 테스트"""

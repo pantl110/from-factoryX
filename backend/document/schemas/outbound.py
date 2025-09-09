@@ -1,7 +1,10 @@
-from ninja import Schema
+from ninja import Schema, ModelSchema, Field
 from typing import List, Optional
 from datetime import datetime
 from pydantic import field_validator
+from document.models import Quotation, QuotationProduct
+from stock.models import Product
+from factory.models import FactoryClient
 
 
 # Quotation Product Detail
@@ -25,16 +28,55 @@ class QuotationDetailProductOut(Schema):
 # (GET) Quotation Detail
 class QuotationDetailOut(Schema):
     factory_name: Optional[str] = ""
+    client_id: Optional[int] = None
     business_registration_number: Optional[str] = None
     representative_name: Optional[str] = None
+    manager_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     fax: Optional[str] = None
     business_type: Optional[str] = None
     business_category: Optional[str] = None
     address: Optional[str] = None
+    uploaded_file: Optional[str] = None
     due_date: Optional[str] = None
     products: List[QuotationDetailProductOut]
+
+
+class ProductModelOut(ModelSchema):
+    class Meta:
+        model = Product
+        # fields = "__all__"
+        exclude = [
+            "location",
+        ]
+
+
+class QuotationProductModelOut(ModelSchema):
+    product: Optional[ProductModelOut] = Field(None, description="품목 정보")
+
+    class Meta:
+        model = QuotationProduct
+        fields = "__all__"
+
+
+class FactoryClientModelOut(ModelSchema):
+    class Meta:
+        model = FactoryClient
+        exclude = [
+            "factory",
+        ]
+
+
+class QuotationModelOut(ModelSchema):
+    products: Optional[List[QuotationProductModelOut]] = Field(
+        [], description="견적서 품목 정보"
+    )
+    client: Optional[FactoryClientModelOut] = Field(None, description="클라이언트 정보")
+
+    class Meta:
+        model = Quotation
+        fields = "__all__"
 
 
 # (POST) Quotation Confirmed Response
@@ -74,13 +116,17 @@ class UndeliveredQuotationProductOut(Schema):
 # (GET) Today's Production Plans
 class TodayProductionPlanOut(Schema):
     company_name: str  # 업체명 (클라이언트명)
+    product_id: int  # 품목 ID
     product_name: str  # 품목명
     product_code: Optional[str] = None  # 품목코드
+    product_note: Optional[str] = None  # 품목 메모
     spec: str  # 규격
     unit: str  # 단위
     production_quantity: int  # 생산 수량
     equipment_name: str  # 생산 설비
     production_time: int  # 생산 시간 (초)
+    start_date: datetime  # 생산 시작일
+    end_date: datetime  # 생산 종료일
     project_id: int  # 프로젝트 ID
 
 

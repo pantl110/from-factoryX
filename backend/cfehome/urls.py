@@ -35,13 +35,16 @@ from location.api import router as location_router
 from document.api_quotation import router as quotation_router
 from document.api_quotation_product import router as quotationProduct_router
 from project.api_project import router as project_router
+from project.api_project_v2 import router as projectV2_router
 from project.api_project_plan import router as projectPlan_router
 from project.api_project_log import router as projectLog_router
 from project.api_project_refund import router as projectRefund_router
 from barobill.api import router as barobill_router
 from tax.api import router as tax_router
 from tax.api_cash_receipt import router as cashReceipt_router
+from subscription.api import router as subscription_router
 from notification.api import router as notification_router
+from scheduling.api import router as scheduling_router
 from django.contrib.admin.views.decorators import staff_member_required
 from cfehome.views import websocket_test, websocket_test_local
 
@@ -79,10 +82,13 @@ base_api.add_router("v1/project-plan", projectPlan_router)
 base_api.add_router("v1/project-log", projectLog_router)
 base_api.add_router("v1/project-refund", projectRefund_router)
 base_api.add_router("v1/project", project_router)
+base_api.add_router("v2/project", projectV2_router)
 base_api.add_router("v1/barobill", barobill_router)
 base_api.add_router("v1/tax", tax_router)
 base_api.add_router("v1/receipt", cashReceipt_router)
+base_api.add_router("v1/subscription", subscription_router)
 base_api.add_router("v1/notification", notification_router)
+base_api.add_router("v1/scheduling", scheduling_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

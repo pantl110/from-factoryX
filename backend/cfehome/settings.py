@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     "tax",
     "location",
     "barobill",
+    "scheduling",
 ]
 
 MIDDLEWARE = [
@@ -321,9 +322,27 @@ CRONJOBS = [
         "0 9 * * *",
         "project.management.commands.update_production_status.Command.handle",
     ),
+    # 매일 오전 6시에 구독 자동 갱신 실행 (1일 후 만료되는 구독)
+    (
+        "0 6 * * *",
+        "subscription.management.commands.renew_subscriptions.Command.handle",
+        "--days=1",
+    ),
+    # 매일 오전 6시 30분에 구독 자동 갱신 실행 (당일 만료되는 구독 - 마지막 기회)
+    (
+        "30 6 * * *",
+        "subscription.management.commands.renew_subscriptions.Command.handle",
+        "--days=0",
+    ),
 ]
 
 # Toss Payments Settings
 TOSS_PAYMENTS_SECRET_KEY = "test_sk_..."  # 실제 환경에서는 환경변수로 관리
 TOSS_PAYMENTS_CLIENT_KEY = "test_ck_..."
 TOSS_PAYMENTS_BASE_URL = "https://api.tosspayments.com"
+
+# Scheduling
+SCHEDULING_SECRET_KEY = config("SCHEDULING_SECRET_KEY", default=None)
+
+# send-email with attachment
+DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024  # 30MB

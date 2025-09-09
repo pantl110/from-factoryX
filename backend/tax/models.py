@@ -16,13 +16,19 @@ class TaxInvoiceType(models.TextChoices):
 
 
 class PublishStatus(models.TextChoices):
-    temporary = ("temporary", "임시 저장")
-    pending = ("pending", "발행 대기")
-    published = ("published", "발행 완료")
+    temporary = ("temporary", "임시 저장")  # 바로빌에 넘기기 전 상태
+    pending = ("pending", "전송 대기")  # 바로빌에만 넘어간 상태
+    processing = ("processing", "처리 중")  # 바로빌에서 국세청 넘어간 상태
+    published = ("published", "발행 완료")  # 국세청에서 데이터 가져온 상태
+    canceled = (
+        "canceled",
+        "발행 취소",
+    )  # 전송 대기일 때만 가능 - 바로빌에서 국세청 가기 전에 한 취소를 의미
+    failed = ("failed", "발행 실패")  # 국세청에서 거부된 상태
 
 
 # 국세청 API 세금계산서 데이터 저장
-class NationalTaxService(BaseModel):
+class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
     # factory? 공장 = 회사
     user = models.ForeignKey(
         "user.User",
@@ -38,6 +44,12 @@ class NationalTaxService(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+    )
+    factory_info = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="공장 정보",
     )
     publish_status = models.CharField(
         max_length=10,
@@ -57,7 +69,7 @@ class NationalTaxService(BaseModel):
         default=TransactionType.receipt,
         help_text="거래 유형",
     )
-    transaction_date = models.DateField(help_text="거래 일자")
+    transaction_date = models.DateField(null=True, blank=True, help_text="거래 일자")
     client = models.ForeignKey(
         FactoryClient,
         related_name="tax_invoices",
@@ -66,13 +78,16 @@ class NationalTaxService(BaseModel):
         blank=True,
         help_text="거래처",
     )
-    product = models.ManyToManyField(
-        "stock.Product",
-        related_name="tax_invoices",
-        help_text="품목명",
+    client_info = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="거래처 정보",
     )
-    transaction_amount = models.IntegerField(help_text="공급 가액")
-    tax_amount = models.IntegerField(help_text="세액")
+    transaction_amount = models.IntegerField(
+        null=True, blank=True, help_text="공급 가액"
+    )
+    tax_amount = models.IntegerField(null=True, blank=True, help_text="세액")
     is_hidden = models.BooleanField(default=False, help_text="숨김 여부")
     mgt_key = models.CharField(
         max_length=50,
@@ -139,6 +154,12 @@ class CashReceipt(BaseModel):
         null=True,
         blank=True,
     )
+    factory_info = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="공장 정보",
+    )
     cash_receipt_type = models.CharField(
         max_length=10,
         choices=CashReceiptType.choices,
@@ -154,10 +175,11 @@ class CashReceipt(BaseModel):
         blank=True,
         help_text="거래처",
     )
-    product = models.ManyToManyField(
-        "stock.Product",
-        related_name="cash_receipts",
-        help_text="품목명",
+    client_info = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="거래처 정보",
     )
     transaction_amount = models.IntegerField(help_text="공급 가액")
     tax_amount = models.IntegerField(help_text="세액")
