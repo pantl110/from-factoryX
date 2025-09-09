@@ -96,6 +96,14 @@ class QuotationProduct(BaseModel):
 
 
 class WorkInstruction(BaseModel):
+    factory = models.ForeignKey(
+        Factory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="work_instructions",
+        help_text="공장",
+    )
     plans = models.ManyToManyField(
         "project.ProjectPlan",
         blank=True,

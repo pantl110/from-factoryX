@@ -2,9 +2,10 @@ from ninja import Schema, ModelSchema, Field
 from typing import List, Optional
 from datetime import datetime
 from pydantic import field_validator
-from document.models import Quotation, QuotationProduct
+from document.models import Quotation, QuotationProduct, WorkInstruction
 from stock.models import Product
 from factory.models import FactoryClient
+from project.models import ProjectPlan
 
 
 # Quotation Product Detail
@@ -166,3 +167,24 @@ class OCRClientInfoOut(Schema):
 class OCRResultOut(Schema):
     client_info: OCRClientInfoOut  # 클라이언트 정보
     request_items: List[OCRRequestItemOut]  # 요청 품목 리스트
+
+
+# ------------------------------------------------------------
+# Work Instruction API
+# ------------------------------------------------------------
+
+
+class ProjectPlanModelOut(ModelSchema):
+    class Meta:
+        model = ProjectPlan
+        fields = "__all__"
+
+
+class WorkInstructionModelOut(ModelSchema):
+    plans: Optional[List[ProjectPlanModelOut]] = Field(
+        [], description="작업 지시서 생산 계획 정보"
+    )
+
+    class Meta:
+        model = WorkInstruction
+        fields = "__all__"

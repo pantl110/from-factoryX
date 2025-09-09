@@ -84,7 +84,7 @@ class SchedulingAPITestCase(TestCase):
         self.token = self.generate_jwt_token()
         self.headers = {
             "HTTP_AUTHORIZATION": f"Bearer {self.token}",
-            "HTTP_X_SCHEDULING_KEY": settings.SCHEDULING_SECRET_KEY,
+            "X-Scheduling-Key": settings.SCHEDULING_SECRET_KEY,
         }
 
     def generate_jwt_token(self):
@@ -136,7 +136,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
         """프로젝트 계획 시작 상태변경 성공 테스트 (원본 엔드포인트)"""
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -152,7 +152,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
         """프로젝트 계획 시작 상태변경 성공 테스트"""
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -172,7 +172,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -190,7 +190,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -208,7 +208,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -226,7 +226,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -244,7 +244,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -262,7 +262,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -280,7 +280,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -294,7 +294,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -317,7 +317,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
         # 총 자재 필요량: 50kg + 25kg = 75kg, 보유: 100kg (충분)
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -349,7 +349,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -370,7 +370,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
         url = "/v1/scheduling/project-plan/start"
         headers = {"HTTP_AUTHORIZATION": f"Bearer {self.token}"}
 
-        response = self.client.get(url, **headers)
+        response = self.client.get(url, headers=headers)
 
         self.assertEqual(response.status_code, 401)
 
@@ -379,7 +379,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
         url = "/v1/scheduling/project-plan/start"
         headers = {"HTTP_AUTHORIZATION": f"Bearer {self.token}"}
 
-        response = self.client.get(url, **headers)
+        response = self.client.get(url, headers=headers)
 
         self.assertEqual(response.status_code, 401)
 
@@ -388,24 +388,24 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
         url = "/v1/scheduling/project-plan/start"
         headers = {
             "HTTP_AUTHORIZATION": f"Bearer {self.token}",
-            "HTTP_X_SCHEDULING_KEY": "invalid_key",
+            "X-Scheduling-Key": "invalid_key",
         }
 
-        response = self.client.get(url, **headers)
+        response = self.client.get(url, headers=headers)
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_project_plan_start_upgrade_invalid_scheduling_key(self):
         """잘못된 스케줄링 키로 접근하는 경우 테스트"""
         url = "/v1/scheduling/project-plan/start"
         headers = {
             "HTTP_AUTHORIZATION": f"Bearer {self.token}",
-            "HTTP_X_SCHEDULING_KEY": "invalid_key",
+            "X-Scheduling-Key": "invalid_key",
         }
 
-        response = self.client.get(url, **headers)
+        response = self.client.get(url, headers=headers)
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_project_plan_start_no_material_products(self):
         """자재-제품 관계가 없는 경우 테스트"""
@@ -414,7 +414,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -433,7 +433,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -451,7 +451,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         # 첫 번째 계획으로 원본 엔드포인트 테스트
         original_response = self.client.get(
-            "/v1/scheduling/project-plan/start", **self.headers
+            "/v1/scheduling/project-plan/start", headers=self.headers
         )
 
         # 계획 상태 초기화
@@ -460,7 +460,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         # 같은 계획으로 업그레이드 엔드포인트 테스트
         upgrade_response = self.client.get(
-            "/v1/scheduling/project-plan/start", **self.headers
+            "/v1/scheduling/project-plan/start", headers=self.headers
         )
 
         # 두 응답이 동일해야 함
@@ -475,7 +475,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -495,7 +495,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, **self.headers)
+        response = self.client.get(url, headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()

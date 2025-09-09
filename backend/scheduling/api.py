@@ -15,6 +15,11 @@ from barobill.barobill_state import (
 )
 from stock.models import MaterialProduct, Material
 from django.db.models import F, OuterRef, Exists, Q
+from itertools import groupby
+from operator import attrgetter
+from django.db import transaction
+from document.models import WorkInstruction
+
 
 router = Router(tags=["Scheduling"])
 
@@ -214,3 +219,49 @@ async def tax_invoice_state_check(request):
     await bulk_update_tax_invoices(tax_invoices_to_update)
 
     return {"tax_invoices": len(tax_invoices_to_update)}
+
+
+@router.post(
+    "/work-instruction",
+    summary="[S] 작업 지시서 생성",
+    description="매일 자정에 작업 지시서를 생성합니다.",
+)
+@scheduling_only
+async def create_work_instruction(request):
+
+    @sync_to_async
+    @transaction.atomic
+    def get_today_project_plans():
+        plans = list(
+            ProjectPlan.objects.select_related(
+                "project",
+                "product__product",
+                "equipment__factory",
+            )
+            .filter(
+                status=ProjectPlan.ProductionStatus.production,
+                start_date__date=timezone.now().date(),
+            )
+            .order_by("equipment__factory")  # groupby를 위해 정렬 필요
+        )
+
+        # factory별로 그룹화
+        factory_plans = {}
+        for factory_id, group in groupby(plans, key=lambda p: p.equipment.factory.id):
+            plans_list = list(group)
+            factory_plans[factory_id] = {
+                "factory": plans_list[0].equipment.factory,
+                "plans": plans_list,
+            }
+
+        for factory_id, data in factory_plans.items():
+            work_instruction, _ = WorkInstruction.objects.get_or_create(
+                factory_id=factory_id,
+                created_at__date=timezone.now().date(),
+            )
+            work_instruction.plans.set(data["plans"])
+
+        return {"work_instructions": len(factory_plans)}
+
+    result = await get_today_project_plans()
+    return result
