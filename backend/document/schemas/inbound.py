@@ -1,4 +1,4 @@
-from ninja import Schema, Field
+from ninja import Schema, Field, FilterSchema
 from typing import List, Optional
 
 
@@ -82,3 +82,12 @@ class QuotationEmailSendIn(Schema):
     pdf_data: Optional[str] = Field(
         None, description="Base64로 인코딩된 PDF 파일 데이터"
     )
+
+
+# ------------------------------------------------------------
+# Work Instruction API
+# ------------------------------------------------------------
+
+
+class WorkInstructionFilter(FilterSchema):
+    pass
