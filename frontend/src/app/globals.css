@@ -38,6 +38,17 @@
 }
 
 @layer components {
+  /* Transition utilities */
+  .transition-slow {
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Hanging indent for list items */
+  .list-hanging li {
+    text-indent: -1.2rem;
+    padding-left: 1.2rem;
+  }
+
   .Heading-1 {
     font-size: 32px;
     line-height: 1.5;

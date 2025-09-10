@@ -11,6 +11,7 @@ import CardDeleteModal from './modals/card-delete-modal';
 import useMemberStore from '@/store/member-store';
 import { useGetFactory } from '@/hooks';
 import useUpdateFactory from '@/hooks/factory/use-update-factory';
+import RefundPolicyModal from './modals/refund-policy-modal';
 
 const Subscription = () => {
   const { factoryId } = useMemberStore();
@@ -18,6 +19,7 @@ const Subscription = () => {
   const { updateFactory } = useUpdateFactory();
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isCardDeleteModalOpen, setIsCardDeleteModalOpen] = useState(false);
+  const [isRefundPolicyModalOpen, setIsRefundPolicyModalOpen] = useState(false);
 
   const planTypes: PlanType[] = ['BASIC', 'PARTNERS'];
 
@@ -86,6 +88,14 @@ const Subscription = () => {
 
   return (
     <div className="px-10 pb-10 flex flex-col gap-8">
+      <div className="flex justify-between items-center">
+        <h3 className="Heading-3">멤버십 요금제</h3>
+        <MiniBtn
+          text="환불 및 구독정책"
+          variant="whiteOutline"
+          onClick={() => setIsRefundPolicyModalOpen(true)}
+        />
+      </div>
       <div className="flex flex-col gap-2">
         <FreePlan />
         {planTypes.map((type) => (
@@ -99,9 +109,7 @@ const Subscription = () => {
           <h3 className="Heading-3">결제 카드 설정</h3>
           <MiniBtn
             text={factory?.billing_key ? '카드 변경 ' : '카드 추가'}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
+            variant="whiteOutline"
             onClick={
               factory?.billing_key
                 ? () => setIsChangeModalOpen(true)
@@ -136,6 +144,11 @@ const Subscription = () => {
         </div>
       </div>
 
+      {/* RefundPolicyModal */}
+      {isRefundPolicyModalOpen && (
+        <RefundPolicyModal onClose={() => setIsRefundPolicyModalOpen(false)} />
+      )}
+
       {/* CardChangeModal */}
       {isChangeModalOpen && (
         <CardChangeModal
@@ -146,10 +159,7 @@ const Subscription = () => {
           }}
         />
       )}
-      {/* CardEnrollModal */}
-      {/* {isEnrollModalOpen && (
-        <CardEnrollModal onClose={() => setIsEnrollModalOpen(false)} />
-      )} */}
+
       {/* CardDeleteModal */}
       {isCardDeleteModalOpen && (
         <CardDeleteModal
