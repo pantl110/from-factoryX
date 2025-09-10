@@ -95,7 +95,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "cfehome.urls"
 
-CORS_URLS_REGEX = r"^/v1/.*$"
+CORS_URLS_REGEX = r"^/v(1|2)/.*$"
 
 CORS_ALLOW_CREDENTIALS = True
 
