@@ -52,6 +52,5 @@ services:
 networks:
   network:
 
-
 volumes:
   redis_data:

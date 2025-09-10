@@ -1,5 +1,5 @@
 # 베이스 이미지: Node.js LTS (예: 20.x)
-FROM node:20-alpine
+FROM node:20-slim
 
 # package.json과 package-lock.json 복사
 COPY ./frontend/package*.json ./
