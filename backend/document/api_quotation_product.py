@@ -47,8 +47,9 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         factory = await Factory.objects.aget(id=int(factory_id))
 
         # 주문 확정(is_confirm=True) 시에는 quotation_id가 필수
-        if payload.is_confirm and payload.quotation_id is None:
-            raise HttpError(400, "is_confirm가 True일 때는 quotation_id가 필요합니다.")
+        # 2025.09.10 : dale : is confirm 이 true일 때도 quotationid가 없을 수 있음 (ocr data로 바로 주문서를 생성한 경우)
+        # if payload.is_confirm and payload.quotation_id is None:
+        #     raise HttpError(400, "is_confirm가 True일 때는 quotation_id가 필요합니다.")
 
         if payload.quotation_id is None:
             # 새 프로젝트와 견적서 생성 (project 생성 API 로직 참고)
