@@ -57,7 +57,9 @@ const ProcessProjectPageInner = () => {
   useEffect(() => {
     const loadProjects = async () => {
       const result = await getProjects({
-        status: selectedStatus,
+        ...(selectedStatus === 'progress'
+          ? { status_exclude: 'suspended,completed' }
+          : { status: selectedStatus }),
         search: searchKeyword,
         order_by:
           sortKey === 'startDate'
@@ -209,7 +211,9 @@ const ProcessProjectPageInner = () => {
 
       // 프로젝트 목록 새로고침
       const result = await getProjects({
-        status: selectedStatus,
+        ...(selectedStatus === 'progress'
+          ? { status_exclude: 'suspended,completed' }
+          : { status: selectedStatus }),
         search: searchKeyword,
         order_by:
           sortKey === 'startDate'
@@ -296,7 +300,9 @@ const ProcessProjectPageInner = () => {
                       onReload={async () => {
                         // 세금계산서 연결 후 프로젝트 데이터 리로드
                         const result = await getProjects({
-                          status: selectedStatus,
+                          ...(selectedStatus === 'progress'
+                            ? { status_exclude: 'suspended,completed' }
+                            : { status: selectedStatus }),
                           search: searchKeyword,
                           order_by:
                             sortKey === 'startDate'

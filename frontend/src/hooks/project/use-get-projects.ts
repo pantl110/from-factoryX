@@ -72,13 +72,11 @@ const useGetProjects = () => {
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project?${queryParams}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v2/project?${queryParams}`,
           {
             method: 'GET',
             credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            // GET 요청에 불필요한 헤더를 제거하여 CORS preflight(OPTIONS) 방지
             signal: abortController.signal, // AbortController signal 연결
           }
         );
