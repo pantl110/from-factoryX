@@ -56,7 +56,10 @@ const useGetProjects = () => {
           queryParams.append('search', params.search);
         }
         if (params.printed_at__isnull !== undefined) {
-          queryParams.append('printed_at__isnull', params.printed_at__isnull.toString());
+          queryParams.append(
+            'printed_at__isnull',
+            params.printed_at__isnull.toString()
+          );
         }
         if (params.order_by) {
           queryParams.append('order_by', params.order_by);
