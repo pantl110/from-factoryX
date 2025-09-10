@@ -112,14 +112,14 @@ const DocumentTable = ({
                 <p className="px-3 flex-2">합계금액</p>
                 <div
                   className="px-3 w-[150px] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
-                  onClick={() => handleTaxSortClick('created_at')}
+                  onClick={() => handleTaxSortClick('transaction_date')}
                 >
                   <p className="">작성일자</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
                 </div>
                 <div
                   className="px-3 w-[150px] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
-                  onClick={() => handleTaxSortClick('transaction_date')}
+                  onClick={() => handleTaxSortClick('created_at')}
                 >
                   <p className="">등록일자</p>
                   <CaretUpDownIcon size={21} className="text-sv" />

@@ -63,8 +63,11 @@ const Permission = () => {
       factory.manager_email
     : false;
 
+  // 시스템 관리자는 목록에서 제외하여 UI/선택 대상에서 보이지 않게 처리
+  const visibleMembers =
+    members?.data?.filter((m) => m && m.role !== 'admin') || [];
   // 체크박스 관리
-  const itemIds = members?.data?.map((item) => item.id) || [];
+  const itemIds = visibleMembers.map((item) => item.id);
   const {
     checkedIds,
     checkedCount,
@@ -156,7 +159,7 @@ const Permission = () => {
                   </div>
                 )}
               </div>
-              {members?.data && members.data.length > 1 && (
+              {visibleMembers.length > 0 && (
                 <>
                   <MiniBtn
                     text="취소"
@@ -194,8 +197,7 @@ const Permission = () => {
                 <div className="flex justify-center items-center h-100">
                   <Spinner />
                 </div>
-              ) : !members?.data || members.data.length === 1 ? (
-                // 자기 자신은 제외하고 UI로 보여주지 않음
+              ) : visibleMembers.length === 0 ? (
                 <NoHistoryBox
                   title="초대된 팀원이 없어요."
                   text="팀원이 초대되면 이곳에 표시돼요."
@@ -206,8 +208,8 @@ const Permission = () => {
                     isAllChecked={isAllChecked}
                     onToggleAll={toggleAll}
                   />
-                  {members?.data && members.data.length > 0
-                    ? [...members.data].map((item) =>
+                  {visibleMembers.length > 0
+                    ? [...visibleMembers].map((item) =>
                         item ? (
                           <PermissionTableItem
                             key={item.id}

@@ -172,9 +172,11 @@ const DocumentTableItem = ({
                 '-'}
             </p>
             <p className="px-3 w-[150px]">
-              {data.updated_at.split('T')[0] || '-'}
+              {data.transaction_date.split('T')[0] || '-'}
             </p>
-            <p className="px-3 w-[150px]">{data.transaction_date || '-'}</p>
+            <p className="px-3 w-[150px]">
+              {data.created_at.split('T')[0] || '-'}
+            </p>
           </>
         ) : documentData ? (
           <>

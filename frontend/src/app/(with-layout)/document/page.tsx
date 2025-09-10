@@ -210,9 +210,7 @@ const DocumentPageContent = () => {
               setCurrentPage(1); // 검색 시 첫 페이지로 이동
             }}
             searchKeyword={searchQuery}
-            hasData={currentData.length > 0}
-            hasDeleteButton={!isTaxDocument && !isTransactionDocument}
-            // ‼️‼️‼️‼️‼️‼️‼️세금계산서 일때는 삭제가 필요하지 않을 수 있음 일단 삭제 버튼 없애둠
+            hasDeleteButton={false} // 문서함에서는 무조건 삭제 버튼 없음
           />
           {(isTaxDocument && isTaxDataLoading) ||
           (isTransactionDocument && isProjectDataLoading) ? (

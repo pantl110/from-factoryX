@@ -13,7 +13,7 @@ interface SearchDeleteTableProps {
   onCancel: () => void;
   onSearch?: (query: string) => void;
   searchKeyword?: string;
-  hasData: boolean;
+  hasData?: boolean;
   hasDeleteButton?: boolean;
 }
 
