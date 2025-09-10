@@ -48,8 +48,14 @@ const CompletedProjectPage = () => {
       const result = await getProjects({
         status: status as ProjectStatusType,
         search: searchKeyword,
-        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
-        order_dir: sortOrder,
+        order_by:
+          sortKey === 'startDate'
+            ? sortOrder === 'desc'
+              ? '-start_date'
+              : 'start_date'
+            : sortOrder === 'desc'
+              ? '-due_date'
+              : 'due_date',
         page: currentPage,
         page_size: 10,
       });
@@ -141,8 +147,14 @@ const CompletedProjectPage = () => {
               ? 'completed'
               : ('suspended' as ProjectStatusType),
         search: searchKeyword,
-        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
-        order_dir: sortOrder,
+        order_by:
+          sortKey === 'startDate'
+            ? sortOrder === 'desc'
+              ? '-start_date'
+              : 'start_date'
+            : sortOrder === 'desc'
+              ? '-due_date'
+              : 'due_date',
         page: currentPage,
         page_size: 10,
       });

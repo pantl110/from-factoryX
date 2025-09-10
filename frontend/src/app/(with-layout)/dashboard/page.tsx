@@ -89,8 +89,7 @@ const DashboardPageContent = () => {
         status: 'progress',
         page: 1,
         page_size: 100,
-        order_by: 'start_date',
-        order_dir: 'desc',
+        order_by: '-start_date',
       }).then(
         (result: { success: boolean; data?: ProjectListResponseModel }) => {
           if (result.success && result.data) {

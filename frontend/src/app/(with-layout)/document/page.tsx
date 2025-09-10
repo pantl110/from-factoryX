@@ -114,8 +114,7 @@ const DocumentPageContent = () => {
           search: debouncedSearchQuery || undefined,
           page: currentPage,
           page_size: 10,
-          order_by: 'start_date',
-          order_dir: 'desc',
+          order_by: '-start_date',
         });
 
         if (result.success && result.data) {

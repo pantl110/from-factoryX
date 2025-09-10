@@ -59,8 +59,14 @@ const ProcessProjectPageInner = () => {
       const result = await getProjects({
         status: selectedStatus,
         search: searchKeyword,
-        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
-        order_dir: sortOrder,
+        order_by:
+          sortKey === 'startDate'
+            ? sortOrder === 'desc'
+              ? '-start_date'
+              : 'start_date'
+            : sortOrder === 'desc'
+              ? '-due_date'
+              : 'due_date',
         page: currentPage,
         page_size: 10,
       });
@@ -205,8 +211,14 @@ const ProcessProjectPageInner = () => {
       const result = await getProjects({
         status: selectedStatus,
         search: searchKeyword,
-        order_by: sortKey === 'startDate' ? 'start_date' : 'due_date',
-        order_dir: sortOrder,
+        order_by:
+          sortKey === 'startDate'
+            ? sortOrder === 'desc'
+              ? '-start_date'
+              : 'start_date'
+            : sortOrder === 'desc'
+              ? '-due_date'
+              : 'due_date',
         page: currentPage,
         page_size: 10,
       });
@@ -287,8 +299,13 @@ const ProcessProjectPageInner = () => {
                           status: selectedStatus,
                           search: searchKeyword,
                           order_by:
-                            sortKey === 'startDate' ? 'start_date' : 'due_date',
-                          order_dir: sortOrder,
+                            sortKey === 'startDate'
+                              ? sortOrder === 'desc'
+                                ? '-start_date'
+                                : 'start_date'
+                              : sortOrder === 'desc'
+                                ? '-due_date'
+                                : 'due_date',
                           page: currentPage,
                           page_size: 10,
                         });

@@ -1,13 +1,13 @@
 import { ProjectListResponseModel } from '@/types/data-model';
-import { ProjectStatusType } from '@/types/status-type';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import useMemberStore from '@/store/member-store';
 
 interface GetProjectModel {
-  status: ProjectStatusType | 'archived' | 'progress';
+  status?: string; // ProjectStatusEnum values (comma-separated)
+  status_exclude?: string; // ProjectStatusEnum values to exclude (comma-separated)
   search?: string; // 업체명 또는 품목명
-  order_by?: 'start_date' | 'due_date';
-  order_dir?: 'asc' | 'desc';
+  printed_at__isnull?: boolean; // 거래명세서 출력 여부
+  order_by?: string; // 정렬 필드 (-start_date, -printed_at, -confirmed_at 등) // default: -start_date
   page?: number;
   page_size?: number;
 }
@@ -45,22 +45,27 @@ const useGetProjects = () => {
 
         const queryParams = new URLSearchParams();
         queryParams.append('factory_id', factoryId.toString());
-        queryParams.append('status', params.status);
 
+        if (params.status) {
+          queryParams.append('status', params.status);
+        }
+        if (params.status_exclude) {
+          queryParams.append('status_exclude', params.status_exclude);
+        }
+        if (params.search) {
+          queryParams.append('search', params.search);
+        }
+        if (params.printed_at__isnull !== undefined) {
+          queryParams.append('printed_at__isnull', params.printed_at__isnull.toString());
+        }
+        if (params.order_by) {
+          queryParams.append('order_by', params.order_by);
+        }
         if (params.page) {
           queryParams.append('page', params.page.toString());
         }
         if (params.page_size) {
           queryParams.append('page_size', params.page_size.toString());
-        }
-        if (params.search) {
-          queryParams.append('search', params.search);
-        }
-        if (params.order_by) {
-          queryParams.append('order_by', params.order_by);
-        }
-        if (params.order_dir) {
-          queryParams.append('order_dir', params.order_dir);
         }
 
         const response = await fetch(

@@ -806,8 +806,8 @@ const QuotationPageContent = () => {
             onClose={() => setIsEmailOpen(false)}
             onEmailSent={() => {
               setToastContent({
-                text: '이메일이 성공적으로 전송되었습니다.',
-                subtext: '견적서가 이메일로 전송되었습니다.',
+                text: '이메일 전송이 완료되었습니다.',
+                subtext: '',
                 type: 'primary',
               });
               showToast();
