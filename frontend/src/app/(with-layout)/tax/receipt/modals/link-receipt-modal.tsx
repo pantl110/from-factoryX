@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
 import PriceInfoSection from './price-info-section';
 import SelectedItem from './selected-item';
-import { useGetMaterialHistory } from '@/hooks';
+import { useGetMaterialHistory, useUpdateMaterialHistory } from '@/hooks';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import UnlinkedTable from './unlinked-table';
@@ -28,10 +28,24 @@ const LinkReceiptModal = ({
   >([]);
   const [unlinkedPage, setUnlinkedPage] = useState(1);
   const [hasMoreUnlinked, setHasMoreUnlinked] = useState(true);
-  // const [linkedMaterialHistory, setLinkedMaterialHistory] = useState<
-  //   MaterialHistoryResponseModel[]
-  // >([]);
+  const [linkedMaterialHistory, setLinkedMaterialHistory] = useState<
+    MaterialHistoryResponseModel[]
+  >([]);
+  const [selectedUnlinkedIds, setSelectedUnlinkedIds] = useState<number[]>([]);
   const { getMaterialHistory } = useGetMaterialHistory();
+  const { updateMaterialHistory, isLoading: isUpdating } =
+    useUpdateMaterialHistory();
+
+  const selectedAmount = useMemo(() => {
+    return linkedMaterialHistory.reduce(
+      (sum, item) => sum + (item.amount ?? 0),
+      0
+    );
+  }, [linkedMaterialHistory]);
+
+  const differenceAmount = useMemo(() => {
+    return supplyAmount + taxAmount - selectedAmount;
+  }, [supplyAmount, taxAmount, selectedAmount]);
 
   // 초기 로드 및 검색어 변경 시 데이터 가져오기 (표시는 아직 하지 않음)
   useEffect(() => {
@@ -64,10 +78,10 @@ const LinkReceiptModal = ({
             page_size: result.data.totalCnt,
           });
           if (newResult.success && newResult.data) {
-            // setLinkedMaterialHistory(newResult.data.data);
+            setLinkedMaterialHistory(newResult.data.data || []);
           }
         } else {
-          // setLinkedMaterialHistory(result.data.data);
+          setLinkedMaterialHistory(result.data.data || []);
         }
       }
     };
@@ -101,6 +115,35 @@ const LinkReceiptModal = ({
     }
   };
 
+  const toggleSelectUnlinked = (id: number) => {
+    setSelectedUnlinkedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAllUnlinked = () => {
+    if (selectedUnlinkedIds.length === unlinkedMaterialHistory.length) {
+      setSelectedUnlinkedIds([]);
+    } else {
+      setSelectedUnlinkedIds(unlinkedMaterialHistory.map((item) => item.id));
+    }
+  };
+
+  const handleAddSelected = () => {
+    if (selectedUnlinkedIds.length === 0) return;
+    const selectedItems = unlinkedMaterialHistory.filter((item) =>
+      selectedUnlinkedIds.includes(item.id)
+    );
+    // 오른쪽 리스트에 추가
+    setLinkedMaterialHistory((prev) => [...prev, ...selectedItems]);
+    // 왼쪽 리스트에서 제거
+    setUnlinkedMaterialHistory((prev) =>
+      prev.filter((item) => !selectedUnlinkedIds.includes(item.id))
+    );
+    // 선택 상태 초기화
+    setSelectedUnlinkedIds([]);
+  };
+
   return (
     <Modal
       width="w-[1000px]"
@@ -110,7 +153,12 @@ const LinkReceiptModal = ({
       scroll={true}
     >
       <div className="flex flex-col gap-4 mt-4 px-6">
-        <PriceInfoSection supplyAmount={supplyAmount} taxAmount={taxAmount} />
+        <PriceInfoSection
+          supplyAmount={supplyAmount}
+          taxAmount={taxAmount}
+          selectedAmount={selectedAmount}
+          differenceAmount={differenceAmount}
+        />
 
         <div className="border-t border-lg" />
 
@@ -130,11 +178,15 @@ const LinkReceiptModal = ({
                   hoverColor="hover:bg-bg"
                   textColor="text-dg"
                   borderColor="border-lg"
+                  onClick={handleAddSelected}
                 />
               </div>
               {unlinkedMaterialHistory.length > 0 ? (
                 <UnlinkedTable
                   unlinkedMaterialHistory={unlinkedMaterialHistory}
+                  selectedIds={selectedUnlinkedIds}
+                  onToggleSelect={toggleSelectUnlinked}
+                  onToggleSelectAll={toggleSelectAllUnlinked}
                   onLoadMore={handleLoadMoreUnlinked}
                 />
               ) : (
@@ -144,17 +196,47 @@ const LinkReceiptModal = ({
 
             {/* 오른쪽 영역 */}
             <div className="flex-1 flex flex-col gap-2.5">
-              <div className="flex justify-between items-center">
-                <p className="Heading-5 text-dg">3개 선택</p>
+              <div className="flex justify-between items-center h-12">
+                <p className="Heading-5 text-dg">
+                  {linkedMaterialHistory.length}개 선택
+                </p>
                 <MiniBtn
                   text="전체 삭제"
                   hoverColor="hover:bg-bg"
                   textColor="text-dg"
                   borderColor="border-lg"
+                  onClick={() => {
+                    // 오른쪽 모든 항목을 다시 왼쪽으로 되돌림
+                    setUnlinkedMaterialHistory((prev) => [
+                      ...linkedMaterialHistory,
+                      ...prev,
+                    ]);
+                    setLinkedMaterialHistory([]);
+                  }}
                 />
               </div>
-              <div className="bg-bg rounded-[8px] p-3 w-full flex flex-col gap-2">
-                <SelectedItem /> <SelectedItem /> <SelectedItem />
+              <div className="bg-bg rounded-[8px] p-3 w-full flex flex-col gap-2 h-[496px]">
+                {linkedMaterialHistory.map((item) => (
+                  <SelectedItem
+                    key={item.id}
+                    item={item}
+                    onRemove={(id) => {
+                      // 해당 항목을 오른쪽에서 제거하고 왼쪽으로 되돌림
+                      setLinkedMaterialHistory((prev) =>
+                        prev.filter((x) => x.id !== id)
+                      );
+                      const removed = linkedMaterialHistory.find(
+                        (x) => x.id === id
+                      );
+                      if (removed) {
+                        setUnlinkedMaterialHistory((prev) => [
+                          removed,
+                          ...prev,
+                        ]);
+                      }
+                    }}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -173,6 +255,16 @@ const LinkReceiptModal = ({
                 hoverColor="hover:bg-primary-hover"
                 bgColor="bg-primary"
                 textColor="text-wh"
+                disabled={isUpdating || differenceAmount !== 0}
+                onClick={async () => {
+                  const ids = linkedMaterialHistory.map((i) => i.id);
+                  const res = await updateMaterialHistory(receiptId, ids);
+                  if (res.success) {
+                    onClose();
+                  } else if (res.error) {
+                    alert(res.error);
+                  }
+                }}
               />
             </div>
           </div>

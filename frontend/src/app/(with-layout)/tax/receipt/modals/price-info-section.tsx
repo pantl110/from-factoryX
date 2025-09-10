@@ -1,11 +1,15 @@
 interface PriceInfoSectionProps {
   supplyAmount: number;
   taxAmount: number;
+  selectedAmount: number;
+  differenceAmount: number;
 }
 
 const PriceInfoSection = ({
   supplyAmount,
   taxAmount,
+  selectedAmount,
+  differenceAmount,
 }: PriceInfoSectionProps) => {
   return (
     <div className="flex flex-col gap-4">
@@ -30,14 +34,22 @@ const PriceInfoSection = ({
           </div>
         </div>
         {/* 선택한 정보 */}
-        <div className="flex-[0.5] flex flex-col gap-2 p-4 bg-bg rounded-[8px]">
+        <div
+          className={`flex-[0.5] flex flex-col gap-2 p-4 bg-bg rounded-[8px] ${differenceAmount < 0 ? 'bg-red-8' : 'bg-bg'}`}
+        >
           <div className="flex justify-between items-center h-7.5">
             <p className="Me_Body-1 text-dg">선택 금액</p>
-            <p className="Me_Body-2 text-bl">0원</p>
+            <p className="Me_Body-2 text-bl">
+              {selectedAmount.toLocaleString()}원
+            </p>
           </div>
           <div className="flex justify-between items-center h-7.5">
             <p className="Me_Body-1 text-dg">차액</p>
-            <p className="Me_Body-2 text-primary">110,000원</p>
+            <p
+              className={`Me_Body-2 ${differenceAmount < 0 ? 'text-red' : 'text-primary'}`}
+            >
+              {differenceAmount.toLocaleString()}원
+            </p>
           </div>
         </div>
       </div>

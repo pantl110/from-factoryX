@@ -3,12 +3,18 @@ import Checkbox from '@/ui/checkbox';
 
 interface UnlinkedTableItemProps {
   item: MaterialHistoryResponseModel;
+  isChecked?: boolean;
+  onToggle?: () => void;
 }
 
-const UnlinkedTableItem = ({ item }: UnlinkedTableItemProps) => {
+const UnlinkedTableItem = ({
+  item,
+  isChecked = false,
+  onToggle,
+}: UnlinkedTableItemProps) => {
   return (
     <div className="flex items-center h-14 border-b border-lg Me_Body-1">
-      <Checkbox isChecked={false} onToggle={() => {}} />
+      <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
       <p
         className="flex-[1.5] px-3 text-dg Me_Body-1 truncate"
         title={item.material_name}
