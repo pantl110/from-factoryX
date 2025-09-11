@@ -221,35 +221,35 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             await plan.asave()
 
             # 수량이 주문 수량보다 작을 때 자동 분할 처리
-            if payload.quantity < quotation_product.quantity:
-                remaining_quantity = quotation_product.quantity - payload.quantity
-                buffer_quantity = int(remaining_quantity * 1.1)  # 10% 버퍼 적용
+            # if payload.quantity < quotation_product.quantity:
+            #     remaining_quantity = quotation_product.quantity - payload.quantity
+            #     buffer_quantity = int(remaining_quantity * 1.1)  # 10% 버퍼 적용
 
-                # 대체 설비가 있는지 확인
-                alternative_equipment = await sync_to_async(list)(
-                    FactoryEquipment.objects.filter(factory_id=factory_id)
-                    .exclude(id=equipment.id)
-                    .order_by("priority")
-                )
+            #     # 대체 설비가 있는지 확인
+            #     alternative_equipment = await sync_to_async(list)(
+            #         FactoryEquipment.objects.filter(factory_id=factory_id)
+            #         .exclude(id=equipment.id)
+            #         .order_by("priority")
+            #     )
 
-                if alternative_equipment:
-                    # 다른 설비로 추가 계획 생성
-                    new_equipment = alternative_equipment[0]
-                else:
-                    # 같은 설비로 추가 계획 생성
-                    new_equipment = equipment
+            #     if alternative_equipment:
+            #         # 다른 설비로 추가 계획 생성
+            #         new_equipment = alternative_equipment[0]
+            #     else:
+            #         # 같은 설비로 추가 계획 생성
+            #         new_equipment = equipment
 
-                # 추가 계획 생성
-                await ProjectPlan.objects.acreate(
-                    project=project,
-                    product=quotation_product,
-                    equipment=new_equipment,
-                    quantity=buffer_quantity,
-                    start_date=payload.start_date,
-                    end_date=payload.end_date,
-                    avg_production_time=payload.avg_production_time,
-                    status=payload.status or ProjectPlan.ProductionStatus.pending,
-                )
+            #     # 추가 계획 생성
+            #     await ProjectPlan.objects.acreate(
+            #         project=project,
+            #         product=quotation_product,
+            #         equipment=new_equipment,
+            #         quantity=buffer_quantity,
+            #         start_date=payload.start_date,
+            #         end_date=payload.end_date,
+            #         avg_production_time=payload.avg_production_time,
+            #         status=payload.status or ProjectPlan.ProductionStatus.pending,
+            #     )
 
             # 설비 변경 로그/알림
             if old_equipment and old_equipment.id != equipment.id:
