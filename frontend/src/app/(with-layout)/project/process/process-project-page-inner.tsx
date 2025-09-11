@@ -113,8 +113,7 @@ const ProcessProjectPageInner = () => {
     setCurrentPage(1); // 정렬 변경 시 첫 페이지로 이동
   };
 
-  const currentIds =
-    projectData?.data.map((project) => project.project_id) || [];
+  const currentIds = projectData?.data.map((project) => project.id) || [];
   const {
     checkedCount,
     isAllChecked,
@@ -293,10 +292,10 @@ const ProcessProjectPageInner = () => {
                   />
                   {projectData?.data.map((project) => (
                     <TableItem
-                      key={project.project_id}
+                      key={project.id}
                       project={project}
-                      checked={isChecked(project.project_id)}
-                      onToggle={() => toggleOne(project.project_id)}
+                      checked={isChecked(project.id)}
+                      onToggle={() => toggleOne(project.id)}
                       onReload={async () => {
                         // 세금계산서 연결 후 프로젝트 데이터 리로드
                         const result = await getProjects({

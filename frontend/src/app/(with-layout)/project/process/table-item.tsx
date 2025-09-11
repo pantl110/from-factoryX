@@ -58,13 +58,42 @@ const TableItem = ({
 
   const displayText = getDisplayText(project.status);
 
+  const productsName =
+    project.status === 'quotation' || project.status === 'confirmed'
+      ? project.quotations[0].products.length > 1
+        ? `${project.quotations[0].products[0].product.name} 외 ${project.quotations[0].products.length - 1}개`
+        : project.quotations[0].products[0]?.product?.name || '-'
+      : project.quotations &&
+          project.quotations.length > 0 &&
+          project.quotations[0].products_info &&
+          project.quotations[0].products_info.length > 1
+        ? `${project.quotations[0].products_info[0].name} 외 ${project.quotations[0].products_info.length - 1}개`
+        : project.quotations[0].products_info[0]?.name || '-';
+
+  const dueDate =
+    project.quotations &&
+    project.quotations.length > 0 &&
+    project.quotations[0].due_date
+      ? project.quotations[0].due_date
+      : '-';
+
+  const startDate =
+    project.plans && project.plans.length > 0
+      ? project.plans
+          .reduce((earliest, plan) => {
+            if (!earliest) return plan.start_date;
+            return plan.start_date < earliest ? plan.start_date : earliest;
+          }, project.plans[0].start_date)
+          .split('T')[0]
+      : '-';
+
   // 프로젝트 복제 핸들러
   const handleCloneProject = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
     if (isCloning) return; // 이미 진행 중이면 중복 실행 방지
 
-    const result = await cloneProject(project.project_id);
+    const result = await cloneProject(project.id);
     if (result.success) {
       //  production 페이지로 이동
       router.push(`/production/${result.data.project_id}`);
@@ -82,11 +111,17 @@ const TableItem = ({
       project.status === 'suspended';
 
     if (isQuotationStatus) {
-      router.push(
-        `/quotation?quotation_id=${project.quotation_id}&project_id=${project.project_id}`
-      );
+      const quotationId =
+        project.quotations && project.quotations.length > 0
+          ? project.quotations[0].id
+          : null;
+      if (quotationId) {
+        router.push(
+          `/quotation?quotation_id=${quotationId}&project_id=${project.id}`
+        );
+      }
     } else {
-      router.push(`/production/${project.project_id}`);
+      router.push(`/production/${project.id}`);
     }
   };
 
@@ -117,35 +152,16 @@ const TableItem = ({
         >
           {project.client_name || '-'}
         </p>
-        <p
-          className="flex-2 px-3 text-dg truncate"
-          title={
-            project.product_names.length === 0
-              ? '-'
-              : project.product_names.length > 1
-                ? `${project.product_names[0]} 외 ${project.product_names.length - 1}개`
-                : project.product_names[0]
-          }
-        >
-          {project.product_names.length === 0
-            ? '-'
-            : project.product_names.length > 1
-              ? `${project.product_names[0]} 외 ${project.product_names.length - 1}개`
-              : project.product_names[0]}
+        <p className="flex-2 px-3 text-dg truncate" title={productsName}>
+          {productsName}
         </p>
         {!isArchived && (
-          <p
-            className="w-[200px] px-3 text-dg truncate"
-            title={project.start_date || '-'}
-          >
-            {project.start_date || '-'}
+          <p className="w-[200px] px-3 text-dg truncate" title={startDate}>
+            {startDate}
           </p>
         )}
-        <p
-          className="w-[200px] px-3 text-dg truncate"
-          title={project.due_date || '-'}
-        >
-          {project.due_date || '-'}
+        <p className="w-[200px] px-3 text-dg truncate" title={dueDate}>
+          {dueDate}
         </p>
         {!isArchived && (
           <div
@@ -154,7 +170,8 @@ const TableItem = ({
               e.stopPropagation();
             }}
           >
-            {project.publish_status === null ? (
+            {!project.tax_invoice ||
+            project.tax_invoice.publish_status === undefined ? (
               <MiniBtn
                 text="연결 필요"
                 bgColor="bg-bg"
@@ -173,23 +190,25 @@ const TableItem = ({
         )}
         {!isArchived && (
           <p
-            className={`w-[200px] px-3 ${getTaxStatusColor(project.publish_status).textColor}`}
+            className={`w-[200px] px-3 ${getTaxStatusColor(project.tax_invoice?.publish_status).textColor}`}
           >
-            {project.publish_status === 'temporary'
-              ? '임시 저장'
-              : project.publish_status === 'pending'
-                ? '전송 대기'
-                : project.publish_status === 'processing'
-                  ? '처리 중'
-                  : project.publish_status === 'published'
-                    ? '발행 완료'
-                    : project.publish_status === 'cancled'
-                      ? '발행 취소'
-                      : project.publish_status === 'failed'
-                        ? '발행 실패'
-                        : project.publish_status === null
-                          ? '-'
-                          : '-'}
+            {!project.tax_invoice
+              ? '-'
+              : project.tax_invoice.publish_status === 'temporary'
+                ? '임시 저장'
+                : project.tax_invoice.publish_status === 'pending'
+                  ? '전송 대기'
+                  : project.tax_invoice.publish_status === 'processing'
+                    ? '처리 중'
+                    : project.tax_invoice.publish_status === 'published'
+                      ? '발행 완료'
+                      : project.tax_invoice.publish_status === 'cancled'
+                        ? '발행 취소'
+                        : project.tax_invoice.publish_status === 'failed'
+                          ? '발행 실패'
+                          : project.tax_invoice.publish_status === null
+                            ? '-'
+                            : '-'}
           </p>
         )}
 
@@ -235,7 +254,7 @@ const TableItem = ({
       {isLinkTaxModalOpen && (
         <LinkTaxModal
           onClose={() => setIsLinkTaxModalOpen(false)}
-          linkedItemId={project.project_id}
+          linkedItemId={project.id}
           type="project"
           onSuccess={onReload} // 연결 완료 시 리로드 콜백 호출
         />

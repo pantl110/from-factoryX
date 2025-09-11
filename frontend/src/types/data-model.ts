@@ -517,16 +517,30 @@ export interface ProjectUpdateModel {
 // 진행 중인 프로젝트: status="progress"
 // 완료된 프로젝트: status="complete"
 export interface ProjectResponseModel {
-  project_id: number;
-  client_name: string;
-  product_names: string[];
-  start_date: string; // 가장 빠른 생산 시작일
-  due_date: string;
-  publish_status: TaxStatusType; // 세금계산서 발행 상태
-  status: ProjectStatusType; // 프로젝트 상태 (영어)
-  is_abandoned: boolean; // 프로젝트 중단 여부
-  quotation_id: number;
-  created_at: string;
+  // project_id: number;
+  // client_name: string;
+  // product_names: string[];
+  // start_date: string; // 가장 빠른 생산 시작일
+  // due_date: string;
+  // publish_status: TaxStatusType; // 세금계산서 발행 상태
+  // status: ProjectStatusType; // 프로젝트 상태 (영어)
+  // is_abandoned: boolean; // 프로젝트 중단 여부
+  // quotation_id: number;
+  // created_at: string;
+
+  client_name: string; // 변하는 이름?
+  confirmed_at: string, // 주문서의 등록 일자
+  created_at: string,
+  id: number,
+  is_refunded: boolean,
+  name: string, // 변하는 이름?
+  plans: ProjectPlanModel[], // ProjectPlanModelOut
+  printed_at: string, // 거래명세서 발행 일자
+  quotations: ProjectQuotationModel[], // QuotationModelOut
+  status: ProjectStatusType,
+  tax_invoice: PublishedTaxInvoiceResponseModel, // NationalTaxServiceOut
+  transact_date: string,  
+  updated_at: string,
 }
 
 export interface ProjectListResponseModel extends PaginationModel {
@@ -534,7 +548,6 @@ export interface ProjectListResponseModel extends PaginationModel {
 }
 
 // 프로젝트 상태 조회 응답
-
 export interface ProjectQuotationProductsInfoModel {
   id: number;
   name: string;
@@ -556,6 +569,45 @@ export interface ProjectQuotationModel {
   due_date_notice: boolean;
   factory: number; // factory_id
   factory_info: TaxFactoryInfoModel;
+  products: {
+    created_at: string;
+    delivery_date: string;
+    id: number;
+    is_delivery: boolean;
+    product: {
+      average_production_time: number;
+      buffer_rate: string; // 0.10
+      code: string;
+      created_at: string;
+      current_stock: number;
+      factory: number;
+      id: number;
+      name: string;
+      note: string;
+      spec: string;
+      unit: string;
+      updated_at: string;
+    }
+    product_info:{
+      average_production_time: number;
+      buffer_rate: number;
+      code: string;
+      created_at: string;
+      current_stock: number;
+      factory: number;
+      id: number;
+      location: number[];
+      name: string;
+      note: string;
+      spec: string;
+      unit: string;
+      updated_at: string;
+    }
+    quantity: number;
+    quotation : number;
+    unit_price: number;
+    updated_at : string;
+  }[]; 
   products_info: ProjectQuotationProductsInfoModel[];
   project: number; // project_id
   type: string;
@@ -1101,6 +1153,7 @@ export interface TaxLineItemModel {
   material_history?: number; // 연동된 자재 이력 ID
 }
 
+// NationalTaxServiceOut
 export interface PublishedTaxInvoiceResponseModel {
   // BaseModel 상속 필드
   id: number; // Primary Key
@@ -1146,18 +1199,6 @@ export interface PublishedTaxInvoiceResponseModel {
 export interface PublishedTaxInvoiceListResponseModel extends PaginationModel {
   data: PublishedTaxInvoiceResponseModel[];
 }
-
-// 발행 대기 세금계산서
-// export interface PendingTaxInvoiceResponseModel {
-//   id: number;
-//   tax_invoice_type: TaxDocumentType;
-//   transaction_date: string;
-//   client_name: string;
-//   product_names: string[];
-//   transaction_amount: number;
-//   tax_amount: number;
-//   total_amount: number;
-// }
 
 export interface PendingTaxInvoiceListResponseModel extends PaginationModel {
   data: PublishedTaxInvoiceResponseModel[];
