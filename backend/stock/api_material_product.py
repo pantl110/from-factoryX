@@ -4,7 +4,10 @@ from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 
 from stock.schemas.inbound import MaterialProductConnectIn, MaterialProductUpdateIn
-from stock.schemas.outbound import MaterialProductConnectOut, MaterialProductConnectionOut
+from stock.schemas.outbound import (
+    MaterialProductConnectOut,
+    MaterialProductConnectionOut,
+)
 from stock.models import Material, Product, MaterialProduct
 from factory.utils import is_factory_member
 
@@ -17,11 +20,13 @@ router = Router(tags=["MaterialProduct"], auth=jwt_auth)
     description="원자재와 품목을 연결합니다.",
     response={200: MaterialProductConnectOut, 400: dict, 404: dict, 500: dict},
 )
-async def create_material_product_connections(request, payload: MaterialProductConnectIn):
-    factory_id = request.GET.get('factory_id')
+async def create_material_product_connections(
+    request, payload: MaterialProductConnectIn
+):
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
@@ -70,7 +75,7 @@ async def create_material_product_connections(request, payload: MaterialProductC
             )()
 
             if existing:
-                continue 
+                continue
 
             material_product = await sync_to_async(MaterialProduct.objects.create)(
                 material=target,
@@ -118,10 +123,10 @@ async def create_material_product_connections(request, payload: MaterialProductC
     response={200: list, 400: dict, 404: dict},
 )
 async def get_material_product_connections(request, target_id: int, type: str):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
@@ -132,7 +137,9 @@ async def get_material_product_connections(request, target_id: int, type: str):
         target_model = Product
         filter_field = "product_id"
     else:
-        raise HttpError(400, "올바르지 않은 타입입니다. 'material' 또는 'product'를 입력해주세요.")
+        raise HttpError(
+            400, "올바르지 않은 타입입니다. 'material' 또는 'product'를 입력해주세요."
+        )
 
     try:
         target = await sync_to_async(target_model.objects.get)(id=target_id)
@@ -141,31 +148,38 @@ async def get_material_product_connections(request, target_id: int, type: str):
 
     filter_kwargs = {filter_field: target_id}
     material_products = await sync_to_async(list)(
-        MaterialProduct.objects.filter(**filter_kwargs).select_related("product", "material")
+        MaterialProduct.objects.filter(**filter_kwargs).select_related(
+            "product", "material"
+        )
     )
 
     results = []
     if type == "product":
         for mp in material_products:
-            results.append({
-                "connection_id": mp.id,
-                "material_id": mp.material.id,
-                "material_name": mp.material.name,
-                "material_code": mp.material.code,
-                "material_spec": mp.material.spec,
-                "material_unit": mp.material.unit,
-                "quantity": float(mp.quantity),
-            })
+            results.append(
+                {
+                    "connection_id": mp.id,
+                    "material_id": mp.material.id,
+                    "material_name": mp.material.name,
+                    "material_code": mp.material.code,
+                    "material_spec": mp.material.spec,
+                    "material_unit": mp.material.unit,
+                    "material_current_stock": int(mp.material.current_stock or 0),
+                    "quantity": float(mp.quantity),
+                }
+            )
     else:
         for mp in material_products:
-            results.append({
-                "connection_id": mp.id,
-                "product_id": mp.product.id,
-                "product_name": mp.product.name,
-                "product_code": mp.product.code,
-                "product_spec": mp.product.spec,
-                "product_unit": mp.product.unit,
-            })
+            results.append(
+                {
+                    "connection_id": mp.id,
+                    "product_id": mp.product.id,
+                    "product_name": mp.product.name,
+                    "product_code": mp.product.code,
+                    "product_spec": mp.product.spec,
+                    "product_unit": mp.product.unit,
+                }
+            )
 
     return results
 
@@ -176,11 +190,13 @@ async def get_material_product_connections(request, target_id: int, type: str):
     description="특정 품목에 연결된 원자재의 수량을 수정합니다.",
     response={200: dict, 404: dict},
 )
-async def update_material_product_connection(request, connection_id: int, payload: MaterialProductUpdateIn):
-    factory_id = request.GET.get('factory_id')
+async def update_material_product_connection(
+    request, connection_id: int, payload: MaterialProductUpdateIn
+):
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
@@ -205,13 +221,13 @@ async def update_material_product_connection(request, connection_id: int, payloa
     response={200: dict, 404: dict},
 )
 async def delete_material_product_connection(request, connection_id: int):
-    factory_id = request.GET.get('factory_id')
+    factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    
+
     try:
         connection = await sync_to_async(MaterialProduct.objects.get)(id=connection_id)
     except MaterialProduct.DoesNotExist:
