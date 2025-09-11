@@ -6,12 +6,12 @@ import ProductListInfo from '../product-list-info';
 
 interface TransactionDocumentViewProps {
   quotationData: ProjectQuotationModel;
-  startDate: string;
+  lastDeliveryDate: string;
 }
 
 const TransactionDocumentView = ({
   quotationData,
-  startDate,
+  lastDeliveryDate,
 }: TransactionDocumentViewProps) => {
   return (
     <div className="flex flex-col gap-6">
@@ -19,7 +19,7 @@ const TransactionDocumentView = ({
         title={`[${quotationData.client_info.name}]건 거래명세서`}
       />
       <SellerInfo
-        startDate={startDate}
+        lastDeliveryDate={lastDeliveryDate}
         factoryData={quotationData.factory_info}
       />
       <BuyerInfo

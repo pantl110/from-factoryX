@@ -1,21 +1,14 @@
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr';
 import DocumentTableItem from './document-table-item';
-import { DocumentDataModel } from '@/mocks/document-data';
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
 } from '@/types/data-model';
 import { useState } from 'react';
 import NoHistoryBox from '@/ui/no-history-box';
-import { getProductNamesDisplay } from '@/utils/get-product-names-display';
-import { getStartDate } from '@/utils/get-start-date';
 
 interface DocumentTableProps {
-  data:
-    | DocumentDataModel[]
-    | PublishedTaxInvoiceResponseModel[]
-    | ProjectResponseModel[];
-  onDocumentClick?: (document: DocumentDataModel) => void;
+  data: PublishedTaxInvoiceResponseModel[] | ProjectResponseModel[];
   selectedType: string;
   onTaxSortChange?: (
     field: 'transaction_date' | 'created_at',
@@ -27,7 +20,6 @@ interface DocumentTableProps {
 
 const DocumentTable = ({
   data,
-  onDocumentClick,
   selectedType,
   onTaxSortChange,
   taxSortField,
@@ -51,37 +43,40 @@ const DocumentTable = ({
     onTaxSortChange?.(field, newDirection);
   };
 
-  // 일반 문서 정렬된 데이터 생성 (DocumentDataModel 타입일 때만)
-  const sortedData =
-    data.length > 0
-      ? (data as DocumentDataModel[]).sort((a, b) => {
-          if (!a.date || !b.date) return 0;
-          if (sortDirection === 'asc') {
-            return a.date.localeCompare(b.date);
-          } else {
-            return b.date.localeCompare(a.date);
-          }
-        })
-      : [];
-
-  // 세금계산서는 백엔드에서 정렬된 데이터를 가져오므로 정렬하지 않음
   const taxData = data as PublishedTaxInvoiceResponseModel[];
+  const projectData = data as ProjectResponseModel[];
 
   // 프로젝트 데이터를 DocumentDataModel 형태로 변환
-  const projectData =
-    selectedType === '거래명세서'
-      ? (data as ProjectResponseModel[]).map((project) => ({
-          id: project.id.toString(),
-          documentType: '거래명세서' as const,
-          companyName: project.client_name,
-          productName: getProductNamesDisplay(
-            project.quotations[0].products.map(
-              (product) => product.product.name
-            )
-          ),
-          date: getStartDate(project), // 현재는 가장 빠른 생산 시작일로 임시 적용
-        }))
-      : [];
+  // const projectData =
+  //   selectedType === '주문서'
+  //     ? (data as ProjectResponseModel[]).map((project) => ({
+  //         id: project.id.toString(),
+  //         documentType: '주문서' as const,
+  //         companyName: project.name,
+  //         productName:
+  //           project.quotations &&
+  //           project.quotations.length > 0 &&
+  //           project.quotations[0].products_info &&
+  //           project.quotations[0].products_info.length > 1
+  //             ? `${project.quotations[0].products_info[0].name} 외 ${project.quotations[0].products_info.length - 1}개`
+  //             : project.quotations[0].products_info[0]?.name || '-',
+  //         date: project.confirmed_at.split('T')[0],
+  //       }))
+  //     : selectedType === '거래명세서'
+  //       ? (data as ProjectResponseModel[]).map((project) => ({
+  //           id: project.id.toString(),
+  //           documentType: '거래명세서' as const,
+  //           companyName: project.name,
+  //           productName:
+  //             project.quotations &&
+  //             project.quotations.length > 0 &&
+  //             project.quotations[0].products_info &&
+  //             project.quotations[0].products_info.length > 1
+  //               ? `${project.quotations[0].products_info[0].name} 외 ${project.quotations[0].products_info.length - 1}개`
+  //               : project.quotations[0].products_info[0]?.name || '-',
+  //           date: project.transact_date,
+  //         }))
+  //       : [];
 
   return (
     <>
@@ -134,31 +129,31 @@ const DocumentTable = ({
             )}
           </div>
 
+          {selectedType === '주문서' &&
+            projectData.map((item, index) => (
+              <DocumentTableItem
+                key={index}
+                data={item}
+                documentType="주문서"
+              />
+            ))}
+          {selectedType === '거래명세서' &&
+            projectData.map((item, index) => (
+              <DocumentTableItem
+                key={index}
+                data={item}
+                documentType="거래명세서"
+              />
+            ))}
           {selectedType === '매출 세금계산서' ||
-          selectedType === '매입 세금계산서'
-            ? taxData.map((item, index) => (
+            (selectedType === '매입 세금계산서' &&
+              taxData.map((item, index) => (
                 <DocumentTableItem
                   key={index}
                   data={item}
-                  isTaxDocument={true}
+                  documentType={selectedType}
                 />
-              ))
-            : selectedType === '거래명세서'
-              ? projectData.map((item, index) => (
-                  <DocumentTableItem
-                    key={index}
-                    data={item}
-                    onClick={() => onDocumentClick?.(item)}
-                    isTransactionDocument={true}
-                  />
-                ))
-              : sortedData.map((item, index) => (
-                  <DocumentTableItem
-                    key={index}
-                    data={item}
-                    onClick={() => onDocumentClick?.(item)}
-                  />
-                ))}
+              )))}
         </>
       )}
     </>

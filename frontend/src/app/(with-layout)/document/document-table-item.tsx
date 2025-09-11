@@ -1,11 +1,10 @@
-import { DocumentDataModel } from '@/mocks/document-data';
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
   ProjectStatusResponseModel,
 } from '@/types/data-model';
 import Chip from '@/ui/chip';
-import { DocumentTypeColorMap } from './types';
+import { DocumentType, DocumentTypeColorMap } from './types';
 import { useState, useEffect } from 'react';
 import Panel from '@/ui/panel';
 import TaxDocumentView from './tax-document-view';
@@ -14,86 +13,47 @@ import TransactionDocumentView from './transaction-document-view';
 import { useGetProjectStatus } from '@/hooks';
 
 interface DocumentTableItemProps {
-  data:
-    | DocumentDataModel
-    | PublishedTaxInvoiceResponseModel
-    | ProjectResponseModel;
-  onClick?: () => void;
-  isTaxDocument?: boolean;
-  isTransactionDocument?: boolean;
+  data: ProjectResponseModel | PublishedTaxInvoiceResponseModel;
+  documentType: DocumentType;
 }
 
-const DocumentTableItem = ({
-  data,
-  onClick,
-  isTaxDocument = false,
-  isTransactionDocument = false,
-}: DocumentTableItemProps) => {
-  const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
+const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
+  const [isOrderPanelOpen, setIsOrderPanelOpen] = useState(false);
   const [isTransactionPanelOpen, setIsTransactionPanelOpen] = useState(false);
+  const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
+  // 주문서, 거래명세서 페이지 열릴 때
   const [projectStatusData, setProjectStatusData] =
     useState<ProjectStatusResponseModel | null>(null);
 
   const { getProjectStatus, isLoading: isProjectStatusLoading } =
     useGetProjectStatus();
 
-  // 타입 가드 함수
-  const isDocumentData = (
-    item:
-      | DocumentDataModel
-      | PublishedTaxInvoiceResponseModel
-      | ProjectResponseModel
-  ): item is DocumentDataModel => {
-    return 'documentType' in item;
-  };
+  const { bgColor, textColor } = DocumentTypeColorMap[documentType];
 
-  const isTaxData = (
-    item:
-      | DocumentDataModel
-      | PublishedTaxInvoiceResponseModel
-      | ProjectResponseModel
-  ): item is PublishedTaxInvoiceResponseModel => {
-    return 'tax_invoice_type' in item; // sales, purchase
-  };
+  const taxData = data as PublishedTaxInvoiceResponseModel;
+  const projectData = data as ProjectResponseModel;
 
-  const isTransactionData = (
-    item:
-      | DocumentDataModel
-      | PublishedTaxInvoiceResponseModel
-      | ProjectResponseModel
-  ): item is DocumentDataModel => {
-    return 'documentType' in item && item.documentType === '거래명세서';
-  };
-
-  // DocumentDataModel 타입일 때의 데이터 // 주문서, 생산지시서, 거래명세서
-  const documentData = isDocumentData(data) ? data : null;
-  const { bgColor, textColor } = documentData
-    ? DocumentTypeColorMap[documentData.documentType]
-    : { bgColor: '', textColor: '' };
-
-  // 세금계산서 클릭 핸들러
-  const handleTaxDocumentClick = () => {
-    if (isTaxDocument && isTaxData(data)) {
+  // 항목 클릭 시
+  const handleItemClick = () => {
+    if (documentType === '주문서') {
+      setIsOrderPanelOpen(true);
+    } else if (documentType === '거래명세서') {
+      setIsTransactionPanelOpen(true);
+    } else if (
+      documentType === '매출 세금계산서' ||
+      documentType === '매입 세금계산서'
+    ) {
       setIsTaxPanelOpen(true);
     }
   };
 
-  // 거래명세서 클릭 핸들러
-  const handleTransactionDocumentClick = () => {
-    if (isTransactionDocument && isTransactionData(data)) {
-      setIsTransactionPanelOpen(true);
-    }
-  };
-
-  // 거래명세서 패널이 열릴 때 프로젝트 상태 데이터 가져오기
+  // 거래명세서 패널이 열릴 때 프로젝트 데이터 가져오기
   useEffect(() => {
     const fetchProjectStatus = async () => {
-      if (isTransactionPanelOpen && isTransactionData(data)) {
-        const projectId = parseInt(data.id);
-        const result = await getProjectStatus(projectId);
-        if (result.success && result.data) {
-          setProjectStatusData(result.data);
-        }
+      const projectId = data.id;
+      const result = await getProjectStatus(projectId);
+      if (result.success && result.data) {
+        setProjectStatusData(result.data);
       }
     };
 
@@ -106,93 +66,102 @@ const DocumentTableItem = ({
         className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
         role="button"
         tabIndex={0}
-        onClick={
-          isTaxDocument
-            ? handleTaxDocumentClick
-            : isTransactionDocument
-              ? handleTransactionDocumentClick
-              : onClick
-        }
+        onClick={handleItemClick}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
-            if (isTaxDocument) {
-              handleTaxDocumentClick();
-            } else if (isTransactionDocument) {
-              handleTransactionDocumentClick();
-            } else {
-              onClick?.();
-            }
+            handleItemClick();
           }
         }}
       >
-        {isTaxDocument && isTaxData(data) ? (
+        {documentType === '매출 세금계산서' ||
+        documentType === '매입 세금계산서' ? (
           <>
             <p
               className="px-3 flex-1 truncate"
-              title={data.client_info.name || '-'}
+              title={taxData.client_info.name || '-'}
             >
-              {data.client_info.name || '-'}
+              {taxData.client_info.name || '-'}
             </p>
             <p
               className="px-3 flex-1 truncate"
               title={getProductNamesDisplay(
-                data.products_info?.map((p) => p.name) || []
+                taxData.products_info?.map((p) => p.name) || []
               )}
             >
               {getProductNamesDisplay(
-                data.products_info?.map((p) => p.name) || []
+                taxData.products_info?.map((p) => p.name) || []
               )}
             </p>
             <p
               className="px-3 flex-1 truncate"
-              title={data.transaction_amount?.toLocaleString() || '-'}
+              title={taxData.transaction_amount?.toLocaleString() || '-'}
             >
-              {data.transaction_amount?.toLocaleString() || '-'}
+              {taxData.transaction_amount?.toLocaleString() || '-'}
             </p>
             <p
               className="px-3 flex-1 truncate"
-              title={data.tax_amount?.toLocaleString() || '-'}
+              title={taxData.tax_amount?.toLocaleString() || '-'}
             >
-              {data.tax_amount?.toLocaleString() || '-'}
+              {taxData.tax_amount?.toLocaleString() || '-'}
             </p>
             <p
               className="px-3 flex-1 truncate"
               title={
-                (data.transaction_amount + data.tax_amount)?.toLocaleString() ||
-                '-'
+                (
+                  taxData.transaction_amount + taxData.tax_amount
+                )?.toLocaleString() || '-'
               }
             >
-              {(data.transaction_amount + data.tax_amount)?.toLocaleString() ||
-                '-'}
+              {(
+                taxData.transaction_amount + taxData.tax_amount
+              )?.toLocaleString() || '-'}
             </p>
             <p className="px-3 w-[150px]">
-              {data.transaction_date.split('T')[0] || '-'}
+              {taxData.transaction_date.split('T')[0] || '-'}
             </p>
             <p className="px-3 w-[150px]">
-              {data.created_at.split('T')[0] || '-'}
+              {taxData.created_at.split('T')[0] || '-'}
             </p>
           </>
-        ) : documentData ? (
+        ) : projectData ? (
           <>
             <div className="px-3 flex-[0.5]">
               <Chip
-                text={documentData.documentType}
+                text={documentType}
                 bgColor={bgColor}
                 textColor={textColor}
               />
             </div>
-            <p className="px-3 flex-1">{documentData.companyName}</p>
-            <p className="px-3 flex-1">{documentData.productName}</p>
-            <p className="px-3 flex-[0.5]">{documentData.date}</p>
+            <p className="px-3 flex-1 truncate" title={projectData.name || '-'}>
+              {projectData.name || '-'}
+            </p>
+            <p
+              className="px-3 flex-1 truncate"
+              title={getProductNamesDisplay(projectData) || '-'}
+            >
+              {getProductNamesDisplay(projectData) || '-'}
+            </p>
+            <p
+              className="px-3 flex-[0.5] truncate"
+              title={
+                documentType === '주문서'
+                  ? projectData.confirmed_at || '-'
+                  : projectData.printed_at || '-'
+              }
+            >
+              {documentType === '주문서'
+                ? projectData.confirmed_at || '-'
+                : projectData.printed_at || '-'}
+            </p>
           </>
         ) : null}
       </div>
 
       {/* 세금계산서 디테일 판넬  */}
-      {isTaxPanelOpen && isTaxData(data) && (
+      {isTaxPanelOpen && (
         <Panel
           title={
-            data.tax_invoice_type === 'sales'
+            taxData.tax_invoice_type === 'sales'
               ? '매출 세금계산서'
               : '매입 세금계산서'
           }
@@ -201,7 +170,8 @@ const DocumentTableItem = ({
           <TaxDocumentView taxId={data.id} />
         </Panel>
       )}
-      {isTransactionPanelOpen && isTransactionData(data) && (
+      {/* 거래명세서 디테일 판넬 */}
+      {isTransactionPanelOpen && (
         <Panel
           title="거래명세서"
           onClose={() => setIsTransactionPanelOpen(false)}
@@ -211,7 +181,7 @@ const DocumentTableItem = ({
           ) : projectStatusData && projectStatusData.quotations.length > 0 ? (
             <TransactionDocumentView
               quotationData={projectStatusData.quotations[0]}
-              startDate={projectStatusData.quotations[0].due_date} // 납기일자로 임의로 설정
+              lastDeliveryDate={getProjectStatusData.quotations[0].due_date}
             />
           ) : (
             <></>

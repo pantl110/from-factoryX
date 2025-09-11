@@ -16,3 +16,11 @@ export const DocumentTypeColorMap: Record<
   '매출 세금계산서': { bgColor: 'bg-primary-8', textColor: 'text-primary' },
   '매입 세금계산서': { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
+
+export interface DocumentDataModel {
+  projectId: string;
+  documentType: DocumentType;
+  companyName: string;
+  productName: string;
+  date: string;
+}

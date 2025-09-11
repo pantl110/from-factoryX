@@ -617,7 +617,9 @@ export interface ProjectStatusResponseModel {
   status: ProjectStatusType;
   updated_at: string;
   tax_invoice: PublishedTaxInvoiceResponseModel | null;
-  transaction_date: string;
+  transact_date: string; // 거래명세서 발행 일자
+  printed_at: string;
+  confirmed_at: string;
 }
 
 //////////////////////
