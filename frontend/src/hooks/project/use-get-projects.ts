@@ -12,11 +12,7 @@ interface GetProjectModel {
   page_size?: number;
 }
 
-// 각 프로젝트별로 데이터 가공
-// - 견적서
-// - 제품명
-// - 생산시작일
-// - 세금계산서 상태 추출
+// 🔴 version 2
 const useGetProjects = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

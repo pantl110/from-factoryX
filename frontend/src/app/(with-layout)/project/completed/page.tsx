@@ -36,7 +36,7 @@ const CompletedProjectPage = () => {
     if (!getProjects) return;
 
     const loadArchivedProjects = async () => {
-      let status = 'archived'; // 전체 보관된 프로젝트
+      let status;
 
       // 개별 상태 선택 시
       if (selectedStatus === '완료') {
@@ -46,7 +46,12 @@ const CompletedProjectPage = () => {
       }
 
       const result = await getProjects({
-        status: status as ProjectStatusType,
+        ...(selectedStatus === '전체'
+          ? {
+              status_exclude:
+                'quotation,confirmed,pending,production,manufactured,delivery',
+            }
+          : { status: status as ProjectStatusType }),
         search: searchKeyword,
         order_by:
           sortKey === 'startDate'
@@ -75,8 +80,7 @@ const CompletedProjectPage = () => {
     currentPage,
   ]);
 
-  const currentIds =
-    projectData?.data.map((project) => project.project_id) || [];
+  const currentIds = projectData?.data.map((project) => project.id) || [];
 
   const {
     checkedCount,
@@ -140,12 +144,17 @@ const CompletedProjectPage = () => {
 
       // 프로젝트 목록 새로고침
       const result = await getProjects({
-        status:
-          selectedStatus === '전체'
-            ? 'archived'
-            : selectedStatus === '완료'
-              ? 'completed'
-              : ('suspended' as ProjectStatusType),
+        ...(selectedStatus === '전체'
+          ? {
+              status_exclude:
+                'quotation,confirmed,pending,production,manufactured,delivery',
+            }
+          : {
+              status:
+                selectedStatus === '완료'
+                  ? 'completed'
+                  : ('suspended' as ProjectStatusType),
+            }),
         search: searchKeyword,
         order_by:
           sortKey === 'startDate'
@@ -211,10 +220,10 @@ const CompletedProjectPage = () => {
                     />
                     {projectData?.data.map((project) => (
                       <TableItem
-                        key={project.project_id}
+                        key={project.id}
                         project={project}
-                        checked={isChecked(project.project_id)}
-                        onToggle={() => toggleOne(project.project_id)}
+                        checked={isChecked(project.id)}
+                        onToggle={() => toggleOne(project.id)}
                         isArchived={true}
                       />
                     ))}

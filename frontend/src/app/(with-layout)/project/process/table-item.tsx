@@ -59,7 +59,9 @@ const TableItem = ({
   const displayText = getDisplayText(project.status);
 
   const productsName =
-    project.status === 'quotation' || project.status === 'confirmed'
+    project.status === 'quotation' ||
+    project.status === 'confirmed' ||
+    project.status === 'suspended'
       ? project.quotations[0].products.length > 1
         ? `${project.quotations[0].products[0].product.name} 외 ${project.quotations[0].products.length - 1}개`
         : project.quotations[0].products[0]?.product?.name || '-'
@@ -70,13 +72,7 @@ const TableItem = ({
         ? `${project.quotations[0].products_info[0].name} 외 ${project.quotations[0].products_info.length - 1}개`
         : project.quotations[0].products_info[0]?.name || '-';
 
-  const dueDate =
-    project.quotations &&
-    project.quotations.length > 0 &&
-    project.quotations[0].due_date
-      ? project.quotations[0].due_date
-      : '-';
-
+  // 생산계획 중 가장 빠른 생산시작일
   const startDate =
     project.plans && project.plans.length > 0
       ? project.plans
@@ -86,6 +82,35 @@ const TableItem = ({
           }, project.plans[0].start_date)
           .split('T')[0]
       : '-';
+
+  // products 중 가장 늦은 납기일자
+  const completedDate =
+    project.quotations &&
+    project.quotations.length > 0 &&
+    project.quotations[0].products &&
+    project.quotations[0].products.length > 0
+      ? project.quotations[0].products
+          .filter((product) => product.delivery_date)
+          .reduce((latest, product) => {
+            if (!latest) return product.delivery_date;
+            return product.delivery_date > latest
+              ? product.delivery_date
+              : latest;
+          }, project.quotations[0].products[0]?.delivery_date || '')
+          .split('T')[0]
+      : '-';
+
+  const dueDate =
+    // 프로젝트 완료에서는 납기일자가 없음, 완료일자
+    project.status === 'suspended'
+      ? '-'
+      : project.status === 'completed'
+        ? completedDate
+        : project.quotations &&
+            project.quotations.length > 0 &&
+            project.quotations[0].due_date
+          ? project.quotations[0].due_date
+          : '-';
 
   // 프로젝트 복제 핸들러
   const handleCloneProject = async (e: React.MouseEvent) => {
