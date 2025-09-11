@@ -25,7 +25,6 @@ import {
 import {
   ProjectResponseModel,
   DashboardResponseModel,
-  ProjectListResponseModel,
   PublishedTaxInvoiceResponseModel,
   PublishedTaxInvoiceListResponseModel,
 } from '@/types/data-model';
@@ -44,7 +43,12 @@ const DashboardPageContent = () => {
 
   const { getPublishedTaxInvoices, isLoading: isTaxInvoicesLoading } =
     useGetPublishedTaxInvoices();
-  const [projectsData, setProjectsData] = useState<ProjectResponseModel[]>([]);
+  const [quotationProjectsData, setQuotationProjectsData] = useState<
+    ProjectResponseModel[]
+  >([]);
+  const [productionProjectsData, setProductionProjectsData] = useState<
+    ProjectResponseModel[]
+  >([]);
   const [dashboardData, setDashboardData] = useState<DashboardResponseModel>({
     current_month_projects: 0,
     previous_month_projects: 0,
@@ -82,24 +86,53 @@ const DashboardPageContent = () => {
     }
   }, [factoryId, initializeFactoryId]);
 
-  // 프로젝트 데이터 가져오기
+  // 견적서 주문서 프로젝트 데이터 3개 가져오기
   useEffect(() => {
     if (factoryId) {
+      // 첫 번째 요청: 견적서 주문서 프로젝트 데이터 3개 가져오기
       getProjects({
-        status: 'progress',
+        status_exclude:
+          'pending,production,manufactured,delivery,completed,suspended',
         page: 1,
-        page_size: 100,
-        order_by: '-start_date',
-      }).then(
-        (result: { success: boolean; data?: ProjectListResponseModel }) => {
-          if (result.success && result.data) {
-            const projects = result.data.data || [];
-            setProjectsData(Array.isArray(projects) ? projects : []);
-          } else {
-            setProjectsData([]);
+        page_size: 3,
+        order_by: '-created_at',
+      })
+        .then((quotationResult) => {
+          // 요청이 취소된 경우 무시
+          if (quotationResult.error === '요청이 취소되었습니다.') {
+            return;
           }
-        }
-      );
+
+          // 견적서 주문서 프로젝트 데이터 처리
+          if (quotationResult.success && quotationResult.data) {
+            const projects = quotationResult.data.data || [];
+            setQuotationProjectsData(Array.isArray(projects) ? projects : []);
+          } else {
+            setQuotationProjectsData([]);
+          }
+
+          // 첫 번째 요청 완료 후 두 번째 요청 실행 // 생산중 프로젝트 데이터 4개 가져오기
+          return getProjects({
+            status_exclude: 'quotation,confirmed,completed,suspended',
+            page: 1,
+            page_size: 4,
+            order_by: '-start_date',
+          });
+        })
+        .then((productionResult) => {
+          // 요청이 취소된 경우 무시
+          if (productionResult?.error === '요청이 취소되었습니다.') {
+            return;
+          }
+
+          // 생산중 프로젝트 데이터 처리
+          if (productionResult?.success && productionResult?.data) {
+            const projects = productionResult.data.data || [];
+            setProductionProjectsData(Array.isArray(projects) ? projects : []);
+          } else {
+            setProductionProjectsData([]);
+          }
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
@@ -161,36 +194,6 @@ const DashboardPageContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
 
-  // 협의 중인 견적 데이터 (견적 요청, 주문 확정) - 최신순 3개
-  const pendingQuotes = Array.isArray(projectsData)
-    ? projectsData
-        .filter(
-          (project) =>
-            project.status === 'quotation' || project.status === 'completed'
-        )
-        .sort(
-          (a, b) =>
-            new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
-        )
-        .slice(0, 3)
-    : [];
-
-  // 생산 프로젝트 데이터 (생산 대기, 생산 중, 생산 완료, 납품) - 최신순 4개
-  const processProjects = Array.isArray(projectsData)
-    ? projectsData
-        .filter(
-          (project) =>
-            project.status === 'pending' ||
-            project.status === 'production' ||
-            project.status === 'manufactured' ||
-            project.status === 'delivery'
-        )
-        .sort(
-          (a, b) =>
-            new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
-        )
-        .slice(0, 4)
-    : [];
   return (
     <>
       <MainTitleSec />
@@ -244,13 +247,13 @@ const DashboardPageContent = () => {
 
             {/* 견적 및 주문 현황 */}
             <PendingQuote
-              projects={pendingQuotes}
+              projects={quotationProjectsData}
               isLoading={isProjectsLoading}
             />
 
             {/* 생산 프로젝트 */}
             <ProcessProject
-              projects={processProjects}
+              projects={productionProjectsData}
               isLoading={isProjectsLoading}
             />
 

@@ -34,9 +34,11 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
           <span>품목</span>
           <span className="text-gr"> | </span>
           <span>
-            {project.product_names.length === 1
-              ? project.product_names[0]
-              : `${project.product_names[0]} 외 ${project.product_names.length - 1}개`}
+            {project.quotations[0].products.length === 0
+              ? '-'
+              : project.quotations[0].products.length === 1
+                ? project.quotations[0].products[0].product.name
+                : `${project.quotations[0].products[0].product.name} 외 ${project.quotations[0].products.length - 1}개`}
           </span>
         </div>
       </div>

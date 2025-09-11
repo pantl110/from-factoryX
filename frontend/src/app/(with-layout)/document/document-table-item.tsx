@@ -6,7 +6,6 @@ import {
 } from '@/types/data-model';
 import Chip from '@/ui/chip';
 import { DocumentTypeColorMap } from './types';
-import Checkbox from '@/ui/checkbox';
 import { useState, useEffect } from 'react';
 import Panel from '@/ui/panel';
 import TaxDocumentView from './tax-document-view';
@@ -20,8 +19,6 @@ interface DocumentTableItemProps {
     | PublishedTaxInvoiceResponseModel
     | ProjectResponseModel;
   onClick?: () => void;
-  checked: boolean;
-  onToggle: () => void;
   isTaxDocument?: boolean;
   isTransactionDocument?: boolean;
 }
@@ -29,8 +26,6 @@ interface DocumentTableItemProps {
 const DocumentTableItem = ({
   data,
   onClick,
-  checked,
-  onToggle,
   isTaxDocument = false,
   isTransactionDocument = false,
 }: DocumentTableItemProps) => {
@@ -130,7 +125,6 @@ const DocumentTableItem = ({
           }
         }}
       >
-        <Checkbox isChecked={checked} onToggle={onToggle} />
         {isTaxDocument && isTaxData(data) ? (
           <>
             <p

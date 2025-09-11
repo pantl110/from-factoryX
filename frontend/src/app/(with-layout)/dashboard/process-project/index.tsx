@@ -39,9 +39,9 @@ const ProcessProject = ({ projects, isLoading }: ProcessProjectProps) => {
             {projects.map((project) => (
               <ProcessProjectItem
                 project={project}
-                key={project.project_id}
+                key={project.id}
                 onClick={() => {
-                  router.push(`/production/${project.project_id}`);
+                  router.push(`/production/${project.id}`);
                 }}
               />
             ))}

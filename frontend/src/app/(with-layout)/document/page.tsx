@@ -2,7 +2,6 @@
 
 import { useState, Suspense, useEffect } from 'react';
 import { useDebounce } from 'use-debounce';
-import SearchDeleteTable from '@/ui/search-delete-table';
 import MainTitleSec from './main-title-sec';
 import DocumentTable from './document-table';
 import Pagination from '@/components/pagination';
@@ -12,22 +11,21 @@ import documentData, { DocumentDataModel } from '@/mocks/document-data';
 import Panel from '@/ui/panel';
 import ProductionDocumentView from './production-document-view';
 import Spinner from '@/ui/spinner';
-import { useCheckAll } from '@/hooks/use-check-all';
-import DeleteModal from '@/ui/modal/delete-modal';
 import { useGetPublishedTaxInvoices } from '@/hooks';
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
 } from '@/types/data-model';
 import useGetProjects from '@/hooks/project/use-get-projects';
+import SearchInput from '@/ui/search-input';
 
 const DocumentPageContent = () => {
   const [selectedType, setSelectedType] = useState<DocumentType>('주문서');
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentDataModel | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
   // 세금계산서 정렬 필드, 방향
   const [taxSortField, setTaxSortField] = useState<
     'created_at' | 'transaction_date'
@@ -153,33 +151,8 @@ const DocumentPageContent = () => {
       ? transactionDocumentsPageInfo.pageCnt
       : Math.ceil(filteredData.length / 10);
 
-  // 체크박스 관리
-  const {
-    checkedCount,
-    isAllChecked,
-    isChecked,
-    toggleAll,
-    toggleOne,
-    setAllChecked,
-    getDeleteButtonText,
-  } = useCheckAll(
-    currentData.map((item) => {
-      if ('id' in item) {
-        return item.id;
-      } else if ('project_id' in item) {
-        return item.project_id; // ‼️‼️‼️‼️‼️‼️‼️세금계산서 일때는 삭제가 필요하지 않을 수 있음
-      }
-      return '';
-    })
-  );
-
   const handleDocumentClick = (document: DocumentDataModel) => {
     setSelectedDocument(document);
-  };
-
-  const handleDelete = () => {
-    setIsDeleteModalOpen(false);
-    setAllChecked(false);
   };
 
   // 탭 변경 핸들러
@@ -187,7 +160,7 @@ const DocumentPageContent = () => {
     setSelectedType(type);
     // 탭 변경 시 첫 페이지로 이동하고 체크박스 초기화, 검색어 초기화
     setCurrentPage(1);
-    setAllChecked(false);
+    // setAllChecked(false);
     setSearchQuery('');
   };
 
@@ -200,18 +173,26 @@ const DocumentPageContent = () => {
         />
 
         <div className="px-10 pb-10">
-          <SearchDeleteTable
-            checkedCount={checkedCount}
-            deleteButtonText={getDeleteButtonText()}
-            onDelete={() => setIsDeleteModalOpen(true)}
-            onCancel={() => setAllChecked(false)}
+          <SearchInput
+            onChange={(query: string) => {
+              setSearchQuery(query);
+              setCurrentPage(1); // 검색 시 첫 페이지로 이동
+            }}
+            value={searchQuery}
+            placeholder="검색어를 입력하세요."
+          />
+          {/* <SearchDeleteTable
+            // checkedCount={checkedCount}
+            // deleteButtonText={getDeleteButtonText()}
+            // onDelete={() => setIsDeleteModalOpen(true)}
+            // onCancel={() => setAllChecked(false)}
             onSearch={(query) => {
               setSearchQuery(query);
               setCurrentPage(1); // 검색 시 첫 페이지로 이동
             }}
             searchKeyword={searchQuery}
             hasDeleteButton={false} // 문서함에서는 무조건 삭제 버튼 없음
-          />
+          /> */}
           {(isTaxDocument && isTaxDataLoading) ||
           (isTransactionDocument && isProjectDataLoading) ? (
             <div className="flex justify-center items-center h-100">
@@ -225,10 +206,6 @@ const DocumentPageContent = () => {
                   ? () => {}
                   : handleDocumentClick
               }
-              isAllChecked={isAllChecked}
-              onToggleAll={toggleAll}
-              isChecked={isChecked}
-              toggleOne={toggleOne}
               selectedType={selectedType}
               // 세금계산서
               onTaxSortChange={(field, direction) => {
@@ -289,13 +266,6 @@ const DocumentPageContent = () => {
         <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
           <ProductionDocumentView todayProductionPlans={[]} />
         </Panel>
-      )}
-
-      {isDeleteModalOpen && (
-        <DeleteModal
-          onClose={() => setIsDeleteModalOpen(false)}
-          onDelete={handleDelete}
-        />
       )}
     </>
   );

@@ -5,10 +5,10 @@ import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
 } from '@/types/data-model';
-import Checkbox from '@/ui/checkbox';
 import { useState } from 'react';
 import NoHistoryBox from '@/ui/no-history-box';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
+import { getStartDate } from '@/utils/get-start-date';
 
 interface DocumentTableProps {
   data:
@@ -16,10 +16,6 @@ interface DocumentTableProps {
     | PublishedTaxInvoiceResponseModel[]
     | ProjectResponseModel[];
   onDocumentClick?: (document: DocumentDataModel) => void;
-  isAllChecked: boolean;
-  onToggleAll: () => void;
-  isChecked: (id: string | number) => boolean;
-  toggleOne: (id: string | number) => void;
   selectedType: string;
   onTaxSortChange?: (
     field: 'transaction_date' | 'created_at',
@@ -32,10 +28,6 @@ interface DocumentTableProps {
 const DocumentTable = ({
   data,
   onDocumentClick,
-  isAllChecked,
-  onToggleAll,
-  isChecked,
-  toggleOne,
   selectedType,
   onTaxSortChange,
   taxSortField,
@@ -79,11 +71,15 @@ const DocumentTable = ({
   const projectData =
     selectedType === '거래명세서'
       ? (data as ProjectResponseModel[]).map((project) => ({
-          id: project.project_id.toString(),
+          id: project.id.toString(),
           documentType: '거래명세서' as const,
           companyName: project.client_name,
-          productName: getProductNamesDisplay(project.product_names),
-          date: project.start_date, // 현재는 가장 빠른 생산 시작일로 임시 적용
+          productName: getProductNamesDisplay(
+            project.quotations[0].products.map(
+              (product) => product.product.name
+            )
+          ),
+          date: getStartDate(project), // 현재는 가장 빠른 생산 시작일로 임시 적용
         }))
       : [];
 
@@ -97,10 +93,6 @@ const DocumentTable = ({
       ) : (
         <>
           <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-            <Checkbox
-              isChecked={isAllChecked}
-              onToggle={onToggleAll || (() => {})}
-            />
             {/* 세금계산서 일 때 */}
             {selectedType === '매출 세금계산서' ||
             selectedType === '매입 세금계산서' ? (
@@ -148,8 +140,6 @@ const DocumentTable = ({
                 <DocumentTableItem
                   key={index}
                   data={item}
-                  checked={isChecked(item.id)}
-                  onToggle={() => toggleOne(item.id)}
                   isTaxDocument={true}
                 />
               ))
@@ -159,8 +149,6 @@ const DocumentTable = ({
                     key={index}
                     data={item}
                     onClick={() => onDocumentClick?.(item)}
-                    checked={isChecked(item.id)}
-                    onToggle={() => toggleOne(item.id)}
                     isTransactionDocument={true}
                   />
                 ))
@@ -169,8 +157,6 @@ const DocumentTable = ({
                     key={index}
                     data={item}
                     onClick={() => onDocumentClick?.(item)}
-                    checked={isChecked(item.id)}
-                    onToggle={() => toggleOne(item.id)}
                   />
                 ))}
         </>

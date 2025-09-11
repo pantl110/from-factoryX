@@ -40,10 +40,10 @@ const PendingQuote = ({ projects, isLoading }: PendingQuoteProps) => {
             {projects.map((project) => (
               <PendingQuoteItem
                 project={project}
-                key={project.project_id}
+                key={project.id}
                 onClick={() => {
                   router.push(
-                    `/quotation?quotation_id=${project.quotation_id}&project_id=${project.project_id}`
+                    `/quotation?quotation_id=${project.quotations[0].id}&project_id=${project.id}`
                   );
                 }}
               />

@@ -13,6 +13,7 @@ import Tooltip from '@/ui/tooltip';
 import useCloneProject from '@/hooks/project/project-plan/use-clone-project';
 import LinkTaxModal from './modals/link-tax-modal/link-tax-modal';
 import useMemberStore from '@/store/member-store';
+import { getStartDate } from '@/utils/get-start-date';
 
 interface TableItemProps {
   project: ProjectResponseModel;
@@ -73,15 +74,7 @@ const TableItem = ({
         : project.quotations[0].products_info[0]?.name || '-';
 
   // 생산계획 중 가장 빠른 생산시작일
-  const startDate =
-    project.plans && project.plans.length > 0
-      ? project.plans
-          .reduce((earliest, plan) => {
-            if (!earliest) return plan.start_date;
-            return plan.start_date < earliest ? plan.start_date : earliest;
-          }, project.plans[0].start_date)
-          .split('T')[0]
-      : '-';
+  const startDate = getStartDate(project);
 
   // products 중 가장 늦은 납기일자
   const completedDate =

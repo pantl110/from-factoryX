@@ -8,6 +8,7 @@ import {
   ProjectStatusType,
 } from '@/types/status-type';
 import { formatRelativeTime } from '@/utils/format-relative-time';
+import { getStartDate } from '@/utils/get-start-date';
 
 interface ProcessProjectItemProps {
   project: ProjectResponseModel;
@@ -34,12 +35,12 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
         <div className="Me_Body-1 text-sv">
           <span>납기일자</span>
           <span className="text-gr"> | </span>
-          <span>{project.due_date}</span>
+          <span>{project.quotations[0].due_date}</span>
         </div>
       </div>
       <div className="flex items-center">
         <p className="flex-1 Me_Body-1 text-dg">
-          {formatRelativeTime(project.start_date)}
+          {formatRelativeTime(getStartDate(project))}
         </p>
         <Chip
           text={ProjectStatusMap[project.status as ProjectStatusType]}
