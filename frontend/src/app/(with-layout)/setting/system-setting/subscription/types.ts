@@ -42,7 +42,7 @@ export const PLAN_INFO: Record<PlanType, PlanInfoModel> = {
   BASIC: {
     type: 'BASIC',
     title: 'Basic',
-    price: 50000,
+    price: 110000,
     description: `기본적인 기능을 모두 이용할 수 있어요.\n사용자 관리, 문서 작성, 권한 설정 등 핵심 기능이 모두 포함돼요.`,
   },
   PARTNERS: {

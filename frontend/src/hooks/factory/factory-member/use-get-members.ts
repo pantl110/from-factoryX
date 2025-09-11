@@ -40,16 +40,8 @@ const useGetMembers = () => {
 
       if (response.ok) {
         const result: MemberListResponseModel = await response.json();
-        // 시스템 관리자(admin) 제외하여 저장
-        const filteredData = (result.data || []).filter((m) => m.role !== 'admin');
-        const filtered: MemberListResponseModel = {
-          ...result,
-          data: filteredData,
-          count: filteredData.length,
-          totalCnt: filteredData.length,
-        };
-        setMembers(filtered);
-        return { success: true, data: filtered };
+        setMembers(result);
+        return { success: true, data: result };
       } else {
         const errorData = await response.json();
         const errorMessage =

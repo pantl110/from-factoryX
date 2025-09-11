@@ -31,7 +31,9 @@ const PlanItem = ({ type, registerCard }: PlanItemProps) => {
             onClick={() => setIsSubscribeModalOpen(true)}
           />
         </div>
-        <h4 className="Heading-4 text-primary">월 {info.price}원</h4>
+        <h4 className="Heading-4 text-primary">
+          월 {info.price.toLocaleString()}원
+        </h4>
         <p className="text-dg Re_Body-1 whitespace-pre-line">
           {info.description}
         </p>
