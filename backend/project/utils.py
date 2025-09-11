@@ -47,7 +47,7 @@ async def get_refund_with_project(
 ) -> Tuple[Refund, Project]:
     """refund_id로 반품과 관련 프로젝트를 조회하고 팩토리 권한 확인"""
     try:
-        refund = await sync_to_async(Refund.objects.select_related("product").get)(
+        refund = await Refund.objects.select_related("product", "plan").aget(
             id=refund_id
         )
     except Refund.DoesNotExist:
@@ -55,17 +55,17 @@ async def get_refund_with_project(
 
     # refund_id로 ProjectLog를 찾아서 project 가져오기
     try:
-        project_log = await sync_to_async(
-            ProjectLog.objects.select_related("project").get
-        )(refund=refund)
+        project_log = (
+            await ProjectLog.objects.select_related("project")
+            .prefetch_related("project__quotations")
+            .aget(refund=refund)
+        )
         project = project_log.project
     except ProjectLog.DoesNotExist:
         raise HttpError(404, "해당 반품과 연결된 프로젝트 로그를 찾을 수 없습니다.")
 
     # 팩토리 권한 확인
-    quotation_exists = await sync_to_async(
-        project.quotations.filter(factory_id=factory_id).exists
-    )()
+    quotation_exists = await project.quotations.filter(factory_id=factory_id).aexists()
     if not quotation_exists:
         raise HttpError(404, "해당 반품을 찾을 수 없습니다.")
 
