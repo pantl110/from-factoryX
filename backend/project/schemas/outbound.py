@@ -138,6 +138,9 @@ class RefundCreateOut(Schema):
     message: str
     refund_id: int
     log_id: int
+    production_amount: Optional[int] = Field(
+        None, description="생산 수량 (재고에 반영된 수량)"
+    )
 
 
 # (PATCH) Refund Update

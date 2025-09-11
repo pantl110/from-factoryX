@@ -151,7 +151,7 @@ class ProjectRefundAPITestCase(TestCase):
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
-
+        data = response.json()
         self.assertEqual(response.status_code, 404)
         self.assertIn(
             "해당 프로젝트를 찾을 수 없습니다", response.json().get("detail", "")
