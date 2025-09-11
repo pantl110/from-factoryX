@@ -10,6 +10,10 @@ interface UpdateMaterialHistoryResponseModel {
   message: string;
 }
 
+interface ErrorResponseModel {
+  detail: string;
+}
+
 const useUpdateMaterialHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +45,8 @@ const useUpdateMaterialHistory = () => {
           const text = await response.text();
           let message = 'API 요청에 실패했습니다.';
           try {
-            const parsed = JSON.parse(text);
-            message = (parsed as any).message || (parsed as any).detail || message;
+            const parsed = JSON.parse(text) as ErrorResponseModel;
+            message = parsed.detail || message;
           } catch {
             message = text || message;
           }
@@ -67,5 +71,3 @@ const useUpdateMaterialHistory = () => {
 };
 
 export default useUpdateMaterialHistory;
-
-
