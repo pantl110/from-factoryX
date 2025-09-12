@@ -6,30 +6,27 @@ import { useParams } from 'next/navigation';
 import CreateTransactionOverlayview from './modals/create-transaction-overlayview';
 import usePageStatusStore from '@/store/page-status-store';
 import MoveToStorageModal from './modals/move-to-storage-modal';
-import useMemberStore from '@/store/member-store';
 import {
   ProjectQuotationModel,
   ProjectStatusType,
   ProjectQuotationProductsModel,
 } from '@/types/data-model';
-import Spinner from '@/ui/spinner';
 import DeliveryOverlay from './modals/delevery-overlay';
 import {
   useCheckAll,
   useUpdateProjectStatus,
   useUpdateQuotationProductDelivery,
 } from '@/hooks';
+import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 
 interface DeliveryProps {
   quotationData: ProjectQuotationModel;
-  startDate: string;
   onProjectStatusChange?: () => Promise<void>;
   projectStatus: ProjectStatusType;
 }
 
 const Delivery = ({
   quotationData,
-  startDate,
   onProjectStatusChange,
   projectStatus,
 }: DeliveryProps) => {
@@ -54,8 +51,9 @@ const Delivery = ({
     (state) => state.setDeliveryData
   );
 
-  // Zustand store에서 factoryId 가져오기
-  const factoryId = useMemberStore((state) => state.factoryId);
+  // 로컬 복제본(인쇄/표시에 사용) – 납품일자 변경 시 동기화
+  const [localQuotationData, setLocalQuotationData] =
+    useState<ProjectQuotationModel>(quotationData);
 
   // 프로젝트 플랜에서 납품 정보 가져오기
   // const { getProjectPlans, isLoading, error } = useGetProjectPlans();
@@ -66,6 +64,7 @@ const Delivery = ({
   // keep deliveryData in sync when quotationData changes
   useEffect(() => {
     setDeliveryData(quotationData?.products || []);
+    setLocalQuotationData(quotationData);
   }, [quotationData]);
 
   const { updateProjectStatus, isLoading: isUpdateLoading } =
@@ -73,25 +72,6 @@ const Delivery = ({
 
   const { updateQuotationProductDelivery } =
     useUpdateQuotationProductDelivery();
-
-  // 프로젝트 플랜 데이터 로드
-  // useEffect(() => {
-  //   const loadProjectPlans = async () => {
-  //     if (factoryId && projectId) {
-  //       try {
-  //         const result = await getProjectPlans(projectId);
-  //         if (result.success && result.data) {
-  //           setDeliveryData(result.data);
-  //         }
-  //       } catch {
-  //         // Error handling can be added here if needed
-  //       }
-  //     }
-  //   };
-
-  //   loadProjectPlans();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [factoryId, projectId]); // getProjectPlans 제거
 
   // 체크 기능
   const itemIds =
@@ -176,6 +156,22 @@ const Delivery = ({
     }
   };
 
+  // 납품일자 변경 콜백(자식에서 호출) – deliveryData와 localQuotationData 동기화
+  const handleDeliveryDateChange = (id: string, newDate: string) => {
+    const targetId = Number(id);
+    setDeliveryData((prev) =>
+      prev.map((item) =>
+        item.id === targetId ? { ...item, delivery_date: newDate } : item
+      )
+    );
+    setLocalQuotationData((prev) => ({
+      ...prev,
+      products: prev.products.map((p) =>
+        p.id === targetId ? { ...p, delivery_date: newDate } : p
+      ),
+    }));
+  };
+
   // 보관함으로 이동하는 버튼
   const handleMoveToStorage = async () => {
     try {
@@ -214,11 +210,12 @@ const Delivery = ({
           await onProjectStatusChange();
         }
       } else {
-        alert('프로젝트 상태 변경에 실패했습니다.');
+        // alert('프로젝트 상태 변경에 실패했습니다.');
       }
     } catch {
-      alert('보관함 이동 처리 중 오류가 발생했습니다.');
+      // alert('보관함 이동 처리 중 오류가 발생했습니다.');
     } finally {
+      onProjectStatusChange?.();
       setMoveToStorageModalOpen(false);
     }
   };
@@ -276,7 +273,7 @@ const Delivery = ({
                     onToggle={() => toggleOne(data.id)}
                     onItemClick={handleItemClick}
                     projectStatus={projectStatus}
-                    onDeliveryDateChange={() => {}}
+                    onDeliveryDateChange={handleDeliveryDateChange}
                     onDeliveryStatusChange={handleDeliveryStatusChange}
                   />
                 ))}
@@ -328,11 +325,10 @@ const Delivery = ({
         )}
 
       {/* 거래명세서 overlayview */}
-      {isCreateTransactionOverlayviewOpen && quotationData && (
+      {isCreateTransactionOverlayviewOpen && localQuotationData && (
         <CreateTransactionOverlayview
           onClose={() => setIsCreateTransactionOverlayviewOpen(false)}
-          quotationData={quotationData}
-          startDate={startDate}
+          quotationData={localQuotationData}
         />
       )}
 

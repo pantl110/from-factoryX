@@ -176,10 +176,12 @@ const ProductionPageContent = () => {
           // 상태 변경 후 프로젝트 상태 리로드
           await reloadProjectStatus();
         } else {
-          alert('프로젝트 상태 변경에 실패했습니다.');
+          reloadProjectStatus();
+          // alert('프로젝트 상태 변경에 실패했습니다.');
         }
       } catch {
-        alert('프로젝트 상태 변경 중 오류가 발생했습니다.');
+        reloadProjectStatus();
+        // alert('프로젝트 상태 변경 중 오류가 발생했습니다.');
       }
     },
     [projectId, updateProjectStatus, reloadProjectStatus, setPageStatus]

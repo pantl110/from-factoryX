@@ -2,19 +2,18 @@ import TransactionDocumentView from '@/app/(with-layout)/document/transaction-do
 import { ProjectQuotationModel } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
 import OverlayView from '@/ui/ovelay-view';
+import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 interface CreateTransactionOverlayviewProps {
   onClose: () => void;
   quotationData: ProjectQuotationModel;
-  startDate: string;
 }
 
 const CreateTransactionOverlayview = ({
   onClose,
   quotationData,
-  startDate,
 }: CreateTransactionOverlayviewProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
@@ -52,7 +51,7 @@ const CreateTransactionOverlayview = ({
         <div ref={contentRef}>
           <TransactionDocumentView
             quotationData={quotationData}
-            startDate={startDate}
+            lastDeliveryDate={getLastDeliveryDate(quotationData)}
           />
         </div>
       </div>
