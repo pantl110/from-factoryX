@@ -215,6 +215,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
 
         return 200, {
             "quotation_id": quotation.id,
+            "project_id": project.id,
             "status": "confirmed" if payload.is_confirm else "draft_saved",
         }
 
