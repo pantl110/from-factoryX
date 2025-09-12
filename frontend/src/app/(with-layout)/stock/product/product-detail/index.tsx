@@ -9,7 +9,6 @@ import Panel from '@/ui/panel';
 import {
   ProductModel,
   LocationModel,
-  MaterialResponseModel,
   MaterialProductConnectionModel,
   ProductMaterialConnectionModel,
 } from '@/types/data-model';
@@ -24,7 +23,6 @@ import {
   useCreateSingleProduct,
   useLocation,
   useMaterialProduct,
-  useGetMaterial,
 } from '@/hooks';
 import NoHistoryBox from '@/ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
@@ -71,7 +69,6 @@ const ProductDetail = ({
     resetData,
     isLoading: isMaterialProductLoading,
   } = useMaterialProduct();
-  const { getMaterialDetail } = useGetMaterial();
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -84,11 +81,6 @@ const ProductDetail = ({
     isLoading: isLocationLoading,
   } = useLocation();
   const { uploadMultipleFiles, isUploading } = useUploadFile();
-
-  // 여러 자재의 상세 정보를 저장할 상태
-  const [materialDetails, setMaterialDetails] = useState<
-    Record<number, MaterialResponseModel>
-  >({});
 
   // 폼데이터
   // - 품목 정보 저장
@@ -155,34 +147,6 @@ const ProductDetail = ({
 
   // 해당 원자재 클릭 시 보여줄 원자재 id와 해당 디테일 판넬
   const [materialId, setMaterialId] = useState<number | null>(null);
-  // 패널 열림 여부는 materialId로만 제어
-
-  // 원자재 디테일 패널이 닫힐 때: 연결 정보와 해당 원자재 상세만 갱신
-  // const handleMaterialDetailClose = async () => {
-  //   const closedMaterialId = materialId; // 현재 열려있던 원자재 id 보관
-  //   setMaterialId(null);
-
-  //   if (productId) {
-  //     // 연결된 자재 목록만 갱신 (StockStatus가 사용하는 데이터)
-  //     resetData();
-  //     await getMaterialProductConnections(productId, 'product');
-  //   }
-
-  //   // 닫힌 원자재의 상세만 갱신하여 materialDetails 상태 업데이트
-  //   if (closedMaterialId) {
-  //     try {
-  //       const result = await getMaterialDetail(closedMaterialId);
-  //       if (result.success && result.data) {
-  //         setMaterialDetails((prev) => ({
-  //           ...prev,
-  //           [closedMaterialId]: result.data,
-  //         }));
-  //       }
-  //     } catch {
-  //       // noop
-  //     }
-  //   }
-  // };
 
   // 각 StockLocationItem 별 모달 오픈 상태 관리
   const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
@@ -316,31 +280,6 @@ const ProductDetail = ({
       getMaterialProductConnections(productId, 'product');
     }
   }, [productId, getMaterialProductConnections]);
-
-  useEffect(() => {
-    if (connections && Array.isArray(connections) && connections.length > 0) {
-      // 연결된 자재의 상세 정보를 가져오기
-      connections.forEach(async (connection: ConnectionModelType) => {
-        // MaterialProductConnectionModel인지 확인
-        if ('material_id' in connection && connection.material_id) {
-          if (!materialDetails[connection.material_id]) {
-            try {
-              const result = await getMaterialDetail(connection.material_id);
-              if (result.success && result.data) {
-                setMaterialDetails((prev) => ({
-                  ...prev,
-                  [connection.material_id]: result.data,
-                }));
-              }
-            } catch {
-              throw new Error('원자재 상세 정보 조회 실패');
-            }
-          }
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connections, getMaterialDetail]);
 
   ////////////////////////////////
   // 함수
@@ -760,7 +699,6 @@ const ProductDetail = ({
                     })) as unknown as ConnectionModelType[])
               }
               quantityOverrides={quantityChanges}
-              materialDetails={materialDetails}
               setMaterialId={setMaterialId}
               setIsQuantityDirty={setIsQuantityDirty}
               handleQuantityChange={handleQuantityChange}
@@ -832,23 +770,9 @@ const ProductDetail = ({
           setIsMaterialDetailOpen={() => setMaterialId(null)}
           selectedMaterialId={materialId}
           onSuccess={async () => {
-            // 저장 성공시에만 연결 목록과 해당 자재 상세를 갱신
-            const closedMaterialId = materialId;
+            // 저장 성공시에만 연결 목록을 갱신
             if (productId) {
               await getMaterialProductConnections(productId, 'product');
-            }
-            if (closedMaterialId) {
-              try {
-                const result = await getMaterialDetail(closedMaterialId);
-                if (result.success && result.data) {
-                  setMaterialDetails((prev) => ({
-                    ...prev,
-                    [closedMaterialId]: result.data,
-                  }));
-                }
-              } catch {
-                // 에러 발생 시 무시
-              }
             }
             // 마지막에 닫기
             setMaterialId(null);

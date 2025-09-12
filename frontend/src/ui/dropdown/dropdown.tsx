@@ -70,6 +70,38 @@ const Dropdown = ({
     };
   }, [onClose]);
 
+  // 사이드바(aside) 이동 시 닫기: aside의 transition/scroll 및 커스텀 이벤트 수신
+  useEffect(() => {
+    const aside = document.querySelector('aside');
+    const handleAsideMove = () => onClose();
+
+    if (aside) {
+      aside.addEventListener('transitionstart', handleAsideMove);
+      aside.addEventListener('transitionend', handleAsideMove);
+      aside.addEventListener('scroll', handleAsideMove, {
+        passive: true,
+      } as any);
+    }
+
+    const handleSidebarToggle = () => onClose();
+    window.addEventListener(
+      'sidebar:toggle' as any,
+      handleSidebarToggle as any
+    );
+
+    return () => {
+      if (aside) {
+        aside.removeEventListener('transitionstart', handleAsideMove);
+        aside.removeEventListener('transitionend', handleAsideMove);
+        aside.removeEventListener('scroll', handleAsideMove as any);
+      }
+      window.removeEventListener(
+        'sidebar:toggle' as any,
+        handleSidebarToggle as any
+      );
+    };
+  }, [onClose]);
+
   return (
     <div
       ref={dropdownRef}

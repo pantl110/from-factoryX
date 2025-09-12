@@ -2,7 +2,6 @@ import StockStatusItem from './stock-status-item';
 import {
   MaterialProductConnectionModel,
   ProductMaterialConnectionModel,
-  MaterialResponseModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
@@ -13,7 +12,6 @@ type ConnectionModelType =
 interface StockStatusProps {
   setMaterialId: (id: number | null) => void;
   connections: ConnectionModelType[];
-  materialDetails: Record<number, MaterialResponseModel>;
   quantityOverrides?: Record<number, number>;
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
@@ -26,7 +24,6 @@ interface StockStatusProps {
 const StockStatus = ({
   setMaterialId,
   connections,
-  materialDetails,
   quantityOverrides,
   setIsQuantityDirty,
   handleQuantityChange,
@@ -52,7 +49,6 @@ const StockStatus = ({
           {connections.map((connection: ConnectionModelType, index: number) => {
             // MaterialProductConnectionModel인지 확인
             if ('material_id' in connection) {
-              const materialDetail = materialDetails[connection.material_id];
               const overrideQuantity =
                 quantityOverrides?.[
                   (connection as MaterialProductConnectionModel).connection_id
@@ -63,7 +59,6 @@ const StockStatus = ({
                   key={index}
                   connection={connection as MaterialProductConnectionModel}
                   overrideQuantity={overrideQuantity}
-                  materialDetail={materialDetail}
                   setMaterialId={setMaterialId}
                   setIsQuantityDirty={setIsQuantityDirty}
                   handleQuantityChange={handleQuantityChange}

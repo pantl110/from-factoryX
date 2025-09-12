@@ -20,6 +20,8 @@ const LogItem = ({ onClick, isSelected, log }: LogItemProps) => {
         return 'planChange';
       case 'date':
         return 'planChange';
+      case 'equipment':
+        return 'planChange';
       default:
         return 'memo';
     }

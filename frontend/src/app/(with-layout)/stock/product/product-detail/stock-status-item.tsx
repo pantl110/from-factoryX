@@ -3,10 +3,7 @@ import {
   InventoryStatusType,
   InventoryStatusColorMap,
 } from '@/types/status-type';
-import {
-  MaterialProductConnectionModel,
-  MaterialResponseModel,
-} from '@/types/data-model';
+import { MaterialProductConnectionModel } from '@/types/data-model';
 import { ArrowLineUpRight, X } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback } from 'react';
@@ -19,7 +16,6 @@ interface StockStatusItemProps {
   connection: MaterialProductConnectionModel;
   // 상위에서 전달되는 수량 override (사용자가 입력한 최신값)
   overrideQuantity?: number;
-  materialDetail?: MaterialResponseModel;
   setMaterialId: (id: number | null) => void;
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
@@ -32,7 +28,6 @@ interface StockStatusItemProps {
 const StockStatusItem = ({
   connection,
   overrideQuantity,
-  materialDetail,
   setMaterialId,
   setIsQuantityDirty,
   handleQuantityChange,
@@ -53,19 +48,14 @@ const StockStatusItem = ({
 
   // 재고 상태를 판단
   const getStockStatus = (currentStock?: number, standardStock?: number) => {
-    if (
-      currentStock === undefined ||
-      currentStock === null ||
-      standardStock === undefined ||
-      standardStock === null
-    )
-      return '-';
+    if (currentStock === undefined || currentStock === null) return '-';
+    if (standardStock === undefined || standardStock === null) return '충분';
     if (currentStock >= standardStock) return '충분';
     return '부족';
   };
   const status = getStockStatus(
-    materialDetail?.current_stock,
-    materialDetail?.standard_stock
+    connection.material_current_stock,
+    connection.material_standard_stock
   );
 
   // 천 단위 구분자 포맷팅 함수

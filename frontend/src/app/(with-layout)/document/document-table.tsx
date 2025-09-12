@@ -1,21 +1,14 @@
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr';
 import DocumentTableItem from './document-table-item';
-import { DocumentDataModel } from '@/mocks/document-data';
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
 } from '@/types/data-model';
 import { useState } from 'react';
 import NoHistoryBox from '@/ui/no-history-box';
-import { getProductNamesDisplay } from '@/utils/get-product-names-display';
-import { getStartDate } from '@/utils/get-start-date';
 
 interface DocumentTableProps {
-  data:
-    | DocumentDataModel[]
-    | PublishedTaxInvoiceResponseModel[]
-    | ProjectResponseModel[];
-  onDocumentClick?: (document: DocumentDataModel) => void;
+  data: PublishedTaxInvoiceResponseModel[] | ProjectResponseModel[];
   selectedType: string;
   onTaxSortChange?: (
     field: 'transaction_date' | 'created_at',
@@ -23,22 +16,19 @@ interface DocumentTableProps {
   ) => void;
   taxSortField: 'transaction_date' | 'created_at';
   taxSortDirection: 'asc' | 'desc';
+  onProjectSortClick?: (direction: 'asc' | 'desc') => void;
+  projectSortDirection?: 'asc' | 'desc';
 }
 
 const DocumentTable = ({
   data,
-  onDocumentClick,
   selectedType,
   onTaxSortChange,
   taxSortField,
   taxSortDirection,
+  onProjectSortClick,
+  projectSortDirection = 'desc',
 }: DocumentTableProps) => {
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  const handleSortClick = () => {
-    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-  };
-
   const handleTaxSortClick = (field: 'transaction_date' | 'created_at') => {
     let newDirection: 'asc' | 'desc';
     if (taxSortField === field) {
@@ -51,37 +41,13 @@ const DocumentTable = ({
     onTaxSortChange?.(field, newDirection);
   };
 
-  // 일반 문서 정렬된 데이터 생성 (DocumentDataModel 타입일 때만)
-  const sortedData =
-    data.length > 0
-      ? (data as DocumentDataModel[]).sort((a, b) => {
-          if (!a.date || !b.date) return 0;
-          if (sortDirection === 'asc') {
-            return a.date.localeCompare(b.date);
-          } else {
-            return b.date.localeCompare(a.date);
-          }
-        })
-      : [];
+  const handleProjectSortClick = () => {
+    const newDirection = projectSortDirection === 'asc' ? 'desc' : 'asc';
+    onProjectSortClick?.(newDirection);
+  };
 
-  // 세금계산서는 백엔드에서 정렬된 데이터를 가져오므로 정렬하지 않음
   const taxData = data as PublishedTaxInvoiceResponseModel[];
-
-  // 프로젝트 데이터를 DocumentDataModel 형태로 변환
-  const projectData =
-    selectedType === '거래명세서'
-      ? (data as ProjectResponseModel[]).map((project) => ({
-          id: project.id.toString(),
-          documentType: '거래명세서' as const,
-          companyName: project.client_name,
-          productName: getProductNamesDisplay(
-            project.quotations[0].products.map(
-              (product) => product.product.name
-            )
-          ),
-          date: getStartDate(project), // 현재는 가장 빠른 생산 시작일로 임시 적용
-        }))
-      : [];
+  const projectData = data as ProjectResponseModel[];
 
   return (
     <>
@@ -125,7 +91,7 @@ const DocumentTable = ({
                 <p className="px-3 flex-1">품목명</p>
                 <div
                   className="px-3 flex-[0.5] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
-                  onClick={handleSortClick}
+                  onClick={handleProjectSortClick}
                 >
                   <p className="">등록일자</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
@@ -134,31 +100,24 @@ const DocumentTable = ({
             )}
           </div>
 
-          {selectedType === '매출 세금계산서' ||
-          selectedType === '매입 세금계산서'
-            ? taxData.map((item, index) => (
-                <DocumentTableItem
-                  key={index}
-                  data={item}
-                  isTaxDocument={true}
-                />
-              ))
-            : selectedType === '거래명세서'
-              ? projectData.map((item, index) => (
-                  <DocumentTableItem
-                    key={index}
-                    data={item}
-                    onClick={() => onDocumentClick?.(item)}
-                    isTransactionDocument={true}
-                  />
-                ))
-              : sortedData.map((item, index) => (
-                  <DocumentTableItem
-                    key={index}
-                    data={item}
-                    onClick={() => onDocumentClick?.(item)}
-                  />
-                ))}
+          {(selectedType === '주문서' || selectedType === '거래명세서') &&
+            projectData.map((item) => (
+              <DocumentTableItem
+                key={item.id}
+                data={item}
+                documentType={selectedType}
+              />
+            ))}
+
+          {(selectedType === '매출 세금계산서' ||
+            selectedType === '매입 세금계산서') &&
+            taxData.map((item) => (
+              <DocumentTableItem
+                key={item.id}
+                data={item}
+                documentType={selectedType}
+              />
+            ))}
         </>
       )}
     </>
