@@ -1,22 +1,21 @@
 import TransactionDocumentView from '@/app/(with-layout)/document/transaction-document-view';
-import { ProjectQuotationModel, ProjectStatusType } from '@/types/data-model';
+import { ProjectQuotationModel } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
 import OverlayView from '@/ui/ovelay-view';
 import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { useUpdateProjectStatus } from '@/hooks';
+import usePageStatusStore from '@/store/page-status-store';
 
 interface CreateTransactionOverlayviewProps {
   onClose: () => void;
   quotationData: ProjectQuotationModel;
-  projectStatus: ProjectStatusType;
 }
 
 const CreateTransactionOverlayview = ({
   onClose,
   quotationData,
-  projectStatus,
 }: CreateTransactionOverlayviewProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
@@ -25,13 +24,15 @@ const CreateTransactionOverlayview = ({
   });
 
   const { updateProjectStatus } = useUpdateProjectStatus();
+  const projectStatus = usePageStatusStore(
+    (state) => state.projectStatusData?.status
+  );
 
   const handlePrint = () => {
     reactToPrintFn();
-    updateProjectStatus(quotationData.project, {
-      status: projectStatus,
-      isPrinted: true,
-    });
+    if (projectStatus) {
+      updateProjectStatus(quotationData.project, projectStatus, true);
+    }
   };
 
   return (

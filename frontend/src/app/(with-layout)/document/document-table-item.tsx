@@ -12,6 +12,7 @@ import TaxDocumentView from './tax-document-view';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
 import TransactionDocumentView from './transaction-document-view';
 import { useGetProjectStatus } from '@/hooks';
+import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 
 interface DocumentTableItemProps {
   data:
@@ -211,7 +212,9 @@ const DocumentTableItem = ({
           ) : projectStatusData && projectStatusData.quotations.length > 0 ? (
             <TransactionDocumentView
               quotationData={projectStatusData.quotations[0]}
-              startDate={projectStatusData.quotations[0].due_date} // 납기일자로 임의로 설정
+              lastDeliveryDate={getLastDeliveryDate(
+                projectStatusData.quotations[0]
+              )}
             />
           ) : (
             <></>

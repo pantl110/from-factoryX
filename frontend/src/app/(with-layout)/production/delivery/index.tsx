@@ -17,7 +17,6 @@ import {
   useUpdateProjectStatus,
   useUpdateQuotationProductDelivery,
 } from '@/hooks';
-import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 
 interface DeliveryProps {
   quotationData: ProjectQuotationModel;
@@ -329,7 +328,6 @@ const Delivery = ({
         <CreateTransactionOverlayview
           onClose={() => setIsCreateTransactionOverlayviewOpen(false)}
           quotationData={localQuotationData}
-          projectStatus={projectStatus}
         />
       )}
 

@@ -28,7 +28,9 @@ const useUpdateProjectStatus = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ payload: { status, is_printed: isPrinted } }),
+            body: JSON.stringify({
+              payload: { status, is_printed: isPrinted },
+            }),
           }
         );
 

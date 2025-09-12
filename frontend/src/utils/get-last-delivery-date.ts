@@ -1,9 +1,11 @@
 import { ProjectQuotationModel } from '@/types/data-model';
 
-const getLastDeliveryDate = (
-  quotationData: ProjectQuotationModel
-): string => {
-  if (!quotationData || !quotationData.products || quotationData.products.length === 0) {
+const getLastDeliveryDate = (quotationData: ProjectQuotationModel): string => {
+  if (
+    !quotationData ||
+    !quotationData.products ||
+    quotationData.products.length === 0
+  ) {
     return '-';
   }
 

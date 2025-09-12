@@ -24,6 +24,7 @@ import {
 import NoHistoryBox from '@/ui/no-history-box';
 import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-modal';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
+import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 
 const getTabsByStatus = (
   status: ProjectStatusType,
@@ -307,14 +308,15 @@ const ProductionPageContent = () => {
           <div className="px-10 pt-5 pb-10">
             <TransactionDocumentView
               quotationData={projectStatus?.quotations[0]}
-              startDate={projectStatus?.earliest_start_date || '-'}
+              lastDeliveryDate={getLastDeliveryDate(
+                projectStatus?.quotations[0]
+              )}
             />
           </div>
         )}
         {tabs[selectedTab] === '납품' && quotationData && (
           <Delivery
             quotationData={projectStatus?.quotations[0]}
-            startDate={projectStatus?.earliest_start_date || '-'}
             onProjectStatusChange={reloadProjectStatus}
             projectStatus={projectStatus.status as ProjectStatusType}
           />

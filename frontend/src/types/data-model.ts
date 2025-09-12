@@ -548,45 +548,45 @@ export interface ProjectQuotationProductsInfoModel {
   total_price: number;
   quotation_product_id: number;
 }
-  export interface ProjectQuotationProductsModel {
+export interface ProjectQuotationProductsModel {
+  created_at: string;
+  delivery_date: string;
+  id: number;
+  is_delivery: boolean;
+  product: {
+    average_production_time: number;
+    buffer_rate: string; // 0.10
+    code: string;
     created_at: string;
-    delivery_date: string;
+    current_stock: number;
+    factory: number;
     id: number;
-    is_delivery: boolean;
-    product: {
-      average_production_time: number;
-      buffer_rate: string; // 0.10
-      code: string;
-      created_at: string;
-      current_stock: number;
-      factory: number;
-      id: number;
-      name: string;
-      note: string;
-      spec: string;
-      unit: string;
-      updated_at: string;
-    };
-    product_info: {
-      average_production_time: number;
-      buffer_rate: number;
-      code: string;
-      created_at: string;
-      current_stock: number;
-      factory: number;
-      id: number;
-      location: number[];
-      name: string;
-      note: string;
-      spec: string;
-      unit: string;
-      updated_at: string;
-    };
-    quantity: number;
-    quotation: number;
-    unit_price: number;
+    name: string;
+    note: string;
+    spec: string;
+    unit: string;
     updated_at: string;
-  }
+  };
+  product_info: {
+    average_production_time: number;
+    buffer_rate: number;
+    code: string;
+    created_at: string;
+    current_stock: number;
+    factory: number;
+    id: number;
+    location: number[];
+    name: string;
+    note: string;
+    spec: string;
+    unit: string;
+    updated_at: string;
+  };
+  quantity: number;
+  quotation: number;
+  unit_price: number;
+  updated_at: string;
+}
 
 export interface ProjectQuotationModel {
   id: number; // quotation_id
