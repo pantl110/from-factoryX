@@ -10,6 +10,7 @@ from stock.schemas.outbound import (
 )
 from stock.models import Material, Product, MaterialProduct
 from factory.utils import is_factory_member
+from project.utils import check_material_availability
 
 router = Router(tags=["MaterialProduct"], auth=jwt_auth)
 
@@ -165,6 +166,7 @@ async def get_material_product_connections(request, target_id: int, type: str):
                     "material_spec": mp.material.spec,
                     "material_unit": mp.material.unit,
                     "material_current_stock": int(mp.material.current_stock or 0),
+                    "material_standard_stock": int(mp.material.standard_stock or 0),
                     "quantity": float(mp.quantity),
                 }
             )
