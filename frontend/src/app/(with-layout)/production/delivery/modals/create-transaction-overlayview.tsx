@@ -11,11 +11,13 @@ import usePageStatusStore from '@/store/page-status-store';
 interface CreateTransactionOverlayviewProps {
   onClose: () => void;
   quotationData: ProjectQuotationModel;
+  printedAt: string;
 }
 
 const CreateTransactionOverlayview = ({
   onClose,
   quotationData,
+  printedAt,
 }: CreateTransactionOverlayviewProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
@@ -30,7 +32,7 @@ const CreateTransactionOverlayview = ({
 
   const handlePrint = () => {
     reactToPrintFn();
-    if (projectStatus) {
+    if (projectStatus && !printedAt) {
       updateProjectStatus(quotationData.project, projectStatus, true);
     }
   };

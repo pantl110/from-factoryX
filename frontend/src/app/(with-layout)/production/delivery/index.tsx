@@ -22,12 +22,14 @@ interface DeliveryProps {
   quotationData: ProjectQuotationModel;
   onProjectStatusChange?: () => Promise<void>;
   projectStatus: ProjectStatusType;
+  printedAt: string;
 }
 
 const Delivery = ({
   quotationData,
   onProjectStatusChange,
   projectStatus,
+  printedAt,
 }: DeliveryProps) => {
   const params = useParams();
   const projectId = Number(params.id);
@@ -328,6 +330,7 @@ const Delivery = ({
         <CreateTransactionOverlayview
           onClose={() => setIsCreateTransactionOverlayviewOpen(false)}
           quotationData={localQuotationData}
+          printedAt={printedAt}
         />
       )}
 

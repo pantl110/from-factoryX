@@ -319,6 +319,7 @@ const ProductionPageContent = () => {
             quotationData={projectStatus?.quotations[0]}
             onProjectStatusChange={reloadProjectStatus}
             projectStatus={projectStatus.status as ProjectStatusType}
+            printedAt={projectStatus.printed_at}
           />
         )}
         {tabs[selectedTab] === '생산 현황' && (
