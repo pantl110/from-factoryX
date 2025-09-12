@@ -543,13 +543,15 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
     try:
         if quotation_id:
             qps = await sync_to_async(list)(
-                QuotationProduct.objects.filter(
+                QuotationProduct.objects.select_related("product").filter(
                     quotation_id=quotation_id, quotation__factory_id=int(factory_id)
                 )
             )
         else:
             qps = await sync_to_async(list)(
-                QuotationProduct.objects.filter(quotation__factory_id=int(factory_id))
+                QuotationProduct.objects.select_related("product").filter(
+                    quotation__factory_id=int(factory_id)
+                )
             )
     except Exception as e:
         raise HttpError(500, f"조회 중 오류: {str(e)}")
@@ -562,6 +564,10 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
             "id": qp.id,
             "quotation": qp.quotation_id,
             "product": qp.product_id,
+            "product_name": qp.product.name,
+            "product_code": qp.product.code,
+            "product_spec": qp.product.spec,
+            "product_unit": qp.product.unit,
             "quantity": qp.quantity,
             "unit_price": qp.unit_price,
             "is_delivery": qp.is_delivery,
