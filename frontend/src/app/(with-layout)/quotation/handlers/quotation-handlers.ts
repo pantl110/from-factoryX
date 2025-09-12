@@ -24,7 +24,7 @@ interface QuotationHandlersProps {
   imageUrl?: string;
   saveDraft: (
     data: SaveDraftDataModel
-  ) => Promise<{ quotation_id: number; status: string }>;
+  ) => Promise<{ quotation_id: number; project_id?: number; status: string }>;
   startProduction: (
     data: ProductionDataModel
   ) => Promise<StartProductionResponseModel>;
@@ -62,7 +62,7 @@ export const useQuotationHandlers = ({
   const [isStartProductionLoading, setIsStartProductionLoading] =
     useState(false);
 
-  // 임시 저장 버튼 핸들러
+  // 임시 저장 버튼 & 주문 확정 버튼 핸들러 
   const handleSaveDraft = useCallback(
     async (isConfirm: boolean) => {
       try {
@@ -155,7 +155,7 @@ export const useQuotationHandlers = ({
     ]
   );
 
-  // 생산 시작 버튼 핸들러 (기존 startProduction API 사용)
+  // 생산 시작 버튼 핸들러 (startProduction API 사용)
   const handleStartProduction = useCallback(async () => {
     try {
       setIsStartProductionLoading(true);
@@ -177,12 +177,51 @@ export const useQuotationHandlers = ({
         );
         return;
       }
+        
+      let currentQuotationId = quotationId;
 
+      // quotationId가 없으면 먼저 견적서를 생성
+      if (!currentQuotationId) {
+        const draftData: SaveDraftDataModel = {
+          quotation_id: null,
+          client: {
+            factory_id: factoryId,
+            client_id: selectedClientId || null,
+            name: formData.name,
+            business_registration_number: formData.business_registration_number,
+            representative_name: formData.representative_name,
+            email: formData.email,
+            phone: formData.phone,
+            fax: formData.fax,
+            business_type: formData.business_type,
+            business_category: formData.business_category,
+            address: formData.address,
+            manager: formData.manager,
+            note: formData.note,
+            client_type: 'customer',
+          },
+          due_date: formData.due_date,
+          products: quotationProducts.map((product) => ({
+            product_id: product.productId || null,
+            quantity: product.quantity || 0,
+            unit_price: product.unit_price || 0,
+            is_delivery: false,
+            delivery_date: null,
+          })),
+          uploaded_file: imageUrl || undefined,
+          is_confirm: true, // 먼저 주문확정으로 견적서 생성
+        };
+
+        const draftResult = await saveDraft(draftData);
+        currentQuotationId = draftResult.quotation_id;
+      }
+
+      // 이제 생산 시작 (주문확정)
       const productionData: ProductionDataModel = {
-        quotation_id: quotationId || null,
+        quotation_id: currentQuotationId,
         client: {
           factory_id: factoryId,
-          client_id: selectedClientId,
+          client_id: selectedClientId || null,
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
