@@ -8,9 +8,13 @@ import { DocumentType, DocumentTypeColorMap } from './types';
 import { useState, useEffect } from 'react';
 import Panel from '@/ui/panel';
 import TaxDocumentView from './tax-document-view';
-import { getProductNamesDisplay } from '@/utils/get-product-names-display';
+import {
+  getProductNames,
+  getProductNamesDisplay,
+} from '@/utils/get-product-names-display';
 import TransactionDocumentView from './transaction-document-view';
 import { useGetProjectStatus } from '@/hooks';
+import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 
 interface DocumentTableItemProps {
   data: ProjectResponseModel | PublishedTaxInvoiceResponseModel;
@@ -47,10 +51,12 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
     }
   };
 
-  // 거래명세서 패널이 열릴 때 프로젝트 데이터 가져오기
+  // 거래명세서 패널이 열릴 때만 프로젝트 상태 데이터 가져오기
   useEffect(() => {
+    if (!isTransactionPanelOpen || documentType !== '거래명세서') return;
+
     const fetchProjectStatus = async () => {
-      const projectId = data.id;
+      const projectId = (data as ProjectResponseModel).id;
       const result = await getProjectStatus(projectId);
       if (result.success && result.data) {
         setProjectStatusData(result.data);
@@ -58,7 +64,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
     };
 
     fetchProjectStatus();
-  }, [isTransactionPanelOpen, data, getProjectStatus]);
+  }, [isTransactionPanelOpen, documentType, data, getProjectStatus]);
 
   return (
     <>
@@ -137,9 +143,9 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             </p>
             <p
               className="px-3 flex-1 truncate"
-              title={getProductNamesDisplay(projectData) || '-'}
+              title={getProductNames(projectData) || '-'}
             >
-              {getProductNamesDisplay(projectData) || '-'}
+              {getProductNames(projectData) || '-'}
             </p>
             <p
               className="px-3 flex-[0.5] truncate"
@@ -157,19 +163,6 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         ) : null}
       </div>
 
-      {/* 세금계산서 디테일 판넬  */}
-      {isTaxPanelOpen && (
-        <Panel
-          title={
-            taxData.tax_invoice_type === 'sales'
-              ? '매출 세금계산서'
-              : '매입 세금계산서'
-          }
-          onClose={() => setIsTaxPanelOpen(false)}
-        >
-          <TaxDocumentView taxId={data.id} />
-        </Panel>
-      )}
       {/* 거래명세서 디테일 판넬 */}
       {isTransactionPanelOpen && (
         <Panel
@@ -181,11 +174,24 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           ) : projectStatusData && projectStatusData.quotations.length > 0 ? (
             <TransactionDocumentView
               quotationData={projectStatusData.quotations[0]}
-              lastDeliveryDate={getProjectStatusData.quotations[0].due_date}
+              lastDeliveryDate={getLastDeliveryDate(projectStatusData)}
             />
           ) : (
             <></>
           )}
+        </Panel>
+      )}
+      {/* 세금계산서 디테일 판넬  */}
+      {isTaxPanelOpen && (
+        <Panel
+          title={
+            taxData.tax_invoice_type === 'sales'
+              ? '매출 세금계산서'
+              : '매입 세금계산서'
+          }
+          onClose={() => setIsTaxPanelOpen(false)}
+        >
+          <TaxDocumentView taxId={data.id} />
         </Panel>
       )}
     </>

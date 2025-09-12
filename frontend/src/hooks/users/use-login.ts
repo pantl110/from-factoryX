@@ -165,7 +165,7 @@ export const useLogin = (): UseLoginReturnModel => {
             // 탈퇴한 계정
             return {
               success: false,
-              error: errorData.detail,
+              error: '탈퇴한 계정입니다.',
               field: 'email' as const,
             };
           } else {

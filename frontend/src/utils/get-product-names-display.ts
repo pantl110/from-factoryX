@@ -10,7 +10,19 @@ import { ProjectResponseModel } from "@/types/data-model";
  * getProductNamesDisplay(["자재A", "자재B"]) // "자재A 외 1개"
  * getProductNamesDisplay(["자재A", "자재B", "자재C"]) // "자재A 외 2개"
  */
-export const getProductNamesDisplay = (project: ProjectResponseModel) => {
+export const getProductNamesDisplay = (productNames: string[]): string => {
+  if (!productNames || productNames.length === 0) {
+    return '-';
+  }
+
+  if (productNames.length === 1) {
+    return productNames[0];
+  }
+
+  return `${productNames[0]} 외 ${productNames.length - 1}개`;
+};
+
+export const getProductNames = (project: ProjectResponseModel) => {
   const productsName =
   project.status === 'quotation' ||
   project.status === 'confirmed' ||

@@ -486,32 +486,16 @@ export interface UpdateLocationModel {
 
 ////////////////////////////
 // Project API
-// 프로젝트 생성 + 견적서 생성
-// export interface CreateProjectModel {
-//   status?: string;
-//   transact_date?: string;
-//   factory_id: number;
-//   client_id: number;
-//   due_date: string;
-//   uploaded_file?: string;
-//   products?: ProductResponseModel[];
-// }
-
+// 프로젝트 생성 수정 응답
 export interface CreateProjectResponseModel {
   id: number;
   status?: string;
-  transact_date?: string;
+  transact_date?: string; // 거래명세서 발행 일자 // 현재 사용 안함
   tax_invoice?: number;
   created_at: string;
   updated_at: string;
 }
 
-// 프로젝트 정보 수정
-export interface ProjectUpdateModel {
-  status: string;
-  transact_date: string;
-  tax_invoice_id: number;
-}
 
 // 프로젝트 조회 요청
 // 진행 중인 프로젝트: status="progress"
@@ -528,7 +512,7 @@ export interface ProjectResponseModel {
   quotations: ProjectQuotationModel[]; // QuotationModelOut
   status: ProjectStatusType;
   tax_invoice: PublishedTaxInvoiceResponseModel; // NationalTaxServiceOut
-  transact_date: string;
+  transact_date: string; // 현재 사용 안하고 printed_at 사용
   updated_at: string;
 }
 

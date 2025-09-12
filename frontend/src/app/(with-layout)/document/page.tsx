@@ -5,10 +5,7 @@ import { useDebounce } from 'use-debounce';
 import MainTitleSec from './main-title-sec';
 import DocumentTable from './document-table';
 import Pagination from '@/components/pagination';
-import { DocumentType, DocumentDataModel } from './types';
-import OrderDocumentView from './order-document-view';
-import Panel from '@/ui/panel';
-import ProductionDocumentView from './production-document-view';
+import { DocumentType } from './types';
 import Spinner from '@/ui/spinner';
 import { useGetPublishedTaxInvoices } from '@/hooks';
 import {
@@ -20,8 +17,6 @@ import SearchInput from '@/ui/search-input';
 
 const DocumentPageContent = () => {
   const [selectedType, setSelectedType] = useState<DocumentType>('주문서');
-  const [selectedDocument, setSelectedDocument] =
-    useState<DocumentDataModel | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,6 +28,10 @@ const DocumentPageContent = () => {
   const [taxSortDirection, setTaxSortDirection] = useState<'asc' | 'desc'>(
     'desc'
   );
+  // 주문서/거래명세서 정렬 방향
+  const [projectSortDirection, setProjectSortDirection] = useState<
+    'asc' | 'desc'
+  >('desc');
 
   // 디바운스된 검색어 (500ms)
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
@@ -46,7 +45,7 @@ const DocumentPageContent = () => {
     []
   );
   //생산지시서 데이터 상태
-  const [productionDocuments, setProductionDocuments] = useState<
+  const [productionDocuments, _setProductionDocuments] = useState<
     ProjectResponseModel[]
   >([]);
   // 거래명세서 데이터 상태
@@ -98,7 +97,8 @@ const DocumentPageContent = () => {
           search: debouncedSearchQuery || undefined,
           page: currentPage,
           page_size: 10,
-          order_by: '-confirmed_at',
+          order_by:
+            projectSortDirection === 'asc' ? 'confirmed_at' : '-confirmed_at',
         });
 
         if (result.success && result.data) {
@@ -119,7 +119,8 @@ const DocumentPageContent = () => {
           search: debouncedSearchQuery || undefined,
           page: currentPage,
           page_size: 10,
-          order_by: '-printed_at',
+          order_by:
+            projectSortDirection === 'asc' ? 'printed_at' : '-printed_at',
         });
 
         if (result.success && result.data) {
@@ -136,6 +137,7 @@ const DocumentPageContent = () => {
     debouncedSearchQuery,
     taxSortField,
     taxSortDirection,
+    projectSortDirection,
     getPublishedTaxInvoices,
     getProjects,
   ]);
@@ -156,9 +158,9 @@ const DocumentPageContent = () => {
           ? taxInvoices
           : [];
 
-  const handleDocumentClick = (document: DocumentDataModel) => {
-    setSelectedDocument(document);
-  };
+  // const handleDocumentClick = (document: DocumentDataModel) => {
+  //   setSelectedDocument(document);
+  // };
 
   // 탭 변경 핸들러
   const handleTabChange = (type: DocumentType) => {
@@ -189,7 +191,7 @@ const DocumentPageContent = () => {
           </div>
 
           {(isTaxDocument && isTaxDataLoading) ||
-          (isTransactionDocument && isProjectDataLoading) ? (
+          (!isTaxDocument && isProjectDataLoading) ? (
             <div className="flex justify-center items-center h-100">
               <Spinner />
             </div>
@@ -197,7 +199,7 @@ const DocumentPageContent = () => {
             <DocumentTable
               data={currentData}
               selectedType={selectedType}
-              // 세금계산서
+              // 세금계산서 정렬
               onTaxSortChange={(field, direction) => {
                 setTaxSortField(field);
                 setTaxSortDirection(direction);
@@ -205,6 +207,12 @@ const DocumentPageContent = () => {
               }}
               taxSortField={taxSortField}
               taxSortDirection={taxSortDirection}
+              // 주문서/거래명세서 정렬
+              onProjectSortClick={(direction) => {
+                setProjectSortDirection(direction);
+                setCurrentPage(1);
+              }}
+              projectSortDirection={projectSortDirection}
             />
           )}
           {totalPages >= 2 && (

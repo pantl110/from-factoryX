@@ -16,6 +16,8 @@ interface DocumentTableProps {
   ) => void;
   taxSortField: 'transaction_date' | 'created_at';
   taxSortDirection: 'asc' | 'desc';
+  onProjectSortClick?: (direction: 'asc' | 'desc') => void;
+  projectSortDirection?: 'asc' | 'desc';
 }
 
 const DocumentTable = ({
@@ -24,13 +26,9 @@ const DocumentTable = ({
   onTaxSortChange,
   taxSortField,
   taxSortDirection,
+  onProjectSortClick,
+  projectSortDirection = 'desc',
 }: DocumentTableProps) => {
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  const handleSortClick = () => {
-    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-  };
-
   const handleTaxSortClick = (field: 'transaction_date' | 'created_at') => {
     let newDirection: 'asc' | 'desc';
     if (taxSortField === field) {
@@ -43,40 +41,13 @@ const DocumentTable = ({
     onTaxSortChange?.(field, newDirection);
   };
 
+  const handleProjectSortClick = () => {
+    const newDirection = projectSortDirection === 'asc' ? 'desc' : 'asc';
+    onProjectSortClick?.(newDirection);
+  };
+
   const taxData = data as PublishedTaxInvoiceResponseModel[];
   const projectData = data as ProjectResponseModel[];
-
-  // 프로젝트 데이터를 DocumentDataModel 형태로 변환
-  // const projectData =
-  //   selectedType === '주문서'
-  //     ? (data as ProjectResponseModel[]).map((project) => ({
-  //         id: project.id.toString(),
-  //         documentType: '주문서' as const,
-  //         companyName: project.name,
-  //         productName:
-  //           project.quotations &&
-  //           project.quotations.length > 0 &&
-  //           project.quotations[0].products_info &&
-  //           project.quotations[0].products_info.length > 1
-  //             ? `${project.quotations[0].products_info[0].name} 외 ${project.quotations[0].products_info.length - 1}개`
-  //             : project.quotations[0].products_info[0]?.name || '-',
-  //         date: project.confirmed_at.split('T')[0],
-  //       }))
-  //     : selectedType === '거래명세서'
-  //       ? (data as ProjectResponseModel[]).map((project) => ({
-  //           id: project.id.toString(),
-  //           documentType: '거래명세서' as const,
-  //           companyName: project.name,
-  //           productName:
-  //             project.quotations &&
-  //             project.quotations.length > 0 &&
-  //             project.quotations[0].products_info &&
-  //             project.quotations[0].products_info.length > 1
-  //               ? `${project.quotations[0].products_info[0].name} 외 ${project.quotations[0].products_info.length - 1}개`
-  //               : project.quotations[0].products_info[0]?.name || '-',
-  //           date: project.transact_date,
-  //         }))
-  //       : [];
 
   return (
     <>
@@ -120,7 +91,7 @@ const DocumentTable = ({
                 <p className="px-3 flex-1">품목명</p>
                 <div
                   className="px-3 flex-[0.5] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
-                  onClick={handleSortClick}
+                  onClick={handleProjectSortClick}
                 >
                   <p className="">등록일자</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
@@ -129,31 +100,24 @@ const DocumentTable = ({
             )}
           </div>
 
-          {selectedType === '주문서' &&
-            projectData.map((item, index) => (
+          {(selectedType === '주문서' || selectedType === '거래명세서') &&
+            projectData.map((item) => (
               <DocumentTableItem
-                key={index}
+                key={item.id}
                 data={item}
-                documentType="주문서"
+                documentType={selectedType}
               />
             ))}
-          {selectedType === '거래명세서' &&
-            projectData.map((item, index) => (
+
+          {(selectedType === '매출 세금계산서' ||
+            selectedType === '매입 세금계산서') &&
+            taxData.map((item) => (
               <DocumentTableItem
-                key={index}
+                key={item.id}
                 data={item}
-                documentType="거래명세서"
+                documentType={selectedType}
               />
             ))}
-          {selectedType === '매출 세금계산서' ||
-            (selectedType === '매입 세금계산서' &&
-              taxData.map((item, index) => (
-                <DocumentTableItem
-                  key={index}
-                  data={item}
-                  documentType={selectedType}
-                />
-              )))}
         </>
       )}
     </>
