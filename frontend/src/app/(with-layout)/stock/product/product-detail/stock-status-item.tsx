@@ -52,21 +52,21 @@ const StockStatusItem = ({
   const [displayValue, setDisplayValue] = useState('');
 
   // 재고 상태를 판단
-  const getStockStatus = (currentStock?: number, standardStock?: number) => {
-    if (
-      currentStock === undefined ||
-      currentStock === null ||
-      standardStock === undefined ||
-      standardStock === null
-    )
-      return '-';
-    if (currentStock >= standardStock) return '충분';
-    return '부족';
-  };
-  const status = getStockStatus(
-    materialDetail?.current_stock,
-    materialDetail?.standard_stock
-  );
+  // const getStockStatus = (currentStock?: number, standardStock?: number) => {
+  //   if (
+  //     currentStock === undefined ||
+  //     currentStock === null ||
+  //     standardStock === undefined ||
+  //     standardStock === null
+  //   )
+  //     return '-';
+  //   if (currentStock >= standardStock) return '충분';
+  //   return '부족';
+  // };
+  // const status = getStockStatus(
+  //   materialDetail?.current_stock,
+  //   materialDetail?.standard_stock
+  // );
 
   // 천 단위 구분자 포맷팅 함수
   const formatNumberWithCommas = useCallback(
