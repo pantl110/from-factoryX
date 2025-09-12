@@ -44,7 +44,10 @@ const ReturnInfo = ({
 
   // 폼 유효성 검사
   const isFormValid =
-    watchedRefundDate && watchedAmount > 0 && watchedProductionAmount >= 0;
+    watchedRefundDate &&
+    watchedAmount > 0 &&
+    watchedProductionAmount >= 0 &&
+    watchedProductionAmount + refundData.current_stock >= watchedAmount;
 
   // 숫자를 000,000 형식으로 포맷팅하는 함수
   const formatNumber = (value: number): string => {
@@ -117,8 +120,10 @@ const ReturnInfo = ({
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsEditing(true)}
                 disabled={
-                  refundData.plan !== null &&
-                  refundData.plan?.status !== 'pending'
+                  refundData.plan?.id === null
+                    ? false
+                    : refundData.plan?.status &&
+                      String(refundData.plan.status) !== '가동 대기'
                 }
               />
             )}
@@ -131,8 +136,10 @@ const ReturnInfo = ({
               onClick={() => setIsRegisterProductionModalOpen(true)}
               disabled={
                 !isFormValid ||
-                (refundData.plan !== null &&
-                  refundData.plan?.status !== 'pending')
+                (refundData.plan?.id === null
+                  ? false
+                  : refundData.plan?.status &&
+                    String(refundData.plan.status) !== '가동 대기')
               }
             />
           </div>
