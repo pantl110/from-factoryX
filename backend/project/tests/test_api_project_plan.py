@@ -719,181 +719,184 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertIn(plan.start_date.date(), [date(2024, 4, 1), date(2024, 3, 31)])
         self.assertIn(plan.end_date.date(), [date(2024, 4, 30), date(2024, 4, 29)])
 
-    def test_create_or_update_project_plan_quantity_less_than_quotation(self):
-        """생산수량을 주문수량보다 작게 수정하는 테스트 (다른 설비로 계획 생성)"""
-        # 두 번째 설비 생성
-        equipment2 = FactoryEquipment.objects.create(
-            factory=self.factory, name="테스트 설비 2", priority=2
-        )
+    # 추가로 project plan 생성 안함
+    # def test_create_or_update_project_plan_quantity_less_than_quotation(self):
+    #     """생산수량을 주문수량보다 작게 수정하는 테스트 (다른 설비로 계획 생성)"""
+    #     # 두 번째 설비 생성
+    #     equipment2 = FactoryEquipment.objects.create(
+    #         factory=self.factory, name="테스트 설비 2", priority=2
+    #     )
 
-        # 먼저 프로젝트 계획 생성 (주문수량: 100)
-        plan = ProjectPlan.objects.create(
-            project=self.project,
-            product=self.quotation_product,  # quantity: 100
-            equipment=self.equipment,
-            status="가동 대기",
-            quantity=100,
-            start_date=date(2024, 1, 1),
-            end_date=date(2024, 1, 31),
-            avg_production_time=3600,
-        )
+    #     # 먼저 프로젝트 계획 생성 (주문수량: 100)
+    #     plan = ProjectPlan.objects.create(
+    #         project=self.project,
+    #         product=self.quotation_product,  # quantity: 100
+    #         equipment=self.equipment,
+    #         status="가동 대기",
+    #         quantity=100,
+    #         start_date=date(2024, 1, 1),
+    #         end_date=date(2024, 1, 31),
+    #         avg_production_time=3600,
+    #     )
 
-        url = "/v1/project-plan/create-or-update"
+    #     url = "/v1/project-plan/create-or-update"
 
-        payload = {
-            "plan_id": plan.id,
-            "project_id": self.project.id,
-            "quotation_product_id": self.quotation_product.id,
-            "equipment_id": self.equipment.id,
-            "quantity": 60,  # 주문수량(100)보다 작음
-            "start_date": "2024-01-01T00:00:00Z",
-            "end_date": "2024-01-31T00:00:00Z",
-            "avg_production_time": 3600,
-            "total_amount": 100,
-            "total_quantity": 100,
-        }
+    #     payload = {
+    #         "plan_id": plan.id,
+    #         "project_id": self.project.id,
+    #         "quotation_product_id": self.quotation_product.id,
+    #         "equipment_id": self.equipment.id,
+    #         "quantity": 60,  # 주문수량(100)보다 작음
+    #         "start_date": "2024-01-01T00:00:00Z",
+    #         "end_date": "2024-01-31T00:00:00Z",
+    #         "avg_production_time": 3600,
+    #         "total_amount": 100,
+    #         "total_quantity": 100,
+    #     }
 
-        response = self.client.post(
-            f"{url}?factory_id={self.factory.id}",
-            data=json.dumps(payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
+    #     response = self.client.post(
+    #         f"{url}?factory_id={self.factory.id}",
+    #         data=json.dumps(payload),
+    #         content_type="application/json",
+    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
+    #     )
 
-        self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(response.status_code, 200)
 
-        # 데이터베이스 확인
-        plan.refresh_from_db()
-        self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
+    #     # 데이터베이스 확인
+    #     plan.refresh_from_db()
+    #     self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
 
-        # 두 번째 계획이 생성되었는지 확인 (다른 설비로)
-        additional_plans = ProjectPlan.objects.filter(
-            project=self.project, product=self.quotation_product, id__gt=plan.id
-        )
-        self.assertEqual(additional_plans.count(), 1)
+    #     # 두 번째 계획이 생성되었는지 확인 (다른 설비로)
+    #     additional_plans = ProjectPlan.objects.filter(
+    #         project=self.project, product=self.quotation_product, id__gt=plan.id
+    #     )
+    #     self.assertEqual(additional_plans.count(), 1)
 
-        additional_plan = additional_plans.first()
-        self.assertEqual(additional_plan.equipment.id, equipment2.id)  # 다른 설비 사용
-        self.assertEqual(
-            additional_plan.quantity, 44
-        )  # (100-60) * 1.1 = 44 (buffer rate 적용)
+    #     additional_plan = additional_plans.first()
+    #     self.assertEqual(additional_plan.equipment.id, equipment2.id)  # 다른 설비 사용
+    #     self.assertEqual(
+    #         additional_plan.quantity, 44
+    #     )  # (100-60) * 1.1 = 44 (buffer rate 적용)
 
-    def test_create_or_update_project_plan_quantity_less_than_quotation_no_alternative_equipment(
-        self,
-    ):
-        """대체 설비가 없을 때 생산수량을 주문수량보다 작게 수정하는 테스트"""
-        # 먼저 프로젝트 계획 생성 (주문수량: 100)
-        plan = ProjectPlan.objects.create(
-            project=self.project,
-            product=self.quotation_product,  # quantity: 100
-            equipment=self.equipment,
-            status="가동 대기",
-            quantity=100,
-            start_date=date(2024, 1, 1),
-            end_date=date(2024, 1, 31),
-            avg_production_time=3600,
-        )
 
-        url = "/v1/project-plan/create-or-update"
+    # 추가로 project plan 생성 안함
+    # def test_create_or_update_project_plan_quantity_less_than_quotation_no_alternative_equipment(
+    #     self,
+    # ):
+    #     """대체 설비가 없을 때 생산수량을 주문수량보다 작게 수정하는 테스트"""
+    #     # 먼저 프로젝트 계획 생성 (주문수량: 100)
+    #     plan = ProjectPlan.objects.create(
+    #         project=self.project,
+    #         product=self.quotation_product,  # quantity: 100
+    #         equipment=self.equipment,
+    #         status="가동 대기",
+    #         quantity=100,
+    #         start_date=date(2024, 1, 1),
+    #         end_date=date(2024, 1, 31),
+    #         avg_production_time=3600,
+    #     )
 
-        payload = {
-            "plan_id": plan.id,
-            "project_id": self.project.id,
-            "quotation_product_id": self.quotation_product.id,
-            "equipment_id": self.equipment.id,
-            "quantity": 60,  # 주문수량(100)보다 작음
-            "start_date": "2024-01-01T00:00:00Z",
-            "end_date": "2024-01-31T00:00:00Z",
-            "avg_production_time": 3600,
-            "total_amount": 100,
-            "total_quantity": 100,
-        }
+    #     url = "/v1/project-plan/create-or-update"
 
-        response = self.client.post(
-            f"{url}?factory_id={self.factory.id}",
-            data=json.dumps(payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
+    #     payload = {
+    #         "plan_id": plan.id,
+    #         "project_id": self.project.id,
+    #         "quotation_product_id": self.quotation_product.id,
+    #         "equipment_id": self.equipment.id,
+    #         "quantity": 60,  # 주문수량(100)보다 작음
+    #         "start_date": "2024-01-01T00:00:00Z",
+    #         "end_date": "2024-01-31T00:00:00Z",
+    #         "avg_production_time": 3600,
+    #         "total_amount": 100,
+    #         "total_quantity": 100,
+    #     }
 
-        self.assertEqual(response.status_code, 200)
+    #     response = self.client.post(
+    #         f"{url}?factory_id={self.factory.id}",
+    #         data=json.dumps(payload),
+    #         content_type="application/json",
+    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
+    #     )
 
-        # 데이터베이스 확인
-        plan.refresh_from_db()
-        self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
+    #     self.assertEqual(response.status_code, 200)
 
-        # 두 번째 계획이 생성되었는지 확인 (같은 설비로)
-        additional_plans = ProjectPlan.objects.filter(
-            project=self.project, product=self.quotation_product, id__gt=plan.id
-        )
-        self.assertEqual(additional_plans.count(), 1)
+    #     # 데이터베이스 확인
+    #     plan.refresh_from_db()
+    #     self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
 
-        additional_plan = additional_plans.first()
-        self.assertEqual(
-            additional_plan.equipment.id, self.equipment.id
-        )  # 같은 설비 사용
-        self.assertEqual(
-            additional_plan.quantity, 44
-        )  # (100-60) * 1.1 = 44 (buffer rate 적용)
+    #     # 두 번째 계획이 생성되었는지 확인 (같은 설비로)
+    #     additional_plans = ProjectPlan.objects.filter(
+    #         project=self.project, product=self.quotation_product, id__gt=plan.id
+    #     )
+    #     self.assertEqual(additional_plans.count(), 1)
 
-    def test_create_or_update_project_plan_quantity_less_than_quotation_refund(self):
-        """반품인 경우 생산수량을 주문수량보다 작게 수정하는 테스트 (buffer rate 적용)"""
-        # 두 번째 설비 생성
-        equipment2 = FactoryEquipment.objects.create(
-            factory=self.factory, name="테스트 설비 2", priority=2
-        )
+    #     additional_plan = additional_plans.first()
+    #     self.assertEqual(
+    #         additional_plan.equipment.id, self.equipment.id
+    #     )  # 같은 설비 사용
+    #     self.assertEqual(
+    #         additional_plan.quantity, 44
+    #     )  # (100-60) * 1.1 = 44 (buffer rate 적용)
 
-        # 반품인 프로젝트 계획 생성 (주문수량: 100)
-        plan = ProjectPlan.objects.create(
-            project=self.project,
-            product=self.quotation_product,  # quantity: 100
-            equipment=self.equipment,
-            status=ProjectPlan.ProductionStatus.pending,
-            quantity=100,
-            start_date=date(2024, 1, 1),
-            end_date=date(2024, 1, 31),
-            avg_production_time=3600,
-        )
+    # def test_create_or_update_project_plan_quantity_less_than_quotation_refund(self):
+    #     """반품인 경우 생산수량을 주문수량보다 작게 수정하는 테스트 (buffer rate 적용)"""
+    #     # 두 번째 설비 생성
+    #     equipment2 = FactoryEquipment.objects.create(
+    #         factory=self.factory, name="테스트 설비 2", priority=2
+    #     )
 
-        url = "/v1/project-plan/create-or-update"
+    #     # 반품인 프로젝트 계획 생성 (주문수량: 100)
+    #     plan = ProjectPlan.objects.create(
+    #         project=self.project,
+    #         product=self.quotation_product,  # quantity: 100
+    #         equipment=self.equipment,
+    #         status=ProjectPlan.ProductionStatus.pending,
+    #         quantity=100,
+    #         start_date=date(2024, 1, 1),
+    #         end_date=date(2024, 1, 31),
+    #         avg_production_time=3600,
+    #     )
 
-        payload = {
-            "plan_id": plan.id,
-            "project_id": self.project.id,
-            "quotation_product_id": self.quotation_product.id,
-            "equipment_id": self.equipment.id,
-            "quantity": 60,  # 주문수량(100)보다 작음
-            "start_date": "2024-01-01T00:00:00Z",
-            "end_date": "2024-01-31T00:00:00Z",
-            "avg_production_time": 3600,
-            "total_amount": 100,
-            "total_quantity": 100,
-        }
+    #     url = "/v1/project-plan/create-or-update"
 
-        response = self.client.post(
-            f"{url}?factory_id={self.factory.id}",
-            data=json.dumps(payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
+    #     payload = {
+    #         "plan_id": plan.id,
+    #         "project_id": self.project.id,
+    #         "quotation_product_id": self.quotation_product.id,
+    #         "equipment_id": self.equipment.id,
+    #         "quantity": 60,  # 주문수량(100)보다 작음
+    #         "start_date": "2024-01-01T00:00:00Z",
+    #         "end_date": "2024-01-31T00:00:00Z",
+    #         "avg_production_time": 3600,
+    #         "total_amount": 100,
+    #         "total_quantity": 100,
+    #     }
 
-        self.assertEqual(response.status_code, 200)
+    #     response = self.client.post(
+    #         f"{url}?factory_id={self.factory.id}",
+    #         data=json.dumps(payload),
+    #         content_type="application/json",
+    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
+    #     )
 
-        # 데이터베이스 확인
-        plan.refresh_from_db()
-        self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
+    #     self.assertEqual(response.status_code, 200)
 
-        # 두 번째 계획이 생성되었는지 확인 (다른 설비로)
-        additional_plans = ProjectPlan.objects.filter(
-            project=self.project, product=self.quotation_product, id__gt=plan.id
-        )
-        self.assertEqual(additional_plans.count(), 1)
+    #     # 데이터베이스 확인
+    #     plan.refresh_from_db()
+    #     self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
 
-        additional_plan = additional_plans.first()
-        self.assertEqual(additional_plan.equipment.id, equipment2.id)  # 다른 설비 사용
-        self.assertEqual(
-            additional_plan.quantity, 44
-        )  # (100-60) * 1.1 = 44 (buffer rate 적용)
+    #     # 두 번째 계획이 생성되었는지 확인 (다른 설비로)
+    #     additional_plans = ProjectPlan.objects.filter(
+    #         project=self.project, product=self.quotation_product, id__gt=plan.id
+    #     )
+    #     self.assertEqual(additional_plans.count(), 1)
+
+    #     additional_plan = additional_plans.first()
+    #     self.assertEqual(additional_plan.equipment.id, equipment2.id)  # 다른 설비 사용
+    #     self.assertEqual(
+    #         additional_plan.quantity, 44
+    #     )  # (100-60) * 1.1 = 44 (buffer rate 적용)
 
     def test_list_today_production_plans_success(self):
         """오늘 생산 시작인 프로젝트 계획 조회 성공 테스트"""

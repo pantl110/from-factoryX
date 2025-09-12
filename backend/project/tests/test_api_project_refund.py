@@ -953,7 +953,7 @@ class ProjectRefundAPITestCase(TestCase):
             id=data["quotation_product_id"]
         )
         self.assertEqual(quotation_product.product.id, self.product.id)
-        self.assertEqual(quotation_product.quantity, 15)
+        self.assertEqual(quotation_product.quantity, 5)
         self.assertEqual(quotation_product.unit_price, 0)  # 반품은 단가 0
 
         # ProjectPlan의 반품 여부 확인
@@ -964,7 +964,7 @@ class ProjectRefundAPITestCase(TestCase):
         self.assertEqual(project_plan.project.id, self.project.id)
         self.assertEqual(project_plan.product.id, quotation_product.id)
         self.assertEqual(project_plan.equipment.id, equipment.id)
-        self.assertEqual(project_plan.quantity, 15)
+        self.assertEqual(project_plan.quantity, 5)
         self.assertEqual(project_plan.status, "가동 대기")
         # 품목의 평균 생산 시간이 사용되는지 확인
         expected_avg_time = (
@@ -1222,7 +1222,7 @@ class ProjectRefundAPITestCase(TestCase):
             id=data["quotation_product_id"]
         )
         self.assertEqual(quotation_product.product.id, new_product.id)
-        self.assertEqual(quotation_product.quantity, 15)
+        self.assertEqual(quotation_product.quantity, 5)
         self.assertEqual(quotation_product.unit_price, 0)  # 반품은 단가 0
 
         # ProjectPlan도 확인

@@ -151,7 +151,7 @@ async def register_production_from_refund_log(
             existing_quotation_product = existing_plan.product
             if existing_quotation_product:
                 # 기존 QuotationProduct 수정
-                existing_quotation_product.quantity = payload.amount
+                existing_quotation_product.quantity = payload.production_amount
                 existing_quotation_product.delivery_date = (
                     await parse_and_validate_date(payload.refund_date)
                 )
@@ -162,7 +162,7 @@ async def register_production_from_refund_log(
                 quotation_product = await QuotationProduct.objects.acreate(
                     quotation=existing_quotation,
                     product=refund_product,
-                    quantity=payload.amount,
+                    quantity=payload.production_amount,
                     unit_price=0,  # 반품은 단가 0으로 설정
                     delivery_date=await parse_and_validate_date(payload.refund_date),
                 )
@@ -171,7 +171,7 @@ async def register_production_from_refund_log(
             quotation_product = await QuotationProduct.objects.acreate(
                 quotation=existing_quotation,
                 product=refund_product,
-                quantity=payload.amount,
+                quantity=payload.production_amount,
                 unit_price=0,  # 반품은 단가 0으로 설정
                 delivery_date=await parse_and_validate_date(payload.refund_date),
             )
@@ -219,6 +219,13 @@ async def register_production_from_refund_log(
             refund.production_amount = payload.production_amount
             refund.refund_date = await parse_and_validate_date(payload.refund_date)
             await refund.asave()
+
+            # 7. 프로젝트 로그 내용도 업데이트
+            project_log = await ProjectLog.objects.aget(refund=refund)
+            log_content = f"{refund.product.name} {payload.amount}개가 반품되었어요."
+            project_log.content = log_content
+            await project_log.asave()
+
         else:
             # 기존 plan이 없는 경우 새로 생성
             # 품목의 평균 생산 시간 가져오기 (기본값 30초)
@@ -239,7 +246,7 @@ async def register_production_from_refund_log(
                 product=quotation_product,  # 수정된 QuotationProduct 사용
                 equipment=default_equipment,
                 status="가동 대기",
-                quantity=payload.amount,
+                quantity=payload.production_amount,
                 start_date=start_date,
                 end_date=end_date,
                 avg_production_time=avg_production_time,  # 품목의 평균 생산 시간 사용
@@ -253,6 +260,12 @@ async def register_production_from_refund_log(
             refund.production_amount = payload.production_amount
             refund.refund_date = await parse_and_validate_date(payload.refund_date)
             await refund.asave()
+
+            # 7. 프로젝트 로그 내용도 업데이트
+            project_log = await ProjectLog.objects.aget(refund=refund)
+            log_content = f"{refund.product.name} {payload.amount}개가 반품되었어요."
+            project_log.content = log_content
+            await project_log.asave()
 
         return 200, {
             "message": "반품 재생산이 성공적으로 처리되었습니다.",
@@ -316,7 +329,7 @@ async def get_refund_detail(request, refund_id: int):
         "updated_at": refund.updated_at.isoformat(),
     }
 
-
+# 현재 쓰지 않는 api
 @router.patch(
     "/{refund_id}",
     summary="[C] 반품 수정",
