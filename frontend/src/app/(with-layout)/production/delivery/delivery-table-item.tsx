@@ -4,7 +4,7 @@ import {
   DeliveryStatusType,
   ProjectStatusType,
 } from '@/types/status-type';
-import { ProjectPlanModel } from '@/types/data-model';
+import { ProjectQuotationProductsModel } from '@/types/data-model';
 import Checkbox from '@/ui/checkbox';
 import { usePortalDropdown, formatDate } from '@/hooks';
 import DeliveryStateDropdown from './modals/delivery-state-dropdown';
@@ -14,10 +14,10 @@ import { useUpdateQuotationProductDelivery } from '@/hooks/document/quotation/us
 import MiniBtn from '@/ui/mini-btn';
 
 interface DeliveryTableItemProps {
-  data: ProjectPlanModel;
+  data: ProjectQuotationProductsModel;
   isChecked: boolean;
   onToggle: () => void;
-  onItemClick: (data: ProjectPlanModel) => void;
+  onItemClick: (data: ProjectQuotationProductsModel) => void;
   projectStatus: ProjectStatusType;
   onDeliveryDateChange?: (id: string, newDate: string) => void;
   onDeliveryStatusChange?: (id: string, newStatus: string) => void;
@@ -38,17 +38,15 @@ const DeliveryTableItem = ({
   onDeliveryStatusChange,
 }: DeliveryTableItemProps) => {
   const {
+    id: quotationProductId,
     quantity,
-    quotation_product: {
-      delivery_date: deliveryDate,
-      is_delivery: isDelivery,
-      product: {
-        id: productId,
-        name: productName,
-        code: productCode,
-        spec: productSpec,
-        unit: productUnit,
-      },
+    is_delivery: isDelivery,
+    delivery_date: deliveryDate,
+    product: {
+      name: productName,
+      code: productCode,
+      spec: productSpec,
+      unit: productUnit,
     },
   } = data;
 
@@ -85,16 +83,19 @@ const DeliveryTableItem = ({
   // 상태 변경 시 서버 반영
   const handleStatusChange = async (newStatus: string) => {
     try {
-      const result = await updateQuotationProductDelivery(productId || 0, {
-        delivery_date: newStatus === '완료' ? watchedDate : savedDate,
-        is_delivery: newStatus === '완료',
-      });
+      const result = await updateQuotationProductDelivery(
+        quotationProductId || 0,
+        {
+          delivery_date: newStatus === '완료' ? watchedDate : savedDate,
+          is_delivery: newStatus === '완료',
+        }
+      );
 
       if (result.success) {
         setValue('deliveryStatus', newStatus);
         // 성공 시 부모 컴포넌트에 알림
         if (onDeliveryStatusChange) {
-          onDeliveryStatusChange(String(productId || ''), newStatus);
+          onDeliveryStatusChange(String(quotationProductId || ''), newStatus);
         }
       } else {
         console.error('납품상태 변경 실패:', result.error);
@@ -111,15 +112,21 @@ const DeliveryTableItem = ({
   // 저장 버튼 클릭 시에만 서버 저장
   const handleSaveClick = async () => {
     try {
-      const result = await updateQuotationProductDelivery(productId || 0, {
-        delivery_date: watchedDate,
-        is_delivery: isDelivery || false,
-      });
+      const result = await updateQuotationProductDelivery(
+        quotationProductId || 0,
+        {
+          delivery_date: watchedDate,
+          is_delivery: isDelivery || false,
+        }
+      );
 
       if (result.success) {
         setSavedDate(watchedDate);
         if (onDeliveryDateChange) {
-          onDeliveryDateChange(String(productId || ''), watchedDate || '');
+          onDeliveryDateChange(
+            String(quotationProductId || ''),
+            watchedDate || ''
+          );
         }
       } else {
         console.error('납품일자 변경 실패:', result.error);

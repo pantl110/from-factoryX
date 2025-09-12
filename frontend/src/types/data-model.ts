@@ -548,17 +548,7 @@ export interface ProjectQuotationProductsInfoModel {
   total_price: number;
   quotation_product_id: number;
 }
-
-export interface ProjectQuotationModel {
-  id: number; // quotation_id
-  client: number; // client_id
-  client_info: TaxClientInfoModel;
-  created_at: string;
-  due_date: string;
-  due_date_notice: boolean;
-  factory: number; // factory_id
-  factory_info: TaxFactoryInfoModel;
-  products: {
+  export interface ProjectQuotationProductsModel {
     created_at: string;
     delivery_date: string;
     id: number;
@@ -596,7 +586,18 @@ export interface ProjectQuotationModel {
     quotation: number;
     unit_price: number;
     updated_at: string;
-  }[];
+  }
+
+export interface ProjectQuotationModel {
+  id: number; // quotation_id
+  client: number; // client_id
+  client_info: TaxClientInfoModel;
+  created_at: string;
+  due_date: string;
+  due_date_notice: boolean;
+  factory: number; // factory_id
+  factory_info: TaxFactoryInfoModel;
+  products: ProjectQuotationProductsModel[];
   products_info: ProjectQuotationProductsInfoModel[];
   project: number; // project_id
   type: string;
@@ -612,7 +613,7 @@ export interface ProjectStatusResponseModel {
   is_refunded: boolean;
   latest_end_date?: string;
   logs: ProjectLogResponseModel[];
-  name: string; // 뭐지?
+  name: string; // 프로젝트 이름?
   quotations: ProjectQuotationModel[];
   status: ProjectStatusType;
   updated_at: string;
