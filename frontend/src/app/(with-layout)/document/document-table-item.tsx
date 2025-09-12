@@ -138,8 +138,11 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
                 textColor={textColor}
               />
             </div>
-            <p className="px-3 flex-1 truncate" title={projectData.name || '-'}>
-              {projectData.name || '-'}
+            <p
+              className="px-3 flex-1 truncate"
+              title={projectData.quotations[0].client_info.name || '-'}
+            >
+              {projectData.quotations[0].client_info.name || '-'}
             </p>
             <p
               className="px-3 flex-1 truncate"
