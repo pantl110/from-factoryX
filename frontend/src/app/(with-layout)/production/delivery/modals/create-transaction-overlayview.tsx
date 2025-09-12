@@ -1,25 +1,38 @@
 import TransactionDocumentView from '@/app/(with-layout)/document/transaction-document-view';
-import { ProjectQuotationModel } from '@/types/data-model';
+import { ProjectQuotationModel, ProjectStatusType } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
 import OverlayView from '@/ui/ovelay-view';
 import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
+import { useUpdateProjectStatus } from '@/hooks';
 
 interface CreateTransactionOverlayviewProps {
   onClose: () => void;
   quotationData: ProjectQuotationModel;
+  projectStatus: ProjectStatusType;
 }
 
 const CreateTransactionOverlayview = ({
   onClose,
   quotationData,
+  projectStatus,
 }: CreateTransactionOverlayviewProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
     documentTitle: `거래명세서`, // 문서 제목
   });
+
+  const { updateProjectStatus } = useUpdateProjectStatus();
+
+  const handlePrint = () => {
+    reactToPrintFn();
+    updateProjectStatus(quotationData.project, {
+      status: projectStatus,
+      isPrinted: true,
+    });
+  };
 
   return (
     <OverlayView onClose={onClose}>
@@ -43,7 +56,7 @@ const CreateTransactionOverlayview = ({
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"
-              onClick={reactToPrintFn}
+              onClick={handlePrint}
             />
           </div>
         </div>

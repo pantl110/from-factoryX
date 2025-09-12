@@ -329,6 +329,7 @@ const Delivery = ({
         <CreateTransactionOverlayview
           onClose={() => setIsCreateTransactionOverlayviewOpen(false)}
           quotationData={localQuotationData}
+          projectStatus={projectStatus}
         />
       )}
 

@@ -9,7 +9,7 @@ const useUpdateProjectStatus = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
 
   const updateProjectStatus = useCallback(
-    async (projectId: number, status: string) => {
+    async (projectId: number, status: string, isPrinted?: boolean) => {
       setIsLoading(true);
       setError(null);
 
@@ -28,7 +28,7 @@ const useUpdateProjectStatus = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ status }),
+            body: JSON.stringify({ payload: { status, is_printed: isPrinted } }),
           }
         );
 
