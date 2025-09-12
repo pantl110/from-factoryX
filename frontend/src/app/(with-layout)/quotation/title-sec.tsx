@@ -169,13 +169,19 @@ const TitleSec = ({
               }
             }}
             onSaveDraft={async (isConfirm: boolean) => {
-              // 업체명이 입력되지 않았으면 토스트 표시하고 함수 종료
-              if (!clientName || clientName.trim() === '') {
-                showToast();
+              // 임시저장: 값이 비어 있어도 저장 가능. 업체명만 체크하고, 폼 유효성 검사는 실행하지 않음
+              if (!isConfirm) {
+                if (!clientName || clientName.trim() === '') {
+                  showToast();
+                  return false;
+                }
+                if (onSaveDraft) {
+                  return await onSaveDraft(false);
+                }
                 return false;
               }
 
-              // 개별 필드 오류 확인 (입력된 값들 중에 유효하지 않은 것이 있는지)
+              // 주문확정: 전체 폼 유효성 검사 수행
               const isValid = await trigger();
               if (!isValid) {
                 setShowErrors(true); // 에러 표시 활성화
@@ -183,7 +189,7 @@ const TitleSec = ({
               }
 
               if (onSaveDraft) {
-                return await onSaveDraft(isConfirm); // isConfirm = true 주문확정, false = 임시저장
+                return await onSaveDraft(true); // isConfirm = true 주문확정
               }
               return false;
             }}
