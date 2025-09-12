@@ -443,6 +443,8 @@ export interface MaterialProductConnectionModel {
   material_code: string;
   material_spec: string;
   material_unit: string;
+  material_current_stock: number;
+  material_standard_stock: number;
   quantity: number; // // 제품 1개 생산에 필요한 원자재 수량
 }
 
