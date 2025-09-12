@@ -179,7 +179,7 @@ export const useQuotationHandlers = ({
       }
 
       const productionData: ProductionDataModel = {
-        quotation_id: quotationId || 0,
+        quotation_id: quotationId || null,
         client: {
           factory_id: factoryId,
           client_id: selectedClientId,

@@ -697,7 +697,7 @@ export interface QuotationProductModel {
 
 // 생산 시작용 데이터 모델
 export interface ProductionDataModel {
-  quotation_id: number;
+  quotation_id?: number;
   client: {
     factory_id: number;
     client_id: number | null;
