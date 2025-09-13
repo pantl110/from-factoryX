@@ -1,9 +1,11 @@
 from django.test import TestCase
 from user.api import router
 from ninja.testing import TestAsyncClient
-from user.models import User, EmailVerification, Jwt
+from user.models import User, EmailVerification
 from factory.models import Factory, FactoryMember
 from asgiref.sync import sync_to_async
+from django.utils import timezone
+from datetime import timedelta
 
 
 class TestUser(TestCase):
@@ -74,7 +76,6 @@ class TestUser(TestCase):
         """
         초대 토큰을 사용한 회원가입 테스트
         """
-        from datetime import datetime, timezone, timedelta
 
         # 팩토리 생성
         factory = await sync_to_async(Factory.objects.create)(
@@ -91,7 +92,7 @@ class TestUser(TestCase):
                 "email": invite_email,
                 "role": "member",
                 "invited_by": self.user.id,
-                "invited_at": datetime.now(timezone.utc).isoformat(),
+                "invited_at": timezone.now().isoformat(),
             }
         ]
         await sync_to_async(factory.save)()
@@ -203,7 +204,6 @@ class TestUser(TestCase):
         """
         만료된 초대 토큰으로 회원가입 시도 테스트
         """
-        from datetime import datetime, timezone, timedelta
 
         # 팩토리 생성
         factory = await sync_to_async(Factory.objects.create)(
@@ -214,7 +214,7 @@ class TestUser(TestCase):
 
         # 만료된 초대 정보 추가 (25시간 전)
         invite_email = "expired@example.com"
-        expired_time = datetime.now(timezone.utc) - timedelta(hours=25)
+        expired_time = timezone.now(timezone.utc) - timedelta(hours=25)
 
         factory.inviting = [
             {
@@ -282,7 +282,7 @@ class TestUser(TestCase):
                 "email": invite_email,
                 "role": "member",
                 "invited_by": self.user.id,
-                "invited_at": datetime.now(timezone.utc).isoformat(),
+                "invited_at": timezone.now().isoformat(),
             }
         ]
         await sync_to_async(factory.save)()
@@ -316,7 +316,6 @@ class TestUser(TestCase):
         """
         만료된 초대로 회원가입 시도 테스트
         """
-        from datetime import datetime, timezone, timedelta
 
         # 팩토리 생성
         factory = await sync_to_async(Factory.objects.create)(
@@ -327,7 +326,7 @@ class TestUser(TestCase):
 
         # 만료된 초대 정보 추가 (25시간 전)
         invite_email = "expired@example.com"
-        expired_time = datetime.now(timezone.utc) - timedelta(hours=25)
+        expired_time = timezone.now(timezone.utc) - timedelta(hours=25)
 
         factory.inviting = [
             {
@@ -576,7 +575,7 @@ class TestUser(TestCase):
         factory = await Factory.objects.acreate(owner=owner, name="공장초대")
         from datetime import datetime, timezone
 
-        invited_at = datetime.now(timezone.utc).isoformat()
+        invited_at = timezone.now().isoformat()
         factory.inviting = [
             {
                 "email": "invitee@example.com",

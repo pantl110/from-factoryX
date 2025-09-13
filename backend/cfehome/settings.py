@@ -346,3 +346,6 @@ SCHEDULING_SECRET_KEY = config("SCHEDULING_SECRET_KEY", default=None)
 
 # send-email with attachment
 DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024  # 30MB
+
+# Trial period days
+TRIAL_PERIOD_DAYS = 30

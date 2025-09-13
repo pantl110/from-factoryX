@@ -1,13 +1,11 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from django.urls import reverse
 from factory.models import Factory, FactoryClient, FactoryMember
 from project.models import Project, ProjectPlan
 from document.models import Quotation, QuotationProduct
 from stock.models import Product
 from factory.models import FactoryEquipment
-import json
 import jwt
 from django.conf import settings
 from datetime import datetime, timedelta, date
@@ -75,7 +73,7 @@ class ProjectV2DuplicateTestCase(TestCase):
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )

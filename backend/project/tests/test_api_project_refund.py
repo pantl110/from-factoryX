@@ -7,6 +7,7 @@ import json
 import jwt
 from django.conf import settings
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -78,7 +79,7 @@ class ProjectRefundAPITestCase(TestCase):
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -1266,8 +1267,8 @@ class ProjectRefundAPITestCase(TestCase):
             equipment=equipment,
             status="가동 대기",
             quantity=15,  # 반품 수량과 동일
-            start_date=datetime.now().date(),
-            end_date=datetime.now().date() + timedelta(days=7),
+            start_date=timezone.now().date(),
+            end_date=timezone.now().date() + timedelta(days=7),
             avg_production_time=3600,
         )
 
@@ -1358,8 +1359,8 @@ class ProjectRefundAPITestCase(TestCase):
             equipment=equipment,
             status="가동 대기",
             quantity=15,
-            start_date=datetime.now().date(),
-            end_date=datetime.now().date() + timedelta(days=7),
+            start_date=timezone.now().date(),
+            end_date=timezone.now().date() + timedelta(days=7),
             avg_production_time=3600,
         )
 

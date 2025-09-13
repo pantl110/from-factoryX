@@ -3,34 +3,12 @@ from typing import Optional, List
 from factory.models import Factory, FactoryClient, FactoryMember, FactoryEquipment
 from project.schemas.outbound import ProjectPlanModelOut
 from subscription.models import Subscription, SubscriptionHistory
+from datetime import date
 
 
 # ------------------------------------------------------------
 # Factory API
 # ------------------------------------------------------------
-
-
-# (GET) Factory
-class FactoryOut(Schema):
-    id: int
-    owner: int
-    name: Optional[str]
-    business_registration_number: Optional[str]
-    representative_name: Optional[str]
-    manager_email: Optional[str]
-    manager_phone: Optional[str]
-    manager_fax: Optional[str]
-    business_type: Optional[str]
-    business_category: Optional[str]
-    business_address: Optional[str]
-    is_trial: bool
-    billing_key: Optional[str]
-    inviting: list
-    created_at: str
-    updated_at: str
-    invited_at: Optional[str]
-    role: Optional[str]
-    invited_by: Optional[int]
 
 
 # (GET) Factory Equipment
@@ -134,6 +112,7 @@ class FactoryClientRowOut(ModelSchema):
 class FactoryModelOut(ModelSchema):
     members: List[FactoryMemberDetailOut] = Field(..., description="공장 멤버 리스트")
     member: FactoryMemberDetailOut = Field(..., description="현재 로그인 한 멤버 정보")
+    trial_end_date: Optional[date] = Field(None, description="무료 체험 종료일")
 
     class Meta:
         model = Factory
@@ -162,6 +141,7 @@ class FactoryModelDetailOut(ModelSchema):
     subscription_histories: Optional[List[SubscriptionHistoryOut]] = Field(
         [], description="구독 이력 리스트"
     )
+    trial_end_date: Optional[date] = Field(None, description="무료 체험 종료일")
 
     class Meta:
         model = Factory

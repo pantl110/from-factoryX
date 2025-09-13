@@ -7,7 +7,8 @@ from stock.models import Product, Material, MaterialHistory
 import json
 import jwt
 from django.conf import settings
-from datetime import datetime, timedelta, date
+from datetime import timedelta, date
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -88,7 +89,7 @@ class ProjectPlanAPITestCase(TestCase):
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -779,7 +780,6 @@ class ProjectPlanAPITestCase(TestCase):
     #         additional_plan.quantity, 44
     #     )  # (100-60) * 1.1 = 44 (buffer rate 적용)
 
-
     # 추가로 project plan 생성 안함
     # def test_create_or_update_project_plan_quantity_less_than_quotation_no_alternative_equipment(
     #     self,
@@ -1075,7 +1075,7 @@ class DashboardAPITestCase(TestCase):
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )

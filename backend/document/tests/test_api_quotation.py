@@ -4,13 +4,13 @@ from factory.models import Factory, FactoryClient, FactoryMember
 from document.models import Quotation, QuotationProduct
 from stock.models import Product
 from project.models import Project
-import json
 import jwt
 from django.conf import settings
-from datetime import datetime, timedelta, date
-from django.test import AsyncClient
+from datetime import timedelta, date
 from cfehome.urls import base_api
 from asgiref.sync import sync_to_async
+from django.utils import timezone
+from ninja.testing import TestAsyncClient
 
 User = get_user_model()
 
@@ -112,12 +112,12 @@ class QuotationDetailAPITestCase(TestCase):
         self.token = self.generate_jwt_token()
 
         # 테스트 클라이언트 생성
-        self.client = AsyncClient()
+        self.client = TestAsyncClient()
 
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )

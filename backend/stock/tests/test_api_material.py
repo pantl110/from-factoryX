@@ -6,7 +6,7 @@ from user.api import router as user_router
 from stock.api_material import router as material_router
 
 from user.models import User
-from factory.models import Factory, FactoryClient, FactoryMember
+from factory.models import Factory, FactoryMember
 from stock.models import Material
 from user.models import EmailVerification
 

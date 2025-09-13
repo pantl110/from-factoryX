@@ -7,6 +7,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 from document.models import Quotation, QuotationProduct
 from document.schemas.inbound import (
@@ -390,7 +391,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             production_quantity = int(base_quantity * (1 + buffer_rate))
 
             # 현재 시간을 기준으로 시작 시간 설정
-            start_datetime = datetime.now()
+            start_datetime = timezone.now()
             start_date = start_datetime.strftime("%Y-%m-%d")
 
             # 평균 생산 시간을 반영하여 마감 일자 계산
@@ -510,7 +511,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             "quotation_id": quotation.id,
             "project_id": project.id,
             "status": "production_waiting",
-            "created_at": datetime.now(),
+            "created_at": timezone.now(),
             "due_date": quotation.due_date.isoformat() if quotation.due_date else None,
             "production_plans": clean_production_plans,
         }

@@ -226,7 +226,7 @@ async def manufactured_to_delivery(request, project_id: int):
             "message": "생산 완료 프로젝트가 성공적으로 납품 처리되었습니다.",
             "project_id": project_id,
             "status": "delivery",
-            "processed_at": datetime.now().isoformat(),
+            "processed_at": timezone.now().isoformat(),
         }
 
     except Project.DoesNotExist:

@@ -1,10 +1,9 @@
-from django.test import TestCase, TransactionTestCase
+from django.test import TransactionTestCase
 from ninja.testing import TestAsyncClient
 from user.api import router
 from user.models import User, EmailVerification
 from django.utils import timezone
 from datetime import timedelta
-import json
 from asgiref.sync import sync_to_async
 
 

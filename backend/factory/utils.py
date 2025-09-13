@@ -1,8 +1,11 @@
 from ninja.errors import HttpError
 from factory.models import Factory, FactoryEquipment
 from factory.models import Factory, FactoryClient, FactoryMember
-from datetime import datetime
+from datetime import timedelta
+from django.utils import timezone
 from django.conf import settings
+from django.db.models import F
+from django.db.models.functions import TruncDate
 
 
 async def is_factory_member(factory_id: int, user=None):
@@ -70,13 +73,29 @@ async def get_factory_by_id(factory_id: int, user=None):
     """공장 ID로 공장을 조회하고 소유권을 검증합니다."""
     try:
         if user is None:
-            factory = await Factory.objects.prefetch_related(
-                "members", "subscription_histories__subscription"
-            ).aget(id=factory_id)
+            factory = (
+                await Factory.objects.prefetch_related(
+                    "members", "subscription_histories__subscription"
+                )
+                .annotate(
+                    trial_end_date=TruncDate(
+                        F("created_at") + timedelta(days=settings.TRIAL_PERIOD_DAYS)
+                    )
+                )
+                .aget(id=factory_id)
+            )
         else:
-            factory = await Factory.objects.prefetch_related(
-                "members", "subscription_histories__subscription"
-            ).aget(id=factory_id, owner=user)
+            factory = (
+                await Factory.objects.prefetch_related(
+                    "members", "subscription_histories__subscription"
+                )
+                .annotate(
+                    trial_end_date=TruncDate(
+                        F("created_at") + timedelta(days=settings.TRIAL_PERIOD_DAYS)
+                    )
+                )
+                .aget(id=factory_id, owner=user)
+            )
         return factory
     except Factory.DoesNotExist:
         raise HttpError(404, "해당 공장이 존재하지 않습니다.")
@@ -583,7 +602,7 @@ def create_inviting_data(email, role, invited_by):
         "email": email,
         "role": role,
         "invited_by": get_user_id(invited_by),
-        "invited_at": datetime.now().isoformat(),
+        "invited_at": timezone.now().isoformat(),
     }
 
 

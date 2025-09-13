@@ -89,7 +89,7 @@ class SchedulingAPITestCase(TestCase):
 
     def generate_jwt_token(self):
         return jwt.encode(
-            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )

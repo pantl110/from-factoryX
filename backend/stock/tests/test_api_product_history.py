@@ -1,12 +1,3 @@
-import os
-import django
-
-# Configure Django settings when the module is executed directly (e.g. `python test_api_product_history.py`)
-# When tests are executed via `manage.py test` or pytest-django, this will be a no-op because settings are already configured.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cfehome.settings")
-# Calling setup() multiple times is safe; Django will ignore subsequent calls.
-django.setup()
-
 from django.test import TestCase
 from ninja.testing import TestAsyncClient
 
@@ -53,7 +44,7 @@ class TestProductHistoryAPI(TestCase):
             unit="대",
             spec="승용차",
         )
-        
+
         self.product2 = Product.objects.create(
             factory=self.factory,
             name="건물",
@@ -61,7 +52,7 @@ class TestProductHistoryAPI(TestCase):
             unit="동",
             spec="상업용 건물",
         )
-        
+
         self.product3 = Product.objects.create(
             factory=self.factory,
             name="전자제품",
@@ -77,30 +68,31 @@ class TestProductHistoryAPI(TestCase):
             quantity=10,
             total_stock=10,
         )
-        
+
         self.history1_out = ProductHistory.objects.create(
             product=self.product1,
             type=ProductHistory.ProductHistoryType.OUT,
             quantity=5,
             total_stock=5,
         )
-        
+
         self.history2_in = ProductHistory.objects.create(
             product=self.product2,
             type=ProductHistory.ProductHistoryType.IN,
             quantity=20,
             total_stock=20,
         )
-        
+
         self.history3_out = ProductHistory.objects.create(
             product=self.product3,
             type=ProductHistory.ProductHistoryType.OUT,
             quantity=15,
             total_stock=15,
         )
-        
+
         # FactoryMember 생성 (권한 검증을 위해)
         from factory.models import FactoryMember
+
         FactoryMember.objects.create(
             factory=self.factory,
             user=self.user,
@@ -127,7 +119,9 @@ class TestProductHistoryAPI(TestCase):
             "quantity": 5,
             "total_stock": 5,
         }
-        response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertIn("id", data)
@@ -136,7 +130,9 @@ class TestProductHistoryAPI(TestCase):
     async def test_list_histories_without_filter(self):
         """[R] 제품 입출고 이력 목록 조회 (필터 없음)"""
         headers = await self.authenticate()
-        response = await self.client.get(f"?factory_id={self.factory.id}", headers=headers)
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}", headers=headers
+        )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
@@ -148,8 +144,8 @@ class TestProductHistoryAPI(TestCase):
         """[R] 제품 입출고 이력 목록 조회 - product_id 필터"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"?factory_id={self.factory.id}&product_id={self.product1.id}", 
-            headers=headers
+            f"?factory_id={self.factory.id}&product_id={self.product1.id}",
+            headers=headers,
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -157,19 +153,17 @@ class TestProductHistoryAPI(TestCase):
         self.assertIn("count", data)
         # product1의 히스토리만 조회되어야 함 (2개)
         self.assertEqual(data["count"], 2)
-        
+
         # 모든 아이템이 product1에 속하는지 확인
         for item in data["data"]:
             self.assertEqual(item["product_id"], self.product1.id)
-
-
 
     async def test_list_histories_by_date_range(self):
         """[R] 제품 입출고 이력 목록 조회 - 날짜 범위 필터"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"?factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31", 
-            headers=headers
+            f"?factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31",
+            headers=headers,
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -182,8 +176,8 @@ class TestProductHistoryAPI(TestCase):
         """[R] 제품 입출고 이력 목록 조회 - 복합 필터 (product_id + 날짜)"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"?factory_id={self.factory.id}&product_id={self.product1.id}&start_date=2025-01-01", 
-            headers=headers
+            f"?factory_id={self.factory.id}&product_id={self.product1.id}&start_date=2025-01-01",
+            headers=headers,
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -191,7 +185,7 @@ class TestProductHistoryAPI(TestCase):
         self.assertIn("count", data)
         # product1의 2025년 이후 히스토리만 조회되어야 함 (2개)
         self.assertEqual(data["count"], 2)
-        
+
         # 아이템이 product1에 속하는지 확인
         item = data["data"][0]
         self.assertEqual(item["product_id"], self.product1.id)
