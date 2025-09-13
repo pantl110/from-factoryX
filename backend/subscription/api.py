@@ -231,6 +231,14 @@ async def process_subscription_payment(
             payment.status = "DONE"
             payment.method = payment_result.get("method")
             payment.approved_at = timezone.now()
+
+            # 카드 정보 저장
+            card_info = payment_result.get("card", {})
+            payment.card_company = card_info.get("company")
+            payment.card_type = card_info.get("cardType")
+            payment.card_number = card_info.get("number")
+            payment.card_owner_type = card_info.get("ownerType")
+
             payment.save()
             return payment
 
@@ -248,12 +256,20 @@ async def process_subscription_payment(
             # 스크랩 등록 실패해도 결제는 성공으로 처리
 
         result = PaymentResultOut(
+            # 구독 정보
+            subscription_id=subscription.id,
+            subscription_type=subscription.type,
             payment_key=payment_result.get("paymentKey"),
             order_id=order_id,
             amount=int(subscription.price),
             status="DONE",
             approved_at=updated_payment.approved_at,
             method=payment_result.get("method"),
+            # 카드 정보
+            card_company=payment_result.get("card", {}).get("company"),
+            card_type=payment_result.get("card", {}).get("cardType"),
+            card_number=payment_result.get("card", {}).get("number"),
+            card_owner_type=payment_result.get("card", {}).get("ownerType"),
         )
 
         logger.info(
@@ -461,12 +477,19 @@ async def renew_subscription(request, factory_id: int):
             # 스크랩 등록 실패해도 구독 갱신은 성공으로 처리
 
         result = PaymentResultOut(
+            subscription_id=subscription.id,
+            subscription_type=subscription.type,
             payment_key=payment.payment_key,
             order_id=payment.order_id,
             amount=int(payment.amount),
             status=payment.status,
             approved_at=payment.approved_at,
             method=payment.method,
+            # 카드 정보
+            card_company=payment.card_company,
+            card_type=payment.card_type,
+            card_number=payment.card_number,
+            card_owner_type=payment.card_owner_type,
         )
 
         logger.info(f"구독 갱신 성공: factory_id={factory_id}")

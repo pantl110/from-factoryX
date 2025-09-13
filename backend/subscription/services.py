@@ -203,6 +203,14 @@ class SubscriptionBillingService:
             payment.status = "DONE"
             payment.method = payment_result.get("method")
             payment.approved_at = timezone.now()
+
+            # 카드 정보 저장
+            card_info = payment_result.get("card", {})
+            payment.card_company = card_info.get("company")
+            payment.card_type = card_info.get("cardType")
+            payment.card_number = card_info.get("number")
+            payment.card_owner_type = card_info.get("ownerType")
+
             payment.save()
 
             # 다음 결제일 업데이트

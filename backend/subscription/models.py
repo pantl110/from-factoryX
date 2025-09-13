@@ -83,3 +83,17 @@ class Payment(BaseModel):
     failure_message = models.CharField(
         max_length=255, null=True, blank=True, help_text="실패 메시지"
     )
+
+    # 카드 정보
+    card_company = models.CharField(
+        max_length=50, null=True, blank=True, help_text="카드사명"
+    )
+    card_type = models.CharField(
+        max_length=20, null=True, blank=True, help_text="카드 타입 (신용/체크)"
+    )
+    card_number = models.CharField(
+        max_length=20, null=True, blank=True, help_text="마스킹된 카드번호"
+    )
+    card_owner_type = models.CharField(
+        max_length=20, null=True, blank=True, help_text="카드 소유자 타입 (개인/법인)"
+    )
