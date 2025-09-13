@@ -1,5 +1,4 @@
 from ninja import ModelSchema, Schema, Field
-from factory.schemas.outbound import FactoryOut
 from subscription.models import Subscription, SubscriptionHistory, Payment
 from typing import Optional
 from datetime import datetime

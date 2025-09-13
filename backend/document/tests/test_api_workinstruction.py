@@ -6,7 +6,8 @@ from document.models import WorkInstruction
 from factory.models import Factory, FactoryMember
 import jwt
 from django.conf import settings
-from datetime import datetime, timedelta
+from datetime import timedelta
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -37,7 +38,7 @@ class TestWorkInstructionAPI(TestCase):
     def _get_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )

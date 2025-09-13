@@ -36,6 +36,10 @@ def _invite_member(factory_id: str, payload: InviteMemberIn, auth_user):
     # 1. 이메일로 사용자 조회
     invite_user = _get_user_from_email(email)
 
+    if invite_user is None:
+        # 새 사용자 초대
+        return _invite_new_user(factory, email, role, invited_by=auth_user)
+
     if invite_user.status == User.UserStatusChoice.withdraw:
         raise HttpError(400, "탈퇴한 사용자입니다.")
 

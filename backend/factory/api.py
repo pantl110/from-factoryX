@@ -8,6 +8,10 @@ from ninja.errors import HttpError
 from factory.utils import get_factory_by_id, is_factory_member
 from asgiref.sync import sync_to_async
 from django.db.models import Prefetch
+from django.db.models import F
+from django.db.models.functions import TruncDate
+from datetime import timedelta
+from django.conf import settings
 
 
 router = Router(tags=["Factory"])
@@ -72,6 +76,11 @@ async def list_factories(request):
             Factory.objects.prefetch_related("members", user_member_prefetch)
             .filter(
                 members__user=user, members__status=FactoryMember.MemberStatus.active
+            )
+            .annotate(
+                trial_end_date=TruncDate(
+                    F("created_at") + timedelta(days=settings.TRIAL_PERIOD_DAYS)
+                )
             )
             .order_by("-members__invited_at")
             .distinct()
