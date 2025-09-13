@@ -35,6 +35,10 @@ class PaymentOut(ModelSchema):
             "approved_at",
             "failure_code",
             "failure_message",
+            "card_company",
+            "card_type",
+            "card_number",
+            "card_owner_type",
             "created_at",
             "updated_at",
         ]
@@ -53,12 +57,23 @@ class BillingKeyIssueOut(Schema):
 class PaymentResultOut(Schema):
     """결제 결과 응답 스키마"""
 
+    # 구독 정보
+    subscription_id: int = Field(..., description="구독 ID")
+    subscription_type: str = Field(..., description="구독 타입")
     payment_key: str = Field(..., description="결제키")
     order_id: str = Field(..., description="주문ID")
     amount: int = Field(..., description="결제 금액")
     status: str = Field(..., description="결제 상태")
     approved_at: Optional[datetime] = Field(None, description="승인 일시")
     method: Optional[str] = Field(None, description="결제 방법")
+
+    # 카드 정보
+    card_company: Optional[str] = Field(None, description="카드사명")
+    card_type: Optional[str] = Field(None, description="카드 타입 (신용/체크)")
+    card_number: Optional[str] = Field(None, description="마스킹된 카드번호")
+    card_owner_type: Optional[str] = Field(
+        None, description="카드 소유자 타입 (개인/법인)"
+    )
 
 
 class PaymentCancelOut(Schema):
