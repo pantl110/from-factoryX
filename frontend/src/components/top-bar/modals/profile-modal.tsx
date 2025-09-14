@@ -59,7 +59,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
     >
       <div className="flex gap-6 mb-2">
         {/* 프로필 사진 */}
-        <div>
+        <div className="shrink-0">
           <ProfileImage />
         </div>
 

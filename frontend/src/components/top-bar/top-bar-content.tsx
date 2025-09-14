@@ -432,14 +432,6 @@ const TopBarContent = ({
           )}
         </div>
       </div>
-
-      {/* {isTaxPanelOpen && (
-        <TaxDetailPanel
-          onClose={() => setIsTaxPanelOpen(false)}
-          itemId={taxId || undefined}
-          projectId={projectId}
-        />
-      )} */}
     </>
   );
 };

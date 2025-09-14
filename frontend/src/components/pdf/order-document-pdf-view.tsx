@@ -37,18 +37,18 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <p className="label">회사명</p>
+                <div>회사명</div>
               </div>
               <div className="content">
-                <p>{clientData.name}</p>
+                <div>{clientData.name}</div>
               </div>
             </div>
             <div className="pdf-table-cell">
               <div className="label">
-                <p>사업자등록번호</p>
+                <div>사업자등록번호</div>
               </div>
               <div className="content">
-                <p>{clientData.business_registration_number}</p>
+                <div>{clientData.business_registration_number}</div>
               </div>
             </div>
           </div>
@@ -57,18 +57,18 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <p>대표자명</p>
+                <div>대표자명</div>
               </div>
               <div className="content">
-                <p>{clientData.representative_name}</p>
+                <div>{clientData.representative_name}</div>
               </div>
             </div>
             <div className="pdf-table-cell">
               <div className="label">
-                <p>납기일자</p>
+                <div>납기일자</div>
               </div>
               <div className="content">
-                <p>{dueDate}</p>
+                <div>{dueDate}</div>
               </div>
             </div>
           </div>
@@ -77,18 +77,18 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <p>업태</p>
+                <div>업태</div>
               </div>
               <div className="content">
-                <p>{clientData.business_type}</p>
+                <div>{clientData.business_type}</div>
               </div>
             </div>
             <div className="pdf-table-cell">
               <div className="label">
-                <p>종목</p>
+                <div>종목</div>
               </div>
               <div className="content">
-                <p>{clientData.business_category}</p>
+                <div>{clientData.business_category}</div>
               </div>
             </div>
           </div>
@@ -97,18 +97,18 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <p>이메일</p>
+                <div>이메일</div>
               </div>
               <div className="content">
-                <p>{clientData.email}</p>
+                <div>{clientData.email}</div>
               </div>
             </div>
             <div className="pdf-table-cell">
               <div className="label">
-                <p>연락처</p>
+                <div>연락처</div>
               </div>
               <div className="content">
-                <p>{clientData.phone}</p>
+                <div>{clientData.phone}</div>
               </div>
             </div>
           </div>
@@ -117,10 +117,10 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <p>팩스 번호</p>
+                <div>팩스 번호</div>
               </div>
               <div className="content">
-                <p>{clientData.fax || '-'}</p>
+                <div>{clientData.fax || '-'}</div>
               </div>
             </div>
           </div>
@@ -129,10 +129,10 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <p>사업장 주소</p>
+                <div>사업장 주소</div>
               </div>
               <div className="content">
-                <p>{clientData.address}</p>
+                <div>{clientData.address}</div>
               </div>
             </div>
           </div>
@@ -146,54 +146,54 @@ const OrderDocumentPDFView = ({
         <div className="pdf-product-table">
           <div className="pdf-product-table-header">
             <div style={{ flex: 1 }}>
-              <p>품목명</p>
+              <div>품목명</div>
             </div>
             <div style={{ flex: 1 }}>
-              <p>품목코드</p>
+              <div>품목코드</div>
             </div>
             <div style={{ flex: 1 }}>
-              <p>규격</p>
+              <div>규격</div>
             </div>
             <div style={{ width: '80px' }}>
-              <p>단위</p>
+              <div>단위</div>
             </div>
             <div style={{ flex: 1 }}>
-              <p>제작 수량</p>
+              <div>제작 수량</div>
             </div>
             <div style={{ width: '100px' }}>
-              <p>단가</p>
+              <div>단가</div>
             </div>
             <div style={{ flex: 1 }}>
-              <p>금액</p>
+              <div>금액</div>
             </div>
           </div>
           <div>
             {productItems.map((item, index) => (
               <div key={index} className="pdf-product-table-body">
                 <div style={{ flex: 1 }}>
-                  <p>{item.product_name || '-'}</p>
+                  <div>{item.product_name || '-'}</div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p>{item.product_code || '-'}</p>
+                  <div>{item.product_code || '-'}</div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p>{item.spec || '-'}</p>
+                  <div>{item.spec || '-'}</div>
                 </div>
                 <div style={{ width: '80px' }}>
-                  <p>{item.unit || '-'}</p>
+                  <div>{item.unit || '-'}</div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p>{item.quantity?.toLocaleString() || '-'}</p>
+                  <div>{item.quantity?.toLocaleString() || '-'}</div>
                 </div>
                 <div style={{ width: '100px' }}>
-                  <p>{item.unit_price?.toLocaleString() || '-'}</p>
+                  <div>{item.unit_price?.toLocaleString() || '-'}</div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p>
+                  <div>
                     {item.quantity && item.unit_price
                       ? (item.quantity * item.unit_price).toLocaleString()
                       : '-'}
-                  </p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -205,34 +205,34 @@ const OrderDocumentPDFView = ({
           <div className="pdf-summary-row">
             <div className="pdf-summary-label">공급가액</div>
             <div className="pdf-summary-value-wrapper">
-              <p className="pdf-summary-value">
+              <div className="pdf-summary-value">
                 {supplyAmount?.toLocaleString() || 0}
-              </p>
-              <p className="pdf-summary-unit">원</p>
+              </div>
+              <div className="pdf-summary-unit">원</div>
             </div>
           </div>
 
           <div className="pdf-summary-row">
             <div className="pdf-summary-label">세액(VAT 10%)</div>
             <div className="pdf-summary-value-wrapper">
-              <p className="pdf-summary-value">
+              <div className="pdf-summary-value">
                 {(
                   supplyAmount && Math.floor(supplyAmount / 10)
                 )?.toLocaleString() || 0}
-              </p>
-              <p className="pdf-summary-unit">원</p>
+              </div>
+              <div className="pdf-summary-unit">원</div>
             </div>
           </div>
 
           <div className="pdf-summary-row">
             <div className="pdf-summary-label">합계금액</div>
             <div className="pdf-summary-value-wrapper">
-              <p className="pdf-summary-value">
+              <div className="pdf-summary-value">
                 {(
                   supplyAmount && Math.floor(supplyAmount / 10) + supplyAmount
                 )?.toLocaleString() || 0}
-              </p>
-              <p className="pdf-summary-unit">원</p>
+              </div>
+              <div className="pdf-summary-unit">원</div>
             </div>
           </div>
         </div>
