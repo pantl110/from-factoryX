@@ -53,7 +53,9 @@ const ProductionDocumentView = ({
                   unit={item.unit}
                   productionQuantity={item.production_quantity || 0}
                   machine={item.equipment_name || '-'}
-                  productionTime={item.production_time || null}
+                  productionTime={
+                    item.start_date.split('T')[1]?.slice(0, 5) || null
+                  }
                 />
               ))}
             </div>
