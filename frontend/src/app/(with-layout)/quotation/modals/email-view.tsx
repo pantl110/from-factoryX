@@ -39,7 +39,7 @@ const EmailView = ({
   quotationId,
 }: EmailViewProps) => {
   const [isEmailSending, setIsEmailSending] = useState(false);
-  // const [isPDFGenerating, setIsPDFGenerating] = useState(false);
+  const [isPDFGenerating, setIsPDFGenerating] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
   const { sendQuotationEmail, isLoading } = useSendQuotationEmail();
 
@@ -113,55 +113,55 @@ const EmailView = ({
   };
 
   // PDF 미리보기 함수
-  // const handlePreviewPDF = async () => {
-  //   if (!pdfRef.current || isPDFGenerating) return;
+  const handlePreviewPDF = async () => {
+    if (!pdfRef.current || isPDFGenerating) return;
 
-  //   setIsPDFGenerating(true);
-  //   try {
-  //     const canvas = await html2canvas(pdfRef.current, {
-  //       scale: 2,
-  //       useCORS: false,
-  //       allowTaint: false,
-  //       backgroundColor: '#ffffff',
-  //       logging: false,
-  //     });
+    setIsPDFGenerating(true);
+    try {
+      const canvas = await html2canvas(pdfRef.current, {
+        scale: 2,
+        useCORS: false,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
 
-  //     const imgData = canvas.toDataURL('image/png');
-  //     const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
 
-  //     const imgWidth = 210; // A4 너비 (mm)
-  //     const pageHeight = 295; // A4 높이 (mm)
-  //     const marginPx = 32;
-  //     const marginMm = marginPx * 0.264583;
-  //     const availableWidth = imgWidth - marginMm * 2;
-  //     const imgHeight = (canvas.height * availableWidth) / canvas.width;
-  //     const availableHeight = pageHeight - marginMm * 2;
-  //     let heightLeft = imgHeight;
+      const imgWidth = 210; // A4 너비 (mm)
+      const pageHeight = 295; // A4 높이 (mm)
+      const marginPx = 32;
+      const marginMm = marginPx * 0.264583;
+      const availableWidth = imgWidth - marginMm * 2;
+      const imgHeight = (canvas.height * availableWidth) / canvas.width;
+      const availableHeight = pageHeight - marginMm * 2;
+      let heightLeft = imgHeight;
 
-  //     // 첫 번째 페이지
-  //     pdf.addImage(imgData, 'PNG', marginMm, 0, availableWidth, imgHeight);
-  //     heightLeft -= availableHeight;
+      // 첫 번째 페이지
+      pdf.addImage(imgData, 'PNG', marginMm, 0, availableWidth, imgHeight);
+      heightLeft -= availableHeight;
 
-  //     // 추가 페이지가 필요한 경우
-  //     while (heightLeft >= 0) {
-  //       pdf.addPage();
-  //       pdf.addImage(imgData, 'PNG', marginMm, 0, availableWidth, imgHeight);
-  //       heightLeft -= availableHeight;
-  //     }
+      // 추가 페이지가 필요한 경우
+      while (heightLeft >= 0) {
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', marginMm, 0, availableWidth, imgHeight);
+        heightLeft -= availableHeight;
+      }
 
-  //     // PDF를 새 탭에서 열기
-  //     const pdfBlob = pdf.output('blob');
-  //     const pdfUrl = URL.createObjectURL(pdfBlob);
-  //     window.open(pdfUrl, '_blank');
+      // PDF를 새 탭에서 열기
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
 
-  //     // 메모리 정리
-  //     setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
-  //   } catch (error) {
-  //     alert('PDF 미리보기 중 오류가 발생했습니다: ' + error);
-  //   } finally {
-  //     setIsPDFGenerating(false);
-  //   }
-  // };
+      // 메모리 정리
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+    } catch (error) {
+      alert('PDF 미리보기 중 오류가 발생했습니다: ' + error);
+    } finally {
+      setIsPDFGenerating(false);
+    }
+  };
 
   const handleSendEmail = async () => {
     if (isLoading || !quotationId) return;
@@ -222,15 +222,15 @@ const EmailView = ({
             </div>
             <div className="flex gap-2">
               {/* PDF 미리보기 버튼 */}
-              {/* <button
-              onClick={handlePreviewPDF}
-              disabled={isPDFGenerating}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="Me_Body-2">
-                {isPDFGenerating ? 'PDF 생성 중...' : 'PDF 미리보기'}
-              </span>
-            </button> */}
+              <button
+                onClick={handlePreviewPDF}
+                disabled={isPDFGenerating}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="Me_Body-2">
+                  {isPDFGenerating ? 'PDF 생성 중...' : 'PDF 미리보기'}
+                </span>
+              </button>
 
               {/* 이메일 전송 버튼 */}
               <MiniBtn
