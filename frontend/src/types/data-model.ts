@@ -1319,6 +1319,21 @@ export interface CashReceiptSyncResponseModel {
   purchase_count: number;
 }
 
+//////////////////////
+// Work Instruction API
+export interface WorkInstructionResponseModel {
+  id: number;
+  factory: number;
+  plans: TodayProductionPlanModel[];
+  memo: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkInstructionListResponseModel extends PaginationModel {
+  data: WorkInstructionResponseModel[];
+}
+
 ////////////
 // 바로빌 관련 api
 export interface BarobillCorpCertModel {
@@ -1380,6 +1395,7 @@ export interface PaymentListResponseModel extends PaginationModel {
   data: PaymentResponseModel[];
 }
 
+import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
 // export interface BillingKeyIssueResponseModel {
 //   billing_key: string;
 //   customer_key: string;

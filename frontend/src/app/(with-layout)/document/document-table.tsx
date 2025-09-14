@@ -3,11 +3,15 @@ import DocumentTableItem from './document-table-item';
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
+  WorkInstructionResponseModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
 interface DocumentTableProps {
-  data: PublishedTaxInvoiceResponseModel[] | ProjectResponseModel[];
+  data:
+    | PublishedTaxInvoiceResponseModel[]
+    | ProjectResponseModel[]
+    | WorkInstructionResponseModel[];
   selectedType: string;
   onTaxSortChange?: (
     field: 'transaction_date' | 'created_at',
@@ -17,6 +21,8 @@ interface DocumentTableProps {
   taxSortDirection: 'asc' | 'desc';
   onProjectSortClick?: (direction: 'asc' | 'desc') => void;
   projectSortDirection?: 'asc' | 'desc';
+  onWorkInstructionSortClick?: (direction: 'asc' | 'desc') => void;
+  workInstructionSortDirection?: 'asc' | 'desc';
 }
 
 const DocumentTable = ({
@@ -27,6 +33,8 @@ const DocumentTable = ({
   taxSortDirection,
   onProjectSortClick,
   projectSortDirection = 'desc',
+  onWorkInstructionSortClick,
+  workInstructionSortDirection = 'desc',
 }: DocumentTableProps) => {
   const handleTaxSortClick = (field: 'transaction_date' | 'created_at') => {
     let newDirection: 'asc' | 'desc';
@@ -39,14 +47,19 @@ const DocumentTable = ({
     // 부모 컴포넌트에 정렬 변경 알림
     onTaxSortChange?.(field, newDirection);
   };
-
   const handleProjectSortClick = () => {
     const newDirection = projectSortDirection === 'asc' ? 'desc' : 'asc';
     onProjectSortClick?.(newDirection);
   };
+  const handleWorkInstructionSortClick = () => {
+    const newDirection =
+      workInstructionSortDirection === 'asc' ? 'desc' : 'asc';
+    onWorkInstructionSortClick?.(newDirection);
+  };
 
   const taxData = data as PublishedTaxInvoiceResponseModel[];
   const projectData = data as ProjectResponseModel[];
+  const workInstructionData = data as WorkInstructionResponseModel[];
 
   return (
     <>
@@ -90,7 +103,11 @@ const DocumentTable = ({
                 <p className="px-3 flex-1">품목명</p>
                 <div
                   className="px-3 flex-[0.5] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
-                  onClick={handleProjectSortClick}
+                  onClick={
+                    selectedType === '생산지시서'
+                      ? handleWorkInstructionSortClick
+                      : handleProjectSortClick
+                  }
                 >
                   <p className="">등록일자</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
@@ -101,6 +118,14 @@ const DocumentTable = ({
 
           {(selectedType === '주문서' || selectedType === '거래명세서') &&
             projectData.map((item) => (
+              <DocumentTableItem
+                key={item.id}
+                data={item}
+                documentType={selectedType}
+              />
+            ))}
+          {selectedType === '생산지시서' &&
+            workInstructionData.map((item) => (
               <DocumentTableItem
                 key={item.id}
                 data={item}

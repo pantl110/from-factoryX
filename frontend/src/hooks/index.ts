@@ -150,7 +150,7 @@ export { default as useLocation } from './stock/use-location';
 
 // Document related hooks
 export { default as useOcrUpload } from './document/quotation/use-ocr-upload';
-export { default as useGetDetailQuotation } from './document/use-get-quotation';
+export { default as useGetDetailQuotation } from './document/quotation/use-get-quotation';
 export { default as useSaveDraftQuotation } from './document/quotation/use-save-draft-quotation';
 export { default as useStartProduction } from './document/quotation/use-start-production';
 export { default as useGetQuotationProducts } from './document/quotation/use-get-quotation-products';
@@ -158,6 +158,7 @@ export { default as useGetQuotationProductDetail } from './document/quotation/us
 export { default as useGetQuotationHistory } from './document/quotation/use-get-quotation-history';
 export { useUpdateQuotationProductDelivery } from './document/quotation/use-update-quotation-product-delivery';
 export { default as useSendQuotationEmail } from './document/quotation/use-send-quotation-email';
+export { default as useGetWorkInstructions } from './document/work-instruction/use-get-work-instructions';
 
 // Production related hooks // 생산계획에서 form 유효성 검사 훅
 export { useProductionPlanValidation } from './production/use-production-plan-validation';

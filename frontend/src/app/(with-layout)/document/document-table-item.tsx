@@ -1,13 +1,11 @@
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
-  ProjectStatusResponseModel,
-  ClientModel,
-  QuotationProductDetailResponseModel,
+  WorkInstructionResponseModel,
 } from '@/types/data-model';
 import Chip from '@/ui/chip';
 import { DocumentType, DocumentTypeColorMap } from './types';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Panel from '@/ui/panel';
 import TaxDocumentView from './tax-document-view';
 import {
@@ -15,30 +13,30 @@ import {
   getProductNamesDisplay,
 } from '@/utils/get-product-names-display';
 import TransactionDocumentView from './transaction-document-view';
-import { useGetProjectStatus } from '@/hooks';
 import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 import OrderDocumentView from './order-document-view';
+import ProductionDocumentView from './production-document-view';
 
 interface DocumentTableItemProps {
-  data: ProjectResponseModel | PublishedTaxInvoiceResponseModel;
+  data:
+    | ProjectResponseModel
+    | PublishedTaxInvoiceResponseModel
+    | WorkInstructionResponseModel;
   documentType: DocumentType;
 }
 
 const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
   const [isOrderPanelOpen, setIsOrderPanelOpen] = useState(false);
   const [isTransactionPanelOpen, setIsTransactionPanelOpen] = useState(false);
+  const [isWorkInstructionPanelOpen, setIsWorkInstructionPanelOpen] =
+    useState(false);
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
-  // 주문서, 거래명세서 페이지 열릴 때
-  const [projectStatusData, setProjectStatusData] =
-    useState<ProjectStatusResponseModel | null>(null);
-
-  const { getProjectStatus, isLoading: isProjectStatusLoading } =
-    useGetProjectStatus();
 
   const { bgColor, textColor } = DocumentTypeColorMap[documentType];
 
   const taxData = data as PublishedTaxInvoiceResponseModel;
   const projectData = data as ProjectResponseModel;
+  const workInstructionData = data as WorkInstructionResponseModel;
 
   // 항목 클릭 시
   const handleItemClick = () => {
@@ -46,6 +44,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
       setIsOrderPanelOpen(true);
     } else if (documentType === '거래명세서') {
       setIsTransactionPanelOpen(true);
+    } else if (documentType === '생산지시서') {
+      setIsWorkInstructionPanelOpen(true);
     } else if (
       documentType === '매출 세금계산서' ||
       documentType === '매입 세금계산서'
@@ -53,21 +53,6 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
       setIsTaxPanelOpen(true);
     }
   };
-
-  // 거래명세서 패널이 열릴 때만 프로젝트 상태 데이터 가져오기
-  useEffect(() => {
-    if (!isTransactionPanelOpen || documentType !== '거래명세서') return;
-
-    const fetchProjectStatus = async () => {
-      const projectId = (data as ProjectResponseModel).id;
-      const result = await getProjectStatus(projectId);
-      if (result.success && result.data) {
-        setProjectStatusData(result.data);
-      }
-    };
-
-    fetchProjectStatus();
-  }, [isTransactionPanelOpen, documentType, data, getProjectStatus]);
 
   return (
     <>
@@ -126,10 +111,44 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               )?.toLocaleString() || '-'}
             </p>
             <p className="px-3 w-[150px]">
-              {taxData.transaction_date.split('T')[0] || '-'}
+              {taxData.transaction_date?.split('T')[0] || '-'}
             </p>
             <p className="px-3 w-[150px]">
-              {taxData.created_at.split('T')[0] || '-'}
+              {taxData.created_at?.split('T')[0] || '-'}
+            </p>
+          </>
+        ) : documentType === '생산지시서' ? (
+          <>
+            <div className="px-3 flex-[0.5]">
+              <Chip
+                text={documentType}
+                bgColor={bgColor}
+                textColor={textColor}
+              />
+            </div>
+            <p
+              className="px-3 flex-1 truncate"
+              title={workInstructionData.plans[0].company_name || '-'}
+            >
+              {workInstructionData.plans[0].company_name || '-'}
+            </p>
+            <p
+              className="px-3 flex-1 truncate"
+              title={
+                getProductNamesDisplay(
+                  workInstructionData.plans.map((plan) => plan.product_name)
+                ) || '-'
+              }
+            >
+              {getProductNamesDisplay(
+                workInstructionData.plans.map((plan) => plan.product_name)
+              ) || '-'}
+            </p>
+            <p
+              className="px-3 flex-[0.5] truncate"
+              title={workInstructionData.created_at?.split('T')[0] || '-'}
+            >
+              {workInstructionData.created_at?.split('T')[0] || '-'}
             </p>
           </>
         ) : projectData ? (
@@ -157,13 +176,13 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               className="px-3 flex-[0.5] truncate"
               title={
                 documentType === '주문서'
-                  ? projectData.confirmed_at || '-'
-                  : projectData.printed_at || '-'
+                  ? projectData.confirmed_at?.split('T')[0] || '-'
+                  : projectData.printed_at?.split('T')[0] || '-'
               }
             >
               {documentType === '주문서'
-                ? projectData.confirmed_at || '-'
-                : projectData.printed_at || '-'}
+                ? projectData.confirmed_at?.split('T')[0] || '-'
+                : projectData.printed_at?.split('T')[0] || '-'}
             </p>
           </>
         ) : null}
@@ -198,20 +217,27 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           />
         </Panel>
       )}
+      {/* 생산지시서 디테일 판넬 */}
+      {isWorkInstructionPanelOpen && (
+        <Panel
+          title="생산지시서"
+          onClose={() => setIsWorkInstructionPanelOpen(false)}
+        >
+          <ProductionDocumentView
+            todayProductionPlans={workInstructionData.plans}
+          />
+        </Panel>
+      )}
       {/* 거래명세서 디테일 판넬 */}
       {isTransactionPanelOpen && (
         <Panel
           title="거래명세서"
           onClose={() => setIsTransactionPanelOpen(false)}
         >
-          {isProjectStatusLoading ? (
-            <></>
-          ) : projectStatusData && projectStatusData.quotations.length > 0 ? (
+          {projectData && projectData.quotations.length > 0 ? (
             <TransactionDocumentView
-              quotationData={projectStatusData.quotations[0]}
-              lastDeliveryDate={getLastDeliveryDate(
-                projectStatusData.quotations[0]
-              )}
+              quotationData={projectData.quotations[0]}
+              lastDeliveryDate={getLastDeliveryDate(projectData.quotations[0])}
             />
           ) : (
             <></>

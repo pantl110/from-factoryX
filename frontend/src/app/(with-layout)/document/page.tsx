@@ -7,10 +7,11 @@ import DocumentTable from './document-table';
 import Pagination from '@/components/pagination';
 import { DocumentType } from './types';
 import Spinner from '@/ui/spinner';
-import { useGetPublishedTaxInvoices } from '@/hooks';
+import { useGetPublishedTaxInvoices, useGetWorkInstructions } from '@/hooks';
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
+  WorkInstructionResponseModel,
 } from '@/types/data-model';
 import useGetProjects from '@/hooks/project/use-get-projects';
 import SearchInput from '@/ui/search-input';
@@ -39,14 +40,16 @@ const DocumentPageContent = () => {
   const { getProjects, isLoading: isProjectDataLoading } = useGetProjects();
   const { getPublishedTaxInvoices, isLoading: isTaxDataLoading } =
     useGetPublishedTaxInvoices();
+  const { getWorkInstructions, isLoading: isWorkInstructionLoading } =
+    useGetWorkInstructions();
 
   // 주문서 데이터 상태
   const [orderDocuments, setOrderDocuments] = useState<ProjectResponseModel[]>(
     []
   );
   //생산지시서 데이터 상태
-  const [productionDocuments, _setProductionDocuments] = useState<
-    ProjectResponseModel[]
+  const [workInstructions, setWorkInstructions] = useState<
+    WorkInstructionResponseModel[]
   >([]);
   // 거래명세서 데이터 상태
   const [transactionDocuments, setTransactionDocuments] = useState<
@@ -109,7 +112,18 @@ const DocumentPageContent = () => {
 
       fetchOrderData();
     } else if (selectedType === '생산지시서') {
-      const fetchProductionData = async () => {};
+      const fetchProductionData = async () => {
+        const result = await getWorkInstructions(
+          projectSortDirection === 'asc' ? 'created_at' : '-created_at',
+          currentPage,
+          10
+        );
+
+        if (result.success && result.data) {
+          setWorkInstructions(result.data.data || []);
+          setTotalPages(result.data.pageCnt || 1);
+        }
+      };
       fetchProductionData();
     } else if (selectedType === '거래명세서') {
       // 거래명세서일 때 프로젝트 완료 상태인 프로젝트 가져오기
@@ -140,27 +154,24 @@ const DocumentPageContent = () => {
     projectSortDirection,
     getPublishedTaxInvoices,
     getProjects,
+    getWorkInstructions,
   ]);
 
   // 현재 표시할 데이터 결정
   const isOrderDocument = selectedType === '주문서';
-  const isProductionDocument = selectedType === '생산지시서';
+  const isWorkInstructions = selectedType === '생산지시서';
   const isTransactionDocument = selectedType === '거래명세서';
   const isTaxDocument =
     selectedType === '매출 세금계산서' || selectedType === '매입 세금계산서';
   const currentData = isOrderDocument
     ? orderDocuments
-    : isProductionDocument
-      ? productionDocuments
+    : isWorkInstructions
+      ? workInstructions
       : isTransactionDocument
         ? transactionDocuments
         : isTaxDocument
           ? taxInvoices
           : [];
-
-  // const handleDocumentClick = (document: DocumentDataModel) => {
-  //   setSelectedDocument(document);
-  // };
 
   // 탭 변경 핸들러
   const handleTabChange = (type: DocumentType) => {
@@ -191,7 +202,8 @@ const DocumentPageContent = () => {
           </div>
 
           {(isTaxDocument && isTaxDataLoading) ||
-          (!isTaxDocument && isProjectDataLoading) ? (
+          (isWorkInstructions && isWorkInstructionLoading) ||
+          (!isTaxDocument && !isWorkInstructions && isProjectDataLoading) ? (
             <div className="flex justify-center items-center h-100">
               <Spinner />
             </div>
@@ -224,47 +236,6 @@ const DocumentPageContent = () => {
           )}
         </div>
       </div>
-
-      {/* 판넬 */}
-      {/* {selectedDocument && selectedDocument.documentType === '주문서' && (
-        <Panel title="주문서" onClose={() => setSelectedDocument(null)}>
-          <OrderDocumentView
-            documentTitle={'주문서'}
-            clientData={{
-              name: '플라스틱이 좋아',
-              business_registration_number: '123-45-67890',
-              representative_name: '플라스틱',
-              email: 'plastic@gmail.com',
-              phone: '010-1234-5678',
-              fax: '02-123-4567',
-              business_type: '소프트웨어',
-              business_category: '소프트웨어',
-              address: '서울시 강남구 역삼동',
-            }}
-            dueDate={'2025-08-01'}
-            productListInfoTitle={'상품 목록'}
-            productItems={[
-              {
-                productId: 1,
-                product_code: '1234567890',
-                product_name: '플라스틱',
-                spec: '100x100x100',
-                unit: '개',
-                quantity: 10,
-                unit_price: 50000,
-                supply_amount: 500000,
-                tax_amount: 50000,
-              },
-            ]}
-            supplyAmount={500000}
-          />
-        </Panel>
-      )}
-      {selectedDocument && selectedDocument.documentType === '생산지시서' && (
-        <Panel title="생산지시서" onClose={() => setSelectedDocument(null)}>
-          <ProductionDocumentView todayProductionPlans={[]} />
-        </Panel>
-      )} */}
     </>
   );
 };
