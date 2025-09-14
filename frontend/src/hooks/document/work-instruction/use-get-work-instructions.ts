@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import axios from 'axios';
 import useMemberStore from '@/store/member-store';
 import { WorkInstructionListResponseModel } from '@/types/data-model';
 
@@ -22,40 +23,46 @@ const useGetWorkInstructions = () => {
           throw new Error('공장 정보가 없습니다.');
         }
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/document/work-instruction?factory_id=${factoryId}&order_by=${orderBy}&page=${page}&page_size=${pageSize}`,
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/document/work-instruction`,
           {
-            method: 'GET',
-            credentials: 'include',
+            params: {
+              factory_id: factoryId,
+              order_by: orderBy,
+              page: page,
+              page_size: pageSize,
+            },
+            withCredentials: true,
           }
         );
 
-        if (response.ok) {
-          const result: WorkInstructionListResponseModel =
-            await response.json();
-          return { success: true, data: result };
-        } else {
-          const errorData = await response.json();
-
+        const result: WorkInstructionListResponseModel = response.data;
+        return { success: true, data: result };
+      } catch (err) {
+        let errorMessage = '서버 연결에 실패했습니다.';
+        
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status;
+          const errorData = err.response?.data;
+          
           // 백엔드 에러 코드에 따른 구체적인 메시지
-          switch (response.status) {
+          switch (status) {
             case 400:
-              setError('잘못된 요청입니다. factory_id를 확인해주세요.');
+              errorMessage = '잘못된 요청입니다. factory_id를 확인해주세요.';
               break;
             case 404:
-              setError('작업 지시서를 찾을 수 없습니다.');
+              errorMessage = '작업 지시서를 찾을 수 없습니다.';
               break;
             case 500:
-              setError('서버 내부 오류가 발생했습니다.');
+              errorMessage = '서버 내부 오류가 발생했습니다.';
               break;
             default:
-              setError(errorData.detail || '작업 지시서 조회에 실패했습니다.');
+              errorMessage = errorData?.detail || '작업 지시서 조회에 실패했습니다.';
           }
-          return { success: false, error: errorData.detail };
+        } else {
+          errorMessage = err instanceof Error ? err.message : '서버 연결에 실패했습니다.';
         }
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : '서버 연결에 실패했습니다.';
+        
         setError(errorMessage);
         return { success: false, error: errorMessage };
       } finally {
