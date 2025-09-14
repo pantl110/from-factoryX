@@ -61,7 +61,6 @@ const useCreateTaxInvoice = () => {
           const errorData = await response.json();
           const errorMessage =
             errorData.detail ||
-            errorData.message ||
             '세금계산서 생성에 실패했습니다.';
           setError(errorMessage);
           return { success: false, error: errorMessage };

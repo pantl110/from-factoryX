@@ -1,5 +1,6 @@
 import { MemberRoleType, MemberStatusType } from '@/types/status-type';
 import { useState } from 'react';
+import axios from 'axios';
 
 interface FactoryMemberDetailModel {
   id: number;
@@ -33,33 +34,37 @@ const useGetMember = () => {
     setError(null);
 
     try {
-      const queryParams = new URLSearchParams();
-      queryParams.append('factory_id', params.factory_id.toString());
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/member/${params.member_id}?${queryParams}`,
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/member/${params.member_id}`,
         {
-          method: 'GET',
-          credentials: 'include',
+          params: {
+            factory_id: params.factory_id,
+          },
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
           },
         }
       );
 
-      if (response.ok) {
-        const result: FactoryMemberDetailModel = await response.json();
-        setMember(result);
-        return { success: true, data: result };
-      } else {
-        const errorData = await response.json();
-        const errorMessage =
-          errorData.detail || '멤버 정보를 불러오는데 실패했습니다.';
-        setError(errorMessage);
-        return { success: false, error: errorMessage };
+      const result: FactoryMemberDetailModel = response.data;
+      setMember(result);
+      return { success: true, data: result };
+    } catch (err) {
+      let errorMessage = '서버 연결에 실패했습니다.';
+      
+      if (axios.isAxiosError(err)) {
+        if (err.response?.data?.detail) {
+          errorMessage = err.response.data.detail;
+        } else if (err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
       }
-    } catch {
-      const errorMessage = '서버 연결에 실패했습니다.';
+      
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {

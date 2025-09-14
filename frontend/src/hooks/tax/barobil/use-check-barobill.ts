@@ -78,7 +78,7 @@ export const useCheckBarobill = () => {
       if (!isBarobillUser) {
         // 바로빌 사용자가 아니면 자동 등록
         const registerResponse = await registerBarobill();
-        if (registerResponse && registerResponse.success) {
+        if (registerResponse) {
           // 2. 인증서 등록 여부 확인
           try {
             const certCheckResponse = await checkCert();
@@ -86,7 +86,7 @@ export const useCheckBarobill = () => {
               // 인증서가 없으면 인증서 등록 진행
               await registerCertification();
             }
-          } catch {
+          } catch (error) {
             // certCheckResponse에서 오류가 나면 인증서 등록 진행
             await registerCertification();
           }
@@ -102,15 +102,16 @@ export const useCheckBarobill = () => {
           } else if (certCheckResponse && certCheckResponse.has_cert) {
             return true;
           }
-        } catch {
+        } catch (error) {
           // certCheckResponse에서 오류가 나면 인증서 등록 진행
           await registerCertification();
         }
         return true;
       }
       return false;
-    } catch {
-      return false;
+    } catch (error) {
+      // 에러를 다시 throw하여 상위에서 처리할 수 있도록 함
+      throw error;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

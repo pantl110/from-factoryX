@@ -5,6 +5,7 @@
 // 4. 바로빌 기업 인증서 등록 여부 확인
 
 import { useState, useCallback } from 'react';
+import axios from 'axios';
 import useMemberStore from '@/store/member-store';
 
 // 타입 정의
@@ -35,37 +36,34 @@ export const useBarobillRegister = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/barobill/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ factory: factoryId }),
-      });
-
-      if (!response.ok) {
-        // API 응답에서 에러 메시지 가져오기
-        try {
-          const errorData = await response.json();
-          const errorMessage =
-            errorData.detail ||
-            errorData.message ||
-            `HTTP error! status: ${response.status}`;
-          throw new Error(errorMessage);
-        } catch {
-          // JSON 파싱 실패 시 기본 에러 메시지 사용
-          throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await axios.post(`${API_BASE_URL}/v1/barobill/register`, 
+        { factory: factoryId },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
-      }
+      );
 
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+      let errorMessage = '알 수 없는 오류가 발생했습니다.';
+      
+      if (axios.isAxiosError(err)) {
+        if (err.response?.data?.detail) {
+          errorMessage = err.response.data.detail;
+        } else if (err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
-      throw err;
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -92,46 +90,39 @@ export const useBarobillCorpCertUrl = () => {
       setError(null);
 
       try {
-        const response = await fetch(
+        const response = await axios.post(
           `${API_BASE_URL}/v1/barobill/register/corp/cert`,
           {
-            method: 'POST', // GET → POST로 변경
+            factory: factoryId,
+            barobill_id: payload.barobill_id,
+            barobill_password: payload.barobill_password,
+          },
+          {
+            withCredentials: true,
             headers: {
               'Content-Type': 'application/json',
             },
-            credentials: 'include',
-            body: JSON.stringify({
-              factory: factoryId,
-              barobill_id: payload.barobill_id,
-              barobill_password: payload.barobill_password,
-            }),
           }
         );
 
-        if (!response.ok) {
-          // API 응답에서 에러 메시지 가져오기
-          try {
-            const errorData = await response.json();
-            const errorMessage =
-              errorData.detail ||
-              errorData.message ||
-              `HTTP error! status: ${response.status}`;
-            throw new Error(errorMessage);
-          } catch {
-            // JSON 파싱 실패 시 기본 에러 메시지 사용
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-        }
-
-        const data = await response.json();
-        return data;
+        return response.data;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : '알 수 없는 오류가 발생했습니다.';
+        let errorMessage = '알 수 없는 오류가 발생했습니다.';
+        
+        if (axios.isAxiosError(err)) {
+          if (err.response?.data?.detail) {
+            errorMessage = err.response.data.detail;
+          } else if (err.response?.data?.message) {
+            errorMessage = err.response.data.message;
+          } else if (err.message) {
+            errorMessage = err.message;
+          }
+        } else if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+        
         setError(errorMessage);
-        throw err;
+        throw new Error(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -159,36 +150,31 @@ export const useBarobillCertCheck = () => {
     setError(null);
 
     try {
-      const response = await fetch(
+      const response = await axios.get(
         `${API_BASE_URL}/v1/barobill/check/cert/${factoryId}`,
         {
-          method: 'GET',
-          credentials: 'include',
+          withCredentials: true,
         }
       );
 
-      if (!response.ok) {
-        // API 응답에서 에러 메시지 가져오기
-        try {
-          const errorData = await response.json();
-          const errorMessage =
-            errorData.detail ||
-            errorData.message ||
-            `HTTP error! status: ${response.status}`;
-          throw new Error(errorMessage);
-        } catch {
-          // JSON 파싱 실패 시 기본 에러 메시지 사용
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-      }
-
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+      let errorMessage = '알 수 없는 오류가 발생했습니다.';
+      
+      if (axios.isAxiosError(err)) {
+        if (err.response?.data?.detail) {
+          errorMessage = err.response.data.detail;
+        } else if (err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
-      throw err;
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -129,9 +129,7 @@ const CreatTaxPanel = ({
             // 바로빌 연동 성공
           } else {
             // 바로빌 연동 실패 시 에러 메시지 설정 후 토스트 표시
-            setErrorMessage(
-              '세금계산서 사용자 확인에 실패했습니다. 다시 시도해 주세요.'
-            );
+            setErrorMessage('다시 시도해 주세요.');
             showToast();
             // 토스트가 표시된 후 2초 뒤에 판넬 닫기
             setTimeout(() => {
@@ -140,10 +138,18 @@ const CreatTaxPanel = ({
           }
         } catch (error) {
           // 에러 발생 시 실제 에러 메시지 설정 후 토스트 표시
-          const errorMsg =
-            error instanceof Error
-              ? error.message.split(':')[1].trim()
-              : '세금계산서 사용자 확인에 실패했습니다. 다시 시도해 주세요.';
+          let errorMsg = '다시 시도해 주세요.';
+
+          if (error instanceof Error) {
+            // 에러 메시지에서 콜론 뒤의 부분만 추출
+            const message = error.message;
+            if (message.includes(':')) {
+              errorMsg = message.split(':')[1]?.trim() || message;
+            } else {
+              errorMsg = message;
+            }
+          }
+
           setErrorMessage(errorMsg);
           showToast();
           // 토스트가 표시된 후 2초 뒤에 판넬 닫기
@@ -618,10 +624,7 @@ const CreatTaxPanel = ({
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
           text="세금계산서 사용자 확인에 실패했습니다."
-          subtext={
-            errorMessage ||
-            '세금계산서 사용자 확인에 실패했습니다. 다시 시도해 주세요.'
-          }
+          subtext={errorMessage || '다시 시도해 주세요.'}
           type="red"
           isVisible={isVisible}
         />
