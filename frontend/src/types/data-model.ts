@@ -498,7 +498,6 @@ export interface CreateProjectResponseModel {
   updated_at: string;
 }
 
-
 // 프로젝트 조회 요청
 // 진행 중인 프로젝트: status="progress"
 // 완료된 프로젝트: status="complete"

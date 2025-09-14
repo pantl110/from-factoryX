@@ -1,4 +1,4 @@
-import { ProjectResponseModel } from "@/types/data-model";
+import { ProjectResponseModel } from '@/types/data-model';
 
 /**
  * 품목명 배열을 표시용 문자열로 변환
@@ -24,18 +24,18 @@ export const getProductNamesDisplay = (productNames: string[]): string => {
 
 export const getProductNames = (project: ProjectResponseModel) => {
   const productsName =
-  project.status === 'quotation' ||
-  project.status === 'confirmed' ||
-  project.status === 'suspended'
-    ? project.quotations[0].products.length > 1
-      ? `${project.quotations[0].products[0].product.name} 외 ${project.quotations[0].products.length - 1}개`
-      : project.quotations[0].products[0]?.product?.name || '-'
-    : project.quotations &&
-        project.quotations.length > 0 &&
-        project.quotations[0].products_info &&
-        project.quotations[0].products_info.length > 1
-      ? `${project.quotations[0].products_info[0].name} 외 ${project.quotations[0].products_info.length - 1}개`
-      : project.quotations[0].products_info[0]?.name || '-';
+    project.status === 'quotation' ||
+    project.status === 'confirmed' ||
+    project.status === 'suspended'
+      ? project.quotations[0].products.length > 1
+        ? `${project.quotations[0].products[0].product.name} 외 ${project.quotations[0].products.length - 1}개`
+        : project.quotations[0].products[0]?.product?.name || '-'
+      : project.quotations &&
+          project.quotations.length > 0 &&
+          project.quotations[0].products_info &&
+          project.quotations[0].products_info.length > 1
+        ? `${project.quotations[0].products_info[0].name} 외 ${project.quotations[0].products_info.length - 1}개`
+        : project.quotations[0].products_info[0]?.name || '-';
 
-      return productsName;
+  return productsName;
 };

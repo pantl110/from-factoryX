@@ -65,7 +65,10 @@ const useGetProjects = () => {
         return { success: true, data: response.data };
       } catch (err: unknown) {
         // 요청이 취소된 경우
-        if (axios.isCancel(err) || (axios.isAxiosError(err) && err.code === 'ERR_CANCELED')) {
+        if (
+          axios.isCancel(err) ||
+          (axios.isAxiosError(err) && err.code === 'ERR_CANCELED')
+        ) {
           return { success: false, error: '요청이 취소되었습니다.' };
         }
 

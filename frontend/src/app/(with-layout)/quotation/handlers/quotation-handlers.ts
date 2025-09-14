@@ -62,7 +62,7 @@ export const useQuotationHandlers = ({
   const [isStartProductionLoading, setIsStartProductionLoading] =
     useState(false);
 
-  // 임시 저장 버튼 & 주문 확정 버튼 핸들러 
+  // 임시 저장 버튼 & 주문 확정 버튼 핸들러
   const handleSaveDraft = useCallback(
     async (isConfirm: boolean) => {
       try {
@@ -179,7 +179,7 @@ export const useQuotationHandlers = ({
         );
         return;
       }
-        
+
       let currentQuotationId = quotationId;
 
       // quotationId가 없으면 먼저 견적서를 생성
@@ -302,6 +302,8 @@ export const useQuotationHandlers = ({
     quotationProducts,
     factoryId,
     selectedClientId,
+    imageUrl,
+    saveDraft,
     startProduction,
     toast,
     setIsStartProductionModalOpen,

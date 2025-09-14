@@ -29,7 +29,8 @@ const useUpdateProjectStatus = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              status, is_printed: isPrinted ,
+              status,
+              is_printed: isPrinted,
             }),
           }
         );

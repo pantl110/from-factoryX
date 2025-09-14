@@ -4,7 +4,6 @@ import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
 } from '@/types/data-model';
-import { useState } from 'react';
 import NoHistoryBox from '@/ui/no-history-box';
 
 interface DocumentTableProps {

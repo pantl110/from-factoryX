@@ -80,25 +80,19 @@ const Dropdown = ({
       aside.addEventListener('transitionend', handleAsideMove);
       aside.addEventListener('scroll', handleAsideMove, {
         passive: true,
-      } as any);
+      } as AddEventListenerOptions);
     }
 
     const handleSidebarToggle = () => onClose();
-    window.addEventListener(
-      'sidebar:toggle' as any,
-      handleSidebarToggle as any
-    );
+    window.addEventListener('sidebar:toggle', handleSidebarToggle);
 
     return () => {
       if (aside) {
         aside.removeEventListener('transitionstart', handleAsideMove);
         aside.removeEventListener('transitionend', handleAsideMove);
-        aside.removeEventListener('scroll', handleAsideMove as any);
+        aside.removeEventListener('scroll', handleAsideMove);
       }
-      window.removeEventListener(
-        'sidebar:toggle' as any,
-        handleSidebarToggle as any
-      );
+      window.removeEventListener('sidebar:toggle', handleSidebarToggle);
     };
   }, [onClose]);
 

@@ -22,7 +22,7 @@ interface DocumentTableItemProps {
 }
 
 const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
-  const [isOrderPanelOpen, setIsOrderPanelOpen] = useState(false);
+  const [_isOrderPanelOpen, setIsOrderPanelOpen] = useState(false);
   const [isTransactionPanelOpen, setIsTransactionPanelOpen] = useState(false);
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
   // 주문서, 거래명세서 페이지 열릴 때
