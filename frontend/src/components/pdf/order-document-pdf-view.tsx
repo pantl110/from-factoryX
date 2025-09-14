@@ -37,7 +37,7 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <p>회사명</p>
+                <p className="label">회사명</p>
               </div>
               <div className="content">
                 <p>{clientData.name}</p>
@@ -170,21 +170,31 @@ const OrderDocumentPDFView = ({
           <div>
             {productItems.map((item, index) => (
               <div key={index} className="pdf-product-table-body">
-                <p style={{ flex: 1 }}>{item.product_name || '-'}</p>
-                <p style={{ flex: 1 }}>{item.product_code || '-'}</p>
-                <p style={{ flex: 1 }}>{item.spec || '-'}</p>
-                <p style={{ width: '80px' }}>{item.unit || '-'}</p>
-                <p style={{ flex: 1 }}>
-                  {item.quantity?.toLocaleString() || '-'}
-                </p>
-                <p style={{ width: '100px' }}>
-                  {item.unit_price?.toLocaleString() || '-'}
-                </p>
-                <p style={{ flex: 1 }}>
-                  {item.quantity && item.unit_price
-                    ? (item.quantity * item.unit_price).toLocaleString()
-                    : '-'}
-                </p>
+                <div style={{ flex: 1 }}>
+                  <p>{item.product_name || '-'}</p>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p>{item.product_code || '-'}</p>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p>{item.spec || '-'}</p>
+                </div>
+                <div style={{ width: '80px' }}>
+                  <p>{item.unit || '-'}</p>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p>{item.quantity?.toLocaleString() || '-'}</p>
+                </div>
+                <div style={{ width: '100px' }}>
+                  <p>{item.unit_price?.toLocaleString() || '-'}</p>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p>
+                    {item.quantity && item.unit_price
+                      ? (item.quantity * item.unit_price).toLocaleString()
+                      : '-'}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

@@ -29,7 +29,9 @@ const ProductionDocumentView = ({
 
   return (
     <div className="flex flex-col gap-6">
-      <DocumentViewTitle title="2025-06-13 생산 지시서" />
+      <DocumentViewTitle
+        title={`${new Date().toISOString().split('T')[0]} 생산 지시서`}
+      />
 
       {/* 생산품목 - 프로젝트별로 표 분리 */}
       <div className="flex flex-col gap-6">
