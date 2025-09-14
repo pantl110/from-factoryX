@@ -253,8 +253,8 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
 
             # 설비 변경 로그/알림
             if old_equipment and old_equipment.id != equipment.id:
-                # 로그 기록 (가동 대기 상태일 때만)
-                if plan.status == ProjectPlan.ProductionStatus.pending:
+                # 로그 기록 (프로젝트가 생산대기 상태가 아니고 가동 대기 상태일 때만)
+                if project.status != Project.ProjectStatus.pending and plan.status == ProjectPlan.ProductionStatus.pending:
                     await ProjectLog.objects.acreate(
                         project=plan.project,
                         type=ProjectLog.LogType.equipment,
@@ -271,8 +271,8 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                     additional_data={"plan_id": plan.id},
                 )
 
-            # 생산 일자 변경 로그
-            if old_start_date != plan.start_date:
+            # 생산 일자 변경 로그 (프로젝트가 생산대기 상태가 아닐 때만)
+            if old_start_date != plan.start_date and project.status != Project.ProjectStatus.pending:
                 change_message = f"생산일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
                 await ProjectLog.objects.acreate(
                     project=plan.project,
@@ -281,11 +281,11 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                     content=change_message,
                 )
 
-            # 알림 전송
+            # 알림 전송 (프로젝트가 생산대기 상태가 아닐 때만)
             kst_now = timezone.localtime(timezone.now())
-            if (payload.start_date and payload.start_date.date() == kst_now.date()) or (
+            if ((payload.start_date and payload.start_date.date() == kst_now.date()) or (
                 old_start_date and old_start_date.date() == kst_now.date()
-            ):
+            )) and project.status != Project.ProjectStatus.pending:
                 await send_notification_to_factory(
                     factory_id=int(factory_id),
                     notification_type="information",
