@@ -2,6 +2,8 @@ import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
   ProjectStatusResponseModel,
+  ClientModel,
+  QuotationProductDetailResponseModel,
 } from '@/types/data-model';
 import Chip from '@/ui/chip';
 import { DocumentType, DocumentTypeColorMap } from './types';
@@ -15,6 +17,7 @@ import {
 import TransactionDocumentView from './transaction-document-view';
 import { useGetProjectStatus } from '@/hooks';
 import getLastDeliveryDate from '@/utils/get-last-delivery-date';
+import OrderDocumentView from './order-document-view';
 
 interface DocumentTableItemProps {
   data: ProjectResponseModel | PublishedTaxInvoiceResponseModel;
@@ -22,7 +25,7 @@ interface DocumentTableItemProps {
 }
 
 const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
-  const [_isOrderPanelOpen, setIsOrderPanelOpen] = useState(false);
+  const [isOrderPanelOpen, setIsOrderPanelOpen] = useState(false);
   const [isTransactionPanelOpen, setIsTransactionPanelOpen] = useState(false);
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
   // 주문서, 거래명세서 페이지 열릴 때
@@ -166,6 +169,35 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         ) : null}
       </div>
 
+      {/* 주문서 디테일 판넬 */}
+      {isOrderPanelOpen && (
+        <Panel title="주문서" onClose={() => setIsOrderPanelOpen(false)}>
+          <OrderDocumentView
+            documentTitle="주문서"
+            clientData={projectData.quotations[0].client_info}
+            dueDate={projectData.quotations[0].due_date}
+            productListInfoTitle="주문 품목 정보"
+            productItems={projectData.quotations[0].products_info.map(
+              (product) => ({
+                productId: product.id,
+                product_code: product.code,
+                product_name: product.name,
+                spec: product.spec,
+                unit: product.unit,
+                quantity: product.quantity,
+                unit_price: product.unit_price,
+                supply_amount: product.unit_price * product.quantity,
+                tax_amount: product.unit_price * product.quantity * 0.1,
+              })
+            )}
+            supplyAmount={projectData.quotations[0].products_info.reduce(
+              (acc, product) =>
+                acc + product.unit_price * product.quantity || 0,
+              0
+            )}
+          />
+        </Panel>
+      )}
       {/* 거래명세서 디테일 판넬 */}
       {isTransactionPanelOpen && (
         <Panel
