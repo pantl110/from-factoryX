@@ -3,12 +3,29 @@ from user.models import User
 from typing import Optional
 
 
-class UserMeOut(Schema):
-    email: str
-    status: str
-    username: Optional[str] = None
-    phone_number: Optional[str] = None
-    profile_image: Optional[str] = None
+class UserMeOut(ModelSchema):
+    # email: Optional[str] = Field(None, description="이메일")
+    # status: Optional[str] = Field(None, description="상태")
+    # username: Optional[str] = Field(None, description="사용자 이름")
+    # phone_number: Optional[str] = Field(None, description="전화번호")
+    # profile_image: Optional[str] = Field(None, description="프로필 이미지")
+
+    class Meta:
+        model = User
+        fields = [
+            "email",
+            "status",
+            "username",
+            "phone_number",
+            "profile_image",
+        ]
+        fields_optional = [
+            "email",
+            "status",
+            "username",
+            "phone_number",
+            "profile_image",
+        ]
 
 
 # class UserMeWithMemberOut(Schema):

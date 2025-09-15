@@ -5,7 +5,8 @@ from user.models import User, EmailVerification
 from factory.models import Factory, FactoryMember
 from asgiref.sync import sync_to_async
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
+from datetime import timezone as dt_timezone
 
 
 class TestUser(TestCase):
@@ -214,7 +215,7 @@ class TestUser(TestCase):
 
         # 만료된 초대 정보 추가 (25시간 전)
         invite_email = "expired@example.com"
-        expired_time = timezone.now(timezone.utc) - timedelta(hours=25)
+        expired_time = timezone.now() - timedelta(hours=25)
 
         factory.inviting = [
             {
@@ -224,7 +225,7 @@ class TestUser(TestCase):
                 "invited_at": expired_time.isoformat(),
             }
         ]
-        await sync_to_async(factory.save)()
+        await factory.asave()
 
         # 이메일 인증 생성
         await EmailVerification.objects.acreate(
@@ -246,6 +247,7 @@ class TestUser(TestCase):
         }
 
         response = await self.client.post("/signup", json=data)
+        data = response.json()
         self.assertEqual(response.status_code, 200)
         # 초대가 만료되지 않았으므로 성공해야 함
 
@@ -266,7 +268,6 @@ class TestUser(TestCase):
         """
         초대받은 이메일과 가입 이메일이 일치하지 않는 경우 테스트
         """
-        from datetime import datetime, timezone
 
         # 팩토리 생성
         factory = await sync_to_async(Factory.objects.create)(
@@ -326,7 +327,7 @@ class TestUser(TestCase):
 
         # 만료된 초대 정보 추가 (25시간 전)
         invite_email = "expired@example.com"
-        expired_time = timezone.now(timezone.utc) - timedelta(hours=25)
+        expired_time = timezone.now() - timedelta(hours=25)
 
         factory.inviting = [
             {
@@ -360,6 +361,8 @@ class TestUser(TestCase):
         response = await self.client.post("/signup", json=data)
         self.assertEqual(response.status_code, 200)
         # 초대가 만료되지 않았으므로 성공해야 함
+
+        await sync_to_async(User.refresh_from_db)(self.user)
 
         # 사용자가 생성되었는지 확인
         new_user = await User.objects.aget(email=invite_email)
@@ -421,7 +424,6 @@ class TestUser(TestCase):
         headers = await self.authenticate()
         response = await self.client.get("/me", headers=headers)
         data = response.json()
-        # print("🐍 File: tests/test_apis.py | Line: 425 | setUp ~ data", data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data["email"], self.user.email)
         self.assertEqual(data["status"], self.user.status)
@@ -436,7 +438,6 @@ class TestUser(TestCase):
         }
         response = await self.client.patch(f"/me", json=data, headers=headers)
         data = response.json()
-        # print("🐍 File: tests/test_apis.py | Line: 84 | setUp ~ data", data)
         self.assertEqual(response.status_code, 200)
 
     async def test_logout(self):
@@ -462,7 +463,6 @@ class TestUser(TestCase):
             json=payload,
         )
         data = response.json()
-        # print("🐍 File: tests/test_apis.py | Line: 112 | setUp ~ data", data)
         self.assertEqual(response.status_code, 200)
         self.assertIn("access_token", data)
         self.assertIn("refresh_token", data)
@@ -573,7 +573,6 @@ class TestUser(TestCase):
         # owner가 공장 생성 및 초대
         owner = await User.objects.acreate(email="owner2@example.com", password="pw")
         factory = await Factory.objects.acreate(owner=owner, name="공장초대")
-        from datetime import datetime, timezone
 
         invited_at = timezone.now().isoformat()
         factory.inviting = [
@@ -608,9 +607,9 @@ class TestUser(TestCase):
         self.assertIsNotNone(member.invited_at)
         # invited_at 값이 inviting에 있던 값과 같은지 확인 (초 단위까지 비교)
         self.assertEqual(
-            member.invited_at.replace(microsecond=0, tzinfo=timezone.utc),
+            member.invited_at.replace(microsecond=0, tzinfo=dt_timezone.utc),
             datetime.fromisoformat(invited_at).replace(
-                microsecond=0, tzinfo=timezone.utc
+                microsecond=0, tzinfo=dt_timezone.utc
             ),
         )
 
