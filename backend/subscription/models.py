@@ -36,6 +36,10 @@ class SubscriptionHistory(BaseModel):
     end_date = models.DateField(
         help_text="종료일 (다음 결제일)",
     )
+    is_canceled = models.BooleanField(
+        default=False,
+        help_text="구독 취소 여부 (True면 자동 갱신하지 않음)",
+    )
 
     # 토스페이먼츠
     billing_key = models.CharField(

@@ -8,6 +8,7 @@ from user.models import EmailVerification
 from django.utils import timezone
 from datetime import timedelta, date
 from unittest.mock import patch, MagicMock
+from asgiref.sync import sync_to_async
 import json
 
 User = get_user_model()
@@ -332,6 +333,11 @@ class SubscriptionBillingServiceTestCase(TestCase):
             representative_name="테스트 대표",
             business_address="테스트 주소",
         )
+        self.factory_member = FactoryMember.objects.create(
+            user=self.user,
+            factory=self.factory,
+            role=FactoryMember.FactoryMemberType.admin,
+        )
 
         self.subscription = Subscription.objects.create(
             type=Subscription.SubscriptionType.basic,
@@ -348,6 +354,17 @@ class SubscriptionBillingServiceTestCase(TestCase):
             customer_key="test_customer_key",
         )
 
+    async def _get_jwt_token(self):
+        """JWT 토큰 획득"""
+        from api.testing import TestAsyncClient
+        from user.api import router as user_router
+
+        auth_client = TestAsyncClient(user_router)
+        response = await auth_client.post(
+            "/login", json={"email": self.user.email, "password": "password123!"}
+        )
+        return response.json()["access_token"]
+
     @patch("subscription.services.TossPaymentsService.request_billing_payment")
     def test_process_subscription_payment_success(self, mock_payment):
         """구독 결제 처리 성공 테스트"""
@@ -362,3 +379,131 @@ class SubscriptionBillingServiceTestCase(TestCase):
         self.assertEqual(payment.status, "DONE")
         self.assertEqual(payment.payment_key, "test_payment_key_123")
         self.assertIsNotNone(payment.approved_at)
+
+    async def test_cancel_payment_success(self):
+        """결제 취소 성공 테스트 (환불 없이 구독 취소)"""
+        from api.testing import TestAsyncClient
+        from subscription.api import router
+
+        # 결제 생성
+        payment = await Payment.objects.acreate(
+            subscription_history=self.subscription_history,
+            payment_key="test_payment_key_123",
+            order_id="test_order_123",
+            amount=50000,
+            status="DONE",
+            approved_at=timezone.now(),
+        )
+
+        client = TestAsyncClient(router)
+        token = await self._get_jwt_token()
+
+        response = await client.post(
+            f"/cancel/{payment.id}",
+            json={
+                "cancel_reason": "사용자 요청으로 인한 취소",
+            },
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["payment_key"], "test_payment_key_123")
+        self.assertEqual(data["cancel_amount"], 0)  # 환불 금액은 0
+        self.assertEqual(data["cancel_reason"], "사용자 요청으로 인한 취소")
+
+        # 구독 히스토리가 취소 상태로 변경되었는지 확인
+        await sync_to_async(self.subscription_history.refresh_from_db)()
+        self.assertTrue(self.subscription_history.is_canceled)
+
+        # 결제 상태는 그대로 유지되는지 확인 (환불하지 않음)
+        await sync_to_async(payment.refresh_from_db)()
+        self.assertEqual(payment.status, "DONE")
+
+    async def test_cancel_payment_already_canceled(self):
+        """이미 취소된 구독 취소 시도 테스트"""
+        from api.testing import TestAsyncClient
+        from subscription.api import router
+
+        # 이미 취소된 구독 히스토리 설정
+        self.subscription_history.is_canceled = True
+        await self.subscription_history.asave()
+
+        # 결제 생성
+        payment = await Payment.objects.acreate(
+            subscription_history=self.subscription_history,
+            payment_key="test_payment_key_123",
+            order_id="test_order_123",
+            amount=50000,
+            status="DONE",
+            approved_at=timezone.now(),
+        )
+
+        client = TestAsyncClient(router)
+        token = await self._get_jwt_token()
+
+        response = await client.post(
+            f"/cancel/{payment.id}",
+            json={
+                "cancel_reason": "사용자 요청으로 인한 취소",
+            },
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("이미 취소된 구독입니다", response.json()["detail"])
+
+    async def test_renew_subscription_canceled_fails(self):
+        """취소된 구독 갱신 시도 실패 테스트"""
+        from api.testing import TestAsyncClient
+        from subscription.api import router
+
+        # 취소된 구독 히스토리 설정
+        self.subscription_history.is_canceled = True
+        await self.subscription_history.asave()
+
+        client = TestAsyncClient(router)
+        token = await self._get_jwt_token()
+
+        response = await client.post(
+            f"/renewal/{self.factory.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("취소된 구독은 갱신할 수 없습니다", response.json()["detail"])
+
+    async def test_subscription_status_canceled(self):
+        """취소된 구독 상태 조회 테스트"""
+        from api.testing import TestAsyncClient
+        from subscription.api import router
+
+        # 구독 취소 상태로 설정
+        self.subscription_history.is_canceled = True
+        await self.subscription_history.asave()
+
+        # 결제 생성
+        payment = await Payment.objects.acreate(
+            subscription_history=self.subscription_history,
+            payment_key="test_payment_key_123",
+            order_id="test_order_123",
+            amount=50000,
+            status="DONE",
+            approved_at=timezone.now(),
+        )
+
+        client = TestAsyncClient(router)
+        token = await self._get_jwt_token()
+
+        response = await client.get(
+            f"/status/{self.factory.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        # 취소된 구독은 비활성 상태여야 함
+        self.assertFalse(data["is_active"])
+        # 다음 결제일은 None이어야 함
+        self.assertIsNone(data["next_billing_date"])
