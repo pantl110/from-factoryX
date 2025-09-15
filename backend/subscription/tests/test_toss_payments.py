@@ -507,3 +507,79 @@ class SubscriptionBillingServiceTestCase(TestCase):
         self.assertFalse(data["is_active"])
         # 다음 결제일은 None이어야 함
         self.assertIsNone(data["next_billing_date"])
+
+    @patch("subscription.services.TossPaymentsService.delete_billing_key")
+    async def test_delete_billing_key_success(self, mock_delete_billing_key):
+        """빌링키 삭제 성공 테스트"""
+        from api.testing import TestAsyncClient
+        from subscription.api import router
+
+        # Mock 설정
+        mock_delete_billing_key.return_value = {
+            "success": True,
+            "message": "빌링키가 성공적으로 삭제되었습니다.",
+        }
+
+        # 빌링키가 있는 구독 히스토리 설정
+        self.subscription_history.billing_key = "test_billing_key_123"
+        self.subscription_history.customer_key = "test_customer_key_123"
+        await self.subscription_history.asave()
+
+        client = TestAsyncClient(router)
+        token = await self._get_jwt_token()
+
+        response = await client.delete(
+            f"/billing-key/{self.factory.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["message"], "등록된 카드가 성공적으로 삭제되었습니다.")
+
+        # 구독 히스토리에서 빌링키 정보가 삭제되었는지 확인
+        await self.subscription_history.arefresh_from_db()
+        self.assertIsNone(self.subscription_history.billing_key)
+        self.assertIsNone(self.subscription_history.customer_key)
+
+    async def test_delete_billing_key_not_found(self):
+        """빌링키가 없는 경우 삭제 실패 테스트"""
+        from api.testing import TestAsyncClient
+        from subscription.api import router
+
+        # 빌링키가 없는 상태로 설정
+        self.subscription_history.billing_key = None
+        self.subscription_history.customer_key = None
+        await self.subscription_history.asave()
+
+        client = TestAsyncClient(router)
+        token = await self._get_jwt_token()
+
+        response = await client.delete(
+            f"/billing-key/{self.factory.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("삭제할 빌링키가 없습니다", response.json()["detail"])
+
+    async def test_delete_billing_key_no_subscription(self):
+        """활성 구독이 없는 경우 빌링키 삭제 실패 테스트"""
+        from api.testing import TestAsyncClient
+        from subscription.api import router
+
+        # 구독을 만료시킴
+        self.subscription_history.end_date = timezone.now().date() - timedelta(days=1)
+        await self.subscription_history.asave()
+
+        client = TestAsyncClient(router)
+        token = await self._get_jwt_token()
+
+        response = await client.delete(
+            f"/billing-key/{self.factory.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("삭제할 빌링키가 없습니다", response.json()["detail"])

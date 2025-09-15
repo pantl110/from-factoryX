@@ -15,6 +15,7 @@ from subscription.schemas.outbound import (
     SubscriptionOut,
     SubscriptionHistoryOut,
     BillingKeyIssueOut,
+    BillingKeyDeleteOut,
     PaymentResultOut,
     PaymentOut,
     PaymentCancelOut,
@@ -161,6 +162,65 @@ async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn
     except Exception as e:
         logger.error(f"빌링키 발급 실패: factory_id={factory_id}, error={str(e)}")
         raise HttpError(400, f"빌링키 발급 실패: {str(e)}")
+
+
+@router.delete(
+    "/billing-key/{factory_id}",
+    summary="[C] 빌링키 삭제",
+    description="등록된 카드(빌링키)를 삭제합니다.",
+    response=BillingKeyDeleteOut,
+    auth=jwt_auth,
+)
+async def delete_billing_key(request, factory_id: int):
+    """빌링키 삭제"""
+    user = request.auth
+    factory = await get_factory_by_id(factory_id)
+    member = await is_factory_member(factory_id, user)
+
+    # 현재 활성 구독에서 빌링키 정보 조회
+    current_subscription = (
+        await SubscriptionHistory.objects.filter(
+            factory=factory,
+            end_date__gt=timezone.now().date(),
+            billing_key__isnull=False,
+        )
+        .select_related("subscription")
+        .afirst()
+    )
+
+    if not current_subscription:
+        raise HttpError(404, "삭제할 빌링키가 없습니다.")
+
+    if not current_subscription.billing_key:
+        raise HttpError(400, "등록된 빌링키가 없습니다.")
+
+    toss_service = TossPaymentsService()
+
+    try:
+        # 토스페이먼츠 빌링키 삭제 API 호출
+        result = toss_service.delete_billing_key(
+            billing_key=current_subscription.billing_key,
+            customer_key=current_subscription.customer_key,
+        )
+
+        @sync_to_async
+        @transaction.atomic
+        def clear_billing_key():
+            # 구독 히스토리에서 빌링키 정보 삭제
+            current_subscription.billing_key = None
+            current_subscription.customer_key = None
+            current_subscription.save()
+
+        await clear_billing_key()
+
+        logger.info(f"빌링키 삭제 성공: factory_id={factory_id}")
+        return BillingKeyDeleteOut(
+            success=True, message="등록된 카드가 성공적으로 삭제되었습니다."
+        )
+
+    except Exception as e:
+        logger.error(f"빌링키 삭제 실패: factory_id={factory_id}, error={str(e)}")
+        raise HttpError(400, f"카드 삭제 실패: {str(e)}")
 
 
 @router.post(

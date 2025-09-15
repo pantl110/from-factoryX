@@ -42,6 +42,13 @@ class BillingKeyIssueOut(Schema):
     card_number: Optional[str] = Field(None, description="마스킹된 카드번호")
 
 
+class BillingKeyDeleteOut(Schema):
+    """빌링키 삭제 응답 스키마"""
+
+    success: bool = Field(..., description="삭제 성공 여부")
+    message: str = Field(..., description="응답 메시지")
+
+
 class PaymentResultOut(Schema):
     """결제 결과 응답 스키마"""
 
