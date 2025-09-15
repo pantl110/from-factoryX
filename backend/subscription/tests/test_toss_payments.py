@@ -67,20 +67,20 @@ class SubscriptionAPITestCase(TestCase):
             tax_invoice_count=500,
         )
 
-    def test_subscription_list(self):
+    async def test_subscription_list(self):
         """구독 플랜 목록 조회 테스트"""
         from api.testing import TestAsyncClient
         from subscription.api import router
 
         client = TestAsyncClient(router)
-        response = client.get("")
+        response = await client.get("")
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertGreaterEqual(len(data["data"]), 2)
 
     @patch("subscription.services.TossPaymentsService.issue_billing_key")
-    def test_issue_billing_key_success(self, mock_issue_billing_key):
+    async def test_issue_billing_key_success(self, mock_issue_billing_key):
         """빌링키 발급 성공 테스트"""
         from api.testing import TestAsyncClient
         from subscription.api import router
@@ -96,9 +96,9 @@ class SubscriptionAPITestCase(TestCase):
         }
 
         client = TestAsyncClient(router)
-        token = self._get_jwt_token()
+        token = await self._get_jwt_token()
 
-        response = client.post(
+        response = await client.post(
             f"/billing-key/{self.factory.id}",
             json={
                 "card_number": "4330123456781234",
@@ -107,7 +107,7 @@ class SubscriptionAPITestCase(TestCase):
                 "card_password": "12",
                 "customer_identity_number": "950101",
             },
-            HTTP_AUTHORIZATION=f"Bearer {token}",
+            headers={"Authorization": f"Bearer {token}"},
         )
 
         self.assertEqual(response.status_code, 201)
@@ -116,7 +116,7 @@ class SubscriptionAPITestCase(TestCase):
         self.assertEqual(data["card_company"], "현대카드")
 
     @patch("subscription.services.TossPaymentsService.request_billing_payment")
-    def test_subscription_payment_success(self, mock_payment):
+    async def test_subscription_payment_success(self, mock_payment):
         """구독 결제 성공 테스트"""
         from api.testing import TestAsyncClient
         from subscription.api import router
@@ -129,16 +129,16 @@ class SubscriptionAPITestCase(TestCase):
         }
 
         client = TestAsyncClient(router)
-        token = self._get_jwt_token()
+        token = await self._get_jwt_token()
 
-        response = client.post(
+        response = await client.post(
             f"/payment/{self.factory.id}",
             json={
                 "subscription_id": self.subscription_basic.id,
                 "billing_key": "test_billing_key_123",
                 "customer_key": "test_customer_key_123",
             },
-            HTTP_AUTHORIZATION=f"Bearer {token}",
+            headers={"Authorization": f"Bearer {token}"},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -148,23 +148,23 @@ class SubscriptionAPITestCase(TestCase):
 
         # DB에 결제 및 구독 히스토리가 생성되었는지 확인
         self.assertTrue(
-            SubscriptionHistory.objects.filter(
+            await SubscriptionHistory.objects.filter(
                 factory=self.factory, subscription=self.subscription_basic
-            ).exists()
+            ).aexists()
         )
         self.assertTrue(
-            Payment.objects.filter(
+            await Payment.objects.filter(
                 payment_key="test_payment_key_123", status="DONE"
-            ).exists()
+            ).aexists()
         )
 
-    def test_payment_history(self):
+    async def test_payment_history(self):
         """결제 내역 조회 테스트"""
         from api.testing import TestAsyncClient
         from subscription.api import router
 
         # 테스트 데이터 생성
-        subscription_history = SubscriptionHistory.objects.create(
+        subscription_history = await SubscriptionHistory.objects.acreate(
             factory=self.factory,
             subscription=self.subscription_basic,
             start_date=timezone.now().date(),
@@ -173,7 +173,7 @@ class SubscriptionAPITestCase(TestCase):
             customer_key="test_customer_key",
         )
 
-        Payment.objects.create(
+        await Payment.objects.acreate(
             subscription_history=subscription_history,
             payment_key="test_payment_key",
             order_id="test_order_123",
@@ -184,10 +184,11 @@ class SubscriptionAPITestCase(TestCase):
         )
 
         client = TestAsyncClient(router)
-        token = self._get_jwt_token()
+        token = await self._get_jwt_token()
 
-        response = client.get(
-            f"/payments/{self.factory.id}", HTTP_AUTHORIZATION=f"Bearer {token}"
+        response = await client.get(
+            f"/payments/{self.factory.id}",
+            headers={"Authorization": f"Bearer {token}"},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -195,13 +196,13 @@ class SubscriptionAPITestCase(TestCase):
         self.assertGreater(len(data["data"]), 0)
         self.assertEqual(data["data"][0]["payment_key"], "test_payment_key")
 
-    def test_subscription_status(self):
+    async def test_subscription_status(self):
         """구독 상태 조회 테스트"""
         from api.testing import TestAsyncClient
         from subscription.api import router
 
         # 활성 구독 생성
-        subscription_history = SubscriptionHistory.objects.create(
+        subscription_history = await SubscriptionHistory.objects.acreate(
             factory=self.factory,
             subscription=self.subscription_basic,
             start_date=timezone.now().date(),
@@ -211,10 +212,11 @@ class SubscriptionAPITestCase(TestCase):
         )
 
         client = TestAsyncClient(router)
-        token = self._get_jwt_token()
+        token = await self._get_jwt_token()
 
-        response = client.get(
-            f"/status/{self.factory.id}", HTTP_AUTHORIZATION=f"Bearer {token}"
+        response = await client.get(
+            f"/status/{self.factory.id}",
+            headers={"Authorization": f"Bearer {token}"},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -222,14 +224,14 @@ class SubscriptionAPITestCase(TestCase):
         self.assertTrue(data["is_active"])
         self.assertIsNotNone(data["next_billing_date"])
 
-    def _get_jwt_token(self):
+    async def _get_jwt_token(self):
         """JWT 토큰 획득"""
         from api.testing import TestAsyncClient
         from user.api import router as user_router
 
         auth_client = TestAsyncClient(user_router)
-        response = auth_client.post(
-            "/signin", json={"email": self.user.email, "password": "password123!"}
+        response = await auth_client.post(
+            "/login", json={"email": self.user.email, "password": "password123!"}
         )
         return response.json()["access_token"]
 

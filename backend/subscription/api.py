@@ -31,9 +31,11 @@ from subscription.exceptions import PaymentError, BillingKeyError, SubscriptionE
 from django.utils import timezone
 from datetime import timedelta
 from django.db import transaction
+from django.db.models import F
 import uuid
 import logging
 from subscription.barobill_utils import handle_barobill_scrap_for_subscription
+
 
 logger = logging.getLogger(__name__)
 router = Router(tags=["Subscription"])
@@ -309,7 +311,7 @@ async def get_payment_history(request, factory_id: int):
 
     payments = await sync_to_async(list)(
         Payment.objects.filter(subscription_history__factory=factory)
-        .select_related("subscription_history", "subscription_history__subscription")
+        .select_related("subscription_history__subscription")
         .order_by("-created_at")
     )
 
