@@ -54,7 +54,11 @@ async def send_verification_code(request, data: EmailVerificationRequestIn):
 
     # 회원가입의 경우 이미 등록된 이메일인지 확인
     if data.verification_type == "signup":
-        if await User.objects.filter(email=data.email).aexists():
+        if (
+            await User.objects.filter(email=data.email)
+            .exclude(status=User.UserStatusChoice.withdraw)
+            .aexists()
+        ):
             raise HttpError(400, "이미 등록된 이메일입니다.")
 
     # 비밀번호 재설정의 경우 등록된 이메일인지 확인
@@ -180,32 +184,32 @@ async def reset_password(request, data: PasswordResetIn):
     "/signup",
     summary="[C] 회원가입",
     description="이메일 인증 후 회원가입을 진행합니다.",
-    response={200: UserMeOut},
+    response=UserMeOut,
 )
 async def signup(request, data: UserSignupIn):
     user = None
+
+    # 1. 기존 사용자 조회 및 상태 체크
     try:
         user = await User.objects.aget(email=data.email)
     except User.DoesNotExist:
         pass
 
-    # 탈퇴 유저 체크를 먼저 수행
-    if user and user.status == User.UserStatusChoice.withdraw:
-        raise HttpError(400, "탈퇴한 회원입니다. 고객센터에 문의해주세요.")
+    if user:
+        if user.status == User.UserStatusChoice.withdraw:
+            raise HttpError(400, "탈퇴한 회원입니다. 고객센터에 문의해주세요.")
+        if user.status == User.UserStatusChoice.active:
+            raise HttpError(400, "이미 가입된 이메일입니다.")
 
-    if user and user.status == User.UserStatusChoice.active:
-        raise HttpError(400, "이미 가입된 이메일입니다.")
-
+    # 2. 비밀번호 및 약관 동의 검증
     if data.password != data.password_confirm:
         raise HttpError(400, "비밀번호가 일치하지 않습니다.")
-
     if not data.terms_of_service:
         raise HttpError(400, "이용약관에 동의해주세요.")
-
     if not data.privacy_policy_agreement:
         raise HttpError(400, "개인정보 수집 및 이용 동의에 동의해주세요.")
 
-    # 이메일 인증 완료 여부 확인
+    # 3. 이메일 인증 여부 확인
     verification_exists = await EmailVerification.objects.filter(
         email=data.email, verification_type="signup", is_verified=True
     ).aexists()
@@ -213,142 +217,125 @@ async def signup(request, data: UserSignupIn):
     if not verification_exists:
         raise HttpError(400, "이메일 인증을 먼저 완료해주세요.")
 
-    # 초대 처리
+    # 초대 관련 변수 초기화
     target_factory = None
     invite_info = None
 
+    # 초대 팩토리 검증 (있을 경우)
     if data.factory_id:
         try:
-            # 팩토리 존재 확인
             target_factory = await Factory.objects.aget(id=data.factory_id)
-
-            # 해당 팩토리의 inviting에서 이메일 확인
-            inviting = target_factory.inviting or []
-            for item in inviting:
-                if item["email"] == data.email:
-                    invite_info = item
-                    break
-
-            if not invite_info:
-                raise HttpError(400, "해당 팩토리에서 초대받지 않은 이메일입니다.")
-
-            # 역할 일치 확인
-            if invite_info["role"] != data.invite_role:
-                raise HttpError(400, "초대받은 역할과 일치하지 않습니다.")
-
-            # 추가 보안 검사: 이미 가입된 사용자인지 확인
-            existing_member = await FactoryMember.objects.filter(
-                factory=target_factory, user__email=data.email
-            ).aexists()
-
-            if existing_member:
-                raise HttpError(400, "이미 해당 팩토리의 멤버입니다.")
-
         except Factory.DoesNotExist:
             raise HttpError(400, "존재하지 않는 팩토리입니다.")
-        except Exception as e:
-            raise e
+
+    # 4. 신규 사용자 생성 (기존 사용자가 없을 경우)
+    if user is None:
+        user = await sync_to_async(User.objects.create_user)(
+            email=data.email,
+            password=data.password,
+            terms_of_service=data.terms_of_service,
+            privacy_policy_agreement=data.privacy_policy_agreement,
+            marketing_agreement=data.marketing_agreement,
+        )
+        user = await User.objects.aget(id=user.id)
+
+    # 6. 초대 팩토리 확인 및 검증
+    if data.factory_id:
+
+        inviting = target_factory.inviting or []
+        invite_info = next(
+            (item for item in inviting if item["email"] == data.email), None
+        )
+
+        if not invite_info:
+            raise HttpError(400, "해당 팩토리에서 초대받지 않은 이메일입니다.")
+
+        if invite_info["role"] != data.invite_role:
+            raise HttpError(400, "초대받은 역할과 일치하지 않습니다.")
+
+        existing_member = await FactoryMember.objects.filter(
+            factory=target_factory, user__email=data.email
+        ).aexists()
+
+        if existing_member:
+            raise HttpError(400, "이미 해당 팩토리의 멤버입니다.")
+
+    # 7. 팩토리 멤버 등록 처리
+    async def remove_invite_from_factories(user_email: str, exclude_factory_id=None):
+        other_factories = await sync_to_async(list)(
+            Factory.objects.filter(inviting__isnull=False).exclude(
+                id=exclude_factory_id
+            )
+        )
+        for factory in other_factories:
+            if factory.inviting:
+                factory.inviting = [
+                    item for item in factory.inviting if item["email"] != user_email
+                ]
+                await factory.asave()
+
+    if target_factory and invite_info:
+        # 초대받은 팩토리에만 멤버 등록
+        invited_by_user = None
+        if invite_info.get("invited_by"):
+            invited_by_user = await User.objects.aget(id=invite_info["invited_by"])
+
+        await FactoryMember.objects.acreate(
+            factory=target_factory,
+            user=user,
+            role=invite_info["role"],
+            status=FactoryMember.MemberStatus.active,
+            invited_by=invited_by_user,
+            invited_at=invite_info.get("invited_at"),
+        )
+
+        # 초대 목록에서 삭제 및 다른 팩토리에서도 제거
+        target_factory.inviting = [
+            item
+            for item in (target_factory.inviting or [])
+            if item["email"] != user.email
+        ]
+        await target_factory.asave()
+        await remove_invite_from_factories(
+            user.email, exclude_factory_id=target_factory.id
+        )
+
     else:
-        # 신규 사용자 생성
-        try:
-            user = await sync_to_async(User.objects.create_user)(
-                email=data.email,
-                password=data.password,
-                terms_of_service=data.terms_of_service,
-                privacy_policy_agreement=data.privacy_policy_agreement,
-                marketing_agreement=data.marketing_agreement,
+        # 일반 가입 또는 초대 없을 때 멤버 등록 처리
+        factories_with_invites = await sync_to_async(list)(
+            Factory.objects.filter(inviting__isnull=False)
+        )
+
+        for factory in factories_with_invites:
+            inviting = factory.inviting or []
+            matched_invite = next(
+                (item for item in inviting if item["email"] == user.email), None
             )
 
-            user = await User.objects.aget(id=user.id)
-
-            # 팩토리 멤버 등록 처리
-
-            if target_factory and invite_info:
-                # 초대받은 경우 - 해당 팩토리에만 등록
-                # invited_by User 인스턴스 찾기
+            if matched_invite:
                 invited_by_user = None
-                if invite_info.get("invited_by"):
+                if matched_invite.get("invited_by"):
                     invited_by_user = await User.objects.aget(
-                        id=invite_info["invited_by"]
+                        id=matched_invite["invited_by"]
                     )
 
-                # FactoryMember 생성
                 await FactoryMember.objects.acreate(
-                    factory=target_factory,
+                    factory=factory,
                     user=user,
-                    role=invite_info["role"],
+                    role=matched_invite["role"],
                     status=FactoryMember.MemberStatus.active,
                     invited_by=invited_by_user,
-                    invited_at=invite_info.get("invited_at"),
+                    invited_at=matched_invite.get("invited_at"),
                 )
 
-                # 해당 팩토리의 inviting에서 해당 항목 삭제
-                inviting = target_factory.inviting or []
-                inviting = [item for item in inviting if item["email"] != user.email]
-                target_factory.inviting = inviting
-                await sync_to_async(target_factory.save)()
+                factory.inviting = [
+                    item for item in inviting if item["email"] != user.email
+                ]
+                await factory.asave()
 
-                # 다른 모든 공장의 inviting에서도 해당 이메일 제거
-                other_factories = await sync_to_async(list)(
-                    Factory.objects.exclude(id=target_factory.id).filter(
-                        inviting__isnull=False
-                    )
-                )
-                for factory in other_factories:
-                    if factory.inviting:
-                        factory.inviting = [
-                            item
-                            for item in factory.inviting
-                            if item["email"] != user.email
-                        ]
-                        await sync_to_async(factory.save)()
-            else:
-                # 일반 가입 - 초대가 있으면 처리하고, 없어도 회원가입 가능
-                factories_with_invites = await sync_to_async(list)(
-                    Factory.objects.filter(inviting__isnull=False)
-                )
+        # 초대받지 않았어도 회원가입은 성공 (멤버 등록 없음)
 
-                for factory in factories_with_invites:
-                    inviting = factory.inviting or []
-                    matched_invite = None
-
-                    # 해당 이메일로 초대된 항목 찾기
-                    for item in inviting:
-                        if item["email"] == user.email:
-                            matched_invite = item
-                            break
-
-                    if matched_invite:
-                        # invited_by User 인스턴스 찾기
-                        invited_by_user = None
-                        if matched_invite.get("invited_by"):
-                            invited_by_user = await User.objects.aget(
-                                id=matched_invite["invited_by"]
-                            )
-
-                        # FactoryMember 생성 - 초대된 공장에 멤버로 등록
-                        await FactoryMember.objects.acreate(
-                            factory=factory,
-                            user=user,
-                            role=matched_invite["role"],
-                            status=FactoryMember.MemberStatus.active,
-                            invited_by=invited_by_user,
-                            invited_at=matched_invite.get("invited_at"),
-                        )
-
-                        # inviting에서 해당 항목 삭제
-                        factory.inviting = [
-                            item for item in inviting if item["email"] != user.email
-                        ]
-                        await sync_to_async(factory.save)()
-
-                # 초대를 받지 않았어도 회원가입은 성공 (멤버 등록 없음)
-
-            return user
-        except Exception as e:
-            raise HttpError(
-                400, "회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-            )
+    return user
 
 
 @router.post(
