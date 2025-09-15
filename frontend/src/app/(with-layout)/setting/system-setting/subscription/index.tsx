@@ -13,14 +13,17 @@ import {
   useGetFactory,
   useUpdateFactory,
   useGetSubscriptionStatus,
+  useGetPaymentHistory,
 } from '@/hooks';
 import RefundPolicyModal from './modals/refund-policy-modal';
+import NoHistoryBox from '@/ui/no-history-box';
 
 const Subscription = () => {
   const { factoryId } = useMemberStore();
   const { getFactory, factory } = useGetFactory();
   const { getSubscriptionStatus, subscriptionStatus } =
     useGetSubscriptionStatus();
+  const { getPaymentHistory, paymentHistory } = useGetPaymentHistory();
   const { updateFactory } = useUpdateFactory();
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isCardDeleteModalOpen, setIsCardDeleteModalOpen] = useState(false);
@@ -32,8 +35,9 @@ const Subscription = () => {
     if (factoryId) {
       getFactory(factoryId);
       getSubscriptionStatus(factoryId);
+      getPaymentHistory(factoryId);
     }
-  }, [factoryId, getFactory, getSubscriptionStatus]);
+  }, [factoryId, getFactory, getSubscriptionStatus, getPaymentHistory]);
 
   const registerCard = async () => {
     try {
@@ -159,15 +163,24 @@ const Subscription = () => {
       {/* 결제 내역 */}
       <div className="flex flex-col gap-4">
         <h3 className="Heading-3">결제 내역</h3>
-        <div>
-          <SubscriptionTableHeader />
-          <SubscriptionTableItem
-            date="2025-06-14"
-            card="현대카드(**** 4821)"
-            amount="19,900원"
-            plan="Basic"
+        {paymentHistory?.data.length === 0 ? (
+          <NoHistoryBox
+            title="결제 내역이 없어요."
+            text="결제 시 이곳에 표시돼요."
           />
-        </div>
+        ) : (
+          <div>
+            <SubscriptionTableHeader />
+            {paymentHistory?.data.map((payment) => (
+              <SubscriptionTableItem
+                date={payment.created_at}
+                card={`${payment.card_company} (${payment.card_number})`}
+                amount={payment.amount.toLocaleString()}
+                plan={payment.amount === 121000 ? 'Basic' : 'Partners'}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* RefundPolicyModal */}

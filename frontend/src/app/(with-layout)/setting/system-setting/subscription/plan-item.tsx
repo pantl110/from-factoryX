@@ -28,14 +28,11 @@ const PlanItem = ({ type, registerCard, subscriptionType }: PlanItemProps) => {
         <div className="flex items-center justify-between">
           <h3 className="Heading-3">{info.title}</h3>
           {isSubscribedType ? (
-            <div className="flex gap-2">
-              <MiniBtn text="구독 중" variant="secondary" onClick={() => {}} />
-              <MiniBtn
-                text="구독 해지"
-                variant="transparent"
-                onClick={() => {}}
-              />
-            </div>
+            <MiniBtn
+              text="구독 해지"
+              variant="transparent"
+              onClick={() => {}}
+            />
           ) : (
             <MiniBtn
               text="구독"

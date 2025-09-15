@@ -163,8 +163,8 @@ export interface SubscriptionHistoryResponseModel {
   end_date: string;
   created_at: string;
   updated_at: string;
-  billing_key: string;
-  customer_key: string;
+  billing_key: string; // 어떤 카드인지
+  customer_key: string; // 누구의 카드인지
 }
 
 export interface PaymentResponseModel {
@@ -184,6 +184,11 @@ export interface PaymentResponseModel {
   created_at: string; // 결제 요청 생성 시간 (ISO 8601 형식)
   updated_at: string;
 }
+
+export interface PaymentListResponseModel extends PaginationModel {
+  data: PaymentResponseModel[];
+}
+
 
 export interface SubscriptionStatusResponseModel{
   subscription_history: SubscriptionHistoryResponseModel;
