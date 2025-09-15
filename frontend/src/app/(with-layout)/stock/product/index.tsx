@@ -1,45 +1,200 @@
-import SearchDeleteTable from "@/ui/search-delete-table";
-import TableHeader from "../product/table-header";
-import TableItem from "./table-item";
-import ProductDetail from "./product-detail";
+'use client';
 
-const Product = () => {
+import TableHeader from './table-header';
+import TableItem from './table-item';
+import { useState, useEffect, useCallback } from 'react';
+import ProductDetail from './product-detail';
+import SearchInput from '@/ui/search-input';
+import MiniBtn from '@/ui/mini-btn';
+import DeleteModal from '@/ui/modal/delete-modal';
+import Pagination from '@/components/pagination';
+import { ProductResponseModel } from '@/types/data-model';
+import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks';
+import Spinner from '@/ui/spinner';
+import NoHistoryBox from '@/ui/no-history-box';
+import useMemberStore from '@/store/member-store';
+
+interface ProductProps {
+  setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
+  isProductDetailPanelOpen?: boolean;
+  setIsProductDetailPanelOpen?: (open: boolean) => void;
+}
+
+const Product = ({
+  isProductDetailPanelOpen,
+  setIsProductDetailPanelOpen,
+}: ProductProps) => {
+  const role = useMemberStore((state) => state.role);
+  const { getProductList, productList, pagination, isLoading } =
+    useGetProduct();
+  const { deleteProduct } = useDeleteProduct();
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [_currentPage, setCurrentPage] = useState(1);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  // 패널 오픈 상태를 부모에서 제어할 경우 prop을 우선 사용
+  const [isInternalPanelOpen, setIsInternalPanelOpen] = useState(false);
+  const isPanelOpen =
+    typeof isProductDetailPanelOpen === 'boolean'
+      ? isProductDetailPanelOpen
+      : isInternalPanelOpen;
+  const setPanelOpen = setIsProductDetailPanelOpen || setIsInternalPanelOpen;
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(
+    null
+  );
+
+  // 제품 목록 로드 함수
+  const loadProducts = useCallback(
+    (page = 1, search = '') => {
+      getProductList({
+        q: search || undefined,
+        page,
+        page_size: 10,
+      });
+    },
+    [getProductList]
+  );
+
+  // 초기 로드
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]); // loadProducts 의존성 추가
+
+  // 검색 처리
+  const handleSearch = (term: string) => {
+    setSearchKeyword(term);
+    setCurrentPage(1);
+    loadProducts(1, term);
+  };
+
+  // 페이지 변경
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    loadProducts(page, searchKeyword);
+  };
+
+  const {
+    checkedCount,
+    isAllChecked,
+    isChecked,
+    toggleAll,
+    toggleOne,
+    setAllChecked,
+    getDeleteButtonText,
+  } = useCheckAll(productList.map((item: ProductResponseModel) => item.id));
+
+  // 리스트 아이템 클릭 시
+  const handleItemClick = (product: ProductResponseModel) => {
+    setSelectedProductId(product.id);
+    setPanelOpen(true);
+  };
+  // 패널 닫기
+  const handlePanelClose = () => {
+    setPanelOpen(false);
+    setSelectedProductId(null);
+  };
+
+  // 삭제 처리 함수
+  const handleDelete = async () => {
+    const checkedIds = productList
+      .filter((item: ProductResponseModel) => isChecked(item.id))
+      .map((item: ProductResponseModel) => item.id);
+    if (checkedIds.length === 0) return;
+    for (const id of checkedIds) {
+      await deleteProduct(id);
+    }
+    setIsDeleteModalOpen(false);
+    loadProducts(_currentPage, searchKeyword);
+  };
+
   return (
     <>
-      <SearchDeleteTable />
-      <div>
-        <TableHeader />
-        <TableItem
-          productName="투명 아크릴판"
-          productCode="PRM-001"
-          size="100x300mm"
-          unit="EA"
-          stock={2500}
+      <div className="flex items-center justify-between pb-4">
+        <SearchInput
+          value={searchKeyword}
+          onChange={handleSearch}
+          placeholder="품목명 또는 품목코드를 검색하세요."
         />
-        <TableItem
-          productName="고무 패킹"
-          productCode="PRM-002"
-          size="∅20"
-          unit="EA"
-          stock={6300}
-        />
-        <TableItem
-          productName="금속 연결 부품"
-          productCode="PRM-003"
-          size="50x30mm"
-          unit="SET"
-          stock={420}
-        />
-        <TableItem
-          productName="방열 테이프"
-          productCode="PRM-004"
-          size="5cmx20m"
-          unit="롤"
-          stock={180}
-        />
+        {productList.length > 0 && (
+          <div className="flex gap-1">
+            <MiniBtn
+              text="취소"
+              textColor="text-dg"
+              borderColor="border-lg"
+              bgColor="bg-white"
+              hoverColor="hover:bg-bg"
+              onClick={() => setAllChecked(false)}
+              disabled={role === 'viewer'}
+            />
+            <MiniBtn
+              text={getDeleteButtonText()}
+              textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
+              borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
+              bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
+              hoverColor={
+                checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'
+              }
+              onClick={
+                checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
+              }
+              disabled={role === 'viewer'}
+            />
+          </div>
+        )}
       </div>
 
-      <ProductDetail />
+      {isLoading ? (
+        <div className="flex justify-center items-center h-100">
+          <Spinner />
+        </div>
+      ) : productList.length === 0 ? (
+        <NoHistoryBox
+          title="품목이 아직 없어요."
+          text="품목이 생성되면 이곳에 표시돼요. "
+        />
+      ) : (
+        <>
+          <div>
+            <TableHeader isAllChecked={isAllChecked} onToggleAll={toggleAll} />
+            {productList.length > 0 &&
+              productList.map((product: ProductResponseModel) => (
+                <TableItem
+                  key={product.id}
+                  product={product}
+                  onClick={() => handleItemClick(product)}
+                  checked={isChecked(product.id)}
+                  onToggle={() => toggleOne(product.id)}
+                />
+              ))}
+          </div>
+
+          {/* 페이지네이션 */}
+          {pagination && pagination.pageCnt && pagination.pageCnt > 1 && (
+            <Pagination
+              currentPage={pagination.curPage || 1}
+              totalPages={pagination.pageCnt}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
+      )}
+
+      {isPanelOpen && (
+        <ProductDetail
+          key={selectedProductId ?? 'create'}
+          productId={selectedProductId}
+          onClose={handlePanelClose}
+          onSuccess={() => {
+            // 저장 성공 후 목록 새로고침
+            loadProducts(_currentPage, searchKeyword);
+          }}
+        />
+      )}
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleDelete}
+        />
+      )}
     </>
   );
 };

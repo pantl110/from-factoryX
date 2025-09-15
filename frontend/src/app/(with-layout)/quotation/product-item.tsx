@@ -1,34 +1,228 @@
+import {
+  QuotationProductDetailResponseModel,
+  ProductResponseModel,
+} from '@/types/data-model';
+import { X } from '@phosphor-icons/react';
+import { useState, useEffect } from 'react';
+import { useGetProduct } from '@/hooks';
+import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
+import { ArrowLineUpRight } from '@phosphor-icons/react/dist/ssr';
+import useMemberStore from '@/store/member-store';
+
 interface ProductItemProps {
-  productName: string;
-  productCode: string;
-  specification: string;
-  unit: string;
-  quantity: string;
-  unitPrice: string;
-  totalPrice: string;
+  data?: QuotationProductDetailResponseModel;
+  onClick?: () => void;
+  canDelete?: boolean;
+  onChange?: (field: 'quantity' | 'unit_price', value: string) => void;
+  onDelete?: () => void;
+  onDropdownShow?: (products: ProductResponseModel[], rect?: DOMRect) => void;
+  onDropdownHide?: () => void;
+  onProductDetailClick?: (productId: number | null) => void;
+  onlyRead?: boolean;
 }
 
 const ProductItem = ({
-  productName,
-  productCode,
-  specification,
-  unit,
-  quantity,
-  unitPrice,
-  totalPrice,
+  data,
+  onClick,
+  canDelete = false,
+  onChange,
+  onDelete,
+  onDropdownShow,
+  onDropdownHide,
+  onProductDetailClick,
+  onlyRead = false,
 }: ProductItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const { getProductList } = useGetProduct();
+  const { isOpen, openDropdown, anchorRect } = usePortalDropdown();
+
+  // 검색어가 변경될 때마다 제품 목록 필터링 (디바운스 300ms)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.length > 0 && isOpen) {
+        const fetchProducts = async () => {
+          try {
+            const response = await getProductList({
+              q: searchTerm,
+            });
+            const products = response?.data?.data || [];
+            onDropdownShow?.(products, anchorRect || undefined);
+          } catch {
+            throw new Error('Failed to fetch products');
+          }
+        };
+        fetchProducts();
+      } else {
+        onDropdownHide?.();
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, isOpen]);
+
   return (
-    <div className="w-full h-14 flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <p className="flex-1 px-3 truncate" title={productName}>
-        {productName}
-      </p>
-      <p className="flex-1 px-3">{productCode}</p>
-      <p className="flex-1 px-3">{specification}</p>
-      <p className="w-[80px] px-3">{unit}</p>
-      <p className="w-[100px] px-3">{quantity}</p>
-      <p className="flex-1 px-3">{unitPrice}</p>
-      <p className="flex-1 px-3">{totalPrice}</p>
-    </div>
+    <>
+      <tr
+        className={`flex Me_Body-1 text-dg border-b border-lg transition-all duration-200 ease-in-out ${
+          !onlyRead
+            ? 'group hover:border hover:border-primary cursor-pointer h-14 items-center'
+            : 'items-start py-[15px]'
+        }`}
+        onClick={!onlyRead ? onClick : undefined}
+      >
+        <td
+          className={`flex-1 px-3 flex items-center gap-1 relative ${onlyRead ? 'break-words' : 'truncate'}`}
+          title={data?.product_name}
+          onClick={
+            !onlyRead
+              ? (e) => {
+                  e.stopPropagation();
+                  openDropdown(e);
+                }
+              : undefined
+          }
+        >
+          {data?.product_name ? (
+            <>
+              <p className={`${onlyRead ? 'break-words' : 'truncate'}`}>
+                {data.product_name}
+              </p>
+              {!onlyRead && (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onProductDetailClick?.(data?.productId || null);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg cursor-pointer transition-all duration-200 ease-in-out"
+                >
+                  <ArrowLineUpRight size={16} />
+                </div>
+              )}
+            </>
+          ) : (
+            <input
+              type="text"
+              placeholder="품목명 검색"
+              className="w-full outline-none"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+              }}
+              disabled={isViewer}
+            />
+          )}
+        </td>
+        <td className="flex-1 px-3">
+          <p
+            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
+            title={data?.product_code || ''}
+          >
+            {data?.product_code || ''}
+          </p>
+        </td>
+        <td className="flex-1 px-3">
+          <p
+            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
+            title={data?.spec || ''}
+          >
+            {data?.spec || ''}
+          </p>
+        </td>
+        <td className="w-[80px] px-3">
+          <p
+            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
+            title={data?.unit || ''}
+          >
+            {data?.unit || ''}
+          </p>
+        </td>
+        <td
+          className="flex-1 px-3"
+          onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
+        >
+          {onlyRead ? (
+            <p
+              className="w-full break-words"
+              title={data?.quantity?.toLocaleString() || ''}
+            >
+              {data?.quantity?.toLocaleString() || ''}
+            </p>
+          ) : (
+            <input
+              type="text"
+              placeholder="(필수)"
+              value={data?.quantity?.toLocaleString() || ''}
+              className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
+              style={{ width: '100%', maxWidth: '100%' }}
+              onChange={(e) => {
+                const { value } = e.target;
+                const numericValue = value.replace(/[^0-9]/g, '');
+                onChange?.('quantity', numericValue);
+              }}
+              disabled={isViewer}
+            />
+          )}
+        </td>
+        <td
+          className="w-[100px] px-3"
+          onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
+        >
+          {onlyRead ? (
+            <p
+              className="w-full break-words"
+              title={data?.unit_price?.toLocaleString() || ''}
+            >
+              {data?.unit_price?.toLocaleString() || ''}
+            </p>
+          ) : (
+            <input
+              type="text"
+              placeholder="(필수)"
+              value={data?.unit_price?.toLocaleString() || ''}
+              className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
+              style={{ width: '100%', maxWidth: '100%' }}
+              onChange={(e) => {
+                const { value } = e.target;
+                const numericValue = value.replace(/[^0-9]/g, '');
+                onChange?.('unit_price', numericValue);
+              }}
+              disabled={isViewer}
+            />
+          )}
+        </td>
+        <td className="flex-1 px-3 min-w-0">
+          <p
+            className={`w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap ${onlyRead ? 'break-words' : 'truncate'}`}
+            title={
+              data?.quantity && data?.unit_price
+                ? (data.quantity * data.unit_price).toLocaleString()
+                : ''
+            }
+          >
+            {data?.quantity && data?.unit_price
+              ? (data.quantity * data.unit_price).toLocaleString()
+              : ''}
+          </p>
+        </td>
+        {canDelete && !onlyRead && !isViewer && (
+          <td className="w-9 h-full flex justify-center items-center">
+            <button
+              className="flex items-center justify-center w-full h-9 rounded-[8px] hover:bg-bg cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete?.();
+              }}
+            >
+              <X size={16} className="text-sv" />
+            </button>
+          </td>
+        )}
+      </tr>
+    </>
   );
 };
 
