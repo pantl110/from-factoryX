@@ -79,7 +79,7 @@ async def get_factory_by_id(factory_id: int, user=None):
                 )
                 .annotate(
                     trial_end_date=TruncDate(
-                        F("created_at") + timedelta(days=settings.TRIAL_PERIOD_DAYS)
+                        F("created_at") + timedelta(days=settings.TRIAL_PERIOD_MONTHS)
                     )
                 )
                 .aget(id=factory_id)
@@ -91,7 +91,7 @@ async def get_factory_by_id(factory_id: int, user=None):
                 )
                 .annotate(
                     trial_end_date=TruncDate(
-                        F("created_at") + timedelta(days=settings.TRIAL_PERIOD_DAYS)
+                        F("created_at") + timedelta(days=settings.TRIAL_PERIOD_MONTHS)
                     )
                 )
                 .aget(id=factory_id, owner=user)

@@ -15,6 +15,7 @@ from subscription.schemas.outbound import (
     SubscriptionOut,
     SubscriptionHistoryOut,
     BillingKeyIssueOut,
+    BillingKeyDeleteOut,
     PaymentResultOut,
     PaymentOut,
     PaymentCancelOut,
@@ -31,9 +32,11 @@ from subscription.exceptions import PaymentError, BillingKeyError, SubscriptionE
 from django.utils import timezone
 from datetime import timedelta
 from django.db import transaction
+from django.db.models import F
 import uuid
 import logging
 from subscription.barobill_utils import handle_barobill_scrap_for_subscription
+
 
 logger = logging.getLogger(__name__)
 router = Router(tags=["Subscription"])
@@ -159,6 +162,65 @@ async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn
     except Exception as e:
         logger.error(f"빌링키 발급 실패: factory_id={factory_id}, error={str(e)}")
         raise HttpError(400, f"빌링키 발급 실패: {str(e)}")
+
+
+@router.delete(
+    "/billing-key/{factory_id}",
+    summary="[C] 빌링키 삭제",
+    description="등록된 카드(빌링키)를 삭제합니다.",
+    response=BillingKeyDeleteOut,
+    auth=jwt_auth,
+)
+async def delete_billing_key(request, factory_id: int):
+    """빌링키 삭제"""
+    user = request.auth
+    factory = await get_factory_by_id(factory_id)
+    member = await is_factory_member(factory_id, user)
+
+    # 현재 활성 구독에서 빌링키 정보 조회
+    current_subscription = (
+        await SubscriptionHistory.objects.filter(
+            factory=factory,
+            end_date__gt=timezone.now().date(),
+            billing_key__isnull=False,
+        )
+        .select_related("subscription")
+        .afirst()
+    )
+
+    if not current_subscription:
+        raise HttpError(404, "삭제할 빌링키가 없습니다.")
+
+    if not current_subscription.billing_key:
+        raise HttpError(400, "등록된 빌링키가 없습니다.")
+
+    toss_service = TossPaymentsService()
+
+    try:
+        # 토스페이먼츠 빌링키 삭제 API 호출
+        result = toss_service.delete_billing_key(
+            billing_key=current_subscription.billing_key,
+            customer_key=current_subscription.customer_key,
+        )
+
+        @sync_to_async
+        @transaction.atomic
+        def clear_billing_key():
+            # 구독 히스토리에서 빌링키 정보 삭제
+            current_subscription.billing_key = None
+            current_subscription.customer_key = None
+            current_subscription.save()
+
+        await clear_billing_key()
+
+        logger.info(f"빌링키 삭제 성공: factory_id={factory_id}")
+        return BillingKeyDeleteOut(
+            success=True, message="등록된 카드가 성공적으로 삭제되었습니다."
+        )
+
+    except Exception as e:
+        logger.error(f"빌링키 삭제 실패: factory_id={factory_id}, error={str(e)}")
+        raise HttpError(400, f"카드 삭제 실패: {str(e)}")
 
 
 @router.post(
@@ -309,7 +371,7 @@ async def get_payment_history(request, factory_id: int):
 
     payments = await sync_to_async(list)(
         Payment.objects.filter(subscription_history__factory=factory)
-        .select_related("subscription_history", "subscription_history__subscription")
+        .select_related("subscription_history__subscription")
         .order_by("-created_at")
     )
 
@@ -344,6 +406,7 @@ async def get_subscription_status(request, factory_id: int):
     # 최신 결제 내역 조회
     latest_payment = await sync_to_async(
         Payment.objects.filter(subscription_history=current_subscription)
+        .select_related("subscription_history__subscription")
         .order_by("-created_at")
         .first
     )()
@@ -354,9 +417,11 @@ async def get_subscription_status(request, factory_id: int):
         subscription_history=SubscriptionHistoryOut.from_orm(current_subscription),
         current_payment=PaymentOut.from_orm(latest_payment) if latest_payment else None,
         next_billing_date=(
-            current_subscription.end_date.isoformat() if is_active else None
+            current_subscription.end_date.isoformat()
+            if is_active and not current_subscription.is_canceled
+            else None
         ),
-        is_active=is_active,
+        is_active=is_active and not current_subscription.is_canceled,
     )
 
     return result
@@ -365,12 +430,12 @@ async def get_subscription_status(request, factory_id: int):
 @router.post(
     "/cancel/{payment_id}",
     summary="[C] 결제 취소",
-    description="구독 결제를 취소합니다.",
+    description="구독 결제를 취소합니다. 즉시 환불하지 않고 다음 달 자동 결제를 중단합니다. 세금계산서 조회 및 발행 기능이 바로 중단됩니다.",
     response=PaymentCancelOut,
     auth=jwt_auth,
 )
 async def cancel_payment(request, payment_id: int, payload: PaymentCancelIn):
-    """결제 취소"""
+    """결제 취소 - 다음 달 자동 갱신 중단"""
     user = request.auth
     payment = await get_payment_by_id(payment_id)
 
@@ -381,54 +446,43 @@ async def cancel_payment(request, payment_id: int, payload: PaymentCancelIn):
     if payment.status != "DONE":
         raise HttpError(400, "완료된 결제만 취소할 수 있습니다.")
 
-    toss_service = TossPaymentsService()
+    if subscription_history.is_canceled:
+        raise HttpError(400, "이미 취소된 구독입니다.")
 
+    @sync_to_async
+    @transaction.atomic
+    def update_subscription_canceled():
+        # 구독 히스토리를 취소 상태로 변경 (현재 기간은 유지)
+        subscription_history.is_canceled = True
+        subscription_history.save()
+
+        # 결제 상태는 그대로 유지 (환불하지 않음)
+        return subscription_history
+
+    await update_subscription_canceled()
+
+    # basic, partners 구독 취소 시 바로빌 홈택스 스크랩 정지
+    subscription = subscription_history.subscription
+    factory = subscription_history.factory
     try:
-        # 토스페이먼츠 결제 취소 API 호출
-        cancel_result = toss_service.cancel_payment(
-            payment_key=payment.payment_key,
-            cancel_reason=payload.cancel_reason,
-            cancel_amount=payload.cancel_amount or int(payment.amount),
+        await handle_barobill_scrap_for_subscription(
+            factory, subscription.type, "deactivate"
         )
-
-        @sync_to_async
-        @transaction.atomic
-        def update_payment_canceled():
-            payment.status = "CANCELED"
-            payment.save()
-
-            # 구독 히스토리도 비활성화
-            subscription_history.end_date = timezone.now().date()
-            subscription_history.save()
-
-        await update_payment_canceled()
-
-        # basic, partners 구독 취소 시 바로빌 홈택스 스크랩 정지
-        subscription = subscription_history.subscription
-        factory = subscription_history.factory
-        try:
-            await handle_barobill_scrap_for_subscription(
-                factory, subscription.type, "deactivate"
-            )
-        except Exception as e:
-            logger.error(
-                f"바로빌 홈택스 스크랩 정지 실패: factory_id={factory.id}, error={str(e)}"
-            )
-            # 스크랩 정지 실패해도 결제 취소는 성공으로 처리
-
-        result = PaymentCancelOut(
-            payment_key=payment.payment_key,
-            cancel_amount=payload.cancel_amount or int(payment.amount),
-            cancel_reason=payload.cancel_reason,
-            canceled_at=timezone.now(),
-        )
-
-        logger.info(f"결제 취소 성공: payment_id={payment_id}")
-        return result
-
     except Exception as e:
-        logger.error(f"결제 취소 실패: payment_id={payment_id}, error={str(e)}")
-        raise HttpError(400, f"결제 취소 실패: {str(e)}")
+        logger.error(
+            f"바로빌 홈택스 스크랩 정지 실패: factory_id={factory.id}, error={str(e)}"
+        )
+        # 스크랩 정지 실패해도 구독 취소는 성공으로 처리
+
+    result = PaymentCancelOut(
+        payment_key=payment.payment_key,
+        cancel_amount=0,  # 환불 금액은 0 (환불하지 않음)
+        cancel_reason=payload.cancel_reason,
+        canceled_at=timezone.now(),
+    )
+
+    logger.info(f"구독 취소 성공 (다음 달 자동 갱신 중단): payment_id={payment_id}")
+    return result
 
 
 @router.post(
@@ -455,6 +509,9 @@ async def renew_subscription(request, factory_id: int):
 
     if not current_subscription:
         raise HttpError(404, "갱신할 구독이 없습니다.")
+
+    if current_subscription.is_canceled:
+        raise HttpError(400, "취소된 구독은 갱신할 수 없습니다.")
 
     if not current_subscription.billing_key:
         raise HttpError(400, "빌링키가 없습니다. 새로 결제를 진행해주세요.")

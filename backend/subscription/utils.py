@@ -29,7 +29,7 @@ async def get_subscription_history_by_id(history_id: int) -> SubscriptionHistory
 async def get_payment_by_id(payment_id: int) -> Payment:
     try:
         payment = await Payment.objects.select_related(
-            "subscription_history", "subscription_history__factory"
+            "subscription_history__subscription", "subscription_history__factory"
         ).aget(id=payment_id)
         return payment
     except Payment.DoesNotExist:

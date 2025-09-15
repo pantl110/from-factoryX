@@ -23,25 +23,13 @@ class SubscriptionHistoryOut(ModelSchema):
 class PaymentOut(ModelSchema):
     """결제 내역 출력 스키마"""
 
+    subscription_history: Optional[SubscriptionHistoryOut] = Field(
+        None, description="구독 히스토리"
+    )
+
     class Meta:
         model = Payment
-        fields = [
-            "id",
-            "payment_key",
-            "order_id",
-            "amount",
-            "status",
-            "method",
-            "approved_at",
-            "failure_code",
-            "failure_message",
-            "card_company",
-            "card_type",
-            "card_number",
-            "card_owner_type",
-            "created_at",
-            "updated_at",
-        ]
+        fields = "__all__"
 
 
 class BillingKeyIssueOut(Schema):
@@ -52,6 +40,13 @@ class BillingKeyIssueOut(Schema):
     card_company: Optional[str] = Field(None, description="카드사")
     card_type: Optional[str] = Field(None, description="카드 타입")
     card_number: Optional[str] = Field(None, description="마스킹된 카드번호")
+
+
+class BillingKeyDeleteOut(Schema):
+    """빌링키 삭제 응답 스키마"""
+
+    success: bool = Field(..., description="삭제 성공 여부")
+    message: str = Field(..., description="응답 메시지")
 
 
 class PaymentResultOut(Schema):
@@ -89,6 +84,6 @@ class SubscriptionStatusOut(Schema):
     """구독 상태 조회 응답 스키마"""
 
     subscription_history: SubscriptionHistoryOut
-    current_payment: Optional[PaymentOut]
+    current_payment: Optional[PaymentOut] = Field(None, description="최근 결제 내역")
     next_billing_date: Optional[str] = Field(None, description="다음 결제일")
     is_active: bool = Field(..., description="구독 활성 상태")

@@ -56,6 +56,28 @@ class TossPaymentsService:
         except requests.exceptions.RequestException as e:
             raise Exception(f"빌링키 발급 실패: {str(e)}")
 
+    def delete_billing_key(self, billing_key, customer_key):
+        """빌링키 삭제"""
+        url = f"{self.base_url}/v1/billing/authorizations/{billing_key}"
+
+        data = {"customerKey": customer_key}
+
+        try:
+            response = requests.delete(url, json=data, headers=self.headers)
+            if response.status_code in [200, 204]:
+                return {
+                    "success": True,
+                    "message": "빌링키가 성공적으로 삭제되었습니다.",
+                }
+
+            # 에러 응답 처리
+            error_data = response.json() if response.content else {}
+            error_message = error_data.get("message", "빌링키 삭제 실패")
+            raise Exception(f"빌링키 삭제 실패: {error_message}")
+
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"빌링키 삭제 실패: {str(e)}")
+
     def confirm_billing_key(self, billing_key, customer_key):
         """빌링키 확인"""
         url = f"{self.base_url}/v1/billing/authorizations/issue"
