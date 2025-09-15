@@ -117,12 +117,15 @@ export interface FactoriesResponseModel {
   business_address: string;
   is_trial: boolean;
   billing_key: string;
-  inviting: string[];
+  inviting: InviteMemberResponseModel[];
   created_at: string;
   updated_at: string;
   invited_at: string;
   role?: string;
   invited_by: number;
+  member: MemberResponseModel;
+  members: MemberResponseModel[];
+  
 }
 
 // 공장 수정
@@ -1022,6 +1025,14 @@ export interface MemberResponseModel {
   role: MemberRoleType;
   status: MemberStatusType;
   invited_at: string | null; // 초대일시 (초대 대기자는 null일 수 있음)
+  invited_by: number;
+  created_at: string;
+  updated_at: string;
+  is_barobill_user: boolean;
+  barobill_id: string | null;
+  barobill_password: string | null;
+  invitation_message: string | null;
+  invitation_token: string | null;
 }
 
 export interface MemberListResponseModel extends PaginationModel {

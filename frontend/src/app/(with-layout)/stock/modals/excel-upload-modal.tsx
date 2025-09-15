@@ -112,8 +112,13 @@ const ExcelUploadModal = ({
             avgProductionTime > 0
               ? { average_production_time: avgProductionTime }
               : {}),
-            ...(type === 'product' && bufferRate !== null && bufferRate > 0
-              ? { buffer_rate: bufferRate / 100 }
+            ...(type === 'product'
+              ? {
+                  buffer_rate:
+                    bufferRate !== null && bufferRate > 0
+                      ? bufferRate / 100
+                      : 0.1,
+                }
               : {}),
             ...(type === 'material' && minStock !== null && minStock > 0
               ? { min_stock: minStock }

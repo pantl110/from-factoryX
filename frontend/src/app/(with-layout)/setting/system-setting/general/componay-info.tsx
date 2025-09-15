@@ -18,7 +18,7 @@ import useMemberStore from '@/store/member-store';
 const CompanyInfo = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
 
-  const { getFactory, factory, error: _factoryError } = useGetFactory();
+  const { getFactory, factory } = useGetFactory();
   const { updateFactory } = useUpdateFactory();
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
