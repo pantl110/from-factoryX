@@ -40,10 +40,14 @@ const MainTitleSec = ({
   const handleExcelDownload = () => {
     try {
       const filename =
-        selectedTab === 'product' ? 'product-excel.csv' : 'material-excel.csv';
+        selectedTab === 'product'
+          ? 'product-excel.xlsx'
+          : 'material-excel.xlsx';
 
       const downloadName =
-        selectedTab === 'product' ? '품목_등록_양식.csv' : '자재_등록_양식.csv';
+        selectedTab === 'product'
+          ? '품목_등록_양식.xlsx'
+          : '자재_등록_양식.xlsx';
 
       // 파일 다운로드
       const link = document.createElement('a'); // 다운로드 링크 생성
