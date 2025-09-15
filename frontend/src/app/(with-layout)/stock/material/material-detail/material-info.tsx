@@ -244,10 +244,14 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                     minStock !== null &&
                     !isNaN(Number(uncomma(currentStock))) &&
                     !isNaN(Number(uncomma(minStock)));
+                  const cs = Number(uncomma(currentStock));
+                  const ms = Number(uncomma(minStock));
                   const status = isValid
-                    ? Number(uncomma(currentStock)) >= Number(uncomma(minStock))
-                      ? '충분'
-                      : '부족'
+                    ? cs === 0
+                      ? '부족'
+                      : cs >= ms
+                        ? '충분'
+                        : '부족'
                     : '-';
                   return (
                     <InfoLabelValue

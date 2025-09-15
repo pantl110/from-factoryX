@@ -49,6 +49,7 @@ const StockStatusItem = ({
   // 재고 상태를 판단
   const getStockStatus = (currentStock?: number, standardStock?: number) => {
     if (currentStock === undefined || currentStock === null) return '-';
+    if (currentStock === 0) return '부족';
     if (standardStock === undefined || standardStock === null) return '충분';
     if (currentStock >= standardStock) return '충분';
     return '부족';
