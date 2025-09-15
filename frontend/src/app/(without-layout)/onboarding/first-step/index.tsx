@@ -183,8 +183,8 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
               textColor="text-sv"
               bgColor="bg-wh"
               hoverColor="hover:bg-bg"
+              type="button"
               onClick={() => handlePrevStep(getValues())}
-              disabled={isLoading}
             />
             <MiniBtn
               text="다음"

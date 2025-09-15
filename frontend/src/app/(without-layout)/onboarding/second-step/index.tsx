@@ -349,7 +349,6 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
               hoverColor="hover:bg-bg"
               onClick={onPrevStep}
               type="button"
-              disabled={isLoading}
             />
             <MiniBtn
               text="다음"
