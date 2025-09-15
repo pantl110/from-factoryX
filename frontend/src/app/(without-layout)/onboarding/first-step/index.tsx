@@ -180,17 +180,13 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
           <div className="w-full flex justify-end gap-2.5">
             <MiniBtn
               text="이전"
-              textColor="text-sv"
-              bgColor="bg-wh"
-              hoverColor="hover:bg-bg"
+              variant="white"
               type="button"
               onClick={() => handlePrevStep(getValues())}
             />
             <MiniBtn
               text="다음"
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="hover:bg-primary-hover"
+              variant="primary"
               type="submit"
               disabled={!isValid || isLoading}
             />

@@ -344,17 +344,13 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
           <div className="w-full flex justify-end gap-2.5 mb-8">
             <MiniBtn
               text="이전"
-              textColor="text-sv"
-              bgColor="bg-wh"
-              hoverColor="hover:bg-bg"
+              variant="white"
               onClick={onPrevStep}
               type="button"
             />
             <MiniBtn
               text="다음"
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="hover:bg-primary-hover"
+              variant="primary"
               type="submit"
               disabled={!isValid || isLoading || isToastOpen}
             />

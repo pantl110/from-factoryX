@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { OnboardingStepType } from './types';
 import Welcome from './welcome';
 import FirstStep from './first-step';
@@ -14,6 +14,17 @@ const OnboardingPage = () => {
     useState<OnboardingStepType>('choosing-role');
 
   const router = useRouter();
+
+  // Leave-onboarding cleanup: clear only when exiting this page
+  useEffect(() => {
+    return () => {
+      try {
+        sessionStorage.removeItem('onboarding-step1-product');
+        sessionStorage.removeItem('onboarding-step2-materials');
+        sessionStorage.removeItem('onboarding-product-id');
+      } catch {}
+    };
+  }, []);
   const steps = [
     'choosing-role',
     'welcome',

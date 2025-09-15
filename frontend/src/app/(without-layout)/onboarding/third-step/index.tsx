@@ -33,20 +33,8 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
 
       {/* 모달버튼 영역 */}
       <div className="w-full flex justify-end gap-2.5">
-        <MiniBtn
-          text="이전 단계"
-          textColor="text-sv"
-          bgColor="bg-wh"
-          hoverColor="hover:bg-bg"
-          onClick={onPrevStep}
-        />
-        <MiniBtn
-          text="시작하기"
-          textColor="text-wh"
-          bgColor="bg-primary"
-          hoverColor="hover:bg-primary-hover"
-          onClick={onNextStep}
-        />
+        <MiniBtn text="이전 단계" variant="white" onClick={onPrevStep} />
+        <MiniBtn text="시작하기" variant="primary" onClick={onNextStep} />
       </div>
     </div>
   );

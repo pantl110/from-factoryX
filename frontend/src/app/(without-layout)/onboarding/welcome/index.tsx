@@ -63,18 +63,10 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
         <Image src={onboardingImage} alt="onboarding" />
       </div>
       <div className="w-full flex justify-end gap-2.5">
-        <MiniBtn
-          text="이전"
-          textColor="text-sv"
-          hoverColor="hover:bg-bg"
-          onClick={onPrevStep}
-          disabled={isLoading}
-        />
+        <MiniBtn text="이전" variant="white" onClick={onPrevStep} />
         <MiniBtn
           text="다음"
-          textColor="text-wh"
-          bgColor="bg-primary"
-          hoverColor="hover:bg-primary-hover"
+          variant="primary"
           onClick={handleFactoryOwnerStart}
           disabled={isLoading}
         />
