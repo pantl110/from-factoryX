@@ -1,32 +1,38 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
-export interface PageResult<T> {
+export interface PageResultModel<T> {
   data: T[];
   curPage: number;
   pageCnt: number;
 }
 
-export interface FetchPageParams {
+export interface FetchPageParamsModel {
   q?: string;
   page: number;
   page_size: number;
 }
 
-export type FetchPageFn<T> = (params: FetchPageParams) => Promise<
+export type FetchPageFnType<T> = (
+  params: FetchPageParamsModel
+) => Promise<
   | { success: true; data: { data: T[]; curPage?: number; pageCnt?: number } }
   | { success: false; error?: string }
 >;
 
-interface UseInfiniteDropdownOptions<T> {
-  fetchPage: FetchPageFn<T>;
+interface UseInfiniteDropdownOptionsModel<T> {
+  fetchPage: FetchPageFnType<T>;
   pageSize?: number;
   debounceMs?: number;
 }
 
-export const useInfiniteDropdown = <T,>(
+export const useInfiniteDropdown = <T>(
   searchKeyword: string,
-  { fetchPage, pageSize = 6, debounceMs = 300 }: UseInfiniteDropdownOptions<T>
+  {
+    fetchPage,
+    pageSize = 6,
+    debounceMs = 300,
+  }: UseInfiniteDropdownOptionsModel<T>
 ) => {
   const [items, setItems] = useState<T[]>([]);
   const [page, setPage] = useState(1);
@@ -74,7 +80,10 @@ export const useInfiniteDropdown = <T,>(
       if (isFetchingRef.current || !hasMore) return;
       const target = e.currentTarget;
       const threshold = 24;
-      if (target.scrollTop + target.clientHeight >= target.scrollHeight - threshold) {
+      if (
+        target.scrollTop + target.clientHeight >=
+        target.scrollHeight - threshold
+      ) {
         await loadPage(page + 1, false);
       }
     },
@@ -91,5 +100,3 @@ export const useInfiniteDropdown = <T,>(
 };
 
 export default useInfiniteDropdown;
-
-

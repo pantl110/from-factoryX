@@ -22,7 +22,10 @@ const OnboardingPage = () => {
         sessionStorage.removeItem('onboarding-step1-product');
         sessionStorage.removeItem('onboarding-step2-materials');
         sessionStorage.removeItem('onboarding-product-id');
-      } catch {}
+      } catch {
+        // ignore cleanup errors
+        void 0;
+      }
     };
   }, []);
   const steps = [

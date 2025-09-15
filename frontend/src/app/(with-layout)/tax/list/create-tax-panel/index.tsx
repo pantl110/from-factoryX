@@ -142,7 +142,7 @@ const CreatTaxPanel = ({
 
           if (error instanceof Error) {
             // 에러 메시지에서 콜론 뒤의 부분만 추출
-            const message = error.message;
+            const { message } = error;
             if (message.includes(':')) {
               errorMsg = message.split(':')[1]?.trim() || message;
             } else {

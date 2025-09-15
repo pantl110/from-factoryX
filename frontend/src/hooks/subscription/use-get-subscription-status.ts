@@ -5,7 +5,8 @@ import { SubscriptionStatusResponseModel } from '@/types/data-model';
 // 공장의 구독 상태 조회
 export const useGetSubscriptionStatus = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatusResponseModel | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] =
+    useState<SubscriptionStatusResponseModel | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const getSubscriptionStatus = useCallback(async (factoryId: number) => {
@@ -33,7 +34,7 @@ export const useGetSubscriptionStatus = () => {
       return { success: true, data: result };
     } catch (err) {
       let errorMessage = '서버 연결에 실패했습니다.';
-      
+
       if (axios.isAxiosError(err)) {
         if (err.response?.data?.detail) {
           errorMessage = err.response.data.detail;
@@ -45,7 +46,7 @@ export const useGetSubscriptionStatus = () => {
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {

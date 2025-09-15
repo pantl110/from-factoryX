@@ -73,46 +73,35 @@ export const useCheckBarobill = () => {
   }, [memberId, factoryId, getMember, getCertification]);
 
   const checkBarobill = useCallback(async () => {
-    try {
-      // 1. 바로빌 사용자 등록 여부 확인
-      if (!isBarobillUser) {
-        // 바로빌 사용자가 아니면 자동 등록
-        const registerResponse = await registerBarobill();
-        if (registerResponse) {
-          // 2. 인증서 등록 여부 확인
-          try {
-            const certCheckResponse = await checkCert();
-            if (certCheckResponse && !certCheckResponse.has_cert) {
-              // 인증서가 없으면 인증서 등록 진행
-              await registerCertification();
-            }
-          } catch (error) {
-            // certCheckResponse에서 오류가 나면 인증서 등록 진행
-            await registerCertification();
-          }
-          return true;
-        }
-      } else {
-        // 바로빌 사용자인 경우 인증서 등록 여부만 확인
+    // 1. 바로빌 사용자 등록 여부 확인
+    if (!isBarobillUser) {
+      const registerResponse = await registerBarobill();
+      if (registerResponse) {
         try {
           const certCheckResponse = await checkCert();
           if (certCheckResponse && !certCheckResponse.has_cert) {
-            // 인증서가 없으면 인증서 등록 진행
             await registerCertification();
-          } else if (certCheckResponse && certCheckResponse.has_cert) {
-            return true;
           }
-        } catch (error) {
-          // certCheckResponse에서 오류가 나면 인증서 등록 진행
+        } catch {
           await registerCertification();
         }
         return true;
       }
-      return false;
-    } catch (error) {
-      // 에러를 다시 throw하여 상위에서 처리할 수 있도록 함
-      throw error;
+    } else {
+      // 바로빌 사용자인 경우 인증서 등록 여부만 확인
+      try {
+        const certCheckResponse = await checkCert();
+        if (certCheckResponse && !certCheckResponse.has_cert) {
+          await registerCertification();
+        } else if (certCheckResponse && certCheckResponse.has_cert) {
+          return true;
+        }
+      } catch {
+        await registerCertification();
+      }
+      return true;
     }
+    return false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     registerBarobill,

@@ -189,8 +189,7 @@ export interface PaymentListResponseModel extends PaginationModel {
   data: PaymentResponseModel[];
 }
 
-
-export interface SubscriptionStatusResponseModel{
+export interface SubscriptionStatusResponseModel {
   subscription_history: SubscriptionHistoryResponseModel;
   current_payment: PaymentResponseModel | null;
   next_billing_date: string | null;
@@ -1407,8 +1406,6 @@ export interface BarobillCorpCertModel {
 }
 
 //////////////////////
-
-
 
 import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
 // export interface BillingKeyIssueResponseModel {

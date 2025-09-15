@@ -36,7 +36,8 @@ export const useBarobillRegister = () => {
     setError(null);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/v1/barobill/register`, 
+      const response = await axios.post(
+        `${API_BASE_URL}/v1/barobill/register`,
         { factory: factoryId },
         {
           withCredentials: true,
@@ -49,7 +50,7 @@ export const useBarobillRegister = () => {
       return response.data;
     } catch (err) {
       let errorMessage = '알 수 없는 오류가 발생했습니다.';
-      
+
       if (axios.isAxiosError(err)) {
         if (err.response?.data?.detail) {
           errorMessage = err.response.data.detail;
@@ -61,7 +62,7 @@ export const useBarobillRegister = () => {
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -108,7 +109,7 @@ export const useBarobillCorpCertUrl = () => {
         return response.data;
       } catch (err) {
         let errorMessage = '알 수 없는 오류가 발생했습니다.';
-        
+
         if (axios.isAxiosError(err)) {
           if (err.response?.data?.detail) {
             errorMessage = err.response.data.detail;
@@ -120,7 +121,7 @@ export const useBarobillCorpCertUrl = () => {
         } else if (err instanceof Error) {
           errorMessage = err.message;
         }
-        
+
         setError(errorMessage);
         throw new Error(errorMessage);
       } finally {
@@ -160,7 +161,7 @@ export const useBarobillCertCheck = () => {
       return response.data;
     } catch (err) {
       let errorMessage = '알 수 없는 오류가 발생했습니다.';
-      
+
       if (axios.isAxiosError(err)) {
         if (err.response?.data?.detail) {
           errorMessage = err.response.data.detail;
@@ -172,7 +173,7 @@ export const useBarobillCertCheck = () => {
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

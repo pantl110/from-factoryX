@@ -52,7 +52,7 @@ const useGetMember = () => {
       return { success: true, data: result };
     } catch (err) {
       let errorMessage = '서버 연결에 실패했습니다.';
-      
+
       if (axios.isAxiosError(err)) {
         if (err.response?.data?.detail) {
           errorMessage = err.response.data.detail;
@@ -64,7 +64,7 @@ const useGetMember = () => {
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {

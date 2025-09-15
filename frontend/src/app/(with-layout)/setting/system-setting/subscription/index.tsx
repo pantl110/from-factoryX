@@ -173,6 +173,7 @@ const Subscription = () => {
             <SubscriptionTableHeader />
             {paymentHistory?.data.map((payment) => (
               <SubscriptionTableItem
+                key={payment.id}
                 date={payment.created_at}
                 card={`${payment.card_company} (${payment.card_number})`}
                 amount={payment.amount.toLocaleString()}
