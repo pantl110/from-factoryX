@@ -19,7 +19,13 @@ interface MiniBtnProps
   iconColor?: string;
   width?: string;
   height?: string;
-  variant?: 'primary' | 'secondary' | 'red' | 'white' | 'whiteOutline';
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'red'
+    | 'white'
+    | 'whiteOutline'
+    | 'transparent';
 }
 
 const MiniBtn = ({
@@ -74,6 +80,12 @@ const MiniBtn = ({
           text: 'text-dg',
           hover: 'hover:bg-bg',
           border: 'border border-lg',
+        };
+      case 'transparent':
+        return {
+          bg: 'bg-transparent',
+          text: 'text-dg',
+          hover: 'hover:bg-[rgb(0,111,237,0.08)]',
         };
       default:
         return {};

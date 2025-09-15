@@ -9,13 +9,18 @@ import MiniBtn from '@/ui/mini-btn';
 import CardChangeModal from './modals/card-change-modal';
 import CardDeleteModal from './modals/card-delete-modal';
 import useMemberStore from '@/store/member-store';
-import { useGetFactory, useUpdateFactory } from '@/hooks';
+import {
+  useGetFactory,
+  useUpdateFactory,
+  useGetSubscriptionStatus,
+} from '@/hooks';
 import RefundPolicyModal from './modals/refund-policy-modal';
-import { FactoriesResponseModel } from '@/types/data-model';
 
 const Subscription = () => {
   const { factoryId } = useMemberStore();
   const { getFactory, factory } = useGetFactory();
+  const { getSubscriptionStatus, subscriptionStatus } =
+    useGetSubscriptionStatus();
   const { updateFactory } = useUpdateFactory();
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isCardDeleteModalOpen, setIsCardDeleteModalOpen] = useState(false);
@@ -26,8 +31,9 @@ const Subscription = () => {
   useEffect(() => {
     if (factoryId) {
       getFactory(factoryId);
+      getSubscriptionStatus(factoryId);
     }
-  }, [factoryId, getFactory]);
+  }, [factoryId, getFactory, getSubscriptionStatus]);
 
   const registerCard = async () => {
     try {
@@ -97,9 +103,18 @@ const Subscription = () => {
         />
       </div>
       <div className="flex flex-col gap-2">
-        <FreePlan endDate={factory?.trial_end_date} />
+        {/* 무료체험 시에만 무료체험 이용중 표시 */}
+        {factory?.is_trial && <FreePlan endDate={factory?.trial_end_date} />}
         {planTypes.map((type) => (
-          <PlanItem key={type} type={type} registerCard={registerCard} />
+          <PlanItem
+            key={type}
+            type={type}
+            registerCard={registerCard}
+            subscriptionType={
+              subscriptionStatus?.subscription_history.subscription
+                .type as PlanType
+            }
+          />
         ))}
       </div>
 
@@ -118,8 +133,11 @@ const Subscription = () => {
           />
         </div>
 
-        <div className="flex items-center justify-between h-18 py-4 px-6 border border-[#eeeeee] rounded-xl">
-          <h4 className="Heading-4">Master 19**</h4>
+        <div className="flex items-center justify-between h-18 py-4 px-6 border border-lg rounded-xl">
+          <h4 className="Heading-4">
+            {subscriptionStatus?.current_payment?.card_company}{' '}
+            {subscriptionStatus?.current_payment?.card_number}
+          </h4>
           <MiniBtn
             text="삭제"
             textColor="text-red"

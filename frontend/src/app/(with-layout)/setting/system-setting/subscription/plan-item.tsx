@@ -5,11 +5,13 @@ import SubscribeModal from './modals/subscribe-modal';
 
 interface PlanItemProps {
   type: PlanType;
+  subscriptionType: PlanType;
   registerCard: () => Promise<void> | void;
 }
 
-const PlanItem = ({ type, registerCard }: PlanItemProps) => {
+const PlanItem = ({ type, registerCard, subscriptionType }: PlanItemProps) => {
   const info = PLAN_INFO[type];
+  const isSubscribedType = subscriptionType === type;
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
 
   const handleSubscribe = async () => {
@@ -20,16 +22,27 @@ const PlanItem = ({ type, registerCard }: PlanItemProps) => {
 
   return (
     <>
-      <div className="flex flex-col gap-1 py-4 px-6 border border-[#eeeeee] rounded-xl">
+      <div
+        className={`flex flex-col gap-1 py-4 px-6 rounded-xl ${isSubscribedType ? 'bg-primary-8' : 'border border-lg'}`}
+      >
         <div className="flex items-center justify-between">
           <h3 className="Heading-3">{info.title}</h3>
-          <MiniBtn
-            text="구독"
-            textColor="text-wh"
-            bgColor="bg-primary"
-            hoverColor="hover:bg-primary-hover"
-            onClick={() => setIsSubscribeModalOpen(true)}
-          />
+          {isSubscribedType ? (
+            <div className="flex gap-2">
+              <MiniBtn text="구독 중" variant="secondary" onClick={() => {}} />
+              <MiniBtn
+                text="구독 해지"
+                variant="transparent"
+                onClick={() => {}}
+              />
+            </div>
+          ) : (
+            <MiniBtn
+              text="구독"
+              variant="primary"
+              onClick={() => setIsSubscribeModalOpen(true)}
+            />
+          )}
         </div>
         <h4 className="Heading-4 text-primary">
           월 {info.price.toLocaleString()}원

@@ -126,6 +126,7 @@ export interface FactoriesResponseModel {
   member: MemberResponseModel;
   members: MemberResponseModel[];
   trial_end_date: string;
+  subscription_histories: SubscriptionHistoryResponseModel[];
 }
 
 // 공장 수정
@@ -142,6 +143,53 @@ export interface FactoriesUpdateModel {
   business_address?: string;
   is_trial?: boolean;
   billing_key?: string;
+}
+
+//////////////////////
+// 구독 관련 api
+export interface SubscriptionResponseModel {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  type: string;
+  price: number;
+  tax_invoice_count: number;
+}
+
+export interface SubscriptionHistoryResponseModel {
+  id: number;
+  subscription: SubscriptionResponseModel;
+  start_date: string;
+  end_date: string;
+  created_at: string;
+  updated_at: string;
+  billing_key: string;
+  customer_key: string;
+}
+
+export interface PaymentResponseModel {
+  id: number; // 결제 아이디
+  payment_key: string; // 토스페이먼츠 결제 키
+  order_id: string; // // 주문 ID (가맹점에서 생성한 주문 식별자)
+  amount: number; // 결제 금액
+  status: SubscriptionStatusType; // 결제 상태
+  method: string; // 카드 정보
+  approved_at: string | null; // 결제 승인 시간 (ISO 8601 형식, null이면 미승인)
+  failure_code: string | null;
+  failure_message: string | null;
+  card_company: string | null;
+  card_number: string | null;
+  card_type: string | null;
+  card_owner_type: string | null;
+  created_at: string; // 결제 요청 생성 시간 (ISO 8601 형식)
+  updated_at: string;
+}
+
+export interface SubscriptionStatusResponseModel{
+  subscription_history: SubscriptionHistoryResponseModel;
+  current_payment: PaymentResponseModel | null;
+  next_billing_date: string | null;
+  is_active: boolean;
 }
 
 //////////////////////
@@ -1354,57 +1402,8 @@ export interface BarobillCorpCertModel {
 }
 
 //////////////////////
-// Subscription API
-// export interface SubscriptionModel {
-//   id: number;
-//   type: 'trial' | 'basic' | 'partners';
-//   price: number;
-//   tax_invoice_count: number; // 세금계산서 발행 제한 개수 // 플랜 별 횟수 차별 제공
-//   created_at: string;
-//   updated_at: string;
-// }
 
-// export interface SubscriptionResponseModel extends SubscriptionModel {
-//   subscription: SubscriptionModel[];
-//   id: number;
-//   created_at: string;
-//   updated_at: string;
-//   start_date: string;
-//   end_date: string;
-//   billing_key: string;
-//   customer_key: string;
-// }
 
-// export interface SubscriptionListResponseModel extends PaginationModel {
-//   data: SubscriptionResponseModel[];
-// }
-
-// export interface SubscriptionHistoryResponseModel {
-//   id: number;
-//   subscription: SubscriptionResponseModel;
-//   start_date: string; // 시작일
-//   end_date: string; // 종료일 (다음 결제일)
-//   created_at: string;
-//   updated_at: string;
-// }
-
-export interface PaymentResponseModel {
-  id: number; // 결제 아이디
-  payment_key: string; // 토스페이먼츠 결제 키
-  order_id: string; // // 주문 ID (가맹점에서 생성한 주문 식별자)
-  amount: number; // 결제 금액
-  status: SubscriptionStatusType; // 결제 상태
-  method: string; // 카드 정보
-  approved_at: string | null; // 결제 승인 시간 (ISO 8601 형식, null이면 미승인)
-  failure_code: string | null;
-  failure_message: string | null;
-  created_at: string; // 결제 요청 생성 시간 (ISO 8601 형식)
-  updated_at: string;
-}
-
-export interface PaymentListResponseModel extends PaginationModel {
-  data: PaymentResponseModel[];
-}
 
 import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
 // export interface BillingKeyIssueResponseModel {
