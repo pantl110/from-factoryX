@@ -232,16 +232,14 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         <div className="flex justify-end gap-2.5">
           <MiniBtn
             text="취소"
-            textColor="text-sv"
+            variant="white"
+            type="button"
             onClick={onClose}
-            hoverColor="hover:bg-bg"
           />
           <MiniBtn
             text="다음"
-            bgColor="bg-primary"
-            textColor="text-wh"
+            variant="primary"
             type="submit"
-            hoverColor="hover:bg-primary-hover"
             disabled={!isFormValid}
           />
         </div>

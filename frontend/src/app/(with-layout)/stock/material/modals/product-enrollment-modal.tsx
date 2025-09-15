@@ -2,6 +2,7 @@ import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { useState, useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
 import {
   ProductResponseModel,
   MaterialItemModel,
@@ -46,12 +47,13 @@ const ProductEnrollmentModal = ({
   const [isManualAddMode, setIsManualAddMode] = useState(false);
 
   // 검색어가 변경될 때 서버에서 검색
+  const [debouncedInput] = useDebounce(input, 300);
+
   useEffect(() => {
     const searchProducts = async () => {
-      if (input.trim()) {
-        // 첫 페이지를 가져와서 전체 개수 확인
+      if (debouncedInput.trim()) {
         const firstPageResult = await getProductList({
-          q: input,
+          q: debouncedInput,
           page: 1,
           page_size: 10,
         });
@@ -62,7 +64,7 @@ const ProductEnrollmentModal = ({
 
           // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
           const allDataResult = await getProductList({
-            q: input,
+            q: debouncedInput,
             page: 1,
             page_size: totalCnt,
           });
@@ -76,9 +78,8 @@ const ProductEnrollmentModal = ({
       }
     };
 
-    const timeoutId = setTimeout(searchProducts, 150); // 디바운스
-    return () => clearTimeout(timeoutId);
-  }, [input, getProductList]);
+    searchProducts();
+  }, [debouncedInput, getProductList]);
 
   // 품목 선택 시 - ProductResponseModel을 MaterialItemModel로 변환
   const handleSelectProduct = (product: ProductResponseModel) => {
@@ -180,7 +181,7 @@ const ProductEnrollmentModal = ({
           <ManualAddProduct
             setIsManualAddMode={setIsManualAddMode}
             setSelectedProducts={setSelectedProducts}
-            checkDuplicateProductCode={(code) =>
+            checkDuplicateProductCode={(code: string) =>
               checkDuplicateProductCode?.(code, selectedProducts) ?? false
             }
             showDuplicateProductToast={showDuplicateProductToast}
@@ -189,13 +190,13 @@ const ProductEnrollmentModal = ({
           // 선택한 품목 list
           selectedProducts.length > 0 && (
             <div className="mb-4 flex flex-col gap-3">
-              {selectedProducts.map((product, index) => (
+              {selectedProducts.map((product, index: number) => (
                 <ConnetionItem
                   key={`${product.name}-${index}`}
                   name={product.name}
                   unit={product.unit}
                   quantity={product.quantity || 0}
-                  onQuantityChange={(quantity) =>
+                  onQuantityChange={(quantity: number) =>
                     handleQuantityChange(product.code, quantity)
                   }
                   onDelete={() => handleRemoveProduct(product.code)}

@@ -106,7 +106,7 @@ const ManualAddMaterial = ({
 
   return (
     <div className="mb-4 flex flex-col gap-3 border border-lg rounded-[12px] p-5 shadow-[4px_4px_12px_-8px_rgba(0,0,0,0.08)]">
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form data-scope="manual-add-material" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2.5">
           <div className="flex w-full gap-2.5">
             <div className="flex-1">
@@ -253,15 +253,13 @@ const ManualAddMaterial = ({
         <div className="flex gap-2 justify-end mt-3">
           <MiniBtn
             text="취소"
-            textColor="text-sv"
-            hoverColor="hover:bg-bg"
+            variant="white"
+            type="button"
             onClick={() => setIsManualAddMode(false)}
           />
           <MiniBtn
             text="추가"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            hoverColor="hover:bg-secondary-hover"
+            variant="primary"
             type="submit"
             disabled={!isFormValid()}
           />

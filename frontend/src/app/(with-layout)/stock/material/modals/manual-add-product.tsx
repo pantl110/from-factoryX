@@ -194,15 +194,13 @@ const ManualAddProduct = ({
         <div className="flex gap-2 justify-end mt-3">
           <MiniBtn
             text="취소"
-            textColor="text-sv"
-            hoverColor="hover:bg-bg"
+            variant="white"
+            type="button"
             onClick={() => setIsManualAddMode(false)}
           />
           <MiniBtn
             text="추가"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            hoverColor="hover:bg-secondary-hover"
+            variant="primary"
             type="submit"
             disabled={!isFormValid()}
           />

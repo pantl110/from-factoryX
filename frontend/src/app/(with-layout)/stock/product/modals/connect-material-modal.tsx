@@ -3,6 +3,7 @@ import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
 import ManualAddMaterial from '../../material/modals/manual-add-material';
 import {
   MaterialItemModel,
@@ -67,7 +68,9 @@ const ConnectMaterialModal = ({
     try {
       const result = await getAllMaterials();
       if (result.success && result.data) {
-        const codes = result.data.map((material) => material.code);
+        const codes = result.data.map(
+          (material: { code: string }) => material.code
+        );
         setAllMaterialCodes(codes);
       }
     } catch (error) {
@@ -82,12 +85,13 @@ const ConnectMaterialModal = ({
   }, []);
 
   // 검색어가 변경될 때 서버에서 검색
+  const [debouncedInput] = useDebounce(input, 300);
+
   useEffect(() => {
     const searchMaterials = async () => {
-      if (input.trim()) {
-        // 첫 페이지를 가져와서 전체 페이지 수 확인
+      if (debouncedInput.trim()) {
         const firstPageResult = await getMaterialList({
-          q: input,
+          q: debouncedInput,
           page: 1,
           page_size: 10,
         });
@@ -98,7 +102,7 @@ const ConnectMaterialModal = ({
 
           // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
           const allDataResult = await getMaterialList({
-            q: input,
+            q: debouncedInput,
             page: 1,
             page_size: totalCnt,
           });
@@ -112,9 +116,8 @@ const ConnectMaterialModal = ({
       }
     };
 
-    const timeoutId = setTimeout(searchMaterials, 150); // 디바운스
-    return () => clearTimeout(timeoutId);
-  }, [input, getMaterialList]);
+    searchMaterials();
+  }, [debouncedInput, getMaterialList]);
 
   // 원자재 선택 시
   const handleSelectMaterial = (item: MaterialResponseModel) => {
@@ -219,8 +222,8 @@ const ConnectMaterialModal = ({
           return;
         }
 
-        createdMaterialIds.forEach((id, index) => {
-          const src = newMaterials[index];
+        createdMaterialIds.forEach((id: number, index: number) => {
+          const src = newMaterials[index] as MaterialItemModel;
           staged.push({
             id,
             name: src.name,
@@ -270,9 +273,9 @@ const ConnectMaterialModal = ({
 
         // 생성된 원자재들을 연결 목록에 추가
         allMaterialIds.push(
-          ...createdMaterialIds.map((materialId, index) => ({
+          ...createdMaterialIds.map((materialId: number, index: number) => ({
             id: materialId,
-            quantity: newMaterials[index]?.quantity || 0,
+            quantity: (newMaterials[index] as MaterialItemModel)?.quantity || 0,
           }))
         );
       }
@@ -363,28 +366,28 @@ const ConnectMaterialModal = ({
             (selectedMaterials.length > 0 || newMaterials.length > 0) && (
               <div className="flex flex-col gap-3 mb-4">
                 {/* 기존 원자재 */}
-                {selectedMaterials.map((mat) => (
+                {selectedMaterials.map((mat: MaterialItemModel) => (
                   <ConnetionItem
                     key={mat.code}
                     name={mat.name}
                     unit={mat.unit}
                     quantity={mat.quantity || 0}
                     onDelete={() => handleRemoveMaterial(mat.code)}
-                    onQuantityChange={(newQuantity) =>
+                    onQuantityChange={(newQuantity: number) =>
                       handleMaterialQuantityChange(mat.code, newQuantity)
                     }
                   />
                 ))}
 
                 {/* 새로운 원자재 */}
-                {newMaterials.map((mat) => (
+                {newMaterials.map((mat: MaterialItemModel) => (
                   <ConnetionItem
                     key={mat.code}
                     name={mat.name}
                     unit={mat.unit}
                     quantity={mat.quantity || 0}
                     onDelete={() => handleRemoveNewMaterial(mat.code)}
-                    onQuantityChange={(newQuantity) =>
+                    onQuantityChange={(newQuantity: number) =>
                       handleMaterialQuantityChange(mat.code, newQuantity)
                     }
                   />

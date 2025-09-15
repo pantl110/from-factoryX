@@ -3,6 +3,7 @@ import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from './manual-add-material';
 import {
@@ -73,38 +74,44 @@ const MaterialEnrollmentModal = ({
   useEffect(() => {
     // 직접 추가 모드 진입 시 전체 원자재 코드 목록을 받아옴
     if (isManualAddMode) {
-      getMaterialList({}).then((result) => {
-        if (result.success && result.data) {
-          setAllMaterials((result.data.data || []).map((mat) => mat.code));
+      getMaterialList({}).then(
+        (result: {
+          success: boolean;
+          data?: { data?: Array<{ code: string }> };
+        }) => {
+          if (result.success && result.data) {
+            setAllMaterials(
+              (result.data.data || []).map((mat: { code: string }) => mat.code)
+            );
+          }
         }
-      });
+      );
     }
   }, [isManualAddMode, getMaterialList]);
 
+  const [debouncedInput] = useDebounce(input, 300);
+
   useEffect(() => {
     const searchMaterials = async () => {
-      // 검색어가 없으면 드롭다운 비우기
-      if (!input.trim()) {
+      if (!debouncedInput.trim()) {
         setFilteredMaterials([]);
         setPreviousSearchKeyword('');
         return;
       }
 
-      // 이전 검색어와 같으면 요청하지 않음
-      if (input.trim() === previousSearchKeyword) {
+      if (debouncedInput.trim() === previousSearchKeyword) {
         return;
       }
 
-      const result = await getMaterialList({ q: input.trim() });
+      const result = await getMaterialList({ q: debouncedInput.trim() });
       if (result.success && result.data) {
         setFilteredMaterials(result.data.data || []);
-        setPreviousSearchKeyword(input.trim());
+        setPreviousSearchKeyword(debouncedInput.trim());
       }
     };
 
-    const timeoutId = setTimeout(searchMaterials, 300);
-    return () => clearTimeout(timeoutId);
-  }, [input, getMaterialList, previousSearchKeyword]);
+    searchMaterials();
+  }, [debouncedInput, getMaterialList, previousSearchKeyword]);
 
   const handleSelectMaterial = (item: MaterialResponseModel) => {
     setInput('');
@@ -172,10 +179,43 @@ const MaterialEnrollmentModal = ({
     }
   };
 
+  const handleSubmitKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if ((e.nativeEvent as KeyboardEvent).isComposing) return;
+    if (e.key !== 'Enter') return;
+
+    // 수동추가 폼 내부에서의 Enter는 무시
+    const target = e.target as HTMLElement;
+    if (isManualAddMode) return;
+    if (target.closest('form[data-scope="manual-add-material"]')) return;
+
+    // 검색창에서의 Enter는 제출 방지
+    if (target.closest('input[type="text"][placeholder*="검색"]')) {
+      e.preventDefault();
+      return;
+    }
+
+    if (selectedMaterials.length === 0 || isCreating || !isFormValid()) return;
+    e.preventDefault();
+    handleRegister();
+  };
+
   const handleSuccessClose = () => {
     setShouldReload(true);
     if (onClose) onClose();
   };
+
+  // Global Enter handler when success modal is open
+  useEffect(() => {
+    if (!isSuccessModalOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.isComposing) return;
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      handleSuccessClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isSuccessModalOpen]);
 
   return (
     <Modal
@@ -189,11 +229,11 @@ const MaterialEnrollmentModal = ({
           ? '추가된 자재는 목록에서 바로 확인할 수 있어요.'
           : '입력한 거래처로부터 실제로 구매한 원자재 정보를 입력해 주세요.'
       }
-      onClose={onClose}
+      onClose={isSuccessModalOpen ? handleSuccessClose : onClose}
       width="w-[520px]"
     >
       {!isSuccessModalOpen && (
-        <>
+        <div onKeyDown={handleSubmitKeyDown}>
           <div className="flex justify-end h-12 gap-2.5 mt-4 items-center">
             <div className="flex-1 relative">
               <SearchInput
@@ -203,6 +243,9 @@ const MaterialEnrollmentModal = ({
                 onChange={setInput}
                 onFocus={() => setIsOpen(true)}
                 onBlur={() => setTimeout(() => setIsOpen(false), 150)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.preventDefault();
+                }}
               />
               {isOpen && filteredMaterials.length > 0 && (
                 <div className="absolute left-0 top-14 w-[449.3px] z-10">
@@ -229,14 +272,16 @@ const MaterialEnrollmentModal = ({
               <ManualAddMaterial
                 noPrice={false}
                 setIsManualAddMode={setIsManualAddMode}
-                setNewMaterials={(fn) => {
+                setNewMaterials={(
+                  fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
+                ) => {
                   const newMaterials = fn([]);
                   setSelectedMaterials((prev) => {
                     const updatedMaterials = [...prev, ...newMaterials];
 
                     // React Hook Form에 새로 추가된 material의 수량과 단가 설정
                     setTimeout(() => {
-                      newMaterials.forEach((material) => {
+                      newMaterials.forEach((material: MaterialItemModel) => {
                         if (
                           material.quantity !== null &&
                           material.quantity !== undefined
@@ -435,21 +480,21 @@ const MaterialEnrollmentModal = ({
               </div>
             )}
           </div>
-        </>
+        </div>
       )}
 
       <div className="flex h-10 gap-2.5 justify-end mt-4">
-        <MiniBtn
-          text="취소"
-          textColor="text-sv"
-          onClick={onClose}
-          hoverColor="hover:bg-bg"
-        />
+        {!isSuccessModalOpen && (
+          <MiniBtn
+            text="취소"
+            onClick={onClose}
+            variant="white"
+            type="button"
+          />
+        )}
         <MiniBtn
           text={isSuccessModalOpen ? '확인' : '추가'}
-          textColor="text-wh"
-          bgColor="bg-primary"
-          hoverColor="hover:bg-primary-hover"
+          variant="primary"
           disabled={
             isSuccessModalOpen
               ? false
