@@ -31,9 +31,11 @@ const TableItem = ({
   const safeStandardStock = standardStock ?? 0;
   const status =
     typeof currentStock === 'number'
-      ? currentStock >= safeStandardStock
-        ? '충분'
-        : '부족'
+      ? currentStock === 0
+        ? '부족'
+        : currentStock >= safeStandardStock
+          ? '충분'
+          : '부족'
       : '충분';
   const colors = InventoryStatusColorMap[status];
 

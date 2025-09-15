@@ -172,15 +172,15 @@ const StockStatusItem = ({
       </p>
       <p
         className="flex-1 px-3 text-dg truncate"
-        title={connection.material_unit || '-'}
-      >
-        {connection.material_unit || '-'}
-      </p>
-      <p
-        className="flex-[0.5] px-3 text-dg truncate"
         title={connection.material_spec || '-'}
       >
         {connection.material_spec || '-'}
+      </p>
+      <p
+        className="flex-[0.5] px-3 text-dg truncate"
+        title={connection.material_unit || '-'}
+      >
+        {connection.material_unit || '-'}
       </p>
       <input
         type="text"

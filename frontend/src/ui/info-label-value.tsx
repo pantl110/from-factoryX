@@ -103,7 +103,9 @@ const InfoLabelValue = ({
               ? '매출'
               : chip.status === 'purchase'
                 ? '매입'
-                : chip.status
+                : chip.status === 'standby'
+                  ? '가동 대기'
+                  : '가동 중'
           }
           bgColor={colors.bgColor}
           textColor={colors.textColor}

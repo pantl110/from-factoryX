@@ -212,7 +212,7 @@ const FacilityDetailPanel = ({
                 label="가동 상태"
                 chip={{
                   status: (facility?.status ??
-                    '가동 대기') as EquipmentStatusType,
+                    'standby') as EquipmentStatusType,
                 }}
               />
               <Controller
