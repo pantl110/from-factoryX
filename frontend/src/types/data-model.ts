@@ -125,7 +125,7 @@ export interface FactoriesResponseModel {
   invited_by: number;
   member: MemberResponseModel;
   members: MemberResponseModel[];
-  
+  trial_end_date: string;
 }
 
 // 공장 수정

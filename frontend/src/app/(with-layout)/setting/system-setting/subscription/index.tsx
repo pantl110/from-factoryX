@@ -9,9 +9,9 @@ import MiniBtn from '@/ui/mini-btn';
 import CardChangeModal from './modals/card-change-modal';
 import CardDeleteModal from './modals/card-delete-modal';
 import useMemberStore from '@/store/member-store';
-import { useGetFactory } from '@/hooks';
-import useUpdateFactory from '@/hooks/factory/use-update-factory';
+import { useGetFactory, useUpdateFactory } from '@/hooks';
 import RefundPolicyModal from './modals/refund-policy-modal';
+import { FactoriesResponseModel } from '@/types/data-model';
 
 const Subscription = () => {
   const { factoryId } = useMemberStore();
@@ -97,7 +97,7 @@ const Subscription = () => {
         />
       </div>
       <div className="flex flex-col gap-2">
-        <FreePlan />
+        <FreePlan endDate={factory?.trial_end_date} />
         {planTypes.map((type) => (
           <PlanItem key={type} type={type} registerCard={registerCard} />
         ))}
