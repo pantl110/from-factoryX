@@ -1,7 +1,7 @@
-import InfoLabelValue from '@/ui/info-label-value';
-import PriceInfo from '@/ui/price-info';
-import QuotationTableHeader from './quotation-table-header';
-import QuotationTableItem from './quotation-table-item';
+import InfoLabelValue from "@/ui/info-label-value";
+import PriceInfo from "@/ui/price-info";
+import QuotationTableHeader from "./quotation-table-header";
+import QuotationTableItem from "./quotation-table-item";
 
 const Quotation = () => {
   return (

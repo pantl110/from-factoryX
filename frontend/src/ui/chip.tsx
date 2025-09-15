@@ -1,19 +1,12 @@
-import { CaretDown } from '@phosphor-icons/react';
-
 interface ChipProps {
   text: string;
   bgColor?: string;
   textColor?: string;
   borderColor?: string;
   containerWidth?: string;
-  state?: boolean;
+  sm?: boolean;
   radius?: string;
-  onClick?: (e?: React.MouseEvent) => void;
-  cursor?: string;
-  hover?: string;
-  height?: string;
-  padding?: string;
-  width?: string;
+  onClick?: () => void;
 }
 
 const Chip = ({
@@ -22,30 +15,20 @@ const Chip = ({
   textColor,
   borderColor,
   containerWidth,
-  state = false,
-  radius = 'rounded',
+  sm = false,
+  radius = "rounded",
   onClick,
-  cursor = onClick ? 'cursor-pointer' : '',
-  hover = '',
-  height = 'h-8',
-  padding = 'px-3',
-  width = 'w-fit',
 }: ChipProps) => {
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onClick?.(e);
-  };
-
   return (
     <div
-      className={`${containerWidth}`}
-      onClick={onClick ? handleClick : undefined}
-      role={onClick ? 'button' : undefined}
+      className={`${containerWidth} cursor-pointer`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={
         onClick
           ? (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 onClick();
               }
@@ -54,12 +37,11 @@ const Chip = ({
       }
     >
       <div
-        className={`flex gap-1 items-center justify-center ${width} ${height} ${padding} ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${hover} ${borderColor ? `border ${borderColor}` : ''} ${
-          state ? 'cursor-pointer' : ''
-        }`}
+        className={`flex items-center w-fit ${radius} Me_Body-1 ${bgColor} ${textColor} ${
+          sm ? "h-7 px-2" : "h-9 px-3"
+        } ${borderColor ? `border ${borderColor}` : ""}`}
       >
-        <span>{text}</span>
-        {state && <CaretDown size={12} />}
+        {text}
       </div>
     </div>
   );

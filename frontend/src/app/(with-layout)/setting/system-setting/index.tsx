@@ -1,38 +1,21 @@
-import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import usePageStatusStore from '@/store/page-status-store';
-import Chip from '@/ui/chip';
-import General from './general';
-import Permission from './permission';
-import Subscription from './subscription';
+import { useState } from "react";
+import Chip from "@/ui/chip";
+import General from "./general";
+import Permission from "./permission";
+import Subscription from "./subscription";
 
 const SystemSetting = () => {
-  const { settingChip, setSettingChip } = usePageStatusStore();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // URL 파라미터에서 tab 값 확인
-    const tab = searchParams.get('tab');
-
-    if (tab === 'subscription') {
-      setSettingChip('subscription');
-    } else if (
-      !settingChip ||
-      (settingChip !== 'general' &&
-        settingChip !== 'permission' &&
-        settingChip !== 'subscription')
-    ) {
-      setSettingChip('general'); // 초기 칩을 일반으로 설정
-    }
-  }, [settingChip, setSettingChip, searchParams]);
+  const [selectedChip, setSelectedChip] = useState<
+    "general" | "permission" | "subscription"
+  >("general");
 
   const renderContent = () => {
-    switch (settingChip) {
-      case 'general':
+    switch (selectedChip) {
+      case "general":
         return <General />;
-      case 'permission':
+      case "permission":
         return <Permission />;
-      case 'subscription':
+      case "subscription":
         return <Subscription />;
       default:
         return null;
@@ -41,39 +24,30 @@ const SystemSetting = () => {
 
   return (
     <div>
-      <div className="flex gap-1 px-10 pb-6">
+      <div className="flex gap-1 px-10 pb-5">
         <Chip
           text="일반"
-          textColor={settingChip === 'general' ? 'text-bg' : 'text-dg'}
-          bgColor={settingChip === 'general' ? 'bg-dg' : 'bg-transparent'}
+          textColor={selectedChip === "general" ? "text-bg" : "text-dg"}
+          bgColor={selectedChip === "general" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
-          cursor="cursor-pointer"
-          onClick={() => setSettingChip('general')}
-          height="h-9"
-          padding="px-4"
+          onClick={() => setSelectedChip("general")}
         />
         <Chip
-          text="권한 설정"
-          textColor={settingChip === 'permission' ? 'text-bg' : 'text-dg'}
-          bgColor={settingChip === 'permission' ? 'bg-dg' : 'bg-transparent'}
+          text="권한설정"
+          textColor={selectedChip === "permission" ? "text-bg" : "text-dg"}
+          bgColor={selectedChip === "permission" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
-          cursor="cursor-pointer"
-          onClick={() => setSettingChip('permission')}
-          height="h-9"
-          padding="px-4"
+          onClick={() => setSelectedChip("permission")}
         />
         <Chip
-          text="구독 관리"
-          textColor={settingChip === 'subscription' ? 'text-bg' : 'text-dg'}
-          bgColor={settingChip === 'subscription' ? 'bg-dg' : 'bg-transparent'}
+          text="구독관리"
+          textColor={selectedChip === "subscription" ? "text-bg" : "text-dg"}
+          bgColor={selectedChip === "subscription" ? "bg-dg" : "bg-transparent"}
           radius="rounded-full"
           borderColor="border-lg"
-          cursor="cursor-pointer"
-          onClick={() => setSettingChip('subscription')}
-          height="h-9"
-          padding="px-4"
+          onClick={() => setSelectedChip("subscription")}
         />
       </div>
       {renderContent()}

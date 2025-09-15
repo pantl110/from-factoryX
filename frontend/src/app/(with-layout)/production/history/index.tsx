@@ -1,6 +1,6 @@
-import DocumentTitle from './document-title';
-import HistoryTableHeader from './history-table-header';
-import HistoryTableItem from './history-table-item';
+import DocumentTitle from "./document-title";
+import HistoryTableHeader from "./history-table-header";
+import HistoryTableItem from "./history-table-item";
 
 const History = () => {
   return (

@@ -9,7 +9,7 @@ const FactoryXLogo = ({
   className,
   width = 131,
   height = 24,
-  color = '#0057B8',
+  color = "#0057B8",
 }: FactoryXLogoProps) => {
   return (
     <svg

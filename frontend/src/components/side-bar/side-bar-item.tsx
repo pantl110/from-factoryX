@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { IconProps } from '@phosphor-icons/react';
-import { CaretDown } from '@phosphor-icons/react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { IconProps } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface DropdownItemProps {
   label: string;
@@ -49,12 +49,12 @@ const SideBarItem = ({
   return (
     <div>
       <button
-        className="flex items-center justify-between h-[52px] px-4 bg-wh hover:bg-bg rounded cursor-pointer w-full"
+        className="flex items-center justify-between h-[52px] px-4 bg-wh hover:bg-transparent rounded cursor-pointer w-full"
         onClick={handleClick}
       >
         <div className="flex items-center gap-2">
-          <Icon size={20} className={isActive ? 'text-primary' : 'text-gr'} />
-          <p className={`Heading-4 ${isActive ? 'text-bl' : 'text-dg'}`}>
+          <Icon size={20} className={isActive ? "text-primary" : "text-gr"} />
+          <p className={`Heading-4 ${isActive ? "text-bl" : "text-dg"}`}>
             {label}
           </p>
         </div>
@@ -62,7 +62,7 @@ const SideBarItem = ({
           {hasDropdown && (
             <CaretDown
               size={20}
-              className={`text-sv transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+              className={`text-dg transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
             />
           )}
         </div>
@@ -77,7 +77,7 @@ const SideBarItem = ({
               onClick={() => handleDropdownItemClick(item.path)}
             >
               <p
-                className={`Me_Body-1 text-dg hover:text-primary ${pathname === item.path ? 'text-primary' : ''}`}
+                className={`Me_Body-1 text-dg ${pathname === item.path ? "text-primary" : ""}`}
               >
                 {item.label}
               </p>
