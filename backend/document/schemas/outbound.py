@@ -175,6 +175,9 @@ class OCRResultOut(Schema):
 
 
 class ProjectPlanModelOut(ModelSchema):
+    client_name: Optional[str] = Field(None, description="클라이언트명")
+    product_name: Optional[str] = Field(None, description="품목명")
+
     class Meta:
         model = ProjectPlan
         fields = "__all__"
@@ -182,6 +185,28 @@ class ProjectPlanModelOut(ModelSchema):
 
 class WorkInstructionModelOut(ModelSchema):
     plans: Optional[List[ProjectPlanModelOut]] = Field(
+        [], description="작업 지시서 생산 계획 정보"
+    )
+
+    class Meta:
+        model = WorkInstruction
+        fields = "__all__"
+
+
+class ProjectPlanDetailModelOut(ModelSchema):
+    client_name: Optional[str] = Field(None, description="클라이언트명")
+    product_name: Optional[str] = Field(None, description="품목명")
+    product_code: Optional[str] = Field(None, description="품목코드")
+    product_unit: Optional[str] = Field(None, description="단위")
+    product_spec: Optional[str] = Field(None, description="규격")
+
+    class Meta:
+        model = ProjectPlan
+        fields = "__all__"
+
+
+class WorkInstructionDetailModelOut(ModelSchema):
+    plans: Optional[List[ProjectPlanDetailModelOut]] = Field(
         [], description="작업 지시서 생산 계획 정보"
     )
 
