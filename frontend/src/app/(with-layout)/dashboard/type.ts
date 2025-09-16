@@ -36,7 +36,7 @@ export interface TodayProductionPlanModel {
   product_note: string | null;
   equipment_name: string;
   production_quantity: number;
-  production_time: number;
+  production_time?: number;
   start_date: string;
   end_date: string;
 }

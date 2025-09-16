@@ -1403,10 +1403,23 @@ export interface CashReceiptSyncResponseModel {
 
 //////////////////////
 // Work Instruction API
+export interface WorkInstructionPlanModel {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  project: number; // project_id
+  status: OperationStatusType;
+  product: number;
+  quantity: number;
+  start_date: string;
+  end_date: string;
+  avg_production_time: number;
+}
+
 export interface WorkInstructionResponseModel {
   id: number;
   factory: number;
-  plans: TodayProductionPlanModel[];
+  plans: WorkInstructionPlanModel[];
   memo: string | null;
   created_at: string;
   updated_at: string;
@@ -1426,7 +1439,7 @@ export interface BarobillCorpCertModel {
 
 //////////////////////
 
-import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
+// import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
 
 // export interface PaymentResultResponseModel {
 //   payment_key: string;

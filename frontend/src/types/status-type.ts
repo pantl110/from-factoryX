@@ -252,4 +252,3 @@ export const TaxDraftStatusColorMap: Record<
   '임시 저장': { textColor: 'text-primary', bgColor: 'bg-bg' },
   '전송 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
 };
-

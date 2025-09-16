@@ -33,6 +33,9 @@ const DocumentPageContent = () => {
   const [projectSortDirection, setProjectSortDirection] = useState<
     'asc' | 'desc'
   >('desc');
+  // 생산지시서 정렬 방향
+  const [workInstructionSortDirection, setWorkInstructionSortDirection] =
+    useState<'asc' | 'desc'>('desc');
 
   // 디바운스된 검색어 (500ms)
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
@@ -114,7 +117,7 @@ const DocumentPageContent = () => {
     } else if (selectedType === '생산지시서') {
       const fetchProductionData = async () => {
         const result = await getWorkInstructions(
-          projectSortDirection === 'asc' ? 'created_at' : '-created_at',
+          workInstructionSortDirection === 'asc' ? 'created_at' : '-created_at',
           currentPage,
           10
         );
@@ -152,6 +155,7 @@ const DocumentPageContent = () => {
     taxSortField,
     taxSortDirection,
     projectSortDirection,
+    workInstructionSortDirection,
     getPublishedTaxInvoices,
     getProjects,
     getWorkInstructions,
@@ -225,6 +229,12 @@ const DocumentPageContent = () => {
                 setCurrentPage(1);
               }}
               projectSortDirection={projectSortDirection}
+              // 생산지시서 정렬
+              onWorkInstructionSortClick={(direction) => {
+                setWorkInstructionSortDirection(direction);
+                setCurrentPage(1);
+              }}
+              workInstructionSortDirection={workInstructionSortDirection}
             />
           )}
           {totalPages >= 2 && (
