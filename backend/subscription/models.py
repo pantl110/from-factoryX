@@ -48,6 +48,9 @@ class SubscriptionHistory(BaseModel):
     customer_key = models.CharField(
         max_length=255, null=True, blank=True, help_text="고객키"
     )
+    auth_key = models.CharField(
+        max_length=255, null=True, blank=True, help_text="인증키"
+    )
 
 
 class Payment(BaseModel):
@@ -101,3 +104,17 @@ class Payment(BaseModel):
     card_owner_type = models.CharField(
         max_length=20, null=True, blank=True, help_text="카드 소유자 타입 (개인/법인)"
     )
+
+
+class PaymentAuth(BaseModel):
+    """결제 인증 모델"""
+
+    factory = models.ForeignKey(
+        Factory, related_name="payment_auths", on_delete=models.CASCADE
+    )
+    auth_key = models.CharField(max_length=255, help_text="인증키")
+    customer_key = models.CharField(max_length=255, help_text="고객키")
+    billing_key = models.CharField(max_length=255, help_text="빌링키")
+
+    def __str__(self):
+        return f"PaymentAuth(factory={self.factory.name}, customer_key={self.customer_key})"

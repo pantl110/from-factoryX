@@ -1,4 +1,4 @@
-from subscription.models import Subscription, SubscriptionHistory, Payment
+from subscription.models import Subscription, SubscriptionHistory, Payment, PaymentAuth
 from ninja.errors import HttpError
 
 
@@ -36,4 +36,32 @@ async def get_payment_by_id(payment_id: int) -> Payment:
         raise HttpError(
             status_code=404,
             message="해당 결제 내역을 찾을 수 없습니다.",
+        )
+
+
+async def get_payment_auth_by_factory(factory_id: int) -> PaymentAuth:
+    """팩토리의 PaymentAuth 정보를 가져옵니다."""
+    try:
+        payment_auth = await PaymentAuth.objects.select_related("factory").aget(
+            factory_id=factory_id
+        )
+        return payment_auth
+    except PaymentAuth.DoesNotExist:
+        raise HttpError(
+            status_code=404,
+            message="해당 팩토리의 결제 인증 정보를 찾을 수 없습니다.",
+        )
+
+
+async def get_payment_auth_by_billing_key(billing_key: str) -> PaymentAuth:
+    """빌링키로 PaymentAuth 정보를 가져옵니다."""
+    try:
+        payment_auth = await PaymentAuth.objects.select_related("factory").aget(
+            billing_key=billing_key
+        )
+        return payment_auth
+    except PaymentAuth.DoesNotExist:
+        raise HttpError(
+            status_code=404,
+            message="해당 빌링키의 결제 인증 정보를 찾을 수 없습니다.",
         )

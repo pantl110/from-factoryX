@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryMember
-from subscription.models import Subscription, SubscriptionHistory, Payment
+from subscription.models import Subscription, SubscriptionHistory, Payment, PaymentAuth
 from subscription.services import TossPaymentsService, SubscriptionBillingService
 from subscription.exceptions import PaymentError, BillingKeyError
 from user.models import EmailVerification
@@ -89,6 +89,7 @@ class SubscriptionAPITestCase(TestCase):
         # Mock 설정
         mock_issue_billing_key.return_value = {
             "billingKey": "test_billing_key_123",
+            "authKey": "test_auth_key_456",
             "card": {
                 "company": "현대카드",
                 "cardType": "신용",
@@ -116,11 +117,26 @@ class SubscriptionAPITestCase(TestCase):
         self.assertEqual(data["billing_key"], "test_billing_key_123")
         self.assertEqual(data["card_company"], "현대카드")
 
+        # PaymentAuth 모델에 데이터가 저장되었는지 확인
+        payment_auth = await PaymentAuth.objects.aget(
+            factory=self.factory, billing_key="test_billing_key_123"
+        )
+        self.assertEqual(payment_auth.auth_key, "test_auth_key_456")
+        self.assertIsNotNone(payment_auth.customer_key)
+
     @patch("subscription.services.TossPaymentsService.request_billing_payment")
     async def test_subscription_payment_success(self, mock_payment):
         """구독 결제 성공 테스트"""
         from api.testing import TestAsyncClient
         from subscription.api import router
+
+        # PaymentAuth 테스트 데이터 생성
+        payment_auth = await PaymentAuth.objects.acreate(
+            factory=self.factory,
+            auth_key="test_auth_key_456",
+            customer_key="test_customer_key_123",
+            billing_key="test_billing_key_123",
+        )
 
         # Mock 설정
         mock_payment.return_value = {
@@ -148,11 +164,12 @@ class SubscriptionAPITestCase(TestCase):
         self.assertEqual(data["status"], "DONE")
 
         # DB에 결제 및 구독 히스토리가 생성되었는지 확인
-        self.assertTrue(
-            await SubscriptionHistory.objects.filter(
-                factory=self.factory, subscription=self.subscription_basic
-            ).aexists()
+        subscription_history = await SubscriptionHistory.objects.aget(
+            factory=self.factory, subscription=self.subscription_basic
         )
+        self.assertEqual(subscription_history.auth_key, "test_auth_key_456")
+        self.assertEqual(subscription_history.billing_key, "test_billing_key_123")
+
         self.assertTrue(
             await Payment.objects.filter(
                 payment_key="test_payment_key_123", status="DONE"
@@ -523,7 +540,16 @@ class SubscriptionBillingServiceTestCase(TestCase):
         # 빌링키가 있는 구독 히스토리 설정
         self.subscription_history.billing_key = "test_billing_key_123"
         self.subscription_history.customer_key = "test_customer_key_123"
+        self.subscription_history.auth_key = "test_auth_key_456"
         await self.subscription_history.asave()
+
+        # PaymentAuth 테스트 데이터 생성
+        payment_auth = await PaymentAuth.objects.acreate(
+            factory=self.factory,
+            auth_key="test_auth_key_456",
+            customer_key="test_customer_key_123",
+            billing_key="test_billing_key_123",
+        )
 
         client = TestAsyncClient(router)
         token = await self._get_jwt_token()
@@ -542,6 +568,13 @@ class SubscriptionBillingServiceTestCase(TestCase):
         await self.subscription_history.arefresh_from_db()
         self.assertIsNone(self.subscription_history.billing_key)
         self.assertIsNone(self.subscription_history.customer_key)
+        self.assertIsNone(self.subscription_history.auth_key)
+
+        # PaymentAuth에서도 데이터가 삭제되었는지 확인
+        payment_auth_exists = await PaymentAuth.objects.filter(
+            factory=self.factory, billing_key="test_billing_key_123"
+        ).aexists()
+        self.assertFalse(payment_auth_exists)
 
     async def test_delete_billing_key_not_found(self):
         """빌링키가 없는 경우 삭제 실패 테스트"""
@@ -583,3 +616,53 @@ class SubscriptionBillingServiceTestCase(TestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertIn("삭제할 빌링키가 없습니다", response.json()["detail"])
+
+    async def test_get_payment_auth_success(self):
+        """PaymentAuth 조회 성공 테스트"""
+        from api.testing import TestAsyncClient
+        from subscription.api import router
+
+        # PaymentAuth 테스트 데이터 생성
+        payment_auth = await PaymentAuth.objects.acreate(
+            factory=self.factory,
+            auth_key="test_auth_key_456",
+            customer_key="test_customer_key_123",
+            billing_key="test_billing_key_123",
+        )
+
+        client = TestAsyncClient(router)
+        token = await self._get_jwt_token()
+
+        response = await client.get(
+            f"/payment-auth/{self.factory.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        # 페이지네이션이 적용되어 data 키 안에 리스트가 있음
+        self.assertIn("data", data)
+        self.assertGreater(len(data["data"]), 0)
+
+        payment_auth_data = data["data"][0]
+        self.assertEqual(payment_auth_data["customer_key"], "test_customer_key_123")
+        self.assertEqual(payment_auth_data["billing_key"], "test_billing_key_123")
+        # auth_key는 보안상 응답에 포함되지 않아야 함
+        self.assertNotIn("auth_key", payment_auth_data)
+
+    async def test_get_payment_auth_not_found(self):
+        """PaymentAuth가 없는 경우 조회 실패 테스트"""
+        from api.testing import TestAsyncClient
+        from subscription.api import router
+
+        client = TestAsyncClient(router)
+        token = await self._get_jwt_token()
+
+        response = await client.get(
+            f"/payment-auth/{self.factory.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("등록된 결제 정보가 없습니다", response.json()["detail"])

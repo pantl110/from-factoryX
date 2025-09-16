@@ -1,5 +1,5 @@
 from ninja import ModelSchema, Schema, Field
-from subscription.models import Subscription, SubscriptionHistory, Payment
+from subscription.models import Subscription, SubscriptionHistory, Payment, PaymentAuth
 from typing import Optional
 from datetime import datetime
 
@@ -30,6 +30,14 @@ class PaymentOut(ModelSchema):
     class Meta:
         model = Payment
         fields = "__all__"
+
+
+class PaymentAuthOut(ModelSchema):
+    """결제 인증 정보 출력 스키마"""
+
+    class Meta:
+        model = PaymentAuth
+        exclude = ["factory", "auth_key"]  # 보안상 auth_key는 제외
 
 
 class BillingKeyIssueOut(Schema):
