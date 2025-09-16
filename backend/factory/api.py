@@ -11,6 +11,7 @@ from django.db.models import Prefetch
 from django.db.models import F
 from django.db.models.functions import TruncDate
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 
 
@@ -77,14 +78,19 @@ async def list_factories(request):
             .filter(
                 members__user=user, members__status=FactoryMember.MemberStatus.active
             )
-            .annotate(
-                trial_end_date=TruncDate(
-                    F("created_at") + timedelta(months=settings.TRIAL_PERIOD_MONTHS)
-                )
-            )
+            # .annotate(
+            #     trial_end_date=TruncDate(
+            #         F("created_at") + timedelta(months=settings.TRIAL_PERIOD_MONTHS)
+            #     )
+            # )
             .order_by("-members__invited_at")
             .distinct()
         )
+        
+        # Python에서 정확한 월 계산
+        for factory in factories:
+            trial_end_datetime = factory.created_at + relativedelta(months=settings.TRIAL_PERIOD_MONTHS)
+            factory.trial_end_date = trial_end_datetime.date()
 
         # 각 공장에 멤버 정보 설정 (user_members 리스트의 첫 번째 요소)
         for factory in factories:
