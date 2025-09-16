@@ -225,8 +225,32 @@ const QuotationPageContent = () => {
       if (quotationData.client_id) {
         setSelectedClientId(quotationData.client_id);
       }
+
+      // 로드된 견적 데이터를 초기값으로 동기화하여 isDirty 정확도 보장
+      const defaults = {
+        factory_id: factoryId || 0,
+        name: quotationData.factory_name || '',
+        business_registration_number:
+          quotationData.business_registration_number || '',
+        representative_name: quotationData.representative_name || '',
+        business_type: quotationData.business_type || '',
+        business_category: quotationData.business_category || '',
+        address: quotationData.address || '',
+        email: quotationData.email || '',
+        phone: quotationData.phone || '',
+        fax: quotationData.fax || '',
+        manager: quotationData.manager_name || '',
+        due_date: quotationData.due_date || '',
+      } as const;
+      reset(defaults);
     }
-  }, [quotationData, isQuotationLoading, setFormValuesFromQuotation]);
+  }, [
+    quotationData,
+    isQuotationLoading,
+    setFormValuesFromQuotation,
+    reset,
+    factoryId,
+  ]);
 
   // 견적 품목 초기값 설정 (변경 추적을 위해)
   useEffect(() => {
