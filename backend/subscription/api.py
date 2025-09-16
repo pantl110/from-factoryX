@@ -4,7 +4,7 @@ from ninja.pagination import paginate
 from api.security import jwt_auth
 from typing import List
 from asgiref.sync import sync_to_async
-from subscription.models import Subscription, SubscriptionHistory, Payment
+from subscription.models import Subscription, SubscriptionHistory, Payment, PaymentAuth
 from subscription.schemas.inbound import (
     SubscriptionHistoryIn,
     BillingKeyIssueIn,
@@ -20,6 +20,7 @@ from subscription.schemas.outbound import (
     PaymentOut,
     PaymentCancelOut,
     SubscriptionStatusOut,
+    PaymentAuthOut,
 )
 from factory.utils import get_factory_by_id, is_factory_member
 from subscription.utils import (
@@ -120,6 +121,32 @@ async def create_subscription_history(
 # ==================== 토스 페이먼츠 구독 결제 API ====================
 
 
+@router.get(
+    "/payment-auth/{factory_id}",
+    summary="[C] 결제 인증 정보 조회",
+    description="팩토리의 결제 인증 정보를 조회합니다.",
+    response=list[PaymentAuthOut],
+    auth=jwt_auth,
+)
+@paginate
+async def get_payment_auth(request, factory_id: int):
+    """결제 인증 정보 조회"""
+    user = request.auth
+    factory = await get_factory_by_id(factory_id)
+    member = await is_factory_member(factory_id, user)
+
+    @sync_to_async
+    def fetch_payment_auths():
+        queryset = PaymentAuth.objects.filter(factory=factory)
+        return list(queryset)
+
+    payment_auths = await fetch_payment_auths()
+    if len(payment_auths) == 0:
+        raise HttpError(404, "등록된 결제 정보가 없습니다.")
+
+    return payment_auths
+
+
 @router.post(
     "/billing-key/{factory_id}",
     summary="[C] 빌링키 발급",
@@ -157,6 +184,17 @@ async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn
         logger.info(
             f"빌링키 발급 성공: factory_id={factory_id}, billing_key={result.get('billingKey')}"
         )
+
+        # PaymentAuth 모델에 저장
+        await PaymentAuth.objects.aget_or_create(
+            factory=factory,
+            defaults={
+                "auth_key": result.get("authKey", ""),
+                "billing_key": result.get("billingKey"),
+                "customer_key": customer_key,
+            },
+        )
+
         return 201, billing_key_response
 
     except Exception as e:
@@ -206,9 +244,15 @@ async def delete_billing_key(request, factory_id: int):
         @sync_to_async
         @transaction.atomic
         def clear_billing_key():
+            # PaymentAuth 모델에서 해당 레코드 삭제 (빌링키 정보 삭제 전에 실행)
+            PaymentAuth.objects.filter(
+                factory=factory, billing_key=current_subscription.billing_key
+            ).delete()
+
             # 구독 히스토리에서 빌링키 정보 삭제
             current_subscription.billing_key = None
             current_subscription.customer_key = None
+            current_subscription.auth_key = None
             current_subscription.save()
 
         await clear_billing_key()
@@ -254,6 +298,20 @@ async def process_subscription_payment(
     @sync_to_async
     @transaction.atomic
     def create_payment_and_history():
+        # PaymentAuth에서 auth_key 가져오기
+        try:
+            payment_auth = PaymentAuth.objects.get(
+                factory=factory,
+                billing_key=payload.billing_key,
+                customer_key=payload.customer_key,
+            )
+            auth_key = payment_auth.auth_key
+        except PaymentAuth.DoesNotExist:
+            auth_key = None
+            logger.warning(
+                f"PaymentAuth not found for factory_id={factory_id}, billing_key={payload.billing_key}"
+            )
+
         # 구독 히스토리 생성
         subscription_history = SubscriptionHistory.objects.create(
             factory=factory,
@@ -262,6 +320,7 @@ async def process_subscription_payment(
             end_date=(timezone.now() + timedelta(days=30)).date(),
             billing_key=payload.billing_key,
             customer_key=payload.customer_key,
+            auth_key=auth_key,
         )
 
         # 결제 객체 생성

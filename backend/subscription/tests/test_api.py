@@ -4,7 +4,7 @@ from subscription.api import router
 from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification
 from factory.models import Factory, FactoryClient, FactoryMember
-from subscription.models import Subscription, SubscriptionHistory
+from subscription.models import Subscription, SubscriptionHistory, PaymentAuth
 from django.utils import timezone
 from datetime import timedelta
 
