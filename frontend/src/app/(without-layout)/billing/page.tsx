@@ -60,24 +60,26 @@ const BillingPageContent = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center w-full">
       <div className="bg-white rounded-[8px] border-lg p-8 w-full max-w-md">
         {/* 로딩 상태 */}
         {currentStatus === 'loading' && (
           // || isBillingKeyLoading)
-          <div className="flex-column align-center w-full">
-            <div className="w-30 h-30 flex justify-center items-center">
+          <div className="flex-column w-full">
+            <div className="w-full h-30 flex justify-center items-center">
               <Spinner />
             </div>
-            <h2 className="Heading-2 mt-8">결제 진행 중</h2>
+            <h2 className="Heading-2 mt-8 text-center">결제 진행 중</h2>
           </div>
         )}
 
         {/* 성공 상태 */}
         {currentStatus === 'success' && (
-          <div className="flex-column align-center w-full">
-            <CheckCircle size={120} weight="fill" className="text-primary" />
-            <h2 className="Heading-2 mt-8">결제를 완료했어요</h2>
+          <div className="flex-column w-full">
+            <div className="w-full flex justify-center">
+              <CheckCircle size={120} weight="fill" className="text-primary" />
+            </div>
+            <h2 className="Heading-2 mt-8 text-center">결제를 완료했어요</h2>
 
             {/* 버튼 */}
             <div className="w-full mt-20">
