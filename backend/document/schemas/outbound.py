@@ -178,16 +178,6 @@ class ProjectPlanModelOut(ModelSchema):
     client_name: Optional[str] = Field(None, description="클라이언트명")
     product_name: Optional[str] = Field(None, description="품목명")
 
-    # @staticmethod
-    # def resolve_client_name(obj):
-    #     # 첫 번째 quotation의 client name 반환
-    #     quotation = obj.project.quotations.first()
-    #     return quotation.client.name if quotation and quotation.client else ""
-
-    # @staticmethod
-    # def resolve_product_name(obj):
-    #     return obj.product.name if obj.product else ""
-
     class Meta:
         model = ProjectPlan
         fields = "__all__"
@@ -195,6 +185,28 @@ class ProjectPlanModelOut(ModelSchema):
 
 class WorkInstructionModelOut(ModelSchema):
     plans: Optional[List[ProjectPlanModelOut]] = Field(
+        [], description="작업 지시서 생산 계획 정보"
+    )
+
+    class Meta:
+        model = WorkInstruction
+        fields = "__all__"
+
+
+class ProjectPlanDetailModelOut(ModelSchema):
+    client_name: Optional[str] = Field(None, description="클라이언트명")
+    product_name: Optional[str] = Field(None, description="품목명")
+    product_code: Optional[str] = Field(None, description="품목코드")
+    product_unit: Optional[str] = Field(None, description="단위")
+    product_spec: Optional[str] = Field(None, description="규격")
+
+    class Meta:
+        model = ProjectPlan
+        fields = "__all__"
+
+
+class WorkInstructionDetailModelOut(ModelSchema):
+    plans: Optional[List[ProjectPlanDetailModelOut]] = Field(
         [], description="작업 지시서 생산 계획 정보"
     )
 

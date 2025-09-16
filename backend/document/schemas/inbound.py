@@ -1,5 +1,6 @@
-from ninja import Schema, Field, FilterSchema
+from ninja import Schema, Field, FilterSchema, ModelSchema
 from typing import List, Optional
+from document.models import WorkInstruction
 
 
 # Factory Client Field
@@ -91,3 +92,11 @@ class QuotationEmailSendIn(Schema):
 
 class WorkInstructionFilter(FilterSchema):
     pass
+
+
+class WorkInstructionUpdateIn(ModelSchema):
+    class Meta:
+        model = WorkInstruction
+        fields = [
+            "memo",
+        ]
