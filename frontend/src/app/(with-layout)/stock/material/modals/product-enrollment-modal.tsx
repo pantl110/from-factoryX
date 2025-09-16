@@ -10,7 +10,9 @@ import {
 } from '@/types/data-model';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import ManualAddProduct from './manual-add-product';
-import { useGetProduct, useAssignProduct } from '@/hooks';
+import { useGetProduct, useAssignProduct, useToast } from '@/hooks';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
 import ConnetionItem from '../../modals/connetion-item';
 
@@ -45,6 +47,12 @@ const ProductEnrollmentModal = ({
     []
   );
   const [isManualAddMode, setIsManualAddMode] = useState(false);
+  // 사용 수량 0 경고 토스트
+  const {
+    isToastOpen: isQtyToastOpen,
+    isVisible: isQtyVisible,
+    showToast: showQtyToast,
+  } = useToast();
 
   // 검색어가 변경될 때 서버에서 검색
   const [debouncedInput] = useDebounce(input, 300);
@@ -114,6 +122,13 @@ const ProductEnrollmentModal = ({
   const handleAddProducts = async () => {
     if (selectedProducts.length === 0) return;
 
+    // 사용 수량 0 검증
+    const hasZeroQty = selectedProducts.some((p) => (p.quantity ?? 0) === 0);
+    if (hasZeroQty) {
+      showQtyToast();
+      return;
+    }
+
     if (!factoryId) {
       alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
       return;
@@ -174,6 +189,17 @@ const ProductEnrollmentModal = ({
           </div>
         )}
       </div>
+
+      {/* 사용 수량 0 토스트 */}
+      {isQtyToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text="사용수량이 입력되지 않았어요."
+          subtext="사용수량을 입력해주세요."
+          type="red"
+          isVisible={isQtyVisible}
+        />
+      )}
 
       {/* 직접 추가 모드 */}
       <div className="px-6 pb-6 max-h-[calc(85vh-181px)] overflow-y-auto scrollbar-hide">

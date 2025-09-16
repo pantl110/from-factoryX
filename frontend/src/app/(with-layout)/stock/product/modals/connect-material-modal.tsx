@@ -57,6 +57,12 @@ const ConnectMaterialModal = ({
     useMaterialProduct();
   const { createMaterial, isLoading: isCreating } = useCreateMaterial();
   const { isToastOpen, isVisible, showToast } = useToast();
+  // 사용 수량 0 경고 토스트
+  const {
+    isToastOpen: isQtyToastOpen,
+    isVisible: isQtyVisible,
+    showToast: showQtyToast,
+  } = useToast();
   const factoryId = useMemberStore((state) => state.factoryId);
 
   const [selectedMaterials, setSelectedMaterials] = useState<
@@ -169,6 +175,15 @@ const ConnectMaterialModal = ({
   // 선택한 원자재들을 제품과 연결
   const handleConnectMaterials = async () => {
     if (selectedMaterials.length === 0 && newMaterials.length === 0) return;
+
+    // 사용 수량 0 검증
+    const hasZeroQty =
+      selectedMaterials.some((m) => (m.quantity ?? 0) === 0) ||
+      newMaterials.some((m) => (m.quantity ?? 0) === 0);
+    if (hasZeroQty) {
+      showQtyToast();
+      return;
+    }
 
     // 품목 생성 모드일 때: productId가 없으면 서버 호출 대신 상위로 전달하여 임시 반영
     if (!productId) {
@@ -428,6 +443,17 @@ const ConnectMaterialModal = ({
           subtext="다른 자재코드로 수정해주세요."
           type="red"
           isVisible={isVisible}
+        />
+      )}
+
+      {/* 사용 수량 0 토스트 */}
+      {isQtyToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text="사용수량이 입력되지 않았어요."
+          subtext="사용수량을 입력해주세요."
+          type="red"
+          isVisible={isQtyVisible}
         />
       )}
     </Modal>
