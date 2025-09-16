@@ -11,9 +11,10 @@ import CardDeleteModal from './modals/card-delete-modal';
 import useMemberStore from '@/store/member-store';
 import {
   useGetFactory,
-  useUpdateFactory,
   useGetSubscriptionStatus,
   useGetPaymentHistory,
+  useDeleteBillingKey,
+  // useIssueBillingKey,
 } from '@/hooks';
 import RefundPolicyModal from './modals/refund-policy-modal';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -24,10 +25,12 @@ const Subscription = () => {
   const { getSubscriptionStatus, subscriptionStatus } =
     useGetSubscriptionStatus();
   const { getPaymentHistory, paymentHistory } = useGetPaymentHistory();
-  const { updateFactory } = useUpdateFactory();
+  // const { issueBillingKey, isLoading: isBillingKeyLoading } =
+  //   useIssueBillingKey();
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isCardDeleteModalOpen, setIsCardDeleteModalOpen] = useState(false);
   const [isRefundPolicyModalOpen, setIsRefundPolicyModalOpen] = useState(false);
+  const { deleteBillingKey } = useDeleteBillingKey();
 
   const planTypes: PlanType[] = ['BASIC', 'PARTNERS'];
 
@@ -53,10 +56,11 @@ const Subscription = () => {
       const toss = await loadTossPayments(clientKey);
       const customerKey = `factory-${factoryId}`; // customerKey는 동일 고객에 대해 항상 동일해야함
 
+      // 토스페이먼츠 빌링키 인증 요청 (URL 리다이렉션 방식)
       await toss.requestBillingAuth('카드', {
         customerKey,
-        successUrl: `${window.location.origin}/billing?status=success`,
-        failUrl: `${window.location.origin}/billing?status=fail`,
+        successUrl: `${window.location.origin}/billing?status=success&factoryId=${factoryId}`,
+        failUrl: `${window.location.origin}/billing?status=fail&factoryId=${factoryId}`,
       });
     } catch (error: unknown) {
       const code =
@@ -67,33 +71,24 @@ const Subscription = () => {
       if (code === 'USER_CANCEL') return;
       alert('카드 등록을 시작하지 못했습니다. 다시 시도해주세요.');
     }
-
-    // ‼️‼️‼️‼️성공하면 빌링키 저장해야 함‼️‼️‼️‼️
   };
 
   const handleDeleteCard = async () => {
-    if (!factoryId || !factory) return;
+    if (!factoryId) return;
     try {
-      await updateFactory({
-        factory_id: factoryId,
-        name: factory.name,
-        business_registration_number: factory.business_registration_number,
-        representative_name: factory.representative_name,
-        manager_email: factory.manager_email,
-        manager_phone: factory.manager_phone,
-        manager_fax: factory.manager_fax,
-        business_type: factory.business_type,
-        business_category: factory.business_category,
-        business_address: factory.business_address,
-        is_trial: factory.is_trial,
-        billing_key: '',
-      });
-      await getFactory(factoryId);
+      const result = await deleteBillingKey();
+      if (!result.success) {
+        alert(result.error ?? '카드 삭제에 실패했습니다.');
+        return;
+      }
+      await Promise.all([
+        getFactory(factoryId),
+        getSubscriptionStatus(factoryId),
+        getPaymentHistory(factoryId),
+      ]);
     } finally {
       setIsCardDeleteModalOpen(false);
     }
-
-    // ‼️‼️‼️‼️서버에서 카드 삭제 요청도 필요 // 토스 빌링키 해지 api‼️‼️‼️‼️
   };
 
   return (
@@ -177,7 +172,14 @@ const Subscription = () => {
                 date={payment.created_at}
                 card={`${payment.card_company} (${payment.card_number})`}
                 amount={payment.amount.toLocaleString()}
-                plan={payment.amount === 121000 ? 'Basic' : 'Partners'}
+                plan={
+                  payment.subscription_history.subscription.type === 'basic'
+                    ? 'Basic'
+                    : payment.subscription_history.subscription.type ===
+                        'partners'
+                      ? 'Partners'
+                      : '-'
+                }
               />
             ))}
           </div>

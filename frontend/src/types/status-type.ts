@@ -39,16 +39,6 @@ export type ProjectStatusType =
   | 'delivery'
   | 'completed'
   | 'suspended';
-// 한글 상태 추가
-// | '견적 협의중'
-// | '주문 확정'
-// | '생산 대기'
-// | '생산 중'
-// | '생산 완료'
-// | '납품'
-// | '프로젝트 완료'
-// | '완료'
-// | '중단';
 
 // | '견적 협의' // quotation
 // | '주문 확정' // confirmed
@@ -188,11 +178,13 @@ export type BarobillStateType = '임시저장' | '발급완료' | '전송완료'
 export type NtsSendStateType = '전송전' | '전송완료';
 
 // 구독 관련
-export type SubscriptionStatusType = 'PENDING' | 'DONE' | 'CANCELED' | 'FAILED';
+export type PaymentStatusType = 'PENDING' | 'DONE' | 'CANCELED' | 'FAILED';
 // ("PENDING", "대기중"),
 // ("DONE", "완료"),
 // ("CANCELED", "취소"),
 // ("FAILED", "실패"),
+
+export type SubscriptionStatusType = 'trial' | 'basic' | 'partners';
 
 ////////////////////
 ////////////////////
@@ -260,3 +252,4 @@ export const TaxDraftStatusColorMap: Record<
   '임시 저장': { textColor: 'text-primary', bgColor: 'bg-bg' },
   '전송 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
 };
+

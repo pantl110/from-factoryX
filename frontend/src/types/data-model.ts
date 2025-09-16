@@ -151,7 +151,7 @@ export interface SubscriptionResponseModel {
   id: number;
   created_at: string;
   updated_at: string;
-  type: string;
+  type: SubscriptionStatusType;
   price: number;
   tax_invoice_count: number;
 }
@@ -165,14 +165,16 @@ export interface SubscriptionHistoryResponseModel {
   updated_at: string;
   billing_key: string; // 어떤 카드인지
   customer_key: string; // 누구의 카드인지
+  is_canceled: boolean;
 }
 
 export interface PaymentResponseModel {
   id: number; // 결제 아이디
+  subscription_history: SubscriptionHistoryResponseModel;
   payment_key: string; // 토스페이먼츠 결제 키
   order_id: string; // // 주문 ID (가맹점에서 생성한 주문 식별자)
   amount: number; // 결제 금액
-  status: SubscriptionStatusType; // 결제 상태
+  status: PaymentStatusType; // 결제 상태
   method: string; // 카드 정보
   approved_at: string | null; // 결제 승인 시간 (ISO 8601 형식, null이면 미승인)
   failure_code: string | null;
@@ -194,6 +196,23 @@ export interface SubscriptionStatusResponseModel {
   current_payment: PaymentResponseModel | null;
   next_billing_date: string | null;
   is_active: boolean;
+}
+
+// 빌링키 발급
+export interface BillingKeyIssueRequestModel {
+  card_number: string;
+  card_expiry_year: string;
+  card_expiry_month: string;
+  card_password: string;
+  customer_identity_number: string;
+}
+
+export interface BillingKeyIssueResponseModel {
+  billing_key: string;
+  customer_key: string;
+  card_company: string | null;
+  card_type: string | null;
+  card_number: string | null;
 }
 
 //////////////////////
@@ -1408,13 +1427,6 @@ export interface BarobillCorpCertModel {
 //////////////////////
 
 import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
-// export interface BillingKeyIssueResponseModel {
-//   billing_key: string;
-//   customer_key: string;
-//   card_company: string | null;
-//   card_type: string | null;
-//   card_number: string | null;
-// }
 
 // export interface PaymentResultResponseModel {
 //   payment_key: string;
@@ -1456,6 +1468,7 @@ import {
   BarobillStateType,
   NtsSendStateType,
   SubscriptionStatusType,
+  PaymentStatusType,
 } from './status-type';
 
 export type {
