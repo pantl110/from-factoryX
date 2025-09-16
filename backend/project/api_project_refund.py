@@ -1,15 +1,14 @@
-from ninja import Router, Query
+from ninja import Router
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
-from datetime import datetime, timedelta
-from typing import List
+from datetime import timedelta
+from django.utils import timezone
 from api.security import jwt_auth
 
 from project.models import Project, ProjectLog, Refund, ProjectPlan
 from project.schemas.outbound import (
     RefundCreateOut,
     RefundUpdateOut,
-    RefundListOut,
     RefundDetailOut,
     RefundProductionRegistrationOut,
 )
@@ -19,13 +18,12 @@ from project.schemas.inbound import (
     RefundProductionRegistrationIn,
 )
 from stock.models import Product
-from document.models import Quotation, QuotationProduct
+from document.models import QuotationProduct
 from project.utils import (
     validate_factory_and_get_user,
     get_refund_with_project,
     parse_and_validate_date,
     get_default_equipment,
-    consume_raw_materials,
 )
 
 

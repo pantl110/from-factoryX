@@ -182,7 +182,7 @@ class SESEmailService:
                 </div>
                 
                 <p style="color: #6c757d; font-size: 14px;">
-                    이 코드는 <strong>5분간</strong> 유효합니다.<br>
+                    이 코드는 <strong>3분간</strong> 유효합니다.<br>
                     본인이 요청하지 않은 인증이라면 이 이메일을 무시해주세요.
                 </p>
                 
@@ -216,7 +216,7 @@ class SESEmailService:
                 </div>
                 
                 <p style="color: #6c757d; font-size: 14px;">
-                    이 코드는 <strong>5분간</strong> 유효합니다.<br>
+                    이 코드는 <strong>3분간</strong> 유효합니다.<br>
                     본인이 요청하지 않은 인증이라면 이 이메일을 무시하고 비밀번호를 변경해주세요.
                 </p>
                 
