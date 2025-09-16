@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import onboardingImage from '@/assets/onboarding.png';
 import MiniBtn from '@/ui/mini-btn';
-import useCreateFactory from '@/hooks/factory/use-create-factory';
 import useMemberStore from '@/store/member-store';
-import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
+import useAuthStore from '@/store/auth-store';
+import { useGetFactoryList, useCreateFactory, useGetMember } from '@/hooks';
 
 interface WelcomeProps {
   onNextStep: () => void;
@@ -13,7 +13,45 @@ interface WelcomeProps {
 const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
   const { createFactory, isLoading } = useCreateFactory();
   const { getFactoryList } = useGetFactoryList();
+  const { userInfo, setUserInfo } = useAuthStore();
+  const { getMember } = useGetMember();
   const setFactoryId = useMemberStore((state) => state.setFactoryId);
+  const setRole = useMemberStore((state) => state.setRole);
+  const setIsBarobillUser = useMemberStore((state) => state.setIsBarobillUser);
+
+  const setFactoryAndMember = async (factoryId: number) => {
+    setFactoryId(factoryId);
+    let memberId = userInfo?.member_id;
+    if (!memberId) {
+      // 공장 생성 직후 me 정보를 갱신하여 member_id 확보
+      try {
+        const meRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/me`,
+          {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          setUserInfo(meData);
+          memberId = meData?.member_id;
+        }
+      } catch {}
+    }
+
+    if (memberId) {
+      const res = await getMember({
+        factory_id: factoryId,
+        member_id: memberId,
+      });
+      if (res.success && res.data) {
+        setRole(res.data.role);
+        setIsBarobillUser(res.data.is_barobill_user);
+      }
+    }
+  };
 
   const handleFactoryOwnerStart = async () => {
     try {
@@ -27,7 +65,7 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
       ) {
         // 기존 공장이 있으면 첫 번째 공장을 사용
         const existingFactory = factoryResult.data[0];
-        setFactoryId(existingFactory.id);
+        await setFactoryAndMember(existingFactory.id);
         onNextStep();
       } else {
         // 기존 공장이 없으면 새로 생성
@@ -36,8 +74,8 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
         });
 
         if (result.success && result.data) {
-          // 생성된 공장 ID를 로컬 스토리지에 저장
-          setFactoryId(result.data.id);
+          // 생성된 공장 ID 저장 및 멤버 정보 세팅
+          await setFactoryAndMember(result.data.id);
           // 다음 단계로 진행
           onNextStep();
         } else {

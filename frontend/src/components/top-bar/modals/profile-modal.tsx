@@ -113,13 +113,9 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
             hoverColor="hover:bg-bg"
             width="w-full"
             onClick={async () => {
-              const result = await logout();
-              if (result.success) {
-                onClose();
-                router.push('/login');
-              } else {
-                // showToast(result.error || '로그아웃에 실패했습니다.')
-              }
+              await logout();
+              onClose();
+              router.push('/login');
             }}
             disabled={isLogoutLoading}
           />

@@ -109,7 +109,7 @@ const MaterialInputItem = ({
             <Input
               label="규격"
               type="text"
-              placeholder="EX) 100 x300mm"
+              placeholder="EX) 100x300mm"
               required={true}
               {...register(`materials.${index}.spec`)}
             />

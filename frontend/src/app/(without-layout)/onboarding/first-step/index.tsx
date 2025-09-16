@@ -161,7 +161,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
                 <Input
                   label="규격"
                   type="text"
-                  placeholder="EX) 100 x300mmc"
+                  placeholder="EX) 100x300mmc"
                   required={true}
                   {...register('spec', { required: true })}
                 />
