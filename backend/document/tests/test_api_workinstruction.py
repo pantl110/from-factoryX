@@ -3,11 +3,15 @@ from django.contrib.auth import get_user_model
 from ninja.testing import TestAsyncClient
 from document.api_workinstruction import router
 from document.models import WorkInstruction
-from factory.models import Factory, FactoryMember
+from factory.models import Factory, FactoryMember, FactoryEquipment, FactoryClient
+from project.models import ProjectPlan, Project
+from stock.models import Product
 import jwt
 from django.conf import settings
 from datetime import timedelta
 from django.utils import timezone
+from document.models import Quotation, QuotationProduct
+from datetime import date
 
 User = get_user_model()
 
@@ -29,11 +33,70 @@ class TestWorkInstructionAPI(TestCase):
             invited_by=self.user,
         )
 
+        # 설비 생성 (가동 대기 상태)
+        self.equipment = FactoryEquipment.objects.create(
+            factory=self.factory,
+            name="테스트 설비",
+            priority=1,
+            status="standby",  # 가동 대기
+        )
+
+        # 제품 생성
+        self.product = Product.objects.create(
+            factory=self.factory,
+            name="테스트 제품",
+            code="TEST001",
+            unit="개",
+            spec="10x10x10",
+        )
+
+        # 클라이언트 생성
+        self.client_company = FactoryClient.objects.create(
+            factory=self.factory,
+            name="테스트 클라이언트",
+            manager="홍길동",
+            phone="010-1234-5678",
+            email="client@test.com",
+        )
+
+        # 프로젝트 생성 (생산 대기 상태)
+        self.project = Project.objects.create(status="pending")  # 생산 대기
+
+        # 견적서 생성 (클라이언트 포함)
+        self.quotation = Quotation.objects.create(
+            factory=self.factory,
+            client=self.client_company,  # 클라이언트 설정
+            project=self.project,
+            due_date=date.today() + timedelta(days=30),
+        )
+
+        # 견적 제품 생성
+        self.quotation_product = QuotationProduct.objects.create(
+            quotation=self.quotation,
+            product=self.product,
+            quantity=100,
+            unit_price=1000,
+        )
+
+        # 프로젝트 계획 생성 (가동 대기 상태, 오늘 생산일자)
+        self.project_plan = ProjectPlan.objects.create(
+            project=self.project,
+            product=self.quotation_product,
+            quantity=100,
+            equipment=self.equipment,
+            start_date=date.today(),  # 오늘 생산일자
+            end_date=date.today() + timedelta(days=7),
+            avg_production_time=3600,  # 1시간
+            status="pending",  # 가동 대기
+        )
+
         # 작업지시서 생성
         self.work_instruction = WorkInstruction.objects.create(
             factory=self.factory,
             memo="Test memo content",
         )
+
+        self.work_instruction.plans.set([self.project_plan])
 
     def _get_jwt_token(self):
         """JWT 토큰 생성"""
@@ -55,6 +118,10 @@ class TestWorkInstructionAPI(TestCase):
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
+        # print(
+        #     "🐍 File: tests/test_api_workinstruction.py | Line: 58 | _get_auth_headers ~ data",
+        #     data,
+        # )
         self.assertEqual(len(data["data"]), 1)
         self.assertEqual(data["data"][0]["memo"], "Test memo content")
         self.assertEqual(data["data"][0]["factory"], self.factory.id)
@@ -209,3 +276,27 @@ class TestWorkInstructionAPI(TestCase):
             self.assertIn("created_at", item)
             self.assertIn("updated_at", item)
             self.assertIn("plans", item)
+
+    async def test_get_work_instructions_with_client_and_product_names(self):
+        """클라이언트명과 제품명이 포함된 작업지시서 테스트"""
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}",
+            headers=self._get_auth_headers(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["data"]), 1)
+
+        work_instruction = data["data"][0]
+        self.assertIn("plans", work_instruction)
+        self.assertEqual(len(work_instruction["plans"]), 1)
+
+        plan = work_instruction["plans"][0]
+        # print("🐍 Test plan data:", plan)
+
+        # client_name과 product_name이 포함되어 있는지 확인
+        self.assertIn("client_name", plan)
+        self.assertIn("product_name", plan)
+        self.assertEqual(plan["client_name"], "테스트 클라이언트")
+        self.assertEqual(plan["product_name"], "테스트 제품")

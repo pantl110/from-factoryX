@@ -5,6 +5,8 @@ from api.security import jwt_auth
 from asgiref.sync import sync_to_async
 from document.schemas.outbound import WorkInstructionModelOut
 from document.models import WorkInstruction
+from django.db.models import Prefetch, F
+from project.models import ProjectPlan
 
 
 router = Router(
@@ -28,9 +30,18 @@ async def get_work_instructions(request, order_by: str = Query("-created_at")):
 
     @sync_to_async
     def work_instructions_list():
-        queryset = WorkInstruction.objects.prefetch_related("plans").filter(
-            factory_id=factory_id
-        )
+        queryset = WorkInstruction.objects.prefetch_related(
+            Prefetch(
+                "plans",
+                queryset=ProjectPlan.objects.select_related("product__product")
+                .prefetch_related("project__quotations__client")
+                .annotate(
+                    client_name=F("project__quotations__client__name"),
+                    product_name=F("product__product__name"),
+                ),
+            )
+        ).filter(factory_id=factory_id)
+
         if order_by:
             queryset = queryset.order_by(order_by)
         return list(queryset)
