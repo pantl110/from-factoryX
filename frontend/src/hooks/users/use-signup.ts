@@ -45,7 +45,7 @@ export const useSignup = (): UseSignupReturnModel => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.message || '회원가입 중 오류가 발생했습니다.');
+        setError(errorData.detail || '회원가입 중 오류가 발생했습니다.');
         return;
       }
 
