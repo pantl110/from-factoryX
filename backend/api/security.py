@@ -1,5 +1,6 @@
 import jwt
 from typing import Any, Optional
+from datetime import datetime
 from django.http import HttpRequest
 from ninja.security import HttpBearer
 from django.contrib.auth import get_user_model
@@ -34,7 +35,10 @@ class JWTAuth(HttpBearer):
     async def authenticate(self, request, token):
         try:
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            if decoded["exp"] < timezone.now().timestamp():
+            # JWT의 exp는 UTC 기준이므로 UTC로 비교
+            exp_datetime_utc = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
+            current_utc = timezone.utcnow()
+            if exp_datetime_utc < current_utc:
                 return None  # 토큰이 만료되었습니다.
 
             user_id = decoded.get("user_id")
@@ -71,7 +75,10 @@ class JWTManagerAuth(JWTAuth):
     async def authenticate(self, request, token):
         try:
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            if decoded["exp"] < timezone.now().timestamp():
+            # JWT의 exp는 UTC 기준이므로 UTC로 비교
+            exp_datetime_utc = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
+            current_utc = timezone.utcnow()
+            if exp_datetime_utc < current_utc:
                 return None
 
             user_id = decoded.get("user_id")
@@ -109,7 +116,10 @@ class JWTAdminAuth(JWTAuth):
     async def authenticate(self, request, token):
         try:
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            if decoded["exp"] < timezone.now().timestamp():
+            # JWT의 exp는 UTC 기준이므로 UTC로 비교
+            exp_datetime_utc = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
+            current_utc = timezone.utcnow()
+            if exp_datetime_utc < current_utc:
                 return None
 
             user_id = decoded.get("user_id")

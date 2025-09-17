@@ -33,41 +33,44 @@ def get_random(length):
 
 
 def get_access_token(payload):
-    exp = timezone.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRATION_TIME)
+    # JWT의 exp는 UTC 기준이므로 UTC로 명시적으로 설정
+    exp_utc = timezone.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRATION_TIME)
     return (
         jwt.encode(
             {
-                "exp": exp,
+                "exp": exp_utc,
                 **payload,
             },
             settings.SECRET_KEY,
             algorithm="HS256",
         ),
-        exp,
+        exp_utc,
     )
 
 
 def get_refresh_token():
-    exp = timezone.now() + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRATION_TIME)
+    # JWT의 exp는 UTC 기준이므로 UTC로 명시적으로 설정
+    exp_utc = timezone.utcnow() + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRATION_TIME)
     return (
         jwt.encode(
             {
-                "exp": exp,
+                "exp": exp_utc,
                 "data": get_random(10),
             },
             settings.SECRET_KEY,
             algorithm="HS256",
         ),
-        exp,
+        exp_utc,
     )
 
 
 async def validate_refresh_token(token):
     try:
         decoded = jwt.decode(token, key=settings.SECRET_KEY, algorithms="HS256")
-        naive_datetime = datetime.fromtimestamp(decoded["exp"])
-        exp_datetime = timezone.make_aware(naive_datetime, ZoneInfo("UTC"))
-        if exp_datetime < timezone.now():
+        # JWT의 exp는 UTC 기준이므로 UTC로 비교
+        exp_datetime_utc = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
+        current_utc = timezone.utcnow()
+        if exp_datetime_utc < current_utc:
             raise CustomAuthorizationError("토큰이 만료되었습니다.", 401)
     except jwt.ExpiredSignatureError:
         raise CustomAuthorizationError("토큰이 만료되었습니다.", 401)
@@ -82,9 +85,10 @@ async def decodeJWT(bearer):
     token = bearer[7:]
     try:
         decoded = jwt.decode(token, key=settings.SECRET_KEY, algorithms="HS256")
-        naive_datetime = datetime.fromtimestamp(decoded["exp"])
-        exp_datetime = timezone.make_aware(naive_datetime, ZoneInfo("UTC"))
-        if exp_datetime < timezone.now():
+        # JWT의 exp는 UTC 기준이므로 UTC로 비교
+        exp_datetime_utc = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
+        current_utc = timezone.utcnow()
+        if exp_datetime_utc < current_utc:
             raise CustomAuthorizationError("토큰이 만료되었습니다.", 401)
     except jwt.exceptions.ExpiredSignatureError:
         raise CustomAuthorizationError("토큰이 만료되었습니다.", 401)
