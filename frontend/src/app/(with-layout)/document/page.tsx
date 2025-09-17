@@ -119,7 +119,8 @@ const DocumentPageContent = () => {
         const result = await getWorkInstructions(
           workInstructionSortDirection === 'asc' ? 'created_at' : '-created_at',
           currentPage,
-          10
+          10,
+          debouncedSearchQuery || undefined
         );
 
         if (result.success && result.data) {

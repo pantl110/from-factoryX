@@ -13,7 +13,8 @@ const useGetWorkInstructions = () => {
     async (
       orderBy: string = '-created_at',
       page: number = 1,
-      pageSize: number = 10
+      pageSize: number = 10,
+      q?: string | null
     ) => {
       setIsLoading(true);
       setError(null);
@@ -31,6 +32,7 @@ const useGetWorkInstructions = () => {
               order_by: orderBy,
               page,
               page_size: pageSize,
+              q: q ?? undefined,
             },
             withCredentials: true,
           }
