@@ -124,33 +124,89 @@ async def create_subscription_history(
 @router.get(
     "/payment-auth/{factory_id}",
     summary="[C] 결제 인증 정보 조회",
-    description="팩토리의 결제 인증 정보를 조회합니다.",
-    response=list[PaymentAuthOut],
+    description="팩토리의 가장 최근에 등록된 결제 인증 정보 1건을 조회합니다.",
+    response=PaymentAuthOut,
     auth=jwt_auth,
 )
-@paginate
 async def get_payment_auth(request, factory_id: int):
-    """결제 인증 정보 조회"""
+    """결제 인증 정보 단건 조회 (가장 최근 등록)"""
     user = request.auth
     factory = await get_factory_by_id(factory_id)
     member = await is_factory_member(factory_id, user)
 
     @sync_to_async
-    def fetch_payment_auths():
-        queryset = PaymentAuth.objects.filter(factory=factory)
-        return list(queryset)
+    def fetch_latest_payment_auth():
+        try:
+            return PaymentAuth.objects.get(factory=factory)
+        except PaymentAuth.DoesNotExist:
+            return None
 
-    payment_auths = await fetch_payment_auths()
-    if len(payment_auths) == 0:
+    latest_payment_auth = await fetch_latest_payment_auth()
+    if not latest_payment_auth:
         raise HttpError(404, "등록된 결제 정보가 없습니다.")
 
-    return payment_auths
+    setattr(latest_payment_auth, "is_current", True)
+    return latest_payment_auth
 
+
+# @router.post(
+#     "/billing-key/{factory_id}",
+#     summary="[C] 빌링키 발급",
+#     description="토스페이먼츠 빌링키를 발급합니다.",
+#     response={201: BillingKeyIssueOut},
+#     auth=jwt_auth,
+# )
+# async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn):
+#     """빌링키 발급"""
+#     user = request.auth
+#     factory = await get_factory_by_id(factory_id)
+#     member = await is_factory_member(factory_id, user)
+
+#     toss_service = TossPaymentsService()
+#     customer_key = f"factory_{factory_id}_{user.id}_{uuid.uuid4().hex[:8]}"
+
+#     try:
+#         result = toss_service.issue_billing_key(
+#             customer_key=customer_key,
+#             card_number=payload.card_number,
+#             card_expiry_year=payload.card_expiry_year,
+#             card_expiry_month=payload.card_expiry_month,
+#             card_password=payload.card_password,
+#             customer_identity_number=payload.customer_identity_number,
+#         )
+
+#         billing_key_response = BillingKeyIssueOut(
+#             billing_key=result.get("billingKey"),
+#             customer_key=customer_key,
+#             card_company=result.get("card", {}).get("company"),
+#             card_type=result.get("card", {}).get("cardType"),
+#             card_number=result.get("card", {}).get("number"),
+#         )
+
+#         logger.info(
+#             f"빌링키 발급 성공: factory_id={factory_id}, billing_key={result.get('billingKey')}"
+#         )
+
+#         # PaymentAuth 모델에 저장
+#         await PaymentAuth.objects.aget_or_create(
+#             factory=factory,
+#             defaults={
+#                 "auth_key": result.get("authKey", ""),
+#                 "billing_key": result.get("billingKey"),
+#                 "customer_key": customer_key,
+#             },
+#         )
+
+#         return 201, billing_key_response
+
+#     except Exception as e:
+#         logger.error(f"빌링키 발급 실패: factory_id={factory_id}, error={str(e)}")
+#         raise HttpError(400, f"빌링키 발급 실패: {str(e)}")
 
 @router.post(
     "/billing-key/{factory_id}",
     summary="[C] 빌링키 발급",
-    description="토스페이먼츠 빌링키를 발급합니다.",
+    description="토스 위젯 성공 콜백(authKey, customerKey)으로 빌링키를 발급합니다.",
     response={201: BillingKeyIssueOut},
     auth=jwt_auth,
 )
@@ -161,39 +217,37 @@ async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn
     member = await is_factory_member(factory_id, user)
 
     toss_service = TossPaymentsService()
-    customer_key = f"factory_{factory_id}_{user.id}_{uuid.uuid4().hex[:8]}"
 
     try:
         result = toss_service.issue_billing_key(
-            customer_key=customer_key,
-            card_number=payload.card_number,
-            card_expiry_year=payload.card_expiry_year,
-            card_expiry_month=payload.card_expiry_month,
-            card_password=payload.card_password,
-            customer_identity_number=payload.customer_identity_number,
+            auth_key=payload.auth_key,
+            customer_key=payload.customer_key,
         )
 
         billing_key_response = BillingKeyIssueOut(
             billing_key=result.get("billingKey"),
-            customer_key=customer_key,
-            card_company=result.get("card", {}).get("company"),
-            card_type=result.get("card", {}).get("cardType"),
-            card_number=result.get("card", {}).get("number"),
+            customer_key=payload.customer_key,
         )
 
         logger.info(
             f"빌링키 발급 성공: factory_id={factory_id}, billing_key={result.get('billingKey')}"
         )
 
-        # PaymentAuth 모델에 저장
-        await PaymentAuth.objects.aget_or_create(
-            factory=factory,
-            defaults={
-                "auth_key": result.get("authKey", ""),
-                "billing_key": result.get("billingKey"),
-                "customer_key": customer_key,
-            },
-        )
+        # PaymentAuth: 공장당 1건만 유지 (기존 삭제 후 최신으로 교체)
+        @sync_to_async
+        @transaction.atomic
+        def replace_payment_auth():
+            PaymentAuth.objects.filter(factory=factory).delete()
+            return PaymentAuth.objects.create(
+                factory=factory,
+                customer_key=payload.customer_key,
+                auth_key=payload.auth_key,
+                billing_key=result.get("billingKey"),
+                card_company=result.get("cardCompany"),
+                card_number=result.get("cardNumber")
+            )
+
+        await replace_payment_auth()
 
         return 201, billing_key_response
 
