@@ -254,7 +254,42 @@ export const useQuotationHandlers = ({
       // 에러가 발생한 경우 (null 반환)
       if (!result) {
         const toastText = '생산 시작에 실패했습니다.';
-        const toastSubtext = '다시 시도해 주세요.';
+        const toastSubtext = '현재 입력한 내용은 임시저장되었습니다. 다시 시도해 주세요.';
+
+        // 실패 시 현재 주문서 내용을 주문확정 상태로 저장 (is_confirm: true)
+        try {
+          await saveDraft({
+            quotation_id: currentQuotationId || null,
+            client: {
+              factory_id: factoryId,
+              client_id: selectedClientId || null,
+              name: formData.name,
+              business_registration_number: formData.business_registration_number,
+              representative_name: formData.representative_name,
+              email: formData.email,
+              phone: formData.phone,
+              fax: formData.fax,
+              business_type: formData.business_type,
+              business_category: formData.business_category,
+              address: formData.address,
+              manager: formData.manager,
+              note: formData.note,
+              client_type: 'customer',
+            },
+            due_date: formData.due_date,
+            products: quotationProducts.map((product) => ({
+              product_id: product.productId || null,
+              quantity: product.quantity || 0,
+              unit_price: product.unit_price || 0,
+              is_delivery: false,
+              delivery_date: null,
+            })),
+            uploaded_file: imageUrl || undefined,
+            is_confirm: true,
+          });
+        } catch {
+          // 임시저장도 실패 시 조용히 무시 (토스트는 생산 실패만 표시)
+        }
 
         toast.setText(toastText);
         toast.setSubtext(toastSubtext);
@@ -272,7 +307,7 @@ export const useQuotationHandlers = ({
     } catch (error) {
       // 에러 메시지 추출
       let errorText = '생산 시작에 실패했습니다.';
-      let errorSubtext = '다시 시도해 주세요.';
+      let errorSubtext = '현재 입력한 내용은 임시저장되었습니다. 다시 시도해 주세요.';
 
       if (error instanceof Error) {
         errorText = error.message;
@@ -288,6 +323,42 @@ export const useQuotationHandlers = ({
           errorText = '올바르지 않은 날짜 형식입니다.';
           errorSubtext = '날짜를 YYYY-MM-DD 형식으로 입력해 주세요.';
         }
+      }
+
+      // 예외 발생 시에도 현재 주문서 내용을 주문확정 상태로 저장 (is_confirm: true)
+      try {
+        const formData = watch();
+        await saveDraft({
+          quotation_id: quotationId || null,
+          client: {
+            factory_id: factoryId as number,
+            client_id: selectedClientId || null,
+            name: formData.name,
+            business_registration_number: formData.business_registration_number,
+            representative_name: formData.representative_name,
+            email: formData.email,
+            phone: formData.phone,
+            fax: formData.fax,
+            business_type: formData.business_type,
+            business_category: formData.business_category,
+            address: formData.address,
+            manager: formData.manager,
+            note: formData.note,
+            client_type: 'customer',
+          },
+          due_date: formData.due_date,
+          products: quotationProducts.map((product) => ({
+            product_id: product.productId || null,
+            quantity: product.quantity || 0,
+            unit_price: product.unit_price || 0,
+            is_delivery: false,
+            delivery_date: null,
+          })),
+          uploaded_file: imageUrl || undefined,
+          is_confirm: true,
+        });
+      } catch {
+        // 임시저장 실패는 조용히 무시
       }
 
       // 에러 토스트 표시

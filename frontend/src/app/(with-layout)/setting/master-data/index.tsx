@@ -53,8 +53,9 @@ const MasterData = () => {
 
   // id 배열
   const equipmentIds: number[] =
-    equipmentList?.data?.map((item) => item.id) ?? []; // 설비 id 배열
-  const clientIds: number[] = clientList?.data?.map((item) => item.id) ?? []; // 거래처 id 배열
+    equipmentList?.data?.map((item: { id: number }) => item.id) ?? []; // 설비 id 배열
+  const clientIds: number[] =
+    clientList?.data?.map((item: { id: number }) => item.id) ?? []; // 거래처 id 배열
 
   // 설비 검색 함수
   const handleEquipmentSearch = useMemo(
@@ -380,37 +381,27 @@ const MasterData = () => {
           )}
 
           {/* 삭제 버튼 */}
-          {(settingChip === 'equipment' &&
+          {((settingChip === 'equipment' &&
             equipmentListForFacility.data.length > 0) ||
             (settingChip === 'client' &&
-              clientList?.data.length &&
-              clientList?.data.length > 0 && (
-                <>
-                  <MiniBtn
-                    text="취소"
-                    textColor="text-dg"
-                    borderColor="border-lg"
-                    hoverColor="hover:bg-bg"
-                    onClick={handleClearAllChecked}
-                    disabled={role === 'viewer'}
-                  />
-                  <MiniBtn
-                    text={getDeleteButtonText()}
-                    textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
-                    borderColor={checkedCount > 0 ? 'border-none' : 'border-lg'}
-                    bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-wh'}
-                    hoverColor={
-                      checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'
-                    }
-                    onClick={handleDeleteBtnClick}
-                    disabled={
-                      isDeleteLoading ||
-                      isDeleteClientLoading ||
-                      role === 'viewer'
-                    }
-                  />
-                </>
-              ))}
+              (clientList?.data?.length ?? 0) > 0)) && (
+            <>
+              <MiniBtn
+                text="취소"
+                variant="whiteOutline"
+                onClick={handleClearAllChecked}
+                disabled={role === 'viewer'}
+              />
+              <MiniBtn
+                text={getDeleteButtonText()}
+                variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
+                onClick={handleDeleteBtnClick}
+                disabled={
+                  isDeleteLoading || isDeleteClientLoading || role === 'viewer'
+                }
+              />
+            </>
+          )}
         </div>
       </div>
       {renderContent()}
