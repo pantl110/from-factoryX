@@ -1404,20 +1404,20 @@ export interface CashReceiptSyncResponseModel {
 //////////////////////
 // Work Instruction API
 export interface WorkInstructionsPlanModel {
-  "avg_production_time": number;
-  "client_name": string;
-  "created_at": string;
-  "end_date": string;
-  "end_notification": boolean;
-  "equipment": number;
-  "id": number;
-  "product": number; // product_id
-  "product_name": string;
-  "project": number; // project_id
-  "quantity": number;
-  "start_date": string;
-  "status": OperationStatusType;
-  "updated_at": string;
+  avg_production_time: number;
+  client_name: string;
+  created_at: string;
+  end_date: string;
+  end_notification: boolean;
+  equipment: number;
+  id: number;
+  product: number; // product_id
+  product_name: string;
+  project: number; // project_id
+  quantity: number;
+  start_date: string;
+  status: OperationStatusType;
+  updated_at: string;
 }
 
 export interface WorkInstructionsResponseModel {

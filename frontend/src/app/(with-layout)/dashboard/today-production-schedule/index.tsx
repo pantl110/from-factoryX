@@ -65,7 +65,7 @@ const TodayProductionSchedule = ({
     fetchLatest();
   }, [factoryId, getWorkInstructions]);
 
-  const canPrint = useMemo(
+  const shouldShowPrint = useMemo(
     () => Boolean(factoryId && latestWorkInstructionId),
     [factoryId, latestWorkInstructionId]
   );
@@ -83,7 +83,7 @@ const TodayProductionSchedule = ({
               setIsPrintOverlayOpen(true);
             }}
             hoverColor="hover:bg-bg"
-            disabled={!canPrint}
+            disabled={!shouldShowPrint}
           />
         </div>
         <ProductionTable

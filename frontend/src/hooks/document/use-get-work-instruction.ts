@@ -17,7 +17,8 @@ interface UseGetWorkInstructionReturnModel {
 
 const useGetWorkInstruction = (): UseGetWorkInstructionReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
-  const [workInstruction, setWorkInstruction] = useState<WorkInstructionDetailResponseModel | null>(null);
+  const [workInstruction, setWorkInstruction] =
+    useState<WorkInstructionDetailResponseModel | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const { factoryId } = useMemberStore();
@@ -49,7 +50,8 @@ const useGetWorkInstruction = (): UseGetWorkInstructionReturnModel => {
         });
 
         if (response.ok) {
-          const result: WorkInstructionDetailResponseModel = await response.json();
+          const result: WorkInstructionDetailResponseModel =
+            await response.json();
           setWorkInstruction(result);
           return { success: true, data: result };
         } else {
@@ -57,7 +59,7 @@ const useGetWorkInstruction = (): UseGetWorkInstructionReturnModel => {
           try {
             const errData = await response.json();
             message = errData.detail || message;
-          } catch (e) {
+          } catch {
             // noop
           }
           setError(message);
@@ -72,12 +74,10 @@ const useGetWorkInstruction = (): UseGetWorkInstructionReturnModel => {
         setIsLoading(false);
       }
     },
-    []
+    [factoryId]
   );
 
   return { getWorkInstruction, workInstruction, isLoading, error };
 };
 
 export default useGetWorkInstruction;
-
-

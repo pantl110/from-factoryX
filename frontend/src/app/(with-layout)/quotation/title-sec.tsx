@@ -157,15 +157,15 @@ const TitleSec = ({
               }
 
               // 이메일 전송 전에 임시저장
-              const result = await onSaveDraft?.(false);
-              if (result) {
+              const isSaveSuccess = await onSaveDraft?.(false);
+              if (isSaveSuccess) {
                 setIsEmailOpen(true);
               }
             }}
             onPrintClick={async () => {
               // 출력 전에 임시저장
-              const result = await onSaveDraft?.(false);
-              if (result) {
+              const isSaveSuccess = await onSaveDraft?.(false);
+              if (isSaveSuccess) {
                 setIsPrintOpen(true);
               }
             }}

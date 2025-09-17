@@ -65,11 +65,8 @@ const QuotationPageContent = () => {
   const setProjectStatusData = usePageStatusStore(
     (state: PageStatusModel) => state.setProjectStatusData
   );
-  const {
-    data: quotationData,
-    isLoading: isQuotationLoading,
-    refetch: refetchQuotation,
-  } = useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
+  const { data: quotationData, isLoading: isQuotationLoading } =
+    useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
   const { showToast, isToastOpen, isVisible } = useToast();
   const { ocrData, imageUrl, setOcrData } = useOcrStore();
   const { clientList, getAllClientList } = useGetClient(); // 거래처 목록 가져오기

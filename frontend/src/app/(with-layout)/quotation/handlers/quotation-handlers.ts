@@ -22,9 +22,12 @@ interface QuotationHandlersProps {
   factoryId: number | null;
   selectedClientId: number | null;
   imageUrl?: string;
-  saveDraft: (
-    data: SaveDraftDataModel
-  ) => Promise<{ quotation_id: number; project_id?: number; client_id?: number; status: string }>;
+  saveDraft: (data: SaveDraftDataModel) => Promise<{
+    quotation_id: number;
+    project_id?: number;
+    client_id?: number;
+    status: string;
+  }>;
   startProduction: (
     data: ProductionDataModel
   ) => Promise<StartProductionResponseModel>;
@@ -66,7 +69,13 @@ export const useQuotationHandlers = ({
 
   // 임시 저장 버튼 & 주문 확정 버튼 핸들러
   const handleSaveDraft = useCallback(
-    async (isConfirm: boolean): Promise<{ success: boolean; quotation_id?: number; client_id?: number }> => {
+    async (
+      isConfirm: boolean
+    ): Promise<{
+      success: boolean;
+      quotation_id?: number;
+      client_id?: number;
+    }> => {
       try {
         setIsSaveDraftLoading(true);
         const formData = watch();
@@ -120,7 +129,11 @@ export const useQuotationHandlers = ({
           setInitialQuotationProducts([...quotationProducts]);
           // 에러 표시 상태 초기화
           setShowErrors(false);
-          return { success: true, quotation_id: result.quotation_id, client_id: result.client_id };
+          return {
+            success: true,
+            quotation_id: result.quotation_id,
+            client_id: result.client_id,
+          };
         }
         return { success: false };
       } catch (error) {
@@ -164,7 +177,7 @@ export const useQuotationHandlers = ({
     // selectedClientId를 기본값으로 두고, 흐름 중 확보되면 갱신
     let currentClientId: number | null = selectedClientId ?? null;
     let currentQuotationId = quotationId ?? createdQuotationId ?? undefined;
-    
+
     try {
       setIsStartProductionLoading(true);
       const formData = watch();
@@ -257,7 +270,8 @@ export const useQuotationHandlers = ({
       // 에러가 발생한 경우 (null 반환)
       if (!result) {
         const toastText = '생산 시작에 실패했습니다.';
-        const toastSubtext = '현재 입력한 내용은 임시저장되었습니다. 다시 시도해 주세요.';
+        const toastSubtext =
+          '현재 입력한 내용은 임시저장되었습니다. 다시 시도해 주세요.';
 
         // 실패 시 현재 주문서 내용을 주문확정 상태로 저장 (is_confirm: true)
         try {
@@ -267,7 +281,8 @@ export const useQuotationHandlers = ({
               factory_id: factoryId,
               client_id: currentClientId,
               name: formData.name,
-              business_registration_number: formData.business_registration_number,
+              business_registration_number:
+                formData.business_registration_number,
               representative_name: formData.representative_name,
               email: formData.email,
               phone: formData.phone,
@@ -310,7 +325,8 @@ export const useQuotationHandlers = ({
     } catch (error) {
       // 에러 메시지 추출
       let errorText = '생산 시작에 실패했습니다.';
-      let errorSubtext = '현재 입력한 내용은 임시저장되었습니다. 다시 시도해 주세요.';
+      let errorSubtext =
+        '현재 입력한 내용은 임시저장되었습니다. 다시 시도해 주세요.';
 
       if (error instanceof Error) {
         errorText = error.message;
@@ -384,6 +400,7 @@ export const useQuotationHandlers = ({
     toast,
     setIsStartProductionModalOpen,
     router,
+    createdQuotationId,
   ]);
 
   return {

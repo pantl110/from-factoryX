@@ -38,7 +38,9 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
           setUserInfo(meData);
           memberId = meData?.member_id;
         }
-      } catch {}
+      } catch {
+        // Handle error silently
+      }
     }
 
     if (memberId) {

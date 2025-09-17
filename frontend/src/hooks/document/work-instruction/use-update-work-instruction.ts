@@ -5,7 +5,7 @@ import axios from 'axios';
 import useMemberStore from '@/store/member-store';
 import { WorkInstructionDetailResponseModel } from '@/types/data-model';
 
-export interface WorkInstructionUpdateIn {
+export interface WorkInstructionUpdateInModel {
   // 백엔드 스키마에 맞게 필요한 필드만 확장해서 사용하세요
   memo?: string;
 }
@@ -18,7 +18,7 @@ const useUpdateWorkInstruction = () => {
   const updateWorkInstruction = useCallback(
     async (
       workInstructionId: number,
-      payload: WorkInstructionUpdateIn
+      payload: WorkInstructionUpdateInModel
     ): Promise<{
       success: boolean;
       data?: WorkInstructionDetailResponseModel;
@@ -44,8 +44,8 @@ const useUpdateWorkInstruction = () => {
       } catch (err) {
         let message = '서버 연결에 실패했습니다.';
         if (axios.isAxiosError(err)) {
-          const status = err.response?.status;
-          const detail = (err.response?.data as any)?.detail;
+          const { status } = err.response || {};
+          const { detail } = (err.response?.data as { detail?: string }) || {};
           switch (status) {
             case 400:
               message = detail || '잘못된 요청입니다.';
@@ -63,7 +63,8 @@ const useUpdateWorkInstruction = () => {
               message = detail || '작업 지시서 업데이트에 실패했습니다.';
           }
         } else if (err instanceof Error) {
-          message = err.message;
+          const { message: errorMessage } = err;
+          message = errorMessage;
         }
         setError(message);
         return { success: false, error: message };
@@ -78,5 +79,3 @@ const useUpdateWorkInstruction = () => {
 };
 
 export default useUpdateWorkInstruction;
-
-
