@@ -1,7 +1,6 @@
 from ninja.errors import HttpError
 import jwt, random, string
-from datetime import datetime, timedelta
-from django.utils import timezone
+from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from api.exceptions import CustomAuthorizationError
@@ -33,8 +32,8 @@ def get_random(length):
 
 
 def get_access_token(payload):
-    # JWT의 exp는 UTC 기준이므로 UTC로 명시적으로 설정
-    exp_utc = timezone.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRATION_TIME)
+    # JWT의 exp는 UTC 기준이므로 UTC로 직접 생성
+    exp_utc = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRATION_TIME)
     return (
         jwt.encode(
             {
@@ -49,8 +48,8 @@ def get_access_token(payload):
 
 
 def get_refresh_token():
-    # JWT의 exp는 UTC 기준이므로 UTC로 명시적으로 설정
-    exp_utc = timezone.utcnow() + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRATION_TIME)
+    # JWT의 exp는 UTC 기준이므로 UTC로 직접 생성
+    exp_utc = datetime.now(timezone.utc) + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRATION_TIME)
     return (
         jwt.encode(
             {
@@ -69,7 +68,7 @@ async def validate_refresh_token(token):
         decoded = jwt.decode(token, key=settings.SECRET_KEY, algorithms="HS256")
         # JWT의 exp는 UTC 기준이므로 UTC로 비교
         exp_datetime_utc = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
-        current_utc = timezone.utcnow()
+        current_utc = datetime.now(timezone.utc)
         if exp_datetime_utc < current_utc:
             raise CustomAuthorizationError("토큰이 만료되었습니다.", 401)
     except jwt.ExpiredSignatureError:
@@ -87,7 +86,7 @@ async def decodeJWT(bearer):
         decoded = jwt.decode(token, key=settings.SECRET_KEY, algorithms="HS256")
         # JWT의 exp는 UTC 기준이므로 UTC로 비교
         exp_datetime_utc = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
-        current_utc = timezone.utcnow()
+        current_utc = datetime.now(timezone.utc)
         if exp_datetime_utc < current_utc:
             raise CustomAuthorizationError("토큰이 만료되었습니다.", 401)
     except jwt.exceptions.ExpiredSignatureError:
