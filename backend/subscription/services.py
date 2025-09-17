@@ -58,7 +58,7 @@ class TossPaymentsService:
 
     def issue_billing_key(self, auth_key, customer_key):
         """성공 콜백으로 받은 authKey를 billingKey로 교환하여 발급"""
-        url = f"{self.base_url}/v1/billing/authorizations"
+        url = f"{self.base_url}/v1/billing/authorizations/issue"
 
         data = {
             "authKey": auth_key,
