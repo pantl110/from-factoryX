@@ -1403,30 +1403,65 @@ export interface CashReceiptSyncResponseModel {
 
 //////////////////////
 // Work Instruction API
-export interface WorkInstructionPlanModel {
-  id: number;
-  created_at: string;
-  updated_at: string;
-  project: number; // project_id
-  status: OperationStatusType;
-  product: number;
-  quantity: number;
-  start_date: string;
-  end_date: string;
-  avg_production_time: number;
+export interface WorkInstructionsPlanModel {
+  "avg_production_time": number;
+  "client_name": string;
+  "created_at": string;
+  "end_date": string;
+  "end_notification": boolean;
+  "equipment": number;
+  "id": number;
+  "product": number; // product_id
+  "product_name": string;
+  "project": number; // project_id
+  "quantity": number;
+  "start_date": string;
+  "status": OperationStatusType;
+  "updated_at": string;
 }
 
-export interface WorkInstructionResponseModel {
+export interface WorkInstructionsResponseModel {
   id: number;
   factory: number;
-  plans: WorkInstructionPlanModel[];
+  plans: WorkInstructionsPlanModel[];
   memo: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface WorkInstructionListResponseModel extends PaginationModel {
-  data: WorkInstructionResponseModel[];
+  data: WorkInstructionsResponseModel[];
+}
+
+// detail
+export interface WorkInstructionDetailPlanModel {
+  avg_production_time: number;
+  client_name: string;
+  created_at: string;
+  end_date: string;
+  end_notification: boolean;
+  equipment: number;
+  equipment_name: string;
+  id: number;
+  product: number;
+  product_code: string;
+  product_name: string;
+  product_spec: string;
+  product_unit: string;
+  product_note: string | null;
+  project: number;
+  quantity: number;
+  start_date: string;
+  status: OperationStatusType;
+  updated_at: string;
+}
+export interface WorkInstructionDetailResponseModel {
+  id: number;
+  factory: number;
+  plans: WorkInstructionDetailPlanModel[];
+  memo: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 ////////////

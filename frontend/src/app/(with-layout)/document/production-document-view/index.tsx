@@ -1,31 +1,52 @@
 import DocumentViewTitle from '../document-view-title';
 import CommentItem from './comment-item';
 import ProductionTableItem from './production-table-item';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
+import { useGetWorkInstruction } from '@/hooks';
+import {
+  WorkInstructionDetailPlanModel,
+  WorkInstructionDetailResponseModel,
+} from '@/types/data-model';
 
 // 프로젝트명별로 그룹핑 함수
-const groupByProject = (data: TodayProductionPlanModel[]) => {
-  return data.reduce<Record<string, TodayProductionPlanModel[]>>(
+const groupByProject = (data: WorkInstructionDetailPlanModel[]) => {
+  return data.reduce<Record<string, WorkInstructionDetailPlanModel[]>>(
     (acc, item) => {
-      if (!acc[item.company_name]) acc[item.company_name] = [];
-      acc[item.company_name].push(item);
+      if (!acc[item.client_name]) acc[item.client_name] = [];
+      acc[item.client_name].push(item);
       return acc;
     },
-    {} as Record<string, TodayProductionPlanModel[]>
+    {} as Record<string, WorkInstructionDetailPlanModel[]>
   );
 };
 
 interface ProductionDocumentViewProps {
-  todayProductionPlans: TodayProductionPlanModel[];
+  workInstructioId: number;
+  isOnlyRead?: boolean;
 }
 
 const ProductionDocumentView = ({
-  todayProductionPlans,
+  workInstructioId,
+  isOnlyRead = false,
 }: ProductionDocumentViewProps) => {
+  const [workInstruction, setWorkInstruction] =
+    useState<WorkInstructionDetailResponseModel | null>(null);
   const [value, setValue] = useState('');
-  const grouped = groupByProject(todayProductionPlans);
+
+  const { getWorkInstruction } = useGetWorkInstruction();
+  useEffect(() => {
+    if (workInstructioId) {
+      getWorkInstruction(workInstructioId).then((res) => {
+        if (res.success && res.data) {
+          setWorkInstruction(res.data);
+          setValue(res.data.memo || '');
+        }
+      });
+    }
+  }, [workInstructioId, getWorkInstruction]);
+
+  const grouped = groupByProject(workInstruction?.plans || []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,11 +70,11 @@ const ProductionDocumentView = ({
               </div>
               {items.map((item, index) => (
                 <ProductionTableItem
-                  key={item.project_id + index}
+                  key={item.project + index}
                   productName={item.product_name}
-                  spec={item.spec}
-                  unit={item.unit}
-                  productionQuantity={item.production_quantity || 0}
+                  spec={item.product_spec}
+                  unit={item.product_unit}
+                  productionQuantity={item.quantity || 0}
                   machine={item.equipment_name || '-'}
                   productionTime={
                     item.start_date.split('T')[1]?.slice(0, 5) || null
@@ -68,14 +89,14 @@ const ProductionDocumentView = ({
       {/* 특이사항 */}
       <div className="flex flex-col gap-3">
         <h3 className="Heading-3 h-10 items-center flex">특이사항</h3>
-        {todayProductionPlans
+        {workInstruction?.plans
           .filter(
             (item, index, self) =>
-              index === self.findIndex((t) => t.product_id === item.product_id)
+              index === self.findIndex((t) => t.product === item.product)
           )
           .map((item) => (
             <CommentItem
-              key={item.product_id}
+              key={item.product}
               title={item.product_name}
               comment={item.product_note || '-'}
             />
@@ -86,11 +107,12 @@ const ProductionDocumentView = ({
       <div className="flex flex-col gap-3">
         <h3 className="Heading-3 h-10 items-center flex">메모</h3>
         <TextareaAutosize
-          placeholder="메모를 입력하세요."
+          placeholder={isOnlyRead ? '-' : '메모를 입력하세요.'}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           className="w-full print:hidden"
           minRows={6}
+          readOnly={isOnlyRead}
         />
         <div className="textarea hidden print:block whitespace-pre-wrap w-full min-h-50">
           {value}

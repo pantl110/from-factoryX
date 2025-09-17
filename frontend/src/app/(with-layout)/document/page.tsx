@@ -11,7 +11,7 @@ import { useGetPublishedTaxInvoices, useGetWorkInstructions } from '@/hooks';
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
-  WorkInstructionResponseModel,
+  WorkInstructionsResponseModel,
 } from '@/types/data-model';
 import useGetProjects from '@/hooks/project/use-get-projects';
 import SearchInput from '@/ui/search-input';
@@ -52,7 +52,7 @@ const DocumentPageContent = () => {
   );
   //생산지시서 데이터 상태
   const [workInstructions, setWorkInstructions] = useState<
-    WorkInstructionResponseModel[]
+    WorkInstructionsResponseModel[]
   >([]);
   // 거래명세서 데이터 상태
   const [transactionDocuments, setTransactionDocuments] = useState<

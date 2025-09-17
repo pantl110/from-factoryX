@@ -1,7 +1,7 @@
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
-  WorkInstructionResponseModel,
+  WorkInstructionsResponseModel,
 } from '@/types/data-model';
 import Chip from '@/ui/chip';
 import { DocumentType, DocumentTypeColorMap } from './types';
@@ -21,7 +21,7 @@ interface DocumentTableItemProps {
   data:
     | ProjectResponseModel
     | PublishedTaxInvoiceResponseModel
-    | WorkInstructionResponseModel;
+    | WorkInstructionsResponseModel;
   documentType: DocumentType;
 }
 
@@ -36,7 +36,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
 
   const taxData = data as PublishedTaxInvoiceResponseModel;
   const projectData = data as ProjectResponseModel;
-  const workInstructionData = data as WorkInstructionResponseModel;
+  const workInstructionData = data as WorkInstructionsResponseModel;
 
   // 항목 클릭 시
   const handleItemClick = () => {
@@ -129,29 +129,29 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             <p
               className="px-3 flex-1 truncate"
               title={
-                workInstructionData?.plans?.[0]?.project !== undefined
-                  ? String(workInstructionData.plans[0].project)
-                  : '-'
+                getProductNamesDisplay(
+                  workInstructionData.plans.map((plan) => plan.client_name)
+                ) ?? '-'
               }
             >
-              {workInstructionData?.plans?.[0]?.project ?? '-'}
+              {getProductNamesDisplay(
+                workInstructionData.plans.map((plan) => plan.client_name)
+              ) ?? '-'}
             </p>
             <p
               className="px-3 flex-1 truncate"
               title={
                 getProductNamesDisplay(
-                  (workInstructionData?.plans || [])
-                    .map((plan) => plan?.product)
-                    .filter((v) => v !== undefined && v !== null)
-                    .map((v) => String(v))
+                  (workInstructionData?.plans || []).map(
+                    (plan) => plan.product_name
+                  )
                 ) || '-'
               }
             >
               {getProductNamesDisplay(
-                (workInstructionData?.plans || [])
-                  .map((plan) => plan?.product)
-                  .filter((v) => v !== undefined && v !== null)
-                  .map((v) => String(v))
+                (workInstructionData?.plans || []).map(
+                  (plan) => plan.product_name
+                )
               ) || '-'}
             </p>
             <p
@@ -234,20 +234,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           onClose={() => setIsWorkInstructionPanelOpen(false)}
         >
           <ProductionDocumentView
-            todayProductionPlans={workInstructionData.plans.map((plan) => ({
-              company_name: String(plan.project),
-              project_id: plan.project,
-              product_id: plan.product,
-              product_name: String(plan.product),
-              product_code: String(plan.product),
-              spec: '',
-              unit: '',
-              product_note: null,
-              equipment_name: '-',
-              production_quantity: plan.quantity || 0,
-              start_date: plan.start_date,
-              end_date: plan.end_date,
-            }))}
+            workInstructioId={workInstructionData.id}
+            isOnlyRead={true}
           />
         </Panel>
       )}

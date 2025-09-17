@@ -3,7 +3,7 @@ import DocumentTableItem from './document-table-item';
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
-  WorkInstructionResponseModel,
+  WorkInstructionsResponseModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
@@ -11,7 +11,7 @@ interface DocumentTableProps {
   data:
     | PublishedTaxInvoiceResponseModel[]
     | ProjectResponseModel[]
-    | WorkInstructionResponseModel[];
+    | WorkInstructionsResponseModel[];
   selectedType: string;
   onTaxSortChange?: (
     field: 'transaction_date' | 'created_at',
@@ -59,7 +59,7 @@ const DocumentTable = ({
 
   const taxData = data as PublishedTaxInvoiceResponseModel[];
   const projectData = data as ProjectResponseModel[];
-  const workInstructionData = data as WorkInstructionResponseModel[];
+  const workInstructionData = data as WorkInstructionsResponseModel[];
 
   return (
     <>
