@@ -24,7 +24,7 @@ interface QuotationHandlersProps {
   imageUrl?: string;
   saveDraft: (
     data: SaveDraftDataModel
-  ) => Promise<{ quotation_id: number; project_id?: number; status: string }>;
+  ) => Promise<{ quotation_id: number; project_id?: number; client_id?: number; status: string }>;
   startProduction: (
     data: ProductionDataModel
   ) => Promise<StartProductionResponseModel>;
@@ -66,7 +66,7 @@ export const useQuotationHandlers = ({
 
   // 임시 저장 버튼 & 주문 확정 버튼 핸들러
   const handleSaveDraft = useCallback(
-    async (isConfirm: boolean): Promise<{ success: boolean; quotation_id?: number }> => {
+    async (isConfirm: boolean): Promise<{ success: boolean; quotation_id?: number; client_id?: number }> => {
       try {
         setIsSaveDraftLoading(true);
         const formData = watch();
@@ -120,7 +120,7 @@ export const useQuotationHandlers = ({
           setInitialQuotationProducts([...quotationProducts]);
           // 에러 표시 상태 초기화
           setShowErrors(false);
-          return { success: true, quotation_id: result.quotation_id };
+          return { success: true, quotation_id: result.quotation_id, client_id: result.client_id };
         }
         return { success: false };
       } catch (error) {
@@ -161,6 +161,8 @@ export const useQuotationHandlers = ({
 
   // 생산 시작 버튼 핸들러 (startProduction API 사용)
   const handleStartProduction = useCallback(async () => {
+    // selectedClientId를 기본값으로 두고, 흐름 중 확보되면 갱신
+    let currentClientId: number | null = selectedClientId ?? null;
     try {
       setIsStartProductionLoading(true);
       const formData = watch();
@@ -218,14 +220,15 @@ export const useQuotationHandlers = ({
 
         const draftResult = await saveDraft(draftData);
         currentQuotationId = draftResult.quotation_id;
+        currentClientId = draftResult.client_id ?? null;
       }
 
-      // 이제 생산 시작 (주문확정)
+      // 이제 생산 시작
       const productionData: ProductionDataModel = {
         quotation_id: currentQuotationId,
         client: {
           factory_id: factoryId,
-          client_id: selectedClientId || null,
+          client_id: currentClientId,
           name: formData.name,
           business_registration_number: formData.business_registration_number,
           representative_name: formData.representative_name,
@@ -262,7 +265,7 @@ export const useQuotationHandlers = ({
             quotation_id: currentQuotationId || null,
             client: {
               factory_id: factoryId,
-              client_id: selectedClientId || null,
+              client_id: currentClientId,
               name: formData.name,
               business_registration_number: formData.business_registration_number,
               representative_name: formData.representative_name,
@@ -332,7 +335,7 @@ export const useQuotationHandlers = ({
           quotation_id: quotationId || null,
           client: {
             factory_id: factoryId as number,
-            client_id: selectedClientId || null,
+            client_id: currentClientId,
             name: formData.name,
             business_registration_number: formData.business_registration_number,
             representative_name: formData.representative_name,

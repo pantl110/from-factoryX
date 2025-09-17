@@ -637,7 +637,10 @@ const QuotationPageContent = () => {
           onProjectStatusChange={handleProjectStatusChange}
           onSaveDraft={async (isConfirm: boolean) => {
             const result = await handleSaveDraft(isConfirm);
-            if (isConfirm && result && result.quotation_id) {
+            if (result && result.client_id) {
+              setSelectedClientId(result.client_id);
+            }
+            if (result && result.quotation_id) {
               setCreatedQuotationId(result.quotation_id);
             }
             return !!result?.success;

@@ -4,6 +4,8 @@ import useMemberStore from '@/store/member-store';
 
 interface SaveDraftQuotationResponseModel {
   quotation_id: number;
+  project_id: number;
+  client_id: number;
   status: string; // confirmed 또는 draft_saved
 }
 
