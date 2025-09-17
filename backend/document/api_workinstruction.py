@@ -91,10 +91,12 @@ async def get_work_instruction(request, work_instruction_id: int):
                     .prefetch_related("project__quotations__client")
                     .annotate(
                         client_name=F("project__quotations__client__name"),
+                        factory_name=F("factory__name"),
                         product_name=F("product__product__name"),
                         product_code=F("product__product__code"),
                         product_unit=F("product__product__unit"),
                         product_spec=F("product__product__spec"),
+                        product_note=F("product__product__note"),
                     ),
                 )
             ).get(id=work_instruction_id, factory_id=factory_id)
