@@ -195,10 +195,12 @@ class WorkInstructionModelOut(ModelSchema):
 
 class ProjectPlanDetailModelOut(ModelSchema):
     client_name: Optional[str] = Field(None, description="클라이언트명")
+    equipment_name: Optional[str] = Field(None, description="설비명")
     product_name: Optional[str] = Field(None, description="품목명")
     product_code: Optional[str] = Field(None, description="품목코드")
     product_unit: Optional[str] = Field(None, description="단위")
     product_spec: Optional[str] = Field(None, description="규격")
+    product_note: Optional[str] = Field(None, description="품목 메모")
 
     class Meta:
         model = ProjectPlan
