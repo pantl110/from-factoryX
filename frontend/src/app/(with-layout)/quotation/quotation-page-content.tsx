@@ -90,6 +90,11 @@ const QuotationPageContent = () => {
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
 
+  // 견적서 생성 후 페이지 안나갔을 때 견적서 ID 관리
+  const [createdQuotationId, setCreatedQuotationId] = useState<number | null>(
+    null
+  );
+
   // 토스트 상태
   const [toastContent, setToastContent] = useState<{
     text: string;
@@ -530,6 +535,7 @@ const QuotationPageContent = () => {
     },
     setIsStartProductionModalOpen,
     router,
+    createdQuotationId,
   });
 
   // 필수 폼이 채워져 있는지 검사 - Client data의 required 필드들이 모두 채워져 있는지 확인
@@ -630,27 +636,19 @@ const QuotationPageContent = () => {
           projectStatus={projectStatus}
           onProjectStatusChange={handleProjectStatusChange}
           onSaveDraft={async (isConfirm: boolean) => {
-            const isSuccess = await handleSaveDraft(isConfirm);
-            return isSuccess || false;
+            const result = await handleSaveDraft(isConfirm);
+            if (isConfirm && result && result.quotation_id) {
+              setCreatedQuotationId(result.quotation_id);
+            }
+            return !!result?.success;
           }}
           taxId={taxId}
           isSaveDraftLoading={isSaveDraftLoading}
           setShowErrors={setShowErrors}
           refresh={() => {
-            // 주문확정 완료 후 상태 업데이트
-            if (quotationId) {
-              // 1. 프로젝트 상태 새로고침
-              loadProjectStatus();
-
-              // 2. 견적서 데이터 재조회 (로컬 상태는 유지하여 버튼 비활성화 방지)
-              if (quotationId > 0) {
-                refetchQuotation?.();
-                // 즉시 UI 반영을 위해 상태를 confirmed로 설정
-                setProjectStatus('confirmed');
-                // 에러 상태 초기화
-                setShowErrors(false);
-              }
-            }
+            // 주문확정 완료 후 낙관적 업데이트(서버 재조회 없이 즉시 반영)
+            setProjectStatus('confirmed');
+            setShowErrors(false);
           }}
         />
         <TabArea

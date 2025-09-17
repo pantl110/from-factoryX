@@ -40,6 +40,7 @@ interface QuotationHandlersProps {
   };
   setIsStartProductionModalOpen: (open: boolean) => void;
   router: ReturnType<typeof useRouter>;
+  createdQuotationId?: number | null;
 }
 
 export const useQuotationHandlers = ({
@@ -57,6 +58,7 @@ export const useQuotationHandlers = ({
   toast,
   setIsStartProductionModalOpen,
   router,
+  createdQuotationId,
 }: QuotationHandlersProps) => {
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isStartProductionLoading, setIsStartProductionLoading] =
@@ -64,7 +66,7 @@ export const useQuotationHandlers = ({
 
   // 임시 저장 버튼 & 주문 확정 버튼 핸들러
   const handleSaveDraft = useCallback(
-    async (isConfirm: boolean) => {
+    async (isConfirm: boolean): Promise<{ success: boolean; quotation_id?: number }> => {
       try {
         setIsSaveDraftLoading(true);
         const formData = watch();
@@ -118,9 +120,9 @@ export const useQuotationHandlers = ({
           setInitialQuotationProducts([...quotationProducts]);
           // 에러 표시 상태 초기화
           setShowErrors(false);
-          return true; // 성공 시 true 반환
+          return { success: true, quotation_id: result.quotation_id };
         }
-        return false; // 실패 시 false 반환
+        return { success: false };
       } catch (error) {
         // 에러 메시지 설정
         const errorMessage =
@@ -137,7 +139,7 @@ export const useQuotationHandlers = ({
 
         toast.setType('red');
         toast.show();
-        return false;
+        return { success: false };
       } finally {
         setIsSaveDraftLoading(false);
       }
@@ -180,7 +182,7 @@ export const useQuotationHandlers = ({
         return;
       }
 
-      let currentQuotationId = quotationId;
+      let currentQuotationId = quotationId ?? createdQuotationId ?? undefined;
 
       // quotationId가 없으면 먼저 견적서를 생성
       if (!currentQuotationId) {
