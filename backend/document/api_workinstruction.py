@@ -8,6 +8,7 @@ from document.schemas.outbound import (
     WorkInstructionDetailModelOut,
 )
 from document.models import WorkInstruction
+from django.db import models
 from django.db.models import Prefetch, F
 from project.models import ProjectPlan
 from factory.utils import is_factory_member
@@ -27,7 +28,11 @@ router = Router(
     response=list[WorkInstructionModelOut],
 )
 @paginate
-async def get_work_instructions(request, order_by: str = Query("-created_at")):
+async def get_work_instructions(
+    request,
+    order_by: str = Query("-created_at"),
+    q: str | None = Query(None, description="검색어(거래처명/품목명)"),
+):
     user = request.auth
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -47,6 +52,13 @@ async def get_work_instructions(request, order_by: str = Query("-created_at")):
                 ),
             )
         ).filter(factory_id=factory_id)
+
+        # 검색어: 계획의 거래처명/품목명 기준
+        if q:
+            queryset = queryset.filter(
+                models.Q(plans__project__quotations__client__name__icontains=q)
+                | models.Q(plans__product__product__name__icontains=q)
+            ).distinct()
 
         if order_by:
             queryset = queryset.order_by(order_by)
