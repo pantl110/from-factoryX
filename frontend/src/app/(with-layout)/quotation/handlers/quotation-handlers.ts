@@ -163,6 +163,8 @@ export const useQuotationHandlers = ({
   const handleStartProduction = useCallback(async () => {
     // selectedClientId를 기본값으로 두고, 흐름 중 확보되면 갱신
     let currentClientId: number | null = selectedClientId ?? null;
+    let currentQuotationId = quotationId ?? createdQuotationId ?? undefined;
+    
     try {
       setIsStartProductionLoading(true);
       const formData = watch();
@@ -183,8 +185,6 @@ export const useQuotationHandlers = ({
         );
         return;
       }
-
-      let currentQuotationId = quotationId ?? createdQuotationId ?? undefined;
 
       // quotationId가 없으면 먼저 견적서를 생성
       if (!currentQuotationId) {
@@ -332,7 +332,7 @@ export const useQuotationHandlers = ({
       try {
         const formData = watch();
         await saveDraft({
-          quotation_id: quotationId || null,
+          quotation_id: currentQuotationId || null,
           client: {
             factory_id: factoryId as number,
             client_id: currentClientId,

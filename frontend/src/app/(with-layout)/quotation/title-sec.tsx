@@ -155,10 +155,19 @@ const TitleSec = ({
                 setShowErrors(true); // 에러 표시 활성화
                 return; // 유효성 검사 실패 시 이메일 모달 열지 않음
               }
-              setIsEmailOpen(true);
+
+              // 이메일 전송 전에 임시저장
+              const result = await onSaveDraft?.(false);
+              if (result) {
+                setIsEmailOpen(true);
+              }
             }}
             onPrintClick={async () => {
-              setIsPrintOpen(true);
+              // 출력 전에 임시저장
+              const result = await onSaveDraft?.(false);
+              if (result) {
+                setIsPrintOpen(true);
+              }
             }}
             onStartProductionClick={async () => {
               const isValid = await trigger();
