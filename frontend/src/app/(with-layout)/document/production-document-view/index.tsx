@@ -24,11 +24,13 @@ const groupByProject = (data: WorkInstructionDetailPlanModel[]) => {
 interface ProductionDocumentViewProps {
   workInstructioId: number;
   isOnlyRead?: boolean;
+  onMemoChange?: (memo: string) => void;
 }
 
 const ProductionDocumentView = ({
   workInstructioId,
   isOnlyRead = false,
+  onMemoChange,
 }: ProductionDocumentViewProps) => {
   const [workInstruction, setWorkInstruction] =
     useState<WorkInstructionDetailResponseModel | null>(null);
@@ -40,7 +42,9 @@ const ProductionDocumentView = ({
       getWorkInstruction(workInstructioId).then((res) => {
         if (res.success && res.data) {
           setWorkInstruction(res.data);
-          setValue(res.data.memo || '');
+          const initialMemo = res.data.memo || '';
+          setValue(initialMemo);
+          if (onMemoChange) onMemoChange(initialMemo);
         }
       });
     }
@@ -109,7 +113,11 @@ const ProductionDocumentView = ({
         <TextareaAutosize
           placeholder={isOnlyRead ? '-' : '메모를 입력하세요.'}
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value;
+            setValue(v);
+            if (onMemoChange) onMemoChange(v);
+          }}
           className="w-full print:hidden"
           minRows={6}
           readOnly={isOnlyRead}

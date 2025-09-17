@@ -10,6 +10,7 @@ import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
 import ProductionTable from './production-table';
 import useMemberStore from '@/store/member-store';
 import useGetWorkInstructions from '@/hooks/document/work-instruction/use-get-work-instructions';
+import useUpdateWorkInstruction from '@/hooks/document/work-instruction/use-update-work-instruction';
 
 interface TodayProductionScheduleProps {
   todayProductionPlans: TodayProductionPlanModel[];
@@ -32,6 +33,8 @@ const TodayProductionSchedule = ({
   });
 
   const { getWorkInstructions } = useGetWorkInstructions();
+  const { updateWorkInstruction } = useUpdateWorkInstruction();
+  const [currentMemo, setCurrentMemo] = useState('');
 
   useEffect(() => {
     const fetchLatest = async () => {
@@ -117,7 +120,15 @@ const TodayProductionSchedule = ({
                   bgColor="bg-primary"
                   hoverColor="hover:bg-primary-hover"
                   borderColor="border-primary-hover"
-                  onClick={reactToPrintFn}
+                  onClick={async () => {
+                    // 출력 직전에 메모를 저장
+                    if (latestWorkInstructionId) {
+                      await updateWorkInstruction(latestWorkInstructionId, {
+                        memo: currentMemo,
+                      });
+                    }
+                    reactToPrintFn();
+                  }}
                 />
               </div>
             </div>
@@ -126,6 +137,7 @@ const TodayProductionSchedule = ({
               {latestWorkInstructionId && (
                 <ProductionDocumentView
                   workInstructioId={latestWorkInstructionId}
+                  onMemoChange={setCurrentMemo}
                 />
               )}
             </div>
