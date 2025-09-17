@@ -143,6 +143,7 @@ const ProcessProjectPageInner = () => {
     setSelectedStatus(status);
     setCurrentPage(1); // 탭 상태 변경 시 표는 첫 페이지로 이동
     setSearchKeyword(''); // 탭 변경시 검색어도 초기화
+    setAllChecked(false); // 탭 변경 시 체크 상태 초기화
   };
 
   const handleDirectInputClick = async (
