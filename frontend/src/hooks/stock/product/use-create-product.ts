@@ -39,7 +39,8 @@ const useCreateProduct = () => {
       });
 
       if (response.status === 201) {
-        const result: ProductCreateExcelApiResponseModel = await response.json();
+        const result: ProductCreateExcelApiResponseModel =
+          await response.json();
         return { success: true, data: result.data, message: result.message };
       } else {
         const errorData = await response.json();

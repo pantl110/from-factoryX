@@ -70,7 +70,7 @@ const ExcelUploadModal = ({
       };
 
       // 원본 데이터에서 비어있는 데이터가 있는지 확인 (모든 필드가 비어있는 행은 제외)
-      const hasEmptyData = dataToProcess.some((row, index) => {
+      const hasEmptyData = dataToProcess.some((row) => {
         const name = String(
           row[type === 'product' ? '품목명' : '자재명'] || ''
         );
@@ -81,12 +81,12 @@ const ExcelUploadModal = ({
         const unit = String(row['단위'] || '');
 
         // 모든 필드가 비어있으면 건너뛰기 (자재/품목에 따라 다른 기준)
-        let allEmpty = false;
+        let isAllEmpty = false;
         if (type === 'material') {
           // 자재: 자재명, 자재 코드, 규격, 단위, 현재 재고, 최소 재고 모두 비어있어야 함
           const currentStock = String(row['현재 재고'] || '').trim();
           const minStock = String(row['최소 재고'] || '').trim();
-          allEmpty =
+          isAllEmpty =
             name.trim() === '' &&
             code.trim() === '' &&
             spec.trim() === '' &&
@@ -101,7 +101,7 @@ const ExcelUploadModal = ({
           ).trim();
           const bufferRate = String(row['버퍼 비율(%)'] || '').trim();
           const note = String(row['특이 사항'] || '').trim();
-          allEmpty =
+          isAllEmpty =
             name.trim() === '' &&
             code.trim() === '' &&
             spec.trim() === '' &&
@@ -112,7 +112,7 @@ const ExcelUploadModal = ({
             note === '';
         }
 
-        if (allEmpty) {
+        if (isAllEmpty) {
           return false; // 빈 행은 검증에서 제외
         }
 
@@ -234,7 +234,26 @@ const ExcelUploadModal = ({
           : await createMaterial(productData as ProductCreateExcelModel[]);
 
       if (result.success) {
-        const message = result.message || result.data?.message || '';
+        let message = '';
+        if (type === 'product') {
+          // 제품: result.message
+          if (
+            'message' in result &&
+            typeof (result as { message?: unknown }).message === 'string'
+          ) {
+            message = (result as { message?: string }).message ?? '';
+          }
+        } else {
+          // 자재: result.data.message
+          const { data } = result as { data?: { message?: unknown } };
+          const { message: dataMessage } = (data || {}) as {
+            message?: unknown;
+          };
+          if (typeof dataMessage === 'string') {
+            message = dataMessage;
+          }
+        }
+
         // 중복된 코드가 있다는 메시지가 포함되면 상위 컴포넌트에 알림
         if (message && message.includes('중복된')) {
           onClose();
