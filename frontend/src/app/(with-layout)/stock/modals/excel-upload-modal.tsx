@@ -234,7 +234,7 @@ const ExcelUploadModal = ({
           : await createMaterial(productData as ProductCreateExcelModel[]);
 
       if (result.success) {
-        const message = result.data?.message || '';
+        const message = result.message || result.data?.message || '';
         // 중복된 코드가 있다는 메시지가 포함되면 상위 컴포넌트에 알림
         if (message && message.includes('중복된')) {
           onClose();
