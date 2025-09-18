@@ -109,13 +109,16 @@ class FactoryClientAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "factory",
-        "type",
+        # "type",
+        "is_customer",
+        "is_supplier",
         "name",
         "business_registration_number",
         "representative_name",
         "created_at",
     ]
-    list_filter = ["type", "created_at", "factory"]
+    # list_filter = ["type", "created_at", "factory"]
+    list_filter = ["is_customer", "is_supplier", "created_at", "factory"]
     search_fields = [
         "factory__name",
         "name",
@@ -131,7 +134,9 @@ class FactoryClientAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "factory",
-                    "type",
+                    # "type",
+                    "is_customer",
+                    "is_supplier",
                     "name",
                     "business_registration_number",
                     "representative_name",

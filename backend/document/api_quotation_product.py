@@ -104,6 +104,13 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                             setattr(client, field_name, new_value)
                             updated = True
 
+                    # 역할 플래그 업데이트 규칙:
+                    # - is_customer는 항상 True로 설정
+                    # - is_supplier는 기존 값 유지
+                    if client.is_customer is not True:
+                        client.is_customer = True
+                        updated = True
+
                     if updated:
                         await client.asave()
 
@@ -114,6 +121,9 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                     )
             else:
                 # 클라이언트 ID가 없는 경우 새로 생성
+                # is_customer는 자동으로 True로 설정, is_supplier는 처음 생성 시 무조건 False
+                new_is_customer = True
+                new_is_supplier = False
                 client = await FactoryClient.objects.acreate(
                     factory=factory,
                     name=client_data.name,
@@ -126,6 +136,8 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                     email=client_data.email,
                     phone=client_data.phone,
                     fax=client_data.fax,
+                    is_customer=new_is_customer,
+                    is_supplier=new_is_supplier,
                 )
 
             quotation.client = client
@@ -307,7 +319,12 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                     client.fax = client_data.fax
                     updated = True
 
-                # updated 플래그만 설정하고 아직 저장하지 않음
+                # 역할 플래그 업데이트 규칙:
+                # - is_customer는 항상 True로 설정
+                # - is_supplier는 기존 값 유지
+                if client.is_customer is not True:
+                    client.is_customer = True
+                    updated = True
 
             except FactoryClient.DoesNotExist:
                 raise HttpError(
@@ -315,6 +332,9 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 )
         else:
             # 클라이언트 ID가 없는 경우 새로 생성 (아직 저장하지 않음)
+            # is_customer는 자동으로 True로 설정, is_supplier는 처음 생성 시 무조건 False
+            new_is_customer = True
+            new_is_supplier = False
             client = FactoryClient(
                 factory=factory,
                 name=client_data.name,
@@ -326,6 +346,8 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 email=client_data.email,
                 phone=client_data.phone,
                 fax=client_data.fax,
+                is_customer=new_is_customer,
+                is_supplier=new_is_supplier,
             )
 
         quotation.client = client

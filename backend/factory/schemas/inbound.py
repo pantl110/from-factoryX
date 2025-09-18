@@ -84,7 +84,9 @@ class FactoryEqUpdateIn(Schema):
 
 # (POST) Factory Client Create
 class FactoryClientCreateIn(Schema):
-    type: Optional[str] = None
+    # type: Optional[str] = None
+    is_customer: Optional[bool] = None
+    is_supplier: Optional[bool] = None
     name: str
     business_registration_number: Optional[str] = None
     representative_name: Optional[str] = None
@@ -101,7 +103,9 @@ class FactoryClientCreateIn(Schema):
 # (PATCH) Factory Client Update
 class FactoryClientUpdateIn(Schema):
     id: Optional[int] = None
-    client_type: Optional[str] = None
+    # client_type: Optional[str] = None
+    is_customer: Optional[bool] = None
+    is_supplier: Optional[bool] = None
     name: Optional[str] = None
     business_registration_number: Optional[str] = None
     representative_name: Optional[str] = None

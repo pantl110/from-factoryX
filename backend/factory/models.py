@@ -108,21 +108,30 @@ class FactoryEquipment(BaseModel):
         help_text="특이사항",
     )
 
-
 class FactoryClient(BaseModel):
-    class ClientType(models.TextChoices):
-        customer = ("customer", "수주처")
-        supplier = ("supplier", "발주처")
+    # class ClientType(models.TextChoices):
+    #     customer = ("customer", "수주처")
+    #     supplier = ("supplier", "발주처")
 
     factory = models.ForeignKey(
         Factory, related_name="clients", on_delete=models.CASCADE
     )
-    type = models.CharField(
-        max_length=10,
-        choices=ClientType.choices,
-        default=ClientType.customer,
-        help_text="타입",
+    is_customer = models.BooleanField(
+        default=False,
+        help_text="수주처 역할 여부",
     )
+    is_supplier = models.BooleanField(
+        default=False,
+        help_text="발주처 역할 여부",
+    )
+
+    # type = models.CharField(
+    #     max_length=10,
+    #     choices=ClientType.choices,
+    #     default=ClientType.customer,
+    #     help_text="타입",
+    # )
+
     name = models.CharField(
         max_length=100,
         help_text="회사명",

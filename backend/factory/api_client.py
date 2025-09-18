@@ -33,6 +33,11 @@ async def create_factory_client(request, payload: FactoryClientCreateIn):
     await is_factory_member(int(factory_id), user)
 
     data = payload.dict()
+    # Normalize role flags: None -> False (avoid NOT NULL errors)
+    if data.get("is_customer") is None:
+        data["is_customer"] = False
+    if data.get("is_supplier") is None:
+        data["is_supplier"] = False
 
     existing_client = await FactoryClient.objects.filter(
         factory_id=int(factory_id), name=data["name"]
@@ -41,25 +46,27 @@ async def create_factory_client(request, payload: FactoryClientCreateIn):
     if existing_client:
         raise HttpError(400, f"이미 등록된 거래처입니다: {data['name']}")
 
-    data = payload.dict()
-
-    if "type" in data and data["type"] is not None:
-        valid_types = ["customer", "supplier"]
-        if data["type"] not in valid_types:
-            raise HttpError(
-                400,
-                f"잘못된 거래처 타입입니다. 'customer' 또는 'supplier' 중 하나를 입력해주세요.",
-            )
-    else:
-        if "type" in data:
-            del data["type"]
+    # data = payload.dict()
+    
+    # if "type" in data and data["type"] is not None:
+    #     valid_types = ["customer", "supplier"]
+    #     if data["type"] not in valid_types:
+    #         raise HttpError(
+    #             400,
+    #             f"잘못된 거래처 타입입니다. 'customer' 또는 'supplier' 중 하나를 입력해주세요.",
+    #         )
+    # else:
+    #     if "type" in data:
+    #         del data["type"]
 
     factory = await Factory.objects.aget(id=int(factory_id))
     client = await FactoryClient.objects.acreate(factory=factory, **data)
     return 201, {
         "id": client.id,
-        "type": client.type,
+        # "type": client.type,
         "name": client.name,
+        "is_customer": client.is_customer,
+        "is_supplier": client.is_supplier,
         "business_registration_number": client.business_registration_number,
         "representative_name": client.representative_name,
         "business_type": client.business_type,
@@ -114,8 +121,10 @@ async def list_factory_clients(
     result = [
         FactoryClientOut(
             id=c.id,
-            type=c.type,
+            # type=c.type,
             name=c.name,
+            is_customer=c.is_customer,
+            is_supplier=c.is_supplier,
             business_registration_number=c.business_registration_number,
             representative_name=c.representative_name,
             business_type=c.business_type,
@@ -157,8 +166,10 @@ async def get_factory_client(request, client_id: int):
 
     return {
         "id": client.id,
-        "type": client.type,
+        # "type": client.type,
         "name": client.name,
+        "is_customer": client.is_customer,
+        "is_supplier": client.is_supplier,
         "business_registration_number": client.business_registration_number,
         "representative_name": client.representative_name,
         "business_type": client.business_type,
@@ -197,7 +208,9 @@ async def update_factory_client(
     except FactoryClient.DoesNotExist:
         raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
     for field in [
-        "type",
+        # "type",
+        "is_customer",
+        "is_supplier",
         "name",
         "business_registration_number",
         "representative_name",
@@ -216,8 +229,10 @@ async def update_factory_client(
     await sync_to_async(client.save)()
     return {
         "id": client.id,
-        "type": client.type,
+        # "type": client.type,
         "name": client.name,
+        "is_customer": client.is_customer,
+        "is_supplier": client.is_supplier,
         "business_registration_number": client.business_registration_number,
         "representative_name": client.representative_name,
         "business_type": client.business_type,
