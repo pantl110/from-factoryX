@@ -97,10 +97,13 @@ class TestProductAPI(TestCase):
         response = await self.client.post(f"?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
         data = response.json()
-        self.assertIn("id", data[0])
-        self.assertIn("id", data[1])
-        self.assertEqual(data[0]["name"], payload[0]["name"])
-        self.assertEqual(data[1]["name"], payload[1]["name"])
+        self.assertIn("data", data)
+        self.assertIn("message", data)
+        self.assertEqual(len(data["data"]), 2)
+        self.assertIn("id", data["data"][0])
+        self.assertIn("id", data["data"][1])
+        self.assertEqual(data["data"][0]["name"], payload[0]["name"])
+        self.assertEqual(data["data"][1]["name"], payload[1]["name"])
         # 생성 응답에는 buffer_rate, note 등이 없을 수 있으므로 체크하지 않음
 
     async def test_create_single_product_success(self):

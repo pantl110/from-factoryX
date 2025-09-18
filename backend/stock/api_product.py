@@ -63,7 +63,7 @@ async def create_single_product(request, payload: SingleProductCreateIn):
     "",
     summary="[C] 제품 등록",
     description="제품을 등록합니다.",
-    response={201: List[ProductOut]},
+    response={201: dict},
     auth=jwt_auth,
 )
 async def create_product(request, payload: List[ProductCreateIn]):
@@ -74,32 +74,69 @@ async def create_product(request, payload: List[ProductCreateIn]):
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
-    result: List[dict] = []
     try:
         factory = await Factory.objects.aget(id=int(factory_id))
     except Factory.DoesNotExist:
         raise HttpError(404, "해당 공장을 찾을 수 없습니다.")
+
+    # 기존 코드와 중복 체크
+    codes = [item.code for item in payload]
+    existing_codes = await sync_to_async(list)(
+        Product.objects.filter(factory=factory, code__in=codes).values_list(
+            "code", flat=True
+        )
+    )
+
+    result: List[dict] = []
+    has_duplicates = False
+    processed_codes = set()  # 이미 처리한 코드들을 추적
+
     for item in payload:
         data = item.dict()
-        product = await Product.objects.acreate(factory=factory, **data)
+        code = data["code"]
 
-        # 응답 데이터 직렬화
-        response_data = {
-            "id": product.id,
-            "factory": product.factory_id,
-            "name": product.name,
-            "code": product.code,
-            "unit": product.unit,
-            "spec": product.spec,
-            "current_stock": product.current_stock,
-            "average_production_time": product.average_production_time,
-            "buffer_rate": float(product.buffer_rate),
-            "note": product.note,
-            "created_at": product.created_at.isoformat(),
-            "updated_at": product.updated_at.isoformat(),
-        }
-        result.append(response_data)
-    return 201, result
+        # 요청 내 중복 코드 체크 (이미 처리한 코드인지 확인)
+        if code in processed_codes:
+            has_duplicates = True
+            continue
+
+        # 기존 코드와 중복 체크
+        if code in existing_codes:
+            has_duplicates = True
+            continue
+
+        try:
+            product = await Product.objects.acreate(factory=factory, **data)
+
+            # 응답 데이터 직렬화
+            response_data = {
+                "id": product.id,
+                "factory": product.factory_id,
+                "name": product.name,
+                "code": product.code,
+                "unit": product.unit,
+                "spec": product.spec,
+                "current_stock": product.current_stock,
+                "average_production_time": product.average_production_time,
+                "buffer_rate": float(product.buffer_rate),
+                "note": product.note,
+                "created_at": product.created_at.isoformat(),
+                "updated_at": product.updated_at.isoformat(),
+            }
+            result.append(response_data)
+            processed_codes.add(code)  # 성공적으로 처리된 코드 추가
+        except IntegrityError:
+            has_duplicates = True
+
+    # 메시지 생성
+    message = f"{len(result)}개의 제품이 성공적으로 생성되었습니다."
+    if has_duplicates:
+        message += " 중복된 코드가 있었습니다."
+
+    return 201, {
+        "data": result,
+        "message": message,
+    }
 
 
 @router.post(
