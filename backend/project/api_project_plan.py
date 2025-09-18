@@ -268,7 +268,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                         factory_id=int(factory_id),
                         notification_type="information",
                         notification_case="production_schedule_changed",
-                        content=f"'{plan.project.name}'의 생산 설비가 {old_equipment.name}라인에서 {equipment.name}라인으로 변경되었어요.",
+                        content=f"'{(plan.project.client_info.name or '-')}'의 생산 설비가 {(old_equipment.name or '-')}라인에서 {(equipment.name or '-')}라인으로 변경되었어요.",
                         additional_data={"plan_id": plan.id},
                     )
 
@@ -291,7 +291,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                     factory_id=int(factory_id),
                     notification_type="information",
                     notification_case="production_schedule_changed",
-                    content=f"'{plan.project.name}'의 생산 일정이 변경되었어요.",
+                    content=f"'{(plan.project.client_info.name or '-')}'의 생산 일정이 변경되었어요.",
                     additional_data={"plan_id": plan.id},
                 )
 
