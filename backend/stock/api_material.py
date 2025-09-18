@@ -47,23 +47,31 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
     except Factory.DoesNotExist:
         raise HttpError(404, "해당 공장을 찾을 수 없습니다.")
 
-    # 중복 코드 체크
-    codes = [item.code for item in payload]
-    if len(codes) != len(set(codes)):
-        raise HttpError(400, "원자재 코드가 중복되었습니다.")
-
     # 기존 코드와 중복 체크
+    codes = [item.code for item in payload]
     existing_codes = await sync_to_async(list)(
         Material.objects.filter(factory=factory, code__in=codes).values_list(
             "code", flat=True
         )
     )
-    if existing_codes:
-        raise HttpError(400, f"이미 존재하는 원자재 코드: {existing_codes}")
 
     material_ids = []
+    has_duplicates = False
+    processed_codes = set()  # 이미 처리한 코드들을 추적
+
     for item in payload:
         data = item.dict()
+        code = data["code"]
+
+        # 요청 내 중복 코드 체크 (이미 처리한 코드인지 확인)
+        if code in processed_codes:
+            has_duplicates = True
+            continue
+
+        # 기존 코드와 중복 체크
+        if code in existing_codes:
+            has_duplicates = True
+            continue
 
         # 기본값 설정
         if "unit" not in data or data["unit"] is None:
@@ -74,12 +82,21 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
         if data.get("standard_stock") is None:
             data.pop("standard_stock", None)
 
-        material = await Material.objects.acreate(factory=factory, **data)
-        material_ids.append(material.id)
+        try:
+            material = await Material.objects.acreate(factory=factory, **data)
+            material_ids.append(material.id)
+            processed_codes.add(code)  # 성공적으로 처리된 코드 추가
+        except IntegrityError:
+            has_duplicates = True
+
+    # 메시지 생성
+    message = f"{len(material_ids)}개의 원자재가 성공적으로 생성되었습니다."
+    if has_duplicates:
+        message += " 중복된 코드가 있었습니다."
 
     return 201, {
         "material_ids": material_ids,
-        "message": f"{len(material_ids)}개의 원자재가 성공적으로 생성되었습니다.",
+        "message": message,
     }
 
 

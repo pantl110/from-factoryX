@@ -97,7 +97,7 @@ class TestMaterialAPI(TestCase):
         self.assertTrue(material_exists)
 
     async def test_create_materials_duplicate_code(self):
-        """중복된 원자재 코드로 생성 시도시 실패 테스트"""
+        """중복된 원자재 코드로 생성 시도시 건너뛰기 테스트"""
         headers = await self.authenticate()
         payload = [
             {
@@ -109,9 +109,10 @@ class TestMaterialAPI(TestCase):
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
         data = response.json()
-        self.assertIn("이미 존재하는 원자재 코드", data.get("detail", ""))
+        self.assertEqual(len(data["material_ids"]), 0)  # 중복으로 인해 생성되지 않음
+        self.assertIn("중복된 코드가 있었습니다", data["message"])
 
     async def test_create_materials_missing_factory_id(self):
         """factory_id 누락시 실패 테스트"""
@@ -189,7 +190,7 @@ class TestMaterialAPI(TestCase):
             self.assertTrue(material_exists)
 
     async def test_create_materials_duplicate_codes_in_payload(self):
-        """요청 내에서 중복된 코드로 생성 시도시 실패 테스트"""
+        """요청 내에서 중복된 코드로 생성 시도시 건너뛰기 테스트"""
         headers = await self.authenticate()
         payload = [
             {"name": "원자재1", "code": "DUPLICATE001", "spec": "규격1"},
@@ -198,9 +199,10 @@ class TestMaterialAPI(TestCase):
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
         data = response.json()
-        self.assertIn("원자재 코드가 중복되었습니다.", data.get("detail", ""))
+        self.assertEqual(len(data["material_ids"]), 1)  # 첫 번째만 생성되고 두 번째는 건너뛰어짐
+        self.assertIn("중복된 코드가 있었습니다", data["message"])
 
     async def test_get_materials_by_factory_success(self):
         """공장별 원자재 목록 조회 성공 테스트"""
