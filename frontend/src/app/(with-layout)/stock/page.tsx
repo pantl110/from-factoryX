@@ -55,6 +55,13 @@ const StockPageContent = () => {
   // 토스트 훅 사용
   const { isToastOpen, isVisible, showToast } = useToast();
 
+  // 중복 코드 토스트 훅
+  const {
+    isToastOpen: isDuplicateToastOpen,
+    isVisible: isDuplicateToastVisible,
+    showToast: showDuplicateToast,
+  } = useToast();
+
   // 디테일 판넬 상태
   const [isProductDetailPanelOpen, setIsProductDetailPanelOpen] =
     useState(false); // 품목 디테일 판넬 상태
@@ -128,13 +135,18 @@ const StockPageContent = () => {
         <ExcelUploadModal
           type={stockTab}
           onClose={() => setIsExcelModalOpen(false)}
-          onSuccess={() => {
+          onSuccess={(hasDuplicates) => {
             // 리로드 함수 호출
             if (stockTab === 'product' && productReloadRef.current) {
               productReloadRef.current();
             }
             if (stockTab === 'material' && materialReloadRef.current) {
               materialReloadRef.current();
+            }
+
+            // 중복 코드가 있으면 토스트 표시
+            if (hasDuplicates) {
+              showDuplicateToast();
             }
           }}
         />
@@ -161,6 +173,21 @@ const StockPageContent = () => {
           type="red"
           isVisible={isVisible}
           icon={<WarningCircle size={20} />}
+        />
+      )}
+
+      {/* 중복 코드 토스트 */}
+      {isDuplicateToastOpen && (
+        <Toast
+          text={
+            stockTab === 'product'
+              ? '중복된 품목 코드는 등록되지 않았습니다.'
+              : '중복된 자재 코드는 등록되지 않았습니다.'
+          }
+          subtext=""
+          type="red"
+          isVisible={isDuplicateToastVisible}
+          icon={<WarningCircle size={20} className="text-red" />}
         />
       )}
     </>

@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { parseExcelFile, ExcelRowModel } from '@/utils/excel-parser';
 import { ProductCreateExcelModel } from '@/types/data-model';
 import Toast from '@/ui/toast';
-import { CheckCircle } from '@phosphor-icons/react';
+import { WarningCircle } from '@phosphor-icons/react';
 import { useToast, useCreateProduct, useCreateMaterial } from '@/hooks';
 import Spinner from '@/ui/spinner';
 
 interface ExcelUploadModalProps {
   onClose: () => void;
   type?: 'product' | 'material';
-  onSuccess?: () => void;
+  onSuccess?: (hasDuplicates?: boolean) => void;
 }
 
 const ExcelUploadModal = ({
@@ -69,20 +69,119 @@ const ExcelUploadModal = ({
         return 0;
       };
 
-      // 엑셀 데이터를 ProductCreateExcelModel 형식으로 변환
+      // 원본 데이터에서 비어있는 데이터가 있는지 확인 (모든 필드가 비어있는 행은 제외)
+      const hasEmptyData = dataToProcess.some((row, index) => {
+        const name = String(
+          row[type === 'product' ? '품목명' : '자재명'] || ''
+        );
+        const code = String(
+          row[type === 'product' ? '품목 코드' : '자재 코드'] || ''
+        );
+        const spec = String(row['규격'] || '');
+        const unit = String(row['단위'] || '');
+
+        // 모든 필드가 비어있으면 건너뛰기 (자재/품목에 따라 다른 기준)
+        let allEmpty = false;
+        if (type === 'material') {
+          // 자재: 자재명, 자재 코드, 규격, 단위, 현재 재고, 최소 재고 모두 비어있어야 함
+          const currentStock = String(row['현재 재고'] || '').trim();
+          const minStock = String(row['최소 재고'] || '').trim();
+          allEmpty =
+            name.trim() === '' &&
+            code.trim() === '' &&
+            spec.trim() === '' &&
+            unit.trim() === '' &&
+            currentStock === '' &&
+            minStock === '';
+        } else {
+          // 품목: 품목명, 품목 코드, 규격, 단위, 현재 재고, 평균 생산 시간(초), 버퍼 비율(%), 특이 사항 모두 비어있어야 함
+          const currentStock = String(row['현재 재고'] || '').trim();
+          const avgProductionTime = String(
+            row['평균 생산 시간(초)'] || ''
+          ).trim();
+          const bufferRate = String(row['버퍼 비율(%)'] || '').trim();
+          const note = String(row['특이 사항'] || '').trim();
+          allEmpty =
+            name.trim() === '' &&
+            code.trim() === '' &&
+            spec.trim() === '' &&
+            unit.trim() === '' &&
+            currentStock === '' &&
+            avgProductionTime === '' &&
+            bufferRate === '' &&
+            note === '';
+        }
+
+        if (allEmpty) {
+          return false; // 빈 행은 검증에서 제외
+        }
+
+        // 빈 행이 아닌 경우에만 필수 필드 검증
+        return (
+          name.trim() === '' ||
+          code.trim() === '' ||
+          unit.trim() === '' ||
+          spec.trim() === ''
+        );
+      });
+
+      // 비어있는 데이터가 있으면 토스트 표시하고 멈춤
+      if (hasEmptyData) {
+        setSubtext(
+          type === 'product'
+            ? '품목명, 품목 코드, 규격, 단위는 필수입니다. 모든 필수 항목을 확인해주세요.'
+            : '자재명, 자재 코드, 규격, 단위는 필수입니다. 모든 필수 항목을 확인해주세요.'
+        );
+        showToast();
+        return;
+      }
+
+      // 빈 행을 필터링하는 함수
+      const isEmptyRow = (row: ExcelRowModel) => {
+        const name = String(
+          row[type === 'product' ? '품목명' : '자재명'] || ''
+        ).trim();
+        const code = String(
+          row[type === 'product' ? '품목 코드' : '자재 코드'] || ''
+        ).trim();
+        const spec = String(row['규격'] || '').trim();
+        const unit = String(row['단위'] || '').trim();
+
+        if (type === 'material') {
+          const currentStock = String(row['현재 재고'] || '').trim();
+          const minStock = String(row['최소 재고'] || '').trim();
+          return (
+            name === '' &&
+            code === '' &&
+            spec === '' &&
+            unit === '' &&
+            currentStock === '' &&
+            minStock === ''
+          );
+        } else {
+          const currentStock = String(row['현재 재고'] || '').trim();
+          const avgProductionTime = String(
+            row['평균 생산 시간(초)'] || ''
+          ).trim();
+          const bufferRate = String(row['버퍼 비율(%)'] || '').trim();
+          const note = String(row['특이 사항'] || '').trim();
+          return (
+            name === '' &&
+            code === '' &&
+            spec === '' &&
+            unit === '' &&
+            currentStock === '' &&
+            avgProductionTime === '' &&
+            bufferRate === '' &&
+            note === ''
+          );
+        }
+      };
+
+      // 빈 행을 제외하고 엑셀 데이터를 ProductCreateExcelModel 형식으로 변환
       const productData = dataToProcess
-        .filter((row) => {
-          // 필수 필드가 비어있지 않은 행만 필터링
-          const name = String(
-            row[type === 'product' ? '품목명' : '자재명'] || ''
-          );
-          const code = String(
-            row[type === 'product' ? '품목 코드' : '자재 코드'] || ''
-          );
-          return name.trim() !== '' && code.trim() !== '';
-        })
+        .filter((row) => !isEmptyRow(row))
         .map((row) => {
-          // 필수값이 있는 경우에만 매핑
           const name = String(
             row[type === 'product' ? '품목명' : '자재명'] || ''
           ).trim();
@@ -129,25 +228,21 @@ const ExcelUploadModal = ({
           };
         });
 
-      // 필터링된 데이터가 없으면 에러
-      if (productData.length === 0) {
-        setSubtext(
-          type === 'product'
-            ? '품목명과 품목 코드는 필수입니다. 품목명과 품목 코드를 확인해주세요.'
-            : '자재명과 자재 코드는 필수입니다. 자재명과 자재 코드를 확인해주세요.'
-        );
-        showToast();
-        return;
-      }
-
       const result =
         type === 'product'
           ? await createProduct(productData as ProductCreateExcelModel[])
           : await createMaterial(productData as ProductCreateExcelModel[]);
 
       if (result.success) {
-        onClose();
-        onSuccess?.();
+        const message = result.data?.message || '';
+        // 중복된 코드가 있다는 메시지가 포함되면 상위 컴포넌트에 알림
+        if (message && message.includes('중복된')) {
+          onClose();
+          onSuccess?.(true); // 중복 코드가 있음을 알림
+        } else {
+          onClose();
+          onSuccess?.(false); // 중복 코드가 없음을 알림
+        }
       } else {
         if (result.error.includes('이미 존재하는')) {
           // [] 안의 자재 코드 추출
@@ -232,7 +327,7 @@ const ExcelUploadModal = ({
           subtext={subtext}
           type="red"
           isVisible={isVisible}
-          icon={<CheckCircle size={20} className="text-red" />}
+          icon={<WarningCircle size={20} className="text-red" />}
         />
       )}
     </>
