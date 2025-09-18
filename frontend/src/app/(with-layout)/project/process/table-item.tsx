@@ -14,6 +14,7 @@ import useCloneProject from '@/hooks/project/project-plan/use-clone-project';
 import LinkTaxModal from './modals/link-tax-modal/link-tax-modal';
 import useMemberStore from '@/store/member-store';
 import { getStartDate } from '@/utils/get-start-date';
+import Skeleton from '@/app/(without-layout)/skeleton';
 
 interface TableItemProps {
   project: ProjectResponseModel;
@@ -36,6 +37,7 @@ const TableItem = ({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
   const { cloneProject, isLoading: isCloning } = useCloneProject();
+  const [isNavigating, setIsNavigating] = useState(false);
   // 프로젝트 상태 색상 가져오기 (영어/한글 모두 지원)
   const chipColors =
     ProjectStatusColorMap[project.status] || ProjectStatusColorMap.quotation;
@@ -122,6 +124,8 @@ const TableItem = ({
 
   // production 페이지로 이동
   const handleClick = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
     // 견적 관련 상태들 (영어/한글 모두 체크)
     const isQuotationStatus =
       project.status === 'quotation' ||
@@ -277,6 +281,8 @@ const TableItem = ({
           onSuccess={onReload} // 연결 완료 시 리로드 콜백 호출
         />
       )}
+
+      {isNavigating && createPortal(<Skeleton />, document.body)}
     </>
   );
 };
