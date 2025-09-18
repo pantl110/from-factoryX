@@ -105,7 +105,9 @@ const InfoLabelValue = ({
                 ? '매입'
                 : chip.status === 'standby'
                   ? '가동 대기'
-                  : '가동 중'
+                  : chip.status === 'running'
+                    ? '가동 중'
+                    : chip.status // 재고 상태는 그대로 표시 (충분, 부족)
           }
           bgColor={colors.bgColor}
           textColor={colors.textColor}

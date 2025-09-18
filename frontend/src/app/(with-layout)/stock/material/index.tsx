@@ -68,7 +68,7 @@ const Material = ({
       await deleteMaterial(id);
     }
     setIsDeleteModalOpen(false);
-    getMaterialList(); // 삭제 후 목록 새로고침
+    getMaterialList({ order, q: search, page, page_size: pageSize }); // 삭제 후 목록 새로고침
     setAllChecked(false); // 체크 해제
   };
 
