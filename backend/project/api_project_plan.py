@@ -264,18 +264,19 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
 
                 # 공장 알림 전송 (프로젝트가 생산대기 상태가 아닐 때)
                 if project.status != Project.ProjectStatus.pending:
-                    project_display_name = "-"
+                    # 표시용 거래처명: 우선 견적서 client_info.name, 없으면 '-'
+                    client_name = "-"
                     try:
-                        client_info = getattr(plan.project, "client_info", None)
-                        if isinstance(client_info, dict):
-                            project_display_name = client_info.get("name") or "-"
+                        if quotation.client_info and isinstance(quotation.client_info, dict):
+                            client_name = quotation.client_info.get("name") or "-"
                     except Exception:
-                        project_display_name = "-"
+                        client_name = "-"
+
                     await send_notification_to_factory(
                         factory_id=int(factory_id),
                         notification_type="information",
                         notification_case="production_schedule_changed",
-                        content=f"'{project_display_name}'의 생산 설비가 {(old_equipment.name or '-')}라인에서 {(equipment.name or '-')}라인으로 변경되었어요.",
+                        content=f"'{client_name}'의 생산 설비가 {(old_equipment.name or '-')}라인에서 {(equipment.name or '-')}라인으로 변경되었어요.",
                         additional_data={"plan_id": plan.id},
                     )
 
@@ -294,18 +295,18 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             if ((payload.start_date and payload.start_date.date() == kst_now.date()) or (
                 old_start_date and old_start_date.date() == kst_now.date()
             )) and project.status != Project.ProjectStatus.pending:
-                project_display_name = "-"
+                client_name = "-"
                 try:
-                    client_info = getattr(plan.project, "client_info", None)
-                    if isinstance(client_info, dict):
-                        project_display_name = client_info.get("name") or "-"
+                    if quotation.client_info and isinstance(quotation.client_info, dict):
+                        client_name = quotation.client_info.get("name") or "-"
                 except Exception:
-                    project_display_name = "-"
+                    client_name = "-"
+
                 await send_notification_to_factory(
                     factory_id=int(factory_id),
                     notification_type="information",
                     notification_case="production_schedule_changed",
-                    content=f"'{project_display_name}'의 생산 일정이 변경되었어요.",
+                    content=f"'{client_name}'의 생산 일정이 변경되었어요.",
                     additional_data={"plan_id": plan.id},
                 )
 
