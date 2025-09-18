@@ -15,11 +15,26 @@ const TableItem = ({ product, onClick, checked, onToggle }: TableItemProps) => {
       onClick={onClick}
     >
       <Checkbox isChecked={checked} onToggle={onToggle} />
-      <p className="flex-1 px-3 text-dg">{product.name}</p>
-      <p className="flex-1 px-3 text-dg">{product.code}</p>
-      <p className="flex-1 px-3 text-dg">{product.spec}</p>
-      <p className="w-[80px] px-3 text-dg">{product.unit}</p>
-      <p className="flex-1 px-3 text-dg">
+      <p className="flex-1 px-3 text-dg truncate" title={product.name}>
+        {product.name}
+      </p>
+      <p className="flex-1 px-3 text-dg truncate" title={product.code}>
+        {product.code}
+      </p>
+      <p className="flex-1 px-3 text-dg truncate" title={product.spec}>
+        {product.spec}
+      </p>
+      <p className="w-[80px] px-3 text-dg truncate" title={product.unit}>
+        {product.unit}
+      </p>
+      <p
+        className="flex-1 px-3 text-dg truncate"
+        title={
+          product.current_stock === undefined || product.current_stock === null
+            ? '-'
+            : product.current_stock.toLocaleString()
+        }
+      >
         {product.current_stock === undefined || product.current_stock === null
           ? '-'
           : product.current_stock.toLocaleString()}
