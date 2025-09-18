@@ -39,7 +39,7 @@ const ExcelUploadModal = ({
       } catch (err) {
         // handleUpload에서 이미 에러 처리를 했으므로 여기서는 파일 파싱 에러만 처리
         if (err instanceof Error) {
-          setSubtext(err.message + '. 파일을 확인 후 다시 시도해주세요.');
+          setSubtext(err.message + ' 파일을 확인 후 다시 시도해주세요.');
           setHasFiles(false);
           showToast();
         }
@@ -159,14 +159,14 @@ const ExcelUploadModal = ({
               '가 이미 존재합니다. 파일을 확인 후 다시 시도해주세요.'
           );
         } else {
-          setSubtext(result.error + '. 다시 시도해 주세요.');
+          setSubtext(result.error + ' 다시 시도해 주세요.');
         }
         showToast();
       }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : '오류가 발생했습니다.';
-      setSubtext(errorMessage + '. 다시 시도해 주세요.');
+      setSubtext(errorMessage + ' 다시 시도해 주세요.');
       showToast();
       // 에러를 다시 throw하지 않음 (handleComplete의 catch로 전파되지 않도록)
     }
