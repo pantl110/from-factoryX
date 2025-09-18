@@ -325,15 +325,17 @@ const TableItem = ({
     ),
     '': (
       <div className="w-full h-full flex justify-between items-center">
-        <MiniBtn
-          text="저장"
-          onClick={handleSave}
-          disabled={operationStatus === 'completed' || !isOriginalFormValid}
-          hoverColor="hover:bg-bg"
-          textColor="text-dg"
-          borderColor="border-lg"
-          height="h-8"
-        />
+        {operationStatus !== 'production' && (
+          <MiniBtn
+            text="저장"
+            onClick={handleSave}
+            disabled={!isOriginalFormValid}
+            hoverColor="hover:bg-bg"
+            textColor="text-dg"
+            borderColor="border-lg"
+            height="h-8"
+          />
+        )}
         {!isFirstOfProduct && operationStatus !== 'completed' && (
           <button
             className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-all duration-200 ease-in-out"
