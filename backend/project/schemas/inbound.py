@@ -41,7 +41,7 @@ class RefundCreateIn(Schema):
     project_id: int
     product_id: int
     refund_date: str
-    production_amount: Optional[int] = None
+    refund_amount: Optional[int] = None
 
 
 # (PATCH) Refund Update
