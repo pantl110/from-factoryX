@@ -664,7 +664,11 @@ async def list_history_quotation_product(request):
 
         qps = await sync_to_async(list)(
             QuotationProduct.objects.select_related("product")
-            .filter(product__id__in=product_id_list)
+            .filter(
+                product__id__in=product_id_list,
+                unit_price__gt=0,  # 단가 0 제외
+                quantity__gt=0,    # 수량 0 제외 => 반품해서 생긴 quotation product 제외하기 위함
+            )
             .order_by("-created_at")
         )
 
