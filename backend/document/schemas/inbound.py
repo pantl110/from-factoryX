@@ -80,6 +80,9 @@ class QuotationEmailSendIn(Schema):
     email: str = Field(..., description="받는 사람 이메일")
     factory_id: int = Field(..., description="공장 ID")
     client_name: Optional[str] = Field(None, description="고객 이름")
+    is_confirmed: bool = Field(
+        False, description="false면 견적서, true면 주문서로 표기"
+    )
     pdf_data: Optional[str] = Field(
         None, description="Base64로 인코딩된 PDF 파일 데이터"
     )
