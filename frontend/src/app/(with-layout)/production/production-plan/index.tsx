@@ -112,8 +112,7 @@ const ProductionPlan = ({
             projectPlans
               .filter(
                 (plan) =>
-                  plan.quotation_product.product.id ===
-                  parentPlan.quotation_product.product.id
+                  plan.quotation_product.id === parentPlan.quotation_product.id
               )
               .reduce((sum, plan) => {
                 // formChanges에 변경사항이 있으면 그 값 사용
@@ -331,8 +330,7 @@ const ProductionPlan = ({
         total_quantity: projectPlans
           .filter(
             (plan) =>
-              plan.quotation_product.product.id ===
-              targetPlan.quotation_product.product.id
+              plan.quotation_product.id === targetPlan.quotation_product.id
           )
           .reduce((sum, plan) => {
             // formChanges에 변경사항이 있으면 그 값 사용
@@ -389,8 +387,8 @@ const ProductionPlan = ({
       const remainingTotalQuantity = projectPlans
         .filter(
           (plan) =>
-            plan.quotation_product.product.id ===
-              planToDelete.quotation_product.product.id && plan.id !== planId // 삭제할 plan 제외
+            plan.quotation_product.id === planToDelete.quotation_product.id &&
+            plan.id !== planId // 삭제할 plan 제외
         )
         .reduce((sum, plan) => {
           // formChanges에 변경사항이 있으면 그 값 사용
@@ -534,13 +532,12 @@ const ProductionPlan = ({
       const currentPlan = projectPlans.find((p) => p.id === planId); // 현재 plan이 존재하는지
       if (!currentPlan || formData.quantity === currentPlan.quantity) return; // 수량이 실제로 변경되었는지 확인
 
-      // 같은 품목의 총 생산수량 계산 (현재 변경된 수량 및 formChanges 반영)
+      // 같은 quotation_product의 총 생산수량 계산 (현재 변경된 수량 및 formChanges 반영)
       const totalQuantity = projectPlans
         .filter(
           (plan) =>
-            plan.quotation_product.product.id ===
-            currentPlan.quotation_product.product.id
-        ) // 같은 품목의 모든 plan 찾기
+            plan.quotation_product.id === currentPlan.quotation_product.id
+        ) // 같은 quotation_product의 모든 plan 찾기
         .reduce((sum, plan) => {
           // 현재 수정 중인 plan이면 새로운 수량으로(사용자가 변경한 수량) 사용
           if (plan.id === planId) {
@@ -587,11 +584,10 @@ const ProductionPlan = ({
           end_date: defaultEndDate,
         };
 
-        // 같은 품목의 마지막 plan을 찾아서 그 다음에 추가
+        // 같은 quotation_product의 마지막 plan을 찾아서 그 다음에 추가
         const sameProductPlans = projectPlans.filter(
           (plan) =>
-            plan.quotation_product.product.id ===
-            currentPlan.quotation_product.product.id
+            plan.quotation_product.id === currentPlan.quotation_product.id
         );
         const lastPlanOfSameProduct =
           sameProductPlans[sameProductPlans.length - 1];
@@ -675,8 +671,7 @@ const ProductionPlan = ({
           total_quantity: projectPlans
             .filter(
               (plan) =>
-                plan.quotation_product.product.id ===
-                currentPlan.quotation_product.product.id
+                plan.quotation_product.id === currentPlan.quotation_product.id
             )
             .reduce((sum, plan) => {
               if (plan.id === planId) {
@@ -690,6 +685,13 @@ const ProductionPlan = ({
         });
 
         if (result.success) {
+          // 저장 성공 시 해당 plan의 formChanges 초기화
+          setFormChanges((prev) => {
+            const newChanges = { ...prev };
+            delete newChanges[planId];
+            return newChanges;
+          });
+
           showSaveToast();
         }
       } catch {
@@ -763,8 +765,7 @@ const ProductionPlan = ({
             total_quantity: projectPlans
               .filter(
                 (plan) =>
-                  plan.quotation_product.product.id ===
-                  currentPlan.quotation_product.product.id
+                  plan.quotation_product.id === currentPlan.quotation_product.id
               )
               .reduce((sum, plan) => {
                 if (plan.id === parseInt(planId)) {
@@ -847,11 +848,11 @@ const ProductionPlan = ({
         <div className="w-full overflow-x-auto">
           <TableHeader />
           {projectPlans.map((item, index) => {
-            // 같은 품목의 첫 번째 plan인지 판단
+            // 같은 quotation_product의 첫 번째 plan인지 판단
             const isFirstOfProduct =
               index === 0 ||
-              projectPlans[index - 1].quotation_product.product.id !==
-                item.quotation_product.product.id;
+              projectPlans[index - 1].quotation_product.id !==
+                item.quotation_product.id;
 
             return (
               <TableItem

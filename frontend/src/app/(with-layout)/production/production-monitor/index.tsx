@@ -18,9 +18,13 @@ import { ProjectStatusType } from '@/types/status-type';
 
 interface ProductionMonitorProps {
   projectStatus: ProjectStatusType;
+  onTabChange?: (tab: string) => void; // 탭 변경 콜백
 }
 
-const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
+const ProductionMonitor = ({
+  projectStatus,
+  onTabChange,
+}: ProductionMonitorProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
 
@@ -123,6 +127,7 @@ const ProductionMonitor = ({ projectStatus }: ProductionMonitorProps) => {
                       key={selectedLog.id}
                       refundId={selectedLog.refund?.id || 0}
                       logId={selectedLog.id}
+                      onTabChange={onTabChange}
                     />
                   ) : selectedLog.type === 'plan' ||
                     selectedLog.type === 'date' ? (

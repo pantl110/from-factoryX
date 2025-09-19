@@ -9,9 +9,14 @@ import ReturnTableItem from './return-table-item';
 interface ReturnSectionProps {
   refundId: number;
   logId: number;
+  onTabChange?: (tab: string) => void; // 탭 변경 콜백
 }
 
-const ReturnSection = ({ refundId, logId }: ReturnSectionProps) => {
+const ReturnSection = ({
+  refundId,
+  logId,
+  onTabChange,
+}: ReturnSectionProps) => {
   const [refundData, setRefundData] = useState<RefundModel | null>(null);
 
   // 실시간 입력값을 추적하기 위한 상태 추가
@@ -68,6 +73,7 @@ const ReturnSection = ({ refundId, logId }: ReturnSectionProps) => {
           refundData={refundData}
           onAmountChange={handleAmountChange}
           onProductionAmountChange={handleProductionAmountChange}
+          onTabChange={onTabChange}
           logId={logId}
         />
         {shouldShowTable && (

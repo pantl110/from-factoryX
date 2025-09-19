@@ -325,6 +325,14 @@ const ProductionPageContent = () => {
         {tabs[selectedTab] === '생산 현황' && (
           <ProductionMonitor
             projectStatus={projectStatus.status as ProjectStatusType}
+            onTabChange={(tab) => {
+              // 탭 인덱스 찾기
+              const tabIndex = tabs.findIndex((t) => t === tab);
+              if (tabIndex !== -1) {
+                setSelectedTab(tabIndex);
+                setProductionTab(tabs[tabIndex]);
+              }
+            }}
           />
         )}
         {tabs[selectedTab] === '생산 내역' && (

@@ -16,6 +16,7 @@ interface ReturnInfoProps {
   refundData: RefundModel;
   onAmountChange: (newAmount: number) => void;
   onProductionAmountChange: (newProductionAmount: number) => void;
+  onTabChange?: (tab: string) => void; // 탭 변경 콜백
   logId: number;
 }
 
@@ -23,6 +24,7 @@ const ReturnInfo = ({
   refundData,
   onAmountChange,
   onProductionAmountChange,
+  onTabChange,
   logId,
 }: ReturnInfoProps) => {
   const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
@@ -250,6 +252,10 @@ const ReturnInfo = ({
       {isRegisterProductionModalOpen && (
         <RegisterProductionModal
           onClose={() => setIsRegisterProductionModalOpen(false)}
+          onSuccess={() => {
+            // 생산 시작 성공 시 생산계획 탭으로 이동
+            onTabChange?.('생산 계획');
+          }}
           logId={logId}
           currentAmount={watchedAmount}
           currentProductionAmount={watchedProductionAmount}

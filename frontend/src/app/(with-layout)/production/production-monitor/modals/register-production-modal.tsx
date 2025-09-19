@@ -7,6 +7,7 @@ import useRegisterProductionFromRefund from '@/hooks/project/project-refund/use-
 
 interface RegisterProductionModalProps {
   onClose: () => void;
+  onSuccess?: () => void; // 생산 시작 성공 시 콜백
   logId: number;
   currentAmount: number;
   currentProductionAmount: number;
@@ -15,6 +16,7 @@ interface RegisterProductionModalProps {
 
 const RegisterProductionModal = ({
   onClose,
+  onSuccess,
   logId,
   currentAmount,
   currentProductionAmount,
@@ -34,6 +36,7 @@ const RegisterProductionModal = ({
 
     if (result.success) {
       onClose();
+      onSuccess?.(); // 생산 시작 성공 시 콜백 호출
     } else {
       showToast();
     }

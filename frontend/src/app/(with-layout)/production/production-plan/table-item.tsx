@@ -110,6 +110,15 @@ const TableItem = ({
   const watchedStartDate = watch('start_date');
   const watchedEndDate = watch('end_date');
 
+  // 원본 데이터와 비교하여 실제 변경사항이 있는지 확인
+  const originalStartDate = item.start_date || '';
+  const originalEndDate = item.end_date || '';
+  const hasChanges =
+    watchedQuantity !== item.quantity ||
+    watchedEquipmentId !== item.equipment.id ||
+    watchedStartDate !== originalStartDate ||
+    watchedEndDate !== originalEndDate;
+
   // 저장 버튼 클릭 시 호출되는 함수
   const handleSave = () => {
     const formData = {
@@ -118,16 +127,6 @@ const TableItem = ({
       start_date: watchedStartDate,
       end_date: watchedEndDate,
     };
-
-    // 원본 데이터와 비교하여 실제 변경사항이 있는지 확인 (이미 KST로 변환된 값)
-    const originalStartDate = item.start_date || '';
-    const originalEndDate = item.end_date || '';
-
-    const hasChanges =
-      watchedQuantity !== item.quantity ||
-      watchedEquipmentId !== item.equipment.id ||
-      watchedStartDate !== originalStartDate ||
-      watchedEndDate !== originalEndDate;
 
     if (hasChanges && onSave) {
       onSave(item.id, formData);
@@ -140,6 +139,9 @@ const TableItem = ({
     watchedEquipmentId &&
     watchedStartDate &&
     watchedEndDate;
+
+  // 저장 버튼 활성화 조건: 폼이 유효하고 변경사항이 있을 때
+  const isSaveButtonEnabled = isOriginalFormValid && hasChanges;
 
   // 현재 선택된 설비 정보 (formData의 equipment_id 우선, 없으면 원본 데이터)
   const selectedEquipment =
@@ -329,7 +331,7 @@ const TableItem = ({
           <MiniBtn
             text="저장"
             onClick={handleSave}
-            disabled={!isOriginalFormValid}
+            disabled={!isSaveButtonEnabled}
             hoverColor="hover:bg-bg"
             textColor="text-dg"
             borderColor="border-lg"
