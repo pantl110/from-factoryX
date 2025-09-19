@@ -166,7 +166,7 @@ const DeliveryTableItem = ({
 
             showToast();
           }
-        } catch (error) {
+        } catch {
           // 실패 시 입력값을 빈값으로 되돌리고 savedDate는 유지
           setValue('deliveryDate', '');
           setText('납품일자 변경에 실패했습니다.');
@@ -307,13 +307,15 @@ const DeliveryTableItem = ({
           anchorRect={anchorRect}
         />
       )}
-      <Toast
-        isVisible={isVisible}
-        icon={<WarningCircle size={20} className="text-red" />}
-        text={text}
-        subtext={subtext}
-        type="red"
-      />
+      {isToastOpen && (
+        <Toast
+          isVisible={isVisible}
+          icon={<WarningCircle size={20} className="text-red" />}
+          text={text}
+          subtext={subtext}
+          type="red"
+        />
+      )}
     </>
   );
 };

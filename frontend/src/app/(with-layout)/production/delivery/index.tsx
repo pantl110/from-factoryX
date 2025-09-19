@@ -262,7 +262,6 @@ const Delivery = ({
             <DeliveryTableHeader
               isAllChecked={isAllChecked}
               onToggleAll={toggleAll}
-              projectStatus={projectStatus}
             />
             {deliveryData && deliveryData.length > 0 && (
               <>

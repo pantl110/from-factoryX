@@ -51,7 +51,9 @@ export const useUpdateQuotationProductDelivery = () => {
       } else {
         const errorData = await response.json();
         const errorMessage =
-          errorData.detail || errorData.message || '납품 상태 수정에 실패했습니다.';
+          errorData.detail ||
+          errorData.message ||
+          '납품 상태 수정에 실패했습니다.';
 
         return {
           success: false,

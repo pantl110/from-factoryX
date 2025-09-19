@@ -1,16 +1,13 @@
 import Checkbox from '@/ui/checkbox';
-import { ProjectStatusType } from '@/types/status-type';
 
 interface DeliveryTableHeaderProps {
   isAllChecked: boolean;
   onToggleAll: () => void;
-  projectStatus: ProjectStatusType;
 }
 
 const DeliveryTableHeader = ({
   isAllChecked,
   onToggleAll,
-  projectStatus,
 }: DeliveryTableHeaderProps) => {
   return (
     <div className="flex items-center h-12 min-w-[1305px] Me_Body-1 rounded bg-lg-table">
