@@ -97,9 +97,7 @@ async def send_quotation_email(request, payload: QuotationEmailSendIn):
         factory_name = factory.name if factory.name else "Factory X"
         client_name = payload.client_name if payload.client_name else "고객님"
         doc_label = "주문서" if getattr(payload, "is_confirmed", False) else "견적서"
-        filename = (
-            f"{doc_label}.pdf"
-        )
+        filename = "order.pdf" if doc_label == "주문서" else "quotation.pdf"
 
         html_message = f"""
         <!DOCTYPE html>
