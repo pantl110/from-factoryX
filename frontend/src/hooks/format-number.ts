@@ -69,10 +69,45 @@ export const formatFaxNumber = (value: string): string => {
 
   if (numbers.length <= 2) {
     return numbers;
+  } else if (numbers.length <= 3) {
+    // 3자리일 때는 하이픈 없이 그대로 반환
+    return numbers;
   } else if (numbers.length <= 6) {
-    return `${numbers.slice(0, 2)}-${numbers.slice(2)}`;
+    // 지역번호가 3자리인 경우 (031, 032, 033 등)
+    if (numbers.startsWith('031') || numbers.startsWith('032') || numbers.startsWith('033') || 
+        numbers.startsWith('041') || numbers.startsWith('042') || numbers.startsWith('043') ||
+        numbers.startsWith('051') || numbers.startsWith('052') || numbers.startsWith('053') ||
+        numbers.startsWith('054') || numbers.startsWith('055') || numbers.startsWith('061') ||
+        numbers.startsWith('062') || numbers.startsWith('063') || numbers.startsWith('064')) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    } else {
+      // 지역번호가 2자리인 경우 (02, 03 등)
+      return `${numbers.slice(0, 2)}-${numbers.slice(2)}`;
+    }
+  } else if (numbers.length <= 7) {
+    // 지역번호가 3자리인 경우 (031-573-8051)
+    if (numbers.startsWith('031') || numbers.startsWith('032') || numbers.startsWith('033') || 
+        numbers.startsWith('041') || numbers.startsWith('042') || numbers.startsWith('043') ||
+        numbers.startsWith('051') || numbers.startsWith('052') || numbers.startsWith('053') ||
+        numbers.startsWith('054') || numbers.startsWith('055') || numbers.startsWith('061') ||
+        numbers.startsWith('062') || numbers.startsWith('063') || numbers.startsWith('064')) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6)}`;
+    } else {
+      // 지역번호가 2자리인 경우 (02-123-4567)
+      return `${numbers.slice(0, 2)}-${numbers.slice(2, 5)}-${numbers.slice(5)}`;
+    }
   } else {
-    return `${numbers.slice(0, 2)}-${numbers.slice(2, 5)}-${numbers.slice(5, 9)}`;
+    // 8자리 이상인 경우
+    if (numbers.startsWith('031') || numbers.startsWith('032') || numbers.startsWith('033') || 
+        numbers.startsWith('041') || numbers.startsWith('042') || numbers.startsWith('043') ||
+        numbers.startsWith('051') || numbers.startsWith('052') || numbers.startsWith('053') ||
+        numbers.startsWith('054') || numbers.startsWith('055') || numbers.startsWith('061') ||
+        numbers.startsWith('062') || numbers.startsWith('063') || numbers.startsWith('064')) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+    } else {
+      // 지역번호가 2자리인 경우 (02-1234-5678)
+      return `${numbers.slice(0, 2)}-${numbers.slice(2, 6)}-${numbers.slice(6, 10)}`;
+    }
   }
 };
 
