@@ -4,6 +4,7 @@ import useMemberStore from '@/store/member-store';
 interface SendQuotationEmailPayloadModel {
   email: string;
   client_name?: string;
+  is_confirmed?: boolean;
   pdf_data?: string; // base64 string
 }
 

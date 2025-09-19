@@ -25,6 +25,7 @@ interface EmailViewProps {
   productItems: QuotationProductDetailResponseModel[];
   supplyAmount: number;
   quotationId: number | null;
+  projectStatus: string;
 }
 
 const EmailView = ({
@@ -37,6 +38,7 @@ const EmailView = ({
   productItems,
   supplyAmount,
   quotationId,
+  projectStatus,
 }: EmailViewProps) => {
   const [isEmailSending, setIsEmailSending] = useState(false);
   // const [isPDFGenerating, setIsPDFGenerating] = useState(false);
@@ -184,6 +186,7 @@ const EmailView = ({
       await sendQuotationEmail({
         email: clientData.email,
         client_name: clientData.name,
+        is_confirmed: projectStatus === 'confirmed',
         pdf_data: base64Pdf,
       });
       setIsEmailSending(false); // 성공 시 먼저 로딩 오버레이 닫기

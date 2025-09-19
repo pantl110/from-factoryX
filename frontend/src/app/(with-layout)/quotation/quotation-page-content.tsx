@@ -825,6 +825,7 @@ const QuotationPageContent = () => {
               return total;
             }, 0)}
             quotationId={quotationId || null}
+            projectStatus={projectStatus}
             onClose={() => setIsEmailOpen(false)}
             onEmailSent={() => {
               setToastContent({
