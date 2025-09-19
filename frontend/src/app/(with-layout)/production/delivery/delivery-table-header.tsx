@@ -22,7 +22,7 @@ const DeliveryTableHeader = ({
       <p className="w-[80px] py-1 px-3 text-sv">단위</p>
       <p className="flex-1 py-1 px-3 text-sv">납품 수량</p>
       <p className="flex-1 py-1 px-3 text-sv">납품일자</p>
-      {projectStatus !== 'completed' && <div className="w-[150px]" />}
+      {/* {projectStatus !== 'completed' && <div className="w-[150px]" />} */}
     </div>
   );
 };

@@ -325,7 +325,7 @@ const TableItem = ({
     ),
     '': (
       <div className="w-full h-full flex justify-between items-center">
-        {operationStatus !== 'production' && (
+        {operationStatus === 'pending' && (
           <MiniBtn
             text="저장"
             onClick={handleSave}

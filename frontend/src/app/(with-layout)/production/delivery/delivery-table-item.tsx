@@ -6,12 +6,14 @@ import {
 } from '@/types/status-type';
 import { ProjectQuotationProductsModel } from '@/types/data-model';
 import Checkbox from '@/ui/checkbox';
-import { usePortalDropdown, formatDate } from '@/hooks';
+import { usePortalDropdown, formatDate, useToast } from '@/hooks';
 import DeliveryStateDropdown from './modals/delivery-state-dropdown';
 import { useForm, Controller } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
 import { useUpdateQuotationProductDelivery } from '@/hooks/document/quotation/use-update-quotation-product-delivery';
-import MiniBtn from '@/ui/mini-btn';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
 
 interface DeliveryTableItemProps {
   data: ProjectQuotationProductsModel;
@@ -56,20 +58,25 @@ const DeliveryTableItem = ({
   const { updateQuotationProductDelivery, isLoading } =
     useUpdateQuotationProductDelivery();
 
-  const { control, setValue, watch, formState } =
-    useForm<DeliveryFormDataModel>({
-      defaultValues: {
-        deliveryDate: deliveryDate || '',
-        deliveryStatus: isDelivery ? '완료' : '예정',
-      },
-      mode: 'onChange',
-    });
+  const { isToastOpen, isVisible, showToast } = useToast();
+  const [text, setText] = useState('');
+  const [subtext, setSubtext] = useState('');
+
+  const { control, setValue, watch } = useForm<DeliveryFormDataModel>({
+    defaultValues: {
+      deliveryDate: deliveryDate || '',
+      deliveryStatus: isDelivery ? '완료' : '예정',
+    },
+    mode: 'onChange',
+  });
 
   // 저장 여부 판단용 기준 날짜 (저장 성공 시 갱신)
   const [savedDate, setSavedDate] = useState<string>(deliveryDate || '');
 
   const deliveryStatus = watch('deliveryStatus');
   const watchedDate = watch('deliveryDate');
+  const [debouncedDate] = useDebounce(watchedDate, 500);
+
   const { bgColor, textColor } =
     DeliveryStatusColorMap[deliveryStatus as DeliveryStatusType];
 
@@ -82,6 +89,15 @@ const DeliveryTableItem = ({
 
   // 상태 변경 시 서버 반영
   const handleStatusChange = async (newStatus: string) => {
+    // 완료로 변경할 때 납품일자가 없으면 토스트 띄우고 중단
+    if (newStatus === '완료' && !watchedDate) {
+      setText('납품 상태 변경에 실패했습니다.');
+      setSubtext('납품일자를 입력해 주세요.');
+      showToast();
+      closeDropdown();
+      return;
+    }
+
     try {
       const result = await updateQuotationProductDelivery(
         quotationProductId || 0,
@@ -109,32 +125,87 @@ const DeliveryTableItem = ({
     closeDropdown();
   };
 
-  // 저장 버튼 클릭 시에만 서버 저장
-  const handleSaveClick = async () => {
-    try {
-      const result = await updateQuotationProductDelivery(
-        quotationProductId || 0,
-        {
-          delivery_date: watchedDate,
-          is_delivery: isDelivery || false,
-        }
-      );
-
-      if (result.success) {
-        setSavedDate(watchedDate);
-        if (onDeliveryDateChange) {
-          onDeliveryDateChange(
-            String(quotationProductId || ''),
-            watchedDate || ''
+  // 디바운스된 날짜 변경 시 자동 저장
+  useEffect(() => {
+    // 유효한 날짜 형식이고 저장된 날짜와 다를 때만 저장
+    if (
+      debouncedDate &&
+      debouncedDate !== savedDate &&
+      /^\d{4}-\d{2}-\d{2}$/.test(debouncedDate) &&
+      projectStatus !== 'completed'
+    ) {
+      const saveDate = async () => {
+        try {
+          const result = await updateQuotationProductDelivery(
+            quotationProductId || 0,
+            {
+              delivery_date: debouncedDate,
+              is_delivery: isDelivery || false,
+            }
           );
+
+          if (result.success) {
+            setSavedDate(debouncedDate);
+            if (onDeliveryDateChange) {
+              onDeliveryDateChange(
+                String(quotationProductId || ''),
+                debouncedDate || ''
+              );
+            }
+          } else {
+            // 실패 시 입력값을 빈값으로 되돌리고 savedDate는 유지
+            setValue('deliveryDate', '');
+            setText('납품일자 변경에 실패했습니다.');
+
+            // 서버 응답의 detail 메시지에 따라 서브텍스트 설정
+            if (result?.error?.includes('날짜 형식이 올바르지 않습니다')) {
+              setSubtext('유효한 납품일자를 입력해 주세요.');
+            } else {
+              setSubtext('다시 시도해주세요.');
+            }
+
+            showToast();
+          }
+        } catch (error) {
+          // 실패 시 입력값을 빈값으로 되돌리고 savedDate는 유지
+          setValue('deliveryDate', '');
+          setText('납품일자 변경에 실패했습니다.');
+          setSubtext('유효한 납품일자를 입력해 주세요.');
+          showToast();
         }
-      } else {
-        console.error('납품일자 변경 실패:', result.error);
-      }
-    } catch (error) {
-      console.error('납품일자 변경 중 오류:', error);
+      };
+
+      saveDate();
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedDate, savedDate, projectStatus]); // 의존성 배열을 최소화
+
+  // 저장 버튼 클릭 시에만 서버 저장 (기존 함수 유지)
+  // const handleSaveClick = async () => {
+  //   try {
+  //     const result = await updateQuotationProductDelivery(
+  //       quotationProductId || 0,
+  //       {
+  //         delivery_date: watchedDate,
+  //         is_delivery: isDelivery || false,
+  //       }
+  //     );
+
+  //     if (result.success) {
+  //       setSavedDate(watchedDate);
+  //       if (onDeliveryDateChange) {
+  //         onDeliveryDateChange(
+  //           String(quotationProductId || ''),
+  //           watchedDate || ''
+  //         );
+  //       }
+  //     } else {
+  //       console.error('납품일자 변경 실패:', result.error);
+  //     }
+  //   } catch (error) {
+  //     console.error('납품일자 변경 중 오류:', error);
+  //   }
+  // };
 
   return (
     <>
@@ -212,7 +283,7 @@ const DeliveryTableItem = ({
             )}
           />
         </div>
-        {projectStatus !== 'completed' && (
+        {/* {projectStatus !== 'completed' && (
           <div className="w-[150px] px-3">
             <MiniBtn
               text="저장"
@@ -226,7 +297,7 @@ const DeliveryTableItem = ({
               }
             />
           </div>
-        )}
+        )} */}
       </div>
       {isOpen && anchorRect && (
         <DeliveryStateDropdown
@@ -236,6 +307,13 @@ const DeliveryTableItem = ({
           anchorRect={anchorRect}
         />
       )}
+      <Toast
+        isVisible={isVisible}
+        icon={<WarningCircle size={20} className="text-red" />}
+        text={text}
+        subtext={subtext}
+        type="red"
+      />
     </>
   );
 };
