@@ -56,10 +56,10 @@ async def create_refund(request, payload: RefundCreateIn):
 
     # Product의 실제 현재 재고를 사용
     current_stock = product.current_stock
-    production_amount = (
-        payload.production_amount if payload.production_amount is not None else 0
+    refund_amount = (
+        payload.refund_amount if payload.refund_amount is not None else 0
     )
-    refund_amount = current_stock + production_amount
+    production_amount = refund_amount - current_stock
 
     if refund_amount <= 0:
         raise HttpError(400, "반품 수량은 0보다 커야 합니다.")

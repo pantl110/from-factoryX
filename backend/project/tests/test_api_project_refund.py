@@ -92,7 +92,7 @@ class ProjectRefundAPITestCase(TestCase):
             "project_id": self.project.id,
             "product_id": self.product.id,
             "refund_date": "2024-01-15",
-            "production_amount": 5,
+            "refund_amount": 5,
         }
 
         response = self.client.post(
@@ -143,7 +143,7 @@ class ProjectRefundAPITestCase(TestCase):
             "project_id": 999,
             "product_id": self.product.id,
             "refund_date": "2024-01-15",
-            "production_amount": 5,
+            "refund_amount": 5,
         }
 
         response = self.client.post(
@@ -166,7 +166,7 @@ class ProjectRefundAPITestCase(TestCase):
             "project_id": self.project.id,
             "product_id": 999,
             "refund_date": "2024-01-15",
-            "production_amount": 5,
+            "refund_amount": 5,
         }
 
         response = self.client.post(
@@ -233,7 +233,7 @@ class ProjectRefundAPITestCase(TestCase):
             "project_id": self.project.id,
             "product_id": self.product.id,
             "refund_date": "2024/01/15",  # 잘못된 형식
-            "production_amount": 5,
+            "refund_amount": 5,
         }
 
         response = self.client.post(
@@ -256,7 +256,7 @@ class ProjectRefundAPITestCase(TestCase):
             "project_id": self.project.id,
             "product_id": self.product.id,
             "refund_date": "2024-01-15",
-            "production_amount": 5,
+            "refund_amount": 5,
         }
 
         response = self.client.post(
@@ -514,15 +514,15 @@ class ProjectRefundAPITestCase(TestCase):
 
         self.assertIn(response.status_code, [401, 403])
 
-    def test_create_refund_with_production_amount_null(self):
-        """production_amount가 null인 경우 반품 생성 테스트"""
+    def test_create_refund_with_refund_amount_null(self):
+        """refund_amount가 null인 경우 반품 생성 테스트"""
         url = "/v1/project-refund"
 
         payload = {
             "project_id": self.project.id,
             "product_id": self.product.id,
             "refund_date": "2024-01-15",
-            "production_amount": 1,
+            "refund_amount": 1,
         }
 
         response = self.client.post(
