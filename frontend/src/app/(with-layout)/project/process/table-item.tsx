@@ -244,7 +244,7 @@ const TableItem = ({
           </p>
         )}
 
-        {isArchived && role !== 'viewer' && (
+        {isArchived && project.status === 'completed' && role !== 'viewer' && (
           <button
             onClick={handleCloneProject}
             onMouseEnter={(e) => {
