@@ -993,7 +993,7 @@ export interface CreateRefundModel {
   project_id: number;
   product_id: number;
   refund_date: string; // YYYY-MM-DD 형식
-  production_amount?: number | null;
+  refund_amount?: number | null;
 }
 
 export interface CreateRefundResponseModel {

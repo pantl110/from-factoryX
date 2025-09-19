@@ -99,7 +99,7 @@ const AddReturnModal = ({
       project_id: projectId,
       product_id: selectedProduct.productId,
       refund_date: returnDate,
-      production_amount: parseInt(returnQuantity, 10) || 0,
+      refund_amount: parseInt(returnQuantity, 10) || 0,
     };
 
     const result = await createRefund(refundData);
@@ -164,21 +164,28 @@ const AddReturnModal = ({
         {isProductNameDropdownOpen && matchedItems.length > 0 && (
           <div className="absolute left-0 top-[calc(100%+8px)] z-10">
             <ProductNameDropdown
-              items={matchedItems.map((item, index) => ({
-                id: item.productId || index, // 고유한 ID 보장
-                created_at: '', // 안쓰는 데이터 형변환 위함
-                updated_at: '', // 안쓰는 데이터 형변환 위함
-                factory: 0, // 안쓰는 데이터 형변환 위함
-                name: item.product_name || '',
-                code: item.product_code || '',
-                unit: item.unit || '',
-                spec: item.spec || '',
-                current_stock: 0, // 안쓰는 데이터 형변환 위함, quotationProductData에는 current_stock이 없음
-                average_production_time: 0, // 안쓰는 데이터 형변환 위함
-                buffer_rate: 0, // 안쓰는 데이터 형변환 위함
-                location: 0, // 안쓰는 데이터 형변환 위함
-                note: '', // 안쓰는 데이터 형변환 위함
-              }))}
+              items={matchedItems
+                .filter(
+                  (item, index, self) =>
+                    // productId가 같은 항목 중 첫 번째만 유지
+                    self.findIndex((i) => i.productId === item.productId) ===
+                    index
+                )
+                .map((item, index) => ({
+                  id: item.productId || index, // 고유한 ID 보장
+                  created_at: '', // 안쓰는 데이터 형변환 위함
+                  updated_at: '', // 안쓰는 데이터 형변환 위함
+                  factory: 0, // 안쓰는 데이터 형변환 위함
+                  name: item.product_name || '',
+                  code: item.product_code || '',
+                  unit: item.unit || '',
+                  spec: item.spec || '',
+                  current_stock: 0, // 안쓰는 데이터 형변환 위함, quotationProductData에는 current_stock이 없음
+                  average_production_time: 0, // 안쓰는 데이터 형변환 위함
+                  buffer_rate: 0, // 안쓰는 데이터 형변환 위함
+                  location: 0, // 안쓰는 데이터 형변환 위함
+                  note: '', // 안쓰는 데이터 형변환 위함
+                }))}
               onSelect={handleSelectProduct}
               onClose={() => setIsProductNameDropdownOpen(false)}
               width="w-[551px]"

@@ -75,6 +75,10 @@ const ReturnInfo = ({
     if (numericValue >= 0) {
       setValue('production_amount', numericValue);
       onProductionAmountChange(numericValue); // 부모에게 알림
+    } else {
+      // 음수 값이 입력되면 input을 비움
+      setValue('production_amount', 0);
+      onProductionAmountChange(0);
     }
   };
 
@@ -96,6 +100,10 @@ const ReturnInfo = ({
       setValue('amount', numericValue);
       onAmountChange(numericValue);
     } else if (numericValue === 0) {
+      setValue('amount', 0);
+      onAmountChange(0);
+    } else {
+      // 음수 값이 입력되면 input을 비움
       setValue('amount', 0);
       onAmountChange(0);
     }
