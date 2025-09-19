@@ -170,9 +170,19 @@ const TableItem = ({
         </div>
         <p
           className="flex-2 px-3 text-dg truncate"
-          title={project.client_name || '-'}
+          title={
+            project.status === 'quotation' ||
+            project.status === 'confirmed' ||
+            project.status === 'suspended'
+              ? project.client_name || '-'
+              : project.quotations[0].client_info.name || '-'
+          }
         >
-          {project.client_name || '-'}
+          {project.status === 'quotation' ||
+          project.status === 'confirmed' ||
+          project.status === 'suspended'
+            ? project.client_name || '-'
+            : project.quotations[0].client_info.name || '-'}
         </p>
         <p className="flex-2 px-3 text-dg truncate" title={productsName}>
           {productsName}

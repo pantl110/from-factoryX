@@ -236,7 +236,11 @@ const ReturnInfo = ({
                     <div className="flex items-center w-full">
                       <input
                         type="text"
-                        value={formatNumber(watchedProductionAmount)}
+                        value={
+                          watchedProductionAmount === 0
+                            ? ''
+                            : formatNumber(watchedProductionAmount)
+                        }
                         onChange={handleProductionAmountChange}
                         placeholder="(필수)"
                         className="w-full placeholder:text-gr"
@@ -249,7 +253,11 @@ const ReturnInfo = ({
             ) : (
               <InfoLabelValue
                 label="생산수량"
-                value={(refundData.production_amount || 0).toLocaleString()}
+                value={
+                  refundData.production_amount
+                    ? refundData.production_amount.toLocaleString()
+                    : ''
+                }
                 isEditing={isEditing}
               />
             )}

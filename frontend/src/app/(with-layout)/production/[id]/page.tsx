@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect, Suspense, useCallback } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
-import { useGetProjectStatus, useGetDetailQuotation } from '@/hooks';
+import { useGetProjectStatus, useUpdateProjectStatus } from '@/hooks';
 import ProductFlowTitle from '../product-flow-title';
 import ProductionPlan from '../production-plan';
 import ProductionMonitor from '../production-monitor';
@@ -15,7 +15,6 @@ import OrderDocumentView from '../../document/order-document-view';
 import { ProjectStatusType } from '@/types/status-type';
 import { ProductionTabType } from '@/components/top-bar/types';
 import Spinner from '@/ui/spinner';
-import useUpdateProjectStatus from '@/hooks/project/use-update-project-status';
 import AddReturnModal from '../delivery/modals/add-return-modal/add-return-modal';
 import {
   ProjectQuotationProductsInfoModel,
@@ -74,11 +73,6 @@ const ProductionPageContent = () => {
   // 프로젝트 상태 데이터
   const [projectStatus, setProjectStatus] =
     useState<ProjectStatusResponseModel | null>(null);
-
-  // 견적서 데이터 가져오기 (거래처 정보와 품목 정보 포함)
-  const { data: quotationData } = useGetDetailQuotation(
-    projectStatus?.quotations[0].id || projectId
-  );
 
   // 프로젝트 상태 로드 및 store 업데이트
   useEffect(() => {
@@ -241,8 +235,8 @@ const ProductionPageContent = () => {
             setProductionTab(tabs[idx]);
           }}
           // 보여줄 정보
-          companyName={quotationData?.factory_name || '-'}
-          dueDate={quotationData?.due_date || '-'}
+          companyName={projectStatus?.quotations[0].client_info.name || '-'}
+          dueDate={projectStatus?.quotations[0].due_date || '-'}
           startDate={projectStatus?.earliest_start_date || ''}
           endDate={projectStatus?.latest_end_date || ''}
         />
@@ -304,7 +298,7 @@ const ProductionPageContent = () => {
             )}
           </div>
         )}
-        {tabs[selectedTab] === '거래명세서' && quotationData && (
+        {tabs[selectedTab] === '거래명세서' && projectStatus?.quotations[0] && (
           <div className="px-10 pt-5 pb-10">
             <TransactionDocumentView
               quotationData={projectStatus?.quotations[0]}
@@ -314,7 +308,7 @@ const ProductionPageContent = () => {
             />
           </div>
         )}
-        {tabs[selectedTab] === '납품' && quotationData && (
+        {tabs[selectedTab] === '납품' && projectStatus?.quotations[0] && (
           <Delivery
             quotationData={projectStatus?.quotations[0]}
             onProjectStatusChange={reloadProjectStatus}
@@ -346,7 +340,7 @@ const ProductionPageContent = () => {
             projectStatus={projectStatus.status as ProjectStatusType}
           />
         )}
-        {tabs[selectedTab] === '주문서' && quotationData && (
+        {tabs[selectedTab] === '주문서' && projectStatus?.quotations[0] && (
           <div className="px-10 pt-5 pb-10">
             <OrderDocumentView
               documentTitle="주문서"
@@ -381,7 +375,17 @@ const ProductionPageContent = () => {
       {isAddReturnModalOpen && (
         <AddReturnModal
           onClose={() => setAddReturnModalOpen(false)}
-          quotationProductData={quotationData?.products || []}
+          quotationProductData={projectStatus.quotations[0].products.map(
+            (p) => ({
+              productId: p.product.id,
+              product_code: p.product.code,
+              product_name: p.product.name,
+              spec: p.product.spec,
+              unit: p.product.unit,
+              quantity: p.quantity,
+              unit_price: p.unit_price,
+            })
+          )}
           onProjectStatusChange={handleChangeStatus}
           onTabChange={(tab) => {
             // 탭 인덱스 찾기
