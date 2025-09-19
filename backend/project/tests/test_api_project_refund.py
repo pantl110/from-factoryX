@@ -954,7 +954,7 @@ class ProjectRefundAPITestCase(TestCase):
             id=data["quotation_product_id"]
         )
         self.assertEqual(quotation_product.product.id, self.product.id)
-        self.assertEqual(quotation_product.quantity, 5)
+        self.assertEqual(quotation_product.quantity, 15)
         self.assertEqual(quotation_product.unit_price, 0)  # 반품은 단가 0
 
         # ProjectPlan의 반품 여부 확인
@@ -1223,7 +1223,7 @@ class ProjectRefundAPITestCase(TestCase):
             id=data["quotation_product_id"]
         )
         self.assertEqual(quotation_product.product.id, new_product.id)
-        self.assertEqual(quotation_product.quantity, 5)
+        self.assertEqual(quotation_product.quantity, 15)
         self.assertEqual(quotation_product.unit_price, 0)  # 반품은 단가 0
 
         # ProjectPlan도 확인

@@ -149,7 +149,7 @@ async def register_production_from_refund_log(
             existing_quotation_product = existing_plan.product
             if existing_quotation_product:
                 # 기존 QuotationProduct 수정
-                existing_quotation_product.quantity = payload.production_amount
+                existing_quotation_product.quantity = payload.amount
                 existing_quotation_product.delivery_date = (
                     await parse_and_validate_date(payload.refund_date)
                 )
@@ -160,7 +160,7 @@ async def register_production_from_refund_log(
                 quotation_product = await QuotationProduct.objects.acreate(
                     quotation=existing_quotation,
                     product=refund_product,
-                    quantity=payload.production_amount,
+                    quantity=payload.amount,
                     unit_price=0,  # 반품은 단가 0으로 설정
                     delivery_date=await parse_and_validate_date(payload.refund_date),
                 )
@@ -169,7 +169,7 @@ async def register_production_from_refund_log(
             quotation_product = await QuotationProduct.objects.acreate(
                 quotation=existing_quotation,
                 product=refund_product,
-                quantity=payload.production_amount,
+                quantity=payload.amount,
                 unit_price=0,  # 반품은 단가 0으로 설정
                 delivery_date=await parse_and_validate_date(payload.refund_date),
             )
