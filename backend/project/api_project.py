@@ -655,6 +655,17 @@ async def update_project_status(
                         is_canceled=False,
                     )
 
+                    # 제품 이력 최대 50개 유지: 가장 최근 50개만 남기고 나머지 삭제
+                    keep_ids = list(
+                        ProductHistory.objects.filter(product=product_obj)
+                        .order_by("-created_at")
+                        .values_list("id", flat=True)[:50]
+                    )
+                    if keep_ids:
+                        ProductHistory.objects.filter(product=product_obj).exclude(
+                            id__in=keep_ids
+                        ).delete()
+
                     # 제품 현재 재고 업데이트
                     product_obj.current_stock = new_total_stock
                     product_obj.save(update_fields=["current_stock"])
