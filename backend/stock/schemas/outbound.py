@@ -83,10 +83,14 @@ class ProductRowOut(ModelSchema):
 # (GET) List Product History
 class ProductHistoryOut(Schema):
     id: int
-    type: str
     product_id: int
-    quantity: int
-    total_stock: int
+    project_id: Optional[int] = None
+    client_name: Optional[str] = None
+    production_quantity: Optional[int] = None
+    delivery_quantity: Optional[int] = None
+    quantity: Optional[int] = None
+    total_stock: Optional[int] = None
+    is_canceled: bool
     created_at: datetime.datetime
     updated_at: datetime.datetime
 

@@ -110,14 +110,35 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(ProductHistory)
 class ProductHistoryAdmin(admin.ModelAdmin):
-    list_display = ["id", "type", "product", "quantity", "total_stock", "created_at"]
-    list_filter = ["type", "created_at", "product__factory"]
+    list_display = [
+        "id",
+        "product",
+        "quantity",
+        "total_stock",
+        "is_canceled",
+        "created_at",
+    ]
+    list_filter = ["created_at", "product__factory"]
     search_fields = ["product__name"]
     readonly_fields = ["created_at", "updated_at"]
     list_per_page = 20
 
     fieldsets = (
-        ("기본 정보", {"fields": ("type", "product", "quantity", "total_stock")}),
+        (
+            "기본 정보",
+            {
+                "fields": (
+                    "product",
+                    "project_id",
+                    "client_name",
+                    "production_quantity",
+                    "delivery_quantity",
+                    "quantity",
+                    "total_stock",
+                    "is_canceled",
+                )
+            },
+        ),
         (
             "시스템 정보",
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},

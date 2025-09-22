@@ -87,16 +87,21 @@ class ProductUpdateIn(Schema):
 # (POST) Create Product History
 class ProductHistoryCreateIn(Schema):
     product: int
-    type: str
-    quantity: int
-    total_stock: int
+    project_id: Optional[int] = None
+    client_name: Optional[str] = None
+    production_quantity: Optional[int] = None
+    delivery_quantity: Optional[int] = None
+    quantity: Optional[int] = None
+    total_stock: Optional[int] = None
+    is_canceled: Optional[bool] = False
 
 
 # (GET) List Product History
 class ProductHistoryFilter(FilterSchema):
-    start_date: Optional[str] = Field(default=None, q="created_at__date__gte")
-    end_date: Optional[str] = Field(default=None, q="created_at__date__lte")
+    # start_date: Optional[str] = Field(default=None, q="created_at__date__gte")
+    # end_date: Optional[str] = Field(default=None, q="created_at__date__lte")
     product_id: Optional[int] = Field(default=None, q="product_id")
+    project_id: Optional[int] = Field(default=None, q="project_id")
 
 
 # ------------------------------------------------------------

@@ -2,8 +2,8 @@ from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from datetime import datetime
 from typing import Tuple
-from project.models import Refund, Project, ProjectLog
-from stock.models import MaterialProduct
+from project.models import Refund, Project, ProjectLog, ProjectPlan
+from stock.models import MaterialProduct, ProductHistory
 from factory.models import FactoryEquipment
 from django.db.models import Max
 
@@ -154,3 +154,4 @@ async def check_material_availability(product_id: int, required_quantity: int) -
         return "충분"
 
     return await check_materials()
+
