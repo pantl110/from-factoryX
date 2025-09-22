@@ -549,63 +549,69 @@ async def update_project_status(
                 processed_product_ids = set()
 
                 for plan in project_plans:
-                    # 이미 완료된 계획이나 이미 납품된 제품은 건너뛰기
-                    if (
+                    # 원자재 소모는 이미 완료/납품된 경우 건너뜀.
+                    skip_material_consumption = (
                         plan.status == ProjectPlan.ProductionStatus.completed
                         or plan.product.is_delivery
-                    ):
-                        continue
+                    )
 
-                    # 계획을 완료 상태로 변경
-                    plan.status = ProjectPlan.ProductionStatus.completed
-                    plan.save()
+                    # 계획 완료/납품 상태 반영 (이미 완료/납품이어도 idempotent)
+                    if plan.status != ProjectPlan.ProductionStatus.completed:
+                        plan.status = ProjectPlan.ProductionStatus.completed
+                        plan.save()
 
                     # QuotationProduct의 납품 상태를 True로 설정
                     quotation_product = plan.product
-                    quotation_product.is_delivery = True
-                    quotation_product.save()
+                    if not quotation_product.is_delivery:
+                        quotation_product.is_delivery = True
+                        quotation_product.save()
 
-                    # 해당 제품에 연결된 원자재 조회
-                    material_products = MaterialProduct.objects.filter(
-                        product=quotation_product.product
-                    )
-
-                    for material_product in material_products:
-                        material = material_product.material
-                        consumed_quantity = material_product.quantity * plan.quantity
-
-                        # 원자재 히스토리 생성
-                        # client는 factory의 기본 고객으로 설정 (임시)
-                        from factory.models import FactoryClient
-
-                        default_client = FactoryClient.objects.filter(
-                            factory_id=int(factory_id)
-                        ).first()
-                        if not default_client:
-                            # 기본 고객이 없으면 생성
-                            default_client = FactoryClient.objects.create(
-                                factory_id=int(factory_id),
-                                name="기본 고객",
-                                type="company",
-                            )
-
-                        # 현재 재고 계산
-                        current_stock = material.current_stock - consumed_quantity
-
-                        MaterialHistory.objects.create(
-                            material=material,
-                            type="consumption",
-                            client=default_client,
-                            quantity=consumed_quantity,
-                            total_stock=current_stock,
+                    if not skip_material_consumption:
+                        # 해당 제품에 연결된 원자재 조회 후 소모 처리
+                        material_products = MaterialProduct.objects.filter(
+                            product=quotation_product.product
                         )
+
+                        for material_product in material_products:
+                            material = material_product.material
+                            consumed_quantity = material_product.quantity * plan.quantity
+
+                            # 원자재 히스토리 생성
+                            # client는 factory의 기본 고객으로 설정 (임시)
+                            from factory.models import FactoryClient
+
+                            default_client = FactoryClient.objects.filter(
+                                factory_id=int(factory_id)
+                            ).first()
+                            if not default_client:
+                                # 기본 고객이 없으면 생성
+                                default_client = FactoryClient.objects.create(
+                                    factory_id=int(factory_id),
+                                    name="기본 고객",
+                                    type="company",
+                                )
+
+                            # 현재 재고 계산
+                            current_stock = material.current_stock - consumed_quantity
+
+                            MaterialHistory.objects.create(
+                                material=material,
+                                type="consumption",
+                                client=default_client,
+                                quantity=consumed_quantity,
+                                total_stock=current_stock,
+                            )
 
                     # -----------------------------
                     # 제품 이력(ProductHistory) 생성
                     # -----------------------------
                     product_obj = quotation_product.product
 
-                    # 이전 이력이 있으면 "가장 최근 1건"을 취소 처리하고 수량 반영 (제품별 1회만)
+                    # 생산량/납품량 산출
+                    production_qty = plan.quantity or 0
+                    delivery_qty = quotation_product.quantity or 0
+
+                    # 이전 이력이 있고 production/delivery 값이 동일하면 생성 스킵
                     canceled_sum = 0
                     if product_obj.id not in processed_product_ids:
                         latest_prev = (
@@ -616,17 +622,17 @@ async def update_project_status(
                             .first()
                         )
                         if latest_prev:
+                            prev_prod = latest_prev.production_quantity or 0
+                            prev_delv = latest_prev.delivery_quantity or 0
+                            if int(prev_prod) == int(production_qty) and int(prev_delv) == int(delivery_qty):
+                                # 동일하면 새 이력 생성 불필요
+                                processed_product_ids.add(product_obj.id)
+                                continue
+                            # 값이 다르면 직전 이력 취소 처리하고 수량 반영
                             canceled_sum = latest_prev.quantity or 0
                             latest_prev.is_canceled = True
                             latest_prev.save(update_fields=["is_canceled"])
                         processed_product_ids.add(product_obj.id)
-
-                    # 생산량: 현재 plan의 생산 수량
-                    production_qty = plan.quantity or 0
-
-                    # 납품량: 해당 견적 품목의 전체 납품 수량(= 주문 수량으로 간주)
-                    delivery_qty = quotation_product.quantity or 0
-
                     # 취소된 이력 수량의 효과를 반대로 적용 (양수면 빼고, 음수면 더함)
                     # 새 이력의 변화량 = 생산 - 납품 - 취소한 과거이력수량
                     delta_qty = int(production_qty) - int(delivery_qty) - int(canceled_sum)
