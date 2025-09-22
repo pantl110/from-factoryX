@@ -1,11 +1,8 @@
-import { CalendarCheck, CaretDown } from '@phosphor-icons/react';
-import ProductStockLogDropdown from '../../../../../../ui/dropdown/select-period-dropdown/select-period-dropdown';
-import { useState } from 'react';
-import MiniBtn from '@/ui/mini-btn';
+import { useEffect } from 'react';
 import NoHistoryBox from '@/ui/no-history-box';
-import ProductStockLog from './product-stock-log';
-import { useProductHistory, usePeriodSelector } from '@/hooks';
+import { useProductHistory } from '@/hooks';
 import { ProductHistoryListResponseModel } from '@/types/data-model';
+import ProductStockLog from './product-stock-log';
 
 interface ProductHistoryProps {
   productId: number | null;
@@ -14,8 +11,8 @@ interface ProductHistoryProps {
 const PAGE_SIZE = 8;
 
 const ProductHistory = ({ productId }: ProductHistoryProps) => {
-  const [isProductStockLogDropdownOpen, setIsProductStockLogDropdownOpen] =
-    useState(false); // 판넬의 품목 입·출고 내역 드롭다운
+  // const [isProductStockLogDropdownOpen, setIsProductStockLogDropdownOpen] =
+  //   useState(false); // 판넬의 품목 입·출고 내역 드롭다운
 
   const { listProductHistories, data } = useProductHistory();
 
@@ -27,33 +24,51 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
   // 페이지 변경 핸들러
   const handlePageChange = (newPage: number) => {
     if (newPage !== page && productId !== null) {
-      const filters = periodSelector.createFilters(
-        periodSelector.selectedPeriod,
-        newPage
-      );
-      listProductHistories(filters);
+      // const filters = periodSelector.createFilters(
+      //   periodSelector.selectedPeriod,
+      //   newPage
+      // );
+      // listProductHistories(filters);
+
+      listProductHistories({
+        product_id: productId,
+        page: newPage,
+        page_size: PAGE_SIZE,
+      });
     }
   };
 
-  // 기간 변경 핸들러
-  const handlePeriodChange = (filters: Record<string, unknown>) => {
-    listProductHistories(filters);
-  };
+  // 초기 로드 및 제품 변경 시 첫 페이지 조회
+  useEffect(() => {
+    if (productId !== null) {
+      listProductHistories({
+        product_id: productId,
+        page: 1,
+        page_size: PAGE_SIZE,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
 
-  // 기간 선택 훅 사용
-  const periodSelector = usePeriodSelector({
-    onPeriodChange: handlePeriodChange,
-    productId,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  // // 기간 변경 핸들러
+  // const handlePeriodChange = (filters: Record<string, unknown>) => {
+  //   listProductHistories(filters);
+  // };
 
-  const handleDropdownSelect = (value: string) => {
-    periodSelector.handlePeriodChange(
-      value as '1개월' | '3개월' | '6개월' | '1년' | '직접 설정'
-    );
-    setIsProductStockLogDropdownOpen(false);
-  };
+  // // 기간 선택 훅 사용
+  // const periodSelector = usePeriodSelector({
+  //   onPeriodChange: handlePeriodChange,
+  //   productId,
+  //   page,
+  //   pageSize: PAGE_SIZE,
+  // });
+
+  // const handleDropdownSelect = (value: string) => {
+  //   periodSelector.handlePeriodChange(
+  //     value as '1개월' | '3개월' | '6개월' | '1년' | '직접 설정'
+  //   );
+  //   setIsProductStockLogDropdownOpen(false);
+  // };
 
   return (
     <>
@@ -64,7 +79,7 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
           </h3>
 
           {/* 기간 선택 */}
-          {productId !== null && (
+          {/* {productId !== null && (
             <div className="relative">
               <MiniBtn
                 text={periodSelector.selectedPeriod}
@@ -85,7 +100,7 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
                 </div>
               )}
             </div>
-          )}
+          )} 
 
           {periodSelector.selectedPeriod === '직접 설정' && (
             <div className="flex items-center px-3 h-9 gap-2 border border-lg rounded-lg">
@@ -124,7 +139,7 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
                 onKeyDown={periodSelector.handleCustomDateKeyDown}
               />
             </div>
-          )}
+          )} */}
         </div>
 
         {/* 재고 이력 목록 */}

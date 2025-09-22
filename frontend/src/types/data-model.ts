@@ -386,19 +386,23 @@ export interface ProductCreateExcelResponseModel {
 
 //////////////////////
 // Product History API
-export interface ProductHistoryModel {
-  product: number; // product_id
-  type: 'in' | 'out'; // 입고 또는 출고
-  quantity: number; // 재고 변동 수량
-  total_stock: number; // 재고 변동 후 재고 수량
-}
+// export interface ProductHistoryModel {
+//   product: number; // product_id
+//   type: 'in' | 'out'; // 입고 또는 출고
+//   quantity: number; // 재고 변동 수량
+//   total_stock: number; // 재고 변동 후 재고 수량
+// }
 
 export interface ProductHistoryResponseModel {
-  id: number; // product_history_id
-  product: number; // product_id
-  type: 'in' | 'out'; // 입고 또는 출고
+  id: number;
+  product_id: number;
+  project_id: number;
+  client_name: string;
+  production_quantity: number;
+  delivery_quantity: number;
   quantity: number;
-  total_stock?: number; // 재고 변동 후 재고 수량
+  total_stock: number;
+  is_canceled: boolean;
   created_at: string;
   updated_at: string;
 }
