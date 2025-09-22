@@ -333,7 +333,8 @@ const CreatTaxPanel = ({
         business_type: clientFormData.businessType || '',
         business_category: clientFormData.businessCategory || '',
         address: clientFormData.address || '',
-        type: 'customer',
+        is_customer: true,
+        is_supplier: false,
       };
 
       return await createClient(clientData);
@@ -356,7 +357,7 @@ const CreatTaxPanel = ({
         business_type: clientFormData.businessType || '',
         business_category: clientFormData.businessCategory || '',
         address: clientFormData.address || '',
-        client_type: 'customer',
+        is_customer: true,
       };
 
       return await updateClient(clientData);
