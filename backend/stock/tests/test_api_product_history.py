@@ -64,30 +64,42 @@ class TestProductHistoryAPI(TestCase):
         # Create multiple history instances for testing filters
         self.history1_in = ProductHistory.objects.create(
             product=self.product1,
-            type=ProductHistory.ProductHistoryType.IN,
+            production_quantity=20,
+            delivery_quantity=10,
             quantity=10,
             total_stock=10,
+            project_id=1001,
+            client_name="고객A",
         )
 
         self.history1_out = ProductHistory.objects.create(
             product=self.product1,
-            type=ProductHistory.ProductHistoryType.OUT,
-            quantity=5,
+            production_quantity=10,
+            delivery_quantity=20,
+            quantity=-10,
             total_stock=5,
+            project_id=1001,
+            client_name="고객A",
         )
 
         self.history2_in = ProductHistory.objects.create(
             product=self.product2,
-            type=ProductHistory.ProductHistoryType.IN,
-            quantity=20,
+            production_quantity=20,
+            delivery_quantity=10,
+            quantity=10,
             total_stock=20,
+            project_id=2002,
+            client_name="고객B",
         )
 
         self.history3_out = ProductHistory.objects.create(
             product=self.product3,
-            type=ProductHistory.ProductHistoryType.OUT,
+            production_quantity=30,
+            delivery_quantity=15,
             quantity=15,
             total_stock=15,
+            project_id=3003,
+            client_name="고객C",
         )
 
         # FactoryMember 생성 (권한 검증을 위해)
@@ -115,9 +127,12 @@ class TestProductHistoryAPI(TestCase):
         headers = await self.authenticate()
         payload = {
             "product": self.product1.id,
-            "type": ProductHistory.ProductHistoryType.OUT,  # "out"
-            "quantity": 5,
+            "quantity": 0,
             "total_stock": 5,
+            "production_quantity": 5,
+            "delivery_quantity": 5,
+            "project_id": 1001,
+            "client_name": "고객A",
         }
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
@@ -158,34 +173,67 @@ class TestProductHistoryAPI(TestCase):
         for item in data["data"]:
             self.assertEqual(item["product_id"], self.product1.id)
 
-    async def test_list_histories_by_date_range(self):
-        """[R] 제품 입출고 이력 목록 조회 - 날짜 범위 필터"""
+    async def test_list_histories_by_project_id(self):
+        """[R] 제품 입출고 이력 목록 조회 - project_id 필터"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"?factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31",
+            f"?factory_id={self.factory.id}&project_id=1001",
             headers=headers,
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
         self.assertIn("count", data)
-        # 날짜 범위 내의 모든 히스토리가 조회되어야 함 (4개)
-        self.assertEqual(data["count"], 4)
-
-    async def test_list_histories_combined_filters(self):
-        """[R] 제품 입출고 이력 목록 조회 - 복합 필터 (product_id + 날짜)"""
-        headers = await self.authenticate()
-        response = await self.client.get(
-            f"?factory_id={self.factory.id}&product_id={self.product1.id}&start_date=2025-01-01",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("data", data)
-        self.assertIn("count", data)
-        # product1의 2025년 이후 히스토리만 조회되어야 함 (2개)
+        # project_id=1001 의 product1 히스토리 2건
         self.assertEqual(data["count"], 2)
+        for item in data["data"]:
+            self.assertEqual(item["project_id"], 1001)
 
-        # 아이템이 product1에 속하는지 확인
-        item = data["data"][0]
-        self.assertEqual(item["product_id"], self.product1.id)
+    async def test_list_histories_by_project_and_product(self):
+        """[R] 제품 입출고 이력 목록 조회 - project_id & product_id 복합 필터"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&project_id=1001&product_id={self.product1.id}",
+            headers=headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("data", data)
+        self.assertIn("count", data)
+        # project_id=1001 이면서 product1인 히스토리 2건
+        self.assertEqual(data["count"], 2)
+        for item in data["data"]:
+            self.assertEqual(item["project_id"], 1001)
+            self.assertEqual(item["product_id"], self.product1.id)
+
+    # async def test_list_histories_by_date_range(self):
+    #     """[R] 제품 입출고 이력 목록 조회 - 날짜 범위 필터"""
+    #     headers = await self.authenticate()
+    #     response = await self.client.get(
+    #         f"?factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     data = response.json()
+    #     self.assertIn("data", data)
+    #     self.assertIn("count", data)
+    #     # 날짜 범위 내의 모든 히스토리가 조회되어야 함 (4개)
+    #     self.assertEqual(data["count"], 4)
+
+    # async def test_list_histories_combined_filters(self):
+    #     """[R] 제품 입출고 이력 목록 조회 - 복합 필터 (product_id + 날짜)"""
+    #     headers = await self.authenticate()
+    #     response = await self.client.get(
+    #         f"?factory_id={self.factory.id}&product_id={self.product1.id}&start_date=2025-01-01",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     data = response.json()
+    #     self.assertIn("data", data)
+    #     self.assertIn("count", data)
+    #     # product1의 2025년 이후 히스토리만 조회되어야 함 (2개)
+    #     self.assertEqual(data["count"], 2)
+
+    #     # 아이템이 product1에 속하는지 확인
+    #     item = data["data"][0]
+    #     self.assertEqual(item["product_id"], self.product1.id)

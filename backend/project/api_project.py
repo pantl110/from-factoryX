@@ -538,10 +538,15 @@ async def update_project_status(
             @sync_to_async
             def handle_project_completion(project_id, factory_id):
                 from project.models import ProjectPlan
-                from stock.models import MaterialProduct, Material, MaterialHistory
+                from stock.models import MaterialProduct, Material, MaterialHistory, ProductHistory
+                from document.models import Quotation
+                from django.db.models import Sum
 
                 # 해당 프로젝트의 모든 생산 계획 조회
                 project_plans = ProjectPlan.objects.filter(project_id=project_id)
+
+                # 동일 프로젝트 내 제품별 한 번만 이전 이력 취소 처리하도록 추적
+                processed_product_ids = set()
 
                 for plan in project_plans:
                     # 이미 완료된 계획이나 이미 납품된 제품은 건너뛰기
@@ -594,6 +599,76 @@ async def update_project_status(
                             quantity=consumed_quantity,
                             total_stock=current_stock,
                         )
+
+                    # -----------------------------
+                    # 제품 이력(ProductHistory) 생성
+                    # -----------------------------
+                    product_obj = quotation_product.product
+
+                    # 이전 이력이 있으면 "가장 최근 1건"을 취소 처리하고 수량 반영 (제품별 1회만)
+                    canceled_sum = 0
+                    if product_obj.id not in processed_product_ids:
+                        latest_prev = (
+                            ProductHistory.objects.filter(
+                                product=product_obj, project_id=project_id, is_canceled=False
+                            )
+                            .order_by("-created_at")
+                            .first()
+                        )
+                        if latest_prev:
+                            canceled_sum = latest_prev.quantity or 0
+                            latest_prev.is_canceled = True
+                            latest_prev.save(update_fields=["is_canceled"])
+                        processed_product_ids.add(product_obj.id)
+
+                    # 생산량: 현재 plan의 생산 수량
+                    production_qty = plan.quantity or 0
+
+                    # 납품량: 해당 견적 품목의 전체 납품 수량(= 주문 수량으로 간주)
+                    delivery_qty = quotation_product.quantity or 0
+
+                    # 취소된 이력 수량의 효과를 반대로 적용 (양수면 빼고, 음수면 더함)
+                    # 새 이력의 변화량 = 생산 - 납품 - 취소한 과거이력수량
+                    delta_qty = int(production_qty) - int(delivery_qty) - int(canceled_sum)
+
+                    # 표시용 거래처명: 견적서 client_info.name 우선, 없으면 null
+                    client_name_value = None
+                    try:
+                        quotation = Quotation.objects.get(id=quotation_product.quotation_id)
+                        if quotation.client_info and isinstance(quotation.client_info, dict):
+                            client_name_value = quotation.client_info.get("name") or None
+                    except Exception:
+                        client_name_value = None
+
+                    # 총 재고 (이력 반영 후)
+                    new_total_stock = (product_obj.current_stock or 0) + delta_qty
+
+                    # 제품 이력 생성
+                    ProductHistory.objects.create(
+                        product=product_obj,
+                        project_id=project_id,
+                        client_name=client_name_value,
+                        production_quantity=int(production_qty) or 0,
+                        delivery_quantity=int(delivery_qty) or 0,
+                        quantity=delta_qty,
+                        total_stock=new_total_stock,
+                        is_canceled=False,
+                    )
+
+                    # 제품 이력 최대 50개 유지: 가장 최근 50개만 남기고 나머지 삭제
+                    keep_ids = list(
+                        ProductHistory.objects.filter(product=product_obj)
+                        .order_by("-created_at")
+                        .values_list("id", flat=True)[:50]
+                    )
+                    if keep_ids:
+                        ProductHistory.objects.filter(product=product_obj).exclude(
+                            id__in=keep_ids
+                        ).delete()
+
+                    # 제품 현재 재고 업데이트
+                    product_obj.current_stock = new_total_stock
+                    product_obj.save(update_fields=["current_stock"])
 
             await handle_project_completion(project.id, int(factory_id))
 

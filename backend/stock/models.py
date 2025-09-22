@@ -178,24 +178,51 @@ class Product(BaseModel):
 
 
 class ProductHistory(BaseModel):
-    class ProductHistoryType(models.TextChoices):
-        IN = ("in", "입고")
-        OUT = ("out", "출고")
+    # class ProductHistoryType(models.TextChoices):
+    #     IN = ("in", "입고")
+    #     OUT = ("out", "출고")
 
-    type = models.CharField(
-        max_length=10,
-        choices=ProductHistoryType.choices,
-        default=ProductHistoryType.IN,
-    )
+    # type = models.CharField(
+    #     max_length=10,
+    #     choices=ProductHistoryType.choices,
+    #     default=ProductHistoryType.IN,
+    # )
+
     product = models.ForeignKey(
         Product, related_name="histories", on_delete=models.CASCADE
     )
+    project_id = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="해당 history가 발생한 project_id",
+    )
+    client_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="해당 history가 발생한 프로젝트의 거래처명",
+    )
+    production_quantity = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="생산 수량",
+    )
+    delivery_quantity = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="납품 수량",
+    )
     quantity = models.IntegerField(
-        help_text="재고 변동 수량",
+        help_text="재고 변동 수량 (음수 & 양수), 취소 된 history에 대한 재고 반영",
     )
     total_stock = models.IntegerField(
         help_text="재고 변동 후 재고",
     )
+    is_canceled = models.BooleanField(
+        default=False,
+        help_text="취소 여부",
+    )
+ 
 
 
 class MaterialProduct(BaseModel):

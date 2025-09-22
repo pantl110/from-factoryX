@@ -24,7 +24,7 @@ from document.schemas.outbound import TodayProductionPlanOut
 from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
 from factory.models import FactoryEquipment
-from stock.models import Product
+from stock.models import Product, ProductHistory
 from datetime import date, timedelta
 from factory.models import Factory
 from typing import List
