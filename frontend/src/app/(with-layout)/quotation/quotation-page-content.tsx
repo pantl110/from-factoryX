@@ -751,7 +751,6 @@ const QuotationPageContent = () => {
           initialClientData={{
             id: selectedClientId || 0,
             factory: factoryId || 0,
-            type: 'customer' as const,
             name: watchedClientData.name || '',
             business_registration_number:
               watchedClientData.business_registration_number || '',

@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
-import { ClientType, ClientTypeColorMap } from '@/types/status-type';
+import { ClientTypeColorMap } from '@/types/status-type';
 import Chip from '@/ui/chip';
 
 interface ClientDetailPanelProps {
@@ -50,7 +50,8 @@ const ClientDetailPanel = ({
       business_type: '',
       business_category: '',
       address: '',
-      client_type: 'customer',
+      is_customer: false,
+      is_supplier: false,
       note: '',
     },
   });
@@ -78,7 +79,8 @@ const ClientDetailPanel = ({
         business_type: clientDetail.business_type || '',
         business_category: clientDetail.business_category || '',
         address: clientDetail.address || '',
-        client_type: clientDetail.type as ClientType,
+        is_customer: clientDetail.is_customer || false,
+        is_supplier: clientDetail.is_supplier || false,
         note: clientDetail.note || '',
       });
     }
@@ -103,15 +105,15 @@ const ClientDetailPanel = ({
     }
   };
 
-  const getClientTypeText = (clientType: ClientType) => {
-    return clientType === 'supplier' ? '발주처' : '수주처';
-  };
+  // const getClientTypeText = (clientType: ClientType) => {
+  //   return clientType === 'supplier' ? '발주처' : '수주처';
+  // };
 
-  const clientType = clientDetail?.type as ClientType;
-  const clientTypeColor =
-    clientType === 'supplier'
-      ? ClientTypeColorMap.supplier
-      : ClientTypeColorMap.customer;
+  // const clientType = clientDetail?.type as ClientType;
+  // const clientTypeColor =
+  //   clientType === 'supplier'
+  //     ? ClientTypeColorMap.supplier
+  //     : ClientTypeColorMap.customer;
 
   return (
     <Panel
@@ -293,11 +295,29 @@ const ClientDetailPanel = ({
             <InfoLabelValue
               label="거래처"
               value={
-                <Chip
-                  text={getClientTypeText(clientType)}
-                  bgColor={clientTypeColor.bgColor}
-                  textColor={clientTypeColor.textColor}
-                />
+                <div className="flex gap-1">
+                  {clientDetail?.is_customer === true && (
+                    <Chip
+                      text="수주처"
+                      bgColor={ClientTypeColorMap.customer.bgColor}
+                      textColor={ClientTypeColorMap.customer.textColor}
+                      radius="rounded-sm"
+                      cursor="cursor-pointer"
+                    />
+                  )}
+                  {clientDetail?.is_supplier === true && (
+                    <Chip
+                      text="발주처"
+                      bgColor={ClientTypeColorMap.supplier.bgColor}
+                      textColor={ClientTypeColorMap.supplier.textColor}
+                      radius="rounded-sm"
+                      cursor="cursor-pointer"
+                    />
+                  )}
+                  {clientDetail?.is_supplier === false &&
+                    clientDetail?.is_customer === false &&
+                    '-'}
+                </div>
               }
             />
           </div>

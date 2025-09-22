@@ -15,7 +15,7 @@ const ClientTableHeader = ({
         isChecked={isAllChecked || false}
         onToggle={onToggleAll || (() => {})}
       />
-      <div className="flex-[0.8] px-3 flex gap-1 items-center">
+      <div className="flex-[1.2] px-3 flex gap-1 items-center">
         <p className=" text-sv">거래처</p>
         {/* <CaretDown size={16} className="text-sv" /> */}
       </div>

@@ -16,12 +16,6 @@ const ClientTableItem = ({
   isChecked,
   onToggleCheck,
 }: ClientTableItemProps) => {
-  const clientTypeText = client.type === 'supplier' ? '발주처' : '수주처';
-  const clientTypeColor =
-    client.type === 'supplier'
-      ? ClientTypeColorMap.supplier
-      : ClientTypeColorMap.customer;
-
   return (
     <div
       className="flex h-14 items-center min-w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
@@ -31,15 +25,28 @@ const ClientTableItem = ({
         isChecked={isChecked || false}
         onToggle={onToggleCheck || (() => {})}
       />
-      <div className="px-3 flex-[0.8]">
-        <div>
-          <Chip
-            text={clientTypeText}
-            bgColor={clientTypeColor.bgColor}
-            textColor={clientTypeColor.textColor}
-            radius="rounded-sm"
-            cursor="cursor-pointer"
-          />
+      <div className="px-3 flex-[1.2]">
+        <div className="flex gap-1">
+          {client.is_customer === true && (
+            <Chip
+              text="수주처"
+              bgColor={ClientTypeColorMap.customer.bgColor}
+              textColor={ClientTypeColorMap.customer.textColor}
+              radius="rounded-sm"
+              cursor="cursor-pointer"
+            />
+          )}
+          {client.is_supplier === true && (
+            <Chip
+              text="발주처"
+              bgColor={ClientTypeColorMap.supplier.bgColor}
+              textColor={ClientTypeColorMap.supplier.textColor}
+              radius="rounded-sm"
+              cursor="cursor-pointer"
+            />
+          )}
+
+          {client.is_supplier === false && client.is_customer === false && '-'}
         </div>
       </div>
       <p className="px-3 flex-[2] truncate" title={client.name || '-'}>

@@ -271,12 +271,16 @@ export interface ClientModel {
   address?: string;
   manager?: string;
   note?: string;
-  type?: ClientType; // 거래처 유형 (발주처/수주처)
+  is_customer?: boolean;
+  is_supplier?: boolean;
+  // type?: ClientType; // 거래처 유형 (발주처/수주처)
 }
 
 export interface ClientResponseModel {
   id: number;
-  type?: ClientType;
+  // type?: ClientType;
+  is_customer?: boolean;
+  is_supplier?: boolean;
   name: string;
   business_registration_number?: string;
   representative_name?: string;
@@ -311,7 +315,9 @@ export interface ClientUpdateModel {
   business_category?: string;
   address?: string;
   note?: string;
-  client_type?: ClientType;
+  // client_type?: ClientType;
+  is_customer?: boolean;
+  is_supplier?: boolean;
 }
 
 //////////////////////
@@ -786,7 +792,9 @@ export interface ProductionDataModel {
     address?: string;
     manager?: string;
     note?: string;
-    client_type: string;
+    // client_type: string;
+    is_customer?: boolean;
+    is_supplier?: boolean;
   };
   products: Array<{
     product_id: number;
@@ -815,7 +823,9 @@ export interface SaveDraftDataModel {
     address?: string;
     manager?: string;
     note?: string;
-    client_type: string;
+    // client_type: string;
+    is_customer?: boolean;
+    is_supplier?: boolean;
   };
   products: Array<{
     product_id: number | null;
@@ -1168,7 +1178,9 @@ export interface TaxClientInfoModel {
   // 거래처 정보 (FactoryClientRowOut 구조)
   id: number;
   factory: number;
-  type: ClientType; // "customer"/"supplier"
+  // type: ClientType; // "customer"/"supplier"
+  is_customer?: boolean;
+  is_supplier?: boolean;
   name: string;
   business_registration_number: string;
   representative_name: string;
