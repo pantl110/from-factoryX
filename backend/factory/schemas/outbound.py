@@ -59,7 +59,9 @@ class FactoryMemberDetailOut(ModelSchema):
 # (GET) Factory Client
 class FactoryClientOut(Schema):
     id: int
-    type: str
+    # type: str
+    is_customer: bool
+    is_supplier: bool
     name: str
     business_registration_number: Optional[str]
     representative_name: Optional[str]
@@ -76,7 +78,9 @@ class FactoryClientOut(Schema):
 # (GET) Factory Client Detail
 class FactoryClientDetailOut(Schema):
     id: int
-    type: str
+    # type: str
+    is_customer: bool
+    is_supplier: bool
     name: str
     business_registration_number: Optional[str]
     representative_name: Optional[str]

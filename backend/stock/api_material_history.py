@@ -123,12 +123,18 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
             if getattr(client, field) != new_value:
                 setattr(client, field, new_value)
                 updated = True
+        # 기존 고객사 수정: is_customer는 기존 값 유지, is_supplier는 True로 강제
+        if client.is_supplier is not True:
+            client.is_supplier = True
+            updated = True
         if updated:
             await client.asave()
     except FactoryClient.DoesNotExist:
         client = await FactoryClient.objects.acreate(
             factory=factory,
-            type=FactoryClient.ClientType.supplier,
+            # type=FactoryClient.ClientType.supplier,
+            is_customer=False,
+            is_supplier=True,
             name=payload.client_info.name,
             business_registration_number=payload.client_info.business_registration_number,
             representative_name=payload.client_info.representative_name,

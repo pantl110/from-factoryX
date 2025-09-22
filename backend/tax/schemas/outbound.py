@@ -8,7 +8,9 @@ from stock.schemas.outbound import ProductOut, MaterialDetailOut
 # 순환 import 방지를 위한 별도 정의
 class FactoryClientOut(Schema):
     id: int
-    type: str
+    # type: str
+    is_customer: bool
+    is_supplier: bool
     name: str
     business_registration_number: Optional[str]
     representative_name: Optional[str]

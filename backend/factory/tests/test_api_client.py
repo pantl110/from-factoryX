@@ -31,7 +31,9 @@ class TestFactoryClient(TestCase):
         )
         self.client_obj = FactoryClient.objects.create(
             factory=self.factory,
-            type="customer",
+            # type="customer",
+            is_customer=True,
+            is_supplier=False,
             name="거래처1",
             business_registration_number="111-22-33333",
             representative_name="홍길동",
@@ -62,7 +64,9 @@ class TestFactoryClient(TestCase):
         headers = await self.authenticate()
         payload = {
             "name": "거래처2",
-            "type": "supplier",
+            # "type": "supplier",
+            "is_customer": False,
+            "is_supplier": True,
             "business_registration_number": "222-33-44444",
             "representative_name": "이몽룡",
             "email": "client2@example.com",
@@ -76,7 +80,9 @@ class TestFactoryClient(TestCase):
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertEqual(data["name"], "거래처2")
-        self.assertEqual(data["type"], "supplier")
+        # self.assertEqual(data["type"], "supplier")
+        self.assertFalse(data["is_customer"]) 
+        self.assertTrue(data["is_supplier"]) 
         self.assertEqual(data["business_registration_number"], "222-33-44444")
 
     async def test_create_factory_client_duplicate_name(self):
@@ -86,7 +92,8 @@ class TestFactoryClient(TestCase):
         headers = await self.authenticate()
         payload = {
             "name": "거래처1",  # 이미 존재하는 이름
-            "type": "supplier",
+            # "type": "supplier",
+            "is_supplier": True,
             "business_registration_number": "999-99-99999",
         }
         response = await self.client.post(
@@ -96,22 +103,22 @@ class TestFactoryClient(TestCase):
         data = response.json()
         self.assertIn("이미 등록된 거래처입니다", data["detail"])
 
-    async def test_create_factory_client_invalid_type(self):
-        """
-        잘못된 거래처 타입 등록 테스트
-        """
-        headers = await self.authenticate()
-        payload = {
-            "name": "거래처3",
-            "type": "invalid_type",  # 잘못된 타입
-            "business_registration_number": "333-44-55555",
-        }
-        response = await self.client.post(
-            f"?factory_id={self.factory.id}", headers=headers, json=payload
-        )
-        self.assertEqual(response.status_code, 400)
-        data = response.json()
-        self.assertIn("잘못된 거래처 타입입니다", data["detail"])
+    # async def test_create_factory_client_invalid_type(self):
+    #     """
+    #     잘못된 거래처 타입 등록 테스트
+    #     """
+    #     headers = await self.authenticate()
+    #     payload = {
+    #         "name": "거래처3",
+    #         "type": "invalid_type",  # 잘못된 타입
+    #         "business_registration_number": "333-44-55555",
+    #     }
+    #     response = await self.client.post(
+    #         f"?factory_id={self.factory.id}", headers=headers, json=payload
+    #     )
+    #     self.assertEqual(response.status_code, 400)
+    #     data = response.json()
+    #     self.assertIn("잘못된 거래처 타입입니다", data["detail"])
 
     async def test_list_factory_clients(self):
         """
@@ -139,7 +146,9 @@ class TestFactoryClient(TestCase):
         data = response.json()
         self.assertEqual(data["id"], self.client_obj.id)
         self.assertEqual(data["name"], "거래처1")
-        self.assertEqual(data["type"], "customer")
+        # self.assertEqual(data["type"], "customer")
+        self.assertTrue(data["is_customer"]) 
+        self.assertFalse(data["is_supplier"]) 
 
     async def test_update_factory_client(self):
         """
@@ -230,9 +239,15 @@ class TestFactoryClient(TestCase):
                     any(value in str(item.get(field, "")) for item in data["data"]),
                     msg=f"{field} 검색 실패: {value}",
                 )
-                # 모든 결과에 type 필드가 포함되어 있는지 확인
+                # # 모든 결과에 type 필드가 포함되어 있는지 확인
+                # for item in data["data"]:
+                #     self.assertIn("type", item)
+
+                # 모든 결과에 is_customer/is_supplier 필드가 포함되어 있는지 확인
                 for item in data["data"]:
-                    self.assertIn("type", item)
+                    # self.assertIn("type", item)
+                    self.assertIn("is_customer", item)
+                    self.assertIn("is_supplier", item)
 
     async def test_type_always_in_response(self):
         """
@@ -246,7 +261,9 @@ class TestFactoryClient(TestCase):
         data = response.json()
         self.assertIn("data", data)
         for item in data["data"]:
-            self.assertIn("type", item)
+            # self.assertIn("type", item)
+            self.assertIn("is_customer", item)
+            self.assertIn("is_supplier", item)
 
     async def test_search_multiple_clients(self):
         """
@@ -256,7 +273,9 @@ class TestFactoryClient(TestCase):
         # 거래처 2, 3 추가 생성
         client2 = await sync_to_async(FactoryClient.objects.create)(
             factory=self.factory,
-            type="supplier",
+            # type="supplier",
+            is_customer=False,
+            is_supplier=True,
             name="거래처2",
             business_registration_number="222-33-44444",
             representative_name="이몽룡",
@@ -267,7 +286,9 @@ class TestFactoryClient(TestCase):
         )
         client3 = await sync_to_async(FactoryClient.objects.create)(
             factory=self.factory,
-            type="customer",
+            # type="customer",
+            is_customer=True,
+            is_supplier=False,
             name="특별상사",
             business_registration_number="333-44-55555",
             representative_name="성춘향",
@@ -300,9 +321,11 @@ class TestFactoryClient(TestCase):
                     any(item["name"] == expected_name for item in data["data"]),
                     msg=f"q={q} 검색 결과에 {expected_name}이(가) 없음",
                 )
-                # type 필드도 항상 포함되어야 함
+                # is_customer/is_supplier 필드도 항상 포함되어야 함
                 for item in data["data"]:
-                    self.assertIn("type", item)
+                    # self.assertIn("type", item)
+                    self.assertIn("is_customer", item)
+                    self.assertIn("is_supplier", item)
 
     async def test_search_multiple_clients_with_types(self):
         """
@@ -312,7 +335,9 @@ class TestFactoryClient(TestCase):
         # 거래처 2, 3 추가 생성 (type 다르게)
         client2 = await sync_to_async(FactoryClient.objects.create)(
             factory=self.factory,
-            type="supplier",  # 발주처
+            # type="supplier",
+            is_customer=False,  # 발주처
+            is_supplier=True,
             name="거래처2",
             business_registration_number="222-33-44444",
             representative_name="이몽룡",
@@ -323,7 +348,9 @@ class TestFactoryClient(TestCase):
         )
         client3 = await sync_to_async(FactoryClient.objects.create)(
             factory=self.factory,
-            type="customer",  # 수주처
+            # type="supplier",
+            is_customer=True,  # 수주처
+            is_supplier=False,
             name="특별상사",
             business_registration_number="333-44-55555",
             representative_name="성춘향",
@@ -351,17 +378,25 @@ class TestFactoryClient(TestCase):
                 self.assertEqual(response.status_code, 200)
                 data = response.json()
                 self.assertIn("data", data)
-                # 검색 결과에 기대 거래처명이 포함되어 있고, type도 기대값인지 확인
+                # 검색 결과에 기대 거래처명이 포함되어 있고, 기대 플래그인지 확인
+                def type_to_flags(t):
+                    return (t == "customer", t == "supplier")
+                exp_is_customer, exp_is_supplier = type_to_flags(expected_type)
                 self.assertTrue(
                     any(
-                        item["name"] == expected_name and item["type"] == expected_type
+                        # item["name"] == expected_name and item["type"] == expected_type
+                        item["name"] == expected_name
+                        and item.get("is_customer") == exp_is_customer
+                        and item.get("is_supplier") == exp_is_supplier
                         for item in data["data"]
                     ),
                     msg=f"q={q} 검색 결과에 {expected_name}({expected_type})이(가) 없음",
                 )
-                # type 필드도 항상 포함되어야 함
+                # is_customer/is_supplier 필드도 항상 포함되어야 함
                 for item in data["data"]:
-                    self.assertIn("type", item)
+                    # self.assertIn("type", item)
+                    self.assertIn("is_customer", item)
+                    self.assertIn("is_supplier", item)
 
     async def test_search_without_q_returns_all(self):
         """
@@ -378,7 +413,9 @@ class TestFactoryClient(TestCase):
         # 응답 구조 확인
         for item in data["data"]:
             self.assertIn("id", item)
-            self.assertIn("type", item)
+            # self.assertIn("type", item)
+            self.assertIn("is_customer", item)
+            self.assertIn("is_supplier", item)
             self.assertIn("name", item)
 
     async def test_pagination_structure(self):
@@ -433,7 +470,9 @@ class TestFactoryClient(TestCase):
         for i in range(15):
             await FactoryClient.objects.acreate(
                 factory=self.factory,
-                type="customer",
+                # type="customer",
+                is_customer=True,
+                is_supplier=False,
                 name=f"거래처{i+2}",
                 business_registration_number=f"{(i+2):03d}-{(i+2):02d}-{(i+2):05d}",
                 representative_name=f"대표자{i+2}",
@@ -481,7 +520,9 @@ class TestFactoryClient(TestCase):
         # FactoryClientOut 스키마 필드 확인
         required_fields = [
             "id",
-            "type",
+            # "type",
+            "is_customer",
+            "is_supplier",
             "name",
             "business_registration_number",
             "representative_name",
@@ -498,7 +539,9 @@ class TestFactoryClient(TestCase):
 
             # 필드 타입 확인
             self.assertIsInstance(item["id"], int)
-            self.assertIsInstance(item["type"], str)
+            # self.assertIsInstance(item["type"], str)
+            self.assertIsInstance(item["is_customer"], bool)
+            self.assertIsInstance(item["is_supplier"], bool)
             self.assertIsInstance(item["name"], str)
 
     async def test_create_factory_client_without_type(self):
@@ -517,7 +560,9 @@ class TestFactoryClient(TestCase):
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertEqual(data["name"], "거래처4")
-        self.assertEqual(data["type"], "customer")  # 기본값
+        # self.assertIn(data["type"], "customer") # 기본값
+        self.assertFalse(data["is_customer"])  # type 없이 생성 시 둘 다 False
+        self.assertFalse(data["is_supplier"]) 
 
     async def test_create_factory_client_with_null_type(self):
         """
@@ -526,7 +571,9 @@ class TestFactoryClient(TestCase):
         headers = await self.authenticate()
         payload = {
             "name": "거래처5",
-            "type": None,
+            # "type": None,
+            "is_customer": None,
+            "is_supplier": None,
             "business_registration_number": "555-66-77777",
         }
         response = await self.client.post(
@@ -535,4 +582,6 @@ class TestFactoryClient(TestCase):
         self.assertEqual(response.status_code, 201)
         data = response.json()
         self.assertEqual(data["name"], "거래처5")
-        self.assertEqual(data["type"], "customer")  # 기본값
+        # self.assertEqual(data["type"], "customer")  # 기본값
+        self.assertFalse(data["is_customer"])  # 둘 다 False
+        self.assertFalse(data["is_supplier"]) 

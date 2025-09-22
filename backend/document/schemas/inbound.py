@@ -6,7 +6,9 @@ from document.models import WorkInstruction
 # Factory Client Field
 class FactoryClientInfoIn(Schema):
     client_id: Optional[int] = None  # 기존 클라이언트 ID (선택사항)
-    type: str = "customer"
+    # type: str = "customer"
+    is_customer: Optional[bool] = None
+    is_supplier: Optional[bool] = None
     name: str
     business_registration_number: Optional[str] = None
     representative_name: Optional[str] = None
