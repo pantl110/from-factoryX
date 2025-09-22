@@ -1523,7 +1523,7 @@ import {
   NotificationType,
   NotificationCaseType,
   TaxDocumentType,
-  ClientType,
+  // ClientType,
   TransactionType,
   BarobillStateType,
   NtsSendStateType,

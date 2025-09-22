@@ -117,7 +117,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       address,
       business_type: businessType,
       business_category: businessCategory,
-      type: 'supplier', // 자재 추가 시 고객 타입을 supplier 발주처로 설정
+      is_supplier: true,
+      // type: 'supplier', // 자재 추가 시 고객 타입을 supplier 발주처로 설정
     });
   };
 
