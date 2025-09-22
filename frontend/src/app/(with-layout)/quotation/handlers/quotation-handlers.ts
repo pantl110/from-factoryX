@@ -105,7 +105,7 @@ export const useQuotationHandlers = ({
             address: formData.address,
             manager: formData.manager,
             note: formData.note,
-            client_type: 'customer',
+            // is_customer, is_supplier는 백엔드에서 자동으로 설정됨
           },
           due_date: formData.due_date,
           products: quotationProducts.map((product) => ({
@@ -217,7 +217,7 @@ export const useQuotationHandlers = ({
             address: formData.address,
             manager: formData.manager,
             note: formData.note,
-            client_type: 'customer',
+            // is_customer, is_supplier는 백엔드에서 자동으로 설정됨
           },
           due_date: formData.due_date,
           products: quotationProducts.map((product) => ({
@@ -253,7 +253,7 @@ export const useQuotationHandlers = ({
           address: formData.address,
           manager: formData.manager,
           note: formData.note,
-          client_type: 'customer',
+          // is_customer, is_supplier는 백엔드에서 자동으로 설정됨
         },
         due_date: formData.due_date,
         products: quotationProducts.map((product) => ({
@@ -292,7 +292,7 @@ export const useQuotationHandlers = ({
               address: formData.address,
               manager: formData.manager,
               note: formData.note,
-              client_type: 'customer',
+              // is_customer, is_supplier는 백엔드에서 자동으로 설정됨
             },
             due_date: formData.due_date,
             products: quotationProducts.map((product) => ({
@@ -363,7 +363,7 @@ export const useQuotationHandlers = ({
             address: formData.address,
             manager: formData.manager,
             note: formData.note,
-            client_type: 'customer',
+            // client_type, is_customer, is_supplier는 백엔드에서 자동으로 설정됨
           },
           due_date: formData.due_date,
           products: quotationProducts.map((product) => ({
