@@ -188,12 +188,14 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
     # 설비 검증
     equipment = await get_equipment_by_id(payload.equipment_id, factory_id)
 
-    # 수량 검증
-    if payload.quantity <= 0:
+    # 수량 검증 (0 가능)
+    if payload.quantity < 0:
         raise HttpError(400, "생산 수량은 0보다 커야 합니다.")
 
-    if payload.total_quantity < payload.total_amount:
-        raise HttpError(400, "해당 품목의 생산 수량 총합이 주문 수량보다 작습니다.")
+    # 반품일때는 생산 수량이 주문 수량보다 작을 수 있다.
+    # if payload.total_quantity < payload.total_amount:
+    #     raise HttpError(400, "해당 품목의 생산 수량 총합이 주문 수량보다 작습니다.")
+
 
     if payload.plan_id:
         # 수정 모드
