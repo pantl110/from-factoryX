@@ -29,7 +29,7 @@ const ProductStockLog = ({
           <ProductStockLogItem
             key={item.id}
             date={item.created_at}
-            status={item.type}
+            status={item.quantity > 0 ? 'in' : 'out'}
             amount={item.quantity}
             total={item.total_stock}
           />

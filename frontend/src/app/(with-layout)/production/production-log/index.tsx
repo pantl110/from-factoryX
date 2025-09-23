@@ -339,6 +339,14 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
                 projectPlans[index - 1].quotation_product.product.id !==
                   plan.quotation_product.product.id;
 
+              // 실제 변경 여부 판단 (원본 대비 변경된 필드가 하나라도 있으면 true)
+              const changed = formChanges[plan.id];
+              const hasRealChanges =
+                !!changed &&
+                (changed.quantity !== plan.quantity ||
+                  (changed.start_date || '') !== (plan.start_date || '') ||
+                  (changed.end_date || '') !== (plan.end_date || ''));
+
               return (
                 <ProductionLogTableItem
                   key={plan.id}
@@ -346,7 +354,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
                   onFormChange={handleFormChange}
                   projectStatus={projectStatus}
                   onSave={() => handleRowSave(plan.id)}
-                  hasChanges={!!formChanges[plan.id]}
+                  hasChanges={hasRealChanges}
                   onValidityChange={handleValidityChange}
                   isFirstOfProduct={isFirstOfProduct}
                 />

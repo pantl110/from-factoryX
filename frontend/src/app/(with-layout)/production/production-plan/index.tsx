@@ -120,7 +120,7 @@ const ProductionPlan = ({
             product: parentPlan.quotation_product.product,
           },
         } as ProjectPlanModel & { is_new?: boolean };
-        (newPlan as any).is_new = true;
+        newPlan.is_new = true;
 
         setProjectPlans((prev) => {
           const parentIndex = prev.findIndex(
@@ -143,7 +143,7 @@ const ProductionPlan = ({
         alert('추가 생산 계획 생성 중 오류가 발생했습니다.');
       }
     },
-    [projectId, projectPlans, formChanges, allEquipments]
+    [projectId, projectPlans, allEquipments]
   );
 
   // 토스트 훅들
@@ -278,17 +278,20 @@ const ProductionPlan = ({
     }
 
     Object.values(grouped).forEach((plans) => {
-      // 버퍼 포함 목표 생산량 계산 (buffer_rate가 null이면 0.1)
+      // 초기 진입 시: 생성 여부 판단은 주문수량 기준, 추천 수량은 버퍼 포함
       const orderQty = plans[0].quotation_product.quantity;
-      const bufferRate = plans[0].quotation_product.product?.buffer_rate ?? 0.1;
-      const targetTotal = orderQty + Math.ceil(orderQty * bufferRate);
+      const targetTotal = orderQty;
       const totalQty = plans.reduce((sum, p) => {
         const q = formChanges[p.id]?.quantity ?? p.quantity;
         return sum + q;
       }, 0);
 
       if (totalQty < targetTotal) {
-        const autoQty = targetTotal - totalQty;
+        // 추천 수량은 버퍼 포함 목표치로 계산
+        const bufferRate =
+          plans[0].quotation_product.product?.buffer_rate ?? 0.1;
+        const bufferedTarget = orderQty + Math.ceil(orderQty * bufferRate);
+        const autoQty = Math.max(0, bufferedTarget - totalQty);
         if (autoQty > 0) {
           const last = plans[plans.length - 1];
           const equipmentId = last.equipment.id;
@@ -451,7 +454,7 @@ const ProductionPlan = ({
         }
         setProjectPlans((prev) => prev.filter((plan) => plan.id !== planId));
         setFormChanges((prev) => {
-          const next = { ...prev } as any;
+          const next: Record<number, ProductionPlanFormDataModel> = { ...prev };
           delete next[planId];
           return next;
         });
@@ -773,7 +776,7 @@ const ProductionPlan = ({
         if (result.success) {
           // 저장 성공 시 projectPlans 상태 업데이트 (저장된 값으로)
           setProjectPlans((prev) => {
-            const realId = (result as any).data?.plan_id;
+            const realId = result.data?.plan_id;
             return prev.map((plan) => {
               if (plan.id !== planId) return plan;
               const updated = {
@@ -792,7 +795,7 @@ const ProductionPlan = ({
               } as ProjectPlanModel;
               // 새 플랜이 저장되면 is_new 제거
               if (isNewPlan) {
-                (updated as any).is_new = undefined;
+                (updated as unknown as { is_new?: boolean }).is_new = undefined;
               }
               return updated;
             });
@@ -802,15 +805,15 @@ const ProductionPlan = ({
           setFormChanges((prev) => {
             const newChanges: Record<number, ProductionPlanFormDataModel> = {
               ...prev,
-            } as any;
-            const realId = (result as any).data?.plan_id;
+            };
+            const realId = result.data?.plan_id;
             if (isNewPlan && realId) {
               // 키를 임시ID에서 실제ID로 이전
               const saved = newChanges[planId];
-              delete (newChanges as any)[planId];
-              (newChanges as any)[realId] = saved;
+              delete newChanges[planId];
+              newChanges[realId] = saved;
             } else {
-              delete (newChanges as any)[planId];
+              delete newChanges[planId];
             }
             return newChanges;
           });

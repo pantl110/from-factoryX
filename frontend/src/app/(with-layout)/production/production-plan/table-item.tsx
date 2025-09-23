@@ -77,15 +77,14 @@ const TableItem = ({
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
   // React Hook Form 설정
-  const { control, watch, reset, getValues } =
-    useForm<ProductionPlanFormDataModel>({
-      defaultValues: {
-        quantity: currentFormData?.quantity ?? item.quantity,
-        equipment_id: currentFormData?.equipment_id ?? item.equipment.id,
-        start_date: currentFormData?.start_date ?? item.start_date ?? '', // 이미 KST로 변환된 값 사용
-        end_date: currentFormData?.end_date ?? item.end_date ?? '', // 이미 KST로 변환된 값 사용
-      },
-    });
+  const { control, watch, reset } = useForm<ProductionPlanFormDataModel>({
+    defaultValues: {
+      quantity: currentFormData?.quantity ?? item.quantity,
+      equipment_id: currentFormData?.equipment_id ?? item.equipment.id,
+      start_date: currentFormData?.start_date ?? item.start_date ?? '', // 이미 KST로 변환된 값 사용
+      end_date: currentFormData?.end_date ?? item.end_date ?? '', // 이미 KST로 변환된 값 사용
+    },
+  });
 
   // 컴포넌트 마운트 시에만 form을 초기화
   useEffect(() => {
@@ -114,7 +113,9 @@ const TableItem = ({
   // 원본 데이터와 비교하여 실제 변경사항이 있는지 확인
   const originalStartDate = item.start_date || '';
   const originalEndDate = item.end_date || '';
-  const isNewPlan = (item as any)?.is_new === true || (item?.id ?? 0) < 0;
+  const isNewPlan =
+    (item as unknown as { is_new?: boolean })?.is_new === true ||
+    (item?.id ?? 0) < 0;
   const hasChanges =
     isNewPlan ||
     watchedQuantity !== item.quantity ||
