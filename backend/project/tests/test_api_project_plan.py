@@ -298,7 +298,7 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(response.status_code, 422)
 
     def test_create_or_update_project_plan_invalid_quantity(self):
-        """올바르지 않은 수량으로 수정 시도 테스트"""
+        """올바르지 않은 수량(음수)으로 수정 시도 테스트. 0은 허용"""
         # 먼저 생산 계획 생성
         create_url = "/v1/project-plan/create-or-update"
         create_payload = {
@@ -323,18 +323,18 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertEqual(create_response.status_code, 200)
         plan_id = create_response.json()["plan_id"]
 
-        # 올바르지 않은 수량으로 수정 시도
+        # 올바르지 않은 수량(음수)으로 수정 시도 (0은 허용)
         update_payload = {
             "plan_id": plan_id,
             "project_id": self.project.id,
             "quotation_product_id": self.quotation_product.id,
             "equipment_id": self.equipment.id,
-            "quantity": 0,
+            "quantity": -1,
             "start_date": "2025-07-13T00:00:00Z",
             "end_date": "2025-07-14T00:00:00Z",
             "avg_production_time": 3600,
-            "total_amount": 0,
-            "total_quantity": 0,
+            "total_amount": -1,
+            "total_quantity": -1,
         }
 
         response = self.client.post(
