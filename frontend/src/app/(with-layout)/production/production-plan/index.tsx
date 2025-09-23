@@ -685,6 +685,28 @@ const ProductionPlan = ({
         });
 
         if (result.success) {
+          // 저장 성공 시 projectPlans 상태 업데이트 (저장된 값으로)
+          setProjectPlans((prev) =>
+            prev.map((plan) =>
+              plan.id === planId
+                ? {
+                    ...plan,
+                    quantity: formData.quantity,
+                    equipment: {
+                      ...plan.equipment,
+                      id: formData.equipment_id,
+                      name:
+                        allEquipments.find(
+                          (eq) => eq.id === formData.equipment_id
+                        )?.name || plan.equipment.name,
+                    },
+                    start_date: formData.start_date,
+                    end_date: formData.end_date,
+                  }
+                : plan
+            )
+          );
+
           // 저장 성공 시 해당 plan의 formChanges 초기화
           setFormChanges((prev) => {
             const newChanges = { ...prev };
@@ -709,6 +731,7 @@ const ProductionPlan = ({
       formChanges,
       checkTimeConflicts,
       checkEquipmentConflicts,
+      allEquipments,
     ]
   );
 
