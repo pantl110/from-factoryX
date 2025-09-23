@@ -13,7 +13,7 @@ interface ManualAddMaterialProps {
   ) => void;
   existingMaterials?: string[]; // 기존 원자재 코드만 저장
   selectedMaterials?: MaterialItemModel[]; // 현재 선택된 원자재들
-  showToast?: () => void;
+  showToast?: (text: string, subtext: string) => void;
 }
 
 const ManualAddMaterial = ({
@@ -80,7 +80,10 @@ const ManualAddMaterial = ({
 
     if (isDuplicate) {
       // 토스트 메시지 표시 (토스트 시스템이 있다면)
-      showToast?.();
+      showToast?.(
+        '이미 존재하는 자재코드에요.',
+        '다른 자재코드로 수정해주세요.'
+      );
       // 자재코드 필드에 에러 표시를 위해 form 에러 설정
       setError('code', {
         type: 'manual',

@@ -56,13 +56,12 @@ const ConnectMaterialModal = ({
   const { createMaterialProduct, isLoading: isConnecting } =
     useMaterialProduct();
   const { createMaterial, isLoading: isCreating } = useCreateMaterial();
+
+  // 토스트
   const { isToastOpen, isVisible, showToast } = useToast();
-  // 사용 수량 0 경고 토스트
-  const {
-    isToastOpen: isQtyToastOpen,
-    isVisible: isQtyVisible,
-    showToast: showQtyToast,
-  } = useToast();
+  const [toastText, setToastText] = useState('');
+  const [toastSubtext, setToastSubtext] = useState('');
+
   const factoryId = useMemberStore((state) => state.factoryId);
 
   const [selectedMaterials, setSelectedMaterials] = useState<
@@ -181,7 +180,9 @@ const ConnectMaterialModal = ({
       selectedMaterials.some((m) => (m.quantity ?? 0) === 0) ||
       newMaterials.some((m) => (m.quantity ?? 0) === 0);
     if (hasZeroQty) {
-      showQtyToast();
+      setToastText('사용수량이 입력되지 않았어요.');
+      setToastSubtext('사용수량을 입력해주세요.');
+      showToast();
       return;
     }
 
@@ -374,7 +375,11 @@ const ConnectMaterialModal = ({
               setNewMaterials={setNewMaterials}
               existingMaterials={allMaterialCodes}
               selectedMaterials={selectedMaterials}
-              showToast={() => showToast()}
+              showToast={(text: string, subtext: string) => {
+                setToastText(text);
+                setToastSubtext(subtext);
+                showToast();
+              }}
             />
           ) : (
             // 선택한 원자재 list
@@ -435,25 +440,14 @@ const ConnectMaterialModal = ({
         </div>
       </div>
 
-      {/* 원자재 코드 중복 토스트 */}
+      {/* 토스트 */}
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
-          text="이미 존재하는 자재코드에요."
-          subtext="다른 자재코드로 수정해주세요."
+          text={toastText}
+          subtext={toastSubtext}
           type="red"
           isVisible={isVisible}
-        />
-      )}
-
-      {/* 사용 수량 0 토스트 */}
-      {isQtyToastOpen && (
-        <Toast
-          icon={<WarningCircle size={20} className="text-red" />}
-          text="사용수량이 입력되지 않았어요."
-          subtext="사용수량을 입력해주세요."
-          type="red"
-          isVisible={isQtyVisible}
         />
       )}
     </Modal>
