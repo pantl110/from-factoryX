@@ -244,7 +244,7 @@ const TableItem = ({
           </p>
         )}
 
-        {isArchived && project.status === 'completed' && role !== 'viewer' && (
+        {isArchived && project.status === 'completed' && role !== 'viewer' ? (
           <button
             onClick={handleCloneProject}
             onMouseEnter={(e) => {
@@ -260,6 +260,8 @@ const TableItem = ({
           >
             <CopySimple size={20} className="text-dg" />
           </button>
+        ) : (
+          <div className="w-9" />
         )}
       </div>
 
