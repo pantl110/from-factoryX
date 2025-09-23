@@ -238,7 +238,6 @@ class QuotationProductDetailOut(Schema):
     unit_price: int
     is_delivery: Optional[bool] = None
     delivery_date: Optional[datetime.date] = None
-    plan_statuses: List[str] = Field(default_factory=list, description="해당 견적 품목에 연결된 생산 계획 상태 목록")
 
 
 # (GET) Equipment Detail
