@@ -174,6 +174,38 @@ async def register_production_from_refund_log(
                 delivery_date=await parse_and_validate_date(payload.refund_date),
             )
 
+        # 생산 수량이 0이면 Plan 생성/수정 없이 QuotationProduct만 처리
+        if payload.production_amount is not None and payload.production_amount <= 0:
+            # 기존 plan이 있으면 삭제
+            if existing_plan:
+                await existing_plan.adelete()
+                refund.plan = None
+                await refund.asave()
+            
+            # refund 및 로그만 업데이트
+            refund.amount = payload.amount
+            refund.production_amount = payload.production_amount
+            refund.refund_date = await parse_and_validate_date(payload.refund_date)
+            await refund.asave()
+
+            project_log = await ProjectLog.objects.aget(refund=refund)
+            log_content = f"{refund.product.name} {payload.amount}개가 반품되었어요."
+            project_log.content = log_content
+            await project_log.asave()
+
+            return 200, {
+                "message": "반품 재생산이 성공적으로 처리되었습니다.",
+                "action": "삭제" if existing_plan else "생성",
+                "refund_id": await sync_to_async(lambda: refund.id)(),
+                "quotation_id": existing_quotation.id,
+                "quotation_product_id": quotation_product.id,
+                "project_plan_id": None,
+                "log_id": log.id,
+                "product_name": refund_product.name,
+                "quantity": payload.amount,
+                "equipment_name": None,
+            }
+
         # 3. 기본 장비 선택
         default_equipment = await get_default_equipment(factory_id)
 
