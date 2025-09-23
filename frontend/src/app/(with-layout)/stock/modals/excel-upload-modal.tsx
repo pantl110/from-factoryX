@@ -69,23 +69,29 @@ const ExcelUploadModal = ({
         return 0;
       };
 
+      // 정수 필드는 반올림 처리 (버퍼 비율 제외)
+      const extractRoundedInt = (value: unknown): number => {
+        const num = extractNumber(value);
+        return Math.round(num);
+      };
+
       // 원본 데이터에서 비어있는 데이터가 있는지 확인 (모든 필드가 비어있는 행은 제외)
       const hasEmptyData = dataToProcess.some((row) => {
         const name = String(
-          row[type === 'product' ? '품목명' : '자재명'] || ''
+          row[type === 'product' ? '품목명' : '자재명'] ?? ''
         );
         const code = String(
-          row[type === 'product' ? '품목 코드' : '자재 코드'] || ''
+          row[type === 'product' ? '품목 코드' : '자재 코드'] ?? ''
         );
-        const spec = String(row['규격'] || '');
-        const unit = String(row['단위'] || '');
+        const spec = String(row['규격'] ?? '');
+        const unit = String(row['단위'] ?? '');
 
         // 모든 필드가 비어있으면 건너뛰기 (자재/품목에 따라 다른 기준)
         let isAllEmpty = false;
         if (type === 'material') {
           // 자재: 자재명, 자재 코드, 규격, 단위, 현재 재고, 최소 재고 모두 비어있어야 함
-          const currentStock = String(row['현재 재고'] || '').trim();
-          const minStock = String(row['최소 재고'] || '').trim();
+          const currentStock = String(row['현재 재고'] ?? '').trim();
+          const minStock = String(row['최소 재고'] ?? '').trim();
           isAllEmpty =
             name.trim() === '' &&
             code.trim() === '' &&
@@ -95,12 +101,12 @@ const ExcelUploadModal = ({
             minStock === '';
         } else {
           // 품목: 품목명, 품목 코드, 규격, 단위, 현재 재고, 평균 생산 시간(초), 버퍼 비율(%), 특이 사항 모두 비어있어야 함
-          const currentStock = String(row['현재 재고'] || '').trim();
+          const currentStock = String(row['현재 재고'] ?? '').trim();
           const avgProductionTime = String(
-            row['평균 생산 시간(초)'] || ''
+            row['평균 생산 시간(초)'] ?? ''
           ).trim();
-          const bufferRate = String(row['버퍼 비율(%)'] || '').trim();
-          const note = String(row['특이 사항'] || '').trim();
+          const bufferRate = String(row['버퍼 비율(%)'] ?? '').trim();
+          const note = String(row['특이 사항'] ?? '').trim();
           isAllEmpty =
             name.trim() === '' &&
             code.trim() === '' &&
@@ -139,17 +145,17 @@ const ExcelUploadModal = ({
       // 빈 행을 필터링하는 함수
       const isEmptyRow = (row: ExcelRowModel) => {
         const name = String(
-          row[type === 'product' ? '품목명' : '자재명'] || ''
+          row[type === 'product' ? '품목명' : '자재명'] ?? ''
         ).trim();
         const code = String(
-          row[type === 'product' ? '품목 코드' : '자재 코드'] || ''
+          row[type === 'product' ? '품목 코드' : '자재 코드'] ?? ''
         ).trim();
-        const spec = String(row['규격'] || '').trim();
-        const unit = String(row['단위'] || '').trim();
+        const spec = String(row['규격'] ?? '').trim();
+        const unit = String(row['단위'] ?? '').trim();
 
         if (type === 'material') {
-          const currentStock = String(row['현재 재고'] || '').trim();
-          const minStock = String(row['최소 재고'] || '').trim();
+          const currentStock = String(row['현재 재고'] ?? '').trim();
+          const minStock = String(row['최소 재고'] ?? '').trim();
           return (
             name === '' &&
             code === '' &&
@@ -159,12 +165,12 @@ const ExcelUploadModal = ({
             minStock === ''
           );
         } else {
-          const currentStock = String(row['현재 재고'] || '').trim();
+          const currentStock = String(row['현재 재고'] ?? '').trim();
           const avgProductionTime = String(
-            row['평균 생산 시간(초)'] || ''
+            row['평균 생산 시간(초)'] ?? ''
           ).trim();
-          const bufferRate = String(row['버퍼 비율(%)'] || '').trim();
-          const note = String(row['특이 사항'] || '').trim();
+          const bufferRate = String(row['버퍼 비율(%)'] ?? '').trim();
+          const note = String(row['특이 사항'] ?? '').trim();
           return (
             name === '' &&
             code === '' &&
@@ -183,22 +189,22 @@ const ExcelUploadModal = ({
         .filter((row) => !isEmptyRow(row))
         .map((row) => {
           const name = String(
-            row[type === 'product' ? '품목명' : '자재명'] || ''
+            row[type === 'product' ? '품목명' : '자재명'] ?? ''
           ).trim();
           const code = String(
-            row[type === 'product' ? '품목 코드' : '자재 코드'] || ''
+            row[type === 'product' ? '품목 코드' : '자재 코드'] ?? ''
           ).trim();
-          const unit = String(row['단위'] || '').trim();
-          const spec = String(row['규격'] || '').trim();
-          const currentStock = extractNumber(row['현재 재고']);
+          const unit = String(row['단위'] ?? '').trim();
+          const spec = String(row['규격'] ?? '').trim();
+          const currentStock = extractRoundedInt(row['현재 재고']);
           const avgProductionTime =
             type === 'product'
-              ? extractNumber(row['평균 생산 시간(초)'])
+              ? extractRoundedInt(row['평균 생산 시간(초)'])
               : null;
           const bufferRate =
             type === 'product' ? extractNumber(row['버퍼 비율(%)']) : null;
           const minStock =
-            type === 'material' ? extractNumber(row['최소 재고']) : null;
+            type === 'material' ? extractRoundedInt(row['최소 재고']) : null;
 
           return {
             name,
