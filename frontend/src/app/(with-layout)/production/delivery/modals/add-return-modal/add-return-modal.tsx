@@ -99,7 +99,7 @@ const AddReturnModal = ({
       project_id: projectId,
       product_id: selectedProduct.productId,
       refund_date: returnDate,
-      production_amount: parseInt(returnQuantity, 10) || 0,
+      refund_amount: parseInt(returnQuantity, 10) || 0,
     };
 
     const result = await createRefund(refundData);

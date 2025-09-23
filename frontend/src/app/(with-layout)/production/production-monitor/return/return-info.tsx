@@ -47,7 +47,7 @@ const ReturnInfo = ({
   // 폼 유효성 검사
   const isFormValid =
     watchedRefundDate &&
-    watchedAmount > 0 &&
+    watchedAmount >= 0 &&
     watchedProductionAmount >= 0 &&
     watchedProductionAmount + refundData.current_stock >= watchedAmount;
 
@@ -199,9 +199,7 @@ const ReturnInfo = ({
                     <div className="flex items-center w-full">
                       <input
                         type="text"
-                        value={
-                          watchedAmount === 0 ? '' : formatNumber(watchedAmount)
-                        }
+                        value={formatNumber(watchedAmount)}
                         onChange={handleAmountChange}
                         placeholder="(필수)"
                         className="w-full placeholder:text-gr"
@@ -236,11 +234,7 @@ const ReturnInfo = ({
                     <div className="flex items-center w-full">
                       <input
                         type="text"
-                        value={
-                          watchedProductionAmount === 0
-                            ? ''
-                            : formatNumber(watchedProductionAmount)
-                        }
+                        value={formatNumber(watchedProductionAmount)}
                         onChange={handleProductionAmountChange}
                         placeholder="(필수)"
                         className="w-full placeholder:text-gr"
