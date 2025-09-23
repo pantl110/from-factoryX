@@ -310,7 +310,7 @@ const ProductionPageContent = () => {
         )}
         {tabs[selectedTab] === '납품' && projectStatus?.quotations[0] && (
           <Delivery
-            quotationData={projectStatus?.quotations[0]}
+            // quotationData={projectStatus?.quotations[0]}
             onProjectStatusChange={reloadProjectStatus}
             projectStatus={projectStatus.status as ProjectStatusType}
             printedAt={projectStatus.printed_at}

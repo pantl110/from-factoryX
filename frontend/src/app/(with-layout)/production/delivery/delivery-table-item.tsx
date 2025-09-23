@@ -80,6 +80,9 @@ const DeliveryTableItem = ({
   const { bgColor, textColor } =
     DeliveryStatusColorMap[deliveryStatus as DeliveryStatusType];
 
+  // 가동완료(= manufactured) 이상에서만 납품상태 변경 허용
+  const canEdit = projectStatus !== 'completed';
+
   // 날짜 입력 핸들러 (포맷만 적용, 저장은 버튼으로)
   const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -216,12 +219,8 @@ const DeliveryTableItem = ({
             text={deliveryStatus}
             bgColor={bgColor}
             textColor={textColor}
-            state={projectStatus !== 'completed' ? true : false}
-            onClick={
-              projectStatus !== 'completed'
-                ? (e) => e && openDropdown(e)
-                : undefined
-            }
+            state={canEdit}
+            onClick={canEdit ? (e) => e && openDropdown(e) : undefined}
           />
         </div>
         <div

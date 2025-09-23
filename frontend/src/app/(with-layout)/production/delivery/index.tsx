@@ -16,17 +16,19 @@ import {
   useCheckAll,
   useUpdateProjectStatus,
   useUpdateQuotationProductDelivery,
+  useGetProjectStatus,
 } from '@/hooks';
+import Spinner from '@/ui/spinner';
 
 interface DeliveryProps {
-  quotationData: ProjectQuotationModel;
+  // quotationData: ProjectQuotationModel;
   onProjectStatusChange?: () => Promise<void>;
   projectStatus: ProjectStatusType;
   printedAt: string;
 }
 
 const Delivery = ({
-  quotationData,
+  // quotationData,
   onProjectStatusChange,
   projectStatus,
   printedAt,
@@ -54,19 +56,32 @@ const Delivery = ({
 
   // 로컬 복제본(인쇄/표시에 사용) – 납품일자 변경 시 동기화
   const [localQuotationData, setLocalQuotationData] =
-    useState<ProjectQuotationModel>(quotationData);
+    useState<ProjectQuotationModel | null>(null);
 
-  // 프로젝트 플랜에서 납품 정보 가져오기
-  // const { getProjectPlans, isLoading, error } = useGetProjectPlans();
   const [deliveryData, setDeliveryData] = useState<
     ProjectQuotationProductsModel[]
-  >(quotationData?.products || []);
+  >([]);
 
-  // keep deliveryData in sync when quotationData changes
+  // 이 탭에서 quotationData를 직접 로드하여 초기화
+  const { getProjectStatus, isLoading: isGetProjectStatusLoading } =
+    useGetProjectStatus();
   useEffect(() => {
-    setDeliveryData(quotationData?.products || []);
-    setLocalQuotationData(quotationData);
-  }, [quotationData]);
+    const loadQuotation = async () => {
+      if (!projectId) return;
+      try {
+        const res = await getProjectStatus(projectId);
+        if (res.success && res.data && res.data.quotations?.[0]) {
+          const q = res.data.quotations[0] as ProjectQuotationModel;
+          setLocalQuotationData(q);
+          setDeliveryData(q.products || []);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    loadQuotation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
 
   const { updateProjectStatus, isLoading: isUpdateLoading } =
     useUpdateProjectStatus();
@@ -120,7 +135,7 @@ const Delivery = ({
         if (!item) return null;
 
         return {
-          companyName: quotationData.factory_info.name,
+          companyName: localQuotationData?.factory_info.name || '-',
           productName: item.product?.name || '-',
           spec: item.product?.spec || '-',
           unit: item.product?.unit || '-',
@@ -165,12 +180,15 @@ const Delivery = ({
         item.id === targetId ? { ...item, delivery_date: newDate } : item
       )
     );
-    setLocalQuotationData((prev) => ({
-      ...prev,
-      products: prev.products.map((p) =>
-        p.id === targetId ? { ...p, delivery_date: newDate } : p
-      ),
-    }));
+    setLocalQuotationData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        products: prev.products.map((p) =>
+          p.id === targetId ? { ...p, delivery_date: newDate } : p
+        ),
+      };
+    });
   };
 
   // 보관함으로 이동하는 버튼
@@ -253,34 +271,34 @@ const Delivery = ({
           </div>
         </div>
         <div className="flex flex-col w-full overflow-x-auto">
-          {/* {isLoading ? (
+          {isGetProjectStatusLoading ? (
             <div className="flex items-center justify-center w-full h-100">
               <Spinner />
             </div>
-          ) : ( */}
-          <>
-            <DeliveryTableHeader
-              isAllChecked={isAllChecked}
-              onToggleAll={toggleAll}
-            />
-            {deliveryData && deliveryData.length > 0 && (
-              <>
-                {deliveryData.map((data: ProjectQuotationProductsModel) => (
-                  <DeliveryTableItem
-                    key={data.id}
-                    data={data}
-                    isChecked={isChecked(data.id)}
-                    onToggle={() => toggleOne(data.id)}
-                    onItemClick={handleItemClick}
-                    projectStatus={projectStatus}
-                    onDeliveryDateChange={handleDeliveryDateChange}
-                    onDeliveryStatusChange={handleDeliveryStatusChange}
-                  />
-                ))}
-              </>
-            )}
-          </>
-          {/* )} */}
+          ) : (
+            <>
+              <DeliveryTableHeader
+                isAllChecked={isAllChecked}
+                onToggleAll={toggleAll}
+              />
+              {deliveryData && deliveryData.length > 0 && (
+                <>
+                  {deliveryData.map((data: ProjectQuotationProductsModel) => (
+                    <DeliveryTableItem
+                      key={data.id}
+                      data={data}
+                      isChecked={isChecked(data.id)}
+                      onToggle={() => toggleOne(data.id)}
+                      onItemClick={handleItemClick}
+                      projectStatus={projectStatus}
+                      onDeliveryDateChange={handleDeliveryDateChange}
+                      onDeliveryStatusChange={handleDeliveryStatusChange}
+                    />
+                  ))}
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -290,7 +308,7 @@ const Delivery = ({
           onClose={() => setIsDeliveryOverlayOpen(false)}
           data={[
             {
-              companyName: quotationData.client_info.name,
+              companyName: localQuotationData?.client_info.name || '-',
               productName: selectedDeliveryData.product?.name || '-',
               spec: selectedDeliveryData.product?.spec || '-',
               unit: selectedDeliveryData.product?.unit || '-',
@@ -315,7 +333,7 @@ const Delivery = ({
           <DeliveryOverlay
             onClose={() => setIsPrintAllDeliveryOverlayOpen(false)}
             data={deliveryData.map((item: ProjectQuotationProductsModel) => ({
-              companyName: quotationData.client_info.name,
+              companyName: localQuotationData?.client_info.name || '-',
               productName: item.product?.name || '-',
               spec: item.product?.spec || '-',
               unit: item.product?.unit || '-',
