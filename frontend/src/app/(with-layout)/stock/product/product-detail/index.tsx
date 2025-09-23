@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import ProductInfo, { ProductInfoModel } from './product-info';
 import MiniBtn from '@/ui/mini-btn';
 import StockStatus from './stock-status';
@@ -132,6 +132,32 @@ const ProductDetail = ({
     }>
   >([]);
 
+  // 모달의 중복 차단을 위한 이미 연결된 자재 ID 목록
+  const connectedMaterialIds = useMemo(() => {
+    if (productId) {
+      const list: ConnectionModelType[] =
+        connections && Array.isArray(connections)
+          ? (connections as ConnectionModelType[])
+          : [];
+      return list
+        .map((c: ConnectionModelType) =>
+          'material_id' in c ? c.material_id : undefined
+        )
+        .filter((v: number | undefined): v is number => typeof v === 'number')
+        .filter(
+          (id: number, idx: number, arr: number[]) => arr.indexOf(id) === idx
+        );
+    }
+    return stagedMaterials
+      .map((m) => m.id)
+      .filter(
+        (v: number | undefined | null): v is number => typeof v === 'number'
+      )
+      .filter(
+        (id: number, idx: number, arr: number[]) => arr.indexOf(id) === idx
+      );
+  }, [productId, connections, stagedMaterials]);
+
   // 수량 변경 추적 함수
   const handleQuantityChange = (connectionId: number, newQuantity: number) => {
     setQuantityChanges((prev) => ({
@@ -259,11 +285,13 @@ const ProductDetail = ({
   // 서버 location 데이터를 RHF locations 배열에 세팅
   useEffect(() => {
     if (locationListData && 'locations' in locationListData) {
-      const serverLocations = locationListData.locations.map((loc) => ({
-        id: loc.id,
-        location: loc.location ?? '',
-        images: loc.images ?? [],
-      }));
+      const serverLocations = locationListData.locations.map(
+        (loc: LocationModel) => ({
+          id: loc.id,
+          location: loc.location ?? '',
+          images: loc.images ?? [],
+        })
+      );
       reset({ locations: serverLocations });
     }
   }, [locationListData, reset]);
@@ -329,7 +357,7 @@ const ProductDetail = ({
         currentProductId?: number | null
       ) => {
         // 현재 제품의 코드는 제외하고 중복 검사
-        const otherCodes = allProductCodes.filter((existingCode) => {
+        const otherCodes = allProductCodes.filter((existingCode: string) => {
           // 수정 모드에서는 현재 제품의 코드는 제외
           if (currentProductId && product && product.code === existingCode) {
             return false;
@@ -473,8 +501,14 @@ const ProductDetail = ({
       if (fileImages.length > 0) {
         const uploadResults = await uploadMultipleFiles(fileImages);
         uploadedUrls = uploadResults
-          .filter((res) => res.success && res.object_url)
-          .map((res) => res.object_url || '');
+          .filter(
+            (res: { success: boolean; object_url?: string }) =>
+              res.success && !!res.object_url
+          )
+          .map(
+            (res: { success: boolean; object_url?: string }) =>
+              res.object_url || ''
+          );
       }
       // 최종 images 배열: 기존 string URL + 새로 업로드된 URL
       const images = [...urlImages, ...uploadedUrls];
@@ -731,6 +765,7 @@ const ProductDetail = ({
               await getMaterialProductConnections(productId, 'product');
             }
           }}
+          connectedMaterialIds={connectedMaterialIds}
           onStage={(
             materials: Array<{
               id: number;

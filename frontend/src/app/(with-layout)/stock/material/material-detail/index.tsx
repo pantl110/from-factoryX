@@ -107,7 +107,7 @@ const MaterialDetailPanel = ({
     useLocation();
   const { uploadMultipleFiles } = useUploadFile();
   const { getProductList } = useGetProduct();
-  const { isToastOpen, isVisible, showToast } = useToast(3000);
+  const { isToastOpen, isVisible, showToast } = useToast();
   const { deleteMaterialProductConnection } = useMaterialProduct();
   const [prevLocations, setPrevLocations] = useState<LocationModel[]>([]);
 

@@ -36,6 +36,8 @@ interface ConnectMaterialModalProps {
       quantity: number;
     }>
   ) => void;
+  // 이미 제품과 연결되어 있는 원자재 ID 목록 (중복 방지용)
+  connectedMaterialIds?: number[];
 }
 
 const ConnectMaterialModal = ({
@@ -43,6 +45,7 @@ const ConnectMaterialModal = ({
   productId,
   onSuccess,
   onStage,
+  connectedMaterialIds = [],
 }: ConnectMaterialModalProps) => {
   const [input, setInput] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -127,6 +130,13 @@ const ConnectMaterialModal = ({
   // 원자재 선택 시
   const handleSelectMaterial = (item: MaterialResponseModel) => {
     setInput('');
+    // 이미 연결되어 있는 자재면 토스트 띄우고 추가하지 않음
+    if (connectedMaterialIds.includes(item.id)) {
+      setToastText('이미 연결된 자재에요.');
+      showToast();
+      setIsDropdownOpen(false);
+      return;
+    }
     setSelectedMaterials((prev) => {
       if (!prev.some((mat) => mat.code === item.code)) {
         // MaterialResponseModel을 MaterialItemModel로 변환
