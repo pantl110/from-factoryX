@@ -871,11 +871,6 @@ async def list_project_plans(request, project_id: int):
                     ),
                     quantity=quotation_product.quantity,
                     unit_price=quotation_product.unit_price,
-                    plan_statuses=list(
-                        await sync_to_async(list)(
-                            ProjectPlan.objects.filter(product_id=quotation_product.id).values_list("status", flat=True)
-                        )
-                    ),
                 ),
                 equipment=EquipmentDetailOut(
                     id=equipment.id, name=equipment.name, priority=equipment.priority
