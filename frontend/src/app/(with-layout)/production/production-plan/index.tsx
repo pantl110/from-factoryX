@@ -108,8 +108,8 @@ const ProductionPlan = ({
               allEquipments.find((eq) => eq.id === planData.equipment_id)
                 ?.name || '설비',
           },
-          start_date: planData.start_date,
-          end_date: planData.end_date,
+          start_date: '',
+          end_date: '',
           status: 'pending',
           material_status: parentPlan.material_status,
           avg_production_time: parentPlan.avg_production_time,
@@ -137,7 +137,7 @@ const ProductionPlan = ({
         // formChanges에도 추가 (초기값으로 설정)
         setFormChanges((prev) => ({
           ...prev,
-          [tempId]: planData,
+          [tempId]: { ...planData, start_date: '', end_date: '' },
         }));
       } catch {
         alert('추가 생산 계획 생성 중 오류가 발생했습니다.');
@@ -428,7 +428,7 @@ const ProductionPlan = ({
       const planToDelete = projectPlans.find((plan) => plan.id === planId);
       if (!planToDelete) return;
 
-      // 삭제 후 해당 품목의 총 생산수량 계산
+      // 삭제 후 해당 품목의 총 생산수량 계산 (로컬 변경 반영)
       const remainingTotalQuantity = projectPlans
         .filter(
           (plan) =>
@@ -442,6 +442,23 @@ const ProductionPlan = ({
         }, 0);
 
       const orderQuantity = planToDelete.quotation_product.quantity;
+
+      // 임시 플랜(음수 ID)은 로컬에서만 삭제. 하지만 수량 부족이면 삭제 금지
+      if (planId < 0) {
+        if (remainingTotalQuantity < orderQuantity) {
+          showDeleteToast();
+          return;
+        }
+        setProjectPlans((prev) => prev.filter((plan) => plan.id !== planId));
+        setFormChanges((prev) => {
+          const next = { ...prev } as any;
+          delete next[planId];
+          return next;
+        });
+        return;
+      }
+
+      // 삭제 후 해당 품목의 총 생산수량 계산
 
       // 삭제 후 생산수량이 주문수량보다 작으면 삭제 금지
       if (remainingTotalQuantity < orderQuantity) {
