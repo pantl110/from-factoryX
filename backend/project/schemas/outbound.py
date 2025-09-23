@@ -189,11 +189,11 @@ class RefundProductionRegistrationOut(Schema):
     refund_id: int
     quotation_id: int
     quotation_product_id: int
-    project_plan_id: int
+    project_plan_id: Optional[int] = None
     log_id: int
     product_name: str
     quantity: int
-    equipment_name: str
+    equipment_name: Optional[str] = None
 
 
 # ------------------------------------------------------------
