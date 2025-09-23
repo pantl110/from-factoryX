@@ -107,8 +107,10 @@ const MaterialDetailPanel = ({
     useLocation();
   const { uploadMultipleFiles } = useUploadFile();
   const { getProductList } = useGetProduct();
-  const { isToastOpen, isVisible, showToast } = useToast();
   const { deleteMaterialProductConnection } = useMaterialProduct();
+  const { isToastOpen, isVisible, showToast } = useToast();
+  const [toastText, setToastText] = useState('');
+  const [toastSubtext, setToastSubtext] = useState('');
   const [prevLocations, setPrevLocations] = useState<LocationModel[]>([]);
 
   // 삭제 모달 열기 함수
@@ -179,6 +181,8 @@ const MaterialDetailPanel = ({
 
   // 중복 토스트 표시 함수
   const showDuplicateProductToast = () => {
+    setToastText('이미 존재하는 품목코드에요.');
+    setToastSubtext('다른 품목코드로 수정해주세요');
     showToast();
   };
 
@@ -430,13 +434,18 @@ const MaterialDetailPanel = ({
           }}
           checkDuplicateProductCode={checkDuplicateProductCode}
           showDuplicateProductToast={showDuplicateProductToast}
+          showToast={(text: string, subtext: string) => {
+            setToastText(text);
+            setToastSubtext(subtext);
+            showToast();
+          }}
         />
       )}
-      {/* 품목 연결하기에서 품목 코드 겹칠 시 토스트 */}
+      {/* 토스트 */}
       {isToastOpen && (
         <Toast
-          text="이미 존재하는 품목코드에요."
-          subtext="다른 품목코드로 수정해주세요"
+          text={toastText}
+          subtext={toastSubtext}
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isVisible}

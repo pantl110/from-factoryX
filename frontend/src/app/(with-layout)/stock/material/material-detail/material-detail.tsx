@@ -43,6 +43,7 @@ interface MaterialDetailProps {
   onProductClick?: (productId: number) => void;
   clientWasModified?: boolean; // 클라이언트가 실제로 수정되어 저장되었는지
   productWasModified?: boolean; // 품목이 실제로 연결/삭제되었는지
+  showToast?: (text: string, subtext: string) => void;
 }
 
 const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
@@ -58,6 +59,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       onProductClick,
       clientWasModified,
       productWasModified,
+      showToast,
     },
     ref
   ) => {

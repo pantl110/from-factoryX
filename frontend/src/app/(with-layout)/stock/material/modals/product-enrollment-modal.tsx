@@ -10,9 +10,7 @@ import {
 } from '@/types/data-model';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import ManualAddProduct from './manual-add-product';
-import { useGetProduct, useAssignProduct, useToast } from '@/hooks';
-import Toast from '@/ui/toast';
-import { WarningCircle } from '@phosphor-icons/react';
+import { useGetProduct, useAssignProduct, useMaterialProduct } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import ConnetionItem from '../../modals/connetion-item';
 
@@ -25,6 +23,7 @@ interface ProductEnrollmentModalProps {
     selectedProducts?: MaterialItemModel[]
   ) => boolean;
   showDuplicateProductToast?: () => void;
+  showToast: (text: string, subtext: string) => void;
 }
 
 const ProductEnrollmentModal = ({
@@ -33,6 +32,7 @@ const ProductEnrollmentModal = ({
   onSuccess,
   checkDuplicateProductCode,
   showDuplicateProductToast,
+  showToast,
 }: ProductEnrollmentModalProps) => {
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -42,17 +42,35 @@ const ProductEnrollmentModal = ({
   const { getProductList } = useGetProduct();
   const { assignProduct, isLoading: isAssignLoading } = useAssignProduct();
   const factoryId = useMemberStore((state) => state.factoryId);
+  const { getMaterialProductConnections, data: connections } =
+    useMaterialProduct();
 
   const [selectedProducts, setSelectedProducts] = useState<MaterialItemModel[]>(
     []
   );
   const [isManualAddMode, setIsManualAddMode] = useState(false);
-  // 사용 수량 0 경고 토스트
-  const {
-    isToastOpen: isQtyToastOpen,
-    isVisible: isQtyVisible,
-    showToast: showQtyToast,
-  } = useToast();
+
+  // 이미 연결된 품목 id 목록 (material 기준 연결 조회)
+  const [connectedProductIds, setConnectedProductIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    const fetchConnections = async () => {
+      if (materialId) {
+        await getMaterialProductConnections(materialId, 'material');
+      }
+    };
+    fetchConnections();
+  }, [materialId, getMaterialProductConnections]);
+
+  useEffect(() => {
+    if (connections && Array.isArray(connections)) {
+      // material 기준일 때는 ProductMaterialConnectionModel 형태로 들어옴
+      const ids = (connections as Array<{ product_id?: number }>)
+        .map((c) => c.product_id)
+        .filter((v): v is number => typeof v === 'number');
+      setConnectedProductIds(Array.from(new Set(ids)));
+    }
+  }, [connections]);
 
   // 검색어가 변경될 때 서버에서 검색
   const [debouncedInput] = useDebounce(input, 300);
@@ -91,6 +109,11 @@ const ProductEnrollmentModal = ({
 
   // 품목 선택 시 - ProductResponseModel을 MaterialItemModel로 변환
   const handleSelectProduct = (product: ProductResponseModel) => {
+    // 이미 연결되어 있는 품목이면 토스트 표시 후 추가하지 않음
+    if (connectedProductIds.includes(product.id)) {
+      showToast('이미 연결된 품목이에요.', '');
+      return;
+    }
     const materialItemModel: MaterialItemModel = {
       name: product.name,
       code: product.code,
@@ -125,7 +148,7 @@ const ProductEnrollmentModal = ({
     // 사용 수량 0 검증
     const hasZeroQty = selectedProducts.some((p) => (p.quantity ?? 0) === 0);
     if (hasZeroQty) {
-      showQtyToast();
+      showToast('사용수량이 입력되지 않았어요.', '사용수량을 입력해주세요.');
       return;
     }
 
@@ -189,17 +212,6 @@ const ProductEnrollmentModal = ({
           </div>
         )}
       </div>
-
-      {/* 사용 수량 0 토스트 */}
-      {isQtyToastOpen && (
-        <Toast
-          icon={<WarningCircle size={20} className="text-red" />}
-          text="사용수량이 입력되지 않았어요."
-          subtext="사용수량을 입력해주세요."
-          type="red"
-          isVisible={isQtyVisible}
-        />
-      )}
 
       {/* 직접 추가 모드 */}
       <div className="px-6 pb-6 max-h-[calc(85vh-181px)] overflow-y-auto scrollbar-hide">
