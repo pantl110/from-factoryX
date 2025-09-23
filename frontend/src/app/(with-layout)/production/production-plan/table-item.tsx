@@ -114,7 +114,9 @@ const TableItem = ({
   // 원본 데이터와 비교하여 실제 변경사항이 있는지 확인
   const originalStartDate = item.start_date || '';
   const originalEndDate = item.end_date || '';
+  const isNewPlan = (item as any)?.is_new === true || (item?.id ?? 0) < 0;
   const hasChanges =
+    isNewPlan ||
     watchedQuantity !== item.quantity ||
     watchedEquipmentId !== item.equipment.id ||
     watchedStartDate !== originalStartDate ||
@@ -339,7 +341,7 @@ const TableItem = ({
             height="h-8"
           />
         )}
-        {!isFirstOfProduct && operationStatus !== 'completed' && (
+        {!isFirstOfProduct && operationStatus === 'pending' && (
           <button
             className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-all duration-200 ease-in-out"
             onClick={() => onDelete?.(item.id)}

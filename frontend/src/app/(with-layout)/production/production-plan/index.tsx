@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import ProductionPlanSaveModal from './modals/production-plan-save-modal';
 import TableHeader from './table-header';
 import TableItem from './table-item';
@@ -97,90 +97,53 @@ const ProductionPlan = ({
           throw new Error('부모 계획을 찾을 수 없습니다.');
         }
 
-        // 바로 DB에 새로운 plan 생성
-        const result = await createOrUpdateProjectPlan({
-          project_id: projectId,
-          quotation_product_id: parentPlan.quotation_product.id,
-          equipment_id: planData.equipment_id,
+        // DB에 저장하지 않고 임시 플랜을 로컬 상태에만 추가
+        const tempId = -Date.now();
+        const newPlan = {
+          id: tempId, // 임시 ID (음수)
           quantity: planData.quantity,
+          equipment: {
+            id: planData.equipment_id || 0,
+            name:
+              allEquipments.find((eq) => eq.id === planData.equipment_id)
+                ?.name || '설비',
+          },
           start_date: planData.start_date,
           end_date: planData.end_date,
+          status: 'pending',
+          material_status: parentPlan.material_status,
           avg_production_time: parentPlan.avg_production_time,
-          plan_id: undefined, // 새로운 plan 생성
-          total_amount: parentPlan.quotation_product.quantity,
-          total_quantity:
-            projectPlans
-              .filter(
-                (plan) =>
-                  plan.quotation_product.id === parentPlan.quotation_product.id
-              )
-              .reduce((sum, plan) => {
-                // formChanges에 변경사항이 있으면 그 값 사용
-                const planFormData = formChanges[plan.id];
-                const quantity = planFormData?.quantity ?? plan.quantity;
-                return sum + quantity;
-              }, 0) + planData.quantity, // 새로 생성할 plan의 수량도 포함
+          quotation_product: {
+            id: parentPlan.quotation_product.id,
+            quantity: parentPlan.quotation_product.quantity,
+            is_delivery: false,
+            product: parentPlan.quotation_product.product,
+          },
+        } as ProjectPlanModel & { is_new?: boolean };
+        (newPlan as any).is_new = true;
+
+        setProjectPlans((prev) => {
+          const parentIndex = prev.findIndex(
+            (plan) => plan.id === parentPlanId
+          );
+          if (parentIndex === -1) {
+            return [...prev, newPlan];
+          }
+          const newPlans = [...prev];
+          newPlans.splice(parentIndex + 1, 0, newPlan);
+          return newPlans;
         });
 
-        if (result.success && result.data) {
-          // 새로 생성된 plan 객체 생성 (DB에서 받은 ID 사용)
-          const newPlan = {
-            id: result.data.plan_id, // DB에서 받은 실제 ID
-            quantity: planData.quantity,
-            equipment: {
-              id: planData.equipment_id || 0,
-              name:
-                allEquipments.find((eq) => eq.id === planData.equipment_id)
-                  ?.name || '설비',
-            },
-            start_date: planData.start_date,
-            end_date: planData.end_date,
-            status: 'pending',
-            material_status: parentPlan.material_status,
-            avg_production_time: parentPlan.avg_production_time,
-            quotation_product: {
-              id: parentPlan.quotation_product.id,
-              quantity: parentPlan.quotation_product.quantity,
-              is_delivery: false,
-              product: parentPlan.quotation_product.product,
-            },
-          } as ProjectPlanModel;
-
-          // projectPlans에 부모 계획 바로 다음에 새로 생성된 플랜 추가
-          setProjectPlans((prev) => {
-            const parentIndex = prev.findIndex(
-              (plan) => plan.id === parentPlanId
-            );
-            if (parentIndex === -1) {
-              return [...prev, newPlan];
-            }
-            const newPlans = [...prev];
-            newPlans.splice(parentIndex + 1, 0, newPlan);
-            return newPlans;
-          });
-
-          // formChanges에도 추가 (초기값으로 설정)
-          const planId = result.data?.plan_id;
-          if (planId) {
-            setFormChanges((prev) => ({
-              ...prev,
-              [planId]: planData,
-            }));
-          }
-        } else {
-          alert('생산 계획 생성에 실패했습니다.');
-        }
+        // formChanges에도 추가 (초기값으로 설정)
+        setFormChanges((prev) => ({
+          ...prev,
+          [tempId]: planData,
+        }));
       } catch {
         alert('추가 생산 계획 생성 중 오류가 발생했습니다.');
       }
     },
-    [
-      projectId,
-      projectPlans,
-      formChanges,
-      allEquipments,
-      createOrUpdateProjectPlan,
-    ]
+    [projectId, projectPlans, formChanges, allEquipments]
   );
 
   // 토스트 훅들
@@ -252,7 +215,27 @@ const ProductionPlan = ({
           end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
         }));
 
-        setProjectPlans(plansWithKSTDates);
+        setProjectPlans((prev) => {
+          const tempPlans = prev.filter((p) => (p.id ?? 0) < 0);
+          if (tempPlans.length === 0) return plansWithKSTDates;
+
+          const merged = [...plansWithKSTDates];
+          // 임시 플랜을 동일 품목의 마지막 플랜 바로 뒤에 삽입
+          tempPlans.forEach((tp) => {
+            const sameProductIndexes: number[] = [];
+            merged.forEach((p, idx) => {
+              if (p.quotation_product.id === tp.quotation_product.id) {
+                sameProductIndexes.push(idx);
+              }
+            });
+            const insertIdx =
+              sameProductIndexes.length > 0
+                ? sameProductIndexes[sameProductIndexes.length - 1] + 1
+                : merged.length;
+            merged.splice(insertIdx, 0, tp);
+          });
+          return merged;
+        });
 
         // formChanges를 변환된 데이터로 초기화
         const initialFormData: Record<number, ProductionPlanFormDataModel> = {};
@@ -264,7 +247,11 @@ const ProductionPlan = ({
             end_date: plan.end_date || '',
           };
         });
-        setFormChanges(initialFormData);
+        setFormChanges((prev) => ({
+          // 기존 임시 플랜 입력값 보존 + 서버 값 채우기
+          ...prev,
+          ...initialFormData,
+        }));
       }
     };
 
@@ -274,6 +261,64 @@ const ProductionPlan = ({
 
   // 생산 계획 검증 훅 사용
   useProductionPlanValidation(projectPlans, formChanges);
+
+  // 초기 진입 시 부족 수량이 있으면 임시 플랜 즉시 생성 (DB 저장 전)
+  const initialSeededRef = useRef(false);
+  useEffect(() => {
+    if (initialSeededRef.current) return;
+    if (!projectId) return;
+    if (!projectPlans.length) return;
+
+    // 제품별 그룹핑
+    const grouped: Record<number, ProjectPlanModel[]> = {};
+    for (const plan of projectPlans) {
+      const qpId = plan.quotation_product.id;
+      if (!grouped[qpId]) grouped[qpId] = [];
+      grouped[qpId].push(plan);
+    }
+
+    Object.values(grouped).forEach((plans) => {
+      // 버퍼 포함 목표 생산량 계산 (buffer_rate가 null이면 0.1)
+      const orderQty = plans[0].quotation_product.quantity;
+      const bufferRate = plans[0].quotation_product.product?.buffer_rate ?? 0.1;
+      const targetTotal = orderQty + Math.ceil(orderQty * bufferRate);
+      const totalQty = plans.reduce((sum, p) => {
+        const q = formChanges[p.id]?.quantity ?? p.quantity;
+        return sum + q;
+      }, 0);
+
+      if (totalQty < targetTotal) {
+        const autoQty = targetTotal - totalQty;
+        if (autoQty > 0) {
+          const last = plans[plans.length - 1];
+          const equipmentId = last.equipment.id;
+          const startDate = last.start_date
+            ? new Date(last.start_date)
+                .toISOString()
+                .slice(0, 16)
+                .replace('T', ' ')
+            : '';
+          const endDate = last.end_date
+            ? new Date(last.end_date)
+                .toISOString()
+                .slice(0, 16)
+                .replace('T', ' ')
+            : '';
+          handleAddPlan(
+            {
+              quantity: autoQty,
+              equipment_id: equipmentId,
+              start_date: startDate,
+              end_date: endDate,
+            },
+            last.id
+          );
+        }
+      }
+    });
+
+    initialSeededRef.current = true;
+  }, [projectId, projectPlans, formChanges, handleAddPlan]);
 
   // 모든 품목이 가동 완료 상태인지 확인
   const isAllProductionCompleted = projectPlans.every(
@@ -682,6 +727,7 @@ const ProductionPlan = ({
         const currentPlan = projectPlans.find((p) => p.id === planId);
         if (!currentPlan) return; // plan을 찾을 수 없으면 종료
 
+        const isNewPlan = planId < 0;
         const result = await createOrUpdateProjectPlan({
           project_id: projectId,
           quotation_product_id: currentPlan.quotation_product.id,
@@ -690,7 +736,7 @@ const ProductionPlan = ({
           start_date: formData.start_date,
           end_date: formData.end_date,
           avg_production_time: currentPlan.avg_production_time,
-          plan_id: planId, // 모든 plan이 DB에 저장되므로 항상 planId 사용
+          plan_id: isNewPlan ? undefined : planId,
           total_amount: currentPlan.quotation_product.quantity,
           total_quantity: projectPlans
             .filter(
@@ -701,7 +747,6 @@ const ProductionPlan = ({
               if (plan.id === planId) {
                 return sum + formData.quantity;
               }
-              // 다른 plan도 formChanges에 변경사항이 있으면 그 값 사용
               const planFormData = formChanges[plan.id];
               const quantity = planFormData?.quantity ?? plan.quantity;
               return sum + quantity;
@@ -710,31 +755,46 @@ const ProductionPlan = ({
 
         if (result.success) {
           // 저장 성공 시 projectPlans 상태 업데이트 (저장된 값으로)
-          setProjectPlans((prev) =>
-            prev.map((plan) =>
-              plan.id === planId
-                ? {
-                    ...plan,
-                    quantity: formData.quantity,
-                    equipment: {
-                      ...plan.equipment,
-                      id: formData.equipment_id,
-                      name:
-                        allEquipments.find(
-                          (eq) => eq.id === formData.equipment_id
-                        )?.name || plan.equipment.name,
-                    },
-                    start_date: formData.start_date,
-                    end_date: formData.end_date,
-                  }
-                : plan
-            )
-          );
+          setProjectPlans((prev) => {
+            const realId = (result as any).data?.plan_id;
+            return prev.map((plan) => {
+              if (plan.id !== planId) return plan;
+              const updated = {
+                ...plan,
+                id: isNewPlan && realId ? realId : plan.id,
+                quantity: formData.quantity,
+                equipment: {
+                  ...plan.equipment,
+                  id: formData.equipment_id,
+                  name:
+                    allEquipments.find((eq) => eq.id === formData.equipment_id)
+                      ?.name || plan.equipment.name,
+                },
+                start_date: formData.start_date,
+                end_date: formData.end_date,
+              } as ProjectPlanModel;
+              // 새 플랜이 저장되면 is_new 제거
+              if (isNewPlan) {
+                (updated as any).is_new = undefined;
+              }
+              return updated;
+            });
+          });
 
           // 저장 성공 시 해당 plan의 formChanges 초기화
           setFormChanges((prev) => {
-            const newChanges = { ...prev };
-            delete newChanges[planId];
+            const newChanges: Record<number, ProductionPlanFormDataModel> = {
+              ...prev,
+            } as any;
+            const realId = (result as any).data?.plan_id;
+            if (isNewPlan && realId) {
+              // 키를 임시ID에서 실제ID로 이전
+              const saved = newChanges[planId];
+              delete (newChanges as any)[planId];
+              (newChanges as any)[realId] = saved;
+            } else {
+              delete (newChanges as any)[planId];
+            }
             return newChanges;
           });
 
