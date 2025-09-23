@@ -530,7 +530,24 @@ const ProductionPlan = ({
   const checkQuantityAndCreatePlan = useCallback(
     (planId: number, formData: ProductionPlanFormDataModel) => {
       const currentPlan = projectPlans.find((p) => p.id === planId); // 현재 plan이 존재하는지
-      if (!currentPlan || formData.quantity === currentPlan.quantity) return; // 수량이 실제로 변경되었는지 확인
+      if (!currentPlan) return;
+      // 사용자가 아직 입력하지 않았거나 0을 입력한 경우 자동 생성하지 않음
+      if (formData.quantity === 0) return;
+      // 수량이 실제로 변경되었는지 확인
+      if (formData.quantity === currentPlan.quantity) return;
+
+      // 같은 품목의 어떤 plan이라도 수량이 0이면, 입력 중으로 간주하고 자동 생성하지 않음
+      const hasZeroQuantityPlan = projectPlans
+        .filter(
+          (plan) =>
+            plan.quotation_product.id === currentPlan.quotation_product.id
+        )
+        .some((plan) => {
+          const override = formChanges[plan.id];
+          const qty = override?.quantity ?? plan.quantity;
+          return qty === 0;
+        });
+      if (hasZeroQuantityPlan) return;
 
       // 같은 quotation_product의 총 생산수량 계산 (현재 변경된 수량 및 formChanges 반영)
       const totalQuantity = projectPlans
@@ -554,7 +571,14 @@ const ProductionPlan = ({
 
       // 총 생산수량이 주문수량보다 작으면 자동으로 새 plan 추가
       if (totalQuantity < orderQuantity) {
-        const shortageQuantity = orderQuantity - totalQuantity;
+        // buffer_rate가 null/undefined면 0.1을 기본으로 적용
+        const bufferRate =
+          currentPlan.quotation_product.product?.buffer_rate ?? 0.1;
+        // 부동소수점 올림 오차 방지: 목표 = 주문수량 + ceil(주문수량 * buffer)
+        const targetTotalQuantity =
+          orderQuantity + Math.ceil(orderQuantity * bufferRate);
+        // 자동 생성 수량 = 목표 총 생산량 - 현재까지의 총 생산수량
+        const autoQuantity = Math.max(0, targetTotalQuantity - totalQuantity);
 
         // 자동 생성될 plan의 기본 설비 (현재 plan과 동일한 설비 사용)
         const defaultEquipmentId =
@@ -578,7 +602,7 @@ const ProductionPlan = ({
 
         // 새 plan 데이터
         const newPlanData: ProductionPlanFormDataModel = {
-          quantity: shortageQuantity,
+          quantity: autoQuantity,
           equipment_id: defaultEquipmentId,
           start_date: defaultStartDate,
           end_date: defaultEndDate,
