@@ -868,9 +868,12 @@ async def list_project_plans(request, project_id: int):
                         code=product.code,
                         unit=product.unit,
                         spec=product.spec,
+                        buffer_rate=float(product.buffer_rate) if product.buffer_rate is not None else None,
                     ),
                     quantity=quotation_product.quantity,
                     unit_price=quotation_product.unit_price,
+                    is_delivery=quotation_product.is_delivery,
+                    delivery_date=quotation_product.delivery_date,
                 ),
                 equipment=EquipmentDetailOut(
                     id=equipment.id, name=equipment.name, priority=equipment.priority
