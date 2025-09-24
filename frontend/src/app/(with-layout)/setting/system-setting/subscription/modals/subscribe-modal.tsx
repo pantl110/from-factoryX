@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 

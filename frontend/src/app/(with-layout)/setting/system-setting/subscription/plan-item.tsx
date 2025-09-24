@@ -2,26 +2,66 @@ import MiniBtn from '@/ui/mini-btn';
 import { PlanType, PLAN_INFO } from './types';
 import { useState } from 'react';
 import SubscribeModal from './modals/subscribe-modal';
+import { useCancelSubscriptionPayment } from '@/hooks/subscription/use-cancel-subscription-payment';
+import { SubscriptionStatusResponseModel } from '@/types/data-model';
+import CancelSubscriptionModal from './modals/cancel-subscription-modal';
 
 interface PlanItemProps {
   type: PlanType;
-  subscriptionType: PlanType;
+  subscriptionStatus: SubscriptionStatusResponseModel;
   onSubscribe: (type: PlanType, onClose?: () => void) => Promise<void>;
   isLoading: boolean;
+  onCanceled: () => void;
 }
 
 const PlanItem = ({
   type,
-  subscriptionType,
+  subscriptionStatus,
   onSubscribe,
   isLoading,
+  onCanceled,
 }: PlanItemProps) => {
   const info = PLAN_INFO[type];
+  const subscriptionType =
+    subscriptionStatus?.is_active === true &&
+    subscriptionStatus?.subscription_history.subscription.type === 'basic'
+      ? 'BASIC'
+      : subscriptionStatus?.is_active === true &&
+          subscriptionStatus?.subscription_history.subscription.type ===
+            'partners'
+        ? 'PARTNERS'
+        : (null as unknown as PlanType);
   const isSubscribedType = subscriptionType === type;
+
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+  const [isCancelSubscriptionModalOpen, setIsCancelSubscriptionModalOpen] =
+    useState(false);
+
+  const { cancelSubscriptionPayment, isLoading: isCancelLoading } =
+    useCancelSubscriptionPayment();
 
   const handleSubscribe = async () => {
     await onSubscribe(type, () => setIsSubscribeModalOpen(false));
+  };
+
+  const handleCancel = async () => {
+    if (!isSubscribedType) return;
+    if (!subscriptionStatus?.current_payment?.id) {
+      alert('취소할 결제를 찾을 수 없습니다.');
+      return;
+    }
+    const res = await cancelSubscriptionPayment(
+      subscriptionStatus?.current_payment?.id,
+      {
+        cancel_reason: '구독 해지',
+      }
+    );
+    if (res.success) {
+      setIsCancelSubscriptionModalOpen(false);
+      onCanceled?.();
+    } else {
+      alert(res.error ?? '구독 해지에 실패했습니다.');
+    }
   };
 
   return (
@@ -35,7 +75,7 @@ const PlanItem = ({
             <MiniBtn
               text="구독 해지"
               variant="transparent"
-              onClick={() => {}}
+              onClick={() => setIsCancelSubscriptionModalOpen(true)}
             />
           ) : (
             <MiniBtn
@@ -59,6 +99,15 @@ const PlanItem = ({
           onSubscribe={handleSubscribe}
           isLoading={isLoading}
           onClose={() => setIsSubscribeModalOpen(false)}
+          planTitle={info.title}
+        />
+      )}
+      {/* 구독 해지 모달 */}
+      {isCancelSubscriptionModalOpen && (
+        <CancelSubscriptionModal
+          onCancel={handleCancel}
+          isLoading={isCancelLoading}
+          onClose={() => setIsCancelSubscriptionModalOpen(false)}
           planTitle={info.title}
         />
       )}

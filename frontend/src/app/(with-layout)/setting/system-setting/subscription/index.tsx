@@ -21,6 +21,7 @@ import {
 import RefundPolicyModal from './modals/refund-policy-modal';
 import NoHistoryBox from '@/ui/no-history-box';
 import RegisterCard from './register-card';
+import { PaymentResponseModel } from '@/types/data-model';
 
 const Subscription = () => {
   const { factoryId } = useMemberStore();
@@ -88,6 +89,15 @@ const Subscription = () => {
     }
   };
 
+  const refreshSubscriptionData = async () => {
+    if (!factoryId) return;
+    await Promise.all([
+      // getPaymentHistory(factoryId),
+      getSubscriptionStatus(factoryId),
+      getPaymentAuth(factoryId),
+    ]);
+  };
+
   const registerCard = async (type?: PlanType) => {
     try {
       if (!factoryId) {
@@ -150,19 +160,11 @@ const Subscription = () => {
           <PlanItem
             key={type}
             type={type}
-            subscriptionType={
-              subscriptionStatus?.is_active === true &&
-              subscriptionStatus?.subscription_history.subscription.type ===
-                'basic'
-                ? 'BASIC'
-                : subscriptionStatus?.is_active === true &&
-                    subscriptionStatus?.subscription_history.subscription
-                      .type === 'partners'
-                  ? 'PARTNERS'
-                  : (null as unknown as PlanType)
-            }
+            subscriptionStatus={subscriptionStatus}
             onSubscribe={handleSubscribe}
             isLoading={isSubscribeLoading}
+            currentPaymentId={subscriptionStatus?.current_payment?.id ?? null}
+            onCanceled={refreshSubscriptionData}
           />
         ))}
       </div>
@@ -186,7 +188,7 @@ const Subscription = () => {
         ) : (
           <div>
             <SubscriptionTableHeader />
-            {paymentHistory?.data.map((payment) => (
+            {paymentHistory?.data.map((payment: PaymentResponseModel) => (
               <SubscriptionTableItem
                 key={payment.id}
                 date={payment.created_at.split('T')[0]}
