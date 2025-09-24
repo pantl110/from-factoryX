@@ -1,8 +1,5 @@
 import MiniBtn from '@/ui/mini-btn';
 import { PaymentAuthModel } from '@/types/data-model';
-import { loadTossPayments } from '@tosspayments/payment-sdk';
-import useMemberStore from '@/store/member-store';
-import { useDeleteBillingKey } from '@/hooks';
 
 interface RegisterCardProps {
   paymentAuth: PaymentAuthModel | null;

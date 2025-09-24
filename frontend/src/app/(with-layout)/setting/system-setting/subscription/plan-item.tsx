@@ -8,7 +8,7 @@ import CancelSubscriptionModal from './modals/cancel-subscription-modal';
 
 interface PlanItemProps {
   type: PlanType;
-  subscriptionStatus: SubscriptionStatusResponseModel;
+  subscriptionStatus: SubscriptionStatusResponseModel | null;
   onSubscribe: (type: PlanType, onClose?: () => void) => Promise<void>;
   isLoading: boolean;
   onCanceled: () => void;
@@ -30,7 +30,7 @@ const PlanItem = ({
           subscriptionStatus?.subscription_history.subscription.type ===
             'partners'
         ? 'PARTNERS'
-        : (null as unknown as PlanType);
+        : null;
   const isSubscribedType = subscriptionType === type;
 
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
@@ -72,11 +72,19 @@ const PlanItem = ({
         <div className="flex items-center justify-between">
           <h3 className="Heading-3">{info.title}</h3>
           {isSubscribedType ? (
-            <MiniBtn
-              text="구독 해지"
-              variant="transparent"
-              onClick={() => setIsCancelSubscriptionModalOpen(true)}
-            />
+            subscriptionStatus?.subscription_history.is_canceled === true ? (
+              <MiniBtn
+                text="구독 해지 취소"
+                variant="transparent"
+                onClick={handleSubscribe}
+              />
+            ) : (
+              <MiniBtn
+                text="구독 해지"
+                variant="transparent"
+                onClick={() => setIsCancelSubscriptionModalOpen(true)}
+              />
+            )
           ) : (
             <MiniBtn
               text="구독"

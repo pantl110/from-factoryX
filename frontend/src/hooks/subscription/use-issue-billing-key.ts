@@ -19,10 +19,7 @@ export const useIssueBillingKey = () => {
         return { success: false, error: '공장 ID가 필요합니다.' };
       }
 
-      if (
-        !payload.auth_key ||
-        !payload.customer_key
-      ) {
+      if (!payload.auth_key || !payload.customer_key) {
         setError('모든 정보를 입력해주세요.');
         return { success: false, error: '모든 정보를 입력해주세요.' };
       }

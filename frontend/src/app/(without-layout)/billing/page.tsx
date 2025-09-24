@@ -56,22 +56,29 @@ const BillingPageContent = () => {
     ): Promise<{ billing_key: string; customer_key: string } | null> => {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          const res: any = await getPaymentAuth(factory);
+          const res = (await getPaymentAuth(factory)) as unknown;
+          const resObj = (
+            res && typeof res === 'object'
+              ? (res as Record<string, unknown>)
+              : {}
+          ) as Record<string, unknown>;
           const latestBillingKey =
-            res?.billing_key ??
-            res?.data?.billing_key ??
-            (paymentAuth as any)?.billing_key;
+            (resObj.billing_key as string | undefined) ??
+            ((resObj.data as Record<string, unknown> | undefined)
+              ?.billing_key as string | undefined) ??
+            paymentAuth?.billing_key;
           const latestCustomerKey =
-            res?.customer_key ??
-            res?.data?.customer_key ??
-            (paymentAuth as any)?.customer_key;
+            (resObj.customer_key as string | undefined) ??
+            ((resObj.data as Record<string, unknown> | undefined)
+              ?.customer_key as string | undefined) ??
+            paymentAuth?.customer_key;
           if (latestBillingKey && latestCustomerKey) {
             return {
               billing_key: latestBillingKey,
               customer_key: latestCustomerKey,
             };
           }
-        } catch (_) {
+        } catch {
           // ignore and retry
         }
         if (attempt < maxAttempts) await wait(delayMs);
@@ -99,16 +106,19 @@ const BillingPageContent = () => {
                 return;
               }
 
-              const payResult: any = await processSubscriptionPayment({
+              const payResult = (await processSubscriptionPayment({
                 factory_id: factoryId,
                 subscription_id: subscriptionId,
                 billing_key: creds.billing_key,
                 customer_key: creds.customer_key,
-              });
+              })) as { success?: boolean } | unknown;
 
-              console.log('payResult', payResult);
-
-              if (payResult?.success) {
+              if (
+                payResult &&
+                typeof payResult === 'object' &&
+                'success' in payResult &&
+                (payResult as { success?: boolean }).success
+              ) {
                 await Promise.all([
                   getPaymentHistory(factoryId),
                   getSubscriptionStatus(factoryId),
@@ -132,7 +142,7 @@ const BillingPageContent = () => {
               result.error || urlMessage || '카드 등록에 실패했습니다.'
             );
           }
-        } catch (_e) {
+        } catch {
           setCurrentStatus('error');
           setMessage(urlMessage || '카드 등록 중 오류가 발생했습니다.');
         }

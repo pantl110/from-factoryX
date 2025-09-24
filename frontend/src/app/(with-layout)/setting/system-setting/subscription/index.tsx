@@ -48,7 +48,13 @@ const Subscription = () => {
       getPaymentHistory(factoryId);
       getPaymentAuth(factoryId);
     }
-  }, [factoryId, getFactory, getSubscriptionStatus, getPaymentHistory]);
+  }, [
+    factoryId,
+    getFactory,
+    getSubscriptionStatus,
+    getPaymentHistory,
+    getPaymentAuth,
+  ]);
 
   // billing success 후 돌아올 때 register=success 플래그가 있으면 PaymentAuth 재조회
   useEffect(() => {
@@ -58,6 +64,15 @@ const Subscription = () => {
       getPaymentAuth(factoryId);
     }
   }, [factoryId, searchParams, getPaymentAuth]);
+
+  const refreshSubscriptionData = async () => {
+    if (!factoryId) return;
+    await Promise.all([
+      getPaymentHistory(factoryId),
+      getSubscriptionStatus(factoryId),
+      getPaymentAuth(factoryId),
+    ]);
+  };
 
   const handleSubscribe = async (type: PlanType, onClose?: () => void) => {
     // 카드가 없으면 등록 플로우로 이동
@@ -82,20 +97,8 @@ const Subscription = () => {
     });
     onClose?.(); // 모달 닫기
     if (result.success) {
-      if (factoryId) {
-        getPaymentHistory(factoryId);
-        getSubscriptionStatus(factoryId);
-      }
+      refreshSubscriptionData();
     }
-  };
-
-  const refreshSubscriptionData = async () => {
-    if (!factoryId) return;
-    await Promise.all([
-      // getPaymentHistory(factoryId),
-      getSubscriptionStatus(factoryId),
-      getPaymentAuth(factoryId),
-    ]);
   };
 
   const registerCard = async (type?: PlanType) => {
@@ -161,9 +164,9 @@ const Subscription = () => {
             key={type}
             type={type}
             subscriptionStatus={subscriptionStatus}
+            // subscriptionHistoris={factory?.subscription_historis}
             onSubscribe={handleSubscribe}
             isLoading={isSubscribeLoading}
-            currentPaymentId={subscriptionStatus?.current_payment?.id ?? null}
             onCanceled={refreshSubscriptionData}
           />
         ))}

@@ -6,7 +6,6 @@ import { PaymentAuthModel } from '@/types/data-model';
 
 // 결제 인증 정보 (백엔드 PaymentAuthOut 스키마에 맞춰 정의)
 
-
 interface UseGetPaymentAuthReturnModel {
   getPaymentAuth: (factoryId: number) => Promise<{
     success: boolean;
@@ -57,8 +56,10 @@ const useGetPaymentAuth = (): UseGetPaymentAuthReturnModel => {
           setPaymentAuth(null);
         }
         if (data) {
-          const maybeDetail = typeof data.detail === 'string' ? data.detail : undefined;
-          const maybeMessage = typeof data.message === 'string' ? data.message : undefined;
+          const maybeDetail =
+            typeof data.detail === 'string' ? data.detail : undefined;
+          const maybeMessage =
+            typeof data.message === 'string' ? data.message : undefined;
           errorMessage = maybeDetail || maybeMessage || errorMessage;
         } else if (err.message) {
           errorMessage = err.message;

@@ -59,7 +59,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       onProductClick,
       clientWasModified,
       productWasModified,
-      showToast,
     },
     ref
   ) => {
