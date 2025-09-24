@@ -274,51 +274,56 @@ async def delete_billing_key(request, factory_id: int):
     factory = await get_factory_by_id(factory_id)
     member = await is_factory_member(factory_id, user)
 
-    # 현재 활성 구독에서 빌링키 정보 조회
-    current_subscription = (
-        await SubscriptionHistory.objects.filter(
-            factory=factory,
-            end_date__gt=timezone.now().date(),
-            billing_key__isnull=False,
-        )
-        .select_related("subscription")
-        .afirst()
-    )
+    # PaymentAuth 또는 Factory에 저장된 빌링키 기준으로 판단 (하나만 있어도 삭제 진행)
+    payment_auth = await sync_to_async(
+        lambda: PaymentAuth.objects.filter(factory=factory).first()
+    )()
 
-    if not current_subscription:
+    billing_key_to_delete = payment_auth.billing_key if payment_auth else factory.billing_key
+    customer_key_to_use = payment_auth.customer_key if payment_auth else None
+
+    if not billing_key_to_delete and not customer_key_to_use:
+        # 둘 다 전혀 없으면 삭제할 것이 없음
         raise HttpError(404, "삭제할 빌링키가 없습니다.")
-
-    if not current_subscription.billing_key:
-        raise HttpError(400, "등록된 빌링키가 없습니다.")
 
     toss_service = TossPaymentsService()
 
     try:
-        # 토스페이먼츠 빌링키 삭제 API 호출
-        result = toss_service.delete_billing_key(
-            billing_key=current_subscription.billing_key,
-            customer_key=current_subscription.customer_key,
-        )
+        ## 토스페이먼츠 빌링키 삭제 API 호출: billing_key와 customer_key가 모두 있을 때만 시도
+        if billing_key_to_delete and customer_key_to_use:
+            try:
+                toss_service.delete_billing_key(
+                    billing_key=billing_key_to_delete,
+                    customer_key=customer_key_to_use,
+                )
+            except Exception as e:
+                # 외부 삭제 실패해도 로컬 정리는 진행 (요청 사항: 강하게 정리)
+                logger.warning(
+                    f"토스 빌링키 삭제 실패, 로컬 정리 계속: factory_id={factory_id}, error={str(e)}"
+                )
 
         @sync_to_async
         @transaction.atomic
-        def clear_billing_key():
-            # PaymentAuth 모델에서 해당 레코드 삭제 (빌링키 정보 삭제 전에 실행)
-            PaymentAuth.objects.filter(
-                factory=factory, billing_key=current_subscription.billing_key
-            ).delete()
+        def clear_keys():
+            # PaymentAuth 삭제 (공장 기준)
+            PaymentAuth.objects.filter(factory=factory).delete()
 
-            # 구독 히스토리에서 빌링키 정보 삭제
-            current_subscription.billing_key = None
-            current_subscription.customer_key = None
-            current_subscription.auth_key = None
-            current_subscription.save()
-
-            # 팩토리의 빌링키도 초기화
+            # 팩토리의 빌링키 초기화
             factory.billing_key = None
             factory.save(update_fields=["billing_key"]) 
 
-        await clear_billing_key()
+            # 현재 및 미래(플랜 변경 예정 시 다음 구독 플랜) 구독 이력의 키 정보 초기화 (end_date >= today)
+            from django.utils import timezone as dj_tz
+            for hist in SubscriptionHistory.objects.filter(
+                factory=factory,
+                end_date__gte=dj_tz.now().date(),
+            ):
+                hist.billing_key = None
+                hist.customer_key = None
+                hist.auth_key = None
+                hist.save()
+
+        await clear_keys()
 
         logger.info(f"빌링키 삭제 성공: factory_id={factory_id}")
         return BillingKeyDeleteOut(
