@@ -377,10 +377,24 @@ async def process_subscription_payment(
         if existing_history.subscription_id == payload.subscription_id:
             raise HttpError(400, "이미 동일한 구독 플랜이 활성화되어 있습니다.")
         
-        # 다른 플랜이면 구독 플랜 변경 처리
-        return await change_subscription_plan(
-            request, factory_id, payload, existing_history.id
+        # 다른 플랜이면 다음 구독을 미리 생성(플랜 변경 예약)
+        await change_subscription_plan(request, factory_id, payload, existing_history.id)
+
+        scheduled_result = PaymentResultOut(
+            subscription_id=subscription.id,
+            subscription_type=subscription.type,
+            payment_key="",
+            order_id=f"plan_change_{factory_id}_{int(timezone.now().timestamp())}",
+            amount=0,
+            status="DONE",
+            approved_at=timezone.now(),
+            method="PLAN_CHANGE_SCHEDULED",
+            card_company=None,
+            card_type=None,
+            card_number=None,
+            card_owner_type=None,
         )
+        return 200, scheduled_result
 
     toss_service = TossPaymentsService()
     order_id = f"subscription_{factory_id}_{int(timezone.now().timestamp())}"
