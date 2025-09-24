@@ -75,7 +75,7 @@ const BillingPageContent = () => {
             <div className="w-full h-30 flex justify-center items-center">
               <Spinner />
             </div>
-            <h2 className="Heading-2 mt-8 text-center">결제 진행 중</h2>
+            <h2 className="Heading-2 mt-8 text-center">카드 등록 중</h2>
           </div>
         )}
 
@@ -85,7 +85,9 @@ const BillingPageContent = () => {
             <div className="w-full flex justify-center">
               <CheckCircle size={120} weight="fill" className="text-primary" />
             </div>
-            <h2 className="Heading-2 mt-8 text-center">결제를 완료했어요</h2>
+            <h2 className="Heading-2 mt-8 text-center">
+              카드 등록을 완료했어요
+            </h2>
 
             {/* 버튼 */}
             <div className="w-full mt-20">
@@ -107,7 +109,9 @@ const BillingPageContent = () => {
             <div className="w-full flex justify-center">
               <WarningCircle size={120} weight="fill" className="text-yellow" />
             </div>
-            <h2 className="Heading-2 mt-8 text-center">결제를 실패했어요</h2>
+            <h2 className="Heading-2 mt-8 text-center">
+              카드 등록에 실패했어요
+            </h2>
             {message && (
               <p className="Body-2 mt-4 text-center whitespace-pre-line">
                 {message.split('.').map((sentence, index) =>
