@@ -27,6 +27,7 @@ from subscription.utils import (
     get_subscription_by_id,
     get_payment_by_id,
     get_subscription_history_by_id,
+    resolve_card_company_from_issuer,
 )
 from subscription.services import TossPaymentsService, SubscriptionBillingService
 from subscription.exceptions import PaymentError, BillingKeyError, SubscriptionError
@@ -224,10 +225,23 @@ async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn
             customer_key=payload.customer_key,
         )
 
+        # issuerCode 기준으로 저장/응답
+        card_info = result.get("card", {}) if isinstance(result, dict) else {}
+        issuer_code = str(
+            (card_info.get("issuerCode") if isinstance(card_info, dict) else None)
+            or result.get("issuerCode")
+            or "UNKNOWN"
+        )
+        resolved_company = (
+            resolve_card_company_from_issuer(issuer_code)
+            or result.get("cardCompany")
+            or issuer_code
+        )
+
         billing_key_response = BillingKeyIssueOut(
             billing_key=result.get("billingKey"),
             customer_key=payload.customer_key,
-            card_company=result.get("cardCompany"),
+            card_company=resolved_company,
             card_number=result.get("cardNumber"),
         )
 
@@ -244,8 +258,8 @@ async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn
                 factory=factory,
                 customer_key=payload.customer_key,
                 billing_key=result.get("billingKey"),
-                card_company=result.get("cardCompany"),
-                card_number=result.get("cardNumber")
+                card_company=resolved_company,
+                card_number=result.get("cardNumber"),
             )
             # 팩토리에도 빌링키 저장
             factory.billing_key = result.get("billingKey")
@@ -394,6 +408,11 @@ async def process_subscription_payment(
             order_name=f"{subscription.type} 플랜 구독료",
         )
 
+        # 카드 정보는 card 객체 하위에 포함됨
+        card_info = payment_result.get("card", {})
+        issuer_code = str(card_info.get("issuerCode") or "")
+        resolved_company = resolve_card_company_from_issuer(issuer_code)
+
         @sync_to_async
         @transaction.atomic
         def create_payment_and_subscription() -> tuple[Payment, SubscriptionHistory]:
@@ -417,10 +436,10 @@ async def process_subscription_payment(
                 method=payment_result.get("method"),
                 approved_at=timezone.now(),
                 # 카드 정보 저장
-                card_company=payment_result.get("cardCompany"),
-                card_type=payment_result.get("cardType"),
-                card_number=payment_result.get("cardNumber"),
-                card_owner_type=payment_result.get("cardOwnerType"),
+                card_company=resolved_company,
+                card_type=card_info.get("cardType"),
+                card_number=card_info.get("number"),
+                card_owner_type=card_info.get("ownerType"),
             )
 
             return payment, subscription_history
@@ -449,10 +468,10 @@ async def process_subscription_payment(
             approved_at=payment.approved_at,
             method=payment_result.get("method"),
             # 카드 정보
-            card_company=payment_result.get("cardCompany"),
-            card_type=payment_result.get("cardType"),
-            card_number=payment_result.get("cardNumber"),
-            card_owner_type=payment_result.get("cardOwnerType"),
+            card_company=resolved_company,
+            card_type=card_info.get("cardType"),
+            card_number=card_info.get("number"),
+            card_owner_type=card_info.get("ownerType"),
         )
 
         logger.info(
