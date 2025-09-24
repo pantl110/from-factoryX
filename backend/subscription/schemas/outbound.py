@@ -37,7 +37,8 @@ class PaymentAuthOut(ModelSchema):
 
     class Meta:
         model = PaymentAuth
-        exclude = ["factory", "auth_key"]  # 보안상 auth_key는 제외
+        # exclude = ["factory", "auth_key"]  # 보안상 auth_key는 제외
+        exclude = ["factory"]  # factory 필드는 제외
 
 
 class BillingKeyIssueOut(Schema):
@@ -45,9 +46,9 @@ class BillingKeyIssueOut(Schema):
 
     billing_key: str = Field(..., description="발급된 빌링키")
     customer_key: str = Field(..., description="고객키")
-    # card_company: Optional[str] = Field(None, description="카드사")
+    card_company: Optional[str] = Field(None, description="카드사")
     # card_type: Optional[str] = Field(None, description="카드 타입")
-    # card_number: Optional[str] = Field(None, description="마스킹된 카드번호")
+    card_number: Optional[str] = Field(None, description="마스킹된 카드번호")
 
 
 class BillingKeyDeleteOut(Schema):

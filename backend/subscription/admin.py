@@ -362,7 +362,9 @@ class PaymentAuthAdmin(admin.ModelAdmin):
         "factory_link",
         "customer_key",
         "billing_key_display",
-        "auth_key_display",
+        # "auth_key_display",
+        "card_company",
+        "card_number",
         "created_at_display",
     ]
     list_filter = ["created_at", "updated_at"]
@@ -371,6 +373,7 @@ class PaymentAuthAdmin(admin.ModelAdmin):
         "factory__business_registration_number",
         "customer_key",
         "billing_key",
+        "card_company",
     ]
     ordering = ["-created_at"]
     readonly_fields = ["id", "created_at", "updated_at", "factory_info", "auth_summary"]
@@ -378,10 +381,13 @@ class PaymentAuthAdmin(admin.ModelAdmin):
     fieldsets = (
         ("기본 정보", {"fields": ("factory", "customer_key")}),
         (
-            "인증 정보",
+            # "인증 정보",
+            "카드 정보",
             {
-                "fields": ("auth_key", "billing_key"),
-                "description": "보안이 중요한 정보입니다. 필요한 경우에만 확인하세요.",
+                # "fields": ("auth_key", "billing_key"),
+                # "description": "보안이 중요한 정보입니다. 필요한 경우에만 확인하세요.",
+                "fields": ("card_company", "card_number"),
+                "description": "카드 정보입니다.",
             },
         ),
         (
@@ -409,12 +415,15 @@ class PaymentAuthAdmin(admin.ModelAdmin):
 
     billing_key_display.short_description = "빌링키"
 
-    def auth_key_display(self, obj):
-        if obj.auth_key:
-            return f"{obj.auth_key[:15]}..."
-        return "-"
+    # def auth_key_display(self, obj):
+    #     if obj.auth_key:
+    #         return f"{obj.auth_key[:15]}..."
+    #     return "-"
+    
+    def card_company_display(self, obj):
+        return obj.card_company or "-"
 
-    auth_key_display.short_description = "인증키"
+    card_company_display.short_description = "카드사"
 
     def created_at_display(self, obj):
         return obj.created_at.strftime("%Y-%m-%d %H:%M")
@@ -441,10 +450,14 @@ class PaymentAuthAdmin(admin.ModelAdmin):
         return format_html(
             "<strong>고객키:</strong> {}<br>"
             "<strong>빌링키:</strong> {}<br>"
-            "<strong>인증키:</strong> {}",
-            obj.customer_key,
+            # "<strong>인증키:</strong> {}<br>"
+            "<strong>카드사:</strong> {}<br>"
+            "<strong>카드번호:</strong> {}",
+            # obj.customer_key,
             f"{obj.billing_key[:20]}..." if obj.billing_key else "-",
-            f"{obj.auth_key[:20]}..." if obj.auth_key else "-",
+            # f"{obj.auth_key[:20]}..." if obj.auth_key else "-",
+            obj.card_company or "-",
+            obj.card_number or "-",
         )
 
     auth_summary.short_description = "인증 정보 요약"
