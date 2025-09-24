@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import usePageStatusStore from '@/store/page-status-store';
 import Chip from '@/ui/chip';
 import General from './general';
@@ -9,22 +9,35 @@ import Subscription from './subscription';
 const SystemSetting = () => {
   const { settingChip, setSettingChip } = usePageStatusStore();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const initRef = useRef(false);
 
   useEffect(() => {
-    // URL 파라미터에서 tab 값 확인
-    const tab = searchParams.get('tab');
-
-    if (tab === 'subscription') {
-      setSettingChip('subscription');
-    } else if (
-      !settingChip ||
-      (settingChip !== 'general' &&
-        settingChip !== 'permission' &&
-        settingChip !== 'subscription')
+    // URL의 chip 쿼리를 최초 진입 시 chip 초기값으로만 사용하고, 이후에는 chip이 단독으로 상태를 가짐
+    if (initRef.current) return;
+    const chip = searchParams.get('chip');
+    if (
+      chip === 'subscription' ||
+      chip === 'permission' ||
+      chip === 'general'
     ) {
-      setSettingChip('general'); // 초기 칩을 일반으로 설정
+      setSettingChip(chip as 'subscription' | 'permission' | 'general');
+    } else {
+      setSettingChip('general');
     }
-  }, [settingChip, setSettingChip, searchParams]);
+    initRef.current = true;
+  }, [searchParams, setSettingChip]);
+
+  const handleChipChange = (
+    chip: 'general' | 'permission' | 'subscription'
+  ) => {
+    // 상태와 URL을 함께 갱신하여 이펙트가 사용자의 선택을 덮어쓰지 않도록 함
+    setSettingChip(chip);
+    const sp = new URLSearchParams(Array.from(searchParams.entries()));
+    sp.set('chip', chip);
+    router.push(`${pathname}?${sp.toString()}`);
+  };
 
   const renderContent = () => {
     switch (settingChip) {
@@ -49,7 +62,7 @@ const SystemSetting = () => {
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSettingChip('general')}
+          onClick={() => handleChipChange('general')}
           height="h-9"
           padding="px-4"
         />
@@ -60,7 +73,7 @@ const SystemSetting = () => {
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSettingChip('permission')}
+          onClick={() => handleChipChange('permission')}
           height="h-9"
           padding="px-4"
         />
@@ -71,7 +84,7 @@ const SystemSetting = () => {
           radius="rounded-full"
           borderColor="border-lg"
           cursor="cursor-pointer"
-          onClick={() => setSettingChip('subscription')}
+          onClick={() => handleChipChange('subscription')}
           height="h-9"
           padding="px-4"
         />

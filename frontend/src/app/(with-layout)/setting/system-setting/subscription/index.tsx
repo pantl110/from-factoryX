@@ -14,7 +14,7 @@ import {
   useGetSubscriptionStatus,
   useGetPaymentHistory,
   useDeleteBillingKey,
-  // useIssueBillingKey,
+  useGetPaymentAuth,
 } from '@/hooks';
 import RefundPolicyModal from './modals/refund-policy-modal';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -25,12 +25,12 @@ const Subscription = () => {
   const { getSubscriptionStatus, subscriptionStatus } =
     useGetSubscriptionStatus();
   const { getPaymentHistory, paymentHistory } = useGetPaymentHistory();
-  // const { issueBillingKey, isLoading: isBillingKeyLoading } =
-  //   useIssueBillingKey();
+  const { deleteBillingKey } = useDeleteBillingKey();
+  const { getPaymentAuth, paymentAuth } = useGetPaymentAuth();
+
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isCardDeleteModalOpen, setIsCardDeleteModalOpen] = useState(false);
   const [isRefundPolicyModalOpen, setIsRefundPolicyModalOpen] = useState(false);
-  const { deleteBillingKey } = useDeleteBillingKey();
 
   const planTypes: PlanType[] = ['BASIC', 'PARTNERS'];
 
@@ -39,6 +39,7 @@ const Subscription = () => {
       getFactory(factoryId);
       getSubscriptionStatus(factoryId);
       getPaymentHistory(factoryId);
+      getPaymentAuth(factoryId);
     }
   }, [factoryId, getFactory, getSubscriptionStatus, getPaymentHistory]);
 
@@ -85,6 +86,7 @@ const Subscription = () => {
         getFactory(factoryId),
         getSubscriptionStatus(factoryId),
         getPaymentHistory(factoryId),
+        getPaymentAuth(factoryId),
       ]);
     } finally {
       setIsCardDeleteModalOpen(false);
@@ -122,10 +124,10 @@ const Subscription = () => {
         <div className="flex justify-between">
           <h3 className="Heading-3">결제 카드 설정</h3>
           <MiniBtn
-            text={factory?.billing_key ? '카드 변경 ' : '카드 추가'}
+            text={paymentAuth?.billing_key ? '카드 변경 ' : '카드 추가'}
             variant="whiteOutline"
             onClick={
-              factory?.billing_key
+              paymentAuth?.billing_key
                 ? () => setIsChangeModalOpen(true)
                 : registerCard
             }
@@ -133,11 +135,10 @@ const Subscription = () => {
         </div>
 
         <div className="flex items-center justify-between h-18 py-4 px-6 border border-lg rounded-xl">
-          {factory?.billing_key ? (
+          {paymentAuth?.billing_key ? (
             <>
               <h4 className="Heading-4">
-                {subscriptionStatus?.current_payment?.card_company}{' '}
-                {subscriptionStatus?.current_payment?.card_number}
+                {paymentAuth?.card_company} {paymentAuth?.card_number}
               </h4>
               <MiniBtn
                 text="삭제"

@@ -211,6 +211,18 @@ export interface BillingKeyIssueResponseModel {
   card_number: string | null;
 }
 
+// 결제 인증 정보 (카드 정보)
+export interface PaymentAuthModel {
+  id: number;
+  customer_key: string;
+  billing_key: string;
+  card_company: string;
+  card_number: string; // 마스킹된 카드번호
+  is_current?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 //////////////////////
 // Factory Equipment API
 // 설비 등록

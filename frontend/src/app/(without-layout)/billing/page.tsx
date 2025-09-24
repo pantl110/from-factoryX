@@ -58,12 +58,12 @@ const BillingPageContent = () => {
 
   const handleConfirm = () => {
     // 구독 설정 페이지로 이동
-    router.push('/setting?tab=subscription');
+    router.push('/setting?chip=subscription');
   };
 
   const handleRetry = () => {
     // 다시 시도 - 구독 설정 페이지로 이동
-    router.push('/setting?tab=subscription');
+    router.push('/setting?chip=subscription');
   };
 
   return (
