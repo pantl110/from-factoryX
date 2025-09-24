@@ -2,9 +2,9 @@
 
 import { useCallback, useState } from 'react';
 import axios from 'axios';
-import useMemberStore from '@/store/member-store';
 
 interface SubscriptionPaymentInModel {
+  factory_id?: number;
   subscription_id: number;
   billing_key: string;
   customer_key: string;
@@ -42,11 +42,10 @@ export const useProcessSubscriptionPayment = (): UseProcessSubscriptionPaymentRe
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SubscriptionPaymentResultModel | null>(null);
-  const { factoryId } = useMemberStore();
 
   const processSubscriptionPayment = useCallback(
     async (payload: SubscriptionPaymentInModel) => {
-      if (!factoryId) {
+      if (!payload.factory_id) {
         const msg = '공장 ID가 필요합니다.';
         setError(msg);
         return { success: false, error: msg };
@@ -63,7 +62,7 @@ export const useProcessSubscriptionPayment = (): UseProcessSubscriptionPaymentRe
 
       try {
         const response = await axios.post<SubscriptionPaymentResultModel>(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/payment/${factoryId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/payment/${payload.factory_id}`,
           payload,
           {
             withCredentials: true,
@@ -94,7 +93,7 @@ export const useProcessSubscriptionPayment = (): UseProcessSubscriptionPaymentRe
         setIsLoading(false);
       }
     },
-    [factoryId]
+    []
   );
 
   return { processSubscriptionPayment, isLoading, error, result };

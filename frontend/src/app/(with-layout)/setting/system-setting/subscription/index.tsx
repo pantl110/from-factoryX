@@ -16,6 +16,7 @@ import {
   useGetPaymentHistory,
   useDeleteBillingKey,
   useGetPaymentAuth,
+  useProcessSubscriptionPayment,
 } from '@/hooks';
 import RefundPolicyModal from './modals/refund-policy-modal';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -29,6 +30,8 @@ const Subscription = () => {
   const { getPaymentHistory, paymentHistory } = useGetPaymentHistory();
   const { deleteBillingKey } = useDeleteBillingKey();
   const { getPaymentAuth, paymentAuth } = useGetPaymentAuth();
+  const { processSubscriptionPayment, isLoading: isSubscribeLoading } =
+    useProcessSubscriptionPayment();
   const searchParams = useSearchParams();
 
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
@@ -55,7 +58,37 @@ const Subscription = () => {
     }
   }, [factoryId, searchParams, getPaymentAuth]);
 
-  const registerCard = async () => {
+  const handleSubscribe = async (type: PlanType, onClose?: () => void) => {
+    // 카드가 없으면 등록 플로우로 이동
+    if (!paymentAuth?.billing_key) {
+      await registerCard(type);
+      return;
+    }
+
+    // 카드가 이미 등록된 상태라면 결제/구독 시작
+    if (!paymentAuth?.billing_key || !paymentAuth?.customer_key) {
+      alert(
+        '결제 정보를 불러오지 못했습니다. 화면을 새로고침 후 다시 시도해주세요.'
+      );
+      return;
+    }
+
+    const result = await processSubscriptionPayment({
+      factory_id: factoryId ?? undefined,
+      subscription_id: type === 'BASIC' ? 1 : 2,
+      billing_key: paymentAuth.billing_key,
+      customer_key: paymentAuth.customer_key,
+    });
+    onClose?.(); // 모달 닫기
+    if (result.success) {
+      if (factoryId) {
+        getPaymentHistory(factoryId);
+        getSubscriptionStatus(factoryId);
+      }
+    }
+  };
+
+  const registerCard = async (type?: PlanType) => {
     try {
       if (!factoryId) {
         alert('공장을 선택해주세요.');
@@ -72,7 +105,7 @@ const Subscription = () => {
       // 토스페이먼츠 빌링키 인증 요청 (URL 리다이렉션 방식)
       await toss.requestBillingAuth('카드', {
         customerKey,
-        successUrl: `${window.location.origin}/billing?status=success&factoryId=${factoryId}`,
+        successUrl: `${window.location.origin}/billing?status=success&factoryId=${factoryId}${type ? `&plan=${type}` : ''}`,
         failUrl: `${window.location.origin}/billing?status=fail&factoryId=${factoryId}`,
       });
     } catch (error: unknown) {
@@ -117,12 +150,19 @@ const Subscription = () => {
           <PlanItem
             key={type}
             type={type}
-            registerCard={registerCard}
             subscriptionType={
-              subscriptionStatus?.subscription_history.subscription
-                .type as PlanType
+              subscriptionStatus?.is_active === true &&
+              subscriptionStatus?.subscription_history.subscription.type ===
+                'basic'
+                ? 'BASIC'
+                : subscriptionStatus?.is_active === true &&
+                    subscriptionStatus?.subscription_history.subscription
+                      .type === 'partners'
+                  ? 'PARTNERS'
+                  : (null as unknown as PlanType)
             }
-            paymentAuth={paymentAuth ?? null}
+            onSubscribe={handleSubscribe}
+            isLoading={isSubscribeLoading}
           />
         ))}
       </div>
@@ -149,9 +189,9 @@ const Subscription = () => {
             {paymentHistory?.data.map((payment) => (
               <SubscriptionTableItem
                 key={payment.id}
-                date={payment.created_at}
-                card={`${payment.card_company} (${payment.card_number})`}
-                amount={payment.amount.toLocaleString()}
+                date={payment.created_at.split('T')[0]}
+                card={`${payment.card_company === null ? '-' : payment.card_company} (${payment.card_number === null ? '-' : payment.card_number})`}
+                amount={Number(payment.amount).toLocaleString()}
                 plan={
                   payment.subscription_history.subscription.type === 'basic'
                     ? 'Basic'
