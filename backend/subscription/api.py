@@ -352,7 +352,7 @@ async def delete_billing_key(request, factory_id: int):
 @router.post(
     "/payment/{factory_id}",
     summary="[C] 구독 결제",
-    description="빌링키를 사용하여 구독 결제를 진행합니다.",
+    description="빌링키를 사용하여 구독 결제를 진행합니다. 구독 취소 해지시에는 결제는 하지 않고 기존 구독 이력을 재활성화합니다.",
     response={200: PaymentResultOut},
     auth=jwt_auth,
 )
@@ -373,18 +373,79 @@ async def process_subscription_payment(
     ).afirst()
 
     if existing_history:
-        # 같은 플랜이면 에러
-        if existing_history.subscription.id == payload.subscription_id:
+        # 같은 플랜이면 에러 반환
+        if existing_history.subscription_id == payload.subscription_id:
             raise HttpError(400, "이미 동일한 구독 플랜이 활성화되어 있습니다.")
         
         # 다른 플랜이면 구독 플랜 변경 처리
         return await change_subscription_plan(
-            request, factory_id, payload, existing_history
+            request, factory_id, payload, existing_history.id
         )
 
     toss_service = TossPaymentsService()
     order_id = f"subscription_{factory_id}_{int(timezone.now().timestamp())}"
 
+    # 활성 구독이 없고, 동일 플랜의 취소 이력이 남아있으면 결제 없이 재활성화
+    @sync_to_async
+    def find_canceled_same_plan():
+        return (
+            SubscriptionHistory.objects.filter(
+                factory=factory,
+                subscription=subscription,
+                is_canceled=True,
+                end_date__gt=timezone.now().date(),
+            )
+            .order_by("-end_date")
+            .first()
+        )
+
+    if not existing_history:
+        canceled_same_plan = await find_canceled_same_plan()
+        if canceled_same_plan:
+            @sync_to_async
+            @transaction.atomic
+            def reactivate_history():
+                canceled_same_plan.is_canceled = False
+                canceled_same_plan.billing_key = payload.billing_key
+                canceled_same_plan.customer_key = payload.customer_key
+                canceled_same_plan.save(
+                    update_fields=["is_canceled", "billing_key", "customer_key"]
+                )
+                return canceled_same_plan
+
+            reactivated = await reactivate_history()
+
+            # 결제 없이 재활성화 응답 구성
+            result = PaymentResultOut(
+                subscription_id=subscription.id,
+                subscription_type=subscription.type,
+                payment_key="",
+                order_id=f"reactivated_{reactivated.id}_{int(timezone.now().timestamp())}",
+                amount=0,
+                status="DONE",
+                approved_at=timezone.now(),
+                method="REACTIVATED",
+                card_company=None,
+                card_type=None,
+                card_number=None,
+                card_owner_type=None,
+            )
+
+            # basic, partners 구독 재활성화 시 바로빌 홈택스 스크랩 재활성화
+            try:
+                await handle_barobill_scrap_for_subscription(
+                    factory, subscription.type, "activate"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"바로빌 홈택스 스크랩 재활성화 실패: factory_id={factory_id}, error={str(e)}"
+                )
+            logger.info(
+                f"구독 취소 해지 재활성화 처리: factory_id={factory_id}, history_id={reactivated.id}"
+            )
+            return 200, result
+
+    # 활성 구독이 없고, 동일 플랜의 취소 이력도 없을 때
     # PaymentAuth에서 빌링키 확인
     try:
         payment_auth = await PaymentAuth.objects.aget(
@@ -416,19 +477,31 @@ async def process_subscription_payment(
         @sync_to_async
         @transaction.atomic
         def create_payment_and_subscription() -> tuple[Payment, SubscriptionHistory]:
-            # 구독 히스토리 생성
-            subscription_history = SubscriptionHistory.objects.create(
+            """새 구독 이력을 생성하고 결제와 연결"""
+            # 1) 새 구독 이력 생성 (한 달 단위)
+            from dateutil.relativedelta import relativedelta
+
+            # 직전 이력의 종료일을 확인하여 중복기간 방지
+            latest_history = (
+                SubscriptionHistory.objects.filter(factory=factory)
+                .order_by("-end_date")
+                .first()
+            )
+            today = timezone.now().date()
+            start_date = max(today, latest_history.end_date) if latest_history else today
+
+            target_history = SubscriptionHistory.objects.create(
                 factory=factory,
                 subscription=subscription,
-                start_date=timezone.now().date(),
-                end_date=(timezone.now() + timedelta(days=30)).date(),
+                start_date=start_date,
+                end_date=(timezone.now() + relativedelta(months=1)).date(),
                 billing_key=payload.billing_key,
                 customer_key=payload.customer_key,
             )
 
-            # Payment 객체 생성 (결제 성공 시에만)
+            # 2) Payment 객체 생성 (결제 성공 시에만)
             payment = Payment.objects.create(
-                subscription_history=subscription_history,
+                subscription_history=target_history,
                 payment_key=payment_result.get("paymentKey"),
                 order_id=order_id,
                 amount=subscription.price,
@@ -442,7 +515,7 @@ async def process_subscription_payment(
                 card_owner_type=card_info.get("ownerType"),
             )
 
-            return payment, subscription_history
+            return payment, target_history
 
         payment, subscription_history = await create_payment_and_subscription()
 
@@ -499,12 +572,17 @@ async def process_subscription_payment(
         raise HttpError(500, f"결제 처리 중 오류가 발생했습니다: {str(e)}")
 
 
-async def change_subscription_plan(request, factory_id: int, payload: SubscriptionPaymentIn, existing_history):
+async def change_subscription_plan(request, factory_id: int, payload: SubscriptionPaymentIn, existing_history_id: int):
     """구독 플랜 변경 - 기존 구독은 만료일까지 유지, 다음 날부터 새 플랜으로 시작"""
     user = request.auth
     factory = await get_factory_by_id(factory_id)
     member = await is_factory_member(factory_id, user)
     new_subscription = await get_subscription_by_id(payload.subscription_id)
+
+    # 기존 히스토리 안전 로드 (relation 포함)
+    existing_history = await sync_to_async(
+        lambda: SubscriptionHistory.objects.select_related("subscription", "factory").get(id=existing_history_id)
+    )()
 
     @sync_to_async
     @transaction.atomic
@@ -530,12 +608,12 @@ async def change_subscription_plan(request, factory_id: int, payload: Subscripti
     result = {
         "message": "구독 플랜이 변경되었습니다. 기존 구독은 설정된 종료일까지 유지되고, 그 다음부터 새 플랜이 시작됩니다.",
         "current_subscription": {
-            "id": existing_history.subscription.id,
+            "id": existing_history.subscription_id,
             "type": existing_history.subscription.type,
             "end_date": existing_history.end_date.isoformat(),
         },
         "next_subscription": {
-            "id": next_subscription_history.subscription.id,
+            "id": next_subscription_history.subscription_id,
             "type": next_subscription_history.subscription.type,
             "start_date": next_subscription_history.start_date.isoformat(),
             "end_date": next_subscription_history.end_date.isoformat(),
@@ -714,13 +792,27 @@ async def renew_subscription(request, factory_id: int):
     if not current_subscription.billing_key:
         raise HttpError(400, "빌링키가 없습니다. 새로 결제를 진행해주세요.")
 
+    # 다음 달 구독(플랜 변경 예정분) 있는지 확인: 기존 end_date + 1일부터 시작하는 구독
+    from datetime import timedelta as _td
+    next_subscription = await sync_to_async(
+        lambda: SubscriptionHistory.objects.filter(
+            factory=factory,
+            start_date=current_subscription.end_date + _td(days=1),
+            is_canceled=False,
+        )
+        .select_related("subscription")
+        .first()
+    )()
+
+    target_subscription = next_subscription if next_subscription else current_subscription
+
     billing_service = SubscriptionBillingService()
 
     try:
-        payment = billing_service.process_subscription_payment(current_subscription)
+        payment = billing_service.process_subscription_payment(target_subscription)
 
         # basic, partners 구독 갱신 시 바로빌 홈택스 스크랩 상태 확인 및 등록
-        subscription = current_subscription.subscription
+        subscription = target_subscription.subscription
         try:
             await handle_barobill_scrap_for_subscription(
                 factory, subscription.type, "renew"
