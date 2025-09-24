@@ -513,9 +513,9 @@ class SubscriptionBillingServiceTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
-        # 취소된 구독은 비활성 상태여야 함
-        self.assertFalse(data["is_active"])
-        # 다음 결제일은 None이어야 함
+        # 취소되었더라도 기간 내이면 활성 상태여야 함
+        self.assertTrue(data["is_active"])
+        # 다음 결제일은 None이어야 함 (자동 갱신 중단)
         self.assertIsNone(data["next_billing_date"])
 
     @patch("subscription.services.TossPaymentsService.delete_billing_key")

@@ -28,6 +28,7 @@ from subscription.utils import (
     get_payment_by_id,
     get_subscription_history_by_id,
     resolve_card_company_from_issuer,
+    change_subscription_plan,
 )
 from subscription.services import TossPaymentsService, SubscriptionBillingService
 from subscription.exceptions import PaymentError, BillingKeyError, SubscriptionError
@@ -586,61 +587,6 @@ async def process_subscription_payment(
         raise HttpError(500, f"결제 처리 중 오류가 발생했습니다: {str(e)}")
 
 
-async def change_subscription_plan(request, factory_id: int, payload: SubscriptionPaymentIn, existing_history_id: int):
-    """구독 플랜 변경 - 기존 구독은 만료일까지 유지, 다음 날부터 새 플랜으로 시작"""
-    user = request.auth
-    factory = await get_factory_by_id(factory_id)
-    member = await is_factory_member(factory_id, user)
-    new_subscription = await get_subscription_by_id(payload.subscription_id)
-
-    # 기존 히스토리 안전 로드 (relation 포함)
-    existing_history = await sync_to_async(
-        lambda: SubscriptionHistory.objects.select_related("subscription", "factory").get(id=existing_history_id)
-    )()
-
-    @sync_to_async
-    @transaction.atomic
-    def update_existing_subscription():
-        # 기존 구독의 종료일은 그대로 유지 (이미 설정된 종료일)
-        # 다음 구독 히스토리 생성 (기존 구독 종료일 + 1일부터 시작)
-        from dateutil.relativedelta import relativedelta
-        
-        next_subscription_history = SubscriptionHistory.objects.create(
-            factory=factory,
-            subscription=new_subscription,
-            start_date=existing_history.end_date + timedelta(days=1),  # 기존 구독 종료일 + 1일
-            end_date=existing_history.end_date + relativedelta(months=1),  # 기존 구독 종료일 + 1개월
-            billing_key=payload.billing_key,
-            customer_key=payload.customer_key,
-            is_canceled=False,
-        )
-        
-        return next_subscription_history
-
-    next_subscription_history = await update_existing_subscription()
-
-    result = {
-        "message": "구독 플랜이 변경되었습니다. 기존 구독은 설정된 종료일까지 유지되고, 그 다음부터 새 플랜이 시작됩니다.",
-        "current_subscription": {
-            "id": existing_history.subscription_id,
-            "type": existing_history.subscription.type,
-            "end_date": existing_history.end_date.isoformat(),
-        },
-        "next_subscription": {
-            "id": next_subscription_history.subscription_id,
-            "type": next_subscription_history.subscription.type,
-            "start_date": next_subscription_history.start_date.isoformat(),
-            "end_date": next_subscription_history.end_date.isoformat(),
-        }
-    }
-
-    logger.info(
-        f"구독 플랜 변경: factory_id={factory_id}, "
-        f"기존={existing_history.subscription.type} (종료: {existing_history.end_date}), "
-        f"신규={new_subscription.type} (시작: {next_subscription_history.start_date})"
-    )
-    
-    return 200, result
 
 
 @router.get(
@@ -709,7 +655,8 @@ async def get_subscription_status(request, factory_id: int):
             if is_active and not current_subscription.is_canceled
             else None
         ),
-        is_active=is_active and not current_subscription.is_canceled,
+        # 활성 여부는 기간 기준으로만 판단 (해지되었어도 기간 내에는 구독 활성이 true)
+        is_active=is_active,
     )
 
     return result
