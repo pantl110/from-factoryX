@@ -240,13 +240,17 @@ async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn
         @transaction.atomic
         def replace_payment_auth():
             PaymentAuth.objects.filter(factory=factory).delete()
-            return PaymentAuth.objects.create(
+            payment_auth = PaymentAuth.objects.create(
                 factory=factory,
                 customer_key=payload.customer_key,
                 billing_key=result.get("billingKey"),
                 card_company=result.get("cardCompany"),
                 card_number=result.get("cardNumber")
             )
+            # 팩토리에도 빌링키 저장
+            factory.billing_key = result.get("billingKey")
+            factory.save(update_fields=["billing_key"]) 
+            return payment_auth
 
         await replace_payment_auth()
 
@@ -309,6 +313,10 @@ async def delete_billing_key(request, factory_id: int):
             current_subscription.customer_key = None
             current_subscription.auth_key = None
             current_subscription.save()
+
+            # 팩토리의 빌링키도 초기화
+            factory.billing_key = None
+            factory.save(update_fields=["billing_key"]) 
 
         await clear_billing_key()
 
