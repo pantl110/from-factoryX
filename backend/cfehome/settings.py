@@ -337,8 +337,8 @@ CRONJOBS = [
 ]
 
 # Toss Payments Settings
-TOSS_PAYMENTS_SECRET_KEY = "test_sk_..."  # 실제 환경에서는 환경변수로 관리
-TOSS_PAYMENTS_CLIENT_KEY = "test_ck_..."
+TOSS_PAYMENTS_SECRET_KEY = config("TOSS_PAYMENTS_SECRET_KEY", default=None)
+TOSS_PAYMENTS_CLIENT_KEY = config("TOSS_PAYMENTS_CLIENT_KEY", default=None)
 TOSS_PAYMENTS_BASE_URL = "https://api.tosspayments.com"
 
 # Scheduling
