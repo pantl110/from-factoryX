@@ -254,7 +254,7 @@ async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn
 
     except Exception as e:
         logger.error(f"빌링키 발급 실패: factory_id={factory_id}, error={str(e)}")
-        raise HttpError(400, f"빌링키 발급 실패: {str(e)}")
+        raise HttpError(400, f"{str(e)}")
 
 
 @router.delete(
