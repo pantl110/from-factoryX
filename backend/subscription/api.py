@@ -352,7 +352,7 @@ async def delete_billing_key(request, factory_id: int):
 @router.post(
     "/payment/{factory_id}",
     summary="[C] 구독 결제",
-    description="빌링키를 사용하여 구독 결제를 진행합니다.",
+    description="빌링키를 사용하여 구독 결제를 진행합니다. 구독 취소 해지시에는 결제는 하지 않고 기존 구독 이력을 재활성화합니다.",
     response={200: PaymentResultOut},
     auth=jwt_auth,
 )
@@ -373,13 +373,13 @@ async def process_subscription_payment(
     ).afirst()
 
     if existing_history:
-        # 같은 플랜이면 에러
-        if existing_history.subscription.id == payload.subscription_id:
+        # 같은 플랜이면 에러 반환
+        if existing_history.subscription_id == payload.subscription_id:
             raise HttpError(400, "이미 동일한 구독 플랜이 활성화되어 있습니다.")
         
         # 다른 플랜이면 구독 플랜 변경 처리
         return await change_subscription_plan(
-            request, factory_id, payload, existing_history
+            request, factory_id, payload, existing_history.id
         )
 
     toss_service = TossPaymentsService()
@@ -416,19 +416,44 @@ async def process_subscription_payment(
         @sync_to_async
         @transaction.atomic
         def create_payment_and_subscription() -> tuple[Payment, SubscriptionHistory]:
-            # 구독 히스토리 생성
-            subscription_history = SubscriptionHistory.objects.create(
-                factory=factory,
-                subscription=subscription,
-                start_date=timezone.now().date(),
-                end_date=(timezone.now() + timedelta(days=30)).date(),
-                billing_key=payload.billing_key,
-                customer_key=payload.customer_key,
+            """취소 이력이 있으면 재활성화, 없으면 새로 생성"""
+            # 1) 재활성화 대상 찾기: 동일 플랜, 취소 상태, 종료일이 미래(구독 기간 남아있음)
+            reactivated = (
+                SubscriptionHistory.objects.select_related("subscription")
+                .filter(
+                    factory=factory,
+                    subscription=subscription,
+                    is_canceled=True,
+                    end_date__gt=timezone.now().date(),
+                )
+                .order_by("-end_date")
+                .first()
             )
+
+            if reactivated:
+                # 기존 이력 재활성화
+                reactivated.is_canceled = False
+                reactivated.billing_key = payload.billing_key
+                reactivated.customer_key = payload.customer_key
+                reactivated.save(
+                    update_fields=["is_canceled", "billing_key", "customer_key"]
+                )
+                target_history = reactivated
+            else:
+                # 2) 신규 구독 이력 생성 (한 달 단위)
+                from dateutil.relativedelta import relativedelta
+                target_history = SubscriptionHistory.objects.create(
+                    factory=factory,
+                    subscription=subscription,
+                    start_date=timezone.now().date(),
+                    end_date=(timezone.now() + relativedelta(months=1)).date(),
+                    billing_key=payload.billing_key,
+                    customer_key=payload.customer_key,
+                )
 
             # Payment 객체 생성 (결제 성공 시에만)
             payment = Payment.objects.create(
-                subscription_history=subscription_history,
+                subscription_history=target_history,
                 payment_key=payment_result.get("paymentKey"),
                 order_id=order_id,
                 amount=subscription.price,
@@ -442,7 +467,7 @@ async def process_subscription_payment(
                 card_owner_type=card_info.get("ownerType"),
             )
 
-            return payment, subscription_history
+            return payment, target_history
 
         payment, subscription_history = await create_payment_and_subscription()
 
@@ -499,12 +524,17 @@ async def process_subscription_payment(
         raise HttpError(500, f"결제 처리 중 오류가 발생했습니다: {str(e)}")
 
 
-async def change_subscription_plan(request, factory_id: int, payload: SubscriptionPaymentIn, existing_history):
+async def change_subscription_plan(request, factory_id: int, payload: SubscriptionPaymentIn, existing_history_id: int):
     """구독 플랜 변경 - 기존 구독은 만료일까지 유지, 다음 날부터 새 플랜으로 시작"""
     user = request.auth
     factory = await get_factory_by_id(factory_id)
     member = await is_factory_member(factory_id, user)
     new_subscription = await get_subscription_by_id(payload.subscription_id)
+
+    # 기존 히스토리 안전 로드 (relation 포함)
+    existing_history = await sync_to_async(
+        lambda: SubscriptionHistory.objects.select_related("subscription", "factory").get(id=existing_history_id)
+    )()
 
     @sync_to_async
     @transaction.atomic
@@ -530,12 +560,12 @@ async def change_subscription_plan(request, factory_id: int, payload: Subscripti
     result = {
         "message": "구독 플랜이 변경되었습니다. 기존 구독은 설정된 종료일까지 유지되고, 그 다음부터 새 플랜이 시작됩니다.",
         "current_subscription": {
-            "id": existing_history.subscription.id,
+            "id": existing_history.subscription_id,
             "type": existing_history.subscription.type,
             "end_date": existing_history.end_date.isoformat(),
         },
         "next_subscription": {
-            "id": next_subscription_history.subscription.id,
+            "id": next_subscription_history.subscription_id,
             "type": next_subscription_history.subscription.type,
             "start_date": next_subscription_history.start_date.isoformat(),
             "end_date": next_subscription_history.end_date.isoformat(),
