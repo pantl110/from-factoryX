@@ -52,6 +52,10 @@ const useGetPaymentAuth = (): UseGetPaymentAuthReturnModel => {
 
       if (axios.isAxiosError(err)) {
         const data = err.response?.data as Record<string, unknown> | undefined;
+        // 404인 경우에는 등록된 결제 정보가 없는 정상 상태이므로 기존 paymentAuth를 비워 UI를 최신화
+        if (err.response?.status === 404) {
+          setPaymentAuth(null);
+        }
         if (data) {
           const maybeDetail = typeof data.detail === 'string' ? data.detail : undefined;
           const maybeMessage = typeof data.message === 'string' ? data.message : undefined;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { loadTossPayments } from '@tosspayments/payment-sdk';
 import FreePlan from './free-plan';
 import PlanItem from './plan-item';
@@ -18,6 +19,7 @@ import {
 } from '@/hooks';
 import RefundPolicyModal from './modals/refund-policy-modal';
 import NoHistoryBox from '@/ui/no-history-box';
+import RegisterCard from './register-card';
 
 const Subscription = () => {
   const { factoryId } = useMemberStore();
@@ -27,6 +29,7 @@ const Subscription = () => {
   const { getPaymentHistory, paymentHistory } = useGetPaymentHistory();
   const { deleteBillingKey } = useDeleteBillingKey();
   const { getPaymentAuth, paymentAuth } = useGetPaymentAuth();
+  const searchParams = useSearchParams();
 
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isCardDeleteModalOpen, setIsCardDeleteModalOpen] = useState(false);
@@ -42,6 +45,15 @@ const Subscription = () => {
       getPaymentAuth(factoryId);
     }
   }, [factoryId, getFactory, getSubscriptionStatus, getPaymentHistory]);
+
+  // billing success 후 돌아올 때 register=success 플래그가 있으면 PaymentAuth 재조회
+  useEffect(() => {
+    if (!factoryId) return;
+    const register = searchParams.get('register');
+    if (register === 'success') {
+      getPaymentAuth(factoryId);
+    }
+  }, [factoryId, searchParams, getPaymentAuth]);
 
   const registerCard = async () => {
     try {
@@ -82,12 +94,7 @@ const Subscription = () => {
         alert(result.error ?? '카드 삭제에 실패했습니다.');
         return;
       }
-      await Promise.all([
-        getFactory(factoryId),
-        getSubscriptionStatus(factoryId),
-        getPaymentHistory(factoryId),
-        getPaymentAuth(factoryId),
-      ]);
+      await Promise.all([getPaymentAuth(factoryId)]);
     } finally {
       setIsCardDeleteModalOpen(false);
     }
@@ -120,41 +127,12 @@ const Subscription = () => {
       </div>
 
       {/* 결제 카드 설정 */}
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between">
-          <h3 className="Heading-3">결제 카드 설정</h3>
-          <MiniBtn
-            text={paymentAuth?.billing_key ? '카드 변경 ' : '카드 추가'}
-            variant="whiteOutline"
-            onClick={
-              paymentAuth?.billing_key
-                ? () => setIsChangeModalOpen(true)
-                : registerCard
-            }
-          />
-        </div>
-
-        <div className="flex items-center justify-between h-18 py-4 px-6 border border-lg rounded-xl">
-          {paymentAuth?.billing_key ? (
-            <>
-              <h4 className="Heading-4">
-                {paymentAuth?.card_company} {paymentAuth?.card_number}
-              </h4>
-              <MiniBtn
-                text="삭제"
-                textColor="text-red"
-                bgColor="bg-red-8"
-                hoverColor="hover:bg-red-hover"
-                onClick={() => setIsCardDeleteModalOpen(true)}
-              />
-            </>
-          ) : (
-            <p className="Me_Body-2 text-gr text-center w-full">
-              등록된 결제 카드가 없습니다.
-            </p>
-          )}
-        </div>
-      </div>
+      <RegisterCard
+        paymentAuth={paymentAuth ?? null}
+        registerCard={registerCard}
+        setIsChangeModalOpen={setIsChangeModalOpen}
+        setIsCardDeleteModalOpen={setIsCardDeleteModalOpen}
+      />
 
       {/* 결제 내역 */}
       <div className="flex flex-col gap-4">

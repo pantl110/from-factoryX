@@ -58,7 +58,7 @@ const BillingPageContent = () => {
 
   const handleConfirm = () => {
     // 구독 설정 페이지로 이동
-    router.push('/setting?chip=subscription');
+    router.push('/setting?chip=subscription&register=success');
   };
 
   const handleRetry = () => {
