@@ -107,14 +107,16 @@ class Payment(BaseModel):
 
 
 class PaymentAuth(BaseModel):
-    """결제 인증 모델"""
+    """결제 인증 모델 (빌링키 + 등록된 카드 정보 저장)"""
 
     factory = models.ForeignKey(
         Factory, related_name="payment_auths", on_delete=models.CASCADE
     )
-    auth_key = models.CharField(max_length=255, help_text="인증키")
+    # auth_key = models.CharField(max_length=255, help_text="인증키")
     customer_key = models.CharField(max_length=255, help_text="고객키")
     billing_key = models.CharField(max_length=255, help_text="빌링키")
+    card_company = models.CharField(max_length=50, help_text="카드사명")
+    card_number = models.CharField(max_length=50, help_text="마스킹된 카드번호")
 
     def __str__(self):
         return f"PaymentAuth(factory={self.factory.name}, customer_key={self.customer_key})"

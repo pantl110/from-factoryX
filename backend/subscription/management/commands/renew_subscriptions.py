@@ -34,20 +34,31 @@ class Command(BaseCommand):
         # 지정된 일수 후에 만료되는 구독들을 찾음
         target_date = timezone.now().date() + timedelta(days=days)
 
+        # 구독 자동 갱신 대상: 만료 예정이고 빌링키가 있으며 취소되지 않은 구독
         expiring_subscriptions = SubscriptionHistory.objects.filter(
             end_date=target_date,
             billing_key__isnull=False,  # 빌링키가 있는 것만
+            is_canceled=False,  # 취소되지 않은 것만
+        ).select_related("subscription", "factory")
+
+        # 취소된 구독 중 만료되는 것들 (스크랩 정지 대상)
+        canceled_expiring_subscriptions = SubscriptionHistory.objects.filter(
+            end_date=target_date,
+            is_canceled=True,  # 취소된 것만
         ).select_related("subscription", "factory")
 
         total_count = expiring_subscriptions.count()
+        canceled_count = canceled_expiring_subscriptions.count()
 
-        if total_count == 0:
+        if total_count == 0 and canceled_count == 0:
             self.stdout.write(
                 self.style.SUCCESS(f"{days}일 후 만료되는 구독이 없습니다.")
             )
             return
-
         self.stdout.write(f"{days}일 후 만료되는 구독 {total_count}건을 찾았습니다.")
+        
+        if canceled_count > 0:
+            self.stdout.write(f"취소된 구독 중 만료되는 것 {canceled_count}건 (스크랩 정지 대상)")
 
         if dry_run:
             self.stdout.write(
@@ -62,6 +73,33 @@ class Command(BaseCommand):
                 )
             return
 
+        # 취소된 구독의 스크랩 정지 처리
+        if canceled_count > 0:
+            self.stdout.write("취소된 구독의 스크랩 정지 처리 시작...")
+            for subscription in canceled_expiring_subscriptions:
+                try:
+                    asyncio.run(
+                        handle_barobill_scrap_for_subscription(
+                            subscription.factory,
+                            subscription.subscription.type,
+                            "deactivate",
+                        )
+                    )
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f"✅ 취소된 구독 스크랩 정지 성공: {subscription.factory.name}"
+                        )
+                    )
+                except Exception as e:
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"❌ 취소된 구독 스크랩 정지 실패: {subscription.factory.name} - {str(e)}"
+                        )
+                    )
+                    logger.error(
+                        f"취소된 구독 스크랩 정지 실패: factory_id={subscription.factory.id}, error={str(e)}"
+                    )
+
         # 실제 갱신 처리
         billing_service = SubscriptionBillingService()
         success_count = 0
@@ -69,19 +107,38 @@ class Command(BaseCommand):
 
         for subscription in expiring_subscriptions:
             try:
-                self.stdout.write(
-                    f"구독 갱신 시작: {subscription.factory.name} - {subscription.subscription.type}"
-                )
-
-                payment = billing_service.process_subscription_payment(subscription)
+                # 다음 구독이 있는지 확인 (플랜이 변경된 경우 확인)
+                # 현재 구독 종료일 + 1일부터 시작하는 구독 찾기
+                next_subscription = SubscriptionHistory.objects.filter(
+                    factory=subscription.factory,
+                    start_date=subscription.end_date + timedelta(days=1),
+                    is_canceled=False,
+                ).first()
+                
+                if next_subscription:
+                    # 다음 달 구독이 있으면 해당 구독으로 갱신
+                    self.stdout.write(
+                        f"구독 플랜 변경 갱신: {subscription.factory.name} - "
+                        f"{subscription.subscription.type} → {next_subscription.subscription.type}"
+                    )
+                    payment = billing_service.process_subscription_payment(next_subscription)
+                else:
+                    # 다음 달 구독이 없으면 기존 구독으로 갱신
+                    self.stdout.write(
+                        f"구독 갱신 시작: {subscription.factory.name} - {subscription.subscription.type}"
+                    )
+                    payment = billing_service.process_subscription_payment(subscription)
 
                 # basic, partners 구독 갱신 시 바로빌 홈택스 스크랩 등록
                 try:
+                    # 사용할 구독 결정 (다음 달 구독이 있으면 그것, 없으면 기존 구독)
+                    target_subscription = next_subscription if next_subscription else subscription
+                    
                     # async 함수를 동기적으로 호출
                     asyncio.run(
                         handle_barobill_scrap_for_subscription(
-                            subscription.factory,
-                            subscription.subscription.type,
+                            target_subscription.factory,
+                            target_subscription.subscription.type,
                             "renew",
                         )
                     )

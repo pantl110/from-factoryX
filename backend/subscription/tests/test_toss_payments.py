@@ -89,12 +89,8 @@ class SubscriptionAPITestCase(TestCase):
         # Mock 설정
         mock_issue_billing_key.return_value = {
             "billingKey": "test_billing_key_123",
-            "authKey": "test_auth_key_456",
-            "card": {
-                "company": "현대카드",
-                "cardType": "신용",
-                "number": "433012******1234",
-            },
+            "cardCompany": "현대카드",
+            "cardNumber": "433012******1234",
         }
 
         client = TestAsyncClient(router)
@@ -103,11 +99,8 @@ class SubscriptionAPITestCase(TestCase):
         response = await client.post(
             f"/billing-key/{self.factory.id}",
             json={
-                "card_number": "4330123456781234",
-                "card_expiry_year": "25",
-                "card_expiry_month": "12",
-                "card_password": "12",
-                "customer_identity_number": "950101",
+                "auth_key": "test_auth_key_456",
+                "customer_key": "test_customer_key_123",
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -121,8 +114,10 @@ class SubscriptionAPITestCase(TestCase):
         payment_auth = await PaymentAuth.objects.aget(
             factory=self.factory, billing_key="test_billing_key_123"
         )
-        self.assertEqual(payment_auth.auth_key, "test_auth_key_456")
         self.assertIsNotNone(payment_auth.customer_key)
+        self.assertIsNotNone(payment_auth.card_company)
+        self.assertIsNotNone(payment_auth.card_number)
+        
 
     @patch("subscription.services.TossPaymentsService.request_billing_payment")
     async def test_subscription_payment_success(self, mock_payment):
@@ -133,9 +128,10 @@ class SubscriptionAPITestCase(TestCase):
         # PaymentAuth 테스트 데이터 생성
         payment_auth = await PaymentAuth.objects.acreate(
             factory=self.factory,
-            auth_key="test_auth_key_456",
             customer_key="test_customer_key_123",
             billing_key="test_billing_key_123",
+            card_company="현대카드",
+            card_number="433012******1234",
         )
 
         # Mock 설정
@@ -167,7 +163,6 @@ class SubscriptionAPITestCase(TestCase):
         subscription_history = await SubscriptionHistory.objects.aget(
             factory=self.factory, subscription=self.subscription_basic
         )
-        self.assertEqual(subscription_history.auth_key, "test_auth_key_456")
         self.assertEqual(subscription_history.billing_key, "test_billing_key_123")
 
         self.assertTrue(
@@ -266,21 +261,19 @@ class TossPaymentsServiceTestCase(TestCase):
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "billingKey": "test_billing_key_123",
-            "card": {"company": "현대카드", "cardType": "신용"},
+            "cardCompany": "현대카드",
+            "cardNumber": "433012******1234",
         }
         mock_post.return_value = mock_response
 
         result = self.service.issue_billing_key(
+            auth_key="test_auth_key_456",
             customer_key="test_customer_123",
-            card_number="4330123456781234",
-            card_expiry_year="25",
-            card_expiry_month="12",
-            card_password="12",
-            customer_identity_number="950101",
         )
 
         self.assertEqual(result["billingKey"], "test_billing_key_123")
-        self.assertEqual(result["card"]["company"], "현대카드")
+        self.assertEqual(result["cardCompany"], "현대카드")
+        self.assertEqual(result["cardNumber"], "433012******1234")
 
     @patch("requests.post")
     def test_request_billing_payment_success(self, mock_post):
@@ -540,15 +533,15 @@ class SubscriptionBillingServiceTestCase(TestCase):
         # 빌링키가 있는 구독 히스토리 설정
         self.subscription_history.billing_key = "test_billing_key_123"
         self.subscription_history.customer_key = "test_customer_key_123"
-        self.subscription_history.auth_key = "test_auth_key_456"
         await self.subscription_history.asave()
 
         # PaymentAuth 테스트 데이터 생성
         payment_auth = await PaymentAuth.objects.acreate(
             factory=self.factory,
-            auth_key="test_auth_key_456",
             customer_key="test_customer_key_123",
             billing_key="test_billing_key_123",
+            card_company="현대카드",
+            card_number="433012******1234",
         )
 
         client = TestAsyncClient(router)
@@ -568,7 +561,6 @@ class SubscriptionBillingServiceTestCase(TestCase):
         await self.subscription_history.arefresh_from_db()
         self.assertIsNone(self.subscription_history.billing_key)
         self.assertIsNone(self.subscription_history.customer_key)
-        self.assertIsNone(self.subscription_history.auth_key)
 
         # PaymentAuth에서도 데이터가 삭제되었는지 확인
         payment_auth_exists = await PaymentAuth.objects.filter(
@@ -625,9 +617,10 @@ class SubscriptionBillingServiceTestCase(TestCase):
         # PaymentAuth 테스트 데이터 생성
         payment_auth = await PaymentAuth.objects.acreate(
             factory=self.factory,
-            auth_key="test_auth_key_456",
             customer_key="test_customer_key_123",
             billing_key="test_billing_key_123",
+            card_company="현대카드",
+            card_number="433012******1234",
         )
 
         client = TestAsyncClient(router)
@@ -641,15 +634,11 @@ class SubscriptionBillingServiceTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
-        # 페이지네이션이 적용되어 data 키 안에 리스트가 있음
-        self.assertIn("data", data)
-        self.assertGreater(len(data["data"]), 0)
-
-        payment_auth_data = data["data"][0]
-        self.assertEqual(payment_auth_data["customer_key"], "test_customer_key_123")
-        self.assertEqual(payment_auth_data["billing_key"], "test_billing_key_123")
-        # auth_key는 보안상 응답에 포함되지 않아야 함
-        self.assertNotIn("auth_key", payment_auth_data)
+        # 단일 PaymentAuth 객체가 반환됨
+        self.assertEqual(data["customer_key"], "test_customer_key_123")
+        self.assertEqual(data["billing_key"], "test_billing_key_123")
+        self.assertEqual(data["card_company"], "현대카드")
+        self.assertEqual(data["card_number"], "433012******1234")
 
     async def test_get_payment_auth_not_found(self):
         """PaymentAuth가 없는 경우 조회 실패 테스트"""

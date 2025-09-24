@@ -124,33 +124,89 @@ async def create_subscription_history(
 @router.get(
     "/payment-auth/{factory_id}",
     summary="[C] 결제 인증 정보 조회",
-    description="팩토리의 결제 인증 정보를 조회합니다.",
-    response=list[PaymentAuthOut],
+    description="팩토리의 가장 최근에 등록된 결제 인증 정보 1건을 조회합니다.",
+    response=PaymentAuthOut,
     auth=jwt_auth,
 )
-@paginate
 async def get_payment_auth(request, factory_id: int):
-    """결제 인증 정보 조회"""
+    """결제 인증 정보 단건 조회 (가장 최근 등록)"""
     user = request.auth
     factory = await get_factory_by_id(factory_id)
     member = await is_factory_member(factory_id, user)
 
     @sync_to_async
-    def fetch_payment_auths():
-        queryset = PaymentAuth.objects.filter(factory=factory)
-        return list(queryset)
+    def fetch_latest_payment_auth():
+        try:
+            return PaymentAuth.objects.get(factory=factory)
+        except PaymentAuth.DoesNotExist:
+            return None
 
-    payment_auths = await fetch_payment_auths()
-    if len(payment_auths) == 0:
+    latest_payment_auth = await fetch_latest_payment_auth()
+    if not latest_payment_auth:
         raise HttpError(404, "등록된 결제 정보가 없습니다.")
 
-    return payment_auths
+    setattr(latest_payment_auth, "is_current", True)
+    return latest_payment_auth
 
+
+# @router.post(
+#     "/billing-key/{factory_id}",
+#     summary="[C] 빌링키 발급",
+#     description="토스페이먼츠 빌링키를 발급합니다.",
+#     response={201: BillingKeyIssueOut},
+#     auth=jwt_auth,
+# )
+# async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn):
+#     """빌링키 발급"""
+#     user = request.auth
+#     factory = await get_factory_by_id(factory_id)
+#     member = await is_factory_member(factory_id, user)
+
+#     toss_service = TossPaymentsService()
+#     customer_key = f"factory_{factory_id}_{user.id}_{uuid.uuid4().hex[:8]}"
+
+#     try:
+#         result = toss_service.issue_billing_key(
+#             customer_key=customer_key,
+#             card_number=payload.card_number,
+#             card_expiry_year=payload.card_expiry_year,
+#             card_expiry_month=payload.card_expiry_month,
+#             card_password=payload.card_password,
+#             customer_identity_number=payload.customer_identity_number,
+#         )
+
+#         billing_key_response = BillingKeyIssueOut(
+#             billing_key=result.get("billingKey"),
+#             customer_key=customer_key,
+#             card_company=result.get("card", {}).get("company"),
+#             card_type=result.get("card", {}).get("cardType"),
+#             card_number=result.get("card", {}).get("number"),
+#         )
+
+#         logger.info(
+#             f"빌링키 발급 성공: factory_id={factory_id}, billing_key={result.get('billingKey')}"
+#         )
+
+#         # PaymentAuth 모델에 저장
+#         await PaymentAuth.objects.aget_or_create(
+#             factory=factory,
+#             defaults={
+#                 "auth_key": result.get("authKey", ""),
+#                 "billing_key": result.get("billingKey"),
+#                 "customer_key": customer_key,
+#             },
+#         )
+
+#         return 201, billing_key_response
+
+#     except Exception as e:
+#         logger.error(f"빌링키 발급 실패: factory_id={factory_id}, error={str(e)}")
+#         raise HttpError(400, f"빌링키 발급 실패: {str(e)}")
 
 @router.post(
     "/billing-key/{factory_id}",
     summary="[C] 빌링키 발급",
-    description="토스페이먼츠 빌링키를 발급합니다.",
+    description="토스 위젯 성공 콜백(authKey, customerKey)으로 빌링키를 발급합니다.",
     response={201: BillingKeyIssueOut},
     auth=jwt_auth,
 )
@@ -161,39 +217,38 @@ async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn
     member = await is_factory_member(factory_id, user)
 
     toss_service = TossPaymentsService()
-    customer_key = f"factory_{factory_id}_{user.id}_{uuid.uuid4().hex[:8]}"
 
     try:
         result = toss_service.issue_billing_key(
-            customer_key=customer_key,
-            card_number=payload.card_number,
-            card_expiry_year=payload.card_expiry_year,
-            card_expiry_month=payload.card_expiry_month,
-            card_password=payload.card_password,
-            customer_identity_number=payload.customer_identity_number,
+            auth_key=payload.auth_key,
+            customer_key=payload.customer_key,
         )
 
         billing_key_response = BillingKeyIssueOut(
             billing_key=result.get("billingKey"),
-            customer_key=customer_key,
-            card_company=result.get("card", {}).get("company"),
-            card_type=result.get("card", {}).get("cardType"),
-            card_number=result.get("card", {}).get("number"),
+            customer_key=payload.customer_key,
+            card_company=result.get("cardCompany"),
+            card_number=result.get("cardNumber"),
         )
 
         logger.info(
             f"빌링키 발급 성공: factory_id={factory_id}, billing_key={result.get('billingKey')}"
         )
 
-        # PaymentAuth 모델에 저장
-        await PaymentAuth.objects.aget_or_create(
-            factory=factory,
-            defaults={
-                "auth_key": result.get("authKey", ""),
-                "billing_key": result.get("billingKey"),
-                "customer_key": customer_key,
-            },
-        )
+        # PaymentAuth: 공장당 1건만 유지 (기존 삭제 후 최신으로 교체)
+        @sync_to_async
+        @transaction.atomic
+        def replace_payment_auth():
+            PaymentAuth.objects.filter(factory=factory).delete()
+            return PaymentAuth.objects.create(
+                factory=factory,
+                customer_key=payload.customer_key,
+                billing_key=result.get("billingKey"),
+                card_company=result.get("cardCompany"),
+                card_number=result.get("cardNumber")
+            )
+
+        await replace_payment_auth()
 
         return 201, billing_key_response
 
@@ -287,55 +342,36 @@ async def process_subscription_payment(
     existing_history = await SubscriptionHistory.objects.filter(
         factory=factory,
         end_date__gt=timezone.now(),
-    ).aexists()
+        is_canceled=False,
+    ).afirst()
 
     if existing_history:
-        raise HttpError(400, "이미 활성화된 구독이 존재합니다.")
+        # 같은 플랜이면 에러
+        if existing_history.subscription.id == payload.subscription_id:
+            raise HttpError(400, "이미 동일한 구독 플랜이 활성화되어 있습니다.")
+        
+        # 다른 플랜이면 구독 플랜 변경 처리
+        return await change_subscription_plan(
+            request, factory_id, payload, existing_history
+        )
 
     toss_service = TossPaymentsService()
     order_id = f"subscription_{factory_id}_{int(timezone.now().timestamp())}"
 
-    @sync_to_async
-    @transaction.atomic
-    def create_payment_and_history():
-        # PaymentAuth에서 auth_key 가져오기
-        try:
-            payment_auth = PaymentAuth.objects.get(
-                factory=factory,
-                billing_key=payload.billing_key,
-                customer_key=payload.customer_key,
-            )
-            auth_key = payment_auth.auth_key
-        except PaymentAuth.DoesNotExist:
-            auth_key = None
-            logger.warning(
-                f"PaymentAuth not found for factory_id={factory_id}, billing_key={payload.billing_key}"
-            )
-
-        # 구독 히스토리 생성
-        subscription_history = SubscriptionHistory.objects.create(
+    # PaymentAuth에서 빌링키 확인
+    try:
+        payment_auth = await PaymentAuth.objects.aget(
             factory=factory,
-            subscription=subscription,
-            start_date=timezone.now().date(),
-            end_date=(timezone.now() + timedelta(days=30)).date(),
             billing_key=payload.billing_key,
             customer_key=payload.customer_key,
-            auth_key=auth_key,
         )
-
-        # 결제 객체 생성
-        payment = Payment.objects.create(
-            subscription_history=subscription_history,
-            order_id=order_id,
-            amount=subscription.price,
-            status="PENDING",
+    except PaymentAuth.DoesNotExist:
+        logger.warning(
+            f"PaymentAuth not found for factory_id={factory_id}, billing_key={payload.billing_key}"
         )
-
-        return payment, subscription_history
+        raise HttpError(400, "유효하지 않은 빌링키입니다.")
 
     try:
-        payment, subscription_history = await create_payment_and_history()
-
         # 토스페이먼츠 결제 요청
         payment_result = toss_service.request_billing_payment(
             billing_key=payload.billing_key,
@@ -347,23 +383,36 @@ async def process_subscription_payment(
 
         @sync_to_async
         @transaction.atomic
-        def update_payment_success():
-            payment.payment_key = payment_result.get("paymentKey")
-            payment.status = "DONE"
-            payment.method = payment_result.get("method")
-            payment.approved_at = timezone.now()
+        def create_payment_and_subscription() -> tuple[Payment, SubscriptionHistory]:
+            # 구독 히스토리 생성
+            subscription_history = SubscriptionHistory.objects.create(
+                factory=factory,
+                subscription=subscription,
+                start_date=timezone.now().date(),
+                end_date=(timezone.now() + timedelta(days=30)).date(),
+                billing_key=payload.billing_key,
+                customer_key=payload.customer_key,
+            )
 
-            # 카드 정보 저장
-            card_info = payment_result.get("card", {})
-            payment.card_company = card_info.get("company")
-            payment.card_type = card_info.get("cardType")
-            payment.card_number = card_info.get("number")
-            payment.card_owner_type = card_info.get("ownerType")
+            # Payment 객체 생성 (결제 성공 시에만)
+            payment = Payment.objects.create(
+                subscription_history=subscription_history,
+                payment_key=payment_result.get("paymentKey"),
+                order_id=order_id,
+                amount=subscription.price,
+                status="DONE",
+                method=payment_result.get("method"),
+                approved_at=timezone.now(),
+                # 카드 정보 저장
+                card_company=payment_result.get("cardCompany"),
+                card_type=payment_result.get("cardType"),
+                card_number=payment_result.get("cardNumber"),
+                card_owner_type=payment_result.get("cardOwnerType"),
+            )
 
-            payment.save()
-            return payment
+            return payment, subscription_history
 
-        updated_payment = await update_payment_success()
+        payment, subscription_history = await create_payment_and_subscription()
 
         # basic, partners 구독에 대해 바로빌 홈택스 스크랩 등록
         try:
@@ -384,13 +433,13 @@ async def process_subscription_payment(
             order_id=order_id,
             amount=int(subscription.price),
             status="DONE",
-            approved_at=updated_payment.approved_at,
+            approved_at=payment.approved_at,
             method=payment_result.get("method"),
             # 카드 정보
-            card_company=payment_result.get("card", {}).get("company"),
-            card_type=payment_result.get("card", {}).get("cardType"),
-            card_number=payment_result.get("card", {}).get("number"),
-            card_owner_type=payment_result.get("card", {}).get("ownerType"),
+            card_company=payment_result.get("cardCompany"),
+            card_type=payment_result.get("cardType"),
+            card_number=payment_result.get("cardNumber"),
+            card_owner_type=payment_result.get("cardOwnerType"),
         )
 
         logger.info(
@@ -399,19 +448,75 @@ async def process_subscription_payment(
         return 200, result
 
     except (PaymentError, BillingKeyError) as e:
-        # 결제 실패시 payment 상태 업데이트
+        # 결제 실패시 payment 삭제
         @sync_to_async
-        def update_payment_failed():
-            payment.status = "FAILED"
-            payment.failure_message = str(e)
-            payment.save()
+        def delete_failed_payment():
+            payment.delete()
 
-        await update_payment_failed()
+        await delete_failed_payment()
         logger.error(f"구독 결제 실패: factory_id={factory_id}, error={str(e)}")
         raise HttpError(400, f"결제 실패: {str(e)}")
     except Exception as e:
+        # 결제 실패시 payment 삭제
+        @sync_to_async
+        def delete_failed_payment():
+            payment.delete()
+
+        await delete_failed_payment()
         logger.error(f"구독 결제 오류: factory_id={factory_id}, error={str(e)}")
         raise HttpError(500, f"결제 처리 중 오류가 발생했습니다: {str(e)}")
+
+
+async def change_subscription_plan(request, factory_id: int, payload: SubscriptionPaymentIn, existing_history):
+    """구독 플랜 변경 - 기존 구독은 만료일까지 유지, 다음 날부터 새 플랜으로 시작"""
+    user = request.auth
+    factory = await get_factory_by_id(factory_id)
+    member = await is_factory_member(factory_id, user)
+    new_subscription = await get_subscription_by_id(payload.subscription_id)
+
+    @sync_to_async
+    @transaction.atomic
+    def update_existing_subscription():
+        # 기존 구독의 종료일은 그대로 유지 (이미 설정된 종료일)
+        # 다음 구독 히스토리 생성 (기존 구독 종료일 + 1일부터 시작)
+        from dateutil.relativedelta import relativedelta
+        
+        next_subscription_history = SubscriptionHistory.objects.create(
+            factory=factory,
+            subscription=new_subscription,
+            start_date=existing_history.end_date + timedelta(days=1),  # 기존 구독 종료일 + 1일
+            end_date=existing_history.end_date + relativedelta(months=1),  # 기존 구독 종료일 + 1개월
+            billing_key=payload.billing_key,
+            customer_key=payload.customer_key,
+            is_canceled=False,
+        )
+        
+        return next_subscription_history
+
+    next_subscription_history = await update_existing_subscription()
+
+    result = {
+        "message": "구독 플랜이 변경되었습니다. 기존 구독은 설정된 종료일까지 유지되고, 그 다음부터 새 플랜이 시작됩니다.",
+        "current_subscription": {
+            "id": existing_history.subscription.id,
+            "type": existing_history.subscription.type,
+            "end_date": existing_history.end_date.isoformat(),
+        },
+        "next_subscription": {
+            "id": next_subscription_history.subscription.id,
+            "type": next_subscription_history.subscription.type,
+            "start_date": next_subscription_history.start_date.isoformat(),
+            "end_date": next_subscription_history.end_date.isoformat(),
+        }
+    }
+
+    logger.info(
+        f"구독 플랜 변경: factory_id={factory_id}, "
+        f"기존={existing_history.subscription.type} (종료: {existing_history.end_date}), "
+        f"신규={new_subscription.type} (시작: {next_subscription_history.start_date})"
+    )
+    
+    return 200, result
 
 
 @router.get(
@@ -489,7 +594,7 @@ async def get_subscription_status(request, factory_id: int):
 @router.post(
     "/cancel/{payment_id}",
     summary="[C] 결제 취소",
-    description="구독 결제를 취소합니다. 즉시 환불하지 않고 다음 달 자동 결제를 중단합니다. 세금계산서 조회 및 발행 기능이 바로 중단됩니다.",
+    description="구독 결제를 취소합니다. 환불하지 않고 다음 달 자동 결제를 중단합니다. 세금계산서 조회 및 발행 기능은 현재 구독 기간이 끝나면 중단됩니다.",
     response=PaymentCancelOut,
     auth=jwt_auth,
 )
@@ -520,18 +625,20 @@ async def cancel_payment(request, payment_id: int, payload: PaymentCancelIn):
 
     await update_subscription_canceled()
 
-    # basic, partners 구독 취소 시 바로빌 홈택스 스크랩 정지
-    subscription = subscription_history.subscription
-    factory = subscription_history.factory
-    try:
-        await handle_barobill_scrap_for_subscription(
-            factory, subscription.type, "deactivate"
-        )
-    except Exception as e:
-        logger.error(
-            f"바로빌 홈택스 스크랩 정지 실패: factory_id={factory.id}, error={str(e)}"
-        )
-        # 스크랩 정지 실패해도 구독 취소는 성공으로 처리
+    # 구독 취소 시 바로빌 스크랩은 즉시 정지하지 않고 구독 기간이 끝나면 자동으로 정지됨
+    
+    #  # basic, partners 구독 취소 시 바로빌 홈택스 스크랩 정지
+    # subscription = subscription_history.subscription
+    # factory = subscription_history.factory
+    # try:
+    #     await handle_barobill_scrap_for_subscription(
+    #         factory, subscription.type, "deactivate"
+    #     )
+    # except Exception as e:
+    #     logger.error(
+    #         f"바로빌 홈택스 스크랩 정지 실패: factory_id={factory.id}, error={str(e)}"
+    #     )
+    #     # 스크랩 정지 실패해도 구독 취소는 성공으로 처리
 
     result = PaymentCancelOut(
         payment_key=payment.payment_key,

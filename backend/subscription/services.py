@@ -28,25 +28,41 @@ class TossPaymentsService:
         credentials = f"{self.secret_key}:"
         return base64.b64encode(credentials.encode()).decode()
 
-    def issue_billing_key(
-        self,
-        customer_key,
-        card_number,
-        card_expiry_year,
-        card_expiry_month,
-        card_password,
-        customer_identity_number,
-    ):
-        """빌링키 발급"""
+    # def issue_billing_key(
+    #     self,
+    #     customer_key,
+    #     card_number,
+    #     card_expiry_year,
+    #     card_expiry_month,
+    #     card_password,
+    #     customer_identity_number,
+    # ):
+    #     """빌링키 발급"""
+    #     url = f"{self.base_url}/v1/billing/authorizations/issue"
+
+    #     data = {
+    #         "customerKey": customer_key,
+    #         "cardNumber": card_number,
+    #         "cardExpirationYear": card_expiry_year,
+    #         "cardExpirationMonth": card_expiry_month,
+    #         "cardPassword": card_password,
+    #         "customerIdentityNumber": customer_identity_number,
+    #     }
+
+    #     try:
+    #         response = requests.post(url, json=data, headers=self.headers)
+    #         response.raise_for_status()
+    #         return response.json()
+    #     except requests.exceptions.RequestException as e:
+    #         raise Exception(f"빌링키 발급 실패: {str(e)}")
+
+    def issue_billing_key(self, auth_key, customer_key):
+        """성공 콜백으로 받은 authKey를 billingKey로 교환하여 발급"""
         url = f"{self.base_url}/v1/billing/authorizations/issue"
 
         data = {
+            "authKey": auth_key,
             "customerKey": customer_key,
-            "cardNumber": card_number,
-            "cardExpirationYear": card_expiry_year,
-            "cardExpirationMonth": card_expiry_month,
-            "cardPassword": card_password,
-            "customerIdentityNumber": customer_identity_number,
         }
 
         try:
