@@ -1,6 +1,13 @@
 from subscription.models import Subscription, SubscriptionHistory, Payment, PaymentAuth
 from ninja.errors import HttpError
 from typing import Optional
+from asgiref.sync import sync_to_async
+from django.db import transaction
+from datetime import timedelta
+import logging
+from factory.utils import get_factory_by_id, is_factory_member
+from subscription.schemas.inbound import SubscriptionPaymentIn
+from django.utils import timezone
 
 
 async def get_subscription_by_id(subscription_id: int) -> Subscription:
@@ -107,3 +114,95 @@ def resolve_card_company_from_issuer(issuer_code: Optional[str]) -> Optional[str
     if not issuer_code:
         return None
     return ISSUER_CODE_TO_NAME.get(str(issuer_code))
+
+
+logger = logging.getLogger(__name__)
+
+
+async def change_subscription_plan(
+    request,
+    factory_id: int,
+    payload: SubscriptionPaymentIn,
+    existing_history_id: int,
+):
+    """구독 플랜 변경 - 기존 구독은 만료일까지 유지, 다음 날부터 새 플랜으로 시작"""
+    user = request.auth
+    factory = await get_factory_by_id(factory_id)
+    member = await is_factory_member(factory_id, user)
+    new_subscription = await get_subscription_by_id(payload.subscription_id)
+
+    # 기존 히스토리 로드
+    existing_history = await sync_to_async(
+        lambda: SubscriptionHistory.objects.select_related("subscription", "factory").get(id=existing_history_id)
+    )()
+
+    @sync_to_async
+    @transaction.atomic
+    def update_existing_subscription():
+        # 기존 구독의 종료일은 그대로 유지 (이미 설정된 종료일)
+        # 다음 구독 히스토리 생성 (기존 구독 종료일 + 1일부터 시작)
+        from dateutil.relativedelta import relativedelta
+        
+        next_start_date = existing_history.end_date + timedelta(days=1) # 기존 구독 종료일 + 1일
+        scheduled_next = (
+            SubscriptionHistory.objects.filter(
+                factory=factory,
+                start_date=next_start_date,
+            )
+            .select_related("subscription")
+            .first()
+        )
+
+        if scheduled_next:
+            # 이미 예약된 다음 구독이 있으면 해당 구독 갱신
+            scheduled_next.subscription = new_subscription
+            scheduled_next.end_date = existing_history.end_date + relativedelta(months=1)
+            scheduled_next.billing_key = payload.billing_key
+            scheduled_next.customer_key = payload.customer_key
+            scheduled_next.is_canceled = False
+            scheduled_next.save(
+                update_fields=[
+                    "subscription",
+                    "end_date",
+                    "billing_key",
+                    "customer_key",
+                    "is_canceled",
+                ]
+            )
+            return scheduled_next
+
+        # 예약된 구독이 없으면 새로 생성
+        return SubscriptionHistory.objects.create(
+            factory=factory,
+            subscription=new_subscription,
+            start_date=next_start_date,
+            end_date=existing_history.end_date + relativedelta(months=1), # 기존 구독 종료일 + 1개월
+            billing_key=payload.billing_key,
+            customer_key=payload.customer_key,
+            is_canceled=False,
+        )
+
+    next_subscription_history = await update_existing_subscription()
+
+    result = {
+        "message": "구독 플랜이 변경되었습니다. 기존 구독은 설정된 종료일까지 유지되고, 그 다음부터 새 플랜이 시작됩니다.",
+        "current_subscription": {
+            "id": existing_history.subscription_id,
+            "type": existing_history.subscription.type,
+            "end_date": existing_history.end_date.isoformat(),
+        },
+        "next_subscription": {
+            "id": next_subscription_history.subscription_id,
+            "type": next_subscription_history.subscription.type,
+            "start_date": next_subscription_history.start_date.isoformat(),
+            "end_date": next_subscription_history.end_date.isoformat(),
+        }
+    }
+
+    logger.info(
+        f"구독 플랜 변경: factory_id={factory_id}, "
+        f"기존={existing_history.subscription.type} (종료: {existing_history.end_date}), "
+        f"신규={new_subscription.type} (시작: {next_subscription_history.start_date})"
+    )
+    
+    return 200, result
