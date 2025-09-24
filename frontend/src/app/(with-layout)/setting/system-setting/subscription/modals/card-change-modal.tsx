@@ -14,19 +14,8 @@ const CardChangeModal = ({ onClose, onConfirm }: CardChangeModalProps) => {
       onClose={onClose}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn
-          text="취소"
-          textColor="text-sv"
-          onClick={onClose}
-          hoverColor="hover:bg-bg"
-        />
-        <MiniBtn
-          text="결제 카드 변경"
-          bgColor="bg-primary"
-          textColor="text-wh"
-          onClick={onConfirm}
-          hoverColor="hover:bg-primary-hover"
-        />
+        <MiniBtn text="취소" variant="white" onClick={onClose} />
+        <MiniBtn text="결제 카드 변경" variant="primary" onClick={onConfirm} />
       </div>
     </Modal>
   );

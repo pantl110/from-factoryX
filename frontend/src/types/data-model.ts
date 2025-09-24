@@ -200,18 +200,14 @@ export interface SubscriptionStatusResponseModel {
 
 // 빌링키 발급
 export interface BillingKeyIssueRequestModel {
-  card_number: string;
-  card_expiry_year: string;
-  card_expiry_month: string;
-  card_password: string;
-  customer_identity_number: string;
+  customer_key: string;
+  auth_key: string;
 }
 
 export interface BillingKeyIssueResponseModel {
   billing_key: string;
   customer_key: string;
   card_company: string | null;
-  card_type: string | null;
   card_number: string | null;
 }
 

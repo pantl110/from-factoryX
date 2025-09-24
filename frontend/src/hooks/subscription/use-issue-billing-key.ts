@@ -20,14 +20,11 @@ export const useIssueBillingKey = () => {
       }
 
       if (
-        !payload.card_number ||
-        !payload.card_expiry_year ||
-        !payload.card_expiry_month ||
-        !payload.card_password ||
-        !payload.customer_identity_number
+        !payload.auth_key ||
+        !payload.customer_key
       ) {
-        setError('모든 카드 정보를 입력해주세요.');
-        return { success: false, error: '모든 카드 정보를 입력해주세요.' };
+        setError('모든 정보를 입력해주세요.');
+        return { success: false, error: '모든 정보를 입력해주세요.' };
       }
 
       setIsLoading(true);
