@@ -177,4 +177,5 @@ export { useGetSubscriptionStatus } from './subscription/use-get-subscription-st
 export { useGetPaymentHistory } from './subscription/use-get-payment-history';
 export { useIssueBillingKey } from './subscription/use-issue-billing-key';
 export { useDeleteBillingKey } from './subscription/use-delete-billing-key';
+export { useProcessSubscriptionPayment } from './subscription/use-process-subscription-payment';
 export { default as useGetPaymentAuth } from './subscription/use-get-payment-auth';

@@ -122,6 +122,7 @@ const Subscription = () => {
               subscriptionStatus?.subscription_history.subscription
                 .type as PlanType
             }
+            paymentAuth={paymentAuth ?? null}
           />
         ))}
       </div>
