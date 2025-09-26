@@ -425,11 +425,10 @@ async def process_subscription_payment(
         )
         return 200, result
 
-    # 2️⃣ 활성 구독 확인
+    # 2️⃣ 활성 구독 확인 (취소된 구독도 포함)
     existing_history = await SubscriptionHistory.objects.filter(
         factory=factory,
         end_date__gt=timezone.now(),
-        is_canceled=False,
     ).afirst()
 
     if existing_history:
