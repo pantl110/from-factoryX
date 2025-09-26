@@ -74,14 +74,14 @@ const PlanItem = ({
           {isSubscribedType ? (
             subscriptionStatus?.subscription_history.is_canceled === true ? (
               <MiniBtn
-                text="구독 해지 취소"
-                variant="transparent"
+                text="해지 취소"
+                variant="red"
                 onClick={handleSubscribe}
               />
             ) : (
               <MiniBtn
                 text="구독 해지"
-                variant="transparent"
+                variant="secondary"
                 onClick={() => setIsCancelSubscriptionModalOpen(true)}
               />
             )
@@ -108,6 +108,7 @@ const PlanItem = ({
           isLoading={isLoading}
           onClose={() => setIsSubscribeModalOpen(false)}
           planTitle={info.title}
+          endDate={subscriptionStatus?.subscription_history.end_date ?? ''}
         />
       )}
       {/* 구독 해지 모달 */}
