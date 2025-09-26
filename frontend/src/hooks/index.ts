@@ -179,3 +179,5 @@ export { useIssueBillingKey } from './subscription/use-issue-billing-key';
 export { useDeleteBillingKey } from './subscription/use-delete-billing-key';
 export { useProcessSubscriptionPayment } from './subscription/use-process-subscription-payment';
 export { default as useGetPaymentAuth } from './subscription/use-get-payment-auth';
+export { useCancelScheduledSubscription } from './subscription/use-cancel-scheduled-subscription';
+export { useCancelSubscriptionPayment } from './subscription/use-cancel-subscription-payment';

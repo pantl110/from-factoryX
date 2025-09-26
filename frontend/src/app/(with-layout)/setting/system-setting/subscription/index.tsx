@@ -71,6 +71,7 @@ const Subscription = () => {
   const refreshSubscriptionData = async () => {
     if (!factoryId) return;
     await Promise.all([
+      getFactory(factoryId),
       getPaymentHistory(factoryId),
       getSubscriptionStatus(factoryId),
       getPaymentAuth(factoryId),
@@ -186,7 +187,7 @@ const Subscription = () => {
             subscriptionStatus={subscriptionStatus}
             onSubscribe={handleSubscribe}
             isLoading={isSubscribeLoading}
-            onCanceled={refreshSubscriptionData}
+            refreshSubscriptionData={refreshSubscriptionData}
             hasScheduledSubscription={hasScheduledSubscription}
           />
         ))}

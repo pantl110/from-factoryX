@@ -2,7 +2,10 @@ import MiniBtn from '@/ui/mini-btn';
 import { PlanType, PLAN_INFO } from './types';
 import { useState } from 'react';
 import SubscribeModal from './modals/subscribe-modal';
-import { useCancelSubscriptionPayment } from '@/hooks/subscription/use-cancel-subscription-payment';
+import {
+  useCancelScheduledSubscription,
+  useCancelSubscriptionPayment,
+} from '@/hooks';
 import { SubscriptionStatusResponseModel } from '@/types/data-model';
 import CancelSubscriptionModal from './modals/cancel-subscription-modal';
 
@@ -11,7 +14,7 @@ interface PlanItemProps {
   subscriptionStatus: SubscriptionStatusResponseModel | null;
   onSubscribe: (type: PlanType, onClose?: () => void) => Promise<void>;
   isLoading: boolean;
-  onCanceled: () => void;
+  refreshSubscriptionData: () => void;
   hasScheduledSubscription: boolean;
 }
 
@@ -20,7 +23,7 @@ const PlanItem = ({
   subscriptionStatus,
   onSubscribe,
   isLoading,
-  onCanceled,
+  refreshSubscriptionData,
   hasScheduledSubscription,
 }: PlanItemProps) => {
   const info = PLAN_INFO[type];
@@ -41,6 +44,8 @@ const PlanItem = ({
 
   const { cancelSubscriptionPayment, isLoading: isCancelLoading } =
     useCancelSubscriptionPayment();
+  const { cancelScheduledSubscription, isLoading: isCancelScheduledLoading } =
+    useCancelScheduledSubscription();
 
   const handleSubscribe = async () => {
     await onSubscribe(type, () => setIsSubscribeModalOpen(false));
@@ -60,7 +65,7 @@ const PlanItem = ({
     );
     if (res.success) {
       setIsCancelSubscriptionModalOpen(false);
-      onCanceled?.();
+      refreshSubscriptionData();
     } else {
       alert(res.error ?? '구독 해지에 실패했습니다.');
     }
@@ -68,9 +73,12 @@ const PlanItem = ({
 
   const handleCancelScheduledSubscription = async () => {
     if (!hasScheduledSubscription) return;
-    if (!subscriptionStatus?.current_payment?.id) {
-      alert('취소할 결제를 찾을 수 없습니다.');
-      return;
+
+    const res = await cancelScheduledSubscription();
+    if (res.success) {
+      refreshSubscriptionData();
+    } else {
+      alert(res.error ?? '예정된 구독 취소에 실패했습니다.');
     }
   };
 
@@ -89,6 +97,7 @@ const PlanItem = ({
                 text="구독 예정 취소"
                 variant="red"
                 onClick={handleCancelScheduledSubscription}
+                disabled={isCancelScheduledLoading}
               />
             )
           ) : // hasScheduledSubscription이 false일 때
