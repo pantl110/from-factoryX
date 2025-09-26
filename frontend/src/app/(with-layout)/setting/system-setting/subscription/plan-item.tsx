@@ -12,6 +12,7 @@ interface PlanItemProps {
   onSubscribe: (type: PlanType, onClose?: () => void) => Promise<void>;
   isLoading: boolean;
   onCanceled: () => void;
+  hasScheduledSubscription: boolean;
 }
 
 const PlanItem = ({
@@ -20,6 +21,7 @@ const PlanItem = ({
   onSubscribe,
   isLoading,
   onCanceled,
+  hasScheduledSubscription,
 }: PlanItemProps) => {
   const info = PLAN_INFO[type];
   const subscriptionType =
@@ -64,6 +66,14 @@ const PlanItem = ({
     }
   };
 
+  const handleCancelScheduledSubscription = async () => {
+    if (!hasScheduledSubscription) return;
+    if (!subscriptionStatus?.current_payment?.id) {
+      alert('취소할 결제를 찾을 수 없습니다.');
+      return;
+    }
+  };
+
   return (
     <>
       <div
@@ -71,7 +81,19 @@ const PlanItem = ({
       >
         <div className="flex items-center justify-between">
           <h3 className="Heading-3">{info.title}</h3>
-          {isSubscribedType ? (
+          {hasScheduledSubscription ? (
+            // hasScheduledSubscription이 true일 때
+            isSubscribedType ? null : ( // isSubscribedType이면 null (버튼 없음)
+              // isSubscribedType이 아니면 구독 예정
+              <MiniBtn
+                text="구독 예정 취소"
+                variant="red"
+                onClick={handleCancelScheduledSubscription}
+              />
+            )
+          ) : // hasScheduledSubscription이 false일 때
+          isSubscribedType ? (
+            // isSubscribedType이면 구독해지나 해지 취소 버튼
             subscriptionStatus?.subscription_history.is_canceled === true ? (
               <MiniBtn
                 text="해지 취소"
@@ -86,6 +108,7 @@ const PlanItem = ({
               />
             )
           ) : (
+            // isSubscribedType이 아니면 구독 버튼
             <MiniBtn
               text="구독"
               variant="primary"
