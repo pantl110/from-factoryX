@@ -24,7 +24,8 @@ export const useCancelScheduledSubscription =
     const { factoryId } = useMemberStore();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [result, setResult] = useState<CancelScheduledSubscriptionResponseModel | null>(null);
+    const [result, setResult] =
+      useState<CancelScheduledSubscriptionResponseModel | null>(null);
 
     const cancelScheduledSubscription = useCallback(async () => {
       if (!factoryId) {
@@ -37,13 +38,14 @@ export const useCancelScheduledSubscription =
       setError(null);
 
       try {
-        const response = await axios.delete<CancelScheduledSubscriptionResponseModel>(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/scheduled-history/${factoryId}`,
-          {
-            withCredentials: true,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
+        const response =
+          await axios.delete<CancelScheduledSubscriptionResponseModel>(
+            `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/scheduled-history/${factoryId}`,
+            {
+              withCredentials: true,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          );
 
         const { data } = response;
         setResult(data);

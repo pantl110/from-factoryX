@@ -150,22 +150,23 @@ const Subscription = () => {
     }
   };
 
-  const hasScheduledSubscription = factory?.subscription_histories.some(
-    (history: SubscriptionHistoryResponseModel) => {
-      if (!subscriptionStatus?.subscription_history.end_date) return false;
+  const hasScheduledSubscription =
+    factory?.subscription_histories.some(
+      (history: SubscriptionHistoryResponseModel) => {
+        if (!subscriptionStatus?.subscription_history.end_date) return false;
 
-      // 현재 구독 종료일의 다음 날 계산
-      const currentEndDate = new Date(
-        subscriptionStatus.subscription_history.end_date
-      );
-      const nextDay = new Date(currentEndDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const nextDayString = nextDay.toISOString().split('T')[0];
+        // 현재 구독 종료일의 다음 날 계산
+        const currentEndDate = new Date(
+          subscriptionStatus.subscription_history.end_date
+        );
+        const nextDay = new Date(currentEndDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        const nextDayString = nextDay.toISOString().split('T')[0];
 
-      // 다음 날에 시작하는 구독이 있는지 확인
-      return history.start_date === nextDayString;
-    }
-  );
+        // 다음 날에 시작하는 구독이 있는지 확인
+        return history.start_date === nextDayString;
+      }
+    ) ?? false;
 
   return (
     <div className="px-10 pb-10 flex flex-col gap-8">
