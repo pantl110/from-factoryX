@@ -661,6 +661,60 @@ async def get_subscription_status(request, factory_id: int):
     return result
 
 
+@router.delete(
+    "/scheduled-history/{factory_id}",
+    summary="[C] 예정된 구독 취소",
+    description="다음 예정된 구독을 취소합니다. 현재 구독은 유지되고 다음 구독만 삭제됩니다.",
+    response={200: dict},
+    auth=jwt_auth,
+)
+async def cancel_scheduled_subscription(request, factory_id: int):
+    """예정된 구독 취소"""
+    user = request.auth
+    factory = await get_factory_by_id(factory_id)
+    member = await is_factory_member(factory_id, user)
+
+    # 현재 활성 구독 조회
+    current_subscription = await sync_to_async(
+        SubscriptionHistory.objects.filter(
+            factory=factory, end_date__gt=timezone.now().date()
+        )
+        .select_related("subscription")
+        .first
+    )()
+
+    if not current_subscription:
+        raise HttpError(404, "현재 활성 구독이 없습니다.")
+
+    # 다음 날에 시작하는 예정된 구독 조회
+    from datetime import timedelta as _td
+    next_day = current_subscription.end_date + _td(days=1)
+    
+    scheduled_subscription = await sync_to_async(
+        SubscriptionHistory.objects.filter(
+            factory=factory,
+            start_date=next_day,
+            is_canceled=False,
+        )
+        .first
+    )()
+
+    if not scheduled_subscription:
+        raise HttpError(404, "예정된 구독이 없습니다.")
+
+    # 예정된 구독 삭제
+    @sync_to_async
+    @transaction.atomic
+    def delete_scheduled_subscription():
+        scheduled_subscription.delete()
+        return True
+
+    await delete_scheduled_subscription()
+
+    logger.info(f"예정된 구독 취소 성공: factory_id={factory_id}, scheduled_subscription_id={scheduled_subscription.id}")
+    return {"message": "예정된 구독이 성공적으로 취소되었습니다."}
+
+
 @router.post(
     "/cancel/{payment_id}",
     summary="[C] 결제 취소",
