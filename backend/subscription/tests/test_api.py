@@ -7,6 +7,7 @@ from factory.models import Factory, FactoryClient, FactoryMember
 from subscription.models import Subscription, SubscriptionHistory, PaymentAuth
 from django.utils import timezone
 from datetime import timedelta
+from asgiref.sync import sync_to_async
 
 
 class TestSubscriptionService(TestCase):
@@ -133,3 +134,48 @@ class TestSubscriptionService(TestCase):
         data = response.json()
         # print("🐍 File: tests/test_api.py | Line: 102 | setUp ~ data", data)
         self.assertEqual(response.status_code, 201)
+
+    async def test_cancel_scheduled_subscription_success(self):
+        """예정된 구독 취소 성공 테스트"""
+        headers = await self.authenticate()
+        
+        # 현재 활성 구독 생성 (한 달 구독)
+        current_end_date = (timezone.now() + timedelta(days=30)).date()
+        current_subscription = await sync_to_async(SubscriptionHistory.objects.create)(
+            subscription=self.subscription,
+            factory=self.factory,
+            start_date=timezone.now().date(),
+            end_date=current_end_date,
+            is_canceled=False,
+        )
+        
+        # 다음 날에 시작하는 예정된 구독 생성 (한 달 구독)
+        next_day = current_end_date + timedelta(days=1)
+        scheduled_subscription = await sync_to_async(SubscriptionHistory.objects.create)(
+            subscription=self.subscription,
+            factory=self.factory,
+            start_date=next_day,
+            end_date=next_day + timedelta(days=30),
+            is_canceled=False,
+        )
+        
+        # 예정된 구독 취소 API 호출
+        response = await self.client.delete(
+            f"/scheduled-history/{self.factory.id}", headers=headers
+        )
+        data = response.json()
+        
+        # 응답 검증
+        self.assertEqual(response.status_code, 200)
+        
+        # 예정된 구독이 삭제되었는지 확인
+        scheduled_exists = await sync_to_async(
+            SubscriptionHistory.objects.filter(id=scheduled_subscription.id).exists
+        )()
+        self.assertFalse(scheduled_exists)
+        
+        # 현재 구독은 유지되는지 확인
+        current_exists = await sync_to_async(
+            SubscriptionHistory.objects.filter(id=current_subscription.id).exists
+        )()
+        self.assertTrue(current_exists)
