@@ -366,7 +366,66 @@ async def process_subscription_payment(
     member = await is_factory_member(factory_id, user)
     subscription = await get_subscription_by_id(payload.subscription_id)
 
-    # 이미 활성 구독이 있는지 확인
+    # 1️⃣ 취소된 동일 플랜 재활성화 확인
+    @sync_to_async
+    def find_canceled_same_plan():
+        return (
+            SubscriptionHistory.objects.filter(
+                factory=factory,
+                subscription=subscription,
+                is_canceled=True,
+                end_date__gt=timezone.now().date(),
+            )
+            .order_by("-end_date")
+            .first()
+        )
+
+    canceled_same_plan = await find_canceled_same_plan()
+    if canceled_same_plan:
+        @sync_to_async
+        @transaction.atomic
+        def reactivate_history():
+            canceled_same_plan.is_canceled = False
+            canceled_same_plan.billing_key = payload.billing_key
+            canceled_same_plan.customer_key = payload.customer_key
+            canceled_same_plan.save(
+                update_fields=["is_canceled", "billing_key", "customer_key"]
+            )
+            return canceled_same_plan
+
+        reactivated = await reactivate_history()
+
+        # 결제 없이 재활성화 응답 구성
+        result = PaymentResultOut(
+            subscription_id=subscription.id,
+            subscription_type=subscription.type,
+            payment_key="",
+            order_id=f"reactivated_{reactivated.id}_{int(timezone.now().timestamp())}",
+            amount=0,
+            status="DONE",
+            approved_at=timezone.now(),
+            method="REACTIVATED",
+            card_company=None,
+            card_type=None,
+            card_number=None,
+            card_owner_type=None,
+        )
+
+        # basic, partners 구독 재활성화 시 바로빌 홈택스 스크랩 재활성화
+        try:
+            await handle_barobill_scrap_for_subscription(
+                factory, subscription.type, "activate"
+            )
+        except Exception as e:
+            logger.warning(
+                f"바로빌 홈택스 스크랩 재활성화 실패: factory_id={factory_id}, error={str(e)}"
+            )
+        logger.info(
+            f"구독 취소 해지 재활성화 처리: factory_id={factory_id}, history_id={reactivated.id}"
+        )
+        return 200, result
+
+    # 2️⃣ 활성 구독 확인
     existing_history = await SubscriptionHistory.objects.filter(
         factory=factory,
         end_date__gt=timezone.now(),
@@ -397,68 +456,9 @@ async def process_subscription_payment(
         )
         return 200, scheduled_result
 
+    # 3️⃣ 활성 구독 없음 -> 새 결제 진행
     toss_service = TossPaymentsService()
     order_id = f"subscription_{factory_id}_{int(timezone.now().timestamp())}"
-
-    # 활성 구독이 없고, 동일 플랜의 취소 이력이 남아있으면 결제 없이 재활성화
-    @sync_to_async
-    def find_canceled_same_plan():
-        return (
-            SubscriptionHistory.objects.filter(
-                factory=factory,
-                subscription=subscription,
-                is_canceled=True,
-                end_date__gt=timezone.now().date(),
-            )
-            .order_by("-end_date")
-            .first()
-        )
-
-    if not existing_history:
-        canceled_same_plan = await find_canceled_same_plan()
-        if canceled_same_plan:
-            @sync_to_async
-            @transaction.atomic
-            def reactivate_history():
-                canceled_same_plan.is_canceled = False
-                canceled_same_plan.billing_key = payload.billing_key
-                canceled_same_plan.customer_key = payload.customer_key
-                canceled_same_plan.save(
-                    update_fields=["is_canceled", "billing_key", "customer_key"]
-                )
-                return canceled_same_plan
-
-            reactivated = await reactivate_history()
-
-            # 결제 없이 재활성화 응답 구성
-            result = PaymentResultOut(
-                subscription_id=subscription.id,
-                subscription_type=subscription.type,
-                payment_key="",
-                order_id=f"reactivated_{reactivated.id}_{int(timezone.now().timestamp())}",
-                amount=0,
-                status="DONE",
-                approved_at=timezone.now(),
-                method="REACTIVATED",
-                card_company=None,
-                card_type=None,
-                card_number=None,
-                card_owner_type=None,
-            )
-
-            # basic, partners 구독 재활성화 시 바로빌 홈택스 스크랩 재활성화
-            try:
-                await handle_barobill_scrap_for_subscription(
-                    factory, subscription.type, "activate"
-                )
-            except Exception as e:
-                logger.warning(
-                    f"바로빌 홈택스 스크랩 재활성화 실패: factory_id={factory_id}, error={str(e)}"
-                )
-            logger.info(
-                f"구독 취소 해지 재활성화 처리: factory_id={factory_id}, history_id={reactivated.id}"
-            )
-            return 200, result
 
     # 활성 구독이 없고, 동일 플랜의 취소 이력도 없을 때
     # PaymentAuth에서 빌링키 확인
