@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import useMemberStore from '@/store/member-store';
 import TaxDetailPanel from '../tax/tax-detail-panel';
 import { useGetFactory } from '@/hooks';
+import NeedInfoModal from './modals/need-info-modal';
 
 interface ButtonSectionProps {
   setIsTaxCreatePanelOpen: (open: boolean) => void;
@@ -46,8 +47,8 @@ const ButtonSection = ({
   const { getFactory, factory } = useGetFactory();
 
   const [showTaxTooltip, setShowTaxTooltip] = useState(false);
-  const [showFactoryNameTooltip, setShowFactoryNameTooltip] = useState(false);
   const [isTaxDetailPanelOpen, setIsTaxDetailPanelOpen] = useState(false);
+  const [isNeedInfoModalOpen, setIsNeedInfoModalOpen] = useState(false);
 
   useEffect(() => {
     if (factoryId) {
@@ -100,36 +101,14 @@ const ButtonSection = ({
           )}
         </div>
         <MiniBtn text="출력" variant="whiteOutline" onClick={onPrintClick} />
-        <div
-          className="relative"
-          onMouseEnter={() => {
-            setShowFactoryNameTooltip(true);
-          }}
-          onMouseLeave={() => {
-            setShowFactoryNameTooltip(false);
-          }}
-        >
-          <MiniBtn
-            text="이메일 전송"
-            variant="whiteOutline"
-            onClick={onEmailClick}
-            disabled={
-              !isFormFilled ||
-              !hasQuotationProducts ||
-              isViewer ||
-              !hasFactoryName
-            }
-          />
-          {!hasFactoryName && showFactoryNameTooltip && (
-            <div className="absolute z-50 top-12 left-0 w-[250px]">
-              <Tooltip
-                text={'설정에서 회사명을 입력해 주세요.'}
-                color="white"
-                position="left"
-              />
-            </div>
-          )}
-        </div>
+        <MiniBtn
+          text="이메일 전송"
+          variant="whiteOutline"
+          onClick={
+            hasFactoryName ? onEmailClick : () => setIsNeedInfoModalOpen(true)
+          }
+          disabled={!isFormFilled || !hasQuotationProducts || isViewer}
+        />
 
         {isOrderStatus ? (
           <>
@@ -184,10 +163,20 @@ const ButtonSection = ({
         )}
       </div>
 
+      {/* 세금계산서 상세 패널 */}
       {isTaxDetailPanelOpen && taxId && (
         <TaxDetailPanel
           itemId={taxId}
           onClose={() => setIsTaxDetailPanelOpen(false)}
+        />
+      )}
+
+      {/* 이메일 전송을 위해 회사 정보가 필요해요 */}
+      {isNeedInfoModalOpen && (
+        <NeedInfoModal
+          onClose={() => setIsNeedInfoModalOpen(false)}
+          onSaveDraft={onSaveDraft ?? (() => false)}
+          isOrderStatus={isOrderStatus}
         />
       )}
     </>
