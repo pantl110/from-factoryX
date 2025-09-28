@@ -15,9 +15,16 @@ interface SellerInfoProps {
     formData: SellerInfoFormDataModel
   ) => void;
   showErrors?: boolean;
+  showWriteDateError?: boolean; // 작성일자만 에러 표시
+  onWriteDateChange?: () => void; // 작성일자 변경 시 콜백
 }
 
-const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
+const SellerInfo = ({
+  onFormChange,
+  showErrors = false,
+  showWriteDateError = false,
+  onWriteDateChange,
+}: SellerInfoProps) => {
   const {
     register,
     formState: { isValid, isDirty, errors, dirtyFields },
@@ -142,6 +149,10 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
 
   // showErrors가 true일 때 실시간으로 에러 상태 업데이트
   const shouldShowError = (fieldName: keyof SellerInfoFormDataModel) => {
+    // 작성일자 필드의 경우 showWriteDateError가 true이면 에러 표시
+    if (fieldName === 'writeDate' && showWriteDateError) {
+      return true;
+    }
     // 해당 필드가 검증되었고, 에러가 있을 때만 에러 표시
     return validatedFields.has(fieldName) && !!errors[fieldName];
   };
@@ -274,6 +285,7 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
                   shouldDirty: true,
                 });
                 handleFieldChange('writeDate');
+                onWriteDateChange?.(); // 작성일자 변경 시 에러 초기화
               },
             })}
           />

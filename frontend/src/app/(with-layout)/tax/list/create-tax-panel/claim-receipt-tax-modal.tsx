@@ -5,7 +5,7 @@ import Modal from '@/ui/modal/modal';
 interface ClaimReceiptTaxModalProps {
   onClose: () => void;
   issueType: '청구' | '영수';
-  handleTemporarySave: (transactionType: TransactionType) => Promise<void>;
+  handleTemporarySave: (transactionType: TransactionType) => Promise<boolean>;
   setIsEditingMode: (isEditingMode: boolean) => void;
 }
 
@@ -43,16 +43,18 @@ const ClaimReceiptTaxModal = ({
             hoverColor="hover:bg-primary-hover"
             onClick={async () => {
               try {
-                await handleTemporarySave(
+                const isSuccess = await handleTemporarySave(
                   issueType === '청구' ? 'invoice' : 'receipt'
                 );
-                // 편집 모드 해제 (판넬이 읽기 모드로 바뀜)
-                if (setIsEditingMode) {
-                  setIsEditingMode(false);
+                // 성공했을 때만 편집 모드 해제 및 모달 닫기
+                if (isSuccess) {
+                  if (setIsEditingMode) {
+                    setIsEditingMode(false);
+                  }
+                  onClose();
                 }
-                onClose();
-              } catch (error) {
-                console.error('임시저장 실패:', error);
+              } catch {
+                // console.error('임시저장 실패:', error);
               }
             }}
           />

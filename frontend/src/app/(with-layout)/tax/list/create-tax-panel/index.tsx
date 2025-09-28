@@ -1,3 +1,5 @@
+'use client';
+
 import Panel from '@/ui/panel';
 import SellerInfo from './seller-info';
 import ClientInfo from './client-info';
@@ -117,9 +119,11 @@ const CreatTaxPanel = ({
   const { linkTaxInvoice } = useLinkTaxInvoice();
   const { checkBarobill } = useCheckBarobill();
 
-  // 바로빌 등록 실패 토스트 훅
+  // 토스트 훅
   const { showToast, isToastOpen, isVisible } = useToast();
-  const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지 상태
+  const [errorText, setErrorText] = useState('');
+  const [errorSubtext, setErrorSubtext] = useState('');
+  const [showWriteDateError, setShowWriteDateError] = useState(false); // 작성일자만 에러 표시
 
   const factoryId = useMemberStore((state) => state.factoryId);
 
@@ -375,11 +379,45 @@ const CreatTaxPanel = ({
     [factoryId, updateClient]
   );
 
+  // 작성날짜 유효성 검사 함수
+  const isWriteDateValid = () => {
+    if (!sellerInfoFormData?.writeDate) {
+      return false;
+    }
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const isValidFormat = dateRegex.test(sellerInfoFormData.writeDate);
+
+    if (!isValidFormat) {
+      return false;
+    }
+
+    // 실제 날짜 유효성 검사 (예: 2025-02-30 같은 잘못된 날짜 체크)
+    const date = new Date(sellerInfoFormData.writeDate);
+    const [year, month, day] = sellerInfoFormData.writeDate
+      .split('-')
+      .map(Number);
+    const isValidDate =
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day &&
+      !isNaN(date.getTime());
+
+    return isValidDate;
+  };
+
   // 임시 저장 버튼 클릭 핸들러
   const handleTemporarySave = async (
     transactionType: TransactionType,
     projectId?: number
-  ) => {
+  ): Promise<boolean> => {
+    // 임시저장일 때는 작성날짜만 유효성 검사
+    if (!isWriteDateValid()) {
+      setShowWriteDateError(true); // 작성일자만 에러 표시
+      setIsSaving(false);
+      return false; // 실패 시 false 반환
+    }
+
     setIsSaving(true);
 
     try {
@@ -427,7 +465,7 @@ const CreatTaxPanel = ({
                     (createResult.error || '알 수 없는 오류')
                 );
                 setIsSaving(false);
-                return;
+                return false;
               }
             } else {
               alert(
@@ -442,13 +480,6 @@ const CreatTaxPanel = ({
 
       // 세금계산서 생성 (거래처 ID가 없어도 생성 가능)
       if (factoryId) {
-        // writeDate를 YYYYMMDD 형식으로 변환
-        const formatDateToYYYYMMDD = (dateString: string) => {
-          if (!dateString) return '';
-          // 0000-00-00 형식을 YYYYMMDD로 변환
-          return dateString.replace(/-/g, '');
-        };
-
         // ProductInfo에서 가져온 데이터 사용 - 모든 필드가 비어있는 라인은 제외
         const lineItems =
           productInfoFormData?.products
@@ -484,7 +515,7 @@ const CreatTaxPanel = ({
           line_items: lineItems,
           tax_invoice_type: 'sales', // 항상 매출 세금계산서
           transaction_type: transactionType,
-          // transaction_date: sellerInfoFormData?.writeDate || '',
+          transaction_date: sellerInfoFormData?.writeDate || '',
           transaction_amount: lineItems.reduce(
             (sum, item) => sum + Number(item.amount),
             0
@@ -499,7 +530,7 @@ const CreatTaxPanel = ({
         const result = await handleCreateTaxInvoice(taxInvoiceData);
         if (!result) {
           setIsSaving(false);
-          return;
+          return false;
         }
 
         // 새로 생성된 세금계산서 ID를 부모에게 전달
@@ -517,9 +548,12 @@ const CreatTaxPanel = ({
       }
     } catch (error) {
       alert('저장 중 오류가 발생했습니다: ' + error);
+      return false; // 에러 시 false 반환
     } finally {
       setIsSaving(false);
     }
+
+    return true; // 성공 시 true 반환
   };
 
   // 발행방식 선택 버튼 클릭 핸들러
@@ -536,7 +570,8 @@ const CreatTaxPanel = ({
       const isReady = await checkBarobill();
 
       if (!isReady) {
-        setErrorMessage('다시 시도해 주세요.');
+        setErrorText('세금계산서 사용자 확인에 실패했습니다.');
+        setErrorSubtext('다시 시도해 주세요.');
         showToast();
         return;
       }
@@ -552,7 +587,8 @@ const CreatTaxPanel = ({
           errorMsg = message;
         }
       }
-      setErrorMessage(errorMsg);
+      setErrorText('세금계산서 사용자 확인에 실패했습니다.');
+      setErrorSubtext(errorMsg);
       showToast();
       return;
     }
@@ -583,9 +619,12 @@ const CreatTaxPanel = ({
         textColor="text-primary"
         bgColor="bg-primary-8"
         hoverColor="hover:bg-secondary-hover"
-        onClick={() => {
-          handleTemporarySave('receipt', projectId);
-          onClose();
+        onClick={async () => {
+          const isSuccess = await handleTemporarySave('receipt', projectId);
+          // 성공했을 때만 판넬 닫기
+          if (isSuccess) {
+            onClose();
+          }
         }}
         disabled={
           // 견적서에서 세금계산서로 들어왔을 때는 isDirty가 아니어도 저장 가능
@@ -634,6 +673,8 @@ const CreatTaxPanel = ({
           <SellerInfo
             onFormChange={handleSellerInfoChange}
             showErrors={showErrors}
+            showWriteDateError={showWriteDateError}
+            onWriteDateChange={() => setShowWriteDateError(false)}
           />
           <ClientInfo
             onFormChange={handleClientInfoChange}
@@ -687,8 +728,8 @@ const CreatTaxPanel = ({
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
-          text="세금계산서 사용자 확인에 실패했습니다."
-          subtext={errorMessage || '다시 시도해 주세요.'}
+          text={errorText}
+          subtext={errorSubtext || '다시 시도해 주세요.'}
           type="red"
           isVisible={isVisible}
         />
