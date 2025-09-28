@@ -108,7 +108,6 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
         <div className="relative h-[60px]">
           <div className="max-w-[1400px] min-w-[1000px] mx-auto px-10 flex items-center justify-between h-full">
             <TopBarCrumb
-              pageStatus={pageStatus || ''}
               stockTab={stockTab || undefined}
               settingTab={settingTab || undefined}
               settingChip={settingChip || undefined}
