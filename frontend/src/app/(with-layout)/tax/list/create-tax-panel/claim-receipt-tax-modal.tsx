@@ -70,12 +70,6 @@ const ClaimReceiptTaxModal = ({
         >
           <div className="flex justify-end gap-[5px] mt-4">
             <MiniBtn
-              text="취소"
-              textColor="text-sv"
-              hoverColor="hover:bg-bg"
-              onClick={() => setIsNextModalOpen(false)}
-            />
-            <MiniBtn
               text="확인"
               textColor="text-wh"
               bgColor="bg-primary"

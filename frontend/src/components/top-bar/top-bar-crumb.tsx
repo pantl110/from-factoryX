@@ -38,14 +38,12 @@ const crumbNameMap: Record<string, string> = {
 };
 
 interface TopBarCrumbProps {
-  pageStatus: string;
   stockTab?: StockTabType;
   settingTab?: SettingTabType;
   settingChip?: SettingChipType;
 }
 
 const TopBarCrumb = ({
-  pageStatus,
   stockTab,
   settingTab,
   settingChip,
@@ -71,7 +69,10 @@ const TopBarCrumb = ({
 
   let finalCrumbs: string[] = crumbs;
   if (isProductionDetail || isQuotation) {
-    if (pageStatus === '완료' || pageStatus === '프로젝트 완료') {
+    if (
+      projectStatusData?.status === 'completed' ||
+      projectStatusData?.status === 'suspended'
+    ) {
       finalCrumbs = ['project', 'completed'];
     } else {
       finalCrumbs = ['project', 'process'];
