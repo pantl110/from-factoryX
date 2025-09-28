@@ -1308,7 +1308,7 @@ export interface UnlinkedTaxInvoiceListResponseModel extends PaginationModel {
 export interface CreateTaxInvoiceModel {
   tax_id?: number; // 세금계산서 ID (임시저장 시 사용)
   factory: number;
-  client: number;
+  client: number | null; // 거래처 ID (없을 수 있음)
   product?: number[]; // 품목 ID 리스트
   line_items: TaxLineItemModel[];
   tax_invoice_type?: TaxDocumentType;
