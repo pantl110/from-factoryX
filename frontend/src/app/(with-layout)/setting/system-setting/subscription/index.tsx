@@ -78,7 +78,7 @@ const Subscription = () => {
     ]);
   };
 
-  const handleSubscribe = async (type: PlanType, onClose?: () => void) => {
+  const handleSubscribe = async (type: PlanType) => {
     // 카드가 없으면 등록 플로우로 이동
     if (!paymentAuth?.billing_key) {
       await registerCard(type);
@@ -99,7 +99,6 @@ const Subscription = () => {
       billing_key: paymentAuth.billing_key,
       customer_key: paymentAuth.customer_key,
     });
-    onClose?.(); // 모달 닫기
     if (result.success) {
       refreshSubscriptionData();
     }
@@ -119,10 +118,13 @@ const Subscription = () => {
       const toss = await loadTossPayments(clientKey);
       const customerKey = `factory-${factoryId}`; // customerKey는 동일 고객에 대해 항상 동일해야함
 
+      // plan 파라미터 처리 (type이 유효한 문자열일 때만 추가)
+      const planParam = type && typeof type === 'string' ? `&plan=${type}` : '';
+
       // 토스페이먼츠 빌링키 인증 요청 (URL 리다이렉션 방식)
       await toss.requestBillingAuth('카드', {
         customerKey,
-        successUrl: `${window.location.origin}/billing?status=success&factoryId=${factoryId}${type ? `&plan=${type}` : ''}`,
+        successUrl: `${window.location.origin}/billing?status=success&factoryId=${factoryId}${planParam}`,
         failUrl: `${window.location.origin}/billing?status=fail&factoryId=${factoryId}`,
       });
     } catch (error: unknown) {

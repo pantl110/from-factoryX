@@ -14,6 +14,7 @@ import {
   useUpdateClient,
   useLinkTaxInvoice,
 } from '@/hooks';
+import { useCheckBarobill } from '@/hooks/tax/barobil/use-check-barobill';
 import useMemberStore from '@/store/member-store';
 import {
   FactoriesUpdateModel,
@@ -111,7 +112,7 @@ const CreatTaxPanel = ({
   const { updateClient } = useUpdateClient();
   const { createTaxInvoice } = useCreateTaxInvoice();
   const { linkTaxInvoice } = useLinkTaxInvoice();
-  // const { checkBarobill } = useCheckBarobill();
+  const { checkBarobill } = useCheckBarobill();
 
   // 바로빌 등록 실패 토스트 훅
   // const { showToast, isToastOpen, isVisible } = useToast();
@@ -519,14 +520,29 @@ const CreatTaxPanel = ({
   };
 
   // 발행방식 선택 버튼 클릭 핸들러
-  const handleIssueTypeDropdownOpen = () => {
+  const handleIssueTypeDropdownOpen = async () => {
     // 판매처, 거래처, 주문품목 정보 모두 유효해야 드롭다운 열기
     if (!isSellerInfoValid || !isClientInfoValid || !isProductInfoValid) {
       forceShowErrors.current = true;
       setShowErrors(true);
       return;
     }
-    // 폼이 유효하면 에러 표시 해제하고 드롭다운 열기
+
+    // 바로빌 상태 확인 및 회원가입 처리
+    try {
+      const isReady = await checkBarobill();
+
+      if (!isReady) {
+        alert('바로빌 회원가입에 실패했습니다. 다시 시도해주세요.');
+        return;
+      }
+    } catch (error) {
+      console.error('바로빌 회원가입 실패:', error);
+      alert('바로빌 회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+      return;
+    }
+
+    // 폼이 유효하고 바로빌이 준비되면 에러 표시 해제하고 드롭다운 열기
     forceShowErrors.current = false;
     setShowErrors(false);
     setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);

@@ -48,7 +48,7 @@ const PlanItem = ({
     useCancelScheduledSubscription();
 
   const handleSubscribe = async () => {
-    await onSubscribe(type, () => setIsSubscribeModalOpen(false));
+    await onSubscribe(type);
   };
 
   const handleCancel = async () => {

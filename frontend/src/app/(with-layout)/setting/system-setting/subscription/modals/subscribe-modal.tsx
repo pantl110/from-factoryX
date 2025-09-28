@@ -47,7 +47,10 @@ const SubscribeModal = ({
         <MiniBtn
           text="구독하기"
           variant="primary"
-          onClick={onSubscribe}
+          onClick={async () => {
+            await onSubscribe();
+            onClose();
+          }}
           disabled={isLoading}
         />
       </div>
