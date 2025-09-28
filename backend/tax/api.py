@@ -114,8 +114,13 @@ async def list_pending_tax_invoices(
 
     @sync_to_async
     def get_pending_tax_invoices():
+        from django.db.models import Q
+        
         queryset = (
-            NationalTaxService.objects.filter(client__factory_id=factory_id)
+            NationalTaxService.objects.filter(
+                Q(client__factory_id=factory_id) | Q(client__isnull=True),
+                factory_id=factory_id
+            )
             .exclude(publish_status="published")
             .prefetch_related("client")
         )
