@@ -63,7 +63,8 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
       writeDate: formatDate(new Date().toISOString().split('T')[0]),
     });
     setValidatedFields(new Set());
-  }, [factory, reset]);
+    trigger(); // reset 후 즉시 유효성 검사 실행
+  }, [factory, reset, trigger]);
 
   // 각 필드별로 에러 표시 여부를 추적하는 상태
   const [validatedFields, setValidatedFields] = useState<
@@ -106,13 +107,16 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
     if (hasFormDataChanged) {
       prevFormDataRef.current = formData;
 
-      onFormChange(
-        isValid,
-        isDirty,
-        hasRequiredValues,
-        isOtherFieldsDirty,
-        formData
-      );
+      // 유효성 검사 강제 실행
+      trigger().then((isFormValid) => {
+        onFormChange(
+          isFormValid,
+          isDirty,
+          hasRequiredValues,
+          isOtherFieldsDirty,
+          formData
+        );
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid, isDirty, hasRequiredValues, isOtherFieldsDirty, formData]);

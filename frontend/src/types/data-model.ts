@@ -1224,7 +1224,7 @@ export interface TaxProductInfoModel {
 // tax invoice detail 가져오기
 export interface TaxLineItemModel {
   id: number; //품목 식별자(순번)
-  purchase_expiry: string; // YYYYMMDD 형식 (예: "20241231") // 공급일자
+  purchase_expiry?: string; // YYYYMMDD 형식 (예: "20241231") // 공급일자
   product_id?: number | null; // 연동된 제품 ID
   name: string; // 품목명
   code?: string | null; // 품목 코드
@@ -1313,7 +1313,7 @@ export interface CreateTaxInvoiceModel {
   line_items: TaxLineItemModel[];
   tax_invoice_type?: TaxDocumentType;
   transaction_type?: TransactionType;
-  transaction_date: string;
+  transaction_date?: string;
   transaction_amount: number; // 공급가액
   tax_amount: number; // 세액
   is_hidden: boolean; // 숨김 여부 // default: false

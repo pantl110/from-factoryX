@@ -460,9 +460,6 @@ const CreatTaxPanel = ({
             })
             ?.map((p, index) => ({
               id: index + 1, // 순번 ID
-              purchase_expiry: formatDateToYYYYMMDD(
-                sellerInfoFormData?.writeDate || ''
-              ), // YYYYMMDD 형식 (예: "20241231")
               product_id: p.productId || null, // 제품 ID
               name: p.product_name || '', // 품목명
               code: p.product_code || null, // 품목 코드
@@ -483,7 +480,7 @@ const CreatTaxPanel = ({
           line_items: lineItems,
           tax_invoice_type: 'sales', // 항상 매출 세금계산서
           transaction_type: transactionType,
-          transaction_date: sellerInfoFormData?.writeDate || '',
+          // transaction_date: sellerInfoFormData?.writeDate || '',
           transaction_amount: lineItems.reduce(
             (sum, item) => sum + Number(item.amount),
             0
