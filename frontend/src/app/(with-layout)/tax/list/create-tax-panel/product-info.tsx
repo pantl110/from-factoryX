@@ -4,7 +4,7 @@ import ProductDetail from '@/app/(with-layout)/stock/product/product-detail';
 import { FormProvider, useForm, useFieldArray } from 'react-hook-form';
 import { useImperativeHandle, forwardRef, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
-import { ProductResponseModel, TaxProductInfoModel } from '@/types/data-model';
+
 // 세금계산서 편집용 품목 데이터 타입
 interface TaxProductEditModel {
   productId: number;

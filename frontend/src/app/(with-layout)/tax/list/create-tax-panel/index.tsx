@@ -103,6 +103,8 @@ const CreatTaxPanel = ({
   const productInfoRef = useRef<ProductInfoRefModel>(null);
   // Panel ref (판넬 닫기 함수 전달)
   const panelRef = useRef<PanelRefModel>(null);
+  // 강제로 에러 표시를 위한 ref
+  const forceShowErrors = useRef(false);
 
   const { updateFactory } = useUpdateFactory();
   const { createClient } = useCreateClient();
@@ -249,9 +251,14 @@ const CreatTaxPanel = ({
     []
   );
 
-  // showErrors가 true일 때 폼이 모두 유효해지면 자동으로 false로 변경
+  // showErrors가 true일 때 폼이 모두 유효해지면 자동으로 false로 변경 (강제 표시가 아닐 때만)
   useEffect(() => {
-    if (showErrors && isSellerInfoValid && isClientInfoValid) {
+    if (
+      showErrors &&
+      isSellerInfoValid &&
+      isClientInfoValid &&
+      !forceShowErrors.current
+    ) {
       setShowErrors(false);
     }
   }, [showErrors, isSellerInfoValid, isClientInfoValid]);
@@ -438,23 +445,36 @@ const CreatTaxPanel = ({
           return dateString.replace(/-/g, '');
         };
 
-        // ProductInfo에서 가져온 데이터 사용
+        // ProductInfo에서 가져온 데이터 사용 - 모든 필드가 비어있는 라인은 제외
         const lineItems =
-          productInfoFormData?.products?.map((p, index) => ({
-            id: index + 1, // 순번 ID
-            purchase_expiry: formatDateToYYYYMMDD(
-              sellerInfoFormData?.writeDate || ''
-            ), // YYYYMMDD 형식 (예: "20241231")
-            product_id: p.productId || null, // 제품 ID
-            name: p.product_name || '', // 품목명
-            code: p.product_code || null, // 품목 코드
-            information: p.product_spec || '', // 규격
-            chargeable_unit: p.quantity.toString() || '0', // 수량
-            unit_price: p.unitPrice.toString() || '0', // 단가
-            amount: ((p.quantity || 0) * (p.unitPrice || 0)).toString() || '0', // 공급가액
-            tax:
-              ((p.quantity || 0) * (p.unitPrice || 0) * 0.1).toString() || '0', // 세액
-          })) || [];
+          productInfoFormData?.products
+            ?.filter((p) => {
+              // 품목명, 품목코드, 규격, 수량, 단가가 모두 비어있지 않은 경우만 포함
+              return (
+                (p.product_name && p.product_name.trim() !== '') ||
+                (p.product_code && p.product_code.trim() !== '') ||
+                (p.product_spec && p.product_spec.trim() !== '') ||
+                (p.quantity && p.quantity > 0) ||
+                (p.unitPrice && p.unitPrice > 0)
+              );
+            })
+            ?.map((p, index) => ({
+              id: index + 1, // 순번 ID
+              purchase_expiry: formatDateToYYYYMMDD(
+                sellerInfoFormData?.writeDate || ''
+              ), // YYYYMMDD 형식 (예: "20241231")
+              product_id: p.productId || null, // 제품 ID
+              name: p.product_name || '', // 품목명
+              code: p.product_code || null, // 품목 코드
+              information: p.product_spec || '', // 규격
+              chargeable_unit: p.quantity.toString() || '0', // 수량
+              unit_price: p.unitPrice.toString() || '0', // 단가
+              amount:
+                ((p.quantity || 0) * (p.unitPrice || 0)).toString() || '0', // 공급가액
+              tax:
+                ((p.quantity || 0) * (p.unitPrice || 0) * 0.1).toString() ||
+                '0', // 세액
+            })) || [];
 
         const taxInvoiceData: CreateTaxInvoiceModel = {
           tax_id: taxId,
@@ -505,10 +525,12 @@ const CreatTaxPanel = ({
   const handleIssueTypeDropdownOpen = () => {
     // 판매처, 거래처, 주문품목 정보 모두 유효해야 드롭다운 열기
     if (!isSellerInfoValid || !isClientInfoValid || !isProductInfoValid) {
+      forceShowErrors.current = true;
       setShowErrors(true);
       return;
     }
     // 폼이 유효하면 에러 표시 해제하고 드롭다운 열기
+    forceShowErrors.current = false;
     setShowErrors(false);
     setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);
   };
