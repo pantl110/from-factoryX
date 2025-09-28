@@ -1,7 +1,7 @@
 import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
 import { formatBusinessNumber, formatDate } from '@/hooks/format-number';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
 import useMemberStore from '@/store/member-store';
 import { SellerInfoFormDataModel } from '../type';
@@ -73,6 +73,9 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
   // 폼 데이터 실시간 감시
   const formData = watch();
 
+  // 이전 formData를 저장하여 변경 감지
+  const prevFormDataRef = useRef<SellerInfoFormDataModel | null>(null);
+
   // 작성일자를 제외한 다른 필드들의 isDirty 상태
   const isOtherFieldsDirty = Boolean(
     dirtyFields.companyName ||
@@ -95,15 +98,24 @@ const SellerInfo = ({ onFormChange, showErrors = false }: SellerInfoProps) => {
 
   // 폼 상태가 변경될 때마다 부모 컴포넌트에 알림
   useEffect(() => {
-    onFormChange(
-      isValid,
-      isDirty,
-      hasRequiredValues,
-      isOtherFieldsDirty,
-      formData
-    );
+    // formData가 실제로 변경되었는지 확인
+    const hasFormDataChanged =
+      !prevFormDataRef.current ||
+      JSON.stringify(prevFormDataRef.current) !== JSON.stringify(formData);
+
+    if (hasFormDataChanged) {
+      prevFormDataRef.current = formData;
+
+      onFormChange(
+        isValid,
+        isDirty,
+        hasRequiredValues,
+        isOtherFieldsDirty,
+        formData
+      );
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid, isDirty, hasRequiredValues, isOtherFieldsDirty]); // onFormChange 제거
+  }, [isValid, isDirty, hasRequiredValues, isOtherFieldsDirty, formData]);
 
   // triggerValidation이 true가 되면 유효성 검사 실행
   useEffect(() => {

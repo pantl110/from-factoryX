@@ -379,12 +379,15 @@ const CreatTaxPanel = ({
       }
 
       // 거래처 정보 처리
+      let currentClientId = selectedClientId;
+
       if (selectedClientId === undefined) {
         // 새로운 거래처 생성
         if (clientInfoFormData) {
           const createResult = await createClientInfo(clientInfoFormData);
           if (createResult.success && createResult.data) {
-            // 생성된 거래처 ID로 상태 업데이트
+            // 생성된 거래처 ID로 상태 업데이트 및 현재 ID 설정
+            currentClientId = createResult.data.id;
             setSelectedClientId(createResult.data.id);
           } else {
             alert(
@@ -392,7 +395,6 @@ const CreatTaxPanel = ({
                 (createResult.error || '알 수 없는 오류')
             );
             setIsSaving(false);
-            return;
           }
         }
       } else {
@@ -408,13 +410,12 @@ const CreatTaxPanel = ({
                 (updateResult.error || '알 수 없는 오류')
             );
             setIsSaving(false);
-            return;
           }
         }
       }
 
-      // 세금계산서 생성
-      if (selectedClientId && factoryId) {
+      // 세금계산서 생성 (거래처 ID가 있어야만 생성)
+      if (currentClientId && factoryId) {
         // writeDate를 YYYYMMDD 형식으로 변환
         const formatDateToYYYYMMDD = (dateString: string) => {
           if (!dateString) return '';
@@ -445,7 +446,7 @@ const CreatTaxPanel = ({
         const taxInvoiceData: CreateTaxInvoiceModel = {
           tax_id: taxId,
           factory: factoryId,
-          client: selectedClientId,
+          client: currentClientId,
           product: productIds,
           line_items: lineItems,
           tax_invoice_type: 'sales', // 항상 매출 세금계산서
@@ -480,6 +481,9 @@ const CreatTaxPanel = ({
             tax_id: result.id,
           });
         }
+      } else {
+        // 거래처 ID가 없으면 세금계산서 생성 불가
+        alert('거래처 정보가 필요합니다.');
       }
     } catch (error) {
       alert('저장 중 오류가 발생했습니다: ' + error);
