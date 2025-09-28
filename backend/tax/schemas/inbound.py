@@ -8,7 +8,9 @@ from pydantic import field_validator
 class TaxServiceItem(Schema):
     id: Optional[int] = Field(None, description="품목 식별자(순번)")
     purchase_expiry: Optional[date | str] = Field(None, description="공급일자")
+    product_id: Optional[int] = Field(None, description="품목 ID")
     name: Optional[str] = Field(None, description="품목")
+    code: Optional[str] = Field(None, description="품목 코드")
     information: Optional[str] = Field("", description="규격")
     chargeable_unit: Optional[str] = Field(None, description="수량")
     unit_price: Optional[str] = Field(None, description="단가")

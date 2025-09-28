@@ -411,7 +411,9 @@ async def sync_tax_invoices(request, factory_id: int):
                     {
                         "id": idx,
                         "purchase_expiry": item.PurchaseExpiry,
+                        "product_id": None,
                         "name": item.Name,
+                        "code": None,
                         "information": item.Information,
                         "chargeable_unit": item.ChargeableUnit,
                         "unit_price": item.UnitPrice,
@@ -419,7 +421,6 @@ async def sync_tax_invoices(request, factory_id: int):
                         "tax": item.Tax,
                         "description": item.Description,
                         "material_history": None,
-                        "product": None,
                     }
                 )
 
@@ -486,7 +487,9 @@ async def sync_tax_invoices(request, factory_id: int):
                     {
                         "id": idx,
                         "purchase_expiry": item.PurchaseExpiry,
+                        "product_id": None,
                         "name": item.Name,
+                        "code": None,
                         "information": item.Information,
                         "chargeable_unit": item.ChargeableUnit,
                         "unit_price": item.UnitPrice,
@@ -494,7 +497,6 @@ async def sync_tax_invoices(request, factory_id: int):
                         "tax": item.Tax,
                         "description": item.Description,
                         "material_history": None,
-                        "product": None,
                     }
                 )
 
