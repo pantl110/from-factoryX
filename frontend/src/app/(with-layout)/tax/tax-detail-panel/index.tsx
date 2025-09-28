@@ -12,7 +12,6 @@ import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
 import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-modal';
 import CreateTaxPanel from '../list/create-tax-panel';
-import { TaxProductInfoModel } from '@/types/data-model';
 import PublishTaxModal from './publish-tax-modal';
 
 // 세금계산서 편집용 품목 데이터 타입
@@ -20,7 +19,9 @@ interface TaxProductEditModel {
   productId: number;
   quantity: number;
   unit_price: number;
-  products_info: TaxProductInfoModel[];
+  product_name: string;
+  product_code: string;
+  product_spec: string;
 }
 
 interface TaxDetailPanelProps {
@@ -115,11 +116,13 @@ const TaxDetailPanel = ({
             (item?.client_info as TaxClientInfoModel) || initialClientData
           }
           initialProducts={
-            (item?.products_info?.map((product, index) => ({
+            (item?.line_items?.map((product, index) => ({
               productId: product.id,
               quantity: Number(item?.line_items?.[index]?.chargeable_unit) || 0,
               unit_price: Number(item?.line_items?.[index]?.unit_price) || 0,
-              products_info: item?.products_info, // 모든 품목 상세 정보 포함
+              product_name: product.name,
+              product_code: product.code,
+              product_spec: product.information,
             })) as TaxProductEditModel[]) || initialProducts
           }
           setIsEditingMode={setIsEditingMode}

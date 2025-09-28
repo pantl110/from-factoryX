@@ -106,16 +106,9 @@ const TopBarContent = ({
                 productId: p.id,
                 quantity: p.quantity,
                 unit_price: p.unit_price,
-                products_info: [
-                  {
-                    id: p.id,
-                    factory: projectStatusData?.quotations[0].factory_info?.id,
-                    name: p.name,
-                    code: p.code,
-                    spec: p.spec,
-                    unit: p.unit,
-                  },
-                ],
+                product_name: p.name,
+                product_code: p.code,
+                product_spec: p.spec,
               })
             )}
           />
@@ -155,16 +148,9 @@ const TopBarContent = ({
                 productId: p.id,
                 quantity: p.quantity,
                 unit_price: p.unit_price,
-                products_info: [
-                  {
-                    id: p.id,
-                    factory: projectStatusData?.quotations[0].factory_info?.id,
-                    name: p.name,
-                    code: p.code,
-                    spec: p.spec,
-                    unit: p.unit,
-                  },
-                ],
+                product_name: p.name,
+                product_code: p.code,
+                product_spec: p.spec,
               })
             )}
           />
@@ -208,16 +194,9 @@ const TopBarContent = ({
                 productId: p.id,
                 quantity: p.quantity,
                 unit_price: p.unit_price,
-                products_info: [
-                  {
-                    id: p.id,
-                    factory: projectStatusData?.quotations[0].factory_info?.id,
-                    name: p.name,
-                    code: p.code,
-                    spec: p.spec,
-                    unit: p.unit,
-                  },
-                ],
+                product_name: p.name,
+                product_code: p.code,
+                product_spec: p.spec,
               })
             )}
           />
@@ -259,16 +238,9 @@ const TopBarContent = ({
                 productId: p.id,
                 quantity: p.quantity,
                 unit_price: p.unit_price,
-                products_info: [
-                  {
-                    id: p.id,
-                    factory: projectStatusData?.quotations[0].factory_info?.id,
-                    name: p.name,
-                    code: p.code,
-                    spec: p.spec,
-                    unit: p.unit,
-                  },
-                ],
+                product_name: p.name,
+                product_code: p.code,
+                product_spec: p.spec,
               })
             )}
           />
@@ -319,16 +291,9 @@ const TopBarContent = ({
                 productId: p.id,
                 quantity: p.quantity,
                 unit_price: p.unit_price,
-                products_info: [
-                  {
-                    id: p.id,
-                    factory: projectStatusData?.quotations[0].factory_info?.id,
-                    name: p.name,
-                    code: p.code,
-                    spec: p.spec,
-                    unit: p.unit,
-                  },
-                ],
+                product_name: p.name,
+                product_code: p.code,
+                product_spec: p.spec,
               })
             )}
           />
@@ -388,16 +353,9 @@ const TopBarContent = ({
                 productId: p.id,
                 quantity: p.quantity,
                 unit_price: p.unit_price,
-                products_info: [
-                  {
-                    id: p.id,
-                    factory: projectStatusData?.quotations[0].factory_info?.id,
-                    name: p.name,
-                    code: p.code,
-                    spec: p.spec,
-                    unit: p.unit,
-                  },
-                ],
+                product_name: p.name,
+                product_code: p.code,
+                product_spec: p.spec,
               })
             )}
           />

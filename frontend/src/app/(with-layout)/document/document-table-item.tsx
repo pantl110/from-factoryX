@@ -79,11 +79,11 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             <p
               className="px-3 flex-1 truncate"
               title={getProductNamesDisplay(
-                taxData.products_info?.map((p) => p.name) || []
+                taxData.line_items?.map((p) => p.name) || []
               )}
             >
               {getProductNamesDisplay(
-                taxData.products_info?.map((p) => p.name) || []
+                taxData.line_items?.map((p) => p.name) || []
               )}
             </p>
             <p

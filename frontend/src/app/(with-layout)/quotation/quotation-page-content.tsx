@@ -767,16 +767,9 @@ const QuotationPageContent = () => {
             productId: product.productId || 0,
             quantity: product.quantity || 0,
             unit_price: product.unit_price || 0,
-            products_info: [
-              {
-                id: product.productId || 0,
-                factory: factoryId || 0,
-                name: product.product_name || '',
-                code: product.product_code || '',
-                spec: product.spec || '',
-                unit: product.unit || '',
-              },
-            ],
+            product_name: product.product_name || '',
+            product_code: product.product_code || '',
+            product_spec: product.spec || '',
           }))}
         />
       )}

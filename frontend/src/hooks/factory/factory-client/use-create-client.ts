@@ -30,7 +30,7 @@ const useCreateClient = () => {
           withCredentials: true,
         }
       );
-      
+
       if (response.status === 201) {
         const result: ClientResponseModel = response.data;
         return { success: true, data: result };
@@ -38,8 +38,10 @@ const useCreateClient = () => {
         setError('거래처 등록에 실패했습니다.');
         return { success: false, error: '거래처 등록에 실패했습니다.' };
       }
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || '서버 연결에 실패했습니다.';
+    } catch (error: unknown) {
+      const errorMessage =
+        (error as { response?: { data?: { detail?: string } } })?.response?.data
+          ?.detail || '서버 연결에 실패했습니다.';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {

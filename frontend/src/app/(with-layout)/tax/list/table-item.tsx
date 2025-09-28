@@ -57,12 +57,12 @@ const TableItem = ({
         className="flex-2 px-3 text-dg truncate"
         title={
           getProductNamesDisplay(
-            item.products_info?.map((product) => product.name) || []
+            item.line_items?.map((product) => product.name) || []
           ) || '-'
         }
       >
         {getProductNamesDisplay(
-          item.products_info?.map((product) => product.name) || []
+          item.line_items?.map((product) => product.name) || []
         ) || '-'}
       </p>
       <p

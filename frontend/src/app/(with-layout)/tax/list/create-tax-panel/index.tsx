@@ -2,7 +2,7 @@ import Panel from '@/ui/panel';
 import SellerInfo from './seller-info';
 import ClientInfo from './client-info';
 import MiniBtn from '@/ui/mini-btn';
-import { CaretDown, WarningCircle } from '@phosphor-icons/react/dist/ssr';
+import { CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AddItemDropdown from './add-item-dropdown';
 import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
@@ -12,18 +12,15 @@ import {
   useCreateTaxInvoice,
   useCreateClient,
   useUpdateClient,
-  useToast,
   useLinkTaxInvoice,
 } from '@/hooks';
 import useMemberStore from '@/store/member-store';
-import { useCheckBarobill } from '@/hooks';
 import {
   FactoriesUpdateModel,
   CreateTaxInvoiceModel,
   ClientModel,
   ClientUpdateModel,
   TaxClientInfoModel,
-  TaxProductInfoModel,
 } from '@/types/data-model';
 import { TransactionType } from '@/types/status-type';
 import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../type';
@@ -31,7 +28,6 @@ import ProductInfo, {
   ProductInfoRefModel,
   ProductFormDataModel,
 } from './product-info';
-import Toast from '@/ui/toast';
 import { PanelRefModel } from '@/ui/panel';
 
 // 세금계산서 편집용 품목 데이터 타입
@@ -39,7 +35,9 @@ interface TaxProductEditModel {
   productId: number;
   quantity: number;
   unit_price: number;
-  products_info: TaxProductInfoModel[]; // TaxProductInfoModel[]와 호환
+  product_name: string;
+  product_code: string;
+  product_spec: string;
 }
 
 interface CreatTaxPanelProps {
@@ -111,7 +109,7 @@ const CreatTaxPanel = ({
   const { updateClient } = useUpdateClient();
   const { createTaxInvoice } = useCreateTaxInvoice();
   const { linkTaxInvoice } = useLinkTaxInvoice();
-  const { checkBarobill } = useCheckBarobill();
+  // const { checkBarobill } = useCheckBarobill();
 
   // 바로빌 등록 실패 토스트 훅
   // const { showToast, isToastOpen, isVisible } = useToast();
@@ -293,8 +291,9 @@ const CreatTaxPanel = ({
           product.productId &&
           product.quantity &&
           product.unit_price &&
-          product.products_info &&
-          product.products_info.length > 0
+          product.product_name &&
+          product.product_code &&
+          product.product_spec
       );
 
       if (hasValidProducts) {

@@ -10,7 +10,9 @@ interface TaxProductEditModel {
   productId: number;
   quantity: number;
   unit_price: number;
-  products_info: TaxProductInfoModel[]; // TaxProductInfoModel[]와 호환
+  product_name: string;
+  product_code: string;
+  product_spec: string;
 }
 
 interface ProductInfoProps {
@@ -63,9 +65,9 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
             productId: product.productId,
             quantity: product.quantity,
             unitPrice: product.unit_price, // snake_case → camelCase로 매핑
-            productData:
-              product.products_info?.find((p) => p.id === product.productId) ||
-              undefined, // productId에 해당하는 품목 상세 정보 찾기
+            product_name: product.product_name,
+            product_code: product.product_code,
+            product_spec: product.product_spec,
           })),
         });
       }
