@@ -1,7 +1,7 @@
 import MiniBtn from '@/ui/mini-btn';
 import { NotificationResponseModel } from '@/types/data-model';
 import { NotificationCaseType } from '@/types/status-type';
-import { ExclamationMark, CheckSquare, Siren } from '@phosphor-icons/react';
+import { Siren, CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import { useGetNotificationDetail } from '@/hooks';
 
 interface NotificationItemProps {
@@ -31,9 +31,9 @@ const NotificationItem = ({
   const getNotificationIcon = (notificationCase: NotificationCaseType) => {
     const iconConfig = {
       // 경고/오류 (빨간색)
-      warning: { icon: ExclamationMark, color: 'text-red' },
+      warning: { icon: WarningCircle, color: 'text-red' },
       // 성공/완료 (파란색)
-      completed: { icon: CheckSquare, color: 'text-primary' },
+      completed: { icon: CheckCircle, color: 'text-primary' },
       // 정보/알림 (회색)
       information: { icon: Siren, color: 'text-gr' },
     };
