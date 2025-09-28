@@ -1225,8 +1225,9 @@ export interface TaxProductInfoModel {
 export interface TaxLineItemModel {
   id: number; //품목 식별자(순번)
   purchase_expiry: string; // YYYYMMDD 형식 (예: "20241231") // 공급일자
-  // product?: number; // 연동된 제품 ID
+  product_id?: number | null; // 연동된 제품 ID
   name: string; // 품목명
+  code?: string | null; // 품목 코드
   information?: string; // 규격
   chargeable_unit: string; // 수량
   unit_price: string; // 단가
@@ -1261,8 +1262,8 @@ export interface PublishedTaxInvoiceResponseModel {
   client_info: TaxClientInfoModel;
 
   // 제품 관련 // 세금계산서 생성/수정 시 저장
-  product: number[]; // Product IDs (ManyToMany)
-  products_info: TaxProductInfoModel[]; // 제품 정보 리스트 (ProductRowOut 구조)
+  // product: number[]; // Product IDs (ManyToMany)
+  // products_info: TaxProductInfoModel[]; // 제품 정보 리스트 (ProductRowOut 구조)
 
   // 금액 관련
   transaction_amount: number; // 공급 가액

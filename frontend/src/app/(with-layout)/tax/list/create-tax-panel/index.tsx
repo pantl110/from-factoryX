@@ -450,7 +450,9 @@ const CreatTaxPanel = ({
             purchase_expiry: formatDateToYYYYMMDD(
               sellerInfoFormData?.writeDate || ''
             ), // YYYYMMDD 형식 (예: "20241231")
+            product_id: p.productId || null, // 제품 ID
             name: p.productData?.name || '', // 품목명
+            code: p.productData?.code || null, // 품목 코드
             information: p.productData?.spec || '', // 규격
             chargeable_unit: p.quantity.toString() || '0', // 수량
             unit_price: p.unitPrice.toString() || '0', // 단가
