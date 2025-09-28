@@ -405,11 +405,27 @@ const CreatTaxPanel = ({
             clientInfoFormData
           );
           if (!updateResult.success) {
-            alert(
-              '거래처 정보 수정에 실패했습니다: ' +
-                (updateResult.error || '알 수 없는 오류')
-            );
-            setIsSaving(false);
+            // 거래처 수정 실패 시 새로 생성 시도
+            if (updateResult.error?.includes('거래처를 찾을 수 없습니다')) {
+              const createResult = await createClientInfo(clientInfoFormData);
+              if (createResult.success && createResult.data) {
+                currentClientId = createResult.data.id;
+                setSelectedClientId(createResult.data.id);
+              } else {
+                alert(
+                  '거래처 생성에 실패했습니다: ' +
+                    (createResult.error || '알 수 없는 오류')
+                );
+                setIsSaving(false);
+                return;
+              }
+            } else {
+              alert(
+                '거래처 정보 수정에 실패했습니다: ' +
+                  (updateResult.error || '알 수 없는 오류')
+              );
+              // 거래처 수정 실패해도 세금계산서는 생성 계속 진행
+            }
           }
         }
       }
