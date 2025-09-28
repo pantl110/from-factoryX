@@ -14,7 +14,9 @@ interface TableItemFormDataModel {
     productId: number;
     quantity: number;
     unitPrice: number;
-    productData?: ProductResponseModel; // 품목 정보를 저장할 필드
+    product_name?: string;
+    product_code?: string;
+    product_spec?: string;
   }>;
 }
 
@@ -48,13 +50,12 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
   // 폼 값 감시
   const quantity = watch(`products.${index}.quantity`) || 0;
   const unitPrice = watch(`products.${index}.unitPrice`) || 0;
-  const productData = watch(`products.${index}.productData`);
+  const productNameValue = watch(`products.${index}.product_name`);
+  const productCode = watch(`products.${index}.product_code`);
+  const productSpec = watch(`products.${index}.product_spec`);
 
   // 금액 자동 계산
   const totalAmount = quantity * unitPrice;
-
-  // productData가 있으면 사용, 없으면 selectedProduct 사용
-  const displayProduct = productData || selectedProduct;
 
   // 천 단위 구분자 추가 함수
   const formatNumber = (value: number): string => {
@@ -126,9 +127,11 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
   const handleProductSelectWithId = (product: ProductResponseModel) => {
     setSelectedProduct(product);
     handleProductSelect(product);
-    // productId와 productData를 폼에 설정
+    // productId와 개별 필드들을 폼에 설정
     setValue(`products.${index}.productId`, product.id);
-    setValue(`products.${index}.productData`, product);
+    setValue(`products.${index}.product_name`, product.name);
+    setValue(`products.${index}.product_code`, product.code);
+    setValue(`products.${index}.product_spec`, product.spec);
     // 드롭다운 닫기
     setIsDropdownOpen(false);
     // productName 초기화하여 재검색 방지
@@ -141,9 +144,9 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
     <>
       <div className="group flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer">
         <div className="flex-1 px-3 flex items-center gap-1 min-w-0 relative">
-          {displayProduct ? (
-            <p className="text-dg w-full truncate" title={displayProduct.name}>
-              {displayProduct.name}
+          {productNameValue ? (
+            <p className="text-dg w-full truncate" title={productNameValue}>
+              {productNameValue}
             </p>
           ) : (
             <input
@@ -154,9 +157,9 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
               className="text-dg outline-none w-full"
             />
           )}
-          {(displayProduct || selectedProduct) && (
+          {(productNameValue || selectedProduct) && (
             <button
-              className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-colors duration-200 group-hover:opacity-100 opacity-0"
+              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-colors duration-200 group-hover:opacity-100 opacity-0"
               onClick={() => {
                 setIsOpen(true);
               }}
@@ -177,12 +180,8 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             </div>
           )}
         </div>
-        <p className="flex-1 px-3 text-dg truncate">
-          {displayProduct?.code || ''}
-        </p>
-        <p className="flex-1 px-3 text-dg truncate">
-          {displayProduct?.spec || ''}
-        </p>
+        <p className="flex-1 px-3 text-dg truncate">{productCode || ''}</p>
+        <p className="flex-1 px-3 text-dg truncate">{productSpec || ''}</p>
         <div className="flex-1 px-3">
           <input
             type="text"
@@ -212,9 +211,9 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
         </button>
       </div>
 
-      {isOpen && (
+      {isOpen && productNameValue && watch(`products.${index}.productId`) && (
         <ProductDetail
-          productId={displayProduct?.id || 0}
+          productId={watch(`products.${index}.productId`)}
           onClose={() => {
             setIsOpen(false);
           }}
@@ -224,8 +223,11 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
               try {
                 const result = await getProductDetail(productId);
                 if (result.success && result.data) {
-                  // 수정된 품목 정보로 productData 업데이트
-                  setValue(`products.${index}.productData`, result.data);
+                  // 수정된 품목 정보로 개별 필드들 업데이트
+                  setValue(`products.${index}.productId`, result.data.id);
+                  setValue(`products.${index}.product_name`, result.data.name);
+                  setValue(`products.${index}.product_code`, result.data.code);
+                  setValue(`products.${index}.product_spec`, result.data.spec);
                   // selectedProduct도 업데이트
                   setSelectedProduct(result.data);
                 }

@@ -31,7 +31,9 @@ export interface ProductFormDataModel {
     productId: number;
     quantity: number;
     unitPrice: number;
-    productData?: ProductResponseModel; // 품목 정보를 저장할 필드
+    product_name?: string;
+    product_code?: string;
+    product_spec?: string;
   }>;
 }
 
@@ -170,7 +172,9 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                       productId,
                       quantity: 0,
                       unitPrice: 0,
-                      productData: result.data, // 품목 정보를 함께 저장
+                      product_name: result.data.name,
+                      product_code: result.data.code,
+                      product_spec: result.data.spec,
                     });
                   }
                 } catch {

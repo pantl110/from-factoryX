@@ -117,7 +117,7 @@ const TaxDetailPanel = ({
           }
           initialProducts={
             (item?.line_items?.map((product, index) => ({
-              productId: product.id,
+              productId: product.product_id, // lineitem의 product_id 사용
               quantity: Number(item?.line_items?.[index]?.chargeable_unit) || 0,
               unit_price: Number(item?.line_items?.[index]?.unit_price) || 0,
               product_name: product.name,

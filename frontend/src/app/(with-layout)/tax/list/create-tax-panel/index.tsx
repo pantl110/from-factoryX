@@ -439,10 +439,6 @@ const CreatTaxPanel = ({
         };
 
         // ProductInfo에서 가져온 데이터 사용
-        const productIds =
-          productInfoFormData?.products
-            ?.map((p) => p.productId)
-            .filter(Boolean) || [];
         const lineItems =
           productInfoFormData?.products?.map((p, index) => ({
             id: index + 1, // 순번 ID
@@ -450,9 +446,9 @@ const CreatTaxPanel = ({
               sellerInfoFormData?.writeDate || ''
             ), // YYYYMMDD 형식 (예: "20241231")
             product_id: p.productId || null, // 제품 ID
-            name: p.productData?.name || '', // 품목명
-            code: p.productData?.code || null, // 품목 코드
-            information: p.productData?.spec || '', // 규격
+            name: p.product_name || '', // 품목명
+            code: p.product_code || null, // 품목 코드
+            information: p.product_spec || '', // 규격
             chargeable_unit: p.quantity.toString() || '0', // 수량
             unit_price: p.unitPrice.toString() || '0', // 단가
             amount: ((p.quantity || 0) * (p.unitPrice || 0)).toString() || '0', // 공급가액
@@ -464,7 +460,6 @@ const CreatTaxPanel = ({
           tax_id: taxId,
           factory: factoryId,
           client: currentClientId || null, // 거래처 ID가 없으면 null
-          product: productIds,
           line_items: lineItems,
           tax_invoice_type: 'sales', // 항상 매출 세금계산서
           transaction_type: transactionType,
