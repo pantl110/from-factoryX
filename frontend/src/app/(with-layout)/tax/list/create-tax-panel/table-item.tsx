@@ -26,7 +26,7 @@ interface TableItemProps {
 }
 
 const TableItem = ({ index, onRemove }: TableItemProps) => {
-  const { watch, setValue } = useFormContext<TableItemFormDataModel>();
+  const { watch, setValue, trigger } = useFormContext<TableItemFormDataModel>();
   const { getProductDetail, getProductList } = useGetProduct();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -70,7 +70,8 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
     const numericValue = value.replace(/,/g, '');
     const number = numericValue === '' ? 0 : Number(numericValue);
     if (!isNaN(number) && number >= 0) {
-      setValue(`products.${index}.${field}`, number);
+      setValue(`products.${index}.${field}`, number, { shouldDirty: true });
+      trigger(); // 폼 상태 강제 업데이트
     }
   };
 
@@ -128,10 +129,17 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
     setSelectedProduct(product);
     handleProductSelect(product);
     // productId와 개별 필드들을 폼에 설정
-    setValue(`products.${index}.productId`, product.id);
-    setValue(`products.${index}.product_name`, product.name);
-    setValue(`products.${index}.product_code`, product.code);
-    setValue(`products.${index}.product_spec`, product.spec);
+    setValue(`products.${index}.productId`, product.id, { shouldDirty: true });
+    setValue(`products.${index}.product_name`, product.name, {
+      shouldDirty: true,
+    });
+    setValue(`products.${index}.product_code`, product.code, {
+      shouldDirty: true,
+    });
+    setValue(`products.${index}.product_spec`, product.spec, {
+      shouldDirty: true,
+    });
+    trigger(); // 폼 상태 강제 업데이트
     // 드롭다운 닫기
     setIsDropdownOpen(false);
     // productName 초기화하여 재검색 방지
@@ -224,10 +232,19 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
                 const result = await getProductDetail(productId);
                 if (result.success && result.data) {
                   // 수정된 품목 정보로 개별 필드들 업데이트
-                  setValue(`products.${index}.productId`, result.data.id);
-                  setValue(`products.${index}.product_name`, result.data.name);
-                  setValue(`products.${index}.product_code`, result.data.code);
-                  setValue(`products.${index}.product_spec`, result.data.spec);
+                  setValue(`products.${index}.productId`, result.data.id, {
+                    shouldDirty: true,
+                  });
+                  setValue(`products.${index}.product_name`, result.data.name, {
+                    shouldDirty: true,
+                  });
+                  setValue(`products.${index}.product_code`, result.data.code, {
+                    shouldDirty: true,
+                  });
+                  setValue(`products.${index}.product_spec`, result.data.spec, {
+                    shouldDirty: true,
+                  });
+                  trigger(); // 폼 상태 강제 업데이트
                   // selectedProduct도 업데이트
                   setSelectedProduct(result.data);
                 }
