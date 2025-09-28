@@ -90,8 +90,11 @@ const TableItem = ({
       >
         {`${(item.transaction_amount || 0) + (item.tax_amount || 0)}`.toLocaleString()}
       </p>
-      <p className="px-3 w-[200px] truncate" title={item.transaction_date}>
-        {item.transaction_date}
+      <p
+        className="px-3 w-[200px] truncate"
+        title={item.transaction_date || '-'}
+      >
+        {item.transaction_date || '-'}
       </p>
     </div>
   );

@@ -13,6 +13,7 @@ import {
   useCreateClient,
   useUpdateClient,
   useLinkTaxInvoice,
+  useToast,
 } from '@/hooks';
 import { useCheckBarobill } from '@/hooks/tax/barobil/use-check-barobill';
 import useMemberStore from '@/store/member-store';
@@ -30,6 +31,8 @@ import ProductInfo, {
   ProductFormDataModel,
 } from './product-info';
 import { PanelRefModel } from '@/ui/panel';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
 
 // 세금계산서 편집용 품목 데이터 타입
 interface TaxProductEditModel {
@@ -115,8 +118,8 @@ const CreatTaxPanel = ({
   const { checkBarobill } = useCheckBarobill();
 
   // 바로빌 등록 실패 토스트 훅
-  // const { showToast, isToastOpen, isVisible } = useToast();
-  // const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지 상태
+  const { showToast, isToastOpen, isVisible } = useToast();
+  const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지 상태
 
   const factoryId = useMemberStore((state) => state.factoryId);
 
@@ -533,12 +536,24 @@ const CreatTaxPanel = ({
       const isReady = await checkBarobill();
 
       if (!isReady) {
-        alert('바로빌 회원가입에 실패했습니다. 다시 시도해주세요.');
+        setErrorMessage('다시 시도해 주세요.');
+        showToast();
         return;
       }
     } catch (error) {
-      console.error('바로빌 회원가입 실패:', error);
-      alert('바로빌 회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+      let errorMsg = '다시 시도해 주세요.';
+
+      if (error instanceof Error) {
+        // 에러 메시지에서 콜론 뒤의 부분만 추출
+        const { message } = error;
+        if (message.includes(':')) {
+          errorMsg = message.split(':')[1]?.trim() || message;
+        } else {
+          errorMsg = message;
+        }
+      }
+      setErrorMessage(errorMsg);
+      showToast();
       return;
     }
 
@@ -669,7 +684,7 @@ const CreatTaxPanel = ({
       )}
 
       {/* 바로빌 등록 실패 토스트 */}
-      {/* {isToastOpen && (
+      {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
           text="세금계산서 사용자 확인에 실패했습니다."
@@ -677,7 +692,7 @@ const CreatTaxPanel = ({
           type="red"
           isVisible={isVisible}
         />
-      )} */}
+      )}
     </>
   );
 };
