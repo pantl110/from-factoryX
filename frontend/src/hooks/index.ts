@@ -8,6 +8,7 @@ export { useInput } from './use-input';
 export { useDropdownFilter } from './use-dropdown-filter';
 export { useCheckAll } from './use-check-all';
 export { usePeriodSelector } from './use-period-selector';
+export { useTooltip } from './useTooltip';
 
 // Utility hooks
 export { getToday } from './get-today';

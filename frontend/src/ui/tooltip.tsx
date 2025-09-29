@@ -2,7 +2,7 @@ import React from 'react';
 
 interface TooltipProps {
   text: string | React.ReactNode;
-  color: 'red' | 'primary' | 'white';
+  color: 'red' | 'primary' | 'white' | 'black';
   position: 'left' | 'right';
 }
 
@@ -11,6 +11,7 @@ const Tooltip = ({ text, color, position }: TooltipProps) => {
     red: 'text-red bg-[#FFF0F5]',
     primary: 'text-primary bg-primary-8',
     white: 'text-dg bg-wh',
+    black: 'text-wh bg-dg',
   };
   const positionMap = {
     left: 'left-[15px] top-[-4px]',

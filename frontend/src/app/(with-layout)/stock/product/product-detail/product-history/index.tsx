@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import NoHistoryBox from '@/ui/no-history-box';
-import { useProductHistory } from '@/hooks';
+import { useProductHistory, useTooltip } from '@/hooks';
 import { ProductHistoryListResponseModel } from '@/types/data-model';
 import ProductStockLog from './product-stock-log';
+import { Info } from '@phosphor-icons/react';
+import Tooltip from '@/ui/tooltip';
 
 interface ProductHistoryProps {
   productId: number | null;
@@ -15,6 +17,7 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
   //   useState(false); // 판넬의 품목 입·출고 내역 드롭다운
 
   const { listProductHistories, data } = useProductHistory();
+  const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});
 
   const listData = data as ProductHistoryListResponseModel | undefined;
   const page = listData?.curPage ?? 1;
@@ -75,8 +78,24 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
       <div className="flex flex-col gap-3">
         <div className="h-10 flex items-center gap-2">
           <h3 className="Heading-3 text-dg h-10 flex items-center">
-            품목 입·출고 내역
+            재고 변동 내역
           </h3>
+          <div
+            className="relative"
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          >
+            <Info size={20} className="text-gr cursor-help" />
+            {isVisible && (
+              <div className="absolute z-10 top-7 -left-2 w-140">
+                <Tooltip
+                  text="현재 재고의 영향이 없을 때는 반품으로 인해 이전 출고 내역을 취소한 처리입니다."
+                  color="black"
+                  position="left"
+                />
+              </div>
+            )}
+          </div>
 
           {/* 기간 선택 */}
           {/* {productId !== null && (
