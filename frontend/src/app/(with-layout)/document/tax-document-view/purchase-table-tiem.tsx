@@ -19,6 +19,7 @@ const PurchaseTableTiem = ({
   setSelectedLineItem,
 }: PurchaseTableTiemProps) => {
   const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
 
   return (
     <div className="h-14 w-full flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
@@ -64,8 +65,7 @@ const PurchaseTableTiem = ({
               setSelectedLineItem?.(lineItem);
             }}
             disabled={
-              role === 'viewer' ||
-              !!(lineItem as TaxLineItemModel).material_history
+              isViewer || !!(lineItem as TaxLineItemModel).material_history
             }
             height="h-8"
           />

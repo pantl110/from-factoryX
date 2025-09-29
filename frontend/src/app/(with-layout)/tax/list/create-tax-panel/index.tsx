@@ -126,51 +126,8 @@ const CreatTaxPanel = ({
   const [showWriteDateError, setShowWriteDateError] = useState(false); // 작성일자만 에러 표시
 
   const factoryId = useMemberStore((state) => state.factoryId);
-
-  // 판넬에 들어올 때 바로빌 상태 확인 및 회원가입
-  // useEffect(() => {
-  //   const checkBarobillStatus = async () => {
-  //     if (factoryId) {
-  //       try {
-  //         const isBarobillValid = await checkBarobill();
-  //         if (isBarobillValid) {
-  //           // 바로빌 연동 성공
-  //         } else {
-  //           // 바로빌 연동 실패 시 에러 메시지 설정 후 토스트 표시
-  //           setErrorMessage('다시 시도해 주세요.');
-  //           showToast();
-  //           // 토스트가 표시된 후 2초 뒤에 판넬 닫기
-  //           setTimeout(() => {
-  //             panelRef.current?.handleClose();
-  //           }, 2000);
-  //         }
-  //       } catch (error) {
-  //         // 에러 발생 시 실제 에러 메시지 설정 후 토스트 표시
-  //         let errorMsg = '다시 시도해 주세요.';
-
-  //         if (error instanceof Error) {
-  //           // 에러 메시지에서 콜론 뒤의 부분만 추출
-  //           const { message } = error;
-  //           if (message.includes(':')) {
-  //             errorMsg = message.split(':')[1]?.trim() || message;
-  //           } else {
-  //             errorMsg = message;
-  //           }
-  //         }
-
-  //         setErrorMessage(errorMsg);
-  //         showToast();
-  //         // 토스트가 표시된 후 2초 뒤에 판넬 닫기
-  //         setTimeout(() => {
-  //           panelRef.current?.handleClose();
-  //         }, 2000);
-  //       }
-  //     }
-  //   };
-
-  //   checkBarobillStatus();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [factoryId]);
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
 
   // 주문품목 정보 폼 변경 핸들러
   const handleProductInfoChange = useCallback(
@@ -632,7 +589,8 @@ const CreatTaxPanel = ({
             !isSellerInfoDirty &&
             !isClientInfoDirty &&
             !isProductInfoDirty) ||
-          isSaving
+          isSaving ||
+          isViewer
         }
       />
       <div className="relative">
@@ -648,7 +606,8 @@ const CreatTaxPanel = ({
             !hasSellerInfoRequiredValues ||
             !hasClientInfoRequiredValues ||
             !isProductInfoValid ||
-            isSaving
+            isSaving ||
+            isViewer
           }
         />
         {isIssueTypeDropdownOpen && (
@@ -694,6 +653,7 @@ const CreatTaxPanel = ({
               icon={CaretDown}
               iconPosition="right"
               onClick={() => setIsAddProductDropdownOpen(true)}
+              disabled={isViewer}
             />
             {isAddProductDropdownOpen && (
               <div className="absolute top-12 right-0">

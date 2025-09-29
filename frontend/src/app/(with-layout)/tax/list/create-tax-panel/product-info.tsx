@@ -4,6 +4,7 @@ import ProductDetail from '@/app/(with-layout)/stock/product/product-detail';
 import { FormProvider, useForm, useFieldArray } from 'react-hook-form';
 import { useImperativeHandle, forwardRef, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
+import useMemberStore from '@/store/member-store';
 
 // 세금계산서 편집용 품목 데이터 타입
 interface TaxProductEditModel {
@@ -51,6 +52,9 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
     },
     ref
   ) => {
+    const role = useMemberStore((state) => state.role);
+    const isViewer = role === 'viewer';
+
     const { getProductDetail } = useGetProduct();
 
     const methods = useForm<ProductFormDataModel>({
@@ -136,14 +140,14 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
             />
           ) : (
             <>
-              <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+              <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
                 <p className="flex-1 py-1 px-3 text-sv">품목명</p>
                 <p className="flex-1 py-1 px-3 text-sv">품목 코드</p>
                 <p className="flex-1 py-1 px-3 text-sv">규격</p>
                 <p className="flex-1 py-1 px-3 text-sv">제작 수량</p>
                 <p className="w-[100px] py-1 px-3 text-sv">단가</p>
                 <p className="flex-1 py-1 px-3 text-sv">금액</p>
-                <div className="w-9" />
+                {!isViewer && <div className="w-9" />}
               </div>
 
               {fields.map((field, index) => (

@@ -47,6 +47,8 @@ const SellerInfo = ({
 
   const { getFactory, factory } = useGetFactory();
   const factoryId = useMemberStore((state) => state.factoryId);
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
 
   // 공장 상세 조회 후 초기값 세팅
   useEffect(() => {
@@ -185,6 +187,7 @@ const SellerInfo = ({
                   handleFieldChange('companyName');
                 },
               })}
+              disabledReadOnly={isViewer}
             />
           </div>
           <div className="flex-1">
@@ -209,6 +212,7 @@ const SellerInfo = ({
                   handleFieldChange('businessNumber');
                 },
               })}
+              disabledReadOnly={isViewer}
             />
           </div>
         </div>
@@ -224,6 +228,7 @@ const SellerInfo = ({
                 handleFieldChange('representativeName');
               },
             })}
+            disabledReadOnly={isViewer}
           />
         </div>
         <div className="flex gap-2">
@@ -239,6 +244,7 @@ const SellerInfo = ({
                   handleFieldChange('businessType');
                 },
               })}
+              disabledReadOnly={isViewer}
             />
           </div>
           <div className="flex-1">
@@ -253,6 +259,7 @@ const SellerInfo = ({
                   handleFieldChange('businessCategory');
                 },
               })}
+              disabledReadOnly={isViewer}
             />
           </div>
         </div>
@@ -265,6 +272,7 @@ const SellerInfo = ({
               handleFieldChange('address');
             },
           })}
+          disabledReadOnly={isViewer}
         />
         <div>
           <Input
@@ -288,6 +296,7 @@ const SellerInfo = ({
                 onWriteDateChange?.(); // 작성일자 변경 시 에러 초기화
               },
             })}
+            disabledReadOnly={isViewer}
           />
         </div>
       </form>

@@ -8,6 +8,8 @@ import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import { ProductResponseModel } from '@/types/data-model';
 import { useGetProduct, useDropdownFilter } from '@/hooks';
 import ProductDetail from '@/app/(with-layout)/stock/product/product-detail';
+import IconBtn from '@/ui/icon-btn';
+import useMemberStore from '@/store/member-store';
 
 interface TableItemFormDataModel {
   products: Array<{
@@ -26,6 +28,9 @@ interface TableItemProps {
 }
 
 const TableItem = ({ index, onRemove }: TableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const { watch, setValue, trigger } = useFormContext<TableItemFormDataModel>();
   const { getProductDetail, getProductList } = useGetProduct();
 
@@ -150,8 +155,8 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
 
   return (
     <>
-      <div className="group flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer">
-        <div className="flex-1 px-3 flex items-center gap-1 min-w-0 relative">
+      <div className="group flex items-center h-14 border-b border-lg Me_Body-1 cursor-default">
+        <div className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0 relative">
           {productNameValue ? (
             <p className="text-dg w-full truncate" title={productNameValue}>
               {productNameValue}
@@ -166,14 +171,13 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             />
           )}
           {(productNameValue || selectedProduct) && (
-            <button
-              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-colors duration-200 group-hover:opacity-100 opacity-0"
-              onClick={() => {
-                setIsOpen(true);
-              }}
-            >
-              <ArrowLineUpRight size={16} className="text-dg" />
-            </button>
+            <IconBtn
+              icon={ArrowLineUpRight}
+              size="w-9 h-9"
+              iconSize={16}
+              onClick={() => setIsOpen(true)}
+              groupHover={true}
+            />
           )}
 
           {/* 품목 검색 드롭다운 */}
@@ -188,8 +192,12 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             </div>
           )}
         </div>
-        <p className="flex-1 px-3 text-dg truncate">{productCode || ''}</p>
-        <p className="flex-1 px-3 text-dg truncate">{productSpec || ''}</p>
+        <p className="flex-1 px-3 text-dg truncate cursor-default">
+          {productCode || '-'}
+        </p>
+        <p className="flex-1 px-3 text-dg truncate cursor-default">
+          {productSpec || '-'}
+        </p>
         <div className="flex-1 px-3">
           <input
             type="text"
@@ -197,6 +205,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             onChange={(e) => handleNumberInput('quantity', e.target.value)}
             placeholder="(필수)"
             className="text-dg focus:outline-none w-full"
+            disabled={isViewer}
           />
         </div>
         <div className="w-[100px] px-3">
@@ -206,17 +215,21 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             onChange={(e) => handleNumberInput('unitPrice', e.target.value)}
             placeholder="(필수)"
             className="text-dg focus:outline-none w-full"
+            disabled={isViewer}
           />
         </div>
-        <p className="flex-1 px-3 text-dg truncate">
+        <p className="flex-1 px-3 text-dg truncate cursor-default">
           {totalAmount === 0 ? '-' : totalAmount.toLocaleString()}
         </p>
-        <button
-          className="w-9 h-9 rounded-[8px] flex items-center justify-center hover:bg-bg"
-          onClick={onRemove}
-        >
-          <X size={16} className="text-sv" />
-        </button>
+        {!isViewer && (
+          <IconBtn
+            icon={X}
+            size="w-9 h-9"
+            iconSize={16}
+            onClick={onRemove}
+            groupHover={true}
+          />
+        )}
       </div>
 
       {isOpen && productNameValue && watch(`products.${index}.productId`) && (

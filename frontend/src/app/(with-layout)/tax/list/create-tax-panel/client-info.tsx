@@ -5,6 +5,7 @@ import { ClientInfoFormDataModel } from '../type';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { ClientResponseModel, TaxClientInfoModel } from '@/types/data-model';
 import { useGetClient, formatBusinessNumber } from '@/hooks';
+import useMemberStore from '@/store/member-store';
 
 interface ClientInfoProps {
   onFormChange: (
@@ -23,6 +24,9 @@ const ClientInfo = ({
   showErrors = false,
   initialData,
 }: ClientInfoProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const {
     register,
     formState: { isValid, isDirty, errors },
@@ -250,6 +254,7 @@ const ClientInfo = ({
                 });
                 handleFieldChange('companyName');
               }}
+              disabledReadOnly={isViewer}
             />
             {isDropdownOpen && searchResults.length > 0 && (
               <div className="absolute top-full left-0 right-0 z-10 mt-1">
@@ -287,6 +292,7 @@ const ClientInfo = ({
                   handleFieldChange('businessNumber');
                 },
               })}
+              disabledReadOnly={isViewer}
             />
           </div>
         </div>
@@ -302,6 +308,7 @@ const ClientInfo = ({
                 handleFieldChange('representativeName');
               },
             })}
+            disabledReadOnly={isViewer}
           />
         </div>
         <div className="flex gap-2">
@@ -317,6 +324,7 @@ const ClientInfo = ({
                   handleFieldChange('businessType');
                 },
               })}
+              disabledReadOnly={isViewer}
             />
           </div>
           <div className="flex-1">
@@ -331,6 +339,7 @@ const ClientInfo = ({
                   handleFieldChange('businessCategory');
                 },
               })}
+              disabledReadOnly={isViewer}
             />
           </div>
         </div>
@@ -343,6 +352,7 @@ const ClientInfo = ({
               handleFieldChange('address');
             },
           })}
+          disabledReadOnly={isViewer}
         />
       </form>
     </div>
