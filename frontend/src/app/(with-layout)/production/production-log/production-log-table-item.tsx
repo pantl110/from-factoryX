@@ -6,6 +6,7 @@ import { formatDateTime } from '@/hooks';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
+import useMemberStore from '@/store/member-store';
 
 interface ProductionLogTableItemProps {
   plan: ProjectPlanModel;
@@ -29,10 +30,11 @@ const ProductionLogTableItem = ({
   onValidityChange,
   isFirstOfProduct,
 }: ProductionLogTableItemProps) => {
-  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
 
-  // 생산 완료 상태일 때만 수정 가능
-  const isEditable = projectStatus === 'manufactured';
+  // 생산 완료 상태일 때만 수정 가능 // 조회자가 아닐때만 수정 가능
+  const isEditable = projectStatus === 'manufactured' && !isViewer;
 
   // React Hook Form 설정
   const { control, watch, formState } = useForm({
@@ -43,6 +45,8 @@ const ProductionLogTableItem = ({
     },
     mode: 'onChange', // 입력 시마다 유효성 검사
   });
+
+  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
   // 부모에 유효성 변경 알림
   useEffect(() => {
@@ -73,31 +77,31 @@ const ProductionLogTableItem = ({
     <>
       <div className="flex items-center h-14 min-w-[1559px] border-b border-lg group Me_Body-1 text-dg">
         <p
-          className="flex-2 px-3 truncate"
+          className="flex-2 px-3 truncate cursor-default"
           title={isFirstOfProduct ? plan.quotation_product.product.name : ''}
         >
           {isFirstOfProduct ? plan.quotation_product.product.name : ''}
         </p>
         <p
-          className="flex-1 px-3 truncate"
+          className="flex-1 px-3 truncate cursor-default"
           title={isFirstOfProduct ? plan.quotation_product.product.code : ''}
         >
           {isFirstOfProduct ? plan.quotation_product.product.code : ''}
         </p>
         <p
-          className="flex-1 px-3 truncate"
+          className="flex-1 px-3 truncate cursor-default"
           title={isFirstOfProduct ? plan.quotation_product.product.spec : ''}
         >
           {isFirstOfProduct ? plan.quotation_product.product.spec : ''}
         </p>
         <p
-          className="w-[80px] px-3 truncate"
+          className="w-[80px] px-3 truncate cursor-default"
           title={isFirstOfProduct ? plan.quotation_product.product.unit : ''}
         >
           {isFirstOfProduct ? plan.quotation_product.product.unit : ''}
         </p>
         <p
-          className="flex-1 px-3 truncate"
+          className="flex-1 px-3 truncate cursor-default"
           title={
             isFirstOfProduct
               ? plan.quotation_product.quantity?.toLocaleString() || '-'
@@ -133,7 +137,10 @@ const ProductionLogTableItem = ({
             )}
           />
         </div>
-        <p className="flex-1 px-3 truncate" title={plan.equipment.name || '-'}>
+        <p
+          className="flex-1 px-3 truncate cursor-default"
+          title={plan.equipment.name || '-'}
+        >
           {plan.equipment.name || '-'}
         </p>
         <div className="w-[200px] px-3">
@@ -161,7 +168,7 @@ const ProductionLogTableItem = ({
             )}
           />
         </div>
-        <p className="w-[140px] px-3">
+        <p className="w-[140px] px-3 cursor-default">
           {plan.avg_production_time ? `${plan.avg_production_time}초` : '-'}
         </p>
         <div className="w-[150px] px-3">

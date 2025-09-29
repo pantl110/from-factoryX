@@ -14,6 +14,7 @@ import usePageStatusStore from '@/store/page-status-store';
 import Toast from '@/ui/toast';
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import { checkDateValidity } from '@/utils/date-validation';
+import useMemberStore from '@/store/member-store';
 
 // UTC 시간을 한국 시간(+9시간)으로 변환하는 함수 (표시용만)
 const convertUTCToKST = (utcDateString: string | null): string => {
@@ -37,6 +38,9 @@ interface ProductionLogProps {
 }
 
 const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
 
