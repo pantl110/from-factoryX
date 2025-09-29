@@ -18,9 +18,13 @@ import { PendingTaxInvoiceListResponseModel } from '@/types/data-model';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
 import TableItem from './table-item';
-// import NotAllowed from '../not-allowed';
+import NotAllowed from '../not-allowed';
+import useSubscriptionStore from '@/store/subscription-store';
 
 const TaxDraftPage = () => {
+  // 구독 상태 확인
+  const { isPartnersSubscription } = useSubscriptionStore();
+
   const [selectedTab, setSelectedTab] = useState<
     '전체' | '임시 저장' | '전송 대기'
   >('전체');
@@ -212,9 +216,13 @@ const TaxDraftPage = () => {
     setSearchQuery('');
   };
 
+  // PARTNERS 구독이 아니면 접근 차단
+  if (!isPartnersSubscription()) {
+    return <NotAllowed />;
+  }
+
   return (
     <>
-      {/* <NotAllowed /> */}
       <div className={`flex flex-col gap-8`}>
         <MainTitleSec
           selectedTab={selectedTab}

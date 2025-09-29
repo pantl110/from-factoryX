@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LogoutResponseModel } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 import { clearAuthData } from '@/utils/storage';
 
 interface UseLogoutReturnModel {
@@ -17,6 +18,7 @@ export const useLogout = (): UseLogoutReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { clearAuth } = useAuthStore();
   const { clearAll: clearMember } = useMemberStore();
+  const { clearSubscription } = useSubscriptionStore();
 
   const logout = async () => {
     setIsLoading(true);
@@ -47,6 +49,7 @@ export const useLogout = (): UseLogoutReturnModel => {
       // 2. 그 다음 전역 상태 초기화
       clearAuth();
       clearMember(); // member store 전체 클리어
+      clearSubscription(); // subscription store 전체 클리어
 
       if (response.ok) {
         return {
@@ -66,6 +69,7 @@ export const useLogout = (): UseLogoutReturnModel => {
       // 2. 그 다음 전역 상태 초기화
       clearAuth();
       clearMember(); // member store 전체 클리어
+      clearSubscription(); // subscription store 전체 클리어
 
       return {
         success: false,

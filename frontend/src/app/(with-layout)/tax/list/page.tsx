@@ -19,12 +19,15 @@ import {
   useUpdateTaxInvoice,
 } from '@/hooks';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
-// import NotAllowed from '../not-allowed';
+import NotAllowed from '../not-allowed';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 const TaxPageContent = () => {
   const role = useMemberStore((state) => state.role);
   const factoryId = useMemberStore((state) => state.factoryId);
+  // 구독 상태 확인
+  const { isPartnersSubscription } = useSubscriptionStore();
 
   const [selectedTaxType, setSelectedTaxType] =
     useState<TaxDocumentType | null>(null);
@@ -266,9 +269,13 @@ const TaxPageContent = () => {
     }
   };
 
+  // PARTNERS 구독이 아니면 접근 차단
+  if (!isPartnersSubscription()) {
+    return <NotAllowed />;
+  }
+
   return (
     <>
-      {/* <NotAllowed /> */}
       <div className="flex flex-col gap-8">
         <MainTitleSec
           selectedTaxType={selectedTaxType}

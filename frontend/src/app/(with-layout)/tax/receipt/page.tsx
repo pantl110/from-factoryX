@@ -8,10 +8,11 @@ import Pagination from '@/components/pagination';
 import { useGetCashReceipts } from '@/hooks';
 import { CashReceiptResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
 import ReceiptDetailPanel from './modals/receipt-detail-panel';
-// import NotAllowed from '../not-allowed';
+import NotAllowed from '../not-allowed';
 
 const TaxReceiptPage = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 정렬 상태 관리
@@ -24,6 +25,9 @@ const TaxReceiptPage = () => {
   // 공장 ID 가져오기
   const factoryStore = useMemberStore();
   const factoryId = factoryStore.factoryId || 1; // 기본값 1
+
+  // 구독 상태 확인
+  const { isPartnersSubscription } = useSubscriptionStore();
 
   // 현금영수증 데이터 가져오기
   const { getCashReceipts, cashReceipts, isLoading, error, totalPages } =
@@ -91,9 +95,13 @@ const TaxReceiptPage = () => {
     setSelectedItem(null);
   };
 
+  // PARTNERS 구독이 아니면 접근 차단
+  if (!isPartnersSubscription()) {
+    return <NotAllowed />;
+  }
+
   return (
     <>
-      {/* <NotAllowed /> */}
       <div className="flex flex-col gap-8 pt-10 px-10">
         <div className="Heading-1 text-dg">현금영수증</div>
 

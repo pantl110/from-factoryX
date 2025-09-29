@@ -14,14 +14,10 @@ const NotAllowed = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <h3 className="Heading-3">
-            {factoryId
-              ? '무료 플랜에서는 세무/회계 기능이 잠겨있어요.'
-              : '세무/회계 기능이 잠겨있어요.'}
-          </h3>
+          <h3 className="Heading-3">세무/회계 기능이 잠겨있어요.</h3>
           <p className="text-gr text-center whitespace-pre-line">
             {factoryId
-              ? `Basic 또는 Partners 플랜으로 업그레이드하면\n세무/회계 기능을 사용할 수 있어요.`
+              ? `Partners 플랜으로 업그레이드하면\n세무/회계 기능을 사용할 수 있어요.`
               : `실제 공장을 생성하거나 초대받아\n운영자 권한으로 접속해야 사용할 수 있어요`}
           </p>
         </div>
@@ -43,7 +39,7 @@ const NotAllowed = () => {
                 bgColor="bg-primary"
                 hoverColor="hover:bg-primary-hover"
                 onClick={() => {
-                  router.push('/setting?tab=subscription');
+                  router.push('/setting?chip=subscription');
                 }}
               />
             </>

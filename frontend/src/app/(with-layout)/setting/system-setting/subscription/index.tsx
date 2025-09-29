@@ -10,6 +10,7 @@ import MiniBtn from '@/ui/mini-btn';
 import CardChangeModal from './modals/card-change-modal';
 import CardDeleteModal from './modals/card-delete-modal';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 import {
   useGetFactory,
   useGetSubscriptionStatus,
@@ -28,6 +29,7 @@ import {
 
 const Subscription = () => {
   const { factoryId, role } = useMemberStore();
+  const { setSubscription } = useSubscriptionStore();
   const { getFactory, factory } = useGetFactory();
   const { getSubscriptionStatus, subscriptionStatus } =
     useGetSubscriptionStatus();
@@ -79,6 +81,52 @@ const Subscription = () => {
     ]);
   };
 
+  // 구독 정보를 persist에 업데이트하는 함수
+  const updateSubscriptionPersist = async () => {
+    if (!factoryId) return;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/status/${factoryId}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const subscriptionData = await response.json();
+
+        if (subscriptionData.subscription_history) {
+          setSubscription({
+            id: subscriptionData.subscription_history.id || 0,
+            created_at:
+              subscriptionData.subscription_history.created_at ||
+              new Date().toISOString(),
+            updated_at:
+              subscriptionData.subscription_history.updated_at ||
+              new Date().toISOString(),
+            start_date:
+              subscriptionData.subscription_history.start_date ||
+              new Date().toISOString().split('T')[0],
+            end_date:
+              subscriptionData.subscription_history.end_date ||
+              new Date().toISOString().split('T')[0],
+            is_canceled:
+              subscriptionData.subscription_history.is_canceled || false,
+            type: subscriptionData.subscription_history.subscription?.type,
+            is_active: subscriptionData.is_active || false,
+          });
+        }
+      }
+    } catch {
+      // 구독 정보 업데이트 실패 시 무시 (UI에는 영향 없음)
+    }
+  };
+
   const handleSubscribe = async (type: PlanType) => {
     // admin이 아니면 권한 없음
     if (!isAdmin) {
@@ -107,7 +155,10 @@ const Subscription = () => {
       customer_key: paymentAuth.customer_key,
     });
     if (result.success) {
-      refreshSubscriptionData();
+      // UI 데이터 새로고침
+      await refreshSubscriptionData();
+      // persist 구독 정보 업데이트
+      await updateSubscriptionPersist();
     }
   };
 
@@ -210,6 +261,7 @@ const Subscription = () => {
             onSubscribe={handleSubscribe}
             isLoading={isSubscribeLoading}
             refreshSubscriptionData={refreshSubscriptionData}
+            updateSubscriptionPersist={updateSubscriptionPersist}
             hasScheduledSubscription={hasScheduledSubscription}
             isAdmin={isAdmin}
           />

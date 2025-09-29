@@ -6,6 +6,7 @@ import {
 } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 import { useGetMember } from '@/hooks';
 import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
 
@@ -28,6 +29,7 @@ export const useLogin = (): UseLoginReturnModel => {
   const { getFactoryList } = useGetFactoryList();
   const { getMember } = useGetMember();
   const { setFactoryId, setRole, setIsBarobillUser } = useMemberStore();
+  const { setSubscription } = useSubscriptionStore();
 
   const login = async (data: LoginFormDataModel) => {
     setIsLoading(true);
@@ -97,6 +99,39 @@ export const useLogin = (): UseLoginReturnModel => {
                     // role과 isBarobillUser를 store에 저장
                     setRole(member.role);
                     setIsBarobillUser(member.is_barobill_user);
+
+                    // 구독 정보도 함께 가져오기
+                    try {
+                      const subscriptionResponse = await fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/status/${factoryId}`,
+                        {
+                          method: 'GET',
+                          credentials: 'include',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                        }
+                      );
+
+                      if (subscriptionResponse.ok) {
+                        const subscriptionData = await subscriptionResponse.json();
+
+                        if (subscriptionData.subscription_history) {
+                          setSubscription({
+                            id: subscriptionData.subscription_history.id || 0,
+                            created_at: subscriptionData.subscription_history.created_at || new Date().toISOString(),
+                            updated_at: subscriptionData.subscription_history.updated_at || new Date().toISOString(),
+                            start_date: subscriptionData.subscription_history.start_date || new Date().toISOString().split('T')[0],
+                            end_date: subscriptionData.subscription_history.end_date || new Date().toISOString().split('T')[0],
+                            is_canceled: subscriptionData.subscription_history.is_canceled || false,
+                            type: subscriptionData.subscription_history.subscription?.type,
+                            is_active: subscriptionData.is_active || false,
+                          });
+                        }
+                      }
+                    } catch {
+                      // 구독 정보 가져오기 실패 시 무시
+                    }
 
                     return {
                       success: true,
