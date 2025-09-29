@@ -6,6 +6,7 @@ import { CashReceiptDetailResponseModel } from '@/types/data-model';
 import PriceInfo from '@/ui/price-info';
 import MiniBtn from '@/ui/mini-btn';
 import LinkReceiptModal from './link-receipt-modal';
+import useMemberStore from '@/store/member-store';
 
 interface ReceiptDetailPanelProps {
   onClose: () => void;
@@ -13,6 +14,9 @@ interface ReceiptDetailPanelProps {
 }
 
 const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const { getCashReceiptDetail, isLoading, error } = useGetCashReceiptDetail();
   const [cashReceipt, setCashReceipt] =
     useState<CashReceiptDetailResponseModel | null>(null);
@@ -43,7 +47,7 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
             onClick={() => {
               setIsLinkReceiptModalOpen(true);
             }}
-            disabled={false}
+            disabled={isViewer}
           />
         }
       >

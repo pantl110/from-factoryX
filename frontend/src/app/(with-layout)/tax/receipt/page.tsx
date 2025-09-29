@@ -5,12 +5,12 @@ import SearchInput from '@/ui/search-input';
 import TableItem from './table-item';
 import { CaretUpDownIcon } from '@phosphor-icons/react';
 import Pagination from '@/components/pagination';
-import ReceiptDetailPanel from './modals/receipt-detail-panel';
 import { useGetCashReceipts } from '@/hooks';
 import { CashReceiptResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
+import ReceiptDetailPanel from './modals/receipt-detail-panel';
 // import NotAllowed from '../not-allowed';
 
 const TaxReceiptPage = () => {
