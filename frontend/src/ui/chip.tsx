@@ -25,7 +25,7 @@ const Chip = ({
   state = false,
   radius = 'rounded',
   onClick,
-  cursor = onClick ? 'cursor-pointer' : '',
+  cursor = onClick ? 'cursor-pointer' : 'cursor-default',
   hover = '',
   height = 'h-8',
   padding = 'px-3',

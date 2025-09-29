@@ -18,6 +18,7 @@ import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks/format-number';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
+import useMemberStore from '@/store/member-store';
 
 // Form 데이터 타입 정의
 interface ProductionPlanFormDataModel {
@@ -41,6 +42,7 @@ interface TableItemProps {
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
   isFirstOfProduct?: boolean; // 같은 품목의 첫 번째 plan인지 여부
+  isViewer?: boolean; // viewer 권한 여부
 }
 
 const TableItem = ({
@@ -55,6 +57,10 @@ const TableItem = ({
   projectStatus,
   isFirstOfProduct = true,
 }: TableItemProps) => {
+  // role 확인
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   // 백엔드에서 한글 상태값을 반환하므로 영어로 변환
   const getOperationStatus = (status: string): OperationStatusType => {
     const statusMap: Record<string, OperationStatusType> = {
@@ -167,12 +173,16 @@ const TableItem = ({
         textColor={operationColor.textColor}
         bgColor={operationColor.bgColor}
         cursor={
-          projectStatus === 'pending' || item.quotation_product?.is_delivery
+          projectStatus === 'pending' ||
+          item.quotation_product?.is_delivery ||
+          isViewer
             ? 'cursor-default'
             : 'cursor-pointer'
         }
         onClick={
-          projectStatus === 'pending' || item.quotation_product?.is_delivery
+          projectStatus === 'pending' ||
+          item.quotation_product?.is_delivery ||
+          isViewer
             ? undefined
             : (e) => {
                 if (e && onOperationStatusClick) {
@@ -182,19 +192,49 @@ const TableItem = ({
               }
         }
         state={
-          projectStatus === 'pending' || item.quotation_product?.is_delivery
+          projectStatus === 'pending' ||
+          item.quotation_product?.is_delivery ||
+          isViewer
             ? false
             : true
         }
       />
     ),
-    품목명: isFirstOfProduct ? item.quotation_product.product.name : '',
-    품목코드: isFirstOfProduct ? item.quotation_product.product.code : '',
-    규격: isFirstOfProduct ? item.quotation_product.product.spec : '',
-    단위: isFirstOfProduct ? item.quotation_product.product.unit : '',
-    '주문 수량': isFirstOfProduct
-      ? item.quotation_product.quantity?.toLocaleString() || '0'
-      : '',
+    품목명: isFirstOfProduct ? (
+      <span className="cursor-default">
+        {item.quotation_product.product.name}
+      </span>
+    ) : (
+      ''
+    ),
+    품목코드: isFirstOfProduct ? (
+      <span className="cursor-default">
+        {item.quotation_product.product.code}
+      </span>
+    ) : (
+      ''
+    ),
+    규격: isFirstOfProduct ? (
+      <span className="cursor-default">
+        {item.quotation_product.product.spec}
+      </span>
+    ) : (
+      ''
+    ),
+    단위: isFirstOfProduct ? (
+      <span className="cursor-default">
+        {item.quotation_product.product.unit}
+      </span>
+    ) : (
+      ''
+    ),
+    '주문 수량': isFirstOfProduct ? (
+      <span className="cursor-default">
+        {item.quotation_product.quantity?.toLocaleString() || '0'}
+      </span>
+    ) : (
+      ''
+    ),
     '생산 수량': (
       <Controller
         name="quantity"
@@ -222,7 +262,7 @@ const TableItem = ({
             }}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={operationStatus !== 'pending'}
+            disabled={isViewer || operationStatus !== 'pending'}
           />
         )}
       />
@@ -253,17 +293,19 @@ const TableItem = ({
     '생산 설비': (
       <div
         className={`flex items-center gap-2.5 ${
-          operationStatus === 'completed' ? '' : 'cursor-pointer'
+          operationStatus === 'completed' || isViewer
+            ? 'cursor-default'
+            : 'cursor-pointer'
         }`}
         onClick={(e) => {
-          if (operationStatus === 'pending') {
+          if (operationStatus === 'pending' && !isViewer) {
             e.stopPropagation();
             onFacilityClick(e, item.id);
           }
         }}
       >
         <p>{selectedEquipment.name}</p>
-        {operationStatus === 'pending' && (
+        {operationStatus === 'pending' && !isViewer && (
           <CaretDown size={16} className="text-sv" />
         )}
       </div>
@@ -293,12 +335,14 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={operationStatus !== 'pending'}
+            disabled={isViewer || operationStatus !== 'pending'}
           />
         )}
       />
     ),
-    '단위당 소요 시간': `${item.avg_production_time}초`,
+    '단위당 소요 시간': (
+      <span className="cursor-default">{item.avg_production_time}초</span>
+    ),
     '마감 예정일자': (
       <Controller
         name="end_date"
@@ -324,14 +368,14 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={operationStatus !== 'pending'}
+            disabled={isViewer || operationStatus !== 'pending'}
           />
         )}
       />
     ),
     '': (
       <div className="w-full h-full flex justify-between items-center">
-        {operationStatus === 'pending' && (
+        {operationStatus === 'pending' && !isViewer && (
           <MiniBtn
             text="저장"
             onClick={handleSave}
@@ -342,7 +386,7 @@ const TableItem = ({
             height="h-8"
           />
         )}
-        {!isFirstOfProduct && operationStatus === 'pending' && (
+        {!isFirstOfProduct && operationStatus === 'pending' && !isViewer && (
           <button
             className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-all duration-200 ease-in-out"
             onClick={() => onDelete?.(item.id)}

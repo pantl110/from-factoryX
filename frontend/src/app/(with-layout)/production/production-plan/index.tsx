@@ -11,6 +11,7 @@ import {
 } from '@/types/data-model';
 import { OperationStatusType } from '@/types/status-type';
 import usePageStatusStore from '@/store/page-status-store';
+import useMemberStore from '@/store/member-store';
 import OperationStatusDropdown from './modals/operation-status-dropdown';
 import { createPortal } from 'react-dom';
 import FacilityDropdown from './modals/facility-dropdown';
@@ -58,6 +59,10 @@ const ProductionPlan = ({
 }: ProductionPlanProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
+
+  // role 확인
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
 
   // API 호출
   const { getProjectPlans, isLoading, error } = useGetProjectPlans();

@@ -7,6 +7,7 @@ import ProfileImage from '@/ui/profile-image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
+import useMemberStore from '@/store/member-store';
 import ProfileModal from './modals/profile-modal';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 
@@ -56,6 +57,10 @@ const TopBarContent = ({
   );
   const deliveryData = usePageStatusStore((state) => state.deliveryData);
 
+  // role 확인
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const isProductionPlanSaveActive =
     productionTab === '생산 계획' &&
     pageStatus === 'pending' &&
@@ -72,14 +77,13 @@ const TopBarContent = ({
       <div className="flex gap-2">
         <MiniBtn
           text="진행 상태로 전환"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
+          variant="whiteOutline"
           onClick={() => {
             if (handleChangeStatus) {
               handleChangeStatus('delivery');
             }
           }}
+          disabled={isViewer}
         />
       </div>
     );
@@ -90,10 +94,9 @@ const TopBarContent = ({
       <>
         <MiniBtn
           text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
+          variant="whiteOutline"
           onClick={() => setIsTaxPanelOpen(true)}
+          disabled={isViewer}
         />
         {isTaxPanelOpen && (
           <TaxDetailPanel
@@ -123,18 +126,15 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <MiniBtn
             text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
+            variant="whiteOutline"
             onClick={() => setIsTaxPanelOpen(true)}
+            disabled={isViewer}
           />
           <MiniBtn
             text="다음"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            hoverColor="hover:bg-secondary-hover"
+            variant="secondary"
             onClick={onProductionPlanSaveClick}
-            disabled={!isProductionPlanSaveActive}
+            disabled={!isProductionPlanSaveActive || isViewer}
           />
         </div>
         {isTaxPanelOpen && (
@@ -165,22 +165,19 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <MiniBtn
             text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
+            variant="whiteOutline"
             onClick={() => setIsTaxPanelOpen(true)}
+            disabled={isViewer}
           />
           <MiniBtn
             text="다음"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            hoverColor="hover:bg-secondary-hover"
+            variant="secondary"
             onClick={() => {
               if (handleChangeStatus) {
                 handleChangeStatus('manufactured');
               }
             }}
-            disabled={!isAllProductionCompleted}
+            disabled={!isAllProductionCompleted || isViewer}
           />
         </div>
         {isTaxPanelOpen && (
@@ -211,19 +208,17 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <MiniBtn
             text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
+            variant="whiteOutline"
             onClick={() => setIsTaxPanelOpen(true)}
+            disabled={isViewer}
           />
 
           {isRefund && (
             <MiniBtn
               text="반품 등록"
-              textColor="text-red"
-              bgColor="bg-red-8"
-              hoverColor="hover:bg-red-hover"
+              variant="red"
               onClick={() => setAddReturnModalOpen(true)}
+              disabled={isViewer}
             />
           )}
         </div>
@@ -255,17 +250,14 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <MiniBtn
             text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
+            variant="whiteOutline"
             onClick={() => setIsTaxPanelOpen(true)}
+            disabled={isViewer}
           />
           {pageStatus === 'manufactured' && (
             <MiniBtn
               text="다음"
-              textColor="text-primary"
-              bgColor="bg-primary-8"
-              hoverColor="hover:bg-secondary-hover"
+              variant="secondary"
               onClick={async () => {
                 // 먼저 생산 내역 저장
                 if (handleProductionLogSave) {
@@ -276,7 +268,7 @@ const TopBarContent = ({
                   await handleChangeStatus('delivery');
                 }
               }}
-              disabled={!isProductionLogValid}
+              disabled={!isProductionLogValid || isViewer}
             />
           )}
         </div>
@@ -308,26 +300,23 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <MiniBtn
             text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
+            variant="whiteOutline"
             onClick={() => setIsTaxPanelOpen(true)}
+            disabled={isViewer}
           />
           <MiniBtn
             text="반품 등록"
-            textColor="text-red"
-            bgColor="bg-red-8"
-            hoverColor="hover:bg-red-hover"
+            variant="red"
             onClick={() => setAddReturnModalOpen(true)}
+            disabled={isViewer}
           />
           {pageStatus === 'delivery' && (
             <MiniBtn
               text="보관함으로 이동"
-              textColor="text-primary"
-              bgColor="bg-primary-8"
-              hoverColor="hover:bg-secondary-hover"
+              variant="secondary"
               onClick={onMoveToStorageClick}
               disabled={
+                isViewer ||
                 !deliveryData ||
                 deliveryData.some((item) => {
                   // delivery_date가 없거나 불완전한 형식이면 disabled
