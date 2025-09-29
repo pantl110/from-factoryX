@@ -6,6 +6,7 @@ interface NoHistoryBoxProps {
   height?: string;
   button?: string;
   onClick?: () => void;
+  disabled?: boolean;
 }
 
 const NoHistoryBox = ({
@@ -14,6 +15,7 @@ const NoHistoryBox = ({
   height,
   button,
   onClick,
+  disabled,
 }: NoHistoryBoxProps) => {
   return (
     <div
@@ -30,6 +32,7 @@ const NoHistoryBox = ({
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
           onClick={onClick}
+          disabled={disabled}
         />
       )}
     </div>

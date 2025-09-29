@@ -24,6 +24,7 @@ import NoHistoryBox from '@/ui/no-history-box';
 import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-modal';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 import getLastDeliveryDate from '@/utils/get-last-delivery-date';
+import useMemberStore from '@/store/member-store';
 
 const getTabsByStatus = (
   status: ProjectStatusType,
@@ -65,6 +66,9 @@ const ProductionPageContent = () => {
   const setProjectStatusData = usePageStatusStore(
     (state) => state.setProjectStatusData
   );
+
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
 
   const [isLinkTaxInvoiceModalOpen, setIsLinkTaxInvoiceModalOpen] =
     useState(false);
@@ -255,6 +259,7 @@ const ProductionPageContent = () => {
                   onClick={() => {
                     setIsLinkTaxInvoiceModalOpen(true);
                   }}
+                  disabled={isViewer}
                 />
                 {isLinkTaxInvoiceModalOpen && (
                   <LinkTaxModal
