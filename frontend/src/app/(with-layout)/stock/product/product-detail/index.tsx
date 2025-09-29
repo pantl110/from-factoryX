@@ -853,7 +853,7 @@ const ProductDetail = ({
       {projectStockHistoryModal.isOpen && (
         <ProjectStockHistoryModal
           projectId={projectStockHistoryModal.projectId}
-          productId={productId}
+          productId={productId ?? undefined}
           onClose={() =>
             setProjectStockHistoryModal({ isOpen: false, projectId: undefined })
           }

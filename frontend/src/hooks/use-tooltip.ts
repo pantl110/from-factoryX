@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-export interface UseTooltipOptions {
+export interface UseTooltipOptionsModel {
   /**
    * 호버 시작 후 툴팁이 나타나기까지의 지연 시간 (ms)
    * @default 300
@@ -13,7 +13,7 @@ export interface UseTooltipOptions {
   hideDelay?: number;
 }
 
-export interface UseTooltipReturn {
+export interface UseTooltipReturnModel {
   /** 툴팁이 현재 보이는지 여부 */
   isVisible: boolean;
   /** 호버 시작 시 호출할 핸들러 */
@@ -29,9 +29,11 @@ export interface UseTooltipReturn {
 /**
  * 호버 시 툴팁을 표시하는 기능을 제공하는 훅
  */
-export const useTooltip = (options: UseTooltipOptions = {}): UseTooltipReturn => {
+export const useTooltip = (
+  options: UseTooltipOptionsModel = {}
+): UseTooltipReturnModel => {
   const { showDelay = 300, hideDelay = 100 } = options;
-  
+
   const [isVisible, setIsVisible] = useState(false);
   const [showTimeout, setShowTimeout] = useState<NodeJS.Timeout | null>(null);
   const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -59,23 +61,23 @@ export const useTooltip = (options: UseTooltipOptions = {}): UseTooltipReturn =>
 
   const onMouseEnter = useCallback(() => {
     clearTimeouts();
-    
+
     const timeout = setTimeout(() => {
       setIsVisible(true);
       setShowTimeout(null);
     }, showDelay);
-    
+
     setShowTimeout(timeout);
   }, [clearTimeouts, showDelay]);
 
   const onMouseLeave = useCallback(() => {
     clearTimeouts();
-    
+
     const timeout = setTimeout(() => {
       setIsVisible(false);
       setHideTimeout(null);
     }, hideDelay);
-    
+
     setHideTimeout(timeout);
   }, [clearTimeouts, hideDelay]);
 

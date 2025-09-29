@@ -11,6 +11,7 @@ export interface ProductHistoryFilterModel {
   project_id?: number; // 프로젝트 ID (선택)
   page?: number; // 페이지 번호
   page_size?: number; // 페이지 크기
+  is_canceled?: boolean; // 취소 여부
 }
 
 const useProductHistory = () => {
@@ -20,46 +21,6 @@ const useProductHistory = () => {
     ProductHistoryResponseModel | ProductHistoryListResponseModel | null
   >(null);
   const factoryId = useMemberStore((state) => state.factoryId);
-
-  // Create product history 제품 입출고 내역 등록
-  // const createProductHistory = useCallback(
-  //   async (payload: ProductHistoryModel) => {
-  //     setIsLoading(true);
-  //     setError(null);
-  //
-  //     if (!factoryId) {
-  //       setError('공장 정보가 없습니다.');
-  //       setIsLoading(false);
-  //       return { success: false, error: '공장 정보가 없습니다.' };
-  //     }
-  //
-  //     try {
-  //       const res = await fetch(
-  //         `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history?factory_id=${factoryId}`,
-  //         {
-  //           method: 'POST',
-  //           credentials: 'include',
-  //           headers: { 'Content-Type': 'application/json' },
-  //           body: JSON.stringify(payload),
-  //         }
-  //       );
-  //       const result = await res.json();
-  //       if (res.status === 201) {
-  //         setData(result);
-  //         return { success: true, data: result };
-  //       } else {
-  //         setError(result.message || '등록에 실패했습니다.');
-  //         return { success: false, error: result.message };
-  //       }
-  //     } catch {
-  //       setError('서버 연결에 실패했습니다.');
-  //       return { success: false, error: '서버 연결에 실패했습니다.' };
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   },
-  //   [factoryId]
-  // );
 
   // List product histories (paginated)제품 입출고 이력 목록 조회
   const listProductHistories = useCallback(
@@ -79,11 +40,13 @@ const useProductHistory = () => {
           page_size: pageSize,
           product_id: productIdParam,
           project_id: projectIdParam,
+          is_canceled: isCanceledParam,
         } = filters as Record<string, unknown> as {
           page?: number;
           page_size?: number;
           product_id?: number | null;
           project_id?: number;
+          is_canceled?: boolean;
         };
 
         const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product/history`;
@@ -92,6 +55,7 @@ const useProductHistory = () => {
             factory_id: factoryId,
             product_id: productIdParam ?? undefined,
             project_id: projectIdParam,
+            is_canceled: isCanceledParam,
             page,
             page_size: pageSize,
           },

@@ -14,7 +14,7 @@ import {
 import { ClientResponseModel } from '@/types/data-model';
 
 interface ClientInfoModalProps {
-  onClose?: () => void;
+  onClose: () => void;
   onNext: (client: ClientModel) => void;
 }
 

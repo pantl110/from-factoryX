@@ -17,7 +17,7 @@ import { useForm } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 
 interface MaterialEnrollmentProps {
-  onClose?: () => void;
+  onClose: () => void;
   clientInfo: ClientModel;
   showToast: () => void;
 }

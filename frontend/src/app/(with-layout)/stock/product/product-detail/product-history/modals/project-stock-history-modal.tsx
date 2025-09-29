@@ -39,7 +39,7 @@ const ProjectStockHistoryModal = ({
         product_id: productId,
         page: currentPage,
         page_size: 8,
-        // is cancelled true로 가져오기
+        is_canceled: true,
       });
     }
   }, [projectId, productId, currentPage, listProductHistories]);
@@ -104,10 +104,15 @@ const ProjectStockHistoryModal = ({
               </div>
             </>
           ) : (
-            <NoHistoryBox
-              title="수정된 재고 내역이 아직 없어요."
-              text="재고 내역이 수정되면 이곳에서 확인할 수 있어요."
-            />
+            <>
+              <NoHistoryBox
+                text="재고 내역이 수정되면 이곳에서 확인할 수 있어요."
+                height="h-25"
+              />
+              <div className="flex justify-end mt-4 mb-4">
+                <MiniBtn text="닫기" variant="primary" onClick={onClose} />
+              </div>
+            </>
           )}
         </div>
       )}

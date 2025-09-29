@@ -17,7 +17,7 @@ const ProductionPlanSaveModal = ({
       title="저장 후 계속 진행할까요?"
       subtitle={`수정 내용을 저장하고 다음 단계로 진행할까요?
         저장된 정보는 이후 생산 일정과 작업 흐름에 반영돼요.`}
-      onClose={isLoading ? undefined : onClose}
+      onClose={isLoading ? () => {} : onClose}
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn

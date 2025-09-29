@@ -15,29 +15,27 @@ const ProductStockLogItem = ({
   setIsProjectStockHistoryModalOpen,
 }: ProductStockLogItemProps) => {
   const {
-    created_at,
-    client_name,
-    production_quantity,
-    delivery_quantity,
-    total_stock,
-    project_id,
+    created_at: createdAt,
+    client_name: clientName,
+    production_quantity: productionQuantity,
+    delivery_quantity: deliveryQuantity,
+    total_stock: totalStock,
+    project_id: projectId,
   } = item;
 
   return (
     <>
       <div className="flex items-center h-14 border-b border-lg Me_Body-1">
-        <p className="flex-1 px-3 text-dg">{created_at.split('T')[0]}</p>
-        <p className="flex-1 px-3 text-dg">{client_name}</p>
+        <p className="flex-1 px-3 text-dg">{createdAt.split('T')[0]}</p>
+        <p className="flex-1 px-3 text-dg">{clientName}</p>
         <p className="flex-1 px-3 text-primary">
-          {production_quantity
-            ? '+' + production_quantity.toLocaleString()
-            : '-'}
+          {productionQuantity ? '+' + productionQuantity.toLocaleString() : '-'}
         </p>
         <p className="flex-1 px-3 text-red">
-          {delivery_quantity ? '-' + delivery_quantity.toLocaleString() : '-'}
+          {deliveryQuantity ? '-' + deliveryQuantity.toLocaleString() : '-'}
         </p>
         <p className="flex-1 px-3 text-dg">
-          {total_stock ? total_stock.toLocaleString() : '-'}
+          {totalStock ? totalStock.toLocaleString() : '-'}
         </p>
         <div className="flex-1 px-3 text-dg">
           <IconBtn
@@ -45,7 +43,7 @@ const ProductStockLogItem = ({
             onClick={() => {
               setIsProjectStockHistoryModalOpen({
                 isOpen: true,
-                projectId: project_id,
+                projectId,
               });
             }}
           />

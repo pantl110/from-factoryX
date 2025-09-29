@@ -2,8 +2,8 @@ import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 
 interface StartProductionModalProps {
-  onClose?: () => void;
-  onClick?: () => void;
+  onClose: () => void;
+  onClick: () => void;
   isLoading?: boolean;
 }
 

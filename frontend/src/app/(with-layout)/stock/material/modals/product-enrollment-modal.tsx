@@ -15,7 +15,7 @@ import useMemberStore from '@/store/member-store';
 import ConnetionItem from '../../modals/connetion-item';
 
 interface ProductEnrollmentModalProps {
-  onClose?: () => void;
+  onClose: () => void;
   materialId: number;
   onSuccess?: () => void;
   checkDuplicateProductCode?: (
