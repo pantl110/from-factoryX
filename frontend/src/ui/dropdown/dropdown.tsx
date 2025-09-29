@@ -54,9 +54,16 @@ const Dropdown = ({
     };
   }, [onClose]);
 
-  // 외부 스크롤 시 닫기
+  // 외부 스크롤 시 닫기 (드롭다운 내부 스크롤 제외)
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = (event: Event) => {
+      // 드롭다운 내부에서 발생한 스크롤은 무시
+      if (
+        dropdownRef.current &&
+        dropdownRef.current.contains(event.target as Node)
+      ) {
+        return;
+      }
       onClose();
     };
 
@@ -100,7 +107,7 @@ const Dropdown = ({
     <div
       ref={dropdownRef}
       className={`shadow-[0px_0px_8px_0px_rgba(0,0,0,0.12)] ${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} rounded-lg ${padding} bg-white z-30 ${className} ${
-        maxHeight ? 'max-h-[256px] overflow-y-auto scrollbar-hide' : ''
+        maxHeight ? 'max-h-[304px] overflow-y-auto scrollbar-hide' : ''
       }`}
       style={style}
     >

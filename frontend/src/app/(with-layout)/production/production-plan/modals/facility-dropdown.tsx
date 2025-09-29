@@ -20,9 +20,12 @@ const FacilityDropdown = ({
     onClose();
   };
 
+  // 6개 이상일 때 스크롤 적용
+  const shouldUseScroll = equipments.length > 6;
+
   return (
     <div style={{ ...style, minWidth: style?.width }} className="w-fit">
-      <Dropdown onClose={onClose} width="w-full">
+      <Dropdown onClose={onClose} width="w-full" maxHeight={shouldUseScroll}>
         {equipments.length > 0 &&
           equipments.map((equipment) => (
             <DropdownItem
