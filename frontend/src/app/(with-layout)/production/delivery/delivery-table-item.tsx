@@ -14,6 +14,7 @@ import { useDebounce } from 'use-debounce';
 import { useUpdateQuotationProductDelivery } from '@/hooks/document/quotation/use-update-quotation-product-delivery';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
+import useMemberStore from '@/store/member-store';
 
 interface DeliveryTableItemProps {
   data: ProjectQuotationProductsModel;
@@ -39,6 +40,9 @@ const DeliveryTableItem = ({
   onDeliveryDateChange,
   onDeliveryStatusChange,
 }: DeliveryTableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const {
     id: quotationProductId,
     quantity,
@@ -219,8 +223,10 @@ const DeliveryTableItem = ({
             text={deliveryStatus}
             bgColor={bgColor}
             textColor={textColor}
-            state={isEditable}
-            onClick={isEditable ? (e) => e && openDropdown(e) : undefined}
+            state={isEditable && !isViewer}
+            onClick={
+              isEditable && !isViewer ? (e) => e && openDropdown(e) : undefined
+            }
           />
         </div>
         <div
@@ -235,25 +241,25 @@ const DeliveryTableItem = ({
           </p>
         </div>
         <p
-          className="flex-1 px-3 text-dg Me_Body-1 truncate"
+          className="flex-1 px-3 text-dg Me_Body-1 truncate cursor-default"
           title={productCode || '-'}
         >
           {productCode || '-'}
         </p>
         <p
-          className="flex-1 px-3 text-dg Me_Body-1 truncate"
+          className="flex-1 px-3 text-dg Me_Body-1 truncate cursor-default"
           title={productSpec || '-'}
         >
           {productSpec || '-'}
         </p>
         <p
-          className="w-[80px] px-3 text-dg Me_Body-1 truncate"
+          className="w-[80px] px-3 text-dg Me_Body-1 truncate cursor-default"
           title={productUnit || '-'}
         >
           {productUnit || '-'}
         </p>
         <p
-          className="flex-1 px-3 text-dg Me_Body-1 truncate"
+          className="flex-1 px-3 text-dg Me_Body-1 truncate cursor-default"
           title={quantity.toLocaleString()}
         >
           {quantity.toLocaleString()}
@@ -275,28 +281,15 @@ const DeliveryTableItem = ({
                 type="text"
                 placeholder="YYYY-MM-DD"
                 className="text-dg Me_Body-1 focus:outline-none w-full"
-                disabled={projectStatus === 'completed' || isLoading}
+                disabled={
+                  projectStatus === 'completed' || isLoading || isViewer
+                }
                 onChange={handleDateInput}
                 maxLength={10}
               />
             )}
           />
         </div>
-        {/* {projectStatus !== 'completed' && (
-          <div className="w-[150px] px-3">
-            <MiniBtn
-              text="저장"
-              textColor="text-dg"
-              borderColor="border-lg"
-              hoverColor="hover:bg-bg"
-              height="h-8"
-              onClick={handleSaveClick}
-              disabled={
-                isLoading || !formState.isValid || watchedDate === savedDate
-              }
-            />
-          </div>
-        )} */}
       </div>
       {isOpen && anchorRect && (
         <DeliveryStateDropdown
