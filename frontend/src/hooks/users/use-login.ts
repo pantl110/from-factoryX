@@ -114,17 +114,30 @@ export const useLogin = (): UseLoginReturnModel => {
                       );
 
                       if (subscriptionResponse.ok) {
-                        const subscriptionData = await subscriptionResponse.json();
+                        const subscriptionData =
+                          await subscriptionResponse.json();
 
                         if (subscriptionData.subscription_history) {
                           setSubscription({
                             id: subscriptionData.subscription_history.id || 0,
-                            created_at: subscriptionData.subscription_history.created_at || new Date().toISOString(),
-                            updated_at: subscriptionData.subscription_history.updated_at || new Date().toISOString(),
-                            start_date: subscriptionData.subscription_history.start_date || new Date().toISOString().split('T')[0],
-                            end_date: subscriptionData.subscription_history.end_date || new Date().toISOString().split('T')[0],
-                            is_canceled: subscriptionData.subscription_history.is_canceled || false,
-                            type: subscriptionData.subscription_history.subscription?.type,
+                            created_at:
+                              subscriptionData.subscription_history
+                                .created_at || new Date().toISOString(),
+                            updated_at:
+                              subscriptionData.subscription_history
+                                .updated_at || new Date().toISOString(),
+                            start_date:
+                              subscriptionData.subscription_history
+                                .start_date ||
+                              new Date().toISOString().split('T')[0],
+                            end_date:
+                              subscriptionData.subscription_history.end_date ||
+                              new Date().toISOString().split('T')[0],
+                            is_canceled:
+                              subscriptionData.subscription_history
+                                .is_canceled || false,
+                            type: subscriptionData.subscription_history
+                              .subscription?.type,
                             is_active: subscriptionData.is_active || false,
                           });
                         }

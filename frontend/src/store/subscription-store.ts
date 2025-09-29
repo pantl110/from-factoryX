@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface SubscriptionInfo {
+interface SubscriptionInfoModel {
   id: number;
   created_at: string;
   updated_at: string;
@@ -13,8 +13,8 @@ interface SubscriptionInfo {
 }
 
 interface SubscriptionStoreModel {
-  subscription: SubscriptionInfo | null;
-  setSubscription: (subscription: SubscriptionInfo) => void;
+  subscription: SubscriptionInfoModel | null;
+  setSubscription: (subscription: SubscriptionInfoModel) => void;
   clearSubscription: () => void;
   isPartnersSubscription: () => boolean;
   isActiveSubscription: () => boolean;
@@ -24,11 +24,11 @@ const useSubscriptionStore = create<SubscriptionStoreModel>()(
   persist(
     (set, get) => ({
       subscription: null,
-      
+
       setSubscription: (subscription) => {
         set({ subscription });
       },
-      
+
       clearSubscription: () => {
         set({ subscription: null });
         // localStorage에서도 제거
@@ -36,14 +36,16 @@ const useSubscriptionStore = create<SubscriptionStoreModel>()(
           localStorage.removeItem('subscription-storage');
         }
       },
-      
+
       isPartnersSubscription: () => {
-        const subscription = get().subscription;
-        return subscription?.type === 'partners' && subscription?.is_active === true;
+        const { subscription } = get();
+        return (
+          subscription?.type === 'partners' && subscription?.is_active === true
+        );
       },
-      
+
       isActiveSubscription: () => {
-        const subscription = get().subscription;
+        const { subscription } = get();
         return subscription?.is_active === true && !subscription?.is_canceled;
       },
     }),
