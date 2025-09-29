@@ -8,19 +8,24 @@ import { PermissionRoleType } from './types';
 import { useState, useEffect } from 'react';
 import InviteModal from './modals/invite-modal';
 import DeleteTeamMemberModal from './modals/delete-team-member-modal';
-import useGetMembers from '@/hooks/factory/factory-member/use-get-members';
-import useDeleteMember from '@/hooks/factory/factory-member/use-delete-member';
-import { useGetFactory } from '@/hooks/factory/use-get-factory';
 import useMemberStore from '@/store/member-store';
 import Spinner from '@/ui/spinner';
 import Tooltip from '@/ui/tooltip';
 import NoHistoryBox from '@/ui/no-history-box';
-
+import {
+  useTooltip,
+  useGetMembers,
+  useDeleteMember,
+  useGetFactory,
+} from '@/hooks';
 const Permission = () => {
   const role = useMemberStore((state) => state.role);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // 툴팁 훅
+  const tooltip = useTooltip({});
 
   const factoryId = useMemberStore((state) => state.factoryId);
   const initializeFactoryId = useMemberStore(
@@ -138,7 +143,7 @@ const Permission = () => {
           <div className="flex items-center justify-between w-full">
             <h3 className="Heading-3">팀원 권한</h3>
             <div className="flex gap-2.5">
-              <div className="relative group">
+              <div className="relative">
                 <MiniBtn
                   text="초대하기"
                   textColor="text-primary"
@@ -148,9 +153,15 @@ const Permission = () => {
                   }}
                   hoverColor="hover:bg-secondary-hover"
                   disabled={!isFactoryInfoComplete || role === 'viewer'}
+                  onMouseEnter={
+                    !isFactoryInfoComplete ? tooltip.onMouseEnter : undefined
+                  }
+                  onMouseLeave={
+                    !isFactoryInfoComplete ? tooltip.onMouseLeave : undefined
+                  }
                 />
-                {!isFactoryInfoComplete && (
-                  <div className="absolute w-[400px] flex justify-end top-12 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                {!isFactoryInfoComplete && tooltip.isVisible && (
+                  <div className="absolute w-[400px] flex justify-end top-12 right-0 z-10">
                     <Tooltip
                       color="red"
                       text="팀원을 초대 전, 회사정보(필수 항목)를 먼저 입력해주세요."

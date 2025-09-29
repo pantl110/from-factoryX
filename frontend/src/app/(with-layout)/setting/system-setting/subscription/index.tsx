@@ -27,7 +27,7 @@ import {
 } from '@/types/data-model';
 
 const Subscription = () => {
-  const { factoryId } = useMemberStore();
+  const { factoryId, role } = useMemberStore();
   const { getFactory, factory } = useGetFactory();
   const { getSubscriptionStatus, subscriptionStatus } =
     useGetSubscriptionStatus();
@@ -43,6 +43,7 @@ const Subscription = () => {
   const [isRefundPolicyModalOpen, setIsRefundPolicyModalOpen] = useState(false);
 
   const planTypes: PlanType[] = ['BASIC', 'PARTNERS'];
+  const isAdmin = role === 'admin';
 
   useEffect(() => {
     if (factoryId) {
@@ -79,6 +80,12 @@ const Subscription = () => {
   };
 
   const handleSubscribe = async (type: PlanType) => {
+    // admin이 아니면 권한 없음
+    if (!isAdmin) {
+      alert('구독 관리는 시스템 관리자만 가능합니다.');
+      return;
+    }
+
     // 카드가 없으면 등록 플로우로 이동
     if (!paymentAuth?.billing_key) {
       await registerCard(type);
@@ -105,6 +112,12 @@ const Subscription = () => {
   };
 
   const registerCard = async (type?: PlanType) => {
+    // admin이 아니면 권한 없음
+    if (!isAdmin) {
+      alert('카드 관리는 시스템 관리자만 가능합니다.');
+      return;
+    }
+
     try {
       if (!factoryId) {
         alert('공장을 선택해주세요.');
@@ -139,6 +152,12 @@ const Subscription = () => {
   };
 
   const handleDeleteCard = async () => {
+    // admin이 아니면 권한 없음
+    if (!isAdmin) {
+      alert('카드 관리는 시스템 관리자만 가능합니다.');
+      return;
+    }
+
     if (!factoryId) return;
     try {
       const result = await deleteBillingKey();
@@ -192,6 +211,7 @@ const Subscription = () => {
             isLoading={isSubscribeLoading}
             refreshSubscriptionData={refreshSubscriptionData}
             hasScheduledSubscription={hasScheduledSubscription}
+            isAdmin={isAdmin}
           />
         ))}
       </div>
@@ -202,6 +222,7 @@ const Subscription = () => {
         registerCard={registerCard}
         setIsChangeModalOpen={setIsChangeModalOpen}
         setIsCardDeleteModalOpen={setIsCardDeleteModalOpen}
+        isAdmin={isAdmin}
       />
 
       {/* 결제 내역 */}

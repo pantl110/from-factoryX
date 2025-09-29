@@ -16,6 +16,7 @@ interface PlanItemProps {
   isLoading: boolean;
   refreshSubscriptionData: () => void;
   hasScheduledSubscription: boolean;
+  isAdmin: boolean;
 }
 
 const PlanItem = ({
@@ -25,6 +26,7 @@ const PlanItem = ({
   isLoading,
   refreshSubscriptionData,
   hasScheduledSubscription,
+  isAdmin,
 }: PlanItemProps) => {
   const info = PLAN_INFO[type];
   const subscriptionType =
@@ -97,7 +99,7 @@ const PlanItem = ({
                 text="구독 예정 취소"
                 variant="red"
                 onClick={handleCancelScheduledSubscription}
-                disabled={isCancelScheduledLoading}
+                disabled={!isAdmin || isCancelScheduledLoading}
               />
             )
           ) : // hasScheduledSubscription이 false일 때
@@ -108,12 +110,14 @@ const PlanItem = ({
                 text="해지 취소"
                 variant="red"
                 onClick={handleSubscribe}
+                disabled={!isAdmin}
               />
             ) : (
               <MiniBtn
                 text="구독 해지"
                 variant="secondary"
                 onClick={() => setIsCancelSubscriptionModalOpen(true)}
+                disabled={!isAdmin}
               />
             )
           ) : (
@@ -122,6 +126,7 @@ const PlanItem = ({
               text="구독"
               variant="primary"
               onClick={() => setIsSubscribeModalOpen(true)}
+              disabled={!isAdmin}
             />
           )}
         </div>

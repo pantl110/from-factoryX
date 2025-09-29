@@ -6,6 +6,7 @@ interface RegisterCardProps {
   registerCard: () => void;
   setIsChangeModalOpen: (isOpen: boolean) => void;
   setIsCardDeleteModalOpen: (isOpen: boolean) => void;
+  isAdmin: boolean;
 }
 
 const RegisterCard = ({
@@ -13,6 +14,7 @@ const RegisterCard = ({
   registerCard,
   setIsChangeModalOpen,
   setIsCardDeleteModalOpen,
+  isAdmin,
 }: RegisterCardProps) => {
   return (
     <div className="flex flex-col gap-4">
@@ -26,6 +28,7 @@ const RegisterCard = ({
               ? () => setIsChangeModalOpen(true)
               : registerCard
           }
+          disabled={!isAdmin}
         />
       </div>
 
@@ -41,6 +44,7 @@ const RegisterCard = ({
               bgColor="bg-red-8"
               hoverColor="hover:bg-red-hover"
               onClick={() => setIsCardDeleteModalOpen(true)}
+              disabled={!isAdmin}
             />
           </>
         ) : (
