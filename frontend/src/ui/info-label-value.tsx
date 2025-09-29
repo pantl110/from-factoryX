@@ -128,7 +128,7 @@ const InfoLabelValue = ({
 
   return (
     <div className="flex w-full Me_Body-1 border-t border-lg">
-      <div className="w-[137px] bg-lg-table flex gap-2 p-3">
+      <div className="w-[137px] bg-lg-table flex gap-2 p-3 cursor-default">
         <div className="text-sv">{label}</div>
         {required && isEditing && <div className="text-sv">*</div>}
       </div>

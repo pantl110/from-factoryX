@@ -11,6 +11,8 @@ import {
   handleNumberKeyDown,
   handleQuantityInput,
 } from '@/hooks/format-number';
+import IconBtn from '@/ui/icon-btn';
+import useMemberStore from '@/store/member-store';
 
 interface StockStatusItemProps {
   connection: MaterialProductConnectionModel;
@@ -36,6 +38,9 @@ const StockStatusItem = ({
   isStagedMode,
   onStagedQuantityChange,
 }: StockStatusItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   // 각 아이템별로 독립적인 form 생성
   const materialQuantityForm = useForm<{
     quantity: number;
@@ -151,33 +156,34 @@ const StockStatusItem = ({
   return (
     <div className="flex items-center h-14 border-b border-lg Me_Body-1 group hover:border hover:border-primary">
       <div
-        className="h-full flex-1 px-3 text-dg truncate flex items-center gap-1"
+        className="h-full flex-1 px-3 text-dg truncate flex items-center justify-between gap-1"
         title={connection.material_name}
       >
-        <p className="truncate">{connection.material_name}</p>
-        <button
-          className="w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 ease-in-out rounded-[8px] hover:bg-bg"
+        <p className="truncate cursor-default">{connection.material_name}</p>
+        <IconBtn
+          icon={ArrowLineUpRight}
+          size="w-9 h-9"
+          iconSize={16}
           onClick={() => {
             setMaterialId(connection.material_id);
           }}
-        >
-          <ArrowLineUpRight size={16} className="text-dg" />
-        </button>
+          groupHover={true}
+        />
       </div>
       <p
-        className="flex-1 px-3 text-dg truncate"
+        className="flex-1 px-3 text-dg truncate cursor-default"
         title={connection.material_code || '-'}
       >
         {connection.material_code || '-'}
       </p>
       <p
-        className="flex-1 px-3 text-dg truncate"
+        className="flex-1 px-3 text-dg truncate cursor-default"
         title={connection.material_spec || '-'}
       >
         {connection.material_spec || '-'}
       </p>
       <p
-        className="flex-[0.5] px-3 text-dg truncate"
+        className="flex-[0.5] px-3 text-dg truncate cursor-default"
         title={connection.material_unit || '-'}
       >
         {connection.material_unit || '-'}
@@ -203,6 +209,7 @@ const StockStatusItem = ({
           setDisplayValue(formatNumberWithCommas(numberValue));
         }}
         onKeyDown={handleNumberKeyDown}
+        disabled={isViewer}
       />
       <div className="flex-[0.8] px-3 text-dg flex justify-between">
         {status === '부족' || status === '충분' ? (
@@ -219,12 +226,15 @@ const StockStatusItem = ({
           <p className="text-dg">-</p>
         )}
       </div>
-      <button
-        className="w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 ease-in-out rounded-[8px] hover:bg-bg"
-        onClick={handleDeleteConnection}
-      >
-        <X size={16} className="text-dg" />
-      </button>
+      {!isViewer && (
+        <IconBtn
+          icon={X}
+          size="w-9 h-9"
+          iconSize={16}
+          onClick={handleDeleteConnection}
+          groupHover={true}
+        />
+      )}
     </div>
   );
 };

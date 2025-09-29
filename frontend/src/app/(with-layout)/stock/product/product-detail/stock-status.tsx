@@ -4,6 +4,7 @@ import {
   ProductMaterialConnectionModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
+import useMemberStore from '@/store/member-store';
 
 type ConnectionModelType =
   | MaterialProductConnectionModel
@@ -32,18 +33,21 @@ const StockStatus = ({
   isStagedMode,
   onStagedQuantityChange,
 }: StockStatusProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   return (
     <>
       {connections && Array.isArray(connections) && connections.length > 0 ? (
         <div>
-          <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+          <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
             <p className="flex-1 px-3 text-sv">자재명</p>
             <p className="flex-1 px-3 text-sv">자재 코드</p>
             <p className="flex-1 px-3 text-sv">규격</p>
             <p className="flex-[0.5] px-3 text-sv">단위</p>
             <p className="flex-[0.5] px-3 text-sv">사용 수량</p>
             <p className="flex-[0.8] px-3 text-sv">자재 재고 상태</p>
-            <div className="w-9" />
+            {!isViewer && <div className="w-9" />}
           </div>
 
           {connections.map((connection: ConnectionModelType, index: number) => {

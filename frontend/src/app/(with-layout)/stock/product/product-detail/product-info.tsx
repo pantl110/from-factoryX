@@ -73,12 +73,12 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="품목명"
                 placeholder="(필수) 품목명을 입력하세요."
-                isEditing={!isViewer}
                 required
                 value={field.value}
                 onChange={(e) => {
                   field.onChange(e);
                 }}
+                disabled={isViewer}
               />
             )}
           />
@@ -90,12 +90,12 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="품목 코드"
                 placeholder="(필수) 품목 코드를 입력하세요."
-                isEditing={!isViewer}
                 required
                 value={field.value}
                 onChange={(e) => {
                   field.onChange(e);
                 }}
+                disabled={isViewer}
               />
             )}
           />
@@ -109,7 +109,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="규격"
                 placeholder="(필수) 규격을 입력하세요."
-                isEditing={!isViewer}
+                disabled={isViewer}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -126,7 +126,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="단위"
                 placeholder="(필수) 단위를 입력하세요."
-                isEditing={!isViewer}
+                disabled={isViewer}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -152,7 +152,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                           .toString()
                           .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                 }
-                isEditing={!isViewer}
+                disabled={isViewer}
                 placeholder="현재 재고 수량을 입력하세요."
                 inputType="text"
                 onChange={(e) => {
@@ -184,7 +184,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                     ? '-'
                     : `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}초`
                 }
-                isEditing={false}
+                disabled={isViewer}
                 inputType="text"
               />
             )}
@@ -197,7 +197,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
             <InfoLabelValue
               label="특이사항"
               value={field.value || ''}
-              isEditing={!isViewer}
+              disabled={isViewer}
               textarea={true}
               placeholder="특이사항을 입력하세요."
               onChange={(e) => {

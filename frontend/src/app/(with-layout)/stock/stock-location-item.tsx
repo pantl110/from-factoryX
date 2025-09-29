@@ -3,6 +3,7 @@ import MiniBtn from '@/ui/mini-btn';
 import { Plus, X } from '@phosphor-icons/react';
 import { Controller, Control, UseFormSetValue } from 'react-hook-form';
 import Image from 'next/image';
+import useMemberStore from '@/store/member-store';
 
 interface LocationFormModel {
   locations: {
@@ -29,10 +30,14 @@ const StockLocationItem = ({
   images = [],
   setValue,
 }: StockLocationItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const handleRemoveImage = (removeIdx: number) => {
     const newImages = images.filter((_, i) => i !== removeIdx);
     setValue(`locations.${index}.images`, newImages, { shouldDirty: true });
   };
+
   return (
     <div className="p-4 flex flex-col gap-4 rounded-[8px] border border-lg ">
       <Controller
@@ -43,6 +48,7 @@ const StockLocationItem = ({
             {...field}
             placeholder="품목이 있는 창고 위치를 입력하세요."
             label="창고 위치"
+            disabledReadOnly={isViewer}
           />
         )}
       />
@@ -59,16 +65,18 @@ const StockLocationItem = ({
                 quality={100}
                 unoptimized={true}
               />
-              <div className="rounded-bl-[8px] rounded-tr-[8px] bg-bg opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out absolute top-0 right-0 cursor-pointer w-8 h-8 flex items-center justify-center">
-                <X
-                  size={16}
-                  className="text-sv"
-                  onClick={() => handleRemoveImage(i)}
-                />
-              </div>
+              {!isViewer && (
+                <div className="rounded-bl-[8px] rounded-tr-[8px] bg-bg opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out absolute top-0 right-0 cursor-pointer w-8 h-8 flex items-center justify-center">
+                  <X
+                    size={16}
+                    className="text-sv"
+                    onClick={() => handleRemoveImage(i)}
+                  />
+                </div>
+              )}
             </div>
           ))}
-          {images?.length < 9 && (
+          {images?.length < 9 && !isViewer && (
             <div
               className="w-20 h-20 bg-primary-8 flex items-center justify-center rounded-[8px] cursor-pointer"
               onClick={openUploadModal}
@@ -78,13 +86,15 @@ const StockLocationItem = ({
           )}
         </div>
 
-        <MiniBtn
-          text="삭제"
-          textColor="text-red"
-          bgColor="bg-red-8"
-          hoverColor="hover:bg-red-hover"
-          onClick={() => remove(index)}
-        />
+        {!isViewer && (
+          <MiniBtn
+            text="삭제"
+            textColor="text-red"
+            bgColor="bg-red-8"
+            hoverColor="hover:bg-red-hover"
+            onClick={() => remove(index)}
+          />
+        )}
       </div>
     </div>
   );
