@@ -33,6 +33,7 @@ interface InfoLabelValueProps {
   textarea?: boolean;
   required?: boolean;
   register?: UseFormRegisterReturn;
+  disabled?: boolean;
 }
 
 const InfoLabelValue = ({
@@ -49,6 +50,7 @@ const InfoLabelValue = ({
   textarea = false,
   required = false,
   register,
+  disabled = false,
 }: InfoLabelValueProps) => {
   const colors = chip
     ? chip.status in TaxDocumentTypeColorMap
@@ -84,11 +86,12 @@ const InfoLabelValue = ({
             value={typeof value === 'string' ? value : ''}
             placeholder={placeholder}
             onChange={register?.onChange || handleChange || onChange}
-            className="w-full placeholder:text-gr"
+            className="w-full placeholder:text-gr disabled:default"
             style={{ outline: 'none' }}
             onFocus={onFocus}
             onBlur={onBlur}
             ref={register?.ref}
+            disabled={disabled}
           />
         </div>
       );
@@ -130,7 +133,9 @@ const InfoLabelValue = ({
         {required && isEditing && <div className="text-sv">*</div>}
       </div>
       <div className="flex-1 flex items-center">
-        <div className="text-dg px-3 flex-1 flex items-center">
+        <div
+          className={`text-dg px-3 flex-1 flex items-center ${disabled ? 'cursor-default' : ''}`}
+        >
           {renderContent()}
         </div>
       </div>

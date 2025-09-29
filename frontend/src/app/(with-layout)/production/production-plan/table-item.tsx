@@ -19,6 +19,7 @@ import { formatDateTime } from '@/hooks/format-number';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
+import IconBtn from '@/ui/icon-btn';
 
 // Form 데이터 타입 정의
 interface ProductionPlanFormDataModel {
@@ -281,19 +282,25 @@ const TableItem = ({
           }
         />
         {materialStatus === '부족' && operationStatus !== 'completed' && (
-          <div
-            className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
+          // <div
+          //   className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center "
+          //   onClick={() => setIsProductDetailOpen(true)}
+          // >
+          //   <ArrowLineUpRight size={16} className="text-dg" />
+          // </div>
+          <IconBtn
+            icon={ArrowLineUpRight}
+            iconSize={16}
             onClick={() => setIsProductDetailOpen(true)}
-          >
-            <ArrowLineUpRight size={16} className="text-dg" />
-          </div>
+            groupHover={true}
+          />
         )}
       </div>
     ),
     '생산 설비': (
       <div
-        className={`flex items-center gap-2.5 ${
-          operationStatus === 'completed' || isViewer
+        className={`flex items-center gap-2.5 justify-between ${
+          operationStatus !== 'pending' || isViewer
             ? 'cursor-default'
             : 'cursor-pointer'
         }`}
@@ -304,9 +311,11 @@ const TableItem = ({
           }
         }}
       >
-        <p>{selectedEquipment.name}</p>
+        <p className="truncate" title={selectedEquipment.name}>
+          {selectedEquipment.name}
+        </p>
         {operationStatus === 'pending' && !isViewer && (
-          <CaretDown size={16} className="text-sv" />
+          <CaretDown size={16} className="text-sv shrink-0" />
         )}
       </div>
     ),

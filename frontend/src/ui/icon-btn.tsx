@@ -4,16 +4,26 @@ import { IconProps } from '@phosphor-icons/react';
 interface IconBtnProps {
   icon: ComponentType<IconProps>;
   size?: string;
+  iconSize?: number;
   onClick: () => void;
+  className?: string;
+  groupHover?: boolean;
 }
 
-const IconBtn = ({ icon: Icon, onClick, size = 'w-9 h-9' }: IconBtnProps) => {
+const IconBtn = ({
+  icon: Icon,
+  onClick,
+  size = 'w-9 h-9',
+  iconSize = 24,
+  className,
+  groupHover,
+}: IconBtnProps) => {
   return (
     <button
-      className={`flex items-center justify-center ${size} rounded-[8px] hover:bg-bg transition-colors duration-200`}
+      className={`${className} flex items-center justify-center ${size} rounded-[8px] hover:bg-bg transition-colors duration-200 ${groupHover ? `opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out` : ''}`}
       onClick={onClick}
     >
-      <Icon size={24} className="text-sv" />
+      <Icon size={iconSize} className="text-sv" />
     </button>
   );
 };

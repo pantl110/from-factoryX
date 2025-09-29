@@ -15,6 +15,7 @@ import {
 import { useGetProjectLogs } from '@/hooks';
 import Spinner from '@/ui/spinner';
 import { ProjectStatusType } from '@/types/status-type';
+import useMemberStore from '@/store/member-store';
 
 interface ProductionMonitorProps {
   projectStatus: ProjectStatusType;
@@ -27,6 +28,10 @@ const ProductionMonitor = ({
 }: ProductionMonitorProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
+
+  // role 확인
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
 
   const [selectedLog, setSelectedLog] =
     useState<ProjectLogResponseModel | null>(null);
@@ -82,6 +87,7 @@ const ProductionMonitor = ({
                       borderColor="border-lg"
                       onClick={() => setIsCreateMemoModalOpen(true)}
                       hoverColor="hover:bg-bg"
+                      disabled={isViewer}
                     />
                   </div>
                 )}

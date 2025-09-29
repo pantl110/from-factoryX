@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import RegisterProductionModal from '../modals/register-production-modal';
 import { RefundModel } from '@/types/data-model';
 import { formatDate } from '@/hooks/format-number';
+import useMemberStore from '@/store/member-store';
 
 interface RefundFormDataModel {
   refund_date: string;
@@ -27,6 +28,9 @@ const ReturnInfo = ({
   onTabChange,
   logId,
 }: ReturnInfoProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
     useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -130,10 +134,11 @@ const ReturnInfo = ({
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsEditing(true)}
                 disabled={
-                  refundData.plan?.id === null
+                  isViewer ||
+                  (refundData.plan?.id === null
                     ? false
                     : refundData.plan?.status &&
-                      String(refundData.plan.status) !== '가동 대기'
+                      String(refundData.plan.status) !== '가동 대기')
                 }
               />
             )}
@@ -145,6 +150,7 @@ const ReturnInfo = ({
               bgColor="bg-primary"
               onClick={() => setIsRegisterProductionModalOpen(true)}
               disabled={
+                isViewer ||
                 !isFormValid ||
                 (refundData.plan?.id === null
                   ? false
@@ -157,7 +163,11 @@ const ReturnInfo = ({
 
         <div>
           <div className="border-t border-b border-lg">
-            <InfoLabelValue label="반품품목" value={refundData.product.name} />
+            <InfoLabelValue
+              label="반품품목"
+              value={refundData.product.name}
+              disabled={true}
+            />
           </div>
           <div className="border-b border-lg">
             {isEditing ? (
@@ -185,6 +195,7 @@ const ReturnInfo = ({
                 label="반품일자"
                 value={formatDate(watchedRefundDate)}
                 isEditing={isEditing}
+                disabled={true}
               />
             )}
           </div>
@@ -214,6 +225,7 @@ const ReturnInfo = ({
                 label="반품수량"
                 value={refundData.amount.toLocaleString()}
                 isEditing={isEditing}
+                disabled={true}
               />
             )}
           </div>
@@ -221,6 +233,7 @@ const ReturnInfo = ({
             <InfoLabelValue
               label="현재재고"
               value={refundData.current_stock?.toLocaleString() || '-'}
+              disabled={true}
             />
           </div>
           <div className="border-b border-lg">
@@ -253,6 +266,7 @@ const ReturnInfo = ({
                     : ''
                 }
                 isEditing={isEditing}
+                disabled={true}
               />
             )}
           </div>

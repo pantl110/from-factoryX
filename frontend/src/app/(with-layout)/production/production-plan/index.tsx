@@ -419,11 +419,19 @@ const ProductionPlan = ({
   const [facilityDropdownRowId, setFacilityDropdownRowId] = useState<
     number | null
   >(null);
-  // 설비 드롭다운 열고 닫는 핸들러
+  // 설비 드롭다운 열고 닫는 핸들러 (토글 기능)
   const handleFacilityClick = (e: React.MouseEvent, rowId: number) => {
+    // 같은 행의 드롭다운이 이미 열려있으면 닫기
+    if (isFacilityDropdownOpen && facilityDropdownRowId === rowId) {
+      handleCloseFacilityDropdown();
+      return;
+    }
+
+    // 새로운 드롭다운 열기
     openFacilityDropdown(e);
-    setFacilityDropdownRowId(rowId); // 어떤 행의 설비 드롭다운을 열지 저장
+    setFacilityDropdownRowId(rowId);
   };
+
   const handleCloseFacilityDropdown = () => {
     setFacilityDropdownRowId(null);
     closeFacilityDropdown();

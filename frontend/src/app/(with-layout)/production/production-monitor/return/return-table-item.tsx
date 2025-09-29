@@ -11,7 +11,7 @@ interface ReturnTableItemProps {
 
 const ReturnTableItem = ({ productDetail }: ReturnTableItemProps) => {
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1 text-dg">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-1 text-dg cursor-default">
       <p className="flex-[2] py-1 px-3 truncate" title={productDetail?.name}>
         {productDetail?.name}
       </p>
