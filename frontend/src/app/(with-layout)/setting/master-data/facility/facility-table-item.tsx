@@ -5,6 +5,7 @@ import {
   EquipmentStatusColorMap,
 } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
+import useMemberStore from '@/store/member-store';
 
 export interface FacilityTableItemProps {
   facility: EquipmentResponseModel;
@@ -19,6 +20,9 @@ const FacilityTableItem = ({
   isChecked,
   onToggle,
 }: FacilityTableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const statusColor = facility.status
     ? EquipmentStatusColorMap[facility.status as EquipmentStatusType]
     : EquipmentStatusColorMap['standby'];
@@ -33,10 +37,12 @@ const FacilityTableItem = ({
         if (e.key === 'Enter' || e.key === ' ') onClick?.();
       }}
     >
-      <Checkbox
-        isChecked={isChecked || false}
-        onToggle={onToggle || (() => {})}
-      />
+      {!isViewer && (
+        <Checkbox
+          isChecked={isChecked || false}
+          onToggle={onToggle || (() => {})}
+        />
+      )}
       <div className="flex-1 px-3">
         <Chip
           text={facility.status === 'standby' ? '가동 대기' : '가동 중'}

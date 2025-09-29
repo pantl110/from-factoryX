@@ -381,27 +381,30 @@ const MasterData = () => {
           )}
 
           {/* 삭제 버튼 */}
-          {((settingChip === 'equipment' &&
-            equipmentListForFacility.data.length > 0) ||
-            (settingChip === 'client' &&
-              (clientList?.data?.length ?? 0) > 0)) && (
-            <>
-              <MiniBtn
-                text="취소"
-                variant="whiteOutline"
-                onClick={handleClearAllChecked}
-                disabled={role === 'viewer'}
-              />
-              <MiniBtn
-                text={getDeleteButtonText()}
-                variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
-                onClick={handleDeleteBtnClick}
-                disabled={
-                  isDeleteLoading || isDeleteClientLoading || role === 'viewer'
-                }
-              />
-            </>
-          )}
+          {role !== 'viewer' &&
+            ((settingChip === 'equipment' &&
+              equipmentListForFacility.data.length > 0) ||
+              (settingChip === 'client' &&
+                (clientList?.data?.length ?? 0) > 0)) && (
+              <>
+                <MiniBtn
+                  text="취소"
+                  variant="whiteOutline"
+                  onClick={handleClearAllChecked}
+                  disabled={role === 'viewer'}
+                />
+                <MiniBtn
+                  text={getDeleteButtonText()}
+                  variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
+                  onClick={handleDeleteBtnClick}
+                  disabled={
+                    isDeleteLoading ||
+                    isDeleteClientLoading ||
+                    role === 'viewer'
+                  }
+                />
+              </>
+            )}
         </div>
       </div>
       {renderContent()}

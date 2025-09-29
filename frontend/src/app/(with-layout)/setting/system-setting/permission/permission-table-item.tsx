@@ -5,6 +5,7 @@ import AuthDropdown from './modals/auth-dropdown';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import useUpdateMember from '@/hooks/factory/factory-member/use-update-member';
 import { MemberResponseModel } from '@/types/data-model';
+import useMemberStore from '@/store/member-store';
 
 interface PermissionTableItemProps {
   item: MemberResponseModel;
@@ -30,6 +31,9 @@ const PermissionTableItem = ({
   onToggle,
   onUpdate,
 }: PermissionTableItemProps) => {
+  const factoryRole = useMemberStore((state) => state.role);
+  const isViewer = factoryRole === 'viewer';
+
   const { status, name, email, role, invited_at: invitedAt, factory } = item;
   const textColor = status === 'active' ? 'text-primary' : 'text-dg';
   const roleText =
@@ -89,7 +93,9 @@ const PermissionTableItem = ({
     <>
       <>
         <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-lg group">
-          <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
+          {!isViewer && (
+            <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
+          )}
           <p className={`px-3 flex-1 ${textColor}`}>
             {status === 'active' ? '완료' : '-'}
           </p>

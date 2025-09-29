@@ -170,32 +170,23 @@ const Permission = () => {
                   </div>
                 )}
               </div>
-              {visibleMembers.length > 0 && (
+              {visibleMembers.length > 0 && role !== 'viewer' && (
                 <>
                   <MiniBtn
                     text="취소"
-                    textColor="text-dg"
-                    borderColor="border-lg"
+                    variant="whiteOutline"
                     onClick={() => {
                       setAllChecked(false);
                     }}
-                    hoverColor="hover:bg-bg"
-                    disabled={role === 'viewer'}
                   />
                   <MiniBtn
                     text={getDeleteButtonText()}
-                    textColor={checkedCount === 0 ? 'text-dg' : 'text-red'}
-                    bgColor={checkedCount === 0 ? '' : 'bg-red-8'}
-                    borderColor={checkedCount === 0 ? 'border-lg' : ''}
-                    hoverColor={
-                      checkedCount === 0 ? 'hover:bg-bg' : 'hover:bg-red-hover'
-                    }
+                    variant={checkedCount === 0 ? 'whiteOutline' : 'red'}
                     onClick={() => {
                       if (checkedCount > 0) {
                         setIsDeleteModalOpen(true);
                       }
                     }}
-                    disabled={role === 'viewer'}
                   />
                 </>
               )}

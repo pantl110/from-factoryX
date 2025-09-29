@@ -2,6 +2,7 @@ import Checkbox from '@/ui/checkbox';
 import { ClientResponseModel } from '@/types/data-model';
 import Chip from '@/ui/chip';
 import { ClientTypeColorMap } from '@/types/status-type';
+import useMemberStore from '@/store/member-store';
 
 interface ClientTableItemProps {
   client: ClientResponseModel;
@@ -16,15 +17,20 @@ const ClientTableItem = ({
   isChecked,
   onToggleCheck,
 }: ClientTableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   return (
     <div
       className="flex h-14 items-center min-w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
-      <Checkbox
-        isChecked={isChecked || false}
-        onToggle={onToggleCheck || (() => {})}
-      />
+      {!isViewer && (
+        <Checkbox
+          isChecked={isChecked || false}
+          onToggle={onToggleCheck || (() => {})}
+        />
+      )}
       <div className="px-3 flex-[1.2]">
         <div className="flex gap-1">
           {client.is_customer === true && (

@@ -1,4 +1,5 @@
 import Checkbox from '@/ui/checkbox';
+import useMemberStore from '@/store/member-store';
 
 interface ClientTableHeaderProps {
   isAllChecked?: boolean;
@@ -9,12 +10,17 @@ const ClientTableHeader = ({
   isAllChecked,
   onToggleAll,
 }: ClientTableHeaderProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   return (
     <div className="flex h-12 min-w-[1697px] items-center border-t border-b border-[#eeeeee] Me_Body-1 text-sv">
-      <Checkbox
-        isChecked={isAllChecked || false}
-        onToggle={onToggleAll || (() => {})}
-      />
+      {!isViewer && (
+        <Checkbox
+          isChecked={isAllChecked || false}
+          onToggle={onToggleAll || (() => {})}
+        />
+      )}
       <div className="flex-[1.2] px-3 flex gap-1 items-center">
         <p className=" text-sv">거래처</p>
         {/* <CaretDown size={16} className="text-sv" /> */}

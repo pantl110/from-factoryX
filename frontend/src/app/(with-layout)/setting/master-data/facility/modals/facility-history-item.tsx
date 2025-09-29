@@ -6,7 +6,7 @@ interface FacilityHistoryItemProps {
 
 const FacilityHistoryItem = ({ history }: FacilityHistoryItemProps) => {
   return (
-    <div className="h-14 flex items-center Me_Body-1 text-dg border-b border-lg cursor-pointer">
+    <div className="h-14 flex items-center Me_Body-1 text-dg border-b border-lg cursor-default">
       <p
         className="flex-1 px-3 truncate"
         title={history.quotation_product_name || '-'}

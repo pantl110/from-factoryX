@@ -105,16 +105,6 @@ const ClientDetailPanel = ({
     }
   };
 
-  // const getClientTypeText = (clientType: ClientType) => {
-  //   return clientType === 'supplier' ? '발주처' : '수주처';
-  // };
-
-  // const clientType = clientDetail?.type as ClientType;
-  // const clientTypeColor =
-  //   clientType === 'supplier'
-  //     ? ClientTypeColorMap.supplier
-  //     : ClientTypeColorMap.customer;
-
   return (
     <Panel
       title="거래처"
@@ -144,7 +134,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="거래처명"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="(필수) 거래처명을 입력하세요."
                   required
                   {...field}
@@ -161,7 +151,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="사업자등록번호"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="(필수) 사업자등록번호를 입력하세요."
                   required
                   value={field.value}
@@ -182,7 +172,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="대표자명"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="(필수) 대표자명을 입력하세요."
                   required
                   {...field}
@@ -198,7 +188,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="이메일"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="-"
                   {...field}
                 />
@@ -215,7 +205,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="연락처"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="-"
                   value={field.value}
                   onChange={(e) => {
@@ -233,7 +223,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="팩스 번호"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="-"
                   value={field.value}
                   onChange={(e) => {
@@ -253,7 +243,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="업태"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="(필수) 업태를 입력하세요."
                   required
                   {...field}
@@ -267,7 +257,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="종목"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="(필수) 종목을 입력하세요."
                   required
                   {...field}
@@ -283,7 +273,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="사업장 주소"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="(필수) 사업장 주소를 입력하세요."
                   required
                   {...field}
@@ -302,7 +292,7 @@ const ClientDetailPanel = ({
                       bgColor={ClientTypeColorMap.customer.bgColor}
                       textColor={ClientTypeColorMap.customer.textColor}
                       radius="rounded-sm"
-                      cursor="cursor-pointer"
+                      cursor="cursor-default"
                     />
                   )}
                   {clientDetail?.is_supplier === true && (
@@ -311,7 +301,7 @@ const ClientDetailPanel = ({
                       bgColor={ClientTypeColorMap.supplier.bgColor}
                       textColor={ClientTypeColorMap.supplier.textColor}
                       radius="rounded-sm"
-                      cursor="cursor-pointer"
+                      cursor="cursor-default"
                     />
                   )}
                   {clientDetail?.is_supplier === false &&
@@ -328,7 +318,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="비고"
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="-"
                   textarea={true}
                   {...field}
