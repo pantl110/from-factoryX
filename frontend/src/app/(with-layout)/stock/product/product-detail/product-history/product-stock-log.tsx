@@ -7,6 +7,10 @@ interface ProductStockLogProps {
   page: number;
   totalPages: number;
   setPage: (page: number) => void;
+  setIsProjectStockHistoryModalOpen: (modal: {
+    isOpen: boolean;
+    projectId?: number;
+  }) => void;
 }
 
 const ProductStockLog = ({
@@ -14,24 +18,27 @@ const ProductStockLog = ({
   page,
   totalPages,
   setPage,
+  setIsProjectStockHistoryModalOpen,
 }: ProductStockLogProps) => {
   if (data.length === 0) return null;
   return (
     <>
       <div>
-        <div className="flex items-center h-12 border-t border-b border-[#eeeeee] Me_Body-1">
-          <p className="w-[150px] py-1 px-3 text-sv">처리일자</p>
-          <p className="w-[150px] py-1 px-3 text-sv">상태</p>
-          <p className="flex-1 py-1 px-3 text-sv">수량</p>
+        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+          <p className="flex-1 py-1 px-3 text-sv">처리일자</p>
+          <p className="flex-1 py-1 px-3 text-sv">업체명</p>
+          <p className="flex-1 py-1 px-3 text-sv">생산 수량</p>
+          <p className="flex-1 py-1 px-3 text-sv">납품 수량</p>
           <p className="flex-1 py-1 px-3 text-sv">현재 재고</p>
+          <p className="flex-1 py-1 px-3 text-sv">변동 로그</p>
         </div>
         {data.map((item) => (
           <ProductStockLogItem
             key={item.id}
-            date={item.created_at}
-            status={item.quantity > 0 ? 'in' : 'out'}
-            amount={item.quantity}
-            total={item.total_stock}
+            item={item}
+            setIsProjectStockHistoryModalOpen={
+              setIsProjectStockHistoryModalOpen
+            }
           />
         ))}
       </div>

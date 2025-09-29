@@ -35,6 +35,7 @@ import DeleteModal from '@/ui/modal/delete-modal';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
+import ProjectStockHistoryModal from './product-history/modals/project-stock-history-modal';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -169,7 +170,10 @@ const ProductDetail = ({
 
   // 모달 오픈 상태
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-  // const [isProductStockModalOpen, setIsProductStockModalOpen] = useState(false);
+  const [projectStockHistoryModal, setProjectStockHistoryModal] = useState<{
+    isOpen: boolean;
+    projectId?: number;
+  }>({ isOpen: false, projectId: undefined });
 
   // 해당 원자재 클릭 시 보여줄 원자재 id와 해당 디테일 판넬
   const [materialId, setMaterialId] = useState<number | null>(null);
@@ -750,7 +754,10 @@ const ProductDetail = ({
           </div>
 
           {/* 품목 입·출고 내역 */}
-          <ProductHistory productId={productId} />
+          <ProductHistory
+            productId={productId}
+            setIsProjectStockHistoryModalOpen={setProjectStockHistoryModal}
+          />
         </div>
       </Panel>
 
@@ -842,6 +849,17 @@ const ProductDetail = ({
         />
       )}
 
+      {/* 재고 변동 내역 모달 */}
+      {projectStockHistoryModal.isOpen && (
+        <ProjectStockHistoryModal
+          projectId={projectStockHistoryModal.projectId}
+          productId={productId}
+          onClose={() =>
+            setProjectStockHistoryModal({ isOpen: false, projectId: undefined })
+          }
+        />
+      )}
+
       {/* 품목 생성 시 품목 코드 중복 토스트 */}
       {isToastOpen && (
         <Toast
@@ -852,15 +870,6 @@ const ProductDetail = ({
           isVisible={isVisible}
         />
       )}
-
-      {/* {isProductStockModalOpen && (
-        <ProductStockModal onClose={() => setIsProductStockModalOpen(false)} />
-      )} */}
-      {/* {isMaterialStockStatusModalOpen && (
-        <MaterialStockStatusModal
-          onClose={() => setIsMaterialStockStatusModalOpen(false)}
-        />
-      )} */}
     </>
   );
 };

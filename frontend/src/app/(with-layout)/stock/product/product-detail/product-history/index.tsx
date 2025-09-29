@@ -8,11 +8,18 @@ import Tooltip from '@/ui/tooltip';
 
 interface ProductHistoryProps {
   productId: number | null;
+  setIsProjectStockHistoryModalOpen: (modal: {
+    isOpen: boolean;
+    projectId?: number;
+  }) => void;
 }
 
 const PAGE_SIZE = 8;
 
-const ProductHistory = ({ productId }: ProductHistoryProps) => {
+const ProductHistory = ({
+  productId,
+  setIsProjectStockHistoryModalOpen,
+}: ProductHistoryProps) => {
   // const [isProductStockLogDropdownOpen, setIsProductStockLogDropdownOpen] =
   //   useState(false); // 판넬의 품목 입·출고 내역 드롭다운
 
@@ -173,6 +180,9 @@ const ProductHistory = ({ productId }: ProductHistoryProps) => {
             page={page}
             totalPages={totalPages}
             setPage={handlePageChange}
+            setIsProjectStockHistoryModalOpen={
+              setIsProjectStockHistoryModalOpen
+            }
           />
         )}
       </div>

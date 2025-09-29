@@ -1,11 +1,12 @@
 import { X } from '@phosphor-icons/react/dist/ssr';
 import { useEffect, useRef } from 'react';
+import IconBtn from '../icon-btn';
 
 interface ModalProps {
   children: React.ReactNode;
   title?: string;
   subtitle?: string;
-  onClose?: () => void;
+  onClose: () => void;
   width?: string;
   height?: string;
   button?: React.ReactNode;
@@ -67,12 +68,7 @@ const Modal = ({
             {button}
           </div>
           {!hideCloseIcon && (
-            <button
-              className={`w-10 h-10 flex justify-center items-center cursor-pointer rounded-lg transition-colors duration-200 hover:bg-bg`}
-              onClick={onClose}
-            >
-              <X size={20} className="text-sv" />
-            </button>
+            <IconBtn icon={X} onClick={onClose} size="w-10 h-10" />
           )}
         </div>
         <div
