@@ -102,6 +102,7 @@ class ProductHistoryFilter(FilterSchema):
     # end_date: Optional[str] = Field(default=None, q="created_at__date__lte")
     product_id: Optional[int] = Field(default=None, q="product_id")
     project_id: Optional[int] = Field(default=None, q="project_id")
+    is_canceled: Optional[bool] = Field(default=None, q="is_canceled")
 
 
 # ------------------------------------------------------------

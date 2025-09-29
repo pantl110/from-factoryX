@@ -91,6 +91,11 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
             .select_related("product")
             .order_by("-created_at")
         )
+        
+        # 기본적으로 is_canceled=False인 것만 조회 (필터에서 명시적으로 지정하지 않은 경우)
+        if filters.is_canceled is None:
+            queryset = queryset.filter(is_canceled=False)
+        
         queryset = filters.filter(queryset)
         return list(queryset)
 
