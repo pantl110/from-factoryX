@@ -36,7 +36,7 @@ const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
     useState(false);
 
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-default">
       <p className="flex-1 px-3 text-dg">{formatDate(data.date)}</p>
       <p className={`flex-1 px-3 ${getStatusColor(data.type)}`}>
         {data.type === 'purchase' ? '입고' : '사용'}

@@ -43,7 +43,7 @@ const MaterialStockLog = ({
     <>
       {/* 재고 이력 테이블 */}
       <div className="flex flex-col">
-        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
           <p className="flex-1 py-1 px-3 text-sv">처리일자</p>
           <p className="flex-1 py-1 px-3 text-sv">상태</p>
           <p className="flex-1 py-1 px-3 text-sv">수량</p>

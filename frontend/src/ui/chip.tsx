@@ -25,7 +25,7 @@ const Chip = ({
   state = false,
   radius = 'rounded',
   onClick,
-  cursor = onClick ? 'cursor-pointer' : 'cursor-default',
+  cursor = 'cursor-default',
   hover = '',
   height = 'h-8',
   padding = 'px-3',
@@ -55,7 +55,7 @@ const Chip = ({
     >
       <div
         className={`flex gap-1 items-center justify-center ${width} ${height} ${padding} ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${hover} ${borderColor ? `border ${borderColor}` : ''} ${
-          state ? 'cursor-pointer' : ''
+          state ? 'cursor-pointer' : 'cursor-default'
         }`}
       >
         <span>{text}</span>

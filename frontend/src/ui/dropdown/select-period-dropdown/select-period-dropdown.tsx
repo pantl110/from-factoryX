@@ -24,6 +24,7 @@ const SelectPeriodDropdown = ({
             height="h-9"
             width="w-20"
             padding="px-2"
+            cursor="cursor-pointer"
           />
         </div>
       </DropdownItem>
@@ -37,6 +38,7 @@ const SelectPeriodDropdown = ({
             height="h-9"
             width="w-20"
             padding="px-2"
+            cursor="cursor-pointer"
           />
         </div>
       </DropdownItem>
@@ -50,6 +52,7 @@ const SelectPeriodDropdown = ({
             height="h-9"
             width="w-20"
             padding="px-2"
+            cursor="cursor-pointer"
           />
         </div>
       </DropdownItem>
@@ -63,6 +66,7 @@ const SelectPeriodDropdown = ({
             height="h-9"
             width="w-20"
             padding="px-2"
+            cursor="cursor-pointer"
           />
         </div>
       </DropdownItem>
@@ -76,6 +80,7 @@ const SelectPeriodDropdown = ({
             height="h-9"
             width="w-20"
             padding="px-2"
+            cursor="cursor-pointer"
           />
         </div>
       </DropdownItem>

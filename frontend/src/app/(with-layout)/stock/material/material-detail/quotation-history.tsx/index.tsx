@@ -31,7 +31,7 @@ const QuotationHistory = ({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+      <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
         <p className="flex-1 px-3 text-sv">업체명</p>
         <p className="flex-1 px-3 text-sv">거래일자</p>
         <p className="flex-[0.5] px-3 text-sv">수량</p>

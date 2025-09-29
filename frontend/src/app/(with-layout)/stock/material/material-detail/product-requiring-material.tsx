@@ -13,6 +13,7 @@ import {
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import Pagination from '@/components/pagination';
+import useMemberStore from '@/store/member-store';
 
 interface ProductRequiringMaterialProps {
   materialId: number;
@@ -32,6 +33,9 @@ const ProductRequiringMaterial = forwardRef<
   ProductRequiringMaterialRefModel,
   ProductRequiringMaterialProps
 >(({ materialId, handleOpenDeleteModal, onProductClick }, ref) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+
   const { getMaterialProductConnections, data: connections } =
     useMaterialProduct();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -119,12 +123,12 @@ const ProductRequiringMaterial = forwardRef<
     <div className="flex flex-col">
       {productConnections.length > 0 ? (
         <>
-          <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+          <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
             <p className="flex-1 py-1 px-3 text-sv">품목명</p>
             <p className="flex-1 py-1 px-3 text-sv">품목 코드</p>
             <p className="flex-1 py-1 px-3 text-sv">규격</p>
-            <p className="w-[80px] py-1 px-3 text-sv">단위</p>
-            <div className="w-9" />
+            <p className="flex-1 py-1 px-3 text-sv">단위</p>
+            {!isViewer && <div className="w-9" />}
           </div>
           {getCurrentPageConnections().map((connection) => {
             const productInfo = getProductInfo(connection);

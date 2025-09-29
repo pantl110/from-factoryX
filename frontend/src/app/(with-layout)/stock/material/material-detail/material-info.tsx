@@ -108,7 +108,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="자재명"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
-                isEditing={!isViewer}
+                disabled={isViewer}
                 required
                 placeholder="(필수) 자재명을 입력하세요."
               />
@@ -122,7 +122,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="자재 코드"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
-                isEditing={!isViewer}
+                disabled={isViewer}
                 required
                 placeholder="(필수) 자재 코드를 입력하세요."
               />
@@ -138,7 +138,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="규격"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
-                isEditing={!isViewer}
+                disabled={isViewer}
                 required
                 placeholder="(필수) 규격을 입력하세요."
               />
@@ -152,7 +152,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="단위"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
-                isEditing={!isViewer}
+                disabled={isViewer}
                 required
                 placeholder="(필수) 단위를 입력하세요."
               />
@@ -187,7 +187,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                         ? '0'
                         : addComma(field.value)
                   }
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="현재 재고 수량을 입력하세요."
                   inputType="text"
                   handleChange={handleChangeCurrentStock}
@@ -219,7 +219,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                         ? '0'
                         : addComma(field.value)
                   }
-                  isEditing={!isViewer}
+                  disabled={isViewer}
                   placeholder="최소 재고를 입력하세요."
                   inputType="text"
                   handleChange={handleChangeMinStock}
@@ -262,7 +262,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                           ? { status }
                           : undefined
                       }
-                      isEditing={false}
+                      disabled={isViewer}
                     />
                   );
                 }}
