@@ -261,7 +261,6 @@ const Subscription = () => {
             onSubscribe={handleSubscribe}
             isLoading={isSubscribeLoading}
             refreshSubscriptionData={refreshSubscriptionData}
-            updateSubscriptionPersist={updateSubscriptionPersist}
             hasScheduledSubscription={hasScheduledSubscription}
             isAdmin={isAdmin}
           />
