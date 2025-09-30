@@ -31,9 +31,10 @@ from subscription.utils import (
     change_subscription_plan,
 )
 from subscription.services import TossPaymentsService, SubscriptionBillingService
-from subscription.exceptions import PaymentError, BillingKeyError, SubscriptionError
+from subscription.exceptions import PaymentError, BillingKeyError
 from django.utils import timezone
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 from django.db import transaction
 from django.db.models import F
 import uuid
@@ -94,25 +95,58 @@ async def create_subscription_history(
     member = await is_factory_member(factory_id, user)
     subscription = await get_subscription_by_id(payload.subscription)
 
-    # 이미 구독이 있는지 확인
-    existing_history = await SubscriptionHistory.objects.filter(
-        factory=factory,
-        end_date__gt=timezone.now(),
-    ).aexists()
-    if existing_history:
-        raise HttpError(
-            status_code=400,
-            message="이미 결제된 구독이 존재합니다.",
-        )
-
     @sync_to_async
     @transaction.atomic
     def create_subscription():
+        current_date = timezone.now().date()
+        
+        # 현재 활성 구독 조회
+        existing_subscription = SubscriptionHistory.objects.filter(
+            factory=factory,
+            end_date__gt=current_date,
+        ).select_related('subscription').first()
+        
+        # 새로 생성할 구독 타입
+        new_subscription_type = subscription.type
+        
+        if existing_subscription:
+            existing_type = existing_subscription.subscription.type
+            
+            # Case 1: 트라이얼 → 유료 플랜 (즉시 시작)
+            if existing_type == 'trial' and new_subscription_type in ['basic', 'partners']:
+                # 트라이얼 즉시 종료
+                existing_subscription.end_date = current_date
+                existing_subscription.save()
+                
+                # 유료 플랜 즉시 시작
+                start_date = current_date
+                
+            # Case 2: 유료 플랜 → 다른 유료 플랜 (기존 구독 종료 후 시작)
+            elif existing_type in ['basic', 'partners'] and new_subscription_type in ['basic', 'partners']:
+                # 기존 구독 종료일 다음 날부터 시작
+                start_date = existing_subscription.end_date + timedelta(days=1)
+                
+            # Case 3: 같은 타입 또는 유료 → 트라이얼 (불가)
+            elif existing_type in ['basic', 'partners'] and new_subscription_type == 'trial':
+                raise ValueError("유료 구독 중에는 트라이얼로 변경할 수 없습니다.")
+            elif existing_type == new_subscription_type:
+                raise ValueError("이미 동일한 구독이 존재합니다.")
+            else:
+                raise ValueError("허용되지 않은 구독 변경입니다.")
+        else:
+            # 활성 구독이 없으면 즉시 시작
+            start_date = current_date
+        
+        # 종료일 계산 (1개월)
+        end_date = start_date + relativedelta(months=1)
+        
+        # 새 구독 생성
         subscription_history = SubscriptionHistory.objects.create(
             factory=factory,
             subscription=subscription,
-            start_date=timezone.now().date(),
-            end_date=(timezone.now() + timedelta(days=30)).date(),
+            start_date=start_date,
+            end_date=end_date,
+            is_canceled=False,
         )
         return subscription_history
 

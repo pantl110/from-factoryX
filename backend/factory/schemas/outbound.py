@@ -116,7 +116,6 @@ class FactoryClientRowOut(ModelSchema):
 class FactoryModelOut(ModelSchema):
     members: List[FactoryMemberDetailOut] = Field(..., description="공장 멤버 리스트")
     member: FactoryMemberDetailOut = Field(..., description="현재 로그인 한 멤버 정보")
-    trial_end_date: Optional[date] = Field(None, description="무료 체험 종료일")
 
     class Meta:
         model = Factory
@@ -145,7 +144,6 @@ class FactoryModelDetailOut(ModelSchema):
     subscription_histories: Optional[List[SubscriptionHistoryOut]] = Field(
         [], description="구독 이력 리스트"
     )
-    trial_end_date: Optional[date] = Field(None, description="무료 체험 종료일")
 
     class Meta:
         model = Factory

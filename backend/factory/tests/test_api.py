@@ -28,6 +28,11 @@ class FactoryCreateAPITestCase(TestCase):
             status=FactoryMember.MemberStatus.active,
             invited_by=self.user,
         )
+        # Ensure trial subscription exists for factory creation API
+        Subscription.objects.get_or_create(
+            type=Subscription.SubscriptionType.trial,
+            defaults={"price": 0, "tax_invoice_count": 0},
+        )
         # 구독 생성
         self.subscription = Subscription.objects.create(
             type=Subscription.SubscriptionType.basic,

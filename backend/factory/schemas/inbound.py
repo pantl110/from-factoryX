@@ -19,7 +19,6 @@ class FactoryUpdateIn(Schema):
     business_type: Optional[str] = None
     business_category: Optional[str] = None
     business_address: Optional[str] = None
-    is_trial: Optional[bool] = None
     billing_key: Optional[str] = None
 
     @field_validator('business_registration_number')
