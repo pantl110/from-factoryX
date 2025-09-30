@@ -8,11 +8,10 @@ from ninja.errors import HttpError
 from factory.utils import get_factory_by_id, is_factory_member
 from asgiref.sync import sync_to_async
 from django.db.models import Prefetch
-from django.db.models import F
-from django.db.models.functions import TruncDate
-from datetime import timedelta
+from subscription.models import Subscription, SubscriptionHistory
+from django.utils import timezone
 from dateutil.relativedelta import relativedelta
-from django.conf import settings
+from django.db import transaction
 
 
 router = Router(tags=["Factory"])
@@ -22,33 +21,53 @@ router = Router(tags=["Factory"])
 @router.post(
     "",
     summary="[C] 공장 등록",
-    description="공장을 등록하고 권한을 관리자로 설정합니다. 이미 다른 공장의 멤버인 경우 기존 멤버십은 모두 삭제됩니다.",
+    description="공장을 등록하고 권한을 관리자로 설정합니다. 트라이얼 구독도 자동으로 생성됩니다. 이미 다른 공장의 멤버인 경우 기존 멤버십은 모두 삭제됩니다.",
     response={201: dict},
     auth=jwt_auth,
 )
 async def create_factory(request):
     user = request.auth
 
-    # 새 공장 생성
-    factory = await Factory.objects.acreate(owner=user)
+    @sync_to_async
+    @transaction.atomic
+    def create_factory_with_trial():
+        # 새 공장 생성
+        factory = Factory.objects.create(owner=user)
 
-    # 새 공장에 관리자로 등록
-    await FactoryMember.objects.acreate(
-        factory=factory,
-        user=user,
-        role=FactoryMember.FactoryMemberType.admin,
-        status=FactoryMember.MemberStatus.active,
-        invited_by=user,
-    )
+        # 새 공장에 관리자로 등록
+        FactoryMember.objects.create(
+            factory=factory,
+            user=user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=user,
+        )
 
-    # 사용자가 다른 공장의 멤버인 경우 모두 삭제 (새 공장 제외)
-    other_factory_members = (
-        await FactoryMember.objects.filter(user=user).exclude(factory=factory).aexists()
-    )
+        # 사용자가 다른 공장의 멤버인 경우 모두 삭제 (새 공장 제외)
+        other_factory_members = FactoryMember.objects.filter(user=user).exclude(factory=factory)
+        if other_factory_members.exists():
+            other_factory_members.delete()
 
-    if other_factory_members:
-        await FactoryMember.objects.filter(user=user).exclude(factory=factory).adelete()
+        # 트라이얼 구독 플랜 조회 (type으로 조회)
+        trial_subscription = Subscription.objects.filter(type=Subscription.SubscriptionType.trial).first()
+        if not trial_subscription:
+            raise ValueError("트라이얼 구독 플랜이 존재하지 않습니다. 관리자에게 문의해주세요.")
 
+        # 트라이얼 구독 히스토리 생성 (1개월)
+        start_date = timezone.now().date()
+        end_date = start_date + relativedelta(months=1)
+
+        SubscriptionHistory.objects.create(
+            factory=factory,
+            subscription=trial_subscription,
+            start_date=start_date,
+            end_date=end_date,
+            is_canceled=False,
+        )
+
+        return factory
+
+    factory = await create_factory_with_trial()
     return 201, {"factory_id": factory.id}
 
 
@@ -87,11 +106,6 @@ async def list_factories(request):
             .distinct()
         )
         
-        # Python에서 정확한 월 계산
-        for factory in factories:
-            trial_end_datetime = factory.created_at + relativedelta(months=settings.TRIAL_PERIOD_MONTHS)
-            factory.trial_end_date = trial_end_datetime.date()
-
         # 각 공장에 멤버 정보 설정 (user_members 리스트의 첫 번째 요소)
         for factory in factories:
             if factory.user_members:

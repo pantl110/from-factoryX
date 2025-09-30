@@ -1,13 +1,9 @@
 from ninja.errors import HttpError
 from factory.models import Factory, FactoryEquipment
 from factory.models import Factory, FactoryClient, FactoryMember
-from datetime import timedelta
-from dateutil.relativedelta import relativedelta
-from django.utils import timezone
-from django.conf import settings
-from django.db.models import F
-from django.db.models.functions import TruncDate
 from django.db import connection
+from django.conf import settings
+from django.utils import timezone
 
 
 async def is_factory_member(factory_id: int, user=None):
@@ -98,10 +94,6 @@ async def get_factory_by_id(factory_id: int, user=None):
                 # )
                 .aget(id=factory_id, owner=user)
             )
-        
-        # Python에서 정확한 월 계산 (relativedelta 사용)
-        trial_end_datetime = factory.created_at + relativedelta(months=settings.TRIAL_PERIOD_MONTHS)
-        factory.trial_end_date = trial_end_datetime.date()
         
         return factory
     except Factory.DoesNotExist:

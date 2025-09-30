@@ -26,11 +26,10 @@ class FactoryAdmin(admin.ModelAdmin):
         "owner",
         "business_registration_number",
         "representative_name",
-        "is_trial",
         "member_count",
         "created_at",
     ]
-    list_filter = ["is_trial", "created_at", "updated_at"]
+    list_filter = ["created_at", "updated_at"]
     search_fields = [
         "name",
         "business_registration_number",
@@ -59,7 +58,7 @@ class FactoryAdmin(admin.ModelAdmin):
             "사업 정보",
             {"fields": ("business_type", "business_category", "business_address")},
         ),
-        ("시스템 정보", {"fields": ("is_trial", "billing_key", "inviting")}),
+        ("시스템 정보", {"fields": ("billing_key", "inviting")}),
         (
             "시스템 정보",
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},

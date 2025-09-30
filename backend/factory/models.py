@@ -61,10 +61,6 @@ class Factory(BaseModel):
         blank=True,
         help_text="사업장 주소",
     )
-    is_trial = models.BooleanField(
-        default=False,
-        help_text="트라이얼 여부",
-    )
     billing_key = models.CharField(
         max_length=255,
         null=True,
