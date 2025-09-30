@@ -65,7 +65,7 @@ const ProductionDocumentView = ({
           <div key={projectName} className="flex flex-col gap-3">
             <h3 className="Heading-3 h-10 items-center flex">{projectName}</h3>
             <div>
-              <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv">
+              <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv cursor-default">
                 <p className="flex-2 px-3">품목명</p>
                 <p className="flex-1 px-3">규격</p>
                 <p className="w-[80px] px-3">단위</p>
@@ -119,7 +119,7 @@ const ProductionDocumentView = ({
             setValue(v);
             if (onMemoChange) onMemoChange(v);
           }}
-          className="w-full print:hidden"
+          className={`w-full print:hidden ${isOnlyRead ? 'cursor-default' : ''}`}
           minRows={6}
           readOnly={isOnlyRead}
         />
