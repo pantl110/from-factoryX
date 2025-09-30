@@ -81,7 +81,7 @@ const Subscription = () => {
     ]);
   };
 
-  // 구독 정보를 persist에 업데이트하는 함수
+  // 구독 정보를 persist에 업데이트
   const updateSubscriptionPersist = async () => {
     if (!factoryId) return;
 
@@ -102,23 +102,19 @@ const Subscription = () => {
 
         if (subscriptionData.subscription_history) {
           setSubscription({
-            id: subscriptionData.subscription_history.id || 0,
+            id: subscriptionData.subscription_history.id ?? null,
             created_at:
-              subscriptionData.subscription_history.created_at ||
-              new Date().toISOString(),
+              subscriptionData.subscription_history.created_at ?? null,
             updated_at:
-              subscriptionData.subscription_history.updated_at ||
-              new Date().toISOString(),
+              subscriptionData.subscription_history.updated_at ?? null,
             start_date:
-              subscriptionData.subscription_history.start_date ||
-              new Date().toISOString().split('T')[0],
-            end_date:
-              subscriptionData.subscription_history.end_date ||
-              new Date().toISOString().split('T')[0],
+              subscriptionData.subscription_history.start_date ?? null,
+            end_date: subscriptionData.subscription_history.end_date ?? null,
             is_canceled:
-              subscriptionData.subscription_history.is_canceled || false,
-            type: subscriptionData.subscription_history.subscription?.type,
-            is_active: subscriptionData.is_active || false,
+              subscriptionData.subscription_history.is_canceled ?? null,
+            type:
+              subscriptionData.subscription_history.subscription?.type ?? null,
+            is_active: subscriptionData.is_active ?? null,
           });
         }
       }

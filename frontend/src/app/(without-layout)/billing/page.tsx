@@ -12,6 +12,7 @@ import {
   useGetPaymentHistory,
   useGetSubscriptionStatus,
 } from '@/hooks';
+import useSubscriptionStore from '@/store/subscription-store';
 
 const BillingPageContent = () => {
   const searchParams = useSearchParams();
@@ -23,6 +24,7 @@ const BillingPageContent = () => {
     useProcessSubscriptionPayment();
   const { getPaymentHistory } = useGetPaymentHistory();
   const { getSubscriptionStatus } = useGetSubscriptionStatus();
+  const { setSubscription } = useSubscriptionStore();
 
   const [currentStatus, setCurrentStatus] = useState<
     'loading' | 'success' | 'error'
@@ -44,6 +46,43 @@ const BillingPageContent = () => {
     if (plan === 'PARTNERS') return 2;
     return null;
   }, [plan]);
+
+  const updateSubscriptionPersist = async (factory: number) => {
+    try {
+      const res = (await getSubscriptionStatus(factory)) as unknown;
+      const resObj =
+        res && typeof res === 'object' ? (res as Record<string, unknown>) : {};
+      const success = Boolean((resObj.success as boolean | undefined) ?? false);
+      const data = resObj.data as
+        | {
+            subscription_history?: {
+              id?: number;
+              created_at?: string;
+              updated_at?: string;
+              start_date?: string;
+              end_date?: string;
+              is_canceled?: boolean;
+              subscription?: { type?: 'basic' | 'partners' | 'trial' };
+            };
+            is_active?: boolean;
+          }
+        | undefined;
+      if (success && data && data.subscription_history) {
+        setSubscription({
+          id: data.subscription_history.id ?? null,
+          created_at: data.subscription_history.created_at ?? null,
+          updated_at: data.subscription_history.updated_at ?? null,
+          start_date: data.subscription_history.start_date ?? null,
+          end_date: data.subscription_history.end_date ?? null,
+          is_canceled: data.subscription_history.is_canceled ?? null,
+          type: data.subscription_history.subscription?.type ?? null,
+          is_active: data.is_active ?? null,
+        });
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     const wait = (ms: number) =>
@@ -123,6 +162,7 @@ const BillingPageContent = () => {
                   getPaymentHistory(factoryId),
                   getSubscriptionStatus(factoryId),
                 ]);
+                await updateSubscriptionPersist(factoryId); // 구독 정보 localstorage 업데이트
                 setCurrentStatus('success');
                 setMessage('구독이 시작되었습니다.');
                 return;

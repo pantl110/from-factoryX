@@ -7,7 +7,7 @@ import {
 import useAuthStore from '@/store/auth-store';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import { useGetMember, useGetFactoryList, useGetFactory } from '@/hooks';
+import { useGetMember, useGetFactoryList } from '@/hooks';
 
 interface UseLoginReturnModel {
   login: (data: LoginFormDataModel) => Promise<{
@@ -26,7 +26,6 @@ export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo, setAuthenticated } = useAuthStore();
   const { getFactoryList } = useGetFactoryList();
-  const { getFactory } = useGetFactory();
   const { getMember } = useGetMember();
   const { setFactoryId, setRole, setIsBarobillUser } = useMemberStore();
   const { setSubscription } = useSubscriptionStore();
@@ -100,48 +99,38 @@ export const useLogin = (): UseLoginReturnModel => {
                     setRole(member.role);
                     setIsBarobillUser(member.is_barobill_user);
 
-                    // 구독 정보와 factory 정보를 함께 가져오기
+                    // 구독 정보 가져오기
                     try {
-                      const [subscriptionResponse, factoryResult] = await Promise.all([
-                        fetch(
-                          `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/status/${factoryId}`,
-                          {
-                            method: 'GET',
-                            credentials: 'include',
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                          }
-                        ),
-                        getFactory(factoryId)
-                      ]);
+                      const subscriptionResponse = await fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/status/${factoryId}`,
+                        {
+                          method: 'GET',
+                          credentials: 'include',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                        }
+                      );
 
                       if (subscriptionResponse.ok) {
-                        const subscriptionData =
-                          await subscriptionResponse.json();
+                        const subscriptionData = await subscriptionResponse.json();
 
                         if (subscriptionData.subscription_history) {
                           setSubscription({
-                            id: subscriptionData.subscription_history.id || 0,
+                            id: subscriptionData.subscription_history.id ?? null,
                             created_at:
-                              subscriptionData.subscription_history
-                                .created_at || new Date().toISOString(),
+                              subscriptionData.subscription_history.created_at ?? null,
                             updated_at:
-                              subscriptionData.subscription_history
-                                .updated_at || new Date().toISOString(),
+                              subscriptionData.subscription_history.updated_at ?? null,
                             start_date:
-                              subscriptionData.subscription_history
-                                .start_date ||
-                              new Date().toISOString().split('T')[0],
+                              subscriptionData.subscription_history.start_date ?? null,
                             end_date:
-                              subscriptionData.subscription_history.end_date ||
-                              new Date().toISOString().split('T')[0],
+                              subscriptionData.subscription_history.end_date ?? null,
                             is_canceled:
-                              subscriptionData.subscription_history
-                                .is_canceled || false,
-                            type: subscriptionData.subscription_history
-                              .subscription?.type,
-                            is_active: subscriptionData.is_active || false,
+                              subscriptionData.subscription_history.is_canceled ?? null,
+                            type:
+                              subscriptionData.subscription_history.subscription?.type ?? null,
+                            is_active: subscriptionData.is_active ?? null,
                           });
                         }
                       }

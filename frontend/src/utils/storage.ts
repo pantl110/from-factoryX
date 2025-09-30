@@ -21,4 +21,8 @@ export const clearAuthData = () => {
   // 인증 관련 localStorage 항목들 삭제
   localStorage.removeItem('auth-storage');
   localStorage.removeItem('member-storage');
+  localStorage.removeItem('subscription-storage');
+  // Toss Payments 식별자들도 함께 제거
+  localStorage.removeItem('@tosspayments/client-id');
+  localStorage.removeItem('@tosspayments/merchant-browser-id');
 };

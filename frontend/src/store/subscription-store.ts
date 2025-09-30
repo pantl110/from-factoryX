@@ -2,14 +2,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface SubscriptionInfoModel {
-  id: number;
-  created_at: string;
-  updated_at: string;
-  start_date: string;
-  end_date: string;
-  is_canceled: boolean;
-  type?: 'basic' | 'partners' | 'trial';
-  is_active?: boolean;
+  id: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  is_canceled: boolean | null;
+  type?: 'basic' | 'partners' | 'trial' | null;
+  is_active?: boolean | null;
 }
 
 interface SubscriptionStoreModel {
