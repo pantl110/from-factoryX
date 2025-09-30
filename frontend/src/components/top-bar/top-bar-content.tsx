@@ -8,8 +8,11 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import usePageStatusStore from '@/store/page-status-store';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 import ProfileModal from './modals/profile-modal';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
+import Tooltip from '@/ui/tooltip';
+import { useTooltip } from '@/hooks';
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
@@ -42,8 +45,12 @@ const TopBarContent = ({
   );
   const isRefund = !!projectStatusData?.is_refunded; // 반품 여부
   const taxId = projectStatusData?.tax_invoice?.id || null; // 세금계산서 ID
+  // 구독 상태 확인
+  const { isPartnersSubscription } = useSubscriptionStore();
   // 세금계산서 패널 상태
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
+  // 세금계산서 버튼 툴팁 (조건부로만 동작)
+  const taxTooltip = useTooltip({});
 
   // store에서 함수들 가져오기
   const handleChangeStatus = usePageStatusStore(
@@ -60,6 +67,16 @@ const TopBarContent = ({
   // role 확인
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+
+  // 툴팁 표시 조건 확인 (파트너스 구독이 아닐때)
+  const shouldShowTooltip = !isPartnersSubscription();
+  // 조건부 마우스 이벤트 핸들러
+  const taxButtonMouseEvents = shouldShowTooltip
+    ? {
+        onMouseEnter: taxTooltip.onMouseEnter,
+        onMouseLeave: taxTooltip.onMouseLeave,
+      }
+    : {};
 
   const isProductionPlanSaveActive =
     productionTab === '생산 계획' &&
@@ -92,12 +109,28 @@ const TopBarContent = ({
   if (productionTab === '주문서') {
     return (
       <>
-        <MiniBtn
-          text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-          variant="whiteOutline"
-          onClick={() => setIsTaxPanelOpen(true)}
-          disabled={isViewer}
-        />
+        <div className="relative" {...taxButtonMouseEvents}>
+          <MiniBtn
+            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+            variant="whiteOutline"
+            onClick={() => {
+              if (isPartnersSubscription() && (!isViewer || taxId)) {
+                setIsTaxPanelOpen(true);
+              }
+            }}
+            disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+          />
+          {taxTooltip.isVisible && shouldShowTooltip && (
+            <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
+              <Tooltip
+                text={`Partners 플랜으로 업그레이드하면 
+                  세무/회계 기능을 사용할 수 있어요.`}
+                color="white"
+                position="right"
+              />
+            </div>
+          )}
+        </div>
         {isTaxPanelOpen && (
           <TaxDetailPanel
             onClose={() => setIsTaxPanelOpen(false)}
@@ -124,12 +157,28 @@ const TopBarContent = ({
     return (
       <>
         <div className="flex gap-2">
-          <MiniBtn
-            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            variant="whiteOutline"
-            onClick={() => setIsTaxPanelOpen(true)}
-            disabled={isViewer}
-          />
+          <div className="relative" {...taxButtonMouseEvents}>
+            <MiniBtn
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              variant="whiteOutline"
+              onClick={() => {
+                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                  setIsTaxPanelOpen(true);
+                }
+              }}
+              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+            />
+            {taxTooltip.isVisible && shouldShowTooltip && (
+              <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
+                <Tooltip
+                  text={`Partners 플랜으로 업그레이드하면 
+                  세무/회계 기능을 사용할 수 있어요.`}
+                  color="white"
+                  position="right"
+                />
+              </div>
+            )}
+          </div>
           <MiniBtn
             text="다음"
             variant="secondary"
@@ -163,12 +212,28 @@ const TopBarContent = ({
     return (
       <>
         <div className="flex gap-2">
-          <MiniBtn
-            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            variant="whiteOutline"
-            onClick={() => setIsTaxPanelOpen(true)}
-            disabled={isViewer}
-          />
+          <div className="relative" {...taxButtonMouseEvents}>
+            <MiniBtn
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              variant="whiteOutline"
+              onClick={() => {
+                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                  setIsTaxPanelOpen(true);
+                }
+              }}
+              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+            />
+            {taxTooltip.isVisible && shouldShowTooltip && (
+              <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
+                <Tooltip
+                  text={`Partners 플랜으로 업그레이드하면 
+                  세무/회계 기능을 사용할 수 있어요.`}
+                  color="white"
+                  position="right"
+                />
+              </div>
+            )}
+          </div>
           <MiniBtn
             text="다음"
             variant="secondary"
@@ -206,12 +271,28 @@ const TopBarContent = ({
     return (
       <>
         <div className="flex gap-2">
-          <MiniBtn
-            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            variant="whiteOutline"
-            onClick={() => setIsTaxPanelOpen(true)}
-            disabled={isViewer}
-          />
+          <div className="relative" {...taxButtonMouseEvents}>
+            <MiniBtn
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              variant="whiteOutline"
+              onClick={() => {
+                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                  setIsTaxPanelOpen(true);
+                }
+              }}
+              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+            />
+            {taxTooltip.isVisible && shouldShowTooltip && (
+              <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
+                <Tooltip
+                  text={`Partners 플랜으로 업그레이드하면 
+                  세무/회계 기능을 사용할 수 있어요.`}
+                  color="white"
+                  position="right"
+                />
+              </div>
+            )}
+          </div>
 
           {isRefund && (
             <MiniBtn
@@ -248,12 +329,29 @@ const TopBarContent = ({
     return (
       <>
         <div className="flex gap-2">
-          <MiniBtn
-            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            variant="whiteOutline"
-            onClick={() => setIsTaxPanelOpen(true)}
-            disabled={isViewer}
-          />
+          <div className="relative" {...taxButtonMouseEvents}>
+            <MiniBtn
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              variant="whiteOutline"
+              onClick={() => {
+                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                  setIsTaxPanelOpen(true);
+                }
+              }}
+              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+            />
+            {taxTooltip.isVisible && shouldShowTooltip && (
+              <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
+                <Tooltip
+                  text={`Partners 플랜으로 업그레이드하면 
+                  세무/회계 기능을 사용할 수 있어요.`}
+                  color="white"
+                  position="right"
+                />
+              </div>
+            )}
+          </div>
+
           {pageStatus === 'manufactured' && (
             <MiniBtn
               text="다음"
@@ -298,12 +396,28 @@ const TopBarContent = ({
     return (
       <>
         <div className="flex gap-2">
-          <MiniBtn
-            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
-            variant="whiteOutline"
-            onClick={() => setIsTaxPanelOpen(true)}
-            disabled={isViewer}
-          />
+          <div className="relative" {...taxButtonMouseEvents}>
+            <MiniBtn
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              variant="whiteOutline"
+              onClick={() => {
+                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                  setIsTaxPanelOpen(true);
+                }
+              }}
+              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+            />
+            {taxTooltip.isVisible && shouldShowTooltip && (
+              <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
+                <Tooltip
+                  text={`Partners 플랜으로 업그레이드하면 
+                  세무/회계 기능을 사용할 수 있어요.`}
+                  color="white"
+                  position="right"
+                />
+              </div>
+            )}
+          </div>
           <MiniBtn
             text="반품 등록"
             variant="red"

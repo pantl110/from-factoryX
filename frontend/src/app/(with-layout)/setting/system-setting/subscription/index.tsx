@@ -279,7 +279,7 @@ const Subscription = () => {
       {/* 결제 내역 */}
       <div className="flex flex-col gap-4">
         <h3 className="Heading-3">결제 내역</h3>
-        {paymentHistory?.data.length === 0 ? (
+        {!paymentHistory || paymentHistory?.data.length === 0 ? (
           <NoHistoryBox
             title="결제 내역이 없어요."
             text="결제 시 이곳에 표시돼요."

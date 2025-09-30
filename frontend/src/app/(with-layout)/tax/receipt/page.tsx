@@ -24,7 +24,7 @@ const TaxReceiptPage = () => {
 
   // 공장 ID 가져오기
   const factoryStore = useMemberStore();
-  const factoryId = factoryStore.factoryId || 1; // 기본값 1
+  const factoryId = factoryStore.factoryId;
 
   // 구독 상태 확인
   const { isPartnersSubscription } = useSubscriptionStore();

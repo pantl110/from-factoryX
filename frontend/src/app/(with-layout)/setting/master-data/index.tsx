@@ -40,10 +40,6 @@ const MasterData = () => {
   // 거래처 목록 가져옴
   const { clientList, isLoading: isClientLoading, getClients } = useGetClient();
 
-  // 현재 거래처 검색어 상태 추가
-  const [currentClientSearchKeyword, setCurrentClientSearchKeyword] =
-    useState('');
-
   // 디바운스된 검색어 (300ms)
   const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
 
@@ -57,29 +53,24 @@ const MasterData = () => {
   const clientIds: number[] =
     clientList?.data?.map((item: { id: number }) => item.id) ?? []; // 거래처 id 배열
 
-  // 설비 검색 함수
-  const handleEquipmentSearch = useMemo(
-    () => (keyword: string) => {
-      if (keyword.trim()) {
-        searchEquipment(keyword, 1);
-      } else {
-        getEquipmentList(1);
+  // 통합된 검색 함수 - 디바운스된 검색어로 현재 탭에 맞는 검색 실행
+  const handleSearch = useCallback(
+    (keyword: string) => {
+      if (settingChip === 'equipment') {
+        if (keyword.trim()) {
+          searchEquipment(keyword, 1);
+        } else {
+          getEquipmentList(1);
+        }
+      } else if (settingChip === 'client') {
+        getClients({
+          q: keyword.trim() || undefined,
+          page: 1,
+          page_size: 10,
+        });
       }
     },
-    [searchEquipment, getEquipmentList]
-  );
-
-  // 거래처 검색 함수
-  const handleClientSearch = useMemo(
-    () => (keyword: string) => {
-      setCurrentClientSearchKeyword(keyword);
-      getClients({
-        q: keyword,
-        page: 1,
-        page_size: 10,
-      });
-    },
-    [getClients]
+    [settingChip, searchEquipment, getEquipmentList, getClients]
   );
 
   // 검색어 변경 시 즉시 처리 (디바운스는 useDebounce에서 처리)
@@ -89,22 +80,8 @@ const MasterData = () => {
 
   // 디바운스된 검색어가 변경될 때 검색 실행
   useEffect(() => {
-    if (settingChip === 'equipment') {
-      handleEquipmentSearch(debouncedSearchKeyword);
-    } else if (settingChip === 'client') {
-      if (debouncedSearchKeyword.trim()) {
-        setCurrentClientSearchKeyword(debouncedSearchKeyword);
-        getClients({
-          q: debouncedSearchKeyword,
-          page: 1,
-          page_size: 10,
-        });
-      } else {
-        setCurrentClientSearchKeyword('');
-        getClients();
-      }
-    }
-  }, [debouncedSearchKeyword, settingChip, handleEquipmentSearch, getClients]);
+    handleSearch(debouncedSearchKeyword);
+  }, [debouncedSearchKeyword, handleSearch]);
 
   // 체크박스 상태 관리
   const {
@@ -169,7 +146,6 @@ const MasterData = () => {
   useEffect(() => {
     if (previousChip !== null && previousChip !== settingChip) {
       setSearchKeyword('');
-      setCurrentClientSearchKeyword('');
     }
     setPreviousChip(settingChip);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -267,7 +243,7 @@ const MasterData = () => {
   // 페이지네이션 변경 핸들러 (Client용)
   const handleClientPageChange = async (page: number) => {
     await getClients({
-      q: currentClientSearchKeyword,
+      q: debouncedSearchKeyword.trim() || undefined,
       page,
       page_size: 10,
     });
@@ -360,11 +336,7 @@ const MasterData = () => {
           onChange={handleSearchChange}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              if (settingChip === 'equipment') {
-                handleEquipmentSearch(searchKeyword);
-              } else if (settingChip === 'client') {
-                handleClientSearch(searchKeyword);
-              }
+              handleSearch(searchKeyword);
             }
           }}
         />

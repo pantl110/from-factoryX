@@ -23,34 +23,19 @@ const NotAllowed = () => {
         </div>
 
         <div className="flex gap-2.5 w-full justify-end">
-          {factoryId ? (
-            <>
-              <MiniBtn
-                text="대시보드로 돌아가기"
-                textColor="text-sv"
-                hoverColor="hover:bg-bg"
-                onClick={() => {
-                  router.push('/dashboard');
-                }}
-              />
-              <MiniBtn
-                text="자세히 보기"
-                textColor="text-wh"
-                bgColor="bg-primary"
-                hoverColor="hover:bg-primary-hover"
-                onClick={() => {
-                  router.push('/setting?chip=subscription');
-                }}
-              />
-            </>
-          ) : (
+          <MiniBtn
+            text="대시보드로 돌아가기"
+            variant={factoryId ? 'white' : 'primary'}
+            onClick={() => {
+              router.push('/dashboard');
+            }}
+          />
+          {factoryId && (
             <MiniBtn
-              text="대시보드로 돌아가기"
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="hover:bg-primary-hover"
+              text="자세히 보기"
+              variant="primary"
               onClick={() => {
-                router.push('/dashboard');
+                router.push('/setting?chip=subscription');
               }}
             />
           )}

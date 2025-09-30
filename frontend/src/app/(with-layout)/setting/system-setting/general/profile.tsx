@@ -25,8 +25,7 @@ interface ProfileProps {
 const Profile = ({ userInfo }: ProfileProps) => {
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
-  const { isToastOpen, isVisible, showToast } = useToast(2000);
-  // const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
+  const { isToastOpen, isVisible, showToast } = useToast();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isEditPhotoDropdownOpen, setIsEditPhotoDropdownOpen] = useState(false);
@@ -239,11 +238,9 @@ const Profile = ({ userInfo }: ProfileProps) => {
         <div className="flex justify-end">
           <MiniBtn
             text="저장"
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            hoverColor="hover:bg-secondary-hover"
+            variant="primary"
             type="submit"
-            disabled={isSubmitting || isLoading || !factoryId}
+            disabled={isSubmitting || isLoading}
           />
         </div>
       </form>
@@ -265,12 +262,6 @@ const Profile = ({ userInfo }: ProfileProps) => {
         onChange={handleFileSelect}
         className="hidden"
       />
-      {/* {isPhotoUploadModalOpen && (
-        <PhotoUploadModal
-          onClose={() => setIsPhotoUploadModalOpen(false)}
-          onImageSelected={handleImageSelected}
-        />
-      )} */}
     </>
   );
 };

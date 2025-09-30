@@ -25,6 +25,7 @@ const useGetClient = () => {
 
       if (!factoryId) {
         setError('공장 ID가 설정되지 않았습니다.');
+        setIsLoading(false);
         return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
       }
 
@@ -79,6 +80,7 @@ const useGetClient = () => {
 
       if (!factoryId) {
         setError('공장 ID가 설정되지 않았습니다.');
+        setIsLoading(false);
         return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
       }
 
