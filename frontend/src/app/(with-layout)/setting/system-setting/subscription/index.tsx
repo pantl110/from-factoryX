@@ -252,7 +252,12 @@ const Subscription = () => {
       </div>
       <div className="flex flex-col gap-2">
         {/* 무료체험 시에만 무료체험 이용중 표시 */}
-        {factory?.is_trial && <FreePlan endDate={factory?.trial_end_date} />}
+        {subscriptionStatus?.subscription_history.subscription.type ===
+          'trial' && (
+          <FreePlan
+            endDate={subscriptionStatus?.subscription_history.end_date}
+          />
+        )}
         {planTypes.map((type) => (
           <PlanItem
             key={type}

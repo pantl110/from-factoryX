@@ -100,7 +100,6 @@ const CompanyInfo = () => {
         business_type: data.business_type || '',
         business_category: data.business_category || '',
         business_address: data.business_address || '',
-        is_trial: factory.is_trial,
         billing_key: factory.billing_key,
       };
       const result = await updateFactory(updateData);

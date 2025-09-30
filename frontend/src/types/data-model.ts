@@ -99,7 +99,6 @@ export interface FactoriesModel {
   business_type?: string;
   business_category?: string;
   business_address?: string;
-  is_trial?: boolean;
   billing_key?: string;
 }
 
@@ -115,7 +114,6 @@ export interface FactoriesResponseModel {
   business_type: string;
   business_category: string;
   business_address: string;
-  is_trial: boolean;
   billing_key: string;
   inviting: InviteMemberResponseModel[];
   created_at: string;
@@ -125,7 +123,6 @@ export interface FactoriesResponseModel {
   invited_by: number;
   member: MemberResponseModel;
   members: MemberResponseModel[];
-  trial_end_date: string;
   subscription_histories: SubscriptionHistoryResponseModel[];
 }
 
@@ -141,7 +138,6 @@ export interface FactoriesUpdateModel {
   business_type: string;
   business_category: string;
   business_address?: string;
-  is_trial?: boolean;
   billing_key?: string;
 }
 
@@ -1182,7 +1178,6 @@ export interface TaxFactoryInfoModel {
   business_type: string;
   business_category: string;
   business_address: string;
-  is_trial: boolean;
   billing_key: string;
 }
 
