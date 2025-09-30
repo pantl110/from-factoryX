@@ -1,3 +1,5 @@
+import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 import Checkbox from '@/ui/checkbox';
 import { CaretUpDown } from '@phosphor-icons/react/dist/ssr';
 
@@ -14,6 +16,12 @@ const TableHeader = ({
   currentOrder,
   onSortChange,
 }: TableHeaderProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   const handleSortClick = () => {
     if (onSortChange) {
       const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
@@ -23,7 +31,12 @@ const TableHeader = ({
 
   return (
     <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
-      <Checkbox isChecked={isAllChecked} onToggle={onToggleAll || (() => {})} />
+      {!isViewer && hasSubscription() && (
+        <Checkbox
+          isChecked={isAllChecked}
+          onToggle={onToggleAll || (() => {})}
+        />
+      )}
       <p className="flex-1 px-3 text-sv">자재명</p>
       <p className="flex-1 px-3 text-sv">자재 코드</p>
       <p className="flex-1 px-3 text-sv">규격</p>

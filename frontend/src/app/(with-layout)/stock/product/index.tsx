@@ -13,6 +13,7 @@ import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ProductProps {
   setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
@@ -27,6 +28,11 @@ const Product = ({
   setReloadFunctionToParent,
 }: ProductProps) => {
   const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   const { getProductList, productList, pagination, isLoading } =
     useGetProduct();
   const { deleteProduct } = useDeleteProduct();
@@ -128,7 +134,7 @@ const Product = ({
           onChange={handleSearch}
           placeholder="품목명 또는 품목코드를 검색하세요."
         />
-        {productList.length > 0 && (
+        {productList.length > 0 && !isViewer && hasSubscription() && (
           <div className="flex gap-1">
             <MiniBtn
               text="취소"
@@ -137,7 +143,6 @@ const Product = ({
               bgColor="bg-white"
               hoverColor="hover:bg-bg"
               onClick={() => setAllChecked(false)}
-              disabled={role === 'viewer'}
             />
             <MiniBtn
               text={getDeleteButtonText()}
@@ -150,7 +155,6 @@ const Product = ({
               onClick={
                 checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
               }
-              disabled={role === 'viewer'}
             />
           </div>
         )}

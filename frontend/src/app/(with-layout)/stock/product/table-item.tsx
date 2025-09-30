@@ -1,5 +1,7 @@
 import Checkbox from '@/ui/checkbox';
 import { ProductResponseModel } from '@/types/data-model';
+import useSubscriptionStore from '@/store/subscription-store';
+import useMemberStore from '@/store/member-store';
 
 interface TableItemProps {
   product: ProductResponseModel;
@@ -9,12 +11,20 @@ interface TableItemProps {
 }
 
 const TableItem = ({ product, onClick, checked, onToggle }: TableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   return (
     <div
       className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
-      <Checkbox isChecked={checked} onToggle={onToggle} />
+      {!isViewer && hasSubscription() && (
+        <Checkbox isChecked={checked} onToggle={onToggle} />
+      )}
       <p className="flex-1 px-3 text-dg truncate" title={product.name}>
         {product.name}
       </p>

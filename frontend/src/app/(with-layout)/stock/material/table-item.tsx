@@ -4,6 +4,8 @@ import Chip from '@/ui/chip';
 
 import { InventoryStatusColorMap } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
+import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 import { MaterialResponseModel } from '@/types/data-model';
 
@@ -20,6 +22,12 @@ const TableItem = ({
   checked,
   onToggle,
 }: TableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   const {
     name,
     code,
@@ -45,7 +53,9 @@ const TableItem = ({
         className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
         onClick={onClick}
       >
-        <Checkbox isChecked={checked} onToggle={onToggle} />
+        {!isViewer && hasSubscription() && (
+          <Checkbox isChecked={checked} onToggle={onToggle} />
+        )}
         <p className="flex-1 px-3 text-dg truncate" title={name}>
           {name}
         </p>

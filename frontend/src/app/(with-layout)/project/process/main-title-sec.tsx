@@ -4,6 +4,7 @@ import { CaretDown } from '@phosphor-icons/react';
 import SelectDropdown from './modals/select-modal';
 import { OcrDataModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface MainTitleSecProps {
   onNewQuotation: () => void;
@@ -38,6 +39,9 @@ const MainTitleSec = ({
 }: MainTitleSecProps) => {
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
@@ -52,7 +56,7 @@ const MainTitleSec = ({
             hoverColor="hover:bg-primary-hover"
             icon={CaretDown}
             iconPosition="right"
-            disabled={!factoryId || role === 'viewer'}
+            disabled={!factoryId || role === 'viewer' || !hasSubscription()}
           />
           {isSelectDropdownOpen &&
             onSelectDropdownClose &&

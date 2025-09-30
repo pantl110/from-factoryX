@@ -14,6 +14,7 @@ import MaterialDetailPanel from './material-detail';
 import { MaterialResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
@@ -27,6 +28,10 @@ const Material = ({
   setReloadFunctionToParent,
 }: MaterialProps) => {
   const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(
     null
@@ -137,7 +142,7 @@ const Material = ({
           value={search}
           onChange={handleSearch}
         />
-        {materialList.length > 0 && (
+        {materialList.length > 0 && !isViewer && hasSubscription() && (
           <div className="flex gap-1">
             <MiniBtn
               text="취소"
@@ -146,7 +151,6 @@ const Material = ({
               bgColor="bg-white"
               hoverColor="hover:bg-bg"
               onClick={() => setAllChecked(false)}
-              disabled={role === 'viewer'}
             />
             <MiniBtn
               text={getDeleteButtonText()}
@@ -159,7 +163,6 @@ const Material = ({
               onClick={
                 checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
               }
-              disabled={role === 'viewer'}
             />
           </div>
         )}

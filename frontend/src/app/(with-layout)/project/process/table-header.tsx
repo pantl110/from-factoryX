@@ -1,5 +1,7 @@
 import { CaretUpDown } from '@phosphor-icons/react/dist/ssr';
 import Checkbox from '@/ui/checkbox';
+import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface TableHeaderProps {
   isAllChecked?: boolean;
@@ -14,13 +16,24 @@ const TableHeader = ({
   onSort,
   isArchived = false,
 }: TableHeaderProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   return (
     <div
       className={`flex items-center h-12 ${
         isArchived ? 'w-full' : 'min-w-[1448px]'
       } border-t border-b border-lg Me_Body-1`}
     >
-      <Checkbox isChecked={isAllChecked} onToggle={onToggleAll || (() => {})} />
+      {!isViewer && hasSubscription() && (
+        <Checkbox
+          isChecked={isAllChecked}
+          onToggle={onToggleAll || (() => {})}
+        />
+      )}
       <p className={`${isArchived ? 'w-[150px]' : 'w-[200px]'} px-3 text-sv`}>
         진행상태
       </p>

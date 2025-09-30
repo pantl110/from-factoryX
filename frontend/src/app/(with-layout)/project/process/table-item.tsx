@@ -13,6 +13,7 @@ import Tooltip from '@/ui/tooltip';
 import useCloneProject from '@/hooks/project/project-plan/use-clone-project';
 import LinkTaxModal from './modals/link-tax-modal/link-tax-modal';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 import { getStartDate } from '@/utils/get-start-date';
 import Skeleton from '@/app/(without-layout)/skeleton';
 
@@ -33,6 +34,11 @@ const TableItem = ({
 }: TableItemProps) => {
   const router = useRouter();
   const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
@@ -160,7 +166,9 @@ const TableItem = ({
           if (e.key === 'Enter' || e.key === ' ') handleClick();
         }}
       >
-        <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
+        {!isViewer && hasSubscription() && (
+          <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
+        )}
         <div className={`px-3 ${isArchived ? 'w-[150px]' : 'w-[200px]'}`}>
           <Chip
             text={displayText}
