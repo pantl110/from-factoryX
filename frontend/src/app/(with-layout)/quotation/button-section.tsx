@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Tooltip from '@/ui/tooltip';
 import { useEffect, useState } from 'react';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 import TaxDetailPanel from '../tax/tax-detail-panel';
 import { useGetFactory } from '@/hooks';
 import NeedInfoModal from './modals/need-info-modal';
@@ -43,6 +44,8 @@ const ButtonSection = ({
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const factoryId = useMemberStore((state) => state.factoryId);
+  // 구독 상태 확인
+  const { isPartnersSubscription } = useSubscriptionStore();
 
   const { getFactory, factory } = useGetFactory();
 
@@ -76,11 +79,12 @@ const ButtonSection = ({
             text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
             variant="whiteOutline"
             disabled={
-              !taxId &&
-              (!isFormFilled ||
-                !hasQuotationProducts ||
-                !isOrderStatus ||
-                isViewer)
+              !isPartnersSubscription() ||
+              (!taxId &&
+                (!isFormFilled ||
+                  !hasQuotationProducts ||
+                  !isOrderStatus ||
+                  isViewer))
             }
             onClick={() => {
               if (taxId) {
@@ -90,15 +94,21 @@ const ButtonSection = ({
               }
             }}
           />
-          {showTaxTooltip && !taxId && !isOrderStatus && (
-            <div className="absolute z-50 top-12 left-0 w-[350px]">
-              <Tooltip
-                text={'세금계산서는 주문을 확정한 후에 생성할 수 있어요.'}
-                color="white"
-                position="left"
-              />
-            </div>
-          )}
+          {showTaxTooltip &&
+            (!isPartnersSubscription() || (!taxId && !isOrderStatus)) && (
+              <div className="absolute z-50 top-12 left-0 w-[350px]">
+                <Tooltip
+                  text={
+                    !isPartnersSubscription()
+                      ? `Partners 플랜으로 업그레이드하면 
+                      세무/회계 기능을 사용할 수 있어요.`
+                      : '세금계산서는 주문을 확정한 후에 생성할 수 있어요.'
+                  }
+                  color="white"
+                  position="left"
+                />
+              </div>
+            )}
         </div>
         <MiniBtn text="출력" variant="whiteOutline" onClick={onPrintClick} />
         <MiniBtn
