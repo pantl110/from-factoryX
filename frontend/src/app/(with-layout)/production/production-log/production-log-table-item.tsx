@@ -7,6 +7,7 @@ import { ArrowLineUpRight } from '@phosphor-icons/react';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ProductionLogTableItemProps {
   plan: ProjectPlanModel;
@@ -32,9 +33,13 @@ const ProductionLogTableItem = ({
 }: ProductionLogTableItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   // 생산 완료 상태일 때만 수정 가능 // 조회자가 아닐때만 수정 가능
-  const isEditable = projectStatus === 'manufactured' && !isViewer;
+  const isEditable =
+    projectStatus === 'manufactured' && !isViewer && hasSubscription();
 
   // React Hook Form 설정
   const { control, watch, formState } = useForm({

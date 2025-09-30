@@ -19,6 +19,7 @@ import {
   useGetProjectStatus,
 } from '@/hooks';
 import Spinner from '@/ui/spinner';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface DeliveryProps {
   // quotationData: ProjectQuotationModel;
@@ -35,6 +36,9 @@ const Delivery = ({
 }: DeliveryProps) => {
   const params = useParams();
   const projectId = Number(params.id);
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const [isPrintAllDeliveryOverlayOpen, setIsPrintAllDeliveryOverlayOpen] =
     useState(false);
@@ -246,27 +250,23 @@ const Delivery = ({
           <div className="flex gap-2">
             <MiniBtn
               text="납품표 일괄 출력"
-              textColor="text-dg"
-              borderColor="border-lg"
+              variant="whiteOutline"
               onClick={() => setIsPrintAllDeliveryOverlayOpen(true)}
-              hoverColor="hover:bg-bg"
+              disabled={!hasSubscription()}
             />
             <MiniBtn
               text="납품표 출력"
-              textColor="text-dg"
-              borderColor="border-lg"
+              variant="whiteOutline"
               onClick={handlePrintDelivery}
-              hoverColor="hover:bg-bg"
-              disabled={checkedIds.length === 0}
+              disabled={checkedIds.length === 0 || !hasSubscription()}
             />
           </div>
           <div className="flex gap-2">
             <MiniBtn
               text="거래명세서 출력"
-              textColor="text-dg"
-              borderColor="border-lg"
+              variant="whiteOutline"
               onClick={() => setIsCreateTransactionOverlayviewOpen(true)}
-              hoverColor="hover:bg-bg"
+              disabled={!hasSubscription()}
             />
           </div>
         </div>

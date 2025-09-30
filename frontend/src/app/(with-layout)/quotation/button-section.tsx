@@ -43,6 +43,9 @@ const ButtonSection = ({
   const router = useRouter();
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
   const factoryId = useMemberStore((state) => state.factoryId);
   // 구독 상태 확인
   const { isPartnersSubscription } = useSubscriptionStore();
@@ -80,6 +83,7 @@ const ButtonSection = ({
             variant="whiteOutline"
             disabled={
               !isPartnersSubscription() ||
+              !hasSubscription() ||
               (!taxId &&
                 (!isFormFilled ||
                   !hasQuotationProducts ||
@@ -110,14 +114,24 @@ const ButtonSection = ({
               </div>
             )}
         </div>
-        <MiniBtn text="출력" variant="whiteOutline" onClick={onPrintClick} />
+        <MiniBtn
+          text="출력"
+          variant="whiteOutline"
+          onClick={onPrintClick}
+          disabled={!hasSubscription()}
+        />
         <MiniBtn
           text="이메일 전송"
           variant="whiteOutline"
           onClick={
             hasFactoryName ? onEmailClick : () => setIsNeedInfoModalOpen(true)
           }
-          disabled={!isFormFilled || !hasQuotationProducts || isViewer}
+          disabled={
+            !isFormFilled ||
+            !hasQuotationProducts ||
+            isViewer ||
+            !hasSubscription()
+          }
         />
 
         {isOrderStatus ? (
@@ -128,7 +142,12 @@ const ButtonSection = ({
               icon={ArrowRight}
               iconPosition="right"
               onClick={onStartProductionClick}
-              disabled={!isFormFilled || !hasQuotationProducts || isViewer}
+              disabled={
+                !isFormFilled ||
+                !hasQuotationProducts ||
+                isViewer ||
+                !hasSubscription()
+              }
             />
           </>
         ) : (
@@ -146,7 +165,9 @@ const ButtonSection = ({
                   // 에러가 발생하면 페이지 이동하지 않음
                 }
               }}
-              disabled={!isDirty || isViewer || isSaveDraftLoading}
+              disabled={
+                !isDirty || isViewer || isSaveDraftLoading || !hasSubscription()
+              }
             />
             <MiniBtn
               text="주문 확정"
@@ -166,7 +187,8 @@ const ButtonSection = ({
                 !isFormFilled ||
                 !hasQuotationProducts ||
                 isViewer ||
-                isSaveDraftLoading
+                isSaveDraftLoading ||
+                !hasSubscription()
               }
             />
           </>

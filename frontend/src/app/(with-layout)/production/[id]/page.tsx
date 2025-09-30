@@ -25,6 +25,7 @@ import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-m
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 const getTabsByStatus = (
   status: ProjectStatusType,
@@ -69,6 +70,9 @@ const ProductionPageContent = () => {
 
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const isPartnersSubscription = useSubscriptionStore(
+    (state) => state.isPartnersSubscription
+  );
 
   const [isLinkTaxInvoiceModalOpen, setIsLinkTaxInvoiceModalOpen] =
     useState(false);
@@ -259,7 +263,7 @@ const ProductionPageContent = () => {
                   onClick={() => {
                     setIsLinkTaxInvoiceModalOpen(true);
                   }}
-                  disabled={isViewer}
+                  disabled={isViewer || !isPartnersSubscription()}
                 />
                 {isLinkTaxInvoiceModalOpen && (
                   <LinkTaxModal

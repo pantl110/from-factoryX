@@ -14,6 +14,7 @@ import ProductDetail from '../stock/product/product-detail';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import PriceInfo from '@/ui/price-info';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface RequestInfoProps {
   onProductClick: (productId: number) => void;
@@ -33,6 +34,10 @@ const RequestInfo = ({
   productList,
 }: RequestInfoProps) => {
   const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const [isProductEnrollmentDropdownOpen, setIsProductEnrollmentDropdownOpen] =
     useState(false);
@@ -242,7 +247,7 @@ const RequestInfo = ({
           iconPosition="right"
           hoverColor="hover:bg-bg"
           onClick={() => setIsProductEnrollmentDropdownOpen(true)}
-          disabled={role === 'viewer'}
+          disabled={isViewer || !hasSubscription()}
         />
         {/* 품목 추가하기 드롭다운 */}
         {isProductEnrollmentDropdownOpen && (
@@ -275,7 +280,7 @@ const RequestInfo = ({
                   <th className="text-left px-3 flex-1">제작 수량</th>
                   <th className="text-left px-3 w-[100px]">단가</th>
                   <th className="text-left px-3 flex-1">금액</th>
-                  {role !== 'viewer' && <th className="w-9" />}
+                  {!isViewer && hasSubscription() && <th className="w-9" />}
                 </tr>
               </thead>
               <tbody>

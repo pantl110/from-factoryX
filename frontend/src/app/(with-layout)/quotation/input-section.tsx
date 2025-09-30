@@ -23,6 +23,7 @@ import {
 } from '@/hooks/format-number';
 import useGetClient from '@/hooks/factory/factory-client/use-get-client';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface InputSectionProps {
   setValue: UseFormSetValue<QuotationFormModel>;
@@ -42,6 +43,9 @@ const InputSection = ({
   const { clientList, getAllClientList } = useGetClient();
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const {
     setInput: setCompanyNameInput,
@@ -105,7 +109,7 @@ const InputSection = ({
                   onBlur={handleCompanyNameBlur}
                   ref={field.ref}
                   name={field.name}
-                  disabledReadOnly={isViewer}
+                  disabledReadOnly={isViewer || !hasSubscription()}
                 />
               );
             }}
@@ -138,7 +142,7 @@ const InputSection = ({
                 placeholder="사업자등록번호를 입력하세요."
                 required
                 showError={showErrors && !!errors.business_registration_number}
-                disabledReadOnly={isViewer}
+                disabledReadOnly={isViewer || !hasSubscription()}
                 value={field.value ?? ''}
                 onChange={(e) => {
                   const formatted = formatBusinessNumber(e.target.value);
@@ -162,7 +166,7 @@ const InputSection = ({
               placeholder="대표자명을 입력하세요."
               required
               showError={showErrors && !!errors.representative_name}
-              disabledReadOnly={isViewer}
+              disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
           )}
@@ -190,7 +194,7 @@ const InputSection = ({
               }}
               ref={field.ref}
               name={field.name}
-              disabledReadOnly={isViewer}
+              disabledReadOnly={isViewer || !hasSubscription()}
             />
           )}
         />
@@ -206,7 +210,7 @@ const InputSection = ({
               placeholder="업태를 입력하세요."
               showError={showErrors && !!errors.business_type}
               required
-              disabledReadOnly={isViewer}
+              disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
           )}
@@ -221,7 +225,7 @@ const InputSection = ({
               required
               placeholder="종목을 입력하세요."
               showError={showErrors && !!errors.business_category}
-              disabledReadOnly={isViewer}
+              disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
           )}
@@ -238,7 +242,7 @@ const InputSection = ({
               placeholder="사업장 주소를 입력하세요."
               required
               showError={showErrors && !!errors.address}
-              disabledReadOnly={isViewer}
+              disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
           )}
@@ -254,7 +258,7 @@ const InputSection = ({
               placeholder="담당자명을 입력하세요."
               required
               showError={showErrors && !!errors.manager}
-              disabledReadOnly={isViewer}
+              disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
           )}
@@ -274,7 +278,7 @@ const InputSection = ({
               placeholder="담당자 이메일을 입력하세요."
               required
               showError={showErrors && !!errors.email}
-              disabledReadOnly={isViewer}
+              disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
           )}
@@ -303,7 +307,7 @@ const InputSection = ({
                 }}
                 ref={field.ref}
                 name={field.name}
-                disabledReadOnly={isViewer}
+                disabledReadOnly={isViewer || !hasSubscription()}
               />
             );
           }}
@@ -330,7 +334,7 @@ const InputSection = ({
                 }}
                 ref={field.ref}
                 name={field.name}
-                disabledReadOnly={isViewer}
+                disabledReadOnly={isViewer || !hasSubscription()}
               />
             );
           }}

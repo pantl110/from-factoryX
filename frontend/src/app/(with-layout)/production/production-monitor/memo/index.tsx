@@ -7,6 +7,7 @@ import { useState } from 'react';
 import useUpdateProjectLog from '@/hooks/project/project-log/use-update-project-log';
 import { ProjectStatusType } from '@/types/status-type';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface MemoSectionProps {
   title: string;
@@ -25,6 +26,9 @@ const MemoSection = ({
 }: MemoSectionProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const { isToastOpen: isSaveToastOpen, isVisible, showToast } = useToast();
   const { updateProjectLog, isLoading } = useUpdateProjectLog();
@@ -85,7 +89,7 @@ const MemoSection = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsEditMode(true)}
-                disabled={isViewer}
+                disabled={isViewer || !hasSubscription()}
               />
             ) : (
               <>

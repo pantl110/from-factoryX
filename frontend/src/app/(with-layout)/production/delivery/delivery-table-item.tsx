@@ -15,6 +15,7 @@ import { useUpdateQuotationProductDelivery } from '@/hooks/document/quotation/us
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface DeliveryTableItemProps {
   data: ProjectQuotationProductsModel;
@@ -42,6 +43,9 @@ const DeliveryTableItem = ({
 }: DeliveryTableItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const {
     id: quotationProductId,
@@ -217,28 +221,36 @@ const DeliveryTableItem = ({
   return (
     <>
       <div className="flex items-center h-14 min-w-[1305px] rounded border-b border-lg">
-        <Checkbox isChecked={isChecked} onToggle={onToggle} />
+        {hasSubscription() && (
+          <Checkbox isChecked={isChecked} onToggle={onToggle} />
+        )}
         <div className="w-[150px] flex items-center py-3 px-2">
           <Chip
             text={deliveryStatus}
             bgColor={bgColor}
             textColor={textColor}
-            state={isEditable && !isViewer}
+            state={isEditable && !isViewer && hasSubscription()}
             onClick={
-              isEditable && !isViewer ? (e) => e && openDropdown(e) : undefined
+              isEditable && !isViewer && hasSubscription()
+                ? (e) => e && openDropdown(e)
+                : undefined
             }
           />
         </div>
         <div
-          className="flex-2 px-3 flex justify-between cursor-pointer group"
-          onClick={() => onItemClick(data)}
+          className={`flex-2 px-3 flex justify-between ${
+            hasSubscription() ? 'cursor-pointer group' : 'cursor-default'
+          }`}
+          onClick={hasSubscription() ? () => onItemClick(data) : undefined}
         >
           <p className=" text-dg Me_Body-1 truncate" title={productName || '-'}>
             {productName || '-'}
           </p>
-          <p className="shrink-0 Re_Body-1 text-gr opacity-0 group-hover:opacity-100 transition-opacity duration-200 ">
-            납품표 보기
-          </p>
+          {hasSubscription() && (
+            <p className="shrink-0 Re_Body-1 text-gr opacity-0 group-hover:opacity-100 transition-opacity duration-200 ">
+              납품표 보기
+            </p>
+          )}
         </div>
         <p
           className="flex-1 px-3 text-dg Me_Body-1 truncate cursor-default"
@@ -282,7 +294,10 @@ const DeliveryTableItem = ({
                 placeholder="YYYY-MM-DD"
                 className="text-dg Me_Body-1 focus:outline-none w-full"
                 disabled={
-                  projectStatus === 'completed' || isLoading || isViewer
+                  projectStatus === 'completed' ||
+                  isLoading ||
+                  isViewer ||
+                  !hasSubscription()
                 }
                 onChange={handleDateInput}
                 maxLength={10}

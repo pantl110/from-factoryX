@@ -1,5 +1,6 @@
 import { ProjectStatusType } from '@/types/status-type';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ProductionLogTableHeaderProps {
   projectStatus: ProjectStatusType;
@@ -10,6 +11,9 @@ const ProductionLogTableHeader = ({
 }: ProductionLogTableHeaderProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   return (
     <div className="flex items-center h-12 min-w-[1559px] Me_Body-1 text-sv rounded bg-lg-table cursor-default">
@@ -25,7 +29,7 @@ const ProductionLogTableHeader = ({
       <p className="w-[140px] px-3">단위당 소요 시간</p>
       <p className="w-[150px] px-3">자재 상태</p>
       <p className="w-[200px] px-3">마감일자</p>
-      {projectStatus === 'manufactured' && !isViewer && (
+      {projectStatus === 'manufactured' && !isViewer && hasSubscription() && (
         <div className="w-[150px]" />
       )}
     </div>

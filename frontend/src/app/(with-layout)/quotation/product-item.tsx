@@ -8,6 +8,7 @@ import { useGetProduct } from '@/hooks';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import { ArrowLineUpRight } from '@phosphor-icons/react/dist/ssr';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ProductItemProps {
   data?: QuotationProductDetailResponseModel;
@@ -34,6 +35,9 @@ const ProductItem = ({
 }: ProductItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const [searchTerm, setSearchTerm] = useState('');
   const { getProductList } = useGetProduct();
@@ -112,7 +116,7 @@ const ProductItem = ({
               onChange={(e) => {
                 setSearchTerm(e.target.value);
               }}
-              disabled={isViewer}
+              disabled={isViewer || !hasSubscription()}
             />
           )}
         </td>
@@ -173,7 +177,7 @@ const ProductItem = ({
                 const numericValue = value.replace(/[^0-9]/g, '');
                 onChange?.('quantity', numericValue);
               }}
-              disabled={isViewer}
+              disabled={isViewer || !hasSubscription()}
             />
           )}
         </td>
@@ -210,7 +214,7 @@ const ProductItem = ({
                 const numericValue = value.replace(/[^0-9]/g, '');
                 onChange?.('unit_price', numericValue);
               }}
-              disabled={isViewer}
+              disabled={isViewer || !hasSubscription()}
             />
           )}
         </td>
@@ -228,7 +232,7 @@ const ProductItem = ({
               : ''}
           </p>
         </td>
-        {canDelete && !onlyRead && !isViewer && (
+        {canDelete && !onlyRead && !isViewer && hasSubscription() && (
           <td className="w-9 h-full flex justify-center items-center">
             <button
               className="flex items-center justify-center w-full h-9 rounded-[8px] hover:bg-bg cursor-pointer"

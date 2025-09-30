@@ -64,9 +64,12 @@ const TopBarContent = ({
   );
   const deliveryData = usePageStatusStore((state) => state.deliveryData);
 
-  // role 확인
+  // role, 구독 확인
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   // 툴팁 표시 조건 확인 (파트너스 구독이 아닐때)
   const shouldShowTooltip = !isPartnersSubscription();
@@ -100,7 +103,7 @@ const TopBarContent = ({
               handleChangeStatus('delivery');
             }
           }}
-          disabled={isViewer}
+          disabled={isViewer || !hasSubscription()}
         />
       </div>
     );
@@ -183,7 +186,9 @@ const TopBarContent = ({
             text="다음"
             variant="secondary"
             onClick={onProductionPlanSaveClick}
-            disabled={!isProductionPlanSaveActive || isViewer}
+            disabled={
+              !isProductionPlanSaveActive || isViewer || !hasSubscription()
+            }
           />
         </div>
         {isTaxPanelOpen && (
@@ -242,7 +247,9 @@ const TopBarContent = ({
                 handleChangeStatus('manufactured');
               }
             }}
-            disabled={!isAllProductionCompleted || isViewer}
+            disabled={
+              !isAllProductionCompleted || isViewer || !hasSubscription()
+            }
           />
         </div>
         {isTaxPanelOpen && (
@@ -299,7 +306,7 @@ const TopBarContent = ({
               text="반품 등록"
               variant="red"
               onClick={() => setAddReturnModalOpen(true)}
-              disabled={isViewer}
+              disabled={isViewer || !hasSubscription()}
             />
           )}
         </div>
@@ -366,7 +373,7 @@ const TopBarContent = ({
                   await handleChangeStatus('delivery');
                 }
               }}
-              disabled={!isProductionLogValid || isViewer}
+              disabled={!isProductionLogValid || isViewer || !hasSubscription()}
             />
           )}
         </div>
@@ -422,7 +429,7 @@ const TopBarContent = ({
             text="반품 등록"
             variant="red"
             onClick={() => setAddReturnModalOpen(true)}
-            disabled={isViewer}
+            disabled={isViewer || !hasSubscription()}
           />
           {pageStatus === 'delivery' && (
             <MiniBtn
@@ -431,6 +438,7 @@ const TopBarContent = ({
               onClick={onMoveToStorageClick}
               disabled={
                 isViewer ||
+                !hasSubscription() ||
                 !deliveryData ||
                 deliveryData.some((item) => {
                   // delivery_date가 없거나 불완전한 형식이면 disabled

@@ -20,6 +20,7 @@ import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
 import IconBtn from '@/ui/icon-btn';
+import useSubscriptionStore from '@/store/subscription-store';
 
 // Form 데이터 타입 정의
 interface ProductionPlanFormDataModel {
@@ -43,7 +44,6 @@ interface TableItemProps {
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
   isFirstOfProduct?: boolean; // 같은 품목의 첫 번째 plan인지 여부
-  isViewer?: boolean; // viewer 권한 여부
 }
 
 const TableItem = ({
@@ -58,9 +58,11 @@ const TableItem = ({
   projectStatus,
   isFirstOfProduct = true,
 }: TableItemProps) => {
-  // role 확인
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   // 백엔드에서 한글 상태값을 반환하므로 영어로 변환
   const getOperationStatus = (status: string): OperationStatusType => {
@@ -176,14 +178,16 @@ const TableItem = ({
         cursor={
           projectStatus === 'pending' ||
           item.quotation_product?.is_delivery ||
-          isViewer
+          isViewer ||
+          !hasSubscription()
             ? 'cursor-default'
             : 'cursor-pointer'
         }
         onClick={
           projectStatus === 'pending' ||
           item.quotation_product?.is_delivery ||
-          isViewer
+          isViewer ||
+          !hasSubscription()
             ? undefined
             : (e) => {
                 if (e && onOperationStatusClick) {
@@ -195,7 +199,8 @@ const TableItem = ({
         state={
           projectStatus === 'pending' ||
           item.quotation_product?.is_delivery ||
-          isViewer
+          isViewer ||
+          !hasSubscription()
             ? false
             : true
         }
@@ -263,7 +268,9 @@ const TableItem = ({
             }}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={isViewer || operationStatus !== 'pending'}
+            disabled={
+              isViewer || !hasSubscription() || operationStatus !== 'pending'
+            }
           />
         )}
       />
@@ -300,12 +307,12 @@ const TableItem = ({
     '생산 설비': (
       <div
         className={`flex items-center gap-2.5 justify-between ${
-          operationStatus !== 'pending' || isViewer
+          operationStatus !== 'pending' || isViewer || !hasSubscription()
             ? 'cursor-default'
             : 'cursor-pointer'
         }`}
         onClick={(e) => {
-          if (operationStatus === 'pending' && !isViewer) {
+          if (operationStatus === 'pending' && !isViewer && hasSubscription()) {
             e.stopPropagation();
             onFacilityClick(e, item.id);
           }
@@ -314,7 +321,7 @@ const TableItem = ({
         <p className="truncate" title={selectedEquipment.name}>
           {selectedEquipment.name}
         </p>
-        {operationStatus === 'pending' && !isViewer && (
+        {operationStatus === 'pending' && !isViewer && hasSubscription() && (
           <CaretDown size={16} className="text-sv shrink-0" />
         )}
       </div>
@@ -344,7 +351,9 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={isViewer || operationStatus !== 'pending'}
+            disabled={
+              isViewer || !hasSubscription() || operationStatus !== 'pending'
+            }
           />
         )}
       />
@@ -377,14 +386,16 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={isViewer || operationStatus !== 'pending'}
+            disabled={
+              isViewer || !hasSubscription() || operationStatus !== 'pending'
+            }
           />
         )}
       />
     ),
     '': (
       <div className="w-full h-full flex justify-between items-center">
-        {operationStatus === 'pending' && !isViewer && (
+        {operationStatus === 'pending' && !isViewer && hasSubscription() && (
           <MiniBtn
             text="저장"
             onClick={handleSave}
@@ -395,14 +406,17 @@ const TableItem = ({
             height="h-8"
           />
         )}
-        {!isFirstOfProduct && operationStatus === 'pending' && !isViewer && (
-          <button
-            className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-all duration-200 ease-in-out"
-            onClick={() => onDelete?.(item.id)}
-          >
-            <Trash size={20} className="text-sv" />
-          </button>
-        )}
+        {!isFirstOfProduct &&
+          operationStatus === 'pending' &&
+          !isViewer &&
+          hasSubscription() && (
+            <button
+              className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg transition-all duration-200 ease-in-out"
+              onClick={() => onDelete?.(item.id)}
+            >
+              <Trash size={20} className="text-sv" />
+            </button>
+          )}
       </div>
     ),
   };

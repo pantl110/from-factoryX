@@ -8,6 +8,7 @@ import { ClientModel, ProjectStatusType } from '@/types/data-model';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import useMemberStore from '@/store/member-store';
 import { useSearchParams } from 'next/navigation';
+import useSubscriptionStore from '@/store/subscription-store';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -53,6 +54,9 @@ const TitleSec = ({
 }: TitleSecProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   // URL에서 projectId 확인
   const searchParams = useSearchParams();
@@ -79,7 +83,7 @@ const TitleSec = ({
         <div className="flex justify-between">
           <div
             className={`${
-              isOrderStatus || isViewer || !hasProjectId
+              isOrderStatus || isViewer || !hasProjectId || !hasSubscription()
                 ? 'cursor-default'
                 : 'cursor-pointer'
             } relative w-fit`}
@@ -106,13 +110,23 @@ const TitleSec = ({
                     ? 'text-red'
                     : 'text-yellow'
               }
-              state={!isOrderStatus && hasProjectId ? !isViewer : false}
+              state={
+                !isOrderStatus && hasProjectId
+                  ? !isViewer && hasSubscription()
+                  : false
+              }
               onClick={(e) => {
-                if (isOrderStatus || isViewer || !hasProjectId) return;
+                if (
+                  isOrderStatus ||
+                  isViewer ||
+                  !hasProjectId ||
+                  !hasSubscription()
+                )
+                  return;
                 if (e) openQuotationStatusDropdown(e);
               }}
               cursor={
-                isOrderStatus || isViewer || !hasProjectId
+                isOrderStatus || isViewer || !hasProjectId || !hasSubscription()
                   ? 'cursor-default'
                   : 'cursor-pointer'
               }
