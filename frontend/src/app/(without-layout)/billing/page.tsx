@@ -52,7 +52,9 @@ const BillingPageContent = () => {
       const res = (await getSubscriptionStatus(factory)) as unknown;
       const resObj =
         res && typeof res === 'object' ? (res as Record<string, unknown>) : {};
-      const success = Boolean((resObj.success as boolean | undefined) ?? false);
+      const isSuccess = Boolean(
+        (resObj.success as boolean | undefined) ?? false
+      );
       const data = resObj.data as
         | {
             subscription_history?: {
@@ -67,7 +69,7 @@ const BillingPageContent = () => {
             is_active?: boolean;
           }
         | undefined;
-      if (success && data && data.subscription_history) {
+      if (isSuccess && data && data.subscription_history) {
         setSubscription({
           id: data.subscription_history.id ?? null,
           created_at: data.subscription_history.created_at ?? null,

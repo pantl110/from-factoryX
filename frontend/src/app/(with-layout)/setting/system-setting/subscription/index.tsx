@@ -46,9 +46,6 @@ const Subscription = () => {
 
   const planTypes: PlanType[] = ['BASIC', 'PARTNERS'];
   const isAdmin = role === 'admin';
-  const hasSubscription = useSubscriptionStore(
-    (state) => state.hasSubscription
-  );
 
   useEffect(() => {
     if (factoryId) {
