@@ -6,6 +6,7 @@ import {
 } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 export interface FacilityTableItemProps {
   facility: EquipmentResponseModel;
@@ -22,6 +23,9 @@ const FacilityTableItem = ({
 }: FacilityTableItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const statusColor = facility.status
     ? EquipmentStatusColorMap[facility.status as EquipmentStatusType]
@@ -37,7 +41,7 @@ const FacilityTableItem = ({
         if (e.key === 'Enter' || e.key === ' ') onClick?.();
       }}
     >
-      {!isViewer && (
+      {!isViewer && hasSubscription() && (
         <Checkbox
           isChecked={isChecked || false}
           onToggle={onToggle || (() => {})}

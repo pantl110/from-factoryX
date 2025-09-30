@@ -1,5 +1,6 @@
 import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface PermissionTableHeaderProps {
   isAllChecked: boolean;
@@ -12,10 +13,13 @@ const PermissionTableHeader = ({
 }: PermissionTableHeaderProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   return (
-    <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-1 border-t border-b border-lg">
-      {!isViewer && (
+    <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-1 border-t border-b border-lg cursor-default">
+      {!isViewer && hasSubscription() && (
         <Checkbox isChecked={isAllChecked} onToggle={onToggleAll} />
       )}
       <p className="px-3 flex-1">가입 상태</p>

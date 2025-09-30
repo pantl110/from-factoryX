@@ -1,5 +1,6 @@
 import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ClientTableHeaderProps {
   isAllChecked?: boolean;
@@ -12,10 +13,13 @@ const ClientTableHeader = ({
 }: ClientTableHeaderProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   return (
     <div className="flex h-12 min-w-[1697px] items-center border-t border-b border-[#eeeeee] Me_Body-1 text-sv">
-      {!isViewer && (
+      {!isViewer && hasSubscription() && (
         <Checkbox
           isChecked={isAllChecked || false}
           onToggle={onToggleAll || (() => {})}

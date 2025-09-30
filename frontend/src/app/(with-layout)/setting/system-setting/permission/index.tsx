@@ -18,8 +18,13 @@ import {
   useDeleteMember,
   useGetFactory,
 } from '@/hooks';
+import useSubscriptionStore from '@/store/subscription-store';
 const Permission = () => {
   const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -143,7 +148,15 @@ const Permission = () => {
           <div className="flex items-center justify-between w-full">
             <h3 className="Heading-3">팀원 권한</h3>
             <div className="flex gap-2.5">
-              <div className="relative">
+              <div
+                className="relative"
+                onMouseEnter={
+                  !isFactoryInfoComplete ? tooltip.onMouseEnter : undefined
+                }
+                onMouseLeave={
+                  !isFactoryInfoComplete ? tooltip.onMouseLeave : undefined
+                }
+              >
                 <MiniBtn
                   text="초대하기"
                   textColor="text-primary"
@@ -152,25 +165,24 @@ const Permission = () => {
                     setIsInviteModalOpen(true);
                   }}
                   hoverColor="hover:bg-secondary-hover"
-                  disabled={!isFactoryInfoComplete || role === 'viewer'}
-                  onMouseEnter={
-                    !isFactoryInfoComplete ? tooltip.onMouseEnter : undefined
-                  }
-                  onMouseLeave={
-                    !isFactoryInfoComplete ? tooltip.onMouseLeave : undefined
+                  disabled={
+                    !isFactoryInfoComplete || isViewer || !hasSubscription()
                   }
                 />
-                {!isFactoryInfoComplete && tooltip.isVisible && (
-                  <div className="absolute w-[400px] flex justify-end top-12 right-0 z-10">
-                    <Tooltip
-                      color="red"
-                      text="팀원을 초대 전, 회사정보(필수 항목)를 먼저 입력해주세요."
-                      position="right"
-                    />
-                  </div>
-                )}
+                {!isFactoryInfoComplete &&
+                  hasSubscription() &&
+                  isViewer &&
+                  tooltip.isVisible && (
+                    <div className="absolute w-[400px] flex justify-end top-12 right-0 z-10">
+                      <Tooltip
+                        color="red"
+                        text="팀원을 초대 전, 회사정보(필수 항목)를 먼저 입력해주세요."
+                        position="right"
+                      />
+                    </div>
+                  )}
               </div>
-              {visibleMembers.length > 0 && role !== 'viewer' && (
+              {visibleMembers.length > 0 && !isViewer && hasSubscription() && (
                 <>
                   <MiniBtn
                     text="취소"

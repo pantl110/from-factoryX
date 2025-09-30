@@ -17,10 +17,15 @@ import {
   useDeleteClient,
 } from '@/hooks';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 const MasterData = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const [isEquipmentCreatePanelOpen, setIsEquipmentCreatePanelOpen] =
     useState(false);
@@ -348,12 +353,13 @@ const MasterData = () => {
               borderColor="border-lg"
               hoverColor="hover:bg-lg"
               onClick={handleAddBtnClick}
-              disabled={!factoryId || role === 'viewer'}
+              disabled={!factoryId || isViewer || !hasSubscription()}
             />
           )}
 
           {/* 삭제 버튼 */}
-          {role !== 'viewer' &&
+          {!isViewer &&
+            hasSubscription() &&
             ((settingChip === 'equipment' &&
               equipmentListForFacility.data.length > 0) ||
               (settingChip === 'client' &&
@@ -363,17 +369,12 @@ const MasterData = () => {
                   text="취소"
                   variant="whiteOutline"
                   onClick={handleClearAllChecked}
-                  disabled={role === 'viewer'}
                 />
                 <MiniBtn
                   text={getDeleteButtonText()}
                   variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
                   onClick={handleDeleteBtnClick}
-                  disabled={
-                    isDeleteLoading ||
-                    isDeleteClientLoading ||
-                    role === 'viewer'
-                  }
+                  disabled={isDeleteLoading || isDeleteClientLoading}
                 />
               </>
             )}

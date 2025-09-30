@@ -6,6 +6,7 @@ import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import useUpdateMember from '@/hooks/factory/factory-member/use-update-member';
 import { MemberResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface PermissionTableItemProps {
   item: MemberResponseModel;
@@ -33,6 +34,9 @@ const PermissionTableItem = ({
 }: PermissionTableItemProps) => {
   const factoryRole = useMemberStore((state) => state.role);
   const isViewer = factoryRole === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const { status, name, email, role, invited_at: invitedAt, factory } = item;
   const textColor = status === 'active' ? 'text-primary' : 'text-dg';
@@ -92,8 +96,8 @@ const PermissionTableItem = ({
   return (
     <>
       <>
-        <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-lg group">
-          {!isViewer && (
+        <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-lg group cursor-default">
+          {!isViewer && hasSubscription() && (
             <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
           )}
           <p className={`px-3 flex-1 ${textColor}`}>
@@ -110,11 +114,21 @@ const PermissionTableItem = ({
               text={roleText}
               textColor={authColors.chipColor.text}
               bgColor={authColors.chipColor.bg}
-              hover={authColors.chipColor.hover}
-              state={true}
-              cursor={'cursor-pointer'}
+              hover={
+                !isViewer && hasSubscription()
+                  ? authColors.chipColor.hover
+                  : undefined
+              }
+              state={!isViewer && hasSubscription() ? true : false}
+              cursor={
+                !isViewer && hasSubscription()
+                  ? 'cursor-pointer'
+                  : 'cursor-default'
+              }
               onClick={(e) => {
-                openAuthDropdown(e as React.MouseEvent);
+                if (!isViewer && hasSubscription()) {
+                  openAuthDropdown(e as React.MouseEvent);
+                }
               }}
             />
           </div>

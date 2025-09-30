@@ -8,6 +8,8 @@ import {
 } from '@/hooks';
 import { SubscriptionStatusResponseModel } from '@/types/data-model';
 import CancelSubscriptionModal from './modals/cancel-subscription-modal';
+import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface PlanItemProps {
   type: PlanType;
@@ -16,7 +18,6 @@ interface PlanItemProps {
   isLoading: boolean;
   refreshSubscriptionData: () => void;
   hasScheduledSubscription: boolean;
-  isAdmin: boolean;
 }
 
 const PlanItem = ({
@@ -26,8 +27,13 @@ const PlanItem = ({
   isLoading,
   refreshSubscriptionData,
   hasScheduledSubscription,
-  isAdmin,
 }: PlanItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isAdmin = role === 'admin';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   const info = PLAN_INFO[type];
   const subscriptionType =
     subscriptionStatus?.is_active === true &&
@@ -99,7 +105,9 @@ const PlanItem = ({
                 text="구독 예정 취소"
                 variant="red"
                 onClick={handleCancelScheduledSubscription}
-                disabled={!isAdmin || isCancelScheduledLoading}
+                disabled={
+                  !isAdmin || isCancelScheduledLoading || !hasSubscription()
+                }
               />
             )
           ) : // hasScheduledSubscription이 false일 때
@@ -110,14 +118,14 @@ const PlanItem = ({
                 text="해지 취소"
                 variant="red"
                 onClick={handleSubscribe}
-                disabled={!isAdmin}
+                disabled={!isAdmin || !hasSubscription()}
               />
             ) : (
               <MiniBtn
                 text="구독 해지"
                 variant="secondary"
                 onClick={() => setIsCancelSubscriptionModalOpen(true)}
-                disabled={!isAdmin}
+                disabled={!isAdmin || !hasSubscription()}
               />
             )
           ) : (
@@ -126,7 +134,7 @@ const PlanItem = ({
               text="구독"
               variant="primary"
               onClick={() => setIsSubscribeModalOpen(true)}
-              disabled={!isAdmin}
+              disabled={!isAdmin || !hasSubscription()}
             />
           )}
         </div>

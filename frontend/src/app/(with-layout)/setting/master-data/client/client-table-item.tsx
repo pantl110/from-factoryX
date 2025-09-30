@@ -3,6 +3,7 @@ import { ClientResponseModel } from '@/types/data-model';
 import Chip from '@/ui/chip';
 import { ClientTypeColorMap } from '@/types/status-type';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ClientTableItemProps {
   client: ClientResponseModel;
@@ -19,13 +20,16 @@ const ClientTableItem = ({
 }: ClientTableItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   return (
     <div
       className="flex h-14 items-center min-w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
-      {!isViewer && (
+      {!isViewer && hasSubscription() && (
         <Checkbox
           isChecked={isChecked || false}
           onToggle={onToggleCheck || (() => {})}

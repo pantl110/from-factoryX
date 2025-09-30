@@ -14,6 +14,7 @@ import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 const CompanyInfo = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
@@ -23,6 +24,9 @@ const CompanyInfo = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isAdmin = role === 'admin';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const {
     register,
@@ -127,14 +131,14 @@ const CompanyInfo = () => {
               required
               {...register('name')}
               showError={!!errors.name}
-              disabledSetting={!isAdmin}
+              disabledSetting={!isAdmin || !hasSubscription()}
             />
             <Input
               label="사업자등록번호"
               placeholder="사업자등록번호를 입력하세요."
               required
               showError={!!errors.business_registration_number}
-              disabledSetting={!isAdmin}
+              disabledSetting={!isAdmin || !hasSubscription()}
               {...register('business_registration_number', {
                 onChange: (e) => {
                   const formatted = formatBusinessNumber(e.target.value);
@@ -152,7 +156,7 @@ const CompanyInfo = () => {
               placeholder="대표자명을 입력하세요."
               label="대표자명"
               required
-              disabledSetting={!isAdmin}
+              disabledSetting={!isAdmin || !hasSubscription()}
               {...register('representative_name')}
             />
             <Input
@@ -160,7 +164,7 @@ const CompanyInfo = () => {
               label="이메일"
               required
               showError={!!errors.manager_email}
-              disabledSetting={!isAdmin}
+              disabledSetting={!isAdmin || !hasSubscription()}
               {...register('manager_email', {
                 pattern: {
                   value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -174,7 +178,7 @@ const CompanyInfo = () => {
               placeholder="연락처를 입력하세요."
               label="연락처"
               showError={!!errors.manager_phone}
-              disabledSetting={!isAdmin}
+              disabledSetting={!isAdmin || !hasSubscription()}
               {...register('manager_phone', {
                 onChange: (e) => {
                   const formatted = formatPhoneNumber(e.target.value);
@@ -190,7 +194,7 @@ const CompanyInfo = () => {
               placeholder="팩스 번호를 입력하세요."
               label="팩스 번호"
               showError={!!errors.manager_fax}
-              disabledSetting={!isAdmin}
+              disabledSetting={!isAdmin || !hasSubscription()}
               {...register('manager_fax', {
                 onChange: (e) => {
                   const formatted = formatFaxNumber(e.target.value);
@@ -207,23 +211,23 @@ const CompanyInfo = () => {
             <Input
               placeholder="업태를 입력하세요."
               label="업태"
-              disabledSetting={!isAdmin}
+              disabledSetting={!isAdmin || !hasSubscription()}
               {...register('business_type')}
             />
             <Input
               placeholder="종목을 입력하세요."
               label="종목"
-              disabledSetting={!isAdmin}
+              disabledSetting={!isAdmin || !hasSubscription()}
               {...register('business_category')}
             />
           </div>
           <Input
             placeholder="사업장 주소를 입력하세요."
             label="사업장 주소"
-            disabledSetting={!isAdmin}
+            disabledSetting={!isAdmin || !hasSubscription()}
             {...register('business_address')}
           />
-          {isAdmin && (
+          {isAdmin && hasSubscription() && (
             <div className="flex justify-end">
               <MiniBtn
                 text="저장"

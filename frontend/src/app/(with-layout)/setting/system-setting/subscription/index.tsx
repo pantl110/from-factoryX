@@ -46,6 +46,9 @@ const Subscription = () => {
 
   const planTypes: PlanType[] = ['BASIC', 'PARTNERS'];
   const isAdmin = role === 'admin';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   useEffect(() => {
     if (factoryId) {
@@ -263,7 +266,6 @@ const Subscription = () => {
             isLoading={isSubscribeLoading}
             refreshSubscriptionData={refreshSubscriptionData}
             hasScheduledSubscription={hasScheduledSubscription}
-            isAdmin={isAdmin}
           />
         ))}
       </div>
@@ -274,7 +276,6 @@ const Subscription = () => {
         registerCard={registerCard}
         setIsChangeModalOpen={setIsChangeModalOpen}
         setIsCardDeleteModalOpen={setIsCardDeleteModalOpen}
-        isAdmin={isAdmin}
       />
 
       {/* 결제 내역 */}

@@ -1,12 +1,13 @@
 import MiniBtn from '@/ui/mini-btn';
 import { PaymentAuthModel } from '@/types/data-model';
+import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface RegisterCardProps {
   paymentAuth: PaymentAuthModel | null;
   registerCard: () => void;
   setIsChangeModalOpen: (isOpen: boolean) => void;
   setIsCardDeleteModalOpen: (isOpen: boolean) => void;
-  isAdmin: boolean;
 }
 
 const RegisterCard = ({
@@ -14,8 +15,13 @@ const RegisterCard = ({
   registerCard,
   setIsChangeModalOpen,
   setIsCardDeleteModalOpen,
-  isAdmin,
 }: RegisterCardProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isAdmin = role === 'admin';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between">
@@ -28,7 +34,7 @@ const RegisterCard = ({
               ? () => setIsChangeModalOpen(true)
               : registerCard
           }
-          disabled={!isAdmin}
+          disabled={!isAdmin || !hasSubscription()}
         />
       </div>
 
@@ -44,7 +50,7 @@ const RegisterCard = ({
               bgColor="bg-red-8"
               hoverColor="hover:bg-red-hover"
               onClick={() => setIsCardDeleteModalOpen(true)}
-              disabled={!isAdmin}
+              disabled={!isAdmin || !hasSubscription()}
             />
           </>
         ) : (

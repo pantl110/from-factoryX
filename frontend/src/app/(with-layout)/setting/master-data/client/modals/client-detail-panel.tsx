@@ -14,6 +14,7 @@ import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
 import { ClientTypeColorMap } from '@/types/status-type';
 import Chip from '@/ui/chip';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ClientDetailPanelProps {
   clientId: number;
@@ -32,6 +33,9 @@ const ClientDetailPanel = ({
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const {
     handleSubmit,
@@ -134,7 +138,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="거래처명"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="(필수) 거래처명을 입력하세요."
                   required
                   {...field}
@@ -151,7 +155,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="사업자등록번호"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="(필수) 사업자등록번호를 입력하세요."
                   required
                   value={field.value}
@@ -172,7 +176,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="대표자명"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="(필수) 대표자명을 입력하세요."
                   required
                   {...field}
@@ -188,7 +192,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="이메일"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="-"
                   {...field}
                 />
@@ -205,7 +209,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="연락처"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="-"
                   value={field.value}
                   onChange={(e) => {
@@ -223,7 +227,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="팩스 번호"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="-"
                   value={field.value}
                   onChange={(e) => {
@@ -243,7 +247,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="업태"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="(필수) 업태를 입력하세요."
                   required
                   {...field}
@@ -257,7 +261,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="종목"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="(필수) 종목을 입력하세요."
                   required
                   {...field}
@@ -273,7 +277,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="사업장 주소"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="(필수) 사업장 주소를 입력하세요."
                   required
                   {...field}
@@ -318,7 +322,7 @@ const ClientDetailPanel = ({
               render={({ field }) => (
                 <InfoLabelValue
                   label="비고"
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="-"
                   textarea={true}
                   {...field}

@@ -11,6 +11,7 @@ import MiniBtn from '@/ui/mini-btn';
 import { useEffect, useState } from 'react';
 import useGetEquipmentDetail from '@/hooks/factory/factory-equipment/use-get-equipment-detail';
 import NoHistoryBox from '@/ui/no-history-box';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface FacilityDetailPanelProps {
   facilityId?: number;
@@ -36,6 +37,9 @@ const FacilityDetailPanel = ({
 }: FacilityDetailPanelProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const { createEquipment } = useCreateEquipment();
   const { updateEquipment } = useUpdateEquipment();
@@ -204,7 +208,7 @@ const FacilityDetailPanel = ({
                     placeholder="(필수) 설비명을 입력하세요."
                     required
                     {...field}
-                    disabled={isViewer}
+                    isEditing={!isViewer && hasSubscription()}
                   />
                 )}
               />
@@ -230,7 +234,7 @@ const FacilityDetailPanel = ({
                   <InfoLabelValue
                     label="자동 배정 순위"
                     placeholder="(필수) 자동 배정 순위를 입력하세요."
-                    disabled={isViewer}
+                    isEditing={!isViewer && hasSubscription()}
                     inputType="text"
                     required
                     value={
@@ -255,7 +259,7 @@ const FacilityDetailPanel = ({
                   <InfoLabelValue
                     label="설비위치"
                     placeholder="설비위치를 입력하세요."
-                    disabled={isViewer}
+                    isEditing={!isViewer && hasSubscription()}
                     {...field}
                   />
                 )}
@@ -275,7 +279,7 @@ const FacilityDetailPanel = ({
                   className="w-full border border-lg rounded-lg pt-5 px-3 Re_Body-1 text-gr resize-none"
                   placeholder="특이사항을 입력하세요."
                   {...field}
-                  disabled={isViewer}
+                  disabled={isViewer || !hasSubscription()}
                 />
               )}
             />
