@@ -23,8 +23,8 @@ interface ProfileProps {
 }
 
 const Profile = ({ userInfo }: ProfileProps) => {
-  const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
+
   const { isToastOpen, isVisible, showToast } = useToast();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);

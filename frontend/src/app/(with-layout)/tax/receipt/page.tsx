@@ -23,8 +23,7 @@ const TaxReceiptPage = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false); // 패널 열기/닫기 상태 관리
 
   // 공장 ID 가져오기
-  const factoryStore = useMemberStore();
-  const factoryId = factoryStore.factoryId;
+  const { factoryId } = useMemberStore();
 
   // 구독 상태 확인
   const { isPartnersSubscription } = useSubscriptionStore();
