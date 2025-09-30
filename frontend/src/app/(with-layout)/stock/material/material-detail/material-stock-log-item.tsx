@@ -3,12 +3,17 @@ import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface MaterialStockLogItemProps {
   data: MaterialHistoryResponseModel;
 }
 
 const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
+  const isPartnersSubscription = useSubscriptionStore(
+    (state) => state.isPartnersSubscription
+  );
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'consumption':
@@ -56,6 +61,7 @@ const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
             onClick={() => {
               setIsTaxDetailPanelOpen(true);
             }}
+            disabled={!isPartnersSubscription()}
           />
         ) : (
           '-'
@@ -72,6 +78,7 @@ const MaterialStockLogItem = ({ data }: MaterialStockLogItemProps) => {
             onClick={() => {
               setIsCashReceiptDetailPanelOpen(true);
             }}
+            disabled={!isPartnersSubscription()}
           />
         ) : (
           '-'

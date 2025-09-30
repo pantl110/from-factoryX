@@ -5,6 +5,7 @@ import {
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 type ConnectionModelType =
   | MaterialProductConnectionModel
@@ -35,6 +36,9 @@ const StockStatus = ({
 }: StockStatusProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   return (
     <>
@@ -47,7 +51,7 @@ const StockStatus = ({
             <p className="flex-[0.5] px-3 text-sv">단위</p>
             <p className="flex-[0.5] px-3 text-sv">사용 수량</p>
             <p className="flex-[0.8] px-3 text-sv">자재 재고 상태</p>
-            {!isViewer && <div className="w-9" />}
+            {!isViewer && hasSubscription() && <div className="w-9" />}
           </div>
 
           {connections.map((connection: ConnectionModelType, index: number) => {

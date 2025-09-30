@@ -1,6 +1,7 @@
 import { ArrowLineUpRight, X } from '@phosphor-icons/react';
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ProductRequiringMaterialItemProps {
   productName: string;
@@ -25,6 +26,9 @@ const ProductRequiringMaterialItem = ({
 }: ProductRequiringMaterialItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const handleDeleteClick = () => {
     handleOpenDeleteModal(connectionId);
@@ -55,7 +59,7 @@ const ProductRequiringMaterialItem = ({
       <p className="flex-1 px-3 text-dg">{size}</p>
       <p className="flex-1 px-3 text-dg">{unit}</p>
 
-      {!isViewer && (
+      {!isViewer && hasSubscription() && (
         <IconBtn
           icon={X}
           size="w-9 h-9"

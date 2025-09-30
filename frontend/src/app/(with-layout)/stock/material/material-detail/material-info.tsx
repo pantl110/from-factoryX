@@ -3,6 +3,7 @@ import InfoLabelValue from '@/ui/info-label-value';
 import { useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface MaterialInfoProps {
   materialId: number;
@@ -39,6 +40,9 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
   ({ materialId, onIsDirtyChange }, ref) => {
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
+    const hasSubscription = useSubscriptionStore(
+      (state) => state.hasSubscription
+    );
 
     const { getMaterialDetail } = useGetMaterial();
     const {
@@ -108,7 +112,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="자재명"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
                 required
                 placeholder="(필수) 자재명을 입력하세요."
               />
@@ -122,7 +126,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="자재 코드"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
                 required
                 placeholder="(필수) 자재 코드를 입력하세요."
               />
@@ -138,7 +142,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="규격"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
                 required
                 placeholder="(필수) 규격을 입력하세요."
               />
@@ -152,7 +156,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 label="단위"
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
                 required
                 placeholder="(필수) 단위를 입력하세요."
               />
@@ -187,7 +191,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                         ? '0'
                         : addComma(field.value)
                   }
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="현재 재고 수량을 입력하세요."
                   inputType="text"
                   handleChange={handleChangeCurrentStock}
@@ -219,7 +223,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                         ? '0'
                         : addComma(field.value)
                   }
-                  disabled={isViewer}
+                  isEditing={!isViewer && hasSubscription()}
                   placeholder="최소 재고를 입력하세요."
                   inputType="text"
                   handleChange={handleChangeMinStock}
@@ -262,7 +266,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                           ? { status }
                           : undefined
                       }
-                      disabled={isViewer}
+                      isEditing={false}
                     />
                   );
                 }}

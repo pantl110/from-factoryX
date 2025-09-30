@@ -36,6 +36,7 @@ import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
 import ProjectStockHistoryModal from './product-history/modals/project-stock-history-modal';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -73,6 +74,10 @@ const ProductDetail = ({
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   const {
     createLocation,
     updateLocation,
@@ -681,7 +686,7 @@ const ProductDetail = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={handleAddStockLocation}
-                disabled={isViewer}
+                disabled={isViewer || !hasSubscription()}
               />
             </div>
             {/* locations가 없을 때 */}
@@ -717,7 +722,7 @@ const ProductDetail = ({
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsMaterialModalOpen(true)}
-                disabled={isViewer}
+                disabled={isViewer || !hasSubscription()}
               />
             </div>
             <StockStatus

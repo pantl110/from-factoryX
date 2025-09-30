@@ -134,7 +134,7 @@ const InfoLabelValue = ({
       </div>
       <div className="flex-1 flex items-center">
         <div
-          className={`text-dg px-3 flex-1 flex items-center ${disabled ? 'cursor-default' : ''}`}
+          className={`text-dg px-3 flex-1 flex items-center ${!isEditing || disabled ? 'cursor-default' : ''}`}
         >
           {renderContent()}
         </div>

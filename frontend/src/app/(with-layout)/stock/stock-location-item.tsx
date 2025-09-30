@@ -4,6 +4,7 @@ import { Plus, X } from '@phosphor-icons/react';
 import { Controller, Control, UseFormSetValue } from 'react-hook-form';
 import Image from 'next/image';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface LocationFormModel {
   locations: {
@@ -32,6 +33,9 @@ const StockLocationItem = ({
 }: StockLocationItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const handleRemoveImage = (removeIdx: number) => {
     const newImages = images.filter((_, i) => i !== removeIdx);
@@ -48,7 +52,7 @@ const StockLocationItem = ({
             {...field}
             placeholder="품목이 있는 창고 위치를 입력하세요."
             label="창고 위치"
-            disabledReadOnly={isViewer}
+            disabledReadOnly={isViewer || !hasSubscription()}
           />
         )}
       />
@@ -65,7 +69,7 @@ const StockLocationItem = ({
                 quality={100}
                 unoptimized={true}
               />
-              {!isViewer && (
+              {!isViewer && hasSubscription() && (
                 <div className="rounded-bl-[8px] rounded-tr-[8px] bg-bg opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out absolute top-0 right-0 cursor-pointer w-8 h-8 flex items-center justify-center">
                   <X
                     size={16}
@@ -76,7 +80,7 @@ const StockLocationItem = ({
               )}
             </div>
           ))}
-          {images?.length < 9 && !isViewer && (
+          {images?.length < 9 && !isViewer && hasSubscription() && (
             <div
               className="w-20 h-20 bg-primary-8 flex items-center justify-center rounded-[8px] cursor-pointer"
               onClick={openUploadModal}
@@ -86,7 +90,7 @@ const StockLocationItem = ({
           )}
         </div>
 
-        {!isViewer && (
+        {!isViewer && hasSubscription() && (
           <MiniBtn
             text="삭제"
             textColor="text-red"

@@ -6,6 +6,7 @@ import { CaretDown } from '@phosphor-icons/react';
 import ProductAddDropdown from './product/modals/product-add-dropdown';
 import MaterialAddDropdown from './material/modals/material-add-dropdown';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface MainTitleSecProps {
   selectedTab: StockTabType;
@@ -32,6 +33,10 @@ const MainTitleSec = ({
 }: MainTitleSecProps) => {
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const handleTabClick = (tab: StockTabType) => {
     onTabChange(tab);
@@ -71,7 +76,7 @@ const MainTitleSec = ({
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
-            disabled={!factoryId || role === 'viewer'}
+            disabled={!factoryId || isViewer || !hasSubscription()}
             onClick={handleExcelDownload}
           />
           <div className="relative">
@@ -90,7 +95,7 @@ const MainTitleSec = ({
                   ? onProductAddDropdownOpen(true)
                   : onMaterialAddDropdownOpen(true)
               }
-              disabled={!factoryId || role === 'viewer'}
+              disabled={!factoryId || isViewer || !hasSubscription()}
             />
 
             {isProductAddDropdownOpen && (

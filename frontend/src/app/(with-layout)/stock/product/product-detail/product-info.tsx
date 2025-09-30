@@ -3,6 +3,7 @@ import InfoLabelValue from '@/ui/info-label-value';
 import { useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ProductInfoProps {
   formData: ProductModel;
@@ -19,6 +20,9 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
   ({ formData, productId, onIsDirtyChange, onIsValidChange }, ref) => {
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
+    const hasSubscription = useSubscriptionStore(
+      (state) => state.hasSubscription
+    );
 
     const {
       control,
@@ -78,7 +82,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 onChange={(e) => {
                   field.onChange(e);
                 }}
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
               />
             )}
           />
@@ -95,7 +99,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 onChange={(e) => {
                   field.onChange(e);
                 }}
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
               />
             )}
           />
@@ -109,7 +113,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="규격"
                 placeholder="(필수) 규격을 입력하세요."
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -126,7 +130,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               <InfoLabelValue
                 label="단위"
                 placeholder="(필수) 단위를 입력하세요."
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -152,7 +156,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                           .toString()
                           .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                 }
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
                 placeholder="현재 재고 수량을 입력하세요."
                 inputType="text"
                 onChange={(e) => {
@@ -184,7 +188,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                     ? '-'
                     : `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}초`
                 }
-                disabled={isViewer}
+                isEditing={!isViewer && hasSubscription()}
                 inputType="text"
               />
             )}
@@ -197,7 +201,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
             <InfoLabelValue
               label="특이사항"
               value={field.value || ''}
-              disabled={isViewer}
+              isEditing={!isViewer && hasSubscription()}
               textarea={true}
               placeholder="특이사항을 입력하세요."
               onChange={(e) => {

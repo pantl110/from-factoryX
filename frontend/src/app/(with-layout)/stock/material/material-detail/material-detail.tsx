@@ -21,6 +21,7 @@ import { ProductRequiringMaterialRefModel } from './product-requiring-material';
 import CustomDateSelector from '@/ui/dropdown/select-period-dropdown/custom-date-selector';
 import { useGetMaterialHistory } from '@/hooks';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 export type { MaterialInfoModel } from './material-info';
 
@@ -80,6 +81,9 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
 
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
+    const hasSubscription = useSubscriptionStore(
+      (state) => state.hasSubscription
+    );
 
     // isDirty 상태 추적 (MaterialInfo, StockLocation 각각)
     const [isDirtyMaterialInfo, setIsDirtyMaterialInfo] = useState(false);
@@ -338,7 +342,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={handleAddStockLocation}
-                disabled={isViewer}
+                disabled={isViewer || !hasSubscription()}
               />
             </div>
             {fields.length === 0 ? (
@@ -429,7 +433,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
                 onClick={() => setIsProductEnrollmentModalOpen(true)}
-                disabled={isViewer}
+                disabled={isViewer || !hasSubscription()}
               />
             </div>
             <ProductRequiringMaterial

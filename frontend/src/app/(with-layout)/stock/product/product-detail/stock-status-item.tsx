@@ -13,6 +13,7 @@ import {
 } from '@/hooks/format-number';
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface StockStatusItemProps {
   connection: MaterialProductConnectionModel;
@@ -40,6 +41,9 @@ const StockStatusItem = ({
 }: StockStatusItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   // 각 아이템별로 독립적인 form 생성
   const materialQuantityForm = useForm<{
@@ -226,7 +230,7 @@ const StockStatusItem = ({
           <p className="text-dg">-</p>
         )}
       </div>
-      {!isViewer && (
+      {!isViewer && hasSubscription() && (
         <IconBtn
           icon={X}
           size="w-9 h-9"

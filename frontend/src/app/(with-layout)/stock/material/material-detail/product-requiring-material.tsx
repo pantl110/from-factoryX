@@ -14,6 +14,7 @@ import {
 import NoHistoryBox from '@/ui/no-history-box';
 import Pagination from '@/components/pagination';
 import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface ProductRequiringMaterialProps {
   materialId: number;
@@ -35,6 +36,9 @@ const ProductRequiringMaterial = forwardRef<
 >(({ materialId, handleOpenDeleteModal, onProductClick }, ref) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const { getMaterialProductConnections, data: connections } =
     useMaterialProduct();
@@ -128,7 +132,7 @@ const ProductRequiringMaterial = forwardRef<
             <p className="flex-1 py-1 px-3 text-sv">품목 코드</p>
             <p className="flex-1 py-1 px-3 text-sv">규격</p>
             <p className="flex-1 py-1 px-3 text-sv">단위</p>
-            {!isViewer && <div className="w-9" />}
+            {!isViewer && hasSubscription() && <div className="w-9" />}
           </div>
           {getCurrentPageConnections().map((connection) => {
             const productInfo = getProductInfo(connection);

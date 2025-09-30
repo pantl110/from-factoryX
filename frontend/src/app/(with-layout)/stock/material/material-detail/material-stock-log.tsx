@@ -51,18 +51,21 @@ const MaterialStockLog = ({
           <p className="flex-1 py-1 px-3 text-sv">매입 세금계산서</p>
           <p className="flex-1 py-1 px-3 text-sv">현금 영수증</p>
         </div>
-        {histories.map((history) => (
-          <MaterialStockLogItem key={history.id} data={history} />
-        ))}
 
-        {/* 페이지네이션 */}
-        {totalPages && totalPages > 1 && (
-          <Pagination
-            currentPage={propCurrentPage || currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
+        <div className="min-h-[340px]">
+          {histories.map((history) => (
+            <MaterialStockLogItem key={history.id} data={history} />
+          ))}
+
+          {/* 페이지네이션 */}
+          {totalPages && totalPages > 1 && (
+            <Pagination
+              currentPage={propCurrentPage || currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </div>
       </div>
     </>
   );
