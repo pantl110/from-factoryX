@@ -7,8 +7,7 @@ import {
 import useAuthStore from '@/store/auth-store';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import { useGetMember } from '@/hooks';
-import { useGetFactoryList } from '@/hooks/factory/use-get-factory';
+import { useGetMember, useGetFactoryList, useGetFactory } from '@/hooks';
 
 interface UseLoginReturnModel {
   login: (data: LoginFormDataModel) => Promise<{
@@ -27,6 +26,7 @@ export const useLogin = (): UseLoginReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo, setAuthenticated } = useAuthStore();
   const { getFactoryList } = useGetFactoryList();
+  const { getFactory } = useGetFactory();
   const { getMember } = useGetMember();
   const { setFactoryId, setRole, setIsBarobillUser } = useMemberStore();
   const { setSubscription } = useSubscriptionStore();
@@ -100,18 +100,21 @@ export const useLogin = (): UseLoginReturnModel => {
                     setRole(member.role);
                     setIsBarobillUser(member.is_barobill_user);
 
-                    // 구독 정보도 함께 가져오기
+                    // 구독 정보와 factory 정보를 함께 가져오기
                     try {
-                      const subscriptionResponse = await fetch(
-                        `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/status/${factoryId}`,
-                        {
-                          method: 'GET',
-                          credentials: 'include',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                        }
-                      );
+                      const [subscriptionResponse, factoryResult] = await Promise.all([
+                        fetch(
+                          `${process.env.NEXT_PUBLIC_API_URL}/v1/subscription/status/${factoryId}`,
+                          {
+                            method: 'GET',
+                            credentials: 'include',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                          }
+                        ),
+                        getFactory(factoryId)
+                      ]);
 
                       if (subscriptionResponse.ok) {
                         const subscriptionData =

@@ -17,7 +17,7 @@ interface SubscriptionStoreModel {
   setSubscription: (subscription: SubscriptionInfoModel) => void;
   clearSubscription: () => void;
   isPartnersSubscription: () => boolean;
-  isActiveSubscription: () => boolean;
+  hasSubscription: (isTrial?: boolean) => boolean;
 }
 
 const useSubscriptionStore = create<SubscriptionStoreModel>()(
@@ -44,9 +44,13 @@ const useSubscriptionStore = create<SubscriptionStoreModel>()(
         );
       },
 
-      isActiveSubscription: () => {
+      hasSubscription: (isTrial = false) => {
         const { subscription } = get();
-        return subscription?.is_active === true && !subscription?.is_canceled;
+        const hasActiveSubscription = subscription?.is_active === true && !subscription?.is_canceled;
+        
+        // 구독이 있거나 무료체험 중일 때 true 반환
+        // 구독이 없고, 무료체험도 아닐 때 false 반환
+        return hasActiveSubscription || isTrial;
       },
     }),
     {
