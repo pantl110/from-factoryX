@@ -1,3 +1,4 @@
+import { convertUTCToKSTDate } from '@/hooks';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import IconBtn from '@/ui/icon-btn';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
@@ -24,7 +25,7 @@ const QuotationHistoryItem = ({ onClick, data }: QuotationHistoryItemProps) => {
         />
       </div>
 
-      <p className="flex-1 px-3 text-dg">{data.date?.split('T')[0]}</p>
+      <p className="flex-1 px-3 text-dg">{convertUTCToKSTDate(data.date)}</p>
       <p
         className="flex-[0.5] px-3 text-dg truncate min-w-0"
         title={data.quantity.toLocaleString()}

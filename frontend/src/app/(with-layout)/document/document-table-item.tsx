@@ -112,7 +112,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               )?.toLocaleString() || '-'}
             </p>
             <p className="px-3 w-[150px]">
-              {taxData.transaction_date?.split('T')[0] || '-'}
+              {convertUTCToKSTDate(taxData.transaction_date) || '-'}
             </p>
             <p className="px-3 w-[150px]">
               {convertUTCToKSTDate(taxData.created_at) || '-'}

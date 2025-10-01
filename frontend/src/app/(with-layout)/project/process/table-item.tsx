@@ -98,7 +98,6 @@ const TableItem = ({
               ? product.delivery_date
               : latest;
           }, project.quotations[0].products[0]?.delivery_date || '')
-          .split('T')[0]
       : '-';
 
   const dueDate =

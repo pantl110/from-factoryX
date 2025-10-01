@@ -2,7 +2,7 @@ import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
 import { formatBusinessNumber, formatDate } from '@/utils/format-number';
 import { useEffect, useState, useRef } from 'react';
-import { useGetFactory } from '@/hooks/factory/use-get-factory';
+import { useGetFactory, convertUTCToKSTDate } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import { SellerInfoFormDataModel } from '../type';
 
@@ -41,7 +41,7 @@ const SellerInfo = ({
       businessType: '',
       businessCategory: '',
       address: '',
-      writeDate: formatDate(new Date().toISOString().split('T')[0]),
+      writeDate: formatDate(convertUTCToKSTDate(new Date().toISOString())),
     },
   });
 
@@ -69,7 +69,7 @@ const SellerInfo = ({
       businessType: factory.business_type || '',
       businessCategory: factory.business_category || '',
       address: factory.business_address || '',
-      writeDate: formatDate(new Date().toISOString().split('T')[0]),
+      writeDate: formatDate(convertUTCToKSTDate(new Date().toISOString())),
     });
     setValidatedFields(new Set());
     trigger(); // reset 후 즉시 유효성 검사 실행

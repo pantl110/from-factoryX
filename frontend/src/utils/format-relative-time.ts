@@ -1,13 +1,13 @@
 // 상대적 시간 포맷팅 함수 (상대적 시간은 UTC 기준, 절대 시간 표시는 한국 시간 기준)
 export const formatRelativeTime = (dateString: string): string => {
   if (!dateString) return '';
-  
+
   const now = new Date();
   const utcDate = new Date(dateString);
-  
+
   // 유효한 날짜인지 확인
   if (isNaN(utcDate.getTime())) return '';
-  
+
   // 상대적 시간 계산은 UTC 기준
   const diffInMs = now.getTime() - utcDate.getTime();
   const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
@@ -31,7 +31,7 @@ export const formatRelativeTime = (dateString: string): string => {
 
   // 절대 시간 표시는 한국 시간으로 변환
   const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
-  
+
   // 어제인지 확인 (한국 시간 기준)
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);

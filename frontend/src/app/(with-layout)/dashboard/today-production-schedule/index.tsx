@@ -53,7 +53,7 @@ const TodayProductionSchedule = ({
         const latest = res.data.data[0];
         const created = (latest.created_at as string | undefined) || '';
         const createdDate = convertUTCToKSTDate(created);
-        const today = new Date().toISOString().split('T')[0];
+        const today = convertUTCToKSTDate(new Date().toISOString());
         if (createdDate === today) {
           setLatestWorkInstructionId(latest.id as number);
         } else {

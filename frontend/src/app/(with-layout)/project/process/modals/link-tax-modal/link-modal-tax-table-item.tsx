@@ -1,4 +1,5 @@
 import { MaterialHistoryResponseModel } from '@/types/data-model';
+import { convertUTCToKSTDate } from '@/hooks';
 
 interface LinkModalTaxTableItemProps {
   item: MaterialHistoryResponseModel;
@@ -62,9 +63,9 @@ const LinkModalTaxTableItem = ({
       </p>
       <p
         className="flex-1 px-3 text-dg truncate"
-        title={item.date.slice(0, 10) || '-'}
+        title={convertUTCToKSTDate(item.date) || '-'}
       >
-        {item.date.slice(0, 10) || '-'}
+        {convertUTCToKSTDate(item.date) || '-'}
       </p>
     </div>
   );

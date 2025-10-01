@@ -29,4 +29,7 @@ export { parseExcelFile } from './excel-parser';
 export type { ExcelRowModel } from './excel-parser';
 
 // Product utilities
-export { getProductNamesDisplay, getProductNames } from './get-product-names-display';
+export {
+  getProductNamesDisplay,
+  getProductNames,
+} from './get-product-names-display';
