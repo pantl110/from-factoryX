@@ -1,6 +1,6 @@
 import { Minus, Plus, X } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
-import { handleQuantityInput } from '@/hooks/format-number';
+import { handleQuantityInput } from '@/utils/format-number';
 
 interface ConnetionItemProps {
   name: string;

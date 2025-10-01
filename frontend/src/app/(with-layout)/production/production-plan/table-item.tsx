@@ -15,7 +15,7 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import { useState, useEffect } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
-import { formatDateTime } from '@/hooks/format-number';
+import { formatDateTime } from '@/utils/format-number';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';

@@ -20,7 +20,7 @@ import {
   formatPhoneNumber,
   formatFaxNumber,
   formatDate,
-} from '@/hooks/format-number';
+} from '@/utils/format-number';
 import useGetClient from '@/hooks/factory/factory-client/use-get-client';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';

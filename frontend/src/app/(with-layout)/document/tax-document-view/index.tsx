@@ -3,11 +3,11 @@ import {
   PublishedTaxInvoiceResponseModel,
   TaxLineItemModel,
 } from '@/types/data-model';
-import useGetTaxInvoiceDetail from '@/hooks/tax/use-get-tax-invoice-detail';
 import Spinner from '@/ui/spinner';
 import TaxBuyerProviderInfo from './tax-buyer-provider-info';
 import OrderItemInfo from './order-item-info';
 import PurchaseItemInfo from './purchase-item-info';
+import { useGetTaxInvoiceDetail } from '@/hooks';
 
 interface TaxDocumentViewProps {
   taxId?: number | null;

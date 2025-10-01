@@ -3,7 +3,11 @@ import CommentItem from './comment-item';
 import ProductionTableItem from './production-table-item';
 import { useEffect, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { useGetWorkInstruction } from '@/hooks';
+import {
+  useGetWorkInstruction,
+  convertUTCToKSTDate,
+  convertUTCToKST,
+} from '@/hooks';
 import {
   WorkInstructionDetailPlanModel,
   WorkInstructionDetailResponseModel,
@@ -56,7 +60,7 @@ const ProductionDocumentView = ({
   return (
     <div className="flex flex-col gap-6">
       <DocumentViewTitle
-        title={`${new Date().toISOString().split('T')[0]} 생산 지시서`}
+        title={`${convertUTCToKSTDate(new Date().toISOString())} 생산 지시서`}
       />
 
       {/* 생산품목 - 프로젝트별로 표 분리 */}
@@ -82,7 +86,7 @@ const ProductionDocumentView = ({
                   productionQuantity={item.quantity || 0}
                   machine={item.equipment_name || '-'}
                   productionTime={
-                    item.start_date.split('T')[1]?.slice(0, 5) || null
+                    convertUTCToKST(item.start_date)?.split(' ')[1] || null
                   }
                 />
               ))}

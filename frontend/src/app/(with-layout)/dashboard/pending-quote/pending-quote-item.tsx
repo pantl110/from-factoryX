@@ -7,6 +7,7 @@ import {
   ProjectStatusMap,
   ProjectStatusType,
 } from '@/types/status-type';
+import { convertUTCToKSTDate } from '@/utils';
 
 interface PendingQuoteItemProps {
   project: ProjectResponseModel;
@@ -44,7 +45,7 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
       </div>
       <div className="flex items-center">
         <p className="flex-1 Me_Body-1 text-sv">
-          {project.created_at.split('T')[0] || '-'}
+          {convertUTCToKSTDate(project.created_at) || '-'}
         </p>
         <Chip
           text={ProjectStatusMap[project.status as ProjectStatusType]}

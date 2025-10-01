@@ -8,14 +8,15 @@ import { DocumentType, DocumentTypeColorMap } from './types';
 import { useState } from 'react';
 import Panel from '@/ui/panel';
 import TaxDocumentView from './tax-document-view';
-import {
-  getProductNames,
-  getProductNamesDisplay,
-} from '@/utils/get-product-names-display';
 import TransactionDocumentView from './transaction-document-view';
-import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 import OrderDocumentView from './order-document-view';
 import ProductionDocumentView from './production-document-view';
+import {
+  convertUTCToKSTDate,
+  getLastDeliveryDate,
+  getProductNames,
+  getProductNamesDisplay,
+} from '@/utils';
 
 interface DocumentTableItemProps {
   data:
@@ -114,7 +115,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               {taxData.transaction_date?.split('T')[0] || '-'}
             </p>
             <p className="px-3 w-[150px]">
-              {taxData.created_at?.split('T')[0] || '-'}
+              {convertUTCToKSTDate(taxData.created_at) || '-'}
             </p>
           </>
         ) : documentType === '생산지시서' ? (
@@ -156,9 +157,9 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             </p>
             <p
               className="px-3 flex-[0.5] truncate"
-              title={workInstructionData.created_at?.split('T')[0] || '-'}
+              title={convertUTCToKSTDate(workInstructionData.created_at) || '-'}
             >
-              {workInstructionData.created_at?.split('T')[0] || '-'}
+              {convertUTCToKSTDate(workInstructionData.created_at) || '-'}
             </p>
           </>
         ) : projectData ? (
@@ -186,13 +187,13 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               className="px-3 flex-[0.5] truncate"
               title={
                 documentType === '주문서'
-                  ? projectData.confirmed_at?.split('T')[0] || '-'
-                  : projectData.printed_at?.split('T')[0] || '-'
+                  ? convertUTCToKSTDate(projectData.confirmed_at) || '-'
+                  : convertUTCToKSTDate(projectData.printed_at) || '-'
               }
             >
               {documentType === '주문서'
-                ? projectData.confirmed_at?.split('T')[0] || '-'
-                : projectData.printed_at?.split('T')[0] || '-'}
+                ? convertUTCToKSTDate(projectData.confirmed_at) || '-'
+                : convertUTCToKSTDate(projectData.printed_at) || '-'}
             </p>
           </>
         ) : null}

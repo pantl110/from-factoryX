@@ -1,6 +1,7 @@
 import { TaxDocumentType, TransactionType } from '@/types/status-type';
 import InfoLabelValue from '@/ui/info-label-value';
 import { TaxClientInfoModel } from '@/types/data-model';
+import { convertUTCToKSTDate } from '@/hooks';
 
 interface TaxBuyerProviderInfoProps {
   taxType: TaxDocumentType;
@@ -31,7 +32,10 @@ const TaxBuyerProviderInfo = ({
             <InfoLabelValue label="종목" value="-" />
           </div>
           <InfoLabelValue label="사업장 주소" value="-" />
-          <InfoLabelValue label="작성일자" value={updatedAt.split('T')[0]} />
+          <InfoLabelValue
+            label="작성일자"
+            value={convertUTCToKSTDate(updatedAt)}
+          />
           <div className="flex">
             <InfoLabelValue label="문서 상태" chip={{ status: taxType }} />
             <InfoLabelValue
@@ -70,7 +74,10 @@ const TaxBuyerProviderInfo = ({
           />
         </div>
         <InfoLabelValue label="사업장 주소" value={clientInfo.address || '-'} />
-        <InfoLabelValue label="작성일자" value={updatedAt.split('T')[0]} />
+        <InfoLabelValue
+          label="작성일자"
+          value={convertUTCToKSTDate(updatedAt)}
+        />
         <div className="flex">
           <InfoLabelValue label="문서 상태" chip={{ status: taxType }} />
           <InfoLabelValue

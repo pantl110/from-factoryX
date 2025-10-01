@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   handleNumberKeyDown,
   handleQuantityInput,
-} from '@/hooks/format-number';
+} from '@/utils/format-number';
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';

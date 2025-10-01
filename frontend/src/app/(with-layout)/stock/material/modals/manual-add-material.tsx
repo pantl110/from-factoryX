@@ -3,7 +3,7 @@ import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
-import { handleQuantityInput } from '@/hooks/format-number';
+import { handleQuantityInput } from '@/utils/format-number';
 
 interface ManualAddMaterialProps {
   noPrice?: boolean;

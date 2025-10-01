@@ -5,7 +5,7 @@ import { CameraIcon, Pencil } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
 // import PhotoUploadModal from './modals/photo-upload-modal';
 import ProfileImage from '@/ui/profile-image';
-import { formatPhoneNumber } from '@/hooks/format-number';
+import { formatPhoneNumber } from '@/utils/format-number';
 import useToast from '@/hooks/use-toast';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';

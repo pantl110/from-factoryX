@@ -2,7 +2,7 @@ import Chip from '@/ui/chip';
 import { TaxDocumentTypeColorMap, TaxDocumentType } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
-import { getProductNamesDisplay } from '@/utils/get-product-names-display';
+import { getProductNamesDisplay } from '@/hooks';
 
 interface TableItemProps {
   onItemClick?: () => void;

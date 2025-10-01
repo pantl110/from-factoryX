@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useGetQuotationHistory } from '@/hooks';
+import { useGetQuotationHistory, convertUTCToKSTDate } from '@/hooks';
 import { QuotationProductHistoryItemResponseModel } from '@/types/data-model';
 import HistoryItem from './history-item';
 
@@ -62,7 +62,7 @@ const History = ({ selectedProduct }: HistoryProps) => {
         {historyData.map((item, idx) => (
           <HistoryItem
             key={idx}
-            date={item.created_at}
+            date={convertUTCToKSTDate(item.created_at)}
             productName={item.product_name}
             quantity={item.quantity}
             unitPrice={item.unit_price}

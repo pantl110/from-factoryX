@@ -1,5 +1,5 @@
 import { ProjectLogResponseModel } from '@/types/data-model';
-import { formatRelativeTime } from '@/utils/format-relative-time';
+import { formatRelativeTime } from '@/hooks';
 import { CubeFocus, NoteBlankIcon, Swap } from '@phosphor-icons/react/dist/ssr';
 
 interface LogItemProps {

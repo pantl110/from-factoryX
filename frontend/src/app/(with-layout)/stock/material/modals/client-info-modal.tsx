@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import {
   formatBusinessNumber,
   handleNumberKeyDown,
-} from '@/hooks/format-number';
+} from '@/utils/format-number';
 import { ClientResponseModel } from '@/types/data-model';
 
 interface ClientInfoModalProps {

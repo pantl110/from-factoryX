@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import RegisterProductionModal from '../modals/register-production-modal';
 import { RefundModel } from '@/types/data-model';
-import { formatDate } from '@/hooks/format-number';
+import { formatDate } from '@/utils/format-number';
 import useMemberStore from '@/store/member-store';
 
 interface RefundFormDataModel {

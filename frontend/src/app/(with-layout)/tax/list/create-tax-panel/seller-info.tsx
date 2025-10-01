@@ -1,6 +1,6 @@
 import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
-import { formatBusinessNumber, formatDate } from '@/hooks/format-number';
+import { formatBusinessNumber, formatDate } from '@/utils/format-number';
 import { useEffect, useState, useRef } from 'react';
 import { useGetFactory } from '@/hooks/factory/use-get-factory';
 import useMemberStore from '@/store/member-store';

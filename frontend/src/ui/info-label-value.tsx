@@ -63,13 +63,16 @@ const InfoLabelValue = ({
   const renderContent = () => {
     // 수정 모드인 경우
     if (isEditing) {
+      const changeHandler = register?.onChange || handleChange || onChange;
+      const strValue = typeof value === 'string' ? value : '';
       if (textarea) {
         return (
           <TextareaAutosize
             minRows={1}
-            value={typeof value === 'string' ? value : ''}
+            {...(changeHandler
+              ? { value: strValue, onChange: changeHandler }
+              : { defaultValue: strValue, readOnly: true })}
             placeholder={placeholder}
-            onChange={register?.onChange || handleChange || onChange}
             className="w-full noDefaultStyle"
             style={{ outline: 'none' }}
             onFocus={onFocus}
@@ -83,9 +86,10 @@ const InfoLabelValue = ({
         <div className="flex items-center w-full">
           <input
             type={inputType}
-            value={typeof value === 'string' ? value : ''}
+            {...(changeHandler
+              ? { value: strValue, onChange: changeHandler }
+              : { defaultValue: strValue, readOnly: true })}
             placeholder={placeholder}
-            onChange={register?.onChange || handleChange || onChange}
             className="w-full placeholder:text-gr disabled:default"
             style={{ outline: 'none' }}
             onFocus={onFocus}

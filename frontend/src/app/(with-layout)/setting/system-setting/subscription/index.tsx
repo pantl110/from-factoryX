@@ -18,6 +18,7 @@ import {
   useDeleteBillingKey,
   useGetPaymentAuth,
   useProcessSubscriptionPayment,
+  convertUTCToKSTDate,
 } from '@/hooks';
 import RefundPolicyModal from './modals/refund-policy-modal';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -289,7 +290,7 @@ const Subscription = () => {
             {paymentHistory?.data.map((payment: PaymentResponseModel) => (
               <SubscriptionTableItem
                 key={payment.id}
-                date={payment.created_at.split('T')[0]}
+                date={convertUTCToKSTDate(payment.created_at)}
                 card={`${payment.card_company === null ? '-' : payment.card_company} (${payment.card_number === null ? '-' : payment.card_number})`}
                 amount={Number(payment.amount).toLocaleString()}
                 plan={
