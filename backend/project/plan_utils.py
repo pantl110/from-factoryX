@@ -153,14 +153,17 @@ async def _find_alternative_equipment(factory_id, current_equipment_id):
 
 # ensure_korean_timezone: db에 저장되는 시간과 출력되는 시간이 다른 문제 해결을 위한 함수
 def ensure_korean_timezone(dt):
-    """naive datetime을 한국 시간으로 처리하여 반환"""
+    """DB에서 가져온 datetime을 한국 시간으로 변환하여 반환"""
     if dt is None:
         return None
     
-    # 이미 timezone-aware라면 그대로 반환
+    # 이미 timezone-aware라면 한국 시간으로 변환
     if dt.tzinfo is not None:
-        return dt
+        korean_tz = pytz.timezone('Asia/Seoul')
+        return dt.astimezone(korean_tz)
     
-    # naive datetime을 한국 시간으로 가정하고 timezone-aware로 변환
+    # naive datetime을 UTC로 가정하고 한국 시간으로 변환
+    utc_tz = pytz.timezone('UTC')
     korean_tz = pytz.timezone('Asia/Seoul')
-    return korean_tz.localize(dt)
+    utc_dt = utc_tz.localize(dt)
+    return utc_dt.astimezone(korean_tz)
