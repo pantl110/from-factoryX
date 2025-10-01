@@ -439,8 +439,8 @@ async def list_ongoing_project_plans(
                     ),
                     status=plan.status,
                     quantity=plan.quantity,
-                    start_date=plan.start_date,
-                    end_date=plan.end_date,
+                    start_date=ensure_korean_timezone(plan.start_date),
+                    end_date=ensure_korean_timezone(plan.end_date),
                     avg_production_time=plan.avg_production_time,
                     material_status=material_status,
                 )
@@ -541,8 +541,8 @@ async def list_completed_project_plans(
                     ),
                     status=plan.status,
                     quantity=plan.quantity,
-                    start_date=plan.start_date,
-                    end_date=plan.end_date,
+                    start_date=ensure_korean_timezone(plan.start_date),
+                    end_date=ensure_korean_timezone(plan.end_date),
                     avg_production_time=plan.avg_production_time,
                     material_status=material_status,
                 )
@@ -616,8 +616,8 @@ async def list_today_production_plans(request):
                         "production_quantity": plan.quantity,  # 생산 수량
                         "equipment_name": plan.equipment.name,  # 생산 설비
                         "production_time": plan.avg_production_time,  # 생산 시간 (초)
-                        "start_date": plan.start_date,  # 생산 시작일
-                        "end_date": plan.end_date,  # 생산 종료일
+                        "start_date": ensure_korean_timezone(plan.start_date),  # 생산 시작일
+                        "end_date": ensure_korean_timezone(plan.end_date),  # 생산 종료일
                         "project_id": plan.product.quotation.project.id,  # 프로젝트 ID
                     }
                 )
@@ -876,8 +876,8 @@ async def list_project_plans(request, project_id: int):
                 ),
                 status=plan.status,
                 quantity=plan.quantity,
-                start_date=plan.start_date,
-                end_date=plan.end_date,
+                start_date=ensure_korean_timezone(plan.start_date),
+                end_date=ensure_korean_timezone(plan.end_date),
                 avg_production_time=plan.avg_production_time,
                 material_status=material_status,
             )
