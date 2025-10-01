@@ -4,6 +4,9 @@ from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from django.db import models
+from django.conf import settings
+from datetime import datetime
+import pytz
 from project.schemas.inbound import (
     ProjectPlanCreateOrUpdateIn,
     ProjectPlanListFilter,
@@ -32,6 +35,7 @@ from project.utils import check_material_availability
 from factory.eq_utils import get_equipment_by_id
 from project.plan_utils import get_plan_by_id
 from django.utils import timezone
+from scheduling.api import update_work_instruction_for_factory
 
 
 router = Router(tags=["ProjectPlan"], auth=jwt_auth)
@@ -218,6 +222,10 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
 
             await plan.asave()
 
+            # 오늘 생산하는 Plan이면 WorkInstruction 갱신
+            if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
+                await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
+
             # 수량이 주문 수량보다 작을 때 자동 분할 처리
             # if payload.quantity < quotation_product.quantity:
             #     remaining_quantity = quotation_product.quantity - payload.quantity
@@ -350,6 +358,10 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             avg_production_time=payload.avg_production_time,
             status=payload.status or ProjectPlan.ProductionStatus.pending,
         )
+
+        # 오늘 생산하는 Plan이면 WorkInstruction 갱신
+        if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
+            await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
 
         return 200, ProjectPlanCreateOrUpdateOut(
             message="프로젝트 생산 계획이 성공적으로 생성되었습니다.",
@@ -577,7 +589,9 @@ async def list_today_production_plans(request):
     await is_factory_member(int(factory_id), user)
 
     try:
-        today = date.today()
+        # Django 설정의 TIME_ZONE 기준으로 오늘 날짜 계산
+        local_tz = pytz.timezone(settings.TIME_ZONE)
+        today_local = datetime.now(local_tz).date()
 
         @sync_to_async
         def get_today_plans():
@@ -587,7 +601,7 @@ async def list_today_production_plans(request):
                 )
                 .filter(
                     product__quotation__factory_id=int(factory_id),
-                    start_date__date=today,  # 오늘 하루(00:00~23:59:59)
+                    start_date__date=today_local,  # Django TIME_ZONE 기준 오늘 하루(00:00~23:59:59)
                 )
                 .order_by(
                     "product__product__id", "created_at"
@@ -996,6 +1010,10 @@ async def delete_project_plan(request, plan_id: int):
         plan = await ProjectPlan.objects.aget(id=plan_id)
     except ProjectPlan.DoesNotExist:
         raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
+
+    # 삭제 전에 오늘 생산하는 Plan이면 WorkInstruction 갱신
+    if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
+        await sync_to_async(update_work_instruction_for_factory)(plan.equipment.factory_id)
 
     await plan.adelete()
 

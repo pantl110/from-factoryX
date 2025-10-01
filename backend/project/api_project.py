@@ -527,9 +527,9 @@ async def update_project_status(
 
         project.status = payload.status
         if payload.status == "pending":
-            project.confirmed_at = timezone.now()
+            project.confirmed_at = timezone.now().date()
         if payload.is_printed is True:
-            project.printed_at = timezone.now()
+            project.printed_at = timezone.now().date()
         await project.asave()
 
         # 프로젝트 완료 처리

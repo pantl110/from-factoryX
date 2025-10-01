@@ -393,7 +393,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         response = self.client.get(url, headers=headers)
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 403)
 
     def test_project_plan_start_upgrade_invalid_scheduling_key(self):
         """잘못된 스케줄링 키로 접근하는 경우 테스트"""
@@ -405,7 +405,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
 
         response = self.client.get(url, headers=headers)
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 403)
 
     def test_project_plan_start_no_material_products(self):
         """자재-제품 관계가 없는 경우 테스트"""

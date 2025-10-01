@@ -3,7 +3,9 @@ from helpers.decorators import scheduling_only
 from project.models import Project, ProjectPlan
 from asgiref.sync import sync_to_async
 from django.utils import timezone
-from datetime import timedelta
+from django.conf import settings
+from datetime import timedelta, datetime
+import pytz
 from websocket.utils import send_notification_to_factory
 from notification.models import Notification
 from document.models import Quotation
@@ -239,8 +241,11 @@ async def create_work_instruction(request):
                 "equipment__factory",
             )
             .filter(
-                status=ProjectPlan.ProductionStatus.production,
-                start_date__date=timezone.now().date(),
+                status__in=[
+                    ProjectPlan.ProductionStatus.pending,
+                    ProjectPlan.ProductionStatus.production,
+                ],
+                start_date__date=datetime.now(pytz.timezone(settings.TIME_ZONE)).date(), # Django TIME_ZONE 기준 오늘 하루(00:00~23:59:59)
             )
             .order_by("equipment__factory")  # groupby를 위해 정렬 필요
         )
@@ -257,7 +262,7 @@ async def create_work_instruction(request):
         for factory_id, data in factory_plans.items():
             work_instruction, _ = WorkInstruction.objects.get_or_create(
                 factory_id=factory_id,
-                created_at__date=timezone.now().date(),
+                created_at__date=datetime.now(pytz.timezone(settings.TIME_ZONE)).date(), # Django TIME_ZONE 기준 오늘 하루(00:00~23:59:59)
             )
             work_instruction.plans.set(data["plans"])
 
@@ -265,3 +270,42 @@ async def create_work_instruction(request):
 
     result = await get_today_project_plans()
     return result
+
+def update_work_instruction_for_factory(factory_id, target_date=None):
+    """특정 factory의 WorkInstruction을 실시간으로 갱신"""
+    if target_date is None:
+        target_date = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+    
+    # 해당 날짜의 생산 중인 Plan들 조회
+    plans = list(
+        ProjectPlan.objects.select_related(
+            "project",
+            "product__product",
+            "equipment__factory",
+        )
+        .filter(
+            equipment__factory_id=factory_id,
+            status__in=[
+                ProjectPlan.ProductionStatus.pending,
+                ProjectPlan.ProductionStatus.production,
+            ],
+            start_date__date=target_date,
+        )
+        .order_by("equipment__factory")
+    )
+    
+    if plans:
+        # WorkInstruction 생성 또는 갱신
+        work_instruction, created = WorkInstruction.objects.get_or_create(
+            factory_id=factory_id,
+            created_at__date=target_date,
+        )
+        work_instruction.plans.set(plans)
+        return {"created": created}
+    else:
+        # Plan이 없으면 기존 WorkInstruction 삭제
+        WorkInstruction.objects.filter(
+            factory_id=factory_id,
+            created_at__date=target_date
+        ).delete()
+        return {"created": False}

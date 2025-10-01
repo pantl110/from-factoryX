@@ -189,7 +189,10 @@ class TestWorkInstructionSchedulingAPI(TestCase):
 
     async def test_create_work_instruction_no_production_plans(self):
         """오늘 시작하는 생산 중인 계획이 없는 경우 테스트"""
-        # 생산 대기 상태의 계획만 생성
+        # 기존의 모든 Plan 삭제 (다른 테스트의 영향 제거)
+        await ProjectPlan.objects.filter(equipment=self.equipment).adelete()
+        
+        # 생산 완료 상태의 계획만 생성 (WorkInstruction에 포함되지 않아야 함)
         start_date = timezone.now().replace(hour=9, minute=0, second=0, microsecond=0)
         end_date = timezone.now().replace(hour=18, minute=0, second=0, microsecond=0)
 
@@ -197,7 +200,7 @@ class TestWorkInstructionSchedulingAPI(TestCase):
             project=self.project,
             product=self.quotation_product,
             equipment=self.equipment,
-            status=ProjectPlan.ProductionStatus.pending,  # 생산 대기 상태
+            status=ProjectPlan.ProductionStatus.completed,  # 생산 완료 상태
             quantity=5,
             start_date=start_date,
             end_date=end_date,
