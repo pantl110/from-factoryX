@@ -101,7 +101,8 @@ const ProductionDocumentView = ({
         {workInstruction?.plans
           .filter(
             (item, index, self) =>
-              index === self.findIndex((t) => t.product === item.product)
+              index ===
+              self.findIndex((t) => t.product_code === item.product_code)
           )
           .map((item) => (
             <CommentItem

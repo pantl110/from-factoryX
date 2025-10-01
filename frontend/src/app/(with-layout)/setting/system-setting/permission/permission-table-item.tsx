@@ -2,11 +2,14 @@ import { PermissionRoleInfo, PermissionRoleType } from './types';
 import Checkbox from '@/ui/checkbox';
 import Chip from '@/ui/chip';
 import AuthDropdown from './modals/auth-dropdown';
-import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
-import useUpdateMember from '@/hooks/factory/factory-member/use-update-member';
 import { MemberResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import {
+  convertUTCToKSTDate,
+  useUpdateMember,
+  usePortalDropdown,
+} from '@/hooks';
 
 interface PermissionTableItemProps {
   item: MemberResponseModel;
@@ -15,16 +18,9 @@ interface PermissionTableItemProps {
   onUpdate?: () => void; // 업데이트 후 목록 새로고침
 }
 
-// 날짜 포맷 함수
-function formatDate(dateString?: string): string {
-  if (!dateString) return '-';
-  const d = new Date(dateString);
-  if (isNaN(d.getTime())) return '-';
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+// 공용 유틸 사용 (KST 날짜)
+const formatDate = (dateString?: string | null) =>
+  dateString ? convertUTCToKSTDate(dateString) || '-' : '-';
 
 const PermissionTableItem = ({
   item,
@@ -132,9 +128,7 @@ const PermissionTableItem = ({
               }}
             />
           </div>
-          <p className="px-3 flex-1">
-            {invitedAt ? formatDate(invitedAt) : '-'}
-          </p>
+          <p className="px-3 flex-1">{formatDate(invitedAt)}</p>
         </div>
 
         {/* 권한 드롭다운 */}
