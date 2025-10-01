@@ -231,14 +231,20 @@ export interface EquipmentModel {
   note?: string;
 }
 
-export interface FacilityHistoryResponseModel {
+export interface FacilityPlanResponseModel {
+  avg_production_time: number;
+  created_at: string;
+  end_date: string;
+  end_notification: boolean;
+  equipment: number;
   id: number;
-  project_id: number;
+  product: number;
   quotation_product_name: string;
+  project: number;
   quantity: number;
   start_date: string;
-  end_date: string;
-  avg_production_time: number;
+  status: OperationStatusType;
+  updated_at: string;
 }
 
 export interface EquipmentResponseModel {
@@ -251,7 +257,7 @@ export interface EquipmentResponseModel {
   priority: number;
   location?: string;
   note?: string;
-  history: FacilityHistoryResponseModel[];
+  plans: FacilityPlanResponseModel[];
 }
 
 // 설비 목록 조회
