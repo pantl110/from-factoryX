@@ -9,7 +9,6 @@ import {
 import { SubscriptionStatusResponseModel } from '@/types/data-model';
 import CancelSubscriptionModal from './modals/cancel-subscription-modal';
 import useMemberStore from '@/store/member-store';
-import useSubscriptionStore from '@/store/subscription-store';
 
 interface PlanItemProps {
   type: PlanType;
@@ -30,9 +29,6 @@ const PlanItem = ({
 }: PlanItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isAdmin = role === 'admin';
-  const hasSubscription = useSubscriptionStore(
-    (state) => state.hasSubscription
-  );
 
   const info = PLAN_INFO[type];
   const subscriptionType =
@@ -105,9 +101,7 @@ const PlanItem = ({
                 text="구독 예정 취소"
                 variant="red"
                 onClick={handleCancelScheduledSubscription}
-                disabled={
-                  !isAdmin || isCancelScheduledLoading || !hasSubscription()
-                }
+                disabled={!isAdmin || isCancelScheduledLoading}
               />
             )
           ) : // hasScheduledSubscription이 false일 때
@@ -118,14 +112,14 @@ const PlanItem = ({
                 text="해지 취소"
                 variant="red"
                 onClick={handleSubscribe}
-                disabled={!isAdmin || !hasSubscription()}
+                disabled={!isAdmin}
               />
             ) : (
               <MiniBtn
                 text="구독 해지"
                 variant="secondary"
                 onClick={() => setIsCancelSubscriptionModalOpen(true)}
-                disabled={!isAdmin || !hasSubscription()}
+                disabled={!isAdmin}
               />
             )
           ) : (
@@ -134,7 +128,7 @@ const PlanItem = ({
               text="구독"
               variant="primary"
               onClick={() => setIsSubscribeModalOpen(true)}
-              disabled={!isAdmin || !hasSubscription()}
+              disabled={!isAdmin}
             />
           )}
         </div>
