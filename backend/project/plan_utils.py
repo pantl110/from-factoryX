@@ -3,7 +3,7 @@ from factory.models import FactoryEquipment
 from project.models import ProjectPlan
 from stock.models import MaterialProduct
 from asgiref.sync import sync_to_async
-
+import pytz
 
 async def get_plan_by_id(plan_id):
     try:
@@ -150,3 +150,17 @@ async def _find_alternative_equipment(factory_id, current_equipment_id):
         .order_by("priority")
         .afirst()
     )
+
+# ensure_korean_timezone: db에 저장되는 시간과 출력되는 시간이 다른 문제 해결을 위한 함수
+def ensure_korean_timezone(dt):
+    """naive datetime을 한국 시간으로 처리하여 반환"""
+    if dt is None:
+        return None
+    
+    # 이미 timezone-aware라면 그대로 반환
+    if dt.tzinfo is not None:
+        return dt
+    
+    # naive datetime을 한국 시간으로 가정하고 timezone-aware로 변환
+    korean_tz = pytz.timezone('Asia/Seoul')
+    return korean_tz.localize(dt)

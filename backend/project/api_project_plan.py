@@ -5,14 +5,10 @@ from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from django.db import models
 from project.schemas.inbound import (
-    ProjectPlanCreateIn,
-    ProjectPlanUpdateIn,
     ProjectPlanCreateOrUpdateIn,
     ProjectPlanListFilter,
 )
 from project.schemas.outbound import (
-    ProjectPlansCreateOut,
-    ProjectPlanDetailOut,
     ProjectPlanDetailWithRelationsOut,
     ProductDetailOut,
     QuotationProductDetailOut,
@@ -34,11 +30,11 @@ from document.models import QuotationProduct
 from websocket.utils import send_notification_to_factory
 from project.utils import check_material_availability
 from factory.eq_utils import get_equipment_by_id
-from project.plan_utils import get_plan_by_id, update_quantity
+from project.plan_utils import ensure_korean_timezone, get_plan_by_id
 from django.utils import timezone
 
-router = Router(tags=["ProjectPlan"], auth=jwt_auth)
 
+router = Router(tags=["ProjectPlan"], auth=jwt_auth)
 
 # @router.post(
 #     "",
@@ -214,8 +210,8 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             # 값 수정
             plan.equipment = equipment
             plan.quantity = payload.quantity
-            plan.start_date = payload.start_date
-            plan.end_date = payload.end_date
+            plan.start_date = ensure_korean_timezone(payload.start_date)
+            plan.end_date = ensure_korean_timezone(payload.end_date)
             plan.avg_production_time = payload.avg_production_time
             if payload.status:
                 plan.status = payload.status
@@ -349,8 +345,8 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             product=quotation_product,
             equipment=equipment,
             quantity=payload.quantity,
-            start_date=payload.start_date,
-            end_date=payload.end_date,
+            start_date=ensure_korean_timezone(payload.start_date),
+            end_date=ensure_korean_timezone(payload.end_date),
             avg_production_time=payload.avg_production_time,
             status=payload.status or ProjectPlan.ProductionStatus.pending,
         )
