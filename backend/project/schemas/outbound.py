@@ -59,6 +59,8 @@ class ListProgressProjectOut(Schema):
 
 
 class ProjectPlanModelOut(ModelSchema):
+    product_name: Optional[str] = Field(None, description="제품명")
+
     class Meta:
         model = ProjectPlan
         fields = "__all__"
