@@ -1,4 +1,6 @@
 from factory.models import FactoryEquipment
+from django.db.models import Prefetch, F
+from project.models import ProjectPlan
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 
@@ -9,7 +11,15 @@ async def get_equipment_by_id(equipment_id, factory_id):
         try:
             return (
                 FactoryEquipment.objects.select_related("factory")
-                .prefetch_related("plans")
+                .prefetch_related(
+                    Prefetch(
+                        "plans",
+                        queryset=ProjectPlan.objects.select_related("product__product")
+                        .annotate(
+                            product_name=F("product__product__name"),
+                        ),
+                    )
+                )
                 .get(id=equipment_id, factory_id=factory_id)
             )
         except FactoryEquipment.DoesNotExist:
