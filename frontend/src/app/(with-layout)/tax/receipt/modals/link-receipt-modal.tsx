@@ -129,7 +129,7 @@ const LinkReceiptModal = ({
     }
   };
 
-  const handleAddSelected = () => {
+  const handleAddSelected = async () => {
     if (selectedUnlinkedIds.length === 0) return;
     const selectedItems = unlinkedMaterialHistory.filter((item) =>
       selectedUnlinkedIds.includes(item.id)
@@ -142,6 +142,14 @@ const LinkReceiptModal = ({
     );
     // 선택 상태 초기화
     setSelectedUnlinkedIds([]);
+
+    // 데이터가 부족하고 더 가져올 수 있다면 자동으로 로드
+    const remainingItems = unlinkedMaterialHistory.filter(
+      (item) => !selectedUnlinkedIds.includes(item.id)
+    );
+    if (remainingItems.length < 9 && hasMoreUnlinked) {
+      await handleLoadMoreUnlinked();
+    }
   };
 
   return (
@@ -163,7 +171,7 @@ const LinkReceiptModal = ({
         <div className="border-t border-lg" />
 
         <div
-          className={`flex flex-col gap-2 overflow-y-auto pb-6 scrollbar-hide max-h-[calc(85vh-256.8px)]`}
+          className={`flex flex-col gap-2 overflow-y-auto pb-6 scrollbar-hide max-h-[calc(85vh-341.17px)]`}
         >
           <div className="flex gap-2.5">
             {/* 왼쪽 영역 */}
@@ -178,6 +186,7 @@ const LinkReceiptModal = ({
                   hoverColor="hover:bg-bg"
                   textColor="text-dg"
                   borderColor="border-lg"
+                  disabled={selectedUnlinkedIds.length === 0}
                   onClick={handleAddSelected}
                 />
               </div>
@@ -205,22 +214,30 @@ const LinkReceiptModal = ({
                   hoverColor="hover:bg-bg"
                   textColor="text-dg"
                   borderColor="border-lg"
-                  onClick={() => {
+                  onClick={async () => {
                     // 오른쪽 모든 항목을 다시 왼쪽으로 되돌림
                     setUnlinkedMaterialHistory((prev) => [
                       ...linkedMaterialHistory,
                       ...prev,
                     ]);
                     setLinkedMaterialHistory([]);
+
+                    // 데이터가 충분하면 자동 로드하지 않음
+                    const currentCount =
+                      unlinkedMaterialHistory.length +
+                      linkedMaterialHistory.length;
+                    if (currentCount < 9 && hasMoreUnlinked) {
+                      await handleLoadMoreUnlinked();
+                    }
                   }}
                 />
               </div>
-              <div className="bg-bg rounded-[8px] p-3 w-full flex flex-col gap-2 h-[496px]">
+              <div className="bg-bg rounded-[8px] p-3 w-full flex flex-col gap-2 h-[496px] overflow-y-auto scrollbar-hide">
                 {linkedMaterialHistory.map((item) => (
                   <SelectedItem
                     key={item.id}
                     item={item}
-                    onRemove={(id) => {
+                    onRemove={async (id) => {
                       // 해당 항목을 오른쪽에서 제거하고 왼쪽으로 되돌림
                       setLinkedMaterialHistory((prev) =>
                         prev.filter((x) => x.id !== id)
@@ -233,6 +250,12 @@ const LinkReceiptModal = ({
                           removed,
                           ...prev,
                         ]);
+
+                        // 데이터가 충분하면 자동 로드하지 않음
+                        const currentCount = unlinkedMaterialHistory.length + 1;
+                        if (currentCount < 9 && hasMoreUnlinked) {
+                          await handleLoadMoreUnlinked();
+                        }
                       }
                     }}
                   />
