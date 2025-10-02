@@ -103,11 +103,12 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
     def check_more_history(product_id, project_id):
         if project_id is None:
             return False
-        # 같은 제품과 같은 프로젝트에 대한 추가 히스토리가 있는지 확인
+        # is_canceled=true인 히스토리들 중에서 같은 제품과 같은 프로젝트에 대한 추가 히스토리가 있는지 확인
         return ProductHistory.objects.filter(
             product__factory_id=int(factory_id),
             product_id=product_id,
-            project_id=project_id
+            project_id=project_id,
+            is_canceled=True
         ).exists()
 
     histories = await get_histories()
