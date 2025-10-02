@@ -716,6 +716,18 @@ const ProductionPlan = ({
         // 날짜 유효성 검사
         const isDateValid = checkDateValidity(formData);
         if (!isDateValid) {
+          // 날짜 형식이 잘못된 경우 이전 값으로 되돌림
+          const originalPlan = projectPlans.find((p) => p.id === planId);
+          if (originalPlan) {
+            setFormChanges((prev) => ({
+              ...prev,
+              [planId]: {
+                ...prev[planId],
+                start_date: originalPlan.start_date,
+                end_date: originalPlan.end_date,
+              },
+            }));
+          }
           showDateToast();
           return;
         }
@@ -842,6 +854,21 @@ const ProductionPlan = ({
         // 날짜 유효성 검사
         const isDateValid = checkDateValidity(formData);
         if (!isDateValid) {
+          // 날짜 형식이 잘못된 경우 이전 값으로 되돌림
+          const originalPlan = projectPlans.find(
+            (p) => p.id === parseInt(planId)
+          );
+          if (originalPlan) {
+            const planIdNum = parseInt(planId);
+            setFormChanges((prev) => ({
+              ...prev,
+              [planIdNum]: {
+                ...prev[planIdNum],
+                start_date: originalPlan.start_date,
+                end_date: originalPlan.end_date,
+              },
+            }));
+          }
           showDateToast();
           return { success: false, error: '날짜 형식 오류' };
         }
@@ -1079,8 +1106,8 @@ const ProductionPlan = ({
       {/* 생산 계획 저장 토스트 */}
       {isSaveToastOpen && (
         <Toast
-          text="생산 계획이 저장되었어요."
-          subtext="변경된 내용이 반영되었어요."
+          text="수정사항이 저장되었습니다."
+          subtext="저장된 내용으로 생산을 진행할게요."
           icon={<CheckCircle size={20} className="text-primary" />}
           type="primary"
           isVisible={isSaveToastVisible}
@@ -1089,8 +1116,8 @@ const ProductionPlan = ({
       {/* 유효한 날짜로 입력 토스트 */}
       {isDateToastOpen && (
         <Toast
-          text="유효한 일자를 입력해 주세요."
-          subtext="생산일자와 마감 예정일자를 확인해 주세요."
+          text="생산일자나 마감 예정일자가 올바른 형식이 아닙니다."
+          subtext="YYYY-MM-DD 형식으로 입력해주세요."
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isDateToastVisible}

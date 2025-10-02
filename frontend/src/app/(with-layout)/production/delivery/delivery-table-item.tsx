@@ -164,13 +164,14 @@ const DeliveryTableItem = ({
               );
             }
           } else {
-            // 실패 시 입력값을 빈값으로 되돌리고 savedDate는 유지
-            setValue('deliveryDate', '');
+            // 실패 시 입력값을 savedDate로 되돌리고 savedDate는 유지
+            setValue('deliveryDate', savedDate);
             setText('납품일자 변경에 실패했습니다.');
 
             // 서버 응답의 detail 메시지에 따라 서브텍스트 설정
             if (result?.error?.includes('날짜 형식이 올바르지 않습니다')) {
-              setSubtext('유효한 납품일자를 입력해 주세요.');
+              setText('납품일자가 올바른 형식이 아닙니다');
+              setSubtext('YYYY-MM-DD 형식으로 입력해주세요.');
             } else {
               setSubtext('다시 시도해주세요.');
             }
@@ -239,7 +240,7 @@ const DeliveryTableItem = ({
         </div>
         <div
           className={`flex-2 px-3 flex justify-between ${
-            hasSubscription() ? 'cursor-pointer group' : 'cursor-default'
+            hasSubscription() ? 'cursor-pointer group' : ''
           }`}
           onClick={hasSubscription() ? () => onItemClick(data) : undefined}
         >
