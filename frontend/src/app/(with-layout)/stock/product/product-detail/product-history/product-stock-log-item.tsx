@@ -22,6 +22,7 @@ const ProductStockLogItem = ({
     delivery_quantity: deliveryQuantity,
     total_stock: totalStock,
     project_id: projectId,
+    has_more_history: hasMoreHistory,
   } = item;
 
   return (
@@ -39,15 +40,19 @@ const ProductStockLogItem = ({
           {totalStock ? totalStock.toLocaleString() : '-'}
         </p>
         <div className="flex-1 px-3 text-dg">
-          <IconBtn
-            icon={Note}
-            onClick={() => {
-              setIsProjectStockHistoryModalOpen({
-                isOpen: true,
-                projectId,
-              });
-            }}
-          />
+          {hasMoreHistory ? (
+            <IconBtn
+              icon={Note}
+              onClick={() => {
+                setIsProjectStockHistoryModalOpen({
+                  isOpen: true,
+                  projectId,
+                });
+              }}
+            />
+          ) : (
+            '-'
+          )}
         </div>
       </div>
     </>

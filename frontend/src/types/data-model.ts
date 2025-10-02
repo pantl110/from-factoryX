@@ -412,6 +412,7 @@ export interface ProductHistoryResponseModel {
   delivery_quantity: number;
   quantity: number;
   total_stock: number;
+  has_more_history: boolean;
   is_canceled: boolean;
   created_at: string;
   updated_at: string;
