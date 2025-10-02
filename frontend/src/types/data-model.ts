@@ -239,7 +239,7 @@ export interface FacilityPlanResponseModel {
   equipment: number;
   id: number;
   product: number;
-  quotation_product_name: string;
+  product_name: string;
   project: number;
   quantity: number;
   start_date: string;
