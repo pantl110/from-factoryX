@@ -99,11 +99,23 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
         queryset = filters.filter(queryset)
         return list(queryset)
 
+    @sync_to_async
+    def check_more_history(project_id):
+        if project_id is None:
+            return False
+        # 같은 프로젝트 ID에 대한 추가 히스토리가 있는지 확인
+        return ProductHistory.objects.filter(
+            product__factory_id=int(factory_id),
+            project_id=project_id
+        ).exists()
+
     histories = await get_histories()
     
     # ProductHistoryOut 스키마에 맞게 응답 데이터 변환
-    response_data = [
-        {
+    response_data = []
+    for history in histories:
+        has_more = await check_more_history(history.project_id)
+        response_data.append({
             "id": history.id,
             "product_id": history.product_id,
             "project_id": history.project_id,
@@ -113,11 +125,10 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
             "quantity": history.quantity,
             "total_stock": history.total_stock,
             "is_canceled": history.is_canceled,
+            "has_more_history": has_more,
             "created_at": history.created_at,
             "updated_at": history.updated_at,
-        }
-        for history in histories
-    ]
+        })
     return response_data
 
 
