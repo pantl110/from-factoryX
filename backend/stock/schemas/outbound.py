@@ -91,6 +91,7 @@ class ProductHistoryOut(Schema):
     quantity: Optional[int] = None
     total_stock: Optional[int] = None
     is_canceled: bool
+    has_more_history: Optional[bool] = None
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
