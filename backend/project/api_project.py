@@ -156,7 +156,7 @@ async def clone_project(request, payload: ProjectCloneIn):
 @router.post(
     "/manufactured-to-delivery/{project_id}",
     summary="[C] 생산 완료 프로젝트 생산완료 처리",
-    description="생산 완료 프로젝트를 생산완료에서 납품으로 처리합니다.",
+    description="프로젝트를 생산완료에서 납품으로 처리합니다. 원자재 소모 처리도 함께 합니다.",
     response={200: dict, 400: dict, 404: dict, 500: dict},
 )
 async def manufactured_to_delivery(request, project_id: int):
@@ -174,37 +174,39 @@ async def manufactured_to_delivery(request, project_id: int):
         if project.status != "manufactured":
             raise HttpError(400, "생산 완료 상태의 프로젝트만 납품 처리할 수 있습니다.")
 
-        quotation = await sync_to_async(project.quotations.first)()
-        if not quotation:
-            raise HttpError(404, "해당 프로젝트의 견적서를 찾을 수 없습니다.")
-
-        # quotation_products를 product와 함께 로드
-        quotation_products_list = await sync_to_async(list)(
-            quotation.products.select_related("product").all()
+        # 플랜 기준으로 원자재 소모 처리 (quotation_products가 아닌 플랜 연결 기준)
+        plans = await sync_to_async(list)(
+            ProjectPlan.objects.filter(project_id=project_id)
+            .select_related("product__product")
         )
+        if not plans:
+            raise HttpError(400, "해당 프로젝트에 생산 계획이 없습니다.")
 
-        if not quotation_products_list:
-            raise HttpError(400, "해당 프로젝트에 견적 품목이 없습니다.")
-
-        # 원자재 소모 처리
         try:
-            print(f"🔍 원자재 소모 처리 시작...")
-            print(f"🔍 견적 품목 수: {len(quotation_products_list)}")
+            # 원자재 소모 처리 + MaterialHistory 생성
+            print("🔍 원자재 소모 처리 시작...")
+            for plan in plans:
+                # 이미 소모 처리된 플랜은 건너뜀
+                if getattr(plan, "material_consumed", False):
+                    continue
 
-            for quotation_product in quotation_products_list:
+                product_obj = plan.product.product  # QuotationProduct.product
+                production_qty = int(plan.quantity or 0) # 원자재 소모처리 기준은 생산수량 (주문수량 아님)
                 print(
-                    f"🔍 처리 중인 제품: {quotation_product.product.name}, 수량: {quotation_product.quantity}"
+                    f"🔍 처리 중인 플랜: plan_id={plan.id}, 제품={product_obj.name}, 수량={production_qty}"
                 )
                 success, message = await process_material_consumption(
-                    product_id=quotation_product.product.id,
-                    production_quantity=quotation_product.quantity,
+                    product_id=product_obj.id,
+                    production_quantity=production_qty,
                     factory_id=int(factory_id),
                 )
-
                 if not success:
                     print(f"❌ 원자재 소모 실패: {message}")
                     raise HttpError(400, message)
 
+                # 플랜에 소모 처리 플래그 세팅
+                plan.material_consumed = True
+                await sync_to_async(plan.save)(update_fields=["material_consumed"])
                 print(f"✅ 원자재 소모 처리 완료: {message}")
 
         except HttpError:
@@ -214,7 +216,6 @@ async def manufactured_to_delivery(request, project_id: int):
             # 기타 예외는 500 에러로 변환
             print(f"❌ 원자재 소모 처리 예외 발생: {str(e)}")
             import traceback
-
             print(f"❌ 원자재 소모 스택 트레이스: {traceback.format_exc()}")
             raise HttpError(500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}")
 
@@ -536,9 +537,9 @@ async def update_project_status(
         if payload.status == "completed":
 
             @sync_to_async
-            def handle_project_completion(project_id, factory_id):
+            def handle_project_completion(project_id):
                 from project.models import ProjectPlan
-                from stock.models import MaterialProduct, Material, MaterialHistory, ProductHistory
+                from stock.models import ProductHistory
                 from document.models import Quotation
 
                 # 해당 프로젝트의 모든 생산 계획 조회
@@ -565,52 +566,14 @@ async def update_project_status(
                     quotation_product = ctx["quotation_product"]
                     plans = ctx["plans"]
 
-                    # 모든 계획 완료 처리 및 원자재 소모 기록
+                    # 모든 계획 완료 처리 (원자재 소모 기록은 manufactured-to-delivery 단계에서 수행)
                     total_production_qty = 0
                     for plan in plans:
-                        # 원자재 소모는 이미 완료/납품된 경우 건너뜀
-                        skip_material_consumption = (
-                            plan.status == ProjectPlan.ProductionStatus.completed
-                            or quotation_product.is_delivery
-                        )
-
                         if plan.status != ProjectPlan.ProductionStatus.completed:
                             plan.status = ProjectPlan.ProductionStatus.completed
                             plan.save()
 
                         total_production_qty += int(plan.quantity or 0)
-
-                        # --------
-                        # material history 생성    
-                        # --------
-
-                        if not skip_material_consumption:
-                            # 해당 제품에 연결된 원자재 조회 후 소모 처리
-                            material_products = MaterialProduct.objects.filter(
-                                product=quotation_product.product
-                            )
-                            from factory.models import FactoryClient
-                            default_client = FactoryClient.objects.filter(
-                                factory_id=int(factory_id)
-                            ).first()
-                            if not default_client:
-                                # 기본 고객이 없으면 생성
-                                default_client = FactoryClient.objects.create(
-                                    factory_id=int(factory_id),
-                                    name="기본 고객",
-                                    type="company",
-                                )
-                            for material_product in material_products:
-                                material = material_product.material
-                                consumed_quantity = material_product.quantity * (plan.quantity or 0)
-                                current_stock = material.current_stock - consumed_quantity
-                                MaterialHistory.objects.create(
-                                    material=material,
-                                    type="consumption",
-                                    client=default_client,
-                                    quantity=consumed_quantity,
-                                    total_stock=current_stock,
-                                )
 
                     # QuotationProduct의 납품 상태를 True로 설정
                     if not quotation_product.is_delivery:
@@ -687,7 +650,7 @@ async def update_project_status(
                     product_obj.current_stock = new_total_stock
                     product_obj.save(update_fields=["current_stock"])
 
-            await handle_project_completion(project.id, int(factory_id))
+            await handle_project_completion(project.id)
 
         return 200, ProjectDetailOut(
             id=project.id,

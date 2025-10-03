@@ -110,15 +110,16 @@ async def project_plan_start_status_change(request):
 
         update_count = 0
         for plan in plans:
-            materials = product_material_map.get(plan.product.product.id, [])
-            for mp in materials:
-                required_qty = mp.quantity * plan.quantity
-                if mp.material.current_stock < required_qty:
-                    break
-            else:  # for문이 break 없이 끝났으면 재고 충분
-                plan.status = ProjectPlan.ProductionStatus.production
-                plan.save(update_fields=["status"])
-                update_count += 1
+            # 원자재 부족해도 가동중으로 변경 허용하기로 함
+            # materials = product_material_map.get(plan.product.product.id, [])
+            # for mp in materials:
+            #     required_qty = mp.quantity * plan.quantity
+            #     if mp.material.current_stock < required_qty:
+            #         break
+            # else:  # for문이 break 없이 끝났으면 재고 충분
+            plan.status = ProjectPlan.ProductionStatus.production
+            plan.save(update_fields=["status"])
+            update_count += 1
 
         return update_count
 

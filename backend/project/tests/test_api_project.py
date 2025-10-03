@@ -168,12 +168,6 @@ class ProjectAPITestCase(TestCase):
 
     # 생성 API 제거로 관련 테스트 삭제
 
-    # 생성 API 제거로 관련 테스트 삭제
-
-    # 생성 API 제거로 관련 테스트 삭제
-
-    # 생성 API 제거로 관련 테스트 삭제
-
     # def test_create_multiple_projects(self):
     #     """여러 프로젝트 생성 테스트"""
     #     url = f"/v1/project?factory_id={self.factory.id}"
@@ -392,8 +386,53 @@ class ProjectAPITestCase(TestCase):
             project.refresh_from_db()
             self.assertEqual(project.status, expected_korean_statuses[i])
 
-    def test_update_project_status_to_completed_with_material_history(self):
-        """프로젝트를 완료 상태로 변경할 때 원자재 히스토리 생성 및 ProjectPlan 완료 처리 테스트"""
+    def test_update_project_status_to_completed_sets_plans_completed(self):
+        """프로젝트 완료 시 ProjectPlan 완료 처리와 납품 플래그 검증 (원자재 소모는 아님)."""
+        from stock.models import MaterialHistory
+
+        # 준비: manufactured 상태 프로젝트와 플랜 생성
+        project = Project.objects.create(status="manufactured")
+        quotation = Quotation.objects.create(
+            factory=self.factory, client=self.client_company, project=project
+        )
+        quotation_product = QuotationProduct.objects.create(
+            quotation=quotation, product=self.product1, quantity=7, unit_price=1000
+        )
+        plan = ProjectPlan.objects.create(
+            project=project,
+            product=quotation_product,
+            equipment=self.equipment,
+            status=ProjectPlan.ProductionStatus.production,
+            quantity=7,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() - timedelta(days=1),
+            avg_production_time=1800,
+        )
+
+        # 액션: 프로젝트 상태를 completed로 변경
+        url = f"/v1/project/{project.id}/status?factory_id={self.factory.id}"
+        payload = {"status": "completed"}
+        response = self.client.patch(
+            url,
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # 검증: 프로젝트 상태
+        project.refresh_from_db()
+        self.assertEqual(project.status, "completed")
+
+        # 검증: 플랜 완료 처리 및 납품 플래그
+        plan.refresh_from_db()
+        quotation_product.refresh_from_db()
+        self.assertEqual(plan.status, ProjectPlan.ProductionStatus.completed)
+        self.assertTrue(quotation_product.is_delivery)
+
+    def test_manufactured_to_delivery_creates_material_history(self):
+        """생산완료→납품 처리 시 원자재 히스토리 생성 및 상태 전환 테스트"""
         from stock.models import Material, MaterialProduct, MaterialHistory
 
         # 원자재 생성 (setUp에서 이미 생성된 것과 다른 코드 사용)
@@ -426,8 +465,8 @@ class ProjectAPITestCase(TestCase):
             quantity=3,  # 제품 1개당 원자재 2를 3개 사용
         )
 
-        # 프로젝트와 견적서 생성
-        project = Project.objects.create(status="생산 완료")
+        # 프로젝트와 견적서 생성 (manufactured 상태)
+        project = Project.objects.create(status="manufactured")
         quotation = Quotation.objects.create(
             factory=self.factory, client=self.client_company, project=project
         )
@@ -472,28 +511,21 @@ class ProjectAPITestCase(TestCase):
             avg_production_time=30,  # 평균 생산 시간 추가
         )
 
-        # 프로젝트를 완료 상태로 변경
-        url = f"/v1/project/{project.id}/status?factory_id={self.factory.id}"
-        payload = {"status": "completed"}
-
-        response = self.client.patch(
-            url,
-            data=json.dumps(payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
+        # 생산완료→납품 처리 호출
+        url = f"/v1/project/manufactured-to-delivery/{project.id}?factory_id={self.factory.id}"
+        response = self.client.post(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
         self.assertEqual(response.status_code, 200)
 
-        # 프로젝트 상태 확인
+        # 프로젝트 상태 확인 (납품)
         project.refresh_from_db()
-        self.assertEqual(project.status, "completed")
+        self.assertEqual(project.status, "delivery")
 
-        # ProjectPlan 완료 상태 확인
+        # 원자재 소모 처리 플래그를 검증
         plan1.refresh_from_db()
         plan2.refresh_from_db()
-        self.assertEqual(plan1.product.is_delivery, True)
-        self.assertEqual(plan2.product.is_delivery, True)
+        self.assertTrue(plan1.material_consumed)
+        self.assertTrue(plan2.material_consumed)
 
         # 원자재 히스토리 생성 확인
         material_histories = MaterialHistory.objects.filter(
