@@ -174,37 +174,39 @@ async def manufactured_to_delivery(request, project_id: int):
         if project.status != "manufactured":
             raise HttpError(400, "생산 완료 상태의 프로젝트만 납품 처리할 수 있습니다.")
 
-        quotation = await sync_to_async(project.quotations.first)()
-        if not quotation:
-            raise HttpError(404, "해당 프로젝트의 견적서를 찾을 수 없습니다.")
-
-        # quotation_products를 product와 함께 로드
-        quotation_products_list = await sync_to_async(list)(
-            quotation.products.select_related("product").all()
+        # 플랜 기준으로 원자재 소모 처리 (quotation_products가 아닌 플랜 연결 기준)
+        plans = await sync_to_async(list)(
+            ProjectPlan.objects.filter(project_id=project_id)
+            .select_related("product__product")
         )
+        if not plans:
+            raise HttpError(400, "해당 프로젝트에 생산 계획이 없습니다.")
 
-        if not quotation_products_list:
-            raise HttpError(400, "해당 프로젝트에 견적 품목이 없습니다.")
-
-        # 원자재 소모 처리
         try:
-            print(f"🔍 원자재 소모 처리 시작...")
-            print(f"🔍 견적 품목 수: {len(quotation_products_list)}")
+            # 원자재 소모 처리 + MaterialHistory 생성
+            print("🔍 원자재 소모 처리 시작...")
+            for plan in plans:
+                # 이미 소모 처리된 플랜은 건너뜀
+                if getattr(plan, "material_consumed", False):
+                    continue
 
-            for quotation_product in quotation_products_list:
+                product_obj = plan.product.product  # QuotationProduct.product
+                production_qty = int(plan.quantity or 0) # 원자재 소모처리 기준은 생산수량 (주문수량 아님)
                 print(
-                    f"🔍 처리 중인 제품: {quotation_product.product.name}, 수량: {quotation_product.quantity}"
+                    f"🔍 처리 중인 플랜: plan_id={plan.id}, 제품={product_obj.name}, 수량={production_qty}"
                 )
                 success, message = await process_material_consumption(
-                    product_id=quotation_product.product.id,
-                    production_quantity=quotation_product.quantity,
+                    product_id=product_obj.id,
+                    production_quantity=production_qty,
                     factory_id=int(factory_id),
                 )
-
                 if not success:
                     print(f"❌ 원자재 소모 실패: {message}")
                     raise HttpError(400, message)
 
+                # 플랜에 소모 처리 플래그 세팅
+                plan.material_consumed = True
+                await sync_to_async(plan.save)(update_fields=["material_consumed"])
                 print(f"✅ 원자재 소모 처리 완료: {message}")
 
         except HttpError:
@@ -214,7 +216,6 @@ async def manufactured_to_delivery(request, project_id: int):
             # 기타 예외는 500 에러로 변환
             print(f"❌ 원자재 소모 처리 예외 발생: {str(e)}")
             import traceback
-
             print(f"❌ 원자재 소모 스택 트레이스: {traceback.format_exc()}")
             raise HttpError(500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}")
 
