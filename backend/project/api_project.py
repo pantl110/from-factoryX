@@ -156,7 +156,7 @@ async def clone_project(request, payload: ProjectCloneIn):
 @router.post(
     "/manufactured-to-delivery/{project_id}",
     summary="[C] 생산 완료 프로젝트 생산완료 처리",
-    description="생산 완료 프로젝트를 생산완료에서 납품으로 처리합니다.",
+    description="프로젝트를 생산완료에서 납품으로 처리합니다. 원자재 소모 처리도 함께 합니다.",
     response={200: dict, 400: dict, 404: dict, 500: dict},
 )
 async def manufactured_to_delivery(request, project_id: int):
