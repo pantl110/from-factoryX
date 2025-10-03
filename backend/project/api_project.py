@@ -537,9 +537,9 @@ async def update_project_status(
         if payload.status == "completed":
 
             @sync_to_async
-            def handle_project_completion(project_id, factory_id):
+            def handle_project_completion(project_id):
                 from project.models import ProjectPlan
-                from stock.models import MaterialProduct, Material, MaterialHistory, ProductHistory
+                from stock.models import ProductHistory
                 from document.models import Quotation
 
                 # 해당 프로젝트의 모든 생산 계획 조회
@@ -566,52 +566,14 @@ async def update_project_status(
                     quotation_product = ctx["quotation_product"]
                     plans = ctx["plans"]
 
-                    # 모든 계획 완료 처리 및 원자재 소모 기록
+                    # 모든 계획 완료 처리 (원자재 소모 기록은 manufactured-to-delivery 단계에서 수행)
                     total_production_qty = 0
                     for plan in plans:
-                        # 원자재 소모는 이미 완료/납품된 경우 건너뜀
-                        skip_material_consumption = (
-                            plan.status == ProjectPlan.ProductionStatus.completed
-                            or quotation_product.is_delivery
-                        )
-
                         if plan.status != ProjectPlan.ProductionStatus.completed:
                             plan.status = ProjectPlan.ProductionStatus.completed
                             plan.save()
 
                         total_production_qty += int(plan.quantity or 0)
-
-                        # --------
-                        # material history 생성    
-                        # --------
-
-                        if not skip_material_consumption:
-                            # 해당 제품에 연결된 원자재 조회 후 소모 처리
-                            material_products = MaterialProduct.objects.filter(
-                                product=quotation_product.product
-                            )
-                            from factory.models import FactoryClient
-                            default_client = FactoryClient.objects.filter(
-                                factory_id=int(factory_id)
-                            ).first()
-                            if not default_client:
-                                # 기본 고객이 없으면 생성
-                                default_client = FactoryClient.objects.create(
-                                    factory_id=int(factory_id),
-                                    name="기본 고객",
-                                    type="company",
-                                )
-                            for material_product in material_products:
-                                material = material_product.material
-                                consumed_quantity = material_product.quantity * (plan.quantity or 0)
-                                current_stock = material.current_stock - consumed_quantity
-                                MaterialHistory.objects.create(
-                                    material=material,
-                                    type="consumption",
-                                    client=default_client,
-                                    quantity=consumed_quantity,
-                                    total_stock=current_stock,
-                                )
 
                     # QuotationProduct의 납품 상태를 True로 설정
                     if not quotation_product.is_delivery:
@@ -688,7 +650,7 @@ async def update_project_status(
                     product_obj.current_stock = new_total_stock
                     product_obj.save(update_fields=["current_stock"])
 
-            await handle_project_completion(project.id, int(factory_id))
+            await handle_project_completion(project.id)
 
         return 200, ProjectDetailOut(
             id=project.id,
