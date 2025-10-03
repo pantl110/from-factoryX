@@ -65,8 +65,10 @@ class MaterialHistory(BaseModel):
     client = models.ForeignKey(
         FactoryClient,
         related_name="material_histories",
-        on_delete=models.CASCADE,
-        help_text="고객",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="고객 (원자재 구매 시에만 입력)",
     )
     quantity = models.IntegerField(
         help_text="재고 변동 수량",
