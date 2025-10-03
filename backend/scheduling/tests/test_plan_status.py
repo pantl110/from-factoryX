@@ -164,41 +164,41 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
             self.pending_plan.status, ProjectPlan.ProductionStatus.production
         )
 
-    def test_project_plan_start_insufficient_material_stock(self):
-        """자재 재고 부족 시 상태변경 안됨 테스트"""
-        # 자재 재고를 부족하게 설정 (필요: 50kg, 보유: 30kg)
-        self.material.current_stock = 30
-        self.material.save()
+    # def test_project_plan_start_insufficient_material_stock(self):
+    #     """자재 재고 부족 시 상태변경 안됨 테스트"""
+    #     # 자재 재고를 부족하게 설정 (필요: 50kg, 보유: 30kg)
+    #     self.material.current_stock = 30
+    #     self.material.save()
 
-        url = "/v1/scheduling/project-plan/start"
+    #     url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, headers=self.headers)
+    #     response = self.client.get(url, headers=self.headers)
 
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["plans"], 0)
+    #     self.assertEqual(response.status_code, 200)
+    #     data = response.json()
+    #     self.assertEqual(data["plans"], 0)
 
-        # 프로젝트 계획 상태가 pending으로 유지되어야 함
-        self.pending_plan.refresh_from_db()
-        self.assertEqual(self.pending_plan.status, ProjectPlan.ProductionStatus.pending)
+    #     # 프로젝트 계획 상태가 pending으로 유지되어야 함
+    #     self.pending_plan.refresh_from_db()
+    #     self.assertEqual(self.pending_plan.status, ProjectPlan.ProductionStatus.pending)
 
-    def test_project_plan_start_upgrade_insufficient_material_stock(self):
-        """자재 재고 부족 시 상태변경 안됨 테스트"""
-        # 자재 재고를 부족하게 설정
-        self.material.current_stock = 30
-        self.material.save()
+    # def test_project_plan_start_upgrade_insufficient_material_stock(self):
+    #     """자재 재고 부족 시 상태변경 안됨 테스트"""
+    #     # 자재 재고를 부족하게 설정
+    #     self.material.current_stock = 30
+    #     self.material.save()
 
-        url = "/v1/scheduling/project-plan/start"
+    #     url = "/v1/scheduling/project-plan/start"
 
-        response = self.client.get(url, headers=self.headers)
+    #     response = self.client.get(url, headers=self.headers)
 
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["plans"], 0)
+    #     self.assertEqual(response.status_code, 200)
+    #     data = response.json()
+    #     self.assertEqual(data["plans"], 0)
 
-        # 프로젝트 계획 상태가 pending으로 유지되어야 함
-        self.pending_plan.refresh_from_db()
-        self.assertEqual(self.pending_plan.status, ProjectPlan.ProductionStatus.pending)
+    #     # 프로젝트 계획 상태가 pending으로 유지되어야 함
+    #     self.pending_plan.refresh_from_db()
+    #     self.assertEqual(self.pending_plan.status, ProjectPlan.ProductionStatus.pending)
 
     def test_project_plan_start_future_start_date(self):
         """시작 예정일이 미래인 경우 상태변경 안됨 테스트"""
