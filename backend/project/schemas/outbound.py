@@ -261,6 +261,7 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     end_date: datetime.datetime
     avg_production_time: int
     material_status: Literal["충분", "부족"]
+    material_consumed: bool
 
 
 # (GET) Daily Production Quantity
