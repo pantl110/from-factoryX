@@ -3,7 +3,6 @@
 """
 
 from typing import List, Tuple
-from django.core.exceptions import ObjectDoesNotExist
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from websocket.utils import send_notification_to_factory
@@ -13,7 +12,7 @@ async def process_material_consumption(
     product_id: int, production_quantity: int, factory_id: int = None
 ) -> Tuple[bool, str]:
     """
-    제품 생산 시 원자재 소모를 처리합니다.
+    제품 생산 시 원자재 소모를 처리합니다. material history도 생성합니다.
 
     Args:
         product_id: 제품 ID
@@ -27,7 +26,7 @@ async def process_material_consumption(
         HttpError: 원자재 재고 부족 또는 처리 실패 시
     """
     try:
-        from stock.models import Material, MaterialProduct
+        from stock.models import MaterialProduct, MaterialHistory
 
         print(
             f"🔍 process_material_consumption 시작: product_id={product_id}, quantity={production_quantity}, factory_id={factory_id}"
@@ -65,33 +64,38 @@ async def process_material_consumption(
                 if material_factory_id and material_factory_id != factory_id:
                     continue  # 다른 공장의 원자재는 건너뛰기
 
-            if material.current_stock >= consumption_quantity:
-                material.current_stock -= consumption_quantity
-                await sync_to_async(material.save)()
+            current_stock_value = int(material.current_stock or 0)
+            standard_stock_value = int(material.standard_stock or 0)
 
-                if material.current_stock < material.standard_stock:
-                    await send_notification_to_factory(
-                        factory_id=int(factory_id),
-                        notification_type="warning",
-                        notification_case="material_lack",
-                        content=f"{material.name} 원자재 부족",
-                        additional_data={"material_id": material.id},
-                    )
+            # MaterialHistory 생성 (소모). save()가 material.current_stock를 total_stock로 반영
+            # 실제 재고 반영 값은 현재 재고에서 직접 차감
+            new_total = int(current_stock_value - consumption_quantity)
+            await sync_to_async(MaterialHistory.objects.create)(
+                material=material,
+                type="consumption",
+                client=None,
+                quantity=int(consumption_quantity),
+                total_stock=new_total,
+            )
 
-                consumed_materials.append(
-                    {
-                        "name": material.name,
-                        "consumed": consumption_quantity,
-                        "remaining": material.current_stock,
-                    }
+            # 부족 알림
+            # 최신 current_stock는 save 내에서 업데이트되므로 new_total로 비교 가능
+            if new_total < standard_stock_value:
+                await send_notification_to_factory(
+                    factory_id=int(factory_id),
+                    notification_type="warning",
+                    notification_case="material_lack",
+                    content=f"{material.name} 원자재 부족",
+                    additional_data={"material_id": material.id},
                 )
-            else:
-                # 재고 부족 시 예외 발생
-                raise HttpError(
-                    400,
-                    f"원자재 '{material.name}'의 재고가 부족합니다. "
-                    f"필요: {consumption_quantity}개, 현재: {material.current_stock}개",
-                )
+
+            consumed_materials.append(
+                {
+                    "name": material.name,
+                    "consumed": int(consumption_quantity),
+                    "remaining": new_total,
+                }
+            )
 
         if consumed_materials:
             material_names = [m["name"] for m in consumed_materials]
