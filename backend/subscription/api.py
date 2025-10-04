@@ -601,21 +601,9 @@ async def process_subscription_payment(
         return 200, result
 
     except (PaymentError, BillingKeyError) as e:
-        # 결제 실패시 payment 삭제
-        @sync_to_async
-        def delete_failed_payment():
-            payment.delete()
-
-        await delete_failed_payment()
         logger.error(f"구독 결제 실패: factory_id={factory_id}, error={str(e)}")
         raise HttpError(400, f"결제 실패: {str(e)}")
     except Exception as e:
-        # 결제 실패시 payment 삭제
-        @sync_to_async
-        def delete_failed_payment():
-            payment.delete()
-
-        await delete_failed_payment()
         logger.error(f"구독 결제 오류: factory_id={factory_id}, error={str(e)}")
         raise HttpError(500, f"결제 처리 중 오류가 발생했습니다: {str(e)}")
 
