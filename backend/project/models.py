@@ -92,6 +92,12 @@ class ProjectPlan(BaseModel):
         help_text="생산 완료 알림 여부",
     )
 
+    # 원자재 소모 처리 여부
+    material_consumed = models.BooleanField(
+        default=False,
+        help_text="해당 생산 계획에 대한 원자재 소모 처리가 완료되었는지 여부",
+    )
+
 
 # 생산 로그
 class ProjectLog(BaseModel):
