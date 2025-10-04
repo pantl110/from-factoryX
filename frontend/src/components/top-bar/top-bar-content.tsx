@@ -12,7 +12,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import ProfileModal from './modals/profile-modal';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 import Tooltip from '@/ui/tooltip';
-import { useTooltip } from '@/hooks';
+import { useTooltip, useManufacturedToDelivery } from '@/hooks';
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
@@ -51,6 +51,10 @@ const TopBarContent = ({
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
   // 세금계산서 버튼 툴팁 (조건부로만 동작)
   const taxTooltip = useTooltip({});
+
+  // manufactured-to-delivery 훅 사용 (생산완료에서 납품)
+  const { manufacturedToDelivery, isLoading: isManufacturedToDeliveryLoading } =
+    useManufacturedToDelivery();
 
   // store에서 함수들 가져오기
   const handleChangeStatus = usePageStatusStore(
@@ -368,12 +372,29 @@ const TopBarContent = ({
                 if (handleProductionLogSave) {
                   await handleProductionLogSave();
                 }
-                // 저장 완료 후 다음 단계로 진행
-                if (handleChangeStatus) {
-                  await handleChangeStatus('delivery');
+                // 저장 완료 후 manufactured-to-delivery API 호출
+                if (projectId) {
+                  const result = await manufacturedToDelivery(projectId);
+                  if (result.success) {
+                    // 성공 시 페이지 상태 업데이트
+                    if (handleChangeStatus) {
+                      await handleChangeStatus('delivery');
+                    }
+                  } else {
+                    console.error(
+                      'manufactured-to-delivery 실패:',
+                      result.error
+                    );
+                    alert('납품 단계로 이동하는데 실패했습니다.');
+                  }
                 }
               }}
-              disabled={!isProductionLogValid || isViewer || !hasSubscription()}
+              disabled={
+                !isProductionLogValid ||
+                isViewer ||
+                !hasSubscription() ||
+                isManufacturedToDeliveryLoading
+              }
             />
           )}
         </div>

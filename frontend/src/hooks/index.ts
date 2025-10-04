@@ -51,6 +51,7 @@ export { default as useUpdateProjectStatus } from './project/use-update-project-
 export { default as useGetProjects } from './project/use-get-projects';
 export { default as useGetProjectStatus } from './project/use-get-project-status';
 export { default as useCloneProject } from './project/project-plan/use-clone-project';
+export { default as useManufacturedToDelivery } from './project/use-manufactured-to-delivery';
 
 // Project log related hooks
 export { default as useCreateProjectLog } from './project/project-log/use-create-project-log';
