@@ -640,8 +640,7 @@ const ProductDetail = ({
         title="품목 재고관리"
         onClose={onClose}
         headerButton={
-          (!productId ||
-            (productId && (isDirty || isLocationDirty || isQuantityDirty))) && (
+          (isDirty || isLocationDirty || isQuantityDirty) && (
             <MiniBtn
               text="저장"
               textColor="text-primary"

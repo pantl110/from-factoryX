@@ -62,7 +62,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
 
     // product prop이 바뀌면 폼 전체를 reset으로 초기화
     useEffect(() => {
-      reset(formData);
+      reset(formData, { keepDefaultValues: false });
       if (onIsDirtyChange) {
         onIsDirtyChange(false);
       }
@@ -215,7 +215,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
 
                     setStockInputValue(displayVal);
 
-                    // 실제 저장할 값
+                    // 실제 저장할 값 (빈 문자열은 undefined로 처리)
                     const finalValue =
                       numValue === ''
                         ? undefined

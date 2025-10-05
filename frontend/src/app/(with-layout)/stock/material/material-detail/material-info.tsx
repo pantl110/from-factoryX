@@ -84,7 +84,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
         const result = await getMaterialDetail(materialId);
         if (result && result.success && result.data) {
           const mat = result.data;
-          reset({
+          const formData = {
             materialName: mat.name ?? '',
             materialCode: mat.code ?? '',
             size: mat.spec ?? '',
@@ -97,7 +97,11 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
               mat.standard_stock !== undefined && mat.standard_stock !== null
                 ? mat.standard_stock.toString()
                 : '',
-          });
+          };
+          reset(formData, { keepDefaultValues: false });
+          if (onIsDirtyChange) {
+            onIsDirtyChange(false);
+          }
         }
       };
       fetchDetail();
@@ -181,7 +185,9 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
               // 입력 중일 때는 stockInputValue, 아니면 포맷된 값 표시
               const displayValue = isStockEditing
                 ? stockInputValue
-                : field.value === undefined || field.value === null
+                : field.value === undefined ||
+                    field.value === null ||
+                    field.value === ''
                   ? ''
                   : field.value === '0'
                     ? '0'
