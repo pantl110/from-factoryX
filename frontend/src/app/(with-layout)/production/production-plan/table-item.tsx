@@ -163,6 +163,9 @@ const TableItem = ({
         item.equipment
       : item.equipment;
 
+  const isDisabled =
+    isViewer || !hasSubscription() || operationStatus !== 'pending';
+
   const itemData = {
     '가동 상태': (
       <Chip
@@ -179,7 +182,8 @@ const TableItem = ({
           projectStatus === 'pending' ||
           item.quotation_product?.is_delivery ||
           isViewer ||
-          !hasSubscription()
+          !hasSubscription() ||
+          item.material_consumed
             ? 'cursor-default'
             : 'cursor-pointer'
         }
@@ -187,7 +191,8 @@ const TableItem = ({
           projectStatus === 'pending' ||
           item.quotation_product?.is_delivery ||
           isViewer ||
-          !hasSubscription()
+          !hasSubscription() ||
+          item.material_consumed
             ? undefined
             : (e) => {
                 if (e && onOperationStatusClick) {
@@ -200,7 +205,8 @@ const TableItem = ({
           projectStatus === 'pending' ||
           item.quotation_product?.is_delivery ||
           isViewer ||
-          !hasSubscription()
+          !hasSubscription() ||
+          item.material_consumed
             ? false
             : true
         }
@@ -268,9 +274,7 @@ const TableItem = ({
             }}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={
-              isViewer || !hasSubscription() || operationStatus !== 'pending'
-            }
+            disabled={isDisabled}
           />
         )}
       />
@@ -351,9 +355,7 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={
-              isViewer || !hasSubscription() || operationStatus !== 'pending'
-            }
+            disabled={isDisabled}
           />
         )}
       />
@@ -386,9 +388,7 @@ const TableItem = ({
             maxLength={16}
             className="w-full h-8 text-left border-none bg-transparent p-0"
             style={{ outline: 'none' }}
-            disabled={
-              isViewer || !hasSubscription() || operationStatus !== 'pending'
-            }
+            disabled={isDisabled}
           />
         )}
       />

@@ -1,6 +1,6 @@
 import { useGetMaterial } from '@/hooks';
 import InfoLabelValue from '@/ui/info-label-value';
-import { useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -43,6 +43,9 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
     const hasSubscription = useSubscriptionStore(
       (state) => state.hasSubscription
     );
+
+    const [isStockEditing, setIsStockEditing] = useState(false);
+    const [stockInputValue, setStockInputValue] = useState<string>('');
 
     const { getMaterialDetail } = useGetMaterial();
     const {
@@ -175,26 +178,88 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 'currentStock'
               >;
             }) => {
+              // 입력 중일 때는 stockInputValue, 아니면 포맷된 값 표시
+              const displayValue = isStockEditing
+                ? stockInputValue
+                : field.value === undefined || field.value === null
+                  ? ''
+                  : field.value === '0'
+                    ? '0'
+                    : (() => {
+                        // 음수 처리를 포함한 포맷팅
+                        const numStr = field.value.toString();
+                        const isNegative = numStr.startsWith('-');
+                        const absValue = numStr.replace('-', '');
+                        const formatted = addComma(absValue);
+                        return isNegative ? `-${formatted}` : formatted;
+                      })();
+
               const handleChangeCurrentStock = (
                 e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
               ) => {
-                const numValue = e.target.value.replace(/[^0-9]/g, '');
-                field.onChange(numValue === '' ? '' : numValue);
+                const inputValue = e.target.value;
+
+                // 음수 기호 체크 (맨 앞의 -만 허용)
+                const isNegative = inputValue.startsWith('-');
+                // 숫자만 추출
+                const numValue = inputValue.replace(/[^0-9]/g, '');
+
+                // 표시할 값 (쉼표 포함)
+                let displayVal = '';
+                if (inputValue === '-') {
+                  displayVal = '-';
+                } else if (numValue === '') {
+                  displayVal = '';
+                } else {
+                  const formatted = numValue.replace(
+                    /\B(?=(\d{3})+(?!\d))/g,
+                    ','
+                  );
+                  displayVal = isNegative ? `-${formatted}` : formatted;
+                }
+
+                setStockInputValue(displayVal);
+
+                // 실제 저장할 값 (문자열로 저장)
+                const finalValue =
+                  numValue === '' ? '' : (isNegative ? '-' : '') + numValue;
+                field.onChange(finalValue);
               };
+
               return (
                 <InfoLabelValue
                   label="현재 재고"
-                  value={
-                    field.value === undefined || field.value === null
-                      ? ''
-                      : field.value === '0'
-                        ? '0'
-                        : addComma(field.value)
-                  }
+                  value={displayValue}
                   isEditing={!isViewer && hasSubscription()}
                   placeholder="현재 재고 수량을 입력하세요."
                   inputType="text"
                   handleChange={handleChangeCurrentStock}
+                  onFocus={() => {
+                    setIsStockEditing(true);
+                    // 포커스 시 현재 값으로 초기화 (쉼표 포함)
+                    if (
+                      field.value === undefined ||
+                      field.value === null ||
+                      field.value === ''
+                    ) {
+                      setStockInputValue('');
+                    } else {
+                      const numStr = field.value.toString();
+                      const isNegative = numStr.startsWith('-');
+                      const absValue = numStr.replace('-', '');
+                      const formatted = absValue.replace(
+                        /\B(?=(\d{3})+(?!\d))/g,
+                        ','
+                      );
+                      setStockInputValue(
+                        isNegative ? `-${formatted}` : formatted
+                      );
+                    }
+                  }}
+                  onBlur={() => {
+                    setIsStockEditing(false);
+                    setStockInputValue('');
+                  }}
                 />
               );
             }}

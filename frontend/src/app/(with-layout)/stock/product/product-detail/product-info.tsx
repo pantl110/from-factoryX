@@ -1,6 +1,6 @@
 import { ProductModel } from '@/types/data-model';
 import InfoLabelValue from '@/ui/info-label-value';
-import { useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -23,6 +23,9 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
     const hasSubscription = useSubscriptionStore(
       (state) => state.hasSubscription
     );
+
+    const [isStockEditing, setIsStockEditing] = useState(false);
+    const [stockInputValue, setStockInputValue] = useState<string>('');
 
     const {
       control,
@@ -144,36 +147,88 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
           <Controller
             name="current_stock"
             control={control}
-            render={({ field }) => (
-              <InfoLabelValue
-                label="현재 재고"
-                value={
-                  field.value === undefined || field.value === null
-                    ? ''
-                    : field.value === 0
-                      ? '0'
-                      : field.value
+            render={({ field }) => {
+              // 입력 중일 때는 stockInputValue, 아니면 포맷된 값 표시
+              const displayValue = isStockEditing
+                ? stockInputValue
+                : field.value === undefined || field.value === null
+                  ? ''
+                  : field.value === 0
+                    ? '0'
+                    : (() => {
+                        const num = Number(field.value);
+                        const abs = Math.abs(num);
+                        const formatted = abs
                           .toString()
-                          .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                isEditing={!isViewer && hasSubscription()}
-                placeholder="현재 재고 수량을 입력하세요."
-                inputType="text"
-                onChange={(e) => {
-                  const numValue = e.target.value.replace(/[^0-9.]/g, '');
-                  // 소수점이 여러 개 입력되는 것을 방지
-                  const parts = numValue.split('.');
-                  const cleanValue =
-                    parts.length > 2
-                      ? parts[0] + '.' + parts.slice(1).join('')
-                      : numValue;
-                  // 빈 문자열이면 undefined, 아니면 숫자로 저장 (소수점 포함)
-                  field.onChange(
-                    cleanValue === '' ? undefined : Number(cleanValue)
-                  );
-                }}
-              />
-            )}
+                          .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        return num < 0 ? `-${formatted}` : formatted;
+                      })();
+
+              return (
+                <InfoLabelValue
+                  label="현재 재고"
+                  value={displayValue}
+                  isEditing={!isViewer && hasSubscription()}
+                  placeholder="현재 재고 수량을 입력하세요."
+                  inputType="text"
+                  onFocus={() => {
+                    setIsStockEditing(true);
+                    // 포커스 시 현재 값으로 초기화 (쉼표 포함)
+                    if (field.value === undefined || field.value === null) {
+                      setStockInputValue('');
+                    } else {
+                      const num = Number(field.value);
+                      if (num === 0) {
+                        setStockInputValue('0');
+                      } else {
+                        const abs = Math.abs(num);
+                        const formatted = abs
+                          .toString()
+                          .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        setStockInputValue(
+                          num < 0 ? `-${formatted}` : formatted
+                        );
+                      }
+                    }
+                  }}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+
+                    // 음수 기호 체크 (맨 앞의 -만 허용)
+                    const isNegative = inputValue.startsWith('-');
+                    // 숫자만 추출
+                    const numValue = inputValue.replace(/[^0-9]/g, '');
+
+                    // 표시할 값 (쉼표 포함)
+                    let displayVal = '';
+                    if (inputValue === '-') {
+                      displayVal = '-';
+                    } else if (numValue === '') {
+                      displayVal = '';
+                    } else {
+                      const formatted = numValue.replace(
+                        /\B(?=(\d{3})+(?!\d))/g,
+                        ','
+                      );
+                      displayVal = isNegative ? `-${formatted}` : formatted;
+                    }
+
+                    setStockInputValue(displayVal);
+
+                    // 실제 저장할 값
+                    const finalValue =
+                      numValue === ''
+                        ? undefined
+                        : Number((isNegative ? '-' : '') + numValue);
+                    field.onChange(finalValue);
+                  }}
+                  onBlur={() => {
+                    setIsStockEditing(false);
+                    setStockInputValue('');
+                  }}
+                />
+              );
+            }}
           />
           <Controller
             name="average_production_time"
