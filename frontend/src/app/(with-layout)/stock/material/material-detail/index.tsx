@@ -265,12 +265,14 @@ const MaterialDetailPanel = ({
         payload.unit = values.unit;
       }
 
-      // 숫자 필드들 추가
-      if (values.currentStock !== undefined && values.currentStock !== '') {
-        payload.current_stock = Number(values.currentStock);
+      // 숫자 필드들 추가 (빈값이면 0으로 저장)
+      if (values.currentStock !== undefined) {
+        payload.current_stock =
+          values.currentStock === '' ? 0 : Number(values.currentStock);
       }
-      if (values.minStock !== undefined && values.minStock !== '') {
-        payload.standard_stock = Number(values.minStock);
+      if (values.minStock !== undefined) {
+        payload.standard_stock =
+          values.minStock === '' ? 0 : Number(values.minStock);
       }
 
       if (Object.keys(payload).length > 0) {
