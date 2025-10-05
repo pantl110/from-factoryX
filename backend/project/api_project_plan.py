@@ -894,6 +894,7 @@ async def list_project_plans(request, project_id: int):
                 end_date=plan.end_date,
                 avg_production_time=plan.avg_production_time,
                 material_status=material_status,
+                material_consumed=plan.material_consumed,
             )
         )
 
