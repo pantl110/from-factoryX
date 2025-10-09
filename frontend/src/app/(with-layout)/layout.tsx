@@ -22,16 +22,22 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <SideBar onVisibilityChange={handleSidebarVisibilityChange} />
+      {/* 데스크톱에서만 사이드바 표시 */}
+      <div className="hidden sm:block">
+        <SideBar onVisibilityChange={handleSidebarVisibilityChange} />
+      </div>
+
       <div
         className={`flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-          isProductionPage && !isSidebarVisible ? 'ml-0' : 'ml-64'
+          isProductionPage && !isSidebarVisible ? 'ml-0' : 'ml-0 sm:ml-64'
         }`}
       >
-        <div className="w-full relative">
+        {/* 데스크톱에서만 탑바 표시 */}
+        <div className="w-full relative hidden sm:block">
           <TopBar isSidebarVisible={isSidebarVisible} />
         </div>
-        <div className="flex flex-col flex-1 max-w-[1400px] min-w-[1000px] mx-auto w-full mt-[60px]">
+
+        <div className="flex flex-col flex-1 w-full sm:max-w-[1400px] sm:min-w-[1000px] mx-auto mt-0 sm:mt-[60px]">
           <main className="flex flex-col flex-1 min-h-0 relative">
             {children}
             {/* <div className="flex justify-center items-center h-[800px]">

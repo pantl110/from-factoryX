@@ -32,6 +32,7 @@ import useMemberStore from '@/store/member-store';
 import { TodayProductionPlanModel } from './type';
 import NoHistoryBox from '@/ui/no-history-box';
 import Footer from '@/components/footer';
+import MobileDashboardPage from '@/app/(mobile)/dashboard';
 
 const DashboardPageContent = () => {
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -196,93 +197,106 @@ const DashboardPageContent = () => {
 
   return (
     <>
-      <MainTitleSec />
+      {/* 데스크톱에서만 MainTitleSec 표시 */}
+      <div className="hidden sm:block">
+        <MainTitleSec />
+      </div>
 
-      {isLoading ? (
-        <div className="flex flex-col h-100 justify-center items-center">
-          <Spinner />
-        </div>
-      ) : (
-        <>
-          <div className="flex flex-col gap-11 p-10">
-            <div className="flex  gap-5">
-              {/* Summary KPI */}
-              <div className="flex flex-col">
-                <h3 className="Heading-3">Summary KPI</h3>
-                {factoryId && dashboardData ? (
-                  <div className="flex flex-col gap-3 w-[280px] min-w-[248px] mt-3">
-                    <DailyProductionQuantity
-                      currentMonthProjects={
-                        dashboardData.current_month_projects
-                      }
-                      previousMonthProjects={
-                        dashboardData.previous_month_projects
-                      }
-                    />
-                    <ShortageCount
-                      shortageMaterialsCount={
-                        dashboardData.shortage_materials_count
-                      }
-                    />
-                    <ProductionYield
-                      monthlyProfits={dashboardData.monthly_profits}
-                    />
-                  </div>
-                ) : (
-                  <div className="w-100 mt-3">
-                    <NoHistoryBox
-                      title="요약할 데이터가 없어요."
-                      text="시스템을 계속 사용하면 주요 지표가 자동으로 요약돼요."
-                    />
-                  </div>
-                )}
-              </div>
+      {/* 모바일 640px 이하에서는 빈 화면 표시 */}
+      <div className="block sm:hidden">
+        <MobileDashboardPage />
+      </div>
 
-              {/* 생산 이익 그래프 */}
-              <ProfitGraph
-                monthlyProfits={dashboardData.monthly_profits}
-                lastYearMonthlyProfits={dashboardData.last_year_monthly_profits}
-              />
-            </div>
-
-            {/* 견적 및 주문 현황 */}
-            <PendingQuote
-              projects={quotationProjectsData}
-              isLoading={isProjectsLoading}
-            />
-
-            {/* 생산 프로젝트 */}
-            <ProcessProject
-              projects={productionProjectsData}
-              isLoading={isProjectsLoading}
-            />
-
-            {/* 오늘의 생산 일정 */}
-            <TodayProductionSchedule
-              todayProductionPlans={todayProductionPlans}
-              isLoading={isTodayPlansLoading}
-            />
-
-            {/* 납품 예정 현황 */}
-            <div className="flex gap-5">
-              <div className="flex flex-col flex-1 min-w-0 gap-3">
-                <div className="h-10 flex items-center">
-                  <h3 className="Heading-3">납품 예정 현황</h3>
-                </div>
-                <DeliveryTable />
-              </div>
-
-              {/* 세금계산서 현황 */}
-              <Tax
-                taxInvoicesData={taxInvoicesData}
-                isLoading={isTaxInvoicesLoading}
-              />
-            </div>
+      {/* 데스크톱에서는 기존 내용 표시 */}
+      <div className="hidden sm:block">
+        {isLoading ? (
+          <div className="flex flex-col h-100 justify-center items-center">
+            <Spinner />
           </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-11 p-10">
+              <div className="flex  gap-5">
+                {/* Summary KPI */}
+                <div className="flex flex-col">
+                  <h3 className="Heading-3">Summary KPI</h3>
+                  {factoryId && dashboardData ? (
+                    <div className="flex flex-col gap-3 w-[280px] min-w-[248px] mt-3">
+                      <DailyProductionQuantity
+                        currentMonthProjects={
+                          dashboardData.current_month_projects
+                        }
+                        previousMonthProjects={
+                          dashboardData.previous_month_projects
+                        }
+                      />
+                      <ShortageCount
+                        shortageMaterialsCount={
+                          dashboardData.shortage_materials_count
+                        }
+                      />
+                      <ProductionYield
+                        monthlyProfits={dashboardData.monthly_profits}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-100 mt-3">
+                      <NoHistoryBox
+                        title="요약할 데이터가 없어요."
+                        text="시스템을 계속 사용하면 주요 지표가 자동으로 요약돼요."
+                      />
+                    </div>
+                  )}
+                </div>
 
-          <Footer />
-        </>
-      )}
+                {/* 생산 이익 그래프 */}
+                <ProfitGraph
+                  monthlyProfits={dashboardData.monthly_profits}
+                  lastYearMonthlyProfits={
+                    dashboardData.last_year_monthly_profits
+                  }
+                />
+              </div>
+
+              {/* 견적 및 주문 현황 */}
+              <PendingQuote
+                projects={quotationProjectsData}
+                isLoading={isProjectsLoading}
+              />
+
+              {/* 생산 프로젝트 */}
+              <ProcessProject
+                projects={productionProjectsData}
+                isLoading={isProjectsLoading}
+              />
+
+              {/* 오늘의 생산 일정 */}
+              <TodayProductionSchedule
+                todayProductionPlans={todayProductionPlans}
+                isLoading={isTodayPlansLoading}
+              />
+
+              {/* 납품 예정 현황 */}
+              <div className="flex gap-5">
+                <div className="flex flex-col flex-1 min-w-0 gap-3">
+                  <div className="h-10 flex items-center">
+                    <h3 className="Heading-3">납품 예정 현황</h3>
+                  </div>
+                  <DeliveryTable />
+                </div>
+
+                {/* 세금계산서 현황 */}
+                <Tax
+                  taxInvoicesData={taxInvoicesData}
+                  isLoading={isTaxInvoicesLoading}
+                />
+              </div>
+            </div>
+
+            <Footer />
+          </>
+        )}
+      </div>
 
       {isToastOpen && (
         <Toast
