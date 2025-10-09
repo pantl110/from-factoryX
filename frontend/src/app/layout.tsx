@@ -31,6 +31,9 @@ const pretendard = localFont({
 export const metadata = {
   title: 'Factory_X',
   description: 'Factory_X',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
