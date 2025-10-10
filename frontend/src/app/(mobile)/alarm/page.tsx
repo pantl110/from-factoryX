@@ -1,5 +1,11 @@
+import Topbar from './topbar';
+
 const AlarmPage = () => {
-  return <div>AlarmPage</div>;
+  return (
+    <div>
+      <Topbar />
+    </div>
+  );
 };
 
 export default AlarmPage;
