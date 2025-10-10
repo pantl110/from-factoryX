@@ -1,21 +1,24 @@
 'use client';
 
 import TabItem from './tab-item';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const Tabbar = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const tabs = [
-    { name: '전체', param: 'all' },
-    { name: '납기 도래', param: 'due-date' },
-    { name: '약정 입금일', param: 'payment-due' },
-    { name: 'ROP', param: 'rop' },
-    { name: '유통기한', param: 'expiry' },
-    { name: '확정 필요 주문', param: 'confirmation-required' },
-  ];
+  const tabs = useMemo(
+    () => [
+      { name: '전체', param: 'all' },
+      { name: '납기 도래', param: 'due-date' },
+      { name: '정산 현황', param: 'payment-due' },
+      { name: 'ROP', param: 'rop' },
+      { name: '유통기한', param: 'expiry' },
+      { name: '확정 필요 주문', param: 'confirmation-required' },
+    ],
+    []
+  );
 
   const [selectedTab, setSelectedTab] = useState(
     searchParams.get('tab') || 'all'

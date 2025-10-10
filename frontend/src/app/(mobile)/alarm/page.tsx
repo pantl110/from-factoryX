@@ -3,13 +3,14 @@
 import Topbar from './topbar';
 import Tabbar from './tabbar';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import DueDate from './due-date';
 import PaymentDue from './payment-due';
 import Expiry from './expiry';
 import ConfirmationRequired from './confirmation-required';
 import Rop from './rop';
 
-const AlarmPage = () => {
+const AlarmContent = () => {
   const searchParams = useSearchParams();
   const currentTab = searchParams.get('tab') || 'all';
 
@@ -49,6 +50,14 @@ const AlarmPage = () => {
       <Tabbar />
       {renderContent()}
     </>
+  );
+};
+
+const AlarmPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AlarmContent />
+    </Suspense>
   );
 };
 

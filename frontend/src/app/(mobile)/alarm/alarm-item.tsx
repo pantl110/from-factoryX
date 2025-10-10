@@ -1,4 +1,3 @@
-import IconBtn from '@/ui/icon-btn';
 import MoChip from '@/ui/mo-chip';
 import { CaretRight } from '@phosphor-icons/react';
 
@@ -8,6 +7,7 @@ interface AlarmItemProps {
   name: string;
   subText: string;
   subChipText?: string;
+  onClick: () => void;
 }
 
 const AlarmItem = ({
@@ -16,23 +16,21 @@ const AlarmItem = ({
   name,
   subText,
   subChipText,
+  onClick,
 }: AlarmItemProps) => {
   return (
-    <div className="w-full flex justify-between items-center px-6 pt-4 pb-3 border-b border-bg">
-      <div className="flex flex-col gap-1.5">
+    <button
+      className="w-full flex justify-between items-center px-6 pt-4 pb-3 border-b border-bg"
+      onClick={onClick}
+    >
+      <div className="flex flex-col gap-1.5 justify-start">
         <MoChip text={chipText} variant={chipVariant} info={true} />
-        <h4 className="m-Heading-5c text-dg">{name}</h4>
-        <h6 className="m-Info text-sv">{subText}</h6>
+        <h4 className="m-Heading-5c text-dg text-start">{name}</h4>
+        <h6 className="m-Info text-sv text-start">{subText}</h6>
         {subChipText && <MoChip text={subChipText} variant="outline" />}
       </div>
-      <IconBtn
-        icon={CaretRight}
-        iconSize={18}
-        iconColor="text-gr"
-        size="w-5 h-5"
-        onClick={() => {}}
-      />
-    </div>
+      <CaretRight size={18} className="text-gr" />
+    </button>
   );
 };
 

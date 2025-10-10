@@ -1,7 +1,10 @@
 import MoBtn from '@/ui/mo-btn';
 import { CaretRight } from '@phosphor-icons/react';
+import { useRouter } from 'next/navigation';
 
 const SalesStatus = () => {
+  const router = useRouter();
+
   return (
     <div className="w-full flex flex-col gap-3 px-4 pt-4 pb-3 rounded-[8px] border border-lg">
       <div className="flex flex-col gap-1.5">
@@ -27,7 +30,7 @@ const SalesStatus = () => {
           text="자세히 보기"
           variant="ghost"
           icon={<CaretRight />}
-          onClick={() => {}}
+          onClick={() => router.push('/alarm?tab=payment-due')}
         />
       </div>
     </div>

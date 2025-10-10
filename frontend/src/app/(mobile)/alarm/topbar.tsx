@@ -13,7 +13,9 @@ const Topbar = () => {
         icon={CaretLeft}
         iconSize={20}
         size="w-9 h-9"
-        onClick={router.back}
+        onClick={() => {
+          router.push('/dashboard');
+        }}
       />
       <h4 className="m-Heading-4b text-dg">알림</h4>
       <div className="w-9" />
