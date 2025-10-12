@@ -39,7 +39,7 @@ const Tabbar = () => {
   };
 
   return (
-    <div className="sticky bottom-0 z-30 bg-wh px-6 border-b border-lg flex overflow-x-auto justify-between scrollbar-hide">
+    <div className="sticky bottom-0 z-30 bg-wh px-6 border-y border-lg flex overflow-x-auto justify-between scrollbar-hide">
       {tabs.map((tab, idx) => (
         <TabItem
           key={idx}

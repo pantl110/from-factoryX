@@ -1,8 +1,8 @@
 'use client';
 
-import Topbar from './topbar';
+import Topbar from '../topbar';
 import Tabbar from './tabbar';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import DueDate from './due-date';
 import PaymentDue from './payment-due';
@@ -13,6 +13,7 @@ import Rop from './rop';
 const AlarmContent = () => {
   const searchParams = useSearchParams();
   const currentTab = searchParams.get('tab') || 'all';
+  const router = useRouter();
 
   const renderContent = () => {
     switch (currentTab) {
@@ -46,7 +47,7 @@ const AlarmContent = () => {
 
   return (
     <>
-      <Topbar />
+      <Topbar title="알림" onBackClick={() => router.push('/dashboard')} />
       <Tabbar />
       {renderContent()}
     </>
