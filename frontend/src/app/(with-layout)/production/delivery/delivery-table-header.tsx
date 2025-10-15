@@ -19,8 +19,8 @@ const DeliveryTableHeader = ({
         <Checkbox isChecked={isAllChecked} onToggle={onToggleAll} />
       )}
       <p className="w-[150px] py-1 px-3 text-sv">납품 상태</p>
-      <p className="flex-2 py-1 px-3 text-sv">품목명</p>
-      <p className="flex-1 py-1 px-3 text-sv">품목 코드</p>
+      <p className="flex-2 py-1 px-3 text-sv">제품명</p>
+      <p className="flex-1 py-1 px-3 text-sv">제품 코드</p>
       <p className="flex-1 py-1 px-3 text-sv">규격</p>
       <p className="w-[80px] py-1 px-3 text-sv">단위</p>
       <p className="flex-1 py-1 px-3 text-sv">납품 수량</p>

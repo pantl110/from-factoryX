@@ -36,7 +36,7 @@ const TopBarContent = ({
   ); // 생산 계획 폼 유효성 검사 상태
   const isAllProductionCompleted = usePageStatusStore(
     (state) => state.isAllProductionCompleted
-  ); // 모든 품목이 가동 완료 상태인지 여부
+  ); // 모든 제품이 가동 완료 상태인지 여부
   const isProductionLogValid = usePageStatusStore(
     (state) => state.isProductionLogValid
   ); // 생산 내역 입력값이 유효한지 여부

@@ -38,4 +38,5 @@ export type SettingChipType =
   | 'permission'
   | 'subscription'
   | 'equipment'
-  | 'client';
+  | 'client'
+  | 'unit';

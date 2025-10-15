@@ -131,7 +131,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
     return duplicates;
   };
 
-  // 첫 번째 품목 정보 가져오기
+  // 첫 번째 제품 정보 가져오기
   useEffect(() => {
     const fetchFirstProduct = async () => {
       const result = await getProductList();
@@ -243,11 +243,11 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
     }
 
     try {
-      // sessionStorage에서 생성된 품목 ID 가져오기
+      // sessionStorage에서 생성된 제품 ID 가져오기
       const productId = sessionStorage.getItem('onboarding-product-id');
       if (!productId) {
         alert(
-          '품목 정보를 찾을 수 없습니다. 이전을 눌러 품목 등록을 다시 진행해주세요.'
+          '제품 정보를 찾을 수 없습니다. 이전을 눌러 제품 등록을 다시 진행해주세요.'
         );
         return;
       }
@@ -262,7 +262,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
         price: null, // 가격은 null로 설정
       }));
 
-      // 원자재 생성 및 품목 연결
+      // 원자재 생성 및 제품 연결
       const result = await assignMaterialProduct({
         product_id: parseInt(productId),
         materials,
@@ -285,10 +285,10 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
           {/* 타이틀 영역 */}
           <div className="flex flex-col gap-2 items-center">
             <h3 className="Heading-3 text-primary">
-              해당 품목을 만들 때 필요한 원자재를 추가해 주세요.
+              해당 제품을 만들 때 필요한 원자재를 추가해 주세요.
             </h3>
             <div className="Me_Body-2 text-bl text-center">
-              운영을 시작하려면 먼저 품목과 설비 정보를 등록해야 해요.
+              운영을 시작하려면 먼저 제품과 설비 정보를 등록해야 해요.
               <br />
               등록이 완료되면 생산부터 재고까지 한눈에 관리할 수 있어요!
             </div>
@@ -297,9 +297,9 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
           {/* 표 영역  */}
           <div className="w-full">
             <div className="flex">
-              <InfoLabelValue label="품목명" value={firstProduct?.name || ''} />
+              <InfoLabelValue label="제품명" value={firstProduct?.name || ''} />
               <InfoLabelValue
-                label="품목코드"
+                label="제품코드"
                 value={firstProduct?.code || ''}
               />
             </div>

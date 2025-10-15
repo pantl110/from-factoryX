@@ -43,7 +43,7 @@ interface TableItemProps {
   formData?: ProductionPlanFormDataModel; // 현재 form 데이터
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
-  isFirstOfProduct?: boolean; // 같은 품목의 첫 번째 plan인지 여부
+  isFirstOfProduct?: boolean; // 같은 제품의 첫 번째 plan인지 여부
 }
 
 const TableItem = ({
@@ -212,14 +212,14 @@ const TableItem = ({
         }
       />
     ),
-    품목명: isFirstOfProduct ? (
+    제품명: isFirstOfProduct ? (
       <span className="cursor-default">
         {item.quotation_product.product.name}
       </span>
     ) : (
       ''
     ),
-    품목코드: isFirstOfProduct ? (
+    제품코드: isFirstOfProduct ? (
       <span className="cursor-default">
         {item.quotation_product.product.code}
       </span>

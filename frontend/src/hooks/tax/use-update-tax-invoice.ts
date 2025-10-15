@@ -10,7 +10,7 @@ export interface TaxInvoiceUpdateModel {
   product?: number[];
   line_items?: Array<{
     purchase_expiry: string; // YYYYMMDD 형식
-    name: string; // 품목명
+    name: string; // 제품명
     information?: string; // 규격
     chargeable_unit: string; // 수량
     unit_price: string; // 단가

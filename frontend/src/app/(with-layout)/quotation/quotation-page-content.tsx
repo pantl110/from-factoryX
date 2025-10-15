@@ -79,7 +79,7 @@ const QuotationPageContent = () => {
     imageUrl ? 'quotation' : 'history'
   ); // 탭 상태 - ocr데이터가 없으면 히스토리 탭이 활성화
   const [isRightPanelExpanded, setIsRightPanelExpanded] = useState(false); // 오른쪽 패널 확장 상태
-  const [selectedProduct, setSelectedProduct] = useState<number | null>(null); // 선택된 품목 상태 -> 히스토리 보여주기
+  const [selectedProduct, setSelectedProduct] = useState<number | null>(null); // 선택된 제품 상태 -> 히스토리 보여주기
 
   // 모달 상태
   const [isEmailOpen, setIsEmailOpen] = useState(false);
@@ -112,8 +112,8 @@ const QuotationPageContent = () => {
   // 폼 유효성 검사, 버튼 활성화 관련 상태
   const [initialQuotationProducts, setInitialQuotationProducts] = useState<
     QuotationProductDetailResponseModel[]
-  >([]); // 견적 품목 변경 추적을 위한 상태
-  const [hasQuotationProducts, setHasQuotationProducts] = useState(false); // 품목이 하나 이상, 품목의 폼이 다 채워졌는지 확인 -> 버튼 활성화 여부
+  >([]); // 견적 제품 변경 추적을 위한 상태
+  const [hasQuotationProducts, setHasQuotationProducts] = useState(false); // 제품이 하나 이상, 제품의 폼이 다 채워졌는지 확인 -> 버튼 활성화 여부
   const [showErrors, setShowErrors] = useState(false); // 에러 표시 상태 (임시저장 시 유효성 검사 오류 표시용)
 
   // 프로젝트 상태 로드
@@ -254,10 +254,10 @@ const QuotationPageContent = () => {
     factoryId,
   ]);
 
-  // 견적 품목 초기값 설정 (변경 추적을 위해)
+  // 견적 제품 초기값 설정 (변경 추적을 위해)
   useEffect(() => {
     if (quotationData && !isQuotationLoading) {
-      // 기존 견적 품목이 있다면 초기값으로 설정
+      // 기존 견적 제품이 있다면 초기값으로 설정
       if (quotationData.products && quotationData.products.length > 0) {
         const initialProducts = quotationData.products.map(
           (product: QuotationProductDetailResponseModel) => ({
@@ -287,7 +287,7 @@ const QuotationPageContent = () => {
         );
         setHasQuotationProducts(hasValidInitialProducts);
       } else {
-        // 품목이 없는 경우
+        // 제품이 없는 경우
         setHasQuotationProducts(false);
       }
     }
@@ -456,7 +456,7 @@ const QuotationPageContent = () => {
     [setValue, setActiveTab, reset, clientList, watch]
   );
 
-  // 견적 품목이 변경되었는지 확인하는 함수
+  // 견적 제품이 변경되었는지 확인하는 함수
   const hasQuotationProductsChanged = useMemo(() => {
     if (initialQuotationProducts.length !== quotationProducts.length) {
       return true;
@@ -474,7 +474,7 @@ const QuotationPageContent = () => {
     });
   }, [initialQuotationProducts, quotationProducts]);
 
-  // 통합된 isDirty 상태 (폼 변경 + 견적 품목 변경)
+  // 통합된 isDirty 상태 (폼 변경 + 견적 제품 변경)
   const isDirty = formState.isDirty || hasQuotationProductsChanged;
 
   const handleProductClick = useCallback(
@@ -482,7 +482,7 @@ const QuotationPageContent = () => {
       // productId가 있을 때만 히스토리 표시
       if (productId) {
         setSelectedProduct(productId);
-        setActiveTab('history'); // 품목 클릭 시 히스토리탭 활성화
+        setActiveTab('history'); // 제품 클릭 시 히스토리탭 활성화
         setIsRightPanelExpanded(false); // 히스토리탭 활성화 시 오른쪽 패널 다시 축소
       }
     },
@@ -783,8 +783,8 @@ const QuotationPageContent = () => {
             dueDate={watch().due_date}
             productListInfoTitle={
               projectStatus === 'confirmed'
-                ? '주문 품목 정보'
-                : '견적 품목 정보'
+                ? '주문 제품 정보'
+                : '견적 제품 정보'
             }
             productItems={quotationProducts}
             supplyAmount={quotationProducts.reduce((total, product) => {
@@ -806,8 +806,8 @@ const QuotationPageContent = () => {
             dueDate={watch().due_date}
             productListInfoTitle={
               projectStatus === 'confirmed'
-                ? '주문 품목 정보'
-                : '견적 품목 정보'
+                ? '주문 제품 정보'
+                : '견적 제품 정보'
             }
             productItems={quotationProducts}
             supplyAmount={quotationProducts.reduce((total, product) => {

@@ -20,7 +20,7 @@ const Progress = ({ currentStep }: ProgressProps) => {
         <p
           className={`Me_Body-2 ${isStepActive('first') ? 'text-primary' : 'text-lg'}`}
         >
-          1. 품목 추가하기
+          1. 제품 추가하기
         </p>
         <div
           className={`w-full h-[8px] ${isStepActive('first') ? 'bg-primary' : 'bg-lg'}`}

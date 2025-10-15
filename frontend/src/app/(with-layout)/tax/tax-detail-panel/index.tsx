@@ -14,7 +14,7 @@ import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-m
 import CreateTaxPanel from '../list/create-tax-panel';
 import PublishTaxModal from './publish-tax-modal';
 
-// 세금계산서 편집용 품목 데이터 타입
+// 세금계산서 편집용 제품 데이터 타입
 interface TaxProductEditModel {
   productId: number;
   quantity: number;

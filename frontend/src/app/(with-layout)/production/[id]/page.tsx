@@ -347,7 +347,7 @@ const ProductionPageContent = () => {
               documentTitle="주문서"
               clientData={projectStatus?.quotations[0].client_info}
               dueDate={projectStatus?.quotations[0].due_date || '-'}
-              productListInfoTitle="주문 품목 정보"
+              productListInfoTitle="주문 제품 정보"
               productItems={projectStatus?.quotations[0].products_info.map(
                 (p) => ({
                   productId: p.id,

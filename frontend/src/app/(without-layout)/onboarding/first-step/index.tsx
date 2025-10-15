@@ -67,18 +67,18 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
     saveFormData(data);
 
     try {
-      // 품목 목록 조회
+      // 제품 목록 조회
       const productListResult = await getProductList();
 
       if (!productListResult.success) {
-        alert('품목 목록 조회에 실패했습니다: ' + productListResult.error);
+        alert('제품 목록 조회에 실패했습니다: ' + productListResult.error);
         return;
       }
 
       const products = productListResult.data?.data || [];
 
       if (products.length === 0) {
-        // 품목이 0개이면 새로 생성
+        // 제품이 0개이면 새로 생성
         const result = await createSingleProduct({
           name: data.productName,
           code: data.productCode,
@@ -87,17 +87,17 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
         });
 
         if (result.success) {
-          // 생성된 품목의 ID를 sessionStorage에 저장
+          // 생성된 제품의 ID를 sessionStorage에 저장
           sessionStorage.setItem(
             'onboarding-product-id',
             result.data?.product_id?.toString() || ''
           );
           onNextStep();
         } else {
-          alert('품목 생성에 실패했습니다: ' + result.error);
+          alert('제품 생성에 실패했습니다: ' + result.error);
         }
       } else {
-        // 품목이 1개 이상이면 첫 번째 품목을 수정
+        // 제품이 1개 이상이면 첫 번째 제품을 수정
         const firstProduct = products[0];
         const result = await updateProduct(firstProduct.id, {
           name: data.productName,
@@ -107,18 +107,18 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
         });
 
         if (result.success) {
-          // 수정된 품목의 ID를 sessionStorage에 저장
+          // 수정된 제품의 ID를 sessionStorage에 저장
           sessionStorage.setItem(
             'onboarding-product-id',
             firstProduct.id.toString()
           );
           onNextStep();
         } else {
-          alert('품목 수정에 실패했습니다: ' + result.error);
+          alert('제품 수정에 실패했습니다: ' + result.error);
         }
       }
     } catch {
-      alert('품목 생성 중 오류가 발생했습니다.');
+      alert('제품 생성 중 오류가 발생했습니다.');
     }
   };
 
@@ -128,10 +128,10 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
         {/* 타이틀 영역 */}
         <div className="flex flex-col gap-2 items-center">
           <h3 className="Heading-3 text-primary">
-            등록할 품목 정보를 입력해주세요.
+            등록할 제품 정보를 입력해주세요.
           </h3>
           <div className="Me_Body-2 text-bl text-center">
-            운영을 시작하려면 먼저 품목과 설비 정보를 등록해야 해요.
+            운영을 시작하려면 먼저 제품과 설비 정보를 등록해야 해요.
             <br />
             등록이 완료되면 생산부터 재고까지 한눈에 관리할 수 있어요!
           </div>
@@ -143,16 +143,16 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
             <div className="flex flex-col gap-2.5">
               <div className="flex gap-2.5 flex-1">
                 <Input
-                  label="품목명"
+                  label="제품명"
                   type="text"
-                  placeholder="품목명을 입력하세요."
+                  placeholder="제품명을 입력하세요."
                   required={true}
                   {...register('productName', { required: true })}
                 />
                 <Input
-                  label="품목 코드"
+                  label="제품 코드"
                   type="text"
-                  placeholder="품목코드를 입력하세요."
+                  placeholder="제품코드를 입력하세요."
                   required={true}
                   {...register('productCode', { required: true })}
                 />

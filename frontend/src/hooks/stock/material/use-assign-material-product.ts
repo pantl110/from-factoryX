@@ -13,7 +13,7 @@ interface AssignMaterialProductModel {
   }>;
 }
 
-// 온보딩 // 원자재 생성 및 품목 연결까지
+// 온보딩 // 원자재 생성 및 제품 연결까지
 const useAssignMaterialProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

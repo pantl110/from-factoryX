@@ -43,7 +43,7 @@ interface MaterialDetailProps {
   handleOpenDeleteModal: (connectionId: number) => void;
   onProductClick?: (productId: number) => void;
   clientWasModified?: boolean; // 클라이언트가 실제로 수정되어 저장되었는지
-  productWasModified?: boolean; // 품목이 실제로 연결/삭제되었는지
+  productWasModified?: boolean; // 제품이 실제로 연결/삭제되었는지
   showToast?: (text: string, subtext: string) => void;
 }
 
@@ -300,7 +300,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       pricePeriodSelector,
     ]);
 
-    // 품목이 연결/삭제되었을 때 ProductRequiringMaterial 재렌더링
+    // 제품이 연결/삭제되었을 때 ProductRequiringMaterial 재렌더링
     useEffect(() => {
       if (productWasModified) {
         // ref를 통해 refresh 메서드 호출
@@ -423,12 +423,12 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             />
           </div>
 
-          {/* 원자재가 연결된 품목 */}
+          {/* 원자재가 연결된 제품 */}
           <div className="flex flex-col gap-3">
             <div className="h-10 flex items-center justify-between">
-              <h3 className="Heading-3 text-dg">원자재가 연결된 품목</h3>
+              <h3 className="Heading-3 text-dg">원자재가 연결된 제품</h3>
               <MiniBtn
-                text="품목 연결"
+                text="제품 연결"
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
@@ -441,7 +441,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               materialId={materialId}
               handleOpenDeleteModal={handleOpenDeleteModal}
               onProductClick={(productId) => {
-                // 품목 디테일 패널 열기 로직
+                // 제품 디테일 패널 열기 로직
                 if (onProductClick) {
                   onProductClick(productId);
                 }

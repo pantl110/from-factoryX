@@ -5,7 +5,7 @@ import useTaxApi from './use-tax-api';
 import { UnlinkedTaxInvoiceListResponseModel } from '@/types/data-model';
 
 interface UnlinkedTaxInvoiceParamsModel {
-  q?: string; // 거래처명 또는 품목명 통합 검색어
+  q?: string; // 거래처명 또는 제품명 통합 검색어
   page?: number;
   page_size?: number;
   is_hidden?: boolean; // 숨김 여부

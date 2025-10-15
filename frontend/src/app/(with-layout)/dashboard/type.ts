@@ -1,8 +1,8 @@
 // 오늘 생산량
 export interface DailyProductionQuantityModel {
-  production_count: number; // 오늘 완료된 품목 개수
+  production_count: number; // 오늘 완료된 제품 개수
   production_quantity: number; // 오늘 총 생산 수량
-  previous_month_count: number | null; // 전월 품목 개수 (첫 달이면 null)
+  previous_month_count: number | null; // 전월 제품 개수 (첫 달이면 null)
   previous_month_quantity: number | null; // 전월 총 생산 수량 (첫 달이면 null)
   change_percentage: number | null; // 변화율 (첫 달이면 null)
   is_first_month: boolean; // 가입 첫 달 여부

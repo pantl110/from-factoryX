@@ -128,8 +128,8 @@ const ProductRequiringMaterial = forwardRef<
       {productConnections.length > 0 ? (
         <>
           <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
-            <p className="flex-1 py-1 px-3 text-sv">품목명</p>
-            <p className="flex-1 py-1 px-3 text-sv">품목 코드</p>
+            <p className="flex-1 py-1 px-3 text-sv">제품명</p>
+            <p className="flex-1 py-1 px-3 text-sv">제품 코드</p>
             <p className="flex-1 py-1 px-3 text-sv">규격</p>
             <p className="flex-1 py-1 px-3 text-sv">단위</p>
             {!isViewer && hasSubscription() && <div className="w-9" />}
@@ -160,8 +160,8 @@ const ProductRequiringMaterial = forwardRef<
         </>
       ) : (
         <NoHistoryBox
-          title="이 원자재에 연결된 품목이 아직 없어요."
-          text="품목을 연결하면, 자재가 사용되는 품목이 이곳에 표시돼요."
+          title="이 원자재에 연결된 제품이 아직 없어요."
+          text="제품을 연결하면, 자재가 사용되는 제품이 이곳에 표시돼요."
         />
       )}
     </div>

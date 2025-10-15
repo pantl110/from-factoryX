@@ -11,7 +11,7 @@
 //       <div className="flex flex-col gap-9 px-10">
 //         <TaxInvoiceInfo />
 //         <div className="flex flex-col gap-5">
-//           <h3 className="Heading-3 text-dg">주문 품목 정보</h3>
+//           <h3 className="Heading-3 text-dg">주문 제품 정보</h3>
 //           <PriceInfo />
 //           <div>
 //             <TaxInvoiceTableHeader />

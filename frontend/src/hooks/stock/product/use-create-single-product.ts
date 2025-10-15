@@ -13,7 +13,7 @@ interface CreateSingleProductResponseModel {
   product_id: number;
 }
 
-// 온보딩 // 단일 품목 생성
+// 온보딩 // 단일 제품 생성
 const useCreateSingleProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +47,7 @@ const useCreateSingleProduct = () => {
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '단일 품목 등록에 실패했습니다.');
+        setError(errorData.detail || '단일 제품 등록에 실패했습니다.');
         return { success: false, error: errorData.detail };
       }
     } catch {

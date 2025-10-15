@@ -6,7 +6,7 @@ import { useImperativeHandle, forwardRef, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 
-// 세금계산서 편집용 품목 데이터 타입
+// 세금계산서 편집용 제품 데이터 타입
 interface TaxProductEditModel {
   productId: number;
   quantity: number;
@@ -135,14 +135,14 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
         <div>
           {fields.length === 0 ? (
             <NoHistoryBox
-              title="품목이 아직 등록되지 않았어요."
-              text="선발행된 세금계산서에는 추후 품목이 추가될 수 있어요."
+              title="제품이 아직 등록되지 않았어요."
+              text="선발행된 세금계산서에는 추후 제품이 추가될 수 있어요."
             />
           ) : (
             <>
               <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
-                <p className="flex-1 py-1 px-3 text-sv">품목명</p>
-                <p className="flex-1 py-1 px-3 text-sv">품목 코드</p>
+                <p className="flex-1 py-1 px-3 text-sv">제품명</p>
+                <p className="flex-1 py-1 px-3 text-sv">제품 코드</p>
                 <p className="flex-1 py-1 px-3 text-sv">규격</p>
                 <p className="flex-1 py-1 px-3 text-sv">제작 수량</p>
                 <p className="w-[100px] py-1 px-3 text-sv">단가</p>
@@ -162,12 +162,12 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
         </div>
 
         {isProductDetailOpen && (
-          // 품목 생성 용도
+          // 제품 생성 용도
           <ProductDetail
             productId={null}
             onClose={() => setIsProductDetailOpen(false)}
             onSuccess={async (productId) => {
-              // 새로운 품목 생성 성공 시 해당 품목 정보를 조회하여 폼에 추가
+              // 새로운 제품 생성 성공 시 해당 제품 정보를 조회하여 폼에 추가
               if (productId) {
                 try {
                   const result = await getProductDetail(productId);

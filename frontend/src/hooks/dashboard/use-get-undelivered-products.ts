@@ -50,7 +50,7 @@ const useGetUndeliveredProducts = () => {
           const errorData = await response.json();
           const errorMessage =
             errorData.detail ||
-            '납품되지 않은 견적서 품목 조회에 실패했습니다.';
+            '납품되지 않은 견적서 제품 조회에 실패했습니다.';
           setError(errorMessage);
           return {
             success: false,

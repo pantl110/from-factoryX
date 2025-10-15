@@ -146,10 +146,10 @@ const OrderDocumentPDFView = ({
         <div className="pdf-product-table">
           <div className="pdf-product-table-header">
             <div style={{ flex: 1 }}>
-              <div>품목명</div>
+              <div>제품명</div>
             </div>
             <div style={{ flex: 1 }}>
-              <div>품목코드</div>
+              <div>제품코드</div>
             </div>
             <div style={{ flex: 1 }}>
               <div>규격</div>

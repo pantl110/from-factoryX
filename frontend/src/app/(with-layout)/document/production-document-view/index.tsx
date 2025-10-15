@@ -63,14 +63,14 @@ const ProductionDocumentView = ({
         title={`${convertUTCToKSTDate(new Date().toISOString())} 생산 지시서`}
       />
 
-      {/* 생산품목 - 프로젝트별로 표 분리 */}
+      {/* 생산제품 - 프로젝트별로 표 분리 */}
       <div className="flex flex-col gap-6">
         {Object.entries(grouped).map(([projectName, items]) => (
           <div key={projectName} className="flex flex-col gap-3">
             <h3 className="Heading-3 h-10 items-center flex">{projectName}</h3>
             <div>
               <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv cursor-default">
-                <p className="flex-2 px-3">품목명</p>
+                <p className="flex-2 px-3">제품명</p>
                 <p className="flex-1 px-3">규격</p>
                 <p className="w-[80px] px-3">단위</p>
                 <p className="flex-1 px-3">생산수량</p>

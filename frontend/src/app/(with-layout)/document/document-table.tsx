@@ -76,7 +76,7 @@ const DocumentTable = ({
             selectedType === '매입 세금계산서' ? (
               <>
                 <p className="px-3 flex-2">업체명</p>
-                <p className="px-3 flex-2">품목명</p>
+                <p className="px-3 flex-2">제품명</p>
                 <p className="px-3 flex-2">공급가액</p>
                 <p className="px-3 flex-2">세액</p>
                 <p className="px-3 flex-2">합계금액</p>
@@ -100,7 +100,7 @@ const DocumentTable = ({
               <>
                 <p className="px-3 flex-[0.5]">문서유형</p>
                 <p className="px-3 flex-1">업체명</p>
-                <p className="px-3 flex-1">품목명</p>
+                <p className="px-3 flex-1">제품명</p>
                 <div
                   className="px-3 flex-[0.5] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
                   onClick={

@@ -127,7 +127,7 @@ const Delivery = ({
     setIsPrintDeliveryOverlayOpen(true);
   };
 
-  // 체크된 품목들의 데이터 가져오기
+  // 체크된 제품들의 데이터 가져오기
   const getCheckedItemsData = () => {
     if (!deliveryData) return [];
 
@@ -198,7 +198,7 @@ const Delivery = ({
   // 보관함으로 이동하는 버튼
   const handleMoveToStorage = async () => {
     try {
-      // 1. 품목들 중 상태가 예정인 것은 완료로 바꾸기
+      // 1. 제품들 중 상태가 예정인 것은 완료로 바꾸기
       if (deliveryData) {
         const updatePromises = deliveryData
           .filter((item: ProjectQuotationProductsModel) => !item.is_delivery) // 예정 상태인 항목만 필터링
@@ -221,7 +221,7 @@ const Delivery = ({
         ).length;
 
         if (successCount < totalCount) {
-          alert(`일부 품목 상태 변경에 실패했습니다.`);
+          alert(`일부 제품 상태 변경에 실패했습니다.`);
         }
       }
 

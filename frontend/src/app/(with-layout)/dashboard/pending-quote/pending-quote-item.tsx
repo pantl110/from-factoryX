@@ -32,7 +32,7 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
       <div className="flex flex-col gap-2.5">
         <h4 className="Heading-4">{project.client_name || '-'}</h4>
         <div className="Me_Body-1 text-sv">
-          <span>품목</span>
+          <span>제품</span>
           <span className="text-gr"> | </span>
           <span>
             {project.quotations[0].products.length === 0

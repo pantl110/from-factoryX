@@ -70,7 +70,7 @@ const useGetProduct = () => {
           return { success: true, data: result };
         } else {
           const errorData = await response.json();
-          setError(errorData.detail || '품목 목록을 불러오지 못했습니다.');
+          setError(errorData.detail || '제품 목록을 불러오지 못했습니다.');
           return { success: false, error: errorData.detail };
         }
       } catch {
@@ -112,7 +112,7 @@ const useGetProduct = () => {
           return { success: true, data: result };
         } else {
           const errorData = await response.json();
-          setError(errorData.detail || '품목 상세 정보를 불러오지 못했습니다.');
+          setError(errorData.detail || '제품 상세 정보를 불러오지 못했습니다.');
           return { success: false, error: errorData.detail };
         }
       } catch {
@@ -125,7 +125,7 @@ const useGetProduct = () => {
     [factoryId]
   );
 
-  // 모든 품목 코드 조회
+  // 모든 제품 코드 조회
   const getAllProductCodes = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -155,7 +155,7 @@ const useGetProduct = () => {
 
       if (!initialResponse.ok) {
         const errorData = await initialResponse.json();
-        setError(errorData.detail || '품목 코드 목록을 불러오지 못했습니다.');
+        setError(errorData.detail || '제품 코드 목록을 불러오지 못했습니다.');
         return { success: false, error: errorData.detail };
       }
 
@@ -191,7 +191,7 @@ const useGetProduct = () => {
         return { success: true, data: codes };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '품목 코드 목록을 불러오지 못했습니다.');
+        setError(errorData.detail || '제품 코드 목록을 불러오지 못했습니다.');
         return { success: false, error: errorData.detail };
       }
     } catch {
@@ -202,7 +202,7 @@ const useGetProduct = () => {
     }
   }, [factoryId]);
 
-  // 전체 품목 목록을 한 번에 가져오는 함수
+  // 전체 제품 목록을 한 번에 가져오는 함수
   const getAllProductList = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -228,7 +228,7 @@ const useGetProduct = () => {
       if (!countResponse.ok) {
         const errorData = await countResponse.json();
         const errorMessage =
-          errorData.detail || '품목 목록을 불러오는데 실패했습니다.';
+          errorData.detail || '제품 목록을 불러오는데 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }
@@ -280,7 +280,7 @@ const useGetProduct = () => {
       } else {
         const errorData = await allResponse.json();
         const errorMessage =
-          errorData.detail || '품목 목록을 불러오는데 실패했습니다.';
+          errorData.detail || '제품 목록을 불러오는데 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }

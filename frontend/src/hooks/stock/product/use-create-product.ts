@@ -11,7 +11,7 @@ export interface ProductCreateExcelApiResponseModel {
   message: string;
 }
 
-// 엑셀 대량등록 품목 생성 훅
+// 엑셀 대량등록 제품 생성 훅
 const useCreateProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +44,7 @@ const useCreateProduct = () => {
         return { success: true, data: result.data, message: result.message };
       } else {
         const errorData = await response.json();
-        const errorMessage = errorData.detail || '품목 등록에 실패했습니다.';
+        const errorMessage = errorData.detail || '제품 등록에 실패했습니다.';
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }

@@ -34,7 +34,7 @@ const Quotation = () => {
         </div>
       </div>
       <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 text-dg">견적 품목 정보</h3>
+        <h3 className="Heading-3 text-dg">견적 제품 정보</h3>
         <PriceInfo />
       </div>
       <div className="flex flex-col">

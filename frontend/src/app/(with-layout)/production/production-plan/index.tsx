@@ -164,7 +164,7 @@ const ProductionPlan = ({
   const setProductionPlanSaveModalOpen = usePageStatusStore(
     (state) => state.setProductionPlanSaveModalOpen
   );
-  // 모든 품목이 가동 완료 상태인지 여부 확인
+  // 모든 제품이 가동 완료 상태인지 여부 확인
   const setAllProductionCompleted = usePageStatusStore(
     (state) => state.setAllProductionCompleted
   );
@@ -204,7 +204,7 @@ const ProductionPlan = ({
           if (tempPlans.length === 0) return plansWithKSTDates;
 
           const merged = [...plansWithKSTDates];
-          // 임시 플랜을 동일 품목의 마지막 플랜 바로 뒤에 삽입
+          // 임시 플랜을 동일 제품의 마지막 플랜 바로 뒤에 삽입
           tempPlans.forEach((tp) => {
             const sameProductIndexes: number[] = [];
             merged.forEach((p, idx) => {
@@ -307,11 +307,11 @@ const ProductionPlan = ({
     initialSeededRef.current = true;
   }, [projectId, projectPlans, formChanges, handleAddPlan]);
 
-  // 모든 품목이 가동 완료 상태인지 확인
+  // 모든 제품이 가동 완료 상태인지 확인
   const isAllProductionCompleted = projectPlans.every(
     (plan) => plan.status === 'completed'
   );
-  // 모든 품목이 가동 완료 상태일 때 store 업데이트
+  // 모든 제품이 가동 완료 상태일 때 store 업데이트
   useEffect(() => {
     setAllProductionCompleted(isAllProductionCompleted);
   }, [isAllProductionCompleted, setAllProductionCompleted]);
@@ -423,7 +423,7 @@ const ProductionPlan = ({
       const planToDelete = projectPlans.find((plan) => plan.id === planId);
       if (!planToDelete) return;
 
-      // 삭제 후 해당 품목의 총 생산수량 계산 (로컬 변경 반영)
+      // 삭제 후 해당 제품의 총 생산수량 계산 (로컬 변경 반영)
       const remainingTotalQuantity = projectPlans
         .filter(
           (plan) =>
@@ -453,7 +453,7 @@ const ProductionPlan = ({
         return;
       }
 
-      // 삭제 후 해당 품목의 총 생산수량 계산
+      // 삭제 후 해당 제품의 총 생산수량 계산
 
       // 삭제 후 생산수량이 주문수량보다 작으면 삭제 금지
       if (remainingTotalQuantity < orderQuantity) {
@@ -593,7 +593,7 @@ const ProductionPlan = ({
       // 수량이 실제로 변경되었는지 확인
       if (formData.quantity === currentPlan.quantity) return;
 
-      // 같은 품목의 어떤 plan이라도 수량이 0이면, 입력 중으로 간주하고 자동 생성하지 않음
+      // 같은 제품의 어떤 plan이라도 수량이 0이면, 입력 중으로 간주하고 자동 생성하지 않음
       const hasZeroQuantityPlan = projectPlans
         .filter(
           (plan) =>

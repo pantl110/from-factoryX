@@ -196,7 +196,7 @@ const ConnectMaterialModal = ({
       return;
     }
 
-    // 품목 생성 모드일 때: productId가 없으면 서버 호출 대신 상위로 전달하여 임시 반영
+    // 제품 생성 모드일 때: productId가 없으면 서버 호출 대신 상위로 전달하여 임시 반영
     if (!productId) {
       const staged: Array<{
         id: number;
@@ -315,7 +315,7 @@ const ConnectMaterialModal = ({
         allMaterialIds.push(...existingMaterialIds);
       }
 
-      // 3. 모든 원자재를 한 번에 품목에 연결
+      // 3. 모든 원자재를 한 번에 제품에 연결
       if (allMaterialIds.length > 0) {
         const connectPayload = {
           type: 'product' as const,
@@ -341,7 +341,7 @@ const ConnectMaterialModal = ({
 
   return (
     <Modal
-      title="품목과 연결할 원자재를 선택하거나 새로 추가해 주세요."
+      title="제품과 연결할 원자재를 선택하거나 새로 추가해 주세요."
       subtitle="원자재를 선택하거나 새로 추가한 뒤, 사용수량을 설정해 주세요."
       width="w-[600px]"
       onClose={onClose}

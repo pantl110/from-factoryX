@@ -20,7 +20,7 @@ interface UseSaveDraftQuotationReturnModel {
 // 견적서 생성 & 임시 저장 & 주문 확정
 // - 거래처 정보 업데이트
 // - 납기일자 업데이트
-// - 품목 정보 업데이트
+// - 제품 정보 업데이트
 // - 프로젝트 상태 변경 (quotation 또는 confirmed)
 const useSaveDraftQuotation = (): UseSaveDraftQuotationReturnModel => {
   const [isLoading, setIsLoading] = useState(false);

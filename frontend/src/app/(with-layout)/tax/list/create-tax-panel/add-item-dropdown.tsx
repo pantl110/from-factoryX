@@ -10,10 +10,10 @@ const AddItemDropdown = ({ onClose, onSelect }: AddItemDropdownProps) => {
   return (
     <Dropdown onClose={onClose} width="w-[180px]">
       <DropdownItem
-        text="기존 품목 추가"
+        text="기존 제품 추가"
         onClick={() => onSelect('existing')}
       />
-      <DropdownItem text="새로운 품목 추가" onClick={() => onSelect('new')} />
+      <DropdownItem text="새로운 제품 추가" onClick={() => onSelect('new')} />
     </Dropdown>
   );
 };

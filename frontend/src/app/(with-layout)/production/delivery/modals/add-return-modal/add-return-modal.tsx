@@ -138,13 +138,13 @@ const AddReturnModal = ({
   return (
     <Modal
       title="반품할 상품을 등록해 주세요."
-      subtitle="반품할 품목명과 수량을 입력해 주세요."
+      subtitle="반품할 제품명과 수량을 입력해 주세요."
       onClose={onClose}
       width="w-[600px]"
     >
       <div className="w-full mt-4 relative">
         <SearchInput
-          placeholder="품목명 검색"
+          placeholder="제품명 검색"
           width="w-full"
           value={productName}
           onChange={(value) =>

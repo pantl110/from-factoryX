@@ -30,16 +30,16 @@ const StockPageContent = () => {
     }
   }, [setStockTab, searchParams]);
 
-  // 품목 추가, 자재 추가 드랍다운 상태
+  // 제품 추가, 자재 추가 드랍다운 상태
   const [isProductAddDropdownOpen, setIsProductAddDropdownOpen] =
     useState(false);
   const [isMaterialAddDropdownOpen, setIsMaterialAddDropdownOpen] =
     useState(false);
 
-  // 품목 추가, 자채추가 엑셀 업로드 모달 상태
+  // 제품 추가, 자채추가 엑셀 업로드 모달 상태
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
 
-  // 품목 추가 버튼
+  // 제품 추가 버튼
   const [productSetSelectedProductId, setProductSetSelectedProductId] =
     useState<((id: number | null) => void) | null>(null);
   // 자재 추가 버튼
@@ -48,7 +48,7 @@ const StockPageContent = () => {
   const [isMaterialEnrollmentModalOpen, setIsMaterialEnrollmentModalOpen] =
     useState(false);
 
-  // 품목 엑셀 업로드 후 새로고침 함수
+  // 제품 엑셀 업로드 후 새로고침 함수
   const productReloadRef = useRef<(() => void) | null>(null);
   const materialReloadRef = useRef<(() => void) | null>(null);
 
@@ -64,7 +64,7 @@ const StockPageContent = () => {
 
   // 디테일 판넬 상태
   const [isProductDetailPanelOpen, setIsProductDetailPanelOpen] =
-    useState(false); // 품목 디테일 판넬 상태
+    useState(false); // 제품 디테일 판넬 상태
   const [isMaterialDetailOpen, setIsMaterialDetailOpen] = useState(false); // 자재 디테일 판넬 상태
 
   // 탭 변경
@@ -72,7 +72,7 @@ const StockPageContent = () => {
     setStockTab(tab);
   };
 
-  // 품목 추가, 자재 추가 관련 함수
+  // 제품 추가, 자재 추가 관련 함수
   const handleOpenExcelModal = () => {
     setIsProductAddDropdownOpen(false);
     setIsExcelModalOpen(true);
@@ -130,7 +130,7 @@ const StockPageContent = () => {
         </div>
       </div>
 
-      {/* 품목 추가, 자재 추가 관련 모달 */}
+      {/* 제품 추가, 자재 추가 관련 모달 */}
       {isExcelModalOpen && (
         <ExcelUploadModal
           type={stockTab}
@@ -181,7 +181,7 @@ const StockPageContent = () => {
         <Toast
           text={
             stockTab === 'product'
-              ? '중복된 품목 코드는 등록되지 않았습니다.'
+              ? '중복된 제품 코드는 등록되지 않았습니다.'
               : '중복된 자재 코드는 등록되지 않았습니다.'
           }
           subtext=""

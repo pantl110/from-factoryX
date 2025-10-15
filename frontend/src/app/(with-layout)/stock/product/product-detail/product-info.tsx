@@ -78,8 +78,8 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
             rules={{ required: true }}
             render={({ field }) => (
               <InfoLabelValue
-                label="품목명"
-                placeholder="(필수) 품목명을 입력하세요."
+                label="제품명"
+                placeholder="(필수) 제품명을 입력하세요."
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -95,8 +95,8 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
             rules={{ required: true }}
             render={({ field }) => (
               <InfoLabelValue
-                label="품목 코드"
-                placeholder="(필수) 품목 코드를 입력하세요."
+                label="제품 코드"
+                placeholder="(필수) 제품 코드를 입력하세요."
                 required
                 value={field.value}
                 onChange={(e) => {

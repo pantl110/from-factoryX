@@ -96,7 +96,7 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
         이제 공장을 본격적으로 운영해볼까요?
       </h3>
       <p className="Me_Body-2 text-center">
-        운영을 시작하려면, 먼저 품목과 설비를 등록해야 해요. <br />
+        운영을 시작하려면, 먼저 제품과 설비를 등록해야 해요. <br />
         등록이 완료되면, 생산부터 재고까지 한눈에 관리할 수 있어요!
       </p>
       <div className="p-7">

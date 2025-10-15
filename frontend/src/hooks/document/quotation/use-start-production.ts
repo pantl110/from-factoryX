@@ -19,7 +19,7 @@ interface UseStartProductionReturnModel {
 // 생산 시작 // 완성된 견적서로 생산을 시작
 // - 거래처 정보 업데이트
 // - 납기 일자 설정
-// - 품목 정보 업데이트
+// - 제품 정보 업데이트
 // - 프로젝트 상태 변경 (pending)으로
 // - 생산계획 자동 생성: 각 products의 제품에 대해
 //   - 해당 제품의 QuotationProduct 찾고

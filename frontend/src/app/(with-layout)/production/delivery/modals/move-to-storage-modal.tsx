@@ -15,7 +15,7 @@ const MoveToStorageModal = ({
     <Modal
       title="프로젝트를 보관하시겠습니까?"
       onClose={onClose}
-      subtitle={`납품 예정인 품목이 모두 완료 처리되며,\n프로젝트는 보관함으로 이동돼요.`}
+      subtitle={`납품 예정인 제품이 모두 완료 처리되며,\n프로젝트는 보관함으로 이동돼요.`}
     >
       <div className="flex gap-2.5 mt-4 justify-end">
         <MiniBtn

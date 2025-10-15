@@ -709,8 +709,8 @@ export interface ProjectStatusResponseModel {
 
 // OCR 결과 요청 아이템 스키마
 export interface OcrRequestItemModel {
-  item_name: string; // 품목명
-  item_code?: string; // 품목코드
+  item_name: string; // 제품명
+  item_code?: string; // 제품코드
   spec?: string; // 규격
   unit: string; // 단위
   quantity: string; // 수량
@@ -735,7 +735,7 @@ export interface OcrClientInfoModel {
 // OCR 결과 전체 스키마
 export interface OcrDataModel {
   client_info: OcrClientInfoModel; // 클라이언트 정보
-  request_items: OcrRequestItemModel[]; // 요청 품목 리스트
+  request_items: OcrRequestItemModel[]; // 요청 제품 리스트
 }
 
 // 견적서 상세 조회
@@ -763,7 +763,7 @@ export interface QuotationResponseModel {
   business_category?: string;
   address?: string;
   manager_name?: string; // 담당자명
-  products?: QuotationProductDetailResponseModel[]; // 주문 품목 정보
+  products?: QuotationProductDetailResponseModel[]; // 주문 제품 정보
   due_date?: string; // 납기일
   uploaded_file?: string;
 }
@@ -854,7 +854,7 @@ export interface SaveDraftDataModel {
   is_confirm: boolean;
 }
 
-// 견적서 품목 목록 조회
+// 견적서 제품 목록 조회
 export interface QuotationProductResponseModel {
   id: number; // quotation_product_id
   quotation: number;
@@ -865,7 +865,7 @@ export interface QuotationProductResponseModel {
   delivery_date?: string | null;
 }
 
-// dashboard 납품되지 않은 견적서 품목 조회 응답
+// dashboard 납품되지 않은 견적서 제품 조회 응답
 export interface UndeliveredProductModel {
   company_name: string;
   product_name: string;
@@ -877,7 +877,7 @@ export interface UndeliveredProductListResponseModel extends PaginationModel {
   data: UndeliveredProductModel[];
 }
 
-// 견적서 품목 히스토리 조회 // 이전에 생산했던 Quotation Product 항목을 조회
+// 견적서 제품 히스토리 조회 // 이전에 생산했던 Quotation Product 항목을 조회
 export interface QuotationProductHistoryItemResponseModel {
   product_name: string; // 제품 명
   quantity: number; // 제작 수량
@@ -886,7 +886,7 @@ export interface QuotationProductHistoryItemResponseModel {
   created_at: string;
 }
 
-// 견적서 품목 납품 상태 수정
+// 견적서 제품 납품 상태 수정
 export interface QuotationProductDeliveryUpdateModel {
   is_delivery: boolean;
   delivery_date?: string; // "YYYY-MM-DD" 형식
@@ -1226,11 +1226,11 @@ export interface TaxProductInfoModel {
 
 // tax invoice detail 가져오기
 export interface TaxLineItemModel {
-  id: number; //품목 식별자(순번)
+  id: number; //제품 식별자(순번)
   purchase_expiry?: string; // YYYYMMDD 형식 (예: "20241231") // 공급일자
   product_id?: number | null; // 연동된 제품 ID
-  name: string; // 품목명
-  code?: string | null; // 품목 코드
+  name: string; // 제품명
+  code?: string | null; // 제품 코드
   information?: string; // 규격
   chargeable_unit: string; // 수량
   unit_price: string; // 단가
@@ -1279,7 +1279,7 @@ export interface PublishedTaxInvoiceResponseModel {
   barobill_state: BarobillStateType; // 바로빌 상태
   nts_send_state: NtsSendStateType; // 국세청 전송 상태
 
-  // 세금계산서 품목 상세 // 바로빌 API로 세금계산서 발행 후 또는 동기화 시 저장
+  // 세금계산서 제품 상세 // 바로빌 API로 세금계산서 발행 후 또는 동기화 시 저장
   line_items: TaxLineItemModel[];
 }
 
@@ -1312,7 +1312,7 @@ export interface CreateTaxInvoiceModel {
   tax_id?: number; // 세금계산서 ID (임시저장 시 사용)
   factory: number;
   client: number | null; // 거래처 ID (없을 수 있음)
-  product?: number[]; // 품목 ID 리스트
+  product?: number[]; // 제품 ID 리스트
   line_items: TaxLineItemModel[];
   tax_invoice_type?: TaxDocumentType;
   transaction_type?: TransactionType;

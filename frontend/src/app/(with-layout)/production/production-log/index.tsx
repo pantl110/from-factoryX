@@ -148,7 +148,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
           return;
         }
 
-        // 같은 품목에 대한 총 생산수량 계산 (formChanges 반영)
+        // 같은 제품에 대한 총 생산수량 계산 (formChanges 반영)
         const totalQuantity = projectPlans
           .filter(
             (p) =>
@@ -236,7 +236,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
             return Promise.resolve();
           }
 
-          // 같은 품목에 대한 총 생산수량 계산 (formChanges 반영)
+          // 같은 제품에 대한 총 생산수량 계산 (formChanges 반영)
           const totalQuantity = projectPlans
             .filter(
               (p) =>
@@ -317,7 +317,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
           <ProductionLogTableHeader projectStatus={projectStatus} />
           {projectPlans.length > 0 &&
             projectPlans.map((plan, index) => {
-              // 같은 품목의 첫 번째 plan인지 판단
+              // 같은 제품의 첫 번째 plan인지 판단
               const isFirstOfProduct =
                 index === 0 ||
                 projectPlans[index - 1].quotation_product.product.id !==

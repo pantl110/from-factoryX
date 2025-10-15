@@ -14,8 +14,8 @@ const ProductEnrollmentDropdown = ({
 }: ProductEnrollmentDropdownProps) => {
   return (
     <Dropdown onClose={onClose} width="w-[180px]">
-      <DropdownItem text="기존 품목 추가" onClick={onAddOldProductClick} />
-      <DropdownItem text="새로운 품목 추가" onClick={onAddNewProductClick} />
+      <DropdownItem text="기존 제품 추가" onClick={onAddOldProductClick} />
+      <DropdownItem text="새로운 제품 추가" onClick={onAddNewProductClick} />
     </Dropdown>
   );
 };
@@ -33,7 +33,7 @@ export default ProductEnrollmentDropdown;
 //   const [selectedProducts, setSelectedProducts] = useState<ProductModel[]>([]);
 //   const [isManualAddMode, setIsManualAddMode] = useState(false);
 
-//   // 품목 선택 시
+//   // 제품 선택 시
 //   const handleSelectProduct = (item: ProductResponseModel) => {
 //     // ProductDataModel로 변환
 //     const dataModel: ProductModel = {
@@ -64,14 +64,14 @@ export default ProductEnrollmentDropdown;
 
 //   return (
 //     <Modal
-//       title="견적서에 포함되지 않은 품목을 추가해 주세요."
-//       subtitle="OCR로 인식되지 않았거나, 추가 요청된 품목이 있다면 등록해 주세요."
+//       title="견적서에 포함되지 않은 제품을 추가해 주세요."
+//       subtitle="OCR로 인식되지 않았거나, 추가 요청된 제품이 있다면 등록해 주세요."
 //       width="w-[600px]"
 //       onClose={onClose}
 //     >
 //       <div className="mt-4 flex gap-2.5 relative">
 //         <SearchInput
-//           placeholder="품목명 검색"
+//           placeholder="제품명 검색"
 //           width="flex-1"
 //           value={input}
 //           onChange={setInput}
@@ -121,7 +121,7 @@ export default ProductEnrollmentDropdown;
 //           setSelectedProducts={setSelectedProducts}
 //         />
 //       ) : (
-//         // 선택한 품목 list
+//         // 선택한 제품 list
 //         selectedProducts.length > 0 && (
 //           <div className="mt-4 flex flex-col">
 //             {selectedProducts.map((product) => (

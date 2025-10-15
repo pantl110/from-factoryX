@@ -23,7 +23,7 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
             <br />
             <br />
             기존에 사용 중인{' '}
-            <span className="text-primary">품목과 원자재를 미리 등록</span>
+            <span className="text-primary">제품과 원자재를 미리 등록</span>
             해두면
             <br />
             팩토리엑스를 더욱 효율적으로 활용하실 수 있습니다.

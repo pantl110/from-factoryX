@@ -129,7 +129,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
     fetchProducts();
   }, [debouncedProductName, getProductList, setIsDropdownOpen, setProductList]);
 
-  // 품목 선택 핸들러 (productId 설정 포함)
+  // 제품 선택 핸들러 (productId 설정 포함)
   const handleProductSelectWithId = (product: ProductResponseModel) => {
     setSelectedProduct(product);
     handleProductSelect(product);
@@ -166,7 +166,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
               type="text"
               value={productName}
               onChange={handleProductNameChange}
-              placeholder="품목명"
+              placeholder="제품명"
               className="text-dg outline-none w-full"
             />
           )}
@@ -180,7 +180,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             />
           )}
 
-          {/* 품목 검색 드롭다운 */}
+          {/* 제품 검색 드롭다운 */}
           {isDropdownOpen && dropdownItems.length > 0 && (
             <div className="absolute top-[41px] left-0 right-0 z-10">
               <ProductNameDropdown
@@ -239,12 +239,12 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             setIsOpen(false);
           }}
           onSuccess={async (productId) => {
-            // 품목 수정 성공 시 변경된 품목 정보를 UI에 반영
+            // 제품 수정 성공 시 변경된 제품 정보를 UI에 반영
             if (productId && productId > 0) {
               try {
                 const result = await getProductDetail(productId);
                 if (result.success && result.data) {
-                  // 수정된 품목 정보로 개별 필드들 업데이트
+                  // 수정된 제품 정보로 개별 필드들 업데이트
                   setValue(`products.${index}.productId`, result.data.id, {
                     shouldDirty: true,
                   });

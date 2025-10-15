@@ -50,7 +50,7 @@ const ProductEnrollmentModal = ({
   );
   const [isManualAddMode, setIsManualAddMode] = useState(false);
 
-  // 이미 연결된 품목 id 목록 (material 기준 연결 조회)
+  // 이미 연결된 제품 id 목록 (material 기준 연결 조회)
   const [connectedProductIds, setConnectedProductIds] = useState<number[]>([]);
 
   useEffect(() => {
@@ -107,11 +107,11 @@ const ProductEnrollmentModal = ({
     searchProducts();
   }, [debouncedInput, getProductList]);
 
-  // 품목 선택 시 - ProductResponseModel을 MaterialItemModel로 변환
+  // 제품 선택 시 - ProductResponseModel을 MaterialItemModel로 변환
   const handleSelectProduct = (product: ProductResponseModel) => {
-    // 이미 연결되어 있는 품목이면 토스트 표시 후 추가하지 않음
+    // 이미 연결되어 있는 제품이면 토스트 표시 후 추가하지 않음
     if (connectedProductIds.includes(product.id)) {
-      showToast('이미 연결된 품목이에요.', '');
+      showToast('이미 연결된 제품이에요.', '');
       return;
     }
     const materialItemModel: MaterialItemModel = {
@@ -133,7 +133,7 @@ const ProductEnrollmentModal = ({
     );
   };
 
-  // 품목 수량 변경
+  // 제품 수량 변경
   const handleQuantityChange = (code: string, newQuantity: number) => {
     setSelectedProducts((prev) =>
       prev.map((product) =>
@@ -177,15 +177,15 @@ const ProductEnrollmentModal = ({
 
   return (
     <Modal
-      title="해당 원자재와 연결할 품목을 등록해 주세요."
-      subtitle="품목을 선택하거나 새로 추가한 뒤, 해당 품목 제작에 필요한 원자재 투입량을 설정해 주세요."
+      title="해당 원자재와 연결할 제품을 등록해 주세요."
+      subtitle="제품을 선택하거나 새로 추가한 뒤, 해당 제품 제작에 필요한 원자재 투입량을 설정해 주세요."
       width="w-[600px]"
       onClose={onClose}
       scroll={true}
     >
       <div className="my-4 flex gap-2.5 relative px-6">
         <SearchInput
-          placeholder="품목 검색"
+          placeholder="제품 검색"
           width="flex-1"
           value={input}
           onChange={setInput}
@@ -225,7 +225,7 @@ const ProductEnrollmentModal = ({
             showDuplicateProductToast={showDuplicateProductToast}
           />
         ) : (
-          // 선택한 품목 list
+          // 선택한 제품 list
           selectedProducts.length > 0 && (
             <div className="mb-4 flex flex-col gap-3">
               {selectedProducts.map((product, index: number) => (

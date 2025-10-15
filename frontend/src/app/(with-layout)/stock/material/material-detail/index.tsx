@@ -65,7 +65,7 @@ const MaterialDetailPanel = ({
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [hasClientBeenModified, setHasClientBeenModified] = useState(false);
 
-  // 품목 코드 중복 검사를 위한 상태
+  // 제품 코드 중복 검사를 위한 상태
   const [existingProductCodes, setExistingProductCodes] = useState<string[]>(
     []
   );
@@ -76,12 +76,12 @@ const MaterialDetailPanel = ({
     null
   );
 
-  // 품목 디테일 판넬 열기 관련 상태
+  // 제품 디테일 판넬 열기 관련 상태
   const [selectedProductId, setSelectedProductId] = useState<number | null>(
     null
   );
 
-  const [hasProductBeenModified, setHasProductBeenModified] = useState(false); // 품목이 실제로 수정/삭제되었는지
+  const [hasProductBeenModified, setHasProductBeenModified] = useState(false); // 제품이 실제로 수정/삭제되었는지
 
   // 필수값 검증 함수
   const checkRequiredFilled = (): boolean => {
@@ -136,7 +136,7 @@ const MaterialDetailPanel = ({
     setDeleteConnectionId(null);
   };
 
-  // 모든 품목 코드 가져오기
+  // 모든 제품 코드 가져오기
   useEffect(() => {
     const fetchAllProductCodes = async () => {
       // 첫 페이지를 가져와서 전체 개수 확인
@@ -181,8 +181,8 @@ const MaterialDetailPanel = ({
 
   // 중복 토스트 표시 함수
   const showDuplicateProductToast = () => {
-    setToastText('이미 존재하는 품목코드에요.');
-    setToastSubtext('다른 품목코드로 수정해주세요');
+    setToastText('이미 존재하는 제품코드에요.');
+    setToastSubtext('다른 제품코드로 수정해주세요');
     showToast();
   };
 
@@ -453,14 +453,14 @@ const MaterialDetailPanel = ({
           isVisible={isVisible}
         />
       )}
-      {/* 품목 연결하기에서 삭제 버튼 누를 시 모달 */}
+      {/* 제품 연결하기에서 삭제 버튼 누를 시 모달 */}
       {isDeleteModalOpen && (
         <DeleteModal
           onClose={() => setIsDeleteModalOpen(false)}
           onDelete={handleConfirmDelete}
         />
       )}
-      {/* 연결된 품목 클릭 시 품목 디테일 판넬 열기 */}
+      {/* 연결된 제품 클릭 시 제품 디테일 판넬 열기 */}
       {selectedProductId && (
         <ProductDetailPanel
           onClose={() => {
@@ -469,7 +469,7 @@ const MaterialDetailPanel = ({
             setTimeout(() => setHasProductBeenModified(false), 100);
           }}
           onSuccess={() => {
-            // 품목이 성공적으로 저장되었을 때
+            // 제품이 성공적으로 저장되었을 때
             setHasProductBeenModified(true);
           }}
           productId={selectedProductId}

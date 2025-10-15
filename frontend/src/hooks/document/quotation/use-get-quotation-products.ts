@@ -8,7 +8,7 @@ interface UseGetQuotationProductsReturnModel {
   refetch: () => void;
 }
 
-// 견적서 품목 목록 조회
+// 견적서 제품 목록 조회
 const useGetQuotationProducts = (
   quotationId?: number,
   factoryId?: number
@@ -49,10 +49,10 @@ const useGetQuotationProducts = (
       } else {
         const errorData = await response.json();
         const errorMessage =
-          errorData.message || '견적서 품목 조회에 실패했습니다.';
+          errorData.message || '견적서 제품 조회에 실패했습니다.';
 
-        // 품목이 없는 경우는 정상적인 상태로 처리
-        if (errorMessage.includes('품목이 없습니다')) {
+        // 제품이 없는 경우는 정상적인 상태로 처리
+        if (errorMessage.includes('제품이 없습니다')) {
           setData([]);
         } else {
           throw new Error(errorMessage);
@@ -60,7 +60,7 @@ const useGetQuotationProducts = (
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : '견적서 품목 조회에 실패했습니다.';
+        err instanceof Error ? err.message : '견적서 제품 조회에 실패했습니다.';
       setError(errorMessage);
     } finally {
       setIsLoading(false);

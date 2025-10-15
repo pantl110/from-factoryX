@@ -12,7 +12,7 @@ interface UseGetQuotationHistoryReturnModel {
   error: string | null;
 }
 
-// 견적서 품목 히스토리 조회 // 이전에 생산하였던 Quotation Product 항목을 조회
+// 견적서 제품 히스토리 조회 // 이전에 생산하였던 Quotation Product 항목을 조회
 const useGetQuotationHistory = (): UseGetQuotationHistoryReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -26,7 +26,7 @@ const ProductionTable = ({
       <div className="mt-3">
         <NoHistoryBox
           title="히스토리가 아직 없어요."
-          text="오늘 생산할 품목을 여기에서 확인할 수 있어요."
+          text="오늘 생산할 제품을 여기에서 확인할 수 있어요."
         />
       </div>
     );

@@ -292,7 +292,7 @@ const FacilityDetailPanel = ({
               {facility && facility.plans && facility.plans.length > 0 ? (
                 <>
                   <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm cursor-default">
-                    <p className="px-3 flex-1">품목명</p>
+                    <p className="px-3 flex-1">제품명</p>
                     <p className="px-3 flex-1">생산 수량</p>
                     <p className="px-3 flex-1">생산일자</p>
                     <p className="px-3 flex-1">단위당 시간</p>

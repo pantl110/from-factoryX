@@ -19,7 +19,7 @@ interface ProductionLogTableItemProps {
   onSave?: () => void;
   hasChanges?: boolean;
   onValidityChange?: (planId: number, isValid: boolean) => void;
-  isFirstOfProduct?: boolean; // 같은 품목의 첫 번째 plan인지 여부
+  isFirstOfProduct?: boolean; // 같은 제품의 첫 번째 plan인지 여부
 }
 
 const ProductionLogTableItem = ({
@@ -236,7 +236,7 @@ const ProductionLogTableItem = ({
           </div>
         )}
 
-        {/* 품목 디테일 판넬 보기 */}
+        {/* 제품 디테일 판넬 보기 */}
         {isProductDetailOpen && (
           <ProductDetail
             productId={plan.quotation_product.product.id}

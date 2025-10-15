@@ -125,7 +125,7 @@ export const useQuotationHandlers = ({
         if (result && result.quotation_id) {
           // 폼의 isDirty 상태 초기화 - 현재 값으로 reset하여 변경사항 없음으로 표시
           reset(formData);
-          // 견적 품목 변경 추적 초기화
+          // 견적 제품 변경 추적 초기화
           setInitialQuotationProducts([...quotationProducts]);
           // 에러 표시 상태 초기화
           setShowErrors(false);
@@ -186,7 +186,7 @@ export const useQuotationHandlers = ({
         throw new Error('공장 정보가 없습니다.');
       }
 
-      // 주문확정 시에는 모든 품목이 완전해야 함
+      // 주문확정 시에는 모든 제품이 완전해야 함
       const incompleteProducts = quotationProducts.filter(
         (product) =>
           !product.productId || !product.quantity || !product.unit_price
@@ -194,7 +194,7 @@ export const useQuotationHandlers = ({
 
       if (incompleteProducts.length > 0) {
         alert(
-          '주문확정을 위해서는 모든 품목의 수량과 단가가 입력되어야 합니다.'
+          '주문확정을 위해서는 모든 제품의 수량과 단가가 입력되어야 합니다.'
         );
         return;
       }

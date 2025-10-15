@@ -16,7 +16,7 @@ const DeliveryTableItem = ({
   return (
     <div className={`flex flex-col ${isLast ? '' : 'pb-8 border-b border-lg'}`}>
       <InfoLabelValue label="납품처" value={data.companyName} />
-      <InfoLabelValue label="품목명" value={data.productName} />
+      <InfoLabelValue label="제품명" value={data.productName} />
       <InfoLabelValue label="규격" value={data.spec} />
       <InfoLabelValue label="단위" value={data.unit} />
       <InfoLabelValue label="납품수량" value={data.quantity} />

@@ -5,7 +5,7 @@ import useTaxApi from './use-tax-api';
 import { PendingTaxInvoiceListResponseModel } from '@/types/data-model';
 
 interface PendingTaxInvoiceParamsModel {
-  q?: string; // 거래처명 또는 품목명 통합 검색어
+  q?: string; // 거래처명 또는 제품명 통합 검색어
   publish_status?: 'all' | 'pending' | 'temporary'; // 세금계산서 상태
   page?: number;
   page_size?: number;

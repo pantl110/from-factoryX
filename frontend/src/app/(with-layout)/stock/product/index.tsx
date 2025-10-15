@@ -132,7 +132,7 @@ const Product = ({
         <SearchInput
           value={searchKeyword}
           onChange={handleSearch}
-          placeholder="품목명 또는 품목코드를 검색하세요."
+          placeholder="제품명 또는 제품코드를 검색하세요."
         />
         {productList.length > 0 && !isViewer && hasSubscription() && (
           <div className="flex gap-1">
@@ -166,8 +166,8 @@ const Product = ({
         </div>
       ) : productList.length === 0 ? (
         <NoHistoryBox
-          title="품목이 아직 없어요."
-          text="품목이 생성되면 이곳에 표시돼요. "
+          title="제품이 아직 없어요."
+          text="제품이 생성되면 이곳에 표시돼요. "
         />
       ) : (
         <>

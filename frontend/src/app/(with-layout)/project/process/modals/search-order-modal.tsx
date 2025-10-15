@@ -69,7 +69,7 @@
 //         <div className="flex items-center h-12 w-full border-t border-b border-lg Me_Body-1">
 //           <p className="flex-[0.5] px-3 text-sv">구분</p>
 //           <p className="flex-1 px-3 text-sv">업체명</p>
-//           <p className="flex-1 px-3 text-sv">품목명</p>
+//           <p className="flex-1 px-3 text-sv">제품명</p>
 //           <div className="flex-[0.6] px-3 h-full flex items-center gap-1 hover:bg-bg cursor-pointer">
 //             <p className=" text-sv">등록일자</p>
 //             <CaretUpDown size={21} className="text-sv" />

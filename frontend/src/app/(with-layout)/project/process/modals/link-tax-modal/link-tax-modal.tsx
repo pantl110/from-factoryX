@@ -166,7 +166,7 @@ const LinkTaxModal = ({
       }
     } else if (type === 'tax') {
       if (!selectedLineItem?.id) {
-        alert('연결할 세금계산서 품목을 선택해주세요.');
+        alert('연결할 세금계산서 제품을 선택해주세요.');
         return;
       }
 
@@ -193,7 +193,7 @@ const LinkTaxModal = ({
       subtitle={
         type === 'project'
           ? '세금계산서를 프로젝트와 연동하면, 거래 내역이 자동으로 반영돼요.'
-          : `${type === 'tax' ? '세금계산서' : '현금영수증'} 품목명과 시스템 자재명이 다를 수 있어요. 연결하면 재고·단가·추적 정보를 정확하게 관리할 수 있어요.`
+          : `${type === 'tax' ? '세금계산서' : '현금영수증'} 제품명과 시스템 자재명이 다를 수 있어요. 연결하면 재고·단가·추적 정보를 정확하게 관리할 수 있어요.`
       }
       onClose={onClose}
       scroll={true}

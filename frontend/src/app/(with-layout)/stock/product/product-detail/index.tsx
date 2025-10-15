@@ -89,7 +89,7 @@ const ProductDetail = ({
   const { uploadMultipleFiles, isUploading } = useUploadFile();
 
   // 폼데이터
-  // - 품목 정보 저장
+  // - 제품 정보 저장
   const [formData, setFormData] = useState<ProductModel>({
     factory: factoryId as number,
     name: '',
@@ -102,7 +102,7 @@ const ProductDetail = ({
     location: undefined,
     note: '',
   });
-  // - 품목이 보관된 창고 위치 관련 RHF for locations
+  // - 제품이 보관된 창고 위치 관련 RHF for locations
   const {
     control,
     watch,
@@ -252,7 +252,7 @@ const ProductDetail = ({
     }
   }, [productId, factoryId, getProductDetail]);
 
-  // 모든 품목 코드 로드 (중복 검증용)
+  // 모든 제품 코드 로드 (중복 검증용)
   useEffect(() => {
     if (factoryId) {
       getAllProductCodes();
@@ -360,7 +360,7 @@ const ProductDetail = ({
       // ProductInfo에서 현재 폼 값 가져오기
       const currentFormData = productInfoRef.current?.getValues() || formData;
 
-      // 품목코드 중복 검사 함수
+      // 제품코드 중복 검사 함수
       const checkCodeDuplicate = (
         code: string,
         currentProductId?: number | null
@@ -382,12 +382,12 @@ const ProductDetail = ({
 
       if (productId) {
         // 수정 모드
-        // 품목코드가 변경되었고 중복인지 확인
+        // 제품코드가 변경되었고 중복인지 확인
         if (
           currentFormData.code !== product?.code &&
           checkCodeDuplicate(currentFormData.code, productId)
         ) {
-          showToastMessage('이미 존재하는 품목코드에요.');
+          showToastMessage('이미 존재하는 제품코드에요.');
           return { success: false };
         }
 
@@ -420,7 +420,7 @@ const ProductDetail = ({
           return { success: true, productId };
         } else {
           showToastMessage(
-            '품목 수정에 실패하였습니다. ' +
+            '제품 수정에 실패하였습니다. ' +
               (result?.error || '알 수 없는 오류')
           );
           return { success: false };
@@ -429,8 +429,8 @@ const ProductDetail = ({
         // 생성 모드 - 중복 코드 검증
         if (checkCodeDuplicate(currentFormData.code)) {
           showToastMessage(
-            '이미 존재하는 품목코드에요.',
-            '다른 품목코드로 수정해주세요.'
+            '이미 존재하는 제품코드에요.',
+            '다른 제품코드로 수정해주세요.'
           );
           return { success: false };
         }
@@ -470,7 +470,7 @@ const ProductDetail = ({
           return { success: true };
         } else {
           showToastMessage(
-            '품목 생성에 실패하였습니다. ' +
+            '제품 생성에 실패하였습니다. ' +
               (result?.error || '알 수 없는 오류')
           );
           return { success: false };
@@ -566,7 +566,7 @@ const ProductDetail = ({
       }
     }
 
-    // 품목 정보와 위치 정보 저장
+    // 제품 정보와 위치 정보 저장
     if (isProductInfoChanged && isLocationsChanged) {
       const result = await handleSaveProductInfo();
       if (result.success) {
@@ -628,7 +628,7 @@ const ProductDetail = ({
   // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
   if (!factoryId) {
     return (
-      <Panel title="품목 재고관리" onClose={onClose}>
+      <Panel title="제품 재고관리" onClose={onClose}>
         <></>
       </Panel>
     );
@@ -637,7 +637,7 @@ const ProductDetail = ({
   return (
     <>
       <Panel
-        title="품목 재고관리"
+        title="제품 재고관리"
         onClose={onClose}
         headerButton={
           (isDirty || isLocationDirty || isQuantityDirty) && (
@@ -660,9 +660,9 @@ const ProductDetail = ({
       >
         <div className="flex flex-col gap-10">
           <div className="flex flex-col gap-3">
-            {/* 품목 정보 */}
+            {/* 제품 정보 */}
             <h3 className="Heading-3 text-dg h-10 flex items-center">
-              품목 정보
+              제품 정보
             </h3>
             <ProductInfo
               formData={formData}
@@ -673,11 +673,11 @@ const ProductDetail = ({
             />
           </div>
 
-          {/* 품목이 보관된 창고 위치 */}
+          {/* 제품이 보관된 창고 위치 */}
           <div className="flex flex-col gap-3">
             <div className="h-10 flex items-center justify-between">
               <h3 className="Heading-3 h-10 flex items-center text-dg ">
-                품목이 보관된 창고 위치
+                제품이 보관된 창고 위치
               </h3>
               <MiniBtn
                 text="추가"
@@ -709,11 +709,11 @@ const ProductDetail = ({
             )}
           </div>
 
-          {/* 품목과 연결된 자재 정보 */}
+          {/* 제품과 연결된 자재 정보 */}
           <div className="flex flex-col gap-3">
             <div className="h-10 flex items-center justify-between">
               <h3 className="Heading-3 h-10 flex items-center text-dg ">
-                품목과 연결된 자재 정보
+                제품과 연결된 자재 정보
               </h3>
               <MiniBtn
                 text="자재 연결"
@@ -757,7 +757,7 @@ const ProductDetail = ({
             />
           </div>
 
-          {/* 품목 입·출고 내역 */}
+          {/* 제품 입·출고 내역 */}
           <ProductHistory
             productId={productId}
             setIsProjectStockHistoryModalOpen={setProjectStockHistoryModal}
@@ -864,7 +864,7 @@ const ProductDetail = ({
         />
       )}
 
-      {/* 품목 생성 시 품목 코드 중복 토스트 */}
+      {/* 제품 생성 시 제품 코드 중복 토스트 */}
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}

@@ -50,7 +50,7 @@ const StockLocationItem = ({
         render={({ field }) => (
           <Input
             {...field}
-            placeholder="품목이 있는 창고 위치를 입력하세요."
+            placeholder="제품이 있는 창고 위치를 입력하세요."
             label="창고 위치"
             disabledReadOnly={isViewer || !hasSubscription()}
           />

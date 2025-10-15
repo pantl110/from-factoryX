@@ -13,7 +13,7 @@ interface AssignProductModel {
   }>;
 }
 
-// 원자재 하나에 여러 품목을 연결
+// 원자재 하나에 여러 제품을 연결
 const useAssignProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +45,7 @@ const useAssignProduct = () => {
         return { success: true };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '품목 연결에 실패했습니다.');
+        setError(errorData.detail || '제품 연결에 실패했습니다.');
         return { success: false, error: errorData.detail };
       }
     } catch {

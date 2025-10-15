@@ -30,7 +30,7 @@ const useDeleteProduct = () => {
         return { success: true };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '품목 삭제에 실패했습니다.');
+        setError(errorData.detail || '제품 삭제에 실패했습니다.');
         return { success: false, error: errorData.detail };
       }
     } catch {

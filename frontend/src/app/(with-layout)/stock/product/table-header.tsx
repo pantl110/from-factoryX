@@ -22,8 +22,8 @@ const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
           onToggle={onToggleAll || (() => {})}
         />
       )}
-      <p className="flex-1 px-3 text-sv">품목명</p>
-      <p className="flex-1 px-3 text-sv">품목 코드</p>
+      <p className="flex-1 px-3 text-sv">제품명</p>
+      <p className="flex-1 px-3 text-sv">제품 코드</p>
       <p className="flex-1 px-3 text-sv">규격</p>
       <p className="w-[80px] px-3 text-sv">단위</p>
       <p className="flex-1 px-3 text-sv">현재 재고</p>

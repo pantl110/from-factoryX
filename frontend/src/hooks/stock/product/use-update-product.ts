@@ -36,7 +36,7 @@ const useUpdateProduct = () => {
         return { success: true, data: result };
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || '품목 수정에 실패했습니다.');
+        setError(errorData.detail || '제품 수정에 실패했습니다.');
         return { success: false, error: errorData.detail };
       }
     } catch {

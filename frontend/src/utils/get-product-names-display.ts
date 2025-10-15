@@ -1,8 +1,8 @@
 import { ProjectResponseModel } from '@/types/data-model';
 
 /**
- * 품목명 배열을 표시용 문자열로 변환
- * @param productNames - 품목명 문자열 배열
+ * 제품명 배열을 표시용 문자열로 변환
+ * @param productNames - 제품명 문자열 배열
  * @returns 표시용 문자열
  *
  * @example

@@ -110,7 +110,7 @@ const ProductItem = ({
           ) : (
             <input
               type="text"
-              placeholder="품목명 검색"
+              placeholder="제품명 검색"
               className="w-full outline-none"
               value={searchTerm}
               onChange={(e) => {

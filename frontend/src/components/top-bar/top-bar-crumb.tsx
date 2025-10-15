@@ -19,7 +19,7 @@ const crumbNameMap: Record<string, string> = {
   quotation: '프로젝트 관리',
 
   stock: '재고 관리',
-  product: '품목',
+  product: '제품',
   material: '원자재',
 
   tax: '세무/회계',

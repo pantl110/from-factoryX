@@ -21,7 +21,7 @@ const ProductHistory = ({
   setIsProjectStockHistoryModalOpen,
 }: ProductHistoryProps) => {
   // const [isProductStockLogDropdownOpen, setIsProductStockLogDropdownOpen] =
-  //   useState(false); // 판넬의 품목 입·출고 내역 드롭다운
+  //   useState(false); // 판넬의 제품 입·출고 내역 드롭다운
 
   const { listProductHistories, data } = useProductHistory();
   const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});

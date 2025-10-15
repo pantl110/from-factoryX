@@ -38,7 +38,7 @@ const TableHeader = ({
         진행상태
       </p>
       <p className="flex-2 px-3 text-sv">업체명</p>
-      <p className="flex-2 px-3 text-sv">품목명</p>
+      <p className="flex-2 px-3 text-sv">제품명</p>
       {!isArchived && (
         <div
           className="w-[200px] px-3 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"

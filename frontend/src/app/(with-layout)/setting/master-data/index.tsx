@@ -18,6 +18,7 @@ import {
 } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import Unit from './unit';
 
 const MasterData = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
@@ -139,7 +140,9 @@ const MasterData = () => {
   useEffect(() => {
     if (
       !settingChip ||
-      (settingChip !== 'equipment' && settingChip !== 'client')
+      (settingChip !== 'equipment' &&
+        settingChip !== 'client' &&
+        settingChip !== 'unit')
     ) {
       setSettingChip('equipment' as SettingChipType); // 설비관리 칩을 기본으로 설정
       return;
@@ -160,6 +163,7 @@ const MasterData = () => {
     setSettingChip('equipment' as SettingChipType);
   const handleClientChipClick = () =>
     setSettingChip('client' as SettingChipType);
+  const handleUnitChipClick = () => setSettingChip('unit' as SettingChipType);
 
   // 설비 추가
   const handleAddBtnClick = () => {
@@ -299,6 +303,8 @@ const MasterData = () => {
             }}
           />
         );
+      case 'unit':
+        return <Unit />;
       default:
         return null;
     }
@@ -329,57 +335,72 @@ const MasterData = () => {
           height="h-9"
           padding="px-4"
         />
-      </div>
-      <div className="flex items-center justify-between px-10 pb-4">
-        <SearchInput
-          placeholder={
-            settingChip === 'client'
-              ? '회사명, 대표자명, 연락처 등을 입력해 검색하세요.'
-              : '찾고 싶은 설비명을 입력하세요.'
-          }
-          value={searchKeyword}
-          onChange={handleSearchChange}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearch(searchKeyword);
-            }
-          }}
+        <Chip
+          text={`단위 변환 관리 2`}
+          // // ${unitList?.totalCnt ? ` ${unitList.totalCnt}` : ''}
+          textColor={settingChip === 'unit' ? 'text-bg' : 'text-dg'}
+          bgColor={settingChip === 'unit' ? 'bg-dg' : 'bg-transparent'}
+          radius="rounded-full"
+          borderColor="border-lg"
+          cursor="cursor-pointer"
+          onClick={handleUnitChipClick}
+          height="h-9"
+          padding="px-4"
         />
-        <div className="flex gap-2">
-          {settingChip === 'equipment' && (
-            <MiniBtn
-              text="추가"
-              textColor="text-dg"
-              borderColor="border-lg"
-              hoverColor="hover:bg-lg"
-              onClick={handleAddBtnClick}
-              disabled={!factoryId || isViewer || !hasSubscription()}
-            />
-          )}
-
-          {/* 삭제 버튼 */}
-          {!isViewer &&
-            hasSubscription() &&
-            ((settingChip === 'equipment' &&
-              equipmentListForFacility.data.length > 0) ||
-              (settingChip === 'client' &&
-                (clientList?.data?.length ?? 0) > 0)) && (
-              <>
-                <MiniBtn
-                  text="취소"
-                  variant="whiteOutline"
-                  onClick={handleClearAllChecked}
-                />
-                <MiniBtn
-                  text={getDeleteButtonText()}
-                  variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
-                  onClick={handleDeleteBtnClick}
-                  disabled={isDeleteLoading || isDeleteClientLoading}
-                />
-              </>
-            )}
-        </div>
       </div>
+      {settingChip === 'unit' || (
+        <div className="flex items-center justify-between px-10 pb-4">
+          <SearchInput
+            placeholder={
+              settingChip === 'client'
+                ? '회사명, 대표자명, 연락처 등을 입력해 검색하세요.'
+                : '찾고 싶은 설비명을 입력하세요.'
+            }
+            value={searchKeyword}
+            onChange={handleSearchChange}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch(searchKeyword);
+              }
+            }}
+          />
+          <div className="flex gap-2">
+            {settingChip === 'equipment' && (
+              <MiniBtn
+                text="추가"
+                textColor="text-dg"
+                borderColor="border-lg"
+                hoverColor="hover:bg-lg"
+                onClick={handleAddBtnClick}
+                disabled={!factoryId || isViewer || !hasSubscription()}
+              />
+            )}
+
+            {/* 삭제 버튼 */}
+            {!isViewer &&
+              hasSubscription() &&
+              ((settingChip === 'equipment' &&
+                equipmentListForFacility.data.length > 0) ||
+                (settingChip === 'client' &&
+                  (clientList?.data?.length ?? 0) > 0)) && (
+                <>
+                  <MiniBtn
+                    text="취소"
+                    variant="whiteOutline"
+                    onClick={handleClearAllChecked}
+                  />
+                  <MiniBtn
+                    text={getDeleteButtonText()}
+                    variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
+                    onClick={handleDeleteBtnClick}
+                    disabled={isDeleteLoading || isDeleteClientLoading}
+                  />
+                </>
+              )}
+          </div>
+        </div>
+      )}
+
       {renderContent()}
 
       {isDeleteModalOpen && (

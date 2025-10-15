@@ -38,7 +38,7 @@ export interface PageStatusModel {
   isProductionPlanValid: boolean;
   setProductionPlanValid: (valid: boolean) => void;
 
-  // production의 "생산 계획" 탭에서 모든 품목이 가동 완료 상태인지 여부
+  // production의 "생산 계획" 탭에서 모든 제품이 가동 완료 상태인지 여부
   isAllProductionCompleted: boolean;
   setAllProductionCompleted: (completed: boolean) => void;
 

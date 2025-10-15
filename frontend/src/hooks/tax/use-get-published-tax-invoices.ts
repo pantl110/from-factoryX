@@ -5,7 +5,7 @@ import useTaxApi from './use-tax-api';
 import { PublishedTaxInvoiceListResponseModel } from '@/types/data-model';
 
 interface PublishedTaxInvoiceParamsModel {
-  q?: string; // 거래처명 또는 품목명 통합 검색어
+  q?: string; // 거래처명 또는 제품명 통합 검색어
   tax_invoice_type?: 'sales' | 'purchase'; // 세금계산서 유형
   start_date?: string; // 시작일 (YYYY-MM-DD)
   end_date?: string; // 종료일 (YYYY-MM-DD)

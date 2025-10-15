@@ -206,7 +206,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             documentTitle="주문서"
             clientData={projectData.quotations[0].client_info}
             dueDate={projectData.quotations[0].due_date}
-            productListInfoTitle="주문 품목 정보"
+            productListInfoTitle="주문 제품 정보"
             productItems={projectData.quotations[0].products_info.map(
               (product) => ({
                 productId: product.id,

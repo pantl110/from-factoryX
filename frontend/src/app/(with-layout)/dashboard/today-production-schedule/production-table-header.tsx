@@ -5,10 +5,10 @@ const ProductionTableHeader = () => {
         <p>업체명</p>
       </div>
       <div className="py-1 px-3 flex-2">
-        <p>품목명</p>
+        <p>제품명</p>
       </div>
       <div className="py-1 px-3 flex-[1.5]">
-        <p>품목코드</p>
+        <p>제품코드</p>
       </div>
       <div className="py-1 px-3 flex-1">
         <p>규격</p>

@@ -51,7 +51,7 @@ const MainTitleSec = ({
 
       const downloadName =
         selectedTab === 'product'
-          ? '품목_등록_양식.xlsx'
+          ? '제품_등록_양식.xlsx'
           : '자재_등록_양식.xlsx';
 
       // 파일 다운로드
@@ -84,7 +84,7 @@ const MainTitleSec = ({
               bgColor="bg-primary"
               textColor="text-wh"
               text={
-                selectedTab === 'product' ? '품목 추가하기' : '자재 추가하기'
+                selectedTab === 'product' ? '제품 추가하기' : '자재 추가하기'
               }
               icon={CaretDown}
               iconPosition="right"
@@ -125,7 +125,7 @@ const MainTitleSec = ({
           className={`${selectedTab === 'product' ? 'text-bl' : 'text-gr'} cursor-pointer`}
           onClick={() => handleTabClick('product')}
         >
-          품목
+          제품
         </button>
         <button
           type="button"

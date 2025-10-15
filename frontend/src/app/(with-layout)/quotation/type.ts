@@ -16,7 +16,7 @@ export interface ClientDataSyncModel {
   due_date?: string;
 }
 
-// 주문 품목 정보 동기화 타입
+// 주문 제품 정보 동기화 타입
 export interface ProductDataSyncModel {
   productId: number;
   product_code: string;

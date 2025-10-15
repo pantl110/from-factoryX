@@ -1,7 +1,7 @@
 export const tableHeader = [
   { name: '가동 상태', width: 'w-[120px]' },
-  { name: '품목명', width: 'flex-[2]' },
-  { name: '품목코드', width: 'flex-1' },
+  { name: '제품명', width: 'flex-[2]' },
+  { name: '제품코드', width: 'flex-1' },
   { name: '규격', width: 'flex-1' },
   { name: '단위', width: 'w-[80px]' },
   { name: '주문 수량', width: 'flex-1' },

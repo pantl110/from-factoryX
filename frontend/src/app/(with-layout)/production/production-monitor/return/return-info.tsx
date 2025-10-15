@@ -164,7 +164,7 @@ const ReturnInfo = ({
         <div>
           <div className="border-t border-b border-lg">
             <InfoLabelValue
-              label="반품품목"
+              label="반품제품"
               value={refundData.product.name}
               disabled={true}
             />

@@ -13,7 +13,7 @@ const ConfirmationRequired = () => {
         chipText="주문이 8일째 확정 상태예요!"
         chipVariant="secondary"
         name="업체명A"
-        subText="품목명 외 2개"
+        subText="제품명 외 2개"
         onClick={() => {
           router.push('/order');
         }}

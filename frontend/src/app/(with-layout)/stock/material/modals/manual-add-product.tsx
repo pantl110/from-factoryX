@@ -68,7 +68,7 @@ const ManualAddProduct = ({
       showDuplicateProductToast?.();
       setError('code', {
         type: 'manual',
-        message: '이미 존재하는 품목코드입니다.',
+        message: '이미 존재하는 제품코드입니다.',
       });
       return;
     }
@@ -94,8 +94,8 @@ const ManualAddProduct = ({
         <div className="flex gap-2.5">
           <div className="flex-1">
             <Input
-              placeholder="품목명을 입력하세요."
-              label="품목명"
+              placeholder="제품명을 입력하세요."
+              label="제품명"
               required
               {...register('name', {
                 required: true,
@@ -109,8 +109,8 @@ const ManualAddProduct = ({
           </div>
           <div className="flex-1">
             <Input
-              placeholder="품목코드를 입력하세요."
-              label="품목코드"
+              placeholder="제품코드를 입력하세요."
+              label="제품코드"
               required
               {...register('code', {
                 required: true,

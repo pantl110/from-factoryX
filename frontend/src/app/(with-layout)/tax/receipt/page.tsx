@@ -133,7 +133,7 @@ const TaxReceiptPage = () => {
                         <CaretUpDownIcon size={21} className="text-sv" />
                       </div>
                       <p className="flex-2 px-3">업체명</p>
-                      <p className="flex-2 px-3">품목명</p>
+                      <p className="flex-2 px-3">제품명</p>
                       <p className="flex-1 px-3">공급가액</p>
                       <p className="flex-1 px-3">세액</p>
                       <p className="flex-1 px-3">합계금액</p>

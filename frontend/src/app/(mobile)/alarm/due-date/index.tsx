@@ -12,7 +12,7 @@ const DueDate = () => {
         chipText="납기일이 2일째 지났어요!"
         chipVariant="red-secondary"
         name="업체명A"
-        subText="품목명(품목코드) · 수량"
+        subText="제품명(제품코드) · 수량"
         onClick={() => {
           router.push('/delivery');
         }}
@@ -21,7 +21,7 @@ const DueDate = () => {
         chipText="오늘이 납품일이에요!"
         chipVariant="secondary"
         name="업체명A"
-        subText="품목명(품목코드) · 수량"
+        subText="제품명(제품코드) · 수량"
         onClick={() => {
           router.push('/delivery');
         }}
@@ -30,7 +30,7 @@ const DueDate = () => {
         chipText="D-5"
         chipVariant="outline"
         name="업체명A"
-        subText="품목명(품목코드) · 수량"
+        subText="제품명(제품코드) · 수량"
         onClick={() => {
           router.push('/delivery');
         }}

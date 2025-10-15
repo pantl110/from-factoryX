@@ -36,7 +36,7 @@ import { PanelRefModel } from '@/ui/panel';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 
-// 세금계산서 편집용 품목 데이터 타입
+// 세금계산서 편집용 제품 데이터 타입
 interface TaxProductEditModel {
   productId: number;
   quantity: number;
@@ -72,7 +72,7 @@ const CreatTaxPanel = ({
   const [selectedIssueType, setSelectedIssueType] = useState<
     '청구' | '영수' | null
   >(null);
-  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false); // 새로운 품목 추가 디테일판넬 상태
+  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false); // 새로운 제품 추가 디테일판넬 상태
 
   // 판매처 정보 폼 상태
   const [isSellerInfoDirty, setIsSellerInfoDirty] = useState(false); // 전체적인 폼 변경 상태(작성일자 포함)
@@ -95,7 +95,7 @@ const CreatTaxPanel = ({
   const [clientInfoFormData, setClientInfoFormData] =
     useState<ClientInfoFormDataModel | null>(null);
 
-  // 주문품목 정보 폼 상태
+  // 주문제품 정보 폼 상태
   const [isProductInfoDirty, setIsProductInfoDirty] = useState(false);
   const [isProductInfoValid, setIsProductInfoValid] = useState(false);
   const [productInfoFormData, setProductInfoFormData] =
@@ -129,7 +129,7 @@ const CreatTaxPanel = ({
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
-  // 주문품목 정보 폼 변경 핸들러
+  // 주문제품 정보 폼 변경 핸들러
   const handleProductInfoChange = useCallback(
     (isDirty: boolean, isValid: boolean, formData: ProductFormDataModel) => {
       setIsProductInfoDirty(isDirty);
@@ -257,7 +257,7 @@ const CreatTaxPanel = ({
     }
 
     if (initialProducts && initialProducts.length > 0) {
-      // 주문품목 정보의 유효성을 실제로 검증
+      // 주문제품 정보의 유효성을 실제로 검증
       const hasValidProducts = initialProducts.every(
         (product) =>
           product.productId &&
@@ -441,7 +441,7 @@ const CreatTaxPanel = ({
         const lineItems =
           productInfoFormData?.products
             ?.filter((p) => {
-              // 품목명, 품목코드, 규격, 수량, 단가가 모두 비어있지 않은 경우만 포함
+              // 제품명, 제품코드, 규격, 수량, 단가가 모두 비어있지 않은 경우만 포함
               return (
                 (p.product_name && p.product_name.trim() !== '') ||
                 (p.product_code && p.product_code.trim() !== '') ||
@@ -453,8 +453,8 @@ const CreatTaxPanel = ({
             ?.map((p, index) => ({
               id: index + 1, // 순번 ID
               product_id: p.productId || null, // 제품 ID
-              name: p.product_name || '', // 품목명
-              code: p.product_code || null, // 품목 코드
+              name: p.product_name || '', // 제품명
+              code: p.product_code || null, // 제품 코드
               information: p.product_spec || '', // 규격
               chargeable_unit: p.quantity.toString() || '0', // 수량
               unit_price: p.unitPrice.toString() || '0', // 단가
@@ -515,7 +515,7 @@ const CreatTaxPanel = ({
 
   // 발행방식 선택 버튼 클릭 핸들러
   const handleIssueTypeDropdownOpen = async () => {
-    // 판매처, 거래처, 주문품목 정보 모두 유효해야 드롭다운 열기
+    // 판매처, 거래처, 주문제품 정보 모두 유효해야 드롭다운 열기
     if (!isSellerInfoValid || !isClientInfoValid || !isProductInfoValid) {
       forceShowErrors.current = true;
       setShowErrors(true);
@@ -556,13 +556,13 @@ const CreatTaxPanel = ({
     setIsIssueTypeDropdownOpen(!isIssueTypeDropdownOpen);
   };
 
-  // 품목 추가 핸들러
+  // 제품 추가 핸들러
   const handleAddProduct = (action: 'existing' | 'new') => {
     if (action === 'existing') {
-      // 기존 품목 추가 - ProductInfo에 새로운 행 추가
+      // 기존 제품 추가 - ProductInfo에 새로운 행 추가
       productInfoRef.current?.addProduct();
     } else if (action === 'new') {
-      // 새로운 품목 추가 - 품목 상세 모달 열기
+      // 새로운 제품 추가 - 제품 상세 모달 열기
       setIsProductDetailOpen(true);
     }
     setIsAddProductDropdownOpen(false);
@@ -644,9 +644,9 @@ const CreatTaxPanel = ({
 
         <div className="flex flex-col gap-3 mt-9">
           <div className="flex justify-between items-center w-full relative">
-            <h3 className="Heading-3 h-10 items-center flex">주문 품목 정보</h3>
+            <h3 className="Heading-3 h-10 items-center flex">주문 제품 정보</h3>
             <MiniBtn
-              text="품목 추가"
+              text="제품 추가"
               textColor="text-dg"
               borderColor="border-lg"
               hoverColor="hover:bg-bg"
