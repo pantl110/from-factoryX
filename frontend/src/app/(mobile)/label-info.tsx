@@ -13,7 +13,7 @@ export const LabelInfo = ({
 }: LabelInfoProps) => {
   return (
     <div
-      className={`flex gap-2 items-center ${direction === 'col' ? 'flex-col' : 'justify-between'}`}
+      className={`flex gap-2 ${direction === 'col' ? 'flex-col' : 'justify-between items-center'}`}
     >
       <h3 className="m-Body-2 text-sv">{label}</h3>
       {value && <p className="m-Body-2 text-bl">{value}</p>}

@@ -145,12 +145,12 @@
     letter-spacing: -0.01em;
   }
   .m-Heading-4b {
-      font-size: 18px;
-      line-height: 1.2;
-      font-weight: var(--font-weight-semibold);
-      color: #000000;
-      letter-spacing: -0.02em;
-    }
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: var(--font-weight-semibold);
+    color: #000000;
+    letter-spacing: -0.02em;
+  }
   .m-Heading-5c {
     font-size: 16px;
     line-height: 1.2;
@@ -290,11 +290,13 @@ input[type='number'] {
 
 /* 모바일에서 전체 페이지 스크롤바 숨기기 */
 @media (max-width: 640px) {
-  html, body {
+  html,
+  body {
     scrollbar-width: none !important; /* Firefox */
     -ms-overflow-style: none !important; /* IE and Edge */
   }
-  html::-webkit-scrollbar, body::-webkit-scrollbar {
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
     display: none !important; /* Chrome, Safari, Opera */
   }
 }
