@@ -1,8 +1,10 @@
 import { CalendarDots } from '@phosphor-icons/react';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
+import { useRouter } from 'next/navigation';
 
 const ConfirmationRequired = () => {
+  const router = useRouter();
   return (
     <div className="flex flex-col gap-1 pt-4">
       <Title icon={<CalendarDots />} title="확정 필요 주문" count={1} />
@@ -12,7 +14,9 @@ const ConfirmationRequired = () => {
         chipVariant="secondary"
         name="업체명A"
         subText="품목명 외 2개"
-        onClick={() => {}}
+        onClick={() => {
+          router.push('/order');
+        }}
       />
     </div>
   );

@@ -12,7 +12,7 @@ const OverlayView = ({
   children,
   onClose,
   bgColor = 'bg-black/50',
-  pageColor = 'bg-white',
+  pageColor = 'bg-wh',
   blockExit = false,
 }: OverlayViewProps) => {
   useEffect(() => {

@@ -11,9 +11,21 @@ interface MoChipProps {
     | 'outline-blue'
     | 'outline-red';
   info?: boolean;
+  small?: boolean;
 }
 
-const MoChip = ({ text, variant, info = false }: MoChipProps) => {
+const MoChip = ({
+  text,
+  variant,
+  info = false,
+  small = false,
+}: MoChipProps) => {
+  const size = info
+    ? 'px-2 py-0.5 m-Info-Me'
+    : small
+      ? 'px-2 py-0.5 Heading-5b'
+      : 'px-2.5 py-1 m-Body-4';
+
   const getVariant = (variant: MoChipProps['variant']) => {
     switch (variant) {
       case 'primary':
@@ -36,10 +48,9 @@ const MoChip = ({ text, variant, info = false }: MoChipProps) => {
         return 'bg-wh text-red border border-lg';
     }
   };
+
   return (
-    <div
-      className={`rounded-full w-fit ${getVariant(variant)} ${info ? 'px-2 py-0.5 m-Info-Me' : 'px-2.5 py-1 m-Body-4'}`}
-    >
+    <div className={`rounded-full w-fit ${getVariant(variant)} ${size}`}>
       {text}
     </div>
   );

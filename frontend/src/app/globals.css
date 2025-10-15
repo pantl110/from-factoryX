@@ -84,6 +84,13 @@
     color: #18181b;
     letter-spacing: -0.02em;
   }
+  .Heading-5b {
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: var(--font-weight-medium);
+    color: #18181b;
+    letter-spacing: -0.02em;
+  }
   .Me_Body-1 {
     font-size: 16px;
     line-height: 1.6;

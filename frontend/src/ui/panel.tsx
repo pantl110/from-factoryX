@@ -94,9 +94,9 @@ const Panel = forwardRef<PanelRefModel, PanelProps>(
             isVisible ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          <div className="w-[1000px] bg-white h-full flex flex-col px-10 pt-5">
+          <div className="w-[1000px] bg-wh h-full flex flex-col px-10 pt-5">
             <div className="flex justify-between border-b border-lg pb-3">
-              <div className="flex gap-2 items-center sticky top-0 bg-white z-10">
+              <div className="flex gap-2 items-center sticky top-0 bg-wh z-10">
                 <h3 className="Heading-3">{title}</h3>
                 <button
                   onClick={handleClose}

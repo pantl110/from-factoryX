@@ -7,7 +7,7 @@ const TopBar = () => {
   const router = useRouter();
 
   return (
-    <div className="w-full h-[60px] bg-white sticky top-0 z-30 pl-5 pr-6.5 flex items-center justify-between border-b border-lg">
+    <div className="w-full h-[60px] bg-wh sticky top-0 z-30 pl-5 pr-6.5 flex items-center justify-between border-b border-lg">
       <FactoryXLogo />
       <IconBtn
         icon={Bell}

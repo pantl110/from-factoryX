@@ -1,8 +1,11 @@
 import { MoneyWavy } from '@phosphor-icons/react';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
+import { useRouter } from 'next/navigation';
 
 const PaymentDue = () => {
+  const router = useRouter();
+
   return (
     <div className="flex flex-col gap-1 pt-4">
       <Title icon={<MoneyWavy />} title="정산 현황" count={2} />
@@ -12,7 +15,7 @@ const PaymentDue = () => {
         name="업체명A"
         subText="약정입금일 · 총액"
         subChipText="매출"
-        onClick={() => {}}
+        onClick={() => router.push('/account?type=income')}
       />
       <AlarmItem
         chipText="우리 지급이 2일째 연체되고 있어요!"
@@ -20,7 +23,7 @@ const PaymentDue = () => {
         name="업체명A"
         subText="약정입금일 · 총액"
         subChipText="매입"
-        onClick={() => {}}
+        onClick={() => router.push('/account?type=outcome')}
       />
     </div>
   );

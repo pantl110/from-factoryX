@@ -101,7 +101,7 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   return (
     <>
       <header
-        className={`fixed top-0 z-40 bg-white border-b border-lg transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 z-40 bg-wh border-b border-lg transition-all duration-300 ease-in-out ${
           isSidebarVisible ? 'left-64 right-0' : 'left-0 right-0'
         }`}
       >
