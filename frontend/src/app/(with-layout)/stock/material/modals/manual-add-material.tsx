@@ -188,7 +188,7 @@ const ManualAddMaterial = ({
             <div className="flex-1">
               <Input
                 placeholder="EX) 100"
-                label="사용 수량"
+                label="수량"
                 required
                 type="text"
                 {...register('quantity', {
