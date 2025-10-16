@@ -57,7 +57,7 @@ const Modal = ({
       }}
     >
       <div
-        className={`bg-wh ${width} ${height} ${scroll ? '' : 'p-6'} rounded-lg max-h-[85%] ${className}`}
+        className={`bg-wh ${width} ${height} ${scroll ? '' : 'p-6'} rounded-lg max-h-[85%] ${className} shrink-0`}
         onClick={(e) => e.stopPropagation()}
       >
         <div

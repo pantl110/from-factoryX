@@ -354,7 +354,7 @@ const MasterData = () => {
             placeholder={
               settingChip === 'client'
                 ? '회사명, 대표자명, 연락처 등을 입력해 검색하세요.'
-                : '찾고 싶은 설비명을 입력하세요.'
+                : '설비명을 입력해 검색하세요.'
             }
             value={searchKeyword}
             onChange={handleSearchChange}
@@ -368,9 +368,7 @@ const MasterData = () => {
             {settingChip === 'equipment' && (
               <MiniBtn
                 text="추가"
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-lg"
+                variant="whiteOutline"
                 onClick={handleAddBtnClick}
                 disabled={!factoryId || isViewer || !hasSubscription()}
               />

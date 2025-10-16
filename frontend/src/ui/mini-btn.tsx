@@ -17,9 +17,11 @@ interface MiniBtnProps
   icon?: React.ComponentType<IconProps>;
   iconPosition?: 'left' | 'right';
   iconColor?: string;
+  iconWeight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone';
   width?: string;
   height?: string;
   variant?: 'primary' | 'secondary' | 'red' | 'white' | 'whiteOutline';
+  justifyBetween?: boolean;
 }
 
 const MiniBtn = ({
@@ -31,13 +33,16 @@ const MiniBtn = ({
   icon: Icon,
   iconPosition = 'left',
   iconColor,
+  iconWeight = 'regular',
   width = 'w-fit',
   height = 'h-10',
   variant,
+  justifyBetween = false,
   ...rest
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : '';
   const positionClass = iconPosition === 'right' ? 'flex-row-reverse' : '';
+  const justifyClass = justifyBetween ? 'justify-between' : 'justify-center';
 
   // variant가 있을 때만 색상 적용, 없으면 기존 방식 사용
   const getVariantStyles = () => {
@@ -85,10 +90,11 @@ const MiniBtn = ({
   return (
     <button
       className={clsx(
-        'px-4 rounded-md Me_Body-1 transition-slow flex items-center justify-center gap-2',
+        'px-4 rounded-md Me_Body-1 transition-slow flex items-center gap-2',
         height,
         width,
         positionClass,
+        justifyClass,
         {
           // disabled 상태
           'bg-lg text-gr': rest.disabled,
@@ -112,6 +118,7 @@ const MiniBtn = ({
       {Icon && (
         <Icon
           size={20}
+          weight={iconWeight}
           className={`transition-slow ${rest.disabled ? 'text-gr' : iconColor}`}
         />
       )}

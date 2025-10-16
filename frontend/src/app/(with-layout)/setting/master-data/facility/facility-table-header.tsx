@@ -19,7 +19,7 @@ const FacilityTableHeader = ({
   );
 
   return (
-    <div className="flex h-12 items-center py-1 px-3 w-full border-t border-b border-[#eeeeee] Me_Body-1 text-sv px-3">
+    <div className="flex h-12 items-center py-1 px-3 w-full border-t border-b border-lg Me_Body-1 text-sv px-3">
       {!isViewer && hasSubscription() && (
         <Checkbox
           isChecked={isAllChecked || false}
