@@ -5,7 +5,7 @@ import {
   Control,
   FieldArrayWithId,
 } from 'react-hook-form';
-import StockLocationItem from '../../product/product-detail/stock-location-item';
+import StockLocationItem from '../../product/product-detail/product-location/stock-location-item';
 
 interface LocationFormModel {
   locations: {

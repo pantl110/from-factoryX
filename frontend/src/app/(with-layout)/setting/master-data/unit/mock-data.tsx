@@ -1,4 +1,4 @@
-export interface UnitConversionData {
+export interface UnitConversionDataModel {
   id: number;
   category: '자재' | '제품';
   name: string;
@@ -7,7 +7,7 @@ export interface UnitConversionData {
   decimalRule: '반올림' | '버림' | '올림';
 }
 
-export const mockUnitConversionData: UnitConversionData[] = [
+export const mockUnitConversionData: UnitConversionDataModel[] = [
   {
     id: 1,
     category: '자재',

@@ -33,7 +33,18 @@ const useGetMaterial = () => {
         setMaterialList([]);
         setPagination(null);
         setIsLoading(false);
-        return { success: true, data: { data: [], count: 0 } };
+        return {
+          success: true,
+          data: {
+            data: [],
+            count: 0,
+            totalCnt: 0,
+            pageCnt: 0,
+            curPage: 1,
+            nextPage: null,
+            previousPage: null,
+          },
+        };
       }
 
       try {

@@ -1,9 +1,8 @@
 import Chip from '@/ui/chip';
-import { UnitConversionData } from './mockData';
+import { UnitConversionDataModel } from './mock-data';
 import { Trash } from '@phosphor-icons/react';
-import IconBtn from '@/ui/icon-btn';
 
-export const UnitTableItem = ({ unit }: { unit: UnitConversionData }) => {
+export const UnitTableItem = ({ unit }: { unit: UnitConversionDataModel }) => {
   return (
     <div className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer">
       <div className="flex-1 px-3">

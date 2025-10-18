@@ -24,7 +24,7 @@ import {
   useLocation,
   useMaterialProduct,
 } from '@/hooks';
-import NoHistoryBox from '@/ui/no-history-box';
+// import NoHistoryBox from '@/ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
 import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -36,7 +36,8 @@ import { WarningCircle } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
 import ProjectStockHistoryModal from './product-history/modals/project-stock-history-modal';
 import useSubscriptionStore from '@/store/subscription-store';
-import LocationItem from './location-item';
+import LocationItem from '../../location-item';
+import StockLocationModal from './product-location/stock-location-modal';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -113,7 +114,11 @@ const ProductDetail = ({
   } = useForm<LocationFormModel>({
     defaultValues: { locations: [] },
   });
-  const { fields, append, remove } = useFieldArray({
+  const {
+    fields: _fields,
+    append: _append,
+    remove: _remove,
+  } = useFieldArray({
     control,
     name: 'locations',
   });
@@ -179,6 +184,8 @@ const ProductDetail = ({
     isOpen: boolean;
     projectId?: number;
   }>({ isOpen: false, projectId: undefined });
+  const [isStockLocationModalOpen, setIsStockLocationModalOpen] =
+    useState(false);
 
   // 해당 원자재 클릭 시 보여줄 원자재 id와 해당 디테일 판넬
   const [materialId, setMaterialId] = useState<number | null>(null);
@@ -327,7 +334,7 @@ const ProductDetail = ({
   // };
 
   // Plus 버튼 클릭 시 사진 추가 모달 오픈
-  const handleOpenUploadModal = (index: number) => {
+  const _handleOpenUploadModal = (index: number) => {
     setOpenUploadModals((prev) => {
       const newModals = [...prev];
       // 배열 크기가 부족하면 확장
@@ -689,17 +696,18 @@ const ProductDetail = ({
                 text="추가"
                 variant="whiteOutline"
                 disabled={isViewer || !hasSubscription()}
+                onClick={() => setIsStockLocationModalOpen(true)}
               />
             </div>
             {/* locations가 없을 때 */}
-            {fields.length === 0 ? (
+            {/* {fields.length === 0 ? (
               <NoHistoryBox
                 title="등록된 창고 위치가 아직 없어요."
                 text="[추가] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
               />
-            ) : (
-              <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
-                {/* {fields.map((field, index) => (
+            ) : ( */}
+            <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
+              {/* {fields.map((field, index) => (
                   // <StockLocationItem
                   //   key={field.id}
                   //   index={index}
@@ -724,11 +732,11 @@ const ProductDetail = ({
                     )}
                   </Fragment>
                 ))} */}
-                <LocationItem image={''} length={3} />
-                <div className="h-[1px] bg-lg w-full" />
-                <LocationItem image={''} length={3} />
-              </div>
-            )}
+              <LocationItem image={''} length={3} />
+              <div className="h-[1px] bg-lg w-full" />
+              <LocationItem image={''} length={3} />
+            </div>
+            {/* )} */}
           </div>
 
           {/* 제품과 연결된 자재 정보 */}
@@ -894,6 +902,13 @@ const ProductDetail = ({
           subtext={toastSubtext}
           type="red"
           isVisible={isVisible}
+        />
+      )}
+
+      {isStockLocationModalOpen && (
+        <StockLocationModal
+          mode="add"
+          onClose={() => setIsStockLocationModalOpen(false)}
         />
       )}
     </>

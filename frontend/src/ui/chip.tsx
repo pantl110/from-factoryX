@@ -59,9 +59,9 @@ const Chip = ({
       };
     }
     return {
-      radius: radius,
-      height: height,
-      padding: padding,
+      radius,
+      height,
+      padding,
       textClass: textStyle,
     };
   };

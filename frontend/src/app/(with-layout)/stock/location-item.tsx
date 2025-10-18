@@ -1,5 +1,3 @@
-import useMemberStore from '@/store/member-store';
-import useSubscriptionStore from '@/store/subscription-store';
 import Chip from '@/ui/chip';
 import Image from 'next/image';
 import React from 'react';
@@ -12,21 +10,23 @@ interface LocationItemProps {
   length: number;
 }
 const LocationItem = ({ image, length }: LocationItemProps) => {
-  const role = useMemberStore((state) => state.role);
-
   return (
     <div className="flex gap-5 items-center">
       {/* 사진 */}
       <div className="relative shrink-0">
-        <Image
-          src={typeof image === 'string' ? image : URL.createObjectURL(image)}
-          width={110}
-          height={110}
-          className="w-[110px] h-[110px] object-cover rounded-[8px] border border-lg"
-          alt="미리보기"
-          quality={100}
-          unoptimized={true}
-        />
+        {image ? (
+          <Image
+            src={typeof image === 'string' ? image : URL.createObjectURL(image)}
+            width={110}
+            height={110}
+            className="w-[110px] h-[110px] object-cover rounded-[8px] border border-lg"
+            alt="미리보기"
+            quality={100}
+            unoptimized={true}
+          />
+        ) : (
+          <div className="w-[110px] h-[110px] bg-lg rounded-[8px] border border-lg" />
+        )}
         {length > 1 && (
           <div className="rounded-bl-[4px] rounded-tr-[4px] bg-primary absolute top-0 right-0 w-5 h-5 flex items-center justify-center">
             <span className="Heading-5b text-wh">{`+${length - 1}`}</span>

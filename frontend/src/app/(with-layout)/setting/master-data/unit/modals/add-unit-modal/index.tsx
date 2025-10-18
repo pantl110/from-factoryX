@@ -40,61 +40,65 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
   const { getMaterialList } = useGetMaterial();
   const { getProductList } = useGetProduct();
 
-  // 무한 스크롤 드롭다운 (필요한 것만 초기화)
-  const materialDropdown =
-    addUnitType === 'material'
-      ? useInfiniteDropdown<MaterialResponseModel>(materialSearchInput, {
-          fetchPage: useCallback(
-            async ({ q, page, page_size }) => {
-              const result = await getMaterialList({ q, page, page_size });
-              if (result.success && result.data) {
-                return {
-                  success: true,
-                  data: {
-                    data: result.data.data,
-                    curPage: result.data.curPage ?? page,
-                    pageCnt:
-                      result.data.pageCnt ??
-                      Math.ceil(result.data.count / page_size),
-                  },
-                };
-              }
-              return { success: false, error: result.error };
-            },
-            [getMaterialList]
-          ),
-          pageSize: 6,
-        })
-      : null;
+  // 무한 스크롤 드롭다운 (항상 호출하되 조건부로 사용)
+  const materialDropdown = useInfiniteDropdown<MaterialResponseModel>(
+    materialSearchInput,
+    {
+      fetchPage: useCallback(
+        async ({ q, page, page_size: pageSize }) => {
+          const result = await getMaterialList({
+            q,
+            page,
+            page_size: pageSize,
+          });
+          if (result.success && result.data) {
+            return {
+              success: true,
+              data: {
+                data: result.data.data,
+                curPage: result.data.curPage ?? page,
+                pageCnt:
+                  result.data.pageCnt ??
+                  Math.ceil(result.data.count / pageSize),
+              },
+            };
+          }
+          return { success: false, error: result.error };
+        },
+        [getMaterialList]
+      ),
+      pageSize: 6,
+    }
+  );
 
-  const productDropdown =
-    addUnitType === 'product'
-      ? useInfiniteDropdown<ProductResponseModel>(productSearchInput, {
-          fetchPage: useCallback(
-            async ({ q, page, page_size }) => {
-              const result = await getProductList({ q, page, page_size });
-              if (result.success && result.data) {
-                return {
-                  success: true,
-                  data: {
-                    data: result.data.data,
-                    curPage: result.data.curPage ?? page,
-                    pageCnt:
-                      result.data.pageCnt ??
-                      Math.ceil(result.data.count / page_size),
-                  },
-                };
-              }
-              return { success: false, error: result.error };
-            },
-            [getProductList]
-          ),
-          pageSize: 6,
-        })
-      : null;
+  const productDropdown = useInfiniteDropdown<ProductResponseModel>(
+    productSearchInput,
+    {
+      fetchPage: useCallback(
+        async ({ q, page, page_size: pageSize }) => {
+          const result = await getProductList({ q, page, page_size: pageSize });
+          if (result.success && result.data) {
+            return {
+              success: true,
+              data: {
+                data: result.data.data,
+                curPage: result.data.curPage ?? page,
+                pageCnt:
+                  result.data.pageCnt ??
+                  Math.ceil(result.data.count / pageSize),
+              },
+            };
+          }
+          return { success: false, error: result.error };
+        },
+        [getProductList]
+      ),
+      pageSize: 6,
+    }
+  );
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const onSubmit = (_data: Record<string, unknown>) => {
+    // TODO: Implement form submission logic
     onClose();
   };
 
@@ -117,7 +121,7 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
     setValue('name', material.name);
     setValue('code', material.code);
     setValue('unit', material.unit);
-    materialDropdown?.setIsOpen(false);
+    materialDropdown.setIsOpen(false);
     setMaterialSearchInput(material.name);
   };
 
@@ -125,9 +129,13 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
     setValue('name', product.name);
     setValue('code', product.code);
     setValue('unit', product.unit);
-    productDropdown?.setIsOpen(false);
+    productDropdown.setIsOpen(false);
     setProductSearchInput(product.name);
   };
+
+  // Scroll handlers for dropdowns
+  const handleMaterialScroll = materialDropdown.onScroll;
+  const handleProductScroll = productDropdown.onScroll;
 
   return (
     <Modal title="단위 추가" width="w-[800px]" onClose={onClose}>
@@ -156,29 +164,28 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
                 }}
                 onFocus={() => {
                   if (addUnitType === 'material') {
-                    materialDropdown?.setIsOpen(true);
+                    materialDropdown.setIsOpen(true);
                   } else {
-                    productDropdown?.setIsOpen(true);
+                    productDropdown.setIsOpen(true);
                   }
                 }}
                 onBlur={() => {
                   setTimeout(() => {
                     if (addUnitType === 'material') {
-                      materialDropdown?.setIsOpen(false);
+                      materialDropdown.setIsOpen(false);
                     } else {
-                      productDropdown?.setIsOpen(false);
+                      productDropdown.setIsOpen(false);
                     }
                   }, 300);
                 }}
               />
               {addUnitType === 'material' &&
-                materialDropdown &&
                 materialDropdown.isOpen &&
                 materialDropdown.items.length > 0 && (
                   <div
                     className="absolute top-full left-0 z-10 mt-2 w-full max-h-[200px] overflow-y-auto scrollbar-hide"
                     ref={materialDropdown.containerRef}
-                    onScroll={materialDropdown.onScroll}
+                    onScroll={handleMaterialScroll}
                     onMouseDown={(e) => e.preventDefault()}
                   >
                     <MaterialNameDropdown
@@ -189,13 +196,12 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
                   </div>
                 )}
               {addUnitType === 'product' &&
-                productDropdown &&
                 productDropdown.isOpen &&
                 productDropdown.items.length > 0 && (
                   <div
                     className="absolute top-full left-0 z-10 mt-2 w-full max-h-[200px] overflow-y-auto scrollbar-hide"
                     ref={productDropdown.containerRef}
-                    onScroll={productDropdown.onScroll}
+                    onScroll={handleProductScroll}
                     onMouseDown={(e) => e.preventDefault()}
                   >
                     <ProductNameDropdown
@@ -295,7 +301,9 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
             </div>
             <div className="flex-[0.5] flex flex-col gap-2 relative">
               <div className="flex items-center gap-1 h-5">
-                <label className="Me_Body-1 text-dg">소수점 규칙</label>
+                <label htmlFor="decimal-rule" className="Me_Body-1 text-dg">
+                  소수점 규칙
+                </label>
               </div>
               <MiniBtn
                 text={selectedDecimalRule}
@@ -306,6 +314,7 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
                 justifyBetween={true}
                 width="w-full"
                 onClick={() => setIsDecimalRuleDropdownOpen(true)}
+                id="decimal-rule"
               />
               {isDecimalRuleDropdownOpen && (
                 <div className="absolute top-full left-0 z-10 mt-2">

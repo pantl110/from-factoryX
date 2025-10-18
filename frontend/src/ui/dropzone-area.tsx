@@ -10,6 +10,7 @@ import {
 } from '@phosphor-icons/react';
 
 interface DropzoneProps {
+  variant?: 'default' | 'location';
   fileCount?: number;
   onClose?: () => void;
   onComplete?: (files: File[]) => void;
@@ -18,6 +19,7 @@ interface DropzoneProps {
 }
 
 const DropzoneArea = ({
+  variant = 'default',
   fileCount = 1,
   onClose,
   onComplete,
@@ -112,7 +114,7 @@ const DropzoneArea = ({
       {files.length === 0 && (
         <div
           {...getRootProps()}
-          className={`h-60 rounded-lg border-2 border-dashed border-gr flex flex-col gap-2 justify-center items-center ${
+          className={`${variant === 'location' ? 'h-30' : 'h-60'} rounded-lg border-2 border-dashed ${variant === 'location' ? 'border-lg' : 'border-gr'} flex flex-col gap-2 justify-center items-center ${
             isDragActive
               ? 'bg-secondary transition-colors duration-200 border-primary'
               : ''
@@ -132,7 +134,8 @@ const DropzoneArea = ({
               {/* 기본 이미지 */}
               <input {...getInputProps()} />
               <p className="Me_Body-2 text-dg">
-                파일을 끌어다 놓거나, 아래 버튼으로 업로드 할 수 있어요.
+                파일을 끌어다 놓거나, 아래 버튼으로 업로드 할 수 있어요.{' '}
+                {variant === 'location' ? '(최대 10장)' : ''}
               </p>
               <MiniBtn
                 text="내 컴퓨터에서 선택"
@@ -193,13 +196,16 @@ const DropzoneArea = ({
                 disabled={files.length >= fileCount}
               />
             )}
-            <MiniBtn
-              text="업로드"
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="hover:bg-primary-hover"
-              onClick={onComplete ? () => onComplete(files) : onClose}
-            />
+
+            {variant !== 'location' && (
+              <MiniBtn
+                text="업로드"
+                textColor="text-wh"
+                bgColor="bg-primary"
+                hoverColor="hover:bg-primary-hover"
+                onClick={onComplete ? () => onComplete(files) : onClose}
+              />
+            )}
           </div>
         </>
       )}

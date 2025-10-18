@@ -1,5 +1,5 @@
 import SearchSection from './search-section';
-import { mockUnitConversionData } from './mockData';
+import { mockUnitConversionData } from './mock-data';
 import NoHistoryBox from '@/ui/no-history-box';
 import { UnitTableHeader } from './unit-table-header';
 import { UnitTableItem } from './unit-table-item';
