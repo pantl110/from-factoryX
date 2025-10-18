@@ -96,6 +96,7 @@ export const useInfiniteDropdown = <T>(
     setIsOpen,
     onScroll,
     containerRef,
+    loadPage,
   };
 };
 

@@ -14,6 +14,7 @@ interface ChipProps {
   height?: string;
   padding?: string;
   width?: string;
+  size?: 'default' | 'small';
 }
 
 const Chip = ({
@@ -30,11 +31,32 @@ const Chip = ({
   height = 'h-8',
   padding = 'px-3',
   width = 'w-fit',
+  size = 'default',
 }: ChipProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onClick?.(e);
   };
+
+  // 사이즈별 스타일 설정
+  const getSizeStyles = () => {
+    if (size === 'small') {
+      return {
+        radius: 'rounded-[18px]',
+        height: 'h-6.5',
+        padding: 'px-2.5',
+        textClass: 'Re_Body-2',
+      };
+    }
+    return {
+      radius: radius,
+      height: height,
+      padding: padding,
+      textClass: 'Me_Body-1',
+    };
+  };
+
+  const sizeStyles = getSizeStyles();
 
   return (
     <div
@@ -54,7 +76,7 @@ const Chip = ({
       }
     >
       <div
-        className={`flex gap-1 items-center justify-center ${width} ${height} ${padding} ${radius} Me_Body-1 ${bgColor} ${textColor} ${cursor} ${hover} ${borderColor ? `border ${borderColor}` : ''} ${
+        className={`flex gap-1 items-center justify-center ${width} ${sizeStyles.height} ${sizeStyles.padding} ${sizeStyles.radius} ${sizeStyles.textClass} ${bgColor} ${textColor} ${cursor} ${hover} ${borderColor ? `border ${borderColor}` : ''} ${
           state ? 'cursor-pointer' : 'cursor-default'
         }`}
       >

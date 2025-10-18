@@ -82,7 +82,7 @@ const SettingPageContent = () => {
       {isAddUnitModalOpen && (
         <AddUnitModal
           onClose={() => setIsAddUnitModalOpen(false)}
-          addUnitType={addUnitType}
+          addUnitType={addUnitType as 'material' | 'product'}
         />
       )}
     </>
