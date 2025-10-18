@@ -1,4 +1,3 @@
-import StockLocationItem from './stock-location-item';
 import NoHistoryBox from '@/ui/no-history-box';
 import {
   UseFieldArrayRemove,
@@ -6,6 +5,7 @@ import {
   Control,
   FieldArrayWithId,
 } from 'react-hook-form';
+import StockLocationItem from '../../product/product-detail/stock-location-item';
 
 interface LocationFormModel {
   locations: {

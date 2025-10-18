@@ -9,6 +9,7 @@ interface IconBtnProps {
   onClick: () => void;
   className?: string;
   groupHover?: boolean;
+  rounded?: string;
 }
 
 const IconBtn = ({
@@ -19,10 +20,11 @@ const IconBtn = ({
   className,
   groupHover,
   iconColor = 'text-sv',
+  rounded = 'rounded-[8px]',
 }: IconBtnProps) => {
   return (
     <button
-      className={`${className} shrink-0 flex items-center justify-center ${size} rounded-[8px] hover:bg-bg transition-colors duration-200 ${groupHover ? `opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out` : ''}`}
+      className={`${className} shrink-0 flex items-center justify-center ${size} ${rounded} hover:bg-bg transition-colors duration-200 ${groupHover ? `opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out` : ''}`}
       onClick={onClick}
     >
       <Icon size={iconSize} className={iconColor} />

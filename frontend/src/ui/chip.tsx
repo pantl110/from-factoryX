@@ -14,7 +14,8 @@ interface ChipProps {
   height?: string;
   padding?: string;
   width?: string;
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | 'role';
+  textStyle?: string;
 }
 
 const Chip = ({
@@ -32,6 +33,7 @@ const Chip = ({
   padding = 'px-3',
   width = 'w-fit',
   size = 'default',
+  textStyle = 'Me_Body-1',
 }: ChipProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -48,11 +50,19 @@ const Chip = ({
         textClass: 'Re_Body-2',
       };
     }
+    if (size === 'role') {
+      return {
+        radius: 'rounded-full',
+        height: 'h-5',
+        padding: 'px-2',
+        textClass: 'Heading-5b',
+      };
+    }
     return {
       radius: radius,
       height: height,
       padding: padding,
-      textClass: 'Me_Body-1',
+      textClass: textStyle,
     };
   };
 

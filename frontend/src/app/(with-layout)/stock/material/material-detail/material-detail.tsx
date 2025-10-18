@@ -3,7 +3,6 @@ import MaterialInfo, { MaterialInfoModel } from './material-info';
 import ProductRequiringMaterial from './product-requiring-material';
 import QuotationHistory from './quotation-history.tsx';
 import MaterialStockLog from './material-stock-log';
-import StockLocation from '../../stock-location';
 import NoHistoryBox from '@/ui/no-history-box';
 import { CaretDown } from '@phosphor-icons/react';
 import SelectPeriodDropdown from '@/ui/dropdown/select-period-dropdown/select-period-dropdown';
@@ -22,6 +21,7 @@ import CustomDateSelector from '@/ui/dropdown/select-period-dropdown/custom-date
 import { useGetMaterialHistory } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import StockLocation from './stock-location';
 
 export type { MaterialInfoModel } from './material-info';
 

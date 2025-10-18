@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, Fragment } from 'react';
 import ProductInfo, { ProductInfoModel } from './product-info';
 import MiniBtn from '@/ui/mini-btn';
 import StockStatus from './stock-status';
@@ -28,7 +28,6 @@ import NoHistoryBox from '@/ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
 import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import { useForm, useFieldArray } from 'react-hook-form';
-import StockLocationItem from '../../stock-location-item';
 import { useUploadFile, useToast } from '@/hooks';
 import MaterialDetailPanel from '../../material/material-detail';
 import DeleteModal from '@/ui/modal/delete-modal';
@@ -37,6 +36,7 @@ import { WarningCircle } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
 import ProjectStockHistoryModal from './product-history/modals/project-stock-history-modal';
 import useSubscriptionStore from '@/store/subscription-store';
+import LocationItem from './location-item';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -321,10 +321,10 @@ const ProductDetail = ({
   ////////////////////////////////
   // 함수
   // StockLocationItem 추가 함수
-  const handleAddStockLocation = () => {
-    append({ location: '', images: [] });
-    setOpenUploadModals((prev) => [...prev, false]);
-  };
+  // const handleAddStockLocation = () => {
+  //   append({ location: '', images: [] });
+  //   setOpenUploadModals((prev) => [...prev, false]);
+  // };
 
   // Plus 버튼 클릭 시 사진 추가 모달 오픈
   const handleOpenUploadModal = (index: number) => {
@@ -679,12 +679,15 @@ const ProductDetail = ({
               <h3 className="Heading-3 h-10 flex items-center text-dg ">
                 제품이 보관된 창고 위치
               </h3>
+              {/* <MiniBtn
+                text="추가"
+                variant="whiteOutline"
+                onClick={handleAddStockLocation}
+                disabled={isViewer || !hasSubscription()}
+              /> */}
               <MiniBtn
                 text="추가"
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
-                onClick={handleAddStockLocation}
+                variant="whiteOutline"
                 disabled={isViewer || !hasSubscription()}
               />
             </div>
@@ -695,17 +698,36 @@ const ProductDetail = ({
                 text="[추가] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
               />
             ) : (
-              fields.map((field, index) => (
-                <StockLocationItem
-                  key={field.id}
-                  index={index}
-                  control={control}
-                  remove={remove}
-                  openUploadModal={() => handleOpenUploadModal(index)}
-                  images={watch(`locations.${index}.images`)}
-                  setValue={setValue}
-                />
-              ))
+              <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
+                {/* {fields.map((field, index) => (
+                  // <StockLocationItem
+                  //   key={field.id}
+                  //   index={index}
+                  //   control={control}
+                  //   remove={remove}
+                  //   openUploadModal={() => handleOpenUploadModal(index)}
+                  //   images={watch(`locations.${index}.images`)}
+                  //   setValue={setValue}
+                  // />
+
+                  <Fragment key={field.id}>
+                    <LocationItem
+                      image={
+                        typeof field.images[0] === 'string'
+                          ? field.images[0]
+                          : ''
+                      }
+                      length={field.images.length}
+                    />
+                    {index < fields.length - 1 && (
+                      <div className="h-[1px] bg-lg w-full" />
+                    )}
+                  </Fragment>
+                ))} */}
+                <LocationItem image={''} length={3} />
+                <div className="h-[1px] bg-lg w-full" />
+                <LocationItem image={''} length={3} />
+              </div>
             )}
           </div>
 
