@@ -40,6 +40,7 @@ interface BOMProps {
   onStagedQuantityChange: (materialId: number, quantity: number) => void;
   onPersistStagedConnections?: (newProductId: number) => Promise<void>;
   onConnectionsRefresh?: () => void | Promise<void>;
+  setIsSubstituteMaterialsModalOpen: (isOpen: boolean) => void;
 }
 
 const Bom = ({
@@ -55,6 +56,7 @@ const Bom = ({
   onInvalidQuantity,
   onStagedQuantityChange,
   onConnectionsRefresh,
+  setIsSubstituteMaterialsModalOpen,
 }: BOMProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -179,6 +181,7 @@ const Bom = ({
         onInvalidQuantity={onInvalidQuantity}
         isStagedMode={!productId}
         onStagedQuantityChange={onStagedQuantityChange}
+        setIsSubstituteMaterialsModalOpen={setIsSubstituteMaterialsModalOpen}
       />
 
       {/* 연결된 자재 정보 삭제 확인 모달 */}

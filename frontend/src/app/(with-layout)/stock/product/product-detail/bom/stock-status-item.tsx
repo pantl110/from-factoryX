@@ -14,6 +14,7 @@ import {
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import SubstituteMaterialsModal from './modals/substitute-materials-modal';
 
 interface StockStatusItemProps {
   connection: MaterialProductConnectionModel;
@@ -26,6 +27,7 @@ interface StockStatusItemProps {
   onInvalidQuantity: (message: string, subtext?: string) => void;
   isStagedMode?: boolean;
   onStagedQuantityChange?: (materialId: number, qty: number) => void;
+  setIsSubstituteMaterialsModalOpen: (isOpen: boolean) => void;
 }
 
 const StockStatusItem = ({
@@ -38,6 +40,7 @@ const StockStatusItem = ({
   onInvalidQuantity,
   isStagedMode,
   onStagedQuantityChange,
+  setIsSubstituteMaterialsModalOpen,
 }: StockStatusItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -242,6 +245,7 @@ const StockStatusItem = ({
       <div
         className="flex-1 px-3 text-dg truncate hover:bg-bg h-full flex items-center cursor-pointer transition-colors duration-200"
         role="button"
+        onClick={() => setIsSubstituteMaterialsModalOpen(true)}
       >
         원자재A 외 1개
       </div>

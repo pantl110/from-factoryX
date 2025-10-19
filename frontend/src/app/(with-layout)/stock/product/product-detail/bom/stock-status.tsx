@@ -21,6 +21,7 @@ interface StockStatusProps {
   onInvalidQuantity: (message: string, subtext?: string) => void;
   isStagedMode?: boolean;
   onStagedQuantityChange?: (materialId: number, qty: number) => void;
+  setIsSubstituteMaterialsModalOpen: (isOpen: boolean) => void;
 }
 
 const StockStatus = ({
@@ -33,6 +34,7 @@ const StockStatus = ({
   onInvalidQuantity,
   isStagedMode,
   onStagedQuantityChange,
+  setIsSubstituteMaterialsModalOpen,
 }: StockStatusProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -75,6 +77,9 @@ const StockStatus = ({
                   onInvalidQuantity={onInvalidQuantity}
                   isStagedMode={isStagedMode}
                   onStagedQuantityChange={onStagedQuantityChange}
+                  setIsSubstituteMaterialsModalOpen={
+                    setIsSubstituteMaterialsModalOpen
+                  }
                 />
               );
             }

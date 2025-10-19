@@ -38,6 +38,7 @@ import ProjectStockHistoryModal from './product-history/modals/project-stock-his
 import useSubscriptionStore from '@/store/subscription-store';
 import LocationItem from '../../location-item';
 import StockLocationModal from './product-location/stock-location-modal';
+import SubstituteMaterialsModal from './bom/modals/substitute-materials-modal';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -179,6 +180,8 @@ const ProductDetail = ({
     projectId?: number;
   }>({ isOpen: false, projectId: undefined });
   const [isStockLocationModalOpen, setIsStockLocationModalOpen] =
+    useState(false);
+  const [isSubstituteMaterialsModalOpen, setIsSubstituteMaterialsModalOpen] =
     useState(false);
 
   // 해당 원자재 클릭 시 보여줄 원자재 id와 해당 디테일 판넬
@@ -689,6 +692,9 @@ const ProductDetail = ({
                 await getMaterialProductConnections(productId, 'product');
               }
             }}
+            setIsSubstituteMaterialsModalOpen={
+              setIsSubstituteMaterialsModalOpen
+            }
           />
 
           {/* 제품 입·출고 내역 */}
@@ -747,6 +753,13 @@ const ProductDetail = ({
             }}
           />
         ) : null
+      )}
+
+      {/* 대체자재 모달 */}
+      {isSubstituteMaterialsModalOpen && (
+        <SubstituteMaterialsModal
+          onClose={() => setIsSubstituteMaterialsModalOpen(false)}
+        />
       )}
 
       {/* 재고 변동 내역 모달 */}
