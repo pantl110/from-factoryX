@@ -37,9 +37,10 @@ interface BOMProps {
   onInvalidQuantity: (message: string) => void;
   onStagedQuantityChange: (materialId: number, quantity: number) => void;
   onPersistStagedConnections?: (newProductId: number) => Promise<void>;
+  onConnectionsRefresh?: () => void | Promise<void>;
 }
 
-const BOM = ({
+const Bom = ({
   productId,
   connections,
   stagedMaterials,
@@ -51,7 +52,7 @@ const BOM = ({
   onQuantityChange,
   onInvalidQuantity,
   onStagedQuantityChange,
-  onPersistStagedConnections,
+  onConnectionsRefresh,
 }: BOMProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -95,6 +96,8 @@ const BOM = ({
           // 연결된 자재 목록 다시 로드
           await getMaterialProductConnections(productId, 'product');
         }
+        // 상위 컴포넌트의 connections 상태도 새로고침
+        onConnectionsRefresh?.();
       } else {
         alert('연결 삭제에 실패했습니다: ' + result.error);
       }
@@ -167,4 +170,4 @@ const BOM = ({
   );
 };
 
-export default BOM;
+export default Bom;

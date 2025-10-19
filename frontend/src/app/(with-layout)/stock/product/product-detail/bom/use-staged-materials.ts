@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useMaterialProduct } from '@/hooks';
 
-interface StagedMaterial {
+interface StagedMaterialModel {
   id: number;
   name: string;
   code: string;
@@ -11,40 +11,46 @@ interface StagedMaterial {
 }
 
 export const useStagedMaterials = () => {
-  const [stagedMaterials, setStagedMaterials] = useState<StagedMaterial[]>([]);
+  const [stagedMaterials, setStagedMaterials] = useState<StagedMaterialModel[]>(
+    []
+  );
   const { createMaterialProduct } = useMaterialProduct();
 
   // 생성 모드에서 임시로 담아둔 원자재 연결을 실제로 생성
-  const persistStagedConnections = useCallback(async (newProductId: number) => {
-    if (stagedMaterials.length === 0) return;
-    
-    const connections = stagedMaterials.map((m) => ({
-      id: m.id,
-      quantity: m.quantity ?? 0,
-    }));
-    
-    await createMaterialProduct({
-      type: 'product',
-      target_id: newProductId,
-      connections,
-    });
-    
-    setStagedMaterials([]);
-  }, [stagedMaterials, createMaterialProduct]);
+  const persistStagedConnections = useCallback(
+    async (newProductId: number) => {
+      if (stagedMaterials.length === 0) return;
+
+      const connections = stagedMaterials.map((m) => ({
+        id: m.id,
+        quantity: m.quantity ?? 0,
+      }));
+
+      await createMaterialProduct({
+        type: 'product',
+        target_id: newProductId,
+        connections,
+      });
+
+      setStagedMaterials([]);
+    },
+    [stagedMaterials, createMaterialProduct]
+  );
 
   // 스테이징된 수량 변경
-  const updateStagedQuantity = useCallback((materialId: number, quantity: number) => {
-    setStagedMaterials((prev) =>
-      prev.map((m) =>
-        m.id === materialId ? { ...m, quantity } : m
-      )
-    );
-  }, []);
+  const updateStagedQuantity = useCallback(
+    (materialId: number, quantity: number) => {
+      setStagedMaterials((prev) =>
+        prev.map((m) => (m.id === materialId ? { ...m, quantity } : m))
+      );
+    },
+    []
+  );
 
   // 스테이징된 자재 추가 (중복 제거)
-  const addStagedMaterials = useCallback((materials: StagedMaterial[]) => {
+  const addStagedMaterials = useCallback((materials: StagedMaterialModel[]) => {
     setStagedMaterials((prev) => {
-      const map = new Map<string, StagedMaterial>();
+      const map = new Map<string, StagedMaterialModel>();
       [...prev, ...materials].forEach((m) => {
         map.set(m.code, m);
       });

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, Fragment } from 'react';
 import ProductInfo, { ProductInfoModel } from './product-info';
 import MiniBtn from '@/ui/mini-btn';
 import ProductHistory from './product-history';
-import BOM from './bom';
+import Bom from './bom';
 import Panel from '@/ui/panel';
 import {
   ProductModel,
@@ -65,11 +65,8 @@ const ProductDetail = ({
   const { updateProduct, isLoading: isProductUpdating } = useUpdateProduct();
   const {
     getMaterialProductConnections,
-    createMaterialProduct,
     data: connections,
     updateMaterialProductConnection,
-    deleteMaterialProductConnection,
-    resetData,
     isLoading: isMaterialProductLoading,
   } = useMaterialProduct();
   const factoryId = useMemberStore((state) => state.factoryId);
@@ -675,7 +672,7 @@ const ProductDetail = ({
           </div>
 
           {/* 제품과 연결된 자재 정보 */}
-          <BOM
+          <Bom
             productId={productId}
             connections={connections}
             stagedMaterials={stagedMaterials}
@@ -687,7 +684,11 @@ const ProductDetail = ({
             onQuantityChange={handleQuantityChange}
             onInvalidQuantity={showToastMessage}
             onStagedQuantityChange={updateStagedQuantity}
-            onPersistStagedConnections={persistStagedConnections}
+            onConnectionsRefresh={async () => {
+              if (productId) {
+                await getMaterialProductConnections(productId, 'product');
+              }
+            }}
           />
 
           {/* 제품 입·출고 내역 */}
