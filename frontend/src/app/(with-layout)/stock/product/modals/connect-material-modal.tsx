@@ -390,6 +390,7 @@ const ConnectMaterialModal = ({
                 setToastSubtext(subtext);
                 showToast();
               }}
+              usageQuantity={true}
             />
           ) : (
             // 선택한 원자재 list

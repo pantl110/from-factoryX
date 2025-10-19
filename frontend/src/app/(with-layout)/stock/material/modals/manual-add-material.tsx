@@ -196,25 +196,36 @@ const ManualAddMaterial = ({
                 {...register('quantity', {
                   required: true,
                   validate: (v) => {
-                    const num = Number(String(v).replace(/[^0-9.]/g, ''));
+                    const regex = usageQuantity ? /[^0-9.]/g : /[^0-9]/g;
+                    const num = Number(String(v).replace(regex, ''));
                     return !isNaN(num) && num > 0;
                   },
                   setValueAs: (v) => {
                     if (v === '' || v === null || v === undefined) return null;
-                    const num = Number(String(v).replace(/[^0-9.]/g, ''));
+                    const regex = usageQuantity ? /[^0-9.]/g : /[^0-9]/g;
+                    const num = Number(String(v).replace(regex, ''));
                     return num === 0 ? null : num;
                   },
                 })}
                 onChange={(e) => {
                   const result = handleQuantityInput(e.target.value);
 
+                  // usageQuantity가 false면 소수점 제거
+                  let processedValue = result.displayValue;
+                  let processedNumericValue = result.numericValue;
+
+                  if (!usageQuantity && processedValue.includes('.')) {
+                    processedValue = processedValue.replace(/\.\d+/, '');
+                    processedNumericValue = Math.floor(processedNumericValue);
+                  }
+
                   // 입력 필드에 포맷된 값 표시
-                  e.target.value = result.displayValue;
+                  e.target.value = processedValue;
 
                   // formValues 업데이트
                   const num =
-                    result.isValid && result.numericValue > 0
-                      ? result.numericValue
+                    result.isValid && processedNumericValue > 0
+                      ? processedNumericValue
                       : null;
                   setFormValues((prev) => ({ ...prev, quantity: num }));
                 }}
