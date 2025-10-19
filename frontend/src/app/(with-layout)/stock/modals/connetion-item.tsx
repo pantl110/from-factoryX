@@ -65,6 +65,16 @@ const ConnetionItem = ({
       if (currentInput) {
         setTimeout(() => adjustInputWidth(currentInput), 0);
       }
+    } else {
+      // quantity가 0이면 그대로 0 유지
+      onQuantityChange(0);
+      setDisplayQuantity('0');
+
+      // 너비 자동 조정
+      const currentInput = inputRef.current;
+      if (currentInput) {
+        setTimeout(() => adjustInputWidth(currentInput), 0);
+      }
     }
   };
 
@@ -73,10 +83,19 @@ const ConnetionItem = ({
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { value } = e.target;
+
+    // 빈 값이면 즉시 0으로 설정
+    if (value === '') {
+      setDisplayQuantity('0');
+      onQuantityChange(0);
+      adjustInputWidth(e.target);
+      return;
+    }
+
     const result = handleQuantityInput(value);
 
     setDisplayQuantity(result.displayValue);
-    if (result.isValid && result.numericValue > 0) {
+    if (result.isValid && result.numericValue >= 0) {
       onQuantityChange(result.numericValue);
     }
 
@@ -88,13 +107,13 @@ const ConnetionItem = ({
   const handleBlur = () => {
     const result = handleQuantityInput(displayQuantity);
 
-    if (result.isValid && result.numericValue > 0) {
+    if (result.isValid && result.numericValue >= 0) {
       setDisplayQuantity(result.displayValue);
       onQuantityChange(result.numericValue);
     } else {
-      // 유효하지 않은 값이면 기본값으로 설정
-      setDisplayQuantity('1');
-      onQuantityChange(1);
+      // 유효하지 않은 값이면 0으로 설정
+      setDisplayQuantity('0');
+      onQuantityChange(0);
     }
 
     // 너비 자동 조정
@@ -124,8 +143,7 @@ const ConnetionItem = ({
             value={displayQuantity}
             onChange={handleQuantityInputChange}
             onBlur={handleBlur}
-            className="Me_body-1 text-dg px-[11px] text-center border-none outline-none bg-transparent"
-            placeholder="(필수)"
+            className="Me_body-1 text-dg px-[11px] text-center border-none outline-none bg-transparent min-w-[60px]"
           />
           <button
             className="Me_body-1 text-dg w-8 h-8 flex justify-center items-center rounded-full border border-lg hover:bg-bg"

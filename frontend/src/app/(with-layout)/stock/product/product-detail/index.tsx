@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef, useMemo, Fragment } from 'react';
 import ProductInfo, { ProductInfoModel } from './product-info';
 import MiniBtn from '@/ui/mini-btn';
-import StockStatus from './stock-status';
 import ProductHistory from './product-history';
+import BOM from './bom';
 import Panel from '@/ui/panel';
 import {
   ProductModel,
@@ -24,13 +24,13 @@ import {
   useLocation,
   useMaterialProduct,
 } from '@/hooks';
+import { useStagedMaterials } from '@/app/(with-layout)/stock/product/product-detail/bom/use-staged-materials';
 // import NoHistoryBox from '@/ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
 import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useUploadFile, useToast } from '@/hooks';
 import MaterialDetailPanel from '../../material/material-detail';
-import DeleteModal from '@/ui/modal/delete-modal';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
@@ -131,17 +131,14 @@ const ProductDetail = ({
   const [isValid, setIsValid] = useState(false);
   const productInfoRef = useRef<ProductInfoModel>(null);
   const [isQuantityDirty, setIsQuantityDirty] = useState(false); // 자재 수량 변경 감지를 위한 상태
-  // 생성 모드에서 임시로 담아둘 원자재 연결 정보
-  const [stagedMaterials, setStagedMaterials] = useState<
-    Array<{
-      id: number;
-      name: string;
-      code: string;
-      spec: string;
-      unit: string;
-      quantity: number;
-    }>
-  >([]);
+
+  // 스테이징된 자재 관리 커스텀 훅
+  const {
+    stagedMaterials,
+    persistStagedConnections,
+    updateStagedQuantity,
+    addStagedMaterials,
+  } = useStagedMaterials();
 
   // 모달의 중복 차단을 위한 이미 연결된 자재 ID 목록
   const connectedMaterialIds = useMemo(() => {
@@ -193,13 +190,6 @@ const ProductDetail = ({
   // 각 StockLocationItem 별 모달 오픈 상태 관리
   const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
 
-  // 연결된 자재 정보 삭제 확인 모달
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteConnectionId, setDeleteConnectionId] = useState<number | null>(
-    null
-  );
-
   // 토스트 상태
   const { isToastOpen, isVisible, showToast } = useToast();
   const [toastMessage, setToastMessage] = useState('');
@@ -210,46 +200,6 @@ const ProductDetail = ({
     setToastMessage(message);
     setToastSubtext(subtext || '');
     showToast();
-  };
-
-  // 연결 삭제 핸들러
-  const handleDeleteConnection = (connectionId: number) => {
-    setDeleteConnectionId(connectionId);
-    setIsDeleteModalOpen(true);
-  };
-
-  // 연결 삭제 실행
-  const handleConfirmDelete = async (connectionId: number) => {
-    if (!connectionId) return;
-
-    setIsDeleting(true);
-    try {
-      const result = await deleteMaterialProductConnection(connectionId);
-      if (result.success) {
-        // 삭제 성공 시 연결된 자재 정보 새로고침
-        if (productId) {
-          // 연결된 자재 목록 초기화
-          resetData();
-          // 연결된 자재 목록 다시 로드
-          await getMaterialProductConnections(productId, 'product');
-        }
-      } else {
-        alert('연결 삭제에 실패했습니다: ' + result.error);
-      }
-    } catch {
-      alert('연결 삭제 중 오류가 발생했습니다.');
-    } finally {
-      setIsDeleting(false);
-      setIsDeleteModalOpen(false);
-      setDeleteConnectionId(null);
-    }
-  };
-
-  // 모달에서 삭제 확인 시 호출되는 함수
-  const handleModalConfirmDelete = () => {
-    if (deleteConnectionId) {
-      handleConfirmDelete(deleteConnectionId);
-    }
   };
 
   // productId가 변경되면 상세 정보 로드
@@ -617,21 +567,6 @@ const ProductDetail = ({
     }
   };
 
-  // 생성 모드에서 임시로 담아둔 원자재 연결을 실제로 생성
-  const persistStagedConnections = async (newProductId: number) => {
-    if (stagedMaterials.length === 0) return;
-    const connections = stagedMaterials.map((m) => ({
-      id: m.id,
-      quantity: m.quantity ?? 0,
-    }));
-    await createMaterialProduct({
-      type: 'product',
-      target_id: newProductId,
-      connections,
-    });
-    setStagedMaterials([]);
-  };
-
   // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
   if (!factoryId) {
     return (
@@ -740,52 +675,20 @@ const ProductDetail = ({
           </div>
 
           {/* 제품과 연결된 자재 정보 */}
-          <div className="flex flex-col gap-3">
-            <div className="h-10 flex items-center justify-between">
-              <h3 className="Heading-3 h-10 flex items-center text-dg ">
-                제품과 연결된 자재 정보
-              </h3>
-              <MiniBtn
-                text="자재 연결"
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
-                onClick={() => setIsMaterialModalOpen(true)}
-                disabled={isViewer || !hasSubscription()}
-              />
-            </div>
-            <StockStatus
-              connections={
-                productId
-                  ? connections && Array.isArray(connections)
-                    ? (connections as ConnectionModelType[])
-                    : []
-                  : (stagedMaterials.map((m, idx) => ({
-                      connection_id: -(idx + 1),
-                      material_id: m.id,
-                      material_name: m.name,
-                      material_code: m.code,
-                      material_spec: m.spec,
-                      material_unit: m.unit,
-                      quantity: m.quantity,
-                    })) as unknown as ConnectionModelType[])
-              }
-              quantityOverrides={quantityChanges}
-              setMaterialId={setMaterialId}
-              setIsQuantityDirty={setIsQuantityDirty}
-              handleQuantityChange={handleQuantityChange}
-              onDeleteConnection={handleDeleteConnection}
-              onInvalidQuantity={showToastMessage}
-              isStagedMode={!productId}
-              onStagedQuantityChange={(materialId, qty) => {
-                setStagedMaterials((prev) =>
-                  prev.map((m) =>
-                    m.id === materialId ? { ...m, quantity: qty } : m
-                  )
-                );
-              }}
-            />
-          </div>
+          <BOM
+            productId={productId}
+            connections={connections}
+            stagedMaterials={stagedMaterials}
+            quantityChanges={quantityChanges}
+            hasSubscription={hasSubscription}
+            onMaterialModalOpen={() => setIsMaterialModalOpen(true)}
+            onMaterialIdChange={setMaterialId}
+            onQuantityDirtyChange={setIsQuantityDirty}
+            onQuantityChange={handleQuantityChange}
+            onInvalidQuantity={showToastMessage}
+            onStagedQuantityChange={updateStagedQuantity}
+            onPersistStagedConnections={persistStagedConnections}
+          />
 
           {/* 제품 입·출고 내역 */}
           <ProductHistory
@@ -807,36 +710,7 @@ const ProductDetail = ({
             }
           }}
           connectedMaterialIds={connectedMaterialIds}
-          onStage={(
-            materials: Array<{
-              id: number;
-              name: string;
-              code: string;
-              spec: string;
-              unit: string;
-              quantity: number;
-            }>
-          ) => {
-            // 생성 모드: 임시로 보관
-            setStagedMaterials((prev) => {
-              // 코드 기준 중복 제거 후 합치기
-              const map = new Map<
-                string,
-                {
-                  id: number;
-                  name: string;
-                  code: string;
-                  spec: string;
-                  unit: string;
-                  quantity: number;
-                }
-              >();
-              [...prev, ...materials].forEach((m) => {
-                map.set(m.code, m);
-              });
-              return Array.from(map.values());
-            });
-          }}
+          onStage={addStagedMaterials}
         />
       )}
 
@@ -872,15 +746,6 @@ const ProductDetail = ({
             }}
           />
         ) : null
-      )}
-
-      {/* 연결된 자재 정보 삭제 확인 모달 */}
-      {isDeleteModalOpen && deleteConnectionId && (
-        <DeleteModal
-          onClose={() => setIsDeleteModalOpen(false)}
-          onDelete={handleModalConfirmDelete}
-          isLoading={isDeleting}
-        />
       )}
 
       {/* 재고 변동 내역 모달 */}
