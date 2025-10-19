@@ -239,9 +239,12 @@ const StockStatusItem = ({
           {connection.material_unit || '-'}
         </span>
       </div>
-      <p className="flex-1 px-3 text-dg truncate cursor-default">
+      <div
+        className="flex-1 px-3 text-dg truncate hover:bg-bg h-full flex items-center cursor-pointer transition-colors duration-200"
+        role="button"
+      >
         원자재A 외 1개
-      </p>
+      </div>
       <div className="flex-[0.5] px-3 text-dg flex justify-between">
         {status === '부족' || status === '충분' ? (
           <Chip
