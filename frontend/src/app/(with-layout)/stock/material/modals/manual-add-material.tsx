@@ -14,6 +14,7 @@ interface ManualAddMaterialProps {
   existingMaterials?: string[]; // 기존 원자재 코드만 저장
   selectedMaterials?: MaterialItemModel[]; // 현재 선택된 원자재들
   showToast?: (text: string, subtext: string) => void;
+  usageQuantity?: boolean;
 }
 
 const ManualAddMaterial = ({
@@ -23,6 +24,7 @@ const ManualAddMaterial = ({
   existingMaterials, // 기존 원자재 코드 목록 받기
   selectedMaterials = [], // 현재 선택된 원자재들
   showToast,
+  usageQuantity = false,
 }: ManualAddMaterialProps) => {
   // 각 필드의 값을 직접 관리
   const [formValues, setFormValues] = useState({
@@ -188,7 +190,7 @@ const ManualAddMaterial = ({
             <div className="flex-1">
               <Input
                 placeholder="EX) 100"
-                label="수량"
+                label={usageQuantity ? '사용 수량' : '수량'}
                 required
                 type="text"
                 {...register('quantity', {
