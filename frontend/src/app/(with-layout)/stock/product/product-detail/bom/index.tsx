@@ -154,6 +154,7 @@ const Bom = ({
           disabled={isViewer || !hasSubscription()}
         />
       </div>
+
       <StockStatus
         connections={
           productId

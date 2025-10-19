@@ -159,6 +159,17 @@ const StockStatusItem = ({
 
   return (
     <div className="flex items-center h-14 border-b border-lg Me_Body-1 group hover:border hover:border-primary">
+      <div className="flex-[0.7] px-3 text-dg cursor-default">
+        <Chip
+          text="원자재"
+          textColor="text-orange"
+          bgColor="bg-orange-8"
+          radius="rounded-[18px]"
+          padding="px-4"
+          height="h-9"
+          textStyle="Me_Body-1"
+        />
+      </div>
       <div
         className="h-full flex-1 px-3 text-dg truncate flex items-center justify-between gap-1"
         title={connection.material_name}
@@ -186,36 +197,52 @@ const StockStatusItem = ({
       >
         {connection.material_spec || '-'}
       </p>
-      <p
+      {/* <p
         className="flex-[0.5] px-3 text-dg truncate cursor-default"
         title={connection.material_unit || '-'}
       >
         {connection.material_unit || '-'}
-      </p>
-      <input
-        type="text"
-        className="flex-[0.5] px-3 text-dg focus:outline-none w-full min-w-0"
-        value={displayValue}
-        placeholder="(필수)"
-        onChange={(e) => handleQuantityChangeLocal(e.target.value)}
-        onBlur={(e) => {
-          const cleanValue = e.target.value.replace(/[^0-9.]/g, '');
-          // 소수점이 여러 개 입력되는 것을 방지
-          const parts = cleanValue.split('.');
-          const finalValue =
-            parts.length > 2
-              ? parts[0] + '.' + parts.slice(1).join('')
-              : cleanValue;
-          const numberValue = finalValue ? parseFloat(finalValue) : 0;
+      </p> */}
+      <div className="flex-[0.8] px-3 text-dg flex items-center overflow-hidden">
+        <input
+          type="text"
+          className="focus:outline-none "
+          style={{
+            width: `${Math.max(displayValue.length + 1, 3)}ch`,
+            minWidth: '4ch',
+            maxWidth: '10ch',
+          }}
+          value={displayValue}
+          placeholder="(필수)"
+          onChange={(e) => handleQuantityChangeLocal(e.target.value)}
+          onBlur={(e) => {
+            const cleanValue = e.target.value.replace(/[^0-9.]/g, '');
+            // 소수점이 여러 개 입력되는 것을 방지
+            const parts = cleanValue.split('.');
+            const finalValue =
+              parts.length > 2
+                ? parts[0] + '.' + parts.slice(1).join('')
+                : cleanValue;
+            const numberValue = finalValue ? parseFloat(finalValue) : 0;
 
-          // 저장 후 포맷팅된 값으로 displayValue 업데이트
-          handleSaveQuantity(numberValue);
-          setDisplayValue(formatNumberWithCommas(numberValue));
-        }}
-        onKeyDown={handleNumberKeyDown}
-        disabled={isViewer}
-      />
-      <div className="flex-[0.8] px-3 text-dg flex justify-between">
+            // 저장 후 포맷팅된 값으로 displayValue 업데이트
+            handleSaveQuantity(numberValue);
+            setDisplayValue(formatNumberWithCommas(numberValue));
+          }}
+          onKeyDown={handleNumberKeyDown}
+          disabled={isViewer}
+        />
+        <span
+          className="max-w-[6ch] text-dg shrink-0 cursor-default truncate"
+          title={connection.material_unit || '-'}
+        >
+          {connection.material_unit || '-'}
+        </span>
+      </div>
+      <p className="flex-1 px-3 text-dg truncate cursor-default">
+        원자재A 외 1개
+      </p>
+      <div className="flex-[0.5] px-3 text-dg flex justify-between">
         {status === '부족' || status === '충분' ? (
           <Chip
             text={status}
