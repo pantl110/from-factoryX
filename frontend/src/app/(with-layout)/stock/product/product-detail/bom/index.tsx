@@ -7,8 +7,10 @@ import {
 } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import { useState } from 'react';
-import { useMaterialProduct } from '@/hooks';
+import { useMaterialProduct, useTooltip } from '@/hooks';
 import DeleteModal from '@/ui/modal/delete-modal';
+import Tooltip from '@/ui/tooltip';
+import { Info } from '@phosphor-icons/react';
 
 type ConnectionModelType =
   | MaterialProductConnectionModel
@@ -62,6 +64,8 @@ const Bom = ({
     resetData,
     getMaterialProductConnections,
   } = useMaterialProduct();
+
+  const { onMouseEnter, onMouseLeave, isVisible } = useTooltip({});
 
   // 연결된 자재 정보 삭제 확인 모달
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -120,9 +124,27 @@ const Bom = ({
   return (
     <div className="flex flex-col gap-3">
       <div className="h-10 flex items-center justify-between">
-        <h3 className="Heading-3 h-10 flex items-center text-dg">
-          BOM/패키징 레시피
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="Heading-3 h-10 flex items-center text-dg">
+            BOM/패키징 레시피
+          </h3>
+          <div
+            className="relative"
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          >
+            <Info size={20} className="text-gr cursor-help" />
+            {isVisible && (
+              <div className="absolute z-10 top-7 -left-2 w-140">
+                <Tooltip
+                  text="소요량은 완제품 1개 만들 때 필요한 자재 양"
+                  color="black"
+                  position="left"
+                />
+              </div>
+            )}
+          </div>
+        </div>
         <MiniBtn
           text="연결"
           textColor="text-dg"
