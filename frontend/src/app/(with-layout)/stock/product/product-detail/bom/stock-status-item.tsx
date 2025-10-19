@@ -14,7 +14,6 @@ import {
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import SubstituteMaterialsModal from './modals/substitute-materials-modal';
 
 interface StockStatusItemProps {
   connection: MaterialProductConnectionModel;
@@ -245,6 +244,7 @@ const StockStatusItem = ({
       <div
         className="flex-1 px-3 text-dg truncate hover:bg-bg h-full flex items-center cursor-pointer transition-colors duration-200"
         role="button"
+        tabIndex={0}
         onClick={() => setIsSubstituteMaterialsModalOpen(true)}
       >
         원자재A 외 1개
