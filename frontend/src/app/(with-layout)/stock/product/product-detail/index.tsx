@@ -27,7 +27,7 @@ import {
 import { useStagedMaterials } from '@/app/(with-layout)/stock/product/product-detail/bom/use-staged-materials';
 // import NoHistoryBox from '@/ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
-import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
+// import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useUploadFile, useToast } from '@/hooks';
 import MaterialDetailPanel from '../../material/material-detail';
@@ -37,7 +37,7 @@ import useMemberStore from '@/store/member-store';
 import ProjectStockHistoryModal from './product-history/modals/project-stock-history-modal';
 import useSubscriptionStore from '@/store/subscription-store';
 import LocationItem from '../../location-item';
-import StockLocationModal from './product-location/stock-location-modal';
+import StockLocationModal from '../../modals/stock-location-modal';
 import SubstituteMaterialsModal from './bom/modals/substitute-materials-modal';
 
 interface ProductDetailProps {
@@ -104,8 +104,8 @@ const ProductDetail = ({
   // - 제품이 보관된 창고 위치 관련 RHF for locations
   const {
     control,
-    watch,
-    setValue,
+    // watch,
+    // setValue,
     getValues,
     formState: { isDirty: isLocationDirty },
     reset,
@@ -188,7 +188,7 @@ const ProductDetail = ({
   const [materialId, setMaterialId] = useState<number | null>(null);
 
   // 각 StockLocationItem 별 모달 오픈 상태 관리
-  const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
+  // const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
 
   // 토스트 상태
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -284,29 +284,29 @@ const ProductDetail = ({
   // };
 
   // Plus 버튼 클릭 시 사진 추가 모달 오픈
-  const _handleOpenUploadModal = (index: number) => {
-    setOpenUploadModals((prev) => {
-      const newModals = [...prev];
-      // 배열 크기가 부족하면 확장
-      while (newModals.length <= index) {
-        newModals.push(false);
-      }
-      newModals[index] = true;
-      return newModals;
-    });
-  };
-  // 사진 추가 모달 닫기
-  const handleCloseUploadModal = (index: number) => {
-    setOpenUploadModals((prev) => {
-      const newModals = [...prev];
-      // 배열 크기가 부족하면 확장
-      while (newModals.length <= index) {
-        newModals.push(false);
-      }
-      newModals[index] = false;
-      return newModals;
-    });
-  };
+  // const _handleOpenUploadModal = (index: number) => {
+  //   setOpenUploadModals((prev) => {
+  //     const newModals = [...prev];
+  //     // 배열 크기가 부족하면 확장
+  //     while (newModals.length <= index) {
+  //       newModals.push(false);
+  //     }
+  //     newModals[index] = true;
+  //     return newModals;
+  //   });
+  // };
+  // // 사진 추가 모달 닫기
+  // const handleCloseUploadModal = (index: number) => {
+  //   setOpenUploadModals((prev) => {
+  //     const newModals = [...prev];
+  //     // 배열 크기가 부족하면 확장
+  //     while (newModals.length <= index) {
+  //       newModals.push(false);
+  //     }
+  //     newModals[index] = false;
+  //     return newModals;
+  //   });
+  // };
 
   // ProductInfo 저장 함수
   const handleSaveProductInfo = async (): Promise<{
@@ -738,7 +738,7 @@ const ProductDetail = ({
       )}
 
       {/* 각 StockLocationItem 별 모달 렌더링 */}
-      {openUploadModals.map((open, idx) =>
+      {/* {openUploadModals.map((open, idx) =>
         open ? (
           <StockLocationUploadModal
             key={idx}
@@ -753,7 +753,7 @@ const ProductDetail = ({
             }}
           />
         ) : null
-      )}
+      )} */}
 
       {/* 대체자재 모달 */}
       {isSubstituteMaterialsModalOpen && (
@@ -784,6 +784,7 @@ const ProductDetail = ({
         />
       )}
 
+      {/* 창고 위치 추가 모달 열기 */}
       {isStockLocationModalOpen && (
         <StockLocationModal
           mode="add"

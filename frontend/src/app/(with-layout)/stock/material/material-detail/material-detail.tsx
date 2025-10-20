@@ -3,7 +3,6 @@ import MaterialInfo, { MaterialInfoModel } from './material-info';
 import ProductRequiringMaterial from './product-requiring-material';
 import QuotationHistory from './quotation-history.tsx';
 import MaterialStockLog from './material-stock-log';
-import NoHistoryBox from '@/ui/no-history-box';
 import { CaretDown } from '@phosphor-icons/react';
 import SelectPeriodDropdown from '@/ui/dropdown/select-period-dropdown/select-period-dropdown';
 import {
@@ -14,7 +13,7 @@ import {
   useRef,
   useCallback,
 } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { usePeriodSelector } from '@/hooks/use-period-selector';
 import { ProductRequiringMaterialRefModel } from './product-requiring-material';
 import CustomDateSelector from '@/ui/dropdown/select-period-dropdown/custom-date-selector';
@@ -36,7 +35,8 @@ interface LocationFormModel {
 interface MaterialDetailProps {
   materialId: number;
   setIsProductEnrollmentModalOpen: (v: boolean) => void;
-  handleOpenUploadModal: (index: number) => void;
+  // handleOpenUploadModal: (index: number) => void;
+  setIsUploadModalOpen: (isOpen: boolean) => void;
   onIsDirtyChange?: (isDirty: boolean) => void;
   locations?: LocationFormModel['locations'];
   setIsClinetDetailPanelOpen: (clientId: number) => void;
@@ -52,7 +52,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     {
       materialId,
       setIsProductEnrollmentModalOpen,
-      handleOpenUploadModal,
+      // handleOpenUploadModal,
+      setIsUploadModalOpen,
       onIsDirtyChange,
       locations,
       setIsClinetDetailPanelOpen,
@@ -65,7 +66,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
   ) => {
     // RHF for locations
     const {
-      control,
+      // control,
       watch,
       setValue,
       getValues: getLocationValues,
@@ -74,10 +75,11 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     } = useForm<LocationFormModel>({
       defaultValues: { locations: [] },
     });
-    const { fields, append, remove } = useFieldArray({
-      control,
-      name: 'locations',
-    });
+
+    // const { fields, append, remove } = useFieldArray({
+    //   control,
+    //   name: 'locations',
+    // });
 
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
@@ -239,6 +241,11 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             materialCode: '',
             size: '',
             unit: '',
+            stockUnit: '',
+            safeStock: '',
+            unitWeight: '',
+            expirationDate: '',
+            memo: '',
             currentStock: '',
             minStock: '',
           },
@@ -312,9 +319,9 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     }, [productWasModified]);
 
     // StockLocationItem 추가 함수
-    const handleAddStockLocation = () => {
-      append({ location: '', images: [] });
-    };
+    // const handleAddStockLocation = () => {
+    //   append({ location: '', images: [] });
+    // };
 
     return (
       <>
@@ -342,25 +349,20 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
-                onClick={handleAddStockLocation}
+                // onClick={handleAddStockLocation}
+                onClick={() => setIsUploadModalOpen(true)}
                 disabled={isViewer || !hasSubscription()}
               />
             </div>
-            {fields.length === 0 ? (
-              <NoHistoryBox
-                title="등록된 창고 위치가 아직 없어요."
-                text="[추가] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
-              />
-            ) : (
-              <StockLocation
-                control={control}
-                fields={fields}
-                remove={remove}
-                setValue={setValue}
-                watch={watch}
-                openUploadModal={handleOpenUploadModal}
-              />
-            )}
+
+            <StockLocation
+            // control={control}
+            // fields={fields}
+            // remove={remove}
+            // setValue={setValue}
+            // watch={watch}
+            // openUploadModal={handleOpenUploadModal}
+            />
           </div>
 
           {/* 업체별 단가 비교 */}

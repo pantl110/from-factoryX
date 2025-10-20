@@ -12,7 +12,7 @@ import {
 } from '@/hooks';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import ProductEnrollmentModal from '../modals/product-enrollment-modal';
-import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
+// import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
@@ -22,6 +22,7 @@ import {
 } from '@/types/data-model';
 import DeleteModal from '@/ui/modal/delete-modal';
 import ProductDetailPanel from '@/app/(with-layout)/stock/product/product-detail';
+import StockLocationModal from '../../modals/stock-location-modal';
 
 interface LocationModel {
   id: number;
@@ -59,7 +60,8 @@ const MaterialDetailPanel = ({
   const [isMaterialDetailDirty, setIsMaterialDetailDirty] = useState(false); // 원자재 디테일 판넬 수정 상태
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
-  const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
+  // const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // ClientDetailPanel 관련 상태
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
@@ -208,27 +210,27 @@ const MaterialDetailPanel = ({
   }, [selectedMaterialId]);
 
   // 원자재 재고 위치 관련 함수
-  const handleOpenUploadModal = (index: number) => {
-    setOpenUploadModals((prev) => {
-      // 배열을 필요한 크기로 확장
-      const newModals = [...prev];
-      while (newModals.length <= index) {
-        newModals.push(false);
-      }
-      newModals[index] = true;
-      return newModals;
-    });
-  };
-  const handleCloseUploadModal = (index: number) => {
-    setOpenUploadModals((prev) => {
-      const newModals = [...prev];
-      while (newModals.length <= index) {
-        newModals.push(false);
-      }
-      newModals[index] = false;
-      return newModals;
-    });
-  };
+  // const handleOpenUploadModal = (index: number) => {
+  // setOpenUploadModals((prev) => {
+  //   // 배열을 필요한 크기로 확장
+  //   const newModals = [...prev];
+  //   while (newModals.length <= index) {
+  //     newModals.push(false);
+  //   }
+  //   newModals[index] = true;
+  //   return newModals;
+  // });
+  // };
+  // const handleCloseUploadModal = (index: number) => {
+  // setOpenUploadModals((prev) => {
+  //   const newModals = [...prev];
+  //   while (newModals.length <= index) {
+  //     newModals.push(false);
+  //   }
+  //   newModals[index] = false;
+  //   return newModals;
+  // });
+  // };
 
   // 원자재 디테일 판넬의 저장 버튼 클릭 시 수정사항 반영
   const materialDetailRef = useRef<MaterialDetailRefModel>(null);
@@ -371,7 +373,8 @@ const MaterialDetailPanel = ({
           materialId={selectedMaterialId}
           locations={prevLocations}
           setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
-          handleOpenUploadModal={handleOpenUploadModal}
+          // handleOpenUploadModal={handleOpenUploadModal}
+          setIsUploadModalOpen={setIsUploadModalOpen}
           onIsDirtyChange={setIsMaterialDetailDirty}
           setIsClinetDetailPanelOpen={setIsClinetDetailPanelOpen}
           handleOpenDeleteModal={handleOpenDeleteModal}
@@ -382,7 +385,8 @@ const MaterialDetailPanel = ({
           productWasModified={hasProductBeenModified}
         />
       </Panel>
-      {openUploadModals.map((open, idx) =>
+
+      {/* {openUploadModals.map((open, idx) =>
         open ? (
           <StockLocationUploadModal
             key={idx}
@@ -410,22 +414,19 @@ const MaterialDetailPanel = ({
             }}
           />
         ) : null
-      )}
-      {/* MaterialDetail의 거래처 정보 디테일 판넬 */}
-      {selectedClientId && (
-        <ClientDetailPanel
-          onClose={() => {
-            setSelectedClientId(null);
-            // 패널이 닫힐 때 수정 상태 리셋 (잠시 후에)
-            setTimeout(() => setHasClientBeenModified(false), 100);
-          }}
-          refetchClient={() => {
-            // 저장 버튼을 눌렀을 때 (수정이 발생했을 때) 호출됨
-            setHasClientBeenModified(true);
-          }}
-          clientId={selectedClientId}
+      )} */}
+
+      {/* 토스트 */}
+      {isToastOpen && (
+        <Toast
+          text={toastText}
+          subtext={toastSubtext}
+          icon={<WarningCircle size={20} className="text-red" />}
+          type="red"
+          isVisible={isVisible}
         />
       )}
+
       {/* MaterialDetail의 추가하기 버튼 모달 */}
       {isProductEnrollmentModalOpen && (
         <ProductEnrollmentModal
@@ -443,16 +444,15 @@ const MaterialDetailPanel = ({
           }}
         />
       )}
-      {/* 토스트 */}
-      {isToastOpen && (
-        <Toast
-          text={toastText}
-          subtext={toastSubtext}
-          icon={<WarningCircle size={20} className="text-red" />}
-          type="red"
-          isVisible={isVisible}
+
+      {/* 창고 추가 모달 열기 */}
+      {isUploadModalOpen && (
+        <StockLocationModal
+          mode="add"
+          onClose={() => setIsUploadModalOpen(false)}
         />
       )}
+
       {/* 제품 연결하기에서 삭제 버튼 누를 시 모달 */}
       {isDeleteModalOpen && (
         <DeleteModal
@@ -460,6 +460,7 @@ const MaterialDetailPanel = ({
           onDelete={handleConfirmDelete}
         />
       )}
+
       {/* 연결된 제품 클릭 시 제품 디테일 판넬 열기 */}
       {selectedProductId && (
         <ProductDetailPanel
@@ -473,6 +474,21 @@ const MaterialDetailPanel = ({
             setHasProductBeenModified(true);
           }}
           productId={selectedProductId}
+        />
+      )}
+      {/* MaterialDetail의 거래처 정보 디테일 판넬 */}
+      {selectedClientId && (
+        <ClientDetailPanel
+          onClose={() => {
+            setSelectedClientId(null);
+            // 패널이 닫힐 때 수정 상태 리셋 (잠시 후에)
+            setTimeout(() => setHasClientBeenModified(false), 100);
+          }}
+          refetchClient={() => {
+            // 저장 버튼을 눌렀을 때 (수정이 발생했을 때) 호출됨
+            setHasClientBeenModified(true);
+          }}
+          clientId={selectedClientId}
         />
       )}
     </>
