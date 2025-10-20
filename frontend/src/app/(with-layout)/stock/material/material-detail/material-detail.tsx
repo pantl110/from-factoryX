@@ -234,6 +234,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       () => ({
         getValues: () =>
           materialInfoRef.current?.getValues() ?? {
+            materialType: '',
             materialName: '',
             materialCode: '',
             size: '',

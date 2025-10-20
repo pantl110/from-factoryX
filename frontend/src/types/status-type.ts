@@ -252,3 +252,13 @@ export const TaxDraftStatusColorMap: Record<
   '임시 저장': { textColor: 'text-primary', bgColor: 'bg-bg' },
   '전송 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
 };
+
+// 원자재 구분
+export type MaterialType = 'rawMaterial' | 'subMaterial';
+export const MaterialTypeColorMap: Record<
+  MaterialType,
+  StatusColorModel
+> = {
+  rawMaterial: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
+  subMaterial: { textColor: 'text-green', bgColor: 'bg-green-8' },
+};

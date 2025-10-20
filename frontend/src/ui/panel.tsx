@@ -1,4 +1,4 @@
-import { CaretLineRightIcon } from '@phosphor-icons/react/dist/ssr';
+import { ArrowLineRightIcon } from '@phosphor-icons/react/dist/ssr';
 import {
   useEffect,
   useState,
@@ -102,7 +102,7 @@ const Panel = forwardRef<PanelRefModel, PanelProps>(
                   onClick={handleClose}
                   className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-bg rounded-lg transition-all duration-200"
                 >
-                  <CaretLineRightIcon size={20} className="text-sv" />
+                  <ArrowLineRightIcon size={20} className="text-sv" />
                 </button>
               </div>
 
