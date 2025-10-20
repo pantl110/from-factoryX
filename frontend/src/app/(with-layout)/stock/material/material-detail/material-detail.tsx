@@ -365,6 +365,32 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             />
           </div>
 
+          {/* 이 자재가 사용된 제품 */}
+          <div className="flex flex-col gap-3">
+            <div className="h-10 flex items-center justify-between">
+              <h3 className="Heading-3 text-dg">이 자재가 사용된 제품</h3>
+              <MiniBtn
+                text="제품 연결"
+                textColor="text-dg"
+                borderColor="border-lg"
+                hoverColor="hover:bg-bg"
+                onClick={() => setIsProductEnrollmentModalOpen(true)}
+                disabled={isViewer || !hasSubscription()}
+              />
+            </div>
+            <ProductRequiringMaterial
+              ref={productRequiringMaterialRef}
+              materialId={materialId}
+              handleOpenDeleteModal={handleOpenDeleteModal}
+              onProductClick={(productId) => {
+                // 제품 디테일 패널 열기 로직
+                if (onProductClick) {
+                  onProductClick(productId);
+                }
+              }}
+            />
+          </div>
+
           {/* 업체별 단가 비교 */}
           <div className="flex flex-col gap-3">
             <div className="flex gap-2 items-center">
@@ -423,32 +449,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               currentPage={priceCurrentPage}
               totalPages={priceHistories?.pageCnt || 1}
               onPageChange={handlePricePageChange}
-            />
-          </div>
-
-          {/* 원자재가 연결된 제품 */}
-          <div className="flex flex-col gap-3">
-            <div className="h-10 flex items-center justify-between">
-              <h3 className="Heading-3 text-dg">원자재가 연결된 제품</h3>
-              <MiniBtn
-                text="제품 연결"
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
-                onClick={() => setIsProductEnrollmentModalOpen(true)}
-                disabled={isViewer || !hasSubscription()}
-              />
-            </div>
-            <ProductRequiringMaterial
-              ref={productRequiringMaterialRef}
-              materialId={materialId}
-              handleOpenDeleteModal={handleOpenDeleteModal}
-              onProductClick={(productId) => {
-                // 제품 디테일 패널 열기 로직
-                if (onProductClick) {
-                  onProductClick(productId);
-                }
-              }}
             />
           </div>
 
