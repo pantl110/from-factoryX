@@ -1,8 +1,8 @@
 import MiniBtn from '@/ui/mini-btn';
 import MaterialInfo, { MaterialInfoModel } from './material-info';
 import ProductRequiringMaterial from './product-requiring-material';
-import QuotationHistory from './quotation-history.tsx';
-import MaterialStockLog from './material-stock-log';
+import QuotationHistory from './quotation-history';
+// import MaterialStockLog from './material-stock-log';
 import { CaretDown } from '@phosphor-icons/react';
 import SelectPeriodDropdown from '@/ui/dropdown/select-period-dropdown/select-period-dropdown';
 import {
@@ -22,6 +22,9 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import StockLocation from './stock-location';
 import { SubMaterials } from './sub-materials';
+import { MaterialStockIn } from './material-stock-in';
+import { MaterialPackaging } from './material-packaging';
+import { MaterialStockOut } from './material-stock-out';
 
 export type { MaterialInfoModel } from './material-info';
 
@@ -452,15 +455,24 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             />
           </div>
 
+          {/* 원자재 입고 및 LOT 추적 */}
+          <MaterialStockIn />
+
+          {/* 원자재 소분 내역 */}
+          <MaterialPackaging />
+
+          {/* 원자재 사용 내역 */}
+          <MaterialStockOut />
+
           {/* 원자재 입·출고 내역 */}
-          <div className="flex flex-col gap-3">
+          {/* <div className="flex flex-col gap-3">
             <div className="flex gap-2 items-center">
               <h3 className="Heading-3 text-dg h-10 flex items-center">
                 원자재 입·출고 내역
-              </h3>
+              </h3> */}
 
-              {/* 기간 선택 */}
-              <div className="relative">
+          {/* 기간 선택 */}
+          {/* <div className="relative">
                 <MiniBtn
                   text={stockLogPeriodSelector.selectedPeriod}
                   variant="whiteOutline"
@@ -511,7 +523,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               totalPages={stockHistories?.pageCnt || 1}
               onPageChange={handleStockPageChange}
             />
-          </div>
+          </div>*/}
         </div>
       </>
     );

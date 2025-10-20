@@ -22,6 +22,8 @@ interface MiniBtnProps
   height?: string;
   variant?: 'primary' | 'secondary' | 'red' | 'white' | 'whiteOutline';
   justifyBetween?: boolean;
+  padding?: string;
+  textStyle?: string;
 }
 
 const MiniBtn = ({
@@ -38,6 +40,8 @@ const MiniBtn = ({
   height = 'h-10',
   variant,
   justifyBetween = false,
+  padding = 'px-4',
+  textStyle = 'Me_Body-1',
   ...rest
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : '';
@@ -90,7 +94,9 @@ const MiniBtn = ({
   return (
     <button
       className={clsx(
-        'px-4 rounded-md Me_Body-1 transition-slow flex items-center gap-2',
+        'rounded-md transition-slow flex items-center gap-2',
+        textStyle,
+        padding,
         height,
         width,
         positionClass,
