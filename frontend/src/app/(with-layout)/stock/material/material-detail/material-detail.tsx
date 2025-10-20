@@ -21,6 +21,7 @@ import { useGetMaterialHistory } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import StockLocation from './stock-location';
+import { SubMaterials } from './sub-materials';
 
 export type { MaterialInfoModel } from './material-info';
 
@@ -371,9 +372,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               <h3 className="Heading-3 text-dg">이 자재가 사용된 제품</h3>
               <MiniBtn
                 text="제품 연결"
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
+                variant="whiteOutline"
                 onClick={() => setIsProductEnrollmentModalOpen(true)}
                 disabled={isViewer || !hasSubscription()}
               />
@@ -391,6 +390,9 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             />
           </div>
 
+          {/* 대체 가능한 원자재 */}
+          <SubMaterials />
+
           {/* 업체별 단가 비교 */}
           <div className="flex flex-col gap-3">
             <div className="flex gap-2 items-center">
@@ -401,9 +403,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               <div className="relative">
                 <MiniBtn
                   text={pricePeriodSelector.selectedPeriod}
-                  textColor="text-dg"
-                  borderColor="border-lg"
-                  hoverColor="hover:bg-bg"
+                  variant="whiteOutline"
                   icon={CaretDown}
                   iconPosition="right"
                   onClick={() => setIsPricePeriodDropdownOpen(true)}
@@ -463,9 +463,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               <div className="relative">
                 <MiniBtn
                   text={stockLogPeriodSelector.selectedPeriod}
-                  textColor="text-dg"
-                  borderColor="border-lg"
-                  hoverColor="hover:bg-bg"
+                  variant="whiteOutline"
                   icon={CaretDown}
                   iconPosition="right"
                   onClick={() => setIsStockLogPeriodDropdownOpen(true)}
