@@ -23,6 +23,7 @@ import {
 import DeleteModal from '@/ui/modal/delete-modal';
 import ProductDetailPanel from '@/app/(with-layout)/stock/product/product-detail';
 import StockLocationModal from '../../modals/stock-location-modal';
+import { MaterialPackagingDetailModal } from '../modals/material-packaging-detail-modal';
 
 interface LocationModel {
   id: number;
@@ -62,6 +63,10 @@ const MaterialDetailPanel = ({
     useState(false);
   // const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [
+    isMaterialPackagingDetailModalOpen,
+    setIsMaterialPackagingDetailModalOpen,
+  ] = useState(false);
 
   // ClientDetailPanel 관련 상태
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
@@ -383,6 +388,9 @@ const MaterialDetailPanel = ({
           }}
           clientWasModified={hasClientBeenModified}
           productWasModified={hasProductBeenModified}
+          setIsMaterialPackagingDetailModalOpen={
+            setIsMaterialPackagingDetailModalOpen
+          }
         />
       </Panel>
 
@@ -444,20 +452,24 @@ const MaterialDetailPanel = ({
           }}
         />
       )}
-
-      {/* 창고 추가 모달 열기 */}
+      {/* 창고 추가 모달 */}
       {isUploadModalOpen && (
         <StockLocationModal
           mode="add"
           onClose={() => setIsUploadModalOpen(false)}
         />
       )}
-
       {/* 제품 연결하기에서 삭제 버튼 누를 시 모달 */}
       {isDeleteModalOpen && (
         <DeleteModal
           onClose={() => setIsDeleteModalOpen(false)}
           onDelete={handleConfirmDelete}
+        />
+      )}
+      {/* 원자재 소분내역 디테일 모달 */}
+      {isMaterialPackagingDetailModalOpen && (
+        <MaterialPackagingDetailModal
+          onClose={() => setIsMaterialPackagingDetailModalOpen(false)}
         />
       )}
 

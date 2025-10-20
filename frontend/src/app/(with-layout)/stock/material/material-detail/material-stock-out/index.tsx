@@ -2,9 +2,7 @@ import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 
-interface MaterialStockOutProps {}
-
-export const MaterialStockOut = ({}: MaterialStockOutProps) => {
+export const MaterialStockOut = () => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(

@@ -49,6 +49,7 @@ interface MaterialDetailProps {
   clientWasModified?: boolean; // 클라이언트가 실제로 수정되어 저장되었는지
   productWasModified?: boolean; // 제품이 실제로 연결/삭제되었는지
   showToast?: (text: string, subtext: string) => void;
+  setIsMaterialPackagingDetailModalOpen: (v: boolean) => void;
 }
 
 const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
@@ -65,6 +66,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       onProductClick,
       clientWasModified,
       productWasModified,
+      setIsMaterialPackagingDetailModalOpen,
     },
     ref
   ) => {
@@ -110,23 +112,23 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     // 기간 선택 드롭다운 상태
     const [isPricePeriodDropdownOpen, setIsPricePeriodDropdownOpen] =
       useState(false);
-    const [isStockLogPeriodDropdownOpen, setIsStockLogPeriodDropdownOpen] =
-      useState(false);
+    // const [isStockLogPeriodDropdownOpen, setIsStockLogPeriodDropdownOpen] =
+    //   useState(false);
 
     // 업체별 단가 비교 조회 훅 (타입: 구매만)
     const { getMaterialHistory: getPriceHistory, histories: priceHistories } =
       useGetMaterialHistory();
 
     // 재고 이력 조회 훅 (전체)
-    const {
-      getMaterialHistory: getStockHistory,
-      histories: stockHistories,
-      isLoading: isStockLoading,
-    } = useGetMaterialHistory();
+    // const {
+    //   getMaterialHistory: getStockHistory,
+    //   histories: stockHistories,
+    //   isLoading: isStockLoading,
+    // } = useGetMaterialHistory();
 
     // 페이지네이션 상태 (각 섹션별로 독립적)
     const [priceCurrentPage, setPriceCurrentPage] = useState(1);
-    const [stockCurrentPage, setStockCurrentPage] = useState(1);
+    // const [stockCurrentPage, setStockCurrentPage] = useState(1);
     const pageSize = 5;
 
     // 업체별 단가 비교 기간 선택 훅
@@ -149,22 +151,22 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     });
 
     // 재고 이력 기간 선택 훅
-    const stockLogPeriodSelector = usePeriodSelector({
-      materialId,
-      page: stockCurrentPage,
-      pageSize,
-      onPeriodChange: async (filters) => {
-        if (materialId) {
-          await getStockHistory({
-            material_id: materialId,
-            start_date: filters.start_date as string | undefined,
-            end_date: filters.end_date as string | undefined,
-            page: filters.page as number,
-            page_size: pageSize,
-          });
-        }
-      },
-    });
+    // const stockLogPeriodSelector = usePeriodSelector({
+    //   materialId,
+    //   page: stockCurrentPage,
+    //   pageSize,
+    //   onPeriodChange: async (filters) => {
+    //     if (materialId) {
+    //       await getStockHistory({
+    //         material_id: materialId,
+    //         start_date: filters.start_date as string | undefined,
+    //         end_date: filters.end_date as string | undefined,
+    //         page: filters.page as number,
+    //         page_size: pageSize,
+    //       });
+    //     }
+    //   },
+    // });
 
     // 업체별 단가 비교 페이지 변경 핸들러
     const handlePricePageChange = (page: number) => {
@@ -181,16 +183,16 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     };
 
     // 재고 이력 페이지 변경 핸들러 (타입: 전체)
-    const handleStockPageChange = (page: number) => {
-      setStockCurrentPage(page);
-      if (materialId) {
-        getStockHistory({
-          material_id: materialId,
-          page,
-          page_size: pageSize,
-        });
-      }
-    };
+    // const handleStockPageChange = (page: number) => {
+    //   setStockCurrentPage(page);
+    //   if (materialId) {
+    //     getStockHistory({
+    //       material_id: materialId,
+    //       page,
+    //       page_size: pageSize,
+    //     });
+    //   }
+    // };
 
     // watch와 setValue 함수를 메모이제이션
     const memoizedWatch = useCallback(
@@ -459,7 +461,11 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           <MaterialStockIn />
 
           {/* 원자재 소분 내역 */}
-          <MaterialPackaging />
+          <MaterialPackaging
+            setIsMaterialPackagingDetailModalOpen={
+              setIsMaterialPackagingDetailModalOpen
+            }
+          />
 
           {/* 원자재 사용 내역 */}
           <MaterialStockOut />

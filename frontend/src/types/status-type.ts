@@ -259,3 +259,14 @@ export const MaterialTypeColorMap: Record<MaterialType, StatusColorModel> = {
   rawMaterial: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
   subMaterial: { textColor: 'text-green', bgColor: 'bg-green-8' },
 };
+
+// 원자재 상태
+export type MaterialStatusType = 'using' | 'used' | 'pending';
+export const MaterialStatusTypeColorMap: Record<
+  MaterialStatusType,
+  StatusColorModel
+> = {
+  using: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
+  used: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
+  pending: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
+};

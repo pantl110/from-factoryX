@@ -3,9 +3,7 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { SubMaterialItem } from './sub-material-item';
 
-interface SubMaterialsProps {}
-
-export const SubMaterials = ({}: SubMaterialsProps) => {
+export const SubMaterials = () => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(

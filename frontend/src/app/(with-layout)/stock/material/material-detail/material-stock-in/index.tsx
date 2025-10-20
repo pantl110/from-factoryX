@@ -2,9 +2,7 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { MaterialStockInItem } from './material-stock-in-item';
 
-interface MaterialStockInProps {}
-
-export const MaterialStockIn = ({}: MaterialStockInProps) => {
+export const MaterialStockIn = () => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
