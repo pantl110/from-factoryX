@@ -8,6 +8,7 @@ import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { ProductionResultPanel } from './production-result-panel';
 
 interface ProductionLogTableItemProps {
   plan: ProjectPlanModel;
@@ -52,6 +53,8 @@ const ProductionLogTableItem = ({
   });
 
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
+  const [isProductionResultPanelOpen, setIsProductionResultPanelOpen] =
+    useState(false);
 
   // 부모에 유효성 변경 알림
   useEffect(() => {
@@ -226,15 +229,21 @@ const ProductionLogTableItem = ({
           <div className="w-[150px] px-3">
             <MiniBtn
               text="저장"
-              textColor="text-dg"
-              borderColor="border-lg"
-              hoverColor="hover:bg-bg"
+              variant="whiteOutline"
               height="h-8"
               onClick={onSave}
               disabled={!hasChanges || !formState.isValid}
             />
           </div>
         )}
+
+        {/* 임시 버튼~~~ */}
+        <MiniBtn
+          text="결과 입력"
+          variant="secondary"
+          height="h-8"
+          onClick={() => setIsProductionResultPanelOpen(true)}
+        />
 
         {/* 제품 디테일 판넬 보기 */}
         {isProductDetailOpen && (
@@ -244,6 +253,13 @@ const ProductionLogTableItem = ({
           />
         )}
       </div>
+
+      {/* 생산 결과 입력 판넬 */}
+      {isProductionResultPanelOpen && (
+        <ProductionResultPanel
+          onClose={() => setIsProductionResultPanelOpen(false)}
+        />
+      )}
     </>
   );
 };

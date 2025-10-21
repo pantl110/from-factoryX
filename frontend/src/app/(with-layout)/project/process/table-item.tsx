@@ -268,7 +268,7 @@ const TableItem = ({
             <CopySimple size={20} className="text-dg" />
           </button>
         ) : (
-          <div className="w-9" />
+          <></>
         )}
       </div>
 

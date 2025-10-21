@@ -11,7 +11,7 @@ export const SubMaterialItem = () => {
     (state) => state.hasSubscription
   );
   return (
-    <div className="flex items-center h-14 border-b border-lg hover:border hover:border-primary Me_Body-1 group cursor-default">
+    <div className="flex items-center h-14 border-b border-lg transition-colors duration-200 ease-in-out Me_Body-1 group cursor-default">
       <div
         className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0"
         // title={productName}
