@@ -8,7 +8,7 @@ interface BuyerInfoProps {
 const BuyerInfo = ({ quotationData }: BuyerInfoProps) => {
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3 h-10 items-center flex">구매처 정보</h3>
+      <h3 className="Heading-3 h-10 items-center flex">거래처 정보</h3>
       <div className="width-full border-b border-lg">
         <div className="flex">
           <InfoLabelValue label="회사명" value={quotationData.factory_name} />

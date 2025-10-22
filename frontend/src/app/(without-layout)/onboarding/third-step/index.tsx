@@ -10,7 +10,7 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
     <div className="bg-wh z-1 w-[586px] py-10 px-8 flex flex-col gap-4 items-center rounded-lg">
       {/* 컨텐츠 영역 */}
       <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-2 items-center">
+        <div className="flex flex-col gap-1 items-center">
           <h3 className="Heading-3 text-primary">
             팩토리엑스에 오신 걸 환영합니다!
           </h3>
@@ -26,15 +26,15 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
             <span className="text-primary">제품과 원자재를 미리 등록</span>
             해두면
             <br />
-            팩토리엑스를 더욱 효율적으로 활용하실 수 있습니다.
+            팩토리엑스를 더욱 효율적으로 활용하실 수 있어요.
           </div>
         </div>
       </div>
 
       {/* 모달버튼 영역 */}
       <div className="w-full flex justify-end gap-2.5">
-        <MiniBtn text="이전 단계" variant="white" onClick={onPrevStep} />
-        <MiniBtn text="시작하기" variant="primary" onClick={onNextStep} />
+        <MiniBtn text="이전" variant="white" onClick={onPrevStep} />
+        <MiniBtn text="시작" variant="primary" onClick={onNextStep} />
       </div>
     </div>
   );

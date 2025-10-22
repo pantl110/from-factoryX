@@ -280,19 +280,12 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
 
   return (
     <>
-      <div className="bg-wh z-1 w-[800px] pt-10 px-8 flex flex-col gap-7 items-center rounded-lg max-h-[85vh]">
-        <div className="flex flex-col gap-8 w-full">
+      <div className="bg-wh z-1 w-[800px] pt-10 px-8 flex flex-col gap-6 items-center rounded-lg max-h-[85vh]">
+        <div className="flex flex-col gap-7 w-full">
           {/* 타이틀 영역 */}
-          <div className="flex flex-col gap-2 items-center">
-            <h3 className="Heading-3 text-primary">
-              해당 제품을 만들 때 필요한 원자재를 추가해 주세요.
-            </h3>
-            <div className="Me_Body-2 text-bl text-center">
-              운영을 시작하려면 먼저 제품과 설비 정보를 등록해야 해요.
-              <br />
-              등록이 완료되면 생산부터 재고까지 한눈에 관리할 수 있어요!
-            </div>
-          </div>
+          <h3 className="Heading-3 text-primary flex justify-center">
+            해당 제품을 만들 때 필요한 원자재를 추가해 주세요.
+          </h3>
 
           {/* 표 영역  */}
           <div className="w-full">
@@ -346,7 +339,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
           </div>
 
           {/* 모달버튼 영역 */}
-          <div className="w-full flex justify-end gap-2.5 mb-8">
+          <div className="w-full flex justify-end gap-2.5 mb-10">
             <MiniBtn
               text="이전"
               variant="white"

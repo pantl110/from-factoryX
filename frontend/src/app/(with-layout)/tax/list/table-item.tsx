@@ -46,7 +46,6 @@ const TableItem = ({
           textColor={textColor}
         />
       </div>
-      <p className="w-[150px] px-3 text-dg">{item.transaction_date}</p>
       <p
         className="flex-2 px-3 text-dg truncate"
         title={item.client_info?.name || '-'}
@@ -66,19 +65,19 @@ const TableItem = ({
         ) || '-'}
       </p>
       <p
-        className="flex-2 px-3 text-dg truncate"
+        className="flex-[1.5] px-3 text-dg truncate"
         title={item.transaction_amount?.toLocaleString() || '0'}
       >
         {item.transaction_amount?.toLocaleString() || '0'}
       </p>
       <p
-        className="flex-2 px-3 text-dg truncate"
+        className="flex-[1.5] px-3 text-dg truncate"
         title={item.tax_amount?.toLocaleString() || '0'}
       >
         {item.tax_amount?.toLocaleString() || '0'}
       </p>
       <p
-        className="flex-2 px-3 text-dg truncate"
+        className="flex-[1.5] px-3 text-dg truncate"
         title={
           (
             (item.transaction_amount || 0) + (item.tax_amount || 0)

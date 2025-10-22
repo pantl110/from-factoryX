@@ -1,3 +1,5 @@
+'use client';
+
 import { TaxDocumentType } from '@/types/status-type';
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
@@ -26,9 +28,7 @@ const MainTitleSec = ({
           <div className="Heading-1 text-dg">세금계산서 내역</div>
           <MiniBtn
             text="세금계산서 생성"
-            textColor="text-wh"
-            bgColor="bg-primary"
-            hoverColor="hover:bg-primary-hover"
+            variant="primary"
             onClick={() => {
               setIsCreatTaxPanelOpen(true);
             }}

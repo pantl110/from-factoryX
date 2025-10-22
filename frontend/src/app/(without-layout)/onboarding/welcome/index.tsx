@@ -92,7 +92,7 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
 
   return (
     <div className="bg-wh z-1 w-[600px] py-10 px-8 flex flex-col items-center rounded-lg">
-      <h3 className="Heading-3 text-primary mb-2">
+      <h3 className="Heading-3 text-primary mb-1">
         이제 공장을 본격적으로 운영해볼까요?
       </h3>
       <p className="Me_Body-2 text-center">

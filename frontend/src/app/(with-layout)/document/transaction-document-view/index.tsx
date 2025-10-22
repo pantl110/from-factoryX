@@ -38,7 +38,7 @@ const TransactionDocumentView = ({
         }}
       />
       <ProductListInfo
-        productListInfoTitle="거래 제품 정보"
+        productListInfoTitle="주문 제품 정보"
         productItems={quotationData.products_info.map((item) => ({
           productId: item.id,
           product_code: item.code,

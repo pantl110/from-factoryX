@@ -124,18 +124,11 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
 
   return (
     <div className="bg-wh z-1 w-[800px] py-10 px-8 flex flex-col items-center rounded-lg">
-      <div className="flex flex-col gap-8 w-full">
+      <div className="flex flex-col gap-7 w-full">
         {/* 타이틀 영역 */}
-        <div className="flex flex-col gap-2 items-center">
-          <h3 className="Heading-3 text-primary">
-            등록할 제품 정보를 입력해주세요.
-          </h3>
-          <div className="Me_Body-2 text-bl text-center">
-            운영을 시작하려면 먼저 제품과 설비 정보를 등록해야 해요.
-            <br />
-            등록이 완료되면 생산부터 재고까지 한눈에 관리할 수 있어요!
-          </div>
-        </div>
+        <h3 className="Heading-3 text-primary flex justify-center">
+          등록할 제품 정보를 입력해주세요.
+        </h3>
 
         {/* input container */}
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-7">
