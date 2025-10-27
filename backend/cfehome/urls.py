@@ -46,8 +46,11 @@ from tax.api_cash_receipt import router as cashReceipt_router
 from subscription.api import router as subscription_router
 from notification.api import router as notification_router
 from scheduling.api import router as scheduling_router
+
+from unit_conversion.api import router as unit_conversion_router
 from django.contrib.admin.views.decorators import staff_member_required
 from cfehome.views import websocket_test, websocket_test_local
+
 
 base_api = NinjaAPI(
     title="Factory X API",
@@ -91,6 +94,7 @@ base_api.add_router("v1/receipt", cashReceipt_router)
 base_api.add_router("v1/subscription", subscription_router)
 base_api.add_router("v1/notification", notification_router)
 base_api.add_router("v1/scheduling", scheduling_router)
+base_api.add_router("v1/unit-conversion", unit_conversion_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

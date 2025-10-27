@@ -16,10 +16,10 @@ async def verify_factory_ownership(factory_id: int, user=None):
         raise HttpError(404, "해당 공장이 존재하지 않거나 접근 권한이 없습니다.")
 
 
-async def get_product_by_id(product_id: int, user=None):
+async def get_product_by_id(product_id: int, factory_id: int):
     try:
         product = await Product.objects.select_related("factory").aget(
-            id=product_id, factory__owner=user
+            id=product_id, factory_id=factory_id
         )
         return product
     except Product.DoesNotExist:
@@ -46,9 +46,20 @@ async def get_history_by_id(history_id: int, user=None):
         return product_history
     except ProductHistory.DoesNotExist:
         raise HttpError(404, "해당 입출고 이력이 존재하지 않습니다.")
+    
+
+async def get_material_by_id(material_id: int, factory_id: int):
+    """원자재 ID로 원자재를 조회합니다."""
+    try:
+        material = await Material.objects.aget(
+            id=material_id, factory_id=factory_id
+        )
+        return material
+    except Material.DoesNotExist:
+        raise HttpError(404, "해당 원자재가 존재하지 않습니다.")
 
 
-async def get_material_by_id(material_id: int, factory_id: int, user=None):
+async def get_material_by_id_with_ownership(material_id: int, factory_id: int, user=None):
     """원자재 ID로 원자재를 조회하고 공장 소유권을 검증합니다."""
     try:
         material = await Material.objects.aget(
@@ -96,7 +107,7 @@ async def get_material_history_by_material(
 ):
     """원자재의 히스토리를 조회합니다."""
     # 원자재 소유권 검증
-    await get_material_by_id(material_id, factory_id, user)
+    await get_material_by_id_with_ownership(material_id, factory_id, user)
 
     queryset = MaterialHistory.objects.filter(
         material_id=material_id, material__factory__owner=user
@@ -126,7 +137,7 @@ async def create_material_history(
 ):
     """원자재 히스토리를 생성하고 재고를 업데이트합니다."""
     # 원자재 소유권 검증 - user를 직접 전달
-    await get_material_by_id(material.id, material.factory_id, user)
+    await get_material_by_id_with_ownership(material.id, material.factory_id, user)
 
     if type == MaterialHistory.MaterialHistoryType.purchase:
         material.current_stock += quantity

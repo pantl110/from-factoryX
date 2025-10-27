@@ -79,6 +79,8 @@ INSTALLED_APPS = [
     "location",
     "barobill",
     "scheduling",
+    # v2
+    "unit_conversion",
 ]
 
 MIDDLEWARE = [
