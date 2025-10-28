@@ -1,0 +1,248 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import useMemberStore from '@/store/member-store';
+
+export interface UnitConversionModel {
+  id: number;
+  factory: number;
+  material: number | null;
+  product: number | null;
+  from_unit: string | null;
+  to_unit: string | null;
+  conversion_rate: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface UnitConversionCreatePayload {
+  factory_id: number;
+  material_id?: number | null;
+  product_id?: number | null;
+  from_unit?: string | null;
+  to_unit?: string | null;
+  conversion_rate?: number;
+}
+
+type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+
+type UnitConversionEndpoint =
+  | 'list'
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'by-material'
+  | 'by-product';
+
+interface CallOptions {
+  method?: HttpMethod;
+  body?: unknown;
+  // Will be appended to URL as search params
+  queryParams?: Record<string, string | number | boolean | null | undefined>;
+  // Path params
+  unit_conversion_id?: number;
+  material_id?: number;
+  product_id?: number;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
+const useUnitConversionApi = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { factoryId } = useMemberStore();
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const call = useCallback(
+    async <T = unknown>(
+      endpoint: UnitConversionEndpoint,
+      options: CallOptions = {}
+    ): Promise<ApiResponse<T>> => {
+      // cancel previous
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+      abortControllerRef.current = new AbortController();
+      const { signal } = abortControllerRef.current;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        if (!factoryId) {
+          return {
+            success: false,
+            error: '공장 정보가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.',
+          };
+        }
+
+        const { method = 'GET', body, queryParams = {} } = options;
+
+        // Build URL
+        let url = `${API_BASE}/v1/unit-conversion`;
+        if (endpoint === 'update' || endpoint === 'delete') {
+          if (!options.unit_conversion_id)
+            throw new Error('unit_conversion_id가 필요합니다.');
+          url += `/${options.unit_conversion_id}`;
+        } else if (endpoint === 'by-material') {
+          if (!options.material_id) throw new Error('material_id가 필요합니다.');
+          url += `/material/${options.material_id}`;
+        } else if (endpoint === 'by-product') {
+          if (!options.product_id) throw new Error('product_id가 필요합니다.');
+          url += `/product/${options.product_id}`;
+        } else if (endpoint === 'create' || endpoint === 'list') {
+          // keep base
+        }
+
+        // Ensure factory_id in query string for GET/DELETE and list/detail
+        const qs = new URLSearchParams();
+        const qp: Record<string, string | number | boolean | null | undefined> = {
+          ...queryParams,
+          factory_id: queryParams.factory_id ?? factoryId,
+        } as Record<string, unknown> as CallOptions['queryParams'];
+
+        Object.entries(qp).forEach(([k, v]) => {
+          if (v !== undefined && v !== null) qs.append(k, String(v));
+        });
+        const fullUrl = qs.toString() ? `${url}?${qs.toString()}` : url;
+
+        const resp = await fetch(fullUrl, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: body ? JSON.stringify(body) : undefined,
+          signal,
+        });
+
+        if (signal.aborted) return { success: false, error: '요청이 취소되었습니다.' };
+
+        if (!resp.ok) {
+          let message = 'API 요청에 실패했습니다.';
+          try {
+            const errData = await resp.json();
+            message = errData.detail || errData.message || message;
+          } catch {
+            // noop
+          }
+          throw new Error(message);
+        }
+
+        // DELETE 204 has no body
+        if (resp.status === 204) return { success: true } as ApiResponse<T>;
+
+        const data = (await resp.json()) as T;
+        return { success: true, data };
+      } catch (err) {
+        if ((err as any)?.name === 'AbortError')
+          return { success: false, error: '요청이 취소되었습니다.' };
+        const msg = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+        setError(msg);
+        return { success: false, error: msg };
+      } finally {
+        if (!abortControllerRef.current?.signal.aborted) setIsLoading(false);
+      }
+    },
+    [factoryId]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+    };
+  }, []);
+
+  // Helper methods with types
+  const create = useCallback(
+    async (payload: Omit<UnitConversionCreatePayload, 'factory_id'> & { factory_id?: number }) => {
+      const body: UnitConversionCreatePayload = {
+        factory_id: payload.factory_id ?? (factoryId as number),
+        material_id: payload.material_id ?? null,
+        product_id: payload.product_id ?? null,
+        from_unit: payload.from_unit ?? null,
+        to_unit: payload.to_unit ?? null,
+        conversion_rate: payload.conversion_rate ?? 1,
+      };
+      return call<UnitConversionModel>('create', { method: 'POST', body });
+    },
+    [call, factoryId]
+  );
+
+  const list = useCallback(
+    async (params?: { page?: number; page_size?: number }) => {
+      return call<UnitConversionModel[]>('list', {
+        method: 'GET',
+        queryParams: {
+          factory_id: factoryId as number,
+          page: params?.page,
+          page_size: params?.page_size,
+        },
+      });
+    },
+    [call, factoryId]
+  );
+
+  const getByMaterial = useCallback(
+    async (materialId: number) => {
+      return call<UnitConversionModel[]>('by-material', {
+        method: 'GET',
+        material_id: materialId,
+        queryParams: { factory_id: factoryId as number },
+      });
+    },
+    [call, factoryId]
+  );
+
+  const getByProduct = useCallback(
+    async (productId: number) => {
+      return call<UnitConversionModel[]>('by-product', {
+        method: 'GET',
+        product_id: productId,
+        queryParams: { factory_id: factoryId as number },
+      });
+    },
+    [call, factoryId]
+  );
+
+  const update = useCallback(
+    async (
+      unitConversionId: number,
+      payload: Partial<Omit<UnitConversionCreatePayload, 'factory_id'>> & { factory_id?: number }
+    ) => {
+      const body: Partial<UnitConversionCreatePayload> = {
+        factory_id: payload.factory_id ?? (factoryId as number),
+        material_id: payload.material_id,
+        product_id: payload.product_id,
+        from_unit: payload.from_unit,
+        to_unit: payload.to_unit,
+        conversion_rate: payload.conversion_rate,
+      };
+      return call<UnitConversionModel>('update', {
+        method: 'PATCH',
+        unit_conversion_id: unitConversionId,
+        body,
+      });
+    },
+    [call, factoryId]
+  );
+
+  const remove = useCallback(
+    async (unitConversionId: number) => {
+      return call<void>('delete', {
+        method: 'DELETE',
+        unit_conversion_id: unitConversionId,
+        queryParams: { factory_id: factoryId as number },
+      });
+    },
+    [call, factoryId]
+  );
+
+  return { call, create, list, getByMaterial, getByProduct, update, remove, isLoading, error };
+};
+
+export default useUnitConversionApi;
+
+
