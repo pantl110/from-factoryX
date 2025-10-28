@@ -94,7 +94,7 @@ base_api.add_router("v1/receipt", cashReceipt_router)
 base_api.add_router("v1/subscription", subscription_router)
 base_api.add_router("v1/notification", notification_router)
 base_api.add_router("v1/scheduling", scheduling_router)
-base_api.add_router("v1/unit-conversion", unit_conversion_router)
+base_api.add_router("v2/unit-conversion", unit_conversion_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
