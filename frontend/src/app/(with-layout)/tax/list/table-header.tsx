@@ -1,4 +1,3 @@
-import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr';
 import Checkbox from '@/ui/checkbox';
 
 interface TableHeaderProps {
@@ -11,7 +10,7 @@ interface TableHeaderProps {
 
 const TableHeader = ({
   onToggleAll,
-  onSortClick,
+  // onSortClick,
   isAllChecked,
 }: TableHeaderProps) => {
   return (
