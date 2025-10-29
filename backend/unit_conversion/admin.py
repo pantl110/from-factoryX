@@ -11,7 +11,9 @@ class UnitConversionAdmin(admin.ModelAdmin):
         "product",
         "from_unit",
         "to_unit",
-        "conversion_rate",
+        "from_quantity",
+        "to_quantity",
+        "decimal_rule",
         "created_at",
     ]
     list_filter = ["factory", "from_unit", "to_unit", "created_at"]
@@ -36,7 +38,9 @@ class UnitConversionAdmin(admin.ModelAdmin):
                     "product",
                     "from_unit",
                     "to_unit",
-                    "conversion_rate",
+                    "from_quantity",
+                    "to_quantity",
+                    "decimal_rule",
                 )
             },
         ),

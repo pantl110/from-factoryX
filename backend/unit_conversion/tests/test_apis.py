@@ -82,7 +82,9 @@ class TestUnitConversionAPI(TestCase):
             material=self.material,
             from_unit="kg",
             to_unit="g",
-            conversion_rate=Decimal("1000.0000"),
+            from_quantity=1,
+            to_quantity=1000,
+            decimal_rule='round',
         )
 
     async def authenticate(self):
@@ -114,7 +116,8 @@ class TestUnitConversionAPI(TestCase):
             "material_id": self.material.id,
             "from_unit": "m",
             "to_unit": "cm",
-            "conversion_rate": "100.0000",
+            "from_quantity": 1,
+            "to_quantity": 100,
         }
         
         response = await self.client.post(
@@ -130,7 +133,8 @@ class TestUnitConversionAPI(TestCase):
         self.assertEqual(response_data["material"], self.material.id)
         self.assertEqual(response_data["from_unit"], "m")
         self.assertEqual(response_data["to_unit"], "cm")
-        self.assertEqual(float(response_data["conversion_rate"]), 100.0)
+        self.assertEqual(float(response_data["from_quantity"]), 1.0)
+        self.assertEqual(float(response_data["to_quantity"]), 100.0)
 
     async def test_create_unit_conversion_with_product(self):
         """제품과 함께 단위변환 생성 테스트"""
@@ -141,7 +145,8 @@ class TestUnitConversionAPI(TestCase):
             "product_id": self.product.id,
             "from_unit": "EA",
             "to_unit": "개",
-            "conversion_rate": "1.0000",
+            "from_quantity": 1,
+            "to_quantity": 1,
         }
         
         response = await self.client.post(
@@ -165,7 +170,8 @@ class TestUnitConversionAPI(TestCase):
             "factory_id": self.factory.id,
             "from_unit": "L",
             "to_unit": "mL",
-            "conversion_rate": "1000.0000",
+            "from_quantity": 1,
+            "to_quantity": 1000,
         }
         
         response = await self.client.post(
@@ -190,7 +196,8 @@ class TestUnitConversionAPI(TestCase):
             "material_id": self.material.id,
             "from_unit": "m",
             "to_unit": "cm",
-            "conversion_rate": "100.0000",
+            "from_quantity": 1,
+            "to_quantity": 100,
         }
         
         response = await self.client.post(
@@ -208,7 +215,8 @@ class TestUnitConversionAPI(TestCase):
             "material_id": self.material.id,
             "from_unit": "m",
             "to_unit": "cm",
-            "conversion_rate": "100.0000",
+            "from_quantity": 1,
+            "to_quantity": 100,
         }
         
         response = await self.client.post("/", json=data)
@@ -270,7 +278,9 @@ class TestUnitConversionAPI(TestCase):
             product=self.product,
             from_unit="EA",
             to_unit="개",
-            conversion_rate=Decimal("1.0000"),
+            from_quantity=1,
+            to_quantity=1,
+            decimal_rule='round',
         )
         
         response = await self.client.get(
@@ -318,7 +328,7 @@ class TestUnitConversionAPI(TestCase):
         data = {
             "factory_id": self.factory.id,
             "to_unit": "pound",
-            "conversion_rate": 2.2046,
+            "to_quantity": 2.2046,
         }
         
         response = await self.client.patch(
@@ -332,7 +342,7 @@ class TestUnitConversionAPI(TestCase):
         
         self.assertEqual(response_data["from_unit"], "kg")  # 기존 값 유지
         self.assertEqual(response_data["to_unit"], "pound")
-        self.assertEqual(float(response_data["conversion_rate"]), 2.2046)
+        self.assertEqual(float(response_data["to_quantity"]), 2.2046)
 
     async def test_update_unit_conversion_partial(self):
         """단위변환 부분 수정 테스트"""
@@ -341,7 +351,7 @@ class TestUnitConversionAPI(TestCase):
         # 일부 필드만 수정
         data = {
             "factory_id": self.factory.id,
-            "conversion_rate": 500.0,
+            "to_quantity": 500.0,
         }
         
         response = await self.client.patch(
@@ -356,7 +366,7 @@ class TestUnitConversionAPI(TestCase):
         # 수정되지 않은 필드는 기존 값 유지
         self.assertEqual(response_data["from_unit"], "kg")
         self.assertEqual(response_data["to_unit"], "g")
-        self.assertEqual(float(response_data["conversion_rate"]), 500.0)
+        self.assertEqual(float(response_data["to_quantity"]), 500.0)
 
     async def test_update_unit_conversion_not_found(self):
         """존재하지 않는 단위변환 수정 시도 테스트"""
@@ -364,7 +374,7 @@ class TestUnitConversionAPI(TestCase):
         
         data = {
             "factory_id": self.factory.id,
-            "conversion_rate": 2.2046,
+            "to_quantity": 2.2046,
         }
         
         response = await self.client.patch(
@@ -382,7 +392,7 @@ class TestUnitConversionAPI(TestCase):
         
         data = {
             "factory_id": self.factory.id,
-            "conversion_rate": 2.2046,
+            "to_quantity": 2.2046,
         }
         
         response = await self.client.patch(
@@ -460,7 +470,8 @@ class TestUnitConversionAPI(TestCase):
             "product_id": 99999,
             "from_unit": "EA",
             "to_unit": "개",
-            "conversion_rate": "1.0000",
+            "from_quantity": 1,
+            "to_quantity": 1,
         }
         
         response = await self.client.post(
@@ -479,7 +490,8 @@ class TestUnitConversionAPI(TestCase):
             "material_id": self.material.id,
             "from_unit": "m",
             "to_unit": "cm",
-            "conversion_rate": "100.0000",
+            "from_quantity": 1,
+            "to_quantity": 100,
         }
         
         response = await self.client.post(
@@ -499,7 +511,8 @@ class TestUnitConversionAPI(TestCase):
             "material_id": self.material.id,
             "from_unit": "m",
             "to_unit": "cm",
-            "conversion_rate": "invalid_rate",
+            "from_quantity": "invalid_qty",
+            "to_quantity": 100,
         }
         
         response = await self.client.post(
