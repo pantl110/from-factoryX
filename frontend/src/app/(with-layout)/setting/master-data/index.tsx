@@ -15,10 +15,12 @@ import {
   useCheckAll,
   useDeleteEquipment,
   useDeleteClient,
+  useUnitConversionApi,
 } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import Unit from './unit';
+import { UnitConversionModel } from '@/types/data-model';
 
 const MasterData = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
@@ -45,6 +47,11 @@ const MasterData = () => {
 
   // 거래처 목록 가져옴
   const { clientList, isLoading: isClientLoading, getClients } = useGetClient();
+
+  // 단위 변환 API
+  const { list: getUnitList, isLoading: isUnitLoading } =
+    useUnitConversionApi();
+  const [unitList, setUnitList] = useState<UnitConversionModel[]>([]);
 
   // 디바운스된 검색어 (300ms)
   const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
@@ -115,6 +122,7 @@ const MasterData = () => {
   // 검색과 무관한 전체 개수(칩 표시용) - 초기 로딩 시 한 번만 저장
   const [equipmentTotal, setEquipmentTotal] = useState<number | null>(null);
   const [clientTotal, setClientTotal] = useState<number | null>(null);
+  const [unitTotal, setUnitTotal] = useState<number | null>(null);
 
   // 현재 탭에 따라 상태/함수 선택
   const checkedCount =
@@ -125,6 +133,16 @@ const MasterData = () => {
       : getClientDeleteButtonText;
   const setAllChecked =
     settingChip === 'equipment' ? facilitySetAllChecked : clientSetAllChecked;
+
+  // 단위 목록 가져오기
+  const fetchUnitList = useCallback(async () => {
+    if (!factoryId) return;
+    const result = await getUnitList();
+    if (result.success && result.data) {
+      setUnitList(result.data.data || []);
+      setUnitTotal(result.data.totalCnt || 0);
+    }
+  }, [factoryId, getUnitList]);
 
   // 페이지 로드 시 설비와 거래처 데이터 초기 로딩
   useEffect(() => {
@@ -137,8 +155,20 @@ const MasterData = () => {
       if (!clientList) {
         getClients();
       }
+      // 단위 데이터 로딩
+      if (unitList.length === 0) {
+        fetchUnitList();
+      }
     }
-  }, [factoryId, equipmentList, clientList, refetchEquipment, getClients]);
+  }, [
+    factoryId,
+    equipmentList,
+    clientList,
+    refetchEquipment,
+    getClients,
+    unitList.length,
+    fetchUnitList,
+  ]);
 
   // 검색어가 없을 때 totalCnt를 저장 (단, 이미 저장된 값이 있으면 업데이트하지 않음)
   useEffect(() => {
@@ -314,7 +344,8 @@ const MasterData = () => {
     // 로딩 중일 때 스피너 표시
     if (
       (settingChip === 'equipment' && isEquipmentLoading) ||
-      (settingChip === 'client' && isClientLoading)
+      (settingChip === 'client' && isClientLoading) ||
+      (settingChip === 'unit' && isUnitLoading)
     ) {
       return (
         <div className="flex justify-center items-center py-20">
@@ -356,7 +387,7 @@ const MasterData = () => {
           />
         );
       case 'unit':
-        return <Unit />;
+        return <Unit unitList={unitList} refetchUnit={fetchUnitList} />;
       default:
         return null;
     }
@@ -388,8 +419,7 @@ const MasterData = () => {
           padding="px-4"
         />
         <Chip
-          text={`단위 변환 관리 2`}
-          // // ${unitList?.totalCnt ? ` ${unitList.totalCnt}` : ''}
+          text={`단위 변환 관리${typeof unitTotal === 'number' ? ` ${unitTotal}` : ''}`}
           textColor={settingChip === 'unit' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'unit' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"

@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
 import SearchSection from './search-section';
 import NoHistoryBox from '@/ui/no-history-box';
 import { UnitTableHeader } from './unit-table-header';
 import { UnitTableItem } from './unit-table-item';
 import { UnitConversionModel } from '@/types/data-model';
-import useUnitConversionApi from '@/hooks/unit-conversion/use-unit-conversion-api';
 
-const Unit = () => {
-  const unitList = mockUnitConversionData;
-
+interface UnitProps {
+  unitList: UnitConversionModel[];
+  refetchUnit: () => Promise<void>;
+}
+const Unit = ({ unitList, refetchUnit }: UnitProps) => {
   return (
     <>
       <div className="w-full px-10 pb-10">

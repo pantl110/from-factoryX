@@ -1515,6 +1515,10 @@ export interface UnitConversionModel {
   updated_at?: string;
 }
 
+export interface UnitConversionListResponseModel extends PaginationModel {  
+  data: UnitConversionModel[];
+}
+
 import {
   MemberRoleType,
   MemberStatusType,

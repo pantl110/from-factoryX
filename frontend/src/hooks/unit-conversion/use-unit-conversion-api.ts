@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useMemberStore from '@/store/member-store';
-import { UnitConversionModel } from '@/types/data-model';
+import { UnitConversionListResponseModel, UnitConversionModel } from '@/types/data-model';
 import axios from 'axios';
 
 export interface UnitConversionCreatePayload {
@@ -177,7 +177,7 @@ const useUnitConversionApi = () => {
 
   const list = useCallback(
     async (params?: { page?: number; page_size?: number }) => {
-      return call<UnitConversionModel[]>('list', {
+      return call<UnitConversionListResponseModel>('list', {
         method: 'GET',
         queryParams: {
           factory_id: factoryId as number,
@@ -191,7 +191,7 @@ const useUnitConversionApi = () => {
 
   const getByMaterial = useCallback(
     async (materialId: number) => {
-      return call<UnitConversionModel[]>('by-material', {
+      return call<UnitConversionModel>('by-material', {
         method: 'GET',
         material_id: materialId,
         queryParams: { factory_id: factoryId as number },
@@ -202,7 +202,7 @@ const useUnitConversionApi = () => {
 
   const getByProduct = useCallback(
     async (productId: number) => {
-      return call<UnitConversionModel[]>('by-product', {
+      return call<UnitConversionModel>('by-product', {
         method: 'GET',
         product_id: productId,
         queryParams: { factory_id: factoryId as number },
