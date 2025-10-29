@@ -1502,17 +1502,19 @@ export interface BarobillCorpCertModel {
 
 //////////////////////
 // 단위변환 API
+// 단위변환 리스트 조회 
 export interface UnitConversionModel {
   id: number;
   factory: number;
   material: number | null;
   product: number | null;
+  material_name: string | null;
+  product_name: string | null;
   from_unit: string | null;
   to_unit: string | null;
-  conversion_rate: number;
-  decimal_rule: DecimalRuleType; // 소수점 규칙 // 반올림, 버림, 올림 // round, floor, ceil
-  created_at?: string;
-  updated_at?: string;
+  from_quantity: number;
+  to_quantity: number;
+  decimal_rule: DecimalRuleType; // 반올림, 버림, 올림 // round, floor, ceil
 }
 
 export interface UnitConversionListResponseModel extends PaginationModel {  
