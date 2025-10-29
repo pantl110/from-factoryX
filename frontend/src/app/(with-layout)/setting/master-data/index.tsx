@@ -112,6 +112,10 @@ const MasterData = () => {
   // 삭제 모달 상태 관리
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  // 검색과 무관한 전체 개수(칩 표시용) - 초기 로딩 시 한 번만 저장
+  const [equipmentTotal, setEquipmentTotal] = useState<number | null>(null);
+  const [clientTotal, setClientTotal] = useState<number | null>(null);
+
   // 현재 탭에 따라 상태/함수 선택
   const checkedCount =
     settingChip === 'equipment' ? facilityCheckedCount : clientCheckedCount;
@@ -135,6 +139,27 @@ const MasterData = () => {
       }
     }
   }, [factoryId, equipmentList, clientList, refetchEquipment, getClients]);
+
+  // 검색어가 없을 때 totalCnt를 저장 (단, 이미 저장된 값이 있으면 업데이트하지 않음)
+  useEffect(() => {
+    if (
+      !searchKeyword.trim() &&
+      equipmentList?.totalCnt !== undefined &&
+      equipmentTotal === null
+    ) {
+      setEquipmentTotal(equipmentList.totalCnt ?? 0);
+    }
+  }, [searchKeyword, equipmentList, equipmentTotal]);
+
+  useEffect(() => {
+    if (
+      !searchKeyword.trim() &&
+      clientList?.totalCnt !== undefined &&
+      clientTotal === null
+    ) {
+      setClientTotal(clientList.totalCnt ?? 0);
+    }
+  }, [searchKeyword, clientList, clientTotal]);
 
   // 탭 선택 관련
   useEffect(() => {
@@ -195,8 +220,17 @@ const MasterData = () => {
           deleteEquipment(id)
         );
         await Promise.all(deletePromises);
-        // 설비 목록 새로고침
+        // 삭제 후 현재 검색어 유지하면서 설비 목록 리프레시
         await refetchEquipment();
+        // 검색어 없이 전체 개수만 갱신 (목록 상태 변경 없음)
+        const totalRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/equipment?factory_id=${factoryId}&page=1&page_size=1`,
+          { method: 'GET', credentials: 'include' }
+        );
+        if (totalRes.ok) {
+          const totalJson = await totalRes.json();
+          setEquipmentTotal(totalJson?.totalCnt ?? 0);
+        }
       } catch {
         alert('설비 삭제 중 오류가 발생했습니다.');
       }
@@ -220,8 +254,26 @@ const MasterData = () => {
           })
         );
         await Promise.all(deletePromises);
-        // 거래처 목록 새로고침
-        await getClients();
+        // 삭제 후 현재 검색어 유지하면서 리스트 리프레시
+        await getClients({
+          q: debouncedSearchKeyword.trim() || undefined,
+          page: 1,
+          page_size: 10,
+        });
+        // 검색어 없이 전체 개수만 갱신 (리스트 상태 변경 없음)
+        const totalParams = new URLSearchParams({
+          factory_id: factoryId.toString(),
+          page: '1',
+          page_size: '1',
+        });
+        const totalRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/client?${totalParams.toString()}`,
+          { method: 'GET', credentials: 'include' }
+        );
+        if (totalRes.ok) {
+          const totalJson = await totalRes.json();
+          setClientTotal(totalJson?.totalCnt ?? 0);
+        }
       } catch {
         alert('거래처 삭제 중 오류가 발생했습니다.');
       }
@@ -314,7 +366,7 @@ const MasterData = () => {
     <div className="w-full">
       <div className="flex gap-1 px-10 pb-5">
         <Chip
-          text={`설비 관리${equipmentList?.totalCnt ? ` ${equipmentList.totalCnt}` : ''}`}
+          text={`설비 관리${typeof equipmentTotal === 'number' ? ` ${equipmentTotal}` : ''}`}
           textColor={settingChip === 'equipment' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'equipment' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -325,7 +377,7 @@ const MasterData = () => {
           padding="px-4"
         />
         <Chip
-          text={`거래처 정보${clientList?.totalCnt ? ` ${clientList.totalCnt}` : ''}`}
+          text={`거래처 정보${typeof clientTotal === 'number' ? ` ${clientTotal}` : ''}`}
           textColor={settingChip === 'client' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'client' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"

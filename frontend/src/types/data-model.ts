@@ -1501,33 +1501,20 @@ export interface BarobillCorpCertModel {
 }
 
 //////////////////////
+// 단위변환 API
+export interface UnitConversionModel {
+  id: number;
+  factory: number;
+  material: number | null;
+  product: number | null;
+  from_unit: string | null;
+  to_unit: string | null;
+  conversion_rate: number;
+  decimal_rule: DecimalRuleType; // 소수점 규칙 // 반올림, 버림, 올림 // round, floor, ceil
+  created_at?: string;
+  updated_at?: string;
+}
 
-// import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
-
-// export interface PaymentResultResponseModel {
-//   payment_key: string;
-//   order_id: string;
-//   amount: number;
-//   status: string;
-//   approved_at: string | null;
-//   method: string | null;
-// }
-
-// export interface PaymentCancelResponseModel {
-//   payment_key: string;
-//   cancel_amount: number;
-//   cancel_reason: string;
-//   canceled_at: string;
-// }
-
-// export interface SubscriptionStatusResponseModel {
-//   subscription_history: SubscriptionHistoryResponseModel;
-//   current_payment: PaymentResponseModel | null;
-//   next_billing_date: string | null;
-//   is_active: boolean;
-// }
-
-//////////////////////
 import {
   MemberRoleType,
   MemberStatusType,
@@ -1539,12 +1526,12 @@ import {
   NotificationType,
   NotificationCaseType,
   TaxDocumentType,
-  // ClientType,
   TransactionType,
   BarobillStateType,
   NtsSendStateType,
   SubscriptionStatusType,
   PaymentStatusType,
+  DecimalRuleType,
 } from './status-type';
 
 export type {

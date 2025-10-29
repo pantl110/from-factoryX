@@ -2,18 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useMemberStore from '@/store/member-store';
-
-export interface UnitConversionModel {
-  id: number;
-  factory: number;
-  material: number | null;
-  product: number | null;
-  from_unit: string | null;
-  to_unit: string | null;
-  conversion_rate: number;
-  created_at?: string;
-  updated_at?: string;
-}
+import { UnitConversionModel } from '@/types/data-model';
+import axios from 'axios';
 
 export interface UnitConversionCreatePayload {
   factory_id: number;
@@ -83,7 +73,7 @@ const useUnitConversionApi = () => {
         const { method = 'GET', body, queryParams = {} } = options;
 
         // Build URL
-        let url = `${API_BASE}/v1/unit-conversion`;
+        let url = `${API_BASE}/v2/unit-conversion`;
         if (endpoint === 'update' || endpoint === 'delete') {
           if (!options.unit_conversion_id)
             throw new Error('unit_conversion_id가 필요합니다.');
@@ -99,47 +89,61 @@ const useUnitConversionApi = () => {
         }
 
         // Ensure factory_id in query string for GET/DELETE and list/detail
-        const qs = new URLSearchParams();
-        const qp: Record<string, string | number | boolean | null | undefined> = {
+        const params: Record<string, string | number | boolean | null | undefined> = {
           ...queryParams,
           factory_id: queryParams.factory_id ?? factoryId,
-        } as Record<string, unknown> as CallOptions['queryParams'];
+        };
 
-        Object.entries(qp).forEach(([k, v]) => {
-          if (v !== undefined && v !== null) qs.append(k, String(v));
-        });
-        const fullUrl = qs.toString() ? `${url}?${qs.toString()}` : url;
-
-        const resp = await fetch(fullUrl, {
+        const axiosConfig = {
           method,
+          url,
+          withCredentials: true,
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: body ? JSON.stringify(body) : undefined,
           signal,
-        });
+          params,
+          data: body,
+        } as const;
+
+        const resp = await axios.request<T>(axiosConfig);
 
         if (signal.aborted) return { success: false, error: '요청이 취소되었습니다.' };
 
-        if (!resp.ok) {
-          let message = 'API 요청에 실패했습니다.';
-          try {
-            const errData = await resp.json();
-            message = errData.detail || errData.message || message;
-          } catch {
-            // noop
-          }
-          throw new Error(message);
-        }
-
-        // DELETE 204 has no body
+        // axios throws on non-2xx, so reaching here means success
+        // 204 No Content
         if (resp.status === 204) return { success: true } as ApiResponse<T>;
 
-        const data = (await resp.json()) as T;
-        return { success: true, data };
+        return { success: true, data: resp.data };
       } catch (err) {
-        if ((err as any)?.name === 'AbortError')
+        // 요청 취소 처리
+        if (
+          (axios.isCancel && axios.isCancel(err)) ||
+          (axios.isAxiosError(err) && err.code === 'ERR_CANCELED') ||
+          (err as any)?.name === 'AbortError'
+        ) {
           return { success: false, error: '요청이 취소되었습니다.' };
-        const msg = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+        }
+        let msg = '알 수 없는 오류가 발생했습니다.';
+        if (axios.isAxiosError(err)) {
+          const data = err.response?.data as unknown;
+          if (data && typeof data === 'object') {
+            const hasDetail = 'detail' in (data as Record<string, unknown>);
+            const hasMessage = 'message' in (data as Record<string, unknown>);
+            const maybeDetail = hasDetail
+              ? (data as { detail?: unknown }).detail
+              : undefined;
+            const maybeMessage = hasMessage
+              ? (data as { message?: unknown }).message
+              : undefined;
+            msg =
+              (typeof maybeDetail === 'string' && maybeDetail) ||
+              (typeof maybeMessage === 'string' && maybeMessage) ||
+              (err.message || 'API 요청에 실패했습니다.');
+          } else {
+            msg = err.message || 'API 요청에 실패했습니다.';
+          }
+        } else if (err instanceof Error) {
+          msg = err.message;
+        }
         setError(msg);
         return { success: false, error: msg };
       } finally {

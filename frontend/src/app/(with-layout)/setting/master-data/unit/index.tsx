@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import SearchSection from './search-section';
-import { mockUnitConversionData } from './mock-data';
 import NoHistoryBox from '@/ui/no-history-box';
 import { UnitTableHeader } from './unit-table-header';
 import { UnitTableItem } from './unit-table-item';
+import { UnitConversionModel } from '@/types/data-model';
+import useUnitConversionApi from '@/hooks/unit-conversion/use-unit-conversion-api';
 
 const Unit = () => {
   const unitList = mockUnitConversionData;
@@ -19,7 +21,7 @@ const Unit = () => {
         ) : (
           <>
             <UnitTableHeader />
-            {unitList.map((item) => (
+            {unitList.map((item: UnitConversionModel) => (
               <UnitTableItem key={item.id} unit={item} />
             ))}
 
