@@ -9,8 +9,6 @@ from unit_conversion.schemas.outbound import UnitConversionOutSchema
 from stock.utils import get_material_by_id, get_product_by_id
 from unit_conversion.utils import get_unit_conversion_by_id
 from asgiref.sync import sync_to_async
-
-
 from factory.utils import is_factory_member
 
 router = Router(tags=["Unit Conversion"])
@@ -64,7 +62,13 @@ async def list_unit_conversions(request, factory_id: int):
     @sync_to_async
     def get_unit_conversions():
         queryset = UnitConversion.objects.filter(factory_id=factory_id).select_related('material', 'product')
-        return list(queryset)
+        results = []
+        for uc in queryset:
+            # 각 인스턴스에 material_name과 product_name 속성 추가
+            uc.material_name = uc.material.name if uc.material else None
+            uc.product_name = uc.product.name if uc.product else None
+            results.append(uc)
+        return results
     
     return await get_unit_conversions()
 

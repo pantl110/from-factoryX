@@ -1,6 +1,9 @@
 from ninja import ModelSchema, Schema
-from typing import Optional
+from typing import Optional, Literal
 from unit_conversion.models import UnitConversion
+from decimal import Decimal
+
+DecimalRuleType = Literal['round', 'floor', 'ceil']
 
 
 class UnitConversionCreateSchema(Schema):
@@ -9,4 +12,6 @@ class UnitConversionCreateSchema(Schema):
     product_id: Optional[int] = None
     from_unit: Optional[str] = None
     to_unit: Optional[str] = None
-    conversion_rate: float = 1.0
+    from_quantity: Optional[Decimal] = 1  
+    to_quantity: Optional[Decimal] = 1    
+    decimal_rule: DecimalRuleType = 'round'
