@@ -52,6 +52,10 @@ const MasterData = () => {
   const { list: getUnitList, isLoading: isUnitLoading } =
     useUnitConversionApi();
   const [unitList, setUnitList] = useState<UnitConversionModel[]>([]);
+  const [unitPagination, setUnitPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
 
   // 디바운스된 검색어 (300ms)
   const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
@@ -135,14 +139,21 @@ const MasterData = () => {
     settingChip === 'equipment' ? facilitySetAllChecked : clientSetAllChecked;
 
   // 단위 목록 가져오기
-  const fetchUnitList = useCallback(async () => {
-    if (!factoryId) return;
-    const result = await getUnitList();
-    if (result.success && result.data) {
-      setUnitList(result.data.data || []);
-      setUnitTotal(result.data.totalCnt || 0);
-    }
-  }, [factoryId, getUnitList]);
+  const fetchUnitList = useCallback(
+    async (page: number = 1) => {
+      if (!factoryId) return;
+      const result = await getUnitList({ page, page_size: 10 });
+      if (result.success && result.data) {
+        setUnitList(result.data.data || []);
+        setUnitTotal(result.data.totalCnt || 0);
+        setUnitPagination({
+          currentPage: result.data.curPage || page,
+          totalPages: result.data.pageCnt || 1,
+        });
+      }
+    },
+    [factoryId, getUnitList]
+  );
 
   // 페이지 로드 시 설비와 거래처 데이터 초기 로딩
   useEffect(() => {
@@ -387,7 +398,15 @@ const MasterData = () => {
           />
         );
       case 'unit':
-        return <Unit unitList={unitList} refetchUnit={fetchUnitList} />;
+        return (
+          <Unit
+            unitList={unitList}
+            refetchUnit={fetchUnitList}
+            currentPage={unitPagination.currentPage}
+            totalPages={unitPagination.totalPages}
+            onPageChange={fetchUnitList}
+          />
+        );
       default:
         return null;
     }

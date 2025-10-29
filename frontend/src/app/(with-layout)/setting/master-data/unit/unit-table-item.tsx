@@ -3,6 +3,24 @@ import { Trash } from '@phosphor-icons/react';
 import { UnitConversionModel } from '@/types/data-model';
 
 export const UnitTableItem = ({ unit }: { unit: UnitConversionModel }) => {
+  const precision = 4; // 소수점 이하 자릿수
+  const applyDecimalRule = (
+    value: number,
+    rule: UnitConversionModel['decimal_rule']
+  ) => {
+    const factor = Math.pow(10, precision);
+    if (rule === 'floor') return Math.floor(value * factor) / factor;
+    if (rule === 'ceil') return Math.ceil(value * factor) / factor;
+    return Math.round(value * factor) / factor; // 'round'
+  };
+  const rawRate = (unit.to_quantity || 0) / (unit.from_quantity || 1);
+  const conversionRate = applyDecimalRule(rawRate, unit.decimal_rule);
+  const conversionRateText = Number.isFinite(conversionRate)
+    ? conversionRate
+        .toFixed(precision)
+        .replace(/\.0+$/, '')
+        .replace(/(\.\d*?)0+$/, '$1')
+    : '-';
   return (
     <div className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer">
       <div className="flex-1 px-3">
@@ -16,19 +34,31 @@ export const UnitTableItem = ({ unit }: { unit: UnitConversionModel }) => {
       <p
         className="flex-1 px-3 truncate"
         title={
-          unit.material ? unit.material.toString() : unit.product?.toString()
+          unit.material ? unit.material_name || '-' : unit.product_name || '-'
         }
       >
-        {unit.material ? unit.material.toString() : unit.product?.toString()}
+        {unit.material ? unit.material_name || '-' : unit.product_name || '-'}
       </p>
-      <p className="flex-1 px-3">
+      <p
+        className="flex-1 px-3 truncate"
+        title={`${unit.from_unit}/${unit.to_unit}`}
+      >
         {unit.from_unit}/{unit.to_unit}
       </p>
-      <p className="flex-1 px-3">
-        1{unit.from_unit}={unit.conversion_rate}
+      <p
+        className="flex-1 px-3 truncate"
+        title={`1${unit.from_unit}=${conversionRateText}${unit.to_unit}`}
+      >
+        1{unit.from_unit}={conversionRateText}
         {unit.to_unit}
       </p>
-      <p className="flex-1 px-3">{unit.decimal_rule}</p>
+      <p className="flex-1 px-3">
+        {unit.decimal_rule === 'round'
+          ? '반올림'
+          : unit.decimal_rule === 'floor'
+            ? '버림'
+            : '올림'}
+      </p>
       <div className="flex-[0.4] px-3">
         <button className="w-9 h-9 flex items-center justify-center group">
           <Trash

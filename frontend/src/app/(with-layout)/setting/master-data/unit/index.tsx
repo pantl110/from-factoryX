@@ -3,12 +3,22 @@ import NoHistoryBox from '@/ui/no-history-box';
 import { UnitTableHeader } from './unit-table-header';
 import { UnitTableItem } from './unit-table-item';
 import { UnitConversionModel } from '@/types/data-model';
+import Pagination from '@/components/pagination';
 
 interface UnitProps {
   unitList: UnitConversionModel[];
   refetchUnit: () => Promise<void>;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }
-const Unit = ({ unitList, refetchUnit }: UnitProps) => {
+const Unit = ({
+  unitList,
+  refetchUnit,
+  currentPage,
+  totalPages,
+  onPageChange,
+}: UnitProps) => {
   return (
     <>
       <div className="w-full px-10 pb-10">
@@ -26,13 +36,13 @@ const Unit = ({ unitList, refetchUnit }: UnitProps) => {
             ))}
 
             {/* 페이지네이션 */}
-            {/* {totalPages >= 2 && (
+            {totalPages > 1 && (
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={onPageChange || (() => {})}
+                onPageChange={onPageChange}
               />
-            )} */}
+            )}
           </>
         )}
       </div>
