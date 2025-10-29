@@ -1,10 +1,10 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from api.security import jwt_auth
 from factory.models import Factory
 from unit_conversion.models import UnitConversion
-from unit_conversion.schemas.inbound import UnitConversionCreateSchema
+from unit_conversion.schemas.inbound import UnitConversionCreateSchema, UnitConversionFilter
 from unit_conversion.schemas.outbound import UnitConversionOutSchema
 from stock.utils import get_material_by_id, get_product_by_id
 from unit_conversion.utils import get_unit_conversion_by_id
@@ -55,13 +55,26 @@ async def create_unit_conversion(request, payload: UnitConversionCreateSchema):
     auth=jwt_auth,
 )
 @paginate
-async def list_unit_conversions(request, factory_id: int):
+async def list_unit_conversions(request, factory_id: int, filters: UnitConversionFilter = Query(None), q: str = None):
     user = request.auth
     await is_factory_member(factory_id, user)
 
     @sync_to_async
     def get_unit_conversions():
         queryset = UnitConversion.objects.filter(factory_id=factory_id).select_related('material', 'product')
+        
+        # 검색어 q가 제공된 경우, material_name과 product_name으로 검색
+        if q:
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(material__name__icontains=q) | 
+                Q(product__name__icontains=q)
+            )
+        
+        # 필터 적용
+        if filters:
+            queryset = filters.filter(queryset)
+        
         results = []
         for uc in queryset:
             # 각 인스턴스에 material_name과 product_name 속성 추가

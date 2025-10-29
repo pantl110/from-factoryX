@@ -1,4 +1,4 @@
-from ninja import ModelSchema, Schema
+from ninja import ModelSchema, Schema, Field, FilterSchema
 from typing import Optional, Literal
 from unit_conversion.models import UnitConversion
 from decimal import Decimal
@@ -15,3 +15,9 @@ class UnitConversionCreateSchema(Schema):
     from_quantity: Optional[Decimal] = 1  
     to_quantity: Optional[Decimal] = 1    
     decimal_rule: DecimalRuleType = 'round'
+
+
+class UnitConversionFilter(FilterSchema):
+    """단위변환 목록 조회 필터"""
+    material_name: Optional[str] = Field(default=None, q="material__name__icontains")
+    product_name: Optional[str] = Field(default=None, q="product__name__icontains")
