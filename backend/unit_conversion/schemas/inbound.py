@@ -21,3 +21,4 @@ class UnitConversionFilter(FilterSchema):
     """단위변환 목록 조회 필터"""
     material_name: Optional[str] = Field(default=None, q="material__name__icontains")
     product_name: Optional[str] = Field(default=None, q="product__name__icontains")
+    item_type: Optional[Literal['material', 'product']] = None
