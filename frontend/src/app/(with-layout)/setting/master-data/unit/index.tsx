@@ -49,7 +49,11 @@ const Unit = ({
           <>
             <UnitTableHeader />
             {unitList.map((item: UnitConversionModel) => (
-              <UnitTableItem key={item.id} unit={item} />
+              <UnitTableItem
+                key={item.id}
+                unit={item}
+                refetchUnit={refetchUnit}
+              />
             ))}
 
             {/* 페이지네이션 */}

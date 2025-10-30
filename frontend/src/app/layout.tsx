@@ -1,5 +1,6 @@
 import localFont from 'next/font/local';
 import './globals.css';
+import QueryClientRootProvider from '@/providers/query-client';
 
 const pretendard = localFont({
   src: [
@@ -43,7 +44,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         className={`${pretendard.className} antialiased`}
         suppressHydrationWarning={process.env.NODE_ENV === 'development'}
       >
-        {children}
+        <QueryClientRootProvider>{children}</QueryClientRootProvider>
       </body>
     </html>
   );

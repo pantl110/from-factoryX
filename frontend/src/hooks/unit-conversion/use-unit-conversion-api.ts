@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
 import { UnitConversionListResponseModel, UnitConversionModel } from '@/types/data-model';
 import axios from 'axios';
@@ -249,5 +250,58 @@ const useUnitConversionApi = () => {
 };
 
 export default useUnitConversionApi;
+
+// React Query mutation helpers
+export const useCreateUnitConversionMutation = () => {
+  const queryClient = useQueryClient();
+  const { create } = useUnitConversionApi();
+  return useMutation({
+    mutationFn: async (
+      payload: Omit<UnitConversionCreatePayload, 'factory_id'> & { factory_id?: number }
+    ) => {
+      const res = await create(payload);
+      if (!res.success) throw new Error(res.error || '생성 실패');
+      return res.data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['unit-conversion', 'list'] });
+    },
+  });
+};
+
+export const useUpdateUnitConversionMutation = () => {
+  const queryClient = useQueryClient();
+  const { update } = useUnitConversionApi();
+  return useMutation({
+    mutationFn: async (
+      args: {
+        id: number;
+        payload: Partial<Omit<UnitConversionCreatePayload, 'factory_id'>> & { factory_id?: number };
+      }
+    ) => {
+      const res = await update(args.id, args.payload);
+      if (!res.success) throw new Error(res.error || '수정 실패');
+      return res.data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['unit-conversion', 'list'] });
+    },
+  });
+};
+
+export const useDeleteUnitConversionMutation = () => {
+  const queryClient = useQueryClient();
+  const { remove } = useUnitConversionApi();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await remove(id);
+      if (!res.success) throw new Error(res.error || '삭제 실패');
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['unit-conversion', 'list'] });
+    },
+  });
+};
 
 
