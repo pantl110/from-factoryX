@@ -70,6 +70,23 @@ const MasterData = () => {
   const clientIds: number[] =
     clientList?.data?.map((item: { id: number }) => item.id) ?? []; // 거래처 id 배열
 
+  // 단위 목록 가져오기
+  const fetchUnitList = useCallback(
+    async (page: number = 1, searchQuery?: string) => {
+      if (!factoryId) return;
+      const result = await getUnitList({ page, page_size: 10, q: searchQuery });
+      if (result.success && result.data) {
+        setUnitList(result.data.data || []);
+        setUnitTotal(result.data.totalCnt || 0);
+        setUnitPagination({
+          currentPage: result.data.curPage || page,
+          totalPages: result.data.pageCnt || 1,
+        });
+      }
+    },
+    [factoryId, getUnitList]
+  );
+
   // 통합된 검색 함수 - 디바운스된 검색어로 현재 탭에 맞는 검색 실행
   const handleSearch = useCallback(
     (keyword: string) => {
@@ -85,9 +102,11 @@ const MasterData = () => {
           page: 1,
           page_size: 10,
         });
+      } else if (settingChip === 'unit') {
+        fetchUnitList(1, keyword.trim() || undefined);
       }
     },
-    [settingChip, searchEquipment, getEquipmentList, getClients]
+    [settingChip, searchEquipment, getEquipmentList, getClients, fetchUnitList]
   );
 
   // 검색어 변경 시 즉시 처리 (디바운스는 useDebounce에서 처리)
@@ -137,23 +156,6 @@ const MasterData = () => {
       : getClientDeleteButtonText;
   const setAllChecked =
     settingChip === 'equipment' ? facilitySetAllChecked : clientSetAllChecked;
-
-  // 단위 목록 가져오기
-  const fetchUnitList = useCallback(
-    async (page: number = 1) => {
-      if (!factoryId) return;
-      const result = await getUnitList({ page, page_size: 10 });
-      if (result.success && result.data) {
-        setUnitList(result.data.data || []);
-        setUnitTotal(result.data.totalCnt || 0);
-        setUnitPagination({
-          currentPage: result.data.curPage || page,
-          totalPages: result.data.pageCnt || 1,
-        });
-      }
-    },
-    [factoryId, getUnitList]
-  );
 
   // 페이지 로드 시 설비와 거래처 데이터 초기 로딩
   useEffect(() => {
@@ -351,12 +353,16 @@ const MasterData = () => {
     });
   };
 
+  // 페이지네이션 변경 핸들러 (Unit용)
+  const handleUnitPageChange = async (page: number) => {
+    await fetchUnitList(page, debouncedSearchKeyword.trim() || undefined);
+  };
+
   const renderContent = () => {
     // 로딩 중일 때 스피너 표시
     if (
       (settingChip === 'equipment' && isEquipmentLoading) ||
-      (settingChip === 'client' && isClientLoading) ||
-      (settingChip === 'unit' && isUnitLoading)
+      (settingChip === 'client' && isClientLoading)
     ) {
       return (
         <div className="flex justify-center items-center py-20">
@@ -404,7 +410,11 @@ const MasterData = () => {
             refetchUnit={fetchUnitList}
             currentPage={unitPagination.currentPage}
             totalPages={unitPagination.totalPages}
-            onPageChange={fetchUnitList}
+            onPageChange={handleUnitPageChange}
+            searchKeyword={searchKeyword}
+            onSearchChange={handleSearchChange}
+            onSearchEnter={() => handleSearch(searchKeyword)}
+            isLoading={isUnitLoading}
           />
         );
       default:

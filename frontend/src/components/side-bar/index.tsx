@@ -58,7 +58,7 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
           </div>
         </div>
         <div className="flex flex-col gap-1 px-2">
-          <SideBarItem icon={ChartBar} label="대시보드" path="/dashboard" />
+          <SideBarItem icon={ChartBar} label="현황판" path="/dashboard" />
           <SideBarItem
             icon={Package}
             label="프로젝트 관리"

@@ -176,13 +176,14 @@ const useUnitConversionApi = () => {
   );
 
   const list = useCallback(
-    async (params?: { page?: number; page_size?: number }) => {
+    async (params?: { page?: number; page_size?: number; q?: string }) => {
       return call<UnitConversionListResponseModel>('list', {
         method: 'GET',
         queryParams: {
           factory_id: factoryId as number,
           page: params?.page,
           page_size: params?.page_size,
+          q: params?.q,
         },
       });
     },

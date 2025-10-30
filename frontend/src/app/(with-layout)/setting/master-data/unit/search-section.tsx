@@ -3,7 +3,14 @@ import SearchInput from '@/ui/search-input';
 import { CaretDown } from '@phosphor-icons/react';
 import { useState } from 'react';
 import SelectProductMaterialDropdown from './modals/select-product-material-dropdown';
-const SearchSection = () => {
+
+interface SearchSectionProps {
+  value: string;
+  onChange: (value: string) => void;
+  onEnter?: () => void;
+}
+
+const SearchSection = ({ value, onChange, onEnter }: SearchSectionProps) => {
   const [
     isSelectProductMaterialDropdownOpen,
     setIsSelectProductMaterialDropdownOpen,
@@ -38,7 +45,16 @@ const SearchSection = () => {
         )}
       </div>
 
-      <SearchInput placeholder="자재명, 품목명을 입력해 검색하세요." />
+      <SearchInput
+        placeholder="자재명, 품목명을 입력해 검색하세요."
+        value={value}
+        onChange={onChange}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            onEnter?.();
+          }
+        }}
+      />
     </div>
   );
 };
