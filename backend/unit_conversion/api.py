@@ -55,13 +55,24 @@ async def create_unit_conversion(request, payload: UnitConversionCreateSchema):
     auth=jwt_auth,
 )
 @paginate
-async def list_unit_conversions(request, factory_id: int, filters: UnitConversionFilter = Query(None), q: str = None):
+async def list_unit_conversions(
+    request,
+    factory_id: int,
+    filters: UnitConversionFilter = Query(None),
+    q: str = None,
+):
     user = request.auth
     await is_factory_member(factory_id, user)
 
     @sync_to_async
     def get_unit_conversions():
         queryset = UnitConversion.objects.filter(factory_id=factory_id).select_related('material', 'product')
+
+        # 자재/제품 타입 필터 (기본: 전체)
+        if filters and getattr(filters, 'item_type', None) == 'material':
+            queryset = queryset.filter(material__isnull=False)
+        elif filters and getattr(filters, 'item_type', None) == 'product':
+            queryset = queryset.filter(product__isnull=False)
         
         # 검색어 q가 제공된 경우, material_name과 product_name으로 검색
         if q:
