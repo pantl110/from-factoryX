@@ -33,7 +33,7 @@ const SettingPageContent = () => {
               {settingTab === 'master' && settingChip === 'unit' && (
                 <div className="relative">
                   <MiniBtn
-                    text="단위 추가"
+                    text="단위 추가하기"
                     variant="primary"
                     icon={Plus}
                     iconPosition="right"
