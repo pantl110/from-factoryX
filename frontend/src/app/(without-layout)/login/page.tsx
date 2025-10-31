@@ -61,10 +61,10 @@ const LoginPage = () => {
   return (
     <>
       <div className="flex min-h-screen">
-        <div className="flex-1 bg-primary flex flex-col items-center justify-center">
+        <div className="flex-[0.8] bg-primary flex flex-col items-center justify-center">
           <FactoryXLogo width={168.908} height={30.558} color="white" />
         </div>
-        <div className="flex flex-col flex-1 gap-5 items-center justify-center w-full">
+        <div className="flex flex-col flex-[1.2] gap-5 items-center justify-center w-full">
           <h2 className="Heading-2">로그인</h2>
           <form
             onSubmit={handleSubmit(onSubmit)}
