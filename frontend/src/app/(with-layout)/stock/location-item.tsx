@@ -4,12 +4,28 @@ import React from 'react';
 import { getRoleText } from '@/utils/get-role-text';
 import { DotsThree } from '@phosphor-icons/react';
 import IconBtn from '@/ui/icon-btn';
+import { formatDate } from '@/utils/format-number';
 
 interface LocationItemProps {
   image: string;
   length: number;
+  email?: string;
+  role?: string;
+  location?: string;
+  memo?: string;
+  created_at?: string;
+  updated_at?: string;
 }
-const LocationItem = ({ image, length }: LocationItemProps) => {
+const LocationItem = ({
+  image,
+  length,
+  email,
+  role,
+  location,
+  memo,
+  created_at,
+  updated_at,
+}: LocationItemProps) => {
   return (
     <div className="flex gap-5 items-center">
       {/* 사진 */}
@@ -35,19 +51,23 @@ const LocationItem = ({ image, length }: LocationItemProps) => {
       </div>
 
       {/* 정보 */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 w-full">
+        <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-1.5">
             <Chip
-              text={getRoleText('manager')}
+              text={getRoleText(role || 'manager')}
               bgColor="bg-primary-8"
               textColor="text-primary"
               size="role"
             />
-            <span className="Heading-5 text-sv">yoogj1998</span>
+            <span className="Heading-5 text-sv">{email || '-'}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="m-Body-4 text-gr">2025-10-03</span>
+            <span className="m-Body-4 text-gr">
+              {updated_at
+                ? formatDate(updated_at)
+                : formatDate(created_at || '-')}
+            </span>
             <IconBtn
               icon={DotsThree}
               size="w-4 h-4"
@@ -57,12 +77,9 @@ const LocationItem = ({ image, length }: LocationItemProps) => {
             />
           </div>
         </div>
-        <p className="m-Body-2 text-bl">창고 A동 2층 선반 B-12 칸</p>
-        <p className="m-Body-3 text-sv line-clamp-2">
-          내용이 들어가요. 내용이 들어가요. 내용이 들어가요. 내용이 들어가요.
-          내용이 들어가요. 내용이 들어가요. 내용이 들어가요. 내용이 들어가요.
-          내용이 들어가요. 내용이 들어가요. 내용이 들어가요. 내용이 들어가요.
-          내용이 들어가요. 내용이 들어가요. 내용이 들어가요. 내용이 들어가요.
+        <p className="m-Body-2 text-bl w-full truncate">{location || '-'}</p>
+        <p className="m-Body-3 text-sv line-clamp-2 w-full min-h-[3rem]">
+          {memo || '-'}
         </p>
       </div>
     </div>

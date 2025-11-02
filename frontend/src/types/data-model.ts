@@ -568,7 +568,14 @@ export interface LocationModel {
   // response 일때는 location_id
   type: 'material' | 'product';
   location?: string;
+  member_id?: number;
+  email?: string;
+  role?: string;
+  detail_location?: string;
+  memo?: string;
   images?: string[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface LocationListResponseModel {

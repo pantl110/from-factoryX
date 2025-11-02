@@ -39,6 +39,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import LocationItem from '../../location-item';
 import StockLocationModal from '../../modals/stock-location-modal';
 import SubstituteMaterialsModal from './bom/modals/substitute-materials-modal';
+import NoHistoryBox from '@/ui/no-history-box';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -635,43 +636,28 @@ const ProductDetail = ({
               />
             </div>
             {/* locations가 없을 때 */}
-            {/* {fields.length === 0 ? (
+            {locationListData?.locations.length === 0 ? (
               <NoHistoryBox
                 title="등록된 창고 위치가 아직 없어요."
-                text="[추가] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
+                text="[추가] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
               />
-            ) : ( */}
-            <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
-              {/* {fields.map((field, index) => (
-                  // <StockLocationItem
-                  //   key={field.id}
-                  //   index={index}
-                  //   control={control}
-                  //   remove={remove}
-                  //   openUploadModal={() => handleOpenUploadModal(index)}
-                  //   images={watch(`locations.${index}.images`)}
-                  //   setValue={setValue}
-                  // />
-
-                  <Fragment key={field.id}>
-                    <LocationItem
-                      image={
-                        typeof field.images[0] === 'string'
-                          ? field.images[0]
-                          : ''
-                      }
-                      length={field.images.length}
-                    />
-                    {index < fields.length - 1 && (
-                      <div className="h-[1px] bg-lg w-full" />
-                    )}
-                  </Fragment>
-                ))} */}
-              <LocationItem image={''} length={3} />
-              <div className="h-[1px] bg-lg w-full" />
-              <LocationItem image={''} length={3} />
-            </div>
-            {/* )} */}
+            ) : (
+              <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
+                {locationListData?.locations.map((loc: LocationModel) => (
+                  <LocationItem
+                    key={loc.id}
+                    image={loc.images?.[0] || ''}
+                    length={loc.images?.length || 0}
+                    email={loc.email}
+                    role={loc.role}
+                    location={loc.location || ''}
+                    memo={loc.memo}
+                    created_at={loc.created_at}
+                    updated_at={loc.updated_at}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 제품과 연결된 자재 정보 */}
