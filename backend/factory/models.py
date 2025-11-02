@@ -199,6 +199,7 @@ class FactoryMember(BaseModel):
         admin = ("admin", "시스템 관리자")
         manager = ("manager", "운영자")
         viewer = ("viewer", "조회자")
+        prod_manager = ("prod_manager", "생산담당자")
 
     class MemberStatus(models.TextChoices):
         invited = ("invited", "초대됨")
@@ -214,7 +215,7 @@ class FactoryMember(BaseModel):
         help_text="팩토리 멤버 유저 (가입된 경우)",
     )
     role = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=FactoryMemberType.choices,
         default=FactoryMemberType.viewer,
         help_text="멤버 권한",
