@@ -1,10 +1,10 @@
-import SearchSection from './search-section';
 import NoHistoryBox from '@/ui/no-history-box';
-import { UnitTableHeader } from './unit-table-header';
-import { UnitTableItem } from './unit-table-item';
 import { UnitConversionModel } from '@/types/data-model';
 import Pagination from '@/components/pagination';
 import Spinner from '@/ui/spinner';
+import SearchSection from './search-section';
+import { UnitTableHeader } from './unit-table-header';
+import { UnitTableItem } from './unit-table-item';
 
 interface UnitProps {
   unitList: UnitConversionModel[];
@@ -16,6 +16,8 @@ interface UnitProps {
   onSearchChange: (value: string) => void;
   onSearchEnter: () => void;
   isLoading?: boolean;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
 }
 const Unit = ({
   unitList,
@@ -27,6 +29,8 @@ const Unit = ({
   onSearchChange,
   onSearchEnter,
   isLoading = false,
+  selectedCategory = '전체',
+  onCategoryChange,
 }: UnitProps) => {
   return (
     <>
@@ -35,6 +39,8 @@ const Unit = ({
           value={searchKeyword}
           onChange={onSearchChange}
           onEnter={onSearchEnter}
+          selectedCategory={selectedCategory}
+          onCategoryChange={onCategoryChange}
         />
         {isLoading ? (
           <div className="flex justify-center items-center py-20">

@@ -8,14 +8,21 @@ interface SearchSectionProps {
   value: string;
   onChange: (value: string) => void;
   onEnter?: () => void;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
 }
 
-const SearchSection = ({ value, onChange, onEnter }: SearchSectionProps) => {
+const SearchSection = ({
+  value,
+  onChange,
+  onEnter,
+  selectedCategory = '전체',
+  onCategoryChange,
+}: SearchSectionProps) => {
   const [
     isSelectProductMaterialDropdownOpen,
     setIsSelectProductMaterialDropdownOpen,
   ] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('전체');
 
   return (
     <div className="flex items-center justify-between pb-4">
@@ -37,7 +44,7 @@ const SearchSection = ({ value, onChange, onEnter }: SearchSectionProps) => {
             <SelectProductMaterialDropdown
               onClose={() => setIsSelectProductMaterialDropdownOpen(false)}
               onSelect={(category) => {
-                setSelectedCategory(category);
+                onCategoryChange?.(category);
                 setIsSelectProductMaterialDropdownOpen(false);
               }}
             />

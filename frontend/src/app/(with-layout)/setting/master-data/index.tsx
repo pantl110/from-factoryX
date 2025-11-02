@@ -56,6 +56,7 @@ const MasterData = () => {
     currentPage: 1,
     totalPages: 1,
   });
+  const [unitCategory, setUnitCategory] = useState<string>('전체');
 
   // 디바운스된 검색어 (300ms)
   const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
@@ -72,9 +73,18 @@ const MasterData = () => {
 
   // 단위 목록 가져오기
   const fetchUnitList = useCallback(
-    async (page: number = 1, searchQuery?: string) => {
+    async (
+      page: number = 1,
+      searchQuery?: string,
+      itemType?: 'material' | 'product' | 'all' | null
+    ) => {
       if (!factoryId) return;
-      const result = await getUnitList({ page, page_size: 10, q: searchQuery });
+      const result = await getUnitList({
+        page,
+        page_size: 10,
+        q: searchQuery,
+        item_type: itemType,
+      });
       if (result.success && result.data) {
         setUnitList(result.data.data || []);
         setUnitTotal(result.data.totalCnt || 0);
@@ -103,10 +113,23 @@ const MasterData = () => {
           page_size: 10,
         });
       } else if (settingChip === 'unit') {
-        fetchUnitList(1, keyword.trim() || undefined);
+        const itemType =
+          unitCategory === '자재'
+            ? 'material'
+            : unitCategory === '제품'
+              ? 'product'
+              : 'all';
+        fetchUnitList(1, keyword.trim() || undefined, itemType);
       }
     },
-    [settingChip, searchEquipment, getEquipmentList, getClients, fetchUnitList]
+    [
+      settingChip,
+      searchEquipment,
+      getEquipmentList,
+      getClients,
+      fetchUnitList,
+      unitCategory,
+    ]
   );
 
   // 검색어 변경 시 즉시 처리 (디바운스는 useDebounce에서 처리)
@@ -355,8 +378,33 @@ const MasterData = () => {
 
   // 페이지네이션 변경 핸들러 (Unit용)
   const handleUnitPageChange = async (page: number) => {
-    await fetchUnitList(page, debouncedSearchKeyword.trim() || undefined);
+    const itemType =
+      unitCategory === '자재'
+        ? 'material'
+        : unitCategory === '제품'
+          ? 'product'
+          : 'all';
+    await fetchUnitList(
+      page,
+      debouncedSearchKeyword.trim() || undefined,
+      itemType
+    );
   };
+
+  // 단위 카테고리 변경 핸들러
+  const handleUnitCategoryChange = useCallback(
+    (category: string) => {
+      setUnitCategory(category);
+      const itemType =
+        category === '자재'
+          ? 'material'
+          : category === '제품'
+            ? 'product'
+            : 'all';
+      fetchUnitList(1, debouncedSearchKeyword.trim() || undefined, itemType);
+    },
+    [fetchUnitList, debouncedSearchKeyword]
+  );
 
   const renderContent = () => {
     // 로딩 중일 때 스피너 표시
@@ -415,6 +463,8 @@ const MasterData = () => {
             onSearchChange={handleSearchChange}
             onSearchEnter={() => handleSearch(searchKeyword)}
             isLoading={isUnitLoading}
+            selectedCategory={unitCategory}
+            onCategoryChange={handleUnitCategoryChange}
           />
         );
       default:

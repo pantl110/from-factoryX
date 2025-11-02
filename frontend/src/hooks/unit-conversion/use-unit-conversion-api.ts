@@ -177,15 +177,34 @@ const useUnitConversionApi = () => {
   );
 
   const list = useCallback(
-    async (params?: { page?: number; page_size?: number; q?: string }) => {
+    async (params?: {
+      page?: number;
+      page_size?: number;
+      q?: string;
+      item_type?: 'material' | 'product' | 'all' | null;
+    }) => {
+      const queryParams: Record<
+        string,
+        string | number | boolean | null | undefined
+      > = {
+        factory_id: factoryId as number,
+        page: params?.page,
+        page_size: params?.page_size,
+        q: params?.q,
+      };
+
+      // item_type이 'material' 또는 'product'일 때만 filters.item_type으로 전달
+      // 'all'일 때는 파라미터를 보내지 않음 (백엔드가 전체 조회)
+      if (
+        params?.item_type &&
+        (params.item_type === 'material' || params.item_type === 'product')
+      ) {
+        queryParams['filters.item_type'] = params.item_type;
+      }
+
       return call<UnitConversionListResponseModel>('list', {
         method: 'GET',
-        queryParams: {
-          factory_id: factoryId as number,
-          page: params?.page,
-          page_size: params?.page_size,
-          q: params?.q,
-        },
+        queryParams,
       });
     },
     [call, factoryId]
