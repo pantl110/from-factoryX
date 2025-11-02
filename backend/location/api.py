@@ -3,10 +3,11 @@ from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from location.schemas.inbound import LocationCreateIn, LocationUpdateIn
-from location.schemas.outbound import LocationDetailOut, ItemLocationsListOut
+from location.schemas.outbound import LocationDetailOut, LocationListOut, ItemLocationsListOut
 from location.models import Location
 from stock.models import Material, Product
 from factory.utils import is_factory_member
+from factory.models import FactoryMember
 
 router = Router(tags=["Location"], auth=jwt_auth)
 
@@ -38,10 +39,24 @@ async def create_location(request, payload: LocationCreateIn):
     except target_model.DoesNotExist:
         raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
 
-    location, created = await Location.objects.aget_or_create(
+    # member_id가 있으면 FactoryMember 조회
+    member = None
+    if payload.member_id:
+        try:
+            member = await FactoryMember.objects.aget(id=payload.member_id)
+            # factory_id 검증
+            if member.factory_id != int(factory_id):
+                raise HttpError(400, "해당 멤버는 이 팩토리에 속하지 않습니다.")
+        except FactoryMember.DoesNotExist:
+            raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
+
+    location = await Location.objects.acreate(
         type=payload.type,
         location=payload.location,
-        defaults={'images': payload.images or []}
+        member=member,
+        detail_location=payload.detail_location,
+        memo=payload.memo,
+        images=payload.images or []
     )
     
     await sync_to_async(item.location.add)(location)
@@ -50,7 +65,12 @@ async def create_location(request, payload: LocationCreateIn):
         id=location.id,
         type=location.type,
         location=location.location,
-        images=location.images or []
+        member_id=location.member.id if location.member else None,
+        detail_location=location.detail_location,
+        memo=location.memo,
+        images=location.images or [],
+        created_at=location.created_at,
+        updated_at=location.updated_at
     )
 
 
@@ -86,12 +106,19 @@ async def list_locations(request, type: str, id: int):
     if not locations:
         raise HttpError(404, "해당 아이템에 연결된 위치 정보가 없습니다.")
 
+    # 각 Location에 대해 FactoryMember에서 email과 role 가져오기
     locations_detail_list = [
-        LocationDetailOut(
+        LocationListOut(
             id=loc.id,
             type=loc.type,
             location=loc.location,
-            images=loc.images or []
+            email=loc.member.user.email if loc.member else None,
+            role=loc.member.role if loc.member else None,
+            detail_location=loc.detail_location,
+            memo=loc.memo,
+            images=loc.images or [],
+            created_at=loc.created_at,
+            updated_at=loc.updated_at
         ) for loc in locations
     ]
 
@@ -120,9 +147,29 @@ async def update_location(request, location_id: int, payload: LocationUpdateIn):
     except Location.DoesNotExist:
         raise HttpError(404, "해당 위치를 찾을 수 없습니다.")
     
+    # member_id 처리
+    if payload.member_id is not None:
+        if payload.member_id == 0:
+            # member_id가 0이면 None으로 설정 (연결 해제)
+            location.member = None
+        else:
+            # member_id가 있으면 FactoryMember 조회
+            try:
+                member = await FactoryMember.objects.aget(id=payload.member_id)
+                # factory_id 검증
+                if member.factory_id != int(factory_id):
+                    raise HttpError(400, "해당 멤버는 이 팩토리에 속하지 않습니다.")
+                location.member = member
+            except FactoryMember.DoesNotExist:
+                raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
+    
     # 위치 정보 수정 (부분 수정 지원)
     if payload.location is not None:
         location.location = payload.location
+    if payload.detail_location is not None:
+        location.detail_location = payload.detail_location
+    if payload.memo is not None:
+        location.memo = payload.memo
     if payload.images is not None:
         location.images = payload.images
     
@@ -132,7 +179,12 @@ async def update_location(request, location_id: int, payload: LocationUpdateIn):
         id=location.id,
         type=location.type,
         location=location.location,
-        images=location.images or []
+        member_id=location.member.id if location.member else None,
+        detail_location=location.detail_location,
+        memo=location.memo,
+        images=location.images or [],
+        created_at=location.created_at,
+        updated_at=location.updated_at
     )
 
 
