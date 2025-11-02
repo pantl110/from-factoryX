@@ -86,6 +86,18 @@ async def list_unit_conversions(
         if filters:
             queryset = filters.filter(queryset)
         
+        # 정렬: 같은 자재/제품끼리 묶되, 그룹 간에서도 최신이 먼저, 그룹 내에서도 최신이 먼저
+        # 각 그룹(material_id 또는 product_id 기준)의 최댓값 id로 우선 정렬(최신 그룹 먼저)한 뒤, 그룹 내에서는 최신(id 내림차순)이 먼저
+        from django.db.models import Max, Window
+        from django.db.models.functions import Coalesce
+        group_key = Coalesce('material_id', 'product_id')
+        queryset = queryset.annotate(
+            group_max_id=Window(
+                expression=Max('id'),
+                partition_by=[group_key],
+            )
+        ).order_by('-group_max_id', '-id')
+        
         results = []
         for uc in queryset:
             # 각 인스턴스에 material_name과 product_name 속성 추가
