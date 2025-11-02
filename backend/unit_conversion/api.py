@@ -71,9 +71,9 @@ async def list_unit_conversions(
 
         # item_type 필터링 (material 또는 product)
         if item_type == 'material':
-            queryset = queryset.filter(material__isnull=False)
+            queryset = queryset.filter(material__isnull=False, product__isnull=True)
         elif item_type == 'product':
-            queryset = queryset.filter(product__isnull=False)
+            queryset = queryset.filter(product__isnull=False, material__isnull=True)
         
         # 검색어 q가 제공된 경우, material_name과 product_name으로 검색
         if q:
