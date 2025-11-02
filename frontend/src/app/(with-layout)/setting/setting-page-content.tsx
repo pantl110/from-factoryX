@@ -33,10 +33,10 @@ const SettingPageContent = () => {
               {settingTab === 'master' && settingChip === 'unit' && (
                 <div className="relative">
                   <MiniBtn
-                    text="단위 추가하기"
+                    text="단위 변환하기"
                     variant="primary"
-                    icon={Plus}
-                    iconPosition="right"
+                    // icon={Plus}
+                    // iconPosition="right"
                     onClick={() => setIsAddUnitDropdownOpen(true)}
                   />
 
