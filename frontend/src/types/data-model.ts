@@ -1509,7 +1509,7 @@ export interface BarobillCorpCertModel {
 
 //////////////////////
 // 단위변환 API
-// 단위변환 리스트 조회 
+// 단위변환 리스트 조회
 export interface UnitConversionModel {
   id: number;
   factory: number;
@@ -1524,7 +1524,7 @@ export interface UnitConversionModel {
   decimal_rule: DecimalRuleType; // 반올림, 버림, 올림 // round, floor, ceil
 }
 
-export interface UnitConversionListResponseModel extends PaginationModel {  
+export interface UnitConversionListResponseModel extends PaginationModel {
   data: UnitConversionModel[];
 }
 

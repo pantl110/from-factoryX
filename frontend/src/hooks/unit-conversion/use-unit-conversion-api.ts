@@ -3,10 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
-import { UnitConversionListResponseModel, UnitConversionModel } from '@/types/data-model';
+import {
+  UnitConversionListResponseModel,
+  UnitConversionModel,
+} from '@/types/data-model';
 import axios from 'axios';
 
-export interface UnitConversionCreatePayload {
+export interface UnitConversionCreatePayloadModel {
   factory_id: number;
   material_id?: number | null;
   product_id?: number | null;
@@ -15,9 +18,9 @@ export interface UnitConversionCreatePayload {
   conversion_rate?: number;
 }
 
-type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+type HttpMethodType = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
-type UnitConversionEndpoint =
+type UnitConversionEndpointType =
   | 'list'
   | 'create'
   | 'update'
@@ -25,8 +28,8 @@ type UnitConversionEndpoint =
   | 'by-material'
   | 'by-product';
 
-interface CallOptions {
-  method?: HttpMethod;
+interface CallOptionsModel {
+  method?: HttpMethodType;
   body?: unknown;
   // Will be appended to URL as search params
   queryParams?: Record<string, string | number | boolean | null | undefined>;
@@ -36,7 +39,7 @@ interface CallOptions {
   product_id?: number;
 }
 
-interface ApiResponse<T> {
+interface ApiResponseModel<T> {
   success: boolean;
   data?: T;
   error?: string;
@@ -52,9 +55,9 @@ const useUnitConversionApi = () => {
 
   const call = useCallback(
     async <T = unknown>(
-      endpoint: UnitConversionEndpoint,
-      options: CallOptions = {}
-    ): Promise<ApiResponse<T>> => {
+      endpoint: UnitConversionEndpointType,
+      options: CallOptionsModel = {}
+    ): Promise<ApiResponseModel<T>> => {
       // cancel previous
       if (abortControllerRef.current) abortControllerRef.current.abort();
       abortControllerRef.current = new AbortController();
@@ -67,7 +70,8 @@ const useUnitConversionApi = () => {
         if (!factoryId) {
           return {
             success: false,
-            error: '공장 정보가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.',
+            error:
+              '공장 정보가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.',
           };
         }
 
@@ -80,7 +84,8 @@ const useUnitConversionApi = () => {
             throw new Error('unit_conversion_id가 필요합니다.');
           url += `/${options.unit_conversion_id}`;
         } else if (endpoint === 'by-material') {
-          if (!options.material_id) throw new Error('material_id가 필요합니다.');
+          if (!options.material_id)
+            throw new Error('material_id가 필요합니다.');
           url += `/material/${options.material_id}`;
         } else if (endpoint === 'by-product') {
           if (!options.product_id) throw new Error('product_id가 필요합니다.');
@@ -90,7 +95,10 @@ const useUnitConversionApi = () => {
         }
 
         // Ensure factory_id in query string for GET/DELETE and list/detail
-        const params: Record<string, string | number | boolean | null | undefined> = {
+        const params: Record<
+          string,
+          string | number | boolean | null | undefined
+        > = {
           ...queryParams,
           factory_id: queryParams.factory_id ?? factoryId,
         };
@@ -107,11 +115,13 @@ const useUnitConversionApi = () => {
 
         const resp = await axios.request<T>(axiosConfig);
 
-        if (signal.aborted) return { success: false, error: '요청이 취소되었습니다.' };
+        if (signal.aborted)
+          return { success: false, error: '요청이 취소되었습니다.' };
 
         // axios throws on non-2xx, so reaching here means success
         // 204 No Content
-        if (resp.status === 204) return { success: true } as ApiResponse<T>;
+        if (resp.status === 204)
+          return { success: true } as ApiResponseModel<T>;
 
         return { success: true, data: resp.data };
       } catch (err) {
@@ -119,7 +129,7 @@ const useUnitConversionApi = () => {
         if (
           (axios.isCancel && axios.isCancel(err)) ||
           (axios.isAxiosError(err) && err.code === 'ERR_CANCELED') ||
-          (err as any)?.name === 'AbortError'
+          (err instanceof Error && err.name === 'AbortError')
         ) {
           return { success: false, error: '요청이 취소되었습니다.' };
         }
@@ -138,7 +148,8 @@ const useUnitConversionApi = () => {
             msg =
               (typeof maybeDetail === 'string' && maybeDetail) ||
               (typeof maybeMessage === 'string' && maybeMessage) ||
-              (err.message || 'API 요청에 실패했습니다.');
+              err.message ||
+              'API 요청에 실패했습니다.';
           } else {
             msg = err.message || 'API 요청에 실패했습니다.';
           }
@@ -162,8 +173,12 @@ const useUnitConversionApi = () => {
 
   // Helper methods with types
   const create = useCallback(
-    async (payload: Omit<UnitConversionCreatePayload, 'factory_id'> & { factory_id?: number }) => {
-      const body: UnitConversionCreatePayload = {
+    async (
+      payload: Omit<UnitConversionCreatePayloadModel, 'factory_id'> & {
+        factory_id?: number;
+      }
+    ) => {
+      const body: UnitConversionCreatePayloadModel = {
         factory_id: payload.factory_id ?? (factoryId as number),
         material_id: payload.material_id ?? null,
         product_id: payload.product_id ?? null,
@@ -235,9 +250,11 @@ const useUnitConversionApi = () => {
   const update = useCallback(
     async (
       unitConversionId: number,
-      payload: Partial<Omit<UnitConversionCreatePayload, 'factory_id'>> & { factory_id?: number }
+      payload: Partial<Omit<UnitConversionCreatePayloadModel, 'factory_id'>> & {
+        factory_id?: number;
+      }
     ) => {
-      const body: Partial<UnitConversionCreatePayload> = {
+      const body: Partial<UnitConversionCreatePayloadModel> = {
         factory_id: payload.factory_id ?? (factoryId as number),
         material_id: payload.material_id,
         product_id: payload.product_id,
@@ -265,7 +282,17 @@ const useUnitConversionApi = () => {
     [call, factoryId]
   );
 
-  return { call, create, list, getByMaterial, getByProduct, update, remove, isLoading, error };
+  return {
+    call,
+    create,
+    list,
+    getByMaterial,
+    getByProduct,
+    update,
+    remove,
+    isLoading,
+    error,
+  };
 };
 
 export default useUnitConversionApi;
@@ -276,11 +303,13 @@ export const useCreateUnitConversionMutation = () => {
   const { create } = useUnitConversionApi();
   return useMutation({
     mutationFn: async (
-      payload: Omit<UnitConversionCreatePayload, 'factory_id'> & { factory_id?: number }
+      payload: Omit<UnitConversionCreatePayloadModel, 'factory_id'> & {
+        factory_id?: number;
+      }
     ) => {
       const res = await create(payload);
-      if (!res.success) throw new Error(res.error || '생성 실패');
-      return res.data!;
+      if (!res.success || !res.data) throw new Error(res.error || '생성 실패');
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unit-conversion', 'list'] });
@@ -292,15 +321,15 @@ export const useUpdateUnitConversionMutation = () => {
   const queryClient = useQueryClient();
   const { update } = useUnitConversionApi();
   return useMutation({
-    mutationFn: async (
-      args: {
-        id: number;
-        payload: Partial<Omit<UnitConversionCreatePayload, 'factory_id'>> & { factory_id?: number };
-      }
-    ) => {
+    mutationFn: async (args: {
+      id: number;
+      payload: Partial<Omit<UnitConversionCreatePayloadModel, 'factory_id'>> & {
+        factory_id?: number;
+      };
+    }) => {
       const res = await update(args.id, args.payload);
-      if (!res.success) throw new Error(res.error || '수정 실패');
-      return res.data!;
+      if (!res.success || !res.data) throw new Error(res.error || '수정 실패');
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unit-conversion', 'list'] });
@@ -322,5 +351,3 @@ export const useDeleteUnitConversionMutation = () => {
     },
   });
 };
-
-

@@ -636,27 +636,34 @@ const ProductDetail = ({
               />
             </div>
             {/* locations가 없을 때 */}
-            {locationListData?.locations.length === 0 ? (
+            {locationListData && 'locations' in locationListData ? (
+              locationListData.locations.length === 0 ? (
+                <NoHistoryBox
+                  title="등록된 창고 위치가 아직 없어요."
+                  text="[추가] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
+                />
+              ) : (
+                <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
+                  {locationListData.locations.map((loc: LocationModel) => (
+                    <LocationItem
+                      key={loc.id}
+                      image={loc.images?.[0] || ''}
+                      length={loc.images?.length || 0}
+                      email={loc.email}
+                      role={loc.role}
+                      location={loc.location || ''}
+                      memo={loc.memo}
+                      createdAt={loc.created_at}
+                      updatedAt={loc.updated_at}
+                    />
+                  ))}
+                </div>
+              )
+            ) : (
               <NoHistoryBox
                 title="등록된 창고 위치가 아직 없어요."
                 text="[추가] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
               />
-            ) : (
-              <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
-                {locationListData?.locations.map((loc: LocationModel) => (
-                  <LocationItem
-                    key={loc.id}
-                    image={loc.images?.[0] || ''}
-                    length={loc.images?.length || 0}
-                    email={loc.email}
-                    role={loc.role}
-                    location={loc.location || ''}
-                    memo={loc.memo}
-                    created_at={loc.created_at}
-                    updated_at={loc.updated_at}
-                  />
-                ))}
-              </div>
             )}
           </div>
 

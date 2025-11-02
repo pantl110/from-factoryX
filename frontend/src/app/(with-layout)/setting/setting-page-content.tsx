@@ -5,7 +5,6 @@ import usePageStatusStore from '@/store/page-status-store';
 import SystemSetting from './system-setting';
 import MasterData from './master-data';
 import MiniBtn from '@/ui/mini-btn';
-import { Plus } from '@phosphor-icons/react';
 import { AddUnitModal } from './master-data/unit/modals/add-unit-modal';
 import AddUnitDropdown from './master-data/unit/modals/add-unit-dropdown';
 

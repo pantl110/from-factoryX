@@ -18,7 +18,7 @@ export const UnitTableItem = ({ unit, refetchUnit }: UnitTableItemProps) => {
       await deleteMutation.mutateAsync((unit as unknown as { id: number }).id);
       setIsDeleteOpen(false);
       refetchUnit();
-    } catch (e) {
+    } catch {
       // noop - error state is handled in hook consumer or toast layer
     }
   };

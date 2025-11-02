@@ -13,8 +13,8 @@ interface LocationItemProps {
   role?: string;
   location?: string;
   memo?: string;
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 const LocationItem = ({
   image,
@@ -23,8 +23,8 @@ const LocationItem = ({
   role,
   location,
   memo,
-  created_at,
-  updated_at,
+  createdAt,
+  updatedAt,
 }: LocationItemProps) => {
   return (
     <div className="flex gap-5 items-center">
@@ -64,9 +64,7 @@ const LocationItem = ({
           </div>
           <div className="flex items-center gap-2">
             <span className="m-Body-4 text-gr">
-              {updated_at
-                ? formatDate(updated_at)
-                : formatDate(created_at || '-')}
+              {updatedAt ? formatDate(updatedAt) : formatDate(createdAt || '-')}
             </span>
             <IconBtn
               icon={DotsThree}
