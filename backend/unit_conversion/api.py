@@ -86,18 +86,34 @@ async def list_unit_conversions(
         if filters:
             queryset = filters.filter(queryset)
         
-        # 정렬: 같은 자재/제품끼리 묶되, 그룹 간에서도 최신이 먼저, 그룹 내에서도 최신이 먼저
-        # 각 그룹(material_id 또는 product_id 기준)의 최댓값 id로 우선 정렬(최신 그룹 먼저)한 뒤, 그룹 내에서는 최신(id 내림차순)이 먼저
-        from django.db.models import Max
-        from django.db.models.functions import Window, Coalesce
+        # 정렬: 같은 material_id 또는 product_id끼리 그룹화하여 최신 그룹이 먼저 오도록
+        from django.db.models import Max, OuterRef, Subquery, IntegerField
+        from django.db.models.functions import Coalesce
         
+        # material_id가 있으면 material_id로, 없으면 product_id로 그룹화
+        # Subquery를 사용하여 각 그룹의 최대 id 계산
+        
+        # material 그룹의 최대 id (material_id가 있는 경우)
+        material_group_max = Subquery(
+            UnitConversion.objects.filter(
+                factory_id=factory_id,
+                material_id=OuterRef('material_id')
+            ).values('material_id').annotate(max_id=Max('id')).values('max_id')[:1],
+            output_field=IntegerField()
+        )
+        
+        # product 그룹의 최대 id (product_id가 있는 경우)
+        product_group_max = Subquery(
+            UnitConversion.objects.filter(
+                factory_id=factory_id,
+                product_id=OuterRef('product_id')
+            ).values('product_id').annotate(max_id=Max('id')).values('max_id')[:1],
+            output_field=IntegerField()
+        )
+        
+        # material_id가 있으면 material 그룹의 최대 id, 없으면 product 그룹의 최대 id 사용
         queryset = queryset.annotate(
-            group_key=Coalesce('material_id', 'product_id')
-        ).annotate(
-            group_max_id=Window(
-                expression=Max('id'),
-                partition_by=['group_key'],
-            )
+            group_max_id=Coalesce(material_group_max, product_group_max, 'id', output_field=IntegerField())
         ).order_by('-group_max_id', '-id')
         
         results = []
