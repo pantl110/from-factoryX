@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDebounce } from 'use-debounce';
+import { useQuery } from '@tanstack/react-query';
 import usePageStatusStore from '@/store/page-status-store';
 import { SettingChipType } from '@/components/top-bar/types';
 import Chip from '@/ui/chip';
@@ -49,17 +50,54 @@ const MasterData = () => {
   const { clientList, isLoading: isClientLoading, getClients } = useGetClient();
 
   // 단위 변환 API
-  const { list: getUnitList, isLoading: isUnitLoading } =
-    useUnitConversionApi();
-  const [unitList, setUnitList] = useState<UnitConversionModel[]>([]);
-  const [unitPagination, setUnitPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-  });
+  const { list: getUnitList } = useUnitConversionApi();
   const [unitCategory, setUnitCategory] = useState<string>('전체');
+  const [unitPage, setUnitPage] = useState(1);
 
   // 디바운스된 검색어 (300ms)
   const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
+
+  // 단위 변환 목록 조회 (React Query)
+  const itemType =
+    unitCategory === '자재'
+      ? 'material'
+      : unitCategory === '제품'
+        ? 'product'
+        : 'all';
+
+  const {
+    data: unitListData,
+    isLoading: isUnitLoading,
+    refetch: refetchUnitList,
+  } = useQuery({
+    queryKey: [
+      'unit-conversion',
+      'list',
+      factoryId,
+      unitPage,
+      debouncedSearchKeyword,
+      itemType,
+    ],
+    queryFn: async () => {
+      if (!factoryId) return null;
+      const result = await getUnitList({
+        page: unitPage,
+        page_size: 10,
+        q: debouncedSearchKeyword.trim() || undefined,
+        item_type: itemType === 'all' ? null : itemType,
+      });
+      return result.success && result.data ? result.data : null;
+    },
+    enabled: !!factoryId && settingChip === 'unit',
+  });
+
+  const unitList = unitListData?.data || [];
+  const unitPagination = unitListData
+    ? {
+        currentPage: unitListData.curPage || unitPage,
+        totalPages: unitListData.pageCnt || 1,
+      }
+    : { currentPage: 1, totalPages: 1 };
 
   // 삭제 훅
   const { deleteEquipment, isLoading: isDeleteLoading } = useDeleteEquipment(); // 설비 삭제 훅
@@ -70,32 +108,6 @@ const MasterData = () => {
     equipmentList?.data?.map((item: { id: number }) => item.id) ?? []; // 설비 id 배열
   const clientIds: number[] =
     clientList?.data?.map((item: { id: number }) => item.id) ?? []; // 거래처 id 배열
-
-  // 단위 목록 가져오기
-  const fetchUnitList = useCallback(
-    async (
-      page: number = 1,
-      searchQuery?: string,
-      itemType?: 'material' | 'product' | 'all' | null
-    ) => {
-      if (!factoryId) return;
-      const result = await getUnitList({
-        page,
-        page_size: 10,
-        q: searchQuery,
-        item_type: itemType,
-      });
-      if (result.success && result.data) {
-        setUnitList(result.data.data || []);
-        setUnitTotal(result.data.totalCnt || 0);
-        setUnitPagination({
-          currentPage: result.data.curPage || page,
-          totalPages: result.data.pageCnt || 1,
-        });
-      }
-    },
-    [factoryId, getUnitList]
-  );
 
   // 통합된 검색 함수 - 디바운스된 검색어로 현재 탭에 맞는 검색 실행
   const handleSearch = useCallback(
@@ -113,34 +125,31 @@ const MasterData = () => {
           page_size: 10,
         });
       } else if (settingChip === 'unit') {
-        const itemType =
-          unitCategory === '자재'
-            ? 'material'
-            : unitCategory === '제품'
-              ? 'product'
-              : 'all';
-        fetchUnitList(1, keyword.trim() || undefined, itemType);
+        // React Query가 자동으로 refetch되므로 페이지만 초기화
+        setUnitPage(1);
       }
     },
-    [
-      settingChip,
-      searchEquipment,
-      getEquipmentList,
-      getClients,
-      fetchUnitList,
-      unitCategory,
-    ]
+    [settingChip, searchEquipment, getEquipmentList, getClients]
   );
 
   // 검색어 변경 시 즉시 처리 (디바운스는 useDebounce에서 처리)
-  const handleSearchChange = useCallback((keyword: string) => {
-    setSearchKeyword(keyword);
-  }, []);
+  const handleSearchChange = useCallback(
+    (keyword: string) => {
+      setSearchKeyword(keyword);
+      // 단위변환 탭일 때는 페이지 초기화
+      if (settingChip === 'unit') {
+        setUnitPage(1);
+      }
+    },
+    [settingChip]
+  );
 
-  // 디바운스된 검색어가 변경될 때 검색 실행
+  // 디바운스된 검색어가 변경될 때 검색 실행 (단위변환은 React Query가 자동 처리)
   useEffect(() => {
-    handleSearch(debouncedSearchKeyword);
-  }, [debouncedSearchKeyword, handleSearch]);
+    if (settingChip !== 'unit') {
+      handleSearch(debouncedSearchKeyword);
+    }
+  }, [debouncedSearchKeyword, handleSearch, settingChip]);
 
   // 체크박스 상태 관리
   const {
@@ -191,9 +200,20 @@ const MasterData = () => {
       if (!clientList) {
         getClients();
       }
-      // 단위 데이터 로딩
-      if (unitList.length === 0) {
-        fetchUnitList();
+      // 단위변환 전체 개수 가져오기 (검색어/필터 없이)
+      if (unitTotal === null) {
+        getUnitList({
+          page: 1,
+          page_size: 1,
+          q: undefined,
+          item_type: null,
+        }).then(
+          (result: { success: boolean; data?: { totalCnt?: number } }) => {
+            if (result.success && result.data?.totalCnt !== undefined) {
+              setUnitTotal(result.data.totalCnt);
+            }
+          }
+        );
       }
     }
   }, [
@@ -202,8 +222,8 @@ const MasterData = () => {
     clientList,
     refetchEquipment,
     getClients,
-    unitList.length,
-    fetchUnitList,
+    unitTotal,
+    getUnitList,
   ]);
 
   // 검색어가 없을 때 totalCnt를 저장 (단, 이미 저장된 값이 있으면 업데이트하지 않음)
@@ -254,7 +274,10 @@ const MasterData = () => {
     setSettingChip('equipment' as SettingChipType);
   const handleClientChipClick = () =>
     setSettingChip('client' as SettingChipType);
-  const handleUnitChipClick = () => setSettingChip('unit' as SettingChipType);
+  const handleUnitChipClick = () => {
+    setSettingChip('unit' as SettingChipType);
+    setUnitPage(1); // 탭 변경 시 첫 페이지로
+  };
 
   // 설비 추가
   const handleAddBtnClick = () => {
@@ -377,34 +400,15 @@ const MasterData = () => {
   };
 
   // 페이지네이션 변경 핸들러 (Unit용)
-  const handleUnitPageChange = async (page: number) => {
-    const itemType =
-      unitCategory === '자재'
-        ? 'material'
-        : unitCategory === '제품'
-          ? 'product'
-          : 'all';
-    await fetchUnitList(
-      page,
-      debouncedSearchKeyword.trim() || undefined,
-      itemType
-    );
+  const handleUnitPageChange = (page: number) => {
+    setUnitPage(page);
   };
 
   // 단위 카테고리 변경 핸들러
-  const handleUnitCategoryChange = useCallback(
-    (category: string) => {
-      setUnitCategory(category);
-      const itemType =
-        category === '자재'
-          ? 'material'
-          : category === '제품'
-            ? 'product'
-            : 'all';
-      fetchUnitList(1, debouncedSearchKeyword.trim() || undefined, itemType);
-    },
-    [fetchUnitList, debouncedSearchKeyword]
-  );
+  const handleUnitCategoryChange = useCallback((category: string) => {
+    setUnitCategory(category);
+    setUnitPage(1); // 카테고리 변경 시 첫 페이지로
+  }, []);
 
   const renderContent = () => {
     // 로딩 중일 때 스피너 표시
@@ -455,7 +459,21 @@ const MasterData = () => {
         return (
           <Unit
             unitList={unitList}
-            refetchUnit={fetchUnitList}
+            refetchUnit={async () => {
+              await refetchUnitList();
+              // 삭제 후 전체 개수 갱신
+              if (factoryId) {
+                const result = await getUnitList({
+                  page: 1,
+                  page_size: 1,
+                  q: undefined,
+                  item_type: null,
+                });
+                if (result.success && result.data?.totalCnt !== undefined) {
+                  setUnitTotal(result.data.totalCnt);
+                }
+              }
+            }}
             currentPage={unitPagination.currentPage}
             totalPages={unitPagination.totalPages}
             onPageChange={handleUnitPageChange}
