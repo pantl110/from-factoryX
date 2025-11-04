@@ -164,7 +164,7 @@ const StockLocationModal = ({
           <Input
             label="창고 위치명"
             required
-            placeholder="창고 위치를 입력하세요."
+            placeholder="A동 3층 렉 B-12"
             value={watch('location')}
             {...register('location', { required: true })}
             showError={!!errors.location}
@@ -174,20 +174,20 @@ const StockLocationModal = ({
           />
           <Input
             label="상세 위치"
-            placeholder="상세 위치를 입력하세요."
+            placeholder="왼쪽 2번째 칸, 바닥에서 3번째 선반"
             value={watch('detail_location')}
             {...register('detail_location')}
           />
           <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center gap-1 h-5">
-              <label htmlFor="memo" className="Me_Body-1 text-dg">
+              <label htmlFor="memo" className="Heading-5 text-sv">
                 메모
               </label>
             </div>
             <textarea
               id="memo"
               rows={4}
-              placeholder="메모를 입력하세요."
+              placeholder="지게차 진입 불가, 소분 전용 구역 등"
               {...register('memo')}
               className="w-full p-2 border border-lg rounded-[8px] resize-none focus:outline-none focus:border-primary"
             />
@@ -195,7 +195,7 @@ const StockLocationModal = ({
 
           {/* 창고 사진 */}
           <div className="flex flex-col gap-2 w-full">
-            <label htmlFor="warehouse-photos" className="Me_Body-1 text-dg">
+            <label htmlFor="warehouse-photos" className="Heading-5 text-sv">
               창고 사진
             </label>
 

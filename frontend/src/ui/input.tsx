@@ -106,8 +106,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="flex flex-col gap-2 w-full">
         {label && (
           <div className="flex items-center gap-1 h-5">
-            <label className="Me_Body-1 text-dg">{label}</label>
-            {required && <span className="text-primary">*</span>}
+            <label className="Heading-5 text-sv">{label}</label>
+            {required && <span className="Heading-5 text-primary">*</span>}
           </div>
         )}
 
