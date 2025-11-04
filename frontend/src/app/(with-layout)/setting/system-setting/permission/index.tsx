@@ -171,7 +171,6 @@ const Permission = () => {
                 />
                 {!isFactoryInfoComplete &&
                   hasSubscription() &&
-                  isViewer &&
                   tooltip.isVisible && (
                     <div className="absolute w-[400px] flex justify-end top-12 right-0 z-10">
                       <Tooltip
