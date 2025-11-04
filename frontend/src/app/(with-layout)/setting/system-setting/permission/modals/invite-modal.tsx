@@ -108,13 +108,19 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
 
     try {
       // 모든 멤버들을 순차적으로 초대
-      const invitePromises = members.map((member) =>
-        inviteMember({
+      const invitePromises = members.map((member) => {
+        const apiRole =
+          member.auth === '시스템 관리자'
+            ? 'admin'
+            : member.auth === '운영자'
+              ? 'manager'
+              : 'viewer';
+        return inviteMember({
           factory_id: factoryId,
           email: member.email,
-          role: member.auth,
-        })
-      );
+          role: apiRole,
+        });
+      });
 
       const results = await Promise.all(invitePromises);
 
