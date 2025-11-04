@@ -9,6 +9,7 @@ from ninja.pagination import paginate
 from factory.schemas.inbound import InviteMemberIn, FactoryMemberUpdateIn
 from factory.schemas.outbound import FactoryMemberOut, FactoryMemberDetailOut
 from datetime import datetime
+from django.utils import timezone
 from factory.utils import is_factory_member
 from websocket.utils import send_notification
 from typing import Optional
@@ -82,6 +83,7 @@ def _add_existing_user_to_factory(factory, user, role, invited_by):
         role=role,
         status=FactoryMember.MemberStatus.active,
         invited_by=invited_by,
+        invited_at=timezone.now(),
     )
     return {"message": "기존 회원을 바로 멤버로 추가했습니다."}
 
