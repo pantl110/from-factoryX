@@ -23,6 +23,7 @@ const AuthDropdown = ({ onClose, onSelect }: AuthDropdownProps) => {
           bgColor={PermissionRoleInfo['운영자'].chipColor.bg}
           hover={PermissionRoleInfo['운영자'].chipColor.hover}
           onClick={() => handleAuthSelect('운영자')}
+          cursor="cursor-pointer"
         />
       </DropdownItem>
       <DropdownItem noHover={true} chip={true}>
@@ -32,6 +33,7 @@ const AuthDropdown = ({ onClose, onSelect }: AuthDropdownProps) => {
           bgColor={PermissionRoleInfo['조회자'].chipColor.bg}
           hover={PermissionRoleInfo['조회자'].chipColor.hover}
           onClick={() => handleAuthSelect('조회자')}
+          cursor="cursor-pointer"
         />
       </DropdownItem>
     </Dropdown>
