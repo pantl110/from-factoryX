@@ -15,6 +15,7 @@ interface LocationItemProps {
   memo?: string;
   createdAt?: string;
   updatedAt?: string;
+  onClick?: () => void;
 }
 const LocationItem = ({
   image,
@@ -25,9 +26,10 @@ const LocationItem = ({
   memo,
   createdAt,
   updatedAt,
+  onClick,
 }: LocationItemProps) => {
   return (
-    <div className="flex gap-5 items-center">
+    <div className={`flex gap-5 items-center cursor-pointer`} onClick={onClick}>
       {/* 사진 */}
       <div className="relative shrink-0">
         {image ? (

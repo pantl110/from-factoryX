@@ -182,6 +182,8 @@ const ProductDetail = ({
   }>({ isOpen: false, projectId: undefined });
   const [isStockLocationModalOpen, setIsStockLocationModalOpen] =
     useState(false);
+  const [selectedLocation, setSelectedLocation] =
+    useState<LocationModel | null>(null);
   const [isSubstituteMaterialsModalOpen, setIsSubstituteMaterialsModalOpen] =
     useState(false);
 
@@ -632,7 +634,10 @@ const ProductDetail = ({
                 text="추가"
                 variant="whiteOutline"
                 disabled={isViewer || !hasSubscription()}
-                onClick={() => setIsStockLocationModalOpen(true)}
+                onClick={() => {
+                  setSelectedLocation(null);
+                  setIsStockLocationModalOpen(true);
+                }}
               />
             </div>
             {/* locations가 없을 때 */}
@@ -655,6 +660,10 @@ const ProductDetail = ({
                       memo={loc.memo}
                       createdAt={loc.created_at}
                       updatedAt={loc.updated_at}
+                      onClick={() => {
+                        setSelectedLocation(loc);
+                        setIsStockLocationModalOpen(true);
+                      }}
                     />
                   ))}
                 </div>
@@ -780,8 +789,19 @@ const ProductDetail = ({
       {/* 창고 위치 추가 모달 열기 */}
       {isStockLocationModalOpen && (
         <StockLocationModal
-          mode="add"
-          onClose={() => setIsStockLocationModalOpen(false)}
+          mode={selectedLocation ? 'update' : 'add'}
+          selectedLocation={selectedLocation}
+          productId={productId}
+          onClose={() => {
+            setIsStockLocationModalOpen(false);
+            setSelectedLocation(null);
+          }}
+          onSuccess={async () => {
+            // 저장 성공 시 창고 위치 목록 새로고침
+            if (productId) {
+              await listLocations('product', productId);
+            }
+          }}
         />
       )}
     </>

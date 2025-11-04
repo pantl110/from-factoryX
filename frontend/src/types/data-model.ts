@@ -585,6 +585,8 @@ export interface LocationListResponseModel {
 export interface UpdateLocationModel {
   type: 'material' | 'product';
   location?: string;
+  detail_location?: string;
+  memo?: string;
   images?: string[];
 }
 

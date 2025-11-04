@@ -7,7 +7,10 @@ import {
   MicrosoftExcelLogo,
   File,
   X,
+  WarningCircle,
 } from '@phosphor-icons/react';
+import { useToast } from '@/hooks';
+import Toast from './toast';
 
 interface DropzoneProps {
   variant?: 'default' | 'location';
@@ -28,24 +31,43 @@ const DropzoneArea = ({
 }: DropzoneProps) => {
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { isToastOpen, isVisible, showToast } = useToast();
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const currentCount = files.length;
       const availableSlots = fileCount - currentCount;
       let filesToAdd = acceptedFiles;
-      if (acceptedFiles.length > availableSlots) {
-        alert(`파일은 최대 9개까지만 업로드할 수 있습니다.`);
+      const shouldShowToast = acceptedFiles.length > availableSlots;
+
+      if (shouldShowToast) {
+        showToast();
         filesToAdd = acceptedFiles.slice(0, availableSlots);
       }
+
       const newFiles = filesToAdd.filter(
         (file) => !files.some((f) => f.name === file.name)
       ); // 중복된 파일은 제외하고 새로운 파일만 추가
+
+      // variant가 'location'이고 onComplete가 있으면 업로드 처리
+      if (variant === 'location' && onComplete && newFiles.length > 0) {
+        if (shouldShowToast) {
+          // 토스트가 표시되는 경우 2000ms 후에 처리
+          setPendingFiles(newFiles);
+        } else {
+          // 토스트가 없는 경우 바로 처리
+          onComplete(newFiles);
+          setFiles([]); // 파일 목록 초기화
+        }
+        return;
+      }
+
       const updatedFiles = [...files, ...newFiles];
       setFiles(updatedFiles);
       onFileUpload?.(updatedFiles.length > 0);
     },
-    [files, fileCount, onFileUpload]
+    [files, fileCount, onFileUpload, variant, onComplete, showToast]
   );
 
   const handleRemoveFile = (indexToRemove: number) => {
@@ -59,13 +81,34 @@ const DropzoneArea = ({
     const currentCount = files.length;
     const availableSlots = fileCount - currentCount;
     let filesToAdd = newFiles;
-    if (newFiles.length > availableSlots) {
-      alert(`파일은 최대 9개까지만 업로드할 수 있습니다.`);
+    const shouldShowToast = newFiles.length > availableSlots;
+
+    if (shouldShowToast) {
+      showToast();
       filesToAdd = newFiles.slice(0, availableSlots);
     }
+
     const uniqueNewFiles = filesToAdd.filter(
       (file) => !files.some((f) => f.name === file.name)
     );
+
+    // variant가 'location'이고 onComplete가 있으면 업로드 처리
+    if (variant === 'location' && onComplete && uniqueNewFiles.length > 0) {
+      if (shouldShowToast) {
+        // 토스트가 표시되는 경우 2000ms 후에 처리
+        setPendingFiles(uniqueNewFiles);
+      } else {
+        // 토스트가 없는 경우 바로 처리
+        onComplete(uniqueNewFiles);
+        setFiles([]); // 파일 목록 초기화
+      }
+      // input 초기화
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
     const updatedFiles = [...files, ...uniqueNewFiles];
     setFiles(updatedFiles);
     onFileUpload?.(updatedFiles.length > 0);
@@ -76,6 +119,19 @@ const DropzoneArea = ({
     onDrop,
     accept,
   });
+
+  // pendingFiles가 설정되면 2000ms 후에 처리
+  React.useEffect(() => {
+    if (pendingFiles && onComplete && variant === 'location') {
+      const timer = setTimeout(() => {
+        onComplete(pendingFiles);
+        setFiles([]);
+        setPendingFiles(null);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [pendingFiles, onComplete, variant]);
 
   // 파일 유형별 아이콘, 텍스트 반환 함수
   const getFileTypeInfo = (type: string) => {
@@ -220,6 +276,17 @@ const DropzoneArea = ({
         // Prevent selecting more files if already 9
         disabled={files.length >= fileCount}
       />
+
+      {/* 토스트 */}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text="파일은 최대 10개까지만 업로드할 수 있습니다."
+          subtext=""
+          type="red"
+          isVisible={isVisible}
+        />
+      )}
     </>
   );
 };
