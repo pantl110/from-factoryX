@@ -82,7 +82,8 @@ const StockLocation = ({
                   const locationData = watch(`locations.${index}`) as
                     | { id?: number }
                     | undefined;
-                  const locationId = locationData?.id || (field as any).id;
+                  const locationId =
+                    locationData?.id || (field.id as number | undefined);
                   if (typeof locationId === 'number' && onLocationClick) {
                     onLocationClick(locationId);
                   }

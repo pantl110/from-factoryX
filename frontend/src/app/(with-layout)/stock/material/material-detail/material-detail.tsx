@@ -89,7 +89,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       defaultValues: { locations: [] },
     });
 
-    const { fields, append, remove } = useFieldArray({
+    const { fields, remove } = useFieldArray({
       control,
       name: 'locations',
     });

@@ -21,7 +21,6 @@ import {
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import Unit from './unit';
-import { UnitConversionModel } from '@/types/data-model';
 
 const MasterData = () => {
   const factoryId = useMemberStore((state) => state.factoryId);

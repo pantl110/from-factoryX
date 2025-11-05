@@ -104,7 +104,7 @@ const eslintConfig = [
           selector: 'variable',
           types: ['boolean'],
           format: ['PascalCase'],
-          prefix: ['is', 'has', 'should', 'show'],
+          prefix: ['is', 'has', 'should', 'show', 'can'],
         },
         {
           selector: 'variable',

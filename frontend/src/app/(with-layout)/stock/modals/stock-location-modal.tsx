@@ -36,7 +36,7 @@ const StockLocationModal = ({
   onSuccess,
 }: StockLocationModalProps) => {
   const { createLocation, updateLocation, isLoading } = useLocation();
-  const { uploadMultipleFiles, isUploading } = useUploadFile();
+  const { uploadMultipleFiles } = useUploadFile();
   const role = useMemberStore((state) => state.role);
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
@@ -101,7 +101,7 @@ const StockLocationModal = ({
           location: data.location,
           detail_location: data.detail_location || undefined,
           memo: data.memo || undefined,
-          images: images,
+          images,
         });
 
         if (result.success) {
@@ -121,7 +121,7 @@ const StockLocationModal = ({
           location: data.location,
           detail_location: data.detail_location || undefined,
           memo: data.memo || undefined,
-          images: images,
+          images,
         });
 
         if (result.success) {
