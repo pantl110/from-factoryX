@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, Fragment } from 'react';
+import React, { useState, useEffect, useRef, useMemo, Fragment } from 'react';
 import ProductInfo, { ProductInfoModel } from './product-info';
 import MiniBtn from '@/ui/mini-btn';
 import ProductHistory from './product-history';
@@ -624,12 +624,6 @@ const ProductDetail = ({
               <h3 className="Heading-3 h-10 flex items-center text-dg ">
                 제품이 보관된 창고 위치
               </h3>
-              {/* <MiniBtn
-                text="추가"
-                variant="whiteOutline"
-                onClick={handleAddStockLocation}
-                disabled={isViewer || !hasSubscription()}
-              /> */}
               <MiniBtn
                 text="추가"
                 variant="whiteOutline"
@@ -649,23 +643,30 @@ const ProductDetail = ({
                 />
               ) : (
                 <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
-                  {locationListData.locations.map((loc: LocationModel) => (
-                    <LocationItem
-                      key={loc.id}
-                      image={loc.images?.[0] || ''}
-                      length={loc.images?.length || 0}
-                      email={loc.email}
-                      role={loc.role}
-                      location={loc.location || ''}
-                      memo={loc.memo}
-                      createdAt={loc.created_at}
-                      updatedAt={loc.updated_at}
-                      onClick={() => {
-                        setSelectedLocation(loc);
-                        setIsStockLocationModalOpen(true);
-                      }}
-                    />
-                  ))}
+                  {locationListData.locations.map(
+                    (loc: LocationModel, index: number) => (
+                      <React.Fragment key={loc.id}>
+                        <LocationItem
+                          image={loc.images?.[0] || ''}
+                          length={loc.images?.length || 0}
+                          email={loc.email}
+                          role={loc.role}
+                          location={loc.location || ''}
+                          memo={loc.memo}
+                          createdAt={loc.created_at}
+                          updatedAt={loc.updated_at}
+                          onClick={() => {
+                            setSelectedLocation(loc);
+                            setIsStockLocationModalOpen(true);
+                          }}
+                        />
+
+                        {index < locationListData.locations.length - 1 && (
+                          <div className="h-[1px] bg-lg w-full" />
+                        )}
+                      </React.Fragment>
+                    )
+                  )}
                 </div>
               )
             ) : (
@@ -738,24 +739,6 @@ const ProductDetail = ({
           }}
         />
       )}
-
-      {/* 각 StockLocationItem 별 모달 렌더링 */}
-      {/* {openUploadModals.map((open, idx) =>
-        open ? (
-          <StockLocationUploadModal
-            key={idx}
-            onClose={() => handleCloseUploadModal(idx)}
-            fileCount={9 - (watch(`locations.${idx}.images`)?.length ?? 0)}
-            onComplete={(uploadedFiles) => {
-              const prevImages = watch(`locations.${idx}.images`) ?? [];
-              const newImages = [...prevImages, ...uploadedFiles];
-              setValue(`locations.${idx}.images`, newImages, {
-                shouldDirty: true,
-              });
-            }}
-          />
-        ) : null
-      )} */}
 
       {/* 대체자재 모달 */}
       {isSubstituteMaterialsModalOpen && (
