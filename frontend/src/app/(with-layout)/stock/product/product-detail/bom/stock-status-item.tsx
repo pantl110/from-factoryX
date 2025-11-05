@@ -22,7 +22,7 @@ interface StockStatusItemProps {
   setMaterialId: (id: number | null) => void;
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
-  onDeleteConnection: (connectionId: number) => void;
+  onDeleteConnection?: (connectionId: number) => void;
   onInvalidQuantity: (message: string, subtext?: string) => void;
   isStagedMode?: boolean;
   onStagedQuantityChange?: (materialId: number, qty: number) => void;
@@ -156,7 +156,7 @@ const StockStatusItem = ({
 
   // 연결 삭제 핸들러
   const handleDeleteConnection = () => {
-    onDeleteConnection(connection.connection_id);
+    onDeleteConnection?.(connection.connection_id);
   };
 
   return (

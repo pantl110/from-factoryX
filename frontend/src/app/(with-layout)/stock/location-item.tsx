@@ -17,6 +17,7 @@ interface LocationItemProps {
   createdAt?: string;
   updatedAt?: string;
   onClick?: () => void;
+  onDelete?: () => void;
 }
 const LocationItem = ({
   image,
@@ -28,12 +29,14 @@ const LocationItem = ({
   createdAt,
   updatedAt,
   onClick,
+  onDelete,
 }: LocationItemProps) => {
   const userRole = useMemberStore((state) => state.role);
   const userHasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
   const canEdit = userRole !== 'viewer' && userHasSubscription();
+
   return (
     <div className={`flex gap-5 items-center cursor-pointer`} onClick={onClick}>
       {/* 사진 */}
@@ -83,6 +86,10 @@ const LocationItem = ({
                 variant="ghost"
                 textStyle="Re_body-2"
                 gap="gap-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.();
+                }}
               />
             )}
           </div>

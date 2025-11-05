@@ -40,6 +40,7 @@ import LocationItem from '../../location-item';
 import StockLocationModal from '../../modals/stock-location-modal';
 import SubstituteMaterialsModal from './bom/modals/substitute-materials-modal';
 import NoHistoryBox from '@/ui/no-history-box';
+import DeleteModal from '@/ui/modal/delete-modal';
 
 interface ProductDetailProps {
   productId: number | null;
@@ -69,6 +70,8 @@ const ProductDetail = ({
     getMaterialProductConnections,
     data: connections,
     updateMaterialProductConnection,
+    deleteMaterialProductConnection,
+    resetData,
     isLoading: isMaterialProductLoading,
   } = useMaterialProduct();
   const factoryId = useMemberStore((state) => state.factoryId);
@@ -186,6 +189,15 @@ const ProductDetail = ({
     useState<LocationModel | null>(null);
   const [isSubstituteMaterialsModalOpen, setIsSubstituteMaterialsModalOpen] =
     useState(false);
+  const [isDeleteLocationModalOpen, setIsDeleteLocationModalOpen] =
+    useState(false);
+  const [deleteLocationId, setDeleteLocationId] = useState<number | null>(null);
+  const [isDeleteConnectionModalOpen, setIsDeleteConnectionModalOpen] =
+    useState(false);
+  const [deleteConnectionId, setDeleteConnectionId] = useState<number | null>(
+    null
+  );
+  const [isDeletingConnection, setIsDeletingConnection] = useState(false);
 
   // 해당 원자재 클릭 시 보여줄 원자재 id와 해당 디테일 판넬
   const [materialId, setMaterialId] = useState<number | null>(null);
@@ -626,6 +638,10 @@ const ProductDetail = ({
                             setSelectedLocation(loc);
                             setIsStockLocationModalOpen(true);
                           }}
+                          onDelete={() => {
+                            setDeleteLocationId(loc.id);
+                            setIsDeleteLocationModalOpen(true);
+                          }}
                         />
 
                         {index < locationListData.locations.length - 1 && (
@@ -665,6 +681,10 @@ const ProductDetail = ({
             setIsSubstituteMaterialsModalOpen={
               setIsSubstituteMaterialsModalOpen
             }
+            onDeleteConnection={(connectionId: number) => {
+              setDeleteConnectionId(connectionId);
+              setIsDeleteConnectionModalOpen(true);
+            }}
           />
 
           {/* 제품 입·출고 내역 */}
@@ -752,6 +772,69 @@ const ProductDetail = ({
               await listLocations('product', productId);
             }
           }}
+        />
+      )}
+
+      {/* 창고 위치 삭제 모달 */}
+      {isDeleteLocationModalOpen && (
+        <DeleteModal
+          onClose={() => {
+            setIsDeleteLocationModalOpen(false);
+            setDeleteLocationId(null);
+          }}
+          onDelete={async () => {
+            if (deleteLocationId) {
+              const result = await deleteLocation(deleteLocationId, 'product');
+              if (result.success) {
+                // 삭제 성공 시 창고 위치 목록 새로고침
+                if (productId) {
+                  await listLocations('product', productId);
+                }
+              }
+            }
+            setIsDeleteLocationModalOpen(false);
+            setDeleteLocationId(null);
+          }}
+        />
+      )}
+
+      {/* BOM/패키징 레시피 연결 삭제 모달 */}
+      {isDeleteConnectionModalOpen && (
+        <DeleteModal
+          onClose={() => {
+            setIsDeleteConnectionModalOpen(false);
+            setDeleteConnectionId(null);
+          }}
+          onDelete={async () => {
+            if (deleteConnectionId) {
+              setIsDeletingConnection(true);
+              try {
+                const result =
+                  await deleteMaterialProductConnection(deleteConnectionId);
+                if (result.success) {
+                  // 삭제 성공 시 연결된 자재 정보 새로고침
+                  if (productId) {
+                    // 연결된 자재 목록 초기화
+                    resetData();
+                    // 연결된 자재 목록 다시 로드
+                    await getMaterialProductConnections(productId, 'product');
+                  }
+                } else {
+                  showToastMessage(
+                    '연결 삭제에 실패했습니다: ' +
+                      (result.error || '알 수 없는 오류')
+                  );
+                }
+              } catch {
+                showToastMessage('연결 삭제 중 오류가 발생했습니다.');
+              } finally {
+                setIsDeletingConnection(false);
+                setIsDeleteConnectionModalOpen(false);
+                setDeleteConnectionId(null);
+              }
+            }
+          }}
+          isLoading={isDeletingConnection}
         />
       )}
     </>

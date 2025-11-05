@@ -17,7 +17,7 @@ interface StockStatusProps {
   quantityOverrides?: Record<number, number>;
   setIsQuantityDirty: (isDirty: boolean) => void;
   handleQuantityChange: (connectionId: number, newQuantity: number) => void;
-  onDeleteConnection: (connectionId: number) => void;
+  onDeleteConnection?: (connectionId: number) => void;
   onInvalidQuantity: (message: string, subtext?: string) => void;
   isStagedMode?: boolean;
   onStagedQuantityChange?: (materialId: number, qty: number) => void;
@@ -73,7 +73,7 @@ const StockStatus = ({
                   setMaterialId={setMaterialId}
                   setIsQuantityDirty={setIsQuantityDirty}
                   handleQuantityChange={handleQuantityChange}
-                  onDeleteConnection={onDeleteConnection}
+                  onDeleteConnection={onDeleteConnection || (() => {})}
                   onInvalidQuantity={onInvalidQuantity}
                   isStagedMode={isStagedMode}
                   onStagedQuantityChange={onStagedQuantityChange}

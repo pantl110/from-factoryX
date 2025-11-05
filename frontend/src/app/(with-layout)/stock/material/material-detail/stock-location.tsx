@@ -37,6 +37,7 @@ const StockLocation = ({
   watch,
   onLocationClick,
   locations,
+  remove,
 }: StockLocationProps) => {
   if (!fields || fields.length === 0) {
     return (
@@ -88,6 +89,7 @@ const StockLocation = ({
                     onLocationClick(locationId);
                   }
                 }}
+                onDelete={() => remove(index)}
               />
               {index < fields.length - 1 && (
                 <div className="h-[1px] bg-lg w-full" />

@@ -6,9 +6,7 @@ import {
   MaterialProductConnectionResponseModel,
 } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
-import { useState } from 'react';
-import { useMaterialProduct, useTooltip } from '@/hooks';
-import DeleteModal from '@/ui/modal/delete-modal';
+import { useTooltip } from '@/hooks';
 import Tooltip from '@/ui/tooltip';
 import { Info } from '@phosphor-icons/react';
 
@@ -39,8 +37,8 @@ interface BOMProps {
   onInvalidQuantity: (message: string) => void;
   onStagedQuantityChange: (materialId: number, quantity: number) => void;
   onPersistStagedConnections?: (newProductId: number) => Promise<void>;
-  onConnectionsRefresh?: () => void | Promise<void>;
   setIsSubstituteMaterialsModalOpen: (isOpen: boolean) => void;
+  onDeleteConnection?: (connectionId: number) => void;
 }
 
 const Bom = ({
@@ -55,72 +53,17 @@ const Bom = ({
   onQuantityChange,
   onInvalidQuantity,
   onStagedQuantityChange,
-  onConnectionsRefresh,
   setIsSubstituteMaterialsModalOpen,
+  onDeleteConnection,
 }: BOMProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
-  const {
-    deleteMaterialProductConnection,
-    resetData,
-    getMaterialProductConnections,
-  } = useMaterialProduct();
-
   const { onMouseEnter, onMouseLeave, isVisible } = useTooltip({});
-
-  // 연결된 자재 정보 삭제 확인 모달
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteConnectionId, setDeleteConnectionId] = useState<number | null>(
-    null
-  );
 
   // 수량 변경 추적 함수
   const handleQuantityChange = (connectionId: number, newQuantity: number) => {
     onQuantityChange(connectionId, newQuantity);
-  };
-
-  // 연결 삭제 핸들러
-  const handleDeleteConnection = (connectionId: number) => {
-    setDeleteConnectionId(connectionId);
-    setIsDeleteModalOpen(true);
-  };
-
-  // 연결 삭제 실행
-  const handleConfirmDelete = async (connectionId: number) => {
-    if (!connectionId) return;
-
-    setIsDeleting(true);
-    try {
-      const result = await deleteMaterialProductConnection(connectionId);
-      if (result.success) {
-        // 삭제 성공 시 연결된 자재 정보 새로고침
-        if (productId) {
-          // 연결된 자재 목록 초기화
-          resetData();
-          // 연결된 자재 목록 다시 로드
-          await getMaterialProductConnections(productId, 'product');
-        }
-        // 상위 컴포넌트의 connections 상태도 새로고침
-        onConnectionsRefresh?.();
-      } else {
-        alert('연결 삭제에 실패했습니다: ' + result.error);
-      }
-    } catch {
-      alert('연결 삭제 중 오류가 발생했습니다.');
-    } finally {
-      setIsDeleting(false);
-      setIsDeleteModalOpen(false);
-      setDeleteConnectionId(null);
-    }
-  };
-
-  // 모달에서 삭제 확인 시 호출되는 함수
-  const handleModalConfirmDelete = () => {
-    if (deleteConnectionId) {
-      handleConfirmDelete(deleteConnectionId);
-    }
   };
 
   return (
@@ -177,21 +120,12 @@ const Bom = ({
         setMaterialId={onMaterialIdChange}
         setIsQuantityDirty={onQuantityDirtyChange}
         handleQuantityChange={handleQuantityChange}
-        onDeleteConnection={handleDeleteConnection}
+        onDeleteConnection={onDeleteConnection}
         onInvalidQuantity={onInvalidQuantity}
         isStagedMode={!productId}
         onStagedQuantityChange={onStagedQuantityChange}
         setIsSubstituteMaterialsModalOpen={setIsSubstituteMaterialsModalOpen}
       />
-
-      {/* 연결된 자재 정보 삭제 확인 모달 */}
-      {isDeleteModalOpen && deleteConnectionId && (
-        <DeleteModal
-          onClose={() => setIsDeleteModalOpen(false)}
-          onDelete={handleModalConfirmDelete}
-          isLoading={isDeleting}
-        />
-      )}
     </div>
   );
 };
