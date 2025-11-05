@@ -7,7 +7,6 @@ from location.schemas.outbound import LocationDetailOut, LocationListOut, ItemLo
 from location.models import Location
 from stock.models import Material, Product
 from factory.utils import is_factory_member
-from factory.models import FactoryMember
 
 router = Router(tags=["Location"], auth=jwt_auth)
 
@@ -25,7 +24,7 @@ async def create_location(request, payload: LocationCreateIn):
         raise HttpError(400, "factory_id를 입력해야 합니다.")
     
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    member = await is_factory_member(int(factory_id), user)
 
     if payload.type == "material":
         target_model = Material
@@ -39,24 +38,14 @@ async def create_location(request, payload: LocationCreateIn):
     except target_model.DoesNotExist:
         raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
 
-    # member_id가 있으면 FactoryMember 조회
-    member = None
-    if payload.member_id:
-        try:
-            member = await FactoryMember.objects.aget(id=payload.member_id)
-            # factory_id 검증
-            if member.factory_id != int(factory_id):
-                raise HttpError(400, "해당 멤버는 이 팩토리에 속하지 않습니다.")
-        except FactoryMember.DoesNotExist:
-            raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
-
     location = await Location.objects.acreate(
         type=payload.type,
         location=payload.location,
+        images=payload.images or [],
         member=member,
+        role=member.role if member else None,
         detail_location=payload.detail_location,
-        memo=payload.memo,
-        images=payload.images or []
+        memo=payload.memo
     )
     
     await sync_to_async(item.location.add)(location)
@@ -65,7 +54,7 @@ async def create_location(request, payload: LocationCreateIn):
         id=location.id,
         type=location.type,
         location=location.location,
-        member_id=location.member.id if location.member else None,
+        member_id=member.id if member else None,
         detail_location=location.detail_location,
         memo=location.memo,
         images=location.images or [],
@@ -101,28 +90,36 @@ async def list_locations(request, type: str, id: int):
     except target_model.DoesNotExist:
         raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
 
-    # member와 user를 미리 prefetch하여 async context에서 접근할 때 에러 방지
-    location_queryset = item.location.select_related('member', 'member__user').all()
-    locations = await sync_to_async(list)(location_queryset)
+    locations = await sync_to_async(list)(
+        item.location.select_related('member', 'member__user').all()
+    )
 
     if not locations:
         raise HttpError(404, "해당 아이템에 연결된 위치 정보가 없습니다.")
 
-    # 각 Location에 대해 FactoryMember에서 email과 role 가져오기
-    locations_detail_list = [
-        LocationListOut(
-            id=loc.id,
-            type=loc.type,
-            location=loc.location,
-            email=loc.member.user.email if loc.member and loc.member.user else None,
-            role=loc.member.role if loc.member else None,
-            detail_location=loc.detail_location,
-            memo=loc.memo,
-            images=loc.images or [],
-            created_at=loc.created_at,
-            updated_at=loc.updated_at
-        ) for loc in locations
-    ]
+    locations_detail_list = []
+    for loc in locations:
+        # member 정보 가져오기
+        member_email = None
+        member_role = None
+        if loc.member and loc.member.user:
+            member_email = loc.member.user.email
+            member_role = loc.member.role
+        
+        locations_detail_list.append(
+            LocationListOut(
+                id=loc.id,
+                type=loc.type,
+                location=loc.location,
+                email=member_email,
+                role=member_role,
+                detail_location=loc.detail_location,
+                memo=loc.memo,
+                images=loc.images or [],
+                created_at=loc.created_at,
+                updated_at=loc.updated_at
+            )
+        )
 
     return 200, ItemLocationsListOut(
         locations=locations_detail_list
@@ -141,7 +138,7 @@ async def update_location(request, location_id: int, payload: LocationUpdateIn):
         raise HttpError(400, "factory_id를 입력해야 합니다.")
     
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    member = await is_factory_member(int(factory_id), user)
 
     # Location 객체 직접 조회
     try:
@@ -149,31 +146,15 @@ async def update_location(request, location_id: int, payload: LocationUpdateIn):
     except Location.DoesNotExist:
         raise HttpError(404, "해당 위치를 찾을 수 없습니다.")
     
-    # member_id 처리
-    if payload.member_id is not None:
-        if payload.member_id == 0:
-            # member_id가 0이면 None으로 설정 (연결 해제)
-            location.member = None
-        else:
-            # member_id가 있으면 FactoryMember 조회
-            try:
-                member = await FactoryMember.objects.aget(id=payload.member_id)
-                # factory_id 검증
-                if member.factory_id != int(factory_id):
-                    raise HttpError(400, "해당 멤버는 이 팩토리에 속하지 않습니다.")
-                location.member = member
-            except FactoryMember.DoesNotExist:
-                raise HttpError(404, "해당 멤버를 찾을 수 없습니다.")
-    
     # 위치 정보 수정 (부분 수정 지원)
     if payload.location is not None:
         location.location = payload.location
+    if payload.images is not None:
+        location.images = payload.images
     if payload.detail_location is not None:
         location.detail_location = payload.detail_location
     if payload.memo is not None:
         location.memo = payload.memo
-    if payload.images is not None:
-        location.images = payload.images
     
     await sync_to_async(location.save)()
     
