@@ -18,7 +18,7 @@ class LocationDetailOut(Schema):
     id: int
     type: str
     location: str
-    member_id: Optional[int] = None
+    member: Optional[int] = None
     detail_location: Optional[str] = None
     memo: Optional[str] = None
     images: List[str] = []

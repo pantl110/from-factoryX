@@ -43,7 +43,6 @@ async def create_location(request, payload: LocationCreateIn):
         location=payload.location,
         images=payload.images or [],
         member=member,
-        role=member.role if member else None,
         detail_location=payload.detail_location,
         memo=payload.memo
     )
@@ -54,7 +53,7 @@ async def create_location(request, payload: LocationCreateIn):
         id=location.id,
         type=location.type,
         location=location.location,
-        member_id=member.id if member else None,
+        member=location.member_id,
         detail_location=location.detail_location,
         memo=location.memo,
         images=location.images or [],
@@ -104,7 +103,7 @@ async def list_locations(request, type: str, id: int):
         member_role = None
         if loc.member and loc.member.user:
             member_email = loc.member.user.email
-            member_role = loc.member.role
+            member_role = getattr(loc.member, "role", None)
         
         locations_detail_list.append(
             LocationListOut(
@@ -162,7 +161,7 @@ async def update_location(request, location_id: int, payload: LocationUpdateIn):
         id=location.id,
         type=location.type,
         location=location.location,
-        member_id=location.member.id if location.member else None,
+        member=location.member_id,
         detail_location=location.detail_location,
         memo=location.memo,
         images=location.images or [],

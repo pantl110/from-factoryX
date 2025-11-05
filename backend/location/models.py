@@ -8,23 +8,11 @@ class Location(BaseModel):
         material = ("material", "자재")
         product = ("product", "제품")
 
-    class LocationRole(models.TextChoices):
-        admin = ("admin", "시스템 관리자")
-        manager = ("manager", "운영자")
-        viewer = ("viewer", "조회자")
-        prod_manager = ("prod_manager", "생산담당자")
 
     type = models.CharField(
         max_length=10,
         choices=LocationType.choices,
         default=LocationType.material,
-    )
-    role = models.CharField(
-        max_length=20,
-        choices=LocationRole.choices,
-        null=True,
-        blank=True,
-        help_text="역할",
     )
     member = models.ForeignKey(
         "factory.FactoryMember",

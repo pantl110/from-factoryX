@@ -5,8 +5,8 @@ from .models import Location
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'type', 'location', 'detail_location', 'member', 'role', 'created_at']
-    list_filter = ['type', 'role', 'created_at']
+    list_display = ['id', 'type', 'location', 'detail_location', 'member', 'created_at']
+    list_filter = ['type', 'created_at']
     search_fields = ['location', 'detail_location', 'memo']
     readonly_fields = ['created_at', 'updated_at']
     list_per_page = 20
@@ -16,7 +16,7 @@ class LocationAdmin(admin.ModelAdmin):
             'fields': ('type', 'location', 'detail_location', 'images')
         }),
         ('담당자 정보', {
-            'fields': ('member', 'role'),
+            'fields': ('member',),
             'classes': ('collapse',)
         }),
         ('메모', {

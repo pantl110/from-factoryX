@@ -5,14 +5,12 @@ class LocationCreateIn(Schema):
     id: int
     type: str
     location: str
-    member_id: Optional[int] = None
     detail_location: Optional[str] = None
     memo: Optional[str] = None
     images: Optional[list] = None
 
 class LocationUpdateIn(Schema):
     location: Optional[str] = None
-    member_id: Optional[int] = None
     detail_location: Optional[str] = None
     memo: Optional[str] = None
     images: Optional[List[str]] = None

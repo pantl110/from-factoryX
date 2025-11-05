@@ -310,12 +310,17 @@ AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default=None)
 
 # Barobill settings
 BAROBILL_CERT_KEY = config("BAROBILL_CERT_KEY", default=None)
-BAROBILL_CLIENT = Client("https://testws.baroservice.com/TI.asmx?WSDL")  # 테스트서버
-# BAROBILL_CLIENT = Client("https://ws.baroservice.com/TI.asmx?WSDL")  # 운영서버
-BAROBILL_CASHBILL_CLIENT = Client(
-    "https://testws.baroservice.com/CASHBILL.asmx?WSDL"
-)  # 테스트서버
-# BAROBILL_CASHBILL_CLIENT = Client("https://ws.baroservice.com/CASHBILL.asmx?WSDL")  # 운영서버
+ENABLE_BAROBILL = config("ENABLE_BAROBILL", default=False, cast=bool)
+if ENABLE_BAROBILL:
+    BAROBILL_CLIENT = Client("https://testws.baroservice.com/TI.asmx?WSDL")  # 테스트서버
+    # BAROBILL_CLIENT = Client("https://ws.baroservice.com/TI.asmx?WSDL")  # 운영서버
+    BAROBILL_CASHBILL_CLIENT = Client(
+        "https://testws.baroservice.com/CASHBILL.asmx?WSDL"
+    )  # 테스트서버
+    # BAROBILL_CASHBILL_CLIENT = Client("https://ws.baroservice.com/CASHBILL.asmx?WSDL")  # 운영서버
+else:
+    BAROBILL_CLIENT = None
+    BAROBILL_CASHBILL_CLIENT = None
 
 # Django Crontab Settings
 CRONJOBS = [
