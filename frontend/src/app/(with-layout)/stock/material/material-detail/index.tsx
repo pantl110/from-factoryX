@@ -27,6 +27,7 @@ import { MaterialPackagingDetailModal } from '../modals/material-packaging-detai
 
 interface LocationModel {
   id: number;
+  type?: 'material' | 'product';
   location: string;
   images: (string | File)[];
 }
@@ -63,6 +64,8 @@ const MaterialDetailPanel = ({
     useState(false);
   // const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] =
+    useState<LocationModel | null>(null);
   const [
     isMaterialPackagingDetailModalOpen,
     setIsMaterialPackagingDetailModalOpen,
@@ -378,8 +381,20 @@ const MaterialDetailPanel = ({
           materialId={selectedMaterialId}
           locations={prevLocations}
           setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
-          // handleOpenUploadModal={handleOpenUploadModal}
           setIsUploadModalOpen={setIsUploadModalOpen}
+          onLocationClick={(locationId) => {
+            const location = prevLocations.find((loc) => loc.id === locationId);
+            if (location) {
+              setSelectedLocation({
+                ...location,
+                type: 'material' as const,
+                images: (location.images || []).filter(
+                  (img): img is string => typeof img === 'string'
+                ),
+              });
+              setIsUploadModalOpen(true);
+            }
+          }}
           onIsDirtyChange={setIsMaterialDetailDirty}
           setIsClinetDetailPanelOpen={setIsClinetDetailPanelOpen}
           handleOpenDeleteModal={handleOpenDeleteModal}
@@ -393,36 +408,6 @@ const MaterialDetailPanel = ({
           }
         />
       </Panel>
-
-      {/* {openUploadModals.map((open, idx) =>
-        open ? (
-          <StockLocationUploadModal
-            key={idx}
-            onClose={() => handleCloseUploadModal(idx)}
-            fileCount={(() => {
-              // materialDetailRef.current가 있고 watch가 있으면 사용
-              const refObj = materialDetailRef.current;
-              if (refObj?.watch) {
-                const images = refObj.watch(`locations.${idx}.images`);
-                return 9 - (images?.length ?? 0);
-              }
-              return 9;
-            })()}
-            onComplete={(uploadedFiles: File[]) => {
-              // 업로드된 파일들을 해당 위치의 이미지 배열에 추가
-              const refObj = materialDetailRef.current;
-              if (refObj?.watch && refObj?.setValue) {
-                const currentImages =
-                  refObj.watch(`locations.${idx}.images`) || [];
-                const newImages = [...currentImages, ...uploadedFiles];
-                refObj.setValue(`locations.${idx}.images`, newImages, {
-                  shouldDirty: true,
-                });
-              }
-            }}
-          />
-        ) : null
-      )} */}
 
       {/* 토스트 */}
       {isToastOpen && (
@@ -452,11 +437,41 @@ const MaterialDetailPanel = ({
           }}
         />
       )}
-      {/* 창고 추가 모달 */}
+      {/* 창고 추가/수정 모달 */}
       {isUploadModalOpen && (
         <StockLocationModal
-          mode="add"
-          onClose={() => setIsUploadModalOpen(false)}
+          mode={selectedLocation ? 'update' : 'add'}
+          selectedLocation={
+            selectedLocation
+              ? {
+                  ...selectedLocation,
+                  type: 'material' as const,
+                  images: (selectedLocation.images || []).filter(
+                    (img): img is string => typeof img === 'string'
+                  ),
+                }
+              : undefined
+          }
+          materialId={selectedMaterialId}
+          onClose={() => {
+            setIsUploadModalOpen(false);
+            setSelectedLocation(null);
+          }}
+          onSuccess={async () => {
+            // 저장 성공 시 창고 위치 목록 새로고침
+            if (selectedMaterialId) {
+              const res = await listLocations('material', selectedMaterialId);
+              if (
+                res &&
+                res.success &&
+                res.data &&
+                Array.isArray(res.data.locations)
+              ) {
+                setPrevLocations(res.data.locations);
+                materialDetailRef.current?.resetLocations?.(res.data.locations);
+              }
+            }
+          }}
         />
       )}
       {/* 제품 연결하기에서 삭제 버튼 누를 시 모달 */}

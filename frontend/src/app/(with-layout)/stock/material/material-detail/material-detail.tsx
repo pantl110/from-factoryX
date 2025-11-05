@@ -13,7 +13,7 @@ import {
   useRef,
   useCallback,
 } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { usePeriodSelector } from '@/hooks/use-period-selector';
 import { ProductRequiringMaterialRefModel } from './product-requiring-material';
 import CustomDateSelector from '@/ui/dropdown/select-period-dropdown/custom-date-selector';
@@ -33,6 +33,11 @@ interface LocationFormModel {
     id?: number;
     location: string;
     images: (string | File)[];
+    email?: string;
+    role?: string;
+    memo?: string;
+    created_at?: string;
+    updated_at?: string;
   }[];
 }
 
@@ -41,6 +46,7 @@ interface MaterialDetailProps {
   setIsProductEnrollmentModalOpen: (v: boolean) => void;
   // handleOpenUploadModal: (index: number) => void;
   setIsUploadModalOpen: (isOpen: boolean) => void;
+  onLocationClick?: (locationId: number) => void;
   onIsDirtyChange?: (isDirty: boolean) => void;
   locations?: LocationFormModel['locations'];
   setIsClinetDetailPanelOpen: (clientId: number) => void;
@@ -59,6 +65,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       setIsProductEnrollmentModalOpen,
       // handleOpenUploadModal,
       setIsUploadModalOpen,
+      onLocationClick,
       onIsDirtyChange,
       locations,
       setIsClinetDetailPanelOpen,
@@ -72,7 +79,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
   ) => {
     // RHF for locations
     const {
-      // control,
+      control,
       watch,
       setValue,
       getValues: getLocationValues,
@@ -82,10 +89,10 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       defaultValues: { locations: [] },
     });
 
-    // const { fields, append, remove } = useFieldArray({
-    //   control,
-    //   name: 'locations',
-    // });
+    const { fields, append, remove } = useFieldArray({
+      control,
+      name: 'locations',
+    });
 
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
@@ -355,19 +362,19 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
-                // onClick={handleAddStockLocation}
                 onClick={() => setIsUploadModalOpen(true)}
                 disabled={isViewer || !hasSubscription()}
               />
             </div>
 
             <StockLocation
-            // control={control}
-            // fields={fields}
-            // remove={remove}
-            // setValue={setValue}
-            // watch={watch}
-            // openUploadModal={handleOpenUploadModal}
+              control={control}
+              fields={fields}
+              remove={remove}
+              setValue={setValue}
+              watch={watch}
+              onLocationClick={onLocationClick}
+              locations={locations}
             />
           </div>
 

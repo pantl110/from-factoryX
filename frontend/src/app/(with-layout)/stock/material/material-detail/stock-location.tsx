@@ -13,6 +13,11 @@ interface LocationFormModel {
     id?: number;
     location: string;
     images: (string | File)[];
+    email?: string;
+    role?: string;
+    memo?: string;
+    created_at?: string;
+    updated_at?: string;
   }[];
 }
 
@@ -23,9 +28,16 @@ interface StockLocationProps {
   setValue: UseFormSetValue<LocationFormModel>;
   // openUploadModal: (index: number) => void;
   watch: (name: string) => (string | File)[] | undefined;
+  onLocationClick?: (locationId: number) => void;
+  locations?: LocationFormModel['locations'];
 }
 
-const StockLocation = ({ fields, watch }: StockLocationProps) => {
+const StockLocation = ({
+  fields,
+  watch,
+  onLocationClick,
+  locations,
+}: StockLocationProps) => {
   if (!fields || fields.length === 0) {
     return (
       <div className="flex flex-col gap-3">
@@ -60,6 +72,21 @@ const StockLocation = ({ fields, watch }: StockLocationProps) => {
                 image={firstImage}
                 length={images.length}
                 location={location}
+                email={locations?.[index]?.email}
+                role={locations?.[index]?.role}
+                memo={locations?.[index]?.memo}
+                createdAt={locations?.[index]?.created_at}
+                updatedAt={locations?.[index]?.updated_at}
+                onClick={() => {
+                  // field 객체에서 실제 location id를 가져옴 (watch로 현재 값을 확인)
+                  const locationData = watch(`locations.${index}`) as
+                    | { id?: number }
+                    | undefined;
+                  const locationId = locationData?.id || (field as any).id;
+                  if (typeof locationId === 'number' && onLocationClick) {
+                    onLocationClick(locationId);
+                  }
+                }}
               />
               {index < fields.length - 1 && (
                 <div className="h-[1px] bg-lg w-full" />

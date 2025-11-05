@@ -13,6 +13,7 @@ interface StockLocationModalProps {
   mode: 'add' | 'update';
   selectedLocation?: LocationModel | null;
   productId?: number | null;
+  materialId?: number | null;
   onClose: () => void;
   onSuccess?: () => void;
 }
@@ -28,6 +29,7 @@ const StockLocationModal = ({
   mode,
   selectedLocation,
   productId,
+  materialId,
   onClose,
   onSuccess,
 }: StockLocationModalProps) => {
@@ -79,13 +81,16 @@ const StockLocationModal = ({
     try {
       if (mode === 'add') {
         // 추가 모드
-        if (!productId) {
+        const id = materialId || productId;
+        if (!id) {
           return;
         }
 
+        const type = materialId ? 'material' : 'product';
+        
         const result = await createLocation({
-          type: 'product',
-          id: productId,
+          type,
+          id: id as number,
           location: data.location,
           detail_location: data.detail_location || undefined,
           memo: data.memo || undefined,
@@ -102,8 +107,10 @@ const StockLocationModal = ({
           return;
         }
 
+        const type = materialId ? 'material' : 'product';
+        
         const result = await updateLocation(selectedLocation.id, {
-          type: 'product',
+          type,
           location: data.location,
           detail_location: data.detail_location || undefined,
           memo: data.memo || undefined,
