@@ -101,7 +101,9 @@ async def list_locations(request, type: str, id: int):
     except target_model.DoesNotExist:
         raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
 
-    locations = await sync_to_async(list)(item.location.all())
+    # member와 user를 미리 prefetch하여 async context에서 접근할 때 에러 방지
+    location_queryset = item.location.select_related('member', 'member__user').all()
+    locations = await sync_to_async(list)(location_queryset)
 
     if not locations:
         raise HttpError(404, "해당 아이템에 연결된 위치 정보가 없습니다.")
@@ -112,7 +114,7 @@ async def list_locations(request, type: str, id: int):
             id=loc.id,
             type=loc.type,
             location=loc.location,
-            email=loc.member.user.email if loc.member else None,
+            email=loc.member.user.email if loc.member and loc.member.user else None,
             role=loc.member.role if loc.member else None,
             detail_location=loc.detail_location,
             memo=loc.memo,
