@@ -242,10 +242,6 @@ textarea,
     color: #3d3d3d;
     border: 1px solid #016fee;
   }
-
-  &::placeholder {
-    color: #949494;
-  }
 }
 
 textarea.noDefaultStyle {

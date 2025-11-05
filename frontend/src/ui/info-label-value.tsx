@@ -154,7 +154,7 @@ const InfoLabelValue = ({
                 ? { value: strValue, onChange: changeHandler }
                 : { defaultValue: strValue, readOnly: true })}
               placeholder={placeholder}
-              className="flex-1 noDefaultStyle"
+              className="flex-1 noDefaultStyle placeholder:text-gr"
               style={{
                 outline: 'none',
                 overflow: 'hidden',
