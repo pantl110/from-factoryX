@@ -217,29 +217,6 @@ const MaterialDetailPanel = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMaterialId]);
 
-  // 원자재 재고 위치 관련 함수
-  // const handleOpenUploadModal = (index: number) => {
-  // setOpenUploadModals((prev) => {
-  //   // 배열을 필요한 크기로 확장
-  //   const newModals = [...prev];
-  //   while (newModals.length <= index) {
-  //     newModals.push(false);
-  //   }
-  //   newModals[index] = true;
-  //   return newModals;
-  // });
-  // };
-  // const handleCloseUploadModal = (index: number) => {
-  // setOpenUploadModals((prev) => {
-  //   const newModals = [...prev];
-  //   while (newModals.length <= index) {
-  //     newModals.push(false);
-  //   }
-  //   newModals[index] = false;
-  //   return newModals;
-  // });
-  // };
-
   // 원자재 디테일 판넬의 저장 버튼 클릭 시 수정사항 반영
   const materialDetailRef = useRef<MaterialDetailRefModel>(null);
   const { updateMaterial } = useUpdateMaterial();

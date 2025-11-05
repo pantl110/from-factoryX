@@ -278,39 +278,6 @@ const ProductDetail = ({
     }
   }, [productId, getMaterialProductConnections]);
 
-  ////////////////////////////////
-  // 함수
-  // StockLocationItem 추가 함수
-  // const handleAddStockLocation = () => {
-  //   append({ location: '', images: [] });
-  //   setOpenUploadModals((prev) => [...prev, false]);
-  // };
-
-  // Plus 버튼 클릭 시 사진 추가 모달 오픈
-  // const _handleOpenUploadModal = (index: number) => {
-  //   setOpenUploadModals((prev) => {
-  //     const newModals = [...prev];
-  //     // 배열 크기가 부족하면 확장
-  //     while (newModals.length <= index) {
-  //       newModals.push(false);
-  //     }
-  //     newModals[index] = true;
-  //     return newModals;
-  //   });
-  // };
-  // // 사진 추가 모달 닫기
-  // const handleCloseUploadModal = (index: number) => {
-  //   setOpenUploadModals((prev) => {
-  //     const newModals = [...prev];
-  //     // 배열 크기가 부족하면 확장
-  //     while (newModals.length <= index) {
-  //       newModals.push(false);
-  //     }
-  //     newModals[index] = false;
-  //     return newModals;
-  //   });
-  // };
-
   // ProductInfo 저장 함수
   const handleSaveProductInfo = async (): Promise<{
     success: boolean;
@@ -642,7 +609,7 @@ const ProductDetail = ({
                   text="[추가] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
                 />
               ) : (
-                <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
+                <div className="px-4 py-3 rounded-[8px] border border-lg flex flex-col gap-3">
                   {locationListData.locations.map(
                     (loc: LocationModel, index: number) => (
                       <React.Fragment key={loc.id}>

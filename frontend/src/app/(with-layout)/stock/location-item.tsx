@@ -1,10 +1,11 @@
 import Chip from '@/ui/chip';
 import Image from 'next/image';
-import React from 'react';
 import { getRoleText } from '@/utils/get-role-text';
-import { DotsThree } from '@phosphor-icons/react';
-import IconBtn from '@/ui/icon-btn';
+import { Trash } from '@phosphor-icons/react';
 import { formatDate } from '@/utils/format-number';
+import MiniBtn from '@/ui/mini-btn';
+import useSubscriptionStore from '@/store/subscription-store';
+import useMemberStore from '@/store/member-store';
 
 interface LocationItemProps {
   image: string;
@@ -28,6 +29,11 @@ const LocationItem = ({
   updatedAt,
   onClick,
 }: LocationItemProps) => {
+  const userRole = useMemberStore((state) => state.role);
+  const userHasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+  const canEdit = userRole !== 'viewer' && userHasSubscription();
   return (
     <div className={`flex gap-5 items-center cursor-pointer`} onClick={onClick}>
       {/* 사진 */}
@@ -68,13 +74,17 @@ const LocationItem = ({
             <span className="m-Body-4 text-gr">
               {updatedAt ? formatDate(updatedAt) : formatDate(createdAt || '-')}
             </span>
-            <IconBtn
-              icon={DotsThree}
-              size="w-4 h-4"
-              iconSize={16}
-              rounded="rounded-[4px]"
-              onClick={() => {}}
-            />
+            {canEdit && (
+              <MiniBtn
+                text="삭제"
+                icon={Trash}
+                iconPosition="right"
+                iconSize={16}
+                variant="ghost"
+                textStyle="Re_body-2"
+                gap="gap-1"
+              />
+            )}
           </div>
         </div>
         <p className="m-Body-2 text-bl w-full truncate">{location || '-'}</p>

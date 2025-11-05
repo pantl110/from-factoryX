@@ -18,9 +18,17 @@ interface MiniBtnProps
   iconPosition?: 'left' | 'right';
   iconColor?: string;
   iconWeight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone';
+  iconSize?: number;
+  gap?: string;
   width?: string;
   height?: string;
-  variant?: 'primary' | 'secondary' | 'red' | 'white' | 'whiteOutline';
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'red'
+    | 'white'
+    | 'whiteOutline'
+    | 'ghost';
   justifyBetween?: boolean;
   padding?: string;
   textStyle?: string;
@@ -36,6 +44,8 @@ const MiniBtn = ({
   iconPosition = 'left',
   iconColor,
   iconWeight = 'regular',
+  iconSize = 20,
+  gap = 'gap-2',
   width = 'w-fit',
   height = 'h-10',
   variant,
@@ -84,6 +94,12 @@ const MiniBtn = ({
           hover: 'hover:bg-bg',
           border: 'border border-lg',
         };
+      case 'ghost':
+        return {
+          bg: '',
+          text: 'text-sv',
+          hover: 'hover:text-red',
+        };
       default:
         return {};
     }
@@ -94,7 +110,8 @@ const MiniBtn = ({
   return (
     <button
       className={clsx(
-        'rounded-md transition-slow flex items-center gap-2',
+        'rounded-md transition-slow flex items-center',
+        gap,
         textStyle,
         padding,
         height,
@@ -123,7 +140,7 @@ const MiniBtn = ({
     >
       {Icon && (
         <Icon
-          size={20}
+          size={iconSize}
           weight={iconWeight}
           className={`transition-slow ${rest.disabled ? 'text-gr' : iconColor}`}
         />

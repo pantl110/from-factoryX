@@ -331,11 +331,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       }
     }, [productWasModified]);
 
-    // StockLocationItem 추가 함수
-    // const handleAddStockLocation = () => {
-    //   append({ location: '', images: [] });
-    // };
-
     return (
       <>
         <div className="flex flex-col gap-10">

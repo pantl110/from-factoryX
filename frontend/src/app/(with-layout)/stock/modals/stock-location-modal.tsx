@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { LocationModel } from '@/types/data-model';
 import { useLocation, useUploadFile } from '@/hooks';
+import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface StockLocationModalProps {
   mode: 'add' | 'update';
@@ -35,6 +37,11 @@ const StockLocationModal = ({
 }: StockLocationModalProps) => {
   const { createLocation, updateLocation, isLoading } = useLocation();
   const { uploadMultipleFiles, isUploading } = useUploadFile();
+  const role = useMemberStore((state) => state.role);
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+  const canEdit = role !== 'viewer' && hasSubscription();
 
   const {
     register,
@@ -87,7 +94,7 @@ const StockLocationModal = ({
         }
 
         const type = materialId ? 'material' : 'product';
-        
+
         const result = await createLocation({
           type,
           id: id as number,
@@ -108,7 +115,7 @@ const StockLocationModal = ({
         }
 
         const type = materialId ? 'material' : 'product';
-        
+
         const result = await updateLocation(selectedLocation.id, {
           type,
           location: data.location,
@@ -163,7 +170,7 @@ const StockLocationModal = ({
   return (
     <Modal
       onClose={onClose}
-      title={mode === 'add' ? '창고 위치 추가' : '창고 위치 수정'}
+      title={mode === 'add' ? '창고 위치 추가' : '창고 위치'}
       width="w-[800px]"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
@@ -178,12 +185,14 @@ const StockLocationModal = ({
             errorMessage={
               errors.location ? '창고 위치명을 입력해주세요.' : undefined
             }
+            disabledReadOnly={!canEdit}
           />
           <Input
             label="상세 위치"
             placeholder="왼쪽 2번째 칸, 바닥에서 3번째 선반"
             value={watch('detail_location')}
             {...register('detail_location')}
+            disabledReadOnly={!canEdit}
           />
           <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center gap-1 h-5">
@@ -197,16 +206,20 @@ const StockLocationModal = ({
               placeholder="지게차 진입 불가, 소분 전용 구역 등"
               {...register('memo')}
               className="w-full p-2 border border-lg rounded-[8px] resize-none focus:outline-none focus:border-primary"
+              disabled={!canEdit}
             />
           </div>
 
           {/* 창고 사진 */}
-          <div className="flex flex-col gap-2 w-full">
-            <label htmlFor="warehouse-photos" className="Heading-5 text-sv">
-              창고 사진
-            </label>
 
-            {images.length < 10 && (
+          <div className="flex flex-col gap-2 w-full">
+            {!canEdit && images.length > 0 && (
+              <label htmlFor="warehouse-photos" className="Heading-5 text-sv">
+                창고 사진
+              </label>
+            )}
+
+            {images.length < 10 && canEdit && (
               <DropzoneArea
                 variant="location"
                 fileCount={10 - images.length}
@@ -231,33 +244,37 @@ const StockLocationModal = ({
                       quality={100}
                       unoptimized={true}
                     />
-                    <button
-                      type="button"
-                      className="rounded-full bg-wh absolute -top-[5px] -right-[8px] w-5 h-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.12)] flex items-center justify-center hover:bg-lg"
-                      onClick={() => handleRemoveImage(index)}
-                    >
-                      <X size={14} className="text-sv" />
-                    </button>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        className="rounded-full bg-wh absolute -top-[5px] -right-[8px] w-5 h-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.12)] flex items-center justify-center hover:bg-lg"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        <X size={14} className="text-sv" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
             )}
           </div>
         </div>
-        <div className="flex justify-end gap-2.5 mt-5">
-          <MiniBtn
-            text="취소"
-            variant="white"
-            onClick={onClose}
-            type="button"
-          />
-          <MiniBtn
-            text="저장"
-            variant="primary"
-            type="submit"
-            disabled={isLoading}
-          />
-        </div>
+        {canEdit && (
+          <div className="flex justify-end gap-2.5 mt-5">
+            <MiniBtn
+              text="취소"
+              variant="white"
+              onClick={onClose}
+              type="button"
+            />
+            <MiniBtn
+              text="저장"
+              variant="primary"
+              type="submit"
+              disabled={isLoading}
+            />
+          </div>
+        )}
       </form>
     </Modal>
   );

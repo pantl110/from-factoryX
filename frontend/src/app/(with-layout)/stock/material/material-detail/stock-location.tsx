@@ -51,7 +51,7 @@ const StockLocation = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="p-5 rounded-[8px] border border-lg flex flex-col gap-3">
+      <div className="px-4 py-3 rounded-[8px] border border-lg flex flex-col gap-3">
         {fields.map((field, index) => {
           const watchedImages = watch(`locations.${index}.images`);
           const images =
