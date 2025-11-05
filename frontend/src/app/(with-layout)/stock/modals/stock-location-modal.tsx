@@ -205,7 +205,7 @@ const StockLocationModal = ({
               rows={4}
               placeholder="지게차 진입 불가, 소분 전용 구역 등"
               {...register('memo')}
-              className="w-full p-2 border border-lg rounded-[8px] resize-none focus:outline-none focus:border-primary"
+              className="w-full p-2 border border-lg rounded-[8px] resize-none focus:border-primary"
               disabled={!canEdit}
             />
           </div>

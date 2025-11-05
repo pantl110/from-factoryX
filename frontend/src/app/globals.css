@@ -240,11 +240,11 @@ textarea,
   &:focus {
     outline: none;
     color: #3d3d3d;
-    border: 1px solid #e3e3e3;
+    border: 1px solid #016fee;
   }
 
   &::placeholder {
-    color: #bababa;
+    color: #949494;
   }
 }
 
