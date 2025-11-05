@@ -47,6 +47,7 @@ interface MaterialDetailProps {
   // handleOpenUploadModal: (index: number) => void;
   setIsUploadModalOpen: (isOpen: boolean) => void;
   onLocationClick?: (locationId: number) => void;
+  onDeleteLocation?: (index: number, locationId?: number) => void;
   onIsDirtyChange?: (isDirty: boolean) => void;
   locations?: LocationFormModel['locations'];
   setIsClinetDetailPanelOpen: (clientId: number) => void;
@@ -66,6 +67,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       // handleOpenUploadModal,
       setIsUploadModalOpen,
       onLocationClick,
+      onDeleteLocation,
       onIsDirtyChange,
       locations,
       setIsClinetDetailPanelOpen,
@@ -370,6 +372,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               watch={watch}
               onLocationClick={onLocationClick}
               locations={locations}
+              onDeleteLocation={onDeleteLocation}
             />
           </div>
 

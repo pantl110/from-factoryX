@@ -133,7 +133,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               rules={{ required: true }}
               render={({ field }) => (
                 <InfoLabelValue
-                  label="단위"
+                  label="개별 단위"
                   placeholder="(필수) 단위를 입력하세요."
                   isEditing={!isViewer && hasSubscription()}
                   required

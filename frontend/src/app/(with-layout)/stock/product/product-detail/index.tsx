@@ -673,11 +673,6 @@ const ProductDetail = ({
             onQuantityChange={handleQuantityChange}
             onInvalidQuantity={showToastMessage}
             onStagedQuantityChange={updateStagedQuantity}
-            onConnectionsRefresh={async () => {
-              if (productId) {
-                await getMaterialProductConnections(productId, 'product');
-              }
-            }}
             setIsSubstituteMaterialsModalOpen={
               setIsSubstituteMaterialsModalOpen
             }

@@ -122,6 +122,12 @@ const MaterialDetailPanel = ({
   const [toastText, setToastText] = useState('');
   const [toastSubtext, setToastSubtext] = useState('');
   const [prevLocations, setPrevLocations] = useState<LocationModel[]>([]);
+  // 위치 삭제 모달 상태 (id 존재 여부로 표시)
+  const [deleteLocationId, setDeleteLocationId] = useState<number | null>(null);
+
+  const handleRequestDeleteLocation = (index: number, locationId?: number) => {
+    setDeleteLocationId(typeof locationId === 'number' ? locationId : null);
+  };
 
   // 삭제 모달 열기 함수
   const handleOpenDeleteModal = (connectionId: number) => {
@@ -375,6 +381,7 @@ const MaterialDetailPanel = ({
           onIsDirtyChange={setIsMaterialDetailDirty}
           setIsClinetDetailPanelOpen={setIsClinetDetailPanelOpen}
           handleOpenDeleteModal={handleOpenDeleteModal}
+          onDeleteLocation={handleRequestDeleteLocation}
           onProductClick={(productId) => {
             setSelectedProductId(productId);
           }}
@@ -456,6 +463,37 @@ const MaterialDetailPanel = ({
         <DeleteModal
           onClose={() => setIsDeleteModalOpen(false)}
           onDelete={handleConfirmDelete}
+        />
+      )}
+      {/* 창고 위치 삭제 모달 */}
+      {deleteLocationId !== null && (
+        <DeleteModal
+          onClose={() => {
+            setDeleteLocationId(null);
+          }}
+          onDelete={async () => {
+            try {
+              if (deleteLocationId) {
+                await deleteLocation(deleteLocationId, 'material');
+              }
+              if (selectedMaterialId) {
+                const res = await listLocations('material', selectedMaterialId);
+                if (
+                  res &&
+                  res.success &&
+                  res.data &&
+                  Array.isArray(res.data.locations)
+                ) {
+                  setPrevLocations(res.data.locations);
+                  materialDetailRef.current?.resetLocations?.(
+                    res.data.locations
+                  );
+                }
+              }
+            } finally {
+              setDeleteLocationId(null);
+            }
+          }}
         />
       )}
       {/* 원자재 소분내역 디테일 모달 */}

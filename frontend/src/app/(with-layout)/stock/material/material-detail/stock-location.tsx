@@ -30,6 +30,7 @@ interface StockLocationProps {
   watch: (name: string) => (string | File)[] | undefined;
   onLocationClick?: (locationId: number) => void;
   locations?: LocationFormModel['locations'];
+  onDeleteLocation?: (index: number, locationId?: number) => void;
 }
 
 const StockLocation = ({
@@ -38,6 +39,7 @@ const StockLocation = ({
   onLocationClick,
   locations,
   remove,
+  onDeleteLocation,
 }: StockLocationProps) => {
   if (!fields || fields.length === 0) {
     return (
@@ -89,7 +91,22 @@ const StockLocation = ({
                     onLocationClick(locationId);
                   }
                 }}
-                onDelete={() => remove(index)}
+                onDelete={() => {
+                  const locationData = watch(`locations.${index}`) as
+                    | { id?: number }
+                    | undefined;
+                  const locationId =
+                    locationData?.id || (field.id as number | undefined);
+                  if (onDeleteLocation) {
+                    onDeleteLocation(
+                      index,
+                      typeof locationId === 'number' ? locationId : undefined
+                    );
+                  } else {
+                    // fallback: 로컬에서만 제거
+                    remove(index);
+                  }
+                }}
               />
               {index < fields.length - 1 && (
                 <div className="h-[1px] bg-lg w-full" />
