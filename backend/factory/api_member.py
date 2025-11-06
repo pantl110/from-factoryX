@@ -9,10 +9,10 @@ from ninja.pagination import paginate
 from factory.schemas.inbound import InviteMemberIn, FactoryMemberUpdateIn
 from factory.schemas.outbound import FactoryMemberOut, FactoryMemberDetailOut
 from datetime import datetime
-from django.utils import timezone
 from factory.utils import is_factory_member
 from websocket.utils import send_notification
 from typing import Optional
+from django.utils import timezone
 
 
 router = Router(tags=["FactoryMember"], auth=jwt_auth)
