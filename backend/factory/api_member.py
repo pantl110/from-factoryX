@@ -12,6 +12,7 @@ from datetime import datetime
 from factory.utils import is_factory_member
 from websocket.utils import send_notification
 from typing import Optional
+from django.utils import timezone
 
 
 router = Router(tags=["FactoryMember"], auth=jwt_auth)
@@ -82,6 +83,7 @@ def _add_existing_user_to_factory(factory, user, role, invited_by):
         role=role,
         status=FactoryMember.MemberStatus.active,
         invited_by=invited_by,
+        invited_at=timezone.now(),
     )
     return {"message": "기존 회원을 바로 멤버로 추가했습니다."}
 
