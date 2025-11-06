@@ -61,6 +61,15 @@ const Bom = ({
 
   const { onMouseEnter, onMouseLeave, isVisible } = useTooltip({});
 
+  // 데이터 유무 판단: hasData가 "있을 때"를 의미
+  const hasData = productId
+    ? Boolean(
+        connections &&
+          Array.isArray(connections) &&
+          (connections as ConnectionModelType[]).length > 0
+      )
+    : stagedMaterials.length > 0;
+
   // 수량 변경 추적 함수
   const handleQuantityChange = (connectionId: number, newQuantity: number) => {
     onQuantityChange(connectionId, newQuantity);
@@ -90,14 +99,14 @@ const Bom = ({
             )}
           </div>
         </div>
-        <MiniBtn
-          text="연결"
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
-          onClick={onMaterialModalOpen}
-          disabled={isViewer || !hasSubscription()}
-        />
+        {hasData && (
+          <MiniBtn
+            text="연결"
+            variant="whiteOutline"
+            onClick={onMaterialModalOpen}
+            disabled={isViewer || !hasSubscription()}
+          />
+        )}
       </div>
 
       <StockStatus
@@ -125,6 +134,7 @@ const Bom = ({
         isStagedMode={!productId}
         onStagedQuantityChange={onStagedQuantityChange}
         setIsSubstituteMaterialsModalOpen={setIsSubstituteMaterialsModalOpen}
+        onMaterialModalOpen={onMaterialModalOpen}
       />
     </div>
   );

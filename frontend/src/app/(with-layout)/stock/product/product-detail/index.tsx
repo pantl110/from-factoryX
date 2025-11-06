@@ -623,6 +623,12 @@ const ProductDetail = ({
                 <NoHistoryBox
                   title="등록된 창고 위치가 아직 없어요."
                   text="[추가] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
+                  button="창고 위치 추가"
+                  onClick={() => {
+                    setSelectedLocation(null);
+                    setIsStockLocationModalOpen(true);
+                  }}
+                  disabled={isViewer || !hasSubscription()}
                 />
               ) : (
                 <div className="px-4 py-3 rounded-[8px] border border-lg flex flex-col gap-3">
@@ -660,6 +666,12 @@ const ProductDetail = ({
               <NoHistoryBox
                 title="등록된 창고 위치가 아직 없어요."
                 text="[추가] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
+                button="창고 위치 추가"
+                onClick={() => {
+                  setSelectedLocation(null);
+                  setIsStockLocationModalOpen(true);
+                }}
+                disabled={isViewer || !hasSubscription()}
               />
             )}
           </div>

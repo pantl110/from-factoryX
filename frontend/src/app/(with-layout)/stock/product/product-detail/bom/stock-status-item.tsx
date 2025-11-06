@@ -4,7 +4,7 @@ import {
   InventoryStatusColorMap,
 } from '@/types/status-type';
 import { MaterialProductConnectionModel } from '@/types/data-model';
-import { ArrowLineUpRight, X } from '@phosphor-icons/react';
+import { ArrowLineUpRight, Trash } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -160,7 +160,7 @@ const StockStatusItem = ({
   };
 
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1 group hover:border hover:border-primary">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-1 hover:border hover:border-primary">
       <div className="flex-[0.7] px-3 text-dg cursor-default">
         <Chip
           text="원자재"
@@ -184,27 +184,21 @@ const StockStatusItem = ({
           onClick={() => {
             setMaterialId(connection.material_id);
           }}
-          groupHover={true}
         />
       </div>
-      <p
+      {/* <p
         className="flex-1 px-3 text-dg truncate cursor-default"
         title={connection.material_code || '-'}
       >
         {connection.material_code || '-'}
-      </p>
+      </p> */}
       <p
-        className="flex-1 px-3 text-dg truncate cursor-default"
+        className="flex-[0.8] px-3 text-dg truncate cursor-default"
         title={connection.material_spec || '-'}
       >
         {connection.material_spec || '-'}
       </p>
-      {/* <p
-        className="flex-[0.5] px-3 text-dg truncate cursor-default"
-        title={connection.material_unit || '-'}
-      >
-        {connection.material_unit || '-'}
-      </p> */}
+
       <div className="flex-[0.8] px-3 text-dg flex items-center overflow-hidden">
         <input
           type="text"
@@ -234,13 +228,19 @@ const StockStatusItem = ({
           onKeyDown={handleNumberKeyDown}
           disabled={isViewer}
         />
-        <span
+        {/* <span
           className="max-w-[6ch] text-dg shrink-0 cursor-default truncate"
           title={connection.material_unit || '-'}
         >
           {connection.material_unit || '-'}
-        </span>
+        </span> */}
       </div>
+      <p
+        className="flex-[0.8] px-3 text-dg truncate cursor-default"
+        title={connection.material_unit || '-'}
+      >
+        {connection.material_unit || '-'}
+      </p>
       <div
         className="flex-1 px-3 text-dg truncate hover:bg-bg h-full flex items-center cursor-pointer transition-colors duration-200"
         role="button"
@@ -265,13 +265,16 @@ const StockStatusItem = ({
         )}
       </div>
       {!isViewer && hasSubscription() && (
-        <IconBtn
-          icon={X}
-          size="w-9 h-9"
-          iconSize={16}
-          onClick={handleDeleteConnection}
-          groupHover={true}
-        />
+        <div className="w-20 px-3">
+          <IconBtn
+            icon={Trash}
+            size="w-9 h-9"
+            iconSize={16}
+            onClick={handleDeleteConnection}
+            hoverBg={false}
+            hoverText={true}
+          />
+        </div>
       )}
     </div>
   );

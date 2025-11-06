@@ -10,6 +10,8 @@ interface IconBtnProps {
   className?: string;
   groupHover?: boolean;
   rounded?: string;
+  hoverBg?: boolean;
+  hoverText?: boolean;
 }
 
 const IconBtn = ({
@@ -21,13 +23,18 @@ const IconBtn = ({
   groupHover,
   iconColor = 'text-sv',
   rounded = 'rounded-[8px]',
+  hoverBg = true,
+  hoverText = false,
 }: IconBtnProps) => {
   return (
     <button
-      className={`${className} shrink-0 flex items-center justify-center ${size} ${rounded} hover:bg-bg transition-colors duration-200 ${groupHover ? `opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out` : ''}`}
+      className={`group ${className} shrink-0 flex items-center justify-center ${size} ${rounded} ${hoverBg && 'hover:bg-bg'} transition-colors duration-200 ${groupHover ? `opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out` : ''}`}
       onClick={onClick}
     >
-      <Icon size={iconSize} className={iconColor} />
+      <Icon
+        size={iconSize}
+        className={iconColor + ' ' + (hoverText && 'group-hover:text-red')}
+      />
     </button>
   );
 };

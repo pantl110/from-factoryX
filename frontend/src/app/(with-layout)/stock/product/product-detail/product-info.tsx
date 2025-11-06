@@ -4,7 +4,7 @@ import { useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import { WarningCircle } from '@phosphor-icons/react';
+// import { WarningCircle } from '@phosphor-icons/react';
 
 interface ProductInfoProps {
   formData: ProductModel;
@@ -269,7 +269,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
           />
         </div>
 
-        <div className="px-4 py-2 flex gap-1 rounded-[8px] bg-bg items-center">
+        {/* <div className="px-4 py-2 flex gap-1 rounded-[8px] bg-bg items-center">
           <div className="w-4 h-4 flex items-center justify-center">
             <WarningCircle size={16} className="text-sv" />
           </div>
@@ -277,7 +277,7 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
             개별 단위는 품목 한 개 기준의 단위이고, 재고 관리 단위는 입·출고 시
             수량을 관리하는 기준이에요.
           </span>
-        </div>
+        </div> */}
       </>
     );
   }

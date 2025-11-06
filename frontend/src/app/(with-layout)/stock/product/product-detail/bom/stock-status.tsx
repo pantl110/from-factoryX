@@ -22,9 +22,11 @@ interface StockStatusProps {
   isStagedMode?: boolean;
   onStagedQuantityChange?: (materialId: number, qty: number) => void;
   setIsSubstituteMaterialsModalOpen: (isOpen: boolean) => void;
+  onMaterialModalOpen: () => void;
 }
 
 const StockStatus = ({
+  onMaterialModalOpen,
   setMaterialId,
   connections,
   quantityOverrides,
@@ -49,12 +51,14 @@ const StockStatus = ({
           <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
             <p className="flex-[0.7] px-3 text-sv">구분</p>
             <p className="flex-1 px-3 text-sv">자재명</p>
-            <p className="flex-1 px-3 text-sv">LOT 번호</p>
-            <p className="flex-1 px-3 text-sv">규격</p>
+            <p className="flex-[0.8] px-3 text-sv">규격</p>
             <p className="flex-[0.8] px-3 text-sv">소요량</p>
+            <p className="flex-[0.8] px-3 text-sv">단위</p>
             <p className="flex-1 px-3 text-sv">대체 자재</p>
             <p className="flex-[0.5] px-3 text-sv">재고 상태</p>
-            {!isViewer && hasSubscription() && <div className="w-9" />}
+            {!isViewer && hasSubscription() && (
+              <p className="w-20 px-3 text-sv">액션</p>
+            )}
           </div>
 
           {connections.map((connection: ConnectionModelType, index: number) => {
@@ -90,6 +94,11 @@ const StockStatus = ({
         <NoHistoryBox
           title="이 제품에 연결된 원자재가 아직 없어요."
           text="원자재를 연결하면 이곳에서 재고 상태를 확인할 수 있어요."
+          button="자재 연결"
+          onClick={() => {
+            onMaterialModalOpen();
+          }}
+          disabled={isViewer || !hasSubscription()}
         />
       )}
     </>

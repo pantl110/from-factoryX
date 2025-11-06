@@ -28,9 +28,7 @@ const NoHistoryBox = ({
       {button && (
         <MiniBtn
           text={button}
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
+          variant="whiteOutline"
           onClick={onClick}
           disabled={disabled}
         />
