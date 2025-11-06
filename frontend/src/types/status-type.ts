@@ -6,8 +6,14 @@ export interface StatusColorModel {
 }
 
 // 팩토리 멤버 type
-export type MemberRoleType = 'admin' | 'manager' | 'viewer';
+export type MemberRoleType = 'admin' | 'manager' | 'viewer' | 'prod_manager';
 export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
+export const MemberRoleColorMap: Record<MemberRoleType, StatusColorModel> = {
+  admin: { bgColor: 'bg-purple-8', textColor: 'text-purple' },
+  manager: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  viewer: { bgColor: 'bg-orange-8', textColor: 'text-orange' },
+  prod_manager: { bgColor: 'bg-green-8', textColor: 'text-green' },
+};
 
 // 설비 상태 // 설정 페이지
 export type EquipmentStatusType = 'standby' | 'running'; // 가동 대기 / 가동 중

@@ -603,15 +603,19 @@ const ProductDetail = ({
               <h3 className="Heading-3 h-10 flex items-center text-dg ">
                 제품이 보관된 창고 위치
               </h3>
-              <MiniBtn
-                text="추가"
-                variant="whiteOutline"
-                disabled={isViewer || !hasSubscription()}
-                onClick={() => {
-                  setSelectedLocation(null);
-                  setIsStockLocationModalOpen(true);
-                }}
-              />
+              {locationListData &&
+                'locations' in locationListData &&
+                locationListData.locations.length > 0 && (
+                  <MiniBtn
+                    text="추가"
+                    variant="whiteOutline"
+                    disabled={isViewer || !hasSubscription()}
+                    onClick={() => {
+                      setSelectedLocation(null);
+                      setIsStockLocationModalOpen(true);
+                    }}
+                  />
+                )}
             </div>
             {/* locations가 없을 때 */}
             {locationListData && 'locations' in locationListData ? (

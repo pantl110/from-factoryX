@@ -6,6 +6,8 @@ import { formatDate } from '@/utils/format-number';
 import MiniBtn from '@/ui/mini-btn';
 import useSubscriptionStore from '@/store/subscription-store';
 import useMemberStore from '@/store/member-store';
+import { MemberRoleColorMap } from '@/types/status-type';
+import { MemberRoleType } from '@/types/status-type';
 
 interface LocationItemProps {
   image: string;
@@ -36,6 +38,11 @@ const LocationItem = ({
     (state) => state.hasSubscription
   );
   const canEdit = userRole !== 'viewer' && userHasSubscription();
+  const roleColor = MemberRoleColorMap[role as MemberRoleType] || {
+    bgColor: 'bg-bg',
+    textColor: 'text-dg',
+  };
+  const roleText = getRoleText(role || '-');
 
   return (
     <div className={`flex gap-5 items-center cursor-pointer`} onClick={onClick}>
@@ -66,12 +73,14 @@ const LocationItem = ({
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-1.5">
             <Chip
-              text={getRoleText(role || 'manager')}
-              bgColor="bg-primary-8"
-              textColor="text-primary"
+              text={roleText}
+              bgColor={roleColor.bgColor}
+              textColor={roleColor.textColor}
               size="role"
             />
-            <span className="Heading-5 text-sv">{email || '-'}</span>
+            <span className="Heading-5 text-sv">
+              {email?.split('@')[0] || '-'}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="m-Body-4 text-gr">
