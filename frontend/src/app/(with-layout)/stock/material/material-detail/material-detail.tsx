@@ -377,28 +377,19 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           </div>
 
           {/* 이 자재가 사용된 제품 */}
-          <div className="flex flex-col gap-3">
-            <div className="h-10 flex items-center justify-between">
-              <h3 className="Heading-3 text-dg">이 자재가 사용된 제품</h3>
-              <MiniBtn
-                text="제품 연결"
-                variant="whiteOutline"
-                onClick={() => setIsProductEnrollmentModalOpen(true)}
-                disabled={isViewer || !hasSubscription()}
-              />
-            </div>
-            <ProductRequiringMaterial
-              ref={productRequiringMaterialRef}
-              materialId={materialId}
-              handleOpenDeleteModal={handleOpenDeleteModal}
-              onProductClick={(productId) => {
-                // 제품 디테일 패널 열기 로직
-                if (onProductClick) {
-                  onProductClick(productId);
-                }
-              }}
-            />
-          </div>
+
+          <ProductRequiringMaterial
+            ref={productRequiringMaterialRef}
+            materialId={materialId}
+            handleOpenDeleteModal={handleOpenDeleteModal}
+            setIsProductEnrollmentModalOpen={setIsProductEnrollmentModalOpen}
+            onProductClick={(productId) => {
+              // 제품 디테일 패널 열기 로직
+              if (onProductClick) {
+                onProductClick(productId);
+              }
+            }}
+          />
 
           {/* 대체 가능한 원자재 */}
           <SubMaterials />

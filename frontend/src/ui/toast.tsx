@@ -8,7 +8,7 @@ interface ToastProps {
 
 const Toast = ({ icon, text, subtext, type, isVisible = true }: ToastProps) => {
   return (
-    <div style={{ position: 'fixed', left: 40, bottom: 40, zIndex: 50 }}>
+    <div style={{ position: 'fixed', left: 40, bottom: 40, zIndex: 100 }}>
       <div
         className={`bg-wh p-5 flex flex-col gap-1 w-111 rounded-[8px] ${
           isVisible ? 'toast-in' : 'toast-out'

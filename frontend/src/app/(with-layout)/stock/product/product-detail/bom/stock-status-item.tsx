@@ -160,7 +160,7 @@ const StockStatusItem = ({
   };
 
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1 hover:border hover:border-primary">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-1">
       <div className="flex-[0.7] px-3 text-dg cursor-default">
         <Chip
           text="원자재"
