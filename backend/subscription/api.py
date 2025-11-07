@@ -406,9 +406,10 @@ async def process_subscription_payment(
         return 200, result
 
     # 2️⃣ 활성 구독 확인 (취소된 구독도 포함)
+    current_date = timezone.now().date()
     existing_history = await SubscriptionHistory.objects.filter(
         factory=factory,
-        end_date__gt=timezone.now(),
+        end_date__gt=current_date,
     ).select_related('subscription').afirst()
 
     if existing_history:
@@ -421,8 +422,8 @@ async def process_subscription_payment(
         
         # Case 1: 트라이얼 → partners (즉시 시작)
         if existing_type == 'trial' and new_subscription_type == 'partners':
+            
             # 트라이얼을 어제로 종료하고 partners 플랜을 오늘부터 시작하며 결제 진행
-            current_date = timezone.now().date()
             yesterday = current_date - timedelta(days=1)
             trial_history_id = existing_history.id
             
