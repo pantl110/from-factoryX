@@ -86,11 +86,13 @@ const Chip = ({
       }
     >
       <div
-        className={`flex gap-1 items-center justify-center ${width} ${sizeStyles.height} ${sizeStyles.padding} ${sizeStyles.radius} ${sizeStyles.textClass} ${bgColor} ${textColor} ${cursor} ${hover} ${borderColor ? `border ${borderColor}` : ''} ${
-          state ? 'cursor-pointer' : 'cursor-default'
+        className={`flex gap-1 items-center justify-center ${width} ${sizeStyles.height} ${sizeStyles.padding} ${sizeStyles.radius} ${bgColor} ${hover} ${borderColor ? `border ${borderColor}` : ''} ${
+          state ? 'cursor-pointer' : cursor
         }`}
       >
-        <span>{text}</span>
+        <span className={`${sizeStyles.textClass} ${textColor || ''}`}>
+          {text}
+        </span>
         {state && <CaretDown size={12} />}
       </div>
     </div>
