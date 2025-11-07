@@ -1,4 +1,4 @@
-import { ArrowLineUpRight, X } from '@phosphor-icons/react';
+import { ArrowLineUpRight, Trash } from '@phosphor-icons/react';
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -40,7 +40,7 @@ const ProductRequiringMaterialItem = ({
   };
 
   return (
-    <div className="flex items-center h-14 border-b border-lg hover:border hover:border-primary Me_Body-1 group cursor-default">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-default">
       <div
         className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0"
         title={productName}
@@ -51,7 +51,6 @@ const ProductRequiringMaterialItem = ({
           size="w-9 h-9"
           iconSize={16}
           onClick={handleProductClick}
-          groupHover={true}
         />
       </div>
 
@@ -60,13 +59,16 @@ const ProductRequiringMaterialItem = ({
       <p className="flex-1 px-3 text-dg">{unit}</p>
 
       {!isViewer && hasSubscription() && (
-        <IconBtn
-          icon={X}
-          size="w-9 h-9"
-          iconSize={16}
-          onClick={handleDeleteClick}
-          groupHover={true}
-        />
+        <div className="w-20 px-3">
+          <IconBtn
+            icon={Trash}
+            size="w-9 h-9"
+            iconSize={16}
+            onClick={handleDeleteClick}
+            hoverBg={false}
+            hoverText={true}
+          />
+        </div>
       )}
     </div>
   );

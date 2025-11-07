@@ -156,7 +156,9 @@ const ProductRequiringMaterial = forwardRef<
                 <p className="flex-1 py-1 px-3 text-sv">제품 코드</p>
                 <p className="flex-1 py-1 px-3 text-sv">규격</p>
                 <p className="flex-1 py-1 px-3 text-sv">단위</p>
-                {!isViewer && hasSubscription() && <div className="w-9" />}
+                {!isViewer && hasSubscription() && (
+                  <p className="w-20 px-3 text-sv">액션</p>
+                )}
               </div>
               {getCurrentPageConnections().map((connection) => {
                 const productInfo = getProductInfo(connection);
