@@ -463,31 +463,54 @@ async def process_subscription_payment(
     existing_history = await SubscriptionHistory.objects.filter(
         factory=factory,
         end_date__gt=timezone.now(),
-    ).afirst()
+    ).select_related('subscription').afirst()
 
     if existing_history:
         # 같은 플랜이면 에러 반환
         if existing_history.subscription_id == payload.subscription_id:
             raise HttpError(400, "이미 동일한 구독 플랜이 활성화되어 있습니다.")
         
-        # 다른 플랜이면 다음 구독을 미리 생성(플랜 변경 예약)
-        await change_subscription_plan(request, factory_id, payload, existing_history.id)
+        existing_type = existing_history.subscription.type
+        new_subscription_type = subscription.type
+        
+        # Case 1: 트라이얼 → 유료 플랜 (즉시 시작)
+        if existing_type == 'trial' and new_subscription_type in ['basic', 'partners']:
+            # 트라이얼 즉시 종료하고 유료 플랜 즉시 시작하며 결제 진행
+            current_date = timezone.now().date()
+            
+            @sync_to_async
+            @transaction.atomic
+            def terminate_trial_and_start_paid():
+                # 트라이얼 즉시 종료
+                existing_history.end_date = current_date
+                existing_history.save()
+                return current_date
+            
+            await terminate_trial_and_start_paid()
+            
+            # 결제 진행 (아래 3️⃣ 로직으로 진행)
+            # existing_history가 없어진 것처럼 처리하기 위해 None으로 설정
+            existing_history = None
+        else:
+            # Case 2: 유료 플랜 → 다른 유료 플랜
+            # 다른 플랜이면 다음 구독을 미리 생성(플랜 변경 예약)
+            await change_subscription_plan(request, factory_id, payload, existing_history.id)
 
-        scheduled_result = PaymentResultOut(
-            subscription_id=subscription.id,
-            subscription_type=subscription.type,
-            payment_key="",
-            order_id=f"plan_change_{factory_id}_{int(timezone.now().timestamp())}",
-            amount=0,
-            status="DONE",
-            approved_at=timezone.now(),
-            method="PLAN_CHANGE_SCHEDULED",
-            card_company=None,
-            card_type=None,
-            card_number=None,
-            card_owner_type=None,
-        )
-        return 200, scheduled_result
+            scheduled_result = PaymentResultOut(
+                subscription_id=subscription.id,
+                subscription_type=subscription.type,
+                payment_key="",
+                order_id=f"plan_change_{factory_id}_{int(timezone.now().timestamp())}",
+                amount=0,
+                status="DONE",
+                approved_at=timezone.now(),
+                method="PLAN_CHANGE_SCHEDULED",
+                card_company=None,
+                card_type=None,
+                card_number=None,
+                card_owner_type=None,
+            )
+            return 200, scheduled_result
 
     # 3️⃣ 활성 구독 없음 -> 새 결제 진행
     toss_service = TossPaymentsService()
