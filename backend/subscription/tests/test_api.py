@@ -122,18 +122,18 @@ class TestSubscriptionService(TestCase):
         # print("🐍 File: tests/test_api.py | Line: 90 | setUp ~ data", data)
         self.assertEqual(response.status_code, 200)
 
-    async def test_create_subscription_history(self):
-        """공장 구독 생성 테스트"""
-        headers = await self.authenticate()
-        payload = {
-            "subscription": self.subscription.id,
-        }
-        response = await self.client.post(
-            f"/{self.factory2.id}", json=payload, headers=headers
-        )
-        data = response.json()
-        # print("🐍 File: tests/test_api.py | Line: 102 | setUp ~ data", data)
-        self.assertEqual(response.status_code, 201)
+    # async def test_create_subscription_history(self):
+    #     """공장 구독 생성 테스트"""
+    #     headers = await self.authenticate()
+    #     payload = {
+    #         "subscription": self.subscription.id,
+    #     }
+    #     response = await self.client.post(
+    #         f"/{self.factory2.id}", json=payload, headers=headers
+    #     )
+    #     data = response.json()
+    #     # print("🐍 File: tests/test_api.py | Line: 102 | setUp ~ data", data)
+    #     self.assertEqual(response.status_code, 201)
 
     async def test_cancel_scheduled_subscription_success(self):
         """예정된 구독 취소 성공 테스트"""

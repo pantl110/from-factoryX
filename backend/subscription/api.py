@@ -80,78 +80,79 @@ async def get_subscription_histories(request, factory_id: int):
     return histories
 
 
-@router.post(
-    "/{factory_id}",
-    summary="[C] 구독 생성",
-    description="특정 공장에 대한 구독을 생성합니다.",
-    response={201: SubscriptionHistoryOut},
-    auth=jwt_auth,
-)
-async def create_subscription_history(
-    request, factory_id: int, payload: SubscriptionHistoryIn
-):
-    user = request.auth
-    factory = await get_factory_by_id(factory_id)
-    member = await is_factory_member(factory_id, user)
-    subscription = await get_subscription_by_id(payload.subscription)
+# @router.post(
+#     "/{factory_id}",
+#     summary="[C] 구독 생성",
+#     description="특정 공장에 대한 구독을 생성합니다.",
+#     response={201: SubscriptionHistoryOut},
+#     auth=jwt_auth,
+# )
+# async def create_subscription_history(
+#     request, factory_id: int, payload: SubscriptionHistoryIn
+# ):
+#     user = request.auth
+#     factory = await get_factory_by_id(factory_id)
+#     member = await is_factory_member(factory_id, user)
+#     subscription = await get_subscription_by_id(payload.subscription)
 
-    @sync_to_async
-    @transaction.atomic
-    def create_subscription():
-        current_date = timezone.now().date()
+#     @sync_to_async
+#     @transaction.atomic
+#     def create_subscription():
+#         current_date = timezone.now().date()
         
-        # 현재 활성 구독 조회
-        existing_subscription = SubscriptionHistory.objects.filter(
-            factory=factory,
-            end_date__gt=current_date,
-        ).select_related('subscription').first()
+#         # 현재 활성 구독 조회
+#         existing_subscription = SubscriptionHistory.objects.filter(
+#             factory=factory,
+#             end_date__gt=current_date,
+#         ).select_related('subscription').first()
         
-        # 새로 생성할 구독 타입
-        new_subscription_type = subscription.type
+#         # 새로 생성할 구독 타입
+#         new_subscription_type = subscription.type
         
-        if existing_subscription:
-            existing_type = existing_subscription.subscription.type
+#         if existing_subscription:
+#             existing_type = existing_subscription.subscription.type
             
-            # Case 1: 트라이얼 → 유료 플랜 (즉시 시작)
-            if existing_type == 'trial' and new_subscription_type in ['basic', 'partners']:
-                # 트라이얼 즉시 종료
-                existing_subscription.end_date = current_date
-                existing_subscription.save()
+#             # Case 1: 트라이얼 → partners (즉시 시작)
+#             if existing_type == 'trial' and new_subscription_type == 'partners':
+#                 # 트라이얼 즉시 종료
+#                 existing_subscription.end_date = current_date
+#                 existing_subscription.save()
                 
-                # 유료 플랜 즉시 시작
-                start_date = current_date
+#                 # partners 플랜 즉시 시작
+#                 start_date = current_date
+            
+#             # Case 2: 트라이얼 → basic 또는 유료 플랜 → 다른 유료 플랜 (다음 달부터 시작)
+#             elif (existing_type == 'trial' and new_subscription_type == 'basic') or \
+#                  (existing_type in ['basic', 'partners'] and new_subscription_type in ['basic', 'partners']):
+#                 # 기존 구독 종료일 다음 날부터 시작
+#                 start_date = existing_subscription.end_date + timedelta(days=1)
                 
-            # Case 2: 유료 플랜 → 다른 유료 플랜 (기존 구독 종료 후 시작)
-            elif existing_type in ['basic', 'partners'] and new_subscription_type in ['basic', 'partners']:
-                # 기존 구독 종료일 다음 날부터 시작
-                start_date = existing_subscription.end_date + timedelta(days=1)
-                
-            # Case 3: 같은 타입 또는 유료 → 트라이얼 (불가)
-            elif existing_type in ['basic', 'partners'] and new_subscription_type == 'trial':
-                raise ValueError("유료 구독 중에는 트라이얼로 변경할 수 없습니다.")
-            elif existing_type == new_subscription_type:
-                raise ValueError("이미 동일한 구독이 존재합니다.")
-            else:
-                raise ValueError("허용되지 않은 구독 변경입니다.")
-        else:
-            # 활성 구독이 없으면 즉시 시작
-            start_date = current_date
+#             # Case 3: 같은 타입 또는 유료 → 트라이얼 (불가)
+#             elif existing_type in ['basic', 'partners'] and new_subscription_type == 'trial':
+#                 raise ValueError("유료 구독 중에는 트라이얼로 변경할 수 없습니다.")
+#             elif existing_type == new_subscription_type:
+#                 raise ValueError("이미 동일한 구독이 존재합니다.")
+#             else:
+#                 raise ValueError("허용되지 않은 구독 변경입니다.")
+#         else:
+#             # 활성 구독이 없으면 즉시 시작
+#             start_date = current_date
         
-        # 종료일 계산 (1개월)
-        end_date = start_date + relativedelta(months=1)
+#         # 종료일 계산 (1개월)
+#         end_date = start_date + relativedelta(months=1)
         
-        # 새 구독 생성
-        subscription_history = SubscriptionHistory.objects.create(
-            factory=factory,
-            subscription=subscription,
-            start_date=start_date,
-            end_date=end_date,
-            is_canceled=False,
-        )
-        return subscription_history
+#         # 새 구독 생성
+#         subscription_history = SubscriptionHistory.objects.create(
+#             factory=factory,
+#             subscription=subscription,
+#             start_date=start_date,
+#             end_date=end_date,
+#             is_canceled=False,
+#         )
+#         return subscription_history
 
-    subscription_history = await create_subscription()
-    return 201, subscription_history
+#     subscription_history = await create_subscription()
+#     return 201, subscription_history
 
 
 # ==================== 토스 페이먼츠 구독 결제 API ====================
@@ -183,61 +184,6 @@ async def get_payment_auth(request, factory_id: int):
 
     setattr(latest_payment_auth, "is_current", True)
     return latest_payment_auth
-
-
-# @router.post(
-#     "/billing-key/{factory_id}",
-#     summary="[C] 빌링키 발급",
-#     description="토스페이먼츠 빌링키를 발급합니다.",
-#     response={201: BillingKeyIssueOut},
-#     auth=jwt_auth,
-# )
-# async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn):
-#     """빌링키 발급"""
-#     user = request.auth
-#     factory = await get_factory_by_id(factory_id)
-#     member = await is_factory_member(factory_id, user)
-
-#     toss_service = TossPaymentsService()
-#     customer_key = f"factory_{factory_id}_{user.id}_{uuid.uuid4().hex[:8]}"
-
-#     try:
-#         result = toss_service.issue_billing_key(
-#             customer_key=customer_key,
-#             card_number=payload.card_number,
-#             card_expiry_year=payload.card_expiry_year,
-#             card_expiry_month=payload.card_expiry_month,
-#             card_password=payload.card_password,
-#             customer_identity_number=payload.customer_identity_number,
-#         )
-
-#         billing_key_response = BillingKeyIssueOut(
-#             billing_key=result.get("billingKey"),
-#             customer_key=customer_key,
-#             card_company=result.get("card", {}).get("company"),
-#             card_type=result.get("card", {}).get("cardType"),
-#             card_number=result.get("card", {}).get("number"),
-#         )
-
-#         logger.info(
-#             f"빌링키 발급 성공: factory_id={factory_id}, billing_key={result.get('billingKey')}"
-#         )
-
-#         # PaymentAuth 모델에 저장
-#         await PaymentAuth.objects.aget_or_create(
-#             factory=factory,
-#             defaults={
-#                 "auth_key": result.get("authKey", ""),
-#                 "billing_key": result.get("billingKey"),
-#                 "customer_key": customer_key,
-#             },
-#         )
-
-#         return 201, billing_key_response
-
-#     except Exception as e:
-#         logger.error(f"빌링키 발급 실패: factory_id={factory_id}, error={str(e)}")
-#         raise HttpError(400, f"빌링키 발급 실패: {str(e)}")
 
 @router.post(
     "/billing-key/{factory_id}",
@@ -473,9 +419,9 @@ async def process_subscription_payment(
         existing_type = existing_history.subscription.type
         new_subscription_type = subscription.type
         
-        # Case 1: 트라이얼 → 유료 플랜 (즉시 시작)
-        if existing_type == 'trial' and new_subscription_type in ['basic', 'partners']:
-            # 트라이얼 즉시 종료하고 유료 플랜 즉시 시작하며 결제 진행
+        # Case 1: 트라이얼 → partners (즉시 시작)
+        if existing_type == 'trial' and new_subscription_type == 'partners':
+            # 트라이얼 즉시 종료하고 partners 플랜 즉시 시작하며 결제 진행
             current_date = timezone.now().date()
             
             @sync_to_async
@@ -491,9 +437,11 @@ async def process_subscription_payment(
             # 결제 진행 (아래 3️⃣ 로직으로 진행)
             # existing_history가 없어진 것처럼 처리하기 위해 None으로 설정
             existing_history = None
-        else:
-            # Case 2: 유료 플랜 → 다른 유료 플랜
-            # 다른 플랜이면 다음 구독을 미리 생성(플랜 변경 예약)
+        
+        # Case 2: 트라이얼 → basic 또는 유료 플랜 → 다른 유료 플랜 (다음 달부터 시작)
+        elif (existing_type == 'trial' and new_subscription_type == 'basic') or \
+             (existing_type in ['basic', 'partners'] and new_subscription_type in ['basic', 'partners']):
+            # 기존 구독 종료일 다음 날부터 시작 (플랜 변경 예약)
             await change_subscription_plan(request, factory_id, payload, existing_history.id)
 
             scheduled_result = PaymentResultOut(
