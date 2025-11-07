@@ -80,78 +80,79 @@ async def get_subscription_histories(request, factory_id: int):
     return histories
 
 
-@router.post(
-    "/{factory_id}",
-    summary="[C] 구독 생성",
-    description="특정 공장에 대한 구독을 생성합니다.",
-    response={201: SubscriptionHistoryOut},
-    auth=jwt_auth,
-)
-async def create_subscription_history(
-    request, factory_id: int, payload: SubscriptionHistoryIn
-):
-    user = request.auth
-    factory = await get_factory_by_id(factory_id)
-    member = await is_factory_member(factory_id, user)
-    subscription = await get_subscription_by_id(payload.subscription)
+# @router.post(
+#     "/{factory_id}",
+#     summary="[C] 구독 생성",
+#     description="특정 공장에 대한 구독을 생성합니다.",
+#     response={201: SubscriptionHistoryOut},
+#     auth=jwt_auth,
+# )
+# async def create_subscription_history(
+#     request, factory_id: int, payload: SubscriptionHistoryIn
+# ):
+#     user = request.auth
+#     factory = await get_factory_by_id(factory_id)
+#     member = await is_factory_member(factory_id, user)
+#     subscription = await get_subscription_by_id(payload.subscription)
 
-    @sync_to_async
-    @transaction.atomic
-    def create_subscription():
-        current_date = timezone.now().date()
+#     @sync_to_async
+#     @transaction.atomic
+#     def create_subscription():
+#         current_date = timezone.now().date()
         
-        # 현재 활성 구독 조회
-        existing_subscription = SubscriptionHistory.objects.filter(
-            factory=factory,
-            end_date__gt=current_date,
-        ).select_related('subscription').first()
+#         # 현재 활성 구독 조회
+#         existing_subscription = SubscriptionHistory.objects.filter(
+#             factory=factory,
+#             end_date__gt=current_date,
+#         ).select_related('subscription').first()
         
-        # 새로 생성할 구독 타입
-        new_subscription_type = subscription.type
+#         # 새로 생성할 구독 타입
+#         new_subscription_type = subscription.type
         
-        if existing_subscription:
-            existing_type = existing_subscription.subscription.type
+#         if existing_subscription:
+#             existing_type = existing_subscription.subscription.type
             
-            # Case 1: 트라이얼 → 유료 플랜 (즉시 시작)
-            if existing_type == 'trial' and new_subscription_type in ['basic', 'partners']:
-                # 트라이얼 즉시 종료
-                existing_subscription.end_date = current_date
-                existing_subscription.save()
+#             # Case 1: 트라이얼 → partners (즉시 시작)
+#             if existing_type == 'trial' and new_subscription_type == 'partners':
+#                 # 트라이얼 즉시 종료
+#                 existing_subscription.end_date = current_date
+#                 existing_subscription.save()
                 
-                # 유료 플랜 즉시 시작
-                start_date = current_date
+#                 # partners 플랜 즉시 시작
+#                 start_date = current_date
+            
+#             # Case 2: 트라이얼 → basic 또는 유료 플랜 → 다른 유료 플랜 (다음 달부터 시작)
+#             elif (existing_type == 'trial' and new_subscription_type == 'basic') or \
+#                  (existing_type in ['basic', 'partners'] and new_subscription_type in ['basic', 'partners']):
+#                 # 기존 구독 종료일 다음 날부터 시작
+#                 start_date = existing_subscription.end_date + timedelta(days=1)
                 
-            # Case 2: 유료 플랜 → 다른 유료 플랜 (기존 구독 종료 후 시작)
-            elif existing_type in ['basic', 'partners'] and new_subscription_type in ['basic', 'partners']:
-                # 기존 구독 종료일 다음 날부터 시작
-                start_date = existing_subscription.end_date + timedelta(days=1)
-                
-            # Case 3: 같은 타입 또는 유료 → 트라이얼 (불가)
-            elif existing_type in ['basic', 'partners'] and new_subscription_type == 'trial':
-                raise ValueError("유료 구독 중에는 트라이얼로 변경할 수 없습니다.")
-            elif existing_type == new_subscription_type:
-                raise ValueError("이미 동일한 구독이 존재합니다.")
-            else:
-                raise ValueError("허용되지 않은 구독 변경입니다.")
-        else:
-            # 활성 구독이 없으면 즉시 시작
-            start_date = current_date
+#             # Case 3: 같은 타입 또는 유료 → 트라이얼 (불가)
+#             elif existing_type in ['basic', 'partners'] and new_subscription_type == 'trial':
+#                 raise ValueError("유료 구독 중에는 트라이얼로 변경할 수 없습니다.")
+#             elif existing_type == new_subscription_type:
+#                 raise ValueError("이미 동일한 구독이 존재합니다.")
+#             else:
+#                 raise ValueError("허용되지 않은 구독 변경입니다.")
+#         else:
+#             # 활성 구독이 없으면 즉시 시작
+#             start_date = current_date
         
-        # 종료일 계산 (1개월)
-        end_date = start_date + relativedelta(months=1)
+#         # 종료일 계산 (1개월)
+#         end_date = start_date + relativedelta(months=1)
         
-        # 새 구독 생성
-        subscription_history = SubscriptionHistory.objects.create(
-            factory=factory,
-            subscription=subscription,
-            start_date=start_date,
-            end_date=end_date,
-            is_canceled=False,
-        )
-        return subscription_history
+#         # 새 구독 생성
+#         subscription_history = SubscriptionHistory.objects.create(
+#             factory=factory,
+#             subscription=subscription,
+#             start_date=start_date,
+#             end_date=end_date,
+#             is_canceled=False,
+#         )
+#         return subscription_history
 
-    subscription_history = await create_subscription()
-    return 201, subscription_history
+#     subscription_history = await create_subscription()
+#     return 201, subscription_history
 
 
 # ==================== 토스 페이먼츠 구독 결제 API ====================
@@ -183,61 +184,6 @@ async def get_payment_auth(request, factory_id: int):
 
     setattr(latest_payment_auth, "is_current", True)
     return latest_payment_auth
-
-
-# @router.post(
-#     "/billing-key/{factory_id}",
-#     summary="[C] 빌링키 발급",
-#     description="토스페이먼츠 빌링키를 발급합니다.",
-#     response={201: BillingKeyIssueOut},
-#     auth=jwt_auth,
-# )
-# async def issue_billing_key(request, factory_id: int, payload: BillingKeyIssueIn):
-#     """빌링키 발급"""
-#     user = request.auth
-#     factory = await get_factory_by_id(factory_id)
-#     member = await is_factory_member(factory_id, user)
-
-#     toss_service = TossPaymentsService()
-#     customer_key = f"factory_{factory_id}_{user.id}_{uuid.uuid4().hex[:8]}"
-
-#     try:
-#         result = toss_service.issue_billing_key(
-#             customer_key=customer_key,
-#             card_number=payload.card_number,
-#             card_expiry_year=payload.card_expiry_year,
-#             card_expiry_month=payload.card_expiry_month,
-#             card_password=payload.card_password,
-#             customer_identity_number=payload.customer_identity_number,
-#         )
-
-#         billing_key_response = BillingKeyIssueOut(
-#             billing_key=result.get("billingKey"),
-#             customer_key=customer_key,
-#             card_company=result.get("card", {}).get("company"),
-#             card_type=result.get("card", {}).get("cardType"),
-#             card_number=result.get("card", {}).get("number"),
-#         )
-
-#         logger.info(
-#             f"빌링키 발급 성공: factory_id={factory_id}, billing_key={result.get('billingKey')}"
-#         )
-
-#         # PaymentAuth 모델에 저장
-#         await PaymentAuth.objects.aget_or_create(
-#             factory=factory,
-#             defaults={
-#                 "auth_key": result.get("authKey", ""),
-#                 "billing_key": result.get("billingKey"),
-#                 "customer_key": customer_key,
-#             },
-#         )
-
-#         return 201, billing_key_response
-
-#     except Exception as e:
-#         logger.error(f"빌링키 발급 실패: factory_id={factory_id}, error={str(e)}")
-#         raise HttpError(400, f"빌링키 발급 실패: {str(e)}")
 
 @router.post(
     "/billing-key/{factory_id}",
@@ -460,34 +406,65 @@ async def process_subscription_payment(
         return 200, result
 
     # 2️⃣ 활성 구독 확인 (취소된 구독도 포함)
+    current_date = timezone.now().date()
     existing_history = await SubscriptionHistory.objects.filter(
         factory=factory,
-        end_date__gt=timezone.now(),
-    ).afirst()
+        end_date__gt=current_date,
+    ).select_related('subscription').afirst()
 
     if existing_history:
         # 같은 플랜이면 에러 반환
         if existing_history.subscription_id == payload.subscription_id:
             raise HttpError(400, "이미 동일한 구독 플랜이 활성화되어 있습니다.")
         
-        # 다른 플랜이면 다음 구독을 미리 생성(플랜 변경 예약)
-        await change_subscription_plan(request, factory_id, payload, existing_history.id)
+        existing_type = existing_history.subscription.type
+        new_subscription_type = subscription.type
+        
+        # Case 1: 트라이얼 → partners (즉시 시작)
+        if existing_type == 'trial' and new_subscription_type == 'partners':
+            
+            # 트라이얼을 어제로 종료하고 partners 플랜을 오늘부터 시작하며 결제 진행
+            yesterday = current_date - timedelta(days=1)
+            trial_history_id = existing_history.id
+            
+            @sync_to_async
+            @transaction.atomic
+            def terminate_trial_and_start_paid():
+                # 트라이얼을 어제로 종료 (오늘부터 partners 사용 가능하도록)
+                # ID로 다시 조회하여 저장 (async 객체를 sync 블록에서 사용하지 않기 위함)
+                trial_history = SubscriptionHistory.objects.get(id=trial_history_id)
+                trial_history.end_date = yesterday
+                trial_history.save(update_fields=['end_date'])
+            
+            await terminate_trial_and_start_paid()
+            
+            # 결제 진행 (아래 3️⃣ 로직으로 진행)
+            # existing_history가 없어진 것처럼 처리하기 위해 None으로 설정
+            existing_history = None
+            # 트라이얼에서 partners로 전환하는 경우임을 표시
+            request._trial_to_partners = True
+        
+        # Case 2: 트라이얼 → basic 또는 유료 플랜 → 다른 유료 플랜 (다음 달부터 시작)
+        elif (existing_type == 'trial' and new_subscription_type == 'basic') or \
+             (existing_type in ['basic', 'partners'] and new_subscription_type in ['basic', 'partners']):
+            # 기존 구독 종료일 다음 날부터 시작 (플랜 변경 예약)
+            await change_subscription_plan(request, factory_id, payload, existing_history.id)
 
-        scheduled_result = PaymentResultOut(
-            subscription_id=subscription.id,
-            subscription_type=subscription.type,
-            payment_key="",
-            order_id=f"plan_change_{factory_id}_{int(timezone.now().timestamp())}",
-            amount=0,
-            status="DONE",
-            approved_at=timezone.now(),
-            method="PLAN_CHANGE_SCHEDULED",
-            card_company=None,
-            card_type=None,
-            card_number=None,
-            card_owner_type=None,
-        )
-        return 200, scheduled_result
+            scheduled_result = PaymentResultOut(
+                subscription_id=subscription.id,
+                subscription_type=subscription.type,
+                payment_key="",
+                order_id=f"plan_change_{factory_id}_{int(timezone.now().timestamp())}",
+                amount=0,
+                status="DONE",
+                approved_at=timezone.now(),
+                method="PLAN_CHANGE_SCHEDULED",
+                card_company=None,
+                card_type=None,
+                card_number=None,
+                card_owner_type=None,
+            )
+            return 200, scheduled_result
 
     # 3️⃣ 활성 구독 없음 -> 새 결제 진행
     toss_service = TossPaymentsService()
@@ -529,14 +506,22 @@ async def process_subscription_payment(
             # 1) 새 구독 이력 생성 (한 달 단위)
             from dateutil.relativedelta import relativedelta
 
-            # 직전 이력의 종료일을 확인하여 중복기간 방지
-            latest_history = (
-                SubscriptionHistory.objects.filter(factory=factory)
-                .order_by("-end_date")
-                .first()
-            )
             today = timezone.now().date()
-            start_date = max(today, latest_history.end_date) if latest_history else today
+            
+            # 트라이얼에서 partners로 전환한 경우 오늘부터 시작
+            if hasattr(request, '_trial_to_partners') and request._trial_to_partners:
+                start_date = today
+            else:
+                # 직전 이력의 종료일을 확인하여 중복기간 방지
+                latest_history = (
+                    SubscriptionHistory.objects.filter(factory=factory)
+                    .order_by("-end_date")
+                    .first()
+                )
+                
+                # 오늘 종료된 구독은 오늘부터 사용 불가능하므로 오늘부터 시작 가능
+                # 종료일과 오늘 중 더 늦은 날짜부터 시작
+                start_date = max(today, latest_history.end_date) if latest_history else today
 
             target_history = SubscriptionHistory.objects.create(
                 factory=factory,
