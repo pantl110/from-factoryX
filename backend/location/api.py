@@ -38,11 +38,13 @@ async def create_location(request, payload: LocationCreateIn):
     except target_model.DoesNotExist:
         raise HttpError(404, "해당 아이템을 찾을 수 없습니다.")
 
-    location, created = await Location.objects.aget_or_create(
+    # 매번 새로운 Location 생성 (id가 다르면 다른 Location)
+    location = Location(
         type=payload.type,
         location=payload.location,
-        defaults={'images': payload.images or []}
+        images=payload.images or []
     )
+    await sync_to_async(location.save)()
     
     await sync_to_async(item.location.add)(location)
     

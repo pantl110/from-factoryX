@@ -421,14 +421,15 @@ async def process_subscription_payment(
         
         # Case 1: 트라이얼 → partners (즉시 시작)
         if existing_type == 'trial' and new_subscription_type == 'partners':
-            # 트라이얼 즉시 종료하고 partners 플랜 즉시 시작하며 결제 진행
+            # 트라이얼을 어제로 종료하고 partners 플랜을 오늘부터 시작하며 결제 진행
             current_date = timezone.now().date()
+            yesterday = current_date - timedelta(days=1)
             
             @sync_to_async
             @transaction.atomic
             def terminate_trial_and_start_paid():
-                # 트라이얼 즉시 종료
-                existing_history.end_date = current_date
+                # 트라이얼을 어제로 종료 (오늘부터 partners 사용 가능하도록)
+                existing_history.end_date = yesterday
                 existing_history.save()
                 return current_date
             
@@ -437,6 +438,8 @@ async def process_subscription_payment(
             # 결제 진행 (아래 3️⃣ 로직으로 진행)
             # existing_history가 없어진 것처럼 처리하기 위해 None으로 설정
             existing_history = None
+            # 트라이얼에서 partners로 전환하는 경우임을 표시
+            request._trial_to_partners = True
         
         # Case 2: 트라이얼 → basic 또는 유료 플랜 → 다른 유료 플랜 (다음 달부터 시작)
         elif (existing_type == 'trial' and new_subscription_type == 'basic') or \
@@ -500,14 +503,22 @@ async def process_subscription_payment(
             # 1) 새 구독 이력 생성 (한 달 단위)
             from dateutil.relativedelta import relativedelta
 
-            # 직전 이력의 종료일을 확인하여 중복기간 방지
-            latest_history = (
-                SubscriptionHistory.objects.filter(factory=factory)
-                .order_by("-end_date")
-                .first()
-            )
             today = timezone.now().date()
-            start_date = max(today, latest_history.end_date) if latest_history else today
+            
+            # 트라이얼에서 partners로 전환한 경우 오늘부터 시작
+            if hasattr(request, '_trial_to_partners') and request._trial_to_partners:
+                start_date = today
+            else:
+                # 직전 이력의 종료일을 확인하여 중복기간 방지
+                latest_history = (
+                    SubscriptionHistory.objects.filter(factory=factory)
+                    .order_by("-end_date")
+                    .first()
+                )
+                
+                # 오늘 종료된 구독은 오늘부터 사용 불가능하므로 오늘부터 시작 가능
+                # 종료일과 오늘 중 더 늦은 날짜부터 시작
+                start_date = max(today, latest_history.end_date) if latest_history else today
 
             target_history = SubscriptionHistory.objects.create(
                 factory=factory,
