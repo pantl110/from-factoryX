@@ -41,6 +41,8 @@ const PlanItem = ({
         ? 'PARTNERS'
         : null;
   const isSubscribedType = subscriptionType === type;
+  const isTrial =
+    subscriptionStatus?.subscription_history.subscription.type === 'trial';
 
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
   const [isCancelSubscriptionModalOpen, setIsCancelSubscriptionModalOpen] =
@@ -148,6 +150,7 @@ const PlanItem = ({
           onClose={() => setIsSubscribeModalOpen(false)}
           planTitle={info.title}
           endDate={subscriptionStatus?.subscription_history.end_date ?? ''}
+          isTrial={isTrial}
         />
       )}
       {/* 구독 해지 모달 */}
