@@ -219,23 +219,38 @@ const Subscription = () => {
     }
   };
 
-  const hasScheduledSubscription =
-    factory?.subscription_histories.some(
-      (history: SubscriptionHistoryResponseModel) => {
-        if (!subscriptionStatus?.subscription_history.end_date) return false;
+  // 각 플랜별로 예정된 구독이 있는지 확인하는 함수
+  const getScheduledSubscriptionForPlan = (planType: PlanType) => {
+    if (!subscriptionStatus?.subscription_history.end_date) return false;
 
-        // 현재 구독 종료일의 다음 날 계산
-        const currentEndDate = new Date(
-          subscriptionStatus.subscription_history.end_date
-        );
-        const nextDay = new Date(currentEndDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-        const nextDayString = nextDay.toISOString().split('T')[0];
+    // 현재 구독 종료일의 다음 날 계산
+    const currentEndDate = new Date(
+      subscriptionStatus.subscription_history.end_date
+    );
+    const nextDay = new Date(currentEndDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const nextDayString = nextDay.toISOString().split('T')[0];
 
-        // 다음 날에 시작하는 구독이 있는지 확인
-        return history.start_date === nextDayString;
-      }
-    ) ?? false;
+    // 해당 플랜 타입으로 변환
+    const subscriptionType =
+      planType === 'BASIC'
+        ? 'basic'
+        : planType === 'PARTNERS'
+          ? 'partners'
+          : null;
+
+    // 다음 날에 시작하는 해당 플랜 구독이 있는지 확인
+    return (
+      factory?.subscription_histories.some(
+        (history: SubscriptionHistoryResponseModel) => {
+          return (
+            history.start_date === nextDayString &&
+            history.subscription.type === subscriptionType
+          );
+        }
+      ) ?? false
+    );
+  };
 
   return (
     <div className="px-10 pb-10 flex flex-col gap-8">
@@ -263,7 +278,7 @@ const Subscription = () => {
             onSubscribe={handleSubscribe}
             isLoading={isSubscribeLoading}
             refreshSubscriptionData={refreshSubscriptionData}
-            hasScheduledSubscription={hasScheduledSubscription}
+            hasScheduledSubscription={getScheduledSubscriptionForPlan(type)}
           />
         ))}
       </div>
