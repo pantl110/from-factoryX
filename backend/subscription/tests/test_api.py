@@ -179,3 +179,116 @@ class TestSubscriptionService(TestCase):
             SubscriptionHistory.objects.filter(id=current_subscription.id).exists
         )()
         self.assertTrue(current_exists)
+
+    async def test_trial_to_partners_transition(self):
+        """트라이얼에서 파트너스로 전환 테스트 - 트라이얼은 어제로 종료, 파트너스는 오늘부터 시작"""
+        from unittest.mock import patch, MagicMock
+        from dateutil.relativedelta import relativedelta
+        
+        headers = await self.authenticate()
+        
+        # setUp에서 생성된 basic 구독 히스토리 삭제 (트라이얼 테스트를 위해)
+        await sync_to_async(SubscriptionHistory.objects.filter(factory=self.factory).delete)()
+        
+        # 트라이얼 구독 생성
+        trial_subscription = await sync_to_async(Subscription.objects.create)(
+            type=Subscription.SubscriptionType.trial,
+            price=0,
+            tax_invoice_count=5,
+        )
+        
+        # 파트너스 구독 생성
+        partners_subscription = await sync_to_async(Subscription.objects.create)(
+            type=Subscription.SubscriptionType.partners,
+            price=100000,
+            tax_invoice_count=1000,
+        )
+        
+        # 트라이얼 구독 히스토리 생성 (오늘부터 30일 후까지)
+        today = timezone.now().date()
+        trial_end_date = today + timedelta(days=30)
+        trial_history = await sync_to_async(SubscriptionHistory.objects.create)(
+            subscription=trial_subscription,
+            factory=self.factory,
+            start_date=today,
+            end_date=trial_end_date,
+            is_canceled=False,
+        )
+        
+        # PaymentAuth 생성 (빌링키 필요)
+        payment_auth = await sync_to_async(PaymentAuth.objects.create)(
+            factory=self.factory,
+            customer_key="test_customer_key_123",
+            billing_key="test_billing_key_123",
+            card_company="현대카드",
+            card_number="433012******1234",
+        )
+        
+        # Mock 설정 - 토스페이먼츠 결제 요청
+        with patch("subscription.services.TossPaymentsService.request_billing_payment") as mock_payment:
+            mock_payment.return_value = {
+                "paymentKey": "test_payment_key_123",
+                "method": "카드",
+                "status": "DONE",
+                "card": {
+                    "issuerCode": "20",
+                    "cardType": "신용",
+                    "number": "433012******1234",
+                    "ownerType": "개인",
+                },
+            }
+            
+            # 트라이얼에서 파트너스로 결제 진행
+            response = await self.client.post(
+                f"/payment/{self.factory.id}",
+                json={
+                    "subscription_id": partners_subscription.id,
+                    "billing_key": "test_billing_key_123",
+                    "customer_key": "test_customer_key_123",
+                },
+                headers=headers,
+            )
+            
+            # 응답 검증
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            self.assertEqual(data["subscription_type"], "partners")
+            self.assertEqual(data["status"], "DONE")
+            
+            # 트라이얼 구독 히스토리 확인 - end_date가 어제로 변경되었는지 확인
+            yesterday = today - timedelta(days=1)
+            # DB에서 다시 조회하여 변경사항 확인
+            updated_trial_history = await sync_to_async(
+                SubscriptionHistory.objects.get
+            )(id=trial_history.id)
+            self.assertEqual(updated_trial_history.end_date, yesterday, 
+                           f"트라이얼의 end_date가 어제({yesterday})로 변경되어야 하는데 {updated_trial_history.end_date}입니다.")
+            
+            # 파트너스 구독 히스토리 확인
+            partners_history = await sync_to_async(
+                SubscriptionHistory.objects.filter(
+                    factory=self.factory,
+                    subscription=partners_subscription
+                ).first
+            )()
+            
+            self.assertIsNotNone(partners_history, "파트너스 구독 히스토리가 생성되어야 합니다.")
+            self.assertEqual(partners_history.start_date, today,
+                           f"파트너스의 start_date가 오늘({today})로 설정되어야 하는데 {partners_history.start_date}입니다.")
+            self.assertEqual(partners_history.is_canceled, False,
+                           "파트너스 구독이 활성화되어야 합니다.")
+            
+            # 파트너스 구독의 end_date가 시작일 기준 한 달 후로 설정되었는지 확인
+            expected_end_date = today + relativedelta(months=1)
+            self.assertEqual(partners_history.end_date, expected_end_date,
+                           f"파트너스의 end_date가 시작일 기준 한 달 후({expected_end_date})로 설정되어야 하는데 {partners_history.end_date}입니다.")
+            
+            # Payment 객체가 생성되었는지 확인
+            from subscription.models import Payment
+            payment_exists = await sync_to_async(
+                Payment.objects.filter(
+                    subscription_history=partners_history,
+                    payment_key="test_payment_key_123"
+                ).exists
+            )()
+            self.assertTrue(payment_exists, "Payment 객체가 생성되어야 합니다.")

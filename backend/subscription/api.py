@@ -424,14 +424,16 @@ async def process_subscription_payment(
             # 트라이얼을 어제로 종료하고 partners 플랜을 오늘부터 시작하며 결제 진행
             current_date = timezone.now().date()
             yesterday = current_date - timedelta(days=1)
+            trial_history_id = existing_history.id
             
             @sync_to_async
             @transaction.atomic
             def terminate_trial_and_start_paid():
                 # 트라이얼을 어제로 종료 (오늘부터 partners 사용 가능하도록)
-                existing_history.end_date = yesterday
-                existing_history.save()
-                return current_date
+                # ID로 다시 조회하여 저장 (async 객체를 sync 블록에서 사용하지 않기 위함)
+                trial_history = SubscriptionHistory.objects.get(id=trial_history_id)
+                trial_history.end_date = yesterday
+                trial_history.save(update_fields=['end_date'])
             
             await terminate_trial_and_start_paid()
             
