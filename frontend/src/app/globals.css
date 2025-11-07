@@ -85,7 +85,7 @@
     letter-spacing: -0.02em;
   }
   .Heading-5b {
-    font-size: 12px !important;
+    font-size: 12px;
     line-height: 1.4;
     font-weight: var(--font-weight-medium);
     color: #18181b;

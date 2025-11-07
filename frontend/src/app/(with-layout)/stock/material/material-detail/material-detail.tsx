@@ -377,7 +377,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           </div>
 
           {/* 이 자재가 사용된 제품 */}
-
           <ProductRequiringMaterial
             ref={productRequiringMaterialRef}
             materialId={materialId}

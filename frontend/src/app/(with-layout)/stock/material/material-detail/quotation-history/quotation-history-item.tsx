@@ -10,7 +10,7 @@ interface QuotationHistoryItemProps {
 
 const QuotationHistoryItem = ({ onClick, data }: QuotationHistoryItemProps) => {
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer hover:border hover:border-primary transition-colors duration-200 group">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-default">
       <div
         className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0"
         title={data.client_name || '-'}
@@ -21,7 +21,6 @@ const QuotationHistoryItem = ({ onClick, data }: QuotationHistoryItemProps) => {
           size="w-9 h-9"
           iconSize={16}
           onClick={onClick}
-          groupHover={true}
         />
       </div>
 
