@@ -724,7 +724,7 @@ async def get_dashboard(request):
                 # 해당 월에 완료된 프로젝트 조회
                 completed_projects = Project.objects.filter(
                     quotations__factory_id=int(factory_id),
-                    status="완료",
+                    status=Project.ProjectStatus.completed,  # "completed" 영문 값 사용
                     created_at__date__gte=month_start,
                     created_at__date__lte=month_end,
                 )
@@ -775,7 +775,7 @@ async def get_dashboard(request):
                 # 해당 월에 완료된 프로젝트 조회
                 completed_projects = Project.objects.filter(
                     quotations__factory_id=int(factory_id),
-                    status="완료",
+                    status=Project.ProjectStatus.completed,  # "completed" 영문 값 사용
                     created_at__date__gte=month_start,
                     created_at__date__lte=month_end,
                 )
