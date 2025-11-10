@@ -249,7 +249,7 @@ const MaterialEnrollmentModal = ({
                 }}
               />
               {isOpen && filteredMaterials.length > 0 && (
-                <div className="absolute left-0 top-14 w-[449.3px] z-10">
+                <div className="absolute left-0 top-14 w-[369.5px] z-10">
                   <MaterialNameDropdown
                     items={filteredMaterials}
                     onSelect={handleSelectMaterial}
