@@ -3,7 +3,7 @@
 import MiniBtn from '@/ui/mini-btn';
 import SaveToast from './save-toast';
 import useToast from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useUpdateProjectLog from '@/hooks/project/project-log/use-update-project-log';
 import { ProjectStatusType } from '@/types/status-type';
 import useMemberStore from '@/store/member-store';
@@ -13,7 +13,7 @@ interface MemoSectionProps {
   title: string;
   content: string;
   logId: number;
-  onUpdate?: () => void; // 메모 수정 성공 시 콜백
+  onUpdate?: (title: string, content: string) => void; // 메모 수정 성공 시 콜백 (업데이트된 title, content 전달)
   projectStatus: ProjectStatusType;
 }
 
@@ -36,6 +36,14 @@ const MemoSection = ({
   const [memoTitle, setMemoTitle] = useState(title);
   const [isEditMode, setIsEditMode] = useState(false);
 
+  // props가 변경될 때 내부 state 업데이트 (수정 모드가 아닐 때만)
+  useEffect(() => {
+    if (!isEditMode) {
+      setMemoTitle(title);
+      setMemoContent(content);
+    }
+  }, [title, content, isEditMode]);
+
   const handleMemoSave = async () => {
     try {
       const result = await updateProjectLog(logId, {
@@ -47,7 +55,7 @@ const MemoSection = ({
       if (result.success) {
         showToast();
         setIsEditMode(false);
-        onUpdate?.(); // 부모 컴포넌트에 업데이트 알림
+        onUpdate?.(memoTitle, memoContent); // 왼쪽 LogItem만 로컬 업데이트
       } else {
         alert(`메모 수정에 실패했습니다: ${result.error}`);
       }
