@@ -62,6 +62,16 @@ const ProductionMonitor = ({
     }
   };
 
+  // 특정 로그만 업데이트 (데이터 재로딩 없이)
+  const updateLogItem = (logId: number, title: string, content: string) => {
+    setLogData((prev) => ({
+      ...prev,
+      data: prev.data.map((log) =>
+        log.id === logId ? { ...log, title, content } : log
+      ),
+    }));
+  };
+
   useEffect(() => {
     loadProjectLogs();
 
@@ -123,30 +133,40 @@ const ProductionMonitor = ({
             {logData.data.length > 0 && (
               <div className="w-[50%] flex-1 pt-5 pb-10">
                 {selectedLog ? (
-                  selectedLog.type === 'memo' ? (
-                    <MemoSection
-                      key={selectedLog.id} // 강제 리렌더링을 위한 key
-                      logId={selectedLog.id}
-                      title={selectedLog.title}
-                      content={selectedLog.content}
-                      onUpdate={loadProjectLogs}
-                      projectStatus={projectStatus}
-                    />
-                  ) : selectedLog.type === 'refund' ? (
-                    <ReturnSection
-                      key={selectedLog.id}
-                      refundId={selectedLog.refund?.id || 0}
-                      logId={selectedLog.id}
-                      onTabChange={onTabChange}
-                    />
-                  ) : selectedLog.type === 'plan' ||
-                    selectedLog.type === 'date' ? (
-                    <PlanChangeSection
-                      key={selectedLog.id}
-                      title={selectedLog.title}
-                      content={selectedLog.content}
-                    />
-                  ) : null
+                  (() => {
+                    // logData에서 최신 데이터 찾기
+                    const currentLog = logData.data.find(
+                      (log) => log.id === selectedLog.id
+                    );
+                    if (!currentLog) return <NoSelectedLog />;
+
+                    return currentLog.type === 'memo' ? (
+                      <MemoSection
+                        key={currentLog.id} // logId만 사용하여 재마운트 방지
+                        logId={currentLog.id}
+                        title={currentLog.title}
+                        content={currentLog.content}
+                        onUpdate={(title, content) =>
+                          updateLogItem(currentLog.id, title, content)
+                        }
+                        projectStatus={projectStatus}
+                      />
+                    ) : currentLog.type === 'refund' ? (
+                      <ReturnSection
+                        key={currentLog.id}
+                        refundId={currentLog.refund?.id || 0}
+                        logId={currentLog.id}
+                        onTabChange={onTabChange}
+                      />
+                    ) : currentLog.type === 'plan' ||
+                      currentLog.type === 'date' ? (
+                      <PlanChangeSection
+                        key={currentLog.id}
+                        title={currentLog.title}
+                        content={currentLog.content}
+                      />
+                    ) : null;
+                  })()
                 ) : (
                   <NoSelectedLog />
                 )}
