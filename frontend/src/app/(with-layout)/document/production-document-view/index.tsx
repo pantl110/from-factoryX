@@ -55,12 +55,17 @@ const ProductionDocumentView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workInstructioId, getWorkInstruction]);
 
+  // 데이터가 로드되기 전에는 빈 화면 표시
+  if (!workInstruction) {
+    return null;
+  }
+
   const grouped = groupByProject(workInstruction?.plans || []);
 
   return (
     <div className="flex flex-col gap-6">
       <DocumentViewTitle
-        title={`${convertUTCToKSTDate(new Date().toISOString())} 생산 지시서`}
+        title={`${convertUTCToKSTDate(workInstruction?.created_at || '') || ''} 생산 지시서`}
       />
 
       {/* 생산제품 - 프로젝트별로 표 분리 */}
