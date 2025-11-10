@@ -261,10 +261,20 @@ async def create_work_instruction(request):
             }
 
         for factory_id, data in factory_plans.items():
-            work_instruction, _ = WorkInstruction.objects.get_or_create(
+            today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+            # 오늘 날짜의 WorkInstruction 조회
+            work_instruction = WorkInstruction.objects.filter(
                 factory_id=factory_id,
-                created_at__date=datetime.now(pytz.timezone(settings.TIME_ZONE)).date(), # Django TIME_ZONE 기준 오늘 하루(00:00~23:59:59)
-            )
+                created_at__date=today,
+            ).first()
+            
+            if not work_instruction:
+                # 없으면 새로 생성
+                work_instruction = WorkInstruction.objects.create(
+                    factory_id=factory_id,
+                )
+            
+            # 기존 또는 새로 생성된 WorkInstruction의 plans 업데이트
             work_instruction.plans.set(data["plans"])
 
         return {"work_instructions": len(factory_plans)}
@@ -296,11 +306,21 @@ def update_work_instruction_for_factory(factory_id, target_date=None):
     )
     
     if plans:
-        # WorkInstruction 생성 또는 갱신
-        work_instruction, created = WorkInstruction.objects.get_or_create(
+        # 해당 날짜의 WorkInstruction 조회
+        work_instruction = WorkInstruction.objects.filter(
             factory_id=factory_id,
             created_at__date=target_date,
-        )
+        ).first()
+        
+        created = False
+        if not work_instruction:
+            # 없으면 새로 생성
+            work_instruction = WorkInstruction.objects.create(
+                factory_id=factory_id,
+            )
+            created = True
+        
+        # 기존 또는 새로 생성된 WorkInstruction의 plans 업데이트
         work_instruction.plans.set(plans)
         return {"created": created}
     else:
