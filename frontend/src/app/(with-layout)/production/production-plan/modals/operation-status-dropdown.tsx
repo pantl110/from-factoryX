@@ -38,6 +38,7 @@ const OperationStatusDropdown = ({
             onClose();
           }}
           hover={color.pending.hover}
+          cursor="cursor-pointer"
         />
       </DropdownItem>
       {/* <DropdownItem noHover={true} chip={true}>
@@ -51,6 +52,7 @@ const OperationStatusDropdown = ({
             onClose();
           }}
           hover={color.production.hover}
+          cursor="cursor-pointer"
         />
       </DropdownItem> */}
       <DropdownItem noHover={true} chip={true}>
@@ -64,6 +66,7 @@ const OperationStatusDropdown = ({
             onClose();
           }}
           hover={color.completed.hover}
+          cursor="cursor-pointer"
         />
       </DropdownItem>
     </Dropdown>
