@@ -48,8 +48,8 @@ const StockStatus = ({
             <p className="flex-1 px-3 text-sv">자재명</p>
             <p className="flex-1 px-3 text-sv">자재 코드</p>
             <p className="flex-1 px-3 text-sv">규격</p>
-            <p className="flex-[0.5] px-3 text-sv">단위</p>
             <p className="flex-[0.5] px-3 text-sv">사용 수량</p>
+            <p className="flex-[0.5] px-3 text-sv">단위</p>
             <p className="flex-[0.8] px-3 text-sv">자재 재고 상태</p>
             {!isViewer && hasSubscription() && <div className="w-9" />}
           </div>

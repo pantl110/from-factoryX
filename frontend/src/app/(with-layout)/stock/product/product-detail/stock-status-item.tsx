@@ -186,12 +186,6 @@ const StockStatusItem = ({
       >
         {connection.material_spec || '-'}
       </p>
-      <p
-        className="flex-[0.5] px-3 text-dg truncate cursor-default"
-        title={connection.material_unit || '-'}
-      >
-        {connection.material_unit || '-'}
-      </p>
       <input
         type="text"
         className="flex-[0.5] px-3 text-dg focus:outline-none w-full min-w-0"
@@ -215,6 +209,12 @@ const StockStatusItem = ({
         onKeyDown={handleNumberKeyDown}
         disabled={isViewer}
       />
+      <p
+        className="flex-[0.5] px-3 text-dg truncate cursor-default"
+        title={connection.material_unit || '-'}
+      >
+        {connection.material_unit || '-'}
+      </p>
       <div className="flex-[0.8] px-3 text-dg flex justify-between">
         {status === '부족' || status === '충분' ? (
           <Chip
