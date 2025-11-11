@@ -1,17 +1,13 @@
 import DocumentViewTitle from '../document-view-title';
-import CommentItem from './comment-item';
-import ProductionTableItem from './production-table-item';
 import { useEffect, useState } from 'react';
-import TextareaAutosize from 'react-textarea-autosize';
-import {
-  useGetWorkInstruction,
-  convertUTCToKSTDate,
-  convertUTCToKST,
-} from '@/hooks';
+import { useGetWorkInstruction, convertUTCToKSTDate } from '@/hooks';
 import {
   WorkInstructionDetailPlanModel,
   WorkInstructionDetailResponseModel,
 } from '@/types/data-model';
+import Chip from '@/ui/chip';
+import { DocumentSection } from './document-section';
+import { LogSection } from './log-section';
 
 // 프로젝트명별로 그룹핑 함수
 const groupByProject = (data: WorkInstructionDetailPlanModel[]) => {
@@ -39,6 +35,9 @@ const ProductionDocumentView = ({
   const [workInstruction, setWorkInstruction] =
     useState<WorkInstructionDetailResponseModel | null>(null);
   const [value, setValue] = useState('');
+  const [selectedChip, setSelectedChip] = useState<'document' | 'log'>(
+    'document'
+  );
 
   const { getWorkInstruction } = useGetWorkInstruction();
   useEffect(() => {
@@ -64,79 +63,46 @@ const ProductionDocumentView = ({
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex gap-1">
+        <Chip
+          text="생산지시서"
+          radius="rounded-full"
+          bgColor={selectedChip === 'document' ? 'bg-dg' : 'bg-transparent'}
+          textColor={selectedChip === 'document' ? 'text-wh' : 'text-dg'}
+          borderColor="border-lg"
+          padding="px-4"
+          height="h-9"
+          cursor="cursor-pointer transition-all duration-200 ease-in-out"
+          onClick={() => setSelectedChip('document')}
+        />
+        <Chip
+          text="수정로그"
+          radius="rounded-full"
+          bgColor={selectedChip === 'log' ? 'bg-dg' : 'bg-transparent'}
+          textColor={selectedChip === 'log' ? 'text-wh' : 'text-dg'}
+          borderColor="border-lg"
+          padding="px-4"
+          height="h-9"
+          cursor="cursor-pointer transition-all duration-200 ease-in-out"
+          onClick={() => setSelectedChip('log')}
+        />
+      </div>
       <DocumentViewTitle
-        title={`${convertUTCToKSTDate(workInstruction?.created_at || '') || ''} 생산 지시서`}
+        title={`PR-${convertUTCToKSTDate(workInstruction?.created_at || '') || ''} 생산지시서`}
       />
 
-      {/* 생산제품 - 프로젝트별로 표 분리 */}
-      <div className="flex flex-col gap-6">
-        {Object.entries(grouped).map(([projectName, items]) => (
-          <div key={projectName} className="flex flex-col gap-3">
-            <h3 className="Heading-3 h-10 items-center flex">{projectName}</h3>
-            <div>
-              <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv cursor-default">
-                <p className="flex-2 px-3">제품명</p>
-                <p className="flex-1 px-3">규격</p>
-                <p className="w-[80px] px-3">단위</p>
-                <p className="flex-1 px-3">생산수량</p>
-                <p className="flex-[0.8] px-3">생산 설비</p>
-                <p className="flex-[0.8] px-3">생산 시간</p>
-              </div>
-              {items.map((item, index) => (
-                <ProductionTableItem
-                  key={item.project + index}
-                  productName={item.product_name}
-                  spec={item.product_spec}
-                  unit={item.product_unit}
-                  productionQuantity={item.quantity || 0}
-                  machine={item.equipment_name || '-'}
-                  productionTime={
-                    convertUTCToKST(item.start_date)?.split(' ')[1] || null
-                  }
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* 특이사항 */}
-      <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 h-10 items-center flex">특이사항</h3>
-        {workInstruction?.plans
-          .filter(
-            (item, index, self) =>
-              index ===
-              self.findIndex((t) => t.product_code === item.product_code)
-          )
-          .map((item) => (
-            <CommentItem
-              key={item.product}
-              title={item.product_name}
-              comment={item.product_note || '-'}
-            />
-          ))}
-      </div>
-
-      {/* 메모 */}
-      <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 h-10 items-center flex">메모</h3>
-        <TextareaAutosize
-          placeholder={isOnlyRead ? '-' : '메모를 입력하세요.'}
+      {selectedChip === 'document' ? (
+        <DocumentSection
+          grouped={grouped}
+          workInstruction={workInstruction}
+          isOnlyRead={isOnlyRead}
           value={value}
-          onChange={(e) => {
-            const v = e.target.value;
-            setValue(v);
-            if (onMemoChange) onMemoChange(v);
-          }}
-          className={`w-full print:hidden ${isOnlyRead ? 'cursor-default' : ''}`}
-          minRows={6}
-          readOnly={isOnlyRead}
+          setValue={setValue}
+          onMemoChange={onMemoChange}
         />
-        <div className="textarea hidden print:block whitespace-pre-wrap w-full min-h-50">
-          {value}
-        </div>
-      </div>
+      ) : (
+        <LogSection />
+      )}
     </div>
   );
 };
