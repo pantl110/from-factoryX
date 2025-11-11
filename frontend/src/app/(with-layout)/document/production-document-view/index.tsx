@@ -60,7 +60,13 @@ const ProductionDocumentView = ({
     return null;
   }
 
-  const grouped = groupByProject(workInstruction?.plans || []);
+  // plan_info가 있으면 그것을 사용, 없으면 plans 사용
+  const plansData =
+    workInstruction.plan_info && workInstruction.plan_info.length > 0
+      ? workInstruction.plan_info
+      : workInstruction.plans;
+
+  const grouped = groupByProject(plansData);
 
   return (
     <div className="flex flex-col gap-6">
@@ -103,7 +109,7 @@ const ProductionDocumentView = ({
       {/* 특이사항 */}
       <div className="flex flex-col gap-3">
         <h3 className="Heading-3 h-10 items-center flex">특이사항</h3>
-        {workInstruction?.plans
+        {plansData
           .filter(
             (item, index, self) =>
               index ===
