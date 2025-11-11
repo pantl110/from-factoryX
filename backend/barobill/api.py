@@ -174,7 +174,7 @@ async def get_check_barobill_cert(request, factory_id: int):
     description="바로빌 기업 인증서 만료일자를 확인하는 API입니다.",
     auth=jwt_auth,
 )
-async def get_check_barobill_cert(request, factory_id: int):
+async def get_check_barobill_cert_expire_date(request, factory_id: int):
     user = request.auth
     factory = await get_factory_by_id(factory_id, user)
     factory_member = await is_factory_member(factory.id, user)

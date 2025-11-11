@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "scheduling",
     # v2
     "unit_conversion",
+    "substitute",
 ]
 
 MIDDLEWARE = [
@@ -312,7 +313,9 @@ AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default=None)
 BAROBILL_CERT_KEY = config("BAROBILL_CERT_KEY", default=None)
 ENABLE_BAROBILL = config("ENABLE_BAROBILL", default=False, cast=bool)
 if ENABLE_BAROBILL:
-    BAROBILL_CLIENT = Client("https://testws.baroservice.com/TI.asmx?WSDL")  # 테스트서버
+    BAROBILL_CLIENT = Client(
+        "https://testws.baroservice.com/TI.asmx?WSDL"
+    )  # 테스트서버
     # BAROBILL_CLIENT = Client("https://ws.baroservice.com/TI.asmx?WSDL")  # 운영서버
     BAROBILL_CASHBILL_CLIENT = Client(
         "https://testws.baroservice.com/CASHBILL.asmx?WSDL"

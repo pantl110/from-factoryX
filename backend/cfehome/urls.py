@@ -46,6 +46,7 @@ from tax.api_cash_receipt import router as cashReceipt_router
 from subscription.api import router as subscription_router
 from notification.api import router as notification_router
 from scheduling.api import router as scheduling_router
+from substitute.api import router as substitute_router
 
 from unit_conversion.api import router as unit_conversion_router
 from django.contrib.admin.views.decorators import staff_member_required
@@ -94,6 +95,7 @@ base_api.add_router("v1/receipt", cashReceipt_router)
 base_api.add_router("v1/subscription", subscription_router)
 base_api.add_router("v1/notification", notification_router)
 base_api.add_router("v1/scheduling", scheduling_router)
+base_api.add_router("v1/substitute", substitute_router)
 base_api.add_router("v2/unit-conversion", unit_conversion_router)
 
 urlpatterns = [
