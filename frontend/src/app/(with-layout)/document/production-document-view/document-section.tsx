@@ -3,14 +3,11 @@ import ProductionTableItem from './production-table-item';
 import CommentItem from './comment-item';
 import TextareaAutosize from 'react-textarea-autosize';
 import { convertUTCToKST } from '@/hooks';
-import {
-  WorkInstructionDetailPlanModel,
-  WorkInstructionDetailResponseModel,
-} from '@/types/data-model';
+import { WorkInstructionDetailPlanModel } from '@/types/data-model';
 
 interface DocumentSectionProps {
   grouped: Record<string, WorkInstructionDetailPlanModel[]>;
-  workInstruction: WorkInstructionDetailResponseModel;
+  plansData: WorkInstructionDetailPlanModel[];
   isOnlyRead: boolean;
   value: string;
   setValue: (value: string) => void;
@@ -19,7 +16,7 @@ interface DocumentSectionProps {
 
 export const DocumentSection = ({
   grouped,
-  workInstruction,
+  plansData,
   isOnlyRead,
   value,
   setValue,
@@ -62,7 +59,7 @@ export const DocumentSection = ({
       {/* 특이사항 */}
       <div className="flex flex-col gap-3">
         <h3 className="Heading-3 h-10 items-center flex">특이사항</h3>
-        {workInstruction?.plans
+        {plansData
           .filter(
             (item, index, self) =>
               index ===

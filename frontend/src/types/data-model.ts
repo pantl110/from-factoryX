@@ -1461,6 +1461,7 @@ export interface WorkInstructionsResponseModel {
   id: number;
   factory: number;
   plans: WorkInstructionsPlanModel[];
+  plan_info: WorkInstructionsPlanModel[] | null;
   memo: string | null;
   created_at: string;
   updated_at: string;
@@ -1496,6 +1497,7 @@ export interface WorkInstructionDetailResponseModel {
   id: number;
   factory: number;
   plans: WorkInstructionDetailPlanModel[];
+  plan_info: WorkInstructionDetailPlanModel[] | null;
   memo: string | null;
   created_at: string;
   updated_at: string;

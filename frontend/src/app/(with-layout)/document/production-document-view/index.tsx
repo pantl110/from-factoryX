@@ -59,7 +59,13 @@ const ProductionDocumentView = ({
     return null;
   }
 
-  const grouped = groupByProject(workInstruction?.plans || []);
+  // plan_info가 있으면 그것을 사용, 없으면 plans 사용
+  const plansData =
+    workInstruction.plan_info && workInstruction.plan_info.length > 0
+      ? workInstruction.plan_info
+      : workInstruction.plans;
+
+  const grouped = groupByProject(plansData);
 
   return (
     <div className="flex flex-col gap-6">
@@ -94,7 +100,7 @@ const ProductionDocumentView = ({
       {selectedChip === 'document' ? (
         <DocumentSection
           grouped={grouped}
-          workInstruction={workInstruction}
+          plansData={plansData}
           isOnlyRead={isOnlyRead}
           value={value}
           setValue={setValue}
