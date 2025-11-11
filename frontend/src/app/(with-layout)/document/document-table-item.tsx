@@ -131,28 +131,40 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               className="px-3 flex-1 truncate"
               title={
                 getProductNamesDisplay(
-                  workInstructionData.plans.map((plan) => plan.client_name)
+                  (workInstructionData.plan_info &&
+                  workInstructionData.plan_info.length > 0
+                    ? workInstructionData.plan_info
+                    : workInstructionData.plans
+                  ).map((plan) => plan.client_name)
                 ) ?? '-'
               }
             >
               {getProductNamesDisplay(
-                workInstructionData.plans.map((plan) => plan.client_name)
+                (workInstructionData.plan_info &&
+                workInstructionData.plan_info.length > 0
+                  ? workInstructionData.plan_info
+                  : workInstructionData.plans
+                ).map((plan) => plan.client_name)
               ) ?? '-'}
             </p>
             <p
               className="px-3 flex-1 truncate"
               title={
                 getProductNamesDisplay(
-                  (workInstructionData?.plans || []).map(
-                    (plan) => plan.product_name
-                  )
+                  (workInstructionData.plan_info &&
+                  workInstructionData.plan_info.length > 0
+                    ? workInstructionData.plan_info
+                    : workInstructionData.plans || []
+                  ).map((plan) => plan.product_name)
                 ) || '-'
               }
             >
               {getProductNamesDisplay(
-                (workInstructionData?.plans || []).map(
-                  (plan) => plan.product_name
-                )
+                (workInstructionData.plan_info &&
+                workInstructionData.plan_info.length > 0
+                  ? workInstructionData.plan_info
+                  : workInstructionData.plans || []
+                ).map((plan) => plan.product_name)
               ) || '-'}
             </p>
             <p
@@ -206,7 +218,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             documentTitle="주문서"
             clientData={projectData.quotations[0].client_info}
             dueDate={projectData.quotations[0].due_date}
-            productListInfoTitle="주문 제품 정보"
+            productListInfoTitle="주문 품목 정보"
             productItems={projectData.quotations[0].products_info.map(
               (product) => ({
                 productId: product.id,
