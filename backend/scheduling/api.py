@@ -282,6 +282,7 @@ async def create_work_instruction(request):
                 status__in=[
                     ProjectPlan.ProductionStatus.pending,
                     ProjectPlan.ProductionStatus.production,
+                    ProjectPlan.ProductionStatus.completed,
                 ],
                 start_date__date=today,
             )
