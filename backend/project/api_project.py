@@ -6,6 +6,8 @@ from asgiref.sync import sync_to_async
 from datetime import date, timedelta, datetime
 from api.security import jwt_auth
 from typing import List
+from django.conf import settings
+import pytz
 
 from project.models import Project, ProjectPlan
 from project.schemas.inbound import (
@@ -27,6 +29,7 @@ from project.models import ProjectPlan, ProjectLog
 from project.utils import get_project_by_id
 from helpers.material_consumption import process_material_consumption
 from django.utils import timezone
+from scheduling.api import update_work_instruction_for_factory
 
 router = Router(tags=["Project"], auth=jwt_auth)
 
@@ -526,12 +529,36 @@ async def update_project_status(
     try:
         project = await Project.objects.aget(id=project_id)
 
+        # 이전 상태 저장
+        old_status = project.status
+
         project.status = payload.status
         if payload.status == "pending":
             project.confirmed_at = timezone.now().date()
         if payload.is_printed is True:
             project.printed_at = timezone.now().date()
         await project.asave()
+
+        # 프로젝트 상태가 "생산 대기" → "생산 중"으로 변경되면 WorkInstruction 갱신
+        if old_status == "pending" and payload.status == "production":
+            @sync_to_async
+            def update_work_instructions_for_project():
+                today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+                
+                # 이 프로젝트의 오늘 시작하는 Plan들의 factory_id 조회
+                factory_ids = set(
+                    ProjectPlan.objects.filter(
+                        project_id=project_id,
+                        start_date__date=today
+                    ).values_list('equipment__factory_id', flat=True)
+                )
+                
+                # 각 factory의 WorkInstruction 갱신
+                for factory_id in factory_ids:
+                    if factory_id:
+                        update_work_instruction_for_factory(factory_id)
+            
+            await update_work_instructions_for_project()
 
         # 프로젝트 완료 처리
         if payload.status == "completed":

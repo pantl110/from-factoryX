@@ -108,6 +108,12 @@ class WorkInstruction(BaseModel):
         "project.ProjectPlan",
         blank=True,
         related_name="work_instructions",
-        help_text="연결된 생산 계획들",
+        help_text="연결된 생산 계획들 (오늘 것만, 실시간 변경 가능)",
+    )
+    plan_info = models.JSONField(
+        default=list,
+        null=True,
+        blank=True,
+        help_text="과거 생산 계획 스냅샷 (불변, 아카이브된 데이터)",
     )
     memo = models.TextField(help_text="메모", null=True, blank=True)
