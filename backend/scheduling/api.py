@@ -235,6 +235,37 @@ async def create_work_instruction(request):
     @sync_to_async
     @transaction.atomic
     def get_today_project_plans():
+        today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+        yesterday = today - timedelta(days=1)
+        
+        # 1단계: 어제 WorkInstruction 아카이빙 (불변으로 만들기)
+        from django.db.models import Q
+        yesterday_instructions = WorkInstruction.objects.filter(
+            Q(created_at__date=yesterday) &
+            (Q(plan_info__isnull=True) | Q(plan_info=[]))  # 아직 아카이빙 안된 것만
+        ).prefetch_related('plans__product__product', 'plans__project')
+        
+        for instruction in yesterday_instructions:
+            if instruction.plans.exists():
+                # plans → plan_info로 스냅샷 저장
+                instruction.plan_info = [
+                    {
+                        "id": plan.id,
+                        "project_name": plan.project.name if plan.project.name else f"프로젝트 {plan.project.id}",
+                        "product_name": plan.product.product.name,
+                        "quantity": plan.quantity,
+                        "status": plan.status,
+                        "start_date": plan.start_date.isoformat(),
+                        "end_date": plan.end_date.isoformat(),
+                    }
+                    for plan in instruction.plans.all()
+                ]
+                instruction.save(update_fields=['plan_info'])
+                
+                # ManyToMany 관계 제거 (Plan 삭제 시 CASCADE 영향 차단)
+                instruction.plans.clear()
+        
+        # 2단계: 오늘 생산 계획 조회
         plans = list(
             ProjectPlan.objects.select_related(
                 "project",
@@ -242,11 +273,17 @@ async def create_work_instruction(request):
                 "equipment__factory",
             )
             .filter(
+                project__status__in=[
+                    Project.ProjectStatus.production,
+                    Project.ProjectStatus.manufactured,
+                    Project.ProjectStatus.delivery,
+                    Project.ProjectStatus.completed,
+                ],
                 status__in=[
                     ProjectPlan.ProductionStatus.pending,
                     ProjectPlan.ProductionStatus.production,
                 ],
-                start_date__date=datetime.now(pytz.timezone(settings.TIME_ZONE)).date(), # Django TIME_ZONE 기준 오늘 하루(00:00~23:59:59)
+                start_date__date=today,
             )
             .order_by("equipment__factory")  # groupby를 위해 정렬 필요
         )
@@ -260,8 +297,8 @@ async def create_work_instruction(request):
                 "plans": plans_list,
             }
 
+        # 3단계: 오늘 WorkInstruction 생성/업데이트
         for factory_id, data in factory_plans.items():
-            today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
             # 오늘 날짜의 WorkInstruction 조회
             work_instruction = WorkInstruction.objects.filter(
                 factory_id=factory_id,
@@ -277,7 +314,7 @@ async def create_work_instruction(request):
             # 기존 또는 새로 생성된 WorkInstruction의 plans 업데이트
             work_instruction.plans.set(data["plans"])
 
-        return {"work_instructions": len(factory_plans)}
+        return {"work_instructions": len(factory_plans), "archived": yesterday_instructions.count()}
 
     result = await get_today_project_plans()
     return result
@@ -296,9 +333,16 @@ def update_work_instruction_for_factory(factory_id, target_date=None):
         )
         .filter(
             equipment__factory_id=factory_id,
+            project__status__in=[
+                Project.ProjectStatus.production,
+                Project.ProjectStatus.manufactured,
+                Project.ProjectStatus.delivery,
+                Project.ProjectStatus.completed,
+            ],
             status__in=[
                 ProjectPlan.ProductionStatus.pending,
                 ProjectPlan.ProductionStatus.production,
+                ProjectPlan.ProductionStatus.completed,
             ],
             start_date__date=target_date,
         )
