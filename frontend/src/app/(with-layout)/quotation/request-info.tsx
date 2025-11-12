@@ -68,9 +68,7 @@ const RequestInfo = ({
   const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(
     null
   );
-  const [dropdownProducts, setDropdownProducts] = useState<
-    ProductResponseModel[]
-  >([]);
+  const [dropdownSearchTerm, setDropdownSearchTerm] = useState('');
   const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
 
   const { fields, update, append, remove } = useFieldArray({
@@ -103,7 +101,7 @@ const RequestInfo = ({
 
       // OCR 데이터로 제품 목록 생성
       const ocrProducts = ocrRequestData.map((item: OcrRequestItemModel) => {
-        // 제품코드로 기존 제품 찾기
+        // 품목코드로 기존 제품 찾기
         const existingProduct = productList?.find(
           (p) => p.code === item.item_code
         );
@@ -184,7 +182,7 @@ const RequestInfo = ({
     }
   };
 
-  // 제품 삭제
+  // 품목 삭제
   const handleDeleteProduct = (index: number) => {
     remove(index);
 
@@ -195,7 +193,7 @@ const RequestInfo = ({
     }
   };
 
-  // 기존 제품 추가 시 빈 제품 추가
+  // 기존 품목 추가 시 빈 품목 추가
   const handleAddEmptyProduct = () => {
     const emptyProduct: QuotationProductDetailResponseModel = {
       productId: null,
@@ -213,12 +211,12 @@ const RequestInfo = ({
     append(emptyProduct);
   };
 
-  // 새로운 제품 추가 시 제품 디테일 판넬에서 저장버튼 누르면
+  // 새로운 품목 추가 시 품목 디테일 판넬에서 저장버튼 누르면
   const handleNewProductAdded = async (productId?: number) => {
     if (productId) {
       const productDetail = await getProductDetail(productId);
 
-      // 새로운 제품을 form에 추가
+      // 새로운 품목을 form에 추가
       const newProduct: QuotationProductDetailResponseModel = {
         productId,
         product_name: productDetail?.data?.name || '-',
@@ -240,7 +238,7 @@ const RequestInfo = ({
       <div className="flex justify-between items-center relative">
         <h3 className="Heading-3">요청 정보</h3>
         <MiniBtn
-          text="제품 추가하기"
+          text="품목 추가하기"
           textColor="text-dg"
           borderColor="border-lg"
           icon={CaretDown}
@@ -249,7 +247,7 @@ const RequestInfo = ({
           onClick={() => setIsProductEnrollmentDropdownOpen(true)}
           disabled={isViewer || !hasSubscription()}
         />
-        {/* 제품 추가하기 드롭다운 */}
+        {/* 품목 추가하기 드롭다운 */}
         {isProductEnrollmentDropdownOpen && (
           <div className="absolute top-12 right-0">
             <ProductEnrollmentDropdown
@@ -273,8 +271,8 @@ const RequestInfo = ({
             <table className="w-full min-w-[938px]">
               <thead>
                 <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-                  <th className="text-left px-3 flex-1">제품명</th>
-                  <th className="text-left px-3 flex-1">제품코드</th>
+                  <th className="text-left px-3 flex-1">품목명</th>
+                  <th className="text-left px-3 flex-1">품목코드</th>
                   <th className="text-left px-3 flex-1">규격</th>
                   <th className="text-left px-3 w-[80px]">단위</th>
                   <th className="text-left px-3 flex-1">제작 수량</th>
@@ -296,14 +294,14 @@ const RequestInfo = ({
                         handleQuantityOrPriceChange(index, field, value);
                       }}
                       onDelete={() => handleDeleteProduct(index)}
-                      onDropdownShow={(products, rect) => {
+                      onDropdownShow={(searchTerm, rect) => {
                         setActiveDropdownIndex(index);
-                        setDropdownProducts(products);
+                        setDropdownSearchTerm(searchTerm);
                         setDropdownRect(rect || null);
                       }}
                       onDropdownHide={() => {
                         setActiveDropdownIndex(null);
-                        setDropdownProducts([]);
+                        setDropdownSearchTerm('');
                         setDropdownRect(null);
                       }}
                       onProductDetailClick={(productId) => {
@@ -323,58 +321,55 @@ const RequestInfo = ({
         <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-lg mb-22">
           <h4 className="Heading-4 text-dg">요청 정보가 아직 없어요.</h4>
           <p className="R_Body-1 text-gr">
-            제품을 추가해서 단가를 측정해 보세요.
+            품목을 추가해서 단가를 측정해 보세요.
           </p>
         </div>
       )}
 
       {/* 포털 드롭다운 */}
-      {activeDropdownIndex !== null &&
-        dropdownProducts.length > 0 &&
-        dropdownRect && (
-          <div
-            className="fixed z-10 scrollbar-hide"
-            style={{
-              top: `${dropdownRect.bottom + 16}px`,
-              left: `${dropdownRect.left - 12}px`,
-              width: `${dropdownRect.width + 24}px`,
-              overflow: 'auto',
-            }}
-          >
-            <ProductNameDropdown
-              items={dropdownProducts}
-              onSelect={(product: ProductResponseModel) => {
-                // 선택된 제품 정보로 해당 행 업데이트
-                if (activeDropdownIndex !== null) {
-                  const updatedProduct = {
-                    ...fields[activeDropdownIndex],
-                    productId: product.id,
-                    product_name: product.name,
-                    product_code: product.code,
-                    spec: product.spec,
-                    unit: product.unit,
-                  };
-                  update(activeDropdownIndex, updatedProduct);
+      {activeDropdownIndex !== null && dropdownSearchTerm && dropdownRect && (
+        <div
+          className="fixed z-10"
+          style={{
+            top: `${dropdownRect.bottom + 16}px`,
+            left: `${dropdownRect.left - 0}px`,
+            width: `${dropdownRect.width - 1}px`,
+          }}
+        >
+          <ProductNameDropdown
+            searchTerm={dropdownSearchTerm}
+            onSelect={(product: ProductResponseModel) => {
+              // 선택된 품목 정보로 해당 행 업데이트
+              if (activeDropdownIndex !== null) {
+                const updatedProduct = {
+                  ...fields[activeDropdownIndex],
+                  productId: product.id,
+                  product_name: product.name,
+                  product_code: product.code,
+                  spec: product.spec,
+                  unit: product.unit,
+                };
+                update(activeDropdownIndex, updatedProduct);
 
-                  // 부모 컴포넌트에 변경사항 알림
-                  if (onProductsChange) {
-                    const updatedFields = [...fields];
-                    updatedFields[activeDropdownIndex] = updatedProduct;
-                    onProductsChange(updatedFields);
-                  }
+                // 부모 컴포넌트에 변경사항 알림
+                if (onProductsChange) {
+                  const updatedFields = [...fields];
+                  updatedFields[activeDropdownIndex] = updatedProduct;
+                  onProductsChange(updatedFields);
                 }
-                setActiveDropdownIndex(null);
-                setDropdownProducts([]);
-              }}
-              onClose={() => {
-                setActiveDropdownIndex(null);
-                setDropdownProducts([]);
-                setDropdownRect(null);
-              }}
-              width="100%"
-            />
-          </div>
-        )}
+              }
+              setActiveDropdownIndex(null);
+              setDropdownSearchTerm('');
+            }}
+            onClose={() => {
+              setActiveDropdownIndex(null);
+              setDropdownSearchTerm('');
+              setDropdownRect(null);
+            }}
+            width="100%"
+          />
+        </div>
+      )}
 
       {isAddNewProductClicked && (
         <ProductDetail

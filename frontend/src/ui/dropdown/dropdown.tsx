@@ -8,8 +8,13 @@ interface DropdownProps {
   className?: string;
   padding?: string;
   borderColor?: string;
-  maxHeight?: boolean;
+  maxHeight?: string;
   gap?: string;
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
+  onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  isLoading?: boolean;
 }
 
 const Dropdown = ({
@@ -20,10 +25,35 @@ const Dropdown = ({
   className = '',
   padding = 'p-2',
   borderColor = '',
-  maxHeight = false,
+  maxHeight = 'max-h-[304px]',
   gap = '',
+  scrollRef,
+  onScroll,
+  onLoadMore,
+  hasMore = false,
+  isLoading = false,
 }: DropdownProps) => {
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const internalRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = scrollRef || internalRef;
+
+  // 무한 스크롤 처리
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    // 커스텀 onScroll이 있으면 먼저 실행
+    if (onScroll) {
+      onScroll(e);
+    }
+
+    // onLoadMore가 있으면 무한 스크롤 처리
+    if (onLoadMore && hasMore && !isLoading) {
+      const target = e.currentTarget;
+      const { scrollTop, scrollHeight, clientHeight } = target;
+
+      // 스크롤이 끝에서 50px 이내에 도달하면 다음 페이지 로드
+      if (scrollHeight - scrollTop - clientHeight < 50) {
+        onLoadMore();
+      }
+    }
+  };
 
   // 외부 클릭 시 닫기
   useEffect(() => {
@@ -41,6 +71,7 @@ const Dropdown = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside); // 언마운트 시 제거
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose]);
 
   // 뷰포트 크기 변경 시 닫기
@@ -57,24 +88,29 @@ const Dropdown = ({
   // 외부 스크롤 시 닫기 (드롭다운 내부 스크롤 제외)
   useEffect(() => {
     const handleScroll = (event: Event) => {
-      // 드롭다운 내부에서 발생한 스크롤은 무시
-      if (
-        dropdownRef.current &&
-        dropdownRef.current.contains(event.target as Node)
-      ) {
+      const target = event.target as Node;
+
+      // 드롭다운 자체가 스크롤되는 경우 무시
+      if (target === dropdownRef.current) {
         return;
       }
+      // 드롭다운 내부에서 발생한 스크롤은 무시
+      if (dropdownRef.current && dropdownRef.current.contains(target)) {
+        return;
+      }
+      // 외부 스크롤인 경우 닫기
       onClose();
     };
 
-    // document와 window 모두에 스크롤 이벤트 리스너 등록
-    document.addEventListener('scroll', handleScroll, true); // capture phase로 등록
-    window.addEventListener('scroll', handleScroll);
+    // document와 window 모두에서 스크롤 감지
+    document.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('scroll', handleScroll, true);
 
     return () => {
       document.removeEventListener('scroll', handleScroll, true);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll, true);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose]);
 
   // 사이드바(aside) 이동 시 닫기: aside의 transition/scroll 및 커스텀 이벤트 수신
@@ -106,18 +142,13 @@ const Dropdown = ({
   return (
     <div
       ref={dropdownRef}
-      className={`shadow-[0px_0px_8px_0px_rgba(0,0,0,0.12)] ${borderColor ? `border ${borderColor}` : ''} flex flex-col ${width} rounded-lg ${padding} bg-white z-30 ${className} ${
-        maxHeight ? 'max-h-[304px] overflow-y-auto scrollbar-hide' : ''
+      className={`shadow-[0px_0px_8px_0px_rgba(0,0,0,0.12)] ${borderColor ? `border ${borderColor}` : ''} ${gap ? 'flex flex-col' : ''} ${gap} ${width} rounded-lg ${padding} bg-white z-30 ${className} ${
+        maxHeight ? `${maxHeight} overflow-y-scroll scrollbar-hide` : ''
       }`}
       style={style}
+      onScroll={handleScroll}
     >
-      <div
-        className={`${gap ? 'flex flex-col' : ''} ${gap} ${
-          maxHeight ? 'min-h-0' : ''
-        }`}
-      >
-        {children}
-      </div>
+      {children}
     </div>
   );
 };

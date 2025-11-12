@@ -1,10 +1,6 @@
-import {
-  QuotationProductDetailResponseModel,
-  ProductResponseModel,
-} from '@/types/data-model';
+import { QuotationProductDetailResponseModel } from '@/types/data-model';
 import { X } from '@phosphor-icons/react';
-import { useState, useEffect } from 'react';
-import { useGetProduct } from '@/hooks';
+import { useState } from 'react';
 import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import { ArrowLineUpRight } from '@phosphor-icons/react/dist/ssr';
 import useMemberStore from '@/store/member-store';
@@ -16,7 +12,7 @@ interface ProductItemProps {
   canDelete?: boolean;
   onChange?: (field: 'quantity' | 'unit_price', value: string) => void;
   onDelete?: () => void;
-  onDropdownShow?: (products: ProductResponseModel[], rect?: DOMRect) => void;
+  onDropdownShow?: (searchTerm: string, rect?: DOMRect) => void;
   onDropdownHide?: () => void;
   onProductDetailClick?: (productId: number | null) => void;
   onlyRead?: boolean;
@@ -40,33 +36,17 @@ const ProductItem = ({
   );
 
   const [searchTerm, setSearchTerm] = useState('');
-  const { getProductList } = useGetProduct();
-  const { isOpen, openDropdown, anchorRect } = usePortalDropdown();
+  const { openDropdown, anchorRect } = usePortalDropdown();
 
-  // 검색어가 변경될 때마다 제품 목록 필터링 (디바운스 300ms)
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchTerm.length > 0 && isOpen) {
-        const fetchProducts = async () => {
-          try {
-            const response = await getProductList({
-              q: searchTerm,
-            });
-            const products = response?.data?.data || [];
-            onDropdownShow?.(products, anchorRect || undefined);
-          } catch {
-            throw new Error('Failed to fetch products');
-          }
-        };
-        fetchProducts();
-      } else {
-        onDropdownHide?.();
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, isOpen]);
+  // 검색어 변경 시 드롭다운 표시
+  const handleSearchTermChange = (value: string) => {
+    setSearchTerm(value);
+    if (value.length > 0) {
+      onDropdownShow?.(value, anchorRect || undefined);
+    } else {
+      onDropdownHide?.();
+    }
+  };
 
   return (
     <>
@@ -114,7 +94,7 @@ const ProductItem = ({
               className="w-full outline-none"
               value={searchTerm}
               onChange={(e) => {
-                setSearchTerm(e.target.value);
+                handleSearchTermChange(e.target.value);
               }}
               disabled={isViewer || !hasSubscription()}
             />

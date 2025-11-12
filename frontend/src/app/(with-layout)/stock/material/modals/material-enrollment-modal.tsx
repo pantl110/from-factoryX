@@ -3,7 +3,6 @@ import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
-import { useDebounce } from 'use-debounce';
 import { X } from '@phosphor-icons/react/dist/ssr';
 import ManualAddMaterial from './manual-add-material';
 import {
@@ -35,9 +34,6 @@ const MaterialEnrollmentModal = ({
   // 원자재 검색 드랍다운 관련
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [filteredMaterials, setFilteredMaterials] = useState<
-    MaterialResponseModel[]
-  >([]);
   const { getMaterialList } = useGetMaterial();
   const factoryId = useMemberStore((state) => state.factoryId);
 
@@ -66,9 +62,6 @@ const MaterialEnrollmentModal = ({
     );
   };
 
-  // 검색어가 변경될 때 서버에서 검색
-  const [previousSearchKeyword, setPreviousSearchKeyword] = useState('');
-
   const [allMaterials, setAllMaterials] = useState<string[]>([]);
 
   useEffect(() => {
@@ -88,30 +81,6 @@ const MaterialEnrollmentModal = ({
       );
     }
   }, [isManualAddMode, getMaterialList]);
-
-  const [debouncedInput] = useDebounce(input, 300);
-
-  useEffect(() => {
-    const searchMaterials = async () => {
-      if (!debouncedInput.trim()) {
-        setFilteredMaterials([]);
-        setPreviousSearchKeyword('');
-        return;
-      }
-
-      if (debouncedInput.trim() === previousSearchKeyword) {
-        return;
-      }
-
-      const result = await getMaterialList({ q: debouncedInput.trim() });
-      if (result.success && result.data) {
-        setFilteredMaterials(result.data.data || []);
-        setPreviousSearchKeyword(debouncedInput.trim());
-      }
-    };
-
-    searchMaterials();
-  }, [debouncedInput, getMaterialList, previousSearchKeyword]);
 
   const handleSelectMaterial = (item: MaterialResponseModel) => {
     setInput('');
@@ -241,18 +210,33 @@ const MaterialEnrollmentModal = ({
                 placeholder="원자재 검색"
                 width="w-full"
                 value={input}
-                onChange={setInput}
-                onFocus={() => setIsOpen(true)}
+                onChange={(value) => {
+                  setInput(value);
+                  if (value.length > 0) {
+                    setIsOpen(true);
+                  } else {
+                    setIsOpen(false);
+                  }
+                }}
+                onFocus={() => {
+                  if (input.length > 0) {
+                    setIsOpen(true);
+                  }
+                }}
                 onBlur={() => setTimeout(() => setIsOpen(false), 150)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') e.preventDefault();
                 }}
               />
-              {isOpen && filteredMaterials.length > 0 && (
+              {isOpen && input && (
                 <div className="absolute left-0 top-14 w-[369.5px] z-10">
                   <MaterialNameDropdown
-                    items={filteredMaterials}
+                    searchTerm={input}
                     onSelect={handleSelectMaterial}
+                    onClose={() => {
+                      setIsOpen(false);
+                      setInput('');
+                    }}
                     width="w-full"
                   />
                 </div>

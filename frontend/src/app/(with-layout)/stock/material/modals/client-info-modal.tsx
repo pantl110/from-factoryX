@@ -2,9 +2,7 @@ import MiniBtn from '@/ui/mini-btn';
 import Input from '@/ui/input';
 import Modal from '@/ui/modal/modal';
 import { ClientModel } from '@/types/data-model';
-import { useEffect, useState } from 'react';
-import { useDebounce } from 'use-debounce';
-import useGetClient from '@/hooks/factory/factory-client/use-get-client';
+import { useState } from 'react';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { useForm } from 'react-hook-form';
 import {
@@ -45,31 +43,11 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     },
   });
 
-  const { clientList, getClients, getAllClientList } = useGetClient();
-
   // 드롭다운 상태 관리
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
 
-  // 디바운스된 검색어 (300ms)
-  const [debouncedSearchKeyword] = useDebounce(searchKeyword, 300);
-
-  // 초기 거래처 목록 로드
-  useEffect(() => {
-    getClients();
-  }, [getClients]);
-
-  // 디바운스된 검색어가 변경될 때 검색 실행
-  useEffect(() => {
-    if (debouncedSearchKeyword.trim()) {
-      getAllClientList(debouncedSearchKeyword);
-    } else {
-      getAllClientList();
-    }
-  }, [debouncedSearchKeyword, getAllClientList]);
-
   const handleSelectClient = (item: ClientModel | ClientResponseModel) => {
-    setSearchKeyword(item.name ?? '');
     setValue('name', item.name ?? '');
     setValue(
       'businessRegistrationNumber',
@@ -80,9 +58,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     setValue('businessType', item.business_type || '');
     setValue('businessCategory', item.business_category || '');
     setIsDropdownOpen(false);
+    setSearchKeyword(item.name ?? '');
   };
-
-  const clientItems = clientList?.data || [];
 
   // 필수 필드들의 값 감시
   const name = watch('name');
@@ -147,19 +124,30 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
                 const { value } = e.target;
                 setValue('name', value);
                 setSearchKeyword(value);
-                setIsDropdownOpen(true);
+                if (value.length > 0) {
+                  setIsDropdownOpen(true);
+                } else {
+                  setIsDropdownOpen(false);
+                }
               }}
-              onFocus={() => setIsDropdownOpen(true)}
+              onFocus={() => {
+                if (searchKeyword.length > 0) {
+                  setIsDropdownOpen(true);
+                }
+              }}
               onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
               showError={!!errors.name}
             />
-            {isDropdownOpen && clientItems.length > 0 && (
+            {isDropdownOpen && searchKeyword && (
               <div className="absolute left-0 top-21 z-10 w-full">
                 <ClientNameDropdown
-                  items={clientItems}
+                  searchTerm={searchKeyword}
                   onSelect={handleSelectClient}
                   width="w-full"
-                  onClose={() => setIsDropdownOpen(false)}
+                  onClose={() => {
+                    setIsDropdownOpen(false);
+                    setSearchKeyword('');
+                  }}
                 />
               </div>
             )}

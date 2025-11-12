@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useDebounce } from 'use-debounce';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { ArrowLineUpRight, X } from '@phosphor-icons/react';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import { ProductResponseModel } from '@/types/data-model';
-import { useGetProduct, useDropdownFilter } from '@/hooks';
+import { useGetProduct } from '@/hooks';
 import ProductDetail from '@/app/(with-layout)/stock/product/product-detail';
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
@@ -32,25 +31,13 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
   const isViewer = role === 'viewer';
 
   const { watch, setValue, trigger } = useFormContext<TableItemFormDataModel>();
-  const { getProductDetail, getProductList } = useGetProduct();
+  const { getProductDetail } = useGetProduct();
 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] =
     useState<ProductResponseModel | null>(null);
-  const [productList, setProductList] = useState<ProductResponseModel[]>([]);
-
-  const {
-    input: productName,
-    setInput: setProductName,
-    isOpen: isDropdownOpen,
-    setIsOpen: setIsDropdownOpen,
-    filtered: dropdownItems,
-    handleInputChange: handleProductNameChange,
-    handleSelect: handleProductSelect,
-  } = useDropdownFilter<ProductResponseModel>(productList, (item) => item.name);
-
-  // 디바운스된 productName (300ms 후에 API 호출)
-  const [debouncedProductName] = useDebounce(productName, 300);
+  const [productName, setProductName] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 폼 값 감시
   const quantity = watch(`products.${index}.quantity`) || 0;
@@ -80,59 +67,9 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
     }
   };
 
-  // debouncedProductName이 변경될 때마다 API 호출 (300ms 디바운스)
-  useEffect(() => {
-    const fetchProducts = async () => {
-      if (!debouncedProductName.trim()) {
-        setProductList([]);
-        setIsDropdownOpen(false); // 드롭다운 닫기
-        return;
-      }
-
-      try {
-        // 먼저 totalCnt를 가져오기 위해 size: 1로 호출
-        const countResult = await getProductList({
-          q: debouncedProductName,
-          page_size: 1,
-        });
-
-        if (!countResult.success || !countResult.data) {
-          setProductList([]);
-          return;
-        }
-
-        const totalCount = countResult.data.totalCnt || 0;
-        if (totalCount === 0) {
-          setProductList([]);
-          return;
-        }
-
-        // totalCnt만큼 사이즈로 전체 데이터 가져오기
-        const result = await getProductList({
-          q: debouncedProductName,
-          page_size: totalCount,
-        });
-
-        if (result.success && result.data && result.data.data.length > 0) {
-          setProductList(result.data.data);
-          setIsDropdownOpen(true); // 드롭다운 열기
-        } else {
-          setProductList([]);
-          setIsDropdownOpen(false); // 드롭다운 닫기
-        }
-      } catch {
-        setProductList([]);
-        setIsDropdownOpen(false); // 에러 시 드롭다운 닫기
-      }
-    };
-
-    fetchProducts();
-  }, [debouncedProductName, getProductList, setIsDropdownOpen, setProductList]);
-
-  // 제품 선택 핸들러 (productId 설정 포함)
+  // 품목 선택 핸들러 (productId 설정 포함)
   const handleProductSelectWithId = (product: ProductResponseModel) => {
     setSelectedProduct(product);
-    handleProductSelect(product);
     // productId와 개별 필드들을 폼에 설정
     setValue(`products.${index}.productId`, product.id, { shouldDirty: true });
     setValue(`products.${index}.product_name`, product.name, {
@@ -149,8 +86,6 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
     setIsDropdownOpen(false);
     // productName 초기화하여 재검색 방지
     setProductName('');
-    // productList 초기화
-    setProductList([]);
   };
 
   return (
@@ -165,8 +100,22 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             <input
               type="text"
               value={productName}
-              onChange={handleProductNameChange}
-              placeholder="제품명"
+              onChange={(e) => {
+                const { value } = e.target;
+                setProductName(value);
+                if (value.length > 0) {
+                  setIsDropdownOpen(true);
+                } else {
+                  setIsDropdownOpen(false);
+                }
+              }}
+              onFocus={() => {
+                if (productName.length > 0) {
+                  setIsDropdownOpen(true);
+                }
+              }}
+              onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
+              placeholder="품목명"
               className="text-dg outline-none w-full"
             />
           )}
@@ -180,11 +129,11 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             />
           )}
 
-          {/* 제품 검색 드롭다운 */}
-          {isDropdownOpen && dropdownItems.length > 0 && (
+          {/* 품목 검색 드롭다운 */}
+          {isDropdownOpen && productName && (
             <div className="absolute top-[41px] left-0 right-0 z-10">
               <ProductNameDropdown
-                items={dropdownItems}
+                searchTerm={productName}
                 onSelect={handleProductSelectWithId}
                 onClose={() => setIsDropdownOpen(false)}
                 width="w-full"
@@ -239,12 +188,12 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             setIsOpen(false);
           }}
           onSuccess={async (productId) => {
-            // 제품 수정 성공 시 변경된 제품 정보를 UI에 반영
+            // 품목 수정 성공 시 변경된 품목 정보를 UI에 반영
             if (productId && productId > 0) {
               try {
                 const result = await getProductDetail(productId);
                 if (result.success && result.data) {
-                  // 수정된 제품 정보로 개별 필드들 업데이트
+                  // 수정된 품목 정보로 개별 필드들 업데이트
                   setValue(`products.${index}.productId`, result.data.id, {
                     shouldDirty: true,
                   });

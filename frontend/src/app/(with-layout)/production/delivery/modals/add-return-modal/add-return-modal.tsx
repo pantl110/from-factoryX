@@ -12,13 +12,7 @@ import {
   QuotationProductDetailResponseModel,
   ProjectStatusType,
 } from '@/types/data-model';
-import {
-  useInput,
-  useDropdownFilter,
-  getToday,
-  formatDate,
-  useCreateRefund,
-} from '@/hooks';
+import { useInput, getToday, formatDate, useCreateRefund } from '@/hooks';
 
 interface AddReturnModalProps {
   onClose: () => void;
@@ -43,17 +37,9 @@ const AddReturnModal = ({
     return parseInt(numbers, 10).toLocaleString();
   };
 
-  const {
-    input: productName,
-    isOpen: isProductNameDropdownOpen,
-    setIsOpen: setIsProductNameDropdownOpen,
-    filtered: matchedItems,
-    handleInputChange,
-    handleSelect,
-  } = useDropdownFilter<QuotationProductDetailResponseModel>(
-    quotationProductData,
-    (item) => item.product_name
-  );
+  const [productName, setProductName] = useState('');
+  const [isProductNameDropdownOpen, setIsProductNameDropdownOpen] =
+    useState(false);
 
   // input 검사 훅
   const {
@@ -118,7 +104,7 @@ const AddReturnModal = ({
 
   // 드롭다운에서 선택 시 두 상태를 각각 업데이트
   const handleSelectProduct = (item: ProductResponseModel) => {
-    // QuotationProductDetailResponseModel로 변환하여 handleSelect에 전달
+    // QuotationProductDetailResponseModel로 변환
     const quotationProductData: QuotationProductDetailResponseModel = {
       productId: item.id,
       product_code: item.code,
@@ -130,7 +116,8 @@ const AddReturnModal = ({
     };
 
     setSelectedProduct(quotationProductData);
-    handleSelect(quotationProductData);
+    setProductName(item.name);
+    setIsProductNameDropdownOpen(false);
     // 제품 선택 시 반품 수량을 자동으로 설정하지 않음 (사용자가 직접 입력하도록)
     setShowSearchIcon(false);
   };
@@ -147,41 +134,32 @@ const AddReturnModal = ({
           placeholder="제품명 검색"
           width="w-full"
           value={productName}
-          onChange={(value) =>
-            handleInputChange({
-              target: { value },
-            } as React.ChangeEvent<HTMLInputElement>)
-          }
+          onChange={(value) => {
+            setProductName(value);
+            if (value.length > 0) {
+              setIsProductNameDropdownOpen(true);
+            } else {
+              setIsProductNameDropdownOpen(false);
+            }
+          }}
           onFocus={() => {
-            setIsProductNameDropdownOpen(true);
+            if (productName.length > 0) {
+              setIsProductNameDropdownOpen(true);
+            }
             setShowSearchIcon(true);
           }}
           onBlur={() =>
-            setTimeout(() => setIsProductNameDropdownOpen(false), 100)
+            setTimeout(() => setIsProductNameDropdownOpen(false), 150)
           }
           showIcon={showSearchIcon}
         />
-        {isProductNameDropdownOpen && matchedItems.length > 0 && (
-          <div className="absolute left-0 top-[calc(100%+8px)] z-10">
+        {isProductNameDropdownOpen && productName && (
+          <div className="absolute left-0 top-[calc(100%+8px)] z-[100] w-[551px]">
             <ProductNameDropdown
-              items={matchedItems.map((item, index) => ({
-                id: item.productId || index, // 고유한 ID 보장
-                created_at: '', // 안쓰는 데이터 형변환 위함
-                updated_at: '', // 안쓰는 데이터 형변환 위함
-                factory: 0, // 안쓰는 데이터 형변환 위함
-                name: item.product_name || '',
-                code: item.product_code || '',
-                unit: item.unit || '',
-                spec: item.spec || '',
-                current_stock: 0, // 안쓰는 데이터 형변환 위함, quotationProductData에는 current_stock이 없음
-                average_production_time: 0, // 안쓰는 데이터 형변환 위함
-                buffer_rate: 0, // 안쓰는 데이터 형변환 위함
-                location: 0, // 안쓰는 데이터 형변환 위함
-                note: '', // 안쓰는 데이터 형변환 위함
-              }))}
+              searchTerm={productName}
               onSelect={handleSelectProduct}
               onClose={() => setIsProductNameDropdownOpen(false)}
-              width="w-[551px]"
+              width="w-full"
             />
           </div>
         )}

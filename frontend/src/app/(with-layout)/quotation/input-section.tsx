@@ -7,9 +7,9 @@ import {
   FieldErrors,
   Control,
 } from 'react-hook-form';
-import { useDropdownFilter } from '@/hooks/use-dropdown-filter';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { ClientModel, ClientResponseModel } from '@/types/data-model';
+import { useState } from 'react';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -21,7 +21,6 @@ import {
   formatFaxNumber,
   formatDate,
 } from '@/utils/format-number';
-import useGetClient from '@/hooks/factory/factory-client/use-get-client';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 
@@ -40,26 +39,16 @@ const InputSection = ({
   onClientSelect,
   showErrors = false,
 }: InputSectionProps) => {
-  const { clientList, getAllClientList } = useGetClient();
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
 
-  const {
-    setInput: setCompanyNameInput,
-    isOpen: isCompanyNameDropdownOpen,
-    setIsOpen: setIsCompanyNameDropdownOpen,
-    filtered: filteredClients,
-    handleSelect: handleCompanyNameSelect,
-  } = useDropdownFilter(clientList?.data || [], (item) => item.name);
-
-  // 초기 ocr 데이터 로드 필요
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleSelectClient = (item: ClientResponseModel) => {
-    handleCompanyNameSelect(item);
-
     // 선택한 거래처 정보로 폼 자동 채우기
     setValue('name', item.name);
     setValue(
@@ -79,7 +68,8 @@ const InputSection = ({
     // 선택된 거래처 ID를 부모 컴포넌트로 전달
     onClientSelect?.(item.id);
 
-    setIsCompanyNameDropdownOpen(false);
+    setIsDropdownOpen(false);
+    setSearchTerm('');
   };
 
   return (
@@ -92,7 +82,7 @@ const InputSection = ({
             rules={{ required: true }}
             render={({ field }) => {
               const handleCompanyNameBlur = () =>
-                setTimeout(() => setIsCompanyNameDropdownOpen(false), 150);
+                setTimeout(() => setIsDropdownOpen(false), 150);
               return (
                 <Input
                   label="업체명"
@@ -102,10 +92,20 @@ const InputSection = ({
                   value={field.value ?? ''}
                   onChange={(e) => {
                     field.onChange(e);
-                    setCompanyNameInput(e.target.value);
-                    getAllClientList(e.target.value);
+                    const { value } = e.target;
+                    setSearchTerm(value);
+                    if (value.length > 0) {
+                      setIsDropdownOpen(true);
+                    } else {
+                      setIsDropdownOpen(false);
+                    }
                   }}
-                  onFocus={() => setIsCompanyNameDropdownOpen(true)}
+                  onFocus={() => {
+                    if (field.value && field.value.length > 0) {
+                      setSearchTerm(field.value);
+                      setIsDropdownOpen(true);
+                    }
+                  }}
                   onBlur={handleCompanyNameBlur}
                   ref={field.ref}
                   name={field.name}
@@ -114,12 +114,15 @@ const InputSection = ({
               );
             }}
           />
-          {isCompanyNameDropdownOpen && filteredClients.length > 0 && (
+          {isDropdownOpen && searchTerm && (
             <div className="absolute left-0 top-21 z-10 w-full">
               <ClientNameDropdown
-                items={filteredClients}
+                searchTerm={searchTerm}
                 onSelect={handleSelectClient}
-                onClose={() => setIsCompanyNameDropdownOpen(false)}
+                onClose={() => {
+                  setIsDropdownOpen(false);
+                  setSearchTerm('');
+                }}
                 width="w-full"
               />
             </div>
