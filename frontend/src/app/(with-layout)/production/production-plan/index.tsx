@@ -1047,7 +1047,6 @@ const ProductionPlan = ({
         createPortal(
           <FacilityDropdown
             onClose={handleCloseFacilityDropdown}
-            equipments={allEquipments}
             onSelect={handleEquipmentSelect}
             style={{
               position: 'fixed',

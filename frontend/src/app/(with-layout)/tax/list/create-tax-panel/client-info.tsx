@@ -1,10 +1,10 @@
 import Input from '@/ui/input';
 import { useForm } from 'react-hook-form';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { ClientInfoFormDataModel } from '../type';
 import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { ClientResponseModel, TaxClientInfoModel } from '@/types/data-model';
-import { useGetClient, formatBusinessNumber } from '@/hooks';
+import { formatBusinessNumber } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 
 interface ClientInfoProps {
@@ -69,16 +69,9 @@ const ClientInfo = ({
   // 검색 관련 상태
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState<ClientResponseModel[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<
     number | undefined
   >();
-
-  // useGetClient 훅 사용
-  const { getAllClientList } = useGetClient();
-
-  // 디바운싱을 위한 타이머 ref
-  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 폼 데이터 실시간 감시
   const formData = watch();
@@ -91,54 +84,6 @@ const ClientInfo = ({
       formData.businessType &&
       formData.businessCategory
   );
-
-  // 검색 함수를 useCallback으로 메모이제이션
-  const performSearch = useCallback(
-    async (query: string) => {
-      if (query.trim().length === 0) {
-        setSearchResults([]);
-        setIsDropdownOpen(false);
-        return;
-      }
-
-      try {
-        // getAllClientList를 사용하여 검색 결과 가져오기
-        const searchResult = await getAllClientList(query);
-
-        if (searchResult.success && searchResult.data) {
-          setSearchResults(searchResult.data.data || []);
-          setIsDropdownOpen(true);
-        } else {
-          setSearchResults([]);
-          setIsDropdownOpen(false);
-        }
-      } catch {
-        setSearchResults([]);
-        setIsDropdownOpen(false);
-      }
-    },
-    [getAllClientList]
-  );
-
-  // 검색어 변경 시 디바운싱 적용
-  useEffect(() => {
-    // 이전 타이머 클리어
-    if (searchTimerRef.current) {
-      clearTimeout(searchTimerRef.current);
-    }
-
-    // 새 타이머 설정 (300ms 디바운싱)
-    searchTimerRef.current = setTimeout(() => {
-      performSearch(searchQuery);
-    }, 300);
-
-    // 클린업 함수
-    return () => {
-      if (searchTimerRef.current) {
-        clearTimeout(searchTimerRef.current);
-      }
-    };
-  }, [searchQuery, performSearch]);
 
   // 거래처 선택 핸들러
   const handleClientSelect = (client: ClientResponseModel) => {
@@ -171,9 +116,9 @@ const ClientInfo = ({
       shouldDirty: true,
     });
 
-    // 드롭다운 상태만 업데이트 (검색 쿼리는 설정하지 않음)
+    // 드롭다운 상태만 업데이트
     setIsDropdownOpen(false);
-    setSearchResults([]);
+    setSearchQuery(client.name);
   };
 
   // 폼 상태가 변경될 때마다 부모 컴포넌트에 알림 (의존성 배열에서 onFormChange 제거)
@@ -247,23 +192,29 @@ const ClientInfo = ({
               showError={shouldShowError('companyName')}
               value={formData.companyName || ''}
               onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setValue('companyName', e.target.value, {
+                const { value } = e.target;
+                setSearchQuery(value);
+                setValue('companyName', value, {
                   shouldValidate: true,
                   shouldDirty: true,
                 });
                 handleFieldChange('companyName');
+                if (value.length > 0) {
+                  setIsDropdownOpen(true);
+                } else {
+                  setIsDropdownOpen(false);
+                }
               }}
               disabledReadOnly={isViewer}
             />
-            {isDropdownOpen && searchResults.length > 0 && (
+            {isDropdownOpen && searchQuery && (
               <div className="absolute top-full left-0 right-0 z-10 mt-1">
                 <ClientNameDropdown
-                  items={searchResults}
+                  searchTerm={searchQuery}
                   onSelect={handleClientSelect}
                   onClose={() => {
                     setIsDropdownOpen(false);
-                    setSearchResults([]);
+                    setSearchQuery('');
                   }}
                   width="100%"
                 />

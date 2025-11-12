@@ -68,9 +68,7 @@ const RequestInfo = ({
   const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(
     null
   );
-  const [dropdownProducts, setDropdownProducts] = useState<
-    ProductResponseModel[]
-  >([]);
+  const [dropdownSearchTerm, setDropdownSearchTerm] = useState('');
   const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
 
   const { fields, update, append, remove } = useFieldArray({
@@ -296,14 +294,14 @@ const RequestInfo = ({
                         handleQuantityOrPriceChange(index, field, value);
                       }}
                       onDelete={() => handleDeleteProduct(index)}
-                      onDropdownShow={(products, rect) => {
+                      onDropdownShow={(searchTerm, rect) => {
                         setActiveDropdownIndex(index);
-                        setDropdownProducts(products);
+                        setDropdownSearchTerm(searchTerm);
                         setDropdownRect(rect || null);
                       }}
                       onDropdownHide={() => {
                         setActiveDropdownIndex(null);
-                        setDropdownProducts([]);
+                        setDropdownSearchTerm('');
                         setDropdownRect(null);
                       }}
                       onProductDetailClick={(productId) => {
@@ -329,52 +327,49 @@ const RequestInfo = ({
       )}
 
       {/* 포털 드롭다운 */}
-      {activeDropdownIndex !== null &&
-        dropdownProducts.length > 0 &&
-        dropdownRect && (
-          <div
-            className="fixed z-10 scrollbar-hide"
-            style={{
-              top: `${dropdownRect.bottom + 16}px`,
-              left: `${dropdownRect.left - 12}px`,
-              width: `${dropdownRect.width + 24}px`,
-              overflow: 'auto',
-            }}
-          >
-            <ProductNameDropdown
-              items={dropdownProducts}
-              onSelect={(product: ProductResponseModel) => {
-                // 선택된 품목 정보로 해당 행 업데이트
-                if (activeDropdownIndex !== null) {
-                  const updatedProduct = {
-                    ...fields[activeDropdownIndex],
-                    productId: product.id,
-                    product_name: product.name,
-                    product_code: product.code,
-                    spec: product.spec,
-                    unit: product.unit,
-                  };
-                  update(activeDropdownIndex, updatedProduct);
+      {activeDropdownIndex !== null && dropdownSearchTerm && dropdownRect && (
+        <div
+          className="fixed z-10"
+          style={{
+            top: `${dropdownRect.bottom + 16}px`,
+            left: `${dropdownRect.left - 0}px`,
+            width: `${dropdownRect.width - 1}px`,
+          }}
+        >
+          <ProductNameDropdown
+            searchTerm={dropdownSearchTerm}
+            onSelect={(product: ProductResponseModel) => {
+              // 선택된 품목 정보로 해당 행 업데이트
+              if (activeDropdownIndex !== null) {
+                const updatedProduct = {
+                  ...fields[activeDropdownIndex],
+                  productId: product.id,
+                  product_name: product.name,
+                  product_code: product.code,
+                  spec: product.spec,
+                  unit: product.unit,
+                };
+                update(activeDropdownIndex, updatedProduct);
 
-                  // 부모 컴포넌트에 변경사항 알림
-                  if (onProductsChange) {
-                    const updatedFields = [...fields];
-                    updatedFields[activeDropdownIndex] = updatedProduct;
-                    onProductsChange(updatedFields);
-                  }
+                // 부모 컴포넌트에 변경사항 알림
+                if (onProductsChange) {
+                  const updatedFields = [...fields];
+                  updatedFields[activeDropdownIndex] = updatedProduct;
+                  onProductsChange(updatedFields);
                 }
-                setActiveDropdownIndex(null);
-                setDropdownProducts([]);
-              }}
-              onClose={() => {
-                setActiveDropdownIndex(null);
-                setDropdownProducts([]);
-                setDropdownRect(null);
-              }}
-              width="100%"
-            />
-          </div>
-        )}
+              }
+              setActiveDropdownIndex(null);
+              setDropdownSearchTerm('');
+            }}
+            onClose={() => {
+              setActiveDropdownIndex(null);
+              setDropdownSearchTerm('');
+              setDropdownRect(null);
+            }}
+            width="100%"
+          />
+        </div>
+      )}
 
       {isAddNewProductClicked && (
         <ProductDetail

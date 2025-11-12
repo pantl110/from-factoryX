@@ -3,13 +3,8 @@ import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState, useEffect } from 'react';
-import { useDebounce } from 'use-debounce';
 import ManualAddMaterial from '../../material/modals/manual-add-material';
-import {
-  MaterialItemModel,
-  MaterialResponseModel,
-  MaterialListResponseModel,
-} from '@/types/data-model';
+import { MaterialItemModel, MaterialResponseModel } from '@/types/data-model';
 import {
   useGetMaterial,
   useMaterialProduct,
@@ -51,11 +46,8 @@ const ConnectMaterialModal = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newMaterials, setNewMaterials] = useState<MaterialItemModel[]>([]); // 수동 추가한 새로운 원자재
   const [isManualAddMode, setIsManualAddMode] = useState(false);
-  const [filteredMaterials, setFilteredMaterials] = useState<
-    MaterialResponseModel[]
-  >([]);
   const [allMaterialCodes, setAllMaterialCodes] = useState<string[]>([]); // 모든 원자재 코드
-  const { getMaterialList, getAllMaterials } = useGetMaterial();
+  const { getAllMaterials } = useGetMaterial();
   const { createMaterialProduct, isLoading: isConnecting } =
     useMaterialProduct();
   const { createMaterial, isLoading: isCreating } = useCreateMaterial();
@@ -91,41 +83,6 @@ const ConnectMaterialModal = ({
     fetchAllMaterials();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // 검색어가 변경될 때 서버에서 검색
-  const [debouncedInput] = useDebounce(input, 300);
-
-  useEffect(() => {
-    const searchMaterials = async () => {
-      if (debouncedInput.trim()) {
-        const firstPageResult = await getMaterialList({
-          q: debouncedInput,
-          page: 1,
-          page_size: 10,
-        });
-
-        if (firstPageResult.success && firstPageResult.data) {
-          const { totalCnt } =
-            firstPageResult.data as MaterialListResponseModel;
-
-          // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
-          const allDataResult = await getMaterialList({
-            q: debouncedInput,
-            page: 1,
-            page_size: totalCnt,
-          });
-
-          if (allDataResult.success && allDataResult.data) {
-            setFilteredMaterials(allDataResult.data.data);
-          }
-        }
-      } else {
-        setFilteredMaterials([]);
-      }
-    };
-
-    searchMaterials();
-  }, [debouncedInput, getMaterialList]);
 
   // 원자재 선택 시
   const handleSelectMaterial = (item: MaterialResponseModel) => {
@@ -353,8 +310,19 @@ const ConnectMaterialModal = ({
             placeholder="원자재를 검색하세요."
             width="flex-1"
             value={input}
-            onChange={setInput}
-            onFocus={() => setIsDropdownOpen(true)}
+            onChange={(value) => {
+              setInput(value);
+              if (value.length > 0) {
+                setIsDropdownOpen(true);
+              } else {
+                setIsDropdownOpen(false);
+              }
+            }}
+            onFocus={() => {
+              if (input.length > 0) {
+                setIsDropdownOpen(true);
+              }
+            }}
             onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
           />
           <MiniBtn
@@ -366,11 +334,15 @@ const ConnectMaterialModal = ({
             onClick={() => setIsManualAddMode(true)}
           />
 
-          {isDropdownOpen && input.trim() && filteredMaterials.length > 0 && (
-            <div className="absolute left-6 top-14 z-10 w-[451px] h-[256px] overflow-y-auto">
+          {isDropdownOpen && input && (
+            <div className="absolute left-6 top-14 z-10 w-[451px]">
               <MaterialNameDropdown
-                items={filteredMaterials}
+                searchTerm={input}
                 onSelect={handleSelectMaterial}
+                onClose={() => {
+                  setIsDropdownOpen(false);
+                  setInput('');
+                }}
                 width="w-full"
               />
             </div>

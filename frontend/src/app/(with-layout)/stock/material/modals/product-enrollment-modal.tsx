@@ -2,15 +2,10 @@ import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { useState, useEffect } from 'react';
-import { useDebounce } from 'use-debounce';
-import {
-  ProductResponseModel,
-  MaterialItemModel,
-  ProductListResponseModel,
-} from '@/types/data-model';
+import { ProductResponseModel, MaterialItemModel } from '@/types/data-model';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import ManualAddProduct from './manual-add-product';
-import { useGetProduct, useAssignProduct, useMaterialProduct } from '@/hooks';
+import { useAssignProduct, useMaterialProduct } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import ConnetionItem from '../../modals/connetion-item';
 
@@ -36,10 +31,6 @@ const ProductEnrollmentModal = ({
 }: ProductEnrollmentModalProps) => {
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [filteredProducts, setFilteredProducts] = useState<
-    ProductResponseModel[]
-  >([]);
-  const { getProductList } = useGetProduct();
   const { assignProduct, isLoading: isAssignLoading } = useAssignProduct();
   const factoryId = useMemberStore((state) => state.factoryId);
   const { getMaterialProductConnections, data: connections } =
@@ -71,41 +62,6 @@ const ProductEnrollmentModal = ({
       setConnectedProductIds(Array.from(new Set(ids)));
     }
   }, [connections]);
-
-  // 검색어가 변경될 때 서버에서 검색
-  const [debouncedInput] = useDebounce(input, 300);
-
-  useEffect(() => {
-    const searchProducts = async () => {
-      if (debouncedInput.trim()) {
-        const firstPageResult = await getProductList({
-          q: debouncedInput,
-          page: 1,
-          page_size: 10,
-        });
-
-        if (firstPageResult.success && firstPageResult.data) {
-          const responseData = firstPageResult.data as ProductListResponseModel;
-          const totalCnt = responseData.totalCnt || responseData.count || 0;
-
-          // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
-          const allDataResult = await getProductList({
-            q: debouncedInput,
-            page: 1,
-            page_size: totalCnt,
-          });
-
-          if (allDataResult.success && allDataResult.data) {
-            setFilteredProducts(allDataResult.data.data);
-          }
-        }
-      } else {
-        setFilteredProducts([]);
-      }
-    };
-
-    searchProducts();
-  }, [debouncedInput, getProductList]);
 
   // 품목 선택 시 - ProductResponseModel을 MaterialItemModel로 변환
   const handleSelectProduct = (product: ProductResponseModel) => {
@@ -188,8 +144,19 @@ const ProductEnrollmentModal = ({
           placeholder="품목 검색"
           width="flex-1"
           value={input}
-          onChange={setInput}
-          onFocus={() => setIsOpen(true)}
+          onChange={(value) => {
+            setInput(value);
+            if (value.length > 0) {
+              setIsOpen(true);
+            } else {
+              setIsOpen(false);
+            }
+          }}
+          onFocus={() => {
+            if (input.length > 0) {
+              setIsOpen(true);
+            }
+          }}
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
         />
         <MiniBtn
@@ -201,13 +168,16 @@ const ProductEnrollmentModal = ({
           onClick={() => setIsManualAddMode(true)}
         />
 
-        {isOpen && filteredProducts.length > 0 && (
+        {isOpen && input && (
           <div className="absolute left-6 top-14 w-[449.3px] z-10">
             <ProductNameDropdown
-              items={filteredProducts}
+              searchTerm={input}
               onSelect={handleSelectProduct}
+              onClose={() => {
+                setIsOpen(false);
+                setInput('');
+              }}
               width="w-full"
-              onClose={() => setIsOpen(false)}
             />
           </div>
         )}
