@@ -99,6 +99,47 @@ async def list_substitutes(request):
 
 
 @router.get(
+    "/{material_id}",
+    summary="[R] 자재로 대체 자재 그룹 조회",
+    description="특정 자재가 속한 대체 자재 그룹들을 조회합니다.",
+    response={200: List[SubstituteDetailOut], 400: dict, 404: dict},
+)
+async def get_substitutes_by_material(
+    request, material_id: int, factory_id: int = None
+):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    @sync_to_async
+    def get_material():
+        try:
+            material = Material.objects.get(id=material_id, factory_id=factory_id)
+            return material
+        except Material.DoesNotExist:
+            raise HttpError(404, "자재를 찾을 수 없습니다.")
+
+    material = await get_material()
+
+    @sync_to_async
+    def get_substitute_groups():
+        # 해당 자재가 속한 모든 대체 자재 그룹을 조회
+        substitutes = (
+            Substitute.objects.filter(materials=material, factory_id=factory_id)
+            .prefetch_related("materials")
+            .select_related("factory")
+        )
+        return list(substitutes)
+
+    substitutes_list = await get_substitute_groups()
+
+    return 200, substitutes_list
+
+
+@router.get(
     "/{substitute_id}",
     summary="[R] 대체 자재 그룹 상세 조회",
     description="특정 대체 자재 그룹의 상세 정보를 조회합니다.",
@@ -169,8 +210,6 @@ async def update_substitute(
     substitute = await get_substitute_by_id(factory_id, substitute_id)
 
     return substitute
-
-
 @router.delete(
     "/{substitute_id}",
     summary="[D] 대체 자재 그룹 삭제",

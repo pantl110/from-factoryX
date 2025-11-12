@@ -293,9 +293,7 @@ async def get_material_detail(request, material_id: int):
     await is_factory_member(int(factory_id), user)
 
     try:
-        material = await Material.objects.prefetch_related(
-            "substitutes__materials"
-        ).aget(id=material_id)
+        material = await Material.objects.aget(id=material_id)
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
 
