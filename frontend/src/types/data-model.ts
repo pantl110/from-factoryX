@@ -1532,6 +1532,35 @@ export interface UnitConversionListResponseModel extends PaginationModel {
   data: UnitConversionModel[];
 }
 
+//////////////////////
+// Substitute API (대체 자재)
+// 대체 자재 간단 정보 (재고 정보 포함)
+export interface MaterialSimpleModel {
+  id: number;
+  name: string;
+  code: string;
+  spec: string;
+  unit: string;
+  current_stock?: number | null;
+  standard_stock?: number | null;
+}
+
+// 대체 자재 관계 생성
+export interface CreateSubstituteModel {
+  source_material_id: number; // 원본 자재 ID
+  target_materials: number[]; // 대체 가능한 자재 ID 목록 (단방향)
+}
+
+// 대체 자재 관계 상세 조회 응답
+export interface SubstituteDetailResponseModel {
+  id: number;
+  factory: number;
+  source_material: MaterialSimpleModel; // 원본 자재
+  target_materials: MaterialSimpleModel[]; // 대체 가능한 자재 목록 (단방향)
+  created_at: string;
+  updated_at: string;
+}
+
 import {
   MemberRoleType,
   MemberStatusType,

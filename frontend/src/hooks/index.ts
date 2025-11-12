@@ -176,3 +176,16 @@ export { useCancelSubscriptionPayment } from './subscription/use-cancel-subscrip
 
 // Unit conversion related hooks
 export { default as useUnitConversionApi } from './unit-conversion/use-unit-conversion-api';
+
+// Substitute related hooks (대체 자재)
+export { default as useCreateSubstitute } from './substitute/use-create-substitute';
+export { default as useGetSubstitutesByMaterial } from './substitute/use-get-substitutes-by-material';
+export { default as useDeleteSubstitute } from './substitute/use-delete-substitute';
+
+// Substitute React Query hooks
+export {
+  useCreateSubstituteMutation,
+  useDeleteSubstituteMutation,
+} from './substitute/use-substitute-mutations';
+export { useSubstitutesByMaterialQuery } from './substitute/use-substitute-queries';
+

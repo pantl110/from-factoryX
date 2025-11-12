@@ -391,7 +391,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           />
 
           {/* 대체 가능한 원자재 */}
-          <SubMaterials />
+          <SubMaterials materialId={materialId} />
 
           {/* 업체별 단가 비교 */}
           <div className="flex flex-col gap-3">
