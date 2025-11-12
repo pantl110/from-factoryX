@@ -3,7 +3,7 @@ from common.models import BaseModel
 
 
 class Substitute(BaseModel):
-    """대체 자재 그룹 - 상호 대체 가능한 자재들을 묶는 그룹"""
+    """대체 자재 관계 - 단방향 (source 자재의 대체 가능한 자재들)"""
 
     factory = models.ForeignKey(
         "factory.Factory",
@@ -11,27 +11,23 @@ class Substitute(BaseModel):
         on_delete=models.CASCADE,
         help_text="공장",
     )
-    name = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        help_text="그룹명 (예: 'M8 볼트 그룹', 'SUS304 1.5t 판재 그룹')",
-    )
-    description = models.TextField(
-        null=True,
-        blank=True,
-        help_text="그룹 설명",
-    )
-    materials = models.ManyToManyField(
+    source_material = models.ForeignKey(
         "stock.Material",
-        related_name="substitutes",
-        help_text="대체 가능한 자재 목록",
+        related_name="substitute_relations",
+        on_delete=models.CASCADE,
+        help_text="이 자재의 대체 가능한 자재들을 정의",
+    )
+    target_materials = models.ManyToManyField(
+        "stock.Material",
+        related_name="substituted_by_relations",
+        help_text="대체 가능한 자재 목록 (단방향: source_material의 대체 자재들)",
     )
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "대체 자재 그룹"
-        verbose_name_plural = "대체 자재 그룹"
+        unique_together = [["factory", "source_material"]]
+        verbose_name = "대체 자재 관계"
+        verbose_name_plural = "대체 자재 관계"
 
     def __str__(self):
-        return f"{self.name} ({self.factory.name})"
+        return f"{self.source_material.name} -> 대체 자재 관계 ({self.factory.name})"

@@ -1,5 +1,6 @@
 from django.test import TestCase
 from ninja.testing import TestAsyncClient
+from asgiref.sync import sync_to_async
 from user.api import router as user_router
 from substitute.api import router
 from user.models import User
@@ -45,6 +46,7 @@ class TestSubstituteAPI(TestCase):
             unit="개",
             spec="M8x20mm",
             current_stock=100,
+            standard_stock=50,
         )
 
         self.material2 = Material.objects.create(
@@ -54,6 +56,7 @@ class TestSubstituteAPI(TestCase):
             unit="개",
             spec="M8x20mm",
             current_stock=50,
+            standard_stock=30,
         )
 
         self.material3 = Material.objects.create(
@@ -63,6 +66,7 @@ class TestSubstituteAPI(TestCase):
             unit="개",
             spec="M8x20mm",
             current_stock=0,
+            standard_stock=20,
         )
 
         self.material4 = Material.objects.create(
@@ -72,17 +76,15 @@ class TestSubstituteAPI(TestCase):
             unit="kg",
             spec="1.5t",
             current_stock=200,
+            standard_stock=100,
         )
 
-        # 테스트용 대체 자재 그룹 생성
-        self.substitute_group = Substitute.objects.create(
+        # 테스트용 대체 자재 관계 생성 (단방향: material1의 대체 자재는 material2, material3)
+        self.substitute_relation = Substitute.objects.create(
             factory=self.factory,
-            name="M8 볼트 그룹",
-            description="M8 볼트 대체 가능 자재",
+            source_material=self.material1,
         )
-        self.substitute_group.materials.add(
-            self.material1, self.material2, self.material3
-        )
+        self.substitute_relation.target_materials.add(self.material2, self.material3)
 
     async def authenticate(self):
         """인증 토큰 생성"""
@@ -99,383 +101,313 @@ class TestSubstituteAPI(TestCase):
             "Authorization": f"Bearer {data['access_token']}",
         }
 
-    async def test_create_substitute_group(self):
-        """대체 자재 그룹 생성 테스트"""
+    async def test_create_substitute_relation(self):
+        """대체 자재 관계 생성 테스트 (단방향)"""
         headers = await self.authenticate()
         payload = {
-            "name": "SUS304 판재 그룹",
-            "description": "SUS304 1.5t 대체 가능 자재",
-            "materials": [self.material4.id],
+            "source_material_id": self.material4.id,
+            "target_materials": [self.material1.id, self.material2.id],
         }
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 201)
         data = response.json()
-        self.assertEqual(data["name"], "SUS304 판재 그룹")
-        self.assertEqual(data["description"], "SUS304 1.5t 대체 가능 자재")
-        self.assertEqual(len(data["materials"]), 1)
-        self.assertEqual(data["materials"][0]["id"], self.material4.id)
+        self.assertEqual(data["source_material"]["id"], self.material4.id)
+        self.assertEqual(len(data["target_materials"]), 2)
+        target_ids = [m["id"] for m in data["target_materials"]]
+        self.assertIn(self.material1.id, target_ids)
+        self.assertIn(self.material2.id, target_ids)
 
-    async def test_create_substitute_group_multiple_materials(self):
-        """여러 자재로 대체 그룹 생성 테스트"""
+    async def test_create_substitute_relation_multiple_targets(self):
+        """여러 대체 자재로 관계 생성 테스트"""
         headers = await self.authenticate()
         payload = {
-            "name": "테스트 그룹",
-            "description": "여러 자재 포함",
-            "materials": [self.material1.id, self.material2.id, self.material4.id],
+            "source_material_id": self.material4.id,
+            "target_materials": [self.material1.id, self.material2.id, self.material3.id],
         }
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 201)
         data = response.json()
-        self.assertEqual(len(data["materials"]), 3)
-        materials = [m["id"] for m in data["materials"]]
-        self.assertIn(self.material1.id, materials)
-        self.assertIn(self.material2.id, materials)
-        self.assertIn(self.material4.id, materials)
+        self.assertEqual(len(data["target_materials"]), 3)
+        target_ids = [m["id"] for m in data["target_materials"]]
+        self.assertIn(self.material1.id, target_ids)
+        self.assertIn(self.material2.id, target_ids)
+        self.assertIn(self.material3.id, target_ids)
 
-    async def test_create_substitute_group_without_name(self):
-        """이름 없이 대체 그룹 생성 테스트 (name은 optional)"""
+    async def test_create_substitute_relation_empty_targets(self):
+        """대체 자재 없이 관계 생성 시도 테스트"""
         headers = await self.authenticate()
         payload = {
-            "materials": [self.material1.id, self.material2.id],
-        }
-        response = await self.client.post(
-            f"?factory_id={self.factory.id}", headers=headers, json=payload
-        )
-        self.assertEqual(response.status_code, 201)
-        data = response.json()
-        self.assertIsNone(data["name"])
-        self.assertEqual(len(data["materials"]), 2)
-
-    async def test_create_substitute_group_empty_materials(self):
-        """자재 없이 대체 그룹 생성 시도 테스트"""
-        headers = await self.authenticate()
-        payload = {
-            "name": "빈 그룹",
-            "materials": [],
+            "source_material_id": self.material4.id,
+            "target_materials": [],
         }
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertIn("최소 1개 이상의 자재를 선택해야 합니다", data["detail"])
+        self.assertIn("최소 1개 이상의 대체 자재를 선택해야 합니다", data["detail"])
 
-    async def test_create_substitute_group_invalid_material_id(self):
-        """존재하지 않는 자재 ID로 그룹 생성 시도 테스트"""
+    async def test_create_substitute_relation_source_in_targets(self):
+        """원본 자재가 대체 자재 목록에 포함된 경우 테스트"""
         headers = await self.authenticate()
         payload = {
-            "name": "잘못된 그룹",
-            "materials": [99999],
+            "source_material_id": self.material4.id,  # material1은 이미 관계가 있으므로 material4 사용
+            "target_materials": [self.material4.id, self.material2.id],
         }
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertIn("일부 자재가 존재하지 않거나", data["detail"])
+        self.assertIn("원본 자재는 대체 자재 목록에 포함될 수 없습니다", data["detail"])
 
-    async def test_create_substitute_group_different_factory_material(self):
-        """다른 공장의 자재로 그룹 생성 시도 테스트"""
+    async def test_create_substitute_relation_duplicate_source(self):
+        """같은 source_material에 대한 중복 관계 생성 시도 테스트"""
+        headers = await self.authenticate()
+        payload = {
+            "source_material_id": self.material1.id,  # 이미 관계가 존재함
+            "target_materials": [self.material4.id],
+        }
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("이미 존재합니다", data["detail"])
+
+    async def test_create_substitute_relation_invalid_source_material(self):
+        """존재하지 않는 source_material로 관계 생성 시도 테스트"""
+        headers = await self.authenticate()
+        payload = {
+            "source_material_id": 99999,
+            "target_materials": [self.material2.id],
+        }
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertIn("원본 자재가 존재하지 않거나", data["detail"])
+
+    async def test_create_substitute_relation_invalid_target_material(self):
+        """존재하지 않는 target_material로 관계 생성 시도 테스트"""
+        headers = await self.authenticate()
+        payload = {
+            "source_material_id": self.material4.id,
+            "target_materials": [99999],
+        }
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("일부 대체 자재가 존재하지 않거나", data["detail"])
+
+    async def test_create_substitute_relation_different_factory_material(self):
+        """다른 공장의 자재로 관계 생성 시도 테스트"""
         headers = await self.authenticate()
 
         # 다른 공장과 자재 생성
-        other_factory = await Factory.objects.acreate(
-            owner=self.user,
-            name="Other Factory",
-            business_registration_number="999-99-99999",
-        )
-        other_material = await Material.objects.acreate(
-            factory=other_factory,
-            name="다른 공장 자재",
-            code="OTHER-001",
-            unit="개",
-            spec="test",
-        )
+        @sync_to_async
+        def create_other_factory():
+            other_factory = Factory.objects.create(
+                owner=self.user,
+                name="Other Factory",
+                business_registration_number="999-99-99999",
+            )
+            other_material = Material.objects.create(
+                factory=other_factory,
+                name="다른 공장 자재",
+                code="OTHER-001",
+                unit="개",
+                spec="test",
+            )
+            return other_factory, other_material
+
+        other_factory, other_material = await create_other_factory()
 
         payload = {
-            "name": "잘못된 그룹",
-            "materials": [other_material.id],
+            "source_material_id": self.material4.id,
+            "target_materials": [other_material.id],
         }
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
         )
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertIn("일부 자재가 존재하지 않거나", data["detail"])
+        self.assertIn("일부 대체 자재가 존재하지 않거나", data["detail"])
 
-    async def test_list_substitute_groups(self):
-        """대체 자재 그룹 목록 조회 테스트"""
+    async def test_get_substitutes_by_material(self):
+        """자재의 대체 가능한 자재 조회 테스트"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"?factory_id={self.factory.id}", headers=headers
+            f"/{self.material1.id}?factory_id={self.factory.id}", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIsInstance(data, list)
-        self.assertGreaterEqual(len(data), 1)
+        self.assertEqual(len(data), 1)
+        
+        substitute = data[0]
+        self.assertEqual(substitute["source_material"]["id"], self.material1.id)
+        self.assertEqual(len(substitute["target_materials"]), 2)
+        target_ids = [m["id"] for m in substitute["target_materials"]]
+        self.assertIn(self.material2.id, target_ids)
+        self.assertIn(self.material3.id, target_ids)
 
-        # 기존 그룹 확인
-        group = next((g for g in data if g["id"] == self.substitute_group.id), None)
-        self.assertIsNotNone(group)
-        self.assertEqual(group["name"], "M8 볼트 그룹")
-        self.assertEqual(group["material_count"], 3)
-
-    async def test_list_substitute_groups_empty(self):
-        """대체 그룹이 없는 공장의 목록 조회 테스트"""
+    async def test_get_substitutes_by_material_not_found(self):
+        """존재하지 않는 자재로 조회 시도 테스트"""
         headers = await self.authenticate()
-
-        # 새 공장 생성
-        new_factory = await Factory.objects.acreate(
-            owner=self.user,
-            name="Empty Factory",
-            business_registration_number="111-11-11111",
-        )
-        await FactoryMember.objects.acreate(
-            factory=new_factory,
-            user=self.user,
-            role="admin",
-            invited_by=self.user,
-            status="active",
-        )
-
         response = await self.client.get(
-            f"?factory_id={new_factory.id}", headers=headers
+            f"/99999?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertIn("자재를 찾을 수 없습니다", data["detail"])
+
+    async def test_get_substitutes_by_material_no_relation(self):
+        """대체 자재 관계가 없는 자재 조회 테스트"""
+        headers = await self.authenticate()
+        response = await self.client.get(
+            f"/{self.material4.id}?factory_id={self.factory.id}", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIsInstance(data, list)
         self.assertEqual(len(data), 0)
 
-    async def test_get_substitute_group_detail(self):
-        """대체 자재 그룹 상세 조회 테스트"""
+    async def test_get_substitutes_by_material_different_factory(self):
+        """다른 공장의 자재로 조회 시도 테스트"""
         headers = await self.authenticate()
-        response = await self.client.get(
-            f"/{self.substitute_group.id}?factory_id={self.factory.id}",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["id"], self.substitute_group.id)
-        self.assertEqual(data["name"], "M8 볼트 그룹")
-        self.assertEqual(data["description"], "M8 볼트 대체 가능 자재")
-        self.assertEqual(len(data["materials"]), 3)
 
-        # 자재 정보 확인
-        materials = [m["id"] for m in data["materials"]]
-        self.assertIn(self.material1.id, materials)
-        self.assertIn(self.material2.id, materials)
-        self.assertIn(self.material3.id, materials)
+        # 다른 공장과 자재 생성
+        @sync_to_async
+        def create_other_factory():
+            other_factory = Factory.objects.create(
+                owner=self.user,
+                name="Other Factory",
+                business_registration_number="999-99-99999",
+            )
+            FactoryMember.objects.create(
+                factory=other_factory,
+                user=self.user,
+                role="admin",
+                invited_by=self.user,
+                status="active",
+            )
+            other_material = Material.objects.create(
+                factory=other_factory,
+                name="다른 공장 자재",
+                code="OTHER-001",
+                unit="개",
+                spec="test",
+            )
+            return other_material
 
-    async def test_get_substitute_group_not_found(self):
-        """존재하지 않는 그룹 조회 테스트"""
-        headers = await self.authenticate()
+        other_material = await create_other_factory()
+
         response = await self.client.get(
-            f"/99999?factory_id={self.factory.id}", headers=headers
+            f"/{other_material.id}?factory_id={self.factory.id}", headers=headers
         )
         self.assertEqual(response.status_code, 404)
         data = response.json()
-        self.assertIn("해당 대체 자재 그룹을 찾을 수 없습니다", data["detail"])
+        self.assertIn("자재를 찾을 수 없습니다", data["detail"])
 
-    async def test_get_substitute_group_different_factory(self):
-        """다른 공장의 그룹 조회 시도 테스트"""
+    async def test_delete_substitute_relation(self):
+        """대체 자재 관계 삭제 테스트"""
         headers = await self.authenticate()
 
-        # 다른 공장 생성
-        other_factory = await Factory.objects.acreate(
-            owner=self.user,
-            name="Other Factory",
-            business_registration_number="999-99-99999",
-        )
-        await FactoryMember.objects.acreate(
-            factory=other_factory,
-            user=self.user,
-            role="admin",
-            invited_by=self.user,
-            status="active",
-        )
+        # 새 관계 생성
+        @sync_to_async
+        def create_substitute():
+            new_substitute = Substitute.objects.create(
+                factory=self.factory,
+                source_material=self.material4,
+            )
+            new_substitute.target_materials.add(self.material1)
+            return new_substitute
 
-        response = await self.client.get(
-            f"/{self.substitute_group.id}?factory_id={other_factory.id}",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 404)
+        new_substitute = await create_substitute()
 
-    async def test_update_substitute_group_name(self):
-        """대체 그룹 이름 수정 테스트"""
-        headers = await self.authenticate()
-        payload = {
-            "name": "M8 볼트 그룹 (수정됨)",
-        }
-        response = await self.client.patch(
-            f"/{self.substitute_group.id}?factory_id={self.factory.id}",
-            headers=headers,
-            json=payload,
-        )
-        data = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data["name"], "M8 볼트 그룹 (수정됨)")
-        self.assertEqual(data["description"], "M8 볼트 대체 가능 자재")  # 기존 값 유지
-
-    async def test_update_substitute_group_materials(self):
-        """대체 그룹 자재 목록 수정 테스트"""
-        headers = await self.authenticate()
-        payload = {
-            "materials": [self.material1.id, self.material4.id],
-        }
-        response = await self.client.patch(
-            f"/{self.substitute_group.id}?factory_id={self.factory.id}",
-            headers=headers,
-            json=payload,
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(len(data["materials"]), 2)
-        materials = [m["id"] for m in data["materials"]]
-        self.assertIn(self.material1.id, materials)
-        self.assertIn(self.material4.id, materials)
-        self.assertNotIn(self.material2.id, materials)
-
-    async def test_update_substitute_group_all_fields(self):
-        """대체 그룹 모든 필드 수정 테스트"""
-        headers = await self.authenticate()
-        payload = {
-            "name": "완전히 새로운 그룹",
-            "description": "새로운 설명",
-            "materials": [self.material4.id],
-        }
-        response = await self.client.patch(
-            f"/{self.substitute_group.id}?factory_id={self.factory.id}",
-            headers=headers,
-            json=payload,
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["name"], "완전히 새로운 그룹")
-        self.assertEqual(data["description"], "새로운 설명")
-        self.assertEqual(len(data["materials"]), 1)
-        self.assertEqual(data["materials"][0]["id"], self.material4.id)
-
-    async def test_update_substitute_group_empty_materials(self):
-        """빈 자재 목록으로 수정 시도 테스트"""
-        headers = await self.authenticate()
-        payload = {
-            "materials": [],
-        }
-        response = await self.client.patch(
-            f"/{self.substitute_group.id}?factory_id={self.factory.id}",
-            headers=headers,
-            json=payload,
-        )
-        self.assertEqual(response.status_code, 400)
-        data = response.json()
-        self.assertIn("최소 1개 이상의 자재를 선택해야 합니다", data["detail"])
-
-    async def test_update_substitute_group_invalid_material(self):
-        """존재하지 않는 자재로 수정 시도 테스트"""
-        headers = await self.authenticate()
-        payload = {
-            "materials": [99999],
-        }
-        response = await self.client.patch(
-            f"/{self.substitute_group.id}?factory_id={self.factory.id}",
-            headers=headers,
-            json=payload,
-        )
-        self.assertEqual(response.status_code, 400)
-        data = response.json()
-        self.assertIn("일부 자재가 존재하지 않거나", data["detail"])
-
-    async def test_update_substitute_group_not_found(self):
-        """존재하지 않는 그룹 수정 시도 테스트"""
-        headers = await self.authenticate()
-        payload = {
-            "name": "수정",
-        }
-        response = await self.client.patch(
-            f"/99999?factory_id={self.factory.id}",
-            headers=headers,
-            json=payload,
-        )
-        self.assertEqual(response.status_code, 404)
-
-    async def test_delete_substitute_group(self):
-        """대체 자재 그룹 삭제 테스트"""
-        headers = await self.authenticate()
-
-        # 새 그룹 생성
-        new_group = await Substitute.objects.acreate(
-            factory=self.factory,
-            name="삭제될 그룹",
-        )
-        await new_group.materials.aadd(self.material1)
         response = await self.client.delete(
-            f"/{new_group.id}?factory_id={self.factory.id}", headers=headers
+            f"/relation/{new_substitute.id}?factory_id={self.factory.id}", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIn("대체 자재 그룹이 삭제되었습니다", data["message"])
-        self.assertEqual(data["deleted_substitute_id"], new_group.id)
+        self.assertIn("대체 자재 관계가 삭제되었습니다", data["message"])
+        self.assertEqual(data["deleted_substitute_id"], new_substitute.id)
 
         # 실제로 삭제되었는지 확인
-        self.assertFalse(await Substitute.objects.filter(id=new_group.id).aexists())
+        @sync_to_async
+        def check_deleted():
+            return Substitute.objects.filter(id=new_substitute.id).exists()
 
-    async def test_delete_substitute_group_not_found(self):
-        """존재하지 않는 그룹 삭제 시도 테스트"""
+        self.assertFalse(await check_deleted())
+
+    async def test_delete_substitute_relation_not_found(self):
+        """존재하지 않는 관계 삭제 시도 테스트"""
         headers = await self.authenticate()
         response = await self.client.delete(
-            f"/99999?factory_id={self.factory.id}", headers=headers
+            f"/relation/99999?factory_id={self.factory.id}", headers=headers
         )
         self.assertEqual(response.status_code, 404)
 
-    async def test_delete_substitute_group_different_factory(self):
-        """다른 공장의 그룹 삭제 시도 테스트"""
+    async def test_delete_substitute_relation_different_factory(self):
+        """다른 공장의 관계 삭제 시도 테스트"""
         headers = await self.authenticate()
 
         # 다른 공장 생성
-        other_factory = await Factory.objects.acreate(
-            owner=self.user,
-            name="Other Factory",
-            business_registration_number="999-99-99999",
-        )
-        await FactoryMember.objects.acreate(
-            factory=other_factory,
-            user=self.user,
-            role="admin",
-            invited_by=self.user,
-            status="active",
-        )
+        @sync_to_async
+        def create_other_factory():
+            other_factory = Factory.objects.create(
+                owner=self.user,
+                name="Other Factory",
+                business_registration_number="999-99-99999",
+            )
+            FactoryMember.objects.create(
+                factory=other_factory,
+                user=self.user,
+                role="admin",
+                invited_by=self.user,
+                status="active",
+            )
+            return other_factory
+
+        other_factory = await create_other_factory()
 
         response = await self.client.delete(
-            f"/{self.substitute_group.id}?factory_id={other_factory.id}",
+            f"/relation/{self.substitute_relation.id}?factory_id={other_factory.id}",
             headers=headers,
         )
         self.assertEqual(response.status_code, 404)
 
-        # 원래 그룹은 그대로 존재
-        self.assertTrue(
-            await Substitute.objects.filter(id=self.substitute_group.id).aexists()
-        )
+        # 원래 관계는 그대로 존재
+        @sync_to_async
+        def check_exists():
+            return Substitute.objects.filter(id=self.substitute_relation.id).exists()
+
+        self.assertTrue(await check_exists())
 
     async def test_create_without_factory_id(self):
         """factory_id 없이 생성 시도 테스트"""
         headers = await self.authenticate()
         payload = {
-            "name": "테스트",
-            "materials": [self.material1.id],
+            "source_material_id": self.material1.id,
+            "target_materials": [self.material2.id],
         }
         response = await self.client.post("", headers=headers, json=payload)
         self.assertEqual(response.status_code, 400)
         data = response.json()
         self.assertIn("factory_id를 입력해야 합니다", data["detail"])
 
-    async def test_list_without_factory_id(self):
-        """factory_id 없이 목록 조회 시도 테스트"""
+    async def test_get_without_factory_id(self):
+        """factory_id 없이 조회 시도 테스트"""
         headers = await self.authenticate()
-        response = await self.client.get("", headers=headers)
+        response = await self.client.get(f"/{self.material1.id}", headers=headers)
         self.assertEqual(response.status_code, 400)
         data = response.json()
         self.assertIn("factory_id를 입력해야 합니다", data["detail"])
@@ -484,52 +416,84 @@ class TestSubstituteAPI(TestCase):
         """자재 데이터 구조 검증 테스트"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"/{self.substitute_group.id}?factory_id={self.factory.id}",
-            headers=headers,
+            f"/{self.material1.id}?factory_id={self.factory.id}", headers=headers
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertGreater(len(data), 0)
 
-        # 자재 데이터 구조 확인
-        for material in data["materials"]:
+        substitute = data[0]
+        # source_material 구조 확인
+        source = substitute["source_material"]
+        self.assertIn("id", source)
+        self.assertIn("name", source)
+        self.assertIn("code", source)
+        self.assertIn("unit", source)
+        self.assertIn("spec", source)
+        self.assertIn("current_stock", source)
+        self.assertIn("standard_stock", source)
+
+        # target_materials 구조 확인
+        for material in substitute["target_materials"]:
             self.assertIn("id", material)
             self.assertIn("name", material)
             self.assertIn("code", material)
             self.assertIn("unit", material)
             self.assertIn("spec", material)
             self.assertIn("current_stock", material)
+            self.assertIn("standard_stock", material)
 
             # 데이터 타입 확인
             self.assertIsInstance(material["id"], int)
             self.assertIsInstance(material["name"], str)
             self.assertIsInstance(material["code"], str)
             self.assertIsInstance(material["unit"], str)
-            self.assertIsInstance(material["spec"], str)
+            self.assertIsInstance(material["spec"], (str, type(None)))
 
-    async def test_multiple_groups_with_same_material(self):
-        """같은 자재가 여러 그룹에 속할 수 있는지 테스트"""
+    async def test_unidirectional_relationship(self):
+        """단방향 관계 테스트 - material1의 대체 자재가 material2이지만, material2의 대체 자재는 material1이 아님"""
         headers = await self.authenticate()
 
-        # 두 번째 그룹 생성 (material1이 이미 다른 그룹에 속함)
+        # material2의 대체 자재 조회 (없어야 함)
+        response = await self.client.get(
+            f"/{self.material2.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 0)  # material2는 source_material이 아니므로 결과 없음
+
+        # material1의 대체 자재 조회 (있어야 함)
+        response = await self.client.get(
+            f"/{self.material1.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 1)  # material1은 source_material이므로 결과 있음
+
+    async def test_multiple_source_materials(self):
+        """여러 source_material에 대한 관계 생성 테스트"""
+        headers = await self.authenticate()
+
+        # material4를 source로 하는 관계 생성
         payload = {
-            "name": "두 번째 그룹",
-            "materials": [self.material1.id, self.material4.id],
+            "source_material_id": self.material4.id,
+            "target_materials": [self.material1.id],
         }
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
         )
-        data = response.json()
         self.assertEqual(response.status_code, 201)
 
-        materials = [m["id"] for m in data["materials"]]
-        self.assertIn(self.material1.id, materials)
-        self.assertIn(self.material4.id, materials)
-
-        # 기존 그룹에서도 material1이 여전히 존재하는지 확인
-        response2 = await self.client.get(
-            f"/{self.substitute_group.id}?factory_id={self.factory.id}",
-            headers=headers,
+        # material1과 material4 모두 source_material로 사용 가능
+        response1 = await self.client.get(
+            f"/{self.material1.id}?factory_id={self.factory.id}", headers=headers
         )
-        data2 = response2.json()
-        materials2 = [m["id"] for m in data2["materials"]]
-        self.assertIn(self.material1.id, materials2)
+        response4 = await self.client.get(
+            f"/{self.material4.id}?factory_id={self.factory.id}", headers=headers
+        )
+
+        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response4.status_code, 200)
+        self.assertEqual(len(response1.json()), 1)
+        self.assertEqual(len(response4.json()), 1)
