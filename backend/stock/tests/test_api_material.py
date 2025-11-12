@@ -9,6 +9,7 @@ from user.models import User
 from factory.models import Factory, FactoryMember
 from stock.models import Material
 from user.models import EmailVerification
+from substitute.models import Substitute
 
 
 class TestMaterialAPI(TestCase):
@@ -54,6 +55,14 @@ class TestMaterialAPI(TestCase):
             current_stock=100,
             standard_stock=50,
         )
+        # 테스트 대체 자재 그룹 생성
+        self.substitute = Substitute.objects.create(
+            factory=self.factory,
+            name="테스트 대체 자재 그룹",
+            description="테스트용 대체 자재 그룹입니다.",
+        )
+        # 테스트 대체 자재와 원자재 연결
+        self.substitute.materials.add(self.material)
 
     async def authenticate(self):
         """사용자 인증 및 토큰 반환"""
@@ -201,7 +210,9 @@ class TestMaterialAPI(TestCase):
         )
         self.assertEqual(response.status_code, 201)
         data = response.json()
-        self.assertEqual(len(data["material_ids"]), 1)  # 첫 번째만 생성되고 두 번째는 건너뛰어짐
+        self.assertEqual(
+            len(data["material_ids"]), 1
+        )  # 첫 번째만 생성되고 두 번째는 건너뛰어짐
         self.assertIn("중복된 코드가 있었습니다", data["message"])
 
     async def test_get_materials_by_factory_success(self):
@@ -274,6 +285,7 @@ class TestMaterialAPI(TestCase):
         response = await self.client.get(
             f"/{self.material.id}?factory_id={self.factory.id}", headers=headers
         )
+        data = response.json()
         self.assertEqual(response.status_code, 200)
 
         data = response.json()

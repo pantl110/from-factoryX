@@ -15,6 +15,7 @@ from stock.schemas.inbound import (
 )
 from stock.schemas.outbound import (
     MaterialDetailOut,
+    MaterialDetailModelOut,
     AssignMaterialOut,
     MaterialSummaryOut,
     ShortageMaterialCountOut,
@@ -281,7 +282,7 @@ async def get_insufficient_material_count(request):
     "{material_id}",
     summary="[C] 원자재 상세 조회",
     description="특정 원자재의 상세 정보를 조회합니다.",
-    response={200: MaterialDetailOut, 404: dict, 500: dict},
+    response={200: MaterialDetailModelOut, 404: dict, 500: dict},
 )
 async def get_material_detail(request, material_id: int):
     factory_id = request.GET.get("factory_id")
@@ -292,19 +293,13 @@ async def get_material_detail(request, material_id: int):
     await is_factory_member(int(factory_id), user)
 
     try:
-        material = await Material.objects.aget(id=material_id)
+        material = await Material.objects.prefetch_related(
+            "substitutes__materials"
+        ).aget(id=material_id)
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
 
-    return 200, MaterialDetailOut(
-        id=material.id,
-        name=material.name,
-        code=material.code,
-        spec=material.spec,
-        unit=material.unit,
-        current_stock=material.current_stock,
-        standard_stock=material.standard_stock,
-    )
+    return material
 
 
 # Material Tab

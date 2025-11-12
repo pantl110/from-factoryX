@@ -1,9 +1,10 @@
-from ninja import Schema, ModelSchema
+from ninja import Schema, ModelSchema, Field
 from typing import Optional, List
 import datetime
-from stock.models import Product
+from stock.models import Product, Material
 from pydantic import field_validator
 from decimal import Decimal
+from substitute.schemas.outbound import SubstituteDetailOut
 
 
 # Material Product Info
@@ -128,6 +129,24 @@ class MaterialDetailOut(Schema):
     unit: str
     current_stock: int
     standard_stock: int
+
+
+class MaterialDetailModelOut(ModelSchema):
+    substitutes: Optional[List[SubstituteDetailOut]] = Field(
+        [], description="대체 자재 그룹명 목록"
+    )
+
+    class Meta:
+        model = Material
+        fields = [
+            "id",
+            "name",
+            "code",
+            "spec",
+            "unit",
+            "current_stock",
+            "standard_stock",
+        ]
 
 
 # (GET) Shortage Material Count
