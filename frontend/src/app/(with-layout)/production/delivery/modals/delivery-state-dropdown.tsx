@@ -34,6 +34,7 @@ const DeliveryStateDropdown = ({
           textColor="text-dg"
           hover="hover:bg-lg"
           onClick={onPendingClick}
+          cursor="cursor-pointer"
         />
       </DropdownItem>
       <DropdownItem
@@ -50,6 +51,7 @@ const DeliveryStateDropdown = ({
           textColor="text-primary"
           hover="hover:bg-secondary-hover"
           onClick={onCompletedClick}
+          cursor="cursor-pointer"
         />
       </DropdownItem>
     </Dropdown>
