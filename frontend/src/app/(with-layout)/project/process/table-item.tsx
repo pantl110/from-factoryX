@@ -267,8 +267,10 @@ const TableItem = ({
           >
             <CopySimple size={20} className="text-dg" />
           </button>
-        ) : (
+        ) : isArchived ? (
           <div className="w-9" />
+        ) : (
+          <></>
         )}
       </div>
 
