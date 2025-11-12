@@ -23,7 +23,7 @@ interface AddReturnModalProps {
 
 const AddReturnModal = ({
   onClose,
-  quotationProductData,
+  quotationProductData: _quotationProductData,
   onProjectStatusChange,
   onTabChange,
 }: AddReturnModalProps) => {

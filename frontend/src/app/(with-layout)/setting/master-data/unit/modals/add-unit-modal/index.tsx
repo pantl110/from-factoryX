@@ -5,17 +5,14 @@ import { CaretDown, Equals, WarningCircle } from '@phosphor-icons/react';
 import MiniBtn from '@/ui/mini-btn';
 import { handleQuantityInput } from '@/utils/format-number';
 import DecimalRuleDropdown from './decimal-rule-dropdown';
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import Preview from './preview';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
-import useGetMaterial from '@/hooks/stock/material/use-get-material';
-import useGetProduct from '@/hooks/stock/product/use-get-product';
 import {
   MaterialResponseModel,
   ProductResponseModel,
 } from '@/types/data-model';
-import { useInfiniteDropdown } from '@/hooks/use-infinite-dropdown';
 
 interface AddUnitModalProps {
   onClose: () => void;
@@ -29,73 +26,14 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
   const [selectedDecimalRule, setSelectedDecimalRule] = useState('반올림');
   const [materialSearchInput, setMaterialSearchInput] = useState('');
   const [productSearchInput, setProductSearchInput] = useState('');
+  const [isMaterialDropdownOpen, setIsMaterialDropdownOpen] = useState(false);
+  const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
 
   // 단위 필드 값 감시
   const watchedUnit = watch('unit');
   const watchedConversionUnit = watch('conversionUnit');
   const watchedUnitValue = watch('unitValue');
   const watchedConversionValue = watch('conversionValue');
-
-  // 데이터 가져오기
-  const { getMaterialList } = useGetMaterial();
-  const { getProductList } = useGetProduct();
-
-  // 무한 스크롤 드롭다운 (항상 호출하되 조건부로 사용)
-  const materialDropdown = useInfiniteDropdown<MaterialResponseModel>(
-    materialSearchInput,
-    {
-      fetchPage: useCallback(
-        async ({ q, page, page_size: pageSize }) => {
-          const result = await getMaterialList({
-            q,
-            page,
-            page_size: pageSize,
-          });
-          if (result.success && result.data) {
-            return {
-              success: true,
-              data: {
-                data: result.data.data,
-                curPage: result.data.curPage ?? page,
-                pageCnt:
-                  result.data.pageCnt ??
-                  Math.ceil(result.data.count / pageSize),
-              },
-            };
-          }
-          return { success: false, error: result.error };
-        },
-        [getMaterialList]
-      ),
-      pageSize: 6,
-    }
-  );
-
-  const productDropdown = useInfiniteDropdown<ProductResponseModel>(
-    productSearchInput,
-    {
-      fetchPage: useCallback(
-        async ({ q, page, page_size: pageSize }) => {
-          const result = await getProductList({ q, page, page_size: pageSize });
-          if (result.success && result.data) {
-            return {
-              success: true,
-              data: {
-                data: result.data.data,
-                curPage: result.data.curPage ?? page,
-                pageCnt:
-                  result.data.pageCnt ??
-                  Math.ceil(result.data.count / pageSize),
-              },
-            };
-          }
-          return { success: false, error: result.error };
-        },
-        [getProductList]
-      ),
-      pageSize: 6,
-    }
-  );
 
   const onSubmit = (_data: Record<string, unknown>) => {
     // TODO: Implement form submission logic
@@ -121,7 +59,7 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
     setValue('name', material.name);
     setValue('code', material.code);
     setValue('unit', material.unit);
-    materialDropdown.setIsOpen(false);
+    setIsMaterialDropdownOpen(false);
     setMaterialSearchInput(material.name);
   };
 
@@ -129,13 +67,9 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
     setValue('name', product.name);
     setValue('code', product.code);
     setValue('unit', product.unit);
-    productDropdown.setIsOpen(false);
+    setIsProductDropdownOpen(false);
     setProductSearchInput(product.name);
   };
-
-  // Scroll handlers for dropdowns
-  const handleMaterialScroll = materialDropdown.onScroll;
-  const handleProductScroll = productDropdown.onScroll;
 
   return (
     <Modal title="단위 추가" width="w-[800px]" onClose={onClose}>
@@ -156,58 +90,66 @@ export const AddUnitModal = ({ onClose, addUnitType }: AddUnitModalProps) => {
                     : productSearchInput
                 }
                 onChange={(e) => {
+                  const { value } = e.target;
                   if (addUnitType === 'material') {
-                    setMaterialSearchInput(e.target.value);
+                    setMaterialSearchInput(value);
+                    if (value.length > 0) {
+                      setIsMaterialDropdownOpen(true);
+                    } else {
+                      setIsMaterialDropdownOpen(false);
+                    }
                   } else {
-                    setProductSearchInput(e.target.value);
+                    setProductSearchInput(value);
+                    if (value.length > 0) {
+                      setIsProductDropdownOpen(true);
+                    } else {
+                      setIsProductDropdownOpen(false);
+                    }
                   }
                 }}
                 onFocus={() => {
-                  if (addUnitType === 'material') {
-                    materialDropdown.setIsOpen(true);
-                  } else {
-                    productDropdown.setIsOpen(true);
+                  if (
+                    addUnitType === 'material' &&
+                    materialSearchInput.length > 0
+                  ) {
+                    setIsMaterialDropdownOpen(true);
+                  } else if (
+                    addUnitType === 'product' &&
+                    productSearchInput.length > 0
+                  ) {
+                    setIsProductDropdownOpen(true);
                   }
                 }}
                 onBlur={() => {
                   setTimeout(() => {
                     if (addUnitType === 'material') {
-                      materialDropdown.setIsOpen(false);
+                      setIsMaterialDropdownOpen(false);
                     } else {
-                      productDropdown.setIsOpen(false);
+                      setIsProductDropdownOpen(false);
                     }
-                  }, 300);
+                  }, 150);
                 }}
               />
               {addUnitType === 'material' &&
-                materialDropdown.isOpen &&
-                materialDropdown.items.length > 0 && (
-                  <div
-                    className="absolute top-full left-0 z-10 mt-2 w-full max-h-[200px] overflow-y-auto scrollbar-hide"
-                    ref={materialDropdown.containerRef}
-                    onScroll={handleMaterialScroll}
-                    onMouseDown={(e) => e.preventDefault()}
-                  >
+                isMaterialDropdownOpen &&
+                materialSearchInput.length > 0 && (
+                  <div className="absolute top-full left-0 z-50 mt-2 w-full">
                     <MaterialNameDropdown
-                      items={materialDropdown.items}
+                      searchTerm={materialSearchInput}
                       onSelect={handleSelectMaterial}
+                      onClose={() => setIsMaterialDropdownOpen(false)}
                       width="w-full"
                     />
                   </div>
                 )}
               {addUnitType === 'product' &&
-                productDropdown.isOpen &&
-                productDropdown.items.length > 0 && (
-                  <div
-                    className="absolute top-full left-0 z-10 mt-2 w-full max-h-[200px] overflow-y-auto scrollbar-hide"
-                    ref={productDropdown.containerRef}
-                    onScroll={handleProductScroll}
-                    onMouseDown={(e) => e.preventDefault()}
-                  >
+                isProductDropdownOpen &&
+                productSearchInput.length > 0 && (
+                  <div className="absolute top-full left-0 z-50 mt-2 w-full">
                     <ProductNameDropdown
-                      items={productDropdown.items}
+                      searchTerm={productSearchInput}
                       onSelect={handleSelectProduct}
-                      onClose={() => productDropdown.setIsOpen(false)}
+                      onClose={() => setIsProductDropdownOpen(false)}
                       width="w-full"
                     />
                   </div>

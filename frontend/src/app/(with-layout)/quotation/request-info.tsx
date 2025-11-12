@@ -238,7 +238,7 @@ const RequestInfo = ({
       <div className="flex justify-between items-center relative">
         <h3 className="Heading-3">요청 정보</h3>
         <MiniBtn
-          text="품목 추가하기"
+          text="제품 추가하기"
           textColor="text-dg"
           borderColor="border-lg"
           icon={CaretDown}
@@ -247,7 +247,7 @@ const RequestInfo = ({
           onClick={() => setIsProductEnrollmentDropdownOpen(true)}
           disabled={isViewer || !hasSubscription()}
         />
-        {/* 품목 추가하기 드롭다운 */}
+        {/* 제품 추가하기 드롭다운 */}
         {isProductEnrollmentDropdownOpen && (
           <div className="absolute top-12 right-0">
             <ProductEnrollmentDropdown
@@ -271,8 +271,8 @@ const RequestInfo = ({
             <table className="w-full min-w-[938px]">
               <thead>
                 <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-                  <th className="text-left px-3 flex-1">품목명</th>
-                  <th className="text-left px-3 flex-1">품목코드</th>
+                  <th className="text-left px-3 flex-1">제품명</th>
+                  <th className="text-left px-3 flex-1">제품코드</th>
                   <th className="text-left px-3 flex-1">규격</th>
                   <th className="text-left px-3 w-[80px]">단위</th>
                   <th className="text-left px-3 flex-1">제작 수량</th>
@@ -321,7 +321,7 @@ const RequestInfo = ({
         <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-lg mb-22">
           <h4 className="Heading-4 text-dg">요청 정보가 아직 없어요.</h4>
           <p className="R_Body-1 text-gr">
-            품목을 추가해서 단가를 측정해 보세요.
+            제품을 추가해서 단가를 측정해 보세요.
           </p>
         </div>
       )}
