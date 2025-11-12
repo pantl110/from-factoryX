@@ -14,7 +14,7 @@ const ShortageCount = ({ shortageMaterialsCount }: ShortageCountProps) => {
           <p className="Heading-4 text-sv">부족한 원자재 수</p>
           <div className="flex flex-col gap-1">
             <p className="Heading-1">
-              {shortageMaterialsCount} <span>개</span>
+              {shortageMaterialsCount.toLocaleString()} <span>개</span>
             </p>
             <div className="flex justify-end">
               <button

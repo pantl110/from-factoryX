@@ -22,7 +22,7 @@ const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
       <div className="flex flex-col gap-1">
         <p className="Heading-4 text-sv">생산 수익</p>
         <p className="flex gap-1 Heading-1">
-          {monthlyProfits[0].profit || 0} <span>만원</span>
+          {(monthlyProfits[0].profit || 0).toLocaleString()} <span>만원</span>
         </p>
 
         {changePercentage !== undefined && !isNaN(changePercentage) && (

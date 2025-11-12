@@ -28,7 +28,7 @@ const DailyProductionQuantity = ({
         <div className="flex flex-col gap-1">
           <p className="Heading-4 text-sv">진행 프로젝트 수</p>
           <p className="flex gap-1 Heading-1">
-            {currentMonthProjects} <span>건</span>
+            {currentMonthProjects.toLocaleString()} <span>건</span>
           </p>
 
           {changePercentage !== undefined && previousMonthProjects !== 0 && (
