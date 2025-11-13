@@ -1561,6 +1561,11 @@ export interface SubstituteDetailResponseModel {
   updated_at: string;
 }
 
+// 대체 자재 목록 조회 응답 (target_materials가 페이지네이션되어 반환됨)
+export interface SubstituteListResponseModel extends PaginationModel {
+  data: MaterialSimpleModel[]; // 페이지네이션된 target_materials 배열
+}
+
 import {
   MemberRoleType,
   MemberStatusType,

@@ -89,6 +89,8 @@ const MaterialDetailPanel = ({
   const [deleteModalState, setDeleteModalState] = useState<{
     type: DeleteType;
     id: number | null;
+    sourceMaterialId?: number;
+    targetMaterialId?: number;
   }>({ type: null, id: null });
   const queryClient = useQueryClient();
   const deleteSubstituteMutation = useDeleteSubstituteMutation();
@@ -141,17 +143,29 @@ const MaterialDetailPanel = ({
   };
 
   // 대체 자재 삭제 모달 열기 함수
-  const handleOpenDeleteSubstituteModal = (substituteId: number) => {
-    setDeleteModalState({ type: 'substitute', id: substituteId });
+  const handleOpenDeleteSubstituteModal = (
+    sourceMaterialId: number,
+    targetMaterialId: number
+  ) => {
+    setDeleteModalState({
+      type: 'substitute',
+      id: null, // substitute 타입에서는 id를 사용하지 않음
+      sourceMaterialId,
+      targetMaterialId,
+    });
   };
 
   // 통합 삭제 확인 함수
   const handleConfirmDelete = async () => {
     const { type, id } = deleteModalState;
-    if (!type || !id) return;
+    if (!type) return;
+
+    // substitute 타입이 아닌 경우 id 체크
+    if (type !== 'substitute' && (id === null || id === undefined)) return;
 
     switch (type) {
       case 'connection':
+        if (id === null || id === undefined) return;
         try {
           const result = await deleteMaterialProductConnection(id);
           if (result.success) {
@@ -162,16 +176,29 @@ const MaterialDetailPanel = ({
         }
         break;
       case 'substitute':
-        deleteSubstituteMutation.mutate(id, {
-          onSuccess: () => {
-            // 삭제 성공 시 해당 source_material의 대체 자재 관계 목록을 다시 불러옴
-            queryClient.invalidateQueries({
-              queryKey: ['substitute', 'by-material', selectedMaterialId],
-            });
-          },
-        });
+        const { sourceMaterialId, targetMaterialId } = deleteModalState;
+        if (sourceMaterialId && targetMaterialId) {
+          deleteSubstituteMutation.mutate(
+            {
+              sourceMaterialId,
+              targetMaterialId,
+            },
+            {
+              onSuccess: () => {
+                // 삭제 성공 시 해당 source_material의 대체 자재 관계 목록을 다시 불러옴
+                queryClient.invalidateQueries({
+                  queryKey: ['substitute', 'by-material', sourceMaterialId],
+                });
+              },
+              onError: () => {
+                // 삭제 실패 시 에러 처리
+              },
+            }
+          );
+        }
         break;
       case 'location':
+        if (id === null || id === undefined) return;
         try {
           await deleteLocation(id, 'material');
           if (selectedMaterialId) {

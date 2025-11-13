@@ -58,7 +58,10 @@ interface MaterialDetailProps {
   showToast?: (text: string, subtext: string) => void;
   setIsMaterialPackagingDetailModalOpen: (v: boolean) => void;
   setIsCreateSubstituteModalOpen: (v: boolean) => void;
-  handleOpenDeleteSubstituteModal: (substituteId: number) => void;
+  handleOpenDeleteSubstituteModal: (
+    sourceMaterialId: number,
+    targetMaterialId: number
+  ) => void;
 }
 
 const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(

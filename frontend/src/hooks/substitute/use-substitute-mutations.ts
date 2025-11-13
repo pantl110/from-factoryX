@@ -44,32 +44,41 @@ export const useCreateSubstituteMutation = () => {
 };
 
 // React Query mutation: 대체 자재 관계 삭제
+// 새로운 API: DELETE /v2/substitute/{source_material_id}?target_material_id={target_material_id}
 export const useDeleteSubstituteMutation = () => {
   const queryClient = useQueryClient();
   const factoryId = useMemberStore((state) => state.factoryId);
 
   return useMutation({
-    mutationFn: async (substituteId: number) => {
+    mutationFn: async ({
+      sourceMaterialId,
+      targetMaterialId,
+    }: {
+      sourceMaterialId: number;
+      targetMaterialId: number;
+    }) => {
       if (!factoryId) {
         throw new Error('공장 ID가 설정되지 않았습니다.');
       }
 
       const response = await axios.delete<{
         message: string;
-        deleted_substitute_id: number;
-      }>(`${API_BASE}/v2/substitute/relation/${substituteId}`, {
+        source_material_id: number;
+        removed_target_material_id: number;
+      }>(`${API_BASE}/v2/substitute/${sourceMaterialId}`, {
         params: {
           factory_id: factoryId,
+          target_material_id: targetMaterialId,
         },
         withCredentials: true,
       });
 
-      return { ...response.data, substituteId };
+      return response.data;
     },
-    onSuccess: () => {
-      // 삭제된 관계의 source_material을 알 수 없으므로, 모든 대체 자재 관계 쿼리를 무효화
+    onSuccess: (data, variables) => {
+      // 삭제 성공 시 해당 source_material의 대체 자재 관계 목록을 다시 불러옴
       queryClient.invalidateQueries({
-        queryKey: ['substitute', 'by-material'],
+        queryKey: ['substitute', 'by-material', variables.sourceMaterialId],
       });
     },
   });

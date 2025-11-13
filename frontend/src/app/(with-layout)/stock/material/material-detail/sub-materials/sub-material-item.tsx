@@ -11,14 +11,15 @@ import { useQueryClient } from '@tanstack/react-query';
 interface SubMaterialItemProps {
   material: MaterialSimpleModel;
   sourceMaterialId: number; // 원본 자재 ID (대체 자재 관계를 다시 불러오기 위해 필요)
-  substituteRelationId: number; // 대체 자재 관계 ID (삭제에 필요)
-  handleOpenDeleteSubstituteModal: (substituteId: number) => void;
+  handleOpenDeleteSubstituteModal: (
+    sourceMaterialId: number,
+    targetMaterialId: number
+  ) => void;
 }
 
 export const SubMaterialItem = ({
   material,
   sourceMaterialId,
-  substituteRelationId,
   handleOpenDeleteSubstituteModal,
 }: SubMaterialItemProps) => {
   const role = useMemberStore((state) => state.role);
@@ -97,7 +98,7 @@ export const SubMaterialItem = ({
               size="w-9 h-9"
               iconSize={16}
               onClick={() => {
-                handleOpenDeleteSubstituteModal(substituteRelationId);
+                handleOpenDeleteSubstituteModal(sourceMaterialId, material.id);
               }}
               hoverBg={false}
               hoverText={true}

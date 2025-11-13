@@ -5,11 +5,16 @@ import { SubMaterialItem } from './sub-material-item';
 import { useSubstitutesByMaterialQuery } from '@/hooks';
 import { MaterialSimpleModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
+import Pagination from '@/components/pagination';
+import { useState, useEffect } from 'react';
 
 interface SubMaterialsProps {
   materialId: number;
   setIsCreateSubstituteModalOpen: (v: boolean) => void;
-  handleOpenDeleteSubstituteModal: (substituteId: number) => void;
+  handleOpenDeleteSubstituteModal: (
+    sourceMaterialId: number,
+    targetMaterialId: number
+  ) => void;
 }
 export const SubMaterials = ({
   materialId,
@@ -22,16 +27,22 @@ export const SubMaterials = ({
     (state) => state.hasSubscription
   );
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+
   // 이 자재가 source_material인 대체 자재 관계들 조회
   const {
-    data: substituteRelations,
+    data: substituteListResponse,
     isLoading,
     error,
-  } = useSubstitutesByMaterialQuery(materialId);
+  } = useSubstitutesByMaterialQuery(materialId, true, currentPage, pageSize);
 
-  // target_materials
-  const targetMaterials: MaterialSimpleModel[] =
-    substituteRelations?.[0]?.target_materials || [];
+  // 페이지네이션 정보
+  const totalPages = substituteListResponse?.pageCnt || 0;
+
+  // data가 이미 페이지네이션된 target_materials 배열
+  const targetMaterials: (MaterialSimpleModel & { relation_id?: number })[] =
+    substituteListResponse?.data || [];
 
   return (
     <div className="flex flex-col gap-3">
@@ -48,9 +59,9 @@ export const SubMaterials = ({
       </div>
 
       {/* 데이터가 없는 경우 (로딩 중이 아니고 에러가 없을 때, API 호출이 안 된 경우 포함) */}
-      {!isLoading &&
+      {isLoading &&
         !error &&
-        (!substituteRelations || targetMaterials.length === 0) && (
+        (!substituteListResponse || targetMaterials.length === 0) && (
           <NoHistoryBox
             title="연결된 자재가 없어요."
             text="현재 자재 대신 사용할 수 있는 원자재를 등록할 수 있어요."
@@ -81,11 +92,17 @@ export const SubMaterials = ({
               key={material.id}
               material={material}
               sourceMaterialId={materialId}
-              substituteRelationId={substituteRelations?.[0]?.id || 0}
               handleOpenDeleteSubstituteModal={handleOpenDeleteSubstituteModal}
             />
           ))}
-          {/* 페이지네이션 필요 */}
+          {/* 페이지네이션 */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </div>
       )}
     </div>
