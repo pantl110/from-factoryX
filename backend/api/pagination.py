@@ -4,7 +4,6 @@ from typing import Any, Optional
 from pydantic import Field
 from django.conf import settings
 from django.db.models import QuerySet
-from asgiref.sync import sync_to_async
 
 
 class CustomPageNumberPagination(PageNumberPagination):
@@ -54,13 +53,7 @@ class CustomPageNumberPagination(PageNumberPagination):
     ) -> dict:
         self.page_size = pagination.page_size
         offset = (pagination.page - 1) * self.page_size
-        
-        # QuerySet 슬라이싱을 비동기로 처리
-        @sync_to_async
-        def get_paginated_items():
-            return list(queryset[offset : offset + self.page_size])
-        
-        paginated_items = await get_paginated_items()
+        paginated_items = list(queryset[offset : offset + self.page_size])
         totalCnt = await self._aitems_count(queryset)
         pageCnt = (totalCnt + self.page_size - 1) // self.page_size
         next_page, previous_page = None, None

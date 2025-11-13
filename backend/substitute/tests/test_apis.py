@@ -317,41 +317,50 @@ class TestSubstituteAPI(TestCase):
         self.assertIn("자재를 찾을 수 없습니다", data["detail"])
 
     async def test_delete_substitute_relation(self):
-        """대체 자재 관계 삭제 테스트"""
+        """대체 자재 관계에서 특정 target_material 제거 테스트"""
         headers = await self.authenticate()
 
-        # 새 관계 생성
-        @sync_to_async
-        def create_substitute():
-            new_substitute = Substitute.objects.create(
-                factory=self.factory,
-                source_material=self.material4,
-            )
-            new_substitute.target_materials.add(self.material1)
-            return new_substitute
-
-        new_substitute = await create_substitute()
-
+        # material1의 target_material 중 하나 제거 (material2)
         response = await self.client.delete(
-            f"/relation/{new_substitute.id}?factory_id={self.factory.id}", headers=headers
+            f"/{self.material1.id}?factory_id={self.factory.id}&target_material_id={self.material2.id}",
+            headers=headers,
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIn("대체 자재 관계가 삭제되었습니다", data["message"])
-        self.assertEqual(data["deleted_substitute_id"], new_substitute.id)
+        self.assertIn("대체 자재가 성공적으로 제거되었습니다", data["message"])
+        self.assertEqual(data["removed_target_material_id"], self.material2.id)
 
-        # 실제로 삭제되었는지 확인
+        # material2가 제거되었는지 확인
         @sync_to_async
-        def check_deleted():
-            return Substitute.objects.filter(id=new_substitute.id).exists()
+        def check_removed():
+            substitute = Substitute.objects.filter(
+                factory_id=self.factory.id, source_material_id=self.material1.id
+            ).first()
+            if not substitute:
+                return False
+            return not substitute.target_materials.filter(id=self.material2.id).exists()
 
-        self.assertFalse(await check_deleted())
+        self.assertTrue(await check_removed())
+
+        # material3는 여전히 남아있어야 함
+        @sync_to_async
+        def check_remaining():
+            substitute = Substitute.objects.filter(
+                factory_id=self.factory.id, source_material_id=self.material1.id
+            ).first()
+            if not substitute:
+                return False
+            return substitute.target_materials.filter(id=self.material3.id).exists()
+
+        self.assertTrue(await check_remaining())
 
     async def test_delete_substitute_relation_not_found(self):
-        """존재하지 않는 관계 삭제 시도 테스트"""
+        """존재하지 않는 관계에서 target_material 제거 시도 테스트"""
         headers = await self.authenticate()
+        # 존재하지 않는 material_id로 시도
         response = await self.client.delete(
-            f"/relation/99999?factory_id={self.factory.id}", headers=headers
+            f"/99999?factory_id={self.factory.id}&target_material_id={self.material2.id}",
+            headers=headers,
         )
         self.assertEqual(response.status_code, 404)
 
@@ -379,7 +388,7 @@ class TestSubstituteAPI(TestCase):
         other_factory = await create_other_factory()
 
         response = await self.client.delete(
-            f"/relation/{self.substitute_relation.id}?factory_id={other_factory.id}",
+            f"/{self.material1.id}?factory_id={other_factory.id}&target_material_id={self.material2.id}",
             headers=headers,
         )
         self.assertEqual(response.status_code, 404)
@@ -402,6 +411,17 @@ class TestSubstituteAPI(TestCase):
         self.assertEqual(response.status_code, 400)
         data = response.json()
         self.assertIn("factory_id를 입력해야 합니다", data["detail"])
+
+    async def test_delete_without_target_material_id(self):
+        """target_material_id 없이 삭제 시도 테스트"""
+        headers = await self.authenticate()
+        response = await self.client.delete(
+            f"/{self.material1.id}?factory_id={self.factory.id}",
+            headers=headers,
+        )
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("target_material_id를 입력해야 합니다", data["detail"])
 
     async def test_get_without_factory_id(self):
         """factory_id 없이 조회 시도 테스트"""

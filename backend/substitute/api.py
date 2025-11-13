@@ -129,63 +129,81 @@ async def get_substitutes_by_material(
         ).first()
 
         if not substitute:
-            # 대체 자재 관계가 없으면 빈 쿼리셋 반환
-            return None, Material.objects.none()
+            # 대체 자재 관계가 없으면 빈 리스트 반환
+            return []
 
-        # target_materials를 QuerySet으로 반환 (페이지네이션을 위해)
+        # target_materials를 리스트로 반환 (페이지네이션을 위해)
         # 자기 자신(source_material)은 제외
-        target_materials = substitute.target_materials.exclude(id=material_id)
-        return substitute, target_materials
-
-    substitute, target_materials = await get_substitute_and_materials()
-
-    if not substitute:
+        target_materials = list(substitute.target_materials.exclude(id=material_id))
         return target_materials
 
-    # @paginate 데코레이터를 사용하면서 relation_id를 추가하려면,
-    # QuerySet을 반환하되 Material 객체에 relation_id를 동적으로 추가해야 합니다.
-    # 하지만 QuerySet은 lazy evaluation이므로, 페이지네이션 시점에 평가되면 속성이 사라질 수 있습니다.
-    # 
-    # 대안: QuerySet을 반환하되, MaterialSimpleOut 스키마가 relation_id를 포함하도록 설정되어 있으므로,
-    # Material 객체에 relation_id 속성을 추가하면 ModelSchema가 이를 포함합니다.
-    # 하지만 @paginate 데코레이터가 QuerySet을 평가할 때 relation_id가 포함되도록 하려면,
-    # QuerySet을 평가하기 전에 각 Material에 relation_id를 추가해야 합니다.
-    #
-    # 가장 확실한 방법: QuerySet을 리스트로 변환하고 각 Material에 relation_id 추가 후 반환
-    # 하지만 이렇게 하면 @paginate 데코레이터가 리스트를 페이지네이션하게 됩니다.
-    
-    # QuerySet을 평가하고 각 Material에 relation_id 추가
-    @sync_to_async
-    def add_relation_id_to_materials(queryset, relation_id):
-        materials_list = list(queryset)
-        for material in materials_list:
-            material.relation_id = relation_id
-        return materials_list
-    
-    materials_with_relation_id = await add_relation_id_to_materials(target_materials, substitute.id)
-    
-    return materials_with_relation_id
+    target_materials = await get_substitute_and_materials()
+
+    return target_materials
 
 
 @router.delete(
-    "/relation/{substitute_id}",
-    summary="[D] 대체 자재 관계 삭제",
-    description="특정 대체 자재 관계를 삭제합니다.",
+    "/{material_id}",
+    summary="[D] 대체 자재 관계에서 특정 대체 자재 제거",
+    description="target_material_id를 필수로 받아 특정 target_material만 제거합니다.",
     response={200: dict, 400: dict, 404: dict},
 )
-async def delete_substitute(request, substitute_id: int, factory_id: int = None):
+async def delete_substitute(
+    request, material_id: int, factory_id: int = None
+):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
+    target_material_id = request.GET.get("target_material_id")
+    if not target_material_id:
+        raise HttpError(400, "target_material_id를 입력해야 합니다.")
+
+    try:
+        target_material_id = int(target_material_id)
+    except (ValueError, TypeError):
+        raise HttpError(400, "target_material_id는 정수여야 합니다.")
+
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
-    substitute = await get_substitute_by_id(factory_id, substitute_id)
+    @sync_to_async
+    def remove_target_material():
+        # source_material 확인
+        try:
+            source_material = Material.objects.get(id=material_id, factory_id=factory_id)
+        except Material.DoesNotExist:
+            raise HttpError(404, "원본 자재를 찾을 수 없습니다.")
 
-    await substitute.adelete()
+        # Substitute 관계 찾기 (unique_together로 하나만 존재)
+        substitute = Substitute.objects.filter(
+            factory_id=factory_id, source_material_id=material_id
+        ).first()
 
-    return 200, {
-        "message": "대체 자재 관계가 삭제되었습니다.",
-        "deleted_substitute_id": substitute_id,
-    }
+        if not substitute:
+            raise HttpError(404, "대체 자재 관계를 찾을 수 없습니다.")
+
+        # target_material이 실제로 관계에 있는지 확인
+        if not substitute.target_materials.filter(id=target_material_id).exists():
+            raise HttpError(404, "해당 대체 자재가 관계에 존재하지 않습니다.")
+
+        # 특정 target_material만 제거
+        substitute.target_materials.remove(target_material_id)
+
+        # target_materials가 비어있으면 Substitute 관계도 삭제
+        if substitute.target_materials.count() == 0:
+            substitute.delete()
+            return {
+                "message": "대체 자재가 모두 제거되어 관계가 삭제되었습니다.",
+                "source_material_id": material_id,
+                "removed_target_material_id": target_material_id,
+            }
+
+        return {
+            "message": "대체 자재가 성공적으로 제거되었습니다.",
+            "source_material_id": material_id,
+            "removed_target_material_id": target_material_id,
+        }
+
+    result = await remove_target_material()
+    return 200, result
