@@ -166,8 +166,19 @@ class TestSubstituteAPI(TestCase):
         self.assertIn("원본 자재는 대체 자재 목록에 포함될 수 없습니다", data["detail"])
 
     async def test_create_substitute_relation_duplicate_source(self):
-        """같은 source_material에 대한 중복 관계 생성 시도 테스트"""
+        """같은 source_material에 대한 관계 추가 테스트 (기존 관계에 추가)"""
         headers = await self.authenticate()
+        
+        # 기존 관계 확인: material1의 대체자재는 material2, material3
+        response = await self.client.get(
+            f"/{self.material1.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        initial_data = response.json()
+        initial_count = len(initial_data["data"])
+        self.assertEqual(initial_count, 2)  # material2, material3
+        
+        # 기존 관계에 material4 추가
         payload = {
             "source_material_id": self.material1.id,  # 이미 관계가 존재함
             "target_materials": [self.material4.id],
@@ -175,9 +186,23 @@ class TestSubstituteAPI(TestCase):
         response = await self.client.post(
             f"?factory_id={self.factory.id}", headers=headers, json=payload
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
         data = response.json()
-        self.assertIn("이미 존재합니다", data["detail"])
+        self.assertEqual(data["source_material"]["id"], self.material1.id)
+        
+        # 기존 관계에 material4가 추가되었는지 확인
+        response = await self.client.get(
+            f"/{self.material1.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        updated_data = response.json()
+        updated_count = len(updated_data["data"])
+        self.assertEqual(updated_count, 3)  # material2, material3, material4
+        
+        target_ids = [m["id"] for m in updated_data["data"]]
+        self.assertIn(self.material2.id, target_ids)
+        self.assertIn(self.material3.id, target_ids)
+        self.assertIn(self.material4.id, target_ids)
 
     async def test_create_substitute_relation_invalid_source_material(self):
         """존재하지 않는 source_material로 관계 생성 시도 테스트"""
@@ -512,3 +537,71 @@ class TestSubstituteAPI(TestCase):
         self.assertIn("data", data4)
         self.assertEqual(len(data1["data"]), 2)  # material1의 target_materials가 2개
         self.assertEqual(len(data4["data"]), 1)  # material4의 target_materials가 1개
+
+    async def test_add_existing_target_material(self):
+        """이미 존재하는 target_material을 다시 추가하는 경우 테스트 (중복 방지)"""
+        headers = await self.authenticate()
+        
+        # 기존 관계 확인: material1의 대체자재는 material2, material3
+        response = await self.client.get(
+            f"/{self.material1.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        initial_data = response.json()
+        initial_count = len(initial_data["data"])
+        self.assertEqual(initial_count, 2)
+        
+        # 이미 존재하는 material2를 다시 추가 시도
+        payload = {
+            "source_material_id": self.material1.id,
+            "target_materials": [self.material2.id],  # 이미 존재하는 target
+        }
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
+        self.assertEqual(response.status_code, 201)
+        
+        # 중복되지 않고 여전히 2개여야 함 (ManyToMany는 자동으로 중복 방지)
+        response = await self.client.get(
+            f"/{self.material1.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        updated_data = response.json()
+        updated_count = len(updated_data["data"])
+        self.assertEqual(updated_count, 2)  # 중복되지 않아서 여전히 2개
+
+    async def test_add_multiple_times(self):
+        """여러 번에 걸쳐 대체자재를 추가하는 테스트"""
+        headers = await self.authenticate()
+        
+        # 첫 번째: material1의 대체자재로 material4 추가
+        payload1 = {
+            "source_material_id": self.material1.id,
+            "target_materials": [self.material4.id],
+        }
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload1
+        )
+        self.assertEqual(response.status_code, 201)
+        
+        # 두 번째: material1의 대체자재로 material2, material3 추가 (이미 존재하지만 다시 추가)
+        payload2 = {
+            "source_material_id": self.material1.id,
+            "target_materials": [self.material2.id, self.material3.id],
+        }
+        response = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload2
+        )
+        self.assertEqual(response.status_code, 201)
+        
+        # 최종 결과 확인: material2, material3, material4가 모두 포함되어야 함
+        response = await self.client.get(
+            f"/{self.material1.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        target_ids = [m["id"] for m in data["data"]]
+        self.assertEqual(len(data["data"]), 3)
+        self.assertIn(self.material2.id, target_ids)
+        self.assertIn(self.material3.id, target_ids)
+        self.assertIn(self.material4.id, target_ids)

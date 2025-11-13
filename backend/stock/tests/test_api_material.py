@@ -55,14 +55,6 @@ class TestMaterialAPI(TestCase):
             current_stock=100,
             standard_stock=50,
         )
-        # 테스트 대체 자재 그룹 생성
-        self.substitute = Substitute.objects.create(
-            factory=self.factory,
-            name="테스트 대체 자재 그룹",
-            description="테스트용 대체 자재 그룹입니다.",
-        )
-        # 테스트 대체 자재와 원자재 연결
-        self.substitute.materials.add(self.material)
 
     async def authenticate(self):
         """사용자 인증 및 토큰 반환"""
@@ -1061,3 +1053,175 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(data["totalCnt"], 12)
         self.assertEqual(data["pageCnt"], 3)
         self.assertEqual(data["curPage"], 3)
+
+    async def test_get_materials_by_factory_exclude_substitutes_with_material_id(self):
+        """material_id로 검색 시 대체자재 제외 테스트"""
+        # 기존 원자재 삭제
+        await sync_to_async(Material.objects.filter(factory=self.factory).delete)()
+        
+        # 테스트용 원자재 생성
+        material1 = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="M8 볼트 A사",
+            code="BOLT-M8-001",
+            unit="개",
+            spec="M8x20mm",
+            current_stock=100,
+            standard_stock=50,
+        )
+        
+        material2 = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="M8 볼트 B사",
+            code="BOLT-M8-002",
+            unit="개",
+            spec="M8x20mm",
+            current_stock=50,
+            standard_stock=30,
+        )
+        
+        material3 = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="M8 볼트 C사",
+            code="BOLT-M8-003",
+            unit="개",
+            spec="M8x20mm",
+            current_stock=0,
+            standard_stock=20,
+        )
+        
+        material4 = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="SUS304 판재 1.5t",
+            code="PLATE-SUS304-1.5",
+            unit="kg",
+            spec="1.5t",
+            current_stock=200,
+            standard_stock=100,
+        )
+        
+        # 대체자재 관계 생성: material1의 대체자재는 material2, material3
+        substitute_relation = await sync_to_async(Substitute.objects.create)(
+            factory=self.factory,
+            source_material=material1,
+        )
+        await sync_to_async(substitute_relation.target_materials.add)(material2, material3)
+        
+        headers = await self.authenticate()
+        
+        # material_id 없이 조회 - 모든 원자재가 포함되어야 함
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        material_ids = [m["id"] for m in data["data"]]
+        self.assertEqual(len(data["data"]), 4)
+        self.assertIn(material1.id, material_ids)
+        self.assertIn(material2.id, material_ids)
+        self.assertIn(material3.id, material_ids)
+        self.assertIn(material4.id, material_ids)
+        
+        # material_id=material1.id로 조회 - material1, material2, material3 제외, material4만 포함
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&material_id={material1.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        material_ids = [m["id"] for m in data["data"]]
+        self.assertEqual(len(data["data"]), 1)
+        self.assertNotIn(material1.id, material_ids)  # 자기 자신 제외
+        self.assertNotIn(material2.id, material_ids)  # 대체자재 제외
+        self.assertNotIn(material3.id, material_ids)  # 대체자재 제외
+        self.assertIn(material4.id, material_ids)  # 다른 자재는 포함
+        
+        # material_id=material4.id로 조회 - material4만 제외, 나머지 모두 포함
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&material_id={material4.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        material_ids = [m["id"] for m in data["data"]]
+        self.assertEqual(len(data["data"]), 3)
+        self.assertIn(material1.id, material_ids)
+        self.assertIn(material2.id, material_ids)
+        self.assertIn(material3.id, material_ids)
+        self.assertNotIn(material4.id, material_ids)  # 자기 자신 제외
+
+    async def test_get_materials_by_factory_exclude_substitutes_with_search_query(self):
+        """material_id와 검색어(q) 함께 사용 시 대체자재 제외 테스트"""
+        # 기존 원자재 삭제
+        await sync_to_async(Material.objects.filter(factory=self.factory).delete)()
+        
+        # 테스트용 원자재 생성
+        material1 = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="M8 볼트 A사",
+            code="BOLT-M8-001",
+            unit="개",
+            spec="M8x20mm",
+            current_stock=100,
+            standard_stock=50,
+        )
+        
+        material2 = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="M8 볼트 B사",
+            code="BOLT-M8-002",
+            unit="개",
+            spec="M8x20mm",
+            current_stock=50,
+            standard_stock=30,
+        )
+        
+        material3 = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="M8 볼트 C사",
+            code="BOLT-M8-003",
+            unit="개",
+            spec="M8x20mm",
+            current_stock=0,
+            standard_stock=20,
+        )
+        
+        material4 = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="SUS304 판재 1.5t",
+            code="PLATE-SUS304-1.5",
+            unit="kg",
+            spec="1.5t",
+            current_stock=200,
+            standard_stock=100,
+        )
+        
+        # 대체자재 관계 생성: material1의 대체자재는 material2, material3
+        substitute_relation = await sync_to_async(Substitute.objects.create)(
+            factory=self.factory,
+            source_material=material1,
+        )
+        await sync_to_async(substitute_relation.target_materials.add)(material2, material3)
+        
+        headers = await self.authenticate()
+        
+        # material_id=material1.id와 검색어 "판재" 함께 사용
+        # material1, material2, material3는 제외되고, material4만 검색어에 매칭되어 포함되어야 함
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&material_id={material1.id}&q=판재", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        material_ids = [m["id"] for m in data["data"]]
+        self.assertEqual(len(data["data"]), 1)
+        self.assertNotIn(material1.id, material_ids)
+        self.assertNotIn(material2.id, material_ids)
+        self.assertNotIn(material3.id, material_ids)
+        self.assertIn(material4.id, material_ids)
+        
+        # material_id=material1.id와 검색어 "볼트" 함께 사용
+        # material1, material2, material3 모두 제외되어야 하므로 결과 없음
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&material_id={material1.id}&q=볼트", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["data"]), 0)

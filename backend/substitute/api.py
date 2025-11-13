@@ -20,8 +20,8 @@ router = Router(tags=["Substitute"], auth=jwt_auth)
 
 @router.post(
     "",
-    summary="[C] 대체 자재 관계 생성 (단방향)",
-    description="source_material의 대체 가능한 자재들을 정의합니다.",
+    summary="[C] 대체 자재 관계 생성 또는 추가 (단방향)",
+    description="source_material의 대체 가능한 자재들을 정의합니다. 이미 관계가 존재하면 기존 관계에 추가합니다.",
     response={201: SubstituteDetailOut, 400: dict, 404: dict},
 )
 async def create_substitute(request, payload: SubstituteIn, factory_id: int = None):
@@ -53,15 +53,6 @@ async def create_substitute(request, payload: SubstituteIn, factory_id: int = No
                 404, "원본 자재가 존재하지 않거나 해당 공장에 속하지 않습니다."
             )
 
-        # 이미 해당 source_material에 대한 관계가 있는지 확인
-        if Substitute.objects.filter(
-            factory_id=factory.id, source_material_id=payload.source_material_id
-        ).exists():
-            raise HttpError(
-                400,
-                f"자재 ID {payload.source_material_id}에 대한 대체 자재 관계가 이미 존재합니다. 기존 관계를 삭제한 후 다시 생성하세요.",
-            )
-
         # target_materials 확인
         target_materials = Material.objects.filter(
             id__in=payload.target_materials, factory_id=factory.id
@@ -76,14 +67,23 @@ async def create_substitute(request, payload: SubstituteIn, factory_id: int = No
         if payload.source_material_id in payload.target_materials:
             raise HttpError(400, "원본 자재는 대체 자재 목록에 포함될 수 없습니다.")
 
-        # Substitute 관계 생성
-        substitute = Substitute.objects.create(
-            factory=factory,
-            source_material=source_material,
-        )
+        # 이미 해당 source_material에 대한 관계가 있는지 확인
+        substitute = Substitute.objects.filter(
+            factory_id=factory.id, source_material_id=payload.source_material_id
+        ).first()
 
-        # M2M 관계 설정 (단방향)
-        substitute.target_materials.set(target_materials)
+        if substitute:
+            # 기존 관계가 있으면 새로운 target_materials를 추가
+            # 이미 존재하는 target_materials는 중복되지 않음 (ManyToMany의 특성)
+            substitute.target_materials.add(*target_materials)
+        else:
+            # 관계가 없으면 새로 생성
+            substitute = Substitute.objects.create(
+                factory=factory,
+                source_material=source_material,
+            )
+            # M2M 관계 설정 (단방향)
+            substitute.target_materials.set(target_materials)
 
         return substitute
 
