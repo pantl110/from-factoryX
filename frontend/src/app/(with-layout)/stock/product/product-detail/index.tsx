@@ -189,6 +189,8 @@ const ProductDetail = ({
     useState<LocationModel | null>(null);
   const [isSubstituteMaterialsModalOpen, setIsSubstituteMaterialsModalOpen] =
     useState(false);
+  const [selectedSubstituteMaterialId, setSelectedSubstituteMaterialId] =
+    useState<number | null>(null);
   const [isDeleteLocationModalOpen, setIsDeleteLocationModalOpen] =
     useState(false);
   const [deleteLocationId, setDeleteLocationId] = useState<number | null>(null);
@@ -689,9 +691,10 @@ const ProductDetail = ({
             onQuantityChange={handleQuantityChange}
             onInvalidQuantity={showToastMessage}
             onStagedQuantityChange={updateStagedQuantity}
-            setIsSubstituteMaterialsModalOpen={
-              setIsSubstituteMaterialsModalOpen
-            }
+            onOpenSubstituteMaterialsModal={(materialId: number) => {
+              setSelectedSubstituteMaterialId(materialId);
+              setIsSubstituteMaterialsModalOpen(true);
+            }}
             onDeleteConnection={(connectionId: number) => {
               setDeleteConnectionId(connectionId);
               setIsDeleteConnectionModalOpen(true);
@@ -739,11 +742,16 @@ const ProductDetail = ({
       )}
 
       {/* 대체자재 모달 */}
-      {isSubstituteMaterialsModalOpen && (
-        <SubstituteMaterialsModal
-          onClose={() => setIsSubstituteMaterialsModalOpen(false)}
-        />
-      )}
+      {isSubstituteMaterialsModalOpen &&
+        selectedSubstituteMaterialId !== null && (
+          <SubstituteMaterialsModal
+            materialId={selectedSubstituteMaterialId}
+            onClose={() => {
+              setIsSubstituteMaterialsModalOpen(false);
+              setSelectedSubstituteMaterialId(null);
+            }}
+          />
+        )}
 
       {/* 재고 변동 내역 모달 */}
       {projectStockHistoryModal.isOpen && (

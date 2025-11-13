@@ -540,6 +540,7 @@ export interface MaterialProductConnectionModel {
   material_unit: string;
   material_current_stock: number;
   material_standard_stock: number;
+  substitutes: string[];
   quantity: number; // // 제품 1개 생산에 필요한 원자재 수량
 }
 

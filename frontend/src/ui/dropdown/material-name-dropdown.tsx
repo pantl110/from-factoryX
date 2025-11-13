@@ -72,7 +72,8 @@ export const MaterialNameDropdown = ({
       isCurrentRequest = false;
       abortController.abort();
     };
-  }, [searchTerm, getMaterialList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   // 더 많은 자재 로드
   const loadMoreMaterials = useCallback(async () => {
@@ -102,7 +103,8 @@ export const MaterialNameDropdown = ({
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, hasMore, searchTerm, currentPage, getMaterialList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, hasMore, searchTerm, currentPage]);
 
   // 검색 결과가 없으면 드롭다운 표시 안 함
   if (materials.length === 0) {

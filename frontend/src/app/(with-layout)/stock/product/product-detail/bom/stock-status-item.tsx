@@ -26,7 +26,7 @@ interface StockStatusItemProps {
   onInvalidQuantity: (message: string, subtext?: string) => void;
   isStagedMode?: boolean;
   onStagedQuantityChange?: (materialId: number, qty: number) => void;
-  setIsSubstituteMaterialsModalOpen: (isOpen: boolean) => void;
+  onOpenSubstituteMaterialsModal: (materialId: number) => void;
 }
 
 const StockStatusItem = ({
@@ -39,7 +39,7 @@ const StockStatusItem = ({
   onInvalidQuantity,
   isStagedMode,
   onStagedQuantityChange,
-  setIsSubstituteMaterialsModalOpen,
+  onOpenSubstituteMaterialsModal,
 }: StockStatusItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -242,12 +242,27 @@ const StockStatusItem = ({
         {connection.material_unit || '-'}
       </p>
       <div
-        className="flex-1 px-3 text-dg truncate hover:bg-bg h-full flex items-center cursor-pointer transition-colors duration-200"
+        className={`flex-1 px-3 text-dg truncate h-full flex items-center ${
+          connection.substitutes.length > 0
+            ? 'hover:bg-bg cursor-pointer transition-colors duration-200'
+            : 'cursor-default'
+        }`}
         role="button"
         tabIndex={0}
-        onClick={() => setIsSubstituteMaterialsModalOpen(true)}
+        title={
+          connection.substitutes.length > 0
+            ? `${connection.substitutes[0]} 외 ${connection.substitutes.length - 1}개`
+            : '-'
+        }
+        onClick={
+          connection.substitutes.length > 0
+            ? () => onOpenSubstituteMaterialsModal(connection.material_id)
+            : undefined
+        }
       >
-        원자재A 외 1개
+        {connection.substitutes.length > 0
+          ? `${connection.substitutes[0]} 외 ${connection.substitutes.length - 1}개`
+          : '-'}
       </div>
       <div className="flex-[0.5] px-3 text-dg flex justify-between">
         {status === '부족' || status === '충분' ? (

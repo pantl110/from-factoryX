@@ -69,7 +69,8 @@ export const ProductNameDropdown = ({
       isCurrentRequest = false;
       abortController.abort();
     };
-  }, [searchTerm, getProductList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   // 더 많은 제품 로드
   const loadMoreProducts = useCallback(async () => {
@@ -96,7 +97,8 @@ export const ProductNameDropdown = ({
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, hasMore, searchTerm, currentPage, getProductList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, hasMore, searchTerm, currentPage]);
 
   // 검색 결과가 없으면 드롭다운 표시 안 함
   if (products.length === 0) {

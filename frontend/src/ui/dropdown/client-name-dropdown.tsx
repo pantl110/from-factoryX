@@ -71,7 +71,8 @@ export const ClientNameDropdown = ({
       isCurrentRequest = false;
       abortController.abort();
     };
-  }, [searchTerm, getClients]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   // 더 많은 거래처 로드
   const loadMoreClients = useCallback(async () => {
@@ -98,7 +99,8 @@ export const ClientNameDropdown = ({
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, hasMore, searchTerm, currentPage, getClients]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, hasMore, searchTerm, currentPage]);
 
   // 검색 결과가 없으면 드롭다운 표시 안 함
   if (clients.length === 0) {

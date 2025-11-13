@@ -37,7 +37,7 @@ interface BOMProps {
   onInvalidQuantity: (message: string) => void;
   onStagedQuantityChange: (materialId: number, quantity: number) => void;
   onPersistStagedConnections?: (newProductId: number) => Promise<void>;
-  setIsSubstituteMaterialsModalOpen: (isOpen: boolean) => void;
+  onOpenSubstituteMaterialsModal: (materialId: number) => void;
   onDeleteConnection?: (connectionId: number) => void;
 }
 
@@ -53,7 +53,7 @@ const Bom = ({
   onQuantityChange,
   onInvalidQuantity,
   onStagedQuantityChange,
-  setIsSubstituteMaterialsModalOpen,
+  onOpenSubstituteMaterialsModal,
   onDeleteConnection,
 }: BOMProps) => {
   const role = useMemberStore((state) => state.role);
@@ -133,7 +133,7 @@ const Bom = ({
         onInvalidQuantity={onInvalidQuantity}
         isStagedMode={!productId}
         onStagedQuantityChange={onStagedQuantityChange}
-        setIsSubstituteMaterialsModalOpen={setIsSubstituteMaterialsModalOpen}
+        onOpenSubstituteMaterialsModal={onOpenSubstituteMaterialsModal}
         onMaterialModalOpen={onMaterialModalOpen}
       />
     </div>
