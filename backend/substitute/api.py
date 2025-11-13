@@ -133,7 +133,8 @@ async def get_substitutes_by_material(
             return Material.objects.none()
 
         # target_materials를 QuerySet으로 반환 (페이지네이션을 위해)
-        return substitute.target_materials.all()
+        # 자기 자신(source_material)은 제외
+        return substitute.target_materials.exclude(id=material_id)
 
     target_materials = await get_target_materials()
 
