@@ -71,4 +71,3 @@ const useGetSubstitutesByMaterial =
   };
 
 export default useGetSubstitutesByMaterial;
-

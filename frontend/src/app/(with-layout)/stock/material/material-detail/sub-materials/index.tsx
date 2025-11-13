@@ -59,16 +59,19 @@ export const SubMaterials = ({ materialId }: SubMaterialsProps) => {
             <p className="flex-1 px-3 text-sv">자재명</p>
             <p className="flex-1 px-3 text-sv">자재코드</p>
             <p className="flex-1 px-3 text-sv">규격</p>
-            <p className="flex-1 px-3 text-sv">단위</p>
             <p className="flex-1 px-3 text-sv">재고 수량</p>
-            <p className="flex-1 px-3 text-sv">재고 상태</p>
+            <p className="flex-[0.5] px-3 text-sv">재고 상태</p>
             {!isViewer && hasSubscription() && (
               <p className="w-20 px-3 text-sv">액션</p>
             )}
           </div>
 
           {targetMaterials.map((material) => (
-            <SubMaterialItem key={material.id} material={material} />
+            <SubMaterialItem
+              key={material.id}
+              material={material}
+              sourceMaterialId={materialId}
+            />
           ))}
           {/* 페이지네이션 필요 */}
         </div>

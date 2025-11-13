@@ -72,4 +72,3 @@ const useDeleteSubstitute = (): UseDeleteSubstituteReturnModel => {
 };
 
 export default useDeleteSubstitute;
-

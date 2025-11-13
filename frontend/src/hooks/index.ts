@@ -188,4 +188,3 @@ export {
   useDeleteSubstituteMutation,
 } from './substitute/use-substitute-mutations';
 export { useSubstitutesByMaterialQuery } from './substitute/use-substitute-queries';
-

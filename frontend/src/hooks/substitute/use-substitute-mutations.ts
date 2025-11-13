@@ -68,8 +68,9 @@ export const useDeleteSubstituteMutation = () => {
     },
     onSuccess: () => {
       // 삭제된 관계의 source_material을 알 수 없으므로, 모든 대체 자재 관계 쿼리를 무효화
-      queryClient.invalidateQueries({ queryKey: ['substitute', 'by-material'] });
+      queryClient.invalidateQueries({
+        queryKey: ['substitute', 'by-material'],
+      });
     },
   });
 };
-

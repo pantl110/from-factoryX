@@ -48,4 +48,3 @@ export const useSubstitutesByMaterialQuery = (
     retry: false,
   });
 };
-
