@@ -50,6 +50,11 @@ interface MaterialDetailRefModel extends MaterialInfoModel {
       refresh?: () => void;
     };
   };
+  subMaterialsRef?: {
+    current?: {
+      resetToFirstPage?: () => void;
+    };
+  };
 }
 
 interface MaterialDetailPanelProps {
@@ -175,7 +180,7 @@ const MaterialDetailPanel = ({
           // 삭제 실패 시 에러 처리
         }
         break;
-      case 'substitute':
+      case 'substitute': {
         const { sourceMaterialId, targetMaterialId } = deleteModalState;
         if (sourceMaterialId && targetMaterialId) {
           deleteSubstituteMutation.mutate(
@@ -197,6 +202,7 @@ const MaterialDetailPanel = ({
           );
         }
         break;
+      }
       case 'location':
         if (id === null || id === undefined) return;
         try {
@@ -577,7 +583,17 @@ const MaterialDetailPanel = ({
       {/* 대체 자재 등록 모달 */}
       {isCreateSubstituteModalOpen && (
         <CreateSubstituteModal
+          materialId={selectedMaterialId}
           onClose={() => setIsCreateSubstituteModalOpen(false)}
+          onSuccess={() => {
+            // 대체자재 생성 성공 시 SubMaterials 컴포넌트를 1페이지로 리셋
+            if (
+              materialDetailRef.current?.subMaterialsRef?.current
+                ?.resetToFirstPage
+            ) {
+              materialDetailRef.current.subMaterialsRef.current.resetToFirstPage();
+            }
+          }}
         />
       )}
     </>

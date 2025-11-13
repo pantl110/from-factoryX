@@ -75,6 +75,16 @@ const ProductRequiringMaterial = forwardRef<
       setCurrentPage(page);
     };
 
+    // 삭제 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+    useEffect(() => {
+      const calculatedTotalPages = Math.ceil(
+        productConnections.length / pageSize
+      );
+      if (calculatedTotalPages > 0 && currentPage > calculatedTotalPages) {
+        setCurrentPage(calculatedTotalPages);
+      }
+    }, [productConnections.length, currentPage, pageSize]);
+
     // materialId나 refreshTrigger가 변경될 때마다 연결된 제품들을 가져오기
     useEffect(() => {
       if (materialId) {

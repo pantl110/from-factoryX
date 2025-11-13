@@ -5,14 +5,10 @@ import {
   PaginationModel,
 } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
-
-interface MaterialFilterModel {
-  page?: number;
-  page_size?: number;
-  q?: string;
-  order?: 'asc' | 'desc';
-  limit?: number;
-}
+import {
+  useGetMaterialListMutation,
+  MaterialFilterModel,
+} from './use-material-mutations';
 
 const useGetMaterial = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +18,10 @@ const useGetMaterial = () => {
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
   const factoryId = useMemberStore((state) => state.factoryId);
 
-  // 원자재 목록 조회
+  // 원자재 목록 조회 mutation
+  const getMaterialListMutation = useGetMaterialListMutation();
+
+  // 원자재 목록 조회 (기존 인터페이스 유지)
   const getMaterialList = useCallback(
     async (filters: MaterialFilterModel = {}) => {
       setIsLoading(true);
@@ -48,41 +47,26 @@ const useGetMaterial = () => {
       }
 
       try {
-        const params = new URLSearchParams();
-        if (filters.page) params.append('page', filters.page.toString());
-        if (filters.page_size)
-          params.append('page_size', filters.page_size.toString());
-        if (filters.q) params.append('q', filters.q);
-        if (filters.order) params.append('order', filters.order);
-        if (filters.limit) params.append('limit', filters.limit.toString());
-
-        params.append('factory_id', factoryId.toString());
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material?${params}`,
-          {
-            method: 'GET',
-            credentials: 'include',
-          }
-        );
-        if (response.ok) {
-          const result: MaterialListResponseModel = await response.json();
-          setMaterialList(result.data || []);
-          setPagination(result);
-          return { success: true, data: result };
-        } else {
-          const errorData = await response.json();
-          setError(errorData.detail || '원자재 목록을 불러오지 못했습니다.');
-          return { success: false, error: errorData.detail };
-        }
-      } catch {
-        setError('서버 연결에 실패했습니다.');
-        return { success: false, error: '서버 연결에 실패했습니다.' };
+        const result = await getMaterialListMutation.mutateAsync(filters);
+        setMaterialList(result.data || []);
+        setPagination(result);
+        setError(null);
+        return {
+          success: true,
+          data: result,
+        };
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : '원자재 목록을 불러오지 못했습니다.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
       } finally {
         setIsLoading(false);
       }
     },
-    [factoryId]
+    [factoryId, getMaterialListMutation]
   );
 
   // 원자재 상세 조회
@@ -201,11 +185,12 @@ const useGetMaterial = () => {
     material,
     materialList,
     pagination,
-    isLoading,
+    isLoading: isLoading || getMaterialListMutation.isPending,
     error,
     getMaterialList,
     getMaterialDetail,
     getAllMaterials,
+    getMaterialListMutation, // mutation 직접 접근 가능
   };
 };
 

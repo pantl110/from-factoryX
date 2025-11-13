@@ -21,7 +21,7 @@ import { useGetMaterialHistory } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import StockLocation from './stock-location';
-import { SubMaterials } from './sub-materials';
+import { SubMaterials, SubMaterialsRefModel } from './sub-materials';
 import { MaterialStockIn } from './material-stock-in';
 import { MaterialPackaging } from './material-packaging';
 import { MaterialStockOut } from './material-stock-out';
@@ -124,6 +124,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     const materialInfoRef = useRef<MaterialInfoModel>(null);
     const productRequiringMaterialRef =
       useRef<ProductRequiringMaterialRefModel>(null);
+    const subMaterialsRef = useRef<SubMaterialsRefModel>(null);
 
     // 기간 선택 드롭다운 상태
     const [isPricePeriodDropdownOpen, setIsPricePeriodDropdownOpen] =
@@ -283,6 +284,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
         setValue: memoizedSetValue,
         // ProductRequiringMaterial ref 노출
         productRequiringMaterialRef,
+        // SubMaterials ref 노출
+        subMaterialsRef,
       }),
       [
         getLocationValues,
@@ -292,6 +295,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
         memoizedWatch,
         memoizedSetValue,
         productRequiringMaterialRef,
+        subMaterialsRef,
       ]
     );
 
@@ -399,6 +403,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
 
           {/* 대체 가능한 원자재 */}
           <SubMaterials
+            ref={subMaterialsRef}
             materialId={materialId}
             setIsCreateSubstituteModalOpen={setIsCreateSubstituteModalOpen}
             handleOpenDeleteSubstituteModal={handleOpenDeleteSubstituteModal}

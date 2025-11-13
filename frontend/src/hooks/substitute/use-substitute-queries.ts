@@ -19,7 +19,14 @@ export const useSubstitutesByMaterialQuery = (
   const isEnabled = enabled && !!factoryId && !!materialId;
 
   return useQuery({
-    queryKey: ['substitute', 'by-material', materialId, factoryId, page, pageSize],
+    queryKey: [
+      'substitute',
+      'by-material',
+      materialId,
+      factoryId,
+      page,
+      pageSize,
+    ],
     queryFn: async () => {
       if (!factoryId || !materialId) {
         return {
