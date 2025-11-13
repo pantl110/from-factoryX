@@ -44,6 +44,13 @@ export const SubMaterials = ({
   const targetMaterials: (MaterialSimpleModel & { relation_id?: number })[] =
     substituteListResponse?.data || [];
 
+  // 삭제 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
   return (
     <div className="flex flex-col gap-3">
       <div className="h-10 flex items-center justify-between">

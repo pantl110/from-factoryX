@@ -173,6 +173,14 @@ const TaxPageContent = () => {
     fetchTaxData(page);
   };
 
+  // 숨기기/복구 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+      fetchTaxData(totalPages);
+    }
+  }, [totalPages, currentPage, fetchTaxData]);
+
   // 시작일자 정렬 방향 변경
   const handleSortClick = () => {
     setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));

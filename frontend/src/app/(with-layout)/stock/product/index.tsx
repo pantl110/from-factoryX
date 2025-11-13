@@ -92,6 +92,15 @@ const Product = ({
     loadProducts(page, searchKeyword);
   };
 
+  // 삭제 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+  useEffect(() => {
+    const totalPages = pagination?.pageCnt || 0;
+    if (totalPages > 0 && _currentPage > totalPages) {
+      setCurrentPage(totalPages);
+      loadProducts(totalPages, searchKeyword);
+    }
+  }, [pagination?.pageCnt, _currentPage, searchKeyword, loadProducts]);
+
   const {
     checkedCount,
     isAllChecked,

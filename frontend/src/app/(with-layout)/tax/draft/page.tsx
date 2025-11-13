@@ -207,6 +207,14 @@ const TaxDraftPage = () => {
     setAllChecked(false);
   };
 
+  // 삭제 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+  useEffect(() => {
+    const totalPages = taxInvoices?.pageCnt || 0;
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [taxInvoices?.pageCnt, currentPage]);
+
   // 탭 변경 핸들러
   const handleTabChange = (tab: '전체' | '임시 저장' | '전송 대기') => {
     setSelectedTab(tab);

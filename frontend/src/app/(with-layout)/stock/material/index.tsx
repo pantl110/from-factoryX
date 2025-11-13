@@ -64,6 +64,20 @@ const Material = ({
     setPage(1); // 정렬 변경 시 첫 페이지로 이동
   };
 
+  // 삭제 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+  useEffect(() => {
+    const totalPages = pagination?.pageCnt || 0;
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+      getMaterialList({
+        order,
+        q: search,
+        page: totalPages,
+        page_size: pageSize,
+      });
+    }
+  }, [pagination?.pageCnt, page, order, search, pageSize, getMaterialList]);
+
   const handleDelete = async () => {
     // 체크된 자재 id 목록
     const idsToDelete = materialList
