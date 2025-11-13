@@ -26,8 +26,8 @@ class Substitute(BaseModel):
     class Meta:
         ordering = ["-created_at"]
         unique_together = [["factory", "source_material"]]
-        verbose_name = "대체 자재 관계"
-        verbose_name_plural = "대체 자재 관계"
+        verbose_name = "Substitute"
+        verbose_name_plural = "Substitutes"
 
     def __str__(self):
         return f"{self.source_material.name} -> 대체 자재 관계 ({self.factory.name})"

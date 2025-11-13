@@ -21,6 +21,7 @@ from stock.schemas.outbound import (
     ShortageMaterialCountOut,
 )
 from factory.models import Factory
+from substitute.models import Substitute
 
 from factory.utils import is_factory_member
 
@@ -178,11 +179,13 @@ async def assign_material(request, payload: AssignMaterialIn):
 @router.get(
     "",
     summary="[C] 공장별 원자재 목록 조회",
-    description="특정 공장의 모든 원자재 정보를 조회합니다.",
+    description="특정 공장의 모든 원자재 정보를 조회합니다. material_id가 제공되면 해당 자재와 연결된 대체자재들을 제외합니다.",
     response={200: List[MaterialSummaryOut], 404: dict, 500: dict},
 )
 @paginate
-async def get_materials_by_factory(request, q: str = None, order: str = "desc"):
+async def get_materials_by_factory(
+    request, q: str = None, order: str = "desc", material_id: int = None
+):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -198,6 +201,24 @@ async def get_materials_by_factory(request, q: str = None, order: str = "desc"):
     @sync_to_async
     def get_materials():
         queryset = Material.objects.filter(factory=factory)
+        
+        # material_id가 제공되면 해당 자재와 연결된 대체자재들 제외, 자기 자신도 제외
+        if material_id:
+            # 해당 material_id가 source_material인 Substitute 관계 찾기
+            substitute_relation = Substitute.objects.filter(
+                factory_id=factory_id, source_material_id=material_id
+            ).first()
+            
+            if substitute_relation:
+                # target_materials로 연결된 자재 ID 목록 가져오기
+                target_material_ids = list(
+                    substitute_relation.target_materials.values_list("id", flat=True)
+                )
+                # 대체자재로 연결된 자재들 제외
+                queryset = queryset.exclude(id__in=target_material_ids)
+            # material_id 자체도 제외 (자기 자신은 대체자재 목록에 포함될 수 없음)
+            queryset = queryset.exclude(id=material_id)
+        
         if q:
             qs1 = queryset.filter(name__icontains=q)
             qs2 = queryset.filter(code__icontains=q)
