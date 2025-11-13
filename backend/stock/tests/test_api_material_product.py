@@ -303,9 +303,13 @@ class MaterialProductAPITestCase(TestCase):
             "material_spec",
             "material_unit",
             "quantity",
+            "substitutes",  # 대체자재 필드 추가
         ]
         for field in expected_fields:
             self.assertIn(field, first_item)
+        
+        # substitutes 필드가 리스트인지 확인
+        self.assertIsInstance(first_item["substitutes"], list)
 
     def test_get_material_product_connections_material_type(self):
         """원자재 기준으로 연결 조회 테스트"""

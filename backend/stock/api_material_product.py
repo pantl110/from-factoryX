@@ -11,6 +11,7 @@ from stock.schemas.outbound import (
 from stock.models import Material, Product, MaterialProduct
 from factory.utils import is_factory_member
 from project.utils import check_material_availability
+from substitute.models import Substitute
 
 router = Router(tags=["MaterialProduct"], auth=jwt_auth)
 
@@ -156,17 +157,42 @@ async def get_material_product_connections(request, target_id: int, type: str):
 
     results = []
     if type == "product":
+        # 모든 자재 ID 수집
+        material_ids = [mp.material.id for mp in material_products]
+        
+        @sync_to_async
+        def get_substitute_names(material_ids):
+            """모든 자재의 대체자재 이름을 한 번에 조회합니다."""
+            if not material_ids:
+                return {}
+            
+            # 모든 대체자재 관계를 한 번에 조회 (N+1 쿼리 방지)
+            substitutes = Substitute.objects.filter(
+                factory_id=int(factory_id), source_material_id__in=material_ids
+            ).prefetch_related("target_materials")
+            
+            # material_id -> 대체자재 이름 리스트 매핑 생성
+            return {
+                sub.source_material_id: [m.name for m in sub.target_materials.all()]
+                for sub in substitutes
+            }
+        
+        # 모든 대체자재 이름을 한 번에 조회
+        substitute_names_map = await get_substitute_names(material_ids)
+        
         for mp in material_products:
+            material = mp.material
             results.append(
                 {
                     "connection_id": mp.id,
-                    "material_id": mp.material.id,
-                    "material_name": mp.material.name,
-                    "material_code": mp.material.code,
-                    "material_spec": mp.material.spec,
-                    "material_unit": mp.material.unit,
-                    "material_current_stock": int(mp.material.current_stock or 0),
-                    "material_standard_stock": int(mp.material.standard_stock or 0),
+                    "material_id": material.id,
+                    "material_name": material.name,
+                    "material_code": material.code,
+                    "material_spec": material.spec,
+                    "material_unit": material.unit,
+                    "material_current_stock": int(material.current_stock or 0),
+                    "material_standard_stock": int(material.standard_stock or 0),
+                    "substitutes": substitute_names_map.get(material.id, []),
                     "quantity": float(mp.quantity),
                 }
             )
