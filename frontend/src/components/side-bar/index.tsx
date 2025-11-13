@@ -42,7 +42,7 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
       )}
 
       <aside
-        className={`fixed left-0 top-0 w-64 h-screen flex flex-col border-r border-lg bg-white z-50 transition-all duration-300 ease-in-out ${
+        className={`fixed left-0 top-0 bottom-0 w-64 flex flex-col border-r border-lg bg-white z-50 transition-transform duration-300 ease-in-out ${
           shouldHide ? '-translate-x-full' : 'translate-x-0'
         }`}
         onMouseLeave={() => isProductionPage && setIsHovered(false)}
