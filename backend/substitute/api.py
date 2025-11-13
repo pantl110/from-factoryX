@@ -122,7 +122,7 @@ async def get_substitutes_by_material(
     material = await get_material()
 
     @sync_to_async
-    def get_target_materials():
+    def get_substitute_and_materials():
         # 해당 자재가 source_material인 대체 자재 관계를 조회 (단방향)
         substitute = Substitute.objects.filter(
             source_material=material, factory_id=factory_id
@@ -130,15 +130,41 @@ async def get_substitutes_by_material(
 
         if not substitute:
             # 대체 자재 관계가 없으면 빈 쿼리셋 반환
-            return Material.objects.none()
+            return None, Material.objects.none()
 
         # target_materials를 QuerySet으로 반환 (페이지네이션을 위해)
         # 자기 자신(source_material)은 제외
-        return substitute.target_materials.exclude(id=material_id)
+        target_materials = substitute.target_materials.exclude(id=material_id)
+        return substitute, target_materials
 
-    target_materials = await get_target_materials()
+    substitute, target_materials = await get_substitute_and_materials()
 
-    return target_materials
+    if not substitute:
+        return target_materials
+
+    # @paginate 데코레이터를 사용하면서 relation_id를 추가하려면,
+    # QuerySet을 반환하되 Material 객체에 relation_id를 동적으로 추가해야 합니다.
+    # 하지만 QuerySet은 lazy evaluation이므로, 페이지네이션 시점에 평가되면 속성이 사라질 수 있습니다.
+    # 
+    # 대안: QuerySet을 반환하되, MaterialSimpleOut 스키마가 relation_id를 포함하도록 설정되어 있으므로,
+    # Material 객체에 relation_id 속성을 추가하면 ModelSchema가 이를 포함합니다.
+    # 하지만 @paginate 데코레이터가 QuerySet을 평가할 때 relation_id가 포함되도록 하려면,
+    # QuerySet을 평가하기 전에 각 Material에 relation_id를 추가해야 합니다.
+    #
+    # 가장 확실한 방법: QuerySet을 리스트로 변환하고 각 Material에 relation_id 추가 후 반환
+    # 하지만 이렇게 하면 @paginate 데코레이터가 리스트를 페이지네이션하게 됩니다.
+    
+    # QuerySet을 평가하고 각 Material에 relation_id 추가
+    @sync_to_async
+    def add_relation_id_to_materials(queryset, relation_id):
+        materials_list = list(queryset)
+        for material in materials_list:
+            material.relation_id = relation_id
+        return materials_list
+    
+    materials_with_relation_id = await add_relation_id_to_materials(target_materials, substitute.id)
+    
+    return materials_with_relation_id
 
 
 @router.delete(
