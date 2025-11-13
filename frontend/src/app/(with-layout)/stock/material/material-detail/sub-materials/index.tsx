@@ -8,8 +8,14 @@ import NoHistoryBox from '@/ui/no-history-box';
 
 interface SubMaterialsProps {
   materialId: number;
+  setIsCreateSubstituteModalOpen: (v: boolean) => void;
+  handleOpenDeleteSubstituteModal: (substituteId: number) => void;
 }
-export const SubMaterials = ({ materialId }: SubMaterialsProps) => {
+export const SubMaterials = ({
+  materialId,
+  setIsCreateSubstituteModalOpen,
+  handleOpenDeleteSubstituteModal,
+}: SubMaterialsProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -35,7 +41,9 @@ export const SubMaterials = ({ materialId }: SubMaterialsProps) => {
           text="원자재 연결"
           variant="whiteOutline"
           disabled={isViewer || !hasSubscription()}
-          onClick={() => {}}
+          onClick={() => {
+            setIsCreateSubstituteModalOpen(true);
+          }}
         />
       </div>
 
@@ -47,7 +55,9 @@ export const SubMaterials = ({ materialId }: SubMaterialsProps) => {
             title="연결된 자재가 없어요."
             text="현재 자재 대신 사용할 수 있는 원자재를 등록할 수 있어요."
             button="원자재 연결"
-            onClick={() => {}}
+            onClick={() => {
+              setIsCreateSubstituteModalOpen(true);
+            }}
             disabled={isViewer || !hasSubscription()}
           />
         )}
@@ -71,6 +81,8 @@ export const SubMaterials = ({ materialId }: SubMaterialsProps) => {
               key={material.id}
               material={material}
               sourceMaterialId={materialId}
+              substituteRelationId={substituteRelations?.[0]?.id || 0}
+              handleOpenDeleteSubstituteModal={handleOpenDeleteSubstituteModal}
             />
           ))}
           {/* 페이지네이션 필요 */}

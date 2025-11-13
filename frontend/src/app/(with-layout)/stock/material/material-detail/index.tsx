@@ -24,6 +24,9 @@ import DeleteModal from '@/ui/modal/delete-modal';
 import ProductDetailPanel from '@/app/(with-layout)/stock/product/product-detail';
 import StockLocationModal from '../../modals/stock-location-modal';
 import { MaterialPackagingDetailModal } from '../modals/material-packaging-detail-modal';
+import CreateSubstituteModal from '../modals/create-substitute-modal';
+import { useDeleteSubstituteMutation } from '@/hooks';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface LocationModel {
   id: number;
@@ -62,7 +65,8 @@ const MaterialDetailPanel = ({
   const [isMaterialDetailDirty, setIsMaterialDetailDirty] = useState(false); // 원자재 디테일 판넬 수정 상태
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
-  // const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
+  const [isCreateSubstituteModalOpen, setIsCreateSubstituteModalOpen] =
+    useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] =
     useState<LocationModel | null>(null);
@@ -80,11 +84,14 @@ const MaterialDetailPanel = ({
     []
   );
 
-  // 삭제 모달 관련 상태
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteConnectionId, setDeleteConnectionId] = useState<number | null>(
-    null
-  );
+  // 삭제 모달 관련 상태 (통합)
+  type DeleteType = 'connection' | 'substitute' | 'location' | null;
+  const [deleteModalState, setDeleteModalState] = useState<{
+    type: DeleteType;
+    id: number | null;
+  }>({ type: null, id: null });
+  const queryClient = useQueryClient();
+  const deleteSubstituteMutation = useDeleteSubstituteMutation();
 
   // 제품 디테일 판넬 열기 관련 상태
   const [selectedProductId, setSelectedProductId] = useState<number | null>(
@@ -122,34 +129,70 @@ const MaterialDetailPanel = ({
   const [toastText, setToastText] = useState('');
   const [toastSubtext, setToastSubtext] = useState('');
   const [prevLocations, setPrevLocations] = useState<LocationModel[]>([]);
-  // 위치 삭제 모달 상태 (id 존재 여부로 표시)
-  const [deleteLocationId, setDeleteLocationId] = useState<number | null>(null);
-
   const handleRequestDeleteLocation = (index: number, locationId?: number) => {
-    setDeleteLocationId(typeof locationId === 'number' ? locationId : null);
+    if (typeof locationId === 'number') {
+      setDeleteModalState({ type: 'location', id: locationId });
+    }
   };
 
   // 삭제 모달 열기 함수
   const handleOpenDeleteModal = (connectionId: number) => {
-    setDeleteConnectionId(connectionId);
-    setIsDeleteModalOpen(true);
+    setDeleteModalState({ type: 'connection', id: connectionId });
   };
 
-  // 삭제 확인 함수
+  // 대체 자재 삭제 모달 열기 함수
+  const handleOpenDeleteSubstituteModal = (substituteId: number) => {
+    setDeleteModalState({ type: 'substitute', id: substituteId });
+  };
+
+  // 통합 삭제 확인 함수
   const handleConfirmDelete = async () => {
-    if (deleteConnectionId) {
-      try {
-        const result =
-          await deleteMaterialProductConnection(deleteConnectionId);
-        if (result.success) {
-          setHasProductBeenModified(true);
+    const { type, id } = deleteModalState;
+    if (!type || !id) return;
+
+    switch (type) {
+      case 'connection':
+        try {
+          const result = await deleteMaterialProductConnection(id);
+          if (result.success) {
+            setHasProductBeenModified(true);
+          }
+        } catch {
+          // 삭제 실패 시 에러 처리
         }
-      } catch {
-        // 삭제 실패 시 에러 처리
-      }
+        break;
+      case 'substitute':
+        deleteSubstituteMutation.mutate(id, {
+          onSuccess: () => {
+            // 삭제 성공 시 해당 source_material의 대체 자재 관계 목록을 다시 불러옴
+            queryClient.invalidateQueries({
+              queryKey: ['substitute', 'by-material', selectedMaterialId],
+            });
+          },
+        });
+        break;
+      case 'location':
+        try {
+          await deleteLocation(id, 'material');
+          if (selectedMaterialId) {
+            const res = await listLocations('material', selectedMaterialId);
+            if (
+              res &&
+              res.success &&
+              res.data &&
+              Array.isArray(res.data.locations)
+            ) {
+              setPrevLocations(res.data.locations);
+              materialDetailRef.current?.resetLocations?.(res.data.locations);
+            }
+          }
+        } catch {
+          // 삭제 실패 시 에러 처리
+        }
+        break;
     }
-    setIsDeleteModalOpen(false);
-    setDeleteConnectionId(null);
+
+    setDeleteModalState({ type: null, id: null });
   };
 
   // 모든 제품 코드 가져오기
@@ -390,6 +433,8 @@ const MaterialDetailPanel = ({
           setIsMaterialPackagingDetailModalOpen={
             setIsMaterialPackagingDetailModalOpen
           }
+          setIsCreateSubstituteModalOpen={setIsCreateSubstituteModalOpen}
+          handleOpenDeleteSubstituteModal={handleOpenDeleteSubstituteModal}
         />
       </Panel>
 
@@ -458,42 +503,11 @@ const MaterialDetailPanel = ({
           }}
         />
       )}
-      {/* 제품 연결하기에서 삭제 버튼 누를 시 모달 */}
-      {isDeleteModalOpen && (
+      {/* 통합 삭제 모달 */}
+      {deleteModalState.type !== null && (
         <DeleteModal
-          onClose={() => setIsDeleteModalOpen(false)}
+          onClose={() => setDeleteModalState({ type: null, id: null })}
           onDelete={handleConfirmDelete}
-        />
-      )}
-      {/* 창고 위치 삭제 모달 */}
-      {deleteLocationId !== null && (
-        <DeleteModal
-          onClose={() => {
-            setDeleteLocationId(null);
-          }}
-          onDelete={async () => {
-            try {
-              if (deleteLocationId) {
-                await deleteLocation(deleteLocationId, 'material');
-              }
-              if (selectedMaterialId) {
-                const res = await listLocations('material', selectedMaterialId);
-                if (
-                  res &&
-                  res.success &&
-                  res.data &&
-                  Array.isArray(res.data.locations)
-                ) {
-                  setPrevLocations(res.data.locations);
-                  materialDetailRef.current?.resetLocations?.(
-                    res.data.locations
-                  );
-                }
-              }
-            } finally {
-              setDeleteLocationId(null);
-            }
-          }}
         />
       )}
       {/* 원자재 소분내역 디테일 모달 */}
@@ -531,6 +545,12 @@ const MaterialDetailPanel = ({
             setHasClientBeenModified(true);
           }}
           clientId={selectedClientId}
+        />
+      )}
+      {/* 대체 자재 등록 모달 */}
+      {isCreateSubstituteModalOpen && (
+        <CreateSubstituteModal
+          onClose={() => setIsCreateSubstituteModalOpen(false)}
         />
       )}
     </>

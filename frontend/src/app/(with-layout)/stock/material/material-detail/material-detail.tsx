@@ -57,6 +57,8 @@ interface MaterialDetailProps {
   productWasModified?: boolean; // 제품이 실제로 연결/삭제되었는지
   showToast?: (text: string, subtext: string) => void;
   setIsMaterialPackagingDetailModalOpen: (v: boolean) => void;
+  setIsCreateSubstituteModalOpen: (v: boolean) => void;
+  handleOpenDeleteSubstituteModal: (substituteId: number) => void;
 }
 
 const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
@@ -76,6 +78,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       clientWasModified,
       productWasModified,
       setIsMaterialPackagingDetailModalOpen,
+      setIsCreateSubstituteModalOpen,
+      handleOpenDeleteSubstituteModal,
     },
     ref
   ) => {
@@ -391,7 +395,11 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           />
 
           {/* 대체 가능한 원자재 */}
-          <SubMaterials materialId={materialId} />
+          <SubMaterials
+            materialId={materialId}
+            setIsCreateSubstituteModalOpen={setIsCreateSubstituteModalOpen}
+            handleOpenDeleteSubstituteModal={handleOpenDeleteSubstituteModal}
+          />
 
           {/* 업체별 단가 비교 */}
           <div className="flex flex-col gap-3">
