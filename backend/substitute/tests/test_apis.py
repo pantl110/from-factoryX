@@ -251,12 +251,9 @@ class TestSubstituteAPI(TestCase):
         data = response.json()
         self.assertIn("data", data)
         self.assertIsInstance(data["data"], list)
-        self.assertEqual(len(data["data"]), 1)
+        self.assertEqual(len(data["data"]), 2)  # target_materials가 2개
         
-        substitute = data["data"][0]
-        self.assertEqual(substitute["source_material"]["id"], self.material1.id)
-        self.assertEqual(len(substitute["target_materials"]), 2)
-        target_ids = [m["id"] for m in substitute["target_materials"]]
+        target_ids = [m["id"] for m in data["data"]]
         self.assertIn(self.material2.id, target_ids)
         self.assertIn(self.material3.id, target_ids)
 
@@ -426,19 +423,8 @@ class TestSubstituteAPI(TestCase):
         self.assertIsInstance(data["data"], list)
         self.assertGreater(len(data["data"]), 0)
 
-        substitute = data["data"][0]
-        # source_material 구조 확인
-        source = substitute["source_material"]
-        self.assertIn("id", source)
-        self.assertIn("name", source)
-        self.assertIn("code", source)
-        self.assertIn("unit", source)
-        self.assertIn("spec", source)
-        self.assertIn("current_stock", source)
-        self.assertIn("standard_stock", source)
-
-        # target_materials 구조 확인
-        for material in substitute["target_materials"]:
+        # target_materials 구조 확인 (이제 직접 MaterialSimpleOut 리스트)
+        for material in data["data"]:
             self.assertIn("id", material)
             self.assertIn("name", material)
             self.assertIn("code", material)
@@ -474,7 +460,7 @@ class TestSubstituteAPI(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
-        self.assertEqual(len(data["data"]), 1)  # material1은 source_material이므로 결과 있음
+        self.assertEqual(len(data["data"]), 2)  # material1의 target_materials가 2개
 
     async def test_multiple_source_materials(self):
         """여러 source_material에 대한 관계 생성 테스트"""
@@ -504,5 +490,5 @@ class TestSubstituteAPI(TestCase):
         data4 = response4.json()
         self.assertIn("data", data1)
         self.assertIn("data", data4)
-        self.assertEqual(len(data1["data"]), 1)
-        self.assertEqual(len(data4["data"]), 1)
+        self.assertEqual(len(data1["data"]), 2)  # material1의 target_materials가 2개
+        self.assertEqual(len(data4["data"]), 1)  # material4의 target_materials가 1개

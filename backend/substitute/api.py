@@ -6,6 +6,7 @@ from api.security import jwt_auth
 from substitute.schemas.inbound import SubstituteIn
 from substitute.schemas.outbound import (
     SubstituteDetailOut,
+    MaterialSimpleOut,
 )
 from substitute.models import Substitute
 from stock.models import Material
@@ -96,8 +97,8 @@ async def create_substitute(request, payload: SubstituteIn, factory_id: int = No
 @router.get(
     "/{material_id}",
     summary="[R] 자재의 대체 가능한 자재 조회 (단방향)",
-    description="특정 자재(source_material)의 대체 가능한 자재들을 조회합니다.",
-    response={200: List[SubstituteDetailOut], 400: dict, 404: dict},
+    description="특정 자재(source_material)의 대체 가능한 자재들을 조회합니다. target_materials가 페이지네이션됩니다.",
+    response={200: List[MaterialSimpleOut], 400: dict, 404: dict},
 )
 @paginate
 async def get_substitutes_by_material(
@@ -121,21 +122,22 @@ async def get_substitutes_by_material(
     material = await get_material()
 
     @sync_to_async
-    def get_substitute_relations():
+    def get_target_materials():
         # 해당 자재가 source_material인 대체 자재 관계를 조회 (단방향)
-        substitutes = list(
-            Substitute.objects.filter(
-                source_material=material, factory_id=factory_id
-            )
-            .prefetch_related("target_materials")
-            .select_related("factory", "source_material")
-        )
+        substitute = Substitute.objects.filter(
+            source_material=material, factory_id=factory_id
+        ).first()
 
-        return substitutes
+        if not substitute:
+            # 대체 자재 관계가 없으면 빈 쿼리셋 반환
+            return Material.objects.none()
 
-    substitutes_list = await get_substitute_relations()
+        # target_materials를 QuerySet으로 반환 (페이지네이션을 위해)
+        return substitute.target_materials.all()
 
-    return substitutes_list
+    target_materials = await get_target_materials()
+
+    return target_materials
 
 
 @router.delete(
