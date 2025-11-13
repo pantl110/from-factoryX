@@ -1,5 +1,6 @@
 from ninja import Router
 from ninja.errors import HttpError
+from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from substitute.schemas.inbound import SubstituteIn
@@ -98,6 +99,7 @@ async def create_substitute(request, payload: SubstituteIn, factory_id: int = No
     description="특정 자재(source_material)의 대체 가능한 자재들을 조회합니다.",
     response={200: List[SubstituteDetailOut], 400: dict, 404: dict},
 )
+@paginate
 async def get_substitutes_by_material(
     request, material_id: int, factory_id: int = None
 ):
@@ -133,7 +135,7 @@ async def get_substitutes_by_material(
 
     substitutes_list = await get_substitute_relations()
 
-    return 200, substitutes_list
+    return substitutes_list
 
 
 @router.delete(

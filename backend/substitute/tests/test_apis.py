@@ -249,10 +249,11 @@ class TestSubstituteAPI(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIsInstance(data, list)
-        self.assertEqual(len(data), 1)
+        self.assertIn("data", data)
+        self.assertIsInstance(data["data"], list)
+        self.assertEqual(len(data["data"]), 1)
         
-        substitute = data[0]
+        substitute = data["data"][0]
         self.assertEqual(substitute["source_material"]["id"], self.material1.id)
         self.assertEqual(len(substitute["target_materials"]), 2)
         target_ids = [m["id"] for m in substitute["target_materials"]]
@@ -277,8 +278,9 @@ class TestSubstituteAPI(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIsInstance(data, list)
-        self.assertEqual(len(data), 0)
+        self.assertIn("data", data)
+        self.assertIsInstance(data["data"], list)
+        self.assertEqual(len(data["data"]), 0)
 
     async def test_get_substitutes_by_material_different_factory(self):
         """다른 공장의 자재로 조회 시도 테스트"""
@@ -420,10 +422,11 @@ class TestSubstituteAPI(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIsInstance(data, list)
-        self.assertGreater(len(data), 0)
+        self.assertIn("data", data)
+        self.assertIsInstance(data["data"], list)
+        self.assertGreater(len(data["data"]), 0)
 
-        substitute = data[0]
+        substitute = data["data"][0]
         # source_material 구조 확인
         source = substitute["source_material"]
         self.assertIn("id", source)
@@ -461,7 +464,8 @@ class TestSubstituteAPI(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data), 0)  # material2는 source_material이 아니므로 결과 없음
+        self.assertIn("data", data)
+        self.assertEqual(len(data["data"]), 0)  # material2는 source_material이 아니므로 결과 없음
 
         # material1의 대체 자재 조회 (있어야 함)
         response = await self.client.get(
@@ -469,7 +473,8 @@ class TestSubstituteAPI(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data), 1)  # material1은 source_material이므로 결과 있음
+        self.assertIn("data", data)
+        self.assertEqual(len(data["data"]), 1)  # material1은 source_material이므로 결과 있음
 
     async def test_multiple_source_materials(self):
         """여러 source_material에 대한 관계 생성 테스트"""
@@ -495,5 +500,9 @@ class TestSubstituteAPI(TestCase):
 
         self.assertEqual(response1.status_code, 200)
         self.assertEqual(response4.status_code, 200)
-        self.assertEqual(len(response1.json()), 1)
-        self.assertEqual(len(response4.json()), 1)
+        data1 = response1.json()
+        data4 = response4.json()
+        self.assertIn("data", data1)
+        self.assertIn("data", data4)
+        self.assertEqual(len(data1["data"]), 1)
+        self.assertEqual(len(data4["data"]), 1)
