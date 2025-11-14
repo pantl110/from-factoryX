@@ -133,6 +133,10 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                     "avg_production_time": old_avg_production_time,
                     "status": old_status,
                 }
+                # old_equipment가 있으면 설비 이름도 추가
+                if old_equipment:
+                    old_values["equipment_name"] = old_equipment.name
+                
                 new_values = {
                     "equipment_id": plan.equipment_id,
                     "quantity": plan.quantity,
@@ -141,6 +145,8 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                     "avg_production_time": plan.avg_production_time,
                     "status": plan.status,
                 }
+                # 새 설비 이름도 추가
+                new_values["equipment_name"] = equipment.name
                 create_work_instruction_history(
                     plan=plan,
                     old_start_date=old_start_date,

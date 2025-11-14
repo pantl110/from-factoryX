@@ -194,6 +194,18 @@ def create_work_instruction_history(
             if isinstance(old_value, date):
                 old_value = old_value.isoformat()
             before_data[field] = old_value
+        
+        # equipment_id가 있으면 설비 이름도 함께 저장 (equipment_name이 없을 때만)
+        if 'equipment_id' in before_data and before_data['equipment_id'] and 'equipment_name' not in before_data:
+            try:
+                from factory.models import FactoryEquipment
+                old_equipment = FactoryEquipment.objects.filter(
+                    id=before_data['equipment_id']
+                ).first()
+                if old_equipment:
+                    before_data['equipment_name'] = old_equipment.name
+            except Exception:
+                pass
     
     if new_values:
         for field, new_value in new_values.items():
@@ -204,6 +216,18 @@ def create_work_instruction_history(
             if isinstance(new_value, date):
                 new_value = new_value.isoformat()
             after_data[field] = new_value
+        
+        # equipment_id가 있으면 설비 이름도 함께 저장 (equipment_name이 없을 때만)
+        if 'equipment_id' in after_data and after_data['equipment_id'] and 'equipment_name' not in after_data:
+            try:
+                from factory.models import FactoryEquipment
+                new_equipment = FactoryEquipment.objects.filter(
+                    id=after_data['equipment_id']
+                ).first()
+                if new_equipment:
+                    after_data['equipment_name'] = new_equipment.name
+            except Exception:
+                pass
     
     # 각 WorkInstruction에 대해 history 기록
     for work_instruction in work_instructions:

@@ -273,6 +273,34 @@ async def get_work_instruction_history(
                     plan_dict['project_id'] = project_id
                     plan_dict['product_id'] = product_id
                     plan_dict['equipment_id'] = equipment_id
+                    
+                    # annotate로 가져온 필드들을 추가 (None이어도 포함)
+                    if hasattr(history, 'equipment_name'):
+                        plan_dict['equipment_name'] = history.equipment_name
+                    if hasattr(history, 'product_name'):
+                        plan_dict['product_name'] = history.product_name
+                    
+                    # 변경 전/후 설비 이름 가져오기 (before_data/after_data에서 직접 가져옴)
+                    equipment_name_before = None
+                    if history.before_data and 'equipment_name' in history.before_data:
+                        equipment_name_before = history.before_data['equipment_name']
+                    
+                    equipment_name_after = None
+                    if history.after_data and 'equipment_name' in history.after_data:
+                        equipment_name_after = history.after_data['equipment_name']
+                    elif hasattr(history, 'equipment_name') and history.equipment_name:
+                        # after_data에 없으면 annotate로 가져온 값 사용
+                        equipment_name_after = history.equipment_name
+                    
+                    # 설비 이름 필드 추가
+                    if equipment_name_before:
+                        plan_dict['equipment_name_before'] = equipment_name_before
+                    if equipment_name_after:
+                        plan_dict['equipment_name_after'] = equipment_name_after
+                    # 현재 설비 이름도 유지 (기본값, 변경 후 설비 이름)
+                    if not plan_dict.get('equipment_name') and equipment_name_after:
+                        plan_dict['equipment_name'] = equipment_name_after
+                    
                     if client_name:
                         plan_dict['client_name'] = client_name
                     
