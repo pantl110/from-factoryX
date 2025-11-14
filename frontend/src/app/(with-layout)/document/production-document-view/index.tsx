@@ -107,7 +107,7 @@ const ProductionDocumentView = ({
           onMemoChange={onMemoChange}
         />
       ) : (
-        <LogSection />
+        <LogSection workInstructionId={workInstructioId} />
       )}
     </div>
   );

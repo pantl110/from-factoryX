@@ -152,7 +152,8 @@ export { default as useGetQuotationHistory } from './document/quotation/use-get-
 export { useUpdateQuotationProductDelivery } from './document/quotation/use-update-quotation-product-delivery';
 export { default as useSendQuotationEmail } from './document/quotation/use-send-quotation-email';
 export { default as useGetWorkInstructions } from './document/work-instruction/use-get-work-instructions';
-export { default as useGetWorkInstruction } from './document/use-get-work-instruction';
+export { default as useGetWorkInstruction } from './document/work-instruction/use-get-work-instruction';
+export { useWorkInstructionHistoryQuery } from './document/work-instruction/use-work-instruction-history-query';
 
 // Production related hooks // 생산계획에서 form 유효성 검사 훅
 export { useProductionPlanValidation } from './production/use-production-plan-validation';

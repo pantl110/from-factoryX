@@ -1567,6 +1567,64 @@ export interface SubstituteListResponseModel extends PaginationModel {
   data: MaterialSimpleModel[]; // 페이지네이션된 target_materials 배열
 }
 
+//
+// Work Instruction History API
+// 작업 지시서 변경 이력 응답 타입
+export interface WorkInstructionHistoryPlanModel {
+  id: number;
+  project_id?: number;
+  project?: number;
+  quotation_product_id?: number;
+  equipment_id?: number;
+  equipment?: number;
+  status: string;
+  quantity: number;
+  start_date: string;
+  end_date: string;
+  avg_production_time: number;
+  client_name?: string | null;
+  equipment_name?: string | null;
+  product_name?: string | null;
+  product_code?: string | null;
+  product?: number;
+  material_consumed?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface WorkInstructionHistoryUserModel {
+  id?: number;
+  email: string;
+  username?: string | null;
+  phone_number?: string | null;
+  profile_image?: string | null;
+  status?: string;
+}
+
+// before_data와 after_data의 구조
+export interface WorkInstructionHistoryChangeDataModel {
+  equipment_id?: number;
+  equipment_name?: string | null;
+  quantity?: number;
+  start_date?: string;
+  end_date?: string;
+  status?: string;
+  avg_production_time?: number;
+  product?: number;
+}
+
+export interface WorkInstructionHistoryResponseModel {
+  id: number;
+  action: 'added' | 'updated' | 'removed' | 'memo_updated';
+  work_instruction_id: number;
+  plan: WorkInstructionHistoryPlanModel | null;
+  changed_by: WorkInstructionHistoryUserModel | null;
+  before_data: WorkInstructionHistoryChangeDataModel | null;
+  after_data: WorkInstructionHistoryChangeDataModel | null;
+  created_at: string;
+  updated_at: string;
+}
+
 import {
   MemberRoleType,
   MemberStatusType,

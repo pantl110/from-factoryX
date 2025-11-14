@@ -1,5 +1,9 @@
 // Date & Time utilities
-export { convertUTCToKST, convertUTCToKSTDate } from './timezone';
+export {
+  convertUTCToKST,
+  convertUTCToKSTDate,
+  convertUTCToKSTTime,
+} from './timezone';
 export { formatRelativeTime } from './format-relative-time';
 export { getToday } from './get-today';
 export { getStartDate } from './get-start-date';
