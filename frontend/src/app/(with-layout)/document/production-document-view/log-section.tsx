@@ -218,7 +218,7 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
       {/* 수정 로그 */}
       <div className="flex flex-col">
         <h3 className="Heading-3 mb-3 h-10 flex items-center">
-          생산계획 수정 로그
+          생산계획 수정로그
         </h3>
 
         <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
