@@ -490,3 +490,220 @@ class TestWorkInstructionAPI(TestCase):
 
         self.assertEqual(plan["client_name"], "테스트 클라이언트")
         self.assertEqual(plan["product_name"], "테스트 제품")
+
+    async def test_get_work_instruction_history_success(self):
+        """작업지시서 변경 이력 조회 성공 테스트"""
+        from document.models import WorkInstructionHistory
+        from document.utils import create_work_instruction_memo_history
+        from asgiref.sync import sync_to_async
+        
+        # 메모 수정 이력 생성
+        await sync_to_async(create_work_instruction_memo_history)(
+            work_instruction=self.work_instruction,
+            old_memo="Old memo",
+            new_memo="New memo",
+            changed_by=self.user,
+        )
+        
+        response = await self.client.get(
+            f"/{self.work_instruction.id}/history?factory_id={self.factory.id}",
+            headers=self._get_auth_headers(),
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 1)
+        
+        history = data[0]
+        self.assertEqual(history["action"], "memo_updated")
+        self.assertEqual(history["work_instruction_id"], self.work_instruction.id)
+        self.assertIsNone(history["plan"])  # 메모 수정은 plan이 None
+        self.assertIsNotNone(history["changed_by"])
+        self.assertIn("email", history["changed_by"])
+        self.assertEqual(history["changed_by"]["email"], self.user.email)
+        self.assertIn("before_data", history)
+        self.assertIn("after_data", history)
+        self.assertEqual(history["before_data"]["memo"], "Old memo")
+        self.assertEqual(history["after_data"]["memo"], "New memo")
+
+    async def test_get_work_instruction_history_with_plan(self):
+        """Plan이 포함된 작업지시서 변경 이력 조회 테스트"""
+        from document.models import WorkInstructionHistory
+        from asgiref.sync import sync_to_async
+        
+        # Plan 추가 이력 생성
+        history = await WorkInstructionHistory.objects.acreate(
+            work_instruction=self.work_instruction,
+            plan=self.project_plan,
+            action=WorkInstructionHistory.ActionType.added,
+            changed_by=self.user,
+            before_data={},
+            after_data={
+                "equipment_id": self.equipment.id,
+                "equipment_name": self.equipment.name,
+                "quantity": 100,
+            },
+        )
+        
+        response = await self.client.get(
+            f"/{self.work_instruction.id}/history?factory_id={self.factory.id}",
+            headers=self._get_auth_headers(),
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 1)
+        
+        history_data = data[0]
+        self.assertEqual(history_data["action"], "added")
+        self.assertIsNotNone(history_data["plan"])
+        self.assertEqual(history_data["plan"]["id"], self.project_plan.id)
+        self.assertIn("client_name", history_data["plan"])
+        self.assertIn("product_name", history_data["plan"])
+        self.assertIn("equipment_name", history_data["plan"])
+        self.assertEqual(history_data["plan"]["client_name"], "테스트 클라이언트")
+        self.assertEqual(history_data["plan"]["product_name"], "테스트 제품")
+        self.assertEqual(history_data["plan"]["equipment_name"], "테스트 설비")
+
+    async def test_get_work_instruction_history_empty(self):
+        """이력이 없는 작업지시서 조회 테스트"""
+        response = await self.client.get(
+            f"/{self.work_instruction.id}/history?factory_id={self.factory.id}",
+            headers=self._get_auth_headers(),
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 0)
+
+    async def test_get_work_instruction_history_not_found(self):
+        """존재하지 않는 작업지시서 이력 조회 테스트"""
+        response = await self.client.get(
+            f"/99999/history?factory_id={self.factory.id}",
+            headers=self._get_auth_headers(),
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("작업 지시서를 찾을 수 없습니다.", response.json()["detail"])
+
+    async def test_get_work_instruction_history_missing_factory_id(self):
+        """factory_id 누락 테스트 (이력 조회)"""
+        response = await self.client.get(
+            f"/{self.work_instruction.id}/history",
+            headers=self._get_auth_headers(),
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("factory_id를 입력해야 합니다.", response.json()["detail"])
+
+    async def test_get_work_instruction_history_different_factory(self):
+        """다른 공장의 작업지시서 이력 조회 테스트"""
+        # 다른 사용자와 공장 생성
+        other_user = await User.objects.acreate(
+            username="otheruser3", email="other3@example.com", password="testpass123"
+        )
+        other_factory = await Factory.objects.acreate(
+            name="Other Factory 3", owner=other_user
+        )
+        
+        # 다른 공장에 작업지시서 생성
+        other_work_instruction = await WorkInstruction.objects.acreate(
+            factory=other_factory,
+            memo="Other factory memo",
+        )
+        
+        response = await self.client.get(
+            f"/{other_work_instruction.id}/history?factory_id={self.factory.id}",
+            headers=self._get_auth_headers(),
+        )
+        
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("작업 지시서를 찾을 수 없습니다.", response.json()["detail"])
+
+    async def test_get_work_instruction_history_multiple_histories(self):
+        """여러 이력이 있는 경우 정렬 테스트 (최신순)"""
+        from document.models import WorkInstructionHistory
+        from document.utils import create_work_instruction_memo_history
+        from asgiref.sync import sync_to_async
+        import asyncio
+        
+        # 첫 번째 이력 생성
+        await sync_to_async(create_work_instruction_memo_history)(
+            work_instruction=self.work_instruction,
+            old_memo="First old",
+            new_memo="First new",
+            changed_by=self.user,
+        )
+        
+        # 약간의 지연 후 두 번째 이력 생성
+        await asyncio.sleep(0.1)
+        
+        await sync_to_async(create_work_instruction_memo_history)(
+            work_instruction=self.work_instruction,
+            old_memo="Second old",
+            new_memo="Second new",
+            changed_by=self.user,
+        )
+        
+        response = await self.client.get(
+            f"/{self.work_instruction.id}/history?factory_id={self.factory.id}",
+            headers=self._get_auth_headers(),
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        
+        # 최신 것이 먼저 나와야 함
+        self.assertEqual(data[0]["after_data"]["memo"], "Second new")
+        self.assertEqual(data[1]["after_data"]["memo"], "First new")
+
+    async def test_get_work_instruction_history_with_equipment_name_in_before_after(self):
+        """before_data/after_data에 equipment_name이 포함된 경우 테스트"""
+        from document.models import WorkInstructionHistory
+        
+        # equipment_name이 before_data와 after_data에 포함된 이력 생성
+        history = await WorkInstructionHistory.objects.acreate(
+            work_instruction=self.work_instruction,
+            plan=self.project_plan,
+            action=WorkInstructionHistory.ActionType.updated,
+            changed_by=self.user,
+            before_data={
+                "equipment_id": self.equipment.id,
+                "equipment_name": "이전 설비",
+            },
+            after_data={
+                "equipment_id": self.equipment.id,
+                "equipment_name": "테스트 설비",
+            },
+        )
+        
+        response = await self.client.get(
+            f"/{self.work_instruction.id}/history?factory_id={self.factory.id}",
+            headers=self._get_auth_headers(),
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 1)
+        
+        history_data = data[0]
+        plan_data = history_data["plan"]
+        
+        # before_data와 after_data 확인
+        self.assertIn("before_data", history_data)
+        self.assertIn("after_data", history_data)
+        self.assertEqual(history_data["before_data"]["equipment_name"], "이전 설비")
+        self.assertEqual(history_data["after_data"]["equipment_name"], "테스트 설비")
+        
+        # equipment_name_before와 equipment_name_after가 포함되어야 함 (값이 있을 때만)
+        if "equipment_name_before" in plan_data:
+            self.assertEqual(plan_data["equipment_name_before"], "이전 설비")
+        if "equipment_name_after" in plan_data:
+            self.assertEqual(plan_data["equipment_name_after"], "테스트 설비")
+        
+        # 기본 equipment_name은 annotate로 가져온 값 또는 after_data의 값
+        self.assertIn("equipment_name", plan_data)
