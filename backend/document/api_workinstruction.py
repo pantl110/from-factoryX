@@ -229,6 +229,8 @@ async def get_work_instruction_history(
             work_instruction_id=work_instruction_id
         ).select_related(
             "changed_by",
+            "plan",
+            "plan__product",
             "plan__product__product",
             "plan__project",
             "plan__equipment",
@@ -249,15 +251,26 @@ async def get_work_instruction_history(
             plan_data = None
             if history.plan:
                 from document.schemas.outbound import ProjectPlanDetailModelOut
-                # client_name은 client_info에서 가져오기
-                if history.plan.project:
-                    quotation = history.plan.project.quotations.first()
-                    if quotation and quotation.client_info and isinstance(quotation.client_info, dict):
-                        history.plan.client_name = quotation.client_info.get("name")
-                    elif quotation and quotation.client:
-                        history.plan.client_name = quotation.client.name
-                
-                plan_data = ProjectPlanDetailModelOut.from_orm(history.plan).dict()
+                try:
+                    # plan의 관계 필드들이 제대로 로드되었는지 확인
+                    # 필요한 필드들을 접근하여 로드 확인
+                    _ = history.plan.project_id
+                    _ = history.plan.product_id
+                    _ = history.plan.equipment_id
+                    
+                    # client_name은 client_info에서 가져오기
+                    if history.plan.project:
+                        quotation = history.plan.project.quotations.first()
+                        if quotation and quotation.client_info and isinstance(quotation.client_info, dict):
+                            history.plan.client_name = quotation.client_info.get("name")
+                        elif quotation and quotation.client:
+                            history.plan.client_name = quotation.client.name
+                    
+                    plan_data = ProjectPlanDetailModelOut.from_orm(history.plan).dict()
+                except Exception as e:
+                    # plan이 삭제되었거나 관계 필드에 접근할 수 없는 경우
+                    # before_data나 after_data에서 정보를 가져올 수 있음
+                    plan_data = None
             
             # changed_by를 UserMeOut 형태로 변환
             changed_by_data = None
