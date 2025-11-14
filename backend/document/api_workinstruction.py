@@ -254,19 +254,29 @@ async def get_work_instruction_history(
                 try:
                     # plan의 관계 필드들이 제대로 로드되었는지 확인
                     # 필요한 필드들을 접근하여 로드 확인
-                    _ = history.plan.project_id
-                    _ = history.plan.product_id
-                    _ = history.plan.equipment_id
+                    project_id = history.plan.project_id
+                    product_id = history.plan.product_id
+                    equipment_id = history.plan.equipment_id
                     
                     # client_name은 client_info에서 가져오기
+                    client_name = None
                     if history.plan.project:
                         quotation = history.plan.project.quotations.first()
                         if quotation and quotation.client_info and isinstance(quotation.client_info, dict):
-                            history.plan.client_name = quotation.client_info.get("name")
+                            client_name = quotation.client_info.get("name")
                         elif quotation and quotation.client:
-                            history.plan.client_name = quotation.client.name
+                            client_name = quotation.client.name
                     
-                    plan_data = ProjectPlanDetailModelOut.from_orm(history.plan).dict()
+                    # from_orm을 사용하면 _id 필드가 누락될 수 있으므로 수동으로 dict 구성
+                    plan_dict = ProjectPlanDetailModelOut.from_orm(history.plan).dict()
+                    # 필수 ForeignKey 필드들을 명시적으로 추가
+                    plan_dict['project_id'] = project_id
+                    plan_dict['product_id'] = product_id
+                    plan_dict['equipment_id'] = equipment_id
+                    if client_name:
+                        plan_dict['client_name'] = client_name
+                    
+                    plan_data = plan_dict
                 except Exception as e:
                     # plan이 삭제되었거나 관계 필드에 접근할 수 없는 경우
                     # before_data나 after_data에서 정보를 가져올 수 있음
