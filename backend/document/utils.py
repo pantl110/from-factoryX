@@ -158,8 +158,9 @@ def create_work_instruction_history(
         # 오늘 시작하는 plan이 수정되어서 오늘 시작이 아니게 바뀌면 -> 삭제
         action = WorkInstructionHistory.ActionType.removed
     elif old_start_date_is_today and new_start_date_is_today:
-        # 오늘 시작하는 plan이 수정되면 -> 수정
-        action = WorkInstructionHistory.ActionType.updated
+        # 오늘 시작하는 plan이 수정되어서 생산지시서에 들어오면 -> 추가 (수정이 아님)
+        # Plan이 처음으로 생산지시서에 들어올 때는 항상 "추가"로 기록
+        action = WorkInstructionHistory.ActionType.added
     elif old_start_date is None and new_start_date_is_today:
         # Plan이 새로 생성되어서 오늘 시작하게 되면 -> 추가
         action = WorkInstructionHistory.ActionType.added
@@ -168,7 +169,7 @@ def create_work_instruction_history(
         return
     
     # 해당 Plan이 연결된 WorkInstruction 찾기
-    # 추가/수정의 경우: new_start_date 기준으로 WorkInstruction 찾기
+    # 추가의 경우: new_start_date 기준으로 WorkInstruction 찾기
     # 삭제의 경우: old_start_date 기준으로 WorkInstruction 찾기
     target_date = new_start_date.date() if new_start_date_is_today else (old_start_date.date() if old_start_date else today)
     
