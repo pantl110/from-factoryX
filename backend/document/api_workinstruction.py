@@ -7,12 +7,14 @@ from document.schemas.outbound import (
     WorkInstructionModelOut,
     WorkInstructionDetailModelOut,
 )
-from document.models import WorkInstruction
+from document.models import WorkInstruction, WorkInstructionHistory
 from django.db import models
 from django.db.models import Prefetch, F
 from project.models import ProjectPlan
 from factory.utils import is_factory_member
 from document.schemas.inbound import WorkInstructionUpdateIn
+from document.schemas.outbound import WorkInstructionHistoryOut
+from document.utils import create_work_instruction_memo_history
 
 
 router = Router(
@@ -47,7 +49,6 @@ async def get_work_instructions(
                 queryset=ProjectPlan.objects.select_related("product__product")
                 .prefetch_related("project__quotations__client")
                 .annotate(
-                    client_name=F("project__quotations__client__name"),
                     product_name=F("product__product__name"),
                 ),
             )
@@ -62,7 +63,20 @@ async def get_work_instructions(
 
         if order_by:
             queryset = queryset.order_by(order_by)
-        return list(queryset)
+        
+        work_instructions = list(queryset)
+        
+        # client_name은 client_info에서 가져오기
+        for work_instruction in work_instructions:
+            for plan in work_instruction.plans.all():
+                if plan.project:
+                    quotation = plan.project.quotations.first()
+                    if quotation and quotation.client_info and isinstance(quotation.client_info, dict):
+                        plan.client_name = quotation.client_info.get("name")
+                    elif quotation and quotation.client:
+                        plan.client_name = quotation.client.name
+        
+        return work_instructions
 
     work_instructions = await work_instructions_list()
     return work_instructions
@@ -84,13 +98,12 @@ async def get_work_instruction(request, work_instruction_id: int):
     @sync_to_async
     def get_work_instruction_detail():
         try:
-            return WorkInstruction.objects.prefetch_related(
+            work_instruction = WorkInstruction.objects.prefetch_related(
                 Prefetch(
                     "plans",
                     queryset=ProjectPlan.objects.select_related("product__product")
                     .prefetch_related("project__quotations__client")
                     .annotate(
-                        client_name=F("project__quotations__client__name"),
                         equipment_name=F("equipment__name"),
                         product_name=F("product__product__name"),
                         product_code=F("product__product__code"),
@@ -100,6 +113,17 @@ async def get_work_instruction(request, work_instruction_id: int):
                     ),
                 )
             ).get(id=work_instruction_id, factory_id=factory_id)
+            
+            # client_name은 client_info에서 가져오기
+            for plan in work_instruction.plans.all():
+                if plan.project:
+                    quotation = plan.project.quotations.first()
+                    if quotation and quotation.client_info and isinstance(quotation.client_info, dict):
+                        plan.client_name = quotation.client_info.get("name")
+                    elif quotation and quotation.client:
+                        plan.client_name = quotation.client.name
+            
+            return work_instruction
         except WorkInstruction.DoesNotExist:
             raise HttpError(404, "작업 지시서를 찾을 수 없습니다.")
 
@@ -109,8 +133,8 @@ async def get_work_instruction(request, work_instruction_id: int):
 
 @router.patch(
     "/{work_instruction_id}",
-    summary="[C] 작업 지시서 완료 처리",
-    description="작업 지시서를 완료 처리합니다.",
+    summary="[C] 작업 지시서 수정",
+    description="작업 지시서를 수정합니다.",
     response=WorkInstructionDetailModelOut,
 )
 async def update_work_instruction(
@@ -131,7 +155,6 @@ async def update_work_instruction(
                     queryset=ProjectPlan.objects.select_related("product__product")
                     .prefetch_related("project__quotations__client")
                     .annotate(
-                        client_name=F("project__quotations__client__name"),
                         product_name=F("product__product__name"),
                         product_code=F("product__product__code"),
                         product_unit=F("product__product__unit"),
@@ -139,12 +162,122 @@ async def update_work_instruction(
                     ),
                 )
             ).get(id=work_instruction_id, factory_id=factory_id)
+            
+            # 메모 수정 전 값 저장
+            old_memo = work_instruction.memo
+            
+            # 값 업데이트
             for attr, value in payload.dict(exclude_unset=True).items():
                 setattr(work_instruction, attr, value)
             work_instruction.save()
+            
+            # 메모가 수정된 경우 history 기록
+            if "memo" in payload.dict(exclude_unset=True) and old_memo != work_instruction.memo:
+                create_work_instruction_memo_history(
+                    work_instruction=work_instruction,
+                    old_memo=old_memo,
+                    new_memo=work_instruction.memo,
+                    changed_by=user,
+                )
+            
+            # client_name은 client_info에서 가져오기
+            for plan in work_instruction.plans.all():
+                if plan.project:
+                    quotation = plan.project.quotations.first()
+                    if quotation and quotation.client_info and isinstance(quotation.client_info, dict):
+                        plan.client_name = quotation.client_info.get("name")
+                    elif quotation and quotation.client:
+                        plan.client_name = quotation.client.name
+            
             return work_instruction
         except WorkInstruction.DoesNotExist:
             raise HttpError(404, "작업 지시서를 찾을 수 없습니다.")
 
     work_instruction = await mark_work_instruction_complete()
     return work_instruction
+
+
+@router.get(
+    "/{work_instruction_id}/history",
+    summary="[C] 작업 지시서 변경 이력 조회",
+    description="작업 지시서의 변경 이력을 조회합니다.",
+    response=list[WorkInstructionHistoryOut],
+)
+async def get_work_instruction_history(
+    request, work_instruction_id: int
+):
+    user = request.auth
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+    await is_factory_member(factory_id, user)
+
+    @sync_to_async
+    def get_history():
+        try:
+            # WorkInstruction 존재 확인
+            work_instruction = WorkInstruction.objects.get(
+                id=work_instruction_id, factory_id=factory_id
+            )
+        except WorkInstruction.DoesNotExist:
+            raise HttpError(404, "작업 지시서를 찾을 수 없습니다.")
+
+        # History 조회 (plan 관련 정보도 함께 가져오기)
+        from django.db.models import F
+        
+        histories = WorkInstructionHistory.objects.filter(
+            work_instruction_id=work_instruction_id
+        ).select_related(
+            "changed_by",
+            "plan__product__product",
+            "plan__project",
+            "plan__equipment",
+        ).prefetch_related(
+            "plan__project__quotations",
+        ).annotate(
+            equipment_name=F("plan__equipment__name"),
+            product_name=F("plan__product__product__name"),
+            product_code=F("plan__product__product__code"),
+            product_unit=F("plan__product__product__unit"),
+            product_spec=F("plan__product__product__spec"),
+            product_note=F("plan__product__product__note"),
+        ).order_by("-created_at")
+
+        result = []
+        for history in histories:
+            # plan 객체를 ProjectPlanDetailModelOut 형태로 변환
+            plan_data = None
+            if history.plan:
+                from document.schemas.outbound import ProjectPlanDetailModelOut
+                # client_name은 client_info에서 가져오기
+                if history.plan.project:
+                    quotation = history.plan.project.quotations.first()
+                    if quotation and quotation.client_info and isinstance(quotation.client_info, dict):
+                        history.plan.client_name = quotation.client_info.get("name")
+                    elif quotation and quotation.client:
+                        history.plan.client_name = quotation.client.name
+                
+                plan_data = ProjectPlanDetailModelOut.from_orm(history.plan).dict()
+            
+            # changed_by를 UserMeOut 형태로 변환
+            changed_by_data = None
+            if history.changed_by:
+                from user.schemas.outbound import UserMeOut
+                changed_by_data = UserMeOut.from_orm(history.changed_by).dict()
+            
+            result.append({
+                "id": history.id,
+                "action": history.action,
+                "work_instruction_id": history.work_instruction_id,
+                "plan": plan_data,
+                "changed_by": changed_by_data,
+                "before_data": history.before_data,
+                "after_data": history.after_data,
+                "created_at": history.created_at,
+                "updated_at": history.updated_at,
+            })
+        
+        return result
+
+    history_list = await get_history()
+    return history_list

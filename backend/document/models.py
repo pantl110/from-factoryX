@@ -117,3 +117,53 @@ class WorkInstruction(BaseModel):
         help_text="과거 생산 계획 스냅샷 (불변, 아카이브된 데이터)",
     )
     memo = models.TextField(help_text="메모", null=True, blank=True)
+
+
+class WorkInstructionHistory(BaseModel):
+    """생산지시서에 연결된 Plan 변경 이력"""
+    
+    class ActionType(models.TextChoices):
+        added = ("added", "추가")
+        updated = ("updated", "수정")
+        removed = ("removed", "삭제")
+        memo_updated = ("memo_updated", "메모 수정")
+    
+    work_instruction = models.ForeignKey(
+        WorkInstruction,
+        on_delete=models.CASCADE,
+        related_name="histories",
+        help_text="생산지시서",
+    )
+    plan = models.ForeignKey(
+        "project.ProjectPlan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="work_instruction_histories",
+        help_text="생산 계획 (삭제된 경우 null)",
+    )
+    action = models.CharField(
+        max_length=20,
+        choices=ActionType.choices,
+        help_text="변경 유형 (추가/수정/삭제/메모 수정)",
+    )
+    changed_by = models.ForeignKey(
+        "user.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="work_instruction_histories",
+        help_text="변경한 사용자",
+    )
+    before_data = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="변경 전 데이터",
+    )
+    after_data = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="변경 후 데이터",
+    )

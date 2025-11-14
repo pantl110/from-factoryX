@@ -2,10 +2,11 @@ from ninja import Schema, ModelSchema, Field
 from typing import List, Optional
 from datetime import datetime
 from pydantic import field_validator
-from document.models import Quotation, QuotationProduct, WorkInstruction
+from document.models import Quotation, QuotationProduct, WorkInstruction, WorkInstructionHistory
 from stock.models import Product
 from factory.models import FactoryClient
 from project.models import ProjectPlan
+from user.schemas.outbound import UserMeOut
 
 
 # Quotation Product Detail
@@ -215,3 +216,15 @@ class WorkInstructionDetailModelOut(ModelSchema):
     class Meta:
         model = WorkInstruction
         fields = "__all__"
+
+
+class WorkInstructionHistoryOut(Schema):
+    id: int
+    work_instruction_id: int
+    action: WorkInstructionHistory.ActionType
+    plan: Optional[ProjectPlanDetailModelOut] = None
+    changed_by: Optional[UserMeOut] = None
+    before_data: Optional[dict] = None
+    after_data: Optional[dict] = None
+    created_at: datetime
+    updated_at: datetime

@@ -36,119 +36,10 @@ from factory.eq_utils import get_equipment_by_id
 from project.plan_utils import get_plan_by_id
 from django.utils import timezone
 from scheduling.api import update_work_instruction_for_factory
+from document.utils import create_work_instruction_history
 
 
 router = Router(tags=["ProjectPlan"], auth=jwt_auth)
-
-# @router.post(
-#     "",
-#     summary="[C] 프로젝트 생산 계획 생성",
-#     description="프로젝트에 연결된 견적서 품목들을 기반으로 생산 계획을 생성합니다.",
-#     response={200: ProjectPlansCreateOut, 400: dict, 404: dict, 500: dict},
-# )
-# async def create_project_plans(request, payload: ProjectPlanCreateIn):
-#     factory_id = request.GET.get("factory_id")
-#     if not factory_id:
-#         raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-#     user = request.auth
-#     await is_factory_member(int(factory_id), user)
-
-#     try:
-#         project = await Project.objects.aget(id=payload.project_id)
-#     except Project.DoesNotExist:
-#         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
-
-#     try:
-#         quotation = await Quotation.objects.aget(project=project)
-#     except Quotation.DoesNotExist:
-#         raise HttpError(404, "해당 프로젝트에 연결된 견적서를 찾을 수 없습니다.")
-
-#     quotation_products = await sync_to_async(list)(
-#         QuotationProduct.objects.filter(
-#             id__in=payload.quotation_product_ids, quotation=quotation
-#         )
-#     )
-
-#     if len(quotation_products) != len(payload.quotation_product_ids):
-#         raise HttpError(400, "일부 견적서 품목을 찾을 수 없습니다.")
-
-#     factory_id = quotation.factory_id
-#     if not factory_id:
-#         raise HttpError(400, "견적서에 연결된 공장 정보가 없습니다.")
-#     factory = await Factory.objects.aget(id=factory_id)
-
-#     equipments = await sync_to_async(list)(
-#         FactoryEquipment.objects.filter(factory=factory)
-#     )
-
-#     if not equipments:
-#         raise HttpError(400, "해당 공장에 등록된 설비가 없습니다.")
-
-#     if payload.equipment_ids:
-#         valid_equipment_ids = [eq.id for eq in equipments]
-#         for equipment_id in payload.equipment_ids:
-#             if equipment_id not in valid_equipment_ids:
-#                 raise HttpError(400, f"설비 ID {equipment_id}를 찾을 수 없습니다.")
-
-#     # 6. 생산 계획 생성
-#     for i, quotation_product in enumerate(quotation_products):
-#         # 필수 입력값 검증
-#         if not payload.production_quantities or i >= len(payload.production_quantities):
-#             raise HttpError(400, f"품목 {i+1}의 생산 수량이 필요합니다.")
-#         if not payload.equipment_ids or i >= len(payload.equipment_ids):
-#             raise HttpError(400, f"품목 {i+1}의 설비 ID가 필요합니다.")
-#         if not payload.start_dates or i >= len(payload.start_dates):
-#             raise HttpError(400, f"품목 {i+1}의 시작일이 필요합니다.")
-#         if not payload.end_dates or i >= len(payload.end_dates):
-#             raise HttpError(400, f"품목 {i+1}의 종료일이 필요합니다.")
-#         if not payload.avg_production_times or i >= len(payload.avg_production_times):
-#             raise HttpError(400, f"품목 {i+1}의 평균 생산 시간이 필요합니다.")
-
-#         # 사용자 입력값 사용
-#         production_quantity = payload.production_quantities[i]
-#         equipment_id = payload.equipment_ids[i]
-#         start_date = payload.start_dates[i]
-#         end_date = payload.end_dates[i]
-#         avg_production_time = payload.avg_production_times[i]
-
-#         # 설비 검증
-#         equipment = next((eq for eq in equipments if eq.id == equipment_id), None)
-#         if not equipment:
-#             raise HttpError(400, f"설비 ID {equipment_id}를 찾을 수 없습니다.")
-
-#         # 버퍼 레이트 업데이트
-#         if production_quantity >= quotation_product.quantity:
-#             new_buffer_rate = (production_quantity / quotation_product.quantity) - 1
-#             quotation_product.product.buffer_rate = new_buffer_rate
-#             await quotation_product.product.asave()
-
-#         # ProjectPlan 생성 (생산 수량)
-#         plan = await ProjectPlan.objects.acreate(
-#             project=project,
-#             product=quotation_product,
-#             equipment=equipment,
-#             quantity=production_quantity,
-#             start_date=start_date,
-#             end_date=end_date,
-#             avg_production_time=avg_production_time,
-#         )
-
-#     return 200, ProjectPlansCreateOut(
-#         message=f"생산 계획이 성공적으로 생성되었습니다.",
-#         plan=ProjectPlanDetailOut(
-#             id=plan.id,
-#             project_id=plan.project.id,
-#             quotation_product_id=plan.product.id,
-#             equipment_id=plan.equipment.id,
-#             status=plan.status,
-#             quantity=plan.quantity,
-#             start_date=plan.start_date,
-#             end_date=plan.end_date,
-#             avg_production_time=plan.avg_production_time,
-#         ),
-#     )
-
 
 @router.post(
     "/create-or-update",
@@ -208,8 +99,13 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 else None
             )
 
-            # 생산 일자 변경 감지를 위한 이전 값 저장
+            # 이전 값 저장
             old_start_date = plan.start_date
+            old_equipment_id = plan.equipment_id
+            old_quantity = plan.quantity
+            old_end_date = plan.end_date
+            old_avg_production_time = plan.avg_production_time
+            old_status = plan.status
 
             # 값 수정
             plan.equipment = equipment
@@ -225,6 +121,36 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             # 오늘 생산하는 Plan이면 WorkInstruction 갱신
             if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
                 await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
+            
+            # WorkInstruction history 기록
+            @sync_to_async
+            def record_history():
+                old_values = {
+                    "equipment_id": old_equipment_id,
+                    "quantity": old_quantity,
+                    "start_date": old_start_date,
+                    "end_date": old_end_date,
+                    "avg_production_time": old_avg_production_time,
+                    "status": old_status,
+                }
+                new_values = {
+                    "equipment_id": plan.equipment_id,
+                    "quantity": plan.quantity,
+                    "start_date": plan.start_date,
+                    "end_date": plan.end_date,
+                    "avg_production_time": plan.avg_production_time,
+                    "status": plan.status,
+                }
+                create_work_instruction_history(
+                    plan=plan,
+                    old_start_date=old_start_date,
+                    new_start_date=plan.start_date,
+                    changed_by=user,
+                    old_values=old_values,
+                    new_values=new_values,
+                )
+            
+            await record_history()
 
             # 수량이 주문 수량보다 작을 때 자동 분할 처리
             # if payload.quantity < quotation_product.quantity:
@@ -362,6 +288,28 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
         # 오늘 생산하는 Plan이면 WorkInstruction 갱신
         if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
             await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
+            
+            # WorkInstruction history 기록 (추가)
+            @sync_to_async
+            def record_creation_history():
+                new_values = {
+                    "equipment_id": plan.equipment_id,
+                    "quantity": plan.quantity,
+                    "start_date": plan.start_date,
+                    "end_date": plan.end_date,
+                    "avg_production_time": plan.avg_production_time,
+                    "status": plan.status,
+                }
+                create_work_instruction_history(
+                    plan=plan,
+                    old_start_date=None,
+                    new_start_date=plan.start_date,
+                    changed_by=user,
+                    old_values=None,
+                    new_values=new_values,
+                )
+            
+            await record_creation_history()
 
         return 200, ProjectPlanCreateOrUpdateOut(
             message="프로젝트 생산 계획이 성공적으로 생성되었습니다.",
@@ -901,98 +849,6 @@ async def list_project_plans(request, project_id: int):
     return 200, plans_detail_list
 
 
-# @router.patch(
-#     "/{plan_id}",
-#     summary="[C] 프로젝트 생산 계획 수정",
-#     description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다. 수량 수정 시 견적서 수량과 일치하도록 자동으로 분할됩니다.",
-#     response={200: dict, 400: dict, 404: dict, 500: dict},
-# )
-# async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn):
-#     factory_id = request.GET.get("factory_id")
-#     if not factory_id:
-#         raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-#     user = request.auth
-#     await is_factory_member(int(factory_id), user)
-
-#     plan = await get_plan_by_id(plan_id)
-
-#     data = payload.dict(exclude_unset=True)
-
-#     # 완료된 생산 계획은 수정 불가
-#     if plan.status == ProjectPlan.ProductionStatus.completed:
-#         raise HttpError(400, "완료된 생산 계획은 수정할 수 없습니다.")
-
-#     old_equipment = (
-#         await FactoryEquipment.objects.aget(id=plan.equipment_id)
-#         if plan.equipment_id
-#         else None
-#     )
-
-#     # 생산 일자 변경 감지를 위한 이전 값 저장
-#     old_start_date = plan.start_date
-
-#     equipment_id = data.pop("equipment_id", None)
-#     if equipment_id:
-#         equipment = await get_equipment_by_id(equipment_id, factory_id)
-#         plan.equipment = equipment
-
-#     await update_quantity(plan, payload, factory_id)
-
-#     # 값 수정
-#     for field, value in data.items():
-#         setattr(plan, field, value)
-
-#     await plan.asave()
-
-#     # 설비 변경 로그
-#     if (
-#         payload.equipment_id is not None
-#         and old_equipment
-#         and plan.equipment
-#         and old_equipment.id != plan.equipment.id
-#         and plan.status == ProjectPlan.ProductionStatus.production
-#     ):  # 가동 중 상태 확인
-#         await ProjectLog.objects.acreate(
-#             project=plan.project,
-#             type=ProjectLog.LogType.date,
-#             title="생산 설비 변경",
-#             content=f"사용 설비가 {old_equipment.name}라인에서 {plan.equipment.name}라인으로 변경되었어요",
-#         )
-
-#     # 생산 일자 변경 로그
-#     if payload.start_date is not None and old_start_date != plan.start_date:
-#         change_message = f"생산일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
-
-#         await ProjectLog.objects.acreate(
-#             project=plan.project,
-#             type=ProjectLog.LogType.date,
-#             title="생산일자 변경",
-#             content=change_message,
-#         )
-
-#     # 알림 전송
-#     if (payload.start_date and payload.start_date.date() == timezone.now().date()) or (
-#         old_start_date and old_start_date.date() == timezone.now().date()
-#     ):
-#         await send_notification_to_factory(
-#             factory_id=int(factory_id),
-#             notification_type="information",
-#             notification_case="production_schedule_changed",
-#             content=f"'{plan.project.name}'의 생산 일정이 변경되었어요.",
-#             additional_data={"plan_id": plan.id},
-#         )
-
-#     # 버퍼 레이트 업데이트
-#     if payload.quantity is not None:
-#         if payload.quantity >= plan.product.quantity:
-#             new_buffer_rate = (payload.quantity / plan.product.quantity) - 1
-#             plan.product.product.buffer_rate = new_buffer_rate
-#             await plan.product.product.asave()
-
-#     return 200, {"message": "프로젝트 생산 계획이 성공적으로 수정되었습니다."}
-
-
 @router.delete(
     "/{plan_id}",
     summary="[C] 프로젝트 생산 계획 삭제",
@@ -1012,8 +868,29 @@ async def delete_project_plan(request, plan_id: int):
     except ProjectPlan.DoesNotExist:
         raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
 
-    # 삭제 전에 오늘 생산하는 Plan이면 WorkInstruction 갱신
+    # 삭제 전에 오늘 생산하는 Plan이면 WorkInstruction 갱신 및 history 기록
     if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
+        # WorkInstruction history 기록 (삭제)
+        @sync_to_async
+        def record_deletion_history():
+            old_values = {
+                "equipment_id": plan.equipment_id,
+                "quantity": plan.quantity,
+                "start_date": plan.start_date,
+                "end_date": plan.end_date,
+                "avg_production_time": plan.avg_production_time,
+                "status": plan.status,
+            }
+            create_work_instruction_history(
+                plan=plan,
+                old_start_date=plan.start_date,
+                new_start_date=None,
+                changed_by=user,
+                old_values=old_values,
+                new_values=None,
+            )
+        
+        await record_deletion_history()
         await sync_to_async(update_work_instruction_for_factory)(plan.equipment.factory_id)
 
     await plan.adelete()
