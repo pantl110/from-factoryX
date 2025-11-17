@@ -6,8 +6,10 @@ from api.pagination import CustomPageNumberPagination
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.utils import timezone
+from django.conf import settings
+import pytz
 
 from document.models import Quotation, QuotationProduct
 from document.schemas.inbound import (
@@ -643,6 +645,77 @@ async def list_undelivered_quotation_products(request):
                 {
                     "company_name": qp.quotation.client.name,  # 업체명
                     "product_name": qp.product.name,  # 품목명
+                    "delivery_date": (
+                        qp.delivery_date.isoformat() if qp.delivery_date else None
+                    ),  # 납품일자
+                    "project_id": qp.quotation.project.id,  # 프로젝트 ID
+                }
+            )
+
+        return results
+
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, f"조회 중 오류가 발생했습니다: {str(e)}")
+
+
+@router.get(
+    "/undelivered-within-week",
+    summary="[C] 일주일 이내 납품 예정 미완료 견적서 품목 조회 (모바일)",
+    description="납품기한이 일주일 이내이고 납품완료되지 않은 견적서 품목을 조회합니다. 프로젝트 상태는 생산대기, 생산중, 생산완료, 납품인 것만 조회합니다. 페이지네이션 없이 전체 결과를 반환합니다.",
+    response={
+        200: list[UndeliveredQuotationProductOut],
+        400: dict,
+        500: dict,
+    },
+)
+async def list_undelivered_quotation_products_within_week(request):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        # 오늘부터 일주일 후까지의 날짜 범위 (프로그램 시간대 기준)
+        # 과거 납기일이었지만 아직 납품되지 않은 것도 모두 포함
+        today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+        week_later = today + timedelta(days=7)
+        
+        # 견적서 품목 조회
+        # 조건:
+        # - 프로젝트 상태: 생산대기(pending), 생산중(production), 생산완료(manufactured), 납품(delivery)
+        # - 납품완료되지 않음 (is_delivery=False)
+        # - 납품일자가 오늘부터 일주일 이내 (과거 납기일 포함)
+        undelivered_products = await sync_to_async(list)(
+            QuotationProduct.objects.select_related(
+                "quotation__client", "quotation__project", "product"
+            )
+            .filter(
+                quotation__factory_id=int(factory_id),
+                quotation__project__status__in=[
+                    "pending",      # 생산 대기
+                    "production",  # 생산 중
+                    "manufactured", # 생산 완료
+                    "delivery",     # 납품
+                ],
+                is_delivery=False,  # 납품완료되지 않음
+                delivery_date__lte=week_later,  # 오늘부터 일주일 이내 (과거 포함)
+            )
+            .order_by("delivery_date")  # 납품일자 순으로 정렬
+        )
+
+        # 응답 데이터 구성
+        results = []
+        for qp in undelivered_products:
+            results.append(
+                {
+                    "company_name": qp.quotation.client.name,  # 업체명
+                    "product_name": qp.product.name,  # 품목명
+                    "product_code": qp.product.code,  # 품목코드
+                    "quantity": qp.quantity,  # 수량
                     "delivery_date": (
                         qp.delivery_date.isoformat() if qp.delivery_date else None
                     ),  # 납품일자
