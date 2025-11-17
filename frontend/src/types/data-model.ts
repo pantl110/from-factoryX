@@ -879,6 +879,9 @@ export interface QuotationProductResponseModel {
 export interface UndeliveredProductModel {
   company_name: string;
   product_name: string;
+  product_code?: string; // 품목코드
+  product_unit?: string; // 품목 단위
+  quantity?: number; // 수량
   delivery_date: string | null;
   project_id: number;
 }

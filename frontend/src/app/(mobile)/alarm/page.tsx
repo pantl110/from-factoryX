@@ -3,9 +3,9 @@
 import Topbar from '../topbar';
 import Tabbar from './tabbar';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import DueDate from './due-date';
-import PaymentDue from './payment-due';
+// import PaymentDue from './payment-due';
 import Expiry from './expiry';
 import ConfirmationRequired from './confirmation-required';
 import Rop from './rop';
@@ -30,17 +30,15 @@ const AlarmContent = () => {
       case 'all':
       default:
         return (
-          <>
-            <DueDate />
-            <div className="h-1 bg-bg" />
+          <div className="flex flex-col pb-6">
+            <DueDate hideWhenEmpty withDivider limit={5} />
             {/* <PaymentDue /> */}
             {/* <div className="h-1 bg-bg" /> */}
-            <Rop />
-            <div className="h-1 bg-bg" />
+            <Rop hideWhenEmpty withDivider limit={5} />
             <Expiry />
             <div className="h-1 bg-bg" />
             <ConfirmationRequired />
-          </>
+          </div>
         );
     }
   };

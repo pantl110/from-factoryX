@@ -1,29 +1,80 @@
+import InfoDetail from './info-detail';
 import { LabelInfo } from './label-info';
+import { ProjectQuotationProductsModel } from '@/types/data-model';
 
 interface DeliveryInfoProps {
   isOrderPage?: boolean;
+  address?: string | null;
+  products?: ProjectQuotationProductsModel[];
+  dueDate?: string | null;
 }
 
-const DeliveryInfo = ({ isOrderPage = false }: DeliveryInfoProps) => {
+const getProductField = (
+  product: ProjectQuotationProductsModel,
+  key: 'name' | 'code' | 'unit'
+) => product.product?.[key] ?? product.product_info?.[key] ?? null;
+
+const formatProductLabel = (product: ProjectQuotationProductsModel) => {
+  const name = getProductField(product, 'name');
+  const code = getProductField(product, 'code');
+  if (!name && !code) return '-';
+  if (name && code) return `${name} (${code})`;
+  return name || code || '-';
+};
+
+const formatProductValue = (product: ProjectQuotationProductsModel) => {
+  const unit = getProductField(product, 'unit');
+  const quantity = product.quantity ?? null;
+  if (quantity === undefined || quantity === null) {
+    return unit || '-';
+  }
+  return unit ? `${quantity} ${unit}` : `${quantity}`;
+};
+
+const DeliveryInfo = ({
+  isOrderPage = false,
+  address,
+  products,
+  dueDate,
+}: DeliveryInfoProps) => {
+  const productsInfo =
+    products && products.length > 0
+      ? products.map((product) => ({
+          label: formatProductLabel(product),
+          value: formatProductValue(product),
+        }))
+      : [];
+
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
       <h3 className="m-Heading-3-semibold">납품 정보</h3>
       <div className="flex flex-col gap-5">
-        <LabelInfo
-          label="사업장 주소"
-          value="서울특별시 금천구 가산로 123, 5층"
-          direction="col"
-        />
+        <LabelInfo label="사업장 주소" value={address || '-'} direction="col" />
         <div className="h-[1px] bg-bg" />
 
         {isOrderPage || (
           <>
-            <LabelInfo label="납품 수량" value="1 Box(5EA)" />
+            <div className="flex flex-col gap-2">
+              <LabelInfo label="납품할 제품 정보" />
+              <div className="flex flex-col gap-2">
+                {productsInfo.length > 0 ? (
+                  productsInfo.map((product, index) => (
+                    <InfoDetail
+                      key={index}
+                      label={product.label}
+                      value={product.value}
+                    />
+                  ))
+                ) : (
+                  <></>
+                )}
+              </div>
+            </div>
             <div className="h-[1px] bg-bg" />
           </>
         )}
 
-        <LabelInfo label="납기일" value="2025-10-03" />
+        <LabelInfo label="납기일" value={dueDate || '-'} />
       </div>
 
       {isOrderPage || (

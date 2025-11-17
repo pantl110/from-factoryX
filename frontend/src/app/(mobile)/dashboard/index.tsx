@@ -5,7 +5,7 @@ import { useState } from 'react';
 import TopBar from './topbar';
 import WorkList from './work-list';
 import TodoList from './todo-list';
-import Memo from './memo';
+// import Memo from './memo';
 
 const MobileDashboardPage = () => {
   // 선택된 날짜 상태 관리 (초기값: 오늘)

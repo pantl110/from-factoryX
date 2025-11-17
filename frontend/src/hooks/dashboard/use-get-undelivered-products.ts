@@ -1,90 +1,80 @@
-import { useState, useCallback } from 'react';
+'use client';
+
+import { useMemo } from 'react';
+import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
 import { UndeliveredProductListResponseModel } from '@/types/data-model';
 
-interface GetUndeliveredProductsModel {
+interface UseUndeliveredProductsQueryParams {
   page?: number;
+  baseDate?: string;
 }
 
-const useGetUndeliveredProducts = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { factoryId } = useMemberStore();
+const EMPTY_RESPONSE: UndeliveredProductListResponseModel = {
+  count: 0,
+  totalCnt: 0,
+  pageCnt: 0,
+  curPage: 1,
+  data: [],
+};
 
-  const getUndeliveredProducts = useCallback(
-    async (params: GetUndeliveredProductsModel) => {
-      setIsLoading(true);
-      setError(null);
+const useGetUndeliveredProducts = (
+  { page = 1, baseDate }: UseUndeliveredProductsQueryParams = {
+    page: 1,
+  }
+) => {
+  const factoryId = useMemberStore((state) => state.factoryId);
+
+  const queryEnabled = useMemo(() => !!factoryId, [factoryId]);
+
+  return useQuery<UndeliveredProductListResponseModel>({
+    queryKey: [
+      'undelivered-quotation-products',
+      factoryId,
+      page,
+      baseDate ?? null,
+    ],
+    queryFn: async () => {
+      if (!factoryId) {
+        return { ...EMPTY_RESPONSE, curPage: page };
+      }
 
       try {
-        // Zustand store에서 factoryId 가져오기
-        if (!factoryId) {
-          setError('Factory ID를 찾을 수 없습니다.');
-          return { success: false, error: 'Factory ID를 찾을 수 없습니다.' };
-        }
-
-        const queryParams = new URLSearchParams();
-        queryParams.append('factory_id', factoryId.toString());
-        queryParams.append('page', (params.page || 1).toString());
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/undelivered?${queryParams}`,
+        const response = await axios.get<UndeliveredProductListResponseModel>(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/undelivered`,
           {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
+            params: {
+              factory_id: factoryId,
+              page,
+              ...(baseDate ? { base_date: baseDate } : {}),
             },
+            withCredentials: true,
           }
         );
 
-        if (response.status === 200) {
-          const result: UndeliveredProductListResponseModel =
-            await response.json();
-          // 백엔드에서 페이지네이션 정보를 받아옴
-          return {
-            success: true,
-            data: result,
-          };
-        } else {
-          const errorData = await response.json();
-          const errorMessage =
-            errorData.detail ||
+        return response.data;
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const message =
+            error.response?.data?.detail ||
+            error.response?.data?.message ||
             '납품되지 않은 견적서 제품 조회에 실패했습니다.';
-          setError(errorMessage);
-          return {
-            success: false,
-            error: errorMessage,
-            data: {
-              count: 0,
-              totalCnt: 0,
-              pageCnt: 0,
-              curPage: params.page || 1,
-              data: [],
-            } as UndeliveredProductListResponseModel,
-          };
+          throw new Error(message);
         }
-      } catch {
-        setError('서버 연결에 실패했습니다.');
-        return {
-          success: false,
-          error: '서버 연결에 실패했습니다.',
-          data: {
-            count: 0,
-            totalCnt: 0,
-            pageCnt: 0,
-            curPage: params.page || 1,
-            data: [],
-          } as UndeliveredProductListResponseModel,
-        };
-      } finally {
-        setIsLoading(false);
+
+        throw error;
       }
     },
-    [factoryId]
-  );
-
-  return { getUndeliveredProducts, isLoading, error };
+    enabled: queryEnabled,
+    staleTime: 1000 * 30,
+    retry: 1,
+    select: (data) => ({
+      ...EMPTY_RESPONSE,
+      ...data,
+      curPage: data.curPage || page,
+    }),
+  });
 };
 
 export default useGetUndeliveredProducts;

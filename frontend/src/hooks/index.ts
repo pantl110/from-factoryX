@@ -9,6 +9,7 @@ export { useDropdownFilter } from './use-dropdown-filter';
 export { useCheckAll } from './use-check-all';
 export { usePeriodSelector } from './use-period-selector';
 export { useTooltip } from './use-tooltip';
+export { default as useInfiniteScroll } from './use-infinite-scroll';
 
 // Utility hooks
 export * from '../utils';
