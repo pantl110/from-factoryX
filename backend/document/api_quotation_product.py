@@ -607,7 +607,10 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
 @router.get(
     "/undelivered",
     summary="[C] 납품되지 않은 견적서 품목 조회",
-    description="프로젝트가 납품 상태이고 납품되지 않은 견적서 품목만 조회합니다. 페이지당 5개씩 반환됩니다.",
+    description=(
+        "기본적으로 프로젝트가 납품 상태이고 납품되지 않은 견적서 품목을 페이지네이션하여 조회합니다. "
+        "base_date가 전달되면 해당 날짜를 기준으로 일주일 이내(과거 포함)의 납품 예정 품목을 조회하며, 이 경우 생산대기/생산중/생산완료/납품 상태의 프로젝트를 모두 포함합니다. "
+    ),
     response={
         200: list[UndeliveredQuotationProductOut],
         400: dict,
@@ -615,64 +618,11 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
     },
 )
 @paginate(CustomPageNumberPagination, page_size=5)
-async def list_undelivered_quotation_products(request):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-
-    try:
-        # 납품되지 않은 견적서 품목 조회
-        # 조건: 프로젝트가 납품 상태이고, is_delivery가 False인 품목
-        undelivered_products = await sync_to_async(list)(
-            QuotationProduct.objects.select_related(
-                "quotation__client", "quotation__project", "product"
-            )
-            .filter(
-                quotation__factory_id=int(factory_id),
-                quotation__project__status="delivery",  # 프로젝트가 납품 상태
-                is_delivery=False,  # 납품되지 않음
-            )
-            .order_by("delivery_date")  # 납품일자 순으로 정렬
-        )
-
-        # 응답 데이터 구성
-        results = []
-        for qp in undelivered_products:
-            results.append(
-                {
-                    "company_name": qp.quotation.client.name,  # 업체명
-                    "product_name": qp.product.name,  # 품목명
-                    "delivery_date": (
-                        qp.delivery_date.isoformat() if qp.delivery_date else None
-                    ),  # 납품일자
-                    "project_id": qp.quotation.project.id,  # 프로젝트 ID
-                }
-            )
-
-        return results
-
-    except HttpError:
-        raise
-    except Exception as e:
-        raise HttpError(500, f"조회 중 오류가 발생했습니다: {str(e)}")
-
-
-@router.get(
-    "/undelivered-within-week",
-    summary="[C] 일주일 이내 납품 예정 미완료 견적서 품목 조회 (모바일)",
-    description="납품기한이 기준 날짜로부터 일주일 이내이고 납품완료되지 않은 견적서 품목을 조회합니다. 프로젝트 상태는 생산대기, 생산중, 생산완료, 납품인 것만 조회합니다. 페이지네이션 없이 전체 결과를 반환합니다. base_date가 없으면 오늘 날짜를 기준으로 합니다.",
-    response={
-        200: list[UndeliveredQuotationProductOut],
-        400: dict,
-        500: dict,
-    },
-)
-async def list_undelivered_quotation_products_within_week(
+async def list_undelivered_quotation_products(
     request,
-    base_date: str = Query(None, description="기준 날짜 (YYYY-MM-DD 형식). 없으면 오늘 날짜 기준"),
+    base_date: str | None = Query(
+        None, description="기준 날짜 (YYYY-MM-DD)"
+    ),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -682,30 +632,19 @@ async def list_undelivered_quotation_products_within_week(
     await is_factory_member(int(factory_id), user)
 
     try:
-        # 기준 날짜 설정 (파라미터가 없으면 오늘 날짜 사용)
+        # 기준 날짜가 전달된 경우: base_date 기반 로직
         if base_date:
             try:
                 base = datetime.strptime(base_date, "%Y-%m-%d").date()
             except ValueError:
-                raise HttpError(400, "날짜 형식이 올바르지 않습니다. YYYY-MM-DD 형식을 사용하세요.")
-        else:
-            # 오늘 날짜 (프로그램 시간대 기준)
-            base = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
-        
-        # 기준 날짜로부터 일주일 후까지의 날짜 범위
-        # 과거 납기일이었지만 아직 납품되지 않은 것도 모두 포함
-        week_later = base + timedelta(days=7)
-        
-        # 견적서 품목 조회
-        # 조건:
-        # - 프로젝트 상태: 생산대기(pending), 생산중(production), 생산완료(manufactured), 납품(delivery)
-        # - 납품완료되지 않음 (is_delivery=False)
-        # - 납품일자가 기준 날짜로부터 일주일 이내 (과거 납기일 포함)
-        undelivered_products = await sync_to_async(list)(
-            QuotationProduct.objects.select_related(
+                raise HttpError(
+                    400, "base_date는 YYYY-MM-DD 형식이어야 합니다."
+                )
+            week_later = base + timedelta(days=7)
+
+            queryset = QuotationProduct.objects.select_related(
                 "quotation__client", "quotation__project", "product"
-            )
-            .filter(
+            ).filter(
                 quotation__factory_id=int(factory_id),
                 quotation__project__status__in=[
                     "pending",      # 생산 대기
@@ -716,8 +655,21 @@ async def list_undelivered_quotation_products_within_week(
                 is_delivery=False,  # 납품완료되지 않음
                 delivery_date__lte=week_later,  # 기준 날짜로부터 일주일 이내 (과거 포함)
             )
-            .order_by("delivery_date")  # 납품일자 순으로 정렬
-        )
+            
+        else:
+            # 기존 로직: 프로젝트 상태가 납품인 프로젝트에서 납품이 되지 않은 견적서 품목 목록
+            queryset = QuotationProduct.objects.select_related(
+                "quotation__client", "quotation__project", "product"
+            ).filter(
+                quotation__factory_id=int(factory_id),
+                quotation__project__status="delivery",
+                is_delivery=False,
+            )
+
+        # delivery_date 오름차순 정렬 (가장 과거 납품일 먼저)
+        queryset = queryset.order_by("delivery_date")
+
+        undelivered_products = await sync_to_async(list)(queryset)
 
         # 응답 데이터 구성
         results = []
@@ -726,7 +678,7 @@ async def list_undelivered_quotation_products_within_week(
                 {
                     "company_name": qp.quotation.client.name,  # 업체명
                     "product_name": qp.product.name,  # 품목명
-                    "product_code": qp.product.code,  # 품목코드
+                    "product_code": qp.product.code if qp.product else None,  # 품목코드
                     "quantity": qp.quantity,  # 수량
                     "delivery_date": (
                         qp.delivery_date.isoformat() if qp.delivery_date else None
