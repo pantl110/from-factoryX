@@ -184,7 +184,11 @@ async def assign_material(request, payload: AssignMaterialIn):
 )
 @paginate
 async def get_materials_by_factory(
-    request, q: str = None, order: str = "desc", material_id: int = None
+    request,
+    q: str = None,
+    order: str = "desc",
+    material_id: int = None,
+    status: str = None,
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -219,6 +223,9 @@ async def get_materials_by_factory(
             # material_id 자체도 제외 (자기 자신은 대체자재 목록에 포함될 수 없음)
             queryset = queryset.exclude(id=material_id)
         
+        if status == "shortage":
+            queryset = queryset.filter(current_stock__lt=F("standard_stock"))
+
         if q:
             qs1 = queryset.filter(name__icontains=q)
             qs2 = queryset.filter(code__icontains=q)
