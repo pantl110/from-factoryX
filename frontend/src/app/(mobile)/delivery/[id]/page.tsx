@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import ClientInfo from '../../client-info';
@@ -35,7 +35,7 @@ const DeliveryPage = () => {
   }, [getProjectStatus, projectId]);
 
   return (
-    <div className="pb-8">
+    <div className="pb-6">
       <Topbar title="납기 상세 조회" />
       {error || (isLoading && !projectStatus) ? (
         <></>

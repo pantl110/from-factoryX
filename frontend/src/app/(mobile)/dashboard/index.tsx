@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Note } from '@phosphor-icons/react';
+import { Calendar } from '@phosphor-icons/react';
 import { useState } from 'react';
 import TopBar from './topbar';
 import WorkList from './work-list';
@@ -30,7 +30,7 @@ const MobileDashboardPage = () => {
             </div>
             <h4 className="m-Heading-4b">오늘의 할일</h4>
           </div>
-          <TodoList selectedDate={selectedDate} />
+          <TodoList />
         </div>
 
         {/* 메모 */}

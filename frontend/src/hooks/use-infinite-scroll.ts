@@ -1,6 +1,6 @@
 import { RefCallback, useCallback, useEffect, useRef } from 'react';
 
-interface UseInfiniteScrollOptions {
+interface UseInfiniteScrollOptionsProps {
   enabled?: boolean;
   hasMore: boolean;
   isLoading?: boolean;
@@ -18,7 +18,7 @@ const useInfiniteScroll = <T extends Element = Element>({
   onLoadMore,
   rootMargin = '80px',
   threshold = 0.1,
-}: UseInfiniteScrollOptions): RefCallback<T> => {
+}: UseInfiniteScrollOptionsProps): RefCallback<T> => {
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   const cleanupObserver = useCallback(() => {
@@ -81,4 +81,3 @@ const useInfiniteScroll = <T extends Element = Element>({
 };
 
 export default useInfiniteScroll;
-

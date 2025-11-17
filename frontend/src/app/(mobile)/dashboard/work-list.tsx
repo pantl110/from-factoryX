@@ -16,7 +16,7 @@ interface WorkListProps {
 const WorkList = ({ selectedDate, setSelectedDate }: WorkListProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const role = useMemberStore((state) => state.role);
+  // const role = useMemberStore((state) => state.role);
   const userInfo = useAuthStore((state) => state.userInfo);
 
   // 오늘 날짜 생성

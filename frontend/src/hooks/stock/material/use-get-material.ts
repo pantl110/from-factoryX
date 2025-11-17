@@ -68,9 +68,7 @@ const fetchMaterialList = async (
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
-    throw new Error(
-      errorData?.detail || '원자재 목록을 불러오지 못했습니다.'
-    );
+    throw new Error(errorData?.detail || '원자재 목록을 불러오지 못했습니다.');
   }
 
   const result: MaterialListResponseModel = await response.json();
@@ -100,11 +98,13 @@ const fetchMaterialDetail = async (factoryId: number, materialId: number) => {
 const fetchAllMaterials = async (factoryId: number) => {
   // 1) minimal request to get total count
   const firstPageResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material?${new URLSearchParams({
-      page: '1',
-      page_size: '1',
-      factory_id: factoryId.toString(),
-    }).toString()}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material?${new URLSearchParams(
+      {
+        page: '1',
+        page_size: '1',
+        factory_id: factoryId.toString(),
+      }
+    ).toString()}`,
     {
       method: 'GET',
       credentials: 'include',
@@ -113,9 +113,7 @@ const fetchAllMaterials = async (factoryId: number) => {
 
   if (!firstPageResponse.ok) {
     const errorData = await firstPageResponse.json().catch(() => null);
-    throw new Error(
-      errorData?.detail || '원자재 목록을 불러오지 못했습니다.'
-    );
+    throw new Error(errorData?.detail || '원자재 목록을 불러오지 못했습니다.');
   }
 
   const firstPageResult: MaterialListResponseModel =
@@ -141,13 +139,10 @@ const fetchAllMaterials = async (factoryId: number) => {
 
   if (!allDataResponse.ok) {
     const errorData = await allDataResponse.json().catch(() => null);
-    throw new Error(
-      errorData?.detail || '원자재 목록을 불러오지 못했습니다.'
-    );
+    throw new Error(errorData?.detail || '원자재 목록을 불러오지 못했습니다.');
   }
 
-  const allDataResult: MaterialListResponseModel =
-    await allDataResponse.json();
+  const allDataResult: MaterialListResponseModel = await allDataResponse.json();
   return allDataResult.data || [];
 };
 

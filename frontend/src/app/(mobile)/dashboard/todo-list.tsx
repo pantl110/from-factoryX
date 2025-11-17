@@ -4,11 +4,7 @@ import TodoListItem from './todo-list-item';
 import MoBtn from '@/ui/mo-btn';
 import { useRouter } from 'next/navigation';
 
-interface TodoListProps {
-  selectedDate: Date;
-}
-
-const TodoList = ({ selectedDate }: TodoListProps) => {
+const TodoList = () => {
   const router = useRouter();
 
   return (

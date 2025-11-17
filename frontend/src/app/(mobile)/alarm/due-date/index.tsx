@@ -16,14 +16,14 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import MoBtn from '@/ui/mo-btn';
 
-type ChipVariant = 'secondary' | 'red-secondary' | 'outline';
+type ChipVariantType = 'secondary' | 'red-secondary' | 'outline';
 
 const normalizeDate = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 const getChipInfo = (
   deliveryDate: string | null
-): { text: string; variant: ChipVariant } => {
+): { text: string; variant: ChipVariantType } => {
   if (!deliveryDate) {
     return { text: '납기일 미지정', variant: 'outline' };
   }
@@ -200,7 +200,7 @@ const DueDate = ({
     }
 
     return (
-      <>
+      <div className="flex flex-col gap-1">
         {alarmItems.map((item) => (
           <AlarmItem
             key={item.key}
@@ -230,7 +230,7 @@ const DueDate = ({
         {hasNextPage && (
           <div ref={loadMoreRef} className="w-full h-1" aria-hidden="true" />
         )}
-      </>
+      </div>
     );
   };
 
@@ -242,7 +242,7 @@ const DueDate = ({
 
   return (
     <>
-      <div className="flex flex-col gap-1 pt-4">
+      <div className="flex flex-col gap-1 pt-4 pb-6">
         <Title icon={<Package />} title="납기 도래" count={totalCount} />
         {content}
       </div>

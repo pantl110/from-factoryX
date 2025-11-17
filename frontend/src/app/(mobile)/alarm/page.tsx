@@ -3,7 +3,7 @@
 import Topbar from '../topbar';
 import Tabbar from './tabbar';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 import DueDate from './due-date';
 // import PaymentDue from './payment-due';
 import Expiry from './expiry';

@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
 import { UndeliveredProductListResponseModel } from '@/types/data-model';
 
-interface UseUndeliveredProductsQueryParams {
+interface UseUndeliveredProductsQueryParamsModel {
   page?: number;
   baseDate?: string;
 }
@@ -20,13 +20,13 @@ const EMPTY_RESPONSE: UndeliveredProductListResponseModel = {
 };
 
 const useGetUndeliveredProducts = (
-  { page = 1, baseDate }: UseUndeliveredProductsQueryParams = {
+  { page = 1, baseDate }: UseUndeliveredProductsQueryParamsModel = {
     page: 1,
   }
 ) => {
   const factoryId = useMemberStore((state) => state.factoryId);
 
-  const queryEnabled = useMemo(() => !!factoryId, [factoryId]);
+  const isQueryEnabled = useMemo(() => !!factoryId, [factoryId]);
 
   return useQuery<UndeliveredProductListResponseModel>({
     queryKey: [
@@ -66,7 +66,7 @@ const useGetUndeliveredProducts = (
         throw error;
       }
     },
-    enabled: queryEnabled,
+    enabled: isQueryEnabled,
     staleTime: 1000 * 30,
     retry: 1,
     select: (data) => ({
