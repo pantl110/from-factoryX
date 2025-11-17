@@ -647,13 +647,13 @@ async def list_undelivered_quotation_products(
             ).filter(
                 quotation__factory_id=int(factory_id),
                 quotation__project__status__in=[
-                    "pending",      # 생산 대기
+                    "pending",  # 생산 대기
                     "production",  # 생산 중
-                    "manufactured", # 생산 완료
-                    "delivery",     # 납품
+                    "manufactured",  # 생산 완료
+                    "delivery",  # 납품
                 ],
                 is_delivery=False,  # 납품완료되지 않음
-                delivery_date__lte=week_later,  # 기준 날짜로부터 일주일 이내 (과거 포함)
+                quotation__due_date__range=(base, week_later),
             )
             
         else:
