@@ -112,6 +112,7 @@ class UndeliveredQuotationProductOut(Schema):
     company_name: str  # 업체명 (클라이언트명)
     product_name: str  # 품목명
     product_code: Optional[str] = None  # 품목코드
+    product_unit: Optional[str] = None  # 품목 단위
     quantity: Optional[int] = None  # 수량
     delivery_date: Optional[str] = None  # 납품일자
     project_id: int  # 프로젝트 ID
