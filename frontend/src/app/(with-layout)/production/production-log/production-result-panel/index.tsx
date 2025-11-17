@@ -3,13 +3,16 @@ import MiniBtn from '@/ui/mini-btn';
 import { ProductionInfo } from './production-info';
 import { DefectRate } from './defect-rate';
 import { ScrapRate } from './scrap-rate';
+import { ProjectPlanModel } from '@/types/data-model';
 
 interface ProductionResultPanelProps {
   onClose: () => void;
+  plan: ProjectPlanModel;
 }
 
 export const ProductionResultPanel = ({
   onClose,
+  plan,
 }: ProductionResultPanelProps) => {
   return (
     <Panel
@@ -21,7 +24,7 @@ export const ProductionResultPanel = ({
     >
       <div className="flex flex-col gap-10">
         {/* 생산 상세 정보 */}
-        <ProductionInfo />
+        <ProductionInfo plan={plan} />
 
         {/* 불량률 정보 */}
         <DefectRate />

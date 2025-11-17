@@ -12,7 +12,7 @@ const Tabbar = () => {
     () => [
       { name: '전체', param: 'all' },
       { name: '납기 도래', param: 'due-date' },
-      { name: '정산 현황', param: 'payment-due' },
+      // { name: '정산 현황', param: 'payment-due' },
       { name: 'ROP', param: 'rop' },
       { name: '유통기한', param: 'expiry' },
       { name: '확정 필요 주문', param: 'confirmation-required' },

@@ -258,6 +258,7 @@ const ProductionLogTableItem = ({
       {isProductionResultPanelOpen && (
         <ProductionResultPanel
           onClose={() => setIsProductionResultPanelOpen(false)}
+          plan={plan}
         />
       )}
     </>

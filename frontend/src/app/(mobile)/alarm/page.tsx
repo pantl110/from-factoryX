@@ -19,8 +19,8 @@ const AlarmContent = () => {
     switch (currentTab) {
       case 'due-date':
         return <DueDate />;
-      case 'payment-due':
-        return <PaymentDue />;
+      // case 'payment-due':
+      //   return <PaymentDue />;
       case 'expiry':
         return <Expiry />;
       case 'confirmation-required':
@@ -33,8 +33,8 @@ const AlarmContent = () => {
           <>
             <DueDate />
             <div className="h-1 bg-bg" />
-            <PaymentDue />
-            <div className="h-1 bg-bg" />
+            {/* <PaymentDue /> */}
+            {/* <div className="h-1 bg-bg" /> */}
             <Rop />
             <div className="h-1 bg-bg" />
             <Expiry />

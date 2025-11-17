@@ -46,6 +46,10 @@ const ProductFlowTitle = ({
             }
             textColor={textColor}
             bgColor={bgColor}
+            radius="rounded-full"
+            padding="px-2.5 py-1"
+            textStyle="Re_Body-2"
+            height="h-auto"
           />
           <h1 className="Heading-1 text-dg">{companyName}</h1>
         </div>

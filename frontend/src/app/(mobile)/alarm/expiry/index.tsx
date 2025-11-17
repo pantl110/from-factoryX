@@ -18,15 +18,6 @@ const Expiry = () => {
           router.push('/material');
         }}
       />
-      <AlarmItem
-        chipText="유통기한이 얼마 남지 않았어요!"
-        chipVariant="red-secondary"
-        name="제품명"
-        subText="현재 재고 수량/ROP 기준 값"
-        onClick={() => {
-          router.push('/material'); // TODO: Product 페이지로 수정
-        }}
-      />
     </div>
   );
 };
