@@ -682,8 +682,10 @@ async def list_undelivered_quotation_products(
                     "product_unit": qp.product.unit if qp.product else None,  # 품목 단위
                     "quantity": qp.quantity,  # 수량
                     "delivery_date": (
-                        qp.delivery_date.isoformat() if qp.delivery_date else None
-                    ),  # 납품일자
+                        qp.quotation.due_date.isoformat()
+                        if qp.quotation and qp.quotation.due_date
+                        else None
+                    ),  # 납기일자 (견적서 기준)
                     "project_id": qp.quotation.project.id,  # 프로젝트 ID
                 }
             )

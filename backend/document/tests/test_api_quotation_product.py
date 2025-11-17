@@ -1865,7 +1865,10 @@ class QuotationProductAPITestCase(TestCase):
         item = data["data"][0]
         self.assertEqual(item["company_name"], self.client_company.name)
         self.assertEqual(item["product_name"], self.product1.name)
-        self.assertEqual(item["delivery_date"], "2024-12-31")
+        self.assertEqual(
+            item["delivery_date"],
+            self.quotation.due_date.isoformat() if self.quotation.due_date else None,
+        )
         self.assertEqual(item["project_id"], self.project.id)
 
     def test_list_undelivered_quotation_products_pagination(self):
