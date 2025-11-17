@@ -663,14 +663,17 @@ async def list_undelivered_quotation_products(request):
 @router.get(
     "/undelivered-within-week",
     summary="[C] 일주일 이내 납품 예정 미완료 견적서 품목 조회 (모바일)",
-    description="납품기한이 일주일 이내이고 납품완료되지 않은 견적서 품목을 조회합니다. 프로젝트 상태는 생산대기, 생산중, 생산완료, 납품인 것만 조회합니다. 페이지네이션 없이 전체 결과를 반환합니다.",
+    description="납품기한이 기준 날짜로부터 일주일 이내이고 납품완료되지 않은 견적서 품목을 조회합니다. 프로젝트 상태는 생산대기, 생산중, 생산완료, 납품인 것만 조회합니다. 페이지네이션 없이 전체 결과를 반환합니다. base_date가 없으면 오늘 날짜를 기준으로 합니다.",
     response={
         200: list[UndeliveredQuotationProductOut],
         400: dict,
         500: dict,
     },
 )
-async def list_undelivered_quotation_products_within_week(request):
+async def list_undelivered_quotation_products_within_week(
+    request,
+    base_date: str = Query(None, description="기준 날짜 (YYYY-MM-DD 형식). 없으면 오늘 날짜 기준"),
+):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -679,16 +682,25 @@ async def list_undelivered_quotation_products_within_week(request):
     await is_factory_member(int(factory_id), user)
 
     try:
-        # 오늘부터 일주일 후까지의 날짜 범위 (프로그램 시간대 기준)
+        # 기준 날짜 설정 (파라미터가 없으면 오늘 날짜 사용)
+        if base_date:
+            try:
+                base = datetime.strptime(base_date, "%Y-%m-%d").date()
+            except ValueError:
+                raise HttpError(400, "날짜 형식이 올바르지 않습니다. YYYY-MM-DD 형식을 사용하세요.")
+        else:
+            # 오늘 날짜 (프로그램 시간대 기준)
+            base = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+        
+        # 기준 날짜로부터 일주일 후까지의 날짜 범위
         # 과거 납기일이었지만 아직 납품되지 않은 것도 모두 포함
-        today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
-        week_later = today + timedelta(days=7)
+        week_later = base + timedelta(days=7)
         
         # 견적서 품목 조회
         # 조건:
         # - 프로젝트 상태: 생산대기(pending), 생산중(production), 생산완료(manufactured), 납품(delivery)
         # - 납품완료되지 않음 (is_delivery=False)
-        # - 납품일자가 오늘부터 일주일 이내 (과거 납기일 포함)
+        # - 납품일자가 기준 날짜로부터 일주일 이내 (과거 납기일 포함)
         undelivered_products = await sync_to_async(list)(
             QuotationProduct.objects.select_related(
                 "quotation__client", "quotation__project", "product"
@@ -702,7 +714,7 @@ async def list_undelivered_quotation_products_within_week(request):
                     "delivery",     # 납품
                 ],
                 is_delivery=False,  # 납품완료되지 않음
-                delivery_date__lte=week_later,  # 오늘부터 일주일 이내 (과거 포함)
+                delivery_date__lte=week_later,  # 기준 날짜로부터 일주일 이내 (과거 포함)
             )
             .order_by("delivery_date")  # 납품일자 순으로 정렬
         )
