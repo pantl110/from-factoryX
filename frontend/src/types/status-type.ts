@@ -277,5 +277,3 @@ export const MaterialStatusTypeColorMap: Record<
   pending: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
 };
 
-// 단위변환 소수점 규칙
-export type DecimalRuleType = 'round' | 'floor' | 'ceil'; // 반올림, 버림, 올림

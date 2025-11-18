@@ -1529,7 +1529,7 @@ export interface UnitConversionModel {
   to_unit: string | null;
   from_quantity: number;
   to_quantity: number;
-  decimal_rule: DecimalRuleType; // 반올림, 버림, 올림 // round, floor, ceil
+  // decimal_rule: DecimalRuleType; // 반올림, 버림, 올림 // round, floor, ceil
 }
 
 export interface UnitConversionListResponseModel extends PaginationModel {

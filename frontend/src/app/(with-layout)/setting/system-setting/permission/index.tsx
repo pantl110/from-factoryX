@@ -183,13 +183,13 @@ const Permission = () => {
               </div>
               {visibleMembers.length > 0 && !isViewer && hasSubscription() && (
                 <>
-                  <MiniBtn
+                  {/* <MiniBtn
                     text="취소"
                     variant="whiteOutline"
                     onClick={() => {
                       setAllChecked(false);
                     }}
-                  />
+                  /> */}
                   <MiniBtn
                     text={getDeleteButtonText()}
                     variant={checkedCount === 0 ? 'whiteOutline' : 'red'}

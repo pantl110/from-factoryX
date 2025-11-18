@@ -179,6 +179,7 @@ export { useCancelSubscriptionPayment } from './subscription/use-cancel-subscrip
 
 // Unit conversion related hooks
 export { default as useUnitConversionApi } from './unit-conversion/use-unit-conversion-api';
+export { useDeleteUnitConversionMutation } from './unit-conversion/use-unit-conversion-api';
 
 // Substitute related hooks (대체 자재)
 export { default as useCreateSubstitute } from './substitute/use-create-substitute';
