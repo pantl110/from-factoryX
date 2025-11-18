@@ -1029,8 +1029,12 @@ class ProjectAPITestCase(TestCase):
         """생산일자 오름차순 정렬 테스트"""
         p1, _, _ = self.create_test_project_with_quotation(status="production")
         p2, _, _ = self.create_test_project_with_quotation(status="production")
-        ProjectPlan.objects.filter(project=p1).update(start_date=date(2025, 6, 1))
-        ProjectPlan.objects.filter(project=p2).update(start_date=date(2025, 6, 10))
+        ProjectPlan.objects.filter(project=p1).update(
+            start_date=timezone.make_aware(datetime(2025, 6, 1))
+        )
+        ProjectPlan.objects.filter(project=p2).update(
+            start_date=timezone.make_aware(datetime(2025, 6, 10))
+        )
 
         url = f"/v2/project?factory_id={self.factory.id}&status=progress&order_by=start_date&order_dir=asc"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")

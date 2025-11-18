@@ -1261,14 +1261,18 @@ class ProjectRefundAPITestCase(TestCase):
         # 반품 생산 등록 (ProjectPlan 생성)
         from project.models import ProjectPlan
 
+        today = timezone.localdate()
+        start_of_today = timezone.make_aware(
+            datetime.combine(today, datetime.min.time())
+        )
         project_plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,
             equipment=equipment,
             status="가동 대기",
             quantity=15,  # 반품 수량과 동일
-            start_date=timezone.now().date(),
-            end_date=timezone.now().date() + timedelta(days=7),
+            start_date=start_of_today,
+            end_date=start_of_today + timedelta(days=7),
             avg_production_time=3600,
         )
 
@@ -1353,14 +1357,18 @@ class ProjectRefundAPITestCase(TestCase):
         # 기존 제품으로 ProjectPlan 생성
         from project.models import ProjectPlan
 
+        today = timezone.localdate()
+        start_of_today = timezone.make_aware(
+            datetime.combine(today, datetime.min.time())
+        )
         old_project_plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,
             equipment=equipment,
             status="가동 대기",
             quantity=15,
-            start_date=timezone.now().date(),
-            end_date=timezone.now().date() + timedelta(days=7),
+            start_date=start_of_today,
+            end_date=start_of_today + timedelta(days=7),
             avg_production_time=3600,
         )
 

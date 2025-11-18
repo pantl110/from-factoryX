@@ -6,6 +6,7 @@ from project.models import Project, ProjectPlan
 from document.models import Quotation, QuotationProduct
 from stock.models import Product
 from datetime import date, timedelta
+from django.utils import timezone
 import io
 
 User = get_user_model()
@@ -75,13 +76,14 @@ class SimpleCronTest(TestCase):
         )
         
         # 프로젝트 계획 생성 (가동 대기 상태, 오늘 생산일자)
+        now = timezone.now()
         self.project_plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,
             quantity=100,
             equipment=self.equipment,
-            start_date=date.today(),  # 오늘 생산일자
-            end_date=date.today() + timedelta(days=7),
+            start_date=now,  # 오늘 생산일자
+            end_date=now + timedelta(days=7),
             avg_production_time=3600,  # 1시간
             status='pending'  # 가동 대기
         )

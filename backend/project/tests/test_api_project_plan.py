@@ -7,7 +7,7 @@ from stock.models import Product, Material, MaterialHistory
 import json
 import jwt
 from django.conf import settings
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from django.utils import timezone
 
 User = get_user_model()
@@ -157,8 +157,8 @@ class ProjectPlanAPITestCase(TestCase):
             product=self.quotation_product,
             equipment=self.equipment,
             quantity=10,
-            start_date=date(2024, 1, 1),
-            end_date=date(2024, 1, 31),
+            start_date=timezone.make_aware(datetime(2024, 1, 1, 0, 0, 0)),
+            end_date=timezone.make_aware(datetime(2024, 1, 31, 0, 0, 0)),
             avg_production_time=3600,
         )
 
@@ -902,14 +902,17 @@ class ProjectPlanAPITestCase(TestCase):
         """오늘 생산 시작인 프로젝트 계획 조회 성공 테스트"""
         # 오늘 날짜로 프로젝트 계획 생성
         today = date.today()
+        start_of_today = timezone.make_aware(
+            datetime.combine(today, datetime.min.time())
+        )
         plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,
             equipment=self.equipment,
             status="가동 대기",
             quantity=50,
-            start_date=today,
-            end_date=today + timedelta(days=7),
+            start_date=start_of_today,
+            end_date=start_of_today + timedelta(days=7),
             avg_production_time=3600,
         )
 
@@ -940,6 +943,9 @@ class ProjectPlanAPITestCase(TestCase):
         """오늘 생산 시작인 프로젝트 계획 조회 (여러 데이터) 테스트"""
         # 오늘 날짜로 7개의 프로젝트 계획 생성
         today = date.today()
+        start_of_today = timezone.make_aware(
+            datetime.combine(today, datetime.min.time())
+        )
         for i in range(7):
             ProjectPlan.objects.create(
                 project=self.project,
@@ -947,8 +953,8 @@ class ProjectPlanAPITestCase(TestCase):
                 equipment=self.equipment,
                 status="가동 대기",
                 quantity=10 + i,
-                start_date=today,
-                end_date=today + timedelta(days=7),
+                start_date=start_of_today,
+                end_date=start_of_today + timedelta(days=7),
                 avg_production_time=3600 + i * 100,
             )
 
@@ -1104,7 +1110,11 @@ class DashboardAPITestCase(TestCase):
             )
             # created_at을 이번달로 설정
             Project.objects.filter(id=project.id).update(
-                created_at=current_month_start + timedelta(days=i)
+                created_at=timezone.make_aware(
+                    datetime.combine(
+                        current_month_start + timedelta(days=i), datetime.min.time()
+                    )
+                )
             )
 
         # 지난달 프로젝트 생성
@@ -1124,7 +1134,11 @@ class DashboardAPITestCase(TestCase):
             )
             # created_at을 지난달로 설정
             Project.objects.filter(id=project.id).update(
-                created_at=previous_month_start + timedelta(days=i)
+                created_at=timezone.make_aware(
+                    datetime.combine(
+                        previous_month_start + timedelta(days=i), datetime.min.time()
+                    )
+                )
             )
 
     def test_get_dashboard_success(self):

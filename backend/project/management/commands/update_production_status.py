@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from project.models import Project, ProjectPlan
 from factory.models import FactoryEquipment
-from datetime import date
+from django.utils import timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,11 +18,11 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 # 오늘 날짜
-                today = date.today()
+                today = timezone.localdate()
                 
                 # 오늘 생산일자인 프로젝트 계획들 조회
                 plans_to_update = ProjectPlan.objects.filter(
-                    start_date=today,
+                    start_date__date=today,
                     status='pending'  # 가동 대기 상태
                 ).select_related('equipment', 'project')
                 

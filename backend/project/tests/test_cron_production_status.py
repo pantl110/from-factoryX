@@ -6,6 +6,7 @@ from project.models import Project, ProjectPlan
 from document.models import Quotation, QuotationProduct
 from stock.models import Product
 from datetime import date, timedelta
+from django.utils import timezone
 import io
 
 User = get_user_model()
@@ -68,13 +69,14 @@ class CronProductionStatusTestCase(TestCase):
         )
 
         # 프로젝트 계획 생성 (가동 대기 상태, 오늘 생산일자)
+        now = timezone.now()
         self.project_plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,
             quantity=100,
             equipment=self.equipment,
-            start_date=date.today(),  # 오늘 생산일자
-            end_date=date.today() + timedelta(days=7),
+            start_date=now,  # 오늘 생산일자
+            end_date=now + timedelta(days=7),
             avg_production_time=3600,  # 1시간
             status="pending",  # 가동 대기
         )
@@ -105,7 +107,7 @@ class CronProductionStatusTestCase(TestCase):
     def test_update_equipment_status_past_date(self):
         """과거 생산일자의 프로젝트 계획 테스트"""
         # 과거 생산일자로 프로젝트 계획 수정
-        self.project_plan.start_date = date.today() - timedelta(days=1)
+        self.project_plan.start_date = timezone.now() - timedelta(days=1)
         self.project_plan.save()
 
         # 명령어 실행
@@ -119,7 +121,7 @@ class CronProductionStatusTestCase(TestCase):
     def test_update_equipment_status_future_date(self):
         """미래 생산일자의 프로젝트 계획 테스트"""
         # 미래 생산일자로 프로젝트 계획 수정
-        self.project_plan.start_date = date.today() + timedelta(days=1)
+        self.project_plan.start_date = timezone.now() + timedelta(days=1)
         self.project_plan.save()
 
         # 명령어 실행
@@ -162,13 +164,14 @@ class CronProductionStatusTestCase(TestCase):
         """같은 설비를 사용하는 여러 프로젝트 계획 테스트"""
         # 두 번째 프로젝트와 계획 생성
         project2 = Project.objects.create(status="pending")
+        plan_start = timezone.now()
         plan2 = ProjectPlan.objects.create(
             project=project2,
             product=self.quotation_product,
             quantity=50,
             equipment=self.equipment,  # 같은 설비 사용
-            start_date=date.today(),
-            end_date=date.today() + timedelta(days=5),
+            start_date=plan_start,
+            end_date=plan_start + timedelta(days=5),
             avg_production_time=1800,
             status="pending",
         )
@@ -190,7 +193,7 @@ class CronProductionStatusTestCase(TestCase):
     def test_no_plans_to_update(self):
         """업데이트할 계획이 없는 경우 테스트"""
         # 프로젝트 계획을 미래 날짜로 설정
-        self.project_plan.start_date = date.today() + timedelta(days=10)
+        self.project_plan.start_date = timezone.now() + timedelta(days=10)
         self.project_plan.save()
 
         # 명령어 실행
