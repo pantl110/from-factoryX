@@ -9,18 +9,38 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "status",
+        "confirmed_at",
+        "pending_at",
         "transact_date",
         "tax_invoice",
         "created_at",
         "updated_at",
     ]
-    list_filter = ["status", "transact_date", "created_at", "updated_at"]
+    list_filter = [
+        "status",
+        "confirmed_at",
+        "pending_at",
+        "transact_date",
+        "created_at",
+        "updated_at",
+    ]
     search_fields = ["id", "status"]
     readonly_fields = ["created_at", "updated_at"]
     list_per_page = 20
 
     fieldsets = (
-        ("기본 정보", {"fields": ("status", "transact_date", "tax_invoice")}),
+        (
+            "기본 정보",
+            {
+                "fields": (
+                    "status",
+                    "confirmed_at",
+                    "pending_at",
+                    "transact_date",
+                    "tax_invoice",
+                )
+            },
+        ),
         (
             "시스템 정보",
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
