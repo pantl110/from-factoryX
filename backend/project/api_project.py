@@ -250,6 +250,85 @@ async def manufactured_to_delivery(request, project_id: int):
 
 
 @router.get(
+    "/stale-confirmed",
+    summary="[R] 7일 이상 경과한 주문 확정 프로젝트 조회",
+    description="confirmed 상태이면서 confirmed_at이 7일 이상 지난 프로젝트 목록을 조회합니다.",
+    response={200: List[StaleConfirmedProjectOut], 400: dict, 500: dict},
+)
+async def list_stale_confirmed_projects(request):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    today = timezone.localdate()
+    cutoff_date = today - timedelta(days=7)
+
+    try:
+
+        @sync_to_async
+        def fetch_projects():
+            projects = (
+                Project.objects.filter(
+                    status=Project.ProjectStatus.confirmed,
+                    confirmed_at__isnull=False,
+                    confirmed_at__lte=cutoff_date,
+                    quotations__factory_id=int(factory_id),
+                )
+                .prefetch_related(
+                    "quotations__client",
+                    "quotations__products__product",
+                )
+                .order_by("confirmed_at")
+                .distinct()
+            )
+
+            result = []
+            for project in projects:
+                quotations = project.quotations.filter(
+                    factory_id=int(factory_id)
+                ).prefetch_related("client", "products__product")
+
+                product_names = []
+                client_name = None
+
+                for quotation in quotations:
+                    if client_name is None and quotation.client:
+                        client_name = quotation.client.name
+
+                    for quotation_product in quotation.products.all():
+                        product_name = quotation_product.product.name
+                        if product_name not in product_names:
+                            product_names.append(product_name)
+
+                days_since_confirmed = (
+                    (today - project.confirmed_at).days
+                    if project.confirmed_at is not None
+                    else None
+                )
+
+                result.append(
+                    StaleConfirmedProjectOut(
+                        project_id=project.id,
+                        client_name=client_name,
+                        product_names=product_names,
+                        days_since_confirmed=days_since_confirmed,
+                    )
+                )
+
+            return result
+
+        return await fetch_projects()
+
+    except HttpError:
+        raise
+    except Exception:
+        raise HttpError(500, "확정 후 7일 경과 프로젝트 조회 중 오류가 발생했습니다.")
+
+
+@router.get(
     "/{project_id}",
     summary="[C] 프로젝트 상태 조회",
     description="프로젝트 ID로 프로젝트 상태를 조회합니다.",
