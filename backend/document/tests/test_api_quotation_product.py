@@ -1410,6 +1410,29 @@ class QuotationProductAPITestCase(TestCase):
         self.project.refresh_from_db()
         self.assertEqual(self.project.status, "quotation")
 
+    def test_save_draft_quotation_confirmed_at_set_on_confirm(self):
+        """quotation -> confirmed 전환 시 confirmed_at이 설정되는지 테스트"""
+        self.assertIsNone(self.project.confirmed_at)
+
+        draft_data = {
+            "quotation_id": self.quotation.id,
+            "client": {"name": "확정 고객사"},
+            "is_confirm": True,
+        }
+
+        response = self.client.post(
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.status, "confirmed")
+        self.assertIsNotNone(self.project.confirmed_at)
+
     def test_save_draft_quotation_existing_products_replacement(self):
         """기존 품목 교체 테스트"""
         # 초기 품목 개수 확인

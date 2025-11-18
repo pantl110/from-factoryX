@@ -170,8 +170,10 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         project = quotation.project
         if payload.is_confirm:
             project.status = Project.ProjectStatus.confirmed
+            project.confirmed_at = timezone.now().date()
         else:
             project.status = Project.ProjectStatus.quotation
+            project.confirmed_at = None
         await project.asave()
 
         if payload.products is not None:

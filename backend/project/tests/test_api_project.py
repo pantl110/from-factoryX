@@ -867,6 +867,58 @@ class ProjectAPITestCase(TestCase):
         projects = Project.objects.all()
         self.assertIsNotNone(projects)
 
+    def test_list_stale_confirmed_projects_success(self):
+        """confirmed_at 기준 7일 이상 지난 프로젝트 조회 성공"""
+        today = timezone.localdate()
+
+        overdue_project, _, _ = self.create_test_project_with_quotation(
+            status="confirmed"
+        )
+        overdue_project.confirmed_at = today - timedelta(days=10)
+        overdue_project.save()
+
+        recent_project, _, _ = self.create_test_project_with_quotation(
+            status="confirmed"
+        )
+        recent_project.confirmed_at = today - timedelta(days=3)
+        recent_project.save()
+
+        pending_project, _, _ = self.create_test_project_with_quotation(
+            status="pending"
+        )
+        pending_project.confirmed_at = today - timedelta(days=20)
+        pending_project.save()
+
+        url = f"/v1/project/stale-confirmed?factory_id={self.factory.id}"
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 1)
+
+        record = data[0]
+        self.assertEqual(record["project_id"], overdue_project.id)
+        self.assertEqual(record["client_name"], "테스트 고객사")
+        self.assertGreaterEqual(record["days_since_confirmed"], 7)
+        self.assertCountEqual(
+            record["product_names"], ["테스트 제품 1", "테스트 제품 2"]
+        )
+
+    def test_list_stale_confirmed_projects_requires_factory_id(self):
+        """factory_id가 없으면 400을 반환"""
+        self.create_test_project_with_quotation(status="confirmed")
+
+        url = "/v1/project/stale-confirmed"
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
     def test_list_progress_project_empty_result(self):
         """빈 결과 조회 테스트"""
         # 빈 결과 조회 로직 테스트
