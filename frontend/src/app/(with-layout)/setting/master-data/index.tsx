@@ -371,9 +371,9 @@ const MasterData = () => {
     setIsDeleteModalOpen(false);
   };
 
-  const handleClearAllChecked = () => {
-    setAllChecked(false);
-  };
+  // const handleClearAllChecked = () => {
+  //   setAllChecked(false);
+  // };
 
   // equipmentList를 Facility에 넘길 때 PaginationModel 형태로 래핑 - useMemo로 메모이제이션
   const equipmentListForFacility = useMemo(

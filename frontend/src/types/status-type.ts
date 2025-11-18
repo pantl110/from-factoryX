@@ -276,4 +276,3 @@ export const MaterialStatusTypeColorMap: Record<
   used: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
   pending: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
 };
-

@@ -1644,7 +1644,6 @@ import {
   NtsSendStateType,
   SubscriptionStatusType,
   PaymentStatusType,
-  DecimalRuleType,
 } from './status-type';
 
 export type {
