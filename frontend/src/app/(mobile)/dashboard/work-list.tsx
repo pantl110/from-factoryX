@@ -5,7 +5,6 @@ import IconBtn from '@/ui/icon-btn';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
 import { useState } from 'react';
-import useMemberStore from '@/store/member-store';
 import useAuthStore from '@/store/auth-store';
 
 interface WorkListProps {

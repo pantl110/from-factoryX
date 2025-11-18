@@ -10,7 +10,7 @@ const AddUnitDropdown = ({ onClose, onSelect }: AddUnitDropdownProps) => {
   return (
     <Dropdown onClose={onClose} width="w-[220px]">
       <DropdownItem text="제품" onClick={() => onSelect('product')} />
-      <DropdownItem text="자재" onClick={() => onSelect('material')} />
+      <DropdownItem text="원자재" onClick={() => onSelect('material')} />
     </Dropdown>
   );
 };

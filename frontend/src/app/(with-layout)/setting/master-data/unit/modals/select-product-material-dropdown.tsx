@@ -10,7 +10,7 @@ const SelectProductMaterialDropdown = ({
   onClose,
   onSelect,
 }: SelectProductMaterialDropdownProps) => {
-  const categories = ['전체', '자재', '제품'];
+  const categories = ['전체', '제품', '자재'];
 
   return (
     <Dropdown onClose={onClose} width="w-[120px]">

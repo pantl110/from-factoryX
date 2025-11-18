@@ -34,8 +34,6 @@ const SettingPageContent = () => {
                   <MiniBtn
                     text="단위 변환하기"
                     variant="primary"
-                    // icon={Plus}
-                    // iconPosition="right"
                     onClick={() => setIsAddUnitDropdownOpen(true)}
                   />
 
