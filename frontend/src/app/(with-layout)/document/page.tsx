@@ -104,7 +104,7 @@ const DocumentPageContent = () => {
           page: currentPage,
           page_size: 10,
           order_by:
-            projectSortDirection === 'asc' ? 'confirmed_at' : '-confirmed_at',
+            projectSortDirection === 'asc' ? 'pending_at' : '-pending_at',
         });
 
         if (result.success && result.data) {

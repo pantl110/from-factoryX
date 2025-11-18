@@ -159,7 +159,7 @@ const Rop = ({
 
   return (
     <>
-      <div className="flex flex-col gap-1 pt-4 pb-6">
+      <div className="flex flex-col gap-1 pt-4">
         <Title icon={<MoneyWavy />} title="ROP" count={totalCount} />
         {content}
       </div>

@@ -1,18 +1,31 @@
 import InfoDetail from '../info-detail';
-import { LabelInfo } from '../label-info';
+import { ProjectQuotationProductsModel } from '@/types/data-model';
 
-const OrderInfo = () => {
+interface OrderInfoProps {
+  products?: ProjectQuotationProductsModel[] | null;
+}
+
+const OrderInfo = ({ products }: OrderInfoProps) => {
+  const productsData = Array.isArray(products) ? products : [];
+
+  const totalAmount = productsData.reduce((acc, product) => {
+    return acc + product.quantity * product.unit_price;
+  }, 0);
+  const totalTaxAmount = totalAmount * 0.1;
+  const totalSupplyAmount = totalAmount - totalTaxAmount;
+
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
       <h3 className="m-Heading-3-semibold">주문 제품 정보</h3>
       <div className="flex flex-col gap-5">
-        <LabelInfo label="총 생산제품" value="5EA" />
         <div className="flex flex-col gap-3">
-          <InfoDetail label="플라스틱 1 (제품코드)" value="1 EA" />
-          <InfoDetail label="플라스틱 2 (제품코드)" value="1 EA" />
-          <InfoDetail label="플라스틱 3 (제품코드)" value="1 EA" />
-          <InfoDetail label="플라스틱 4 (제품코드)" value="1 EA" />
-          <InfoDetail label="플라스틱 5 (제품코드)" value="1 EA" />
+          {productsData.map((product, index) => (
+            <InfoDetail
+              key={index}
+              label={`${product.product.name} (${product.product.code})`}
+              value={`${product.quantity} ${product.product.unit}`}
+            />
+          ))}
         </div>
       </div>
       <div className="h-[1px] bg-bg" />
@@ -20,11 +33,19 @@ const OrderInfo = () => {
       <div className="flex flex-col gap-5">
         <div className="flex justify-between">
           <h4 className="m-Heading-4b">총 합계금액</h4>
-          <span className="m-Heading-3-semibold text-primary">50,000원</span>
+          <span className="m-Heading-3-semibold text-primary">
+            {totalAmount.toLocaleString()}원
+          </span>
         </div>
         <div className="flex flex-col gap-3">
-          <InfoDetail label="공급가액" value="45,455원" />
-          <InfoDetail label="세액" value="4,545원" />
+          <InfoDetail
+            label="공급가액"
+            value={`${totalSupplyAmount.toLocaleString()}원`}
+          />
+          <InfoDetail
+            label="세액"
+            value={`${totalTaxAmount.toLocaleString()}원`}
+          />
         </div>
       </div>
       <div className="h-[1px] bg-bg" />

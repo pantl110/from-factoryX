@@ -18,15 +18,35 @@ const AlarmContent = () => {
   const renderContent = () => {
     switch (currentTab) {
       case 'due-date':
-        return <DueDate />;
+        return (
+          <div className="pb-6">
+            <DueDate />
+          </div>
+        );
       // case 'payment-due':
-      //   return <PaymentDue />;
+      //   return (
+      //     <div className="pb-6">
+      //       <PaymentDue />
+      //     </div>
+      //   );
       case 'expiry':
-        return <Expiry />;
+        return (
+          <div className="pb-6">
+            <Expiry />
+          </div>
+        );
       case 'confirmation-required':
-        return <ConfirmationRequired />;
+        return (
+          <div className="pb-6">
+            <ConfirmationRequired />
+          </div>
+        );
       case 'rop':
-        return <Rop />;
+        return (
+          <div className="pb-6">
+            <Rop />
+          </div>
+        );
       case 'all':
       default:
         return (
@@ -37,7 +57,7 @@ const AlarmContent = () => {
             <Rop hideWhenEmpty withDivider limit={5} />
             <Expiry />
             <div className="h-1 bg-bg" />
-            <ConfirmationRequired />
+            <ConfirmationRequired hideWhenEmpty limit={5} />
           </div>
         );
     }

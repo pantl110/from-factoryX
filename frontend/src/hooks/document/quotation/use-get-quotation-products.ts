@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios, { AxiosError } from 'axios';
 import { QuotationProductResponseModel } from '@/types/data-model';
 
 interface UseGetQuotationProductsReturnModel {
@@ -24,43 +25,45 @@ const useGetQuotationProducts = (
     setError(null);
 
     try {
-      const params = new URLSearchParams();
+      const params: Record<string, number> = {};
       if (quotationId) {
-        params.append('quotation_id', quotationId.toString());
+        params.quotation_id = quotationId;
       }
       if (factoryId) {
-        params.append('factory_id', factoryId.toString());
+        params.factory_id = factoryId;
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/?${params.toString()}`,
+      const response = await axios.get<QuotationProductResponseModel[]>(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/`,
         {
-          method: 'GET',
-          credentials: 'include',
+          params,
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
           },
         }
       );
 
-      if (response.ok) {
-        const result = await response.json();
-        setData(result);
-      } else {
-        const errorData = await response.json();
-        const errorMessage =
-          errorData.message || '견적서 제품 조회에 실패했습니다.';
+      setData(response.data);
+    } catch (err) {
+      let errorMessage = '견적서 제품 조회에 실패했습니다.';
 
-        // 제품이 없는 경우는 정상적인 상태로 처리
+      if (axios.isAxiosError(err)) {
+        const axiosError = err as AxiosError<{ message?: string }>;
+        errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.message ||
+          errorMessage;
+
         if (errorMessage.includes('제품이 없습니다')) {
           setData([]);
-        } else {
-          throw new Error(errorMessage);
+          setError(null);
+          return;
         }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : '견적서 제품 조회에 실패했습니다.';
+
       setError(errorMessage);
     } finally {
       setIsLoading(false);

@@ -608,7 +608,7 @@ export interface CreateProjectResponseModel {
 // 완료된 프로젝트: status="complete"
 export interface ProjectResponseModel {
   client_name: string; // 변하는 이름?
-  confirmed_at: string; // 주문서의 등록 일자
+  pending_at: string; // 주문서의 등록 일자
   created_at: string;
   id: number;
   is_refunded: boolean;
@@ -624,6 +624,13 @@ export interface ProjectResponseModel {
 
 export interface ProjectListResponseModel extends PaginationModel {
   data: ProjectResponseModel[];
+}
+
+export interface StaleConfirmedProjectModel {
+  project_id: number;
+  client_name: string | null;
+  product_names: string[];
+  days_since_confirmed: number | null;
 }
 
 // 프로젝트 상태 조회 응답
@@ -680,7 +687,7 @@ export interface ProjectQuotationProductsModel {
 
 export interface ProjectQuotationModel {
   id: number; // quotation_id
-  client: number; // client_id
+  client: TaxClientInfoModel; // client_id
   client_info: TaxClientInfoModel;
   created_at: string;
   due_date: string;
@@ -710,7 +717,7 @@ export interface ProjectStatusResponseModel {
   tax_invoice: PublishedTaxInvoiceResponseModel | null;
   transact_date: string; // 거래명세서 발행 일자
   printed_at: string;
-  confirmed_at: string;
+  pending_at: string;
 }
 
 //////////////////////

@@ -199,12 +199,12 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               className="px-3 flex-[0.5] truncate"
               title={
                 documentType === '주문서'
-                  ? convertUTCToKSTDate(projectData.confirmed_at) || '-'
+                  ? convertUTCToKSTDate(projectData.pending_at) || '-'
                   : convertUTCToKSTDate(projectData.printed_at) || '-'
               }
             >
               {documentType === '주문서'
-                ? convertUTCToKSTDate(projectData.confirmed_at) || '-'
+                ? convertUTCToKSTDate(projectData.pending_at) || '-'
                 : convertUTCToKSTDate(projectData.printed_at) || '-'}
             </p>
           </>

@@ -1,16 +1,34 @@
-import React from 'react';
-import MoModal from '@/ui/modal/mo-modal';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import MoModal, { MoModalHandleModel } from '@/ui/modal/mo-modal';
 import Image from 'next/image';
 import MoBtn from '@/ui/mo-btn';
 
 interface OrderConfirmModalProps {
   onClose: () => void;
   onConfirm: () => void;
+  isConfirming?: boolean;
 }
 
-const OrderConfirmModal = ({ onClose, onConfirm }: OrderConfirmModalProps) => {
+export interface OrderConfirmModalHandleModel {
+  close: () => void;
+}
+
+const OrderConfirmModal = forwardRef<
+  OrderConfirmModalHandleModel,
+  OrderConfirmModalProps
+>(({ onClose, onConfirm, isConfirming = false }, ref) => {
+  const modalRef = useRef<MoModalHandleModel>(null);
+
+  const handleClose = () => {
+    modalRef.current?.close();
+  };
+
+  useImperativeHandle(ref, () => ({
+    close: handleClose,
+  }));
+
   return (
-    <MoModal title="주문 내역 확정" onClose={onClose}>
+    <MoModal ref={modalRef} title="주문 내역 확정" onClose={onClose}>
       <div className="flex flex-col gap-3 mb-4 ">
         <div className="flex justify-center mb-3">
           <Image
@@ -35,6 +53,7 @@ const OrderConfirmModal = ({ onClose, onConfirm }: OrderConfirmModalProps) => {
           variant="primary"
           width="w-full"
           big={true}
+          disabled={isConfirming}
           onClick={onConfirm}
         />
         <MoBtn
@@ -42,11 +61,13 @@ const OrderConfirmModal = ({ onClose, onConfirm }: OrderConfirmModalProps) => {
           variant="outline"
           width="w-full"
           big={true}
-          onClick={onClose}
+          onClick={handleClose}
         />
       </div>
     </MoModal>
   );
-};
+});
+
+OrderConfirmModal.displayName = 'OrderConfirmModal';
 
 export default OrderConfirmModal;

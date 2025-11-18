@@ -242,7 +242,7 @@ const DueDate = ({
 
   return (
     <>
-      <div className="flex flex-col gap-1 pt-4 pb-6">
+      <div className="flex flex-col gap-1 pt-4">
         <Title icon={<Package />} title="납기 도래" count={totalCount} />
         {content}
       </div>

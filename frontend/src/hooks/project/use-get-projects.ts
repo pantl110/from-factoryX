@@ -8,7 +8,7 @@ interface GetProjectModel {
   status_exclude?: string; // ProjectStatusEnum values to exclude (comma-separated)
   search?: string; // 업체명 또는 제품명
   printed_at__isnull?: boolean; // 거래명세서 출력 여부
-  order_by?: string; // 정렬 필드 (-start_date, -printed_at, -confirmed_at 등) // default: -start_date
+  order_by?: string; // 정렬 필드 (-start_date, -printed_at, -pending_at 등) // default: -start_date
   page?: number;
   page_size?: number;
 }

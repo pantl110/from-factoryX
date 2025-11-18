@@ -23,7 +23,7 @@ const SearchDeleteTable = ({
   checkedCount,
   deleteButtonText,
   onDelete,
-  onCancel,
+  // onCancel,
   onSearch,
   searchKeyword = '',
   hasData,
@@ -56,14 +56,14 @@ const SearchDeleteTable = ({
       />
       {hasData && hasDeleteButton && !isViewer && hasSubscription() && (
         <div className="flex gap-1">
-          <MiniBtn
+          {/* <MiniBtn
             text="취소"
             textColor="text-dg"
             borderColor="border-lg"
             bgColor="bg-white"
             hoverColor="hover:bg-bg"
             onClick={onCancel}
-          />
+          /> */}
           <MiniBtn
             text={deleteButtonText}
             textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
