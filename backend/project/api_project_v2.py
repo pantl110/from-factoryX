@@ -30,7 +30,7 @@ async def list_projects(
     filters: ProjectFilter = Query(...),
     order_by: Optional[str] = Query(
         "start_date",
-        description="정렬 필드(-start_date, -printed_at, -confirmed_at 등)",
+        description="정렬 필드(-start_date, -printed_at, -pending_at 등)",
     ),
 ):
     factory_id = request.GET.get("factory_id")

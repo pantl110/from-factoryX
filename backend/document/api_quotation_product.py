@@ -382,7 +382,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
 
         project = await sync_to_async(lambda: quotation.project)()
         project.status = Project.ProjectStatus.pending
-        project.confirmed_at = timezone.now().date()
+        project.pending_at = timezone.now().date()
         # 아직 저장하지 않음
 
         production_plans = []

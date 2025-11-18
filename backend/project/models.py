@@ -54,7 +54,7 @@ class Project(BaseModel):
         blank=True,
         help_text="거래명세서 출력 일자",
     )
-    confirmed_at = models.DateField(
+    pending_at = models.DateField(
         null=True,
         blank=True,
         help_text="주문 확정 일자",

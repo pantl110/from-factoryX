@@ -81,6 +81,14 @@ class ProjectModelOut(ModelSchema):
         fields = "__all__"
 
 
+# (GET) Stale Confirmed Projects
+class StaleConfirmedProjectOut(Schema):
+    project_id: int
+    client_name: Optional[str] = None
+    product_names: List[str] = Field(default_factory=list, description="연결된 품목명 목록")
+    days_since_confirmed: Optional[int] = None
+
+
 # (GET) Project Status
 class ProjectStatusOut(Schema):
     project_id: int
