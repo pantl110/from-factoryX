@@ -8,9 +8,7 @@ from project.models import Project
 from project.schemas.inbound import ProjectFilter
 from project.schemas.outbound import ProjectModelOut
 from factory.utils import is_factory_member
-from django.utils import timezone
-from datetime import timedelta
-from django.db.models import Min, F
+from django.db.models import Min
 
 router = Router(
     tags=["Project V2"],
@@ -39,8 +37,6 @@ async def list_projects(
 
     user = request.auth
     await is_factory_member(int(factory_id), user)
-    now = timezone.now()
-    two_months_ago = now - timedelta(days=60)
 
     @sync_to_async
     def get_projects():
