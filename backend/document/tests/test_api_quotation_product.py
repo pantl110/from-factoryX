@@ -1833,8 +1833,6 @@ class QuotationProductAPITestCase(TestCase):
         self.assertEqual(plan["avg_production_time"], 1800)
         self.assertIn("start_date", plan)
         self.assertIn("end_date", plan)
-        self.assertIn("production_days", plan)
-
         # 시간 형식 확인 (YYYY-MM-DD HH:MM)
         datetime_pattern = r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}"
         self.assertIsNotNone(re.match(datetime_pattern, plan["start_date"]))

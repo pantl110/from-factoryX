@@ -971,26 +971,16 @@ class ProjectRefundAPITestCase(TestCase):
         expected_avg_time = (
             self.product.average_production_time
             if self.product.average_production_time is not None
-            else 30
+            else 3600
         )
         self.assertEqual(project_plan.avg_production_time, expected_avg_time)
 
-        # 마감 시간이 올바르게 계산되는지 확인
-        expected_production_days = int(expected_avg_time * 15 / (24 * 3600))
-        if expected_production_days == 0:
-            expected_production_days = 1
-
-        # 현재 시간을 기준으로 예상 마감일 계산 (UTC 시간대 고려)
-        from django.utils import timezone
-
-        current_date = timezone.now().date()
-        expected_end_date = current_date + timedelta(days=expected_production_days)
-
-        # DateTimeField이므로 datetime 객체와 비교하되, 날짜 부분만 비교
-        # 시간대 변환으로 인해 1일 차이가 날 수 있으므로 허용 범위 설정
-        actual_end_date = project_plan.end_date.date()
-        self.assertIn(
-            actual_end_date, [expected_end_date, expected_end_date - timedelta(days=1)]
+        # 마감 시간이 올바르게 계산되는지 확인 (초 단위 동일)
+        expected_duration = timedelta(
+            seconds=expected_avg_time * payload["production_amount"]
+        )
+        self.assertEqual(
+            project_plan.end_date - project_plan.start_date, expected_duration
         )
 
         # 기존 QuotationProduct는 그대로 유지되는지 확인
@@ -1230,7 +1220,7 @@ class ProjectRefundAPITestCase(TestCase):
         from project.models import ProjectPlan
 
         project_plan = ProjectPlan.objects.get(id=data["project_plan_id"])
-        self.assertEqual(project_plan.avg_production_time, 30)  # 기본값 30초 사용
+        self.assertEqual(project_plan.avg_production_time, 3600)  # 기본값 1시간
 
     def test_update_refund_with_related_project_plan(self):
         """반품 수정 시 연결된 ProjectPlan도 함께 수정되는지 테스트"""

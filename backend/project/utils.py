@@ -1,7 +1,8 @@
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
-from datetime import datetime
-from typing import Tuple
+from datetime import datetime, timedelta
+from typing import Optional, Tuple
+from django.utils import timezone
 from project.models import Refund, Project, ProjectLog, ProjectPlan
 from stock.models import MaterialProduct, ProductHistory
 from factory.models import FactoryEquipment
@@ -154,4 +155,32 @@ async def check_material_availability(product_id: int, required_quantity: int) -
         return "충분"
 
     return await check_materials()
+
+
+def calculate_plan_schedule(
+    quantity: int,
+    avg_production_time: Optional[int],
+    start: Optional[datetime] = None,
+) -> Tuple[datetime, datetime, int, int]:
+    """
+    공통 생산 계획 시간 계산 함수.
+
+    Args:
+        quantity: 생산 수량
+        avg_production_time: 제품별 평균 생산 시간(초)
+        start: 시작 시각(없으면 timezone.now())
+
+    Returns:
+        (start_datetime, end_datetime, resolved_avg_time, total_seconds)
+    """
+
+    if quantity < 0:
+        raise ValueError("quantity must be non-negative")
+
+    resolved_avg = avg_production_time or 3600  # 기본값 1시간
+    start_dt = start or timezone.now()
+    total_seconds = resolved_avg * quantity
+    end_dt = start_dt + timedelta(seconds=total_seconds)
+
+    return start_dt, end_dt, resolved_avg, total_seconds
 

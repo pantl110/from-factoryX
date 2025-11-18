@@ -1,7 +1,6 @@
 from ninja import Router
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
-from datetime import timedelta
 from django.utils import timezone
 from api.security import jwt_auth
 
@@ -24,6 +23,7 @@ from project.utils import (
     get_refund_with_project,
     parse_and_validate_date,
     get_default_equipment,
+    calculate_plan_schedule,
 )
 
 
@@ -225,18 +225,14 @@ async def register_production_from_refund_log(
             project_plan.equipment = default_equipment
             project_plan.quantity = payload.production_amount
 
-            # 품목의 평균 생산 시간 가져오기 (기본값 30초)
-            avg_production_time = refund_product.average_production_time
-            if avg_production_time is None:
-                avg_production_time = 30  # 기본값 30초
-
-            # 마감 시간 계산: 시작일 + (평균 생산 시간 × 수량)
-            total_production_seconds = avg_production_time * payload.production_amount
-            production_days = int(total_production_seconds / (24 * 3600))
-            if production_days == 0:
-                production_days = 1  # 최소 1일
-            start_date = timezone.now().date()
-            end_date = start_date + timedelta(days=production_days)
+            (
+                start_date,
+                end_date,
+                avg_production_time,
+                _,
+            ) = calculate_plan_schedule(
+                payload.production_amount, refund_product.average_production_time
+            )
 
             project_plan.start_date = start_date
             project_plan.end_date = end_date
@@ -258,18 +254,14 @@ async def register_production_from_refund_log(
 
         else:
             # 기존 plan이 없는 경우 새로 생성
-            # 품목의 평균 생산 시간 가져오기 (기본값 30초)
-            avg_production_time = refund_product.average_production_time
-            if avg_production_time is None:
-                avg_production_time = 30  # 기본값 30초
-
-            # 마감 시간 계산: 시작일 + (평균 생산 시간 × 수량)
-            total_production_seconds = avg_production_time * payload.production_amount
-            production_days = int(total_production_seconds / (24 * 3600))
-            if production_days == 0:
-                production_days = 1  # 최소 1일
-            start_date = timezone.now().date()
-            end_date = start_date + timedelta(days=production_days)
+            (
+                start_date,
+                end_date,
+                avg_production_time,
+                _,
+            ) = calculate_plan_schedule(
+                payload.production_amount, refund_product.average_production_time
+            )
 
             project_plan = await ProjectPlan.objects.acreate(
                 project=project,
@@ -472,6 +464,15 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
                     # 기본 장비 선택
                     default_equipment = await get_default_equipment(factory_id)
 
+                    (
+                        start_date,
+                        end_date,
+                        avg_production_time,
+                        _,
+                    ) = calculate_plan_schedule(
+                        new_refund_amount, refund.product.average_production_time
+                    )
+
                     # 새로운 ProjectPlan 생성
                     new_project_plan = await ProjectPlan.objects.acreate(
                         project=project,
@@ -479,9 +480,9 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
                         equipment=default_equipment,
                         status="가동 대기",
                         quantity=new_refund_amount,
-                        start_date=timezone.now().date(),
-                        end_date=timezone.now().date() + timedelta(days=7),
-                        avg_production_time=3600,
+                        start_date=start_date,
+                        end_date=end_date,
+                        avg_production_time=avg_production_time,
                     )
                     created_plans.append(new_project_plan.id)
             except Exception:

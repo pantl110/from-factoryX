@@ -6,10 +6,8 @@ from api.pagination import CustomPageNumberPagination
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from django.utils import timezone
-from django.conf import settings
-import pytz
 
 from document.models import Quotation, QuotationProduct
 from document.schemas.inbound import (
@@ -24,6 +22,7 @@ from document.schemas.outbound import (
 )
 from stock.models import Product
 from project.models import Project, ProjectPlan
+from project.utils import calculate_plan_schedule
 from factory.models import FactoryClient, FactoryEquipment, Factory
 from factory.utils import is_factory_member
 from stock.schemas.outbound import ProductRowOut
@@ -416,22 +415,14 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             base_quantity = prod.quantity
             production_quantity = int(base_quantity * (1 + buffer_rate))
 
-            # 현재 시간을 기준으로 시작 시간 설정
-            start_datetime = timezone.now()
-            start_date = start_datetime.strftime("%Y-%m-%d")
-
-            # 평균 생산 시간을 반영하여 마감 일자 계산
-            # 총 생산 시간 = 생산 수량 * 평균 생산 시간(초)
-            avg_production_time = product.average_production_time or 30  # 기본값 30초
-            total_production_seconds = production_quantity * avg_production_time
-
-            # 총 생산 시간을 일자로 변환
-            production_days = max(
-                1, int(total_production_seconds / (24 * 3600))
-            )  # 24시간 기준
-
-            end_datetime = start_datetime + timedelta(days=production_days)
-            end_date = end_datetime.strftime("%Y-%m-%d")
+            (
+                start_datetime,
+                end_datetime,
+                avg_production_time,
+                _,
+            ) = calculate_plan_schedule(
+                production_quantity, product.average_production_time
+            )
 
             # 생산 계획 데이터 준비 (저장은 나중에)
             project_plan_data = {
@@ -453,7 +444,6 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 "start_date": start_datetime.strftime("%Y-%m-%d %H:%M"),
                 "end_date": end_datetime.strftime("%Y-%m-%d %H:%M"),
                 "avg_production_time": avg_production_time,
-                "production_days": production_days,
             }
             production_plans.append(production_plan_info)
 
