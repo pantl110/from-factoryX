@@ -34,7 +34,7 @@ const OverlayView = ({
       }}
     >
       <div
-        className={`${pageColor} w-[1000px] max-h-[85%] overflow-y-auto scrollbar-hide`}
+        className={`${pageColor} w-[1000px] max-h-[85%] min-h-[85%] overflow-y-auto scrollbar-hide`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

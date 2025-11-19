@@ -287,7 +287,7 @@ const EmailView = ({
           pageColor="bg-black/30"
           blockExit={true}
         >
-          <div className="flex items-center justify-center h-[calc(85vh)]">
+          <div className="flex items-center justify-center min-h-[85vh]">
             <Spinner />
           </div>
         </OverlayView>
