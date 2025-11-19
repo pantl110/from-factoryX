@@ -16,14 +16,12 @@ import { useInput, getToday, formatDate, useCreateRefund } from '@/hooks';
 
 interface AddReturnModalProps {
   onClose: () => void;
-  quotationProductData: QuotationProductDetailResponseModel[];
   onProjectStatusChange?: (status: ProjectStatusType) => void; // 프로젝트 상태 변경 콜백
   onTabChange?: (tab: string) => void; // 탭 변경 콜백
 }
 
 const AddReturnModal = ({
   onClose,
-  quotationProductData,
   onProjectStatusChange,
   onTabChange,
 }: AddReturnModalProps) => {
