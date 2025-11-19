@@ -65,8 +65,22 @@ const QuotationPageContent = () => {
   const setProjectStatusData = usePageStatusStore(
     (state: PageStatusModel) => state.setProjectStatusData
   );
+  const [createdQuotationId, setCreatedQuotationId] = useState<number | null>(
+    null
+  );
+
+  const effectiveQuotationId = useMemo(() => {
+    if (quotationId && quotationId > 0) {
+      return quotationId;
+    }
+    if (createdQuotationId && createdQuotationId > 0) {
+      return createdQuotationId;
+    }
+    return undefined;
+  }, [quotationId, createdQuotationId]);
+
   const { data: quotationData, isLoading: isQuotationLoading } =
-    useGetDetailQuotation(quotationId && quotationId > 0 ? quotationId : 0);
+    useGetDetailQuotation(effectiveQuotationId ?? 0);
   const { showToast, isToastOpen, isVisible } = useToast();
   const { ocrData, imageUrl, setOcrData } = useOcrStore();
   const { clientList, getAllClientList } = useGetClient(); // 거래처 목록 가져오기
@@ -87,10 +101,11 @@ const QuotationPageContent = () => {
   const [isStartProductionModalOpen, setIsStartProductionModalOpen] =
     useState(false);
 
-  // 견적서 생성 후 페이지 안나갔을 때 견적서 ID 관리
-  const [createdQuotationId, setCreatedQuotationId] = useState<number | null>(
-    null
-  );
+  useEffect(() => {
+    if (quotationId && quotationId > 0) {
+      setCreatedQuotationId(quotationId);
+    }
+  }, [quotationId]);
 
   // 토스트 상태
   const [toastContent, setToastContent] = useState<{
@@ -513,7 +528,7 @@ const QuotationPageContent = () => {
   } = useQuotationHandlers({
     watch,
     reset,
-    quotationId,
+    quotationId: effectiveQuotationId,
     quotationProducts,
     factoryId,
     selectedClientId,
@@ -731,7 +746,7 @@ const QuotationPageContent = () => {
                   onProductClick={handleProductClick}
                   setHasQuotationProducts={setHasQuotationProducts}
                   onProductsChange={setQuotationProducts}
-                  quotationId={quotationId}
+                  quotationId={effectiveQuotationId}
                   ocrRequestData={
                     ocrData?.request_items as OcrRequestItemModel[]
                   }
@@ -816,7 +831,7 @@ const QuotationPageContent = () => {
               }
               return total;
             }, 0)}
-            quotationId={quotationId || null}
+            quotationId={effectiveQuotationId ?? null}
             projectStatus={projectStatus}
             onClose={() => setIsEmailOpen(false)}
             onEmailSent={() => {
