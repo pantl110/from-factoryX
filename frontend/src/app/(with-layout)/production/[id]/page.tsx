@@ -376,17 +376,17 @@ const ProductionPageContent = () => {
       {isAddReturnModalOpen && (
         <AddReturnModal
           onClose={() => setAddReturnModalOpen(false)}
-          quotationProductData={projectStatus.quotations[0].products.map(
-            (p) => ({
-              productId: p.product.id,
-              product_code: p.product.code,
-              product_name: p.product.name,
-              spec: p.product.spec,
-              unit: p.product.unit,
-              quantity: p.quantity,
-              unit_price: p.unit_price,
-            })
-          )}
+          // quotationProductData={projectStatus.quotations[0].products.map(
+          //   (p) => ({
+          //     productId: p.product.id,
+          //     product_code: p.product.code,
+          //     product_name: p.product.name,
+          //     spec: p.product.spec,
+          //     unit: p.product.unit,
+          //     quantity: p.quantity,
+          //     unit_price: p.unit_price,
+          //   })
+          // )}
           onProjectStatusChange={handleChangeStatus}
           onTabChange={(tab) => {
             // 탭 인덱스 찾기
