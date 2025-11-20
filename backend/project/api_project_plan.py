@@ -248,16 +248,16 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                     additional_data={"plan_id": plan.id},
                 )
 
-            # 버퍼 레이트 업데이트
-            if payload.total_quantity >= payload.total_amount:
-                new_buffer_rate = (payload.total_quantity / payload.total_amount) - 1
+            # # 버퍼 레이트 업데이트
+            # if payload.total_quantity >= payload.total_amount:
+            #     new_buffer_rate = (payload.total_quantity / payload.total_amount) - 1
 
-                # 관계 필드 접근을 async로 처리
-                product_obj = await Product.objects.aget(
-                    id=quotation_product.product_id
-                )
-                product_obj.buffer_rate = new_buffer_rate
-                await product_obj.asave()
+            #     # 관계 필드 접근을 async로 처리
+            #     product_obj = await Product.objects.aget(
+            #         id=quotation_product.product_id
+            #     )
+            #     product_obj.buffer_rate = new_buffer_rate
+            #     await product_obj.asave()
 
             return 200, ProjectPlanCreateOrUpdateOut(
                 message="프로젝트 생산 계획이 성공적으로 수정되었습니다.",
@@ -270,14 +270,14 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
 
     else:
         # 생성 모드
-        # 버퍼 레이트 업데이트
-        if payload.total_quantity >= payload.total_amount:
-            new_buffer_rate = (payload.total_quantity / payload.total_amount) - 1
+        # # 버퍼 레이트 업데이트
+        # if payload.total_quantity >= payload.total_amount:
+        #     new_buffer_rate = (payload.total_quantity / payload.total_amount) - 1
 
-            # 관계 필드 접근을 async로 처리
-            product_obj = await Product.objects.aget(id=quotation_product.product_id)
-            product_obj.buffer_rate = new_buffer_rate
-            await product_obj.asave()
+        #     # 관계 필드 접근을 async로 처리
+        #     product_obj = await Product.objects.aget(id=quotation_product.product_id)
+        #     product_obj.buffer_rate = new_buffer_rate
+        #     await product_obj.asave()
 
         # ProjectPlan 생성
         plan = await ProjectPlan.objects.acreate(
