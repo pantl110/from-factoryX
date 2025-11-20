@@ -219,6 +219,7 @@ class ProjectPlanDetailOut(Schema):
     equipment_id: int
     status: str
     quantity: int
+    defective_quantity: int
     start_date: datetime.datetime
     end_date: datetime.datetime
     avg_production_time: int
@@ -265,6 +266,7 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     equipment: EquipmentDetailOut
     status: str
     quantity: int
+    defective_quantity: int
     start_date: datetime.datetime
     end_date: datetime.datetime
     avg_production_time: int

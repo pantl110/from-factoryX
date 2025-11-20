@@ -110,6 +110,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             # 값 수정
             plan.equipment = equipment
             plan.quantity = payload.quantity
+            plan.defective_quantity = payload.defective_quantity or 0
             plan.start_date = payload.start_date
             plan.end_date = payload.end_date
             plan.avg_production_time = payload.avg_production_time
@@ -285,6 +286,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             product=quotation_product,
             equipment=equipment,
             quantity=payload.quantity,
+            defective_quantity=payload.defective_quantity or 0,
             start_date=payload.start_date,
             end_date=payload.end_date,
             avg_production_time=payload.avg_production_time,
@@ -405,6 +407,7 @@ async def list_ongoing_project_plans(
                     ),
                     status=plan.status,
                     quantity=plan.quantity,
+                    defective_quantity=plan.defective_quantity,
                     start_date=plan.start_date,
                     end_date=plan.end_date,
                     avg_production_time=plan.avg_production_time,
@@ -507,6 +510,7 @@ async def list_completed_project_plans(
                     ),
                     status=plan.status,
                     quantity=plan.quantity,
+                    defective_quantity=plan.defective_quantity,
                     start_date=plan.start_date,
                     end_date=plan.end_date,
                     avg_production_time=plan.avg_production_time,
@@ -844,6 +848,7 @@ async def list_project_plans(request, project_id: int):
                 ),
                 status=plan.status,
                 quantity=plan.quantity,
+                defective_quantity=plan.defective_quantity,
                 start_date=plan.start_date,
                 end_date=plan.end_date,
                 avg_production_time=plan.avg_production_time,

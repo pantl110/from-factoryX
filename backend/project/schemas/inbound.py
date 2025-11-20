@@ -185,6 +185,7 @@ class ProjectPlanCreateOrUpdateIn(Schema):
     quotation_product_id: int
     equipment_id: int
     quantity: int  # 생산 수량
+    defective_quantity: Optional[int] = Field(0, description="불량품 수량")
     start_date: datetime
     end_date: datetime
     avg_production_time: int
@@ -206,6 +207,13 @@ class ProjectPlanCreateOrUpdateIn(Schema):
     def validate_avg_production_time(cls, v):
         if v <= 0:
             raise ValueError("평균 생산 시간은 0보다 커야 합니다.")
+        return v
+
+    @field_validator("defective_quantity")
+    @classmethod
+    def validate_defective_quantity(cls, v):
+        if v is not None and v < 0:
+            raise ValueError("불량품 수량은 0보다 크거나 같아야 합니다.")
         return v
 
 
