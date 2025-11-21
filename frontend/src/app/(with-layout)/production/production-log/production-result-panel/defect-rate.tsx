@@ -1,10 +1,54 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Input from '@/ui/input';
 import { handleQuantityInput } from '@/utils/format-number';
 
-export const DefectRate = () => {
-  const [totalProduction, setTotalProduction] = useState<string>('');
-  const [defectQuantity, setDefectQuantity] = useState<string>('');
+interface DefectRateProps {
+  onError?: (text: string, subtext: string) => void;
+  initialDefectQuantity?: number;
+  onDefectQuantityChange?: (defectQuantity: number) => void;
+  totalProductionQuantity?: number; // 생산 지시 수량
+  onTotalProductionQuantityChange?: (quantity: number) => void; // 총 생산 수량 변경 시 생산 지시 수량 업데이트
+}
+
+export const DefectRate = ({
+  onError,
+  initialDefectQuantity = 0,
+  onDefectQuantityChange,
+  totalProductionQuantity = 0,
+  onTotalProductionQuantityChange,
+}: DefectRateProps) => {
+  const [totalProduction, setTotalProduction] = useState<string>(() => {
+    if (totalProductionQuantity > 0) {
+      const result = handleQuantityInput(totalProductionQuantity.toString());
+      return result.displayValue;
+    }
+    return '';
+  });
+  const [defectQuantity, setDefectQuantity] = useState<string>(() => {
+    if (initialDefectQuantity > 0) {
+      // handleQuantityInput을 사용하여 일관된 포맷팅 적용
+      const result = handleQuantityInput(initialDefectQuantity.toString());
+      return result.displayValue;
+    }
+    return '';
+  });
+
+  // 생산 지시 수량이 변경되면 총 생산 수량에 자동 반영
+  // 단, 사용자가 직접 총 생산 수량을 수정한 경우는 제외
+  const [isUserEditingTotalProduction, setIsUserEditingTotalProduction] =
+    useState(false);
+
+  useEffect(() => {
+    // 사용자가 직접 수정 중이 아닐 때만 자동 동기화
+    if (!isUserEditingTotalProduction) {
+      if (totalProductionQuantity > 0) {
+        const result = handleQuantityInput(totalProductionQuantity.toString());
+        setTotalProduction(result.displayValue);
+      } else {
+        setTotalProduction('');
+      }
+    }
+  }, [totalProductionQuantity, isUserEditingTotalProduction]);
 
   // 총 생산 수량의 숫자 값
   const totalProductionNumeric = useMemo(() => {
@@ -15,6 +59,11 @@ export const DefectRate = () => {
   const defectQuantityNumeric = useMemo(() => {
     return handleQuantityInput(defectQuantity).numericValue;
   }, [defectQuantity]);
+
+  // 불량 수량이 변경될 때 부모 컴포넌트에 알림
+  useEffect(() => {
+    onDefectQuantityChange?.(defectQuantityNumeric);
+  }, [defectQuantityNumeric, onDefectQuantityChange]);
 
   // 양품 수량 계산: 총 생산 수량 - 불량 수량
   const goodQuantity = useMemo(() => {
@@ -57,8 +106,14 @@ export const DefectRate = () => {
             type="text"
             value={totalProduction}
             onChange={(e) => {
+              setIsUserEditingTotalProduction(true);
               const result = handleQuantityInput(e.target.value);
               setTotalProduction(result.displayValue);
+              // 총 생산 수량이 변경되면 생산 지시 수량도 업데이트
+              onTotalProductionQuantityChange?.(result.numericValue);
+            }}
+            onBlur={() => {
+              setIsUserEditingTotalProduction(false);
             }}
             placeholder="생산 수량을 입력하세요."
           />
@@ -68,6 +123,21 @@ export const DefectRate = () => {
             value={defectQuantity}
             onChange={(e) => {
               const result = handleQuantityInput(e.target.value);
+              const newDefectNumeric = result.numericValue;
+
+              // 총 생산 수량이 있고, 불량 수량이 생산 수량보다 큰 경우
+              if (
+                totalProduction &&
+                newDefectNumeric > totalProductionNumeric
+              ) {
+                setDefectQuantity('');
+                onError?.(
+                  '불량 수량을 확인해 주세요.',
+                  '불량 수량은 총 생산 수량보다 작아야 합니다'
+                );
+                return;
+              }
+
               setDefectQuantity(result.displayValue);
             }}
             placeholder="불량 수량을 입력하세요."

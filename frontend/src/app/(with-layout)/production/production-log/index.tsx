@@ -148,24 +148,6 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
           return;
         }
 
-        // 같은 제품에 대한 총 생산수량 계산 (formChanges 반영)
-        const totalQuantity = projectPlans
-          .filter(
-            (p) =>
-              p.quotation_product.product.id ===
-              plan.quotation_product.product.id
-          )
-          .reduce((sum, p) => {
-            if (p.id === planId) {
-              // 현재 수정 중인 plan은 새로운 수량 사용
-              return sum + formData.quantity;
-            }
-            // 다른 plan은 formChanges가 있으면 그 값, 없으면 원본 값 사용
-            const planFormData = formChanges[p.id];
-            const quantity = planFormData?.quantity ?? p.quantity;
-            return sum + quantity;
-          }, 0);
-
         const result = await createOrUpdateProjectPlan({
           project_id: projectId,
           quotation_product_id: plan.quotation_product.id,
@@ -175,8 +157,6 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
           end_date: formData.end_date,
           avg_production_time: plan.avg_production_time,
           plan_id: planId > 0 ? planId : undefined,
-          total_amount: plan.quotation_product.quantity,
-          total_quantity: totalQuantity,
         });
 
         if (result.success) {
@@ -236,24 +216,6 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
             return Promise.resolve();
           }
 
-          // 같은 제품에 대한 총 생산수량 계산 (formChanges 반영)
-          const totalQuantity = projectPlans
-            .filter(
-              (p) =>
-                p.quotation_product.product.id ===
-                plan.quotation_product.product.id
-            )
-            .reduce((sum, p) => {
-              if (p.id === parseInt(planId)) {
-                // 현재 수정 중인 plan은 새로운 수량 사용
-                return sum + formData.quantity;
-              }
-              // 다른 plan은 formChanges가 있으면 그 값, 없으면 원본 값 사용
-              const planFormData = formChanges[p.id];
-              const quantity = planFormData?.quantity ?? p.quantity;
-              return sum + quantity;
-            }, 0);
-
           return createOrUpdateProjectPlan({
             project_id: projectId,
             quotation_product_id: plan.quotation_product.id,
@@ -263,8 +225,6 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
             end_date: formData.end_date,
             avg_production_time: plan.avg_production_time,
             plan_id: parseInt(planId) > 0 ? parseInt(planId) : undefined,
-            total_amount: plan.quotation_product.quantity,
-            total_quantity: totalQuantity,
           });
         }
       );
@@ -341,6 +301,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
                   hasChanges={hasRealChanges}
                   onValidityChange={handleValidityChange}
                   isFirstOfProduct={isFirstOfProduct}
+                  onSaveSuccess={loadProjectPlans}
                 />
               );
             })}
@@ -360,8 +321,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       {/* 유효한 날짜로 입력 토스트 */}
       {isDateToastOpen && (
         <Toast
-          text="유효한 일자를 입력해 주세요."
-          subtext="생산일자와 마감 예정일자를 확인해 주세요."
+          text="유효한 생산 일자나 마감 일자를 입력해 주세요."
+          subtext="YYYY-MM-DD 00:00 형식으로 입력해주세요."
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isDateToastVisible}

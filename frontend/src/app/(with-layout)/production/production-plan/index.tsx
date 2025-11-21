@@ -907,21 +907,21 @@ const ProductionPlan = ({
             end_date: formData.end_date,
             avg_production_time: currentPlan.avg_production_time,
             plan_id: parseInt(planId), // 모든 plan이 이제 DB에 저장되므로 항상 planId 사용
-            total_amount: currentPlan.quotation_product.quantity,
-            total_quantity: projectPlans
-              .filter(
-                (plan) =>
-                  plan.quotation_product.id === currentPlan.quotation_product.id
-              )
-              .reduce((sum, plan) => {
-                if (plan.id === parseInt(planId)) {
-                  return sum + formData.quantity;
-                }
-                // 다른 plan도 formChanges에 변경사항이 있으면 그 값 사용
-                const planFormData = formChanges[plan.id];
-                const quantity = planFormData?.quantity ?? plan.quantity;
-                return sum + quantity;
-              }, 0),
+            // total_amount: currentPlan.quotation_product.quantity,
+            // total_quantity: projectPlans
+            //   .filter(
+            //     (plan) =>
+            //       plan.quotation_product.id === currentPlan.quotation_product.id
+            //   )
+            //   .reduce((sum, plan) => {
+            //     if (plan.id === parseInt(planId)) {
+            //       return sum + formData.quantity;
+            //     }
+            //     // 다른 plan도 formChanges에 변경사항이 있으면 그 값 사용
+            //     const planFormData = formChanges[plan.id];
+            //     const quantity = planFormData?.quantity ?? plan.quantity;
+            //     return sum + quantity;
+            //   }, 0),
           });
         }
       );
@@ -1115,8 +1115,8 @@ const ProductionPlan = ({
       {/* 유효한 날짜로 입력 토스트 */}
       {isDateToastOpen && (
         <Toast
-          text="생산일자나 마감 예정일자가 올바른 형식이 아닙니다."
-          subtext="YYYY-MM-DD 형식으로 입력해주세요."
+          text="유효한 생산 일자나 마감 예정일자를 입력해 주세요."
+          subtext="YYYY-MM-DD 00:00 형식으로 입력해주세요."
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isDateToastVisible}

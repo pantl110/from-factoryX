@@ -21,6 +21,7 @@ interface ProductionLogTableItemProps {
   hasChanges?: boolean;
   onValidityChange?: (planId: number, isValid: boolean) => void;
   isFirstOfProduct?: boolean; // 같은 제품의 첫 번째 plan인지 여부
+  onSaveSuccess?: () => void;
 }
 
 const ProductionLogTableItem = ({
@@ -31,6 +32,7 @@ const ProductionLogTableItem = ({
   hasChanges,
   onValidityChange,
   isFirstOfProduct,
+  onSaveSuccess,
 }: ProductionLogTableItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -226,7 +228,7 @@ const ProductionLogTableItem = ({
           />
         </div>
         {isEditable && (
-          <div className="w-[150px] px-3">
+          <div className="w-[200px] px-3 flex gap-2">
             <MiniBtn
               text="저장"
               variant="whiteOutline"
@@ -234,16 +236,14 @@ const ProductionLogTableItem = ({
               onClick={onSave}
               disabled={!hasChanges || !formState.isValid}
             />
+            <MiniBtn
+              text="결과 입력"
+              variant="secondary"
+              height="h-8"
+              onClick={() => setIsProductionResultPanelOpen(true)}
+            />
           </div>
         )}
-
-        {/* 임시 버튼~~~ */}
-        <MiniBtn
-          text="결과 입력"
-          variant="secondary"
-          height="h-8"
-          onClick={() => setIsProductionResultPanelOpen(true)}
-        />
 
         {/* 제품 디테일 판넬 보기 */}
         {isProductDetailOpen && (
@@ -259,6 +259,7 @@ const ProductionLogTableItem = ({
         <ProductionResultPanel
           onClose={() => setIsProductionResultPanelOpen(false)}
           plan={plan}
+          onSaveSuccess={onSaveSuccess}
         />
       )}
     </>
