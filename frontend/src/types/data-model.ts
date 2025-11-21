@@ -1006,7 +1006,7 @@ export interface ProjectPlanModel {
   equipment: EquipmentForPlanModel;
   status: OperationStatusType; // 가동 대기, 가동 중, 가동 완료
   quantity: number; // 생산 수량
-  defective_quantity: number; // 불량 수량
+  defective_quantity?: number; // 불량 수량
   start_date: string; // 생산 시작 일자
   end_date: string; // 생산 종료 일자
   avg_production_time: number; // 단위당 소요 시간
@@ -1025,7 +1025,7 @@ export interface CreateOrUpdateProjectPlanModel {
   quotation_product_id: number;
   equipment_id: number;
   quantity: number;
-  defective_quantity: number;
+  defective_quantity?: number | null;
   start_date: string;
   end_date: string;
   avg_production_time: number;

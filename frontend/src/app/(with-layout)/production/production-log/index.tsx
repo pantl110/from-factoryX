@@ -155,6 +155,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
           quantity: formData.quantity,
           start_date: formData.start_date,
           end_date: formData.end_date,
+          defective_quantity: plan.defective_quantity ?? undefined,
           avg_production_time: plan.avg_production_time,
           plan_id: planId > 0 ? planId : undefined,
         });
@@ -223,6 +224,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
             quantity: formData.quantity,
             start_date: formData.start_date,
             end_date: formData.end_date,
+            defective_quantity: plan.defective_quantity ?? undefined,
             avg_production_time: plan.avg_production_time,
             plan_id: parseInt(planId) > 0 ? parseInt(planId) : undefined,
           });

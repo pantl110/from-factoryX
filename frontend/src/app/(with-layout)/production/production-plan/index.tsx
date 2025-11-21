@@ -358,18 +358,18 @@ const ProductionPlan = ({
         avg_production_time: targetPlan.avg_production_time,
         status, // 가동 상태 추가
         plan_id: operationStatusDropdownRowId, // 모든 plan이 이제 DB에 저장되므로 항상 ID 사용
-        total_amount: targetPlan.quotation_product.quantity,
-        total_quantity: projectPlans
-          .filter(
-            (plan) =>
-              plan.quotation_product.id === targetPlan.quotation_product.id
-          )
-          .reduce((sum, plan) => {
-            // formChanges에 변경사항이 있으면 그 값 사용
-            const planFormData = formChanges[plan.id];
-            const quantity = planFormData?.quantity ?? plan.quantity;
-            return sum + quantity;
-          }, 0),
+        // total_amount: targetPlan.quotation_product.quantity,
+        // total_quantity: projectPlans
+        //   .filter(
+        //     (plan) =>
+        //       plan.quotation_product.id === targetPlan.quotation_product.id
+        //   )
+        //   .reduce((sum, plan) => {
+        //     // formChanges에 변경사항이 있으면 그 값 사용
+        //     const planFormData = formChanges[plan.id];
+        //     const quantity = planFormData?.quantity ?? plan.quantity;
+        //     return sum + quantity;
+        //   }, 0),
       });
       if (result.success) {
         // 상태 변경 성공 시 해당 plan의 상태만 업데이트
@@ -761,20 +761,20 @@ const ProductionPlan = ({
           end_date: formData.end_date,
           avg_production_time: currentPlan.avg_production_time,
           plan_id: isNewPlan ? undefined : planId,
-          total_amount: currentPlan.quotation_product.quantity,
-          total_quantity: projectPlans
-            .filter(
-              (plan) =>
-                plan.quotation_product.id === currentPlan.quotation_product.id
-            )
-            .reduce((sum, plan) => {
-              if (plan.id === planId) {
-                return sum + formData.quantity;
-              }
-              const planFormData = formChanges[plan.id];
-              const quantity = planFormData?.quantity ?? plan.quantity;
-              return sum + quantity;
-            }, 0),
+          // total_amount: currentPlan.quotation_product.quantity,
+          // total_quantity: projectPlans
+          //   .filter(
+          //     (plan) =>
+          //       plan.quotation_product.id === currentPlan.quotation_product.id
+          //   )
+          //   .reduce((sum, plan) => {
+          //     if (plan.id === planId) {
+          //       return sum + formData.quantity;
+          //     }
+          //     const planFormData = formChanges[plan.id];
+          //     const quantity = planFormData?.quantity ?? plan.quantity;
+          //     return sum + quantity;
+          //   }, 0),
         });
 
         if (result.success) {
