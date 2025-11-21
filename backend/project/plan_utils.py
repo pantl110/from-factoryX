@@ -3,6 +3,7 @@ from factory.models import FactoryEquipment
 from project.models import ProjectPlan
 from stock.models import MaterialProduct
 from asgiref.sync import sync_to_async
+from decimal import Decimal, ROUND_HALF_UP
 
 async def get_plan_by_id(plan_id):
     try:
@@ -84,7 +85,9 @@ async def _handle_quantity_increase(
 ):
     """수량 증가 처리: buffer rate 업데이트"""
     # Buffer rate 계산 및 업데이트
-    new_buffer_rate = (new_quantity - quotation_quantity) / quotation_quantity
+    new_buffer_rate = Decimal(new_quantity - quotation_quantity) / Decimal(quotation_quantity)
+    # 소수점 2자리로 반올림
+    new_buffer_rate = new_buffer_rate.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
     product_obj = plan.product.product
     product_obj.buffer_rate = new_buffer_rate
     await sync_to_async(product_obj.save)()

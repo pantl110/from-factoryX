@@ -6,6 +6,7 @@ from api.security import jwt_auth
 from django.db import models
 from django.conf import settings
 from datetime import datetime
+from decimal import Decimal
 import pytz
 from project.schemas.inbound import (
     ProjectPlanCreateOrUpdateIn,
@@ -119,6 +120,20 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
 
             await plan.asave()
 
+            # 불량률을 buffer_rate에 반영 (defective_quantity가 있으면)
+            if payload.defective_quantity is not None and payload.defective_quantity > 0 and payload.quantity > 0:
+                # 관계 필드 접근을 async로 처리
+                product_obj = await Product.objects.aget(
+                    id=quotation_product.product_id
+                )
+                # 불량률 계산: (불량품 수량 / 생산 수량)
+                defect_rate = Decimal(payload.defective_quantity) / Decimal(payload.quantity)
+                # 최신 불량률로 buffer_rate 업데이트 (누적하지 않음)
+                from decimal import ROUND_HALF_UP
+                new_buffer_rate = defect_rate.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                product_obj.buffer_rate = new_buffer_rate
+                await product_obj.asave()
+
             # 오늘 생산하는 Plan이면 WorkInstruction 갱신
             if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
                 await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
@@ -158,37 +173,6 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 )
             
             await record_history()
-
-            # 수량이 주문 수량보다 작을 때 자동 분할 처리
-            # if payload.quantity < quotation_product.quantity:
-            #     remaining_quantity = quotation_product.quantity - payload.quantity
-            #     buffer_quantity = int(remaining_quantity * 1.1)  # 10% 버퍼 적용
-
-            #     # 대체 설비가 있는지 확인
-            #     alternative_equipment = await sync_to_async(list)(
-            #         FactoryEquipment.objects.filter(factory_id=factory_id)
-            #         .exclude(id=equipment.id)
-            #         .order_by("priority")
-            #     )
-
-            #     if alternative_equipment:
-            #         # 다른 설비로 추가 계획 생성
-            #         new_equipment = alternative_equipment[0]
-            #     else:
-            #         # 같은 설비로 추가 계획 생성
-            #         new_equipment = equipment
-
-            #     # 추가 계획 생성
-            #     await ProjectPlan.objects.acreate(
-            #         project=project,
-            #         product=quotation_product,
-            #         equipment=new_equipment,
-            #         quantity=buffer_quantity,
-            #         start_date=payload.start_date,
-            #         end_date=payload.end_date,
-            #         avg_production_time=payload.avg_production_time,
-            #         status=payload.status or ProjectPlan.ProductionStatus.pending,
-            #     )
 
             # 설비 변경 로그/알림
             if old_equipment and old_equipment.id != equipment.id:

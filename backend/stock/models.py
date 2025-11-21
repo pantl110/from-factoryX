@@ -200,7 +200,7 @@ class Product(BaseModel):
         max_digits=5,
         decimal_places=2,
         default=0.10,
-        help_text="재고 버퍼 비율 (기본값: 10%)",
+        help_text="재고 불량률 (기본값: 10%)",
     )
     location = models.ManyToManyField(
         "location.Location",
