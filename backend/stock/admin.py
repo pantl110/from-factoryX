@@ -1,6 +1,27 @@
 from django.contrib import admin
 from .models import Material, MaterialHistory, Product, ProductHistory, MaterialProduct
 
+# 순환 import 방지를 위해 여기서 import
+try:
+    from repackaging.models import MaterialRepackaging
+
+    class MaterialRepackagingInline(admin.TabularInline):
+        """MaterialHistory의 소분 내역 인라인"""
+        model = MaterialRepackaging
+        extra = 0
+        fields = [
+            "lot_number",
+            "quantity",
+            "warehouse_location",
+            "expiration_date",
+        ]
+        readonly_fields = ["lot_number"]
+        can_delete = True
+
+except ImportError:
+    # repackaging 앱이 없을 경우를 대비
+    MaterialRepackagingInline = None
+
 # Register your models here.
 
 
@@ -51,6 +72,7 @@ class MaterialHistoryAdmin(admin.ModelAdmin):
     search_fields = ["material__name", "client__name"]
     readonly_fields = ["created_at", "updated_at"]
     list_per_page = 20
+    inlines = [MaterialRepackagingInline] if MaterialRepackagingInline else []
 
     fieldsets = (
         (
@@ -76,6 +98,12 @@ class MaterialHistoryAdmin(admin.ModelAdmin):
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
         ),
     )
+
+    def get_inlines(self, request, obj):
+        """구매 타입일 때만 소분 인라인 표시"""
+        if obj and obj.type == MaterialHistory.MaterialHistoryType.purchase and MaterialRepackagingInline:
+            return [MaterialRepackagingInline]
+        return []
 
 
 @admin.register(Product)

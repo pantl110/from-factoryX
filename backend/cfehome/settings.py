@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "subscription",
     "notification",
     "stock",
+    "repackaging",
     "tax",
     "location",
     "barobill",
