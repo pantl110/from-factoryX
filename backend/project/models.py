@@ -87,7 +87,7 @@ class ProjectPlan(BaseModel):
     )
     quantity = models.IntegerField(help_text="생산 수량")
     defective_quantity = models.IntegerField(
-        default=0, help_text="불량품 수량"
+        null=True, blank=True, help_text="불량품 수량"
     )
     equipment = models.ForeignKey(
         FactoryEquipment, related_name="plans", on_delete=models.CASCADE

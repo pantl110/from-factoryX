@@ -185,7 +185,7 @@ class ProjectPlanCreateOrUpdateIn(Schema):
     quotation_product_id: int
     equipment_id: int
     quantity: int  # 생산 수량
-    defective_quantity: Optional[int] = Field(0, description="불량품 수량")
+    defective_quantity: Optional[int] = Field(None, description="불량품 수량")
     start_date: datetime
     end_date: datetime
     avg_production_time: int

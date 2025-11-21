@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='projectplan',
             name='defective_quantity',
-            field=models.IntegerField(default=0, help_text='불량품 수량'),
+            field=models.IntegerField(null=True, blank=True, help_text='불량품 수량'),
         ),
     ]
