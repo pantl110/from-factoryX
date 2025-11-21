@@ -40,7 +40,11 @@ class MaterialHistoryAdmin(admin.ModelAdmin):
         "client",
         "quantity",
         "price",
+        "lot_number",
+        "warehouse_location",
+        "expiration_date",
         "total_stock",
+        "remaining_quantity",
         "created_at",
     ]
     list_filter = ["type", "created_at", "material__factory"]
@@ -58,7 +62,11 @@ class MaterialHistoryAdmin(admin.ModelAdmin):
                     "client",
                     "quantity",
                     "price",
+                    "lot_number",
+                    "warehouse_location",
+                    "expiration_date",
                     "total_stock",
+                    "remaining_quantity",
                 )
             },
         ),

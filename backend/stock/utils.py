@@ -133,7 +133,14 @@ async def get_material_history_by_id(history_id: int, user=None):
 
 
 async def create_material_history(
-    material, client, type, quantity, price=None, user=None
+    material,
+    client,
+    type,
+    quantity,
+    price=None,
+    warehouse_location=None,
+    expiration_date=None,
+    user=None,
 ):
     """원자재 히스토리를 생성하고 재고를 업데이트합니다."""
     # 원자재 소유권 검증 - user를 직접 전달
@@ -155,6 +162,8 @@ async def create_material_history(
         type=type,
         quantity=quantity,
         price=price,
+        warehouse_location=warehouse_location,
+        expiration_date=expiration_date,
         total_stock=material.current_stock,
     )
 

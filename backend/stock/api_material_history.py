@@ -75,6 +75,8 @@ async def create_single_material_history(
         client=client,
         quantity=payload.quantity,
         price=payload.price,
+        warehouse_location=payload.warehouse_location,
+        expiration_date=payload.expiration_date,
     )
 
     # material을 새로고침하여 업데이트된 재고를 가져옴
@@ -87,7 +89,13 @@ async def create_single_material_history(
         client_id=material_history.client_id,
         quantity=material_history.quantity,
         price=material_history.price,
+        lot_number=material_history.lot_number,
+        warehouse_location=material_history.warehouse_location,
+        expiration_date=material_history.expiration_date.isoformat()
+        if material_history.expiration_date
+        else None,
         total_stock=material.current_stock,
+        remaining_quantity=material_history.remaining_quantity,
     )
 
 
@@ -168,6 +176,8 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
             client=client,
             quantity=material_item.quantity,
             price=material_item.price,
+            warehouse_location=material_item.warehouse_location,
+            expiration_date=material_item.expiration_date,
         )
 
         # material을 새로고침하여 업데이트된 재고를 가져옴
@@ -181,7 +191,13 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
                 client_id=material_history.client_id,
                 quantity=material_history.quantity,
                 price=material_history.price,
+                lot_number=material_history.lot_number,
+                warehouse_location=material_history.warehouse_location,
+                expiration_date=material_history.expiration_date.isoformat()
+                if material_history.expiration_date
+                else None,
                 total_stock=material.current_stock,
+                remaining_quantity=material_history.remaining_quantity,
             )
         )
 
@@ -307,8 +323,14 @@ async def get_material_history(
                         history.created_at.isoformat() if history.created_at else None
                     ),
                     "total_stock": history.total_stock,
+                    "remaining_quantity": history.remaining_quantity,
                     "cash_receipt": history.cash_receipt_id,
                     "national_tax_service_id": national_tax_service_id,
+                    "lot_number": history.lot_number,
+                    "warehouse_location": history.warehouse_location,
+                    "expiration_date": history.expiration_date.isoformat()
+                    if history.expiration_date
+                    else None,
                 }
             )
 

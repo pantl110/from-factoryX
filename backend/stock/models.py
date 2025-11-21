@@ -1,6 +1,7 @@
 from django.db import models
 from common.models import BaseModel
 from factory.models import Factory, FactoryClient
+from stock.utils_lot import generate_lot_number
 
 
 # Create your models here.
@@ -33,10 +34,10 @@ class Material(BaseModel):
         default=0,
         help_text="안전 재고",
     )
-    cost_average = models.PositiveIntegerField(
-        default=0,
-        help_text="평균 단가",
-    )
+    # cost_average = models.PositiveIntegerField(
+    #     default=0,
+    #     help_text="평균 단가",
+    # )
     location = models.ManyToManyField(
         "location.Location",
         related_name="materials",
@@ -78,6 +79,28 @@ class MaterialHistory(BaseModel):
         blank=True,
         help_text="구매 단가 (원자재 구매 시에만 입력)",
     )
+    lot_number = models.CharField(
+        max_length=100,
+        default="",
+        blank=True,
+        help_text="LOT 번호",
+    )
+    warehouse_location = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="창고 위치",
+    )
+    expiration_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="유통기한",
+    )
+    remaining_quantity = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="현재 잔량",
+    )
     cash_receipt = models.ForeignKey(
         "tax.CashReceipt",
         related_name="material_histories",
@@ -91,6 +114,9 @@ class MaterialHistory(BaseModel):
     )
 
     def save(self, *args, **kwargs):
+        if not self.lot_number:
+            self.lot_number = generate_lot_number()
+
         # total_stock 자동 계산 (값이 없는 경우)
         if self.total_stock is None:
             current_stock = self.material.current_stock or 0
@@ -100,32 +126,42 @@ class MaterialHistory(BaseModel):
                 self.total_stock = current_stock - self.quantity
 
         # 구매인 경우에만 cost_average 계산
-        if (
-            self.type == self.MaterialHistoryType.purchase
-            and self.price
-            and self.price > 0
-        ):
-            try:
-                # 기존 재고와 새로운 구매를 고려한 평균 단가 계산
-                current_stock = self.material.current_stock or 0
-                current_total_value = current_stock * self.material.cost_average
-                new_total_value = current_total_value + (self.quantity * self.price)
-                new_total_stock = current_stock + self.quantity
+        # if (
+        #     self.type == self.MaterialHistoryType.purchase
+        #     and self.price
+        #     and self.price > 0
+        # ):
+        #     try:
+        #         # 기존 재고와 새로운 구매를 고려한 평균 단가 계산
+        #         current_stock = self.material.current_stock or 0
+        #         current_total_value = current_stock * self.material.cost_average
+        #         new_total_value = current_total_value + (self.quantity * self.price)
+        #         new_total_stock = current_stock + self.quantity
+        #
+        #         if new_total_stock > 0:
+        #             # 반올림을 사용하여 평균 단가 계산
+        #             new_cost_average = round(new_total_value / new_total_stock)
+        #             self.material.cost_average = new_cost_average
+        #             # current_stock도 함께 업데이트
+        #             self.material.current_stock = new_total_stock
+        #             self.material.save(update_fields=["cost_average", "current_stock"])
+        #     except Exception:
+        #         # 로그 기록 또는 에러 처리
+        #         pass
+        # else:
+        #     # 구매가 아닌 경우에도 current_stock 업데이트
+        #     self.material.current_stock = self.total_stock
+        #     self.material.save(update_fields=["current_stock"])
+        
+        # current_stock 업데이트
+        self.material.current_stock = self.total_stock
+        self.material.save(update_fields=["current_stock"])
 
-                if new_total_stock > 0:
-                    # 반올림을 사용하여 평균 단가 계산
-                    new_cost_average = round(new_total_value / new_total_stock)
-                    self.material.cost_average = new_cost_average
-                    # current_stock도 함께 업데이트
-                    self.material.current_stock = new_total_stock
-                    self.material.save(update_fields=["cost_average", "current_stock"])
-            except Exception:
-                # 로그 기록 또는 에러 처리
-                pass
+        if self.type == self.MaterialHistoryType.purchase:
+            if self.remaining_quantity is None:
+                self.remaining_quantity = self.quantity
         else:
-            # 구매가 아닌 경우에도 current_stock 업데이트
-            self.material.current_stock = self.total_stock
-            self.material.save(update_fields=["current_stock"])
+            self.remaining_quantity = None
 
         super().save(*args, **kwargs)
 

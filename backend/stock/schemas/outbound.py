@@ -176,7 +176,11 @@ class MaterialHistoryDetailOut(Schema):
     client_id: int
     quantity: int
     price: Optional[int]
+    lot_number: Optional[str] = None
+    warehouse_location: Optional[str] = None
+    expiration_date: Optional[str] = None
     total_stock: int
+    remaining_quantity: Optional[int] = None
 
 
 # (POST) Create Material History
@@ -202,3 +206,7 @@ class MaterialHistoryItemOut(Schema):
     total_stock: int
     cash_receipt: Optional[int]
     national_tax_service_id: Optional[int]
+    lot_number: Optional[str] = None
+    warehouse_location: Optional[str] = None
+    expiration_date: Optional[str] = None
+    remaining_quantity: Optional[int] = None

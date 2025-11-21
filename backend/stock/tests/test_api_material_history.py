@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.utils import timezone
 from ninja.testing import TestAsyncClient
 from asgiref.sync import sync_to_async
 
@@ -119,12 +120,14 @@ class TestMaterialHistoryAPI(TestCase):
         self.assertEqual(data["materials"][0]["quantity"], 100)
         self.assertEqual(data["materials"][0]["price"], 1000)
         self.assertEqual(data["materials"][0]["total_stock"], 100)
+        self.assertEqual(data["materials"][0]["remaining_quantity"], 100)
 
         # 두 번째 원자재 확인
         self.assertEqual(data["materials"][1]["type"], "purchase")
         self.assertEqual(data["materials"][1]["quantity"], 50)
         self.assertEqual(data["materials"][1]["price"], 2000)
         self.assertEqual(data["materials"][1]["total_stock"], 50)
+        self.assertEqual(data["materials"][1]["remaining_quantity"], 50)
 
         # 실제로 원자재가 데이터베이스에 생성되었는지 확인
         material1 = await sync_to_async(Material.objects.get)(
@@ -206,9 +209,11 @@ class TestMaterialHistoryAPI(TestCase):
         await sync_to_async(material.refresh_from_db)()
         self.assertEqual(data["materials"][0]["total_stock"], 80)  # 50 + 30
         self.assertEqual(material.current_stock, 80)
+        self.assertEqual(data["materials"][0]["remaining_quantity"], 30)
 
         # 새로운 원자재 확인
         self.assertEqual(data["materials"][1]["total_stock"], 25)
+        self.assertEqual(data["materials"][1]["remaining_quantity"], 25)
 
         # 새로운 원자재가 실제로 데이터베이스에 생성되었는지 확인
         new_material = await sync_to_async(Material.objects.get)(
@@ -294,6 +299,8 @@ class TestMaterialHistoryAPI(TestCase):
             "quantity": 50,
             "price": 2000,
             "client_id": self.client_obj.id,
+            "warehouse_location": "A-01",
+            "expiration_date": "2030-12-31",
         }
 
         response = await self.client.post(
@@ -305,7 +312,15 @@ class TestMaterialHistoryAPI(TestCase):
         self.assertEqual(data["type"], "purchase")
         self.assertEqual(data["quantity"], 50)
         self.assertEqual(data["price"], 2000)
+        today_prefix = timezone.localdate().strftime("LOT-%Y%m%d-")
+        self.assertTrue(
+            data["lot_number"].startswith(today_prefix),
+            f"lot_number should start with {today_prefix}",
+        )
+        self.assertEqual(data["warehouse_location"], "A-01")
+        self.assertEqual(data["expiration_date"], "2030-12-31")
         self.assertEqual(data["total_stock"], 150)  # 100 + 50
+        self.assertEqual(data["remaining_quantity"], 50)
 
         # 재고 업데이트 확인
         await sync_to_async(self.material.refresh_from_db)()
@@ -321,6 +336,8 @@ class TestMaterialHistoryAPI(TestCase):
             "quantity": 30,
             "price": None,
             "client_id": self.client_obj.id,
+            "warehouse_location": None,
+            "expiration_date": None,
         }
 
         response = await self.client.post(
@@ -332,7 +349,13 @@ class TestMaterialHistoryAPI(TestCase):
         self.assertEqual(data["type"], "consumption")
         self.assertEqual(data["quantity"], 30)
         self.assertIsNone(data["price"])
+        today_prefix = timezone.localdate().strftime("LOT-%Y%m%d-")
+        self.assertTrue(
+            data["lot_number"].startswith(today_prefix),
+            f"lot_number should start with {today_prefix}",
+        )
         self.assertEqual(data["total_stock"], 70)  # 100 - 30
+        self.assertIsNone(data["remaining_quantity"])
 
         # 재고 업데이트 확인
         await sync_to_async(self.material.refresh_from_db)()

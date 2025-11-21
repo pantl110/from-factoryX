@@ -1,3 +1,4 @@
+from datetime import date
 from ninja import Field, FilterSchema, Schema
 from typing import Optional, List
 
@@ -166,6 +167,12 @@ class MaterialItemIn(Schema):
     unit: str
     quantity: int
     price: int
+    warehouse_location: Optional[str] = Field(
+        default=None, description="창고 위치"
+    )
+    expiration_date: Optional[date] = Field(
+        default=None, description="유통기한"
+    )
 
 
 # Factory Client Info
@@ -185,6 +192,12 @@ class SingleMaterialHistoryCreateIn(Schema):
     quantity: int
     price: Optional[int]
     client_id: int
+    warehouse_location: Optional[str] = Field(
+        default=None, description="창고 위치"
+    )
+    expiration_date: Optional[date] = Field(
+        default=None, description="유통기한"
+    )
 
 
 # (POST) Create Material History
