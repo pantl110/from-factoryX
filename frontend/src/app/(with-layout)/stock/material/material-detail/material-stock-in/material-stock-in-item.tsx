@@ -16,6 +16,9 @@ export const MaterialStockInItem = () => {
       <p className="flex-1 px-3 text-primary truncate" title="+1000EA">
         +1000EA
       </p>
+      <p className="flex-1 px-3 text-dg truncate" title="100EA">
+        100EA
+      </p>
       <p className="flex-1 px-3 text-dg truncate" title="창고1-랙A">
         창고1-랙A
       </p>

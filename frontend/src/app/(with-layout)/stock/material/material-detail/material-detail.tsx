@@ -123,65 +123,44 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       useRef<ProductRequiringMaterialRefModel>(null);
     const subMaterialsRef = useRef<SubMaterialsRefModel>(null);
 
-    // 업체별 단가 비교 조회 훅 (타입: 구매만)
-    const { getMaterialHistory: getPriceHistory, histories: priceHistories } =
-      useGetMaterialHistory();
-
-    // 재고 이력 조회 훅 (전체)
-    const {
-      getMaterialHistory: getStockHistory,
-      histories: stockHistories,
-      isLoading: isStockLoading,
-    } = useGetMaterialHistory();
-
     // 페이지네이션 상태 (각 섹션별로 독립적)
     const [priceCurrentPage, setPriceCurrentPage] = useState(1);
-    // const [stockCurrentPage, setStockCurrentPage] = useState(1);
+    const [stockCurrentPage, setStockCurrentPage] = useState(1);
     const pageSize = 5;
 
-    // 업체별 단가 비교 기간 선택 훅
-    const pricePeriodSelector = usePeriodSelector({
-      materialId,
-      page: priceCurrentPage,
-      pageSize,
-      onPeriodChange: async (filters) => {
-        if (materialId) {
-          await getPriceHistory({
-            material_id: materialId,
-            start_date: filters.start_date as string | undefined,
-            end_date: filters.end_date as string | undefined,
-            page: filters.page as number,
-            page_size: pageSize,
-            type: 'purchase',
-          });
-        }
-      },
-    });
+    // 업체별 단가 비교 필터 상태
+    const [priceFilters, setPriceFilters] = useState<{
+      start_date?: string;
+      end_date?: string;
+    }>({});
+
+    // 업체별 단가 비교 조회 훅 (타입: 구매만)
+    const { histories: priceHistories, refetch: refetchPriceHistory } =
+      useGetMaterialHistory({
+        material_id: materialId,
+        type: 'purchase',
+        start_date: priceFilters.start_date,
+        end_date: priceFilters.end_date,
+        page: priceCurrentPage,
+        page_size: pageSize,
+      });
+
+    // 재고 이력 조회 훅 (전체)
+    const { histories: stockHistories, isLoading: isStockLoading } =
+      useGetMaterialHistory({
+        material_id: materialId,
+        page: stockCurrentPage,
+        page_size: pageSize,
+      });
 
     // 업체별 단가 비교 페이지 변경 핸들러
     const handlePricePageChange = (page: number) => {
       setPriceCurrentPage(page);
-      if (materialId) {
-        // 업체별 단가 비교 (타입: 구매만)
-        getPriceHistory({
-          material_id: materialId,
-          page,
-          page_size: pageSize,
-          type: 'purchase',
-        });
-      }
     };
 
     // 재고 이력 페이지 변경 핸들러 (타입: 전체)
     const handleStockPageChange = (page: number) => {
       setStockCurrentPage(page);
-      if (materialId) {
-        getStockHistory({
-          material_id: materialId,
-          page,
-          page_size: pageSize,
-        });
-      }
     };
 
     // watch와 setValue 함수를 메모이제이션
@@ -281,31 +260,9 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     // 클라이언트가 수정되어 저장되었을 때 업체별 단가 비교 재조회
     useEffect(() => {
       if (clientWasModified && materialId) {
-        // pricePeriodSelector의 createFilters를 사용해서 현재 기간에 맞는 필터 생성
-        const filters = pricePeriodSelector.createFilters(
-          pricePeriodSelector.selectedPeriod,
-          priceCurrentPage // 업체별 단가 비교의 현재 페이지 유지
-        );
-
-        if (filters) {
-          getPriceHistory({
-            material_id: materialId,
-            start_date: filters.start_date as string | undefined,
-            end_date: filters.end_date as string | undefined,
-            page: filters.page as number,
-            page_size: pageSize,
-            type: 'purchase',
-          });
-        }
+        refetchPriceHistory();
       }
-    }, [
-      clientWasModified,
-      materialId,
-      priceCurrentPage,
-      pageSize,
-      getPriceHistory,
-      pricePeriodSelector,
-    ]);
+    }, [clientWasModified, materialId, refetchPriceHistory]);
 
     // 제품이 연결/삭제되었을 때 ProductRequiringMaterial 재렌더링
     useEffect(() => {
@@ -403,6 +360,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           {/* 원자재 입고 및 LOT 추적 */}
           <MaterialStockIn />
 
+          {/* 이 부분 확인... */}
           {/* 원자재 소분 내역 */}
           <MaterialPackaging
             setIsMaterialPackagingDetailModalOpen={
@@ -415,19 +373,17 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
 
           {/* 원자재 입·출고 내역 */}
           <div className="flex flex-col gap-3">
-            <div className="flex gap-2 items-center">
-              <h3 className="Heading-3 text-dg h-10 flex items-center">
-                원자재 입고 및 사용 내역
-              </h3>
+            <h3 className="Heading-3 text-dg h-10 flex items-center">
+              원자재 입고 및 사용 내역
+            </h3>
 
-              <MaterialHistory
-                histories={stockHistories?.data}
-                isLoading={isStockLoading}
-                currentPage={stockCurrentPage}
-                totalPages={stockHistories?.pageCnt || 1}
-                onPageChange={handleStockPageChange}
-              />
-            </div>
+            <MaterialStockLog
+              histories={stockHistories?.data}
+              isLoading={isStockLoading}
+              currentPage={stockCurrentPage}
+              totalPages={stockHistories?.pageCnt || 1}
+              onPageChange={handleStockPageChange}
+            />
           </div>
         </div>
       </>

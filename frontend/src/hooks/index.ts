@@ -134,7 +134,12 @@ export { useGetMaterialListMutation } from './stock/material/use-material-mutati
 // Material history related hooks
 export { default as useCreateMaterialHistory } from './stock/material-history/use-create-material-history';
 export { default as useCreateSingleMaterialHistory } from './stock/material-history/use-create-single-material-history';
-export { default as useGetMaterialHistory } from './stock/material-history/use-get-material-history';
+export { default as useGetMaterialHistory } from './stock/material-history/use-get-material-history-query';
+export {
+  getMaterialHistoryQueryFn,
+  getMaterialHistoryQueryKey,
+} from './stock/material-history/use-get-material-history-query';
+export type { GetMaterialHistoryOptionModel } from './stock/material-history/use-get-material-history-query';
 
 // Material product related hooks
 export { default as useMaterialProduct } from './stock/use-material-product';

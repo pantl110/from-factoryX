@@ -22,6 +22,7 @@ export const MaterialStockIn = () => {
           <p className="flex-[1.5] px-3 text-sv">LOT 번호</p>
           <p className="flex-1 px-3 text-sv">입고일</p>
           <p className="flex-1 px-3 text-sv">입고 수량</p>
+          <p className="flex-1 px-3 text-sv">남은 수량</p>
           <p className="flex-1 px-3 text-sv">창고 위치</p>
           <p className="flex-1 px-3 text-sv">유통기한</p>
           {!isViewer && hasSubscription() && (
