@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import MaterialStockLogItem from './material-stock-log-item';
-import NoHistoryBox from '@/ui/no-history-box';
+import { NoHistoryBox } from '@/ui';
 import Pagination from '@/components/pagination';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 

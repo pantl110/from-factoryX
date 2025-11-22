@@ -1,6 +1,6 @@
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import MiniBtn from '@/ui/mini-btn';
+import { MiniBtn } from '@/ui';
 
 export const MaterialStockInItem = () => {
   const role = useMemberStore((state) => state.role);

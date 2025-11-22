@@ -1,12 +1,11 @@
-import IconBtn from '@/ui/icon-btn';
 import { ArrowLineUpRight, Trash } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import Chip from '@/ui/chip';
 import { MaterialSimpleModel } from '@/types/data-model';
 import MaterialDetailPanel from '../index';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { IconBtn, RoundChip } from '@/ui';
 
 interface SubMaterialItemProps {
   material: MaterialSimpleModel;
@@ -33,25 +32,35 @@ export const SubMaterialItem = ({
     useState(false);
 
   // 재고 상태 계산 함수
-  const getStockStatus = () => {
+  const getStockStatus = (): {
+    text: string;
+    color: 'secondary' | 'red';
+  } | null => {
     const currentStock = material.current_stock ?? 0;
-    const standardStock = material.standard_stock ?? 0;
+    const standardStock = material.standard_stock;
 
-    if (standardStock === 0) {
-      return { text: '-', textColor: 'text-dg', bgColor: '' };
+    // 기준 재고가 없으면(null/undefined) 상태를 반환하지 않음
+    if (standardStock === null || standardStock === undefined) {
+      return null;
+    }
+
+    // 현재 재고가 0이면 위험
+    if (currentStock === 0) {
+      return {
+        text: '위험',
+        color: 'red' as const,
+      };
     }
 
     if (currentStock >= standardStock) {
       return {
         text: '충분',
-        textColor: 'text-primary',
-        bgColor: 'bg-primary-8',
+        color: 'secondary' as const,
       };
     } else {
       return {
         text: '부족',
-        textColor: 'text-red',
-        bgColor: 'bg-red-8',
+        color: 'red' as const,
       };
     }
   };
@@ -84,11 +93,15 @@ export const SubMaterialItem = ({
         <p className="flex-1 px-3 text-dg">{stockQuantity}</p>
 
         <div className="flex-[0.5] px-3">
-          <Chip
-            text={stockStatus.text}
-            textColor={stockStatus.textColor}
-            bgColor={stockStatus.bgColor}
-          />
+          {stockStatus ? (
+            <RoundChip
+              text={stockStatus.text}
+              variant="sm"
+              color={stockStatus.color}
+            />
+          ) : (
+            <span className="text-dg Me_Body-1">-</span>
+          )}
         </div>
 
         {!isViewer && hasSubscription() && (

@@ -1,4 +1,4 @@
-import MiniBtn from '@/ui/mini-btn';
+import { MiniBtn } from '@/ui';
 import MaterialInfo, { MaterialInfoModel } from './material-info';
 import ProductRequiringMaterial from './product-requiring-material';
 import QuotationHistory from './quotation-history';
@@ -12,7 +12,6 @@ import {
   useCallback,
 } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { usePeriodSelector } from '@/hooks/use-period-selector';
 import { ProductRequiringMaterialRefModel } from './product-requiring-material';
 import { useGetMaterialHistory } from '@/hooks';
 import useMemberStore from '@/store/member-store';
