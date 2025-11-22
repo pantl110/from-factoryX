@@ -23,16 +23,20 @@ export const MaterialStockInItem = ({ history }: MaterialStockInItemProps) => {
       </p>
       <p
         className="flex-1 px-3 text-primary truncate"
-        title={`+${history.quantity}${history.material_unit}`}
+        title={`+${history.quantity.toLocaleString()}${history.material_unit}`}
       >
-        {`+${history.quantity}${history.material_unit}`}
+        {`+${history.quantity.toLocaleString()}${history.material_unit}`}
       </p>
       <p
         className="flex-1 px-3 text-dg truncate"
-        title={`${history.remaining_quantity}${history.material_unit}`}
+        title={
+          history.remaining_quantity
+            ? `${history.remaining_quantity.toLocaleString()}${history.material_unit}`
+            : '-'
+        }
       >
         {history.remaining_quantity
-          ? `${history.remaining_quantity}${history.material_unit}`
+          ? `${history.remaining_quantity.toLocaleString()}${history.material_unit}`
           : '-'}
       </p>
       <p
