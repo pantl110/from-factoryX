@@ -51,8 +51,11 @@ const ProductRequiringMaterial = forwardRef<
       (state) => state.hasSubscription
     );
 
-    const { getMaterialProductConnections, data: connections } =
-      useMaterialProduct();
+    const {
+      getMaterialProductConnections,
+      data: connections,
+      isLoading,
+    } = useMaterialProduct();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [productConnections, setProductConnections] = useState<
       ConnectionModelType[]
@@ -159,7 +162,9 @@ const ProductRequiringMaterial = forwardRef<
         </div>
 
         <div className="flex flex-col">
-          {productConnections.length > 0 ? (
+          {isLoading ? (
+            <div className="h-50" />
+          ) : productConnections.length > 0 ? (
             <>
               <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
                 <p className="flex-1 py-1 px-3 text-sv">제품명</p>

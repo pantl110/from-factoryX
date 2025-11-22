@@ -20,7 +20,11 @@ const QuotationHistory = ({
   totalPages = 1,
   onPageChange,
 }: QuotationHistoryProps) => {
-  if (isLoading || !histories || histories.length === 0) {
+  if (isLoading) {
+    return <div className="h-50" />;
+  }
+
+  if (!histories || histories.length === 0) {
     return (
       <NoHistoryBox
         title="이 원자재의 거래처 정보가 아직 없어요."

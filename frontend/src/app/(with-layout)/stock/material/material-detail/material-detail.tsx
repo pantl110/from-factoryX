@@ -58,6 +58,7 @@ interface MaterialDetailProps {
     sourceMaterialId: number,
     targetMaterialId: number
   ) => void;
+  isLocationLoading?: boolean;
 }
 
 const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
@@ -79,6 +80,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       setIsMaterialPackagingDetailModalOpen,
       setIsCreateSubstituteModalOpen,
       handleOpenDeleteSubstituteModal,
+      isLocationLoading,
     },
     ref
   ) => {
@@ -313,6 +315,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               onLocationClick={onLocationClick}
               locations={locations}
               onDeleteLocation={onDeleteLocation}
+              isLoading={isLocationLoading}
             />
           </div>
 
@@ -357,9 +360,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           </div>
 
           {/* 원자재 입고 및 LOT 추적 */}
-          <MaterialStockIn />
+          <MaterialStockIn materialId={materialId} />
 
-          {/* 이 부분 확인... */}
           {/* 원자재 소분 내역 */}
           <MaterialPackaging
             setIsMaterialPackagingDetailModalOpen={
@@ -370,6 +372,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           {/* 원자재 사용 내역 */}
           <MaterialStockOut />
 
+          {/*  이 부분 확인해보기 */}
           {/* 원자재 입·출고 내역 */}
           <div className="flex flex-col gap-3">
             <h3 className="Heading-3 text-dg h-10 flex items-center">

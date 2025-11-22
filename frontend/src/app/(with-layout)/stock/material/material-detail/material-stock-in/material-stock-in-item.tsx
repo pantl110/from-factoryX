@@ -1,8 +1,14 @@
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { MiniBtn } from '@/ui';
+import { MaterialHistoryResponseModel } from '@/types/data-model';
+import { convertUTCToKSTDate } from '@/utils';
 
-export const MaterialStockInItem = () => {
+interface MaterialStockInItemProps {
+  history: MaterialHistoryResponseModel;
+}
+
+export const MaterialStockInItem = ({ history }: MaterialStockInItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -11,18 +17,35 @@ export const MaterialStockInItem = () => {
 
   return (
     <div className="flex items-center h-14 border-b border-lg Me_Body-1 group cursor-default">
-      <p className="flex-[1.5] px-3 text-dg">LOT-20251019-01</p>
-      <p className="flex-1 px-3 text-dg">2025-10-19</p>
-      <p className="flex-1 px-3 text-primary truncate" title="+1000EA">
-        +1000EA
+      <p className="flex-[1.5] px-3 text-dg">{history.lot_number || '-'}</p>
+      <p className="flex-1 px-3 text-dg">
+        {convertUTCToKSTDate(history.date) || '-'}
       </p>
-      <p className="flex-1 px-3 text-dg truncate" title="100EA">
-        100EA
+      <p
+        className="flex-1 px-3 text-primary truncate"
+        title={`+${history.quantity}${history.material_unit}`}
+      >
+        {`+${history.quantity}${history.material_unit}`}
       </p>
-      <p className="flex-1 px-3 text-dg truncate" title="창고1-랙A">
-        창고1-랙A
+      <p
+        className="flex-1 px-3 text-dg truncate"
+        title={`${history.remaining_quantity}${history.material_unit}`}
+      >
+        {history.remaining_quantity
+          ? `${history.remaining_quantity}${history.material_unit}`
+          : '-'}
       </p>
-      <p className="flex-1 px-3 text-dg">-</p>
+      <p
+        className="flex-1 px-3 text-dg truncate"
+        title={history.warehouse_location || '-'}
+      >
+        {history.warehouse_location || '-'}
+      </p>
+      <p className="flex-1 px-3 text-dg">
+        {history.expiration_date
+          ? convertUTCToKSTDate(history.expiration_date) || '-'
+          : '-'}
+      </p>
 
       {!isViewer && hasSubscription() && (
         <div className="flex-1 px-3">

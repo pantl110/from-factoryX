@@ -25,9 +25,7 @@ import {
   useMaterialProduct,
 } from '@/hooks';
 import { useStagedMaterials } from '@/app/(with-layout)/stock/product/product-detail/bom/use-staged-materials';
-// import NoHistoryBox from '@/ui/no-history-box';
 import ConnectMaterialModal from '../modals/connect-material-modal';
-// import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useUploadFile, useToast } from '@/hooks';
 import MaterialDetailPanel from '../../material/material-detail';
@@ -203,9 +201,6 @@ const ProductDetail = ({
 
   // 해당 원자재 클릭 시 보여줄 원자재 id와 해당 디테일 판넬
   const [materialId, setMaterialId] = useState<number | null>(null);
-
-  // 각 StockLocationItem 별 모달 오픈 상태 관리
-  // const [openUploadModals, setOpenUploadModals] = useState<boolean[]>([false]);
 
   // 토스트 상태
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -620,7 +615,9 @@ const ProductDetail = ({
                 )}
             </div>
             {/* locations가 없을 때 */}
-            {locationListData && 'locations' in locationListData ? (
+            {isLocationLoading ? (
+              <div className="h-50" />
+            ) : locationListData && 'locations' in locationListData ? (
               locationListData.locations.length === 0 ? (
                 <NoHistoryBox
                   title="등록된 창고 위치가 아직 없어요."
@@ -699,6 +696,7 @@ const ProductDetail = ({
               setDeleteConnectionId(connectionId);
               setIsDeleteConnectionModalOpen(true);
             }}
+            isLoading={isMaterialProductLoading}
           />
 
           {/* 제품 입·출고 내역 */}

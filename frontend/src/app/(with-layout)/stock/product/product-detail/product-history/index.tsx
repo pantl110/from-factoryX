@@ -23,7 +23,7 @@ const ProductHistory = ({
   // const [isProductStockLogDropdownOpen, setIsProductStockLogDropdownOpen] =
   //   useState(false); // 판넬의 제품 입·출고 내역 드롭다운
 
-  const { listProductHistories, data } = useProductHistory();
+  const { listProductHistories, data, isLoading } = useProductHistory();
   const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});
 
   const listData = data as ProductHistoryListResponseModel | undefined;
@@ -60,26 +60,6 @@ const ProductHistory = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
-  // // 기간 변경 핸들러
-  // const handlePeriodChange = (filters: Record<string, unknown>) => {
-  //   listProductHistories(filters);
-  // };
-
-  // // 기간 선택 훅 사용
-  // const periodSelector = usePeriodSelector({
-  //   onPeriodChange: handlePeriodChange,
-  //   productId,
-  //   page,
-  //   pageSize: PAGE_SIZE,
-  // });
-
-  // const handleDropdownSelect = (value: string) => {
-  //   periodSelector.handlePeriodChange(
-  //     value as '1개월' | '3개월' | '6개월' | '1년' | '직접 설정'
-  //   );
-  //   setIsProductStockLogDropdownOpen(false);
-  // };
-
   return (
     <>
       <div className="flex flex-col gap-3">
@@ -103,73 +83,12 @@ const ProductHistory = ({
               </div>
             )}
           </div>
-
-          {/* 기간 선택 */}
-          {/* {productId !== null && (
-            <div className="relative">
-              <MiniBtn
-                text={periodSelector.selectedPeriod}
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
-                icon={CaretDown}
-                iconPosition="right"
-                onClick={() => setIsProductStockLogDropdownOpen(true)}
-                height="h-9"
-              />
-              {isProductStockLogDropdownOpen && (
-                <div className="absolute top-12 right-0 z-10 pb-5">
-                  <ProductStockLogDropdown
-                    onClose={() => setIsProductStockLogDropdownOpen(false)}
-                    onSelect={handleDropdownSelect}
-                  />
-                </div>
-              )}
-            </div>
-          )} 
-
-          {periodSelector.selectedPeriod === '직접 설정' && (
-            <div className="flex items-center px-3 h-9 gap-2 border border-lg rounded-lg">
-              <CalendarCheck size={20} className="text-dg" />
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="YYYY-MM-DD"
-                className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
-                value={periodSelector.customStartDate}
-                onChange={(e) =>
-                  periodSelector.handleDateAutoHyphen(
-                    e.target.value,
-                    periodSelector.handleStartDateChange
-                  )
-                }
-                maxLength={10}
-                size={(periodSelector.customStartDate || 'YYYY-MM-DDDD').length}
-                onKeyDown={periodSelector.handleCustomDateKeyDown}
-              />
-              <span className="mx-0">~</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="YYYY-MM-DD"
-                className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
-                value={periodSelector.customEndDate}
-                onChange={(e) =>
-                  periodSelector.handleDateAutoHyphen(
-                    e.target.value,
-                    periodSelector.handleEndDateChange
-                  )
-                }
-                maxLength={10}
-                size={(periodSelector.customEndDate || 'YYYY-MM-DDDD').length}
-                onKeyDown={periodSelector.handleCustomDateKeyDown}
-              />
-            </div>
-          )} */}
         </div>
 
         {/* 재고 이력 목록 */}
-        {productId === null || histories.length === 0 ? (
+        {isLoading ? (
+          <div className="h-50" />
+        ) : productId === null || histories.length === 0 ? (
           <NoHistoryBox
             title="등록된 재고 이력이 아직 없어요."
             text="입고나 출고와 관련된 재고 이력이 등록되면 이곳에서 확인할 수 있어요."

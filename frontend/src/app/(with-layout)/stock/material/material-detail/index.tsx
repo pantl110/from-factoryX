@@ -127,8 +127,13 @@ const MaterialDetailPanel = ({
     setSelectedClientId(clientId);
   };
 
-  const { createLocation, updateLocation, deleteLocation, listLocations } =
-    useLocation();
+  const {
+    createLocation,
+    updateLocation,
+    deleteLocation,
+    listLocations,
+    isLoading: isLocationLoading,
+  } = useLocation();
   const { uploadMultipleFiles } = useUploadFile();
   const { getProductList } = useGetProduct();
   const { deleteMaterialProductConnection } = useMaterialProduct();
@@ -463,6 +468,7 @@ const MaterialDetailPanel = ({
           }}
           clientWasModified={hasClientBeenModified}
           productWasModified={hasProductBeenModified}
+          isLocationLoading={isLocationLoading}
           setIsMaterialPackagingDetailModalOpen={
             setIsMaterialPackagingDetailModalOpen
           }

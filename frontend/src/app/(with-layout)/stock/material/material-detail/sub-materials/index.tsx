@@ -84,7 +84,9 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
         </div>
 
         {/* 데이터가 있는 경우 */}
-        {!isLoading && !error && targetMaterials.length > 0 ? (
+        {isLoading ? (
+          <div className="h-50" />
+        ) : !error && targetMaterials.length > 0 ? (
           <div className="flex flex-col">
             <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
               <p className="flex-1 px-3 text-sv">자재명</p>

@@ -31,6 +31,7 @@ interface StockLocationProps {
   onLocationClick?: (locationId: number) => void;
   locations?: LocationFormModel['locations'];
   onDeleteLocation?: (index: number, locationId?: number) => void;
+  isLoading?: boolean;
 }
 
 const StockLocation = ({
@@ -40,7 +41,12 @@ const StockLocation = ({
   locations,
   remove,
   onDeleteLocation,
+  isLoading,
 }: StockLocationProps) => {
+  if (isLoading) {
+    return <div className="h-50" />;
+  }
+
   if (!fields || fields.length === 0) {
     return (
       <div className="flex flex-col gap-3">

@@ -13,6 +13,7 @@ type ConnectionModelType =
 
 interface StockStatusProps {
   setMaterialId: (id: number | null) => void;
+  isLoading?: boolean;
   connections: ConnectionModelType[];
   quantityOverrides?: Record<number, number>;
   setIsQuantityDirty: (isDirty: boolean) => void;
@@ -26,6 +27,7 @@ interface StockStatusProps {
 }
 
 const StockStatus = ({
+  isLoading,
   onMaterialModalOpen,
   setMaterialId,
   connections,
@@ -46,7 +48,11 @@ const StockStatus = ({
 
   return (
     <>
-      {connections && Array.isArray(connections) && connections.length > 0 ? (
+      {isLoading ? (
+        <div className="h-50" />
+      ) : connections &&
+        Array.isArray(connections) &&
+        connections.length > 0 ? (
         <div>
           <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
             <p className="flex-[0.7] px-3 text-sv">구분</p>
