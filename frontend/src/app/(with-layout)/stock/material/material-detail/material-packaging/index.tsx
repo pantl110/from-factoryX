@@ -3,7 +3,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import { MaterialPackagingItem } from './material-packaging-item';
 
 interface MaterialPackagingProps {
-  setIsMaterialPackagingDetailModalOpen: (v: boolean) => void;
+  setIsMaterialPackagingDetailModalOpen: () => void;
 }
 
 export const MaterialPackaging = ({

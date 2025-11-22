@@ -8,7 +8,11 @@ interface MaterialPackagingFormModel {
   expirationDate: string;
 }
 
-export const InputArea = () => {
+interface InputAreaProps {
+  mode: 'create' | 'update';
+}
+
+export const InputArea = ({ mode }: InputAreaProps) => {
   const { control, handleSubmit } = useForm<MaterialPackagingFormModel>({
     defaultValues: {
       quantity: '',
@@ -47,8 +51,11 @@ export const InputArea = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <InfoLabelValue label="상태" chip={{ status: 'using' }} />
+
       <InfoLabelValue label="부모 LOT 번호" value="LOT-20250910-01" />
-      <InfoLabelValue label="소분 LOT 번호" value="LOT-20250910-01-01" />
+      {mode === 'update' && (
+        <InfoLabelValue label="소분 LOT 번호" value="LOT-20250910-01-01" />
+      )}
 
       <Controller
         name="quantity"

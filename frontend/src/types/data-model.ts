@@ -456,6 +456,10 @@ export interface MaterialResponseModel {
   spec: string;
   current_stock?: number;
   standard_stock?: number;
+  rop?: number;
+  max_stock?: number;
+  expiration_date?: string;
+  memo?: string;
   location?: number;
 }
 

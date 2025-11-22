@@ -104,7 +104,12 @@ const useGetMaterialHistory = (options?: GetMaterialHistoryOptionModel) => {
 
   const query = useQuery<MaterialHistoryListResponseModel, Error>({
     queryKey,
-    queryFn: () => getMaterialHistoryQueryFn(factoryId!, options),
+    queryFn: () => {
+      if (!factoryId) {
+        throw new Error('공장 ID가 설정되지 않았습니다.');
+      }
+      return getMaterialHistoryQueryFn(factoryId, options);
+    },
     enabled: !!factoryId,
     staleTime: 0,
     gcTime: 1000 * 60 * 5,
@@ -160,4 +165,3 @@ const useGetMaterialHistory = (options?: GetMaterialHistoryOptionModel) => {
 };
 
 export default useGetMaterialHistory;
-

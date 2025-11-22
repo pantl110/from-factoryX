@@ -6,9 +6,13 @@ import { convertUTCToKSTDate } from '@/utils';
 
 interface MaterialStockInItemProps {
   history: MaterialHistoryResponseModel;
+  setIsMaterialPackagingDetailModalOpen: (mode: 'create' | 'update') => void;
 }
 
-export const MaterialStockInItem = ({ history }: MaterialStockInItemProps) => {
+export const MaterialStockInItem = ({
+  history,
+  setIsMaterialPackagingDetailModalOpen,
+}: MaterialStockInItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -59,7 +63,7 @@ export const MaterialStockInItem = ({ history }: MaterialStockInItemProps) => {
             height="h-8"
             padding="px-3"
             textStyle="Re_body-2"
-            onClick={() => {}}
+            onClick={() => setIsMaterialPackagingDetailModalOpen('create')}
           />
         </div>
       )}

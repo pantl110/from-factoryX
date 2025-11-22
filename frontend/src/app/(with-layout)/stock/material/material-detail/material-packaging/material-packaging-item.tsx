@@ -5,7 +5,7 @@ import IconBtn from '@/ui/icon-btn';
 import { PencilSimple, Trash } from '@phosphor-icons/react';
 
 interface MaterialPackagingItemProps {
-  setIsMaterialPackagingDetailModalOpen: (v: boolean) => void;
+  setIsMaterialPackagingDetailModalOpen: () => void;
 }
 
 export const MaterialPackagingItem = ({
@@ -45,9 +45,7 @@ export const MaterialPackagingItem = ({
             icon={PencilSimple}
             size="w-9 h-9"
             iconSize={16}
-            onClick={() => {
-              setIsMaterialPackagingDetailModalOpen(true);
-            }}
+            onClick={setIsMaterialPackagingDetailModalOpen}
           />
           <IconBtn
             icon={Trash}

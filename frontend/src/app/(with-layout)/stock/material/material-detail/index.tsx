@@ -79,6 +79,15 @@ const MaterialDetailPanel = ({
     isMaterialPackagingDetailModalOpen,
     setIsMaterialPackagingDetailModalOpen,
   ] = useState(false);
+  const [packagingModalMode, setPackagingModalMode] = useState<
+    'create' | 'update'
+  >('create');
+
+  // 모달 열기 함수 (mode 포함)
+  const handleOpenPackagingModal = (mode: 'create' | 'update') => {
+    setPackagingModalMode(mode);
+    setIsMaterialPackagingDetailModalOpen(true);
+  };
 
   // ClientDetailPanel 관련 상태
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
@@ -469,9 +478,7 @@ const MaterialDetailPanel = ({
           clientWasModified={hasClientBeenModified}
           productWasModified={hasProductBeenModified}
           isLocationLoading={isLocationLoading}
-          setIsMaterialPackagingDetailModalOpen={
-            setIsMaterialPackagingDetailModalOpen
-          }
+          setIsMaterialPackagingDetailModalOpen={handleOpenPackagingModal}
           setIsCreateSubstituteModalOpen={setIsCreateSubstituteModalOpen}
           handleOpenDeleteSubstituteModal={handleOpenDeleteSubstituteModal}
         />
@@ -552,6 +559,7 @@ const MaterialDetailPanel = ({
       {/* 원자재 소분내역 디테일 모달 */}
       {isMaterialPackagingDetailModalOpen && (
         <MaterialPackagingDetailModal
+          mode={packagingModalMode}
           onClose={() => setIsMaterialPackagingDetailModalOpen(false)}
         />
       )}

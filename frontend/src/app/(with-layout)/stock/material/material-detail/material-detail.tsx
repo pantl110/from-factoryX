@@ -52,7 +52,7 @@ interface MaterialDetailProps {
   clientWasModified?: boolean; // 클라이언트가 실제로 수정되어 저장되었는지
   productWasModified?: boolean; // 제품이 실제로 연결/삭제되었는지
   showToast?: (text: string, subtext: string) => void;
-  setIsMaterialPackagingDetailModalOpen: (v: boolean) => void;
+  setIsMaterialPackagingDetailModalOpen: (mode: 'create' | 'update') => void;
   setIsCreateSubstituteModalOpen: (v: boolean) => void;
   handleOpenDeleteSubstituteModal: (
     sourceMaterialId: number,
@@ -129,19 +129,11 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     const [stockCurrentPage, setStockCurrentPage] = useState(1);
     const pageSize = 5;
 
-    // 업체별 단가 비교 필터 상태
-    const [priceFilters, setPriceFilters] = useState<{
-      start_date?: string;
-      end_date?: string;
-    }>({});
-
     // 업체별 단가 비교 조회 훅 (타입: 구매만)
     const { histories: priceHistories, refetch: refetchPriceHistory } =
       useGetMaterialHistory({
         material_id: materialId,
         type: 'purchase',
-        start_date: priceFilters.start_date,
-        end_date: priceFilters.end_date,
         page: priceCurrentPage,
         page_size: pageSize,
       });
@@ -360,12 +352,17 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           </div>
 
           {/* 원자재 입고 및 LOT 추적 */}
-          <MaterialStockIn materialId={materialId} />
+          <MaterialStockIn
+            materialId={materialId}
+            setIsMaterialPackagingDetailModalOpen={() =>
+              setIsMaterialPackagingDetailModalOpen('create')
+            }
+          />
 
           {/* 원자재 소분 내역 */}
           <MaterialPackaging
-            setIsMaterialPackagingDetailModalOpen={
-              setIsMaterialPackagingDetailModalOpen
+            setIsMaterialPackagingDetailModalOpen={() =>
+              setIsMaterialPackagingDetailModalOpen('update')
             }
           />
 

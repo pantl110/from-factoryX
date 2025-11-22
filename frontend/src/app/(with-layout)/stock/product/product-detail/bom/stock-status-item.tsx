@@ -161,17 +161,6 @@ const StockStatusItem = ({
 
   return (
     <div className="flex items-center h-14 border-b border-lg Me_Body-1">
-      <div className="flex-[0.7] px-3 text-dg cursor-default">
-        <Chip
-          text="원자재"
-          textColor="text-orange"
-          bgColor="bg-orange-8"
-          radius="rounded-[18px]"
-          padding="px-4"
-          height="h-9"
-          textStyle="Me_Body-1"
-        />
-      </div>
       <div
         className="h-full flex-1 px-3 text-dg truncate flex items-center justify-between gap-1"
         title={connection.material_name}

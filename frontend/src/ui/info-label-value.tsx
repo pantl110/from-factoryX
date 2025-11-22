@@ -1,4 +1,3 @@
-import Chip from './chip';
 import React, { ChangeEvent, ReactNode } from 'react';
 import {
   InventoryStatusType,
@@ -7,13 +6,12 @@ import {
   TaxDocumentTypeColorMap,
   EquipmentStatusType,
   EquipmentStatusColorMap,
-  MaterialType,
-  MaterialTypeColorMap,
   MaterialStatusType,
   MaterialStatusTypeColorMap,
 } from '@/types/status-type';
 import TextareaAutosize from 'react-textarea-autosize';
 import { UseFormRegisterReturn } from 'react-hook-form';
+import { RoundChip } from '@/ui';
 
 interface InfoLabelValueProps {
   label: string;
@@ -23,7 +21,6 @@ interface InfoLabelValueProps {
       | InventoryStatusType
       | TaxDocumentType
       | EquipmentStatusType
-      | MaterialType
       | MaterialStatusType
       | 'danger';
   };
@@ -69,18 +66,17 @@ const InfoLabelValue = ({
         ? TaxDocumentTypeColorMap[chip.status as TaxDocumentType]
         : chip.status in EquipmentStatusColorMap
           ? EquipmentStatusColorMap[chip.status as EquipmentStatusType]
-          : chip.status in MaterialTypeColorMap
-            ? MaterialTypeColorMap[chip.status as MaterialType]
-            : chip.status in MaterialStatusTypeColorMap
-              ? MaterialStatusTypeColorMap[chip.status as MaterialStatusType]
-              : InventoryStatusColorMap[chip.status as InventoryStatusType]
+          : chip.status in MaterialStatusTypeColorMap
+            ? MaterialStatusTypeColorMap[chip.status as MaterialStatusType]
+            : InventoryStatusColorMap[chip.status as InventoryStatusType]
     : null;
 
   const renderChip = () => {
-    if (!chip || !colors) return null;
+    if (!chip || !colors || !colors.color) return null;
 
     return (
-      <Chip
+      <RoundChip
+        variant="sm"
         text={
           chip.status === 'sales'
             ? '매출'
@@ -90,42 +86,13 @@ const InfoLabelValue = ({
                 ? '가동 대기'
                 : chip.status === 'running'
                   ? '가동 중'
-                  : chip.status === 'rawMaterial'
-                    ? '원자재'
-                    : chip.status === 'subMaterial'
-                      ? '부자재'
-                      : chip.status === 'using'
-                        ? '사용중'
-                        : chip.status === 'danger'
-                          ? '위험'
-                          : chip.status // 재고 상태는 그대로 표시 (충분, 부족)
+                  : chip.status === 'using'
+                    ? '사용중'
+                    : chip.status === 'danger'
+                      ? '위험'
+                      : chip.status // 재고 상태는 그대로 표시 (충분, 부족)
         }
-        bgColor={colors.bgColor}
-        textColor={colors.textColor}
-        radius={
-          chip.status === 'sales' ||
-          chip.status === 'purchase' ||
-          chip.status === 'standby' ||
-          chip.status === 'running'
-            ? 'rounded'
-            : 'rounded-[18px]'
-        }
-        padding={
-          chip.status === 'sales' ||
-          chip.status === 'purchase' ||
-          chip.status === 'standby' ||
-          chip.status === 'running'
-            ? 'px-3'
-            : 'px-2.5'
-        }
-        height={
-          chip.status === 'sales' ||
-          chip.status === 'purchase' ||
-          chip.status === 'standby' ||
-          chip.status === 'running'
-            ? 'h-8'
-            : 'h-6.5'
-        }
+        color={colors.color}
       />
     );
   };

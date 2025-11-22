@@ -9,11 +9,15 @@ import Pagination from '@/components/pagination';
 
 interface MaterialStockInProps {
   materialId: number;
+  setIsMaterialPackagingDetailModalOpen: (mode: 'create' | 'update') => void;
 }
 
 const PAGE_SIZE = 5;
 
-export const MaterialStockIn = ({ materialId }: MaterialStockInProps) => {
+export const MaterialStockIn = ({
+  materialId,
+  setIsMaterialPackagingDetailModalOpen,
+}: MaterialStockInProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -30,13 +34,17 @@ export const MaterialStockIn = ({ materialId }: MaterialStockInProps) => {
       page: currentPage,
       page_size: PAGE_SIZE,
     }),
-    queryFn: () =>
-      getMaterialHistoryQueryFn(factoryId!, {
+    queryFn: () => {
+      if (!factoryId) {
+        throw new Error('공장 ID가 설정되지 않았습니다.');
+      }
+      return getMaterialHistoryQueryFn(factoryId, {
         material_id: materialId,
         type: 'purchase',
         page: currentPage,
         page_size: PAGE_SIZE,
-      }),
+      });
+    },
     enabled: !!factoryId,
   });
 
@@ -75,7 +83,13 @@ export const MaterialStockIn = ({ materialId }: MaterialStockInProps) => {
               )}
             </div>
             {historyList.map((history) => (
-              <MaterialStockInItem key={history.id} history={history} />
+              <MaterialStockInItem
+                key={history.id}
+                history={history}
+                setIsMaterialPackagingDetailModalOpen={
+                  setIsMaterialPackagingDetailModalOpen
+                }
+              />
             ))}
             {totalPages > 1 && (
               <Pagination

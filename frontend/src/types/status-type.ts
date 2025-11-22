@@ -3,6 +3,15 @@ export interface StatusColorModel {
   bgColor?: string;
   textColor?: string;
   hover?: string;
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'red'
+    | 'orange'
+    | 'purple'
+    | 'green'
+    | 'yellow'
+    | 'gray';
 }
 
 // 팩토리 멤버 type
@@ -21,8 +30,12 @@ export const EquipmentStatusColorMap: Record<
   EquipmentStatusType,
   StatusColorModel
 > = {
-  standby: { textColor: 'text-dg', bgColor: 'bg-bg' },
-  running: { textColor: 'text-purple', bgColor: 'bg-purple-8' },
+  standby: { textColor: 'text-dg', bgColor: 'bg-bg', color: 'gray' },
+  running: {
+    textColor: 'text-purple',
+    bgColor: 'bg-purple-8',
+    color: 'purple',
+  },
 };
 
 // 거래처 유형 // 설정 페이지
@@ -105,8 +118,12 @@ export const InventoryStatusColorMap: Record<
   InventoryStatusType,
   StatusColorModel
 > = {
-  충분: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
-  부족: { textColor: 'text-red', bgColor: 'bg-red-8' },
+  충분: {
+    textColor: 'text-primary',
+    bgColor: 'bg-primary-8',
+    color: 'secondary',
+  },
+  부족: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
 };
 
 // 프로젝트 로그 타입
@@ -135,8 +152,12 @@ export const TaxDocumentTypeColorMap: Record<
   TaxDocumentType,
   StatusColorModel
 > = {
-  sales: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  purchase: { bgColor: 'bg-red-8', textColor: 'text-red' },
+  sales: {
+    bgColor: 'bg-primary-8',
+    textColor: 'text-primary',
+    color: 'secondary',
+  },
+  purchase: { bgColor: 'bg-red-8', textColor: 'text-red', color: 'red' },
 };
 
 export type TransactionType = 'receipt' | 'invoice'; // 영수, 청구
@@ -259,20 +280,21 @@ export const TaxDraftStatusColorMap: Record<
   '전송 대기': { textColor: 'text-dg', bgColor: 'bg-bg' },
 };
 
-// 원자재 구분
-export type MaterialType = 'rawMaterial' | 'subMaterial';
-export const MaterialTypeColorMap: Record<MaterialType, StatusColorModel> = {
-  rawMaterial: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
-  subMaterial: { textColor: 'text-green', bgColor: 'bg-green-8' },
-};
-
 // 원자재 상태
 export type MaterialStatusType = 'using' | 'used' | 'pending';
 export const MaterialStatusTypeColorMap: Record<
   MaterialStatusType,
   StatusColorModel
 > = {
-  using: { textColor: 'text-primary', bgColor: 'bg-primary-8' },
-  used: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
-  pending: { textColor: 'text-orange', bgColor: 'bg-orange-8' },
+  using: {
+    textColor: 'text-primary',
+    bgColor: 'bg-primary-8',
+    color: 'secondary',
+  },
+  used: { textColor: 'text-orange', bgColor: 'bg-orange-8', color: 'orange' },
+  pending: {
+    textColor: 'text-orange',
+    bgColor: 'bg-orange-8',
+    color: 'orange',
+  },
 };
