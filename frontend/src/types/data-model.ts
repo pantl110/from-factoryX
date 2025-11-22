@@ -499,6 +499,10 @@ export interface MaterialHistoryResponseModel {
   total_stock: number; // 거래 후 총 재고
   cash_receipt: number | null; // 현금영수증 ID
   national_tax_service_id: number | null; // 국세청 신고 ID
+  lot_number: string | null; // 로트 번호
+  warehouse_location: string | null; // 창고 위치
+  expiration_date: string | null; // 유통기한
+  remaining_quantity: number; // 남은 수량
 }
 
 export interface MaterialHistoryListResponseModel extends PaginationModel {

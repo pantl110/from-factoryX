@@ -2,9 +2,7 @@ import MiniBtn from '@/ui/mini-btn';
 import MaterialInfo, { MaterialInfoModel } from './material-info';
 import ProductRequiringMaterial from './product-requiring-material';
 import QuotationHistory from './quotation-history';
-// import MaterialStockLog from './material-stock-log';
-import { CaretDown } from '@phosphor-icons/react';
-import SelectPeriodDropdown from '@/ui/dropdown/select-period-dropdown/select-period-dropdown';
+import MaterialStockLog from './material-stock-log';
 import {
   useImperativeHandle,
   forwardRef,
@@ -16,7 +14,6 @@ import {
 import { useForm, useFieldArray } from 'react-hook-form';
 import { usePeriodSelector } from '@/hooks/use-period-selector';
 import { ProductRequiringMaterialRefModel } from './product-requiring-material';
-import CustomDateSelector from '@/ui/dropdown/select-period-dropdown/custom-date-selector';
 import { useGetMaterialHistory } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -126,22 +123,16 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       useRef<ProductRequiringMaterialRefModel>(null);
     const subMaterialsRef = useRef<SubMaterialsRefModel>(null);
 
-    // 기간 선택 드롭다운 상태
-    const [isPricePeriodDropdownOpen, setIsPricePeriodDropdownOpen] =
-      useState(false);
-    // const [isStockLogPeriodDropdownOpen, setIsStockLogPeriodDropdownOpen] =
-    //   useState(false);
-
     // 업체별 단가 비교 조회 훅 (타입: 구매만)
     const { getMaterialHistory: getPriceHistory, histories: priceHistories } =
       useGetMaterialHistory();
 
     // 재고 이력 조회 훅 (전체)
-    // const {
-    //   getMaterialHistory: getStockHistory,
-    //   histories: stockHistories,
-    //   isLoading: isStockLoading,
-    // } = useGetMaterialHistory();
+    const {
+      getMaterialHistory: getStockHistory,
+      histories: stockHistories,
+      isLoading: isStockLoading,
+    } = useGetMaterialHistory();
 
     // 페이지네이션 상태 (각 섹션별로 독립적)
     const [priceCurrentPage, setPriceCurrentPage] = useState(1);
@@ -167,24 +158,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       },
     });
 
-    // 재고 이력 기간 선택 훅
-    // const stockLogPeriodSelector = usePeriodSelector({
-    //   materialId,
-    //   page: stockCurrentPage,
-    //   pageSize,
-    //   onPeriodChange: async (filters) => {
-    //     if (materialId) {
-    //       await getStockHistory({
-    //         material_id: materialId,
-    //         start_date: filters.start_date as string | undefined,
-    //         end_date: filters.end_date as string | undefined,
-    //         page: filters.page as number,
-    //         page_size: pageSize,
-    //       });
-    //     }
-    //   },
-    // });
-
     // 업체별 단가 비교 페이지 변경 핸들러
     const handlePricePageChange = (page: number) => {
       setPriceCurrentPage(page);
@@ -200,16 +173,16 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     };
 
     // 재고 이력 페이지 변경 핸들러 (타입: 전체)
-    // const handleStockPageChange = (page: number) => {
-    //   setStockCurrentPage(page);
-    //   if (materialId) {
-    //     getStockHistory({
-    //       material_id: materialId,
-    //       page,
-    //       page_size: pageSize,
-    //     });
-    //   }
-    // };
+    const handleStockPageChange = (page: number) => {
+      setStockCurrentPage(page);
+      if (materialId) {
+        getStockHistory({
+          material_id: materialId,
+          page,
+          page_size: pageSize,
+        });
+      }
+    };
 
     // watch와 setValue 함수를 메모이제이션
     const memoizedWatch = useCallback(
@@ -415,47 +388,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               <h3 className="Heading-3 text-dg h-10 flex items-center">
                 업체별 단가 비교
               </h3>
-              {/* 기간 선택 */}
-              <div className="relative">
-                <MiniBtn
-                  text={pricePeriodSelector.selectedPeriod}
-                  variant="whiteOutline"
-                  icon={CaretDown}
-                  iconPosition="right"
-                  onClick={() => setIsPricePeriodDropdownOpen(true)}
-                  height="h-9"
-                />
-                {isPricePeriodDropdownOpen && (
-                  <div className="absolute top-12 right-0 z-10 pb-5">
-                    <SelectPeriodDropdown
-                      onClose={() => setIsPricePeriodDropdownOpen(false)}
-                      onSelect={(value) => {
-                        pricePeriodSelector.handlePeriodChange(
-                          value as
-                            | '1개월'
-                            | '3개월'
-                            | '6개월'
-                            | '1년'
-                            | '직접 설정'
-                        );
-                        setIsPricePeriodDropdownOpen(false);
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-              {pricePeriodSelector.selectedPeriod === '직접 설정' && (
-                <CustomDateSelector
-                  customStartDate={pricePeriodSelector.customStartDate}
-                  customEndDate={pricePeriodSelector.customEndDate}
-                  onStartDateChange={pricePeriodSelector.handleStartDateChange}
-                  onEndDateChange={pricePeriodSelector.handleEndDateChange}
-                  onDateAutoHyphen={pricePeriodSelector.handleDateAutoHyphen}
-                  onCustomDateKeyDown={
-                    pricePeriodSelector.handleCustomDateKeyDown
-                  }
-                />
-              )}
             </div>
 
             <QuotationHistory
@@ -482,65 +414,21 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           <MaterialStockOut />
 
           {/* 원자재 입·출고 내역 */}
-          {/* <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
             <div className="flex gap-2 items-center">
               <h3 className="Heading-3 text-dg h-10 flex items-center">
-                원자재 입·출고 내역
-              </h3> */}
+                원자재 입고 및 사용 내역
+              </h3>
 
-          {/* 기간 선택 */}
-          {/* <div className="relative">
-                <MiniBtn
-                  text={stockLogPeriodSelector.selectedPeriod}
-                  variant="whiteOutline"
-                  icon={CaretDown}
-                  iconPosition="right"
-                  onClick={() => setIsStockLogPeriodDropdownOpen(true)}
-                  height="h-9"
-                />
-                {isStockLogPeriodDropdownOpen && (
-                  <div className="absolute top-12 right-0 z-10 pb-5">
-                    <SelectPeriodDropdown
-                      onClose={() => setIsStockLogPeriodDropdownOpen(false)}
-                      onSelect={(value) => {
-                        stockLogPeriodSelector.handlePeriodChange(
-                          value as
-                            | '1개월'
-                            | '3개월'
-                            | '6개월'
-                            | '1년'
-                            | '직접 설정'
-                        );
-                        setIsStockLogPeriodDropdownOpen(false);
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-              {stockLogPeriodSelector.selectedPeriod === '직접 설정' && (
-                <CustomDateSelector
-                  customStartDate={stockLogPeriodSelector.customStartDate}
-                  customEndDate={stockLogPeriodSelector.customEndDate}
-                  onStartDateChange={
-                    stockLogPeriodSelector.handleStartDateChange
-                  }
-                  onEndDateChange={stockLogPeriodSelector.handleEndDateChange}
-                  onDateAutoHyphen={stockLogPeriodSelector.handleDateAutoHyphen}
-                  onCustomDateKeyDown={
-                    stockLogPeriodSelector.handleCustomDateKeyDown
-                  }
-                />
-              )}
+              <MaterialHistory
+                histories={stockHistories?.data}
+                isLoading={isStockLoading}
+                currentPage={stockCurrentPage}
+                totalPages={stockHistories?.pageCnt || 1}
+                onPageChange={handleStockPageChange}
+              />
             </div>
-
-            <MaterialStockLog
-              histories={stockHistories?.data}
-              isLoading={isStockLoading}
-              currentPage={stockCurrentPage}
-              totalPages={stockHistories?.pageCnt || 1}
-              onPageChange={handleStockPageChange}
-            />
-          </div>*/}
+          </div>
         </div>
       </>
     );
