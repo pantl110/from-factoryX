@@ -115,8 +115,8 @@ class MaterialSummaryOut(Schema):
     code: str
     spec: str
     unit: str
-    current_stock: int
-    standard_stock: int
+    current_stock: Optional[int]
+    standard_stock: Optional[int]
 
 
 # (GET) Material Detail

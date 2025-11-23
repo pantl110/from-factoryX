@@ -47,6 +47,8 @@ class Material(BaseModel):
     )
     expiry_days = models.IntegerField(
         default=7,
+        null=True,
+        blank=True,
         help_text="유통기한 (일)",
     )
     memo = models.TextField(
