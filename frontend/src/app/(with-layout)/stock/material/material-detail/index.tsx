@@ -27,6 +27,7 @@ import { MaterialPackagingDetailModal } from '../modals/material-packaging-detai
 import CreateSubstituteModal from '../modals/create-substitute-modal';
 import { useDeleteSubstituteMutation } from '@/hooks';
 import { useQueryClient } from '@tanstack/react-query';
+import useMemberStore from '@/store/member-store';
 
 interface LocationModel {
   id: number;
@@ -310,6 +311,7 @@ const MaterialDetailPanel = ({
   const materialDetailRef = useRef<MaterialDetailRefModel>(null);
   const { updateMaterial } = useUpdateMaterial();
   const { setShouldReload } = useMaterialReloadStore();
+  const factoryId = useMemberStore((state) => state.factoryId);
   const handleSaveMaterialDetail = async () => {
     if (!selectedMaterialId) return;
     const refObj = materialDetailRef.current;
@@ -364,6 +366,50 @@ const MaterialDetailPanel = ({
       }
       if (values.memo !== undefined) {
         payload.memo = values.memo === '' ? null : values.memo;
+      }
+
+      // max stock > rop > standard stock 검증 (있는 값들 간의 관계만 검증)
+      const maxStockNum =
+        values.maxStock !== undefined && values.maxStock !== ''
+          ? Number(values.maxStock)
+          : null;
+      const ropNum =
+        values.rop !== undefined && values.rop !== ''
+          ? Number(values.rop)
+          : null;
+      const standardStockNum =
+        values.standardStock !== undefined && values.standardStock !== ''
+          ? Number(values.standardStock)
+          : null;
+
+      // 있는 값들 간의 관계 검증
+      if (maxStockNum !== null && ropNum !== null) {
+        if (maxStockNum <= ropNum) {
+          setToastText('수치를 다시 입력해주세요.');
+          setToastSubtext('적정 재고는 ROP보다 항상 크게 설정해야 해요.');
+          showToast();
+          return;
+        }
+      }
+      if (ropNum !== null && standardStockNum !== null) {
+        if (ropNum <= standardStockNum) {
+          setToastText('수치를 다시 입력해주세요.');
+          setToastSubtext('ROP는 안전 재고보다 항상 크게 설정해야 해요.');
+          showToast();
+          return;
+        }
+      }
+      if (
+        maxStockNum !== null &&
+        standardStockNum !== null &&
+        ropNum === null
+      ) {
+        if (maxStockNum <= standardStockNum) {
+          setToastText('수치를 다시 입력해주세요.');
+          setToastSubtext('적정 재고는 안전 재고보다 항상 크게 설정해야 해요.');
+          showToast();
+          return;
+        }
       }
 
       if (Object.keys(payload).length > 0) {
@@ -443,6 +489,12 @@ const MaterialDetailPanel = ({
     }
 
     if (hasSaved) {
+      // 캐시 무효화하여 다음에 열 때 최신 데이터를 가져오도록 함
+      if (factoryId && selectedMaterialId) {
+        queryClient.invalidateQueries({
+          queryKey: ['material-detail', factoryId, selectedMaterialId],
+        });
+      }
       setShouldReload(true); // 원자재 목록 렌더링
       onSuccess?.(); // 상위에 저장 성공 알림
       setIsMaterialDetailOpen(false); // 판넬 닫기
