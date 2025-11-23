@@ -358,7 +358,11 @@ async def update_material(request, material_id: int, payload: MaterialUpdateIn):
 
     update_data = payload.dict(exclude_unset=True)
 
-    nullable_fields = ["current_stock", "standard_stock", "rop", "max_stock", "memo"]
+    # expiry_days가 None이면 7로 설정
+    if "expiry_days" in update_data and update_data.get("expiry_days") is None:
+        update_data["expiry_days"] = 7
+
+    nullable_fields = ["current_stock", "standard_stock", "rop", "max_stock", "memo", "expiry_days"]
     blank_fields = []
     for field, value in update_data.items():
         if field not in nullable_fields and value in [None, ""]:
