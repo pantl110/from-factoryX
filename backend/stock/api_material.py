@@ -361,8 +361,12 @@ async def update_material(request, material_id: int, payload: MaterialUpdateIn):
     # expiry_days가 None이면 7로 설정
     if "expiry_days" in update_data and update_data.get("expiry_days") is None:
         update_data["expiry_days"] = 7
+    
+    # current_stock이 None이면 0으로 설정
+    if "current_stock" in update_data and update_data.get("current_stock") is None:
+        update_data["current_stock"] = 0
 
-    nullable_fields = ["current_stock", "standard_stock", "rop", "max_stock", "memo", "expiry_days"]
+    nullable_fields = ["standard_stock", "rop", "max_stock", "memo", "expiry_days"]
     blank_fields = []
     for field, value in update_data.items():
         if field not in nullable_fields and value in [None, ""]:

@@ -10,6 +10,7 @@ from substitute.schemas.outbound import (
 )
 from substitute.models import Substitute
 from stock.models import Material
+from stock.utils import get_material_status
 from factory.utils import is_factory_member, get_factory_by_id
 from typing import List
 from substitute.utils import get_substitute_by_id
@@ -139,7 +140,22 @@ async def get_substitutes_by_material(
 
     target_materials = await get_substitute_and_materials()
 
-    return target_materials
+    # 각 자재에 status 추가
+    results = []
+    for material in target_materials:
+        # 자재 상태 판단
+        material_status = get_material_status(
+            current_stock=material.current_stock,
+            max_stock=material.max_stock,
+            rop=material.rop,
+            standard_stock=material.standard_stock,
+        )
+        # MaterialSimpleOut으로 변환하고 status 추가
+        material_out = MaterialSimpleOut.model_validate(material)
+        material_out.status = material_status
+        results.append(material_out)
+
+    return results
 
 
 @router.delete(

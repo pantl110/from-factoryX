@@ -476,7 +476,7 @@ class TestSubstituteAPI(TestCase):
             self.assertIn("unit", material)
             self.assertIn("spec", material)
             self.assertIn("current_stock", material)
-            self.assertIn("standard_stock", material)
+            self.assertIn("status", material)
 
             # 데이터 타입 확인
             self.assertIsInstance(material["id"], int)

@@ -9,6 +9,7 @@ from stock.schemas.outbound import (
     MaterialProductConnectionOut,
 )
 from stock.models import Material, Product, MaterialProduct
+from stock.utils import get_material_status
 from factory.utils import is_factory_member
 from project.utils import check_material_availability
 from substitute.models import Substitute
@@ -182,6 +183,13 @@ async def get_material_product_connections(request, target_id: int, type: str):
         
         for mp in material_products:
             material = mp.material
+            # 자재 상태 판단
+            material_status = get_material_status(
+                current_stock=material.current_stock,
+                max_stock=material.max_stock,
+                rop=material.rop,
+                standard_stock=material.standard_stock,
+            )
             results.append(
                 {
                     "connection_id": mp.id,
@@ -190,8 +198,7 @@ async def get_material_product_connections(request, target_id: int, type: str):
                     "material_code": material.code,
                     "material_spec": material.spec,
                     "material_unit": material.unit,
-                    "material_current_stock": int(material.current_stock or 0),
-                    "material_standard_stock": int(material.standard_stock or 0),
+                    "material_status": material_status,
                     "substitutes": substitute_names_map.get(material.id, []),
                     "quantity": float(mp.quantity),
                 }

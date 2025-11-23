@@ -5,8 +5,7 @@ from stock.models import Material
 
 
 class MaterialSimpleOut(ModelSchema):
-    current_stock: Optional[int] = Field(None, description="현재 재고량")
-    standard_stock: Optional[int] = Field(None, description="안전 재고량")
+    status: Optional[str] = Field(None, description="자재 상태: '과재고', '충분', '위험', '부족', None")
 
     class Meta:
         model = Material
@@ -17,7 +16,6 @@ class MaterialSimpleOut(ModelSchema):
             "unit",
             "spec",
             "current_stock",
-            "standard_stock",
         ]
 
 

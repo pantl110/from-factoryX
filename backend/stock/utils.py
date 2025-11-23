@@ -168,3 +168,53 @@ async def create_material_history(
     )
 
     return history
+
+
+def get_material_status(
+    current_stock: int | None,
+    max_stock: int | None,
+    rop: int | None,
+    standard_stock: int | None,
+) -> str | None:
+    """
+    자재 상태를 판단합니다.
+    
+    Args:
+        current_stock: 현재 재고
+        max_stock: 적정 재고(최대 재고)
+        rop: 재주문점
+        standard_stock: 안전 재고
+    
+    Returns:
+        str | None: '과재고', '충분', '위험', '부족', None (판단 불가)
+    """
+    # current_stock이 없으면 판단 불가
+    if current_stock is None:
+        return None
+
+    # 1. 과재고: 현재 재고 > 최대 재고
+    if max_stock is not None:
+        if current_stock > max_stock:
+            return "과재고"
+
+    # 2. 충분: 최대 재고 >= 현재 재고 > ROP
+    if max_stock is not None and rop is not None:
+        if current_stock <= max_stock and current_stock > rop:
+            return "충분"
+
+    # 3. 위험: ROP >= 현재 재고 > 안전 재고
+    if rop is not None and standard_stock is not None:
+        if current_stock <= rop and current_stock > standard_stock:
+            return "위험"
+
+    # 4. 부족: 현재 재고 <= 안전 재고 또는 현재 재고 === 0
+    if standard_stock is not None:
+        if current_stock <= standard_stock:
+            return "부족"
+
+    # 현재 재고가 0이면 부족
+    if current_stock == 0:
+        return "부족"
+
+    # 판단할 수 없는 경우
+    return None
