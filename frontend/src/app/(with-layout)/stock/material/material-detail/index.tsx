@@ -16,10 +16,7 @@ import ProductEnrollmentModal from '../modals/product-enrollment-modal';
 import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
-import {
-  MaterialItemModel,
-  ProductListResponseModel,
-} from '@/types/data-model';
+import { MaterialItemModel } from '@/types/data-model';
 import DeleteModal from '@/ui/modal/delete-modal';
 import ProductDetailPanel from '@/app/(with-layout)/stock/product/product-detail';
 import StockLocationModal from '../../modals/stock-location-modal';
@@ -69,7 +66,7 @@ const MaterialDetailPanel = ({
   onSuccess,
 }: MaterialDetailPanelProps) => {
   const [isMaterialDetailDirty, setIsMaterialDetailDirty] = useState(false); // 원자재 디테일 판넬 수정 상태
-  const [areRequiredFieldsFilled, setAreRequiredFieldsFilled] = useState(true); // 필수 필드 채워짐 상태
+  const [hasRequiredFieldsFilled, setHasRequiredFieldsFilled] = useState(true); // 필수 필드 채워짐 상태
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
   const [isCreateSubstituteModalOpen, setIsCreateSubstituteModalOpen] =
@@ -115,7 +112,7 @@ const MaterialDetailPanel = ({
 
   // 필수값 검증 함수
   const checkRequiredFilled = (): boolean => {
-    return areRequiredFieldsFilled;
+    return hasRequiredFieldsFilled;
   };
 
   // ClientDetailPanel 열기 함수
@@ -257,10 +254,10 @@ const MaterialDetailPanel = ({
 
       if (result.success && result.data) {
         // 검색 결과에서 정확히 일치하는 코드가 있는지 확인
-        const exactMatch = result.data.data.some(
+        const hasExactMatch = result.data.data.some(
           (product) => product.code === code
         );
-        return exactMatch;
+        return hasExactMatch;
       }
     } catch {
       // 에러 발생 시 중복이 아닌 것으로 처리
@@ -306,7 +303,7 @@ const MaterialDetailPanel = ({
 
   // 필수 필드 검증 상태 업데이트 (간단하게)
   const handleRequiredFieldsChange = (areFilled: boolean) => {
-    setAreRequiredFieldsFilled(areFilled);
+    setHasRequiredFieldsFilled(areFilled);
   };
   const handleSaveMaterialDetail = async () => {
     if (!selectedMaterialId) return;
@@ -510,7 +507,7 @@ const MaterialDetailPanel = ({
               hoverColor="hover:bg-secondary-hover"
               textColor="text-primary"
               bgColor="bg-primary-8"
-              disabled={!areRequiredFieldsFilled}
+              disabled={!hasRequiredFieldsFilled}
             />
           )
         }

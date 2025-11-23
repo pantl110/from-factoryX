@@ -308,12 +308,12 @@ const ProductDetail = ({
           if (result.success && result.data) {
             // 검색 결과에서 정확히 일치하는 코드가 있는지 확인
             // 수정 모드에서는 현재 제품의 코드는 제외
-            const exactMatch = result.data.data.some(
+            const hasExactMatch = result.data.data.some(
               (p) =>
                 p.code === code &&
                 (!currentProductId || p.id !== currentProductId)
             );
-            return exactMatch;
+            return hasExactMatch;
           }
         } catch {
           // 에러 발생 시 중복이 아닌 것으로 처리

@@ -104,13 +104,16 @@ const LinkReceiptModal = ({
 
     if (result.success && result.data) {
       // 기존 데이터에 새 페이지 데이터 추가
-      setUnlinkedMaterialHistory((prev) => [...prev, ...result.data.data]);
+      const { data: historyData, nextPage: resultNextPage } = result.data;
+      if (historyData) {
+        setUnlinkedMaterialHistory((prev) => [...prev, ...historyData]);
+      }
 
       // 페이지 번호 업데이트
       setUnlinkedPage(nextPage);
 
       // 더 가져올 데이터가 있는지 확인 // nextPage가 있으면 더 가져올 데이터가 있는 것
-      const hasMore = !!result.data.nextPage;
+      const hasMore = !!resultNextPage;
       setHasMoreUnlinked(hasMore);
     }
   };

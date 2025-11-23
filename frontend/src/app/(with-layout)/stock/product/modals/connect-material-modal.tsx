@@ -2,7 +2,7 @@ import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ManualAddMaterial from '../../material/modals/manual-add-material';
 import { MaterialItemModel, MaterialResponseModel } from '@/types/data-model';
 import {
@@ -100,10 +100,10 @@ const ConnectMaterialModal = ({
 
       if (result.success && result.data) {
         // 검색 결과에서 정확히 일치하는 코드가 있는지 확인
-        const exactMatch = result.data.data.some(
+        const hasExactMatch = result.data.data.some(
           (material) => material.code === code
         );
-        return exactMatch;
+        return hasExactMatch;
       }
     } catch {
       // 에러 발생 시 중복이 아닌 것으로 처리

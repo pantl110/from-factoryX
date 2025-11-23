@@ -301,20 +301,6 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 field.onChange(finalValue);
               };
 
-              // 재고 상태 계산
-              const currentStockNum = stringToNumber(field.value);
-              const maxStockNum = stringToNumber(getValues('maxStock'));
-              const ropNum = stringToNumber(getValues('rop'));
-              const standardStockNum = stringToNumber(
-                getValues('standardStock')
-              );
-              const stockStatus = getMaterialStockStatus({
-                currentStock: currentStockNum,
-                maxStock: maxStockNum,
-                rop: ropNum,
-                standardStock: standardStockNum,
-              });
-
               return (
                 <InfoLabelValue
                   label="현재 재고"
