@@ -116,7 +116,7 @@ class MaterialSummaryOut(Schema):
     spec: str
     unit: str
     current_stock: Optional[int]
-    standard_stock: Optional[int]
+    status: Optional[str] = Field(None, description="자재 상태: '과재고', '충분', '위험', '부족', None")
 
 
 # (GET) Material Detail

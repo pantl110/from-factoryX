@@ -19,6 +19,7 @@ from stock.schemas.outbound import (
     MaterialSummaryOut,
     ShortageMaterialCountOut,
 )
+from stock.utils import get_material_status
 from factory.models import Factory
 from substitute.models import Substitute
 
@@ -252,6 +253,13 @@ async def get_materials_by_factory(
 
     material_list = []
     for material in materials:
+        # 자재 상태 판단
+        material_status = get_material_status(
+            current_stock=material.current_stock,
+            max_stock=material.max_stock,
+            rop=material.rop,
+            standard_stock=material.standard_stock,
+        )
         material_list.append(
             {
                 "id": material.id,
@@ -260,7 +268,7 @@ async def get_materials_by_factory(
                 "spec": material.spec,
                 "unit": material.unit,
                 "current_stock": material.current_stock,
-                "standard_stock": material.standard_stock,
+                "status": material_status,
             }
         )
 

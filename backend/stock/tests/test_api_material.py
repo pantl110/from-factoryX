@@ -234,7 +234,7 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(material_data["spec"], "테스트 규격")
         self.assertEqual(material_data["unit"], "EA")
         self.assertEqual(material_data["current_stock"], 100)
-        self.assertEqual(material_data["standard_stock"], 50)
+        self.assertIn("status", material_data)
 
         # 페이지네이션 정보 확인
         self.assertEqual(data["count"], 1)
