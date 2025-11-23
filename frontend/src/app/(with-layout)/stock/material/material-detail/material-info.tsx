@@ -16,17 +16,15 @@ export interface MaterialInfoModel {
 }
 
 interface MaterialInfoFormModel {
-  materialType: string;
   materialName: string;
   materialCode: string;
   size: string;
   unit: string;
-  stockUnit: string;
   currentStock: string;
   standardStock: string;
   rop: string; // rop
   maxStock: string; // 적정 재고 (최대 재고)
-  expirationDate: string;
+  expiryDays: string;
   memo: string;
 }
 
@@ -70,8 +68,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
     const [isStockEditing, setIsStockEditing] = useState(false);
     const [stockInputValue, setStockInputValue] = useState<string>('');
-    const [isExpirationDateEditing, setIsExpirationDateEditing] =
-      useState(false);
+    const [isExpiryDaysEditing, setIsExpiryDaysEditing] = useState(false);
 
     const { getMaterialDetail } = useGetMaterial();
     const {
@@ -82,7 +79,6 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
       formState: { isDirty },
     } = useForm<MaterialInfoFormModel>({
       defaultValues: {
-        materialType: '',
         materialName: '',
         materialCode: '',
         size: '',
@@ -91,7 +87,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
         standardStock: '', // 안전 재고
         rop: '', // rop
         maxStock: '', // 적정 재고 (최대 재고)
-        expirationDate: '',
+        expiryDays: '',
         memo: '',
       },
     });
@@ -117,23 +113,31 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
         if (result && result.success && result.data) {
           const mat = result.data;
           const formData = {
-            materialType: 'rawMaterial', // TODO: 설정 변경 설정
             materialName: mat.name ?? '',
             materialCode: mat.code ?? '',
             size: mat.spec ?? '',
             unit: mat.unit ?? '',
-            stockUnit: 'EA', // TODO: 재고 관리 단위 추가
             currentStock:
               mat.current_stock !== undefined && mat.current_stock !== null
                 ? mat.current_stock.toString()
                 : '',
-            standardStock: '', // TODO: 안전재고 추가
+            standardStock:
+              mat.standard_stock !== undefined && mat.standard_stock !== null
+                ? mat.standard_stock.toString()
+                : '',
             rop:
               mat.rop !== undefined && mat.rop !== null
                 ? mat.rop.toString()
                 : '',
-            expirationDate: '', // TODO: 유통기한 추가
-            memo: '', // TODO: 메모 추가
+            maxStock:
+              mat.max_stock !== undefined && mat.max_stock !== null
+                ? mat.max_stock.toString()
+                : '',
+            expiryDays:
+              mat.expiry_days !== undefined && mat.expiry_days !== null
+                ? mat.expiry_days.toString()
+                : '',
+            memo: mat.memo ?? '',
           };
           reset(formData, { keepDefaultValues: false });
           if (onIsDirtyChange) {
@@ -202,6 +206,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
                 placeholder="개별 단위를 입력하세요."
+                required
               />
             )}
           />
@@ -418,10 +423,10 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             );
           })()}
           <Controller
-            name="expirationDate"
+            name="expiryDays"
             control={control}
             render={({ field }) => {
-              const handleChangeExpirationDate = (
+              const handleChangeExpiryDays = (
                 e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
               ) => {
                 // '일' 제거하고 숫자만 추출
@@ -444,7 +449,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 return isNaN(num) ? '' : num.toLocaleString();
               };
 
-              const displayValue = isExpirationDateEditing
+              const displayValue = isExpiryDaysEditing
                 ? formatNumber(field.value ?? '')
                 : field.value && field.value !== '-'
                   ? `${formatNumber(field.value)}일`
@@ -454,11 +459,11 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 <InfoLabelValue
                   label="유통기한"
                   value={displayValue}
-                  handleChange={handleChangeExpirationDate}
+                  handleChange={handleChangeExpiryDays}
                   isEditing={!isViewer && hasSubscription()}
                   placeholder="유통기한 위험일을 입력하세요."
-                  onFocus={() => setIsExpirationDateEditing(true)}
-                  onBlur={() => setIsExpirationDateEditing(false)}
+                  onFocus={() => setIsExpiryDaysEditing(true)}
+                  onBlur={() => setIsExpiryDaysEditing(false)}
                 />
               );
             }}

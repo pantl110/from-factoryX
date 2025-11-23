@@ -441,7 +441,12 @@ export interface MaterialModel {
   code: string;
   unit: string;
   spec: string;
+  current_stock?: number;
   standard_stock?: number;
+  rop?: number;
+  max_stock?: number;
+  expiry_days?: string;
+  memo?: string;
   location?: number;
 }
 
@@ -458,7 +463,7 @@ export interface MaterialResponseModel {
   standard_stock?: number;
   rop?: number;
   max_stock?: number;
-  expiration_date?: string;
+  expiry_days?: string;
   memo?: string;
   location?: number;
 }

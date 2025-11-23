@@ -204,18 +204,16 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       () => ({
         getValues: () =>
           materialInfoRef.current?.getValues() ?? {
-            materialType: '',
             materialName: '',
             materialCode: '',
             size: '',
             unit: '',
-            stockUnit: '',
-            safeStock: '',
-            unitWeight: '',
-            expirationDate: '',
-            memo: '',
             currentStock: '',
-            minStock: '',
+            standardStock: '',
+            rop: '',
+            maxStock: '',
+            expiryDays: '',
+            memo: '',
           },
         isDirty: isDirtyMaterialInfo,
         // 추가: 위치 정보 관련 메서드도 함께 노출

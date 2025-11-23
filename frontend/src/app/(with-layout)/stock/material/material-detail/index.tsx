@@ -242,8 +242,10 @@ const MaterialDetailPanel = ({
     setDeleteModalState({ type: null, id: null });
   };
 
-  // 모든 제품 코드 가져오기
+  // 제품 등록 모달이 열릴 때만 모든 제품 코드 가져오기
   useEffect(() => {
+    if (!isProductEnrollmentModalOpen) return;
+
     const fetchAllProductCodes = async () => {
       // 첫 페이지를 가져와서 전체 개수 확인
       const firstPageResult = await getProductList({
@@ -267,7 +269,7 @@ const MaterialDetailPanel = ({
       }
     };
     fetchAllProductCodes();
-  }, [getProductList]);
+  }, [isProductEnrollmentModalOpen, getProductList]);
 
   // 중복 검사 함수
   const checkDuplicateProductCode = (
@@ -332,7 +334,7 @@ const MaterialDetailPanel = ({
     // 1. 원자재 정보 저장
     if (refObj.isDirty) {
       const values = refObj.getValues();
-      const payload: Record<string, string | number> = {};
+      const payload: Record<string, string | number | null> = {};
 
       // 필수 필드들 추가
       if (values.materialName !== undefined && values.materialName !== '') {
@@ -348,14 +350,29 @@ const MaterialDetailPanel = ({
         payload.unit = values.unit;
       }
 
-      // 숫자 필드들 추가 (빈값이면 0으로 저장)
+      // 숫자 필드들 추가 (빈값이면 null로 저장)
       if (values.currentStock !== undefined) {
         payload.current_stock =
-          values.currentStock === '' ? 0 : Number(values.currentStock);
+          values.currentStock === '' ? null : Number(values.currentStock);
       }
-      if (values.minStock !== undefined) {
+      if (values.standardStock !== undefined) {
         payload.standard_stock =
-          values.minStock === '' ? 0 : Number(values.minStock);
+          values.standardStock === '' ? null : Number(values.standardStock);
+      }
+      if (values.rop !== undefined) {
+        payload.rop = values.rop === '' ? null : Number(values.rop);
+      }
+      // 필수값이 아닌 필드들: 빈값이면 null로 저장
+      if (values.maxStock !== undefined) {
+        payload.max_stock =
+          values.maxStock === '' ? null : Number(values.maxStock);
+      }
+      if (values.expiryDays !== undefined) {
+        payload.expiry_days =
+          values.expiryDays === '' ? null : values.expiryDays;
+      }
+      if (values.memo !== undefined) {
+        payload.memo = values.memo === '' ? null : values.memo;
       }
 
       if (Object.keys(payload).length > 0) {
