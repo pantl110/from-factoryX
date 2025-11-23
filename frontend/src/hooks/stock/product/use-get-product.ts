@@ -18,7 +18,6 @@ const useGetProduct = () => {
   const [product, setProduct] = useState<ProductResponseModel | null>(null);
   const [productList, setProductList] = useState<ProductResponseModel[]>([]);
   const [pagination, setPagination] = useState<PaginationModel | null>(null);
-  const [allProductCodes, setAllProductCodes] = useState<string[]>([]);
   const factoryId = useMemberStore((state) => state.factoryId);
 
   // 제품 목록 조회 (q, page, page_size)
@@ -125,82 +124,6 @@ const useGetProduct = () => {
     [factoryId]
   );
 
-  // 모든 제품 코드 조회
-  const getAllProductCodes = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    if (!factoryId) {
-      // factoryId가 없으면 빈 배열을 반환
-      setAllProductCodes([]);
-      setIsLoading(false);
-      return { success: true, data: [] };
-    }
-
-    try {
-      // 1. 먼저 첫 번째 요청으로 total 개수 확인
-      const initialQueryParams = new URLSearchParams();
-      initialQueryParams.append('factory_id', factoryId.toString());
-      initialQueryParams.append('page', '1');
-      initialQueryParams.append('page_size', '1'); // 최소한의 데이터만 가져와서 total 확인
-
-      const initialUrl = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?${initialQueryParams}`;
-      const initialResponse = await fetch(initialUrl, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!initialResponse.ok) {
-        const errorData = await initialResponse.json();
-        setError(errorData.detail || '제품 코드 목록을 불러오지 못했습니다.');
-        return { success: false, error: errorData.detail };
-      }
-
-      const initialResult: ProductListResponseModel =
-        await initialResponse.json();
-      const total = initialResult.totalCnt || 0;
-
-      if (total === 0) {
-        setAllProductCodes([]);
-        return { success: true, data: [] };
-      }
-
-      // 2. total 개수만큼 한 번에 가져오기
-      const queryParams = new URLSearchParams();
-      queryParams.append('factory_id', factoryId.toString());
-      queryParams.append('page', '1');
-      queryParams.append('page_size', total.toString());
-
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?${queryParams}`;
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const result: ProductListResponseModel = await response.json();
-        const products = result.data || [];
-        const codes = products.map((product) => product.code).filter(Boolean);
-        setAllProductCodes(codes);
-        return { success: true, data: codes };
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || '제품 코드 목록을 불러오지 못했습니다.');
-        return { success: false, error: errorData.detail };
-      }
-    } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
-    } finally {
-      setIsLoading(false);
-    }
-  }, [factoryId]);
 
   // 전체 제품 목록을 한 번에 가져오는 함수
   const getAllProductList = useCallback(async () => {
@@ -296,12 +219,10 @@ const useGetProduct = () => {
   return {
     getProductList,
     getProductDetail,
-    getAllProductCodes,
     getAllProductList,
     product,
     productList,
     pagination,
-    allProductCodes,
     isLoading,
     error,
   };

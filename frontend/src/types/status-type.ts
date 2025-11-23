@@ -113,16 +113,18 @@ export const CompletedProjectStatusColorMap: Record<
 };
 
 // 재고 상태
-export type InventoryStatusType = '충분' | '부족';
+export type InventoryStatusType = '과재고'|'충분' | '위험'|'부족';
 export const InventoryStatusColorMap: Record<
   InventoryStatusType,
   StatusColorModel
 > = {
+  과재고: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
   충분: {
     textColor: 'text-primary',
     bgColor: 'bg-primary-8',
     color: 'secondary',
   },
+  위험: { textColor: 'text-orange', bgColor: 'bg-orange-8', color: 'orange' },
   부족: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
 };
 

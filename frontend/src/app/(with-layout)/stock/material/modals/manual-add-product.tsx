@@ -10,7 +10,7 @@ interface ManualAddProductProps {
   setSelectedProducts?: (
     fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
   ) => void;
-  checkDuplicateProductCode?: (code: string) => boolean;
+  checkDuplicateProductCode?: (code: string) => Promise<boolean>;
   showDuplicateProductToast?: () => void;
 }
 
@@ -59,18 +59,18 @@ const ManualAddProduct = ({
     );
   };
 
-  const onSubmit = () => {
-    // 중복 검사
-    if (
-      checkDuplicateProductCode &&
-      checkDuplicateProductCode(formValues.code)
-    ) {
-      showDuplicateProductToast?.();
-      setError('code', {
-        type: 'manual',
-        message: '이미 존재하는 제품코드입니다.',
-      });
-      return;
+  const onSubmit = async () => {
+    // 중복 검사 (비동기)
+    if (checkDuplicateProductCode) {
+      const isDuplicate = await checkDuplicateProductCode(formValues.code);
+      if (isDuplicate) {
+        showDuplicateProductToast?.();
+        setError('code', {
+          type: 'manual',
+          message: '이미 존재하는 제품코드에요.',
+        });
+        return;
+      }
     }
 
     setSelectedProducts?.((prev) => [

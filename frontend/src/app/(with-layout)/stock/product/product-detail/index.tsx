@@ -60,8 +60,7 @@ const ProductDetail = ({
   onClose,
   onSuccess,
 }: ProductDetailProps) => {
-  const { getProductDetail, getAllProductCodes, allProductCodes, product } =
-    useGetProduct();
+  const { getProductDetail, getProductList, product } = useGetProduct();
   const { createSingleProduct } = useCreateSingleProduct();
   const { updateProduct, isLoading: isProductUpdating } = useUpdateProduct();
   const {
@@ -221,13 +220,6 @@ const ProductDetail = ({
     }
   }, [productId, factoryId, getProductDetail]);
 
-  // 모든 제품 코드 로드 (중복 검증용)
-  useEffect(() => {
-    if (factoryId) {
-      getAllProductCodes();
-    }
-  }, [factoryId, getAllProductCodes]);
-
   // product가 로드되면 formData 업데이트
   useEffect(() => {
     if (productId && product) {
@@ -296,35 +288,56 @@ const ProductDetail = ({
       // ProductInfo에서 현재 폼 값 가져오기
       const currentFormData = productInfoRef.current?.getValues() || formData;
 
-      // 제품코드 중복 검사 함수
-      const checkCodeDuplicate = (
+      // 제품코드 중복 검사 함수 (비동기 - 제품 코드로 검색)
+      const checkCodeDuplicate = async (
         code: string,
         currentProductId?: number | null
-      ) => {
-        // 현재 제품의 코드는 제외하고 중복 검사
-        const otherCodes = allProductCodes.filter((existingCode: string) => {
-          // 수정 모드에서는 현재 제품의 코드는 제외
-          if (currentProductId && product && product.code === existingCode) {
-            return false;
+      ): Promise<boolean> => {
+        // 제품 코드로 검색하여 존재하는지 확인
+        if (!code || code.trim() === '') {
+          return false;
+        }
+
+        try {
+          const result = await getProductList({
+            q: code,
+            page: 1,
+            page_size: 10,
+          });
+
+          if (result.success && result.data) {
+            // 검색 결과에서 정확히 일치하는 코드가 있는지 확인
+            // 수정 모드에서는 현재 제품의 코드는 제외
+            const exactMatch = result.data.data.some(
+              (p) =>
+                p.code === code &&
+                (!currentProductId || p.id !== currentProductId)
+            );
+            return exactMatch;
           }
-          const isDuplicate = existingCode === code;
-          return isDuplicate;
-        });
+        } catch {
+          // 에러 발생 시 중복이 아닌 것으로 처리
+          return false;
+        }
 
-        const hasDuplicate = otherCodes.length > 0;
-
-        return hasDuplicate;
+        return false;
       };
 
       if (productId) {
         // 수정 모드
         // 제품코드가 변경되었고 중복인지 확인
-        if (
-          currentFormData.code !== product?.code &&
-          checkCodeDuplicate(currentFormData.code, productId)
-        ) {
-          showToastMessage('이미 존재하는 제품코드에요.');
-          return { success: false };
+        if (currentFormData.code !== product?.code) {
+          const isDuplicate = await checkCodeDuplicate(
+            currentFormData.code,
+            productId
+          );
+          if (isDuplicate) {
+            showToastMessage(
+              '이미 존재하는 제품코드에요.',
+              '다른 제품코드로 수정해주세요.'
+            );
+            return { success: false };
+          }
         }
 
         // factory 필드는 수정 시 제외 (서버에서 Factory 인스턴스를 기대함)
@@ -363,7 +376,8 @@ const ProductDetail = ({
         }
       } else {
         // 생성 모드 - 중복 코드 검증
-        if (checkCodeDuplicate(currentFormData.code)) {
+        const isDuplicate = await checkCodeDuplicate(currentFormData.code);
+        if (isDuplicate) {
           showToastMessage(
             '이미 존재하는 제품코드에요.',
             '다른 제품코드로 수정해주세요.'

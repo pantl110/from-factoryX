@@ -4,6 +4,7 @@ import { useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { getMaterialStockStatus } from '@/utils';
 
 interface MaterialInfoProps {
   materialId: number;
@@ -40,22 +41,11 @@ function addComma(num: string | number) {
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-// Helper to calculate stock status
-function calculateStockStatus(currentStock: string, minStock: string) {
-  const isValid =
-    currentStock !== '' &&
-    minStock !== '' &&
-    minStock !== undefined &&
-    minStock !== null &&
-    !isNaN(Number(uncomma(currentStock))) &&
-    !isNaN(Number(uncomma(minStock)));
-
-  if (!isValid) return null;
-
-  const cs = Number(uncomma(currentStock));
-  const ms = Number(uncomma(minStock));
-
-  return cs === 0 ? '부족' : cs >= ms ? '충분' : '부족';
+// Helper to convert string to number (handles commas and empty strings)
+function stringToNumber(str: string | undefined | null): number | null {
+  if (str === undefined || str === null || str === '') return null;
+  const num = Number(uncomma(str));
+  return isNaN(num) ? null : num;
 }
 
 const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
@@ -274,19 +264,22 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
               };
 
               // 재고 상태 계산
-              const ropValue = getValues('rop');
-              const stockStatus = calculateStockStatus(field.value, ropValue);
+              const currentStockNum = stringToNumber(field.value);
+              const maxStockNum = stringToNumber(getValues('maxStock'));
+              const ropNum = stringToNumber(getValues('rop'));
+              const standardStockNum = stringToNumber(
+                getValues('standardStock')
+              );
+              const stockStatus = getMaterialStockStatus({
+                currentStock: currentStockNum,
+                maxStock: maxStockNum,
+                rop: ropNum,
+                standardStock: standardStockNum,
+              });
 
               return (
                 <InfoLabelValue
                   label="현재 재고"
-                  chip={
-                    stockStatus === '부족'
-                      ? {
-                          status: 'danger',
-                        }
-                      : undefined
-                  }
                   value={displayValue}
                   isEditing={!isViewer && hasSubscription()}
                   placeholder="현재 재고를 입력하세요."
@@ -408,16 +401,20 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
         <div className="flex">
           {(() => {
             const currentStock = watch('currentStock');
-            const ropValue = watch('rop');
-            const status = calculateStockStatus(currentStock, ropValue);
+            const maxStock = watch('maxStock');
+            const rop = watch('rop');
+            const standardStock = watch('standardStock');
+            const status = getMaterialStockStatus({
+              currentStock: stringToNumber(currentStock),
+              maxStock: stringToNumber(maxStock),
+              rop: stringToNumber(rop),
+              standardStock: stringToNumber(standardStock),
+            });
             return (
               <InfoLabelValue
                 label="재고 상태"
-                chip={
-                  status === '충분' || status === '부족'
-                    ? { status }
-                    : undefined
-                }
+                chip={status ? { status } : undefined}
+                value={status ? '' : '-'}
                 isEditing={false}
               />
             );

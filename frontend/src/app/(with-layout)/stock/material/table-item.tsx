@@ -1,13 +1,10 @@
 'use client';
 
-import Chip from '@/ui/chip';
-
 import { InventoryStatusColorMap } from '@/types/status-type';
-import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-
 import { MaterialResponseModel } from '@/types/data-model';
+import { RoundChip, Checkbox } from '@/ui';
 
 interface TableItemProps {
   material: MaterialResponseModel;
@@ -34,18 +31,9 @@ const TableItem = ({
     unit,
     spec,
     current_stock: currentStock,
-    standard_stock: standardStock,
+    status,
   } = material;
-  const safeStandardStock = standardStock ?? 0;
-  const status =
-    typeof currentStock === 'number'
-      ? currentStock === 0
-        ? '부족'
-        : currentStock >= safeStandardStock
-          ? '충분'
-          : '부족'
-      : '충분';
-  const colors = InventoryStatusColorMap[status];
+  const colors = status ? InventoryStatusColorMap[status] : null;
 
   return (
     <>
@@ -80,15 +68,17 @@ const TableItem = ({
             ? currentStock.toLocaleString()
             : '-'}
         </p>
-        <div className="px-3 w-[150px]">
-          {typeof currentStock === 'number' ? (
-            <Chip
-              text={status}
-              bgColor={colors.bgColor}
-              textColor={colors.textColor}
-            />
+        <div className="w-[150px]">
+          {status && colors ? (
+            <div className="px-2">
+              <RoundChip
+                text={status}
+                variant="sm"
+                color={colors.color ?? 'gray'}
+              />
+            </div>
           ) : (
-            <span className="text-dg">-</span>
+            <span className="px-3 text-dg">-</span>
           )}
         </div>
       </div>

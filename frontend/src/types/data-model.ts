@@ -459,6 +459,7 @@ export interface MaterialResponseModel {
   code: string;
   unit: string;
   spec: string;
+  status: InventoryStatusType | null;
   current_stock?: number;
   standard_stock?: number;
   rop?: number;
@@ -552,7 +553,7 @@ export interface MaterialProductConnectionModel {
   material_spec: string;
   material_unit: string;
   material_current_stock: number;
-  material_standard_stock: number;
+  material_status: InventoryStatusType | null;
   substitutes: string[];
   quantity: number; // // 제품 1개 생산에 필요한 원자재 수량
 }
@@ -1664,6 +1665,7 @@ import {
   NtsSendStateType,
   SubscriptionStatusType,
   PaymentStatusType,
+  InventoryStatusType,
 } from './status-type';
 
 export type {

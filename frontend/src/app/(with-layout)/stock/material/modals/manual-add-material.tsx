@@ -11,8 +11,7 @@ interface ManualAddMaterialProps {
   setNewMaterials: (
     fn: (prev: MaterialItemModel[]) => MaterialItemModel[]
   ) => void;
-  existingMaterials?: string[]; // 기존 원자재 코드만 저장
-  selectedMaterials?: MaterialItemModel[]; // 현재 선택된 원자재들
+  checkDuplicateMaterialCode?: (code: string) => Promise<boolean>; // 비동기 중복 검사 함수
   showToast?: (text: string, subtext: string) => void;
   usageQuantity?: boolean;
 }
@@ -21,8 +20,7 @@ const ManualAddMaterial = ({
   noPrice = true,
   setIsManualAddMode,
   setNewMaterials,
-  existingMaterials, // 기존 원자재 코드 목록 받기
-  selectedMaterials = [], // 현재 선택된 원자재들
+  checkDuplicateMaterialCode, // 비동기 중복 검사 함수
   showToast,
   usageQuantity = false,
 }: ManualAddMaterialProps) => {
@@ -72,26 +70,23 @@ const ManualAddMaterial = ({
     return baseValidation && price !== null && price > 0;
   };
 
-  const onSubmit = (data: MaterialItemModel) => {
-    // 중복 검사 - 기존 원자재 + 현재 선택된 원자재들
-    const isExistingDuplicate = existingMaterials?.includes(data.code);
-    const isSelectedDuplicate = selectedMaterials.some(
-      (material) => material.code === data.code
-    );
-    const isDuplicate = isExistingDuplicate || isSelectedDuplicate;
-
-    if (isDuplicate) {
-      // 토스트 메시지 표시 (토스트 시스템이 있다면)
-      showToast?.(
-        '이미 존재하는 자재코드에요.',
-        '다른 자재코드로 수정해주세요.'
-      );
-      // 자재코드 필드에 에러 표시를 위해 form 에러 설정
-      setError('code', {
-        type: 'manual',
-        message: '이미 존재하는 자재코드입니다.',
-      });
-      return;
+  const onSubmit = async (data: MaterialItemModel) => {
+    // 중복 검사 (비동기)
+    if (checkDuplicateMaterialCode) {
+      const isDuplicate = await checkDuplicateMaterialCode(data.code);
+      if (isDuplicate) {
+        // 토스트 메시지 표시 (토스트 시스템이 있다면)
+        showToast?.(
+          '이미 존재하는 자재코드에요.',
+          '다른 자재코드로 수정해주세요.'
+        );
+        // 자재코드 필드에 에러 표시를 위해 form 에러 설정
+        setError('code', {
+          type: 'manual',
+          message: '이미 존재하는 자재코드에요.',
+        });
+        return;
+      }
     }
 
     setNewMaterials((prev) => [

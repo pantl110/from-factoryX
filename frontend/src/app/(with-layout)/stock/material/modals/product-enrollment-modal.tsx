@@ -16,7 +16,7 @@ interface ProductEnrollmentModalProps {
   checkDuplicateProductCode?: (
     code: string,
     selectedProducts?: MaterialItemModel[]
-  ) => boolean;
+  ) => Promise<boolean>;
   showDuplicateProductToast?: () => void;
   showToast: (text: string, subtext: string) => void;
 }
@@ -189,8 +189,9 @@ const ProductEnrollmentModal = ({
           <ManualAddProduct
             setIsManualAddMode={setIsManualAddMode}
             setSelectedProducts={setSelectedProducts}
-            checkDuplicateProductCode={(code: string) =>
-              checkDuplicateProductCode?.(code, selectedProducts) ?? false
+            checkDuplicateProductCode={async (code: string) =>
+              (await checkDuplicateProductCode?.(code, selectedProducts)) ??
+              false
             }
             showDuplicateProductToast={showDuplicateProductToast}
           />

@@ -1,4 +1,3 @@
-import Chip from '@/ui/chip';
 import {
   InventoryStatusType,
   InventoryStatusColorMap,
@@ -14,6 +13,7 @@ import {
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { RoundChip } from '@/ui';
 
 interface StockStatusItemProps {
   connection: MaterialProductConnectionModel;
@@ -57,18 +57,8 @@ const StockStatusItem = ({
   });
   const [displayValue, setDisplayValue] = useState('');
 
-  // 재고 상태를 판단
-  const getStockStatus = (currentStock?: number, standardStock?: number) => {
-    if (currentStock === undefined || currentStock === null) return '-';
-    if (currentStock === 0) return '부족';
-    if (standardStock === undefined || standardStock === null) return '충분';
-    if (currentStock >= standardStock) return '충분';
-    return '부족';
-  };
-  const status = getStockStatus(
-    connection.material_current_stock,
-    connection.material_standard_stock
-  );
+  // 백엔드에서 받은 재고 상태 사용
+  const status = connection.material_status;
 
   // 천 단위 구분자 포맷팅 함수
   const formatNumberWithCommas = useCallback(
@@ -254,14 +244,13 @@ const StockStatusItem = ({
           : '-'}
       </div>
       <div className="flex-[0.5] px-3 text-dg flex justify-between">
-        {status === '부족' || status === '충분' ? (
-          <Chip
+        {status ? (
+          <RoundChip
             text={status}
-            textColor={
-              InventoryStatusColorMap[status as InventoryStatusType].textColor
-            }
-            bgColor={
-              InventoryStatusColorMap[status as InventoryStatusType].bgColor
+            variant="sm"
+            color={
+              InventoryStatusColorMap[status as InventoryStatusType]?.color ??
+              'gray'
             }
           />
         ) : (

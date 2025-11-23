@@ -46,8 +46,7 @@ const ConnectMaterialModal = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newMaterials, setNewMaterials] = useState<MaterialItemModel[]>([]); // 수동 추가한 새로운 원자재
   const [isManualAddMode, setIsManualAddMode] = useState(false);
-  const [allMaterialCodes, setAllMaterialCodes] = useState<string[]>([]); // 모든 원자재 코드
-  const { getAllMaterials } = useGetMaterial();
+  const { getMaterialList } = useGetMaterial();
   const { createMaterialProduct, isLoading: isConnecting } =
     useMaterialProduct();
   const { createMaterial, isLoading: isCreating } = useCreateMaterial();
@@ -63,26 +62,56 @@ const ConnectMaterialModal = ({
     MaterialItemModel[]
   >([]);
 
-  // 모든 원자재 정보 가져오기
-  const fetchAllMaterials = async () => {
-    try {
-      const result = await getAllMaterials();
-      if (result.success && result.data) {
-        const codes = result.data.map(
-          (material: { code: string }) => material.code
-        );
-        setAllMaterialCodes(codes);
-      }
-    } catch (error) {
-      console.error('원자재 목록 가져오기 실패:', error);
-    }
-  };
+  // 자재 코드 중복 검사 함수 (비동기 - 자재 코드로 검색)
+  const checkDuplicateMaterialCode = async (
+    code: string,
+    selectedMaterials: MaterialItemModel[] = [],
+    newMaterials: MaterialItemModel[] = []
+  ): Promise<boolean> => {
+    // 현재 선택된 자재들 중에서 중복 확인
+    const isSelectedDuplicate = selectedMaterials.some(
+      (material) => material.code === code
+    );
 
-  // 컴포넌트 마운트 시 모든 원자재 정보 가져오기
-  useEffect(() => {
-    fetchAllMaterials();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (isSelectedDuplicate) {
+      return true;
+    }
+
+    // 새로 추가된 자재들 중에서 중복 확인
+    const isNewDuplicate = newMaterials.some(
+      (material) => material.code === code
+    );
+
+    if (isNewDuplicate) {
+      return true;
+    }
+
+    // 자재 코드로 검색하여 존재하는지 확인
+    if (!code || code.trim() === '') {
+      return false;
+    }
+
+    try {
+      const result = await getMaterialList({
+        q: code,
+        page: 1,
+        page_size: 10,
+      });
+
+      if (result.success && result.data) {
+        // 검색 결과에서 정확히 일치하는 코드가 있는지 확인
+        const exactMatch = result.data.data.some(
+          (material) => material.code === code
+        );
+        return exactMatch;
+      }
+    } catch {
+      // 에러 발생 시 중복이 아닌 것으로 처리
+      return false;
+    }
+
+    return false;
+  };
 
   // 원자재 선택 시
   const handleSelectMaterial = (item: MaterialResponseModel) => {
@@ -183,7 +212,9 @@ const ConnectMaterialModal = ({
       // 2) 수동 추가 원자재는 먼저 생성하여 id 확보
       if (newMaterials.length > 0) {
         if (!factoryId) {
-          alert('공장 정보가 없습니다.');
+          setToastText('공장 정보가 없습니다.');
+          setToastSubtext('');
+          showToast();
           return;
         }
 
@@ -196,12 +227,16 @@ const ConnectMaterialModal = ({
 
         const createResult = await createMaterial(createPayload);
         if (!createResult.success) {
-          alert('새 원자재 생성 실패: ' + createResult.error);
+          setToastText('새 원자재 생성에 실패했어요.');
+          setToastSubtext(createResult.error || '');
+          showToast();
           return;
         }
         const createdMaterialIds = createResult.data?.material_ids;
         if (!createdMaterialIds || createdMaterialIds.length === 0) {
-          alert('새 원자재 ID를 가져올 수 없습니다.');
+          setToastText('새 원자재 ID를 가져올 수 없어요.');
+          setToastSubtext('');
+          showToast();
           return;
         }
 
@@ -229,7 +264,9 @@ const ConnectMaterialModal = ({
       // 1. 새로운 원자재 생성
       if (newMaterials.length > 0) {
         if (!factoryId) {
-          alert('공장 정보가 없습니다.');
+          setToastText('공장 정보가 없습니다.');
+          setToastSubtext('');
+          showToast();
           return;
         }
 
@@ -243,14 +280,18 @@ const ConnectMaterialModal = ({
 
         const createResult = await createMaterial(createPayload);
         if (!createResult.success) {
-          alert('새 원자재 생성 실패: ' + createResult.error);
+          setToastText('새 원자재 생성에 실패했어요.');
+          setToastSubtext(createResult.error || '');
+          showToast();
           return;
         }
 
         // 생성된 원자재 ID들을 가져와서 연결 목록에 추가
         const createdMaterialIds = createResult.data?.material_ids;
         if (!createdMaterialIds || createdMaterialIds.length === 0) {
-          alert('새 원자재 ID를 가져올 수 없습니다.');
+          setToastText('새 원자재 ID를 가져올 수 없어요.');
+          setToastSubtext('');
+          showToast();
           return;
         }
 
@@ -282,7 +323,9 @@ const ConnectMaterialModal = ({
 
         const connectResult = await createMaterialProduct(connectPayload);
         if (!connectResult.success) {
-          alert('원자재 연결 실패: ' + connectResult.error);
+          setToastText('원자재 연결에 실패했어요.');
+          setToastSubtext(connectResult.error || '');
+          showToast();
           return;
         }
       }
@@ -292,7 +335,9 @@ const ConnectMaterialModal = ({
         await onSuccess();
       }
     } catch (error) {
-      alert('원자재 연결 중 오류가 발생했습니다. ' + error);
+      setToastText('원자재 연결 중 오류가 발생했어요.');
+      setToastSubtext(error instanceof Error ? error.message : String(error));
+      showToast();
     }
   };
 
@@ -355,8 +400,13 @@ const ConnectMaterialModal = ({
             <ManualAddMaterial
               setIsManualAddMode={setIsManualAddMode}
               setNewMaterials={setNewMaterials}
-              existingMaterials={allMaterialCodes}
-              selectedMaterials={selectedMaterials}
+              checkDuplicateMaterialCode={async (code: string) =>
+                await checkDuplicateMaterialCode(
+                  code,
+                  selectedMaterials,
+                  newMaterials
+                )
+              }
               showToast={(text: string, subtext: string) => {
                 setToastText(text);
                 setToastSubtext(subtext);

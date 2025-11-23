@@ -93,11 +93,6 @@ const MaterialDetailPanel = ({
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [hasClientBeenModified, setHasClientBeenModified] = useState(false);
 
-  // 제품 코드 중복 검사를 위한 상태
-  const [existingProductCodes, setExistingProductCodes] = useState<string[]>(
-    []
-  );
-
   // 삭제 모달 관련 상태 (통합)
   type DeleteType = 'connection' | 'substitute' | 'location' | null;
   const [deleteModalState, setDeleteModalState] = useState<{
@@ -242,55 +237,51 @@ const MaterialDetailPanel = ({
     setDeleteModalState({ type: null, id: null });
   };
 
-  // 제품 등록 모달이 열릴 때만 모든 제품 코드 가져오기
-  useEffect(() => {
-    if (!isProductEnrollmentModalOpen) return;
-
-    const fetchAllProductCodes = async () => {
-      // 첫 페이지를 가져와서 전체 개수 확인
-      const firstPageResult = await getProductList({
-        page: 1,
-        page_size: 10,
-      });
-
-      if (firstPageResult.success && firstPageResult.data) {
-        const { totalCnt } = firstPageResult.data as ProductListResponseModel;
-
-        // 전체 개수를 알았으니 한 번에 모든 데이터 가져오기
-        const allDataResult = await getProductList({
-          page: 1,
-          page_size: totalCnt,
-        });
-
-        if (allDataResult.success && allDataResult.data) {
-          const codes = allDataResult.data.data.map((product) => product.code);
-          setExistingProductCodes(codes);
-        }
-      }
-    };
-    fetchAllProductCodes();
-  }, [isProductEnrollmentModalOpen, getProductList]);
-
-  // 중복 검사 함수
-  const checkDuplicateProductCode = (
+  // 중복 검사 함수 (비동기 - 제품 코드로 검색)
+  const checkDuplicateProductCode = async (
     code: string,
     selectedProducts: MaterialItemModel[] = []
-  ): boolean => {
-    // 기존 제품 코드들 확인
-    const isExistingDuplicate = existingProductCodes.includes(code);
-
-    // 현재 선택된 제품들 중에서도 중복 확인
+  ): Promise<boolean> => {
+    // 현재 선택된 제품들 중에서 중복 확인
     const isSelectedDuplicate = selectedProducts.some(
       (product) => product.code === code
     );
 
-    return isExistingDuplicate || isSelectedDuplicate;
+    if (isSelectedDuplicate) {
+      return true;
+    }
+
+    // 제품 코드로 검색하여 존재하는지 확인
+    if (!code || code.trim() === '') {
+      return false;
+    }
+
+    try {
+      const result = await getProductList({
+        q: code,
+        page: 1,
+        page_size: 10,
+      });
+
+      if (result.success && result.data) {
+        // 검색 결과에서 정확히 일치하는 코드가 있는지 확인
+        const exactMatch = result.data.data.some(
+          (product) => product.code === code
+        );
+        return exactMatch;
+      }
+    } catch {
+      // 에러 발생 시 중복이 아닌 것으로 처리
+      return false;
+    }
+
+    return false;
   };
 
   // 중복 토스트 표시 함수
   const showDuplicateProductToast = () => {
     setToastText('이미 존재하는 제품코드에요.');
-    setToastSubtext('다른 제품코드로 수정해주세요');
+    setToastSubtext('다른 제품코드로 수정해주세요.');
     showToast();
   };
 
@@ -378,7 +369,17 @@ const MaterialDetailPanel = ({
       if (Object.keys(payload).length > 0) {
         const result = await updateMaterial(selectedMaterialId, payload);
         if (!result || !result.success) {
-          alert(result?.error || '원자재 정보 수정에 실패했습니다.');
+          const errorMessage =
+            result?.error || '원자재 정보 수정에 실패했어요.';
+          // 자재코드 중복 에러인 경우 워딩 통일 및 subtext 추가
+          if (errorMessage.includes('이미 존재하는 자재코드')) {
+            setToastText('이미 존재하는 자재코드에요.');
+            setToastSubtext('다른 자재코드로 수정해주세요.');
+          } else {
+            setToastText(errorMessage);
+            setToastSubtext('');
+          }
+          showToast();
           return;
         }
         hasSaved = true;

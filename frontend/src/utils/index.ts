@@ -37,3 +37,6 @@ export {
   getProductNamesDisplay,
   getProductNames,
 } from './get-product-names-display';
+
+// Stock utilities
+export { getMaterialStockStatus } from './get-material-stock-status';
