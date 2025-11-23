@@ -2,7 +2,7 @@ from datetime import date
 from typing import List, Optional
 from ninja import Schema, ModelSchema
 from tax.models import NationalTaxService, CashReceipt
-from stock.schemas.outbound import ProductOut, MaterialDetailOut
+from stock.schemas.outbound import ProductOut
 
 
 # 순환 import 방지를 위한 별도 정의

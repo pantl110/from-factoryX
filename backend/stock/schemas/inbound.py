@@ -118,7 +118,11 @@ class SingleMaterialCreateIn(Schema):
     spec: str = Field(..., description="원자재 사양")
     unit: Optional[str] = Field(None, description="원자재 단위")
     current_stock: Optional[int] = Field(None, description="현재 재고")
-    standard_stock: Optional[int] = Field(None, description="기준 재고")
+    standard_stock: Optional[int] = Field(None, description="안전 재고")
+    rop: Optional[int] = Field(None, description="재주문점")
+    max_stock: Optional[int] = Field(None, description="적정 재고(최대 재고)")
+    expiry_days: Optional[int] = Field(None, description="유통기한 (일)")
+    memo: Optional[str] = Field(None, description="메모")
 
 
 # (POST) Assign Material
@@ -135,6 +139,10 @@ class MaterialUpdateIn(Schema):
     unit: Optional[str] = None
     current_stock: Optional[int] = None
     standard_stock: Optional[int] = None
+    rop: Optional[int] = None
+    max_stock: Optional[int] = None
+    expiry_days: Optional[int] = None
+    memo: Optional[str] = None
 
 
 # ------------------------------------------------------------

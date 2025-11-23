@@ -120,16 +120,6 @@ class MaterialSummaryOut(Schema):
 
 
 # (GET) Material Detail
-class MaterialDetailOut(Schema):
-    id: int
-    name: str
-    code: str
-    spec: str
-    unit: str
-    current_stock: int
-    standard_stock: int
-
-
 class MaterialDetailModelOut(ModelSchema):
     class Meta:
         model = Material
@@ -141,6 +131,10 @@ class MaterialDetailModelOut(ModelSchema):
             "unit",
             "current_stock",
             "standard_stock",
+            "rop",
+            "max_stock",
+            "expiry_days",
+            "memo",
         ]
 
 

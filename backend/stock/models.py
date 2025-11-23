@@ -31,8 +31,28 @@ class Material(BaseModel):
         help_text="현재 재고",
     )
     standard_stock = models.IntegerField(
-        default=0,
+        null=True,
+        blank=True,
         help_text="안전 재고",
+    )
+    rop = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="재주문점 (Reorder Point)",
+    )
+    max_stock = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="적정 재고(최대 재고)",
+    )
+    expiry_days = models.IntegerField(
+        default=7,
+        help_text="유통기한 (일)",
+    )
+    memo = models.TextField(
+        null=True,
+        blank=True,
+        help_text="메모",
     )
     # cost_average = models.PositiveIntegerField(
     #     default=0,

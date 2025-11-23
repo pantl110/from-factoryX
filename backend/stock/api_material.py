@@ -14,7 +14,6 @@ from stock.schemas.inbound import (
     SingleMaterialCreateIn,
 )
 from stock.schemas.outbound import (
-    MaterialDetailOut,
     MaterialDetailModelOut,
     AssignMaterialOut,
     MaterialSummaryOut,
@@ -78,11 +77,20 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
         # 기본값 설정
         if "unit" not in data or data["unit"] is None:
             data["unit"] = "EA"
-        # current_stock과 standard_stock은 None이면 제거 (모델의 기본값 사용)
+        # expiry_days가 없거나 None이면 기본값 7 설정
+        if "expiry_days" not in data or data.get("expiry_days") is None:
+            data["expiry_days"] = 7
+        # current_stock과 standard_stock, rop, max_stock, memo는 None이면 제거 (모델의 기본값 사용)
         if data.get("current_stock") is None:
             data.pop("current_stock", None)
         if data.get("standard_stock") is None:
             data.pop("standard_stock", None)
+        if data.get("rop") is None:
+            data.pop("rop", None)
+        if data.get("max_stock") is None:
+            data.pop("max_stock", None)
+        if data.get("memo") is None:
+            data.pop("memo", None)
 
         try:
             material = await Material.objects.acreate(factory=factory, **data)
@@ -333,7 +341,7 @@ async def get_material_detail(request, material_id: int):
     "{material_id}",
     summary="[C] 원자재 수정",
     description="특정 원자재의 정보를 수정합니다.",
-    response={200: MaterialDetailOut, 400: dict, 404: dict, 500: dict},
+    response={200: MaterialDetailModelOut, 400: dict, 404: dict, 500: dict},
 )
 async def update_material(request, material_id: int, payload: MaterialUpdateIn):
     factory_id = request.GET.get("factory_id")
@@ -350,7 +358,7 @@ async def update_material(request, material_id: int, payload: MaterialUpdateIn):
 
     update_data = payload.dict(exclude_unset=True)
 
-    nullable_fields = ["current_stock", "standard_stock"]
+    nullable_fields = ["current_stock", "standard_stock", "rop", "max_stock", "memo"]
     blank_fields = []
     for field, value in update_data.items():
         if field not in nullable_fields and value in [None, ""]:
@@ -372,15 +380,7 @@ async def update_material(request, material_id: int, payload: MaterialUpdateIn):
         setattr(material, key, value)
     await sync_to_async(material.save)()
 
-    return 200, MaterialDetailOut(
-        id=material.id,
-        name=material.name,
-        code=material.code,
-        spec=material.spec,
-        unit=material.unit,
-        current_stock=material.current_stock,
-        standard_stock=material.standard_stock,
-    )
+    return material
 
 
 @router.delete(
