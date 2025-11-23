@@ -45,6 +45,7 @@ interface MaterialDetailProps {
   onLocationClick?: (locationId: number) => void;
   onDeleteLocation?: (index: number, locationId?: number) => void;
   onIsDirtyChange?: (isDirty: boolean) => void;
+  onRequiredFieldsChange?: (areFilled: boolean) => void;
   locations?: LocationFormModel['locations'];
   setIsClinetDetailPanelOpen: (clientId: number) => void;
   handleOpenDeleteModal: (connectionId: number) => void;
@@ -71,6 +72,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       onLocationClick,
       onDeleteLocation,
       onIsDirtyChange,
+      onRequiredFieldsChange,
       locations,
       setIsClinetDetailPanelOpen,
       handleOpenDeleteModal,
@@ -216,6 +218,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             memo: '',
           },
         isDirty: isDirtyMaterialInfo,
+        areRequiredFieldsFilled: () =>
+          materialInfoRef.current?.areRequiredFieldsFilled() ?? false,
         // 추가: 위치 정보 관련 메서드도 함께 노출
         getLocationValues: () =>
           getLocationValues('locations' as keyof LocationFormModel),
@@ -277,6 +281,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               materialId={materialId}
               ref={materialInfoRef}
               onIsDirtyChange={setIsDirtyMaterialInfo}
+              onRequiredFieldsChange={onRequiredFieldsChange}
             />
           </div>
 

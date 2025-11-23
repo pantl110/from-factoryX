@@ -69,6 +69,7 @@ const MaterialDetailPanel = ({
   onSuccess,
 }: MaterialDetailPanelProps) => {
   const [isMaterialDetailDirty, setIsMaterialDetailDirty] = useState(false); // 원자재 디테일 판넬 수정 상태
+  const [areRequiredFieldsFilled, setAreRequiredFieldsFilled] = useState(true); // 필수 필드 채워짐 상태
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
     useState(false);
   const [isCreateSubstituteModalOpen, setIsCreateSubstituteModalOpen] =
@@ -114,17 +115,7 @@ const MaterialDetailPanel = ({
 
   // 필수값 검증 함수
   const checkRequiredFilled = (): boolean => {
-    const refObj = materialDetailRef.current;
-    if (!refObj) return false;
-
-    const currentValues = refObj.getValues ? refObj.getValues() : undefined;
-    return !!(
-      currentValues &&
-      String(currentValues.materialName || '').trim() !== '' &&
-      String(currentValues.materialCode || '').trim() !== '' &&
-      String(currentValues.unit || '').trim() !== '' &&
-      String(currentValues.size || '').trim() !== ''
-    );
+    return areRequiredFieldsFilled;
   };
 
   // ClientDetailPanel 열기 함수
@@ -312,6 +303,11 @@ const MaterialDetailPanel = ({
   const { updateMaterial } = useUpdateMaterial();
   const { setShouldReload } = useMaterialReloadStore();
   const factoryId = useMemberStore((state) => state.factoryId);
+
+  // 필수 필드 검증 상태 업데이트 (간단하게)
+  const handleRequiredFieldsChange = (areFilled: boolean) => {
+    setAreRequiredFieldsFilled(areFilled);
+  };
   const handleSaveMaterialDetail = async () => {
     if (!selectedMaterialId) return;
     const refObj = materialDetailRef.current;
@@ -514,7 +510,7 @@ const MaterialDetailPanel = ({
               hoverColor="hover:bg-secondary-hover"
               textColor="text-primary"
               bgColor="bg-primary-8"
-              disabled={!checkRequiredFilled()}
+              disabled={!areRequiredFieldsFilled}
             />
           )
         }
@@ -539,6 +535,7 @@ const MaterialDetailPanel = ({
             }
           }}
           onIsDirtyChange={setIsMaterialDetailDirty}
+          onRequiredFieldsChange={handleRequiredFieldsChange}
           setIsClinetDetailPanelOpen={setIsClinetDetailPanelOpen}
           handleOpenDeleteModal={handleOpenDeleteModal}
           onDeleteLocation={handleRequestDeleteLocation}

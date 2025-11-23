@@ -124,7 +124,6 @@ const useGetProduct = () => {
     [factoryId]
   );
 
-
   // 전체 제품 목록을 한 번에 가져오는 함수
   const getAllProductList = useCallback(async () => {
     setIsLoading(true);

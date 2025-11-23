@@ -1,6 +1,12 @@
 import { useGetMaterial } from '@/hooks';
 import InfoLabelValue from '@/ui/info-label-value';
-import { useEffect, forwardRef, useImperativeHandle, useState } from 'react';
+import {
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useCallback,
+} from 'react';
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -9,11 +15,13 @@ import { getMaterialStockStatus } from '@/utils';
 interface MaterialInfoProps {
   materialId: number;
   onIsDirtyChange?: (isDirty: boolean) => void;
+  onRequiredFieldsChange?: (areFilled: boolean) => void;
 }
 
 export interface MaterialInfoModel {
   getValues: () => MaterialInfoFormModel;
   isDirty: boolean;
+  areRequiredFieldsFilled: () => boolean;
 }
 
 interface MaterialInfoFormModel {
@@ -49,7 +57,7 @@ function stringToNumber(str: string | undefined | null): number | null {
 }
 
 const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
-  ({ materialId, onIsDirtyChange }, ref) => {
+  ({ materialId, onIsDirtyChange, onRequiredFieldsChange }, ref) => {
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
     const hasSubscription = useSubscriptionStore(
@@ -88,13 +96,43 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
       }
     }, [isDirty, onIsDirtyChange]);
 
+    // 필수 필드들을 watch하여 실시간으로 검증
+    const materialName = watch('materialName');
+    const materialCode = watch('materialCode');
+    const size = watch('size');
+    const unit = watch('unit');
+
+    const areRequiredFieldsFilled = useCallback(() => {
+      return !!(
+        String(materialName || '').trim() !== '' &&
+        String(materialCode || '').trim() !== '' &&
+        String(unit || '').trim() !== '' &&
+        String(size || '').trim() !== ''
+      );
+    }, [materialName, materialCode, unit, size]);
+
+    // 필수 필드 값이 변경될 때마다 상위 컴포넌트에 알림
+    useEffect(() => {
+      if (onRequiredFieldsChange) {
+        onRequiredFieldsChange(areRequiredFieldsFilled());
+      }
+    }, [
+      materialName,
+      materialCode,
+      unit,
+      size,
+      areRequiredFieldsFilled,
+      onRequiredFieldsChange,
+    ]);
+
     useImperativeHandle(
       ref,
       () => ({
         getValues,
         isDirty,
+        areRequiredFieldsFilled,
       }),
-      [getValues, isDirty]
+      [getValues, isDirty, areRequiredFieldsFilled]
     );
 
     useEffect(() => {
@@ -195,7 +233,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="개별 단위를 입력하세요."
+                placeholder="단위를 입력하세요."
                 required
               />
             )}

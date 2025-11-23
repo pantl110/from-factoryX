@@ -113,7 +113,7 @@ export const CompletedProjectStatusColorMap: Record<
 };
 
 // 재고 상태
-export type InventoryStatusType = '과재고'|'충분' | '위험'|'부족';
+export type InventoryStatusType = '과재고' | '충분' | '위험' | '부족';
 export const InventoryStatusColorMap: Record<
   InventoryStatusType,
   StatusColorModel
