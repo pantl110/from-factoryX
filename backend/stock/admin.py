@@ -92,7 +92,7 @@ class MaterialHistoryAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        ("세금 정보", {"fields": ("purchase_tax_invoice", "cash_receipt")}),
+        ("세금 정보", {"fields": ("cash_receipt",)}),
         (
             "시스템 정보",
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
