@@ -6,6 +6,7 @@ import {
 } from '@/hooks';
 import NoHistoryBox from '@/ui/no-history-box';
 import MemoLogItem from './memo-log-item';
+import { RoundChip } from '@/ui';
 
 interface LogSectionProps {
   workInstructionId: number;
@@ -37,16 +38,27 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
   const getActionText = (action: string) => {
     switch (action) {
       case 'added':
-        return '추가';
+        return '생산 계획 추가';
       case 'updated':
         return '수정';
       case 'removed':
-        return '삭제';
+        return '생산 계획 삭제';
       case 'memo_updated':
         return '메모 수정';
       default:
         return action;
     }
+  };
+
+  // item에 따라 RoundChip 색상 결정
+  const getChipColor = (item: string) => {
+    if (item === '생산 계획 추가') return 'secondary';
+    if (item === '생산 계획 삭제') return 'red';
+    if (item === '생산 설비') return 'gray';
+    if (item === '생산 수량') return 'whiteOutline';
+    if (item === '생산 일자') return 'purple';
+    if (item === '마감 예정일자') return 'orange';
+    return 'gray';
   };
 
   // 프로젝트명 표시
@@ -222,9 +234,9 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
         </h3>
 
         <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-          <p className="flex-[0.8] px-3 text-sv">수정일시</p>
-          <p className="flex-[1.3] px-3 text-sv">프로젝트명</p>
-          <p className="flex-[1.3] px-3 text-sv">제품명</p>
+          <p className="flex-[0.5] px-3 text-sv">수정일시</p>
+          <p className="flex-[1.2] px-3 text-sv">프로젝트명</p>
+          <p className="flex-[1.2] px-3 text-sv">제품명</p>
           <p className="flex-1 px-3 text-sv">변경항목</p>
           <p className="flex-1 px-3 text-sv">변경 전</p>
           <p className="flex-1 px-3 text-sv">변경 후</p>
@@ -240,27 +252,62 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
                 key={`${history.id}-${item}-${index}`}
                 className="flex items-start border-b border-lg Me_Body-1 cursor-default"
               >
-                <p className="flex-[0.8] px-3 py-[15px] text-dg">
+                <p className="flex-[0.5] px-3 py-[15px] text-dg">
                   {index === 0 ? convertUTCToKSTTime(history.created_at) : ''}
                 </p>
-                <p className="flex-[1.3] px-3 py-[15px] text-dg">
+                <p
+                  className="flex-[1.2] px-3 py-[15px] text-dg truncate"
+                  title={index === 0 ? getProjectName(history) : ''}
+                >
                   {index === 0 ? getProjectName(history) : ''}
                 </p>
-                <p className="flex-[1.3] px-3 py-[15px] text-dg">
+                <p
+                  className="flex-[1.2] px-3 py-[15px] text-dg truncate"
+                  title={index === 0 ? getProductName(history) : ''}
+                >
                   {index === 0 ? getProductName(history) : ''}
                 </p>
-                <p className="flex-1 px-3 py-[15px] text-dg">{item}</p>
-                <p className="flex-1 px-3 py-[15px] text-dg whitespace-pre-line">
+                <div className="flex-1 px-2 py-[15px] text-dg">
+                  <RoundChip
+                    text={item}
+                    variant="sm"
+                    color={getChipColor(item)}
+                  />
+                </div>
+                <p
+                  className="flex-1 px-3 py-[15px] text-dg whitespace-pre-line truncate"
+                  title={
+                    history.action === 'added' || history.action === 'removed'
+                      ? ''
+                      : getBeforeValueForItem(history, item)
+                  }
+                >
                   {history.action === 'added' || history.action === 'removed'
                     ? ''
                     : getBeforeValueForItem(history, item)}
                 </p>
-                <p className="flex-1 px-3 py-[15px] text-dg whitespace-pre-line">
+                <p
+                  className="flex-1 px-3 py-[15px] text-dg whitespace-pre-line truncate"
+                  title={
+                    history.action === 'added' || history.action === 'removed'
+                      ? ''
+                      : getAfterValueForItem(history, item)
+                  }
+                >
                   {history.action === 'added' || history.action === 'removed'
                     ? ''
                     : getAfterValueForItem(history, item)}
                 </p>
-                <p className="flex-[0.8] px-3 py-[15px] text-dg">
+                <p
+                  className="flex-[0.8] px-3 py-[15px] text-dg truncate"
+                  title={
+                    index === 0
+                      ? history.changed_by?.username ||
+                        history.changed_by?.email ||
+                        '-'
+                      : ''
+                  }
+                >
                   {index === 0
                     ? history.changed_by?.username ||
                       history.changed_by?.email ||

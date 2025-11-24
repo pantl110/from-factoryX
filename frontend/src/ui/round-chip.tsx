@@ -23,10 +23,12 @@ const colorClasses = {
   yellow: 'bg-yellow-8 text-yellow',
   purple: 'bg-purple-8 text-purple',
   gray: 'bg-bg text-dg',
+  white: 'bg-wh text-dg',
+  whiteOutline: 'bg-wh text-dg border border-lg',
 } as const;
 
 const sizeClasses = {
-  sm: 'px-2.5 h-[26px] Re_Body-2',
+  sm: 'px-2.5 h-[26px] Re_body-2',
 } as const;
 
 export const RoundChip = ({ text, variant, color }: RoundChipProps) => {
@@ -38,7 +40,7 @@ export const RoundChip = ({ text, variant, color }: RoundChipProps) => {
         sizeClasses[variant]
       )}
     >
-      {text}
+      <span>{text}</span>
     </div>
   );
 };
