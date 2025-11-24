@@ -285,25 +285,26 @@ async def get_material_history(
         histories = list(queryset.order_by("-created_at"))
 
         # material_id 필터가 있을 때만 NationalTaxService 조회
-        national_tax_service_id = None
+        # 각 히스토리마다 연결된 세금계산서를 찾기 위해 미리 조회
+        history_to_tax_service = {}
         if filters.material_id:
-            # SQLite에서 JSON contains lookup이 지원되지 않으므로 다른 방법 사용
             tax_services = NationalTaxService.objects.filter(factory_id=factory_id)
             for tax_service in tax_services:
                 if tax_service.line_items:
                     for item in tax_service.line_items:
-                        if (
-                            isinstance(item, dict)
-                            and item.get("material_history") == filters.material_id
-                        ):
-                            national_tax_service_id = tax_service.id
-                            break
-                if national_tax_service_id:
-                    break
+                        if isinstance(item, dict):
+                            material_history_id = item.get("material_history")
+                            if material_history_id:
+                                history_to_tax_service[material_history_id] = tax_service.id
 
         result = []
         for history in histories:
             client_name = history.client.name if history.client else None
+            # material_id 필터가 있을 때만 각 히스토리마다 연결된 세금계산서 ID 찾기
+            if filters.material_id:
+                national_tax_service_id = history_to_tax_service.get(history.id)
+            else:
+                national_tax_service_id = None
 
             result.append(
                 {
