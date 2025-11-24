@@ -190,7 +190,7 @@ async def assign_material(request, payload: AssignMaterialIn):
     "",
     summary="[C] 공장별 원자재 목록 조회",
     description="특정 공장의 모든 원자재 정보를 조회합니다. material_id가 제공되면 해당 자재와 연결된 대체자재들을 제외합니다.",
-    response={200: List[ExpiryRiskMaterialOut], 404: dict, 500: dict},
+    response={200: List[MaterialSummaryOut], 404: dict, 500: dict},
 )
 @paginate
 async def get_materials_by_factory(
