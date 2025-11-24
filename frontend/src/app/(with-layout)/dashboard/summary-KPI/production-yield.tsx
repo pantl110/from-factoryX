@@ -6,15 +6,21 @@ interface ProductionYieldProps {
 }
 
 const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
-  if (!monthlyProfits || monthlyProfits.length < 2) return null;
+  // 데이터가 없거나 빈 배열인 경우 기본값 사용
+  const currentProfit =
+    monthlyProfits && monthlyProfits.length > 0
+      ? monthlyProfits[0].profit || 0
+      : 0;
+  const previousProfit =
+    monthlyProfits && monthlyProfits.length > 1
+      ? monthlyProfits[1].profit
+      : undefined;
 
-  const isNegative = monthlyProfits[0].profit < monthlyProfits[1].profit;
+  const isNegative =
+    previousProfit !== undefined ? currentProfit < previousProfit : false;
   const changePercentage =
-    monthlyProfits[0].profit !== undefined &&
-    monthlyProfits[1].profit !== undefined
-      ? ((monthlyProfits[0].profit - monthlyProfits[1].profit) /
-          monthlyProfits[1].profit) *
-        100
+    previousProfit !== undefined && previousProfit !== 0
+      ? ((currentProfit - previousProfit) / previousProfit) * 100
       : undefined;
 
   return (
@@ -22,7 +28,7 @@ const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
       <div className="flex flex-col gap-1">
         <p className="Heading-4 text-sv">생산 수익</p>
         <p className="flex gap-1 Heading-1">
-          {monthlyProfits[0].profit || 0} <span>만원</span>
+          {currentProfit} <span>만원</span>
         </p>
 
         {changePercentage !== undefined && !isNaN(changePercentage) && (
