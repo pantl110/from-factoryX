@@ -309,14 +309,15 @@ async def get_expiry_risk_materials(request, q: str = None):
             
             # 위험 상태인 것만 필터링
             if expiry_status == "위험":
+                # 스키마로 변환하여 반환
                 risk_materials.append(
-                    {
-                        "id": material.id,
-                        "name": material.name,
-                        "current_stock": material.current_stock,
-                        "rop": material.rop,
-                        "expiry_status": expiry_status,
-                    }
+                    ExpiryRiskMaterialOut(
+                        id=material.id,
+                        name=material.name,
+                        current_stock=material.current_stock,
+                        rop=material.rop,
+                        expiry_status=expiry_status,
+                    )
                 )
         
         return risk_materials

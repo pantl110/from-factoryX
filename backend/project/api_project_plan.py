@@ -694,17 +694,17 @@ async def get_dashboard(request):
                         product_revenue = qp.quantity * qp.unit_price
 
                         # 원자재 비용 계산
-                        from stock.models import MaterialProduct
+                        # from stock.models import MaterialProduct
 
-                        material_products = MaterialProduct.objects.filter(
-                            product=qp.product
-                        )
+                        # material_products = MaterialProduct.objects.filter(
+                        #     product=qp.product
+                        # )
 
                         material_cost = 0
-                        for mp in material_products:
-                            # 원자재 단가 (cost_average 필드 사용)
-                            material_unit_cost = mp.material.cost_average
-                            material_cost += mp.quantity * material_unit_cost
+                        # for mp in material_products:
+                        #     # 원자재 단가 (cost_average 필드 사용)
+                        #     material_unit_cost = mp.material.cost_average
+                        #     material_cost += mp.quantity * material_unit_cost
 
                         # 수익 = 품목 가격 - 원자재 비용
                         profit = product_revenue - material_cost
