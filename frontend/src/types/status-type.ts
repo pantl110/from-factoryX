@@ -300,3 +300,15 @@ export const MaterialStatusTypeColorMap: Record<
     color: 'orange',
   },
 };
+
+// 유통기한 상태
+export type ExpiryStatusType = 'warning' | 'safe';
+export const ExpiryStatusColorMap: Record<ExpiryStatusType, StatusColorModel> =
+  {
+    warning: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
+    safe: {
+      textColor: 'text-primary',
+      bgColor: 'bg-primary-8',
+      color: 'secondary',
+    },
+  };

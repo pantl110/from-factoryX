@@ -11,6 +11,7 @@ import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { getMaterialStockStatus } from '@/utils';
+import { ExpiryStatusType } from '@/types/status-type';
 
 interface MaterialInfoProps {
   materialId: number;
@@ -67,6 +68,9 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
     const [isStockEditing, setIsStockEditing] = useState(false);
     const [stockInputValue, setStockInputValue] = useState<string>('');
     const [isExpiryDaysEditing, setIsExpiryDaysEditing] = useState(false);
+    const [expiryStatus, setExpiryStatus] = useState<ExpiryStatusType | null>(
+      null
+    );
 
     const { getMaterialDetail } = useGetMaterial();
     const {
@@ -168,6 +172,15 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             memo: mat.memo ?? '',
           };
           reset(formData, { keepDefaultValues: false });
+          // 백엔드에서 '위험'/'양호'를 반환하므로 프론트엔드 타입으로 변환
+          const expiryStatusValue = mat.expiry_status;
+          if (expiryStatusValue === '위험') {
+            setExpiryStatus('warning');
+          } else if (expiryStatusValue === '양호') {
+            setExpiryStatus('safe');
+          } else {
+            setExpiryStatus(null);
+          }
           if (onIsDirtyChange) {
             onIsDirtyChange(false);
           }
@@ -476,9 +489,14 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                   ? `${formatNumber(field.value)}일`
                   : (field.value ?? '-');
 
+              // 읽기 모드이고 수정되지 않았을 때만 chip 표시
+              const shouldShowChip =
+                !isDirty && !isExpiryDaysEditing && expiryStatus !== null;
+
               return (
                 <InfoLabelValue
                   label="유통기한"
+                  chip={shouldShowChip ? { status: expiryStatus } : undefined}
                   value={displayValue}
                   handleChange={handleChangeExpiryDays}
                   isEditing={!isViewer && hasSubscription()}

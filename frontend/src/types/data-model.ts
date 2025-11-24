@@ -465,6 +465,7 @@ export interface MaterialResponseModel {
   rop?: number;
   max_stock?: number;
   expiry_days?: string;
+  expiry_status?: '위험' | '양호' | null;
   memo?: string;
   location?: number;
 }
@@ -1666,6 +1667,7 @@ import {
   SubscriptionStatusType,
   PaymentStatusType,
   InventoryStatusType,
+  ExpiryStatusType,
 } from './status-type';
 
 export type {

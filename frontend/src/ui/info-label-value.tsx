@@ -8,6 +8,8 @@ import {
   EquipmentStatusColorMap,
   MaterialStatusType,
   MaterialStatusTypeColorMap,
+  ExpiryStatusType,
+  ExpiryStatusColorMap,
 } from '@/types/status-type';
 import TextareaAutosize from 'react-textarea-autosize';
 import { UseFormRegisterReturn } from 'react-hook-form';
@@ -22,6 +24,7 @@ interface InfoLabelValueProps {
       | TaxDocumentType
       | EquipmentStatusType
       | MaterialStatusType
+      | ExpiryStatusType
       | 'danger';
   };
   isEditing?: boolean;
@@ -68,7 +71,9 @@ const InfoLabelValue = ({
           ? EquipmentStatusColorMap[chip.status as EquipmentStatusType]
           : chip.status in MaterialStatusTypeColorMap
             ? MaterialStatusTypeColorMap[chip.status as MaterialStatusType]
-            : InventoryStatusColorMap[chip.status as InventoryStatusType]
+            : chip.status in ExpiryStatusColorMap
+              ? ExpiryStatusColorMap[chip.status as ExpiryStatusType]
+              : InventoryStatusColorMap[chip.status as InventoryStatusType]
     : null;
 
   const renderChip = () => {
@@ -90,7 +95,11 @@ const InfoLabelValue = ({
                     ? '사용중'
                     : chip.status === 'danger'
                       ? '위험'
-                      : chip.status // 재고 상태는 그대로 표시 (충분, 부족)
+                      : chip.status === 'warning'
+                        ? '위험'
+                        : chip.status === 'safe'
+                          ? '양호'
+                          : chip.status // 재고 상태는 그대로 표시 (충분, 부족)
         }
         color={colors.color}
       />
