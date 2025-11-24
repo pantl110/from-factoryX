@@ -130,6 +130,7 @@ export { default as useUpdateMaterial } from './stock/material/use-update-materi
 export { default as useDeleteMaterial } from './stock/material/use-delete-material';
 export { default as useAssignMaterialProduct } from './stock/material/use-assign-material-product';
 export { useGetMaterialListMutation } from './stock/material/use-material-mutations';
+export { default as useGetExpiryRiskMaterials } from './stock/material/use-get-expiry-risk-materials';
 
 // Material history related hooks
 export { default as useCreateMaterialHistory } from './stock/material-history/use-create-material-history';

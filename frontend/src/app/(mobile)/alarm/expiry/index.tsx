@@ -1,24 +1,189 @@
-import { CalendarDots } from '@phosphor-icons/react';
+import { useMemo } from 'react';
+import { CalendarDots, CaretRight } from '@phosphor-icons/react';
+import { useRouter } from 'next/navigation';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
-import { useRouter } from 'next/navigation';
+import { MoBtn, NoHistoryBox } from '@/ui';
+import { useInfiniteScroll } from '@/hooks';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import useMemberStore from '@/store/member-store';
+import axios from 'axios';
+import {
+  ExpiryRiskMaterialListResponseModel,
+  ExpiryRiskMaterialModel,
+} from '@/types/data-model';
 
-const Expiry = () => {
+interface ExpiryProps {
+  hideWhenEmpty?: boolean;
+  limit?: number;
+}
+
+const formatStockValue = (value?: number) =>
+  typeof value === 'number' ? value.toLocaleString() : '-';
+
+const expiryPageSize = 10;
+
+const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
   const router = useRouter();
-  return (
-    <div className="flex flex-col gap-1 pt-4">
-      <Title icon={<CalendarDots />} title="유통기한" count={2} />
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage = false,
+    isLoading,
+    isFetchingNextPage,
+    error,
+  } = useInfiniteQuery<{
+    items: ExpiryRiskMaterialModel[];
+    totalCount: number;
+    nextPage: number | null;
+  }>({
+    queryKey: ['expiry-risk-materials', factoryId],
+    enabled: !!factoryId,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    queryFn: async ({ pageParam = 1 }) => {
+      const pageNumber =
+        typeof pageParam === 'number' ? pageParam : Number(pageParam) || 1;
 
-      <AlarmItem
-        chipText="유통기한이 얼마 남지 않았어요!"
-        chipVariant="red-secondary"
-        name="자재명"
-        subText="현재 재고 수량/ROP 기준 값"
-        onClick={() => {
-          router.push('/material');
-        }}
-      />
-    </div>
+      if (!factoryId) {
+        return { items: [], totalCount: 0, nextPage: null };
+      }
+
+      const { data: result } =
+        await axios.get<ExpiryRiskMaterialListResponseModel>(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/expiry-risk`,
+          {
+            params: {
+              factory_id: factoryId,
+              page: pageNumber,
+              page_size: expiryPageSize,
+            },
+            withCredentials: true,
+          }
+        );
+
+      const items: ExpiryRiskMaterialModel[] = result.data || [];
+      const totalCount = result.totalCnt ?? result.count ?? items.length ?? 0;
+      const currentPage = result.curPage ?? pageNumber;
+      const totalPages =
+        result.pageCnt ?? Math.max(1, Math.ceil(totalCount / expiryPageSize));
+      const nextPage =
+        result.nextPage ?? (currentPage < totalPages ? currentPage + 1 : null);
+
+      return {
+        items,
+        totalCount,
+        nextPage,
+      };
+    },
+  });
+
+  const materials = useMemo(
+    () => data?.pages.flatMap((page) => page.items) ?? [],
+    [data]
+  );
+
+  const displayMaterials = useMemo(() => {
+    if (!Array.isArray(materials)) {
+      return [];
+    }
+    if (limit && materials.length > limit) {
+      return materials.slice(0, limit);
+    }
+    return materials;
+  }, [materials, limit]);
+
+  const totalCount = data?.pages[0]?.totalCount ?? materials.length ?? 0;
+  const isInitialLoading = isLoading && materials.length === 0;
+  const showMoreButton = Boolean(limit && materials.length > limit);
+  const errorMessage =
+    error instanceof Error ? error.message : error ? String(error) : null;
+
+  const loadMoreRef = useInfiniteScroll<HTMLDivElement>({
+    enabled: true,
+    hasMore: hasNextPage,
+    isLoading: isInitialLoading,
+    isFetchingMore: isFetchingNextPage,
+    onLoadMore: () => {
+      if (hasNextPage) {
+        fetchNextPage();
+      }
+    },
+  });
+
+  const shouldHideSection =
+    hideWhenEmpty && !isInitialLoading && materials.length === 0;
+  if (shouldHideSection) {
+    return null;
+  }
+
+  const renderContent = () => {
+    if (isInitialLoading) {
+      return <></>;
+    }
+
+    if (
+      errorMessage ||
+      !Array.isArray(displayMaterials) ||
+      displayMaterials.length === 0
+    ) {
+      return (
+        <div className="px-6 pt-4">
+          <NoHistoryBox text="유통기한 위험 알림이 없어요." />
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {displayMaterials.map((material) => {
+          const currentStock = formatStockValue(material.current_stock);
+          const rop = formatStockValue(material.rop);
+          const unit = material.unit ? ` ${material.unit}` : '';
+          const subText = `${currentStock}${unit} / ${rop}${unit}`;
+
+          return (
+            <AlarmItem
+              key={material.id}
+              chipText="유통기한이 얼마 남지 않았어요!"
+              chipVariant="red-secondary"
+              name={material.name}
+              subText={subText}
+              onClick={() => {
+                router.push(`/material/${material.id}`);
+              }}
+            />
+          );
+        })}
+
+        {showMoreButton && (
+          <div className="px-4 py-2">
+            <MoBtn
+              text="더 보기"
+              variant="outline"
+              icon={<CaretRight />}
+              width="w-full"
+              onClick={() => router.push('/alarm?tab=expiry')}
+            />
+          </div>
+        )}
+        {hasNextPage && (
+          <div ref={loadMoreRef} className="w-full h-1" aria-hidden="true" />
+        )}
+      </>
+    );
+  };
+
+  const content = renderContent();
+
+  return (
+    <>
+      <div className="flex flex-col gap-1 pt-4">
+        <Title icon={<CalendarDots />} title="유통기한" count={totalCount} />
+        {content}
+      </div>
+    </>
   );
 };
 

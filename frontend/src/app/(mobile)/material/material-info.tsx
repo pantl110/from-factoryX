@@ -5,10 +5,7 @@ import MoChip from '@/ui/mo-chip';
 import { LabelInfo } from '../label-info';
 import InfoDetail from '../info-detail';
 import { getMaterialStockStatus } from '@/utils';
-import {
-  InventoryStatusType,
-  InventoryStatusColorMap,
-} from '@/types/status-type';
+import { InventoryStatusColorMap } from '@/types/status-type';
 
 interface MaterialInfoProps {
   material: MaterialResponseModel | null;

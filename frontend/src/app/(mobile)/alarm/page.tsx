@@ -50,13 +50,11 @@ const AlarmContent = () => {
       case 'all':
       default:
         return (
-          <div className="flex flex-col pb-6">
-            <DueDate hideWhenEmpty withDivider limit={5} />
+          <div className="flex flex-col border-b border-bg pb-6 divide-y-[4px] divide-bg">
+            <DueDate hideWhenEmpty limit={5} />
             {/* <PaymentDue /> */}
-            {/* <div className="h-1 bg-bg" /> */}
-            <Rop hideWhenEmpty withDivider limit={5} />
-            <Expiry />
-            <div className="h-1 bg-bg" />
+            <Rop hideWhenEmpty limit={5} />
+            <Expiry hideWhenEmpty limit={5} />
             <ConfirmationRequired hideWhenEmpty limit={5} />
           </div>
         );

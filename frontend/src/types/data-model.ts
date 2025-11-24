@@ -475,6 +475,21 @@ export interface MaterialListResponseModel extends PaginationModel {
   data: MaterialResponseModel[];
 }
 
+// 유통기한 위험 원자재
+export interface ExpiryRiskMaterialModel {
+  id: number;
+  name: string;
+  unit: string;
+  current_stock?: number;
+  rop?: number;
+  expiry_status: '위험';
+}
+
+// 유통기한 위험 원자재 목록 조회
+export interface ExpiryRiskMaterialListResponseModel extends PaginationModel {
+  data: ExpiryRiskMaterialModel[];
+}
+
 // Material History API
 export interface MaterialItemModel {
   id?: number;
@@ -1667,7 +1682,6 @@ import {
   SubscriptionStatusType,
   PaymentStatusType,
   InventoryStatusType,
-  ExpiryStatusType,
 } from './status-type';
 
 export type {

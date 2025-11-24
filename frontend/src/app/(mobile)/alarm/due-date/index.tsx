@@ -70,15 +70,10 @@ const getTodayDateString = () => {
 
 interface DueDateProps {
   hideWhenEmpty?: boolean;
-  withDivider?: boolean;
   limit?: number;
 }
 
-const DueDate = ({
-  hideWhenEmpty = false,
-  withDivider = false,
-  limit,
-}: DueDateProps) => {
+const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
   const router = useRouter();
   const factoryId = useMemberStore((state) => state.factoryId);
   const baseDate = getTodayDateString();
@@ -246,7 +241,6 @@ const DueDate = ({
         <Title icon={<Package />} title="납기 도래" count={totalCount} />
         {content}
       </div>
-      {withDivider && <div className="h-1 bg-bg" />}
     </>
   );
 };

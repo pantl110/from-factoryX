@@ -11,7 +11,6 @@ import MoBtn from '@/ui/mo-btn';
 
 interface RopProps {
   hideWhenEmpty?: boolean;
-  withDivider?: boolean;
   limit?: number;
 }
 
@@ -20,11 +19,7 @@ const formatStockValue = (value?: number) =>
 
 const shortagePageSize = 10;
 
-const Rop = ({
-  hideWhenEmpty = false,
-  withDivider = false,
-  limit,
-}: RopProps) => {
+const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
   const router = useRouter();
   const { getMaterialList } = useGetMaterial();
 
@@ -163,7 +158,6 @@ const Rop = ({
         <Title icon={<MoneyWavy />} title="ROP" count={totalCount} />
         {content}
       </div>
-      {withDivider && <div className="h-1 bg-bg" />}
     </>
   );
 };
