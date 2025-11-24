@@ -1,16 +1,25 @@
 'use client';
 
 import { Calendar } from '@phosphor-icons/react';
-import { useState } from 'react';
+import { useMemo } from 'react';
+import { useGetMobileDashboardCounts } from '@/hooks';
+import { MobileDashboardCountsResponseModel } from '@/types/data-model';
 import TopBar from './topbar';
 import WorkList from './work-list';
 import TodoList from './todo-list';
 // import Memo from './memo';
 
+const EMPTY_COUNTS: MobileDashboardCountsResponseModel = {
+  undelivered_quotation_products: 0,
+  shortage_materials: 0,
+  expiry_risk_materials: 0,
+  stale_confirmed_projects: 0,
+};
+
 const MobileDashboardPage = () => {
-  // 선택된 날짜 상태 관리 (초기값: 오늘)
-  const today = new Date();
-  const [selectedDate, setSelectedDate] = useState<Date>(today);
+  const baseDate = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const { data } = useGetMobileDashboardCounts({ baseDate });
+  const dashboardCounts = data ?? EMPTY_COUNTS;
 
   return (
     <>
@@ -18,8 +27,9 @@ const MobileDashboardPage = () => {
       <div className="flex flex-col gap-8 py-6 px-4">
         {/* 작업목록 */}
         <WorkList
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
+          data={dashboardCounts}
+          // selectedDate={selectedDate}
+          // setSelectedDate={setSelectedDate}
         />
 
         {/* 오늘의 할일 */}
@@ -30,7 +40,7 @@ const MobileDashboardPage = () => {
             </div>
             <h4 className="m-Heading-4b">오늘의 할일</h4>
           </div>
-          <TodoList />
+          <TodoList data={dashboardCounts} />
         </div>
 
         {/* 메모 */}

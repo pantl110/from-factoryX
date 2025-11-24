@@ -3,8 +3,13 @@ import { CaretRight } from '@phosphor-icons/react';
 import TodoListItem from './todo-list-item';
 import MoBtn from '@/ui/mo-btn';
 import { useRouter } from 'next/navigation';
+import { MobileDashboardCountsResponseModel } from '@/types/data-model';
 
-const TodoList = () => {
+interface TodoListProps {
+  data: MobileDashboardCountsResponseModel;
+}
+
+const TodoList = ({ data }: TodoListProps) => {
   const router = useRouter();
 
   return (
@@ -16,14 +21,14 @@ const TodoList = () => {
       {/* <div className="flex gap-2.5"> */}
       <TodoListItem
         title="납기 도래"
-        count={2}
+        count={data.undelivered_quotation_products}
         onClick={() => {
           router.push('/alarm?tab=due-date');
         }}
       />
       <TodoListItem
         title="ROP"
-        count={1}
+        count={data.shortage_materials}
         onClick={() => {
           router.push('/alarm?tab=rop');
         }}
@@ -32,14 +37,14 @@ const TodoList = () => {
       {/* <div className="flex gap-2.5"> */}
       <TodoListItem
         title="확정 필요 주문"
-        count={4}
+        count={data.stale_confirmed_projects}
         onClick={() => {
           router.push('/alarm?tab=confirmation-required');
         }}
       />
       <TodoListItem
         title="유통기한"
-        count={2}
+        count={data.expiry_risk_materials}
         onClick={() => {
           router.push('/alarm?tab=expiry');
         }}

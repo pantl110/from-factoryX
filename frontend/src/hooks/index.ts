@@ -169,6 +169,7 @@ export { useProductionPlanValidation } from './production/use-production-plan-va
 export { default as useGetTodayProductionPlans } from './dashboard/use-get-today-production-plans';
 export { default as useGetUndeliveredProducts } from './dashboard/use-get-undelivered-products';
 export { default as useGetDashboard } from './dashboard/use-get-dashboard';
+export { default as useGetMobileDashboardCounts } from './dashboard/use-get-mobile-dashboard-counts';
 
 // websocket related hooks
 export { useWebSocket } from './websocket/use-websocket';

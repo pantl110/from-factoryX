@@ -1146,6 +1146,13 @@ export interface DashboardResponseModel {
   last_year_monthly_profits: MonthlyProfitModel[];
 }
 
+export interface MobileDashboardCountsResponseModel {
+  undelivered_quotation_products: number;
+  shortage_materials: number;
+  expiry_risk_materials: number;
+  stale_confirmed_projects: number;
+}
+
 //////////////////////
 // Factory Member API
 // 멤버 초대
