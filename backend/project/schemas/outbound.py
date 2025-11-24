@@ -337,6 +337,13 @@ class DashboardOut(Schema):
     last_year_monthly_profits: List[dict]  # 작년 동일 기간 월별 생산 수익
 
 
+class MobileDashboardCountOut(Schema):
+    undelivered_quotation_products: int
+    shortage_materials: int
+    expiry_risk_materials: int
+    stale_confirmed_projects: int
+
+
 # (POST) Project Plan Create or Update Response
 class ProjectPlanCreateOrUpdateOut(Schema):
     message: str

@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from factory.models import Factory, FactoryClient, FactoryEquipment
+from factory.models import Factory, FactoryClient, FactoryEquipment, FactoryMember
 from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
 from stock.models import Product, Material
@@ -1198,7 +1198,71 @@ class DashboardAPITestCase(TestCase):
         self.assertNotEqual(response.status_code, 200)
 
 
-# cost_average 필드가 Material 모델에서 제거되어 주석 처리
+class MobileDashboardCountTestCase(TestCase):
+    """모바일 대시보드 지표 API 최소 검증"""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="mobile_user", email="mobile@example.com", password="testpass123"
+        )
+        self.factory = Factory.objects.create(name="모바일 공장", owner=self.user)
+        FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
+        )
+        self.token = jwt.encode(
+            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )
+
+    def _auth_headers(self):
+        return {"HTTP_AUTHORIZATION": f"Bearer {self.token}"}
+
+    def test_get_mobile_dashboard_counts_empty_data(self):
+        """데이터가 없어도 기본 지표가 0으로 반환되는지 확인"""
+        url = "/v1/project-plan/dashboard-mobile"
+        response = self.client.get(
+            url, {"factory_id": self.factory.id}, **self._auth_headers()
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        expected_keys = [
+            "undelivered_quotation_products",
+            "shortage_materials",
+            "expiry_risk_materials",
+            "stale_confirmed_projects",
+        ]
+        for key in expected_keys:
+            self.assertIn(key, data)
+            self.assertEqual(data[key], 0)
+
+    def test_get_mobile_dashboard_counts_missing_factory_id(self):
+        """factory_id 누락 시 400 반환"""
+        url = "/v1/project-plan/dashboard-mobile"
+        response = self.client.get(url, **self._auth_headers())
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("factory_id를 입력해야 합니다.", response.json()["detail"])
+
+    def test_get_mobile_dashboard_counts_invalid_base_date(self):
+        """잘못된 base_date 형식 시 400 반환"""
+        url = "/v1/project-plan/dashboard-mobile"
+        response = self.client.get(
+            url,
+            {"factory_id": self.factory.id, "base_date": "2024-13-40"},
+            **self._auth_headers(),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("base_date는 YYYY-MM-DD 형식이어야 합니다.", response.json()["detail"])
+
+
 # class MaterialCostAverageTestCase(TestCase):
 #     """원자재 평균 단가 계산 테스트 케이스"""
 #
