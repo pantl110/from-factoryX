@@ -39,7 +39,7 @@ async def get_work_instructions(
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    await is_factory_member(factory_id, user)
+    await is_factory_member(int(factory_id), user)
 
     @sync_to_async
     def work_instructions_list():
@@ -93,7 +93,7 @@ async def get_work_instruction(request, work_instruction_id: int):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    await is_factory_member(factory_id, user)
+    await is_factory_member(int(factory_id), user)
 
     @sync_to_async
     def get_work_instruction_detail():
@@ -144,7 +144,7 @@ async def update_work_instruction(
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    await is_factory_member(factory_id, user)
+    await is_factory_member(int(factory_id), user)
 
     @sync_to_async
     def mark_work_instruction_complete():
@@ -210,7 +210,7 @@ async def get_work_instruction_history(
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    await is_factory_member(factory_id, user)
+    await is_factory_member(int(factory_id), user)
 
     @sync_to_async
     def get_history():

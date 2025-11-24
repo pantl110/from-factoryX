@@ -121,6 +121,8 @@ class MaterialSummaryOut(Schema):
 
 # (GET) Material Detail
 class MaterialDetailModelOut(ModelSchema):
+    expiry_status: Optional[str] = Field(None, description="유통기한 상태: '양호', '위험', None")
+    
     class Meta:
         model = Material
         fields = [

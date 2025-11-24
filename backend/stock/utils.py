@@ -3,8 +3,11 @@ from stock.models import Product, ProductHistory, Material, MaterialHistory
 from factory.models import Factory
 from factory.utils import get_factory_by_id
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.db.models import Q
+from django.conf import settings
+import pytz
+from repackaging.models import MaterialRepackaging
 
 
 async def verify_factory_ownership(factory_id: int, user=None):
@@ -218,3 +221,51 @@ def get_material_status(
 
     # 판단할 수 없는 경우
     return None
+
+
+def get_expiry_status(material_id: int, expiry_days: int) -> str | None:
+    """
+    원자재의 유통기한 상태를 판단합니다.
+    
+    Args:
+        material_id: 원자재 ID
+        expiry_days: 유통기한 기준 일수
+    
+    Returns:
+        str | None: '양호', '위험', None (해당 항목이 없을 경우)
+    """
+    # 오늘 날짜 (timezone 기준)
+    local_tz = pytz.timezone(settings.TIME_ZONE)
+    today = datetime.now(local_tz).date()
+    
+    # MaterialHistory에서 remaining_quantity > 0이고 expiration_date가 있는 것들
+    histories = MaterialHistory.objects.filter(
+        material_id=material_id,
+        remaining_quantity__gt=0,
+        expiration_date__isnull=False
+    ).values_list('expiration_date', flat=True)
+
+    # MaterialRepackaging에서 quantity > 0이고 expiration_date가 있는 것들
+    repackagings = MaterialRepackaging.objects.filter(
+        parent_history__material_id=material_id,
+        quantity__gt=0,
+        expiration_date__isnull=False
+    ).values_list('expiration_date', flat=True)
+
+    # 모든 유통기한을 합쳐서 가장 짧은 것 찾기
+    all_expiry_dates = list(histories) + list(repackagings)
+    
+    if not all_expiry_dates:
+        return None
+
+    # 가장 짧은 유통기한 찾기
+    shortest_expiry = min(all_expiry_dates)
+    
+    # 오늘 날짜와 유통기한의 차이 계산
+    days_until_expiry = (shortest_expiry - today).days
+    
+    # material.expiry_days와 비교
+    if days_until_expiry > expiry_days:
+        return "양호"
+    else:
+        return "위험"

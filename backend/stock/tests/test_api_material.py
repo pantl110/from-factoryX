@@ -1,13 +1,14 @@
 from django.test import TestCase
 from ninja.testing import TestAsyncClient
 from asgiref.sync import sync_to_async
+from datetime import date, timedelta
 
 from user.api import router as user_router
 from stock.api_material import router as material_router
 
 from user.models import User
 from factory.models import Factory, FactoryMember
-from stock.models import Material
+from stock.models import Material, MaterialHistory
 from user.models import EmailVerification
 from substitute.models import Substitute
 
@@ -1226,3 +1227,45 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["data"]), 0)
+
+    async def test_get_material_detail_expiry_status(self):
+        """expiry_status 계산 테스트"""
+        headers = await self.authenticate()
+        self.material.expiry_days = 7
+        await sync_to_async(self.material.save)()
+
+        # 유통기한 없음 -> None
+        response = await self.client.get(
+            f"/{self.material.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertIsNone(response.json().get("expiry_status"))
+
+        # 유통기한 10일 후 -> 양호
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=50,
+            price=1000,
+            expiration_date=date.today() + timedelta(days=10),
+            remaining_quantity=50,
+            total_stock=150,
+        )
+        response = await self.client.get(
+            f"/{self.material.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.json().get("expiry_status"), "양호")
+
+        # 유통기한 3일 후 -> 위험
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=30,
+            price=1000,
+            expiration_date=date.today() + timedelta(days=3),
+            remaining_quantity=30,
+            total_stock=180,
+        )
+        response = await self.client.get(
+            f"/{self.material.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.json().get("expiry_status"), "위험")

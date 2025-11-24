@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryEquipment
 from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
-from stock.models import Product, Material, MaterialHistory
+from stock.models import Product, Material
 import json
 import jwt
 from django.conf import settings
@@ -1036,7 +1036,7 @@ class DashboardAPITestCase(TestCase):
             spec="테스트 규격",
             current_stock=50,
             standard_stock=30,
-            cost_average=1000,  # 기본 평균 단가
+            # cost_average=1000,  # 기본 평균 단가
         )
 
         # 제품 생성
@@ -1198,206 +1198,201 @@ class DashboardAPITestCase(TestCase):
         self.assertNotEqual(response.status_code, 200)
 
 
-class MaterialCostAverageTestCase(TestCase):
-    """원자재 평균 단가 계산 테스트 케이스"""
-
-    def setUp(self):
-        """테스트 설정"""
-        self.user = User.objects.create_user(
-            username="cost_user", email="cost@example.com", password="testpass123"
-        )
-
-        self.factory = Factory.objects.create(
-            name="원자재 테스트 공장", owner=self.user
-        )
-
-        self.client_company = FactoryClient.objects.create(
-            factory=self.factory,
-            name="원자재 테스트 고객사",
-            business_registration_number="123-45-67890",
-        )
-
-        # 원자재 생성 (초기 재고 100개, 평균 단가 1000원)
-        self.material = Material.objects.create(
-            factory=self.factory,
-            name="테스트 원자재",
-            code="MAT001",
-            unit="개",
-            spec="테스트 규격",
-            current_stock=100,
-            standard_stock=50,
-            cost_average=1000,
-        )
-
-    def test_material_cost_average_calculation(self):
-        """원자재 평균 단가 계산 테스트"""
-        # 이 테스트용으로 새로운 원자재 생성
-        test_material = Material.objects.create(
-            factory=self.factory,
-            name="계산 테스트 원자재",
-            code="MAT002",
-            unit="개",
-            spec="계산 테스트 규격",
-            current_stock=100,
-            standard_stock=50,
-            cost_average=1000,
-        )
-
-        # 첫 번째 구매: 50개를 1200원에 구매
-        history1 = MaterialHistory.objects.create(
-            material=test_material,
-            client=self.client_company,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=50,
-            price=1200,
-        )
-
-        # 평균 단가 계산: (100 * 1000 + 50 * 1200) / (100 + 50) = 1066.67
-        # 반올림하면 1067
-        test_material.refresh_from_db()
-        self.assertEqual(test_material.cost_average, 1067)
-
-        # 두 번째 구매: 30개를 800원에 구매
-        history2 = MaterialHistory.objects.create(
-            material=test_material,
-            client=self.client_company,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=30,
-            price=800,
-        )
-
-        # 평균 단가 계산: (150 * 1067 + 30 * 800) / (150 + 30) = 1022.5
-        # 반올림하면 1022
-        test_material.refresh_from_db()
-        self.assertEqual(test_material.cost_average, 1022)
-
-    def test_material_cost_average_consumption_no_change(self):
-        """원자재 소모 시 평균 단가 변경 없음 테스트"""
-        # 이 테스트용으로 새로운 원자재 생성
-        test_material = Material.objects.create(
-            factory=self.factory,
-            name="소모 테스트 원자재",
-            code="MAT003",
-            unit="개",
-            spec="소모 테스트 규격",
-            current_stock=100,
-            standard_stock=50,
-            cost_average=1000,
-        )
-
-        # 소모 기록 생성 (가격 없음)
-        history = MaterialHistory.objects.create(
-            material=test_material,
-            client=self.client_company,
-            type=MaterialHistory.MaterialHistoryType.consumption,
-            quantity=20,
-            price=None,  # 소모는 가격 없음
-        )
-
-        # 평균 단가는 변경되지 않아야 함
-        test_material.refresh_from_db()
-        self.assertEqual(test_material.cost_average, 1000)
-
-    def test_material_cost_average_zero_price(self):
-        """가격이 0인 구매 시 평균 단가 변경 없음 테스트"""
-        # 이 테스트용으로 새로운 원자재 생성
-        test_material = Material.objects.create(
-            factory=self.factory,
-            name="0원 테스트 원자재",
-            code="MAT004",
-            unit="개",
-            spec="0원 테스트 규격",
-            current_stock=100,
-            standard_stock=50,
-            cost_average=1000,
-        )
-
-        # 가격이 0인 구매 기록
-        history = MaterialHistory.objects.create(
-            material=test_material,
-            client=self.client_company,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=50,
-            price=0,
-        )
-
-        # 평균 단가는 변경되지 않아야 함
-        test_material.refresh_from_db()
-        self.assertEqual(test_material.cost_average, 1000)
-
-    def test_material_cost_average_negative_price(self):
-        """음수 가격 구매 시 평균 단가 변경 없음 테스트"""
-        # 이 테스트용으로 새로운 원자재 생성
-        test_material = Material.objects.create(
-            factory=self.factory,
-            name="음수 테스트 원자재",
-            code="MAT005",
-            unit="개",
-            spec="음수 테스트 규격",
-            current_stock=100,
-            standard_stock=50,
-            cost_average=1000,
-        )
-
-        # 음수 가격 구매 기록
-        history = MaterialHistory.objects.create(
-            material=test_material,
-            client=self.client_company,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=50,
-            price=-100,
-        )
-
-        # 평균 단가는 변경되지 않아야 함
-        test_material.refresh_from_db()
-        self.assertEqual(test_material.cost_average, 1000)
-
-    def test_material_cost_average_rounding(self):
-        """원자재 평균 단가 반올림 테스트"""
-        # 이 테스트용으로 새로운 원자재 생성
-        test_material = Material.objects.create(
-            factory=self.factory,
-            name="반올림 테스트 원자재",
-            code="MAT006",
-            unit="개",
-            spec="반올림 테스트 규격",
-            current_stock=100,
-            standard_stock=50,
-            cost_average=1000,
-        )
-
-        # 반올림이 필요한 경우 테스트
-        # 초기: 100개 × 1000원 = 100,000원
-        # 구매: 1개 × 1500원 = 1,500원
-        # 총: 101개 × ?원 = 101,500원
-        # 평균: 101,500 ÷ 101 = 1004.95... → 반올림하면 1005
-
-        history = MaterialHistory.objects.create(
-            material=test_material,
-            client=self.client_company,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=1,
-            price=1500,
-        )
-
-        # 반올림 검증: 1004.95... → 1005
-        test_material.refresh_from_db()
-        self.assertEqual(test_material.cost_average, 1005)
-
-        # 반내림이 필요한 경우 테스트
-        # 초기: 101개 × 1005원 = 101,505원
-        # 구매: 1개 × 1490원 = 1,490원
-        # 총: 102개 × ?원 = 102,995원
-        # 평균: 102,995 ÷ 102 = 1009.75... → 반올림하면 1010
-
-        history2 = MaterialHistory.objects.create(
-            material=test_material,
-            client=self.client_company,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=1,
-            price=1490,
-        )
-
-        # 반올림 검증: 1009.75... → 1010
-        test_material.refresh_from_db()
-        self.assertEqual(test_material.cost_average, 1010)
+# cost_average 필드가 Material 모델에서 제거되어 주석 처리
+# class MaterialCostAverageTestCase(TestCase):
+#     """원자재 평균 단가 계산 테스트 케이스"""
+#
+#     def setUp(self):
+#         """테스트 설정"""
+#         self.user = User.objects.create_user(
+#             username="cost_user", email="cost@example.com", password="testpass123"
+#         )
+#
+#         self.factory = Factory.objects.create(
+#             name="원자재 테스트 공장", owner=self.user
+#         )
+#
+#         self.client_company = FactoryClient.objects.create(
+#             factory=self.factory,
+#             name="원자재 테스트 고객사",
+#             business_registration_number="123-45-67890",
+#         )
+#
+#         # 원자재 생성 (초기 재고 100개)
+#         self.material = Material.objects.create(
+#             factory=self.factory,
+#             name="테스트 원자재",
+#             code="MAT001",
+#             unit="개",
+#             spec="테스트 규격",
+#             current_stock=100,
+#             standard_stock=50,
+#         )
+#
+#     def test_material_cost_average_calculation(self):
+#         """원자재 평균 단가 계산 테스트"""
+#         # 이 테스트용으로 새로운 원자재 생성
+#         test_material = Material.objects.create(
+#             factory=self.factory,
+#             name="계산 테스트 원자재",
+#             code="MAT002",
+#             unit="개",
+#             spec="계산 테스트 규격",
+#             current_stock=100,
+#             standard_stock=50,
+#         )
+#
+#         # 첫 번째 구매: 50개를 1200원에 구매
+#         history1 = MaterialHistory.objects.create(
+#             material=test_material,
+#             client=self.client_company,
+#             type=MaterialHistory.MaterialHistoryType.purchase,
+#             quantity=50,
+#             price=1200,
+#         )
+#
+#         # 평균 단가 계산: (100 * 1000 + 50 * 1200) / (100 + 50) = 1066.67
+#         # 반올림하면 1067
+#         test_material.refresh_from_db()
+#         self.assertEqual(test_material.cost_average, 1067)
+#
+#         # 두 번째 구매: 30개를 800원에 구매
+#         history2 = MaterialHistory.objects.create(
+#             material=test_material,
+#             client=self.client_company,
+#             type=MaterialHistory.MaterialHistoryType.purchase,
+#             quantity=30,
+#             price=800,
+#         )
+#
+#         # 평균 단가 계산: (150 * 1067 + 30 * 800) / (150 + 30) = 1022.5
+#         # 반올림하면 1022
+#         test_material.refresh_from_db()
+#         self.assertEqual(test_material.cost_average, 1022)
+#
+#     def test_material_cost_average_consumption_no_change(self):
+#         """원자재 소모 시 평균 단가 변경 없음 테스트"""
+#         # 이 테스트용으로 새로운 원자재 생성
+#         test_material = Material.objects.create(
+#             factory=self.factory,
+#             name="소모 테스트 원자재",
+#             code="MAT003",
+#             unit="개",
+#             spec="소모 테스트 규격",
+#             current_stock=100,
+#             standard_stock=50,
+#         )
+#
+#         # 소모 기록 생성 (가격 없음)
+#         history = MaterialHistory.objects.create(
+#             material=test_material,
+#             client=self.client_company,
+#             type=MaterialHistory.MaterialHistoryType.consumption,
+#             quantity=20,
+#             price=None,  # 소모는 가격 없음
+#         )
+#
+#         # 평균 단가는 변경되지 않아야 함
+#         test_material.refresh_from_db()
+#         self.assertEqual(test_material.cost_average, 1000)
+#
+#     def test_material_cost_average_zero_price(self):
+#         """가격이 0인 구매 시 평균 단가 변경 없음 테스트"""
+#         # 이 테스트용으로 새로운 원자재 생성
+#         test_material = Material.objects.create(
+#             factory=self.factory,
+#             name="0원 테스트 원자재",
+#             code="MAT004",
+#             unit="개",
+#             spec="0원 테스트 규격",
+#             current_stock=100,
+#             standard_stock=50,
+#         )
+#
+#         # 가격이 0인 구매 기록
+#         history = MaterialHistory.objects.create(
+#             material=test_material,
+#             client=self.client_company,
+#             type=MaterialHistory.MaterialHistoryType.purchase,
+#             quantity=50,
+#             price=0,
+#         )
+#
+#         # 평균 단가는 변경되지 않아야 함
+#         test_material.refresh_from_db()
+#         self.assertEqual(test_material.cost_average, 1000)
+#
+#     def test_material_cost_average_negative_price(self):
+#         """음수 가격 구매 시 평균 단가 변경 없음 테스트"""
+#         # 이 테스트용으로 새로운 원자재 생성
+#         test_material = Material.objects.create(
+#             factory=self.factory,
+#             name="음수 테스트 원자재",
+#             code="MAT005",
+#             unit="개",
+#             spec="음수 테스트 규격",
+#             current_stock=100,
+#             standard_stock=50,
+#         )
+#
+#         # 음수 가격 구매 기록
+#         history = MaterialHistory.objects.create(
+#             material=test_material,
+#             client=self.client_company,
+#             type=MaterialHistory.MaterialHistoryType.purchase,
+#             quantity=50,
+#             price=-100,
+#         )
+#
+#         # 평균 단가는 변경되지 않아야 함
+#         test_material.refresh_from_db()
+#         self.assertEqual(test_material.cost_average, 1000)
+#
+#     def test_material_cost_average_rounding(self):
+#         """원자재 평균 단가 반올림 테스트"""
+#         # 이 테스트용으로 새로운 원자재 생성
+#         test_material = Material.objects.create(
+#             factory=self.factory,
+#             name="반올림 테스트 원자재",
+#             code="MAT006",
+#             unit="개",
+#             spec="반올림 테스트 규격",
+#             current_stock=100,
+#             standard_stock=50,
+#         )
+#
+#         # 반올림이 필요한 경우 테스트
+#         # 초기: 100개 × 1000원 = 100,000원
+#         # 구매: 1개 × 1500원 = 1,500원
+#         # 총: 101개 × ?원 = 101,500원
+#         # 평균: 101,500 ÷ 101 = 1004.95... → 반올림하면 1005
+#
+#         history = MaterialHistory.objects.create(
+#             material=test_material,
+#             client=self.client_company,
+#             type=MaterialHistory.MaterialHistoryType.purchase,
+#             quantity=1,
+#             price=1500,
+#         )
+#
+#         # 반올림 검증: 1004.95... → 1005
+#         test_material.refresh_from_db()
+#         self.assertEqual(test_material.cost_average, 1005)
+#
+#         # 반내림이 필요한 경우 테스트
+#         # 초기: 101개 × 1005원 = 101,505원
+#         # 구매: 1개 × 1490원 = 1,490원
+#         # 총: 102개 × ?원 = 102,995원
+#         # 평균: 102,995 ÷ 102 = 1009.75... → 반올림하면 1010
+#
+#         history2 = MaterialHistory.objects.create(
+#             material=test_material,
+#             client=self.client_company,
+#             type=MaterialHistory.MaterialHistoryType.purchase,
+#             quantity=1,
+#             price=1490,
+#         )
+#
+#         # 반올림 검증: 1009.75... → 1010
+#         test_material.refresh_from_db()
+#         self.assertEqual(test_material.cost_average, 1010)

@@ -182,7 +182,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                         project=plan.project,
                         type=ProjectLog.LogType.equipment,
                         title="생산 설비 변경",
-                        content=f"사용설비가 {old_equipment.name}라인에서 {equipment.name}라인으로 변경되었어요",
+                        content=f"생산 설비가 {old_equipment.name}라인에서 {equipment.name}라인으로 변경되었어요",
                     )
 
                 # 공장 알림 전송 (프로젝트가 생산대기 상태가 아닐 때)
@@ -203,13 +203,23 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                         additional_data={"plan_id": plan.id},
                     )
 
+            # 생산 수량 변경 로그 (프로젝트가 생산대기 상태가 아닐 때)
+            if old_quantity != plan.quantity and project.status != Project.ProjectStatus.pending:
+                change_message = f"생산 수량이 {old_quantity}개에서 {plan.quantity}개로 변경되었어요"
+                await ProjectLog.objects.acreate(
+                    project=plan.project,
+                    type=ProjectLog.LogType.memo,
+                    title="생산 수량 변경",
+                    content=change_message,
+                )
+
             # 생산 일자 변경 로그 (프로젝트가 생산대기 상태가 아닐 때)
             if old_start_date != plan.start_date and project.status != Project.ProjectStatus.pending:
-                change_message = f"생산일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
+                change_message = f"생산 일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
                 await ProjectLog.objects.acreate(
                     project=plan.project,
                     type=ProjectLog.LogType.date,
-                    title="생산일자 변경",
+                    title="생산 일자 변경",
                     content=change_message,
                 )
 

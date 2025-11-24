@@ -19,7 +19,7 @@ from stock.schemas.outbound import (
     MaterialSummaryOut,
     ShortageMaterialCountOut,
 )
-from stock.utils import get_material_status
+from stock.utils import get_material_status, get_expiry_status
 from factory.models import Factory
 from substitute.models import Substitute
 
@@ -341,7 +341,15 @@ async def get_material_detail(request, material_id: int):
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
 
-    return material
+    # 유통기한 상태 계산
+    expiry_days = material.expiry_days or 7  # 기본값 7일
+    expiry_status = await sync_to_async(get_expiry_status)(material.id, expiry_days)
+    
+    # MaterialDetailModelOut으로 변환하면서 expiry_status 추가
+    material_detail = MaterialDetailModelOut.model_validate(material)
+    material_detail.expiry_status = expiry_status
+    
+    return material_detail
 
 
 # Material Tab

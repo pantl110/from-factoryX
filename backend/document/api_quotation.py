@@ -64,7 +64,7 @@ async def upload_file(request, payload: OcrIn):
 async def send_quotation_email(request, payload: QuotationEmailSendIn):
     factory_id = payload.factory_id
     user = request.auth
-    factory = await get_factory_by_id(int(factory_id))
+    factory = await get_factory_by_id(int(factory_id), user)
     await is_factory_member(int(factory_id), user)
 
     try:
