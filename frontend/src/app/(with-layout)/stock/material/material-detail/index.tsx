@@ -22,7 +22,10 @@ import ProductDetailPanel from '@/app/(with-layout)/stock/product/product-detail
 import StockLocationModal from '../../modals/stock-location-modal';
 import { MaterialPackagingDetailModal } from '../modals/material-packaging-detail-modal';
 import CreateSubstituteModal from '../modals/create-substitute-modal';
-import { useDeleteSubstituteMutation } from '@/hooks';
+import {
+  useDeleteSubstituteMutation,
+  useDeleteMaterialRepackaging,
+} from '@/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
 
@@ -93,7 +96,12 @@ const MaterialDetailPanel = ({
   const [hasClientBeenModified, setHasClientBeenModified] = useState(false);
 
   // 삭제 모달 관련 상태 (통합)
-  type DeleteType = 'connection' | 'substitute' | 'location' | null;
+  type DeleteType =
+    | 'connection'
+    | 'substitute'
+    | 'location'
+    | 'repackaging'
+    | null;
   const [deleteModalState, setDeleteModalState] = useState<{
     type: DeleteType;
     id: number | null;
@@ -102,6 +110,7 @@ const MaterialDetailPanel = ({
   }>({ type: null, id: null });
   const queryClient = useQueryClient();
   const deleteSubstituteMutation = useDeleteSubstituteMutation();
+  const deleteRepackagingMutation = useDeleteMaterialRepackaging();
 
   // 제품 디테일 판넬 열기 관련 상태
   const [selectedProductId, setSelectedProductId] = useState<number | null>(
@@ -220,6 +229,28 @@ const MaterialDetailPanel = ({
         } catch {
           // 삭제 실패 시 에러 처리
         }
+        break;
+      case 'repackaging':
+        if (id === null || id === undefined) return;
+        deleteRepackagingMutation.mutate(id, {
+          onSuccess: () => {
+            queryClient.invalidateQueries({
+              queryKey: ['material-repackagings'],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ['material-history'],
+            });
+          },
+          onError: (error) => {
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : '소분 내역 삭제에 실패했어요.';
+            setToastText(errorMessage);
+            setToastSubtext('');
+            showToast();
+          },
+        });
         break;
     }
 
@@ -545,6 +576,9 @@ const MaterialDetailPanel = ({
           setIsMaterialPackagingDetailModalOpen={handleOpenPackagingModal}
           setIsCreateSubstituteModalOpen={setIsCreateSubstituteModalOpen}
           handleOpenDeleteSubstituteModal={handleOpenDeleteSubstituteModal}
+          handleOpenDeleteRepackagingModal={(repackagingId: number) =>
+            setDeleteModalState({ type: 'repackaging', id: repackagingId })
+          }
         />
       </Panel>
 

@@ -50,12 +50,16 @@ export const InputArea = ({ mode }: InputAreaProps) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <InfoLabelValue label="상태" chip={{ status: 'using' }} />
+      {mode === 'update' && (
+        <InfoLabelValue label="상태" chip={{ status: 'using' }} />
+      )}
 
       <InfoLabelValue label="부모 LOT 번호" value="LOT-20250910-01" />
-      {mode === 'update' && (
-        <InfoLabelValue label="소분 LOT 번호" value="LOT-20250910-01-01" />
-      )}
+      <InfoLabelValue
+        label="소분 LOT 번호"
+        value="LOT-20250910-01-01"
+        disabled
+      />
 
       <Controller
         name="quantity"
@@ -65,6 +69,7 @@ export const InputArea = ({ mode }: InputAreaProps) => {
             label="수량"
             value={field.value}
             placeholder="소분할 수량을 입력하세요."
+            required={true}
             isEditing={true}
             onChange={(e) => handleQuantityChange(field, e)}
           />

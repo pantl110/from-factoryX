@@ -131,6 +131,10 @@ export { default as useDeleteMaterial } from './stock/material/use-delete-materi
 export { default as useAssignMaterialProduct } from './stock/material/use-assign-material-product';
 export { useGetMaterialListMutation } from './stock/material/use-material-mutations';
 export { default as useGetExpiryRiskMaterials } from './stock/material/use-get-expiry-risk-materials';
+export { default as useCreateMaterialRepackaging } from './stock/material/use-create-material-repackaging';
+export { default as useGetMaterialRepackagings } from './stock/material/use-get-material-repackagings';
+export { default as useUpdateMaterialRepackaging } from './stock/material/use-update-material-repackaging';
+export { default as useDeleteMaterialRepackaging } from './stock/material/use-delete-material-repackaging';
 
 // Material history related hooks
 export { default as useCreateMaterialHistory } from './stock/material-history/use-create-material-history';

@@ -17,6 +17,8 @@ export const MaterialPackagingDetailModal = ({
       <div className="mt-4 flex flex-col gap-3">
         <h4 className="Heading-4">상세정보</h4>
         <InputArea mode={mode} />
+
+        {/* 삭제 버튼 */}
         {mode === 'update' && (
           <div className="flex justify-between items-center p-5 bg-bg rounded-[12px]">
             <p className="Me_Body-2 text-red">

@@ -59,6 +59,7 @@ interface MaterialDetailProps {
     sourceMaterialId: number,
     targetMaterialId: number
   ) => void;
+  handleOpenDeleteRepackagingModal?: (repackagingId: number) => void;
   isLocationLoading?: boolean;
 }
 
@@ -82,6 +83,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       setIsMaterialPackagingDetailModalOpen,
       setIsCreateSubstituteModalOpen,
       handleOpenDeleteSubstituteModal,
+      handleOpenDeleteRepackagingModal,
       isLocationLoading,
     },
     ref
@@ -364,8 +366,15 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
 
           {/* 원자재 소분 내역 */}
           <MaterialPackaging
+            materialId={materialId}
             setIsMaterialPackagingDetailModalOpen={() =>
               setIsMaterialPackagingDetailModalOpen('update')
+            }
+            handleOpenDeleteModal={
+              handleOpenDeleteRepackagingModal ||
+              (() => {
+                // fallback
+              })
             }
           />
 

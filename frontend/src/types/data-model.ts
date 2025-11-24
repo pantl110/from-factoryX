@@ -535,6 +535,34 @@ export interface MaterialHistoryListResponseModel extends PaginationModel {
   data: MaterialHistoryResponseModel[];
 }
 
+// 원자재 소분 (Repackaging) API
+export interface CreateMaterialRepackagingModel {
+  parent_history_id: number; // 부모 구매 이력 ID
+  quantity: number; // 소분 수량
+  warehouse_location?: string | null; // 창고 위치
+  expiration_date?: string | null; // 유통기한 (YYYY-MM-DD)
+}
+
+export interface UpdateMaterialRepackagingModel {
+  warehouse_location?: string | null; // 창고 위치
+  expiration_date?: string | null; // 유통기한 (YYYY-MM-DD)
+}
+
+export interface MaterialRepackagingResponseModel {
+  parent_history_id: number; // 부모 구매 이력 ID
+  id: number; // 소분 내역 ID
+  lot_number: string; // 소분 LOT 번호
+  quantity: number; // 소분 수량
+  warehouse_location: string | null; // 창고 위치
+  expiration_date: string | null; // 유통기한
+  created_at: string; // 생성일시
+  updated_at: string; // 수정일시
+}
+
+export interface MaterialRepackagingListResponseModel extends PaginationModel {
+  data: MaterialRepackagingResponseModel[];
+}
+
 // 원자재 엑셀 대량등록
 export interface MaterialCreateExcelModel {
   name: string;
