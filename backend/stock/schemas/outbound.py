@@ -123,6 +123,7 @@ class MaterialSummaryOut(Schema):
 class ExpiryRiskMaterialOut(Schema):
     id: int
     name: str
+    unit: str
     current_stock: Optional[int]
     rop: Optional[int]
     expiry_status: str = Field(description="유통기한 상태: '위험'")

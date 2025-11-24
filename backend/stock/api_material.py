@@ -314,6 +314,7 @@ async def get_expiry_risk_materials(request, q: str = None):
                     ExpiryRiskMaterialOut(
                         id=material.id,
                         name=material.name,
+                        unit=material.unit,
                         current_stock=material.current_stock,
                         rop=material.rop,
                         expiry_status=expiry_status,
