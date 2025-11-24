@@ -334,7 +334,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                     404, f"클라이언트 ID {client_data.client_id}를 찾을 수 없습니다."
                 )
         else:
-            # 클라이언트 ID가 없는 경우 새로 생성 (아직 저장하지 않음)
+            # 클라이언트 ID가 없는 경우 새로 생성
             # is_customer는 자동으로 True로 설정, is_supplier는 처음 생성 시 무조건 False
             new_is_customer = True
             new_is_supplier = False
@@ -352,6 +352,9 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 is_customer=new_is_customer,
                 is_supplier=new_is_supplier,
             )
+            # 새로운 클라이언트는 즉시 저장하여 ForeignKey 관계 설정 가능하도록 함
+            await sync_to_async(client.save)()
+            updated = False  # 새로운 클라이언트는 이미 저장되었으므로 나중에 다시 저장할 필요 없음
 
         quotation.client = client
 
@@ -453,13 +456,11 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
         try:
             print(f"[SAVE] Starting save process...")
 
-            # 1. 클라이언트 저장
+            # 1. 클라이언트 저장 (업데이트된 경우에만)
             if updated:
                 print(f"[SAVE] Saving updated client...")
                 await sync_to_async(client.save)()
-            else:
-                print(f"[SAVE] Saving new client...")
-                await sync_to_async(client.save)()
+            # 새로운 클라이언트는 이미 저장되었으므로 여기서는 저장하지 않음
 
             # 2. quotation 저장
             print(f"[SAVE] Saving quotation...")
