@@ -135,6 +135,38 @@ async def list_material_repackagings(
     ]
 
 
+@router.get(
+    "/{repackaging_id}",
+    summary="[R] 원자재 소분 내역 상세 조회",
+    description="소분 내역 ID로 상세 정보를 조회합니다.",
+    response={200: MaterialRepackagingOut, 400: dict, 404: dict, 500: dict},
+)
+async def get_material_repackaging_detail(request, repackaging_id: int):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    # 소분 내역 조회
+    try:
+        repackaging = await MaterialRepackaging.objects.select_related(
+            "parent_history", "parent_history__material"
+        ).aget(id=repackaging_id)
+    except MaterialRepackaging.DoesNotExist:
+        raise HttpError(404, "소분 내역을 찾을 수 없습니다.")
+
+    # 공장 소유권 확인
+    if repackaging.parent_history.material.factory_id != int(factory_id):
+        raise HttpError(403, "해당 공장의 소분 내역이 아닙니다.")
+
+    # 모델을 새로고침하여 property 접근 가능하도록
+    await sync_to_async(repackaging.refresh_from_db)()
+
+    return 200, MaterialRepackagingOut.model_validate(repackaging)
+
+
 @router.patch(
     "/{repackaging_id}",
     summary="[U] 원자재 소분 내역 수정",

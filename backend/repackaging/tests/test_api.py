@@ -140,6 +140,39 @@ class TestRepackagingAPI(TestCase):
         self.assertEqual(data["data"][0]["quantity"], 50)
         self.assertEqual(data["data"][0]["warehouse_location"], "B-01")
 
+    async def test_get_repackaging_detail_success(self):
+        """소분 내역 상세 조회 성공 테스트"""
+        headers = await self.authenticate()
+
+        # 소분 내역 생성
+        repackaging = await sync_to_async(MaterialRepackaging.objects.create)(
+            parent_history=self.purchase_history,
+            lot_number="LOT-20241121-01-01",
+            quantity=30,
+            warehouse_location="A-01",
+            expiration_date="2025-12-31",
+        )
+
+        response = await self.client.get(
+            f"/{repackaging.id}?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data["id"], repackaging.id)
+        self.assertEqual(data["quantity"], 30)
+        self.assertEqual(data["warehouse_location"], "A-01")
+        self.assertEqual(data["parent_history_id"], self.purchase_history.id)
+
+    async def test_get_repackaging_detail_not_found(self):
+        """존재하지 않는 소분 내역 조회 테스트"""
+        headers = await self.authenticate()
+
+        response = await self.client.get(
+            f"/99999?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 404)
+
     async def test_update_repackaging_success(self):
         """소분 내역 수정 성공 테스트"""
         headers = await self.authenticate()
