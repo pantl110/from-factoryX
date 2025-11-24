@@ -8,7 +8,7 @@ import { convertUTCToKSTDate } from '@/utils';
 
 interface MaterialPackagingItemProps {
   repackaging: MaterialRepackagingResponseModel;
-  setIsMaterialPackagingDetailModalOpen: () => void;
+  setIsMaterialPackagingDetailModalOpen: (repackagingId: number) => void;
   onDelete: () => void;
 }
 
@@ -28,7 +28,7 @@ export const MaterialPackagingItem = ({
   const parentLotNumber = repackaging.lot_number.replace(/-\d+$/, '');
 
   return (
-    <div className="flex items-center h-14 border-b border-lg hover:border hover:border-primary Me_Body-1 group cursor-default">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-default">
       {/* <div className="flex-[0.8] px-3">
         <Chip text="사용중" textColor="text-primary" bgColor="bg-primary-8" />
       </div> */}
@@ -65,7 +65,9 @@ export const MaterialPackagingItem = ({
             icon={PencilSimple}
             size="w-9 h-9"
             iconSize={16}
-            onClick={setIsMaterialPackagingDetailModalOpen}
+            onClick={() =>
+              setIsMaterialPackagingDetailModalOpen(repackaging.id)
+            }
           />
           <IconBtn
             icon={Trash}

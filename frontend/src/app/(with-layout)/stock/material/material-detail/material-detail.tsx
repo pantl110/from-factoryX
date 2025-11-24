@@ -53,7 +53,10 @@ interface MaterialDetailProps {
   clientWasModified?: boolean; // 클라이언트가 실제로 수정되어 저장되었는지
   productWasModified?: boolean; // 제품이 실제로 연결/삭제되었는지
   showToast?: (text: string, subtext: string) => void;
-  setIsMaterialPackagingDetailModalOpen: (mode: 'create' | 'update') => void;
+  setIsMaterialPackagingDetailModalOpen: (
+    mode: 'create' | 'update',
+    repackagingId?: number
+  ) => void;
   setIsCreateSubstituteModalOpen: (v: boolean) => void;
   handleOpenDeleteSubstituteModal: (
     sourceMaterialId: number,
@@ -367,8 +370,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           {/* 원자재 소분 내역 */}
           <MaterialPackaging
             materialId={materialId}
-            setIsMaterialPackagingDetailModalOpen={() =>
-              setIsMaterialPackagingDetailModalOpen('update')
+            setIsMaterialPackagingDetailModalOpen={(repackagingId) =>
+              setIsMaterialPackagingDetailModalOpen('update', repackagingId)
             }
             handleOpenDeleteModal={
               handleOpenDeleteRepackagingModal ||

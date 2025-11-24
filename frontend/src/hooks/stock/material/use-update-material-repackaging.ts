@@ -40,7 +40,7 @@ const useUpdateMaterialRepackaging = () => {
       return response.data;
     },
     onSuccess: () => {
-      // 소분 내역 목록 쿼리 무효화
+      // 소분 내역 목록 및 상세 조회 쿼리 무효화
       if (factoryId) {
         queryClient.invalidateQueries({
           queryKey: ['material-repackagings', factoryId],

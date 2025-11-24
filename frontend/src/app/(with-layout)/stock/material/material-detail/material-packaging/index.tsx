@@ -8,7 +8,7 @@ import Pagination from '@/components/pagination';
 
 interface MaterialPackagingProps {
   materialId: number;
-  setIsMaterialPackagingDetailModalOpen: () => void;
+  setIsMaterialPackagingDetailModalOpen: (repackagingId: number) => void;
   handleOpenDeleteModal: (repackagingId: number) => void;
 }
 

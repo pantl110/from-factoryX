@@ -84,10 +84,17 @@ const MaterialDetailPanel = ({
   const [packagingModalMode, setPackagingModalMode] = useState<
     'create' | 'update'
   >('create');
+  const [selectedRepackagingId, setSelectedRepackagingId] = useState<
+    number | null
+  >(null);
 
   // 모달 열기 함수 (mode 포함)
-  const handleOpenPackagingModal = (mode: 'create' | 'update') => {
+  const handleOpenPackagingModal = (
+    mode: 'create' | 'update',
+    repackagingId?: number
+  ) => {
     setPackagingModalMode(mode);
+    setSelectedRepackagingId(repackagingId || null);
     setIsMaterialPackagingDetailModalOpen(true);
   };
 
@@ -658,7 +665,12 @@ const MaterialDetailPanel = ({
       {isMaterialPackagingDetailModalOpen && (
         <MaterialPackagingDetailModal
           mode={packagingModalMode}
-          onClose={() => setIsMaterialPackagingDetailModalOpen(false)}
+          materialId={selectedMaterialId}
+          repackagingId={selectedRepackagingId}
+          onClose={() => {
+            setIsMaterialPackagingDetailModalOpen(false);
+            setSelectedRepackagingId(null);
+          }}
         />
       )}
 

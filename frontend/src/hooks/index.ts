@@ -133,6 +133,7 @@ export { useGetMaterialListMutation } from './stock/material/use-material-mutati
 export { default as useGetExpiryRiskMaterials } from './stock/material/use-get-expiry-risk-materials';
 export { default as useCreateMaterialRepackaging } from './stock/material/use-create-material-repackaging';
 export { default as useGetMaterialRepackagings } from './stock/material/use-get-material-repackagings';
+export { default as useGetMaterialRepackagingDetail } from './stock/material/use-get-material-repackaging-detail';
 export { default as useUpdateMaterialRepackaging } from './stock/material/use-update-material-repackaging';
 export { default as useDeleteMaterialRepackaging } from './stock/material/use-delete-material-repackaging';
 
