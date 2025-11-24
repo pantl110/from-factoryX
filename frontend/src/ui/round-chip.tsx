@@ -11,7 +11,9 @@ interface RoundChipProps {
     | 'orange'
     | 'yellow'
     | 'purple'
-    | 'gray';
+    | 'gray'
+    | 'white'
+    | 'whiteOutline';
 }
 
 const colorClasses = {

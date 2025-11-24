@@ -118,6 +118,10 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
       <>
         {displayMaterials.map((material) => {
           const unitLabel = material.unit ? ` ${material.unit}` : '';
+          const formatValueWithUnit = (value?: number) => {
+            const formatted = formatStockValue(value);
+            return formatted === '-' ? formatted : `${formatted}${unitLabel}`;
+          };
 
           return (
             <AlarmItem
@@ -125,7 +129,7 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
               chipText="자재가 부족해요!"
               chipVariant="red-secondary"
               name={material.name}
-              subText={`${formatStockValue(material.current_stock)}${unitLabel} / ${formatStockValue(material.standard_stock)}${unitLabel}`}
+              subText={`${formatValueWithUnit(material.current_stock)} / ${formatValueWithUnit(material.standard_stock)}`}
               onClick={() => {
                 router.push(`/material/${material.id}`);
               }}

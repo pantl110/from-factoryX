@@ -138,10 +138,14 @@ const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
     return (
       <>
         {displayMaterials.map((material) => {
-          const currentStock = formatStockValue(material.current_stock);
-          const rop = formatStockValue(material.rop);
           const unit = material.unit ? ` ${material.unit}` : '';
-          const subText = `${currentStock}${unit} / ${rop}${unit}`;
+          const formatValueWithUnit = (value?: number) => {
+            const formatted = formatStockValue(value);
+            return formatted === '-' ? formatted : `${formatted}${unit}`;
+          };
+          const currentStock = formatValueWithUnit(material.current_stock);
+          const rop = formatValueWithUnit(material.rop);
+          const subText = `${currentStock} / ${rop}`;
 
           return (
             <AlarmItem
