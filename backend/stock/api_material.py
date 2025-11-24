@@ -18,6 +18,7 @@ from stock.schemas.outbound import (
     AssignMaterialOut,
     MaterialSummaryOut,
     ShortageMaterialCountOut,
+    ExpiryRiskMaterialOut,
 )
 from stock.utils import get_material_status, get_expiry_status
 from factory.models import Factory
@@ -189,7 +190,7 @@ async def assign_material(request, payload: AssignMaterialIn):
     "",
     summary="[C] 공장별 원자재 목록 조회",
     description="특정 공장의 모든 원자재 정보를 조회합니다. material_id가 제공되면 해당 자재와 연결된 대체자재들을 제외합니다.",
-    response={200: List[MaterialSummaryOut], 404: dict, 500: dict},
+    response={200: List[ExpiryRiskMaterialOut], 404: dict, 500: dict},
 )
 @paginate
 async def get_materials_by_factory(
@@ -273,6 +274,58 @@ async def get_materials_by_factory(
         )
 
     return material_list
+
+
+@router.get(
+    "/expiry-risk",
+    summary="[C] 유통기한 위험 원자재 목록 조회",
+    description="유통기한이 위험 상태인 원자재 목록을 조회합니다. expiry_status가 '위험'인 원자재만 반환합니다.",
+    response={200: List[ExpiryRiskMaterialOut], 404: dict, 500: dict},
+)
+@paginate
+async def get_expiry_risk_materials(request, q: str = None):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    try:
+        factory = await Factory.objects.aget(id=factory_id)
+    except Factory.DoesNotExist:
+        raise HttpError(404, "공장 정보를 찾을 수 없습니다.")
+
+    @sync_to_async
+    def get_risk_materials():
+        # 모든 원자재 조회
+        materials = Material.objects.filter(factory=factory)
+        risk_materials = []
+        
+        for material in materials:
+            # 유통기한 상태 계산
+            expiry_days = material.expiry_days or 7  # 기본값 7일
+            expiry_status = get_expiry_status(material.id, expiry_days)
+            
+            # 위험 상태인 것만 필터링
+            if expiry_status == "위험":
+                risk_materials.append(
+                    {
+                        "id": material.id,
+                        "name": material.name,
+                        "code": material.code,
+                        "spec": material.spec,
+                        "unit": material.unit,
+                        "current_stock": material.current_stock,
+                        "rop": material.rop,
+                        "expiry_status": expiry_status,
+                    }
+                )
+        
+        return risk_materials
+
+    risk_materials = await get_risk_materials()
+    return risk_materials
 
 
 @router.get(

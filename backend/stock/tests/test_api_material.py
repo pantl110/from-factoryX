@@ -1269,3 +1269,61 @@ class TestMaterialAPI(TestCase):
             f"/{self.material.id}?factory_id={self.factory.id}", headers=headers
         )
         self.assertEqual(response.json().get("expiry_status"), "위험")
+
+    async def test_get_expiry_risk_materials(self):
+        """유통기한 위험 원자재 목록 조회 테스트"""
+        headers = await self.authenticate()
+
+        # 위험 상태 원자재: expiry_days=7, 유통기한 3일 후
+        risk_material = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="위험 원자재",
+            code="RISK001",
+            spec="Spec1",
+            unit="개",
+            current_stock=100,
+            expiry_days=7,
+        )
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=risk_material,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=50,
+            price=1000,
+            expiration_date=date.today() + timedelta(days=3),
+            remaining_quantity=50,
+            total_stock=150,
+        )
+
+        # 양호 상태 원자재: expiry_days=7, 유통기한 10일 후
+        safe_material = await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="양호 원자재",
+            code="SAFE001",
+            spec="Spec2",
+            unit="개",
+            current_stock=200,
+            expiry_days=7,
+        )
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=safe_material,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=100,
+            price=2000,
+            expiration_date=date.today() + timedelta(days=10),
+            remaining_quantity=100,
+            total_stock=300,
+        )
+
+        # 유통기한 위험 원자재 목록 조회
+        response = await self.client.get(
+            f"/expiry-risk?factory_id={self.factory.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        # 위험 상태인 원자재만 반환되어야 함
+        materials = data["data"]
+        self.assertEqual(len(materials), 1)
+        self.assertEqual(materials[0]["id"], risk_material.id)
+        self.assertEqual(materials[0]["expiry_status"], "위험")
+        self.assertIn("rop", materials[0])

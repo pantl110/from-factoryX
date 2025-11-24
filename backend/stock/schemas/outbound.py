@@ -119,6 +119,18 @@ class MaterialSummaryOut(Schema):
     status: Optional[str] = Field(None, description="자재 상태: '과재고', '충분', '위험', '부족', None")
 
 
+# (GET) Expiry Risk Materials
+class ExpiryRiskMaterialOut(Schema):
+    id: int
+    name: str
+    code: str
+    spec: str
+    unit: str
+    current_stock: Optional[int]
+    rop: Optional[int]
+    expiry_status: str = Field(description="유통기한 상태: '위험'")
+
+
 # (GET) Material Detail
 class MaterialDetailModelOut(ModelSchema):
     expiry_status: Optional[str] = Field(None, description="유통기한 상태: '양호', '위험', None")
