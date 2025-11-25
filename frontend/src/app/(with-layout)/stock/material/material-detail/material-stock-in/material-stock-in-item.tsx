@@ -3,15 +3,18 @@ import useSubscriptionStore from '@/store/subscription-store';
 import { MiniBtn } from '@/ui';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import { convertUTCToKSTDate } from '@/utils';
+import { getExpiryClassName } from '../utils';
 
 interface MaterialStockInItemProps {
   history: MaterialHistoryResponseModel;
   setIsMaterialPackagingDetailModalOpen: (mode: 'create' | 'update') => void;
+  expiryWarningDays?: number | null;
 }
 
 export const MaterialStockInItem = ({
   history,
   setIsMaterialPackagingDetailModalOpen,
+  expiryWarningDays,
 }: MaterialStockInItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -49,7 +52,12 @@ export const MaterialStockInItem = ({
       >
         {history.warehouse_location || '-'}
       </p>
-      <p className="flex-1 px-3 text-dg">
+      <p
+        className={`flex-1 px-3 ${getExpiryClassName({
+          target: history,
+          warningDays: expiryWarningDays,
+        })}`}
+      >
         {history.expiration_date
           ? convertUTCToKSTDate(history.expiration_date) || '-'
           : '-'}

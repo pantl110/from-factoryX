@@ -10,6 +10,7 @@ import Pagination from '@/components/pagination';
 interface MaterialStockInProps {
   materialId: number;
   setIsMaterialPackagingDetailModalOpen: (mode: 'create' | 'update') => void;
+  expiryWarningDays?: number | null;
 }
 
 const PAGE_SIZE = 5;
@@ -17,6 +18,7 @@ const PAGE_SIZE = 5;
 export const MaterialStockIn = ({
   materialId,
   setIsMaterialPackagingDetailModalOpen,
+  expiryWarningDays,
 }: MaterialStockInProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -89,6 +91,7 @@ export const MaterialStockIn = ({
                 setIsMaterialPackagingDetailModalOpen={
                   setIsMaterialPackagingDetailModalOpen
                 }
+                expiryWarningDays={expiryWarningDays}
               />
             ))}
             {totalPages > 1 && (

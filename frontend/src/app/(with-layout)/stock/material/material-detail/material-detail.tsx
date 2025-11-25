@@ -117,6 +117,9 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
     // isDirty 상태 추적 (MaterialInfo, StockLocation 각각)
     const [isDirtyMaterialInfo, setIsDirtyMaterialInfo] = useState(false);
     const [isDirtyStockLocation, setIsDirtyStockLocation] = useState(false);
+    const [expiryWarningDays, setExpiryWarningDays] = useState<number | null>(
+      null
+    );
     useEffect(() => {
       setIsDirtyStockLocation(isRhfDirty);
     }, [isRhfDirty]);
@@ -292,6 +295,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               ref={materialInfoRef}
               onIsDirtyChange={setIsDirtyMaterialInfo}
               onRequiredFieldsChange={onRequiredFieldsChange}
+              onExpiryWarningDaysChange={setExpiryWarningDays}
             />
           </div>
 
@@ -370,6 +374,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             setIsMaterialPackagingDetailModalOpen={() =>
               setIsMaterialPackagingDetailModalOpen('create')
             }
+            expiryWarningDays={expiryWarningDays}
           />
 
           {/* 원자재 소분 내역 */}
@@ -384,6 +389,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 // fallback
               })
             }
+            expiryWarningDays={expiryWarningDays}
           />
 
           {/* 원자재 사용 내역 */}

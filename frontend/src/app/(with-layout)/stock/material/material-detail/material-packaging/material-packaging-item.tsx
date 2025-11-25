@@ -4,17 +4,20 @@ import IconBtn from '@/ui/icon-btn';
 import { PencilSimple, Trash } from '@phosphor-icons/react';
 import { MaterialRepackagingResponseModel } from '@/types/data-model';
 import { convertUTCToKSTDate } from '@/utils';
+import { getExpiryClassName } from '../utils';
 
 interface MaterialPackagingItemProps {
   repackaging: MaterialRepackagingResponseModel;
   setIsMaterialPackagingDetailModalOpen: (repackagingId: number) => void;
   onDelete: () => void;
+  expiryWarningDays?: number | null;
 }
 
 export const MaterialPackagingItem = ({
   repackaging,
   setIsMaterialPackagingDetailModalOpen,
   onDelete,
+  expiryWarningDays,
 }: MaterialPackagingItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -52,7 +55,12 @@ export const MaterialPackagingItem = ({
       >
         {repackaging.warehouse_location || '-'}
       </p>
-      <p className="flex-1 px-3 text-dg">
+      <p
+        className={`flex-1 px-3 ${getExpiryClassName({
+          target: repackaging,
+          warningDays: expiryWarningDays,
+        })}`}
+      >
         {repackaging.expiration_date
           ? convertUTCToKSTDate(repackaging.expiration_date) || '-'
           : '-'}

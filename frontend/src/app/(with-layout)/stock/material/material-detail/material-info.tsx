@@ -18,6 +18,7 @@ interface MaterialInfoProps {
   materialId: number;
   onIsDirtyChange?: (isDirty: boolean) => void;
   onRequiredFieldsChange?: (areFilled: boolean) => void;
+  onExpiryWarningDaysChange?: (days: number | null) => void;
 }
 
 export interface MaterialInfoModel {
@@ -60,7 +61,15 @@ function stringToNumber(str: string | undefined | null): number | null {
 }
 
 const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
-  ({ materialId, onIsDirtyChange, onRequiredFieldsChange }, ref) => {
+  (
+    {
+      materialId,
+      onIsDirtyChange,
+      onRequiredFieldsChange,
+      onExpiryWarningDaysChange,
+    },
+    ref
+  ) => {
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
     const hasSubscription = useSubscriptionStore(
@@ -107,6 +116,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
     const materialCode = watch('materialCode');
     const size = watch('size');
     const unit = watch('unit');
+    const expiryDaysValue = watch('expiryDays');
 
     const areRequiredFieldsFilled = useCallback(() => {
       return !!(
@@ -130,6 +140,19 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
       areRequiredFieldsFilled,
       onRequiredFieldsChange,
     ]);
+
+    const parseExpiryDaysToNumber = useCallback((value?: string) => {
+      if (!value || value.trim() === '') {
+        return null;
+      }
+      const numericValue = parseInt(value.replace(/[^0-9]/g, ''), 10);
+      return Number.isNaN(numericValue) ? null : numericValue;
+    }, []);
+
+    useEffect(() => {
+      if (!onExpiryWarningDaysChange) return;
+      onExpiryWarningDaysChange(parseExpiryDaysToNumber(expiryDaysValue));
+    }, [expiryDaysValue, onExpiryWarningDaysChange, parseExpiryDaysToNumber]);
 
     const fetchDetail = useCallback(async () => {
       const result = await getMaterialDetail(materialId);

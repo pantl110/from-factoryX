@@ -10,12 +10,14 @@ interface MaterialPackagingProps {
   materialId: number;
   setIsMaterialPackagingDetailModalOpen: (repackagingId: number) => void;
   handleOpenDeleteModal: (repackagingId: number) => void;
+  expiryWarningDays?: number | null;
 }
 
 export const MaterialPackaging = ({
   materialId,
   setIsMaterialPackagingDetailModalOpen,
   handleOpenDeleteModal,
+  expiryWarningDays,
 }: MaterialPackagingProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -86,6 +88,7 @@ export const MaterialPackaging = ({
                   setIsMaterialPackagingDetailModalOpen
                 }
                 onDelete={() => handleOpenDeleteModal(repackaging.id)}
+                expiryWarningDays={expiryWarningDays}
               />
             ))}
             {totalPages > 1 && (
