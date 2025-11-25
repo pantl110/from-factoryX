@@ -19,7 +19,7 @@ interface InputAreaProps {
   mode: 'create' | 'update';
   materialId: number;
   repackagingId?: number | null;
-  onUpdateSuccess?: () => void;
+  onUpdateSuccess?: () => Promise<void> | void;
   onError?: (message: { text: string; subtext: string }) => void;
   formId?: string;
   onQuantityChange?: (hasValue: boolean) => void;
@@ -110,7 +110,9 @@ export const InputArea = ({
           payload,
         });
 
-        onUpdateSuccess?.();
+        if (onUpdateSuccess) {
+          await onUpdateSuccess();
+        }
       } catch {
         // 에러는 mutation에서 처리됨
       }

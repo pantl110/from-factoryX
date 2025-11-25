@@ -339,8 +339,15 @@ const MaterialDetailPanel = ({
   const { setShouldReload } = useMaterialReloadStore();
   const factoryId = useMemberStore((state) => state.factoryId);
 
-  const handleRepackagingUpdateSuccess = () => {
-    materialDetailRef.current?.refetchMaterialInfo?.();
+  const handleRepackagingUpdateSuccess = async () => {
+    if (factoryId && selectedMaterialId) {
+      await queryClient.invalidateQueries({
+        queryKey: ['material-detail', factoryId, selectedMaterialId],
+      });
+    }
+    if (materialDetailRef.current?.refetchMaterialInfo) {
+      await materialDetailRef.current.refetchMaterialInfo();
+    }
   };
 
   // 필수 필드 검증 상태 업데이트 (간단하게)

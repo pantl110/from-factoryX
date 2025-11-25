@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ComponentProps } from 'react';
 
 import { MaterialResponseModel } from '@/types/data-model';
 import MoChip from '@/ui/mo-chip';
@@ -6,11 +6,14 @@ import { LabelInfo } from '../label-info';
 import InfoDetail from '../info-detail';
 import { getMaterialStockStatus } from '@/utils';
 import { InventoryStatusColorMap } from '@/types/status-type';
+import { mapExpiryStatus } from '@/app/(with-layout)/stock/material/material-detail/utils';
 
 interface MaterialInfoProps {
   material: MaterialResponseModel | null;
   isLoading?: boolean;
 }
+
+type MoChipVariant = ComponentProps<typeof MoChip>['variant'];
 
 const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
   const stockStatus = useMemo(() => {
@@ -73,6 +76,22 @@ const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
     return material?.max_stock ?? '-';
   }, [material]);
 
+  const expiryStatus = useMemo(
+    () => mapExpiryStatus(material?.expiry_status),
+    [material?.expiry_status]
+  );
+
+  const expiryChip = useMemo(() => {
+    if (!expiryStatus) {
+      return null;
+    }
+    const variant: MoChipVariant =
+      expiryStatus === 'warning' ? 'red-secondary' : 'secondary';
+    const text =
+      material?.expiry_status ?? (expiryStatus === 'warning' ? '위험' : '양호');
+    return { text, variant };
+  }, [expiryStatus, material?.expiry_status]);
+
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
       <h3 className="m-Heading-3-semibold">자재 정보</h3>
@@ -110,17 +129,10 @@ const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
           />
           <LabelInfo
             label="유통기한 상태"
-            value={!material?.expiry_status ? '-' : undefined}
+            value={!expiryChip ? '-' : undefined}
             chip={
-              material?.expiry_status ? (
-                <MoChip
-                  text={material.expiry_status}
-                  variant={
-                    material.expiry_status === '위험'
-                      ? 'red-secondary'
-                      : 'secondary'
-                  }
-                />
+              expiryChip ? (
+                <MoChip text={expiryChip.text} variant={expiryChip.variant} />
               ) : undefined
             }
           />
