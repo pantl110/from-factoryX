@@ -19,6 +19,7 @@ from stock.schemas.outbound import (
 from factory.models import Factory, FactoryClient
 from factory.utils import is_factory_member
 from tax.models import NationalTaxService
+from repackaging.utils import generate_repackaging_lot_number
 
 
 router = Router(tags=["MaterialHistory"], auth=jwt_auth)
@@ -306,6 +307,18 @@ async def get_material_history(
             else:
                 national_tax_service_id = None
 
+            # 구매 타입이고 잔량이 있는 경우 다음 소분 로트 번호 계산
+            next_repackaging_lot_number = None
+            if (
+                history.type == MaterialHistory.MaterialHistoryType.purchase
+                and history.remaining_quantity
+                and history.remaining_quantity > 0
+                and history.lot_number
+            ):
+                next_repackaging_lot_number = generate_repackaging_lot_number(
+                    history.lot_number
+                )
+
             result.append(
                 {
                     "id": history.id,
@@ -332,6 +345,7 @@ async def get_material_history(
                     "expiration_date": history.expiration_date.isoformat()
                     if history.expiration_date
                     else None,
+                    "next_repackaging_lot_number": next_repackaging_lot_number,
                 }
             )
 

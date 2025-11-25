@@ -216,3 +216,6 @@ class MaterialHistoryItemOut(Schema):
     warehouse_location: Optional[str] = None
     expiration_date: Optional[str] = None
     remaining_quantity: Optional[int] = None
+    next_repackaging_lot_number: Optional[str] = Field(
+        None, description="소분 시 생성될 다음 로트 번호 (구매 타입이고 잔량이 있을 때만)"
+    )
