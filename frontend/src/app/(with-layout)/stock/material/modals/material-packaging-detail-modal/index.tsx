@@ -6,7 +6,7 @@ import {
   useDeleteMaterialRepackaging,
   useToast,
 } from '@/hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { WarningCircle } from '@phosphor-icons/react';
 
 interface MaterialPackagingDetailModalProps {
@@ -22,13 +22,15 @@ export const MaterialPackagingDetailModal = ({
   repackagingId,
   onClose,
 }: MaterialPackagingDetailModalProps) => {
-  const formId = 'material-packaging-form';
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [toastText, setToastText] = useState('');
   const [toastSubtext, setToastSubtext] = useState('');
+  const [shouldCloseAfterToast, setShouldCloseAfterToast] = useState(false);
+
   const { isToastOpen, isVisible, showToast } = useToast();
 
   const deleteMutation = useDeleteMaterialRepackaging();
+  const formId = 'material-packaging-form';
 
   // update 모드일 때 repackaging 상세 데이터 가져오기 (제목용)
   const { data: repackaging } = useGetMaterialRepackagingDetail(
@@ -47,8 +49,15 @@ export const MaterialPackagingDetailModal = ({
 
   const handleUpdateSuccess = () => {
     showToastMessage('수정이 완료되었습니다.', '수정된 내용이 저장되었어요.');
-    onClose();
+    setShouldCloseAfterToast(true);
   };
+
+  useEffect(() => {
+    if (shouldCloseAfterToast && !isToastOpen) {
+      setShouldCloseAfterToast(false);
+      onClose();
+    }
+  }, [shouldCloseAfterToast, isToastOpen, onClose]);
 
   const handleDelete = async () => {
     if (!repackagingId) return;
