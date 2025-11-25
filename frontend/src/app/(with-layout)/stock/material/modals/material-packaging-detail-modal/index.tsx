@@ -14,6 +14,7 @@ interface MaterialPackagingDetailModalProps {
   materialId: number;
   repackagingId?: number | null;
   onClose: () => void;
+  onRepackagingUpdated?: () => void;
 }
 
 export const MaterialPackagingDetailModal = ({
@@ -21,12 +22,14 @@ export const MaterialPackagingDetailModal = ({
   materialId,
   repackagingId,
   onClose,
+  onRepackagingUpdated,
 }: MaterialPackagingDetailModalProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isErrorToast, setIsErrorToast] = useState(false);
   const [toastText, setToastText] = useState('');
   const [toastSubtext, setToastSubtext] = useState('');
   const [shouldCloseAfterToast, setShouldCloseAfterToast] = useState(false);
+  const [isQuantityFilled, setIsQuantityFilled] = useState(false);
 
   const { isToastOpen, isVisible, showToast } = useToast();
 
@@ -65,7 +68,8 @@ export const MaterialPackagingDetailModal = ({
       'success',
       true
     );
-  }, [showToastMessage]);
+    onRepackagingUpdated?.();
+  }, [showToastMessage, onRepackagingUpdated]);
 
   const handleError = useCallback(
     (message: { text: string; subtext: string }) => {
@@ -106,6 +110,7 @@ export const MaterialPackagingDetailModal = ({
             formId={formId}
             onUpdateSuccess={handleUpdateSuccess}
             onError={handleError}
+            onQuantityChange={setIsQuantityFilled}
           />
 
           {/* 삭제 버튼 */}
@@ -141,6 +146,7 @@ export const MaterialPackagingDetailModal = ({
               variant="secondary"
               type="submit"
               form={formId}
+              disabled={!isQuantityFilled}
             />
           </div>
         )}

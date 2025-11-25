@@ -12,6 +12,7 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { getMaterialStockStatus } from '@/utils';
 import { ExpiryStatusType } from '@/types/status-type';
+import { mapExpiryStatus, mapMaterialToFormData } from './utils';
 
 interface MaterialInfoProps {
   materialId: number;
@@ -23,6 +24,7 @@ export interface MaterialInfoModel {
   getValues: () => MaterialInfoFormModel;
   isDirty: boolean;
   areRequiredFieldsFilled: () => boolean;
+  refetchMaterialInfo: () => Promise<void>;
 }
 
 interface MaterialInfoFormModel {
@@ -129,66 +131,30 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
       onRequiredFieldsChange,
     ]);
 
+    const fetchDetail = useCallback(async () => {
+      const result = await getMaterialDetail(materialId);
+      if (!result?.success || !result.data) return;
+
+      const mat = result.data;
+      reset(mapMaterialToFormData(mat), { keepDefaultValues: false });
+      setExpiryStatus(mapExpiryStatus(mat.expiry_status));
+      onIsDirtyChange?.(false);
+    }, [getMaterialDetail, materialId, onIsDirtyChange, reset]);
+
     useImperativeHandle(
       ref,
       () => ({
         getValues,
         isDirty,
         areRequiredFieldsFilled,
+        refetchMaterialInfo: fetchDetail,
       }),
-      [getValues, isDirty, areRequiredFieldsFilled]
+      [getValues, isDirty, areRequiredFieldsFilled, fetchDetail]
     );
 
     useEffect(() => {
-      const fetchDetail = async () => {
-        const result = await getMaterialDetail(materialId);
-        if (result && result.success && result.data) {
-          const mat = result.data;
-          const formData = {
-            materialName: mat.name ?? '',
-            materialCode: mat.code ?? '',
-            size: mat.spec ?? '',
-            unit: mat.unit ?? '',
-            currentStock:
-              mat.current_stock !== undefined && mat.current_stock !== null
-                ? mat.current_stock.toString()
-                : '',
-            standardStock:
-              mat.standard_stock !== undefined && mat.standard_stock !== null
-                ? mat.standard_stock.toString()
-                : '',
-            rop:
-              mat.rop !== undefined && mat.rop !== null
-                ? mat.rop.toString()
-                : '',
-            maxStock:
-              mat.max_stock !== undefined && mat.max_stock !== null
-                ? mat.max_stock.toString()
-                : '',
-            expiryDays:
-              mat.expiry_days !== undefined && mat.expiry_days !== null
-                ? mat.expiry_days.toString()
-                : '',
-            memo: mat.memo ?? '',
-          };
-          reset(formData, { keepDefaultValues: false });
-          // 백엔드에서 '위험'/'양호'를 반환하므로 프론트엔드 타입으로 변환
-          const expiryStatusValue = mat.expiry_status;
-          if (expiryStatusValue === '위험') {
-            setExpiryStatus('warning');
-          } else if (expiryStatusValue === '양호') {
-            setExpiryStatus('safe');
-          } else {
-            setExpiryStatus(null);
-          }
-          if (onIsDirtyChange) {
-            onIsDirtyChange(false);
-          }
-        }
-      };
       fetchDetail();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [materialId]);
+    }, [fetchDetail]);
 
     return (
       <div className="flex flex-col">

@@ -46,19 +46,18 @@ const useGetMaterialRepackagings = (
       }
 
       try {
-        const response =
-          await axios.get<MaterialRepackagingListResponseModel>(
-            `${process.env.NEXT_PUBLIC_API_URL}/v2/repackaging`,
-            {
-              params: {
-                factory_id: factoryId,
-                material_id: materialId,
-                page,
-                page_size,
-              },
-              withCredentials: true,
-            }
-          );
+        const response = await axios.get<MaterialRepackagingListResponseModel>(
+          `${process.env.NEXT_PUBLIC_API_URL}/v2/repackaging`,
+          {
+            params: {
+              factory_id: factoryId,
+              material_id: materialId,
+              page,
+              page_size,
+            },
+            withCredentials: true,
+          }
+        );
 
         return response.data;
       } catch (error) {
@@ -77,4 +76,3 @@ const useGetMaterialRepackagings = (
 };
 
 export default useGetMaterialRepackagings;
-

@@ -22,6 +22,7 @@ interface InputAreaProps {
   onUpdateSuccess?: () => void;
   onError?: (message: { text: string; subtext: string }) => void;
   formId?: string;
+  onQuantityChange?: (hasValue: boolean) => void;
 }
 
 export const InputArea = ({
@@ -31,6 +32,7 @@ export const InputArea = ({
   onUpdateSuccess,
   onError,
   formId,
+  onQuantityChange,
 }: InputAreaProps) => {
   // update 모드일 때 repackaging 상세 데이터 가져오기
   const { data: repackaging } = useGetMaterialRepackagingDetail(
@@ -39,13 +41,14 @@ export const InputArea = ({
 
   const updateMutation = useUpdateMaterialRepackaging();
 
-  const { control, handleSubmit, reset } = useForm<MaterialPackagingFormModel>({
-    defaultValues: {
-      quantity: '',
-      location: '',
-      expirationDate: '',
-    },
-  });
+  const { control, handleSubmit, reset, watch } =
+    useForm<MaterialPackagingFormModel>({
+      defaultValues: {
+        quantity: '',
+        location: '',
+        expirationDate: '',
+      },
+    });
 
   // repackaging 데이터가 로드되면 form에 채우기
   useEffect(() => {
@@ -59,6 +62,12 @@ export const InputArea = ({
       });
     }
   }, [mode, repackaging, reset]);
+
+  const quantityValue = watch('quantity');
+
+  useEffect(() => {
+    onQuantityChange?.(Boolean(quantityValue?.toString().trim()));
+  }, [quantityValue, onQuantityChange]);
 
   // 날짜를 API 형식으로 변환 (빈 문자열이면 null, 아니면 그대로 사용)
   const formatDateForAPI = (dateString: string): string | null => {

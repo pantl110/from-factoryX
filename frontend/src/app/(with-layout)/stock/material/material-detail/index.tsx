@@ -339,6 +339,10 @@ const MaterialDetailPanel = ({
   const { setShouldReload } = useMaterialReloadStore();
   const factoryId = useMemberStore((state) => state.factoryId);
 
+  const handleRepackagingUpdateSuccess = () => {
+    materialDetailRef.current?.refetchMaterialInfo?.();
+  };
+
   // 필수 필드 검증 상태 업데이트 (간단하게)
   const handleRequiredFieldsChange = (areFilled: boolean) => {
     setHasRequiredFieldsFilled(areFilled);
@@ -667,6 +671,7 @@ const MaterialDetailPanel = ({
           mode={packagingModalMode}
           materialId={selectedMaterialId}
           repackagingId={selectedRepackagingId}
+          onRepackagingUpdated={handleRepackagingUpdateSuccess}
           onClose={() => {
             setIsMaterialPackagingDetailModalOpen(false);
             setSelectedRepackagingId(null);

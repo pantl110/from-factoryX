@@ -225,6 +225,11 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
         isDirty: isDirtyMaterialInfo,
         areRequiredFieldsFilled: () =>
           materialInfoRef.current?.areRequiredFieldsFilled() ?? false,
+        refetchMaterialInfo: async () => {
+          if (materialInfoRef.current?.refetchMaterialInfo) {
+            await materialInfoRef.current.refetchMaterialInfo();
+          }
+        },
         // 추가: 위치 정보 관련 메서드도 함께 노출
         getLocationValues: () =>
           getLocationValues('locations' as keyof LocationFormModel),

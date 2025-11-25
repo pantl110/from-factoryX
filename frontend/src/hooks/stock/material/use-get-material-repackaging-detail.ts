@@ -6,9 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
 import { MaterialRepackagingResponseModel } from '@/types/data-model';
 
-const useGetMaterialRepackagingDetail = (
-  repackagingId: number | null
-) => {
+const useGetMaterialRepackagingDetail = (repackagingId: number | null) => {
   const factoryId = useMemberStore((state) => state.factoryId);
 
   const isEnabled = useMemo(
@@ -55,4 +53,3 @@ const useGetMaterialRepackagingDetail = (
 };
 
 export default useGetMaterialRepackagingDetail;
-
