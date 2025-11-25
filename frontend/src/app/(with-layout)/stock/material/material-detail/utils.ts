@@ -14,8 +14,7 @@ export const mapMaterialToFormData = (mat: MaterialResponseModel) => ({
     mat.standard_stock !== undefined && mat.standard_stock !== null
       ? mat.standard_stock.toString()
       : '',
-  rop:
-    mat.rop !== undefined && mat.rop !== null ? mat.rop.toString() : '',
+  rop: mat.rop !== undefined && mat.rop !== null ? mat.rop.toString() : '',
   maxStock:
     mat.max_stock !== undefined && mat.max_stock !== null
       ? mat.max_stock.toString()

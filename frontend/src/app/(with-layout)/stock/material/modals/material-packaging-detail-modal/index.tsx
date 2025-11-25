@@ -11,7 +11,6 @@ import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 
 interface MaterialPackagingDetailModalProps {
   mode: 'create' | 'update';
-  materialId: number;
   repackagingId?: number | null;
   onClose: () => void;
   onRepackagingUpdated?: () => void;
@@ -19,7 +18,6 @@ interface MaterialPackagingDetailModalProps {
 
 export const MaterialPackagingDetailModal = ({
   mode,
-  materialId,
   repackagingId,
   onClose,
   onRepackagingUpdated,
@@ -95,7 +93,7 @@ export const MaterialPackagingDetailModal = ({
       }
       setIsDeleteModalOpen(false);
       onClose();
-    } catch (error) {
+    } catch {
       // 에러는 mutation에서 처리됨
     }
   };
@@ -108,7 +106,6 @@ export const MaterialPackagingDetailModal = ({
           <h4 className="Heading-4">상세정보</h4>
           <InputArea
             mode={mode}
-            materialId={materialId}
             repackagingId={repackagingId}
             formId={formId}
             onUpdateSuccess={handleUpdateSuccess}

@@ -13,7 +13,7 @@ interface MaterialInfoProps {
   isLoading?: boolean;
 }
 
-type MoChipVariant = ComponentProps<typeof MoChip>['variant'];
+type MoChipVariantType = ComponentProps<typeof MoChip>['variant'];
 
 const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
   const stockStatus = useMemo(() => {
@@ -85,7 +85,7 @@ const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
     if (!expiryStatus) {
       return null;
     }
-    const variant: MoChipVariant =
+    const variant: MoChipVariantType =
       expiryStatus === 'warning' ? 'red-secondary' : 'secondary';
     const text =
       material?.expiry_status ?? (expiryStatus === 'warning' ? '위험' : '양호');

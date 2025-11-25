@@ -92,14 +92,30 @@ const Product = ({
     loadProducts(page, searchKeyword);
   };
 
-  // 삭제 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+  // 페이지 유효성 관리 (삭제나 비어 있는 페이지 처리)
   useEffect(() => {
     const totalPages = pagination?.pageCnt || 0;
+    const hasData = productList.length > 0;
+
     if (totalPages > 0 && _currentPage > totalPages) {
       setCurrentPage(totalPages);
       loadProducts(totalPages, searchKeyword);
+      return;
     }
-  }, [pagination?.pageCnt, _currentPage, searchKeyword, loadProducts]);
+
+    if (!isLoading && _currentPage > 1 && !hasData) {
+      const previousPage = _currentPage - 1;
+      setCurrentPage(previousPage);
+      loadProducts(previousPage, searchKeyword);
+    }
+  }, [
+    pagination?.pageCnt,
+    productList.length,
+    _currentPage,
+    isLoading,
+    loadProducts,
+    searchKeyword,
+  ]);
 
   const {
     checkedCount,

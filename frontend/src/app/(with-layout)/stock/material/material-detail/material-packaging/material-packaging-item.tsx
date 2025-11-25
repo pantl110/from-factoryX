@@ -1,6 +1,5 @@
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import Chip from '@/ui/chip';
 import IconBtn from '@/ui/icon-btn';
 import { PencilSimple, Trash } from '@phosphor-icons/react';
 import { MaterialRepackagingResponseModel } from '@/types/data-model';

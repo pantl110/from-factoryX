@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useGetMaterialRepackagings } from '@/hooks';
@@ -30,16 +30,30 @@ export const MaterialPackaging = ({
     materialId,
     {
       page,
-      page_size: pageSize,
+      pageSize,
     }
   );
 
   const repackagings = repackagingsData?.data || [];
-  const totalPages = repackagingsData?.pageCnt || 1;
+  const totalPages = repackagingsData?.pageCnt ?? 0;
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
+
+  // 페이지 유효성 관리 (삭제 등으로 비는 경우 포함)
+  useEffect(() => {
+    const hasData = repackagings.length > 0;
+
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+      return;
+    }
+
+    if (!isLoading && page > 1 && !hasData) {
+      setPage((prev) => Math.max(prev - 1, 1));
+    }
+  }, [totalPages, page, repackagings.length, isLoading]);
 
   return (
     <div className="flex flex-col gap-3">

@@ -99,13 +99,25 @@ const ProcessProjectPageInner = () => {
     setCurrentPage(page);
   };
 
-  // 삭제 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+  // 페이지 유효성 관리 (삭제나 비어 있는 페이지 처리)
   useEffect(() => {
     const totalPages = projectData?.pageCnt || 0;
+    const hasData = (projectData?.data?.length ?? 0) > 0;
+
     if (totalPages > 0 && currentPage > totalPages) {
       setCurrentPage(totalPages);
+      return;
     }
-  }, [projectData?.pageCnt, currentPage]);
+
+    if (!isProjectsLoading && currentPage > 1 && !hasData) {
+      setCurrentPage((prev) => Math.max(prev - 1, 1));
+    }
+  }, [
+    projectData?.pageCnt,
+    projectData?.data?.length,
+    currentPage,
+    isProjectsLoading,
+  ]);
 
   // 정렬 핸들러
   const handleSort = (key: 'startDate' | 'endDate') => {

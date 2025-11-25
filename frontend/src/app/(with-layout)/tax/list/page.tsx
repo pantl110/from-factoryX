@@ -173,13 +173,20 @@ const TaxPageContent = () => {
     fetchTaxData(page);
   };
 
-  // 숨기기/복구 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+  // 페이지 유효성 관리 (숨김이나 비어 있는 페이지 처리)
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) {
       setCurrentPage(totalPages);
       fetchTaxData(totalPages);
+      return;
     }
-  }, [totalPages, currentPage, fetchTaxData]);
+
+    if (!isLoading && currentPage > 1 && taxData.length === 0) {
+      const previousPage = currentPage - 1;
+      setCurrentPage(previousPage);
+      fetchTaxData(previousPage);
+    }
+  }, [totalPages, currentPage, fetchTaxData, isLoading, taxData.length]);
 
   // 시작일자 정렬 방향 변경
   const handleSortClick = () => {

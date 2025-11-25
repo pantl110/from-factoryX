@@ -52,6 +52,9 @@ const useUpdateMaterialRepackaging = () => {
             variables.repackagingId,
           ],
         });
+        queryClient.invalidateQueries({
+          queryKey: ['material-history'],
+        });
       }
     },
   });

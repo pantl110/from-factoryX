@@ -4,22 +4,19 @@ import { useMemo } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
-import {
-  MaterialRepackagingResponseModel,
-  MaterialRepackagingListResponseModel,
-} from '@/types/data-model';
+import { MaterialRepackagingListResponseModel } from '@/types/data-model';
 
-interface UseGetMaterialRepackagingsOptions {
+interface UseGetMaterialRepackagingsOptionsModel {
   page?: number;
-  page_size?: number;
+  pageSize?: number;
 }
 
 const useGetMaterialRepackagings = (
   materialId: number | null,
-  options: UseGetMaterialRepackagingsOptions = {}
+  options: UseGetMaterialRepackagingsOptionsModel = {}
 ) => {
   const factoryId = useMemberStore((state) => state.factoryId);
-  const { page = 1, page_size = 5 } = options;
+  const { page = 1, pageSize = 5 } = options;
 
   const isEnabled = useMemo(
     () => !!factoryId && materialId !== null,
@@ -27,7 +24,7 @@ const useGetMaterialRepackagings = (
   );
 
   return useQuery<MaterialRepackagingListResponseModel>({
-    queryKey: ['material-repackagings', factoryId, materialId, page, page_size],
+    queryKey: ['material-repackagings', factoryId, materialId, page, pageSize],
     enabled: isEnabled,
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 5,
@@ -53,7 +50,7 @@ const useGetMaterialRepackagings = (
               factory_id: factoryId,
               material_id: materialId,
               page,
-              page_size,
+              page_size: pageSize,
             },
             withCredentials: true,
           }

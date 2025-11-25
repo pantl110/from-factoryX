@@ -60,12 +60,19 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
       },
     }));
 
-    // 삭제 후 현재 페이지가 총 페이지 수보다 크면 이전 페이지로 이동
+    // 페이지 유효성 관리 (삭제 등으로 비는 경우 포함)
     useEffect(() => {
+      const hasData = targetMaterials.length > 0;
+
       if (totalPages > 0 && currentPage > totalPages) {
         setCurrentPage(totalPages);
+        return;
       }
-    }, [totalPages, currentPage]);
+
+      if (!isLoading && currentPage > 1 && !hasData) {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+      }
+    }, [isLoading, currentPage, targetMaterials.length, totalPages]);
 
     return (
       <div className="flex flex-col gap-3">

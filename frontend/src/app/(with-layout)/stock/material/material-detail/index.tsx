@@ -341,11 +341,16 @@ const MaterialDetailPanel = ({
   const factoryId = useMemberStore((state) => state.factoryId);
 
   const handleRepackagingUpdateSuccess = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['material-history'],
+    });
+
     if (factoryId && selectedMaterialId) {
       await queryClient.invalidateQueries({
         queryKey: ['material-detail', factoryId, selectedMaterialId],
       });
     }
+
     if (materialDetailRef.current?.refetchMaterialInfo) {
       await materialDetailRef.current.refetchMaterialInfo();
     }
@@ -677,7 +682,6 @@ const MaterialDetailPanel = ({
       {isMaterialPackagingDetailModalOpen && (
         <MaterialPackagingDetailModal
           mode={packagingModalMode}
-          materialId={selectedMaterialId}
           repackagingId={selectedRepackagingId}
           onRepackagingUpdated={handleRepackagingUpdateSuccess}
           onClose={() => {

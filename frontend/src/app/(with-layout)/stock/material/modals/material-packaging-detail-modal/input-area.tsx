@@ -17,7 +17,6 @@ interface MaterialPackagingFormModel {
 
 interface InputAreaProps {
   mode: 'create' | 'update';
-  materialId: number;
   repackagingId?: number | null;
   onUpdateSuccess?: () => Promise<void> | void;
   onError?: (message: { text: string; subtext: string }) => void;
@@ -27,7 +26,6 @@ interface InputAreaProps {
 
 export const InputArea = ({
   mode,
-  materialId,
   repackagingId,
   onUpdateSuccess,
   onError,
