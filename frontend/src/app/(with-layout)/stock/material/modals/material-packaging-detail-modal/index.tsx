@@ -12,6 +12,7 @@ import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 interface MaterialPackagingDetailModalProps {
   repackagingId?: number | null;
   nextRepackagingLotNumber?: string | null;
+  parentHistoryId?: number | null;
   onClose: () => void;
   onRepackagingUpdated?: () => void;
 }
@@ -19,6 +20,7 @@ interface MaterialPackagingDetailModalProps {
 export const MaterialPackagingDetailModal = ({
   repackagingId,
   nextRepackagingLotNumber,
+  parentHistoryId,
   onClose,
   onRepackagingUpdated,
 }: MaterialPackagingDetailModalProps) => {
@@ -73,6 +75,16 @@ export const MaterialPackagingDetailModal = ({
     onRepackagingUpdated?.();
   }, [showToastMessage, onRepackagingUpdated]);
 
+  const handleCreateSuccess = useCallback(() => {
+    showToastMessage(
+      '소분 내역이 생성되었습니다.',
+      '소분 내역은 원자재 소분 내역에서 확인할 수 있어요.',
+      'success',
+      true
+    );
+    onRepackagingUpdated?.();
+  }, [showToastMessage, onRepackagingUpdated]);
+
   const handleError = useCallback(
     (message: { text: string; subtext: string }) => {
       showToastMessage(message.text, message.subtext, 'error');
@@ -117,8 +129,11 @@ export const MaterialPackagingDetailModal = ({
             <InputArea
               repackagingId={repackagingId}
               nextRepackagingLotNumber={nextRepackagingLotNumber}
+              parentHistoryId={parentHistoryId}
               formId={formId}
-              onUpdateSuccess={handleUpdateSuccess}
+              onUpdateSuccess={
+                mode === 'create' ? handleCreateSuccess : handleUpdateSuccess
+              }
               onError={handleError}
               onQuantityChange={setIsQuantityFilled}
             />
@@ -145,7 +160,13 @@ export const MaterialPackagingDetailModal = ({
           {mode === 'create' && (
             <div className="flex justify-end gap-2.5 mt-5">
               <MiniBtn text="취소" variant="white" onClick={onClose} />
-              <MiniBtn text="소분" variant="secondary" onClick={onClose} />
+              <MiniBtn
+                text="소분"
+                variant="secondary"
+                type="submit"
+                form={formId}
+                disabled={!isQuantityFilled}
+              />
             </div>
           )}
           {mode === 'update' && (

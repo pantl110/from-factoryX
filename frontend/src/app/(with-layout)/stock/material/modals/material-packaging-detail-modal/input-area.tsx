@@ -4,10 +4,14 @@ import { formatDate, handleQuantityInput } from '@/utils/format-number';
 import {
   useGetMaterialRepackagingDetail,
   useUpdateMaterialRepackaging,
+  useCreateMaterialRepackaging,
 } from '@/hooks';
 import { useEffect } from 'react';
 import { convertUTCToKSTDate, isValidDateString } from '@/utils';
-import { UpdateMaterialRepackagingModel } from '@/types/data-model';
+import {
+  UpdateMaterialRepackagingModel,
+  CreateMaterialRepackagingModel,
+} from '@/types/data-model';
 import axios from 'axios';
 
 interface MaterialPackagingFormModel {
@@ -19,6 +23,7 @@ interface MaterialPackagingFormModel {
 interface InputAreaProps {
   repackagingId?: number | null;
   nextRepackagingLotNumber?: string | null;
+  parentHistoryId?: number | null;
   onUpdateSuccess?: () => Promise<void> | void;
   onError?: (message: { text: string; subtext: string }) => void;
   formId?: string;
@@ -28,6 +33,7 @@ interface InputAreaProps {
 export const InputArea = ({
   repackagingId,
   nextRepackagingLotNumber,
+  parentHistoryId,
   onUpdateSuccess,
   onError,
   formId,
@@ -41,6 +47,7 @@ export const InputArea = ({
   );
 
   const updateMutation = useUpdateMaterialRepackaging();
+  const createMutation = useCreateMaterialRepackaging();
 
   const { control, handleSubmit, reset, watch } =
     useForm<MaterialPackagingFormModel>({
@@ -87,19 +94,20 @@ export const InputArea = ({
   };
 
   const onSubmit = async (data: MaterialPackagingFormModel) => {
-    if (mode === 'update' && repackagingId) {
-      try {
-        const trimmedExpiration = data.expirationDate?.trim();
+    const trimmedExpiration = data.expirationDate?.trim();
 
-        if (trimmedExpiration && !isValidDateString(trimmedExpiration)) {
-          onError?.({
-            text: '유효한 유통기한을 입력해 주세요.',
-            subtext: 'YYYY-MM-DD 형식으로 입력해 주세요.',
-          });
-          return;
-        }
+    if (trimmedExpiration && !isValidDateString(trimmedExpiration)) {
+      onError?.({
+        text: '유효한 유통기한을 입력해 주세요.',
+        subtext: 'YYYY-MM-DD 형식으로 입력해 주세요.',
+      });
+      return;
+    }
 
-        const parsedQuantity = parseQuantity(data.quantity);
+    const parsedQuantity = parseQuantity(data.quantity);
+
+    try {
+      if (mode === 'update' && repackagingId) {
         const payload: UpdateMaterialRepackagingModel = {
           quantity: parsedQuantity ?? undefined,
           warehouse_location: data.location.trim() || null,
@@ -114,38 +122,63 @@ export const InputArea = ({
         if (onUpdateSuccess) {
           await onUpdateSuccess();
         }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          const detailMessageRaw =
-            (typeof error.response?.data?.detail === 'string'
-              ? error.response?.data?.detail
-              : '') ||
-            (typeof error.response?.data?.message === 'string'
-              ? error.response?.data?.message
-              : '') ||
-            error.message ||
-            '';
-          const detailMessage = detailMessageRaw.trim();
-          const parentLotErrorKeyword =
-            '수량 증가가 불가능합니다. 부모 이력의 잔량이 부족합니다';
-          const isParentLotQuantityError = detailMessage.includes(
-            parentLotErrorKeyword
-          );
+      } else if (mode === 'create' && parentHistoryId && parsedQuantity) {
+        const payload: CreateMaterialRepackagingModel = {
+          parent_history_id: parentHistoryId,
+          quantity: parsedQuantity,
+          warehouse_location: data.location.trim() || null,
+          expiration_date: formatDateForAPI(data.expirationDate),
+        };
 
-          onError?.({
-            text: isParentLotQuantityError
+        await createMutation.mutateAsync(payload);
+
+        if (onUpdateSuccess) {
+          await onUpdateSuccess();
+        }
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const detailMessageRaw =
+          (typeof error.response?.data?.detail === 'string'
+            ? error.response?.data?.detail
+            : '') ||
+          (typeof error.response?.data?.message === 'string'
+            ? error.response?.data?.message
+            : '') ||
+          error.message ||
+          '';
+        const detailMessage = detailMessageRaw.trim();
+        const parentLotErrorKeyword =
+          '수량 증가가 불가능합니다. 부모 이력의 잔량이 부족합니다';
+        const quantityInsufficientKeyword = '소분 수량이 부족합니다';
+        const isParentLotQuantityError = detailMessage.includes(
+          parentLotErrorKeyword
+        );
+        const isQuantityInsufficientError = detailMessage.includes(
+          quantityInsufficientKeyword
+        );
+
+        onError?.({
+          text:
+            isParentLotQuantityError || isQuantityInsufficientError
               ? '수량을 다시 확인해 주세요.'
-              : detailMessage || '소분 내역 수정 중 오류가 발생했습니다.',
-            subtext: isParentLotQuantityError
+              : detailMessage ||
+                (mode === 'create'
+                  ? '소분 내역 생성 중 오류가 발생했습니다.'
+                  : '소분 내역 수정 중 오류가 발생했습니다.'),
+          subtext:
+            isParentLotQuantityError || isQuantityInsufficientError
               ? '부모 이력의 잔량이 부족해요.'
               : '잠시 후 다시 시도해 주세요.',
-          });
-        } else {
-          onError?.({
-            text: '소분 내역 수정 중 오류가 발생했습니다.',
-            subtext: '잠시 후 다시 시도해 주세요.',
-          });
-        }
+        });
+      } else {
+        onError?.({
+          text:
+            mode === 'create'
+              ? '소분 내역 생성 중 오류가 발생했습니다.'
+              : '소분 내역 수정 중 오류가 발생했습니다.',
+          subtext: '잠시 후 다시 시도해 주세요.',
+        });
       }
     }
   };

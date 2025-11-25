@@ -11,7 +11,8 @@ interface MaterialStockInProps {
   materialId: number;
   setIsMaterialPackagingDetailModalOpen: (
     repackagingId?: number,
-    nextRepackagingLotNumber?: string
+    nextRepackagingLotNumber?: string,
+    parentHistoryId?: number
   ) => void;
   expiryWarningDays?: number | null;
 }

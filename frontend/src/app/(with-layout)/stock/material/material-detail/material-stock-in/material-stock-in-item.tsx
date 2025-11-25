@@ -9,7 +9,8 @@ interface MaterialStockInItemProps {
   history: MaterialHistoryResponseModel;
   setIsMaterialPackagingDetailModalOpen: (
     repackagingId?: number,
-    nextRepackagingLotNumber?: string
+    nextRepackagingLotNumber?: string,
+    parentHistoryId?: number
   ) => void;
   expiryWarningDays?: number | null;
 }
@@ -79,7 +80,8 @@ export const MaterialStockInItem = ({
                 undefined,
                 history.next_repackaging_lot_number
                   ? history.next_repackaging_lot_number
-                  : undefined
+                  : undefined,
+                history.id
               );
             }}
           />

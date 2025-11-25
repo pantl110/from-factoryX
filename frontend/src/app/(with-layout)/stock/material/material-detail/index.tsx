@@ -88,14 +88,19 @@ const MaterialDetailPanel = ({
     selectedNextRepackagingLotNumber,
     setSelectedNextRepackagingLotNumber,
   ] = useState<string | null>(null);
+  const [selectedParentHistoryId, setSelectedParentHistoryId] = useState<
+    number | null
+  >(null);
 
   // 모달 열기 함수
   const handleOpenPackagingModal = (
     repackagingId?: number,
-    nextRepackagingLotNumber?: string
+    nextRepackagingLotNumber?: string,
+    parentHistoryId?: number
   ) => {
     setSelectedRepackagingId(repackagingId ?? null);
     setSelectedNextRepackagingLotNumber(nextRepackagingLotNumber ?? null);
+    setSelectedParentHistoryId(parentHistoryId ?? null);
     setIsMaterialPackagingDetailModalOpen(true);
   };
 
@@ -684,11 +689,13 @@ const MaterialDetailPanel = ({
         <MaterialPackagingDetailModal
           repackagingId={selectedRepackagingId}
           nextRepackagingLotNumber={selectedNextRepackagingLotNumber}
+          parentHistoryId={selectedParentHistoryId}
           onRepackagingUpdated={handleRepackagingUpdateSuccess}
           onClose={() => {
             setIsMaterialPackagingDetailModalOpen(false);
             setSelectedRepackagingId(null);
             setSelectedNextRepackagingLotNumber(null);
+            setSelectedParentHistoryId(null);
           }}
         />
       )}

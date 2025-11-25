@@ -55,7 +55,8 @@ interface MaterialDetailProps {
   showToast?: (text: string, subtext: string) => void;
   setIsMaterialPackagingDetailModalOpen: (
     repackagingId?: number,
-    nextRepackagingLotNumber?: string
+    nextRepackagingLotNumber?: string,
+    parentHistoryId?: number
   ) => void;
   setIsCreateSubstituteModalOpen: (v: boolean) => void;
   handleOpenDeleteSubstituteModal: (
