@@ -195,8 +195,12 @@ async def update_material_repackaging(
     if repackaging.parent_history.material.factory_id != int(factory_id):
         raise HttpError(403, "해당 공장의 소분 내역이 아닙니다.")
 
+    fields_set = getattr(payload, "model_fields_set", set())
+
     # 수량 수정 처리
-    if payload.quantity is not None:
+    if "quantity" in fields_set:
+        if payload.quantity is None:
+            raise HttpError(400, "수정하려는 수량은 비워둘 수 없습니다.")
         if payload.quantity <= 0:
             raise HttpError(400, "수량은 0보다 커야 합니다.")
         
@@ -226,12 +230,12 @@ async def update_material_repackaging(
         # 소분 내역 수량 업데이트
         repackaging.quantity = new_quantity
 
-    # 창고 위치 수정
-    if payload.warehouse_location is not None:
+    # 창고 위치 수정 (None 포함)
+    if "warehouse_location" in fields_set:
         repackaging.warehouse_location = payload.warehouse_location
 
-    # 유통기한 수정
-    if payload.expiration_date is not None:
+    # 유통기한 수정 (None 포함)
+    if "expiration_date" in fields_set:
         repackaging.expiration_date = payload.expiration_date
 
     # 저장
