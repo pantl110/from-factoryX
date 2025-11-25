@@ -6,8 +6,8 @@ import {
   useDeleteMaterialRepackaging,
   useToast,
 } from '@/hooks';
-import { useEffect, useState } from 'react';
-import { WarningCircle } from '@phosphor-icons/react';
+import { useEffect, useState, useCallback } from 'react';
+import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 
 interface MaterialPackagingDetailModalProps {
   mode: 'create' | 'update';
@@ -23,6 +23,7 @@ export const MaterialPackagingDetailModal = ({
   onClose,
 }: MaterialPackagingDetailModalProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isErrorToast, setIsErrorToast] = useState(false);
   const [toastText, setToastText] = useState('');
   const [toastSubtext, setToastSubtext] = useState('');
   const [shouldCloseAfterToast, setShouldCloseAfterToast] = useState(false);
@@ -41,16 +42,37 @@ export const MaterialPackagingDetailModal = ({
     ? `[${repackaging.lot_number}]`
     : '[소분 LOT 번호]';
 
-  const showToastMessage = (text: string, subtext: string) => {
-    setToastText(text);
-    setToastSubtext(subtext);
-    showToast();
-  };
+  const showToastMessage = useCallback(
+    (
+      text: string,
+      subtext: string,
+      type: 'success' | 'error' = 'success',
+      triggerClose: boolean = false
+    ) => {
+      setToastText(text);
+      setToastSubtext(subtext);
+      setIsErrorToast(type === 'error');
+      setShouldCloseAfterToast(triggerClose);
+      showToast();
+    },
+    [showToast]
+  );
 
-  const handleUpdateSuccess = () => {
-    showToastMessage('수정이 완료되었습니다.', '수정된 내용이 저장되었어요.');
-    setShouldCloseAfterToast(true);
-  };
+  const handleUpdateSuccess = useCallback(() => {
+    showToastMessage(
+      '수정이 완료되었습니다.',
+      '수정된 내용이 저장되었어요.',
+      'success',
+      true
+    );
+  }, [showToastMessage]);
+
+  const handleError = useCallback(
+    (message: { text: string; subtext: string }) => {
+      showToastMessage(message.text, message.subtext, 'error');
+    },
+    [showToastMessage]
+  );
 
   useEffect(() => {
     if (shouldCloseAfterToast && !isToastOpen) {
@@ -83,6 +105,7 @@ export const MaterialPackagingDetailModal = ({
             repackagingId={repackagingId}
             formId={formId}
             onUpdateSuccess={handleUpdateSuccess}
+            onError={handleError}
           />
 
           {/* 삭제 버튼 */}
@@ -134,10 +157,16 @@ export const MaterialPackagingDetailModal = ({
 
       {isToastOpen && (
         <Toast
-          icon={<WarningCircle size={20} className="text-red" />}
+          icon={
+            isErrorToast ? (
+              <WarningCircle size={20} className="text-red" />
+            ) : (
+              <CheckCircle size={20} className="text-primary" />
+            )
+          }
           text={toastText}
           subtext={toastSubtext}
-          type="red"
+          type={isErrorToast ? 'red' : 'primary'}
           isVisible={isVisible}
         />
       )}

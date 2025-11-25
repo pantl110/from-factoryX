@@ -6,7 +6,7 @@ import {
   useUpdateMaterialRepackaging,
 } from '@/hooks';
 import { useEffect } from 'react';
-import { convertUTCToKSTDate } from '@/utils';
+import { convertUTCToKSTDate, isValidDateString } from '@/utils';
 import { UpdateMaterialRepackagingModel } from '@/types/data-model';
 
 interface MaterialPackagingFormModel {
@@ -20,6 +20,7 @@ interface InputAreaProps {
   materialId: number;
   repackagingId?: number | null;
   onUpdateSuccess?: () => void;
+  onError?: (message: { text: string; subtext: string }) => void;
   formId?: string;
 }
 
@@ -28,6 +29,7 @@ export const InputArea = ({
   materialId,
   repackagingId,
   onUpdateSuccess,
+  onError,
   formId,
 }: InputAreaProps) => {
   // update 모드일 때 repackaging 상세 데이터 가져오기
@@ -77,6 +79,16 @@ export const InputArea = ({
   const onSubmit = async (data: MaterialPackagingFormModel) => {
     if (mode === 'update' && repackagingId) {
       try {
+        const trimmedExpiration = data.expirationDate?.trim();
+
+        if (trimmedExpiration && !isValidDateString(trimmedExpiration)) {
+          onError?.({
+            text: '유효한 유통기한을 입력해 주세요.',
+            subtext: 'YYYY-MM-DD 형식으로 입력해 주세요.',
+          });
+          return;
+        }
+
         const parsedQuantity = parseQuantity(data.quantity);
         const payload: UpdateMaterialRepackagingModel = {
           quantity: parsedQuantity ?? undefined,

@@ -22,7 +22,7 @@ export {
 } from './format-number';
 
 // Validation utilities
-export { checkDateValidity } from './date-validation';
+export { checkDateValidity, isValidDateString } from './date-validation';
 export { validateEmail, validatePassword } from './validation';
 
 // Storage utilities

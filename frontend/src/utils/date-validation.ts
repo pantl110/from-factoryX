@@ -42,3 +42,27 @@ export const checkDateValidity = (formData: DateFormDataModel): boolean => {
 
   return true; // 모든 검증 통과
 };
+
+/**
+ * YYYY-MM-DD 형식의 단일 날짜 문자열이 유효한지 검사
+ * @param dateString - 검증할 날짜 문자열
+ * @returns 유효한 날짜면 true, 그렇지 않으면 false
+ */
+export const isValidDateString = (dateString: string | null | undefined) => {
+  if (!dateString) return false;
+
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(dateString)) {
+    return false;
+  }
+
+  const date = new Date(dateString);
+  const [year, month, day] = dateString.split('-').map(Number);
+
+  return (
+    !isNaN(date.getTime()) &&
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+};
