@@ -8,6 +8,7 @@ import {
 import { useEffect } from 'react';
 import { convertUTCToKSTDate, isValidDateString } from '@/utils';
 import { UpdateMaterialRepackagingModel } from '@/types/data-model';
+import axios from 'axios';
 
 interface MaterialPackagingFormModel {
   quantity: string;
@@ -111,8 +112,38 @@ export const InputArea = ({
         if (onUpdateSuccess) {
           await onUpdateSuccess();
         }
-      } catch {
-        // 에러는 mutation에서 처리됨
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const detailMessageRaw =
+            (typeof error.response?.data?.detail === 'string'
+              ? error.response?.data?.detail
+              : '') ||
+            (typeof error.response?.data?.message === 'string'
+              ? error.response?.data?.message
+              : '') ||
+            error.message ||
+            '';
+          const detailMessage = detailMessageRaw.trim();
+          const parentLotErrorKeyword =
+            '수량 증가가 불가능합니다. 부모 이력의 잔량이 부족합니다';
+          const isParentLotQuantityError = detailMessage.includes(
+            parentLotErrorKeyword
+          );
+
+          onError?.({
+            text: isParentLotQuantityError
+              ? '수량을 다시 확인해 주세요.'
+              : detailMessage || '소분 내역 수정 중 오류가 발생했습니다.',
+            subtext: isParentLotQuantityError
+              ? '부모 이력의 잔량이 부족해요.'
+              : '잠시 후 다시 시도해 주세요.',
+          });
+        } else {
+          onError?.({
+            text: '소분 내역 수정 중 오류가 발생했습니다.',
+            subtext: '잠시 후 다시 시도해 주세요.',
+          });
+        }
       }
     }
   };
