@@ -529,6 +529,7 @@ export interface MaterialHistoryResponseModel {
   warehouse_location: string | null; // 창고 위치
   expiration_date: string | null; // 유통기한
   remaining_quantity: number; // 남은 수량
+  next_repackaging_lot_number: string | null; // 다음 소분 LOT 번호
 }
 
 export interface MaterialHistoryListResponseModel extends PaginationModel {

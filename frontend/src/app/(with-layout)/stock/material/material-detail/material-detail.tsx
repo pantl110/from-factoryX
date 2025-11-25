@@ -54,8 +54,8 @@ interface MaterialDetailProps {
   productWasModified?: boolean; // 제품이 실제로 연결/삭제되었는지
   showToast?: (text: string, subtext: string) => void;
   setIsMaterialPackagingDetailModalOpen: (
-    mode: 'create' | 'update',
-    repackagingId?: number
+    repackagingId?: number,
+    nextRepackagingLotNumber?: string
   ) => void;
   setIsCreateSubstituteModalOpen: (v: boolean) => void;
   handleOpenDeleteSubstituteModal: (
@@ -371,8 +371,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           {/* 원자재 입고 및 LOT 추적 */}
           <MaterialStockIn
             materialId={materialId}
-            setIsMaterialPackagingDetailModalOpen={() =>
-              setIsMaterialPackagingDetailModalOpen('create')
+            setIsMaterialPackagingDetailModalOpen={
+              setIsMaterialPackagingDetailModalOpen
             }
             expiryWarningDays={expiryWarningDays}
           />
@@ -381,7 +381,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           <MaterialPackaging
             materialId={materialId}
             setIsMaterialPackagingDetailModalOpen={(repackagingId) =>
-              setIsMaterialPackagingDetailModalOpen('update', repackagingId)
+              setIsMaterialPackagingDetailModalOpen(repackagingId)
             }
             handleOpenDeleteModal={
               handleOpenDeleteRepackagingModal ||

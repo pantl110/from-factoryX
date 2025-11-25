@@ -7,7 +7,10 @@ import { getExpiryClassName } from '../utils';
 
 interface MaterialStockInItemProps {
   history: MaterialHistoryResponseModel;
-  setIsMaterialPackagingDetailModalOpen: (mode: 'create' | 'update') => void;
+  setIsMaterialPackagingDetailModalOpen: (
+    repackagingId?: number,
+    nextRepackagingLotNumber?: string
+  ) => void;
   expiryWarningDays?: number | null;
 }
 
@@ -71,7 +74,14 @@ export const MaterialStockInItem = ({
             height="h-8"
             padding="px-3"
             textStyle="Re_body-2"
-            onClick={() => setIsMaterialPackagingDetailModalOpen('create')}
+            onClick={() => {
+              setIsMaterialPackagingDetailModalOpen(
+                undefined,
+                history.next_repackaging_lot_number
+                  ? history.next_repackaging_lot_number
+                  : undefined
+              );
+            }}
           />
         </div>
       )}

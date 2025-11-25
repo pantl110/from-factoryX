@@ -81,20 +81,21 @@ const MaterialDetailPanel = ({
     isMaterialPackagingDetailModalOpen,
     setIsMaterialPackagingDetailModalOpen,
   ] = useState(false);
-  const [packagingModalMode, setPackagingModalMode] = useState<
-    'create' | 'update'
-  >('create');
   const [selectedRepackagingId, setSelectedRepackagingId] = useState<
     number | null
   >(null);
+  const [
+    selectedNextRepackagingLotNumber,
+    setSelectedNextRepackagingLotNumber,
+  ] = useState<string | null>(null);
 
-  // 모달 열기 함수 (mode 포함)
+  // 모달 열기 함수
   const handleOpenPackagingModal = (
-    mode: 'create' | 'update',
-    repackagingId?: number
+    repackagingId?: number,
+    nextRepackagingLotNumber?: string
   ) => {
-    setPackagingModalMode(mode);
-    setSelectedRepackagingId(repackagingId || null);
+    setSelectedRepackagingId(repackagingId ?? null);
+    setSelectedNextRepackagingLotNumber(nextRepackagingLotNumber ?? null);
     setIsMaterialPackagingDetailModalOpen(true);
   };
 
@@ -681,12 +682,13 @@ const MaterialDetailPanel = ({
       {/* 원자재 소분내역 디테일 모달 */}
       {isMaterialPackagingDetailModalOpen && (
         <MaterialPackagingDetailModal
-          mode={packagingModalMode}
           repackagingId={selectedRepackagingId}
+          nextRepackagingLotNumber={selectedNextRepackagingLotNumber}
           onRepackagingUpdated={handleRepackagingUpdateSuccess}
           onClose={() => {
             setIsMaterialPackagingDetailModalOpen(false);
             setSelectedRepackagingId(null);
+            setSelectedNextRepackagingLotNumber(null);
           }}
         />
       )}

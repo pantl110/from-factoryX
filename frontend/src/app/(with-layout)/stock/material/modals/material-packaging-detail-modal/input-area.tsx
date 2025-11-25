@@ -17,8 +17,8 @@ interface MaterialPackagingFormModel {
 }
 
 interface InputAreaProps {
-  mode: 'create' | 'update';
   repackagingId?: number | null;
+  nextRepackagingLotNumber?: string | null;
   onUpdateSuccess?: () => Promise<void> | void;
   onError?: (message: { text: string; subtext: string }) => void;
   formId?: string;
@@ -26,16 +26,18 @@ interface InputAreaProps {
 }
 
 export const InputArea = ({
-  mode,
   repackagingId,
+  nextRepackagingLotNumber,
   onUpdateSuccess,
   onError,
   formId,
   onQuantityChange,
 }: InputAreaProps) => {
+  const mode = repackagingId ? 'update' : 'create';
+
   // update 모드일 때 repackaging 상세 데이터 가져오기
   const { data: repackaging } = useGetMaterialRepackagingDetail(
-    mode === 'update' && repackagingId ? repackagingId : null
+    repackagingId ?? null
   );
 
   const updateMutation = useUpdateMaterialRepackaging();
@@ -171,10 +173,19 @@ export const InputArea = ({
     field.onChange(e.target.value);
   };
 
-  // 부모 LOT 번호 계산 (소분 LOT 번호에서 마지막 -00 제거)
-  const parentLotNumber = repackaging
-    ? repackaging.lot_number.replace(/-\d+$/, '')
-    : '';
+  // 부모 LOT 번호 계산 (update 모드: 소분 LOT 번호에서 마지막 -00 제거)
+  const effectiveParentLotNumber =
+    mode === 'update' && repackaging
+      ? repackaging.lot_number.replace(/-\d+$/, '')
+      : nextRepackagingLotNumber
+        ? nextRepackagingLotNumber.replace(/-\d+$/, '')
+        : '';
+
+  // create 모드일 때 소분 LOT 번호
+  const displayLotNumber =
+    mode === 'create'
+      ? (nextRepackagingLotNumber ?? '')
+      : (repackaging?.lot_number ?? '');
 
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)}>
@@ -182,12 +193,12 @@ export const InputArea = ({
         <InfoLabelValue label="상태" chip={{ status: 'using' }} />
       )} */}
 
-      <InfoLabelValue label="부모 LOT 번호" value={parentLotNumber} />
       <InfoLabelValue
-        label="소분 LOT 번호"
-        value={repackaging?.lot_number || ''}
+        label="부모 LOT 번호"
+        value={effectiveParentLotNumber}
         disabled
       />
+      <InfoLabelValue label="소분 LOT 번호" value={displayLotNumber} disabled />
 
       <Controller
         name="quantity"

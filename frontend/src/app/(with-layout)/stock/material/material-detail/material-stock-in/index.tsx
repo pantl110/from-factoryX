@@ -9,7 +9,10 @@ import Pagination from '@/components/pagination';
 
 interface MaterialStockInProps {
   materialId: number;
-  setIsMaterialPackagingDetailModalOpen: (mode: 'create' | 'update') => void;
+  setIsMaterialPackagingDetailModalOpen: (
+    repackagingId?: number,
+    nextRepackagingLotNumber?: string
+  ) => void;
   expiryWarningDays?: number | null;
 }
 

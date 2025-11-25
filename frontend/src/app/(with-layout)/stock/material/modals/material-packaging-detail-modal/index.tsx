@@ -10,18 +10,19 @@ import { useEffect, useState, useCallback } from 'react';
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 
 interface MaterialPackagingDetailModalProps {
-  mode: 'create' | 'update';
   repackagingId?: number | null;
+  nextRepackagingLotNumber?: string | null;
   onClose: () => void;
   onRepackagingUpdated?: () => void;
 }
 
 export const MaterialPackagingDetailModal = ({
-  mode,
   repackagingId,
+  nextRepackagingLotNumber,
   onClose,
   onRepackagingUpdated,
 }: MaterialPackagingDetailModalProps) => {
+  const mode = repackagingId ? 'update' : 'create';
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isErrorToast, setIsErrorToast] = useState(false);
   const [toastText, setToastText] = useState('');
@@ -36,12 +37,15 @@ export const MaterialPackagingDetailModal = ({
 
   // update 모드일 때 repackaging 상세 데이터 가져오기 (제목용)
   const { data: repackaging } = useGetMaterialRepackagingDetail(
-    mode === 'update' && repackagingId ? repackagingId : null
+    repackagingId ?? null
   );
 
-  const modalTitle = repackaging
-    ? `[${repackaging.lot_number}]`
-    : '[소분 LOT 번호]';
+  const modalTitle =
+    mode === 'update' && repackaging
+      ? `[${repackaging.lot_number}]`
+      : mode === 'create' && nextRepackagingLotNumber
+        ? `[${nextRepackagingLotNumber}]`
+        : '[]';
 
   const showToastMessage = useCallback(
     (
@@ -106,13 +110,13 @@ export const MaterialPackagingDetailModal = ({
         title={modalTitle}
         scroll={true}
       >
-        <div className="pt-4 px-6 pb-6 max-h-[calc(85vh-64px)] overflow-y-auto scrollbar-hide">
+        <div className="pt-4 px-6 pb-6 max-h-[calc(85vh-68px)] overflow-y-auto scrollbar-hide">
           {/* 상세정보 */}
           <div className="flex flex-col gap-3">
             <h4 className="Heading-4">상세정보</h4>
             <InputArea
-              mode={mode}
               repackagingId={repackagingId}
+              nextRepackagingLotNumber={nextRepackagingLotNumber}
               formId={formId}
               onUpdateSuccess={handleUpdateSuccess}
               onError={handleError}
