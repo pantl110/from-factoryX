@@ -247,6 +247,7 @@ const MaterialDetailPanel = ({
             queryClient.invalidateQueries({
               queryKey: ['material-history'],
             });
+            void handleRepackagingUpdateSuccess();
           },
           onError: (error) => {
             const errorMessage =

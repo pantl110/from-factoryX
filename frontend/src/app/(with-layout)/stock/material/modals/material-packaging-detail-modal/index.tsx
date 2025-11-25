@@ -90,6 +90,9 @@ export const MaterialPackagingDetailModal = ({
 
     try {
       await deleteMutation.mutateAsync(repackagingId);
+      if (onRepackagingUpdated) {
+        await onRepackagingUpdated();
+      }
       setIsDeleteModalOpen(false);
       onClose();
     } catch (error) {
