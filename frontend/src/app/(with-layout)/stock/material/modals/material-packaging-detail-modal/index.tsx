@@ -100,65 +100,72 @@ export const MaterialPackagingDetailModal = ({
 
   return (
     <>
-      <Modal onClose={onClose} width="w-[800px]" title={modalTitle}>
-        {/* 상세정보 */}
-        <div className="mt-4 flex flex-col gap-3">
-          <h4 className="Heading-4">상세정보</h4>
-          <InputArea
-            mode={mode}
-            repackagingId={repackagingId}
-            formId={formId}
-            onUpdateSuccess={handleUpdateSuccess}
-            onError={handleError}
-            onQuantityChange={setIsQuantityFilled}
-          />
+      <Modal
+        onClose={onClose}
+        width="w-[800px]"
+        title={modalTitle}
+        scroll={true}
+      >
+        <div className="pt-4 px-6 pb-6 max-h-[calc(85vh-64px)] overflow-y-auto scrollbar-hide">
+          {/* 상세정보 */}
+          <div className="flex flex-col gap-3">
+            <h4 className="Heading-4">상세정보</h4>
+            <InputArea
+              mode={mode}
+              repackagingId={repackagingId}
+              formId={formId}
+              onUpdateSuccess={handleUpdateSuccess}
+              onError={handleError}
+              onQuantityChange={setIsQuantityFilled}
+            />
 
-          {/* 삭제 버튼 */}
+            {/* 삭제 버튼 */}
+            {mode === 'update' && (
+              <div className="flex justify-between items-center p-5 bg-bg rounded-[12px]">
+                <p className="Me_Body-2 text-red">
+                  삭제 시 기록과 재고 차감은 복구되지 않아요
+                </p>
+                <MiniBtn
+                  text="삭제"
+                  variant="red"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 소분된 원자재 사용 내역 */}
+          {mode === 'update' && <UsageHistory />}
+
+          {/* 버튼 */}
+          {mode === 'create' && (
+            <div className="flex justify-end gap-2.5 mt-5">
+              <MiniBtn text="취소" variant="white" onClick={onClose} />
+              <MiniBtn text="소분" variant="secondary" onClick={onClose} />
+            </div>
+          )}
           {mode === 'update' && (
-            <div className="flex justify-between items-center p-5 bg-bg rounded-[12px]">
-              <p className="Me_Body-2 text-red">
-                삭제 시 기록과 재고 차감은 복구되지 않아요
-              </p>
+            <div className="flex justify-end gap-2.5 mt-5">
+              <MiniBtn text="취소" variant="white" onClick={onClose} />
               <MiniBtn
-                text="삭제"
-                variant="red"
-                onClick={() => setIsDeleteModalOpen(true)}
+                text="수정"
+                variant="secondary"
+                type="submit"
+                form={formId}
+                disabled={!isQuantityFilled}
               />
             </div>
           )}
-        </div>
 
-        {/* 소분된 원자재 사용 내역 */}
-        {mode === 'update' && <UsageHistory />}
-
-        {/* 버튼 */}
-        {mode === 'create' && (
-          <div className="flex justify-end gap-2.5 mt-5">
-            <MiniBtn text="취소" variant="white" onClick={onClose} />
-            <MiniBtn text="소분" variant="secondary" onClick={onClose} />
-          </div>
-        )}
-        {mode === 'update' && (
-          <div className="flex justify-end gap-2.5 mt-5">
-            <MiniBtn text="취소" variant="white" onClick={onClose} />
-            <MiniBtn
-              text="수정"
-              variant="secondary"
-              type="submit"
-              form={formId}
-              disabled={!isQuantityFilled}
+          {/* 삭제 확인 모달 */}
+          {isDeleteModalOpen && (
+            <DeleteModal
+              onClose={() => setIsDeleteModalOpen(false)}
+              onDelete={handleDelete}
+              isLoading={deleteMutation.isPending}
             />
-          </div>
-        )}
-
-        {/* 삭제 확인 모달 */}
-        {isDeleteModalOpen && (
-          <DeleteModal
-            onClose={() => setIsDeleteModalOpen(false)}
-            onDelete={handleDelete}
-            isLoading={deleteMutation.isPending}
-          />
-        )}
+          )}
+        </div>
       </Modal>
 
       {isToastOpen && (
