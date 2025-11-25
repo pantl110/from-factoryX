@@ -1,15 +1,11 @@
 import InfoLabelValue from '@/ui/info-label-value';
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
-import {
-  formatDate,
-  handleQuantityInput,
-  extractNumbers,
-} from '@/utils/format-number';
+import { formatDate, handleQuantityInput } from '@/utils/format-number';
 import {
   useGetMaterialRepackagingDetail,
   useUpdateMaterialRepackaging,
 } from '@/hooks';
-import { useEffect, useImperativeHandle, forwardRef } from 'react';
+import { useEffect } from 'react';
 import { convertUTCToKSTDate } from '@/utils';
 import { UpdateMaterialRepackagingModel } from '@/types/data-model';
 
@@ -23,17 +19,23 @@ interface InputAreaProps {
   mode: 'create' | 'update';
   materialId: number;
   repackagingId?: number | null;
+  onUpdateSuccess?: () => void;
+  formId?: string;
 }
 
 export const InputArea = ({
   mode,
   materialId,
   repackagingId,
+  onUpdateSuccess,
+  formId,
 }: InputAreaProps) => {
   // update 모드일 때 repackaging 상세 데이터 가져오기
   const { data: repackaging } = useGetMaterialRepackagingDetail(
     mode === 'update' && repackagingId ? repackagingId : null
   );
+
+  const updateMutation = useUpdateMaterialRepackaging();
 
   const { control, handleSubmit, reset } = useForm<MaterialPackagingFormModel>({
     defaultValues: {
@@ -56,8 +58,42 @@ export const InputArea = ({
     }
   }, [mode, repackaging, reset]);
 
-  const onSubmit = (_data: MaterialPackagingFormModel) => {
-    // TODO: Implement form submission logic
+  // 날짜를 API 형식으로 변환 (빈 문자열이면 null, 아니면 그대로 사용)
+  const formatDateForAPI = (dateString: string): string | null => {
+    const trimmed = dateString?.trim();
+    return trimmed === '' ? null : trimmed || null;
+  };
+
+  // 수량을 숫자로 변환 (콤마 제거)
+  const parseQuantity = (quantityString: string): number | null => {
+    if (!quantityString || quantityString.trim() === '') {
+      return null;
+    }
+    const numbers = quantityString.replace(/,/g, '');
+    const parsed = parseFloat(numbers);
+    return isNaN(parsed) ? null : parsed;
+  };
+
+  const onSubmit = async (data: MaterialPackagingFormModel) => {
+    if (mode === 'update' && repackagingId) {
+      try {
+        const parsedQuantity = parseQuantity(data.quantity);
+        const payload: UpdateMaterialRepackagingModel = {
+          quantity: parsedQuantity ?? undefined,
+          warehouse_location: data.location.trim() || null,
+          expiration_date: formatDateForAPI(data.expirationDate),
+        };
+
+        await updateMutation.mutateAsync({
+          repackagingId,
+          payload,
+        });
+
+        onUpdateSuccess?.();
+      } catch {
+        // 에러는 mutation에서 처리됨
+      }
+    }
   };
 
   const handleDateChange = (
@@ -89,7 +125,7 @@ export const InputArea = ({
     : '';
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form id={formId} onSubmit={handleSubmit(onSubmit)}>
       {/* {mode === 'update' && (
         <InfoLabelValue label="상태" chip={{ status: 'using' }} />
       )} */}
@@ -108,7 +144,7 @@ export const InputArea = ({
           <InfoLabelValue
             label="수량"
             value={field.value}
-            placeholder="소분할 수량을 입력하세요."
+            placeholder="(필수) 소분할 수량을 입력하세요."
             required={true}
             isEditing={true}
             onChange={(e) => handleQuantityChange(field, e)}

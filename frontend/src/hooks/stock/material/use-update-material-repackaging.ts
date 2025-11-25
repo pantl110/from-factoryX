@@ -39,11 +39,18 @@ const useUpdateMaterialRepackaging = () => {
 
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       // 소분 내역 목록 및 상세 조회 쿼리 무효화
       if (factoryId) {
         queryClient.invalidateQueries({
           queryKey: ['material-repackagings', factoryId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [
+            'material-repackaging-detail',
+            factoryId,
+            variables.repackagingId,
+          ],
         });
       }
     },

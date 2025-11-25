@@ -544,6 +544,7 @@ export interface CreateMaterialRepackagingModel {
 }
 
 export interface UpdateMaterialRepackagingModel {
+  quantity?: number | null; // 수량
   warehouse_location?: string | null; // 창고 위치
   expiration_date?: string | null; // 유통기한 (YYYY-MM-DD)
 }

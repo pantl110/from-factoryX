@@ -1,11 +1,13 @@
-import { Modal, MiniBtn, DeleteModal } from '@/ui';
+import { Modal, MiniBtn, DeleteModal, Toast } from '@/ui';
 import { InputArea } from './input-area';
 import { UsageHistory } from './usage-history';
 import {
   useGetMaterialRepackagingDetail,
   useDeleteMaterialRepackaging,
+  useToast,
 } from '@/hooks';
 import { useState } from 'react';
+import { WarningCircle } from '@phosphor-icons/react';
 
 interface MaterialPackagingDetailModalProps {
   mode: 'create' | 'update';
@@ -20,7 +22,12 @@ export const MaterialPackagingDetailModal = ({
   repackagingId,
   onClose,
 }: MaterialPackagingDetailModalProps) => {
+  const formId = 'material-packaging-form';
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [toastText, setToastText] = useState('');
+  const [toastSubtext, setToastSubtext] = useState('');
+  const { isToastOpen, isVisible, showToast } = useToast();
+
   const deleteMutation = useDeleteMaterialRepackaging();
 
   // update 모드일 때 repackaging 상세 데이터 가져오기 (제목용)
@@ -31,6 +38,17 @@ export const MaterialPackagingDetailModal = ({
   const modalTitle = repackaging
     ? `[${repackaging.lot_number}]`
     : '[소분 LOT 번호]';
+
+  const showToastMessage = (text: string, subtext: string) => {
+    setToastText(text);
+    setToastSubtext(subtext);
+    showToast();
+  };
+
+  const handleUpdateSuccess = () => {
+    showToastMessage('수정이 완료되었습니다.', '수정된 내용이 저장되었어요.');
+    onClose();
+  };
 
   const handleDelete = async () => {
     if (!repackagingId) return;
@@ -45,56 +63,75 @@ export const MaterialPackagingDetailModal = ({
   };
 
   return (
-    <Modal onClose={onClose} width="w-[800px]" title={modalTitle}>
-      {/* 상세정보 */}
-      <div className="mt-4 flex flex-col gap-3">
-        <h4 className="Heading-4">상세정보</h4>
-        <InputArea
-          mode={mode}
-          materialId={materialId}
-          repackagingId={repackagingId}
-        />
+    <>
+      <Modal onClose={onClose} width="w-[800px]" title={modalTitle}>
+        {/* 상세정보 */}
+        <div className="mt-4 flex flex-col gap-3">
+          <h4 className="Heading-4">상세정보</h4>
+          <InputArea
+            mode={mode}
+            materialId={materialId}
+            repackagingId={repackagingId}
+            formId={formId}
+            onUpdateSuccess={handleUpdateSuccess}
+          />
 
-        {/* 삭제 버튼 */}
+          {/* 삭제 버튼 */}
+          {mode === 'update' && (
+            <div className="flex justify-between items-center p-5 bg-bg rounded-[12px]">
+              <p className="Me_Body-2 text-red">
+                삭제 시 기록과 재고 차감은 복구되지 않아요
+              </p>
+              <MiniBtn
+                text="삭제"
+                variant="red"
+                onClick={() => setIsDeleteModalOpen(true)}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* 소분된 원자재 사용 내역 */}
+        {mode === 'update' && <UsageHistory />}
+
+        {/* 버튼 */}
+        {mode === 'create' && (
+          <div className="flex justify-end gap-2.5 mt-5">
+            <MiniBtn text="취소" variant="white" onClick={onClose} />
+            <MiniBtn text="소분" variant="secondary" onClick={onClose} />
+          </div>
+        )}
         {mode === 'update' && (
-          <div className="flex justify-between items-center p-5 bg-bg rounded-[12px]">
-            <p className="Me_Body-2 text-red">
-              삭제 시 기록과 재고 차감은 복구되지 않아요
-            </p>
+          <div className="flex justify-end gap-2.5 mt-5">
+            <MiniBtn text="취소" variant="white" onClick={onClose} />
             <MiniBtn
-              text="삭제"
-              variant="red"
-              onClick={() => setIsDeleteModalOpen(true)}
+              text="수정"
+              variant="secondary"
+              type="submit"
+              form={formId}
             />
           </div>
         )}
-      </div>
 
-      {/* 소분된 원자재 사용 내역 */}
-      {mode === 'update' && <UsageHistory />}
+        {/* 삭제 확인 모달 */}
+        {isDeleteModalOpen && (
+          <DeleteModal
+            onClose={() => setIsDeleteModalOpen(false)}
+            onDelete={handleDelete}
+            isLoading={deleteMutation.isPending}
+          />
+        )}
+      </Modal>
 
-      {/* 버튼 */}
-      {mode === 'create' && (
-        <div className="flex justify-end gap-2.5 mt-5">
-          <MiniBtn text="취소" variant="white" onClick={onClose} />
-          <MiniBtn text="소분" variant="secondary" onClick={onClose} />
-        </div>
-      )}
-      {mode === 'update' && (
-        <div className="flex justify-end gap-2.5 mt-5">
-          <MiniBtn text="취소" variant="white" onClick={onClose} />
-          <MiniBtn text="수정" variant="secondary" onClick={onClose} />
-        </div>
-      )}
-
-      {/* 삭제 확인 모달 */}
-      {isDeleteModalOpen && (
-        <DeleteModal
-          onClose={() => setIsDeleteModalOpen(false)}
-          onDelete={handleDelete}
-          isLoading={deleteMutation.isPending}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text={toastText}
+          subtext={toastSubtext}
+          type="red"
+          isVisible={isVisible}
         />
       )}
-    </Modal>
+    </>
   );
 };
