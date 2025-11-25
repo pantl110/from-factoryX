@@ -170,7 +170,7 @@ async def get_material_repackaging_detail(request, repackaging_id: int):
 @router.patch(
     "/{repackaging_id}",
     summary="[U] 원자재 소분 내역 수정",
-    description="소분 내역의 창고 위치, 유통기한을 수정합니다.",
+    description="소분 내역의 수량, 창고 위치, 유통기한을 수정합니다. 수량 수정 시 부모 이력의 잔량이 자동으로 조정됩니다.",
     response={200: MaterialRepackagingOut, 400: dict, 404: dict, 500: dict},
 )
 async def update_material_repackaging(
@@ -194,6 +194,37 @@ async def update_material_repackaging(
     # 공장 소유권 확인
     if repackaging.parent_history.material.factory_id != int(factory_id):
         raise HttpError(403, "해당 공장의 소분 내역이 아닙니다.")
+
+    # 수량 수정 처리
+    if payload.quantity is not None:
+        if payload.quantity <= 0:
+            raise HttpError(400, "수량은 0보다 커야 합니다.")
+        
+        old_quantity = repackaging.quantity
+        new_quantity = payload.quantity
+        quantity_diff = new_quantity - old_quantity
+        
+        # 부모 이력의 현재 잔량 확인
+        parent_history = repackaging.parent_history
+        current_remaining = parent_history.remaining_quantity or 0
+        
+        # 수량이 증가하는 경우: 부모 잔량에서 차감
+        if quantity_diff > 0:
+            if quantity_diff > current_remaining:
+                raise HttpError(
+                    400,
+                    f"수량 증가가 불가능합니다. 부모 이력의 잔량이 부족합니다. (현재 잔량: {current_remaining}, 증가량: {quantity_diff})",
+                )
+            parent_history.remaining_quantity = current_remaining - quantity_diff
+        # 수량이 감소하는 경우: 부모 잔량에 반환
+        elif quantity_diff < 0:
+            parent_history.remaining_quantity = current_remaining + abs(quantity_diff)
+        
+        # 부모 이력 잔량 업데이트
+        await sync_to_async(parent_history.save)(update_fields=["remaining_quantity"])
+        
+        # 소분 내역 수량 업데이트
+        repackaging.quantity = new_quantity
 
     # 창고 위치 수정
     if payload.warehouse_location is not None:

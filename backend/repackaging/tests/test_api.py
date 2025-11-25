@@ -185,6 +185,10 @@ class TestRepackagingAPI(TestCase):
             warehouse_location="A-01",
         )
 
+        # 부모 이력 잔량 설정
+        self.purchase_history.remaining_quantity = 70
+        await sync_to_async(self.purchase_history.save)()
+
         payload = {
             "warehouse_location": "C-02",
             "expiration_date": "2026-01-01",
@@ -201,6 +205,95 @@ class TestRepackagingAPI(TestCase):
         self.assertEqual(data["warehouse_location"], "C-02")
         self.assertEqual(data["expiration_date"], "2026-01-01")
         self.assertEqual(data["quantity"], 30)  # 수량은 변경되지 않음
+
+    async def test_update_repackaging_quantity_increase(self):
+        """소분 내역 수량 증가 테스트"""
+        headers = await self.authenticate()
+
+        # 소분 내역 생성 (수량 30)
+        repackaging = await sync_to_async(MaterialRepackaging.objects.create)(
+            parent_history=self.purchase_history,
+            lot_number="LOT-20241121-01-01",
+            quantity=30,
+        )
+
+        # 부모 이력 잔량 설정 (70)
+        self.purchase_history.remaining_quantity = 70
+        await sync_to_async(self.purchase_history.save)()
+
+        # 수량을 40으로 증가
+        payload = {"quantity": 40}
+
+        response = await self.client.patch(
+            f"/{repackaging.id}?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data["quantity"], 40)
+
+        # 부모 이력 잔량이 10 감소했는지 확인 (70 -> 60)
+        await sync_to_async(self.purchase_history.refresh_from_db)()
+        self.assertEqual(self.purchase_history.remaining_quantity, 60)
+
+    async def test_update_repackaging_quantity_decrease(self):
+        """소분 내역 수량 감소 테스트"""
+        headers = await self.authenticate()
+
+        # 소분 내역 생성 (수량 40)
+        repackaging = await sync_to_async(MaterialRepackaging.objects.create)(
+            parent_history=self.purchase_history,
+            lot_number="LOT-20241121-01-01",
+            quantity=40,
+        )
+
+        # 부모 이력 잔량 설정 (60)
+        self.purchase_history.remaining_quantity = 60
+        await sync_to_async(self.purchase_history.save)()
+
+        # 수량을 30으로 감소
+        payload = {"quantity": 30}
+
+        response = await self.client.patch(
+            f"/{repackaging.id}?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data["quantity"], 30)
+
+        # 부모 이력 잔량이 10 증가했는지 확인 (60 -> 70)
+        await sync_to_async(self.purchase_history.refresh_from_db)()
+        self.assertEqual(self.purchase_history.remaining_quantity, 70)
+
+    async def test_update_repackaging_quantity_insufficient(self):
+        """소분 내역 수량 증가 시 부모 잔량 부족 테스트"""
+        headers = await self.authenticate()
+
+        # 소분 내역 생성 (수량 30)
+        repackaging = await sync_to_async(MaterialRepackaging.objects.create)(
+            parent_history=self.purchase_history,
+            lot_number="LOT-20241121-01-01",
+            quantity=30,
+        )
+
+        # 부모 이력 잔량 설정 (5, 부족한 상태)
+        self.purchase_history.remaining_quantity = 5
+        await sync_to_async(self.purchase_history.save)()
+
+        # 수량을 40으로 증가 시도 (10 증가 필요, 하지만 잔량은 5만 있음)
+        payload = {"quantity": 40}
+
+        response = await self.client.patch(
+            f"/{repackaging.id}?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
+        )
+        self.assertEqual(response.status_code, 400)
 
     async def test_delete_repackaging_success(self):
         """소분 내역 삭제 성공 테스트"""
