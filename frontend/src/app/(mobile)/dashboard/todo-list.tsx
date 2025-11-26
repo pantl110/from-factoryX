@@ -36,7 +36,7 @@ const TodoList = ({ data }: TodoListProps) => {
       {/* </div> */}
       {/* <div className="flex gap-2.5"> */}
       <TodoListItem
-        title="확정 필요 주문"
+        title="진행 필요"
         count={data.stale_confirmed_projects}
         onClick={() => {
           router.push('/alarm?tab=confirmation-required');

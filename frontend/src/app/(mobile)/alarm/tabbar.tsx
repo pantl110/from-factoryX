@@ -15,7 +15,7 @@ const Tabbar = () => {
       // { name: '정산 현황', param: 'payment-due' },
       { name: 'ROP', param: 'rop' },
       { name: '유통기한', param: 'expiry' },
-      { name: '확정 필요 주문', param: 'confirmation-required' },
+      { name: '진행 필요', param: 'confirmation-required' },
     ],
     []
   );

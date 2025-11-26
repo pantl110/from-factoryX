@@ -85,11 +85,11 @@ export const ProductionInfo = ({
             name="quantity"
             control={control}
             rules={{
-              validate: (value) => value > 0 || '생산수량을 입력해주세요',
+              validate: (value) => value > 0 || '생산 수량을 입력해주세요',
             }}
             render={({ field }) => (
               <InfoLabelValue
-                label="생산 지시 수량"
+                label="생산 수량"
                 isEditing={true}
                 value={field.value > 0 ? field.value.toLocaleString() : ''}
                 onChange={(e) => {

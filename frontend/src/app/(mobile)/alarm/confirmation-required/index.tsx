@@ -50,7 +50,7 @@ const ConfirmationRequired = ({
     if (!hasProjects || error) {
       return (
         <div className="px-6 pt-4">
-          <NoHistoryBox text="확정 필요 주문 알림이 없어요." />
+          <NoHistoryBox text="진행 필요 알림이 없어요." />
         </div>
       );
     }
@@ -76,7 +76,7 @@ const ConfirmationRequired = ({
     <div className="flex flex-col gap-1 pt-4">
       <Title
         icon={<CalendarDots />}
-        title="확정 필요 주문"
+        title="진행 필요"
         count={projects.length}
       />
 
