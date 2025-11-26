@@ -2,7 +2,7 @@ import { Input, Tooltip } from '@/ui';
 import { useTooltip } from '@/hooks';
 import { Trash } from '@phosphor-icons/react';
 import { SubstituteMaterialDropdown } from './substitute-material-dropdown';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LotDropdown } from './lot-dropdown';
 
 interface MaterialUsageProps {
@@ -14,6 +14,7 @@ interface MaterialUsageProps {
   usageAmount: number;
   onChangeUsage: (value: number) => void;
   onChangeIsSubstitute?: (isSubstitute: boolean) => void;
+  resetSignal?: number;
 }
 
 export const MaterialUsage = ({
@@ -25,6 +26,7 @@ export const MaterialUsage = ({
   usageAmount,
   onChangeUsage,
   onChangeIsSubstitute,
+  resetSignal,
 }: MaterialUsageProps) => {
   const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -37,6 +39,15 @@ export const MaterialUsage = ({
     name: materialName,
   });
   const [selectedLotNumber, setSelectedLotNumber] = useState('');
+
+  // 전체 삭제 시(상위에서 resetSignal 증가) 첫 행의 표시 값 초기화
+  useEffect(() => {
+    setSelectedMaterial({
+      id: materialId,
+      name: materialName,
+    });
+    setSelectedLotNumber('');
+  }, [resetSignal, materialId, materialName]);
   return (
     <div className="flex gap-2.5 border-b border-lg pb-5">
       <div className="flex-1 relative">

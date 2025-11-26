@@ -19,6 +19,7 @@ export const Material = ({ material, productionQuantity }: MaterialProps) => {
   >({
     0: false,
   });
+  const [resetCounter, setResetCounter] = useState(0);
 
   const handleAddUsage = () => {
     setUsages((prev) => {
@@ -40,6 +41,7 @@ export const Material = ({ material, productionQuantity }: MaterialProps) => {
       const firstId = prev.length ? prev[0] : 0;
       setUsageAmounts({ [firstId]: 0 });
       setUsageIsSubstitute({ [firstId]: false });
+      setResetCounter((prevCounter) => prevCounter + 1);
       return [firstId];
     });
   };
@@ -51,11 +53,13 @@ export const Material = ({ material, productionQuantity }: MaterialProps) => {
       }
       const next = prev.filter((usageId) => usageId !== id);
       setUsageAmounts((prevAmounts) => {
-        const { [id]: _removed, ...rest } = prevAmounts;
+        const rest = { ...prevAmounts };
+        delete rest[id];
         return rest;
       });
       setUsageIsSubstitute((prevFlags) => {
-        const { [id]: _removed, ...rest } = prevFlags;
+        const rest = { ...prevFlags };
+        delete rest[id];
         return rest;
       });
       return next;
@@ -116,6 +120,7 @@ export const Material = ({ material, productionQuantity }: MaterialProps) => {
                   [id]: isSubstitute,
                 }))
               }
+              resetSignal={resetCounter}
             />
           ))}
         </div>

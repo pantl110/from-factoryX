@@ -25,12 +25,12 @@ export const Result = ({
   const lossRateDisplay =
     lossRatio === null ? '-' : `${(lossRatio * 100).toFixed(1)}%`;
 
-  const disableAll = hasSubstitute;
-  const theoryValue = disableAll ? '-' : expectedUsage;
-  const totalValue = disableAll ? '-' : totalUsage;
-  const unitValue = disableAll ? '-' : unit;
-  const lossValue = disableAll ? '-' : lossRateDisplay;
-  const inputBgClass = disableAll ? 'bg-lg' : 'bg-white';
+  const isDisabled = hasSubstitute;
+  const theoryValue = isDisabled ? '-' : expectedUsage;
+  const totalValue = isDisabled ? '-' : totalUsage;
+  const unitValue = isDisabled ? '-' : unit;
+  const lossValue = isDisabled ? '-' : lossRateDisplay;
+  const inputBgClass = isDisabled ? 'bg-lg' : 'bg-white';
 
   return (
     <>
