@@ -19,7 +19,13 @@ const useGetMaterialAvailableLots = (
   );
 
   return useQuery<MaterialAvailableLotListResponseModel>({
-    queryKey: ['material-available-lots', factoryId, materialId, page, pageSize],
+    queryKey: [
+      'material-available-lots',
+      factoryId,
+      materialId,
+      page,
+      pageSize,
+    ],
     enabled: isEnabled,
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 5,
@@ -56,5 +62,3 @@ const useGetMaterialAvailableLots = (
 };
 
 export default useGetMaterialAvailableLots;
-
-

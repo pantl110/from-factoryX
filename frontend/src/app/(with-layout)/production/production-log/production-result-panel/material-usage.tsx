@@ -11,6 +11,9 @@ interface MaterialUsageProps {
   unit: string;
   onDelete?: () => void;
   canDelete?: boolean;
+  usageAmount: number;
+  onChangeUsage: (value: number) => void;
+  onChangeIsSubstitute?: (isSubstitute: boolean) => void;
 }
 
 export const MaterialUsage = ({
@@ -19,6 +22,9 @@ export const MaterialUsage = ({
   unit,
   onDelete,
   canDelete = true,
+  usageAmount,
+  onChangeUsage,
+  onChangeIsSubstitute,
 }: MaterialUsageProps) => {
   const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -51,6 +57,9 @@ export const MaterialUsage = ({
                   id: item.id,
                   name: item.name,
                 });
+                // 자재명이 변경되면 기존 LOT 번호는 초기화
+                setSelectedLotNumber('');
+                onChangeIsSubstitute?.(item.id !== materialId);
                 setIsDropdownOpen(false);
               }}
               onClose={() => setIsDropdownOpen(false)}
@@ -85,6 +94,13 @@ export const MaterialUsage = ({
           label="실제 투입량"
           placeholder="투입량을 입력하세요."
           message="작업자가 실제로 공정에 넣은 양"
+          type="number"
+          value={usageAmount || ''}
+          onChange={(e) => {
+            const raw = e.target.value;
+            const parsed = raw === '' ? 0 : parseFloat(raw);
+            onChangeUsage(Number.isNaN(parsed) ? 0 : parsed);
+          }}
         />
       </div>
       <div className="flex-[0.4]">

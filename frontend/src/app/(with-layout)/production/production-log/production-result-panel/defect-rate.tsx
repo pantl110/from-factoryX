@@ -85,9 +85,9 @@ export const DefectRate = ({
     // 둘 다 입력되어야 계산 결과 표시
     if (!totalProduction || !defectQuantity) return '-';
 
-    if (totalProductionNumeric === 0) return '0';
+    if (totalProductionNumeric === 0) return '0%';
     const rate = (defectQuantityNumeric / totalProductionNumeric) * 100;
-    return rate.toFixed(2);
+    return `${rate.toFixed(2)}%`;
   }, [
     totalProduction,
     defectQuantity,
