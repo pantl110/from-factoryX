@@ -9,6 +9,7 @@ from stock.api_material_history import router as material_history_router
 from user.models import User
 from factory.models import Factory, FactoryClient
 from stock.models import Material, MaterialHistory
+from repackaging.models import MaterialRepackaging
 from tax.models import NationalTaxService, CashReceipt
 from user.models import EmailVerification
 
@@ -530,6 +531,96 @@ class TestMaterialHistoryAPI(TestCase):
 
         data = response.json()["data"]
         self.assertTrue(len(data) >= 1)
+
+    async def test_get_material_history_next_repackaging_lot_number(self):
+        """소분 가능한 이력에 next_repackaging_lot_number가 포함되는지 테스트"""
+        headers = await self.authenticate()
+
+        # 구매 이력 1개 생성 (remaining_quantity > 0)
+        history = await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=self.client_obj,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=50,
+            price=1000,
+            remaining_quantity=50,
+            lot_number="LOT-20250101-01",
+        )
+
+        response = await self.client.get(
+            f"/?material_id={self.material.id}&factory_id={self.factory.id}",
+            headers=headers,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        items = response.json()["data"]
+        target = next((item for item in items if item["id"] == history.id), None)
+        self.assertIsNotNone(target)
+        self.assertIn("next_repackaging_lot_number", target)
+        self.assertTrue(
+            target["next_repackaging_lot_number"].startswith("LOT-20250101-01-")
+        )
+
+    async def test_list_available_lots_success(self):
+        """available-lots API가 history + repackaging 로트를 함께 반환하는지 테스트"""
+        headers = await self.authenticate()
+
+        # 구매 이력: remaining_quantity 50, lot_number 고정
+        history = await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=self.client_obj,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=100,
+            price=1000,
+            remaining_quantity=50,
+            lot_number="LOT-20250101-01",
+        )
+
+        # 소분 이력: quantity 20, 같은 material
+        repack = await sync_to_async(MaterialRepackaging.objects.create)(
+            parent_history=history,
+            lot_number="LOT-20250101-01-01",
+            quantity=20,
+        )
+
+        response = await self.client.get(
+            f"/available-lots?material_id={self.material.id}&factory_id={self.factory.id}",
+            headers=headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        items = response.json()
+
+        # history, repack 각 1개씩 존재
+        self.assertEqual(len(items), 2)
+        history_item = next(i for i in items if i["source"] == "history")
+        repack_item = next(i for i in items if i["source"] == "repackaging")
+
+        self.assertEqual(history_item["id"], history.id)
+        self.assertEqual(history_item["lot_number"], "LOT-20250101-01")
+        self.assertEqual(history_item["available_quantity"], 50)
+
+        self.assertEqual(repack_item["id"], repack.id)
+        self.assertEqual(repack_item["lot_number"], "LOT-20250101-01-01")
+        self.assertEqual(repack_item["available_quantity"], 20)
+
+    async def test_list_available_lots_missing_factory_id(self):
+        """available-lots API factory_id 누락 테스트"""
+        headers = await self.authenticate()
+
+        response = await self.client.get(
+            f"/available-lots?material_id={self.material.id}", headers=headers
+        )
+        self.assertEqual(response.status_code, 400)
+
+    async def test_list_available_lots_material_not_found(self):
+        """available-lots API 원자재 미존재 테스트"""
+        headers = await self.authenticate()
+
+        response = await self.client.get(
+            f"/available-lots?material_id=99999&factory_id={self.factory.id}",
+            headers=headers,
+        )
+        self.assertEqual(response.status_code, 404)
 
     async def test_get_material_history_by_date_range_success(self):
         """원자재 히스토리 조회 성공 테스트 (날짜 범위)"""

@@ -219,3 +219,12 @@ class MaterialHistoryItemOut(Schema):
     next_repackaging_lot_number: Optional[str] = Field(
         None, description="소분 시 생성될 다음 로트 번호 (구매 타입이고 잔량이 있을 때만)"
     )
+
+
+class MaterialAvailableLotOut(Schema):
+    source: str = Field(..., description="로트 출처: 'history' 또는 'repackaging'")
+    id: int = Field(..., description="source에 따른 PK (MaterialHistory.id 또는 MaterialRepackaging.id)")
+    lot_number: str = Field(..., description="로트 번호")
+    available_quantity: int = Field(..., description="사용 가능한 수량")
+    warehouse_location: Optional[str] = Field(None, description="창고 위치")
+    expiration_date: Optional[str] = Field(None, description="유통기한 (YYYY-MM-DD)")
