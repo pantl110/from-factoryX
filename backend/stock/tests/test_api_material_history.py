@@ -532,37 +532,8 @@ class TestMaterialHistoryAPI(TestCase):
         data = response.json()["data"]
         self.assertTrue(len(data) >= 1)
 
-    async def test_get_material_history_next_repackaging_lot_number(self):
-        """소분 가능한 이력에 next_repackaging_lot_number가 포함되는지 테스트"""
-        headers = await self.authenticate()
-
-        # 구매 이력 1개 생성 (remaining_quantity > 0)
-        history = await sync_to_async(MaterialHistory.objects.create)(
-            material=self.material,
-            client=self.client_obj,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=50,
-            price=1000,
-            remaining_quantity=50,
-            lot_number="LOT-20250101-01",
-        )
-
-        response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}",
-            headers=headers,
-        )
-
-        self.assertEqual(response.status_code, 200)
-        items = response.json()["data"]
-        target = next((item for item in items if item["id"] == history.id), None)
-        self.assertIsNotNone(target)
-        self.assertIn("next_repackaging_lot_number", target)
-        self.assertTrue(
-            target["next_repackaging_lot_number"].startswith("LOT-20250101-01-")
-        )
-
     async def test_list_available_lots_success(self):
-        """available-lots API가 history + repackaging 로트를 함께 반환하는지 테스트"""
+        """available-lots가 history + repackaging 로트와 next_repackaging_lot_number를 함께 반환하는지 테스트"""
         headers = await self.authenticate()
 
         # 구매 이력: remaining_quantity 50, lot_number 고정

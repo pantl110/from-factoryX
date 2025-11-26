@@ -359,9 +359,10 @@ async def get_material_history(
 @router.get(
     "/available-lots",
     summary="[C] 원자재별 사용 가능한 로트 목록 조회",
-    description="특정 원자재에 대해 MaterialHistory와 소분(MaterialRepackaging)에서 잔여 수량이 0이 아닌 로트 번호 목록을 조회합니다.",
+    description="특정 원자재에 대해 MaterialHistory와 소분(MaterialRepackaging)에서 잔여 수량이 0이 아닌 로트 번호 목록을 페이지네이션하여 조회합니다.",
     response=List[MaterialAvailableLotOut],
 )
+@paginate
 async def list_available_lots(
     request,
     material_id: int = Query(..., description="원자재 ID"),
