@@ -144,18 +144,8 @@ export const DefectRate = ({
           />
         </div>
         <div className="flex gap-2">
-          <Input
-            label="양품 수량"
-            type="text"
-            value={goodQuantity}
-            disabledReadOnly
-          />
-          <Input
-            label="불량률(%)"
-            type="text"
-            value={defectRate}
-            disabledReadOnly
-          />
+          <Input label="양품 수량" type="text" value={goodQuantity} disabled />
+          <Input label="불량률(%)" type="text" value={defectRate} disabled />
         </div>
       </div>
     </div>

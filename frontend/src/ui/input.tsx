@@ -1,4 +1,8 @@
-import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react/dist/ssr';
+import {
+  CaretDown,
+  EyeIcon,
+  EyeSlashIcon,
+} from '@phosphor-icons/react/dist/ssr';
 import { useState, forwardRef } from 'react';
 
 interface InputProps {
@@ -12,6 +16,7 @@ interface InputProps {
   isShowPasswordToggle?: boolean;
   showError?: boolean;
   errorMessage?: string;
+  message?: string;
   inputRef?: React.RefObject<HTMLInputElement>;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onFocus?: (() => void) | ((e: React.FocusEvent<HTMLInputElement>) => void);
@@ -20,6 +25,9 @@ interface InputProps {
   disabledSetting?: boolean;
   disabledReadOnly?: boolean;
   step?: string;
+  className?: string;
+  button?: boolean;
+  onClickButton?: () => void;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -35,6 +43,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       isShowPasswordToggle = false,
       showError = false,
       errorMessage,
+      message,
       inputRef,
       onKeyDown,
       onFocus,
@@ -43,6 +52,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       disabledSetting = false,
       disabledReadOnly = false,
       step,
+      className,
+      button = false,
+      onClickButton,
     },
     ref
   ) => {
@@ -62,7 +74,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       }
 
       if (disabled) {
-        className += ' bg-lg text-dg cursor-not-allowed border-lg';
+        className += ' bg-bg text-dg border-lg';
       } else if (disabledSetting || disabledReadOnly) {
         className += disabledSetting
           ? ' text-sv border-lg '
@@ -111,46 +123,60 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           </div>
         )}
 
-        <div className="relative">
-          <input
-            ref={ref || inputRef}
-            name={name}
-            type={
-              isShowPasswordToggle
-                ? isShowPassword
-                  ? 'text'
-                  : 'password'
-                : type
-            }
-            value={value}
-            onChange={handleChange}
-            onKeyDown={onKeyDown}
-            onFocus={onFocus}
-            onBlur={handleBlur}
-            placeholder={placeholder}
-            disabled={disabled || disabledSetting || disabledReadOnly}
-            className={getInputClassName()}
-            onWheel={type === 'number' ? (e) => e.preventDefault() : undefined}
-            pattern={type === 'number' ? '[0-9.]*' : undefined}
-            step={type === 'number' ? step || '0.1' : undefined}
-          />
+        {button ? (
+          <button
+            type="button"
+            onClick={onClickButton}
+            className="w-full h-12 min-h-9 rounded px-3 Re_Body-1 border border-lg flex items-center justify-between"
+          >
+            <span className="Re_Body-1 text-dg">{value}</span>
+            <CaretDown size={20} className="text-sv" />
+          </button>
+        ) : (
+          <div className="relative">
+            <input
+              ref={ref || inputRef}
+              name={name}
+              type={
+                isShowPasswordToggle
+                  ? isShowPassword
+                    ? 'text'
+                    : 'password'
+                  : type
+              }
+              value={value}
+              onChange={handleChange}
+              onKeyDown={onKeyDown}
+              onFocus={onFocus}
+              onBlur={handleBlur}
+              placeholder={placeholder}
+              disabled={disabled || disabledSetting || disabledReadOnly}
+              className={`${getInputClassName()} ${className ?? ''}`}
+              onWheel={
+                type === 'number' ? (e) => e.preventDefault() : undefined
+              }
+              pattern={type === 'number' ? '[0-9.]*' : undefined}
+              step={type === 'number' ? step || '0.1' : undefined}
+            />
 
-          {isShowPasswordToggle && (
-            <button
-              type="button"
-              onClick={togglePasswordVisibility}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-dg hover:text-primary transition-colors"
-            >
-              {isShowPassword ? (
-                <EyeSlashIcon size={20} className="text-sv" />
-              ) : (
-                <EyeIcon size={20} className="text-sv" />
-              )}
-            </button>
-          )}
-        </div>
+            {isShowPasswordToggle && (
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-dg hover:text-primary transition-colors"
+              >
+                {isShowPassword ? (
+                  <EyeSlashIcon size={20} className="text-sv" />
+                ) : (
+                  <EyeIcon size={20} className="text-sv" />
+                )}
+              </button>
+            )}
+          </div>
+        )}
 
         {errorMessage && <p className="text-red Re_Body-1">{errorMessage}</p>}
+        {message && <p className="text-sv Re_Body-1">{message}</p>}
       </div>
     );
   }

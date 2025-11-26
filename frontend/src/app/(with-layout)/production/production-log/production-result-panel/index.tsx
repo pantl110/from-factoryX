@@ -2,7 +2,7 @@ import Panel from '@/ui/panel';
 import MiniBtn from '@/ui/mini-btn';
 import { ProductionInfo } from './production-info';
 import { DefectRate } from './defect-rate';
-import { ScrapRate } from './scrap-rate';
+import { LossRate } from './loss-rate';
 import { ProjectPlanModel } from '@/types/data-model';
 import { useState, useCallback } from 'react';
 import {
@@ -105,7 +105,7 @@ export const ProductionResultPanel = ({
     // 수량 검사
     if (currentFormData.quantity <= 0) {
       setToastTexts({
-        text: '생산 지시 수량을 입력해주세요.',
+        text: '생산 수량을 입력해주세요.',
         subtext: '',
       });
       setCurrentFormData({
@@ -185,8 +185,11 @@ export const ProductionResultPanel = ({
             }
           />
 
-          {/* 스크랩율 정보 */}
-          <ScrapRate />
+          {/* 자재 소모/로스율 정보 */}
+          <LossRate
+            productId={plan.quotation_product.product.id}
+            productionQuantity={currentFormData.quantity}
+          />
         </div>
       </Panel>
       {isToastOpen && (

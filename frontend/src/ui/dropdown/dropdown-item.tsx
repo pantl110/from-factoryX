@@ -38,14 +38,14 @@ const DropdownItem = ({
           {icon}
         </div>
       )}
+      {children}
       {text && (
         <h4
-          className={`${search ? 'Me_Body-1' : mobile ? 'm-Heading-5c' : 'Heading-4'} ${textColor} transition-colors duration-200 ease-in-out ${search ? 'text-left pl-2' : mobile ? 'text-left pl-4' : 'pl-4'} w-full`}
+          className={`${search ? 'Me_Body-1' : mobile ? 'm-Heading-5c' : 'Heading-4'} ${textColor} transition-colors duration-200 ease-in-out ${search ? 'text-left px-2' : mobile ? 'text-left px-4' : 'px-4'} w-full`}
         >
           {text}
         </h4>
       )}
-      {children}
     </div>
   );
 };

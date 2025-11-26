@@ -536,6 +536,20 @@ export interface MaterialHistoryListResponseModel extends PaginationModel {
   data: MaterialHistoryResponseModel[];
 }
 
+// 특정 원자재의 사용 가능한 LOT(구매 이력 + 소분 이력) 목록
+export interface MaterialAvailableLotResponseModel {
+  source: 'history' | 'repackaging';
+  id: number;
+  lot_number: string;
+  available_quantity: number;
+  warehouse_location: string | null;
+  expiration_date: string | null;
+}
+
+export interface MaterialAvailableLotListResponseModel extends PaginationModel {
+  data: MaterialAvailableLotResponseModel[];
+}
+
 // 원자재 소분 (Repackaging) API
 export interface CreateMaterialRepackagingModel {
   parent_history_id: number; // 부모 구매 이력 ID
