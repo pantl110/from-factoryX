@@ -4,7 +4,7 @@ import { ProductionInfo } from './production-info';
 import { DefectRate } from './defect-rate';
 import { LossRate } from './loss-rate';
 import { ProjectPlanModel } from '@/types/data-model';
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useMemo } from 'react';
 import {
   useCreateOrUpdateProjectPlan,
   checkDateValidity,
@@ -12,6 +12,7 @@ import {
 } from '@/hooks';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
+import axios from 'axios';
 
 interface ProductionResultPanelProps {
   onClose: () => void;
@@ -50,6 +51,9 @@ export const ProductionResultPanel = ({
     plan.defective_quantity ?? 0
   );
 
+  // isDirty 상태 관리 (ProductionInfo의 react-hook-form isDirty + DefectRate 변경사항)
+  const [isProductionInfoDirty, setIsProductionInfoDirty] = useState(false);
+
   const materialUsageSaveRef = useRef<(() => Promise<void>) | null>(null);
 
   const handleFormChange = useCallback(
@@ -73,6 +77,18 @@ export const ProductionResultPanel = ({
   const handleDefectQuantityChange = useCallback((defectQuantity: number) => {
     setDefectiveQuantity(defectQuantity);
   }, []);
+
+  // ProductionInfo의 react-hook-form isDirty 상태 변경 핸들러
+  const handleProductionInfoDirtyChange = useCallback((dirty: boolean) => {
+    setIsProductionInfoDirty(dirty);
+  }, []);
+
+  // 전체 isDirty 상태 계산 (ProductionInfo의 react-hook-form isDirty 또는 DefectRate 변경 시)
+  const isDirty = useMemo(() => {
+    const initialDefectQuantity = plan.defective_quantity ?? 0;
+    const isDefectRateDirty = defectiveQuantity !== initialDefectQuantity;
+    return isProductionInfoDirty || isDefectRateDirty;
+  }, [isProductionInfoDirty, defectiveQuantity, plan.defective_quantity]);
 
   const handleTotalProductionQuantityChange = useCallback(
     (quantity: number) => {
@@ -135,8 +151,50 @@ export const ProductionResultPanel = ({
       if (result.success) {
         // 생산 계획 저장 성공 시 자재 사용 정보도 함께 저장
         if (materialUsageSaveRef.current) {
-          await materialUsageSaveRef.current();
+          try {
+            await materialUsageSaveRef.current();
+          } catch (error: unknown) {
+            // 에러 메시지 파싱
+            const errorMessage = axios.isAxiosError(error)
+              ? error.response?.data?.detail || error.message || ''
+              : error instanceof Error
+                ? error.message
+                : String(error);
+
+            // material_history_id 또는 material_repackaging_id 관련 오류
+            if (
+              errorMessage.includes('material_history_id') ||
+              errorMessage.includes('material_repackaging_id')
+            ) {
+              setToastTexts({
+                text: 'LOT 번호를 선택해주세요.',
+                subtext: '',
+              });
+              showToast();
+              return;
+            }
+
+            // 사용량 0 관련 오류
+            if (errorMessage.includes('사용량은 0보다 커야 합니다.')) {
+              setToastTexts({
+                text: '실제 투입량을 입력해 주세요.',
+                subtext: '',
+              });
+              showToast();
+              return;
+            }
+
+            // 기타 오류
+            setToastTexts({
+              text: '자재 사용 정보 저장에 실패했습니다.',
+              subtext: errorMessage,
+            });
+            showToast();
+            return;
+          }
         }
+        // 저장 성공 후 isDirty 상태 초기화
+        setIsProductionInfoDirty(false);
         onSaveSuccess?.();
         onClose();
       } else {
@@ -146,10 +204,17 @@ export const ProductionResultPanel = ({
         });
         showToast();
       }
-    } catch {
+    } catch (error: unknown) {
+      // 생산 계획 저장 오류
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.detail || error.message || ''
+        : error instanceof Error
+          ? error.message
+          : String(error);
+
       setToastTexts({
         text: '저장 중 오류가 발생했습니다.',
-        subtext: '',
+        subtext: errorMessage,
       });
       showToast();
     }
@@ -169,7 +234,9 @@ export const ProductionResultPanel = ({
         title="생산 결과 입력"
         onClose={onClose}
         headerButton={
-          <MiniBtn text="저장" variant="primary" onClick={handleSave} />
+          isDirty ? (
+            <MiniBtn text="저장" variant="secondary" onClick={handleSave} />
+          ) : null
         }
       >
         <div className="flex flex-col gap-10">
@@ -177,7 +244,7 @@ export const ProductionResultPanel = ({
           <ProductionInfo
             plan={plan}
             onFormChange={handleFormChange}
-            values={currentFormData}
+            onIsDirtyChange={handleProductionInfoDirtyChange}
           />
 
           {/* 불량률 정보 */}

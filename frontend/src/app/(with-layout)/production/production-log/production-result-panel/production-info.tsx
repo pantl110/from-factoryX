@@ -11,15 +11,15 @@ interface ProductionInfoProps {
     start_date: string;
     end_date: string;
   }) => void;
-  values?: { quantity: number; start_date: string; end_date: string };
+  onIsDirtyChange?: (isDirty: boolean) => void;
 }
 
 export const ProductionInfo = ({
   plan,
   onFormChange,
-  values,
+  onIsDirtyChange,
 }: ProductionInfoProps) => {
-  const { control, watch, reset } = useForm({
+  const { control, watch, formState } = useForm({
     defaultValues: {
       quantity: plan.quantity || 0,
       start_date: plan.start_date || '',
@@ -27,16 +27,6 @@ export const ProductionInfo = ({
     },
     mode: 'onChange',
   });
-
-  useEffect(() => {
-    if (values) {
-      reset({
-        quantity: values.quantity ?? plan.quantity ?? 0,
-        start_date: values.start_date ?? plan.start_date ?? '',
-        end_date: values.end_date ?? plan.end_date ?? '',
-      });
-    }
-  }, [values, plan.quantity, plan.start_date, plan.end_date, reset]);
 
   const watchedQuantity = watch('quantity');
   const watchedStartDate = watch('start_date');
@@ -50,6 +40,11 @@ export const ProductionInfo = ({
       end_date: watchedEndDate,
     });
   }, [watchedQuantity, watchedStartDate, watchedEndDate, onFormChange]);
+
+  // isDirty 상태 변경 시 부모 컴포넌트에 알림
+  useEffect(() => {
+    onIsDirtyChange?.(formState.isDirty);
+  }, [formState.isDirty, onIsDirtyChange]);
 
   return (
     <div className="flex flex-col gap-3">
