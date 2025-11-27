@@ -111,11 +111,6 @@ export const ProductionResultPanel = ({
         text: '유효한 생산 시작일자나 생산 완료일자를 입력해 주세요.',
         subtext: 'YYYY-MM-DD 00:00 형식으로 입력해주세요.',
       });
-      setCurrentFormData({
-        quantity: plan.quantity ?? plan.quotation_product.quantity ?? 0,
-        start_date: plan.start_date ?? '',
-        end_date: plan.end_date ?? '',
-      });
       showToast();
       return;
     }
@@ -125,11 +120,6 @@ export const ProductionResultPanel = ({
       setToastTexts({
         text: '생산 수량을 입력해주세요.',
         subtext: '',
-      });
-      setCurrentFormData({
-        quantity: plan.quantity ?? plan.quotation_product.quantity ?? 0,
-        start_date: plan.start_date ?? '',
-        end_date: plan.end_date ?? '',
       });
       showToast();
       return;
