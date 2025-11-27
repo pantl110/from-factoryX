@@ -236,50 +236,38 @@ class MaterialUsageAPITestCase(TestCase):
             parent_history=self.material_history, lot_number="LOT-2024-001-02", quantity=20
         )
 
-        # repackaging1을 사용하는 usage 생성
         usage1 = MaterialUsage.objects.create(
             plan=self.plan,
             material=self.material,
-            original_material=self.material,
             usage_amount=Decimal("10.00"),
             material_repackaging=repackaging1,
         )
-
-        # repackaging2를 사용하는 usage 생성
         usage2 = MaterialUsage.objects.create(
             plan=self.plan,
             material=self.material,
-            original_material=self.material,
             usage_amount=Decimal("15.00"),
             material_repackaging=repackaging2,
         )
 
-        # material_history를 사용하는 usage 생성
-        usage3 = MaterialUsage.objects.create(
-            plan=self.plan,
-            material=self.material,
-            original_material=self.material,
-            usage_amount=Decimal("5.00"),
-            material_history=self.material_history,
-        )
-
-        # repackaging1로 필터링
-        url = f"/v2/material-usage?factory_id={self.factory.id}&material_repackaging_id={repackaging1.id}"
+        # repackaging1로 필터링 (페이지네이션 엔드포인트 사용)
+        url = f"/v2/material-usage/paginated?factory_id={self.factory.id}&material_repackaging_id={repackaging1.id}"
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["id"], usage1.id)
-        self.assertEqual(data[0]["material_repackaging_id"], repackaging1.id)
+        self.assertEqual(data["count"], 1)
+        self.assertEqual(len(data["data"]), 1)
+        self.assertEqual(data["data"][0]["id"], usage1.id)
+        self.assertEqual(data["data"][0]["material_repackaging_id"], repackaging1.id)
 
-        # repackaging2로 필터링
-        url = f"/v2/material-usage?factory_id={self.factory.id}&material_repackaging_id={repackaging2.id}"
+        # repackaging2로 필터링 (페이지네이션 엔드포인트 사용)
+        url = f"/v2/material-usage/paginated?factory_id={self.factory.id}&material_repackaging_id={repackaging2.id}"
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["id"], usage2.id)
-        self.assertEqual(data[0]["material_repackaging_id"], repackaging2.id)
+        self.assertEqual(data["count"], 1)
+        self.assertEqual(len(data["data"]), 1)
+        self.assertEqual(data["data"][0]["id"], usage2.id)
+        self.assertEqual(data["data"][0]["material_repackaging_id"], repackaging2.id)
 
     def test_create_material_usages_success(self):
         """자재 사용 내역 생성 성공"""
