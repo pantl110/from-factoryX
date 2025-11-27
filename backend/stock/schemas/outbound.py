@@ -35,7 +35,7 @@ class ProductListOut(Schema):
     code: str
     unit: str
     spec: str
-    current_stock: Optional[int]
+    current_stock: Optional[Decimal]
 
 
 # (GET) List Product
@@ -46,7 +46,7 @@ class ProductOut(Schema):
     code: str
     unit: str
     spec: str
-    current_stock: Optional[int]
+    current_stock: Optional[Decimal]
     average_production_time: Optional[int]
     note: Optional[str]
 
@@ -115,7 +115,7 @@ class MaterialSummaryOut(Schema):
     code: str
     spec: str
     unit: str
-    current_stock: Optional[int]
+    current_stock: Optional[Decimal]
     status: Optional[str] = Field(None, description="자재 상태: '과재고', '충분', '위험', '부족', None")
 
 
@@ -180,13 +180,13 @@ class MaterialHistoryDetailOut(Schema):
     type: str
     material_id: int
     client_id: int
-    quantity: int
+    quantity: Decimal
     price: Optional[int]
     lot_number: Optional[str] = None
     warehouse_location: Optional[str] = None
     expiration_date: Optional[str] = None
-    total_stock: int
-    remaining_quantity: Optional[int] = None
+    total_stock: Decimal
+    remaining_quantity: Optional[Decimal] = None
 
 
 # (POST) Create Material History
@@ -205,17 +205,17 @@ class MaterialHistoryItemOut(Schema):
     material_unit: str
     client_id: Optional[int]
     client_name: Optional[str]
-    quantity: int
+    quantity: Decimal
     unit_price: Optional[int]
-    amount: int
+    amount: Decimal
     date: Optional[str]
-    total_stock: int
+    total_stock: Decimal
     cash_receipt: Optional[int]
     national_tax_service_id: Optional[int]
     lot_number: Optional[str] = None
     warehouse_location: Optional[str] = None
     expiration_date: Optional[str] = None
-    remaining_quantity: Optional[int] = None
+    remaining_quantity: Optional[Decimal] = None
     next_repackaging_lot_number: Optional[str] = Field(
         None, description="소분 시 생성될 다음 로트 번호 (구매 타입이고 잔량이 있을 때만)"
     )
@@ -225,7 +225,7 @@ class MaterialAvailableLotOut(Schema):
     source: str = Field(..., description="로트 출처: 'history' 또는 'repackaging'")
     id: int = Field(..., description="source에 따른 PK (MaterialHistory.id 또는 MaterialRepackaging.id)")
     lot_number: str = Field(..., description="로트 번호")
-    available_quantity: int = Field(..., description="사용 가능한 수량")
+    available_quantity: Decimal = Field(..., description="사용 가능한 수량")
     warehouse_location: Optional[str] = Field(None, description="창고 위치")
     expiration_date: Optional[str] = Field(None, description="유통기한 (YYYY-MM-DD)")
 
@@ -238,6 +238,7 @@ class MaterialAvailableLotOut(Schema):
 class MaterialUsageOut(Schema):
     id: int
     plan_id: int
+    plan_end_date: Optional[datetime.datetime] = None
     original_material_id: Optional[int] = None
     original_material_name: Optional[str] = None
     material_id: int

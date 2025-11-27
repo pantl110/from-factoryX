@@ -14,7 +14,9 @@ class MaterialRepackaging(BaseModel):
         max_length=100,
         help_text="소분된 LOT 번호 (부모 로트번호-01, -02 형식으로 자동 생성)",
     )
-    quantity = models.IntegerField(
+    quantity = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
         help_text="현재 잔량",
     )
     warehouse_location = models.CharField(

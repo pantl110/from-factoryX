@@ -1,20 +1,21 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryEquipment, FactoryMember
-from project.models import Project, ProjectPlan, ProjectPlanMaterialUsage
+from project.models import Project, ProjectPlan
 from document.models import Quotation, QuotationProduct
-from stock.models import Product, Material, MaterialHistory
+from stock.models import Product, Material, MaterialHistory, MaterialUsage
 import json
 import jwt
 from django.conf import settings
 from datetime import timedelta
 from django.utils import timezone
 from decimal import Decimal
+from typing import Optional
 
 User = get_user_model()
 
 
-class ProjectPlanMaterialUsageAPITestCase(TestCase):
+class MaterialUsageAPITestCase(TestCase):
     """프로젝트 플랜 자재 사용 내역 API 테스트"""
 
     def setUp(self):
@@ -97,9 +98,28 @@ class ProjectPlanMaterialUsageAPITestCase(TestCase):
             **self.headers,
         )
 
+    def _create_usage_api(
+        self,
+        usage_amount: str,
+        material_history_id: Optional[int] = None,
+        material_repackaging_id: Optional[int] = None,
+    ):
+        payload = [
+            {
+                "plan_id": self.plan.id,
+                "material_id": self.material.id,
+                "usage_amount": usage_amount,
+                "material_history_id": material_history_id or self.material_history.id,
+                "material_repackaging_id": material_repackaging_id,
+            }
+        ]
+        response = self._post(payload)
+        self.assertEqual(response.status_code, 201)
+        return response.json()[0]
+
     def test_list_success(self):
         """자재 사용 내역 조회 성공"""
-        usage = ProjectPlanMaterialUsage.objects.create(
+        usage = MaterialUsage.objects.create(
             plan=self.plan,
             material=self.material,
             original_material=self.material,
@@ -115,7 +135,7 @@ class ProjectPlanMaterialUsageAPITestCase(TestCase):
 
     def test_list_multiple(self):
         """여러 자재 사용 내역 조회"""
-        ProjectPlanMaterialUsage.objects.create(
+        MaterialUsage.objects.create(
             plan=self.plan,
             material=self.material,
             original_material=self.material,
@@ -135,7 +155,7 @@ class ProjectPlanMaterialUsageAPITestCase(TestCase):
             total_stock=200,
             remaining_quantity=150,
         )
-        usage2 = ProjectPlanMaterialUsage.objects.create(
+        usage2 = MaterialUsage.objects.create(
             plan=self.plan,
             material=material2,
             original_material=material2,
@@ -190,7 +210,7 @@ class ProjectPlanMaterialUsageAPITestCase(TestCase):
         repackaging = MaterialRepackaging.objects.create(
             parent_history=self.material_history, lot_number="LOT-2024-001-01", quantity=30
         )
-        ProjectPlanMaterialUsage.objects.create(
+        MaterialUsage.objects.create(
             plan=self.plan,
             material=self.material,
             original_material=self.material,
@@ -211,7 +231,7 @@ class ProjectPlanMaterialUsageAPITestCase(TestCase):
             {
                 "plan_id": self.plan.id,
                 "material_id": self.material.id,
-                "usage_amount": "100.50",
+                "usage_amount": "10.50",
                 "material_history_id": self.material_history.id,
             }
         ]
@@ -222,44 +242,109 @@ class ProjectPlanMaterialUsageAPITestCase(TestCase):
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["plan_id"], self.plan.id)
         self.assertEqual(data[0]["material_id"], self.material.id)
-        self.assertEqual(str(data[0]["usage_amount"]), "100.50")
+        self.assertEqual(str(data[0]["usage_amount"]), "10.50")
+
+        self.material_history.refresh_from_db()
+        self.assertEqual(self.material_history.remaining_quantity, Decimal("39.50"))
+
+    def test_create_usage_exceeds_lot(self):
+        """LOT 잔량 초과 시 생성 실패"""
+        payload = [
+            {
+                "plan_id": self.plan.id,
+                "material_id": self.material.id,
+                "usage_amount": "999.00",
+                "material_history_id": self.material_history.id,
+            }
+        ]
+
+        response = self._post(payload)
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_usage_adjusts_lot_quantity(self):
+        """수정 시 기존 LOT 복원 후 차감"""
+        usage = self._create_usage_api("10.00")
+        self.material_history.refresh_from_db()
+        self.assertEqual(self.material_history.remaining_quantity, Decimal("40.00"))
+
+        payload = [{"id": usage["id"], "usage_amount": "15.00"}]
+        response = self._post(payload)
+        self.assertEqual(response.status_code, 200)
+
+        self.material_history.refresh_from_db()
+        self.assertEqual(self.material_history.remaining_quantity, Decimal("35.00"))
+
+    def test_update_usage_switch_lot(self):
+        """다른 LOT으로 변경 시 잔량 이동"""
+        other_history = MaterialHistory.objects.create(
+            material=self.material,
+            client=self.client_company,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=50,
+            price=1200,
+            lot_number="LOT-2024-003",
+            total_stock=150,
+            remaining_quantity=Decimal("25.00"),
+        )
+        usage = self._create_usage_api("10.00")
+        payload = [
+            {
+                "id": usage["id"],
+                "material_history_id": other_history.id,
+                "usage_amount": "5.00",
+            }
+        ]
+        response = self._post(payload)
+        self.assertEqual(response.status_code, 200)
+
+        self.material_history.refresh_from_db()
+        other_history.refresh_from_db()
+        self.assertEqual(self.material_history.remaining_quantity, Decimal("50.00"))
+        self.assertEqual(other_history.remaining_quantity, Decimal("20.00"))
 
     def test_update_material_usage_success(self):
         """자재 사용 내역 수정 성공"""
-        usage = ProjectPlanMaterialUsage.objects.create(
-            plan=self.plan,
-            material=self.material,
-            original_material=self.material,
-            usage_amount=Decimal("50.00"),
-            material_history=self.material_history,
-        )
+        usage = self._create_usage_api("25.00")
 
         payload = [
             {
-                "id": usage.id,
-                "usage_amount": "75.25",
+                "id": usage["id"],
+                "usage_amount": "40.00",
             }
         ]
 
         response = self._post(payload)
         self.assertEqual(response.status_code, 200)
-        usage.refresh_from_db()
-        self.assertEqual(usage.usage_amount, Decimal("75.25"))
+        db_usage = MaterialUsage.objects.get(id=usage["id"])
+        self.assertEqual(db_usage.usage_amount, Decimal("40.00"))
+
+    def test_update_material_usage_insufficient_same_lot(self):
+        """같은 LOT에서 잔량 부족 시 오류"""
+        usage = self._create_usage_api("50.00")
+
+        payload = [
+            {
+                "id": usage["id"],
+                "usage_amount": "75.25",
+            }
+        ]
+
+        response = self._post(payload)
+        self.assertEqual(response.status_code, 400)
+        detail = response.json().get("detail")
+        self.assertIn("LOT", detail)
+        self.assertIn(self.material.name, detail)
 
     def test_delete_material_usage_success(self):
         """자재 사용 내역 삭제 성공"""
-        usage = ProjectPlanMaterialUsage.objects.create(
-            plan=self.plan,
-            material=self.material,
-            original_material=self.material,
-            usage_amount=Decimal("10.00"),
-            material_history=self.material_history,
-        )
+        usage = self._create_usage_api("10.00")
 
-        url = f"/v2/material-usage/{usage.id}?factory_id={self.factory.id}"
+        url = f"/v2/material-usage/{usage['id']}?factory_id={self.factory.id}"
         response = self.client.delete(url, **self.headers)
         self.assertEqual(response.status_code, 204)
         self.assertFalse(
-            ProjectPlanMaterialUsage.objects.filter(id=usage.id).exists()
+            MaterialUsage.objects.filter(id=usage["id"]).exists()
         )
+        self.material_history.refresh_from_db()
+        self.assertEqual(self.material_history.remaining_quantity, Decimal("50.00"))
 

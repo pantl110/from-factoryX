@@ -118,10 +118,10 @@ class SingleMaterialCreateIn(Schema):
     code: str = Field(..., description="원자재 코드")
     spec: str = Field(..., description="원자재 사양")
     unit: Optional[str] = Field(None, description="원자재 단위")
-    current_stock: Optional[int] = Field(None, description="현재 재고")
-    standard_stock: Optional[int] = Field(None, description="안전 재고")
-    rop: Optional[int] = Field(None, description="재주문점")
-    max_stock: Optional[int] = Field(None, description="적정 재고(최대 재고)")
+    current_stock: Optional[Decimal] = Field(None, description="현재 재고")
+    standard_stock: Optional[Decimal] = Field(None, description="안전 재고")
+    rop: Optional[Decimal] = Field(None, description="재주문점")
+    max_stock: Optional[Decimal] = Field(None, description="적정 재고(최대 재고)")
     expiry_days: Optional[int] = Field(None, description="유통기한 (일)")
     memo: Optional[str] = Field(None, description="메모")
 
@@ -138,10 +138,10 @@ class MaterialUpdateIn(Schema):
     code: Optional[str] = None
     spec: Optional[str] = None
     unit: Optional[str] = None
-    current_stock: Optional[int] = None
-    standard_stock: Optional[int] = None
-    rop: Optional[int] = None
-    max_stock: Optional[int] = None
+    current_stock: Optional[Decimal] = None
+    standard_stock: Optional[Decimal] = None
+    rop: Optional[Decimal] = None
+    max_stock: Optional[Decimal] = None
     expiry_days: Optional[int] = None
     memo: Optional[str] = None
 
@@ -174,7 +174,7 @@ class MaterialItemIn(Schema):
     code: str
     spec: str
     unit: str
-    quantity: int
+    quantity: Decimal
     price: int
     warehouse_location: Optional[str] = Field(
         default=None, description="창고 위치"
@@ -198,7 +198,7 @@ class FactoryClientCreateIn(Schema):
 class SingleMaterialHistoryCreateIn(Schema):
     material_id: int
     type: str
-    quantity: int
+    quantity: Decimal
     price: Optional[int]
     client_id: int
     warehouse_location: Optional[str] = Field(

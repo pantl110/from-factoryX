@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from common.models import BaseModel
 from factory.models import Factory, FactoryClient
@@ -25,22 +26,30 @@ class Material(BaseModel):
         max_length=100,
         help_text="규격",
     )
-    current_stock = models.IntegerField(
-        default=0,
+    current_stock = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
         null=True,
         help_text="현재 재고",
     )
-    standard_stock = models.IntegerField(
+    standard_stock = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
         null=True,
         blank=True,
         help_text="안전 재고",
     )
-    rop = models.IntegerField(
+    rop = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
         null=True,
         blank=True,
         help_text="재주문점 (Reorder Point)",
     )
-    max_stock = models.IntegerField(
+    max_stock = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
         null=True,
         blank=True,
         help_text="적정 재고(최대 재고)",
@@ -75,7 +84,7 @@ class Material(BaseModel):
 class MaterialHistory(BaseModel):
     class MaterialHistoryType(models.TextChoices):
         purchase = ("purchase", "구매")
-        consumption = ("consumption", "소모")
+        consumption = ("consumption", "소모") # v2에는 사용되지 않고 소모의 경우는 material_usage에서 처리
 
     type = models.CharField(
         max_length=20,
@@ -93,7 +102,9 @@ class MaterialHistory(BaseModel):
         blank=True,
         help_text="고객 (원자재 구매 시에만 입력)",
     )
-    quantity = models.IntegerField(
+    quantity = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
         help_text="재고 변동 수량",
     )
     price = models.IntegerField(
@@ -118,7 +129,9 @@ class MaterialHistory(BaseModel):
         blank=True,
         help_text="유통기한",
     )
-    remaining_quantity = models.IntegerField(
+    remaining_quantity = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
         null=True,
         blank=True,
         help_text="현재 잔량",
@@ -131,7 +144,9 @@ class MaterialHistory(BaseModel):
         blank=True,
         help_text="연결된 현금영수증",
     )
-    total_stock = models.IntegerField(
+    total_stock = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
         help_text="재고 변동 후 재고",
     )
 
@@ -141,11 +156,12 @@ class MaterialHistory(BaseModel):
 
         # total_stock 자동 계산 (값이 없는 경우)
         if self.total_stock is None:
-            current_stock = self.material.current_stock or 0
+            current_stock = self.material.current_stock or Decimal("0")
+            quantity = self.quantity or Decimal("0")
             if self.type == self.MaterialHistoryType.purchase:
-                self.total_stock = current_stock + self.quantity
+                self.total_stock = current_stock + quantity
             else:  # consumption
-                self.total_stock = current_stock - self.quantity
+                self.total_stock = current_stock - quantity
 
         # 구매인 경우에만 cost_average 계산
         # if (
@@ -181,7 +197,7 @@ class MaterialHistory(BaseModel):
 
         if self.type == self.MaterialHistoryType.purchase:
             if self.remaining_quantity is None:
-                self.remaining_quantity = self.quantity
+                self.remaining_quantity = self.quantity or Decimal("0")
         else:
             self.remaining_quantity = None
 
@@ -295,3 +311,57 @@ class MaterialProduct(BaseModel):
     quantity = models.DecimalField(
         max_digits=10, decimal_places=2, help_text="제품 1개 생산에 필요한 원자재 수량"
     )
+
+
+class MaterialUsage(BaseModel):
+    """프로젝트 플랜별 실제 자재 사용 기록"""
+
+    plan = models.ForeignKey(
+        "project.ProjectPlan",
+        related_name="material_usages",
+        on_delete=models.CASCADE,
+        help_text="생산 계획",
+    )
+    original_material = models.ForeignKey(
+        Material,
+        related_name="original_plan_usages",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="원래 계획된 자재",
+    )
+    material = models.ForeignKey(
+        Material,
+        related_name="plan_usages",
+        on_delete=models.CASCADE,
+        help_text="실제 사용한 자재 (대체 자재일 수도 있음)",
+    )
+    material_history = models.ForeignKey(
+        "stock.MaterialHistory",
+        related_name="plan_usages",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="사용한 자재 이력 (MaterialHistory 또는 MaterialRepackaging 중 하나만 설정)",
+    )
+    material_repackaging = models.ForeignKey(
+        "repackaging.MaterialRepackaging",
+        related_name="plan_usages",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="사용한 자재 소분 내역 (MaterialHistory 또는 MaterialRepackaging 중 하나만 설정)",
+    )
+    usage_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, help_text="실제 투입량"
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "프로젝트 플랜 자재 사용 내역"
+        verbose_name_plural = "프로젝트 플랜 자재 사용 내역"
+        app_label = "project"
+        db_table = "project_projectplanmaterialusage"
+
+    def __str__(self):
+        return f"{self.plan_id} - {self.material.name}: {self.usage_amount}"

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Project, ProjectPlan, ProjectLog, Refund, ProjectPlanMaterialUsage
+from .models import Project, ProjectPlan, ProjectLog, Refund
+from stock.models import MaterialUsage
 
 # Register your models here.
 
@@ -120,8 +121,8 @@ class RefundAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(ProjectPlanMaterialUsage)
-class ProjectPlanMaterialUsageAdmin(admin.ModelAdmin):
+@admin.register(MaterialUsage)
+class MaterialUsageAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "plan",
