@@ -10,22 +10,24 @@ import {
 
 const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/v2/material-usage`;
 
-export interface MaterialUsageListVariables {
+export interface MaterialUsageListVariablesModel {
   planId?: number;
   materialId?: number;
 }
 
 interface CreateOrUpdateMaterialUsageVariablesModel {
   payload: MaterialUsageModel[];
-  invalidateFilters?: MaterialUsageListVariables;
+  invalidateFilters?: MaterialUsageListVariablesModel;
 }
 
 interface DeleteMaterialUsageVariablesModel {
   usageId: number;
-  invalidateFilters?: MaterialUsageListVariables;
+  invalidateFilters?: MaterialUsageListVariablesModel;
 }
 
-export const materialUsageQueryKey = (filters?: MaterialUsageListVariables) => [
+export const materialUsageQueryKey = (
+  filters?: MaterialUsageListVariablesModel
+) => [
   'plan-material-usages',
   filters?.planId ?? null,
   filters?.materialId ?? null,
@@ -48,12 +50,12 @@ export const useCreateOrUpdatePlanMaterialUsageMutation = () => {
     CreateOrUpdateMaterialUsageVariablesModel
   >({
     mutationFn: async ({ payload }) => {
-      const factory_id = ensureFactoryId(factoryId);
+      const factoryIdParam = ensureFactoryId(factoryId);
       const response = await axios.post<MaterialUsageResponseModel[]>(
         BASE_URL,
         payload,
         {
-          params: { factory_id },
+          params: { factory_id: factoryIdParam },
           withCredentials: true,
         }
       );
@@ -76,16 +78,16 @@ export const usePlanMaterialUsageListMutation = () => {
   return useMutation<
     MaterialUsageResponseModel[],
     Error,
-    MaterialUsageListVariables
+    MaterialUsageListVariablesModel
   >({
     mutationFn: async ({ planId, materialId }) => {
       if (!planId && !materialId) {
         throw new Error('planId 또는 materialId는 최소 하나가 필요합니다.');
       }
-      const factory_id = ensureFactoryId(factoryId);
+      const factoryIdParam = ensureFactoryId(factoryId);
       const response = await axios.get<MaterialUsageResponseModel[]>(BASE_URL, {
         params: {
-          factory_id,
+          factory_id: factoryIdParam,
           ...(planId ? { plan_id: planId } : {}),
           ...(materialId ? { material_id: materialId } : {}),
         },
@@ -103,9 +105,9 @@ export const useDeletePlanMaterialUsageMutation = () => {
 
   return useMutation<void, Error, DeleteMaterialUsageVariablesModel>({
     mutationFn: async ({ usageId }) => {
-      const factory_id = ensureFactoryId(factoryId);
+      const factoryIdParam = ensureFactoryId(factoryId);
       await axios.delete(`${BASE_URL}/${usageId}`, {
-        params: { factory_id },
+        params: { factory_id: factoryIdParam },
         withCredentials: true,
       });
     },

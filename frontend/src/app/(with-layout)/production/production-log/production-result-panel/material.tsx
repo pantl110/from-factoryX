@@ -39,7 +39,7 @@ export const Material = ({
     0: material.material_id,
   });
   const [resetCounter, setResetCounter] = useState(0);
-  const { mutateAsync: saveMaterialUsage, isPending } =
+  const { mutateAsync: saveMaterialUsage } =
     useCreateOrUpdatePlanMaterialUsageMutation();
 
   // 상위에서 내려준 초기 자재 사용 이력으로 상태 세팅
@@ -64,7 +64,8 @@ export const Material = ({
       newUsageAmounts[id] = Number.isNaN(amount) ? 0 : (amount ?? 0);
       newUsageMaterialIds[id] = item.material_id;
       newUsageIsSubstitute[id] =
-        item.original_material_id != null &&
+        item.original_material_id !== null &&
+        item.original_material_id !== undefined &&
         item.original_material_id !== item.material_id;
     });
 

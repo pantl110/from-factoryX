@@ -46,7 +46,7 @@ export const MaterialUsage = ({
 
   // 서버에서 내려온 LOT 번호가 있으면 최초 진입 시 한 번 세팅
   useEffect(() => {
-    if (initialLotNumber == null) return;
+    if (initialLotNumber === null || initialLotNumber === undefined) return;
     setSelectedLotNumber(initialLotNumber);
   }, [initialLotNumber]);
 
