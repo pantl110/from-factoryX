@@ -17,6 +17,7 @@ export {
   formatPhoneNumber,
   formatFaxNumber,
   handleNumberKeyDown,
+  handleIntegerInput,
   handleQuantityInput,
   formatTime,
   formatDateTime,

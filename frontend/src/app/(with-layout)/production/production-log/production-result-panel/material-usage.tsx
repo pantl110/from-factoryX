@@ -2,7 +2,7 @@ import { Input, Tooltip } from '@/ui';
 import { useTooltip } from '@/hooks';
 import { Trash } from '@phosphor-icons/react';
 import { SubstituteMaterialDropdown } from './substitute-material-dropdown';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { LotDropdown } from './lot-dropdown';
 import { handleQuantityInput } from '@/utils';
 

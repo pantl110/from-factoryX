@@ -186,6 +186,43 @@ export const handleNumberKeyDown = (
   }
 };
 
+// 실시간 정수 입력 포맷팅 함수 (입력 중에 콤마 표시, 정수만 허용)
+export const handleIntegerInput = (
+  inputValue: string
+): {
+  displayValue: string;
+  numericValue: number;
+  isValid: boolean;
+} => {
+  // 빈 문자열 처리
+  if (!inputValue || inputValue === '') {
+    return {
+      displayValue: '',
+      numericValue: 0,
+      isValid: true,
+    };
+  }
+
+  // 콤마 제거 후 숫자만 허용
+  const cleanValue = inputValue.replace(/[^0-9]/g, '');
+
+  // 숫자 변환
+  const numericValue = cleanValue === '' ? 0 : parseInt(cleanValue) || 0;
+
+  // 유효성 검사
+  const isValid = !isNaN(numericValue) && numericValue >= 0;
+
+  // 콤마 포함된 포맷팅 적용
+  const displayValue =
+    numericValue === 0 ? '' : numericValue.toLocaleString('en-US');
+
+  return {
+    displayValue,
+    numericValue,
+    isValid,
+  };
+};
+
 // 실시간 수량 입력 포맷팅 함수 (입력 중에 콤마 표시, 소수점 한자리까지 허용)
 export const handleQuantityInput = (
   inputValue: string

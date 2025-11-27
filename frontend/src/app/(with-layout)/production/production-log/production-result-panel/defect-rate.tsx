@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import Input from '@/ui/input';
-import { handleQuantityInput } from '@/utils/format-number';
+import { handleQuantityInput, handleIntegerInput } from '@/utils';
 
 interface DefectRateProps {
   onError?: (text: string, subtext: string) => void;
@@ -55,9 +55,9 @@ export const DefectRate = ({
     return handleQuantityInput(totalProduction).numericValue;
   }, [totalProduction]);
 
-  // 불량 수량의 숫자 값
+  // 불량 수량의 숫자 값 (정수만)
   const defectQuantityNumeric = useMemo(() => {
-    return handleQuantityInput(defectQuantity).numericValue;
+    return handleIntegerInput(defectQuantity).numericValue;
   }, [defectQuantity]);
 
   // 불량 수량이 변경될 때 부모 컴포넌트에 알림
@@ -122,7 +122,7 @@ export const DefectRate = ({
             type="text"
             value={defectQuantity}
             onChange={(e) => {
-              const result = handleQuantityInput(e.target.value);
+              const result = handleIntegerInput(e.target.value);
               const newDefectNumeric = result.numericValue;
 
               // 총 생산 수량이 있고, 불량 수량이 생산 수량보다 큰 경우

@@ -265,7 +265,7 @@ export const Material = ({
           {[...usages]
             .slice()
             .reverse()
-            .map((id, index, arr) => {
+            .map((id, index) => {
               const record =
                 initialUsages && id < initialUsages.length
                   ? initialUsages[id]

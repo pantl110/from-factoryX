@@ -22,11 +22,7 @@ interface CreateOrUpdateMaterialUsageVariablesModel {
 
 export const materialUsageQueryKey = (
   filters?: MaterialUsageListVariablesModel
-) => [
-  'material-usages',
-  filters?.planId ?? null,
-  filters?.materialId ?? null,
-];
+) => ['material-usages', filters?.planId ?? null, filters?.materialId ?? null];
 
 const ensureFactoryId = (factoryId: number | null) => {
   if (!factoryId) {
