@@ -360,6 +360,8 @@ async def list_material_usages(
             usages = (
                 MaterialUsage.objects.select_related(
                     "plan",
+                    "plan__product",
+                    "plan__product__product",
                     "material",
                     "original_material",
                     "material_history",
@@ -431,6 +433,8 @@ async def list_material_usages_paginated(
         usages = (
             MaterialUsage.objects.select_related(
                 "plan",
+                "plan__product",
+                "plan__product__product",
                 "material",
                 "original_material",
                 "material_history",

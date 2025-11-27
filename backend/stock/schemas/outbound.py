@@ -239,6 +239,7 @@ class MaterialUsageOut(Schema):
     id: int
     plan_id: int
     plan_end_date: Optional[datetime.datetime] = None
+    plan_product_name: Optional[str] = None
     original_material_id: Optional[int] = None
     original_material_name: Optional[str] = None
     material_id: int

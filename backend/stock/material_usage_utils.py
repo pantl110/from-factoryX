@@ -30,10 +30,15 @@ def build_material_usage_out(usage: MaterialUsage) -> MaterialUsageOut:
         lot_number = usage.material_repackaging.lot_number
         material_repackaging_id = usage.material_repackaging.id
 
+    plan_product_name = None
+    if usage.plan and usage.plan.product and usage.plan.product.product:
+        plan_product_name = usage.plan.product.product.name
+
     return MaterialUsageOut(
         id=usage.id,
         plan_id=usage.plan_id,
         plan_end_date=usage.plan.end_date if usage.plan else None,
+        plan_product_name=plan_product_name,
         material_id=usage.material.id,
         material_name=usage.material.name,
         material_unit=usage.material.unit,
