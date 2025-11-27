@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.test import TestCase
 from django.utils import timezone
 from ninja.testing import TestAsyncClient
@@ -93,14 +94,14 @@ class TestRepackagingAPI(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        self.assertEqual(data["quantity"], 30)
+        self.assertEqual(Decimal(str(data["quantity"])), Decimal("30"))
         self.assertEqual(data["warehouse_location"], "A-01")
         self.assertEqual(data["parent_history_id"], self.purchase_history.id)
         self.assertTrue(data["lot_number"].startswith(self.purchase_history.lot_number))
 
         # 부모 이력의 잔량이 차감되었는지 확인
         await sync_to_async(self.purchase_history.refresh_from_db)()
-        self.assertEqual(self.purchase_history.remaining_quantity, 70)
+        self.assertEqual(self.purchase_history.remaining_quantity, Decimal("70"))
 
     async def test_create_repackaging_insufficient_quantity(self):
         """소분 수량 부족 테스트"""
@@ -137,7 +138,7 @@ class TestRepackagingAPI(TestCase):
         # 페이지네이션 응답 형식: {"data": [...], "count": ..., ...}
         self.assertIn("data", data)
         self.assertGreaterEqual(len(data["data"]), 1)
-        self.assertEqual(data["data"][0]["quantity"], 50)
+        self.assertEqual(Decimal(str(data["data"][0]["quantity"])), Decimal("50"))
         self.assertEqual(data["data"][0]["warehouse_location"], "B-01")
 
     async def test_get_repackaging_detail_success(self):
@@ -160,7 +161,7 @@ class TestRepackagingAPI(TestCase):
 
         data = response.json()
         self.assertEqual(data["id"], repackaging.id)
-        self.assertEqual(data["quantity"], 30)
+        self.assertEqual(Decimal(str(data["quantity"])), Decimal("30"))
         self.assertEqual(data["warehouse_location"], "A-01")
         self.assertEqual(data["parent_history_id"], self.purchase_history.id)
 
@@ -203,13 +204,13 @@ class TestRepackagingAPI(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        self.assertEqual(data["quantity"], 40)
+        self.assertEqual(Decimal(str(data["quantity"])), Decimal("40"))
         self.assertEqual(data["warehouse_location"], "C-02")
         self.assertEqual(data["expiration_date"], "2026-01-01")
 
         # 부모 이력 잔량이 60으로 감소했는지 확인 (70 -> 60)
         await sync_to_async(self.purchase_history.refresh_from_db)()
-        self.assertEqual(self.purchase_history.remaining_quantity, 60)
+        self.assertEqual(self.purchase_history.remaining_quantity, Decimal("60"))
 
     async def test_update_repackaging_quantity_insufficient(self):
         """소분 내역 수량 증가 시 부모 잔량 부족 테스트"""
@@ -258,7 +259,7 @@ class TestRepackagingAPI(TestCase):
 
         # 부모 이력의 잔량이 복구되었는지 확인
         await sync_to_async(self.purchase_history.refresh_from_db)()
-        self.assertEqual(self.purchase_history.remaining_quantity, 100)
+        self.assertEqual(self.purchase_history.remaining_quantity, Decimal("100"))
 
         # 소분 내역이 삭제되었는지 확인
         exists = await sync_to_async(

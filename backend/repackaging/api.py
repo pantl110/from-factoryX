@@ -1,3 +1,4 @@
+from decimal import Decimal
 from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
@@ -54,7 +55,7 @@ async def create_material_repackaging(
         raise HttpError(403, "해당 공장의 원자재 이력이 아닙니다.")
 
     # 잔량 확인
-    current_remaining = parent_history.remaining_quantity or 0
+    current_remaining = parent_history.remaining_quantity or Decimal("0")
     if payload.quantity > current_remaining:
         raise HttpError(
             400,
@@ -210,7 +211,7 @@ async def update_material_repackaging(
         
         # 부모 이력의 현재 잔량 확인
         parent_history = repackaging.parent_history
-        current_remaining = parent_history.remaining_quantity or 0
+        current_remaining = parent_history.remaining_quantity or Decimal("0")
         
         # 수량이 증가하는 경우: 부모 잔량에서 차감
         if quantity_diff > 0:
