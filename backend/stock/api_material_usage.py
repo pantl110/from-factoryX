@@ -337,7 +337,7 @@ async def create_or_update_plan_material_usage(
 @router.get(
     "",
     summary="[R] 자재 사용 내역 조회",
-    description="plan_id 또는 material_id로 필터링하여 자재 사용 내역을 조회합니다.",
+    description="plan_id, material_id, 또는 material_repackaging_id로 필터링하여 자재 사용 내역을 조회합니다.",
     response={200: List[MaterialUsageOut], 404: dict, 500: dict},
 )
 async def list_material_usages(
@@ -348,6 +348,9 @@ async def list_material_usages(
     material_id: Optional[int] = Query(
         None, description="자재 ID (필터링용)"
     ),
+    material_repackaging_id: Optional[int] = Query(
+        None, description="자재 소분 내역 ID (필터링용)"
+    ),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -356,8 +359,8 @@ async def list_material_usages(
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
-    if plan_id is None and material_id is None:
-        raise HttpError(400, "plan_id 또는 material_id 중 하나는 입력해야 합니다.")
+    if plan_id is None and material_id is None and material_repackaging_id is None:
+        raise HttpError(400, "plan_id, material_id, 또는 material_repackaging_id 중 하나는 입력해야 합니다.")
 
     if plan_id is not None:
         await sync_to_async(check_plan_permission)(plan_id, int(factory_id))
@@ -370,6 +373,17 @@ async def list_material_usages(
         )()
         if not material_exists:
             raise HttpError(404, "해당 자재를 찾을 수 없습니다.")
+
+    if material_repackaging_id is not None:
+        from repackaging.models import MaterialRepackaging
+        repackaging_exists = await sync_to_async(
+            MaterialRepackaging.objects.filter(
+                id=material_repackaging_id,
+                parent_history__material__factory_id=int(factory_id)
+            ).exists
+        )()
+        if not repackaging_exists:
+            raise HttpError(404, "해당 자재 소분 내역을 찾을 수 없습니다.")
 
     try:
         @sync_to_async
@@ -389,6 +403,8 @@ async def list_material_usages(
                 usages = usages.filter(plan_id=plan_id)
             if material_id is not None:
                 usages = usages.filter(material_id=material_id)
+            if material_repackaging_id is not None:
+                usages = usages.filter(material_repackaging_id=material_repackaging_id)
 
             return [build_material_usage_out(usage) for usage in usages]
 
