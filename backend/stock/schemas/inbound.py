@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 from ninja import Field, FilterSchema, Schema
 from typing import Optional, List
 
@@ -228,3 +229,40 @@ class MaterialHistoryDetailFilter(FilterSchema):
     client_id: Optional[int] = Field(default=None, q="client_id")
     is_linked: Optional[bool] = Field(default=None, description="(현금영수증/세금계산서) 모두 미연결 조회하려면 false 전달")
     receipt_id: Optional[int] = Field(default=None, q="cash_receipt_id")
+
+
+# ------------------------------------------------------------
+# Material Usage API
+# ------------------------------------------------------------
+
+
+class MaterialUsageIn(Schema):
+    id: Optional[int] = Field(
+        None, description="자재 사용 내역 ID (있으면 수정, 없으면 생성)"
+    )
+    plan_id: Optional[int] = Field(
+        None, description="프로젝트 플랜 ID (생성 시 필수)"
+    )
+    original_material_id: Optional[int] = Field(
+        None, description="원래 계획된 자재 ID (0으로 설정하면 None)"
+    )
+    material_id: Optional[int] = Field(
+        None, description="실제 사용한 자재 ID (Create 시 필수)"
+    )
+    usage_amount: Optional[Decimal] = Field(
+        None, description="실제 투입량 (Create 시 필수)"
+    )
+    material_history_id: Optional[int] = Field(
+        None,
+        description=(
+            "자재 이력 ID (0으로 설정하면 None, MaterialHistory 또는 "
+            "MaterialRepackaging 중 하나만 설정)"
+        ),
+    )
+    material_repackaging_id: Optional[int] = Field(
+        None,
+        description=(
+            "자재 소분 내역 ID (0으로 설정하면 None, MaterialHistory 또는 "
+            "MaterialRepackaging 중 하나만 설정)"
+        ),
+    )

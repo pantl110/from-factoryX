@@ -3,8 +3,8 @@ from asgiref.sync import sync_to_async
 from datetime import datetime, timedelta
 from typing import Optional, Tuple
 from django.utils import timezone
-from project.models import Refund, Project, ProjectLog, ProjectPlan
-from stock.models import MaterialProduct, ProductHistory
+from project.models import Refund, Project, ProjectLog
+from stock.models import MaterialProduct
 from factory.models import FactoryEquipment
 from django.db.models import Max
 

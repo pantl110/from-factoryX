@@ -352,24 +352,3 @@ class ProjectPlanCreateOrUpdateOut(Schema):
     action: str  # "created" 또는 "updated"
 
 
-# ------------------------------------------------------------
-# Project Plan Material Usage API
-# ------------------------------------------------------------
-
-
-# (GET) Project Plan Material Usage
-class MaterialUsageOut(Schema):
-    id: int
-    plan_id: int
-    original_material_id: Optional[int] = None
-    original_material_name: Optional[str] = None
-    material_id: int
-    material_name: str
-    material_unit: str
-    usage_amount: Decimal
-    material_history_id: Optional[int] = None
-    material_history_lot_number: Optional[str] = None
-    material_repackaging_id: Optional[int] = None
-    material_repackaging_lot_number: Optional[str] = None
-    created_at: datetime.datetime
-    updated_at: datetime.datetime

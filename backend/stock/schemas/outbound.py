@@ -228,3 +228,25 @@ class MaterialAvailableLotOut(Schema):
     available_quantity: int = Field(..., description="사용 가능한 수량")
     warehouse_location: Optional[str] = Field(None, description="창고 위치")
     expiration_date: Optional[str] = Field(None, description="유통기한 (YYYY-MM-DD)")
+
+
+# ------------------------------------------------------------
+# Material Usage API
+# ------------------------------------------------------------
+
+
+class MaterialUsageOut(Schema):
+    id: int
+    plan_id: int
+    original_material_id: Optional[int] = None
+    original_material_name: Optional[str] = None
+    material_id: int
+    material_name: str
+    material_unit: str
+    usage_amount: Decimal
+    material_history_id: Optional[int] = None
+    material_history_lot_number: Optional[str] = None
+    material_repackaging_id: Optional[int] = None
+    material_repackaging_lot_number: Optional[str] = None
+    created_at: datetime.datetime
+    updated_at: datetime.datetime

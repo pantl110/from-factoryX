@@ -242,3 +242,5 @@ class RefundProductionRegistrationIn(Schema):
     amount: int
     production_amount: int
     refund_date: str
+
+
