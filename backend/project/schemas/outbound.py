@@ -1,6 +1,7 @@
 from ninja import Schema, ModelSchema, Field
 import datetime
 from typing import Optional, List, Literal
+from decimal import Decimal
 from project.models import Project, ProjectLog, Refund, ProjectPlan
 from document.schemas.outbound import QuotationModelOut
 from tax.models import NationalTaxService
@@ -349,3 +350,26 @@ class ProjectPlanCreateOrUpdateOut(Schema):
     message: str
     plan_id: int
     action: str  # "created" 또는 "updated"
+
+
+# ------------------------------------------------------------
+# Project Plan Material Usage API
+# ------------------------------------------------------------
+
+
+# (GET) Project Plan Material Usage
+class MaterialUsageOut(Schema):
+    id: int
+    plan_id: int
+    original_material_id: Optional[int] = None
+    original_material_name: Optional[str] = None
+    material_id: int
+    material_name: str
+    material_unit: str
+    usage_amount: Decimal
+    material_history_id: Optional[int] = None
+    material_history_lot_number: Optional[str] = None
+    material_repackaging_id: Optional[int] = None
+    material_repackaging_lot_number: Optional[str] = None
+    created_at: datetime.datetime
+    updated_at: datetime.datetime

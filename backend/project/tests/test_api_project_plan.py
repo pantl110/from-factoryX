@@ -1,14 +1,15 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryEquipment, FactoryMember
-from project.models import Project, ProjectPlan, ProjectLog
+from project.models import Project, ProjectPlan, ProjectLog, ProjectPlanMaterialUsage
 from document.models import Quotation, QuotationProduct
-from stock.models import Product, Material
+from stock.models import Product, Material, MaterialHistory
 import json
 import jwt
 from django.conf import settings
 from datetime import timedelta, date, datetime
 from django.utils import timezone
+from decimal import Decimal
 
 User = get_user_model()
 
@@ -1460,3 +1461,205 @@ class MobileDashboardCountTestCase(TestCase):
 #         # 반올림 검증: 1009.75... → 1010
 #         test_material.refresh_from_db()
 #         self.assertEqual(test_material.cost_average, 1010)
+
+
+class ProjectPlanMaterialUsageAPITestCase(TestCase):
+    """프로젝트 플랜 자재 사용 내역 API 테스트"""
+
+    def setUp(self):
+        """테스트 설정"""
+        from dateutil.relativedelta import relativedelta
+
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="testpass123"
+        )
+        self.factory = Factory.objects.create(name="테스트 공장", owner=self.user)
+        self.client_company = FactoryClient.objects.create(
+            factory=self.factory,
+            name="테스트 고객사",
+            business_registration_number="123-45-67890",
+        )
+        self.equipment = FactoryEquipment.objects.create(
+            factory=self.factory, name="테스트 설비", priority=1
+        )
+        self.product = Product.objects.create(
+            factory=self.factory, name="테스트 제품", code="TEST001", unit="개"
+        )
+        self.material = Material.objects.create(
+            factory=self.factory, name="테스트 자재", code="MAT001", unit="kg", current_stock=100
+        )
+        self.original_material = Material.objects.create(
+            factory=self.factory, name="원래 계획 자재", code="MAT002", unit="kg", current_stock=50
+        )
+
+        self.project = Project.objects.create()
+        self.quotation = Quotation.objects.create(
+            factory=self.factory, client=self.client_company, project=self.project
+        )
+        self.quotation_product = QuotationProduct.objects.create(
+            quotation=self.quotation, product=self.product, quantity=100, unit_price=1000
+        )
+        self.plan = ProjectPlan.objects.create(
+            project=self.project,
+            product=self.quotation_product,
+            equipment=self.equipment,
+            quantity=100,
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=7),
+            avg_production_time=3600,
+        )
+        self.material_history = MaterialHistory.objects.create(
+            material=self.material,
+            client=self.client_company,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=100,
+            price=1000,
+            lot_number="LOT-2024-001",
+            total_stock=100,
+            remaining_quantity=50,
+        )
+
+        one_month_ago = timezone.now() - relativedelta(months=1)
+        self.factory_member = FactoryMember.objects.create(
+            factory=self.factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
+        )
+        FactoryMember.objects.filter(id=self.factory_member.id).update(created_at=one_month_ago)
+
+        self.token = jwt.encode(
+            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )
+
+    def _get_url(self, plan_id=None):
+        plan_id = plan_id or self.plan.id
+        return f"/v2/project-plan/{plan_id}/material-usages?factory_id={self.factory.id}"
+
+    def test_list_plan_material_usages_success(self):
+        """프로젝트 플랜 자재 사용 내역 조회 성공 테스트"""
+        usage = ProjectPlanMaterialUsage.objects.create(
+            plan=self.plan,
+            material=self.material,
+            original_material=self.original_material,
+            usage_amount=Decimal("100.50"),
+            material_history=self.material_history,
+        )
+
+        response = self.client.get(self._get_url(), HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["id"], usage.id)
+        self.assertEqual(data[0]["plan_id"], self.plan.id)
+        self.assertEqual(float(data[0]["usage_amount"]), 100.50)
+
+    def test_list_plan_material_usages_multiple(self):
+        """여러 자재 사용 내역 조회 테스트"""
+        ProjectPlanMaterialUsage.objects.create(
+            plan=self.plan,
+            material=self.material,
+            original_material=self.material,
+            usage_amount=Decimal("50.25"),
+            material_history=self.material_history,
+        )
+
+        material2 = Material.objects.create(
+            factory=self.factory, name="테스트 자재 2", code="MAT003", unit="개", current_stock=200
+        )
+        material_history2 = MaterialHistory.objects.create(
+            material=material2,
+            client=self.client_company,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=200,
+            price=2000,
+            lot_number="LOT-2024-002",
+            total_stock=200,
+            remaining_quantity=150,
+        )
+        usage2 = ProjectPlanMaterialUsage.objects.create(
+            plan=self.plan,
+            material=material2,
+            original_material=material2,
+            usage_amount=Decimal("75.75"),
+            material_history=material_history2,
+        )
+
+        response = self.client.get(self._get_url(), HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0]["id"], usage2.id)
+
+    def test_list_plan_material_usages_empty(self):
+        """자재 사용 내역이 없을 때 빈 리스트 반환 테스트"""
+        response = self.client.get(self._get_url(), HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [])
+
+    def test_list_plan_material_usages_nonexistent_plan(self):
+        """존재하지 않는 플랜 조회 시 에러 테스트"""
+        response = self.client.get(
+            self._get_url(plan_id=99999), HTTP_AUTHORIZATION=f"Bearer {self.token}"
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("프로젝트 플랜을 찾을 수 없습니다", response.json()["detail"])
+
+    def test_list_plan_material_usages_wrong_factory(self):
+        """다른 공장의 플랜 조회 시 권한 에러 테스트"""
+        from dateutil.relativedelta import relativedelta
+
+        other_factory = Factory.objects.create(name="다른 공장", owner=self.user)
+        one_month_ago = timezone.now() - relativedelta(months=1)
+        FactoryMember.objects.create(
+            factory=other_factory,
+            user=self.user,
+            role=FactoryMember.FactoryMemberType.admin,
+            status=FactoryMember.MemberStatus.active,
+            invited_by=self.user,
+        )
+        FactoryMember.objects.filter(factory=other_factory).update(created_at=one_month_ago)
+
+        url = f"/v2/project-plan/{self.plan.id}/material-usages?factory_id={other_factory.id}"
+        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("접근할 권한이 없습니다", response.json()["detail"])
+
+    def test_list_plan_material_usages_without_factory_id(self):
+        """factory_id 없이 조회 시 에러 테스트"""
+        url = f"/v2/project-plan/{self.plan.id}/material-usages"
+        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("factory_id를 입력해야 합니다", response.json()["detail"])
+
+    def test_list_plan_material_usages_with_repackaging(self):
+        """MaterialRepackaging을 사용한 자재 사용 내역 조회 테스트"""
+        from repackaging.models import MaterialRepackaging
+
+        repackaging = MaterialRepackaging.objects.create(
+            parent_history=self.material_history, lot_number="LOT-2024-001-01", quantity=30
+        )
+        ProjectPlanMaterialUsage.objects.create(
+            plan=self.plan,
+            material=self.material,
+            original_material=self.material,
+            usage_amount=Decimal("25.00"),
+            material_repackaging=repackaging,
+        )
+
+        response = self.client.get(self._get_url(), HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["material_repackaging_id"], repackaging.id)
+        self.assertIsNone(data[0]["material_history_id"])
