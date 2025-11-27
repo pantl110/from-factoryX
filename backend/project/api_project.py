@@ -22,7 +22,6 @@ from project.schemas.outbound import (
     ProjectUpdateOut,
     ProjectStatusDetailOut,
     ProjectCloneOut,
-    StaleConfirmedProjectOut,
 )
 from factory.utils import is_factory_member
 from document.models import Quotation, QuotationProduct
@@ -160,7 +159,7 @@ async def clone_project(request, payload: ProjectCloneIn):
 @router.post(
     "/manufactured-to-delivery/{project_id}",
     summary="[C] 생산 완료 프로젝트 생산완료 처리",
-    description="프로젝트를 생산완료에서 납품으로 처리합니다. 원자재 소모 처리도 함께 합니다.",
+    description="프로젝트를 생산완료에서 납품으로 처리합니다. 원자재 소모 처리도 함께 합니다(소모 처리는 현재 비활성화, 필요 시 주석 처리하여 활성화).",
     response={200: dict, 400: dict, 404: dict, 500: dict},
 )
 async def manufactured_to_delivery(request, project_id: int):
@@ -186,42 +185,44 @@ async def manufactured_to_delivery(request, project_id: int):
         if not plans:
             raise HttpError(400, "해당 프로젝트에 생산 계획이 없습니다.")
 
-        try:
-            # 원자재 소모 처리 + MaterialHistory 생성
-            print("🔍 원자재 소모 처리 시작...")
-            for plan in plans:
-                # 이미 소모 처리된 플랜은 건너뜀
-                if getattr(plan, "material_consumed", False):
-                    continue
-
-                product_obj = plan.product.product  # QuotationProduct.product
-                production_qty = int(plan.quantity or 0) # 원자재 소모처리 기준은 생산수량 (주문수량 아님)
-                print(
-                    f"🔍 처리 중인 플랜: plan_id={plan.id}, 제품={product_obj.name}, 수량={production_qty}"
-                )
-                success, message = await process_material_consumption(
-                    product_id=product_obj.id,
-                    production_quantity=production_qty,
-                    factory_id=int(factory_id),
-                )
-                if not success:
-                    print(f"❌ 원자재 소모 실패: {message}")
-                    raise HttpError(400, message)
-
-                # 플랜에 소모 처리 플래그 세팅
-                plan.material_consumed = True
-                await sync_to_async(plan.save)(update_fields=["material_consumed"])
-                print(f"✅ 원자재 소모 처리 완료: {message}")
-
-        except HttpError:
-            # HttpError는 그대로 재발생
-            raise
-        except Exception as e:
-            # 기타 예외는 500 에러로 변환
-            print(f"❌ 원자재 소모 처리 예외 발생: {str(e)}")
-            import traceback
-            print(f"❌ 원자재 소모 스택 트레이스: {traceback.format_exc()}")
-            raise HttpError(500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}")
+        # NOTE: 생산 완료 → 납품 전환 시 원자재 소모 처리 및 MaterialHistory 생성 로직
+        # v2에서는 material usage api를 사용하여 원자재 소모 처리를 합니다. 필요 시 아래 주석 블록을
+        # 해제하여 기존 동작을 복구할 수 있습니다.
+        # try:
+        #     print("🔍 원자재 소모 처리 시작...")
+        #     for plan in plans:
+        #         # 이미 소모 처리된 플랜은 건너뜀
+        #         if getattr(plan, "material_consumed", False):
+        #             continue
+        #
+        #         product_obj = plan.product.product  # QuotationProduct.product
+        #         production_qty = int(plan.quantity or 0) # 원자재 소모처리 기준은 생산수량 (주문수량 아님)
+        #         print(
+        #             f"🔍 처리 중인 플랜: plan_id={plan.id}, 제품={product_obj.name}, 수량={production_qty}"
+        #         )
+        #         success, message = await process_material_consumption(
+        #             product_id=product_obj.id,
+        #             production_quantity=production_qty,
+        #             factory_id=int(factory_id),
+        #         )
+        #         if not success:
+        #             print(f"❌ 원자재 소모 실패: {message}")
+        #             raise HttpError(400, message)
+        #
+        #         # 플랜에 소모 처리 플래그 세팅
+        #         plan.material_consumed = True
+        #         await sync_to_async(plan.save)(update_fields=["material_consumed"])
+        #         print(f"✅ 원자재 소모 처리 완료: {message}")
+        #
+        # except HttpError:
+        #     # HttpError는 그대로 재발생
+        #     raise
+        # except Exception as e:
+        #     # 기타 예외는 500 에러로 변환
+        #     print(f"❌ 원자재 소모 처리 예외 발생: {str(e)}")
+        #     import traceback
+        #     print(f"❌ 원자재 소모 스택 트레이스: {traceback.format_exc()}")
+        #     raise HttpError(500, f"원자재 소모 처리 중 오류가 발생했습니다: {str(e)}")
 
         # 프로젝트 상태를 납품으로 변경
         project.status = "delivery"
@@ -247,85 +248,6 @@ async def manufactured_to_delivery(request, project_id: int):
             500,
             f"생산 완료 프로젝트 납품 처리 중 내부 서버 오류가 발생했습니다: {str(e)}",
         )
-
-
-@router.get(
-    "/stale-confirmed",
-    summary="[R] 7일 이상 경과한 주문 확정 프로젝트 조회",
-    description="confirmed 상태이면서 confirmed_at이 7일 이상 지난 프로젝트 목록을 조회합니다.",
-    response={200: List[StaleConfirmedProjectOut], 400: dict, 500: dict},
-)
-async def list_stale_confirmed_projects(request):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-
-    today = timezone.localdate()
-    cutoff_date = today - timedelta(days=7)
-
-    try:
-
-        @sync_to_async
-        def fetch_projects():
-            projects = (
-                Project.objects.filter(
-                    status=Project.ProjectStatus.confirmed,
-                    confirmed_at__isnull=False,
-                    confirmed_at__lte=cutoff_date,
-                    quotations__factory_id=int(factory_id),
-                )
-                .prefetch_related(
-                    "quotations__client",
-                    "quotations__products__product",
-                )
-                .order_by("confirmed_at")
-                .distinct()
-            )
-
-            result = []
-            for project in projects:
-                quotations = project.quotations.filter(
-                    factory_id=int(factory_id)
-                ).prefetch_related("client", "products__product")
-
-                product_names = []
-                client_name = None
-
-                for quotation in quotations:
-                    if client_name is None and quotation.client:
-                        client_name = quotation.client.name
-
-                    for quotation_product in quotation.products.all():
-                        product_name = quotation_product.product.name
-                        if product_name not in product_names:
-                            product_names.append(product_name)
-
-                days_since_confirmed = (
-                    (today - project.confirmed_at).days
-                    if project.confirmed_at is not None
-                    else None
-                )
-
-                result.append(
-                    StaleConfirmedProjectOut(
-                        project_id=project.id,
-                        client_name=client_name,
-                        product_names=product_names,
-                        days_since_confirmed=days_since_confirmed,
-                    )
-                )
-
-            return result
-
-        return await fetch_projects()
-
-    except HttpError:
-        raise
-    except Exception:
-        raise HttpError(500, "확정 후 7일 경과 프로젝트 조회 중 오류가 발생했습니다.")
 
 
 @router.get(
@@ -569,85 +491,6 @@ async def list_project(
         raise
     except Exception as e:
         raise HttpError(500, "프로젝트 조회 중 내부 서버 오류가 발생했습니다.")
-
-
-@router.get(
-    "/stale-confirmed",
-    summary="[R] 7일 이상 경과한 주문 확정 프로젝트 조회",
-    description="confirmed 상태이면서 confirmed_at이 7일 이상 지난 프로젝트 목록을 조회합니다.",
-    response={200: List[StaleConfirmedProjectOut], 400: dict, 500: dict},
-)
-async def list_stale_confirmed_projects(request):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-
-    today = timezone.localdate()
-    cutoff_date = today - timedelta(days=7)
-
-    try:
-
-        @sync_to_async
-        def fetch_projects():
-            projects = (
-                Project.objects.filter(
-                    status=Project.ProjectStatus.confirmed,
-                    confirmed_at__isnull=False,
-                    confirmed_at__lte=cutoff_date,
-                    quotations__factory_id=int(factory_id),
-                )
-                .prefetch_related(
-                    "quotations__client",
-                    "quotations__products__product",
-                )
-                .order_by("confirmed_at")
-                .distinct()
-            )
-
-            result = []
-            for project in projects:
-                quotations = project.quotations.filter(
-                    factory_id=int(factory_id)
-                ).prefetch_related("client", "products__product")
-
-                product_names = []
-                client_name = None
-
-                for quotation in quotations:
-                    if client_name is None and quotation.client:
-                        client_name = quotation.client.name
-
-                    for quotation_product in quotation.products.all():
-                        product_name = quotation_product.product.name
-                        if product_name not in product_names:
-                            product_names.append(product_name)
-
-                days_since_confirmed = (
-                    (today - project.confirmed_at).days
-                    if project.confirmed_at is not None
-                    else None
-                )
-
-                result.append(
-                    StaleConfirmedProjectOut(
-                        project_id=project.id,
-                        client_name=client_name,
-                        product_names=product_names,
-                        days_since_confirmed=days_since_confirmed,
-                    )
-                )
-
-            return result
-
-        return await fetch_projects()
-
-    except HttpError:
-        raise
-    except Exception:
-        raise HttpError(500, "확정 후 7일 경과 프로젝트 조회 중 오류가 발생했습니다.")
 
 
 @router.patch(

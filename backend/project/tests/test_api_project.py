@@ -165,96 +165,7 @@ class ProjectAPITestCase(TestCase):
             project.save()
 
         return project, quotation, [quotation_product1, quotation_product2]
-
-    # 생성 API 제거로 관련 테스트 삭제
-
-    # def test_create_multiple_projects(self):
-    #     """여러 프로젝트 생성 테스트"""
-    #     url = f"/v1/project?factory_id={self.factory.id}"
-
-    #     # 첫 번째 프로젝트 생성
-    #     response1 = self.client.post(
-    #         url,
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
-    #     )
-    #     self.assertEqual(response1.status_code, 201)
-
-    #     # 두 번째 프로젝트 생성
-    #     response2 = self.client.post(
-    #         url,
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
-    #     )
-    #     self.assertEqual(response2.status_code, 201)
-
-    #     # 데이터베이스에 두 개의 프로젝트와 견적서가 생성되었는지 확인
-    #     project_count = Project.objects.count()
-    #     quotation_count = Quotation.objects.count()
-
-    #     self.assertEqual(project_count, 2)
-    #     self.assertEqual(quotation_count, 2)
-
-    #     # 각 프로젝트에 견적서가 연결되어 있는지 확인
-    #     projects = Project.objects.all()
-    #     quotations = Quotation.objects.all()
-
-    #     for project in projects:
-    #         self.assertTrue(hasattr(project, "quotations"))
-    #         self.assertEqual(project.quotations.count(), 1)
-
-    #     for quotation in quotations:
-    #         self.assertIsNotNone(quotation.project)
-
-    # def test_project_quotation_relationship(self):
-    #     """프로젝트와 견적서의 관계 확인 테스트"""
-    #     url = f"/v1/project?factory_id={self.factory.id}"
-
-    #     response = self.client.post(
-    #         url,
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
-    #     )
-
-    #     self.assertEqual(response.status_code, 201)
-
-    #     # 프로젝트와 견적서의 관계 확인
-    #     project = Project.objects.first()
-    #     quotation = Quotation.objects.first()
-
-    #     # 프로젝트에서 견적서 접근
-    #     self.assertEqual(project.quotations.first(), quotation)
-
-    #     # 견적서에서 프로젝트 접근
-    #     self.assertEqual(quotation.project, project)
-
-    #     # 견적서의 기본 필드 확인
-    #     self.assertEqual(quotation.factory, self.factory)  # factory는 설정됨
-    #     self.assertIsNone(quotation.client)
-    #     self.assertIsNone(quotation.due_date)
-    #     self.assertIsNone(quotation.uploaded_file)
-
-    # def test_project_default_status(self):
-    #     """프로젝트 생성 시 기본 상태 확인 테스트"""
-    #     url = f"/v1/project?factory_id={self.factory.id}"
-
-    #     response = self.client.post(
-    #         url,
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
-    #     )
-
-    #     self.assertEqual(response.status_code, 201)
-
-    #     project = Project.objects.first()
-
-    #     # 프로젝트의 기본 상태가 'quotation'인지 확인
-    #     self.assertEqual(project.status, Project.ProjectStatus.quotation)
-    #     self.assertEqual(project.status, "quotation")
-
-    #     # 다른 기본 필드들 확인
-    #     self.assertIsNone(project.transact_date)
-    #     self.assertIsNone(project.tax_invoice)
+        
 
     def test_delete_project_success(self):
         """프로젝트 삭제 성공 테스트"""
@@ -521,30 +432,30 @@ class ProjectAPITestCase(TestCase):
         project.refresh_from_db()
         self.assertEqual(project.status, "delivery")
 
-        # 원자재 소모 처리 플래그를 검증
-        plan1.refresh_from_db()
-        plan2.refresh_from_db()
-        self.assertTrue(plan1.material_consumed)
-        self.assertTrue(plan2.material_consumed)
+        # 원자재 소모 처리 플래그 -> 현재 미사용이므로 검증하지 않음
+        # plan1.refresh_from_db()
+        # plan2.refresh_from_db()
+        # self.assertTrue(plan1.material_consumed)
+        # self.assertTrue(plan2.material_consumed)
 
-        # 원자재 히스토리 생성 확인
-        material_histories = MaterialHistory.objects.filter(
-            material__in=[material1, material2]
-        ).order_by("material__name")
-
-        self.assertEqual(len(material_histories), 2)
-
-        # material1 히스토리 확인 (제품1에만 연결되어 있음)
-        material1_history = material_histories.filter(material=material1).first()
-        self.assertIsNotNone(material1_history)
-        self.assertEqual(material1_history.type, "consumption")
-        self.assertEqual(material1_history.quantity, 2.5 * 10)  # 2.5kg * 10개
-
-        # material2 히스토리 확인 (제품1에만 연결되어 있음)
-        material2_history = material_histories.filter(material=material2).first()
-        self.assertIsNotNone(material2_history)
-        self.assertEqual(material2_history.type, "consumption")
-        self.assertEqual(material2_history.quantity, 3 * 10)  # 3개 * 10개
+        # 원자재 히스토리는 현재 manufactured_to_delivery에서 생성하지 않으므로 검증하지 않음
+        # material_histories = MaterialHistory.objects.filter(
+        #     material__in=[material1, material2]
+        # ).order_by("material__name")
+        #
+        # self.assertEqual(len(material_histories), 2)
+        #
+        # # material1 히스토리 확인 (제품1에만 연결되어 있음)
+        # material1_history = material_histories.filter(material=material1).first()
+        # self.assertIsNotNone(material1_history)
+        # self.assertEqual(material1_history.type, "consumption")
+        # self.assertEqual(material1_history.quantity, 2.5 * 10)  # 2.5kg * 10개
+        #
+        # # material2 히스토리 확인 (제품1에만 연결되어 있음)
+        # material2_history = material_histories.filter(material=material2).first()
+        # self.assertIsNotNone(material2_history)
+        # self.assertEqual(material2_history.type, "consumption")
+        # self.assertEqual(material2_history.quantity, 3 * 10)  # 3개 * 10개
 
     def test_update_project_status_to_completed_already_completed_plans(self):
         """이미 완료된 ProjectPlan이 있는 경우 중복 처리 방지 테스트"""
@@ -889,7 +800,7 @@ class ProjectAPITestCase(TestCase):
         pending_project.confirmed_at = today - timedelta(days=20)
         pending_project.save()
 
-        url = f"/v1/project/stale-confirmed?factory_id={self.factory.id}"
+        url = f"/v2/project/stale-confirmed?factory_id={self.factory.id}"
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
@@ -911,7 +822,7 @@ class ProjectAPITestCase(TestCase):
         """factory_id가 없으면 400을 반환"""
         self.create_test_project_with_quotation(status="confirmed")
 
-        url = "/v1/project/stale-confirmed"
+        url = "/v2/project/stale-confirmed"
         response = self.client.get(
             url,
             HTTP_AUTHORIZATION=f"Bearer {self.token}",

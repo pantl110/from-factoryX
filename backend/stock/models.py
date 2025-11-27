@@ -358,10 +358,10 @@ class MaterialUsage(BaseModel):
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "프로젝트 플랜 자재 사용 내역"
-        verbose_name_plural = "프로젝트 플랜 자재 사용 내역"
-        app_label = "project"
-        db_table = "project_projectplanmaterialusage"
+        verbose_name = "자재 사용 내역"
+        verbose_name_plural = "자재 사용 내역"
+        app_label = "stock"
+        db_table = "stock_materialusage"
 
     def __str__(self):
         return f"{self.plan_id} - {self.material.name}: {self.usage_amount}"
