@@ -38,6 +38,7 @@ from document.api_workinstruction import router as workInstruction_router
 from project.api_project import router as project_router
 from project.api_project_v2 import router as projectV2_router
 from project.api_project_plan import router as projectPlan_router
+from project.api_project_plan_v2 import router as projectPlanV2_router
 from project.api_project_log import router as projectLog_router
 from project.api_project_refund import router as projectRefund_router
 from barobill.api import router as barobill_router
@@ -86,6 +87,7 @@ base_api.add_router("v1/document/quotation/product", quotationProduct_router)
 base_api.add_router("v1/document/quotation", quotation_router)
 base_api.add_router("v1/document/work-instruction", workInstruction_router)
 base_api.add_router("v1/project-plan", projectPlan_router)
+base_api.add_router("v2/project-plan", projectPlanV2_router)
 base_api.add_router("v1/project-log", projectLog_router)
 base_api.add_router("v1/project-refund", projectRefund_router)
 base_api.add_router("v1/project", project_router)

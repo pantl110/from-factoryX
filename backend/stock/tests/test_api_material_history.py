@@ -559,7 +559,9 @@ class TestMaterialHistoryAPI(TestCase):
             headers=headers,
         )
         self.assertEqual(response.status_code, 200)
-        items = response.json()
+        body = response.json()
+        self.assertIn("data", body)
+        items = body["data"]
 
         # history, repack 각 1개씩 존재
         self.assertEqual(len(items), 2)

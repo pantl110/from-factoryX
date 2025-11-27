@@ -1224,7 +1224,7 @@ class MobileDashboardCountTestCase(TestCase):
 
     def test_get_mobile_dashboard_counts_empty_data(self):
         """데이터가 없어도 기본 지표가 0으로 반환되는지 확인"""
-        url = "/v1/project-plan/dashboard-mobile"
+        url = "/v2/project-plan/dashboard-mobile"
         response = self.client.get(
             url, {"factory_id": self.factory.id}, **self._auth_headers()
         )
@@ -1244,7 +1244,7 @@ class MobileDashboardCountTestCase(TestCase):
 
     def test_get_mobile_dashboard_counts_missing_factory_id(self):
         """factory_id 누락 시 400 반환"""
-        url = "/v1/project-plan/dashboard-mobile"
+        url = "/v2/project-plan/dashboard-mobile"
         response = self.client.get(url, **self._auth_headers())
 
         self.assertEqual(response.status_code, 400)
@@ -1252,7 +1252,7 @@ class MobileDashboardCountTestCase(TestCase):
 
     def test_get_mobile_dashboard_counts_invalid_base_date(self):
         """잘못된 base_date 형식 시 400 반환"""
-        url = "/v1/project-plan/dashboard-mobile"
+        url = "/v2/project-plan/dashboard-mobile"
         response = self.client.get(
             url,
             {"factory_id": self.factory.id, "base_date": "2024-13-40"},

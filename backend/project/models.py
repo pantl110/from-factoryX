@@ -151,3 +151,58 @@ class Refund(BaseModel):
     production_amount = models.IntegerField(
         null=True, blank=True, help_text="생산 수량"
     )
+
+
+# 프로젝트 플랜별 자재 사용 내역
+class ProjectPlanMaterialUsage(BaseModel):
+    """프로젝트 플랜에서 실제 사용한 자재 정보를 저장하는 모델"""
+
+    plan = models.ForeignKey(
+        ProjectPlan,
+        related_name="material_usages",
+        on_delete=models.CASCADE,
+        help_text="생산 계획",
+    )
+    original_material = models.ForeignKey(
+        "stock.Material",
+        related_name="original_plan_usages",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="원래 계획된 자재 ID",
+    )
+    material = models.ForeignKey(
+        "stock.Material",
+        related_name="plan_usages",
+        on_delete=models.CASCADE,
+        help_text="실제 사용한 자재 ID (대체 자재일 수도 있음)",
+    )
+    material_history = models.ForeignKey(
+        "stock.MaterialHistory",
+        related_name="plan_usages",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="사용한 자재 이력 (MaterialHistory 또는 MaterialRepackaging 중 하나만 설정)",
+    )
+    material_repackaging = models.ForeignKey(
+        "repackaging.MaterialRepackaging",
+        related_name="plan_usages",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="사용한 자재 소분 내역 (MaterialHistory 또는 MaterialRepackaging 중 하나만 설정)",
+    )
+    usage_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="실제 투입량",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "프로젝트 플랜 자재 사용 내역"
+        verbose_name_plural = "프로젝트 플랜 자재 사용 내역"
+
+    def __str__(self):
+        return f"{self.plan.id} - {self.material.name}: {self.usage_amount}"
