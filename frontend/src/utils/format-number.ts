@@ -333,9 +333,7 @@ export const formatDateTime = (value: string): string => {
 };
 
 // 숫자 포맷팅 함수 (콤마 추가, 소수점 아래 끝자리 0 제거)
-export const removeTrailingZeros = (
-  num: string | number
-): string => {
+export const removeTrailingZeros = (num: string | number): string => {
   if (num === '' || num === undefined || num === null) return '';
   const str = String(num).replace(/,/g, '');
   // 소수점이 있는 경우 처리

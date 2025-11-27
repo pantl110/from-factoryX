@@ -6,6 +6,7 @@ import MaterialDetailPanel from '../index';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { IconBtn, RoundChip } from '@/ui';
+import { removeTrailingZeros } from '@/utils';
 
 interface SubMaterialItemProps {
   material: MaterialSimpleModel;
@@ -68,7 +69,7 @@ export const SubMaterialItem = ({
   const stockStatus = getStockStatus();
   const stockQuantity =
     material.current_stock !== null && material.current_stock !== undefined
-      ? `${material.current_stock}${material.unit}`
+      ? `${removeTrailingZeros(material.current_stock)} ${material.unit}`
       : '-';
 
   return (

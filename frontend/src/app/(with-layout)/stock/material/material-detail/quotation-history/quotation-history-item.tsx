@@ -2,6 +2,7 @@ import { convertUTCToKSTDate } from '@/hooks';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import IconBtn from '@/ui/icon-btn';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
+import { removeTrailingZeros } from '@/utils';
 
 interface QuotationHistoryItemProps {
   onClick: () => void;
@@ -27,9 +28,9 @@ const QuotationHistoryItem = ({ onClick, data }: QuotationHistoryItemProps) => {
       <p className="flex-1 px-3 text-dg">{convertUTCToKSTDate(data.date)}</p>
       <p
         className="flex-[0.5] px-3 text-dg truncate min-w-0"
-        title={data.quantity.toLocaleString()}
+        title={removeTrailingZeros(data.quantity)}
       >
-        {data.quantity.toLocaleString()}
+        {removeTrailingZeros(data.quantity)}
       </p>
       <p
         className="flex-[0.5] px-3 text-dg truncate min-w-0"

@@ -3,7 +3,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import IconBtn from '@/ui/icon-btn';
 import { PencilSimple, Trash } from '@phosphor-icons/react';
 import { MaterialRepackagingResponseModel } from '@/types/data-model';
-import { convertUTCToKSTDate } from '@/utils';
+import { convertUTCToKSTDate, removeTrailingZeros } from '@/utils';
 import { getExpiryClassName } from '../utils';
 
 interface MaterialPackagingItemProps {
@@ -45,9 +45,9 @@ export const MaterialPackagingItem = ({
       </p>
       <p
         className="flex-1 px-3 text-dg truncate"
-        title={`${repackaging.quantity.toLocaleString()}`}
+        title={removeTrailingZeros(repackaging.quantity)}
       >
-        {repackaging.quantity.toLocaleString()}
+        {removeTrailingZeros(repackaging.quantity)}
       </p>
       <p
         className="flex-1 px-3 text-dg truncate"

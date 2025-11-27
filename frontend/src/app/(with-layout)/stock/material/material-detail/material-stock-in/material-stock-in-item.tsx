@@ -2,7 +2,7 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { MiniBtn } from '@/ui';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
-import { convertUTCToKSTDate } from '@/utils';
+import { convertUTCToKSTDate, removeTrailingZeros } from '@/utils';
 import { getExpiryClassName } from '../utils';
 
 interface MaterialStockInItemProps {
@@ -34,20 +34,20 @@ export const MaterialStockInItem = ({
       </p>
       <p
         className="flex-1 px-3 text-primary truncate"
-        title={`+${history.quantity.toLocaleString()}${history.material_unit}`}
+        title={`+${removeTrailingZeros(history.quantity)}${history.material_unit}`}
       >
-        {`+${history.quantity.toLocaleString()}${history.material_unit}`}
+        {`+${removeTrailingZeros(history.quantity)}${history.material_unit}`}
       </p>
       <p
         className="flex-1 px-3 text-dg truncate"
         title={
           history.remaining_quantity
-            ? `${history.remaining_quantity.toLocaleString()}${history.material_unit}`
+            ? `${removeTrailingZeros(history.remaining_quantity)}${history.material_unit}`
             : '-'
         }
       >
         {history.remaining_quantity
-          ? `${history.remaining_quantity.toLocaleString()}${history.material_unit}`
+          ? `${removeTrailingZeros(history.remaining_quantity)}${history.material_unit}`
           : '-'}
       </p>
       <p
