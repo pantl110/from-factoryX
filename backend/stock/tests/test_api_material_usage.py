@@ -335,16 +335,68 @@ class MaterialUsageAPITestCase(TestCase):
         self.assertIn("LOT", detail)
         self.assertIn(self.material.name, detail)
 
-    def test_delete_material_usage_success(self):
-        """자재 사용 내역 삭제 성공"""
-        usage = self._create_usage_api("10.00")
-
-        url = f"/v2/material-usage/{usage['id']}?factory_id={self.factory.id}"
-        response = self.client.delete(url, **self.headers)
-        self.assertEqual(response.status_code, 204)
-        self.assertFalse(
-            MaterialUsage.objects.filter(id=usage["id"]).exists()
+    def test_delete_usage_by_omitting_from_payload(self):
+        """payload에서 제외하면 자동 삭제되는지 확인"""
+        # 기존 사용 내역 2개 생성
+        usage1 = self._create_usage_api("10.00")
+        material2 = Material.objects.create(
+            factory=self.factory, name="테스트 자재 2", code="MAT002", unit="개", current_stock=200
         )
-        self.material_history.refresh_from_db()
-        self.assertEqual(self.material_history.remaining_quantity, Decimal("50.00"))
+        history2 = MaterialHistory.objects.create(
+            material=material2,
+            client=self.client_company,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=200,
+            price=2000,
+            lot_number="LOT-2024-002",
+            total_stock=200,
+            remaining_quantity=150,
+        )
+        # usage2 생성 (usage1도 함께 포함하여 삭제되지 않도록)
+        payload2 = [
+            {
+                "id": usage1["id"],
+                "usage_amount": usage1["usage_amount"],
+            },
+            {
+                "plan_id": self.plan.id,
+                "material_id": material2.id,
+                "usage_amount": "15.00",
+                "material_history_id": history2.id,
+            }
+        ]
+        response2 = self._post(payload2)
+        # usage1이 업데이트되면 200, usage2가 새로 생성되면 201이지만, 둘 다 있으면 200이 반환됨
+        self.assertIn(response2.status_code, [200, 201], f"usage2 생성 실패: {response2.json()}")
+        usage2_data = response2.json()
+        # usage2 찾기 (material_id가 material2.id인 것)
+        usage2 = next(u for u in usage2_data if u["material_id"] == material2.id)
+
+        # 기존 사용 내역이 2개인지 확인
+        response = self._get()
+        usages = response.json()
+        self.assertEqual(len(usages), 2, f"사용 내역이 2개가 아님. 현재: {len(usages)}, 내용: {usages}")
+
+        # usage1만 payload에 포함하고 usage2는 제외
+        payload = [
+            {
+                "id": usage1["id"],
+                "usage_amount": "12.00",  # 수정
+            }
+        ]
+
+        response = self._post(payload)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["id"], usage1["id"])
+        self.assertEqual(str(data[0]["usage_amount"]), "12.00")
+
+        # usage2가 삭제되었는지 확인
+        self.assertFalse(MaterialUsage.objects.filter(id=usage2["id"]).exists())
+
+        # usage2의 LOT 잔량이 복원되었는지 확인
+        history2.refresh_from_db()
+        self.assertEqual(history2.remaining_quantity, Decimal("150.00"))
+
 

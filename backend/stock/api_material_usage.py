@@ -24,8 +24,8 @@ router = Router(tags=["MaterialUsage"], auth=jwt_auth)
 
 @router.post(
     "",
-    summary="[C/U] 자재 사용 내역 생성 또는 수정",
-    description="id가 있으면 수정하고, 없으면 생성합니다. 여러 개를 한 번에 처리할 수 있습니다.",
+    summary="[C/U/D] 프로젝트 플랜 자재 사용 내역 생성, 수정 또는 삭제",
+    description="id가 있으면 수정하고, 없으면 생성합니다. 여러 개를 한 번에 처리할 수 있습니다. 같은 plan_id의 기존 항목 중 payload에 없는 항목은 자동으로 삭제됩니다.",
     response={200: List[MaterialUsageOut], 201: List[MaterialUsageOut], 400: dict, 404: dict, 500: dict},
 )
 async def create_or_update_plan_material_usage(
@@ -45,11 +45,43 @@ async def create_or_update_plan_material_usage(
             has_updates = False
 
             with transaction.atomic():
+                # payload에서 plan_id 추출 (모든 항목이 같은 plan_id를 가진다고 가정)
+                plan_id = None
+                payload_ids = set()
+                
+                for item in payload:
+                    if item.id:
+                        payload_ids.add(item.id)
+                    if item.plan_id:
+                        plan_id = item.plan_id
+                    elif item.id:
+                        # id가 있지만 plan_id가 없으면 기존 항목에서 조회
+                        try:
+                            existing = MaterialUsage.objects.get(id=item.id)
+                            plan_id = existing.plan_id
+                        except MaterialUsage.DoesNotExist:
+                            pass
+                
+                # 1) 삭제 모드: plan_id가 있으면 기존 항목 중 payload에 없는 것들 삭제
+                if plan_id:
+                    check_plan_permission(plan_id, int(factory_id))  # 권한 검증
+                    existing_usages = MaterialUsage.objects.filter(plan_id=plan_id)
+                    for existing_usage in existing_usages:
+                        if existing_usage.id not in payload_ids:
+                            # 삭제 전 LOT 할당 복원
+                            restore_lot_allocation(
+                                existing_usage.material_history,
+                                existing_usage.material_repackaging,
+                                existing_usage.usage_amount,
+                            )
+                            existing_usage.delete()
+                
+                # payload 항목들 처리
                 for item in payload:
                     # 각 item마다 plan/usage 결정
                     plan = None
                     if item.id:
-                        # Update 모드
+                        # 2) Update 모드
                         has_updates = True
                         try:
                             usage = (
@@ -79,6 +111,9 @@ async def create_or_update_plan_material_usage(
                         prev_history = usage.material_history
                         prev_repackaging = usage.material_repackaging
                         prev_amount = usage.usage_amount
+
+                        if prev_history or prev_repackaging:
+                            restore_lot_allocation(prev_history, prev_repackaging, prev_amount)
 
                         # Material 변경
                         if item.material_id:
@@ -162,19 +197,21 @@ async def create_or_update_plan_material_usage(
                                 usage.material_repackaging = material_repackaging
                                 usage.material_history = None
 
+                        # MaterialHistory 또는 MaterialRepackaging 중 하나는 필수
+                        if not usage.material_history and not usage.material_repackaging:
+                            raise HttpError(
+                                400,
+                                "material_history_id 또는 material_repackaging_id 중 하나는 필수입니다.",
+                            )
+
                         usage.save()
 
-                        reallocate_lot_on_update(
-                            prev_history,
-                            prev_repackaging,
-                            prev_amount,
-                            usage.material_history,
-                            usage.material_repackaging,
-                            usage.usage_amount,
+                        apply_lot_allocation(
+                            usage.material_history, usage.material_repackaging, usage.usage_amount
                         )
 
                     else:
-                        # Create 모드
+                        # 3) Create 모드
                         if not item.plan_id:
                             raise HttpError(400, "생성 시 plan_id는 필수입니다.")
                         if not item.material_id:
@@ -244,6 +281,13 @@ async def create_or_update_plan_material_usage(
                                     400,
                                     "선택한 소분 LOT이 자재와 일치하지 않습니다.",
                                 )
+
+                        # MaterialHistory 또는 MaterialRepackaging 중 하나는 필수
+                        if not material_history and not material_repackaging:
+                            raise HttpError(
+                                400,
+                                "material_history_id 또는 material_repackaging_id 중 하나는 필수입니다.",
+                            )
 
                         # Usage amount 검증
                         if item.usage_amount <= 0:
@@ -357,52 +401,52 @@ async def list_material_usages(
         raise HttpError(500, f"자재 사용 내역 조회 중 오류가 발생했습니다: {str(e)}")
 
 
-@router.delete(
-    "/{usage_id}",
-    summary="[D] 프로젝트 플랜 자재 사용 내역 삭제",
-    description="usage_id로 자재 사용 내역을 삭제합니다.",
-    response={204: dict, 404: dict, 500: dict},
-)
-async def delete_plan_material_usage(request, usage_id: int):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
+# @router.delete(
+#     "/{usage_id}",
+#     summary="[D] 프로젝트 플랜 자재 사용 내역 삭제",
+#     description="usage_id로 자재 사용 내역을 삭제합니다.",
+#     response={204: dict, 404: dict, 500: dict},
+# )
+# async def delete_plan_material_usage(request, usage_id: int):
+#     factory_id = request.GET.get("factory_id")
+#     if not factory_id:
+#         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
+#     user = request.auth
+#     await is_factory_member(int(factory_id), user)
 
-    try:
-        @sync_to_async
-        def delete_usage():
-            with transaction.atomic():
-                # Usage 존재 확인 및 연결된 플랜/프로젝트 권한 검증
-                try:
-                    usage = (
-                        MaterialUsage.objects.select_related(
-                            "plan__project",
-                            "material_history",
-                            "material_repackaging",
-                        )
-                        .select_for_update()
-                        .get(id=usage_id)
-                    )
-                except MaterialUsage.DoesNotExist:
-                    raise HttpError(404, "해당 자재 사용 내역을 찾을 수 없습니다.")
+#     try:
+#         @sync_to_async
+#         def delete_usage():
+#             with transaction.atomic():
+#                 # Usage 존재 확인 및 연결된 플랜/프로젝트 권한 검증
+#                 try:
+#                     usage = (
+#                         MaterialUsage.objects.select_related(
+#                             "plan__project",
+#                             "material_history",
+#                             "material_repackaging",
+#                         )
+#                         .select_for_update()
+#                         .get(id=usage_id)
+#                     )
+#                 except MaterialUsage.DoesNotExist:
+#                     raise HttpError(404, "해당 자재 사용 내역을 찾을 수 없습니다.")
 
-                # 연결된 플랜 기준으로 권한 검증
-                check_plan_permission(usage.plan_id, int(factory_id))
+#                 # 연결된 플랜 기준으로 권한 검증
+#                 check_plan_permission(usage.plan_id, int(factory_id))
 
-                restore_lot_allocation(
-                    usage.material_history, usage.material_repackaging, usage.usage_amount
-                )
+#                 restore_lot_allocation(
+#                     usage.material_history, usage.material_repackaging, usage.usage_amount
+#                 )
 
-                usage.delete()
+#                 usage.delete()
 
-        await delete_usage()
-        return 204, {}
+#         await delete_usage()
+#         return 204, {}
 
-    except HttpError:
-        raise
-    except Exception as e:
-        raise HttpError(500, f"자재 사용 내역 삭제 중 오류가 발생했습니다: {str(e)}")
+#     except HttpError:
+#         raise
+#     except Exception as e:
+#         raise HttpError(500, f"자재 사용 내역 삭제 중 오류가 발생했습니다: {str(e)}")
 
