@@ -13,6 +13,7 @@ const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/v2/material-usage`;
 export interface MaterialUsageListVariablesModel {
   planId?: number;
   materialId?: number;
+  materialRepackagingId?: number;
 }
 
 interface CreateOrUpdateMaterialUsageVariablesModel {
@@ -22,7 +23,7 @@ interface CreateOrUpdateMaterialUsageVariablesModel {
 
 export const materialUsageQueryKey = (
   filters?: MaterialUsageListVariablesModel
-) => ['material-usages', filters?.planId ?? null, filters?.materialId ?? null];
+) => ['material-usages', filters?.planId ?? null, filters?.materialId ?? null, filters?.materialRepackagingId ?? null];
 
 const ensureFactoryId = (factoryId: number | null) => {
   if (!factoryId) {
@@ -71,9 +72,9 @@ export const useMaterialUsageListMutation = () => {
     Error,
     MaterialUsageListVariablesModel
   >({
-    mutationFn: async ({ planId, materialId }) => {
-      if (!planId && !materialId) {
-        throw new Error('planId 또는 materialId는 최소 하나가 필요합니다.');
+    mutationFn: async ({ planId, materialId, materialRepackagingId }) => {
+      if (!planId && !materialId && !materialRepackagingId) {
+        throw new Error('planId, materialId, 또는 materialRepackagingId 중 하나는 필수입니다.');
       }
       const factoryIdParam = ensureFactoryId(factoryId);
       const response = await axios.get<MaterialUsageResponseModel[]>(BASE_URL, {
@@ -81,6 +82,7 @@ export const useMaterialUsageListMutation = () => {
           factory_id: factoryIdParam,
           ...(planId ? { plan_id: planId } : {}),
           ...(materialId ? { material_id: materialId } : {}),
+          ...(materialRepackagingId ? { material_repackaging_id: materialRepackagingId } : {}),
         },
         withCredentials: true,
       });

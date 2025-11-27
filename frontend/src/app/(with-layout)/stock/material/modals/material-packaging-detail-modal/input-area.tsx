@@ -1,12 +1,16 @@
 import InfoLabelValue from '@/ui/info-label-value';
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
-import { formatDate, handleQuantityInput } from '@/utils/format-number';
+import {
+  formatDate,
+  handleQuantityInput,
+  removeTrailingZeros,
+} from '@/utils/format-number';
 import {
   useGetMaterialRepackagingDetail,
   useUpdateMaterialRepackaging,
   useCreateMaterialRepackaging,
 } from '@/hooks';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { convertUTCToKSTDate, isValidDateString } from '@/utils';
 import {
   UpdateMaterialRepackagingModel,
@@ -58,11 +62,14 @@ export const InputArea = ({
       },
     });
 
+  const [isQuantityEditing, setIsQuantityEditing] = useState(false);
+  const [quantityInputValue, setQuantityInputValue] = useState<string>('');
+
   // repackaging 데이터가 로드되면 form에 채우기
   useEffect(() => {
     if (mode === 'update' && repackaging) {
       reset({
-        quantity: repackaging.quantity.toLocaleString(),
+        quantity: removeTrailingZeros(repackaging.quantity),
         location: repackaging.warehouse_location || '',
         expirationDate: repackaging.expiration_date
           ? convertUTCToKSTDate(repackaging.expiration_date) || ''
@@ -195,8 +202,26 @@ export const InputArea = ({
     field: ControllerRenderProps<MaterialPackagingFormModel, 'quantity'>,
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { displayValue } = handleQuantityInput(e.target.value);
-    field.onChange(displayValue);
+    const inputValue = e.target.value;
+    const result = handleQuantityInput(inputValue);
+
+    // 입력 중인 값 표시
+    let displayVal = result.displayValue;
+    if (inputValue.endsWith('.') && !result.displayValue.includes('.')) {
+      displayVal = `${result.displayValue}.`;
+    }
+    setQuantityInputValue(displayVal);
+
+    // 실제 저장할 값 (문자열로 저장, 소수점 포함)
+    if (inputValue.endsWith('.') && inputValue !== '.') {
+      field.onChange(inputValue);
+    } else {
+      const savedValue =
+        result.numericValue === 0 && !inputValue.endsWith('.')
+          ? ''
+          : result.numericValue.toString();
+      field.onChange(savedValue);
+    }
   };
 
   const handleLocationChange = (
@@ -236,16 +261,37 @@ export const InputArea = ({
       <Controller
         name="quantity"
         control={control}
-        render={({ field }) => (
-          <InfoLabelValue
-            label="수량"
-            value={field.value}
-            placeholder="(필수) 소분할 수량을 입력하세요."
-            required={true}
-            isEditing={true}
-            onChange={(e) => handleQuantityChange(field, e)}
-          />
-        )}
+        render={({ field }) => {
+          const displayValue = isQuantityEditing
+            ? quantityInputValue
+            : field.value
+              ? removeTrailingZeros(field.value)
+              : '';
+
+          return (
+            <InfoLabelValue
+              label="수량"
+              value={displayValue}
+              placeholder="(필수) 소분할 수량을 입력하세요."
+              required={true}
+              isEditing={true}
+              onChange={(e) => handleQuantityChange(field, e)}
+              onFocus={() => {
+                setIsQuantityEditing(true);
+                if (field.value) {
+                  const formatted = removeTrailingZeros(field.value);
+                  setQuantityInputValue(formatted);
+                } else {
+                  setQuantityInputValue('');
+                }
+              }}
+              onBlur={() => {
+                setIsQuantityEditing(false);
+                setQuantityInputValue('');
+              }}
+            />
+          );
+        }}
       />
 
       <Controller

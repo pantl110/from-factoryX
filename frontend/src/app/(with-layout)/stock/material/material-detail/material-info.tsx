@@ -49,13 +49,6 @@ interface MaterialInfoFormModel {
 function uncomma(str: string) {
   return str.replace(/,/g, '');
 }
-// Helper to add commas (string only, safe for big numbers)
-function addComma(num: string | number) {
-  if (num === '' || num === undefined || num === null) return '';
-  const str = String(num).replace(/,/g, '');
-  // 소수점 이하도 지원하려면 아래 정규식 사용
-  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
 
 // Helper to convert string to number (handles commas and empty strings)
 function stringToNumber(str: string | undefined | null): number | null {
@@ -86,6 +79,13 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
     const [expiryStatus, setExpiryStatus] = useState<ExpiryStatusType | null>(
       null
     );
+    const [isStandardStockEditing, setIsStandardStockEditing] = useState(false);
+    const [standardStockInputValue, setStandardStockInputValue] =
+      useState<string>('');
+    const [isRopEditing, setIsRopEditing] = useState(false);
+    const [ropInputValue, setRopInputValue] = useState<string>('');
+    const [isMaxStockEditing, setIsMaxStockEditing] = useState(false);
+    const [maxStockInputValue, setMaxStockInputValue] = useState<string>('');
 
     const { getMaterialDetail } = useGetMaterial();
     const {
@@ -374,11 +374,6 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 'standardStock'
               >;
             }) => {
-              const [isStandardStockEditing, setIsStandardStockEditing] =
-                useState(false);
-              const [standardStockInputValue, setStandardStockInputValue] =
-                useState<string>('');
-
               const handleChangeStandardStock = (
                 e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
               ) => {
@@ -456,9 +451,6 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             }: {
               field: ControllerRenderProps<MaterialInfoFormModel, 'rop'>;
             }) => {
-              const [isRopEditing, setIsRopEditing] = useState(false);
-              const [ropInputValue, setRopInputValue] = useState<string>('');
-
               const handleChangeRop = (
                 e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
               ) => {
@@ -530,10 +522,6 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             name="maxStock"
             control={control}
             render={({ field }) => {
-              const [isMaxStockEditing, setIsMaxStockEditing] = useState(false);
-              const [maxStockInputValue, setMaxStockInputValue] =
-                useState<string>('');
-
               const handleChangeMaxStock = (
                 e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
               ) => {
