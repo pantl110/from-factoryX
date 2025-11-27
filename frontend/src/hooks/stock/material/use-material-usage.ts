@@ -20,15 +20,10 @@ interface CreateOrUpdateMaterialUsageVariablesModel {
   invalidateFilters?: MaterialUsageListVariablesModel;
 }
 
-interface DeleteMaterialUsageVariablesModel {
-  usageId: number;
-  invalidateFilters?: MaterialUsageListVariablesModel;
-}
-
 export const materialUsageQueryKey = (
   filters?: MaterialUsageListVariablesModel
 ) => [
-  'plan-material-usages',
+  'material-usages',
   filters?.planId ?? null,
   filters?.materialId ?? null,
 ];
@@ -40,7 +35,7 @@ const ensureFactoryId = (factoryId: number | null) => {
   return factoryId;
 };
 
-export const useCreateOrUpdatePlanMaterialUsageMutation = () => {
+export const useCreateOrUpdateMaterialUsageMutation = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
   const queryClient = useQueryClient();
 
@@ -72,7 +67,7 @@ export const useCreateOrUpdatePlanMaterialUsageMutation = () => {
   });
 };
 
-export const usePlanMaterialUsageListMutation = () => {
+export const useMaterialUsageListMutation = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
 
   return useMutation<
@@ -95,28 +90,6 @@ export const usePlanMaterialUsageListMutation = () => {
       });
 
       return response.data;
-    },
-  });
-};
-
-export const useDeletePlanMaterialUsageMutation = () => {
-  const factoryId = useMemberStore((state) => state.factoryId);
-  const queryClient = useQueryClient();
-
-  return useMutation<void, Error, DeleteMaterialUsageVariablesModel>({
-    mutationFn: async ({ usageId }) => {
-      const factoryIdParam = ensureFactoryId(factoryId);
-      await axios.delete(`${BASE_URL}/${usageId}`, {
-        params: { factory_id: factoryIdParam },
-        withCredentials: true,
-      });
-    },
-    onSuccess: (_data, variables) => {
-      if (variables?.invalidateFilters) {
-        queryClient.invalidateQueries({
-          queryKey: materialUsageQueryKey(variables.invalidateFilters),
-        });
-      }
     },
   });
 };

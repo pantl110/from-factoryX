@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Material } from './material';
-import { useMaterialProduct, usePlanMaterialUsageListMutation } from '@/hooks';
+import {
+  useMaterialProduct,
+  useMaterialUsageListMutation,
+  useCreateOrUpdateMaterialUsageMutation,
+} from '@/hooks';
 import {
   MaterialProductConnectionModel,
   MaterialProductConnectionResponseModel,
+  MaterialUsageModel,
   MaterialUsageResponseModel,
 } from '@/types/data-model';
 
@@ -22,9 +27,12 @@ export const LossRate = ({
 }: LossRateProps) => {
   const { getMaterialProductConnections, data, isLoading } =
     useMaterialProduct();
-  const materialSaveHandlersRef = useRef<Array<() => Promise<void>>>([]);
-  const { mutateAsync: fetchMaterialUsages } =
-    usePlanMaterialUsageListMutation();
+  const materialSaveHandlersRef = useRef<
+    Array<() => Promise<MaterialUsageModel[]>>
+  >([]);
+  const { mutateAsync: fetchMaterialUsages } = useMaterialUsageListMutation();
+  const { mutateAsync: saveMaterialUsage } =
+    useCreateOrUpdateMaterialUsageMutation();
   const [allUsages, setAllUsages] = useState<MaterialUsageResponseModel[]>([]);
 
   useEffect(() => {
@@ -68,15 +76,32 @@ export const LossRate = ({
     if (!onRegisterSaveAllMaterialUsage) return;
 
     onRegisterSaveAllMaterialUsage(async () => {
+      if (!planId) return;
+
+      // 저장 함수 실행 시점에 현재 등록된 핸들러들을 수집
       const fns = materialSaveHandlersRef.current;
       if (!fns.length) return;
-      await Promise.all(fns.map((fn) => fn()));
+
+      // 모든 자재의 usage payload를 모아서 한 번에 저장
+      const allPayloads: MaterialUsageModel[] = [];
+      for (const fn of fns) {
+        const payload = await fn();
+        allPayloads.push(...payload);
+      }
+
+      // 모든 payload를 한 번에 저장
+      if (allPayloads.length > 0) {
+        await saveMaterialUsage({
+          payload: allPayloads,
+          invalidateFilters: { planId, materialId: undefined },
+        });
+      }
     });
-  }, [onRegisterSaveAllMaterialUsage]);
+  }, [onRegisterSaveAllMaterialUsage, planId, saveMaterialUsage]);
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3 h-10 flex items-center">자재별 로스율 정보</h3>
+      <h3 className="Heading-3 h-10 flex items-center">자재 투입량 정보</h3>
       <div className="flex flex-col">
         {materials.length === 0 && !isLoading && <></>}
         {/* 매 렌더링마다 전체 핸들러 배열 초기화 후, 각 자재별 저장 함수를 쌓는다 */}

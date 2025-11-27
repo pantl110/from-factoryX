@@ -2,8 +2,9 @@ import { Input, Tooltip } from '@/ui';
 import { useTooltip } from '@/hooks';
 import { Trash } from '@phosphor-icons/react';
 import { SubstituteMaterialDropdown } from './substitute-material-dropdown';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { LotDropdown } from './lot-dropdown';
+import { handleQuantityInput } from '@/utils';
 
 interface MaterialUsageProps {
   materialName: string;
@@ -17,6 +18,11 @@ interface MaterialUsageProps {
   resetSignal?: number;
   onChangeSelectedMaterial?: (materialId: number) => void;
   initialLotNumber?: string;
+  onChangeSelectedLot?: (lotInfo: {
+    lotNumber: string;
+    materialHistoryId: number | null;
+    materialRepackagingId: number | null;
+  }) => void;
 }
 
 export const MaterialUsage = ({
@@ -31,6 +37,7 @@ export const MaterialUsage = ({
   resetSignal,
   onChangeSelectedMaterial,
   initialLotNumber,
+  onChangeSelectedLot,
 }: MaterialUsageProps) => {
   const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -43,6 +50,23 @@ export const MaterialUsage = ({
     name: materialName,
   });
   const [selectedLotNumber, setSelectedLotNumber] = useState('');
+  const [usageAmountDisplay, setUsageAmountDisplay] = useState<string>(() => {
+    if (usageAmount > 0) {
+      const result = handleQuantityInput(usageAmount.toString());
+      return result.displayValue;
+    }
+    return '';
+  });
+
+  // usageAmount가 외부에서 변경되면 displayValue 업데이트
+  useEffect(() => {
+    if (usageAmount > 0) {
+      const result = handleQuantityInput(usageAmount.toString());
+      setUsageAmountDisplay(result.displayValue);
+    } else {
+      setUsageAmountDisplay('');
+    }
+  }, [usageAmount]);
 
   // 서버에서 내려온 LOT 번호가 있으면 최초 진입 시 한 번 세팅
   useEffect(() => {
@@ -60,7 +84,12 @@ export const MaterialUsage = ({
       name: materialName,
     });
     setSelectedLotNumber('');
-  }, [resetSignal, materialId, materialName]);
+    onChangeSelectedLot?.({
+      lotNumber: '',
+      materialHistoryId: null,
+      materialRepackagingId: null,
+    });
+  }, [resetSignal, materialId, materialName, onChangeSelectedLot]);
   return (
     <div className="flex gap-2.5 border-b border-lg pb-5">
       <div className="flex-1 relative">
@@ -83,6 +112,11 @@ export const MaterialUsage = ({
                 });
                 // 자재명이 변경되면 기존 LOT 번호는 초기화
                 setSelectedLotNumber('');
+                onChangeSelectedLot?.({
+                  lotNumber: '',
+                  materialHistoryId: null,
+                  materialRepackagingId: null,
+                });
                 onChangeIsSubstitute?.(item.id !== materialId);
                 onChangeSelectedMaterial?.(item.id);
                 setIsDropdownOpen(false);
@@ -108,6 +142,12 @@ export const MaterialUsage = ({
               onClose={() => setIsLotDropdownOpen(false)}
               onSelect={(item) => {
                 setSelectedLotNumber(item.name);
+                onChangeSelectedLot?.({
+                  lotNumber: item.name,
+                  materialHistoryId: item.source === 'history' ? item.id : null,
+                  materialRepackagingId:
+                    item.source === 'repackaging' ? item.id : null,
+                });
                 setIsLotDropdownOpen(false);
               }}
             />
@@ -119,12 +159,12 @@ export const MaterialUsage = ({
           label="실제 투입량"
           placeholder="투입량을 입력하세요."
           message="작업자가 실제로 공정에 넣은 양"
-          type="number"
-          value={usageAmount || ''}
+          type="text"
+          value={usageAmountDisplay}
           onChange={(e) => {
-            const raw = e.target.value;
-            const parsed = raw === '' ? 0 : parseFloat(raw);
-            onChangeUsage(Number.isNaN(parsed) ? 0 : parsed);
+            const result = handleQuantityInput(e.target.value);
+            setUsageAmountDisplay(result.displayValue);
+            onChangeUsage(result.numericValue);
           }}
         />
       </div>

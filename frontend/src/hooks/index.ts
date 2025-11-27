@@ -63,11 +63,7 @@ export { default as useUpdateProjectLog } from './project/project-log/use-update
 export { default as useCreateOrUpdateProjectPlan } from './project/project-plan/use-create-or-update-project-plan';
 export { default as useGetProjectPlans } from './project/project-plan/use-get-project-plans';
 export { default as useDeleteProjectPlan } from './project/project-plan/use-delete-project-plan';
-export {
-  useCreateOrUpdatePlanMaterialUsageMutation,
-  usePlanMaterialUsageListMutation,
-  useDeletePlanMaterialUsageMutation,
-} from './project/project-plan/use-plan-material-usage';
+
 
 // Project refund related hooks
 export { default as useCreateRefund } from './project/project-refund/use-create-refund';
@@ -141,6 +137,10 @@ export { default as useGetMaterialRepackagings } from './stock/material/use-get-
 export { default as useGetMaterialRepackagingDetail } from './stock/material/use-get-material-repackaging-detail';
 export { default as useUpdateMaterialRepackaging } from './stock/material/use-update-material-repackaging';
 export { default as useDeleteMaterialRepackaging } from './stock/material/use-delete-material-repackaging';
+export {
+  useCreateOrUpdateMaterialUsageMutation,
+  useMaterialUsageListMutation,
+} from './stock/material/use-material-usage';
 
 // Material history related hooks
 export { default as useCreateMaterialHistory } from './stock/material-history/use-create-material-history';

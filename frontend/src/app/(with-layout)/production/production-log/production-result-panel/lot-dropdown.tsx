@@ -7,7 +7,11 @@ interface LotDropdownProps {
   width?: string;
   materialId: number;
   onClose: () => void;
-  onSelect: (item: { id: number; name: string }) => void;
+  onSelect: (item: {
+    id: number;
+    name: string;
+    source: 'history' | 'repackaging';
+  }) => void;
 }
 
 export const LotDropdown = ({
@@ -66,6 +70,7 @@ export const LotDropdown = ({
               onSelect({
                 id: lot.id,
                 name: lot.lot_number,
+                source: lot.source,
               })
             }
           />

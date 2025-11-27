@@ -63,6 +63,7 @@ export const SubstituteMaterialDropdown = ({
           onClose();
         }}
       />
+
       {/* <DropdownItem>
         <div className="pl-2 pr-4 flex items-center gap-2">
           <RoundChip text="기준 자재" variant="sm" color="secondary" />
@@ -85,6 +86,9 @@ export const SubstituteMaterialDropdown = ({
           </div>
         </DropdownItem>
       ))}
+
+      {/* 로딩 인디케이터 */}
+      {isLoading && <DropdownItem text="..." noHover />}
     </Dropdown>
   );
 };
