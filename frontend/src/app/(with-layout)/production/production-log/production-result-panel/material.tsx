@@ -77,7 +77,10 @@ export const Material = ({
 
   const handleAddUsage = () => {
     setUsages((prev) => {
-      const newId = prev.length ? prev[prev.length - 1] + 1 : 0;
+      // usages 배열은 렌더링 시 reverse되므로,
+      // 새 행이 화면의 "맨 아래"에 오도록 ID는 맨 앞에 추가한다.
+      const maxId = prev.length ? Math.max(...prev) : -1;
+      const newId = maxId + 1;
       setUsageAmounts((prevAmounts) => ({
         ...prevAmounts,
         [newId]: 0,
@@ -90,7 +93,7 @@ export const Material = ({
         ...prevIds,
         [newId]: material.material_id,
       }));
-      return [...prev, newId];
+      return [newId, ...prev];
     });
   };
 
@@ -195,59 +198,62 @@ export const Material = ({
       <div className="flex flex-col">
         {/* 자재 사용 정보 입력 */}
         <div className="flex flex-col gap-5">
-          {usages.map((id, index) => (
-            <MaterialUsage
-              key={id}
-              materialName={
-                // 전체 삭제 이후에는 기준 자재명으로 고정
-                resetCounter > 0
-                  ? material.material_name
-                  : initialUsages && index < initialUsages.length
-                    ? (initialUsages[index]?.material_name ??
-                      material.material_name)
-                    : material.material_name
-              }
-              materialId={
-                // 전체 삭제 이후에는 기준 자재 ID로 고정
-                resetCounter > 0
-                  ? material.material_id
-                  : initialUsages && index < initialUsages.length
-                    ? (initialUsages[index]?.material_id ??
-                      material.material_id)
-                    : material.material_id
-              }
-              unit={material.material_unit}
-              initialLotNumber={
-                // 전체 삭제 이후에는 LOT 초기화 (빈 값 → 화면에서는 '-')
-                resetCounter > 0
-                  ? ''
-                  : initialUsages && index < initialUsages.length
-                    ? (initialUsages[index]?.material_history_lot_number ??
-                      initialUsages[index]?.material_repackaging_lot_number ??
-                      '')
-                    : ''
-              }
-              onDelete={() => handleDeleteUsage(id)}
-              canDelete={index !== 0}
-              usageAmount={usageAmounts[id] ?? 0}
-              onChangeUsage={(value) =>
-                setUsageAmounts((prev) => ({ ...prev, [id]: value }))
-              }
-              onChangeIsSubstitute={(isSubstitute) =>
-                setUsageIsSubstitute((prev) => ({
-                  ...prev,
-                  [id]: isSubstitute,
-                }))
-              }
-              resetSignal={resetCounter}
-              onChangeSelectedMaterial={(selectedMaterialId) =>
-                setUsageMaterialIds((prev) => ({
-                  ...prev,
-                  [id]: selectedMaterialId,
-                }))
-              }
-            />
-          ))}
+          {[...usages]
+            .slice()
+            .reverse()
+            .map((id, index, arr) => {
+              const record =
+                initialUsages && id < initialUsages.length
+                  ? initialUsages[id]
+                  : undefined;
+
+              return (
+                <MaterialUsage
+                  key={id}
+                  materialName={
+                    // 전체 삭제 이후에는 기준 자재명으로 고정
+                    resetCounter > 0
+                      ? material.material_name
+                      : (record?.material_name ?? material.material_name)
+                  }
+                  materialId={
+                    // 전체 삭제 이후에는 기준 자재 ID로 고정
+                    resetCounter > 0
+                      ? material.material_id
+                      : (record?.material_id ?? material.material_id)
+                  }
+                  unit={material.material_unit}
+                  initialLotNumber={
+                    // 전체 삭제 이후에는 LOT 초기화 (빈 값 → 화면에서는 '-')
+                    resetCounter > 0
+                      ? ''
+                      : (record?.material_history_lot_number ??
+                        record?.material_repackaging_lot_number ??
+                        '')
+                  }
+                  onDelete={() => handleDeleteUsage(id)}
+                  // 화면에서 첫 번째 행은 삭제 불가
+                  canDelete={index !== 0}
+                  usageAmount={usageAmounts[id] ?? 0}
+                  onChangeUsage={(value) =>
+                    setUsageAmounts((prev) => ({ ...prev, [id]: value }))
+                  }
+                  onChangeIsSubstitute={(isSubstitute) =>
+                    setUsageIsSubstitute((prev) => ({
+                      ...prev,
+                      [id]: isSubstitute,
+                    }))
+                  }
+                  resetSignal={resetCounter}
+                  onChangeSelectedMaterial={(selectedMaterialId) =>
+                    setUsageMaterialIds((prev) => ({
+                      ...prev,
+                      [id]: selectedMaterialId,
+                    }))
+                  }
+                />
+              );
+            })}
         </div>
 
         {/* 로스율 계산 */}
