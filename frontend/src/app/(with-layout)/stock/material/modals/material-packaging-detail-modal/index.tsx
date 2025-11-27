@@ -154,7 +154,9 @@ export const MaterialPackagingDetailModal = ({
           </div>
 
           {/* 소분된 원자재 사용 내역 */}
-          {mode === 'update' && <UsageHistory />}
+          {mode === 'update' && repackagingId && (
+            <UsageHistory repackagingId={repackagingId} />
+          )}
 
           {/* 버튼 */}
           {mode === 'create' && (

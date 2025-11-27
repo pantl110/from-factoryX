@@ -69,7 +69,7 @@ export const SubMaterialItem = ({
   const stockStatus = getStockStatus();
   const stockQuantity =
     material.current_stock !== null && material.current_stock !== undefined
-      ? `${removeTrailingZeros(material.current_stock)} ${material.unit}`
+      ? `${removeTrailingZeros(material.current_stock)}${material.unit}`
       : '-';
 
   return (

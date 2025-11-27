@@ -1731,6 +1731,7 @@ export interface MaterialUsageModel {
 export interface MaterialUsageResponseModel {
   id: number;
   plan_id: number;
+  plan_product_name?: string | null;
   plan_end_date?: string | null;
   original_material_id?: number | null;
   original_material_name?: string | null;
@@ -1744,6 +1745,10 @@ export interface MaterialUsageResponseModel {
   material_repackaging_lot_number?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface MaterialUsageListResponseModel extends PaginationModel {
+  data: MaterialUsageResponseModel[];
 }
 
 import {

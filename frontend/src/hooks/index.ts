@@ -139,6 +139,7 @@ export { default as useDeleteMaterialRepackaging } from './stock/material/use-de
 export {
   useCreateOrUpdateMaterialUsageMutation,
   useMaterialUsageListMutation,
+  useMaterialUsagePaginatedQuery,
 } from './stock/material/use-material-usage';
 
 // Material history related hooks

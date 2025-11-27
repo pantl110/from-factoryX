@@ -34,20 +34,20 @@ export const MaterialStockInItem = ({
       </p>
       <p
         className="flex-1 px-3 text-primary truncate"
-        title={`+${removeTrailingZeros(history.quantity)}${history.material_unit}`}
+        title={`+${removeTrailingZeros(history.quantity)}`}
       >
-        {`+${removeTrailingZeros(history.quantity)}${history.material_unit}`}
+        {`+${removeTrailingZeros(history.quantity)}`}
       </p>
       <p
         className="flex-1 px-3 text-dg truncate"
         title={
           history.remaining_quantity
-            ? `${removeTrailingZeros(history.remaining_quantity)}${history.material_unit}`
+            ? `${removeTrailingZeros(history.remaining_quantity)}`
             : '-'
         }
       >
         {history.remaining_quantity
-          ? `${removeTrailingZeros(history.remaining_quantity)}${history.material_unit}`
+          ? `${removeTrailingZeros(history.remaining_quantity)}`
           : '-'}
       </p>
       <p

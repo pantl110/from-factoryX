@@ -2,7 +2,6 @@ import { MiniBtn } from '@/ui';
 import MaterialInfo, { MaterialInfoModel } from './material-info';
 import ProductRequiringMaterial from './product-requiring-material';
 import QuotationHistory from './quotation-history';
-import MaterialStockLog from './material-stock-log';
 import {
   useImperativeHandle,
   forwardRef,
@@ -137,7 +136,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
 
     // 페이지네이션 상태 (각 섹션별로 독립적)
     const [priceCurrentPage, setPriceCurrentPage] = useState(1);
-    const [stockCurrentPage, setStockCurrentPage] = useState(1);
     const pageSize = 5;
 
     // 업체별 단가 비교 조회 훅 (타입: 구매만)
@@ -149,22 +147,9 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
         page_size: pageSize,
       });
 
-    // 재고 이력 조회 훅 (전체)
-    const { histories: stockHistories, isLoading: isStockLoading } =
-      useGetMaterialHistory({
-        material_id: materialId,
-        page: stockCurrentPage,
-        page_size: pageSize,
-      });
-
     // 업체별 단가 비교 페이지 변경 핸들러
     const handlePricePageChange = (page: number) => {
       setPriceCurrentPage(page);
-    };
-
-    // 재고 이력 페이지 변경 핸들러 (타입: 전체)
-    const handleStockPageChange = (page: number) => {
-      setStockCurrentPage(page);
     };
 
     // watch와 setValue 함수를 메모이제이션
@@ -394,11 +379,10 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           />
 
           {/* 원자재 사용 내역 */}
-          <MaterialStockOut />
+          <MaterialStockOut materialId={materialId} />
 
-          {/*  이 부분 확인해보기 */}
           {/* 원자재 입·출고 내역 */}
-          <div className="flex flex-col gap-3">
+          {/* <div className="flex flex-col gap-3">
             <h3 className="Heading-3 text-dg h-10 flex items-center">
               원자재 입고 및 사용 내역
             </h3>
@@ -410,7 +394,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               totalPages={stockHistories?.pageCnt || 1}
               onPageChange={handleStockPageChange}
             />
-          </div>
+          </div> */}
         </div>
       </>
     );
