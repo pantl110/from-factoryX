@@ -1085,7 +1085,7 @@ export interface ProjectPlanModel {
   end_date: string; // 생산 종료 일자
   avg_production_time: number; // 단위당 소요 시간
   material_status: '충분' | '부족'; // 원자재 상태
-  material_consumed: boolean; // 원자재 소모 여부
+  // material_consumed: boolean; // 원자재 소모 여부
 }
 
 export interface ProjectPlanListResponseModel extends PaginationModel {
@@ -1712,6 +1712,36 @@ export interface WorkInstructionHistoryResponseModel {
   changed_by: WorkInstructionHistoryUserModel | null;
   before_data: WorkInstructionHistoryChangeDataModel | null;
   after_data: WorkInstructionHistoryChangeDataModel | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Material Usage API
+// 생성, 수정
+export interface MaterialUsageModel {
+  id?: number;
+  plan_id?: number;
+  material_id?: number;
+  original_material_id?: number | null;
+  usage_amount?: number;
+  material_history_id?: number | null;
+  material_repackaging_id?: number | null;
+}
+
+export interface MaterialUsageResponseModel {
+  id: number;
+  plan_id: number;
+  plan_end_date?: string | null;
+  original_material_id?: number | null;
+  original_material_name?: string | null;
+  material_id: number;
+  material_name: string;
+  material_unit: string;
+  usage_amount: number | string;
+  material_history_id?: number | null;
+  material_history_lot_number?: string | null;
+  material_repackaging_id?: number | null;
+  material_repackaging_lot_number?: string | null;
   created_at: string;
   updated_at: string;
 }

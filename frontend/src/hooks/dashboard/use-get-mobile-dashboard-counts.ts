@@ -37,7 +37,7 @@ const useGetMobileDashboardCounts = (
 
       try {
         const response = await axios.get<MobileDashboardCountsResponseModel>(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan/dashboard-mobile`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v2/project-plan/dashboard-mobile`,
           {
             params: {
               factory_id: factoryId,

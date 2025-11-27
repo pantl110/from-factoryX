@@ -23,7 +23,7 @@ const useGetStaleConfirmedProjects = () => {
 
       try {
         const response = await axios.get<StaleConfirmedProjectModel[]>(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/project/stale-confirmed`,
+          `${process.env.NEXT_PUBLIC_API_URL}/v2/project/stale-confirmed`,
           {
             params: {
               factory_id: factoryId,

@@ -4,7 +4,7 @@ import { ProductionInfo } from './production-info';
 import { DefectRate } from './defect-rate';
 import { LossRate } from './loss-rate';
 import { ProjectPlanModel } from '@/types/data-model';
-import { useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import {
   useCreateOrUpdateProjectPlan,
   checkDateValidity,
@@ -49,6 +49,8 @@ export const ProductionResultPanel = ({
   const [defectiveQuantity, setDefectiveQuantity] = useState<number>(
     plan.defective_quantity ?? 0
   );
+
+  const materialUsageSaveRef = useRef<(() => Promise<void>) | null>(null);
 
   const handleFormChange = useCallback(
     (data: { quantity: number; start_date: string; end_date: string }) => {
@@ -131,6 +133,10 @@ export const ProductionResultPanel = ({
       });
 
       if (result.success) {
+        // 생산 계획 저장 성공 시 자재 사용 정보도 함께 저장
+        if (materialUsageSaveRef.current) {
+          await materialUsageSaveRef.current();
+        }
         onSaveSuccess?.();
         onClose();
       } else {
@@ -189,6 +195,10 @@ export const ProductionResultPanel = ({
           <LossRate
             productId={plan.quotation_product.product.id}
             productionQuantity={currentFormData.quantity}
+            planId={plan.id}
+            onRegisterSaveAllMaterialUsage={(fn) => {
+              materialUsageSaveRef.current = fn;
+            }}
           />
         </div>
       </Panel>

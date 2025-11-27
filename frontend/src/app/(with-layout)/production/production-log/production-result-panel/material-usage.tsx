@@ -15,6 +15,8 @@ interface MaterialUsageProps {
   onChangeUsage: (value: number) => void;
   onChangeIsSubstitute?: (isSubstitute: boolean) => void;
   resetSignal?: number;
+  onChangeSelectedMaterial?: (materialId: number) => void;
+  initialLotNumber?: string;
 }
 
 export const MaterialUsage = ({
@@ -27,6 +29,8 @@ export const MaterialUsage = ({
   onChangeUsage,
   onChangeIsSubstitute,
   resetSignal,
+  onChangeSelectedMaterial,
+  initialLotNumber,
 }: MaterialUsageProps) => {
   const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -40,8 +44,17 @@ export const MaterialUsage = ({
   });
   const [selectedLotNumber, setSelectedLotNumber] = useState('');
 
+  // 서버에서 내려온 LOT 번호가 있으면 최초 진입 시 한 번 세팅
+  useEffect(() => {
+    if (initialLotNumber == null) return;
+    setSelectedLotNumber(initialLotNumber);
+  }, [initialLotNumber]);
+
   // 전체 삭제 시(상위에서 resetSignal 증가) 첫 행의 표시 값 초기화
   useEffect(() => {
+    // 초기 마운트 시에는 resetSignal이 0이므로 DB에서 내려온 LOT 값(있다면)을 유지
+    if (!resetSignal) return;
+
     setSelectedMaterial({
       id: materialId,
       name: materialName,
@@ -71,6 +84,7 @@ export const MaterialUsage = ({
                 // 자재명이 변경되면 기존 LOT 번호는 초기화
                 setSelectedLotNumber('');
                 onChangeIsSubstitute?.(item.id !== materialId);
+                onChangeSelectedMaterial?.(item.id);
                 setIsDropdownOpen(false);
               }}
               onClose={() => setIsDropdownOpen(false)}

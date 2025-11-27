@@ -63,6 +63,11 @@ export { default as useUpdateProjectLog } from './project/project-log/use-update
 export { default as useCreateOrUpdateProjectPlan } from './project/project-plan/use-create-or-update-project-plan';
 export { default as useGetProjectPlans } from './project/project-plan/use-get-project-plans';
 export { default as useDeleteProjectPlan } from './project/project-plan/use-delete-project-plan';
+export {
+  useCreateOrUpdatePlanMaterialUsageMutation,
+  usePlanMaterialUsageListMutation,
+  useDeletePlanMaterialUsageMutation,
+} from './project/project-plan/use-plan-material-usage';
 
 // Project refund related hooks
 export { default as useCreateRefund } from './project/project-refund/use-create-refund';

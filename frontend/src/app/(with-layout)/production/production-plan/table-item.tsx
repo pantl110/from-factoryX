@@ -182,18 +182,18 @@ const TableItem = ({
           projectStatus === 'pending' ||
           item.quotation_product?.is_delivery ||
           isViewer ||
-          !hasSubscription() ||
-          item.material_consumed
-            ? 'cursor-default'
+          !hasSubscription()
+            ? // || item.material_consumed
+              'cursor-default'
             : 'cursor-pointer'
         }
         onClick={
           projectStatus === 'pending' ||
           item.quotation_product?.is_delivery ||
           isViewer ||
-          !hasSubscription() ||
-          item.material_consumed
-            ? undefined
+          !hasSubscription()
+            ? // || item.material_consumed
+              undefined
             : (e) => {
                 if (e && onOperationStatusClick) {
                   e.stopPropagation();
@@ -205,9 +205,9 @@ const TableItem = ({
           projectStatus === 'pending' ||
           item.quotation_product?.is_delivery ||
           isViewer ||
-          !hasSubscription() ||
-          item.material_consumed
-            ? false
+          !hasSubscription()
+            ? // || item.material_consumed
+              false
             : true
         }
       />
