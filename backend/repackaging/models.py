@@ -33,8 +33,8 @@ class MaterialRepackaging(BaseModel):
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "원자재 소분 내역"
-        verbose_name_plural = "원자재 소분 내역"
+        verbose_name = "Material Repackaging"
+        verbose_name_plural = "Material Repackagings"
 
     @property
     def parent_history_lot_number(self):

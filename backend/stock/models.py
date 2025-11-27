@@ -358,8 +358,8 @@ class MaterialUsage(BaseModel):
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "자재 사용 내역"
-        verbose_name_plural = "자재 사용 내역"
+        verbose_name = "Material Usage"
+        verbose_name_plural = "Material Usages"
         app_label = "stock"
         db_table = "stock_materialusage"
 
