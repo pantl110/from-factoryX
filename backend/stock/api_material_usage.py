@@ -24,7 +24,7 @@ router = Router(tags=["MaterialUsage"], auth=jwt_auth)
 
 @router.post(
     "",
-    summary="[C/U] 프로젝트 플랜 자재 사용 내역 생성 또는 수정",
+    summary="[C/U] 자재 사용 내역 생성 또는 수정",
     description="id가 있으면 수정하고, 없으면 생성합니다. 여러 개를 한 번에 처리할 수 있습니다.",
     response={200: List[MaterialUsageOut], 201: List[MaterialUsageOut], 400: dict, 404: dict, 500: dict},
 )
