@@ -10,7 +10,11 @@ import {
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import { getMaterialStockStatus } from '@/utils';
+import {
+  getMaterialStockStatus,
+  removeTrailingZeros,
+  handleQuantityInput,
+} from '@/utils';
 import { ExpiryStatusType } from '@/types/status-type';
 import { mapExpiryStatus, mapMaterialToFormData } from './utils';
 
@@ -267,7 +271,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                         const numStr = field.value.toString();
                         const isNegative = numStr.startsWith('-');
                         const absValue = numStr.replace('-', '');
-                        const formatted = addComma(absValue);
+                        const formatted = removeTrailingZeros(absValue);
                         return isNegative ? `-${formatted}` : formatted;
                       })();
 
@@ -278,29 +282,49 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
                 // 음수 기호 체크 (맨 앞의 -만 허용)
                 const isNegative = inputValue.startsWith('-');
-                // 숫자만 추출
-                const numValue = inputValue.replace(/[^0-9]/g, '');
+                // 음수 기호 제거 후 handleQuantityInput 적용
+                const valueWithoutSign = isNegative
+                  ? inputValue.slice(1)
+                  : inputValue;
+                const result = handleQuantityInput(valueWithoutSign);
 
-                // 표시할 값 (쉼표 포함)
-                let displayVal = '';
+                // 음수 기호를 포함한 displayValue 생성
+                let displayVal = result.displayValue;
                 if (inputValue === '-') {
                   displayVal = '-';
-                } else if (numValue === '') {
-                  displayVal = '';
-                } else {
-                  const formatted = numValue.replace(
-                    /\B(?=(\d{3})+(?!\d))/g,
-                    ','
-                  );
-                  displayVal = isNegative ? `-${formatted}` : formatted;
+                } else if (isNegative && result.displayValue) {
+                  displayVal = `-${result.displayValue}`;
+                } else if (isNegative && valueWithoutSign.endsWith('.')) {
+                  // 음수이고 소수점 입력 중 (예: "-100.")
+                  displayVal = `-${result.displayValue || '0'}.`;
+                } else if (
+                  valueWithoutSign.endsWith('.') &&
+                  !result.displayValue.includes('.')
+                ) {
+                  // 정수 뒤에 소수점 입력 (예: "100.")
+                  displayVal = `${result.displayValue}.`;
+                } else if (isNegative && !result.displayValue) {
+                  displayVal = '-';
                 }
 
                 setStockInputValue(displayVal);
 
-                // 실제 저장할 값 (문자열로 저장)
-                const finalValue =
-                  numValue === '' ? '' : (isNegative ? '-' : '') + numValue;
-                field.onChange(finalValue);
+                // 실제 저장할 값 (문자열로 저장, 소수점 포함)
+                // 입력 중에 소수점만 있는 경우는 그대로 유지
+                if (
+                  valueWithoutSign.endsWith('.') &&
+                  valueWithoutSign !== '.'
+                ) {
+                  const savedValue = (isNegative ? '-' : '') + valueWithoutSign;
+                  field.onChange(savedValue);
+                } else {
+                  const savedValue =
+                    result.numericValue === 0 && !valueWithoutSign.endsWith('.')
+                      ? ''
+                      : (isNegative ? '-' : '') +
+                        result.numericValue.toString();
+                  field.onChange(savedValue);
+                }
               };
 
               return (
@@ -313,7 +337,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                   handleChange={handleChangeCurrentStock}
                   onFocus={() => {
                     setIsStockEditing(true);
-                    // 포커스 시 현재 값으로 초기화 (쉼표 포함)
+                    // 포커스 시 현재 값으로 초기화 (쉼표 포함, 끝자리 0 제거)
                     if (
                       field.value === undefined ||
                       field.value === null ||
@@ -324,10 +348,8 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                       const numStr = field.value.toString();
                       const isNegative = numStr.startsWith('-');
                       const absValue = numStr.replace('-', '');
-                      const formatted = absValue.replace(
-                        /\B(?=(\d{3})+(?!\d))/g,
-                        ','
-                      );
+                      // 끝자리 0 제거 후 포맷팅
+                      const formatted = removeTrailingZeros(absValue);
                       setStockInputValue(
                         isNegative ? `-${formatted}` : formatted
                       );
@@ -352,26 +374,74 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 'standardStock'
               >;
             }) => {
+              const [isStandardStockEditing, setIsStandardStockEditing] =
+                useState(false);
+              const [standardStockInputValue, setStandardStockInputValue] =
+                useState<string>('');
+
               const handleChangeStandardStock = (
                 e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
               ) => {
-                const numValue = e.target.value.replace(/[^0-9]/g, '');
-                field.onChange(numValue === '' ? '' : numValue);
+                const inputValue = e.target.value;
+                const result = handleQuantityInput(inputValue);
+
+                // 입력 중인 값 표시
+                let displayVal = result.displayValue;
+                if (
+                  inputValue.endsWith('.') &&
+                  !result.displayValue.includes('.')
+                ) {
+                  displayVal = `${result.displayValue}.`;
+                }
+                setStandardStockInputValue(displayVal);
+
+                // 실제 저장할 값 (문자열로 저장, 소수점 포함)
+                if (inputValue.endsWith('.') && inputValue !== '.') {
+                  field.onChange(inputValue);
+                } else {
+                  const savedValue =
+                    result.numericValue === 0 && !inputValue.endsWith('.')
+                      ? ''
+                      : result.numericValue.toString();
+                  field.onChange(savedValue);
+                }
               };
+
+              const displayValue = isStandardStockEditing
+                ? standardStockInputValue
+                : field.value === undefined ||
+                    field.value === null ||
+                    field.value === ''
+                  ? ''
+                  : field.value === '0'
+                    ? '0'
+                    : removeTrailingZeros(field.value);
+
               return (
                 <InfoLabelValue
                   label="안전 재고"
-                  value={
-                    field.value === undefined || field.value === null
-                      ? ''
-                      : field.value === '0'
-                        ? '0'
-                        : addComma(field.value)
-                  }
+                  value={displayValue}
                   isEditing={!isViewer && hasSubscription()}
                   placeholder="안전재고를 입력하세요."
                   inputType="text"
                   handleChange={handleChangeStandardStock}
+                  onFocus={() => {
+                    setIsStandardStockEditing(true);
+                    if (
+                      field.value === undefined ||
+                      field.value === null ||
+                      field.value === ''
+                    ) {
+                      setStandardStockInputValue('');
+                    } else {
+                      const formatted = removeTrailingZeros(field.value);
+                      setStandardStockInputValue(formatted);
+                    }
+                  }}
+                  onBlur={() => {
+                    setIsStandardStockEditing(false);
+                    setStandardStockInputValue('');
+                  }}
                 />
               );
             }}
@@ -386,26 +456,72 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             }: {
               field: ControllerRenderProps<MaterialInfoFormModel, 'rop'>;
             }) => {
+              const [isRopEditing, setIsRopEditing] = useState(false);
+              const [ropInputValue, setRopInputValue] = useState<string>('');
+
               const handleChangeRop = (
                 e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
               ) => {
-                const numValue = e.target.value.replace(/[^0-9]/g, '');
-                field.onChange(numValue === '' ? '' : numValue);
+                const inputValue = e.target.value;
+                const result = handleQuantityInput(inputValue);
+
+                // 입력 중인 값 표시
+                let displayVal = result.displayValue;
+                if (
+                  inputValue.endsWith('.') &&
+                  !result.displayValue.includes('.')
+                ) {
+                  displayVal = `${result.displayValue}.`;
+                }
+                setRopInputValue(displayVal);
+
+                // 실제 저장할 값 (문자열로 저장, 소수점 포함)
+                if (inputValue.endsWith('.') && inputValue !== '.') {
+                  field.onChange(inputValue);
+                } else {
+                  const savedValue =
+                    result.numericValue === 0 && !inputValue.endsWith('.')
+                      ? ''
+                      : result.numericValue.toString();
+                  field.onChange(savedValue);
+                }
               };
+
+              const displayValue = isRopEditing
+                ? ropInputValue
+                : field.value === undefined ||
+                    field.value === null ||
+                    field.value === ''
+                  ? ''
+                  : field.value === '0'
+                    ? '0'
+                    : removeTrailingZeros(field.value);
+
               return (
                 <InfoLabelValue
                   label="ROP"
-                  value={
-                    field.value === undefined || field.value === null
-                      ? ''
-                      : field.value === '0'
-                        ? '0'
-                        : addComma(field.value)
-                  }
+                  value={displayValue}
                   isEditing={!isViewer && hasSubscription()}
                   placeholder="ROP를 입력하세요."
                   inputType="text"
                   handleChange={handleChangeRop}
+                  onFocus={() => {
+                    setIsRopEditing(true);
+                    if (
+                      field.value === undefined ||
+                      field.value === null ||
+                      field.value === ''
+                    ) {
+                      setRopInputValue('');
+                    } else {
+                      const formatted = removeTrailingZeros(field.value);
+                      setRopInputValue(formatted);
+                    }
+                  }}
+                  onBlur={() => {
+                    setIsRopEditing(false);
+                    setRopInputValue('');
+                  }}
                 />
               );
             }}
@@ -413,15 +529,76 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
           <Controller
             name="maxStock"
             control={control}
-            render={({ field }) => (
-              <InfoLabelValue
-                label="적정 재고"
-                value={field.value ?? '-'}
-                handleChange={field.onChange}
-                isEditing={!isViewer && hasSubscription()}
-                placeholder="적정 재고를 입력하세요."
-              />
-            )}
+            render={({ field }) => {
+              const [isMaxStockEditing, setIsMaxStockEditing] = useState(false);
+              const [maxStockInputValue, setMaxStockInputValue] =
+                useState<string>('');
+
+              const handleChangeMaxStock = (
+                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+              ) => {
+                const inputValue = e.target.value;
+                const result = handleQuantityInput(inputValue);
+
+                // 입력 중인 값 표시
+                let displayVal = result.displayValue;
+                if (
+                  inputValue.endsWith('.') &&
+                  !result.displayValue.includes('.')
+                ) {
+                  displayVal = `${result.displayValue}.`;
+                }
+                setMaxStockInputValue(displayVal);
+
+                // 실제 저장할 값 (문자열로 저장, 소수점 포함)
+                if (inputValue.endsWith('.') && inputValue !== '.') {
+                  field.onChange(inputValue);
+                } else {
+                  const savedValue =
+                    result.numericValue === 0 && !inputValue.endsWith('.')
+                      ? ''
+                      : result.numericValue.toString();
+                  field.onChange(savedValue);
+                }
+              };
+
+              const displayValue = isMaxStockEditing
+                ? maxStockInputValue
+                : field.value === undefined ||
+                    field.value === null ||
+                    field.value === ''
+                  ? ''
+                  : field.value === '0'
+                    ? '0'
+                    : removeTrailingZeros(field.value);
+
+              return (
+                <InfoLabelValue
+                  label="적정 재고"
+                  value={displayValue}
+                  handleChange={handleChangeMaxStock}
+                  isEditing={!isViewer && hasSubscription()}
+                  placeholder="적정 재고를 입력하세요."
+                  onFocus={() => {
+                    setIsMaxStockEditing(true);
+                    if (
+                      field.value === undefined ||
+                      field.value === null ||
+                      field.value === ''
+                    ) {
+                      setMaxStockInputValue('');
+                    } else {
+                      const formatted = removeTrailingZeros(field.value);
+                      setMaxStockInputValue(formatted);
+                    }
+                  }}
+                  onBlur={() => {
+                    setIsMaxStockEditing(false);
+                    setMaxStockInputValue('');
+                  }}
+                />
+              );
+            }}
           />
         </div>
         <div className="flex">

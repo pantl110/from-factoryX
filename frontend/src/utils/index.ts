@@ -21,6 +21,7 @@ export {
   handleQuantityInput,
   formatTime,
   formatDateTime,
+  removeTrailingZeros,
 } from './format-number';
 
 // Validation utilities

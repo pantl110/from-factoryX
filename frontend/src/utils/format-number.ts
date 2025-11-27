@@ -331,3 +331,22 @@ export const formatDateTime = (value: string): string => {
     return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 8)} ${numbers.slice(8, 10)}:${numbers.slice(10, 12)}`;
   }
 };
+
+// 숫자 포맷팅 함수 (콤마 추가, 소수점 아래 끝자리 0 제거)
+export const removeTrailingZeros = (
+  num: string | number
+): string => {
+  if (num === '' || num === undefined || num === null) return '';
+  const str = String(num).replace(/,/g, '');
+  // 소수점이 있는 경우 처리
+  if (str.includes('.')) {
+    // 소수점 아래 끝자리 0들을 제거 (예: 100.50 → 100.5, 100.00 → 100)
+    // 정규식: 소수점 뒤의 끝자리 0들을 제거하되, 소수점만 남으면 소수점도 제거
+    let trimmed = str.replace(/0+$/, ''); // 끝자리 0 제거
+    if (trimmed.endsWith('.')) {
+      trimmed = trimmed.slice(0, -1); // 소수점만 남으면 소수점도 제거
+    }
+    return trimmed.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
