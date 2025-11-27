@@ -92,7 +92,7 @@ async def create_or_update_plan_material_usage(
                                     "material_history",
                                     "material_repackaging",
                                 )
-                                .select_for_update()
+                                .select_for_update(of=("self",))
                                 .get(id=item.id)
                             )
                         except MaterialUsage.DoesNotExist:
