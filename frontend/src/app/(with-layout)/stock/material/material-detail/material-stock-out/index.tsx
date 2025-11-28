@@ -40,7 +40,7 @@ export const MaterialStockOut = ({ materialId }: MaterialStockOutProps) => {
           <>
             <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
               <p className="flex-1 px-3 text-sv">처리일자</p>
-              <p className="flex-1 px-3 text-sv">생산지시서</p>
+              <p className="flex-1 px-3 text-sv">프로젝트명</p>
               <p className="flex-1 px-3 text-sv">제품명</p>
               <p className="flex-1 px-3 text-sv">적용 LOT</p>
               <p className="flex-1 px-3 text-sv">사용량</p>

@@ -1,5 +1,9 @@
 // Date & Time utilities
 export {
+  convertUTCToLocal,
+  convertUTCToLocalDate,
+  convertUTCToLocalTime,
+  // 하위 호환성을 위한 deprecated 함수들
   convertUTCToKST,
   convertUTCToKSTDate,
   convertUTCToKSTTime,

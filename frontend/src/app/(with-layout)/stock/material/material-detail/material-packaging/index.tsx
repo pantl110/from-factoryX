@@ -3,8 +3,10 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useGetMaterialRepackagings } from '@/hooks';
 import { MaterialPackagingItem } from './material-packaging-item';
-import { NoHistoryBox } from '@/ui';
+import { MiniBtn, NoHistoryBox } from '@/ui';
 import Pagination from '@/components/pagination';
+import { CaretDown } from '@phosphor-icons/react';
+import OrderDropdown from './order-dropdown';
 
 interface MaterialPackagingProps {
   materialId: number;
@@ -25,6 +27,10 @@ export const MaterialPackaging = ({
     (state) => state.hasSubscription
   );
 
+  const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  const [orderBy, setOrderBy] = useState<'expiration_date' | 'lot_number'>(
+    'expiration_date'
+  );
   const [page, setPage] = useState(1);
   const pageSize = 5;
 
@@ -33,6 +39,7 @@ export const MaterialPackaging = ({
     {
       page,
       pageSize,
+      orderBy,
     }
   );
 
@@ -59,8 +66,33 @@ export const MaterialPackaging = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="h-10 flex items-center justify-between">
+      <div className="h-10 flex items-center justify-between relative">
         <h3 className="Heading-3 text-dg">원자재 소분 내역</h3>
+        <MiniBtn
+          text={orderBy === 'expiration_date' ? '임박 순' : '입고 순'}
+          variant="whiteOutline"
+          icon={CaretDown}
+          iconSize={16}
+          iconWeight="fill"
+          iconPosition="right"
+          onClick={() => {
+            setIsOrderDropdownOpen(true);
+          }}
+        />
+        {isOrderDropdownOpen && (
+          <div className="absolute mt-2 top-full right-0.5">
+            <OrderDropdown
+              onClose={() => {
+                setIsOrderDropdownOpen(false);
+              }}
+              onSelectOrder={(order: 'expiration_date' | 'lot_number') => {
+                setOrderBy(order);
+                setPage(1); // 정렬 변경 시 첫 페이지로 리셋
+                setIsOrderDropdownOpen(false);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* 표 헤더 부분 */}

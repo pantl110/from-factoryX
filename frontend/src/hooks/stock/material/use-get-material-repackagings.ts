@@ -9,6 +9,7 @@ import { MaterialRepackagingListResponseModel } from '@/types/data-model';
 interface UseGetMaterialRepackagingsOptionsModel {
   page?: number;
   pageSize?: number;
+  orderBy?: 'expiration_date' | 'lot_number';
 }
 
 const useGetMaterialRepackagings = (
@@ -16,7 +17,7 @@ const useGetMaterialRepackagings = (
   options: UseGetMaterialRepackagingsOptionsModel = {}
 ) => {
   const factoryId = useMemberStore((state) => state.factoryId);
-  const { page = 1, pageSize = 5 } = options;
+  const { page = 1, pageSize = 5, orderBy = 'expiration_date' } = options;
 
   const isEnabled = useMemo(
     () => !!factoryId && materialId !== null,
@@ -24,7 +25,14 @@ const useGetMaterialRepackagings = (
   );
 
   return useQuery<MaterialRepackagingListResponseModel>({
-    queryKey: ['material-repackagings', factoryId, materialId, page, pageSize],
+    queryKey: [
+      'material-repackagings',
+      factoryId,
+      materialId,
+      page,
+      pageSize,
+      orderBy,
+    ],
     enabled: isEnabled,
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 5,
@@ -51,6 +59,7 @@ const useGetMaterialRepackagings = (
               material_id: materialId,
               page,
               page_size: pageSize,
+              order_by: orderBy,
             },
             withCredentials: true,
           }
