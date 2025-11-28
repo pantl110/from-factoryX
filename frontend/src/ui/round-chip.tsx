@@ -2,7 +2,7 @@ import clsx from 'clsx';
 
 interface RoundChipProps {
   text: string;
-  variant: 'sm';
+  variant: 'sm' | 'role';
   color:
     | 'primary'
     | 'secondary'
@@ -31,6 +31,7 @@ const colorClasses = {
 
 const sizeClasses = {
   sm: 'px-2.5 h-[26px] Re_body-2',
+  role: 'px-2 h-[20px] Re_body-3',
 } as const;
 
 export const RoundChip = ({ text, variant, color }: RoundChipProps) => {

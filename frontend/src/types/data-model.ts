@@ -1705,6 +1705,7 @@ export interface WorkInstructionHistoryUserModel {
   phone_number?: string | null;
   profile_image?: string | null;
   status?: string;
+  role?: string | null;
 }
 
 // before_data와 after_data의 구조
