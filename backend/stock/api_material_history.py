@@ -15,7 +15,6 @@ from stock.schemas.outbound import (
     MaterialHistoryDetailOut,
     MaterialHistoryListOut,
     MaterialHistoryItemOut,
-    MaterialAvailableLotOut,
 )
 from factory.models import Factory, FactoryClient
 from factory.utils import is_factory_member

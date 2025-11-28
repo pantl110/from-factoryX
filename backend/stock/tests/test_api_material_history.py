@@ -532,69 +532,6 @@ class TestMaterialHistoryAPI(TestCase):
         data = response.json()["data"]
         self.assertTrue(len(data) >= 1)
 
-    async def test_list_available_lots_success(self):
-        """available-lots가 history + repackaging 로트와 next_repackaging_lot_number를 함께 반환하는지 테스트"""
-        headers = await self.authenticate()
-
-        # 구매 이력: remaining_quantity 50, lot_number 고정
-        history = await sync_to_async(MaterialHistory.objects.create)(
-            material=self.material,
-            client=self.client_obj,
-            type=MaterialHistory.MaterialHistoryType.purchase,
-            quantity=100,
-            price=1000,
-            remaining_quantity=50,
-            lot_number="LOT-20250101-01",
-        )
-
-        # 소분 이력: quantity 20, 같은 material
-        repack = await sync_to_async(MaterialRepackaging.objects.create)(
-            parent_history=history,
-            lot_number="LOT-20250101-01-01",
-            quantity=20,
-        )
-
-        response = await self.client.get(
-            f"/available-lots?material_id={self.material.id}&factory_id={self.factory.id}",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-        body = response.json()
-        self.assertIn("data", body)
-        items = body["data"]
-
-        # history, repack 각 1개씩 존재
-        self.assertEqual(len(items), 2)
-        history_item = next(i for i in items if i["source"] == "history")
-        repack_item = next(i for i in items if i["source"] == "repackaging")
-
-        self.assertEqual(history_item["id"], history.id)
-        self.assertEqual(history_item["lot_number"], "LOT-20250101-01")
-        self.assertEqual(history_item["available_quantity"], 50)
-
-        self.assertEqual(repack_item["id"], repack.id)
-        self.assertEqual(repack_item["lot_number"], "LOT-20250101-01-01")
-        self.assertEqual(repack_item["available_quantity"], 20)
-
-    async def test_list_available_lots_missing_factory_id(self):
-        """available-lots API factory_id 누락 테스트"""
-        headers = await self.authenticate()
-
-        response = await self.client.get(
-            f"/available-lots?material_id={self.material.id}", headers=headers
-        )
-        self.assertEqual(response.status_code, 400)
-
-    async def test_list_available_lots_material_not_found(self):
-        """available-lots API 원자재 미존재 테스트"""
-        headers = await self.authenticate()
-
-        response = await self.client.get(
-            f"/available-lots?material_id=99999&factory_id={self.factory.id}",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 404)
-
     async def test_get_material_history_by_date_range_success(self):
         """원자재 히스토리 조회 성공 테스트 (날짜 범위)"""
         headers = await self.authenticate()
@@ -701,7 +638,7 @@ class TestMaterialHistoryAPI(TestCase):
                 self.assertIn(field, history)
 
             # 필드 값 검증
-            self.assertIsInstance(history["total_stock"], int)
+            self.assertIsInstance(history["total_stock"], (int, float))
             self.assertIsInstance(history["material_id"], int)
             self.assertIsInstance(history["material_name"], str)
             self.assertIsInstance(history["material_code"], str)

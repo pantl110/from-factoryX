@@ -3,7 +3,7 @@ from typing import Optional, List
 import datetime
 from datetime import date
 from stock.models import Product, Material
-from pydantic import field_validator
+from pydantic import field_validator, field_serializer
 from decimal import Decimal
 
 
@@ -189,6 +189,12 @@ class MaterialHistoryDetailOut(Schema):
     total_stock: Decimal
     remaining_quantity: Optional[Decimal] = None
 
+    @field_serializer("quantity", "total_stock", "remaining_quantity")
+    def serialize_decimal(self, value: Optional[Decimal]) -> Optional[float]:
+        if value is None:
+            return None
+        return float(value)
+
 
 # (POST) Create Material History
 class MaterialHistoryListOut(Schema):
@@ -221,6 +227,12 @@ class MaterialHistoryItemOut(Schema):
         None, description="소분 시 생성될 다음 로트 번호 (구매 타입이고 잔량이 있을 때만)"
     )
 
+    @field_serializer("quantity", "amount", "total_stock", "remaining_quantity")
+    def serialize_decimal(self, value: Optional[Decimal]) -> Optional[float]:
+        if value is None:
+            return None
+        return float(value)
+
 
 # (GET) Material Available Lot
 class MaterialAvailableLotOut(Schema):
@@ -231,9 +243,13 @@ class MaterialAvailableLotOut(Schema):
     warehouse_location: Optional[str] = Field(None, description="창고 위치")
     expiration_date: Optional[str] = Field(None, description="유통기한 (YYYY-MM-DD)")
 
+    @field_serializer("available_quantity")
+    def serialize_decimal(self, value: Decimal) -> float:
+        return float(value)
 
-# (GET) Material History Detail
-class MaterialHistoryDetailOut(Schema):
+
+# (GET) Material History Detail (V2)
+class MaterialHistoryLotDetailOut(Schema):
     lot_number: Optional[str] = None
     quantity: Decimal
     remaining_quantity: Optional[Decimal] = None

@@ -456,7 +456,7 @@ async def list_material_usages_paginated(
             .prefetch_related(
                 "plan__project__quotations",
             )
-            .order_by("-created_at")
+            .order_by("-plan__end_date")
         )
 
         if material_id is not None:

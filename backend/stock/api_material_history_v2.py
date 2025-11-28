@@ -7,7 +7,7 @@ from datetime import datetime
 from api.security import jwt_auth
 
 from stock.models import Material, MaterialHistory
-from stock.schemas.outbound import MaterialAvailableLotOut, MaterialHistoryDetailOut
+from stock.schemas.outbound import MaterialAvailableLotOut, MaterialHistoryLotDetailOut
 from stock.schemas.inbound import MaterialHistoryUpdateIn
 from factory.utils import is_factory_member
 from repackaging.models import MaterialRepackaging
@@ -114,7 +114,7 @@ async def list_available_lots(
     "/{history_id}",
     summary="[R] 원자재 이력 상세 조회",
     description="원자재 이력 ID로 상세 정보를 조회합니다. lot번호, 입고수량, 남은수량, 창고위치, 유통기한을 반환합니다.",
-    response={200: MaterialHistoryDetailOut, 404: dict, 500: dict},
+    response={200: MaterialHistoryLotDetailOut, 404: dict, 500: dict},
 )
 async def get_material_history(
     request,
@@ -143,7 +143,7 @@ async def get_material_history(
             return history
 
         history = await get_history_detail()
-        return 200, MaterialHistoryDetailOut.model_validate(history)
+        return 200, MaterialHistoryLotDetailOut.model_validate(history)
 
     except HttpError:
         raise
@@ -157,7 +157,7 @@ async def get_material_history(
     "/{history_id}",
     summary="[U] 원자재 이력 수정",
     description="원자재 이력의 창고위치와 유통기한을 수정합니다.",
-    response={200: MaterialHistoryDetailOut, 400: dict, 404: dict, 500: dict},
+    response={200: MaterialHistoryLotDetailOut, 400: dict, 404: dict, 500: dict},
 )
 async def update_material_history(
     request,
@@ -203,7 +203,7 @@ async def update_material_history(
             return history
 
         history = await update_history()
-        return 200, MaterialHistoryDetailOut.model_validate(history)
+        return 200, MaterialHistoryLotDetailOut.model_validate(history)
 
     except HttpError:
         raise
