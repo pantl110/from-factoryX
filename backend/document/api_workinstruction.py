@@ -310,11 +310,25 @@ async def get_work_instruction_history(
                     # before_data나 after_data에서 정보를 가져올 수 있음
                     plan_data = None
             
-            # changed_by를 UserMeOut 형태로 변환
+            # changed_by를 UserMeOut 형태로 변환 (role 정보 포함)
             changed_by_data = None
             if history.changed_by:
                 from user.schemas.outbound import UserMeOut
+                from factory.models import FactoryMember
                 changed_by_data = UserMeOut.from_orm(history.changed_by).dict()
+                # 해당 factory에서의 role 정보 추가
+                try:
+                    factory_member = FactoryMember.objects.filter(
+                        user=history.changed_by,
+                        factory_id=int(factory_id),
+                        status=FactoryMember.MemberStatus.active
+                    ).first()
+                    if factory_member:
+                        changed_by_data['role'] = factory_member.role
+                    else:
+                        changed_by_data['role'] = None
+                except Exception:
+                    changed_by_data['role'] = None
             
             result.append({
                 "id": history.id,

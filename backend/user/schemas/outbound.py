@@ -9,6 +9,7 @@ class UserMeOut(ModelSchema):
     # username: Optional[str] = Field(None, description="사용자 이름")
     # phone_number: Optional[str] = Field(None, description="전화번호")
     # profile_image: Optional[str] = Field(None, description="프로필 이미지")
+    role: Optional[str] = Field(None, description="공장 멤버 권한 (해당 공장 기준)")
 
     class Meta:
         model = User
