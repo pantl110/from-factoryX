@@ -1,6 +1,7 @@
 from ninja import Schema, ModelSchema, Field
 from typing import Optional, List
 import datetime
+from datetime import date
 from stock.models import Product, Material
 from pydantic import field_validator
 from decimal import Decimal
@@ -221,6 +222,7 @@ class MaterialHistoryItemOut(Schema):
     )
 
 
+# (GET) Material Available Lot
 class MaterialAvailableLotOut(Schema):
     source: str = Field(..., description="로트 출처: 'history' 또는 'repackaging'")
     id: int = Field(..., description="source에 따른 PK (MaterialHistory.id 또는 MaterialRepackaging.id)")
@@ -228,6 +230,24 @@ class MaterialAvailableLotOut(Schema):
     available_quantity: Decimal = Field(..., description="사용 가능한 수량")
     warehouse_location: Optional[str] = Field(None, description="창고 위치")
     expiration_date: Optional[str] = Field(None, description="유통기한 (YYYY-MM-DD)")
+
+
+# (GET) Material History Detail
+class MaterialHistoryDetailOut(Schema):
+    lot_number: Optional[str] = None
+    quantity: Decimal
+    remaining_quantity: Optional[Decimal] = None
+    warehouse_location: Optional[str] = None
+    expiration_date: Optional[str] = None
+
+    @field_validator("expiration_date", mode="before")
+    @classmethod
+    def convert_expiration_date(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, date):
+            return v.isoformat()
+        return v
 
 
 # ------------------------------------------------------------

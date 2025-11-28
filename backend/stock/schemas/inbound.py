@@ -232,6 +232,16 @@ class MaterialHistoryDetailFilter(FilterSchema):
 
 
 # ------------------------------------------------------------
+# Material History V2 API
+# ------------------------------------------------------------
+
+# (PATCH) Update Material History
+class MaterialHistoryUpdateIn(Schema):
+    warehouse_location: Optional[str] = Field(None, description="창고 위치")
+    expiration_date: Optional[str] = Field(None, description="유통기한 (YYYY-MM-DD)")
+
+
+# ------------------------------------------------------------
 # Material Usage API
 # ------------------------------------------------------------
 
