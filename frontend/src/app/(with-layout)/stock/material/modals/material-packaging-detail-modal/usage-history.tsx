@@ -36,7 +36,9 @@ export const UsageHistory = ({ repackagingId }: UsageHistoryProps) => {
           <>
             <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
               <p className="flex-1 px-3 text-sv">처리일자</p>
-              <p className="flex-1 px-3 text-sv">생산지시서</p>
+              <div className="flex-1 px-3 flex items-center justify-between">
+                <p className="text-sv">프로젝트명</p>
+              </div>
               <p className="flex-1 px-3 text-sv">제품명</p>
               <p className="flex-1 px-3 text-sv">자재 사용량</p>
             </div>

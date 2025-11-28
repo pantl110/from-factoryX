@@ -1745,6 +1745,8 @@ export interface MaterialUsageModel {
 
 export interface MaterialUsageResponseModel {
   id: number;
+  project_id: number;
+  client_name: string;
   plan_id: number;
   plan_product_name?: string | null;
   plan_end_date?: string | null;
