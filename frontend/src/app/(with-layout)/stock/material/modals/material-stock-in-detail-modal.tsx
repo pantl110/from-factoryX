@@ -5,12 +5,16 @@ import {
   useGetMaterialHistoryDetail,
   useUpdateMaterialHistoryV2,
   useToast,
+  getMaterialHistoryQueryKey,
 } from '@/hooks';
 import { WarningCircle } from '@phosphor-icons/react';
-import { removeTrailingZeros } from '@/utils';
+import { removeTrailingZeros, formatDate } from '@/utils';
+import { useQueryClient } from '@tanstack/react-query';
+import useMemberStore from '@/store/member-store';
 
 interface MaterialStockInDetailModalProps {
   historyId: number | null;
+  materialId?: number;
   onClose: () => void;
   onUpdateSuccess?: () => void;
 }
@@ -22,12 +26,15 @@ interface MaterialHistoryFormModel {
 
 export const MaterialStockInDetailModal = ({
   historyId,
+  materialId,
   onClose,
   onUpdateSuccess,
 }: MaterialStockInDetailModalProps) => {
   const { isToastOpen, isVisible, showToast } = useToast();
   const [toastText, setToastText] = useState('');
   const [toastSubtext, setToastSubtext] = useState('');
+  const queryClient = useQueryClient();
+  const factoryId = useMemberStore((state) => state.factoryId);
 
   const {
     data: historyDetail,
@@ -77,13 +84,31 @@ export const MaterialStockInDetailModal = ({
     });
 
     if (result.success && result.data) {
+      // material-history 쿼리 무효화하여 목록 갱신
+      if (factoryId && materialId) {
+        await queryClient.invalidateQueries({
+          queryKey: getMaterialHistoryQueryKey(factoryId, {
+            material_id: materialId,
+            type: 'purchase',
+          }),
+        });
+      }
       onUpdateSuccess?.();
       onClose();
     } else {
-      showToastMessage(
-        '수정에 실패했습니다.',
-        result.error || '잠시 후 다시 시도해 주세요.'
-      );
+      // 유통기한 형식 에러인 경우 다른 토스트 메시지 표시
+      const errorMessage = result.error || '';
+      if (errorMessage.includes('유통기한 형식이 올바르지 않습니다')) {
+        showToastMessage(
+          '유효한 유통기한을 입력해 주세요.',
+          'YYYY-MM-DD 형식으로 입력해 주세요.'
+        );
+      } else {
+        showToastMessage(
+          '수정에 실패했습니다.',
+          errorMessage || '잠시 후 다시 시도해 주세요.'
+        );
+      }
     }
   };
 
@@ -138,7 +163,10 @@ export const MaterialStockInDetailModal = ({
                 value={field.value || ''}
                 placeholder="YYYY-MM-DD"
                 isEditing={true}
-                onChange={(e) => field.onChange(e.target.value || null)}
+                onChange={(e) => {
+                  const formattedValue = formatDate(e.target.value);
+                  field.onChange(formattedValue || null);
+                }}
               />
             )}
           />

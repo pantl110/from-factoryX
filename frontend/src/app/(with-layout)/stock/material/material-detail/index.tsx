@@ -700,6 +700,7 @@ const MaterialDetailPanel = ({
       {isMaterialStockInDetailModalOpen && (
         <MaterialStockInDetailModal
           historyId={selectedHistoryId}
+          materialId={selectedMaterialId}
           onClose={() => {
             setIsMaterialStockInDetailModalOpen(false);
             setSelectedHistoryId(null);

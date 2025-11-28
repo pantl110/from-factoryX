@@ -143,8 +143,8 @@ export const useQuotationHandlers = ({
 
         // 날짜 형식 에러인 경우 다른 토스트 메시지 표시
         if (errorMessage.includes('올바르지 않은 날짜 형식')) {
-          toast.setText('올바르지 않은 날짜 형식입니다.');
-          toast.setSubtext('날짜를 YYYY-MM-DD 형식으로 입력해 주세요.');
+          toast.setText('유효한 납기일자를 입력해 주세요.');
+          toast.setSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
         } else {
           toast.setText('임시저장에 실패했습니다');
           toast.setSubtext(errorMessage);

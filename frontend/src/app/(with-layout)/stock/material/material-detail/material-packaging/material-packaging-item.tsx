@@ -72,6 +72,8 @@ export const MaterialPackagingItem = ({
             icon={PencilSimple}
             size="w-9 h-9"
             iconSize={16}
+            hoverBg={false}
+            hoverText="text-primary"
             onClick={() =>
               setIsMaterialPackagingDetailModalOpen(repackaging.id)
             }
@@ -80,6 +82,8 @@ export const MaterialPackagingItem = ({
             icon={Trash}
             size="w-9 h-9"
             iconSize={16}
+            hoverBg={false}
+            hoverText="text-red"
             onClick={onDelete}
           />
         </div>
