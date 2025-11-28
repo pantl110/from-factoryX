@@ -258,6 +258,7 @@ class MaterialHistoryDetailOut(Schema):
 class MaterialUsageOut(Schema):
     id: int
     plan_id: int
+    project_id: Optional[int] = None
     plan_end_date: Optional[datetime.datetime] = None
     plan_product_name: Optional[str] = None
     original_material_id: Optional[int] = None
@@ -270,5 +271,6 @@ class MaterialUsageOut(Schema):
     material_history_lot_number: Optional[str] = None
     material_repackaging_id: Optional[int] = None
     material_repackaging_lot_number: Optional[str] = None
+    client_name: Optional[str] = None
     created_at: datetime.datetime
     updated_at: datetime.datetime

@@ -88,10 +88,14 @@ async def create_or_update_plan_material_usage(
                             usage = (
                                 MaterialUsage.objects.select_related(
                                     "plan",
+                                    "plan__project",
                                     "material",
                                     "original_material",
                                     "material_history",
                                     "material_repackaging",
+                                )
+                                .prefetch_related(
+                                    "plan__project__quotations",
                                 )
                                 .select_for_update(of=("self",))
                                 .get(id=item.id)
@@ -311,10 +315,14 @@ async def create_or_update_plan_material_usage(
                     usage = (
                         MaterialUsage.objects.select_related(
                             "plan",
+                            "plan__project",
                             "material",
                             "original_material",
                             "material_history",
                             "material_repackaging",
+                        )
+                        .prefetch_related(
+                            "plan__project__quotations",
                         )
                         .get(id=usage.id)
                     )
@@ -360,12 +368,16 @@ async def list_material_usages(
             usages = (
                 MaterialUsage.objects.select_related(
                     "plan",
+                    "plan__project",
                     "plan__product",
                     "plan__product__product",
                     "material",
                     "original_material",
                     "material_history",
                     "material_repackaging",
+                )
+                .prefetch_related(
+                    "plan__project__quotations",
                 )
                 .filter(plan_id=plan_id)
                 .order_by("-created_at")
@@ -433,12 +445,16 @@ async def list_material_usages_paginated(
         usages = (
             MaterialUsage.objects.select_related(
                 "plan",
+                "plan__project",
                 "plan__product",
                 "plan__product__product",
                 "material",
                 "original_material",
                 "material_history",
                 "material_repackaging",
+            )
+            .prefetch_related(
+                "plan__project__quotations",
             )
             .order_by("-created_at")
         )

@@ -34,9 +34,28 @@ def build_material_usage_out(usage: MaterialUsage) -> MaterialUsageOut:
     if usage.plan and usage.plan.product and usage.plan.product.product:
         plan_product_name = usage.plan.product.product.name
 
+    # project_id 추출
+    project_id = None
+    if usage.plan and usage.plan.project:
+        project_id = usage.plan.project.id
+
+    # client_name 추출 (Project의 고객사 - 불변하는 정보)
+    client_name = None
+    if usage.plan and usage.plan.project:
+        # Project의 첫 번째 Quotation의 client_info에서 불변하는 client 이름을 가져옴
+        quotation = usage.plan.project.quotations.first()
+        if quotation:
+            # client_info에 저장된 불변하는 정보를 우선 사용
+            if quotation.client_info and isinstance(quotation.client_info, dict):
+                client_name = quotation.client_info.get("name")
+            # client_info가 없으면 fallback으로 현재 client의 이름 사용
+            if not client_name and quotation.client:
+                client_name = quotation.client.name
+
     return MaterialUsageOut(
         id=usage.id,
         plan_id=usage.plan_id,
+        project_id=project_id,
         plan_end_date=usage.plan.end_date if usage.plan else None,
         plan_product_name=plan_product_name,
         material_id=usage.material.id,
@@ -49,6 +68,7 @@ def build_material_usage_out(usage: MaterialUsage) -> MaterialUsageOut:
         material_history_lot_number=lot_number if material_history_id else None,
         material_repackaging_id=material_repackaging_id,
         material_repackaging_lot_number=lot_number if material_repackaging_id else None,
+        client_name=client_name,
         created_at=usage.created_at,
         updated_at=usage.updated_at,
     )
