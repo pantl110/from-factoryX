@@ -1,8 +1,8 @@
-import Chip from '@/ui/chip';
 import { TaxDocumentTypeColorMap, TaxDocumentType } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import { getProductNamesDisplay } from '@/hooks';
+import { RoundChip } from '@/ui';
 
 interface TableItemProps {
   onItemClick?: () => void;
@@ -26,7 +26,8 @@ const TableItem = ({
   };
 
   const mappedTaxType = taxTypeMap[item.tax_invoice_type] || 'sales';
-  const { bgColor, textColor } = TaxDocumentTypeColorMap[mappedTaxType];
+  const { color } = TaxDocumentTypeColorMap[mappedTaxType];
+  const chipColor = color || 'gray';
 
   return (
     <div
@@ -40,10 +41,10 @@ const TableItem = ({
     >
       <Checkbox isChecked={isChecked} onToggle={onToggle} />
       <div className="px-3 flex-1">
-        <Chip
+        <RoundChip
           text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}
-          bgColor={bgColor}
-          textColor={textColor}
+          variant="sm"
+          color={chipColor}
         />
       </div>
       <p

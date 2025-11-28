@@ -47,3 +47,6 @@ export {
 
 // Stock utilities
 export { getMaterialStockStatus } from './get-material-stock-status';
+
+// Role utilities
+export { getRoleText } from './get-role-text';

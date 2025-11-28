@@ -301,7 +301,7 @@ const TaxPageContent = () => {
             <SearchInput
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder="찾고 싶은 세금계산서의 거래처나 제품명을 입력하세요."
+              placeholder="세금계산서 거래처나 제품명을 검색하세요."
             />
             {/* 숨김 버튼: 숨김 목록 보기 중이거나, 일반 목록에서 데이터가 없고 숨김 데이터도 없을 때 */}
             {(showHidden || (!showHidden && hasItem)) && (

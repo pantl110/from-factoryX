@@ -61,7 +61,7 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
           <SideBarItem icon={ChartBar} label="현황판" path="/dashboard" />
           <SideBarItem
             icon={Package}
-            label="프로젝트 관리"
+            label="PO 관리"
             path="/project"
             hasDropdown={true}
             dropdownItems={[
@@ -72,7 +72,7 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
           <SideBarItem icon={Warehouse} label="재고 관리" path="/stock" />
           <SideBarItem
             icon={MoneyWavy}
-            label="세무/회계"
+            label="세무 관리"
             path="/tax"
             hasDropdown={true}
             dropdownItems={[

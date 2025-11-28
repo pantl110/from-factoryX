@@ -54,8 +54,8 @@ const DeliveryInfo = ({
 
         {isOrderPage || (
           <>
-            <div className="flex flex-col gap-2">
-              <LabelInfo label="납품할 제품 정보" />
+            <div className="flex flex-col gap-5">
+              <LabelInfo label="납품할 제품" />
               <div className="flex flex-col gap-2">
                 {productsInfo.length > 0 ? (
                   productsInfo.map((product, index) => (

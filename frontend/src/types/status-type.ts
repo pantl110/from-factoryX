@@ -19,19 +19,17 @@ export type MemberRoleType = 'admin' | 'manager' | 'viewer' | 'prod_manager';
 export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
 export const MemberRoleColorMap: Record<MemberRoleType, StatusColorModel> = {
   admin: { bgColor: 'bg-purple-8', textColor: 'text-purple', color: 'purple' },
-  manager: { bgColor: 'bg-primary-8', textColor: 'text-primary', color: 'secondary' },
+  manager: {
+    bgColor: 'bg-primary-8',
+    textColor: 'text-primary',
+    color: 'secondary',
+  },
   viewer: { bgColor: 'bg-yellow-8', textColor: 'text-yellow', color: 'yellow' },
-  prod_manager: { bgColor: 'bg-green-8', textColor: 'text-green', color: 'green' },
-};
-
-// role을 한글로 변환
-export const getRoleText = (role: string | null): string => {
-  if (!role) return '-';
-  if (role === 'admin') return '시스템 관리자';
-  if (role === 'manager') return '운영자';
-  if (role === 'viewer') return '조회자';
-  if (role === 'prod_manager') return '생산관리자';
-  return '-';
+  prod_manager: {
+    bgColor: 'bg-green-8',
+    textColor: 'text-green',
+    color: 'green',
+  },
 };
 
 // 설비 상태 // 설정 페이지

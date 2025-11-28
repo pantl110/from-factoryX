@@ -11,15 +11,10 @@ import AgreeArea from './agree-area';
 import PasswordStep from './password-step';
 import EmailStep from './email-step';
 import { useRouter } from 'next/navigation';
-import PrivacyPolicyModal from './modals/privacy-policy-modal';
 
 const SignupPage = () => {
   const router = useRouter();
   const [verificationCode, setVerificationCode] = useState('');
-
-  // 약관 동의 모달 열기
-  // const [isTermsOfServiceOpen, setIsTermsOfServiceOpen] = useState(false);
-  const [isPrivacyPolicyOpen, setIsPrivacyPolicyOpen] = useState(false);
 
   const {
     register,
@@ -117,12 +112,7 @@ const SignupPage = () => {
 
             {/* 약관 동의 - 이메일 인증 시작 전에만 표시 */}
             {!verification.isVerificationSent && (
-              <AgreeArea
-                watchedValues={watchedValues}
-                setValue={setValue}
-                // setIsTermsOfServiceOpen={setIsTermsOfServiceOpen}
-                setIsPrivacyPolicyOpen={setIsPrivacyPolicyOpen}
-              />
+              <AgreeArea watchedValues={watchedValues} setValue={setValue} />
             )}
 
             {/* 로그인 비밀번호 찾기 */}
@@ -133,17 +123,6 @@ const SignupPage = () => {
           </form>
         </div>
       </div>
-
-      {/* 모달 */}
-      {/* {isTermsOfServiceOpen && (
-        <TermsOfServiceModal
-          isOpen={isTermsOfServiceOpen}
-          onClose={() => setIsTermsOfServiceOpen(false)}
-        />
-      )} */}
-      {isPrivacyPolicyOpen && (
-        <PrivacyPolicyModal onClose={() => setIsPrivacyPolicyOpen(false)} />
-      )}
     </>
   );
 };

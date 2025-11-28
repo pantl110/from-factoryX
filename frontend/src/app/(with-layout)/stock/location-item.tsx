@@ -1,13 +1,10 @@
-import Chip from '@/ui/chip';
 import Image from 'next/image';
-import { getRoleText } from '@/utils/get-role-text';
+import { getRoleText, formatDate } from '@/utils';
 import { Trash } from '@phosphor-icons/react';
-import { formatDate } from '@/utils/format-number';
-import MiniBtn from '@/ui/mini-btn';
 import useSubscriptionStore from '@/store/subscription-store';
 import useMemberStore from '@/store/member-store';
-import { MemberRoleColorMap } from '@/types/status-type';
-import { MemberRoleType } from '@/types/status-type';
+import { MemberRoleColorMap, MemberRoleType } from '@/types/status-type';
+import { RoundChip, MiniBtn } from '@/ui';
 
 interface LocationItemProps {
   image: string;
@@ -72,11 +69,10 @@ const LocationItem = ({
       <div className="flex flex-col gap-2 w-full">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-1.5">
-            <Chip
+            <RoundChip
               text={roleText}
-              bgColor={roleColor.bgColor}
-              textColor={roleColor.textColor}
-              size="role"
+              variant="role"
+              color={roleColor.color || 'gray'}
             />
             <span className="Heading-5 text-sv">
               {email?.split('@')[0] || '-'}

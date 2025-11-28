@@ -1,11 +1,8 @@
-import {
-  getRoleText,
-  MemberRoleColorMap,
-  MemberRoleType,
-} from '@/types/status-type';
+import { MemberRoleColorMap, MemberRoleType } from '@/types/status-type';
 import { RoundChip } from '@/ui';
+import { getRoleText } from '@/utils';
 
-interface ChangedByInfo {
+interface ChangedByInfoModel {
   role: string | null;
   username: string | null;
   email: string;
@@ -14,7 +11,7 @@ interface ChangedByInfo {
 interface MemoLogItemProps {
   memo?: string | null;
   time?: string;
-  changedBy?: ChangedByInfo | null;
+  changedBy?: ChangedByInfoModel | null;
 }
 
 const MemoLogItem = ({ memo, time, changedBy }: MemoLogItemProps) => {
