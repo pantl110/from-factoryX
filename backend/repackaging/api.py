@@ -3,7 +3,8 @@ from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
-from typing import List
+from typing import List, Optional
+from django.db.models import F
 from api.security import jwt_auth
 
 from stock.models import MaterialHistory, Material
@@ -94,13 +95,17 @@ async def create_material_repackaging(
 @router.get(
     "",
     summary="[R] 원자재 소분 내역 조회",
-    description="material_id로 특정 원자재의 소분 내역을 조회합니다.",
+    description="material_id로 특정 원자재의 소분 내역을 조회합니다. order_by 파라미터로 정렬 옵션을 선택할 수 있습니다 (expiration_date: 유통기한순, lot_number: 입고순).",
     response=List[MaterialRepackagingOut],
 )
 @paginate
 async def list_material_repackagings(
     request,
     material_id: int = Query(..., description="원자재 ID"),
+    order_by: Optional[str] = Query(
+        "expiration_date", 
+        description="정렬 기준: 'expiration_date' (유통기한순, 기본값), 'lot_number' (입고순)"
+    ),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -125,8 +130,25 @@ async def list_material_repackagings(
                 parent_history__material__factory_id=int(factory_id),
             )
             .select_related("parent_history", "parent_history__material")
-            .order_by("-created_at")
         )
+        
+        # 정렬 옵션에 따라 정렬
+        if order_by == "lot_number":
+            # 입고순: lot_number로 정렬 (LOT-YYYYMMDD-XX 형식이므로 날짜순으로 정렬됨)
+            queryset = queryset.order_by("lot_number", "-created_at")
+        elif order_by == "expiration_date":
+            # 유통기한순
+            queryset = queryset.order_by(
+                F("expiration_date").asc(nulls_last=True),  # 유통기한 오름차순 (null은 마지막)
+                "lot_number"  # 같으면 로트 번호순
+            )
+        else:
+            # 기본값: 유통기한순 (잘못된 값이 들어와도 기본값 사용)
+            queryset = queryset.order_by(
+                F("expiration_date").asc(nulls_last=True),
+                "lot_number"  # 같으면 로트 번호순
+            )
+        
         return list(queryset)
 
     repackagings = await get_repackagings()

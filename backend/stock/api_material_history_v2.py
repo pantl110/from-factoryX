@@ -90,9 +90,11 @@ async def list_available_lots(
 
             # 유통기한 → 로트 번호 순 정렬
             def sort_key(item: dict):
-                exp = item.get("expiration_date") or ""
+                exp = item.get("expiration_date")
                 lot = item.get("lot_number") or ""
-                return (exp, lot)
+                # expiration_date가 None이면 마지막으로 정렬하기 위해 큰 값 사용
+                exp_key = exp if exp else "9999-12-31"
+                return (exp_key, lot)
 
             lots.sort(key=sort_key)
             return lots
