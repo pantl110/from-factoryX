@@ -134,8 +134,8 @@ async def list_material_repackagings(
         
         # 정렬 옵션에 따라 정렬
         if order_by == "lot_number":
-            # 입고순: lot_number로 정렬 (LOT-YYYYMMDD-XX 형식이므로 날짜순으로 정렬됨)
-            queryset = queryset.order_by("lot_number", "-created_at")
+            # 입고순: lot_number로 정렬 (큰 값이 위로, LOT-YYYYMMDD-XX 형식이므로 최신순으로 정렬됨)
+            queryset = queryset.order_by("-lot_number", "-created_at")
         elif order_by == "expiration_date":
             # 유통기한순
             queryset = queryset.order_by(
