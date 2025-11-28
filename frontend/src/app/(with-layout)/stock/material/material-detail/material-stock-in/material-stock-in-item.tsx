@@ -1,9 +1,10 @@
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import { MiniBtn } from '@/ui';
+import { IconBtn, MiniBtn } from '@/ui';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import { convertUTCToKSTDate, removeTrailingZeros } from '@/utils';
 import { getExpiryClassName } from '../utils';
+import { PencilSimple } from '@phosphor-icons/react';
 
 interface MaterialStockInItemProps {
   history: MaterialHistoryResponseModel;
@@ -12,12 +13,14 @@ interface MaterialStockInItemProps {
     nextRepackagingLotNumber?: string,
     parentHistoryId?: number
   ) => void;
+  onEditClick?: () => void;
   expiryWarningDays?: number | null;
 }
 
 export const MaterialStockInItem = ({
   history,
   setIsMaterialPackagingDetailModalOpen,
+  onEditClick,
   expiryWarningDays,
 }: MaterialStockInItemProps) => {
   const role = useMemberStore((state) => state.role);
@@ -28,10 +31,27 @@ export const MaterialStockInItem = ({
 
   return (
     <div className="flex items-center h-14 border-b border-lg Me_Body-1 group cursor-default">
-      <p className="flex-[1.5] px-3 text-dg">{history.lot_number || '-'}</p>
-      <p className="flex-1 px-3 text-dg">
-        {convertUTCToKSTDate(history.date) || '-'}
-      </p>
+      <div className="flex-[1.9] px-3 flex items-center justify-between">
+        <p className="text-dg">{history.lot_number || '-'}</p>
+        {!isViewer && hasSubscription() && (
+          <MiniBtn
+            text="소분하기"
+            variant="whiteOutline"
+            height="h-8"
+            padding="px-3"
+            textStyle="Re_body-2"
+            onClick={() => {
+              setIsMaterialPackagingDetailModalOpen(
+                undefined,
+                history.next_repackaging_lot_number
+                  ? history.next_repackaging_lot_number
+                  : undefined,
+                history.id
+              );
+            }}
+          />
+        )}
+      </div>
       <p
         className="flex-1 px-3 text-primary truncate"
         title={`+${removeTrailingZeros(history.quantity)}`}
@@ -68,22 +88,14 @@ export const MaterialStockInItem = ({
       </p>
 
       {!isViewer && hasSubscription() && (
-        <div className="flex-1 px-3">
-          <MiniBtn
-            text="소분"
-            variant="whiteOutline"
-            height="h-8"
-            padding="px-3"
-            textStyle="Re_body-2"
-            onClick={() => {
-              setIsMaterialPackagingDetailModalOpen(
-                undefined,
-                history.next_repackaging_lot_number
-                  ? history.next_repackaging_lot_number
-                  : undefined,
-                history.id
-              );
-            }}
+        <div className="w-20 px-3">
+          <IconBtn
+            icon={PencilSimple}
+            size="w-9 h-9"
+            iconSize={16}
+            hoverBg={false}
+            hoverText="text-primary"
+            onClick={() => onEditClick?.()}
           />
         </div>
       )}

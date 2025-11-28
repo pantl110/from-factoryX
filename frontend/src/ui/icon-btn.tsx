@@ -11,7 +11,7 @@ interface IconBtnProps {
   groupHover?: boolean;
   rounded?: string;
   hoverBg?: boolean;
-  hoverText?: boolean;
+  hoverText?: string | boolean;
 }
 
 const IconBtn = ({
@@ -33,7 +33,15 @@ const IconBtn = ({
     >
       <Icon
         size={iconSize}
-        className={iconColor + ' ' + (hoverText && 'group-hover:text-red')}
+        className={
+          iconColor +
+          ' ' +
+          (hoverText
+            ? typeof hoverText === 'string'
+              ? `group-hover:${hoverText.replace(/^(hover:|group-hover:)/, '')}`
+              : 'group-hover:text-red'
+            : '')
+        }
       />
     </button>
   );

@@ -28,6 +28,7 @@ import {
 } from '@/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
+import { MaterialStockInDetailModal } from '../modals/material-stock-in-detail-modal';
 
 interface LocationModel {
   id: number;
@@ -81,6 +82,13 @@ const MaterialDetailPanel = ({
     isMaterialPackagingDetailModalOpen,
     setIsMaterialPackagingDetailModalOpen,
   ] = useState(false);
+  const [
+    isMaterialStockInDetailModalOpen,
+    setIsMaterialStockInDetailModalOpen,
+  ] = useState(false);
+  const [selectedHistoryId, setSelectedHistoryId] = useState<number | null>(
+    null
+  );
   const [selectedRepackagingId, setSelectedRepackagingId] = useState<
     number | null
   >(null);
@@ -604,6 +612,10 @@ const MaterialDetailPanel = ({
           productWasModified={hasProductBeenModified}
           isLocationLoading={isLocationLoading}
           setIsMaterialPackagingDetailModalOpen={handleOpenPackagingModal}
+          setIsMaterialStockInDetailModalOpen={(historyId: number) => {
+            setSelectedHistoryId(historyId);
+            setIsMaterialStockInDetailModalOpen(true);
+          }}
           setIsCreateSubstituteModalOpen={setIsCreateSubstituteModalOpen}
           handleOpenDeleteSubstituteModal={handleOpenDeleteSubstituteModal}
           handleOpenDeleteRepackagingModal={(repackagingId: number) =>
@@ -682,6 +694,16 @@ const MaterialDetailPanel = ({
         <DeleteModal
           onClose={() => setDeleteModalState({ type: null, id: null })}
           onDelete={handleConfirmDelete}
+        />
+      )}
+      {/* 원자재 입고 및 lot 추적 수정 모달 */}
+      {isMaterialStockInDetailModalOpen && (
+        <MaterialStockInDetailModal
+          historyId={selectedHistoryId}
+          onClose={() => {
+            setIsMaterialStockInDetailModalOpen(false);
+            setSelectedHistoryId(null);
+          }}
         />
       )}
       {/* 원자재 소분내역 디테일 모달 */}

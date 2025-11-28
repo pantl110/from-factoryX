@@ -57,6 +57,7 @@ interface MaterialDetailProps {
     nextRepackagingLotNumber?: string,
     parentHistoryId?: number
   ) => void;
+  setIsMaterialStockInDetailModalOpen?: (historyId: number) => void;
   setIsCreateSubstituteModalOpen: (v: boolean) => void;
   handleOpenDeleteSubstituteModal: (
     sourceMaterialId: number,
@@ -84,6 +85,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       clientWasModified,
       productWasModified,
       setIsMaterialPackagingDetailModalOpen,
+      setIsMaterialStockInDetailModalOpen,
       setIsCreateSubstituteModalOpen,
       handleOpenDeleteSubstituteModal,
       handleOpenDeleteRepackagingModal,
@@ -360,6 +362,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             setIsMaterialPackagingDetailModalOpen={
               setIsMaterialPackagingDetailModalOpen
             }
+            onEditClick={setIsMaterialStockInDetailModalOpen}
             expiryWarningDays={expiryWarningDays}
           />
 

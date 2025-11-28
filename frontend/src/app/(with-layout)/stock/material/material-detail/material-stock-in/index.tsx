@@ -14,6 +14,7 @@ interface MaterialStockInProps {
     nextRepackagingLotNumber?: string,
     parentHistoryId?: number
   ) => void;
+  onEditClick?: (historyId: number) => void;
   expiryWarningDays?: number | null;
 }
 
@@ -22,6 +23,7 @@ const PAGE_SIZE = 5;
 export const MaterialStockIn = ({
   materialId,
   setIsMaterialPackagingDetailModalOpen,
+  onEditClick,
   expiryWarningDays,
 }: MaterialStockInProps) => {
   const role = useMemberStore((state) => state.role);
@@ -78,14 +80,13 @@ export const MaterialStockIn = ({
         ) : historyList.length > 0 ? (
           <>
             <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
-              <p className="flex-[1.5] px-3 text-sv">LOT 번호</p>
-              <p className="flex-1 px-3 text-sv">입고일</p>
+              <p className="flex-[1.9] px-3 text-sv">LOT 번호</p>
               <p className="flex-1 px-3 text-sv">입고 수량</p>
               <p className="flex-1 px-3 text-sv">남은 수량</p>
               <p className="flex-1 px-3 text-sv">창고 위치</p>
               <p className="flex-1 px-3 text-sv">유통기한</p>
               {!isViewer && hasSubscription() && (
-                <p className="flex-1 px-3 text-sv">액션</p>
+                <p className="w-20 px-3 text-sv">액션</p>
               )}
             </div>
             {historyList.map((history) => (
@@ -95,6 +96,7 @@ export const MaterialStockIn = ({
                 setIsMaterialPackagingDetailModalOpen={
                   setIsMaterialPackagingDetailModalOpen
                 }
+                onEditClick={() => onEditClick?.(history.id)}
                 expiryWarningDays={expiryWarningDays}
               />
             ))}
