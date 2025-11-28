@@ -40,9 +40,9 @@ const QuotationHistoryItem = ({ onClick, data }: QuotationHistoryItemProps) => {
       </p>
       <p
         className="flex-[0.5] px-3 text-dg truncate min-w-0"
-        title={data.amount.toLocaleString()}
+        title={Math.floor(data.amount).toLocaleString()}
       >
-        {data.amount.toLocaleString()}
+        {Math.floor(data.amount).toLocaleString()}
       </p>
     </div>
   );

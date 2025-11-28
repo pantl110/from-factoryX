@@ -31,7 +31,7 @@ export const getMaterialHistoryQueryFn = async (
 
   try {
     const response = await axios.get<MaterialHistoryListResponseModel>(
-      `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/history`,
+      `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material-history`,
       {
         params: {
           factory_id: factoryId,

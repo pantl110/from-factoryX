@@ -550,6 +550,21 @@ export interface MaterialAvailableLotListResponseModel extends PaginationModel {
   data: MaterialAvailableLotResponseModel[];
 }
 
+// v2 Material History API
+export interface MaterialHistoryDetailOutModel {
+  id: number;
+  lot_number: string | null;
+  quantity: number; // 입고수량
+  remaining_quantity: number; // 남은수량
+  warehouse_location: string | null; // 창고위치
+  expiration_date: string | null; // 유통기한 (YYYY-MM-DD)
+}
+
+export interface MaterialHistoryUpdateInModel {
+  warehouse_location?: string | null; // 창고위치
+  expiration_date?: string | null; // 유통기한 (YYYY-MM-DD)
+}
+
 // 원자재 소분 (Repackaging) API
 export interface CreateMaterialRepackagingModel {
   parent_history_id: number; // 부모 구매 이력 ID

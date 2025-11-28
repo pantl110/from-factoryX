@@ -44,7 +44,7 @@ const useGetMaterialAvailableLots = (
       }
 
       const response = await axios.get<MaterialAvailableLotListResponseModel>(
-        `${process.env.NEXT_PUBLIC_API_URL}/v2/stock/material/history/available-lots`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v2/stock/material-history/available-lots`,
         {
           params: {
             factory_id: factoryId,

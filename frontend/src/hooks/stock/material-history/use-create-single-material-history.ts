@@ -26,7 +26,7 @@ const useCreateSingleMaterialHistory = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/history/single`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material-history/single`,
         {
           method: 'POST',
           credentials: 'include',

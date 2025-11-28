@@ -28,7 +28,7 @@ const useCreateMaterialHistory = () => {
     }
 
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material/history?factory_id=${factoryId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material-history?factory_id=${factoryId}`;
       const response = await fetch(url, {
         method: 'POST',
         credentials: 'include',
