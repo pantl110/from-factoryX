@@ -117,13 +117,10 @@ export const LossRate = ({
             return (
               <Material
                 key={m.material_id}
-                material={m}
+                material={m} // 기준 자재 (bom에 정의된 자재중 하나)
                 productionQuantity={productionQuantity}
                 planId={planId}
                 initialUsages={initialUsagesForMaterial}
-                registerSaveHandler={(fn) => {
-                  materialSaveHandlersRef.current.push(fn);
-                }}
               />
             );
           });

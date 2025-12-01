@@ -64,14 +64,7 @@ export const SubstituteMaterialDropdown = ({
         }}
       />
 
-      {/* <DropdownItem>
-        <div className="pl-2 pr-4 flex items-center gap-2">
-          <RoundChip text="기준 자재" variant="sm" color="secondary" />
-          <p className="Heading-4 text-dg">{materialName}</p>
-        </div>
-      </DropdownItem> */}
-
-      {/* 대체 자재들 */}
+      {/* 대체 자재들 - chip과 함께 표시 */}
       {items.map((item) => (
         <DropdownItem
           key={item.id}
