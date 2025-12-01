@@ -18,6 +18,7 @@ import useMemberStore from '@/store/member-store';
 interface MaterialEnrollmentProps {
   onClose: () => void;
   clientInfo: ClientModel;
+  clientId?: number | null;
   showToast: () => void;
 }
 
@@ -29,6 +30,7 @@ interface MaterialFormModel {
 const MaterialEnrollmentModal = ({
   onClose,
   clientInfo, // 추가: 상위에서 전달받는 거래처 정보
+  clientId, // 추가: 상위에서 전달받는 거래처 ID
   showToast,
 }: MaterialEnrollmentProps) => {
   // 원자재 검색 드랍다운 관련
@@ -130,7 +132,8 @@ const MaterialEnrollmentModal = ({
 
     const payload = {
       factory: factoryId,
-      client_info: clientInfo,
+      client_id: clientId || null, // 최상위 레벨에 client_id 전달
+      client_info: clientInfo, // client_info는 client_id 없이 전달
       materials: selectedMaterials.map((mat) => ({
         name: mat.name,
         code: mat.code,

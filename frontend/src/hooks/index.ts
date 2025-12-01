@@ -144,7 +144,7 @@ export {
 
 // Material history related hooks
 export { default as useCreateMaterialHistory } from './stock/material-history/use-create-material-history';
-export { default as useCreateSingleMaterialHistory } from './stock/material-history/use-create-single-material-history';
+// export { default as useCreateSingleMaterialHistory } from './stock/material-history/use-create-single-material-history';
 export { default as useGetMaterialHistory } from './stock/material-history/use-get-material-history-query';
 export { default as useGetMaterialAvailableLots } from './stock/material-history/use-get-material-available-lots';
 export { default as useGetMaterialHistoryDetail } from './stock/material-history/use-get-material-history-detail';

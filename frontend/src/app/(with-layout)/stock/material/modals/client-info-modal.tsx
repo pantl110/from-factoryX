@@ -13,7 +13,7 @@ import { ClientResponseModel } from '@/types/data-model';
 
 interface ClientInfoModalProps {
   onClose: () => void;
-  onNext: (client: ClientModel) => void;
+  onNext: (client: ClientModel, clientId?: number | null) => void;
 }
 
 interface ClientFormModel {
@@ -46,6 +46,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
   // 드롭다운 상태 관리
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
 
   const handleSelectClient = (item: ClientModel | ClientResponseModel) => {
     setValue('name', item.name ?? '');
@@ -59,6 +60,12 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
     setValue('businessCategory', item.business_category || '');
     setIsDropdownOpen(false);
     setSearchKeyword(item.name ?? '');
+    // ClientResponseModel인 경우 id가 있음
+    if ('id' in item && item.id) {
+      setSelectedClientId(item.id);
+    } else {
+      setSelectedClientId(null);
+    }
   };
 
   // 필수 필드들의 값 감시
@@ -87,16 +94,20 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
       businessType,
       businessCategory,
     } = data;
-    onNext({
-      name,
-      business_registration_number: businessRegistrationNumber,
-      representative_name: representativeName,
-      address,
-      business_type: businessType,
-      business_category: businessCategory,
-      is_supplier: true,
-      // type: 'supplier', // 자재 추가 시 고객 타입을 supplier 발주처로 설정
-    });
+
+    onNext(
+      {
+        name,
+        business_registration_number: businessRegistrationNumber,
+        representative_name: representativeName,
+        address,
+        business_type: businessType,
+        business_category: businessCategory,
+        is_supplier: true,
+        // type: 'supplier', // 자재 추가 시 고객 타입을 supplier 발주처로 설정
+      },
+      selectedClientId || null // 기존 거래처를 선택한 경우 client_id 전달, 없으면 null
+    );
   };
 
   return (

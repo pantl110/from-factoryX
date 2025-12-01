@@ -269,6 +269,7 @@ export interface EquipmentListResponseModel extends PaginationModel {
 // Factory Client API
 // 거래체 등록
 export interface ClientModel {
+  client_id?: number;
   factory_id?: number;
   name: string;
   business_registration_number?: string;
@@ -503,6 +504,7 @@ export interface MaterialItemModel {
 
 export interface MaterialHistoryModel {
   factory: number;
+  client_id?: number | null;
   client_info: ClientModel;
   materials: MaterialItemModel[];
 }

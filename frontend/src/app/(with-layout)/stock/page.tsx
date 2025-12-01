@@ -45,6 +45,7 @@ const StockPageContent = () => {
   // 자재 추가 버튼
   const [isClientInfoModalOpen, setIsClientInfoModalOpen] = useState(false);
   const [clientInfo, setClientInfo] = useState<ClientModel | null>(null); // 자재 추가 시 저장해 둘 거래처 정보
+  const [clientId, setClientId] = useState<number | null>(null); // 자재 추가 시 저장해 둘 거래처 ID
   const [isMaterialEnrollmentModalOpen, setIsMaterialEnrollmentModalOpen] =
     useState(false);
 
@@ -88,8 +89,9 @@ const StockPageContent = () => {
     setIsMaterialAddDropdownOpen(false);
     setIsClientInfoModalOpen(true);
   };
-  const handleNextClientInfo = (info: ClientModel) => {
+  const handleNextClientInfo = (info: ClientModel, id?: number | null) => {
     setClientInfo(info);
+    setClientId(id || null);
     setIsClientInfoModalOpen(false);
     setIsMaterialEnrollmentModalOpen(true);
   };
@@ -160,6 +162,7 @@ const StockPageContent = () => {
       {isMaterialEnrollmentModalOpen && clientInfo && (
         <MaterialEnrollmentModal
           clientInfo={clientInfo}
+          clientId={clientId}
           onClose={() => setIsMaterialEnrollmentModalOpen(false)}
           showToast={showToast}
         />
