@@ -56,6 +56,7 @@ export const ProductionResultPanel = ({
   const [isLossRateDirty, setIsLossRateDirty] = useState(false);
 
   const materialUsageSaveRef = useRef<(() => Promise<void>) | null>(null);
+  const checkMaterialConsumedRef = useRef<(() => boolean) | null>(null);
 
   const handleFormChange = useCallback(
     (data: { quantity: number; start_date: string; end_date: string }) => {
@@ -132,6 +133,56 @@ export const ProductionResultPanel = ({
     }
 
     try {
+      // material consumed 상태 확인
+      const materialConsumed = checkMaterialConsumedRef.current?.() ?? false;
+
+      // 1. 먼저 자재 사용 정보 저장
+      if (materialUsageSaveRef.current) {
+        try {
+          await materialUsageSaveRef.current();
+        } catch (error: unknown) {
+          // 에러 메시지 파싱
+          const errorMessage = axios.isAxiosError(error)
+            ? error.response?.data?.detail || error.message || ''
+            : error instanceof Error
+              ? error.message
+              : String(error);
+
+          // material_history_id 또는 material_repackaging_id 관련 오류
+          if (
+            errorMessage.includes('material_history_id') ||
+            errorMessage.includes('material_repackaging_id') ||
+            errorMessage.includes('필수입니다')
+          ) {
+            setToastTexts({
+              text: 'LOT 번호를 선택해주세요.',
+              subtext: '',
+            });
+            showToast();
+            return;
+          }
+
+          // 사용량 0 관련 오류
+          if (errorMessage.includes('사용량은 0보다 커야 합니다.')) {
+            setToastTexts({
+              text: '실제 투입량을 입력해 주세요.',
+              subtext: '',
+            });
+            showToast();
+            return;
+          }
+
+          // 기타 오류
+          setToastTexts({
+            text: '자재 사용 정보 저장에 실패했습니다.',
+            subtext: errorMessage,
+          });
+          showToast();
+          return;
+        }
+      }
+
+      // 2. 자재 사용 정보 저장 성공 시 생산 계획 저장
       const result = await createOrUpdateProjectPlan({
         project_id: plan.project_id,
         quotation_product_id: plan.quotation_product.id,
@@ -142,53 +193,10 @@ export const ProductionResultPanel = ({
         defective_quantity: defectiveQuantity,
         avg_production_time: plan.avg_production_time,
         plan_id: plan.id > 0 ? plan.id : undefined,
+        material_consumed: materialConsumed,
       });
 
       if (result.success) {
-        // 생산 계획 저장 성공 시 자재 사용 정보도 함께 저장
-        if (materialUsageSaveRef.current) {
-          try {
-            await materialUsageSaveRef.current();
-          } catch (error: unknown) {
-            // 에러 메시지 파싱
-            const errorMessage = axios.isAxiosError(error)
-              ? error.response?.data?.detail || error.message || ''
-              : error instanceof Error
-                ? error.message
-                : String(error);
-
-            // material_history_id 또는 material_repackaging_id 관련 오류
-            if (
-              errorMessage.includes('material_history_id') ||
-              errorMessage.includes('material_repackaging_id')
-            ) {
-              setToastTexts({
-                text: 'LOT 번호를 선택해주세요.',
-                subtext: '',
-              });
-              showToast();
-              return;
-            }
-
-            // 사용량 0 관련 오류
-            if (errorMessage.includes('사용량은 0보다 커야 합니다.')) {
-              setToastTexts({
-                text: '실제 투입량을 입력해 주세요.',
-                subtext: '',
-              });
-              showToast();
-              return;
-            }
-
-            // 기타 오류
-            setToastTexts({
-              text: '자재 사용 정보 저장에 실패했습니다.',
-              subtext: errorMessage,
-            });
-            showToast();
-            return;
-          }
-        }
         // 저장 성공 후 isDirty 상태 초기화
         setIsProductionInfoDirty(false);
         setIsLossRateDirty(false);
@@ -264,6 +272,9 @@ export const ProductionResultPanel = ({
               materialUsageSaveRef.current = fn;
             }}
             onIsDirtyChange={setIsLossRateDirty}
+            onRegisterCheckMaterialConsumed={(fn) => {
+              checkMaterialConsumedRef.current = fn;
+            }}
           />
         </div>
       </Panel>

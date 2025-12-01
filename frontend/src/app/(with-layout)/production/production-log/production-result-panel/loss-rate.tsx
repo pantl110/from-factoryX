@@ -11,6 +11,7 @@ import {
   MaterialUsageModel,
   MaterialUsageResponseModel,
 } from '@/types/data-model';
+import { MaterialUsageFormModel } from './material-usage';
 
 interface LossRateProps {
   productId: number;
@@ -18,6 +19,7 @@ interface LossRateProps {
   planId?: number;
   onRegisterSaveAllMaterialUsage?: (fn: () => Promise<void>) => void;
   onIsDirtyChange?: (isDirty: boolean) => void;
+  onRegisterCheckMaterialConsumed?: (fn: () => boolean) => void;
 }
 
 export const LossRate = ({
@@ -26,11 +28,15 @@ export const LossRate = ({
   planId,
   onRegisterSaveAllMaterialUsage,
   onIsDirtyChange,
+  onRegisterCheckMaterialConsumed,
 }: LossRateProps) => {
   const { getMaterialProductConnections, data, isLoading } =
     useMaterialProduct();
   const materialSaveHandlersRef = useRef<
     Array<() => Promise<MaterialUsageModel[]>>
+  >([]);
+  const materialGetCurrentDataHandlersRef = useRef<
+    Array<() => MaterialUsageFormModel[]>
   >([]);
   const { mutateAsync: fetchMaterialUsages } = useMaterialUsageListMutation();
   const { mutateAsync: saveMaterialUsage } =
@@ -117,6 +123,46 @@ export const LossRate = ({
     [onIsDirtyChange]
   );
 
+  // material consumed 상태 확인 함수 등록
+  useEffect(() => {
+    if (!onRegisterCheckMaterialConsumed) return;
+
+    onRegisterCheckMaterialConsumed(() => {
+      // 모든 connection에 있는 material이 각자 하나 이상의 MaterialUsage를 갖고 있는지 확인
+      if (materials.length === 0) return false;
+
+      // 모든 material의 핸들러가 등록되었는지 확인
+      if (
+        materialGetCurrentDataHandlersRef.current.length !== materials.length
+      ) {
+        return false;
+      }
+
+      // 각 material에 대해 확인
+      for (let i = 0; i < materials.length; i++) {
+        const getCurrentData = materialGetCurrentDataHandlersRef.current[i];
+        if (!getCurrentData) return false;
+
+        const usages = getCurrentData();
+
+        // 하나 이상의 MaterialUsage가 있어야 함
+        if (usages.length === 0) return false;
+
+        // 모든 MaterialUsage의 from이 채워져 있어야 함
+        // from은 material_history_id 또는 material_repackaging_id 중 하나가 있어야 함
+        const allFromFilled = usages.every(
+          (usage) =>
+            usage.material_history_id !== null ||
+            usage.material_repackaging_id !== null
+        );
+
+        if (!allFromFilled) return false;
+      }
+
+      return true;
+    });
+  }, [onRegisterCheckMaterialConsumed, materials]);
+
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 flex items-center">자재 투입량 정보</h3>
@@ -125,6 +171,7 @@ export const LossRate = ({
         {/* 매 렌더링마다 전체 핸들러 배열 초기화 후, 각 자재별 저장 함수를 쌓는다 */}
         {(() => {
           materialSaveHandlersRef.current = [];
+          materialGetCurrentDataHandlersRef.current = [];
           return materials.map((m) => {
             const initialUsagesForMaterial = allUsages.filter(
               (item) =>
@@ -142,6 +189,9 @@ export const LossRate = ({
                 onIsDirtyChange={handleMaterialDirtyChange(m.material_id)}
                 onRegisterSaveHandler={(fn) => {
                   materialSaveHandlersRef.current.push(fn);
+                }}
+                onRegisterGetCurrentDataHandler={(fn) => {
+                  materialGetCurrentDataHandlersRef.current.push(fn);
                 }}
               />
             );

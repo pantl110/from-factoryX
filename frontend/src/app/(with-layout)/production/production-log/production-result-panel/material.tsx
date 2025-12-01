@@ -16,6 +16,9 @@ interface MaterialProps {
   initialUsages?: MaterialUsageResponseModel[];
   onIsDirtyChange?: (isDirty: boolean) => void;
   onRegisterSaveHandler?: (fn: () => Promise<MaterialUsageModel[]>) => void;
+  onRegisterGetCurrentDataHandler?: (
+    fn: () => MaterialUsageFormModel[]
+  ) => void;
 }
 
 interface MaterialFormModel {
@@ -29,6 +32,7 @@ export const Material = ({
   initialUsages,
   onIsDirtyChange,
   onRegisterSaveHandler,
+  onRegisterGetCurrentDataHandler,
 }: MaterialProps) => {
   const { control, watch, reset, setValue, formState } =
     useForm<MaterialFormModel>({
@@ -219,6 +223,15 @@ export const Material = ({
       return payloads;
     });
   }, [onRegisterSaveHandler, planId, material.material_id, watch]);
+
+  // 현재 데이터 가져오기 핸들러 등록
+  useEffect(() => {
+    if (!onRegisterGetCurrentDataHandler) return;
+
+    onRegisterGetCurrentDataHandler(() => {
+      return watch('usages');
+    });
+  }, [onRegisterGetCurrentDataHandler, watch]);
 
   return (
     <div className="flex flex-col gap-5 py-5">
