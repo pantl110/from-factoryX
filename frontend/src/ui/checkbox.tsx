@@ -3,9 +3,14 @@ import { Square, Check } from '@phosphor-icons/react';
 interface CheckboxProps {
   isChecked: boolean;
   onToggle: () => void;
+  disabled?: boolean;
 }
 
-const Checkbox = ({ isChecked, onToggle }: CheckboxProps) => {
+const Checkbox = ({ isChecked, onToggle, disabled = false }: CheckboxProps) => {
+  if (disabled) {
+    return null;
+  }
+
   return (
     <div
       className="flex items-center justify-center w-9 h-full"

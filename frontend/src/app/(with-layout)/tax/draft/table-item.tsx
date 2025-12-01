@@ -5,6 +5,7 @@ import {
 } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import Chip from '@/ui/chip';
+import useMemberStore from '@/store/member-store';
 
 interface TableItemProps {
   item: PublishedTaxInvoiceResponseModel;
@@ -19,6 +20,9 @@ const TableItem = ({
   onToggle,
   onItemClick,
 }: TableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const isProdManager = role === 'prod_manager';
   const chipText =
     item.publish_status === 'temporary'
       ? '임시 저장'
@@ -32,7 +36,11 @@ const TableItem = ({
       onClick={onItemClick}
     >
       <div onClick={(e) => e.stopPropagation()}>
-        <Checkbox isChecked={isChecked} onToggle={onToggle} />
+        <Checkbox
+          isChecked={isChecked}
+          onToggle={onToggle}
+          disabled={isProdManager || isViewer}
+        />
       </div>
       <div className="px-3 w-[150px]">
         {chipText === '-' ? (

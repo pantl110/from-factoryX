@@ -20,10 +20,14 @@ import NoHistoryBox from '@/ui/no-history-box';
 import TableItem from './table-item';
 import NotAllowed from '../not-allowed';
 import useSubscriptionStore from '@/store/subscription-store';
+import useMemberStore from '@/store/member-store';
 
 const TaxDraftPage = () => {
   // 구독 상태 확인
   const { isPartnersSubscription } = useSubscriptionStore();
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const isProdManager = role === 'prod_manager';
 
   const [selectedTab, setSelectedTab] = useState<
     '전체' | '임시 저장' | '전송 대기'
@@ -260,6 +264,7 @@ const TaxDraftPage = () => {
             }}
             searchKeyword={searchQuery}
             hasData={!!taxInvoices?.data.length}
+            disableForProdManager={true}
           />
 
           {isDataLoading ? (
@@ -281,7 +286,11 @@ const TaxDraftPage = () => {
             <>
               <div className="w-full overflow-y-auto">
                 <div className="flex items-center h-12 min-w-[1272px] border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-                  <Checkbox isChecked={isAllChecked} onToggle={toggleAll} />
+                  <Checkbox
+                    isChecked={isAllChecked}
+                    onToggle={toggleAll}
+                    disabled={isProdManager || isViewer}
+                  />
                   <p className="px-3 w-[150px]">진행상태</p>
                   <p className="px-3 flex-2">구분</p>
                   <p className="px-3 flex-2">업체명</p>

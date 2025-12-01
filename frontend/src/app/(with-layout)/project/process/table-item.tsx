@@ -220,7 +220,7 @@ const TableItem = ({
                 onClick={() => {
                   setIsLinkTaxModalOpen(true);
                 }}
-                disabled={role === 'viewer'}
+                disabled={role === 'viewer' || role === 'prod_manager'}
               />
             ) : (
               <p className="text-dg px-4">연결 완료</p>

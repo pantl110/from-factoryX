@@ -121,11 +121,17 @@ const TopBarContent = ({
             text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
             variant="whiteOutline"
             onClick={() => {
-              if (isPartnersSubscription() && (!isViewer || taxId)) {
+              if (
+                isPartnersSubscription() &&
+                ((!isViewer && role !== 'prod_manager') || taxId)
+              ) {
                 setIsTaxPanelOpen(true);
               }
             }}
-            disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+            disabled={
+              !isPartnersSubscription() ||
+              ((isViewer || role === 'prod_manager') && !taxId)
+            }
           />
           {taxTooltip.isVisible && shouldShowTooltip && (
             <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
@@ -169,11 +175,17 @@ const TopBarContent = ({
               text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
               variant="whiteOutline"
               onClick={() => {
-                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                if (
+                  isPartnersSubscription() &&
+                  ((!isViewer && role !== 'prod_manager') || taxId)
+                ) {
                   setIsTaxPanelOpen(true);
                 }
               }}
-              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+              disabled={
+                !isPartnersSubscription() ||
+                ((isViewer || role === 'prod_manager') && !taxId)
+              }
             />
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
@@ -226,11 +238,17 @@ const TopBarContent = ({
               text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
               variant="whiteOutline"
               onClick={() => {
-                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                if (
+                  isPartnersSubscription() &&
+                  ((!isViewer && role !== 'prod_manager') || taxId)
+                ) {
                   setIsTaxPanelOpen(true);
                 }
               }}
-              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+              disabled={
+                !isPartnersSubscription() ||
+                ((isViewer || role === 'prod_manager') && !taxId)
+              }
             />
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
@@ -287,11 +305,17 @@ const TopBarContent = ({
               text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
               variant="whiteOutline"
               onClick={() => {
-                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                if (
+                  isPartnersSubscription() &&
+                  ((!isViewer && role !== 'prod_manager') || taxId)
+                ) {
                   setIsTaxPanelOpen(true);
                 }
               }}
-              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+              disabled={
+                !isPartnersSubscription() ||
+                ((isViewer || role === 'prod_manager') && !taxId)
+              }
             />
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
@@ -345,11 +369,17 @@ const TopBarContent = ({
               text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
               variant="whiteOutline"
               onClick={() => {
-                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                if (
+                  isPartnersSubscription() &&
+                  ((!isViewer && role !== 'prod_manager') || taxId)
+                ) {
                   setIsTaxPanelOpen(true);
                 }
               }}
-              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+              disabled={
+                !isPartnersSubscription() ||
+                ((isViewer || role === 'prod_manager') && !taxId)
+              }
             />
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
@@ -429,11 +459,17 @@ const TopBarContent = ({
               text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
               variant="whiteOutline"
               onClick={() => {
-                if (isPartnersSubscription() && (!isViewer || taxId)) {
+                if (
+                  isPartnersSubscription() &&
+                  ((!isViewer && role !== 'prod_manager') || taxId)
+                ) {
                   setIsTaxPanelOpen(true);
                 }
               }}
-              disabled={!isPartnersSubscription() || (isViewer && !taxId)}
+              disabled={
+                !isPartnersSubscription() ||
+                ((isViewer || role === 'prod_manager') && !taxId)
+              }
             />
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">

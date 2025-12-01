@@ -304,47 +304,38 @@ const TaxPageContent = () => {
               placeholder="세금계산서 거래처나 제품명을 검색하세요."
             />
             {/* 숨김 버튼: 숨김 목록 보기 중이거나, 일반 목록에서 데이터가 없고 숨김 데이터도 없을 때 */}
-            {(showHidden || (!showHidden && hasItem)) && (
-              <div className="flex gap-1">
-                <MiniBtn
-                  text={checkedCount === 0 ? '숨긴 목록 보기' : '취소'}
-                  textColor="text-dg"
-                  borderColor={showHidden ? 'border-none' : 'border-lg'}
-                  bgColor={showHidden ? 'bg-bg' : 'bg-white'}
-                  hoverColor="hover:bg-bg"
-                  onClick={handleToggleHidden}
-                />
-                <MiniBtn
-                  text={
-                    checkedCount === 0
-                      ? showHidden
-                        ? '복구'
-                        : '숨기기'
-                      : checkedCount === taxData.length
+            {(showHidden || (!showHidden && hasItem)) &&
+              role &&
+              !['viewer', 'prod_manager'].includes(role) && (
+                <div className="flex gap-1">
+                  <MiniBtn
+                    text={checkedCount === 0 ? '숨긴 목록 보기' : '취소'}
+                    textColor="text-dg"
+                    borderColor={showHidden ? 'border-none' : 'border-lg'}
+                    bgColor={showHidden ? 'bg-bg' : 'bg-white'}
+                    hoverColor="hover:bg-bg"
+                    onClick={handleToggleHidden}
+                  />
+                  <MiniBtn
+                    text={
+                      checkedCount === 0
                         ? showHidden
-                          ? '전체 항목 복구'
-                          : '전체 항목 숨기기'
-                        : showHidden
-                          ? `${checkedCount}개 항목 복구`
-                          : `${checkedCount}개 항목 숨기기`
-                  }
-                  textColor={checkedCount === 0 ? 'text-dg' : 'text-white'}
-                  borderColor={checkedCount === 0 ? 'border-lg' : 'border-none'}
-                  bgColor={checkedCount === 0 ? 'bg-white' : 'bg-primary'}
-                  hoverColor={
-                    checkedCount === 0
-                      ? 'hover:bg-bg'
-                      : 'hover:bg-primary-hover'
-                  }
-                  onClick={handleHideRestore}
-                  disabled={
-                    checkedCount === 0 ||
-                    isHideRestoreLoading ||
-                    role === 'viewer'
-                  }
-                />
-              </div>
-            )}
+                          ? '복구'
+                          : '숨기기'
+                        : checkedCount === taxData.length
+                          ? showHidden
+                            ? '전체 항목 복구'
+                            : '전체 항목 숨기기'
+                          : showHidden
+                            ? `${checkedCount}개 항목 복구`
+                            : `${checkedCount}개 항목 숨기기`
+                    }
+                    variant={checkedCount > 0 ? 'red' : 'primary'}
+                    onClick={handleHideRestore}
+                    disabled={checkedCount === 0 || isHideRestoreLoading}
+                  />
+                </div>
+              )}
           </div>
 
           {isLoading ? (

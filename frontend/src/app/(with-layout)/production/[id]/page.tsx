@@ -263,7 +263,11 @@ const ProductionPageContent = () => {
                   onClick={() => {
                     setIsLinkTaxInvoiceModalOpen(true);
                   }}
-                  disabled={isViewer || !isPartnersSubscription()}
+                  disabled={
+                    isViewer ||
+                    role === 'prod_manager' ||
+                    !isPartnersSubscription()
+                  }
                 />
                 {isLinkTaxInvoiceModalOpen && (
                   <LinkTaxModal

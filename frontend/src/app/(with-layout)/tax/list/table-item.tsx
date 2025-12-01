@@ -3,6 +3,7 @@ import Checkbox from '@/ui/checkbox';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import { getProductNamesDisplay } from '@/hooks';
 import { RoundChip } from '@/ui';
+import useMemberStore from '@/store/member-store';
 
 interface TableItemProps {
   onItemClick?: () => void;
@@ -17,6 +18,9 @@ const TableItem = ({
   onToggle,
   isChecked,
 }: TableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const isProdManager = role === 'prod_manager';
   // Map Korean values to English for color lookup
   const taxTypeMap: Record<string, TaxDocumentType> = {
     매출: 'sales',
@@ -39,7 +43,11 @@ const TableItem = ({
         if (e.key === 'Enter' || e.key === ' ') onItemClick?.();
       }}
     >
-      <Checkbox isChecked={isChecked} onToggle={onToggle} />
+      <Checkbox
+        isChecked={isChecked}
+        onToggle={onToggle}
+        disabled={isProdManager || isViewer}
+      />
       <div className="px-3 flex-1">
         <RoundChip
           text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}

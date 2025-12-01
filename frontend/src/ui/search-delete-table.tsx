@@ -16,6 +16,7 @@ interface SearchDeleteTableProps {
   searchKeyword?: string;
   hasData?: boolean;
   hasDeleteButton?: boolean;
+  disableForProdManager?: boolean; // 세금계산서 페이지에서만 생산관리자 제한 적용
 }
 
 const SearchDeleteTable = ({
@@ -28,6 +29,7 @@ const SearchDeleteTable = ({
   searchKeyword = '',
   hasData,
   hasDeleteButton = true,
+  disableForProdManager = false,
 }: SearchDeleteTableProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -54,9 +56,13 @@ const SearchDeleteTable = ({
         onChange={handleSearchChange}
         placeholder={placeholder}
       />
-      {hasData && hasDeleteButton && !isViewer && hasSubscription() && (
-        <div className="flex gap-1">
-          {/* <MiniBtn
+      {hasData &&
+        hasDeleteButton &&
+        !isViewer &&
+        (!disableForProdManager || role !== 'prod_manager') &&
+        hasSubscription() && (
+          <div className="flex gap-1">
+            {/* <MiniBtn
             text="취소"
             textColor="text-dg"
             borderColor="border-lg"
@@ -64,16 +70,13 @@ const SearchDeleteTable = ({
             hoverColor="hover:bg-bg"
             onClick={onCancel}
           /> */}
-          <MiniBtn
-            text={deleteButtonText}
-            textColor={checkedCount > 0 ? 'text-red' : 'text-dg'}
-            borderColor={checkedCount > 0 ? '' : 'border-lg'}
-            bgColor={checkedCount > 0 ? 'bg-red-8' : 'bg-white'}
-            hoverColor={checkedCount > 0 ? 'hover:bg-red-hover' : 'hover:bg-bg'}
-            onClick={checkedCount > 0 ? onDelete : () => {}}
-          />
-        </div>
-      )}
+            <MiniBtn
+              text={deleteButtonText}
+              variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
+              onClick={checkedCount > 0 ? onDelete : () => {}}
+            />
+          </div>
+        )}
     </div>
   );
 };
