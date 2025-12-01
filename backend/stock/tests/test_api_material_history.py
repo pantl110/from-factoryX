@@ -290,289 +290,289 @@ class TestMaterialHistoryAPI(TestCase):
         )()
         self.assertEqual(history_count, 1)
 
-    async def test_create_single_material_history_purchase_success(self):
-        """단일 원자재 구매 이력 생성 성공 테스트"""
-        headers = await self.authenticate()
-
-        payload = {
-            "material_id": self.material.id,
-            "type": "purchase",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id,
-            "warehouse_location": "A-01",
-            "expiration_date": "2030-12-31",
-        }
-
-        response = await self.client.post(
-            f"/single?factory_id={self.factory.id}", headers=headers, json=payload
-        )
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
-        self.assertEqual(data["type"], "purchase")
-        self.assertEqual(data["quantity"], 50)
-        self.assertEqual(data["price"], 2000)
-        today_prefix = timezone.localdate().strftime("LOT-%Y%m%d-")
-        self.assertTrue(
-            data["lot_number"].startswith(today_prefix),
-            f"lot_number should start with {today_prefix}",
-        )
-        self.assertEqual(data["warehouse_location"], "A-01")
-        self.assertEqual(data["expiration_date"], "2030-12-31")
-        self.assertEqual(data["total_stock"], 150)  # 100 + 50
-        self.assertEqual(data["remaining_quantity"], 50)
-
-        # 재고 업데이트 확인
-        await sync_to_async(self.material.refresh_from_db)()
-        self.assertEqual(self.material.current_stock, 150)
-
-    async def test_create_single_material_history_consumption_success(self):
-        """단일 원자재 소모 이력 생성 성공 테스트"""
-        headers = await self.authenticate()
-
-        payload = {
-            "material_id": self.material.id,
-            "type": "consumption",
-            "quantity": 30,
-            "price": None,
-            "client_id": self.client_obj.id,
-            "warehouse_location": None,
-            "expiration_date": None,
-        }
-
-        response = await self.client.post(
-            f"/single?factory_id={self.factory.id}", headers=headers, json=payload
-        )
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
-        self.assertEqual(data["type"], "consumption")
-        self.assertEqual(data["quantity"], 30)
-        self.assertIsNone(data["price"])
-        today_prefix = timezone.localdate().strftime("LOT-%Y%m%d-")
-        self.assertTrue(
-            data["lot_number"].startswith(today_prefix),
-            f"lot_number should start with {today_prefix}",
-        )
-        self.assertEqual(data["total_stock"], 70)  # 100 - 30
-        self.assertIsNone(data["remaining_quantity"])
-
-        # 재고 업데이트 확인
-        await sync_to_async(self.material.refresh_from_db)()
-        self.assertEqual(self.material.current_stock, 70)
-
-    async def test_create_single_material_history_material_not_found(self):
-        """존재하지 않는 원자재 이력 생성 테스트"""
-        headers = await self.authenticate()
-
-        payload = {
-            "material_id": 99999,
-            "type": "purchase",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id,
-        }
-
-        response = await self.client.post(
-            f"/single?factory_id={self.factory.id}", headers=headers, json=payload
-        )
-        self.assertEqual(response.status_code, 404)
-
-        data = response.json()
-        self.assertEqual(
-            data.get("message") or data.get("detail"), "원자재 정보를 찾을 수 없습니다."
-        )
-
-    async def test_create_single_material_history_client_not_found(self):
-        """존재하지 않는 거래처 이력 생성 테스트"""
-        headers = await self.authenticate()
-
-        payload = {
-            "material_id": self.material.id,
-            "type": "purchase",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": 99999,
-        }
-
-        response = await self.client.post(
-            f"/single?factory_id={self.factory.id}", headers=headers, json=payload
-        )
-        self.assertEqual(response.status_code, 404)
-
-        data = response.json()
-        self.assertEqual(
-            data.get("message") or data.get("detail"), "거래처 정보를 찾을 수 없습니다."
-        )
-
-    async def test_create_single_material_history_invalid_type(self):
-        """잘못된 거래 타입 이력 생성 테스트"""
-        headers = await self.authenticate()
-
-        payload = {
-            "material_id": self.material.id,
-            "type": "invalid_type",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id,
-        }
-
-        response = await self.client.post(
-            f"/single?factory_id={self.factory.id}", headers=headers, json=payload
-        )
-        self.assertEqual(response.status_code, 400)
-
-        data = response.json()
-        self.assertEqual(
-            data.get("message") or data.get("detail"),
-            "잘못된 거래 타입입니다. 'purchase' 또는 'consumption'을 입력해주세요.",
-        )
-
-    async def test_create_single_material_history_purchase_without_price(self):
-        """구매 시 가격 미입력 테스트"""
-        headers = await self.authenticate()
-
-        payload = {
-            "material_id": self.material.id,
-            "type": "purchase",
-            "quantity": 50,
-            "price": None,
-            "client_id": self.client_obj.id,
-        }
-
-        response = await self.client.post(
-            f"/single?factory_id={self.factory.id}", headers=headers, json=payload
-        )
-        self.assertEqual(response.status_code, 400)
-
-        data = response.json()
-        self.assertEqual(
-            data.get("message") or data.get("detail"),
-            "구매 시에는 가격을 입력해주세요.",
-        )
-
-    async def test_create_single_material_history_insufficient_stock(self):
-        """재고 부족 시 소모 이력 생성 테스트"""
-        headers = await self.authenticate()
-
-        payload = {
-            "material_id": self.material.id,
-            "type": "consumption",
-            "quantity": 150,  # 현재 재고(100)보다 많은 수량
-            "price": None,
-            "client_id": self.client_obj.id,
-        }
-
-        response = await self.client.post(
-            f"/single?factory_id={self.factory.id}", headers=headers, json=payload
-        )
-        self.assertEqual(response.status_code, 400)
-
-        data = response.json()
-        self.assertEqual(
-            data.get("message") or data.get("detail"), "재고가 부족합니다."
-        )
-
-    async def test_create_single_material_history_unauthorized(self):
-        """인증되지 않은 사용자 테스트"""
-        payload = {
-            "material_id": self.material.id,
-            "type": "purchase",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id,
-        }
-
-        response = await self.client.post(
-            f"/single?factory_id={self.factory.id}", json=payload
-        )
-        self.assertEqual(response.status_code, 401)
-
-    async def test_get_material_history_success(self):
-        """원자재 히스토리 조회 성공 테스트 (전체 히스토리)"""
-        # 먼저 히스토리 데이터 생성
-        headers = await self.authenticate()
-
-        # 구매 히스토리 생성
-        purchase_payload = {
-            "material_id": self.material.id,
-            "type": "purchase",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id,
-        }
-        await self.client.post(
-            f"/single?factory_id={self.factory.id}",
-            headers=headers,
-            json=purchase_payload,
-        )
-
-        # 소모 히스토리 생성
-        consumption_payload = {
-            "material_id": self.material.id,
-            "type": "consumption",
-            "quantity": 20,
-            "price": None,
-            "client_id": self.client_obj.id,
-        }
-        await self.client.post(
-            f"/single?factory_id={self.factory.id}",
-            headers=headers,
-            json=consumption_payload,
-        )
-
-        # 전체 히스토리 조회 (기간 파라미터 없음)
-        response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()["data"]
-        self.assertTrue(len(data) >= 1)
-
-    async def test_get_material_history_by_date_range_success(self):
-        """원자재 히스토리 조회 성공 테스트 (날짜 범위)"""
-        headers = await self.authenticate()
-
-        # 히스토리 데이터 생성
-        purchase_payload = {
-            "material_id": self.material.id,
-            "type": "purchase",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id,
-        }
-        await self.client.post(
-            f"/single?factory_id={self.factory.id}",
-            headers=headers,
-            json=purchase_payload,
-        )
-
-        consumption_payload = {
-            "material_id": self.material.id,
-            "type": "consumption",
-            "quantity": 20,
-            "price": None,
-            "client_id": self.client_obj.id,
-        }
-        await self.client.post(
-            f"/single?factory_id={self.factory.id}",
-            headers=headers,
-            json=consumption_payload,
-        )
-
-        # 2025년 히스토리 조회
-        response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()["data"]
-        self.assertTrue(len(data) >= 1)
-
+    # async def test_create_single_material_history_purchase_success(self):
+    #     """단일 원자재 구매 이력 생성 성공 테스트 (라우터 /single 비활성화로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     payload = {
+    #         "material_id": self.material.id,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": self.client_obj.id,
+    #         "warehouse_location": "A-01",
+    #         "expiration_date": "2030-12-31",
+    #     }
+    #
+    #     response = await self.client.post(
+    #         f"/single?factory_id={self.factory.id}", headers=headers, json=payload
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #
+    #     data = response.json()
+    #     self.assertEqual(data["type"], "purchase")
+    #     self.assertEqual(data["quantity"], 50)
+    #     self.assertEqual(data["price"], 2000)
+    #     today_prefix = timezone.localdate().strftime("LOT-%Y%m%d-")
+    #     self.assertTrue(
+    #         data["lot_number"].startswith(today_prefix),
+    #         f"lot_number should start with {today_prefix}",
+    #     )
+    #     self.assertEqual(data["warehouse_location"], "A-01")
+    #     self.assertEqual(data["expiration_date"], "2030-12-31")
+    #     self.assertEqual(data["total_stock"], 150)  # 100 + 50
+    #     self.assertEqual(data["remaining_quantity"], 50)
+    #
+    #     # 재고 업데이트 확인
+    #     await sync_to_async(self.material.refresh_from_db)()
+    #     self.assertEqual(self.material.current_stock, 150)
+    #
+    # async def test_create_single_material_history_consumption_success(self):
+    #     """단일 원자재 소모 이력 생성 성공 테스트 (라우터 /single 비활성화로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     payload = {
+    #         "material_id": self.material.id,
+    #         "type": "consumption",
+    #         "quantity": 30,
+    #         "price": None,
+    #         "client_id": self.client_obj.id,
+    #         "warehouse_location": None,
+    #         "expiration_date": None,
+    #     }
+    #
+    #     response = await self.client.post(
+    #         f"/single?factory_id={self.factory.id}", headers=headers, json=payload
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #
+    #     data = response.json()
+    #     self.assertEqual(data["type"], "consumption")
+    #     self.assertEqual(data["quantity"], 30)
+    #     self.assertIsNone(data["price"])
+    #     today_prefix = timezone.localdate().strftime("LOT-%Y%m%d-")
+    #     self.assertTrue(
+    #         data["lot_number"].startswith(today_prefix),
+    #         f"lot_number should start with {today_prefix}",
+    #     )
+    #     self.assertEqual(data["total_stock"], 70)  # 100 - 30
+    #     self.assertIsNone(data["remaining_quantity"])
+    #
+    #     # 재고 업데이트 확인
+    #     await sync_to_async(self.material.refresh_from_db)()
+    #     self.assertEqual(self.material.current_stock, 70)
+    #
+    # async def test_create_single_material_history_material_not_found(self):
+    #     """존재하지 않는 원자재 이력 생성 테스트 (라우터 /single 비활성화로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     payload = {
+    #         "material_id": 99999,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #
+    #     response = await self.client.post(
+    #         f"/single?factory_id={self.factory.id}", headers=headers, json=payload
+    #     )
+    #     self.assertEqual(response.status_code, 404)
+    #
+    #     data = response.json()
+    #     self.assertEqual(
+    #         data.get("message") or data.get("detail"), "원자재 정보를 찾을 수 없습니다."
+    #     )
+    #
+    # async def test_create_single_material_history_client_not_found(self):
+    #     """존재하지 않는 거래처 이력 생성 테스트 (라우터 /single 비활성화로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     payload = {
+    #         "material_id": self.material.id,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": 99999,
+    #     }
+    #
+    #     response = await self.client.post(
+    #         f"/single?factory_id={self.factory.id}", headers=headers, json=payload
+    #     )
+    #     self.assertEqual(response.status_code, 404)
+    #
+    #     data = response.json()
+    #     self.assertEqual(
+    #         data.get("message") or data.get("detail"), "거래처 정보를 찾을 수 없습니다."
+    #     )
+    #
+    # async def test_create_single_material_history_invalid_type(self):
+    #     """잘못된 거래 타입 이력 생성 테스트 (라우터 /single 비활성화로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     payload = {
+    #         "material_id": self.material.id,
+    #         "type": "invalid_type",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #
+    #     response = await self.client.post(
+    #         f"/single?factory_id={self.factory.id}", headers=headers, json=payload
+    #     )
+    #     self.assertEqual(response.status_code, 400)
+    #
+    #     data = response.json()
+    #     self.assertEqual(
+    #         data.get("message") or data.get("detail"),
+    #         "잘못된 거래 타입입니다. 'purchase' 또는 'consumption'을 입력해주세요.",
+    #     )
+    #
+    # async def test_create_single_material_history_purchase_without_price(self):
+    #     """구매 시 가격 미입력 테스트 (라우터 /single 비활성화로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     payload = {
+    #         "material_id": self.material.id,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": None,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #
+    #     response = await self.client.post(
+    #         f"/single?factory_id={self.factory.id}", headers=headers, json=payload
+    #     )
+    #     self.assertEqual(response.status_code, 400)
+    #
+    #     data = response.json()
+    #     self.assertEqual(
+    #         data.get("message") or data.get("detail"),
+    #         "구매 시에는 가격을 입력해주세요.",
+    #     )
+    #
+    # async def test_create_single_material_history_insufficient_stock(self):
+    #     """재고 부족 시 소모 이력 생성 테스트 (라우터 /single 비활성화로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     payload = {
+    #         "material_id": self.material.id,
+    #         "type": "consumption",
+    #         "quantity": 150,  # 현재 재고(100)보다 많은 수량
+    #         "price": None,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #
+    #     response = await self.client.post(
+    #         f"/single?factory_id={self.factory.id}", headers=headers, json=payload
+    #     )
+    #     self.assertEqual(response.status_code, 400)
+    #
+    #     data = response.json()
+    #     self.assertEqual(
+    #         data.get("message") or data.get("detail"), "재고가 부족합니다."
+    #     )
+    #
+    # async def test_create_single_material_history_unauthorized(self):
+    #     """인증되지 않은 사용자 테스트 (라우터 /single 비활성화로 테스트 중단)"""
+    #     payload = {
+    #         "material_id": self.material.id,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #
+    #     response = await self.client.post(
+    #         f"/single?factory_id={self.factory.id}", json=payload
+    #     )
+    #     self.assertEqual(response.status_code, 401)
+    #
+    # async def test_get_material_history_success(self):
+    #     """원자재 히스토리 조회 성공 테스트 (전체 히스토리, /single 의존으로 테스트 중단)"""
+    #     # 먼저 히스토리 데이터 생성
+    #     headers = await self.authenticate()
+    #
+    #     # 구매 히스토리 생성
+    #     purchase_payload = {
+    #         "material_id": self.material.id,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #     await self.client.post(
+    #         f"/single?factory_id={self.factory.id}",
+    #         headers=headers,
+    #         json=purchase_payload,
+    #     )
+    #
+    #     # 소모 히스토리 생성
+    #     consumption_payload = {
+    #         "material_id": self.material.id,
+    #         "type": "consumption",
+    #         "quantity": 20,
+    #         "price": None,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #     await self.client.post(
+    #         f"/single?factory_id={self.factory.id}",
+    #         headers=headers,
+    #         json=consumption_payload,
+    #     )
+    #
+    #     # 전체 히스토리 조회 (기간 파라미터 없음)
+    #     response = await self.client.get(
+    #         f"/?material_id={self.material.id}&factory_id={self.factory.id}",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #
+    #     data = response.json()["data"]
+    #     self.assertTrue(len(data) >= 1)
+    #
+    # async def test_get_material_history_by_date_range_success(self):
+    #     """원자재 히스토리 조회 성공 테스트 (날짜 범위, /single 의존으로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     # 히스토리 데이터 생성
+    #     purchase_payload = {
+    #         "material_id": self.material.id,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #     await self.client.post(
+    #         f"/single?factory_id={self.factory.id}",
+    #         headers=headers,
+    #         json=purchase_payload,
+    #     )
+    #
+    #     consumption_payload = {
+    #         "material_id": self.material.id,
+    #         "type": "consumption",
+    #         "quantity": 20,
+    #         "price": None,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #     await self.client.post(
+    #         f"/single?factory_id={self.factory.id}",
+    #         headers=headers,
+    #         json=consumption_payload,
+    #     )
+    #
+    #     # 2025년 히스토리 조회
+    #     response = await self.client.get(
+    #         f"/?material_id={self.material.id}&factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #
+    #     data = response.json()["data"]
+    #     self.assertTrue(len(data) >= 1)
+    #
     async def test_get_material_history_material_not_found(self):
         """존재하지 않는 원자재 히스토리 조회 테스트"""
         headers = await self.authenticate()
@@ -592,163 +592,163 @@ class TestMaterialHistoryAPI(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    async def test_get_material_history_data_validation(self):
-        """원자재 히스토리 데이터 검증 테스트"""
-        headers = await self.authenticate()
+    # async def test_get_material_history_data_validation(self):
+    #     """원자재 히스토리 데이터 검증 테스트 (/single 의존으로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     # 히스토리 데이터 생성
+    #     purchase_payload = {
+    #         "material_id": self.material.id,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #     await self.client.post(
+    #         f"/single?factory_id={self.factory.id}",
+    #         headers=headers,
+    #         json=purchase_payload,
+    #     )
+    #
+    #     # 히스토리 조회
+    #     response = await self.client.get(
+    #         f"/?material_id={self.material.id}&factory_id={self.factory.id}",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #
+    #     data = response.json()["data"]
+    #     for history in data:
+    #         for field in [
+    #             "id",
+    #             "type",
+    #             "material_id",
+    #             "material_name",
+    #             "material_code",
+    #             "client_id",
+    #             "client_name",
+    #             "quantity",
+    #             "unit_price",
+    #             "amount",
+    #             "date",
+    #             "total_stock",
+    #             "cash_receipt",
+    #             "national_tax_service_id",
+    #         ]:
+    #             self.assertIn(field, history)
+    #
+    #         # 필드 값 검증
+    #         self.assertIsInstance(history["total_stock"], (int, float))
+    #         self.assertIsInstance(history["material_id"], int)
+    #         self.assertIsInstance(history["material_name"], str)
+    #         self.assertIsInstance(history["material_code"], str)
+    #
+    #         # client_id 검증
+    #         self.assertIsInstance(history["client_id"], (int, type(None)))
+    #
+    #         # cash_receipt와 national_tax_service_id는 Optional[int]
+    #         self.assertIsInstance(history["cash_receipt"], (int, type(None)))
+    #         self.assertIsInstance(history["national_tax_service_id"], (int, type(None)))
 
-        # 히스토리 데이터 생성
-        purchase_payload = {
-            "material_id": self.material.id,
-            "type": "purchase",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id,
-        }
-        await self.client.post(
-            f"/single?factory_id={self.factory.id}",
-            headers=headers,
-            json=purchase_payload,
-        )
-
-        # 히스토리 조회
-        response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()["data"]
-        for history in data:
-            for field in [
-                "id",
-                "type",
-                "material_id",
-                "material_name",
-                "material_code",
-                "client_id",
-                "client_name",
-                "quantity",
-                "unit_price",
-                "amount",
-                "date",
-                "total_stock",
-                "cash_receipt",
-                "national_tax_service_id",
-            ]:
-                self.assertIn(field, history)
-
-            # 필드 값 검증
-            self.assertIsInstance(history["total_stock"], (int, float))
-            self.assertIsInstance(history["material_id"], int)
-            self.assertIsInstance(history["material_name"], str)
-            self.assertIsInstance(history["material_code"], str)
-
-            # client_id 검증
-            self.assertIsInstance(history["client_id"], (int, type(None)))
-
-            # cash_receipt와 national_tax_service_id는 Optional[int]
-            self.assertIsInstance(history["cash_receipt"], (int, type(None)))
-            self.assertIsInstance(history["national_tax_service_id"], (int, type(None)))
-
-    async def test_get_material_history_by_type_filter(self):
-        """원자재 히스토리 타입별 필터링 테스트"""
-        headers = await self.authenticate()
-
-        # 구매 히스토리 생성
-        purchase_payload = {
-            "material_id": self.material.id,
-            "type": "purchase",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id,
-        }
-        await self.client.post(
-            f"/single?factory_id={self.factory.id}",
-            headers=headers,
-            json=purchase_payload,
-        )
-
-        # 소모 히스토리 생성
-        consumption_payload = {
-            "material_id": self.material.id,
-            "type": "consumption",
-            "quantity": 20,
-            "price": None,
-            "client_id": self.client_obj.id,
-        }
-        await self.client.post(
-            f"/single?factory_id={self.factory.id}",
-            headers=headers,
-            json=consumption_payload,
-        )
-
-        # 구매 타입만 조회
-        response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=구매",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()["data"]
-
-        # 모든 결과가 구매 타입인지 확인
-        for history in data:
-            self.assertEqual(history["type"], "구매")
-
-        # 소모 타입만 조회
-        response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=소모",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()["data"]
-
-        # 모든 결과가 소모 타입인지 확인
-        for history in data:
-            self.assertEqual(history["type"], "소모")
-
-    async def test_get_material_history_by_type_and_date_filter(self):
-        """원자재 히스토리 타입과 날짜 필터 조합 테스트"""
-        headers = await self.authenticate()
-
-        # 구매 히스토리 생성
-        purchase_payload = {
-            "material_id": self.material.id,
-            "type": "purchase",
-            "quantity": 50,
-            "price": 2000,
-            "client_id": self.client_obj.id,
-        }
-        await self.client.post(
-            f"/single?factory_id={self.factory.id}",
-            headers=headers,
-            json=purchase_payload,
-        )
-
-        # 소모 히스토리 생성
-        consumption_payload = {
-            "material_id": self.material.id,
-            "type": "consumption",
-            "quantity": 20,
-            "price": None,
-            "client_id": self.client_obj.id,
-        }
-        await self.client.post(
-            f"/single?factory_id={self.factory.id}",
-            headers=headers,
-            json=consumption_payload,
-        )
-
-        # 구매 타입 + 날짜 범위 조회
-        response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=구매&start_date=2025-01-01&end_date=2025-12-31",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()["data"]
-
-        # 모든 결과가 구매 타입인지 확인
-        for history in data:
-            self.assertEqual(history["type"], "구매")
+    # async def test_get_material_history_by_type_filter(self):
+    #     """원자재 히스토리 타입별 필터링 테스트 (/single 의존으로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     # 구매 히스토리 생성
+    #     purchase_payload = {
+    #         "material_id": self.material.id,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #     await self.client.post(
+    #         f"/single?factory_id={self.factory.id}",
+    #         headers=headers,
+    #         json=purchase_payload,
+    #     )
+    #
+    #     # 소모 히스토리 생성
+    #     consumption_payload = {
+    #         "material_id": self.material.id,
+    #         "type": "consumption",
+    #         "quantity": 20,
+    #         "price": None,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #     await self.client.post(
+    #         f"/single?factory_id={self.factory.id}",
+    #         headers=headers,
+    #         json=consumption_payload,
+    #     )
+    #
+    #     # 구매 타입만 조회
+    #     response = await self.client.get(
+    #         f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=구매",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     data = response.json()["data"]
+    #
+    #     # 모든 결과가 구매 타입인지 확인
+    #     for history in data:
+    #         self.assertEqual(history["type"], "구매")
+    #
+    #     # 소모 타입만 조회
+    #     response = await self.client.get(
+    #         f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=소모",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     data = response.json()["data"]
+    #
+    #     # 모든 결과가 소모 타입인지 확인
+    #     for history in data:
+    #         self.assertEqual(history["type"], "소모")
+    #
+    # async def test_get_material_history_by_type_and_date_filter(self):
+    #     """원자재 히스토리 타입과 날짜 필터 조합 테스트 (/single 의존으로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     # 구매 히스토리 생성
+    #     purchase_payload = {
+    #         "material_id": self.material.id,
+    #         "type": "purchase",
+    #         "quantity": 50,
+    #         "price": 2000,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #     await self.client.post(
+    #         f"/single?factory_id={self.factory.id}",
+    #         headers=headers,
+    #         json=purchase_payload,
+    #     )
+    #
+    #     # 소모 히스토리 생성
+    #     consumption_payload = {
+    #         "material_id": self.material.id,
+    #         "type": "consumption",
+    #         "quantity": 20,
+    #         "price": None,
+    #         "client_id": self.client_obj.id,
+    #     }
+    #     await self.client.post(
+    #         f"/single?factory_id={self.factory.id}",
+    #         headers=headers,
+    #         json=consumption_payload,
+    #     )
+    #
+    #     # 구매 타입 + 날짜 범위 조회
+    #     response = await self.client.get(
+    #         f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=구매&start_date=2025-01-01&end_date=2025-12-31",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     data = response.json()["data"]
+    #
+    #     # 모든 결과가 구매 타입인지 확인
+    #     for history in data:
+    #         self.assertEqual(history["type"], "구매")
 
     async def test_get_material_history_invalid_type_filter(self):
         """잘못된 타입 필터 테스트"""
@@ -764,57 +764,57 @@ class TestMaterialHistoryAPI(TestCase):
         data = response.json()["data"]
         self.assertEqual(len(data), 0)  # 잘못된 타입이므로 결과가 없어야 함
 
-    async def test_get_material_history_pagination(self):
-        """원자재 히스토리 페이지네이션 테스트"""
-        headers = await self.authenticate()
-
-        # 기존 히스토리 삭제 (테스트를 위해 깨끗하게 시작)
-        await sync_to_async(
-            MaterialHistory.objects.filter(material=self.material).delete
-        )()
-
-        # 여러 개의 히스토리 생성 (6개)
-        for i in range(6):
-            purchase_payload = {
-                "material_id": self.material.id,
-                "type": "purchase",
-                "quantity": 10 + i,
-                "price": 1000 + i * 100,
-                "client_id": self.client_obj.id,
-            }
-            await self.client.post(
-                f"/single?factory_id={self.factory.id}",
-                headers=headers,
-                json=purchase_payload,
-            )
-
-        # 첫 번째 페이지 조회 (기본 5개)
-        response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
-
-        self.assertIn("data", data)
-        self.assertIn("count", data)
-        self.assertIn("curPage", data)
-
-        # 페이지네이션 정보 확인
-        self.assertEqual(data["totalCnt"], 6)  # 총 6개
-        self.assertEqual(data["curPage"], 1)  # 첫 번째 페이지
-        self.assertEqual(data["count"], 5)  # 첫 페이지는 5개
-
-        # 두 번째 페이지 조회
-        response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}&page=2",
-            headers=headers,
-        )
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
-        self.assertEqual(data["curPage"], 2)  # 두 번째 페이지
+    # async def test_get_material_history_pagination(self):
+    #     """원자재 히스토리 페이지네이션 테스트 (/single 의존으로 테스트 중단)"""
+    #     headers = await self.authenticate()
+    #
+    #     # 기존 히스토리 삭제 (테스트를 위해 깨끗하게 시작)
+    #     await sync_to_async(
+    #         MaterialHistory.objects.filter(material=self.material).delete
+    #     )()
+    #
+    #     # 여러 개의 히스토리 생성 (6개)
+    #     for i in range(6):
+    #         purchase_payload = {
+    #             "material_id": self.material.id,
+    #             "type": "purchase",
+    #             "quantity": 10 + i,
+    #             "price": 1000 + i * 100,
+    #             "client_id": self.client_obj.id,
+    #         }
+    #         await self.client.post(
+    #             f"/single?factory_id={self.factory.id}",
+    #             headers=headers,
+    #             json=purchase_payload,
+    #         )
+    #
+    #     # 첫 번째 페이지 조회 (기본 5개)
+    #     response = await self.client.get(
+    #         f"/?material_id={self.material.id}&factory_id={self.factory.id}",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #
+    #     data = response.json()
+    #
+    #     self.assertIn("data", data)
+    #     self.assertIn("count", data)
+    #     self.assertIn("curPage", data)
+    #
+    #     # 페이지네이션 정보 확인
+    #     self.assertEqual(data["totalCnt"], 6)  # 총 6개
+    #     self.assertEqual(data["curPage"], 1)  # 첫 번째 페이지
+    #     self.assertEqual(data["count"], 5)  # 첫 페이지는 5개
+    #
+    #     # 두 번째 페이지 조회
+    #     response = await self.client.get(
+    #         f"/?material_id={self.material.id}&factory_id={self.factory.id}&page=2",
+    #         headers=headers,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #
+    #     data = response.json()
+    #     self.assertEqual(data["curPage"], 2)  # 두 번째 페이지
 
     async def test_get_material_history_with_tax_invoice_and_cash_receipt(self):
         """세금계산서와 현금영수증이 연결된 원자재 히스토리 조회 테스트"""
@@ -883,7 +883,7 @@ class TestMaterialHistoryAPI(TestCase):
         self.assertIsNotNone(cash_history_data)
 
     async def test_create_material_history_update_existing_client(self):
-        """기존 거래처 명으로 이력 생성 시 거래처 정보가 업데이트되는지 테스트"""
+        """기존 거래처 ID로 이력 생성 시 client_info 기준으로 거래처 정보가 업데이트되는지 테스트"""
         headers = await self.authenticate()
         # 기존 거래처 생성
         old_client = await sync_to_async(FactoryClient.objects.create)(
@@ -895,8 +895,9 @@ class TestMaterialHistoryAPI(TestCase):
             business_category="기타",
             address="구주소",
         )
-        # 기존 거래처와 같은 이름, 다른 정보로 요청
+        # 기존 거래처의 ID를 client_id로 보내고, 다른 정보(client_info)로 업데이트 요청
         payload = {
+            "client_id": old_client.id,
             "client_info": {
                 "name": "업데이트 거래처",
                 "business_registration_number": "222-22-22222",

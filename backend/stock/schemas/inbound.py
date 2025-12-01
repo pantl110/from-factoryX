@@ -198,26 +198,33 @@ class FactoryClientCreateIn(Schema):
 
 
 # (POST) Create Single Material History
-class SingleMaterialHistoryCreateIn(Schema):
-    material_id: int
-    type: str
-    quantity: Decimal
-    price: Optional[int]
-    client_id: int
-    warehouse_location: Optional[str] = Field(
-        default=None, description="창고 위치"
-    )
-    expiration_date: Optional[date] = Field(
-        default=None, description="유통기한"
-    )
-    remaining_quantity: Optional[Decimal] = Field(
-        default=None, description="해당 입고 LOT의 잔여 수량 (미지정 시 quantity 전체로 설정)"
-    )
+# class SingleMaterialHistoryCreateIn(Schema):
+#     material_id: int
+#     type: str
+#     quantity: Decimal
+#     price: Optional[int]
+#     client_id: int
+#     warehouse_location: Optional[str] = Field(
+#         default=None, description="창고 위치"
+#     )
+#     expiration_date: Optional[date] = Field(
+#         default=None, description="유통기한"
+#     )
+#     remaining_quantity: Optional[Decimal] = Field(
+#         default=None, description="해당 입고 LOT의 잔여 수량 (미지정 시 quantity 전체로 설정)"
+#     )
 
 
 # (POST) Create Material History
 class MaterialHistoryCreateIn(Schema):
-    client_info: FactoryClientCreateIn
+    client_id: Optional[int] = Field(
+        default=None,
+        description="거래처 ID (있으면 해당 거래처를 사용해 수정, 없으면 client_info로 새 거래처 생성)",
+    )
+    client_info: Optional[FactoryClientCreateIn] = Field(
+        default=None,
+        description="거래처 정보 (client_id가 없을 때는 이 정보로 새 거래처 생성, 있을 때는 해당 거래처를 업데이트)",
+    )
     materials: List[MaterialItemIn]
 
 

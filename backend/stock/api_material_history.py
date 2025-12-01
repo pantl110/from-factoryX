@@ -4,11 +4,9 @@ from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from typing import List
 from api.security import jwt_auth
-
 from stock.models import Material, MaterialHistory
 from stock.schemas.inbound import (
     MaterialHistoryCreateIn,
-    SingleMaterialHistoryCreateIn,
     MaterialHistoryDetailFilter,
 )
 from stock.schemas.outbound import (
@@ -20,92 +18,91 @@ from factory.models import Factory, FactoryClient
 from factory.utils import is_factory_member
 from tax.models import NationalTaxService
 from repackaging.utils import generate_repackaging_lot_number
-from repackaging.models import MaterialRepackaging
 
 
 router = Router(tags=["MaterialHistory"], auth=jwt_auth)
 
 
-@router.post(
-    "single",
-    summary="[C] 단일 원자재 이력 생성",
-    description="특정 원자재의 구매 또는 소모 이력을 생성합니다. 재고가 자동으로 업데이트됩니다.",
-    response={200: MaterialHistoryDetailOut, 400: dict, 404: dict, 500: dict},
-)
-async def create_single_material_history(
-    request, payload: SingleMaterialHistoryCreateIn
-):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
+# @router.post(
+#     "single",
+#     summary="[C] 단일 원자재 이력 생성",
+#     description="특정 원자재의 구매 또는 소모 이력을 생성합니다. 재고가 자동으로 업데이트됩니다.",
+#     response={200: MaterialHistoryDetailOut, 400: dict, 404: dict, 500: dict},
+# )
+# async def create_single_material_history(
+#     request, payload: SingleMaterialHistoryCreateIn
+# ):
+#     factory_id = request.GET.get("factory_id")
+#     if not factory_id:
+#         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
+#     user = request.auth
+#     await is_factory_member(int(factory_id), user)
 
-    try:
-        material = await Material.objects.aget(id=payload.material_id)
-    except Material.DoesNotExist:
-        raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
+#     try:
+#         material = await Material.objects.aget(id=payload.material_id)
+#     except Material.DoesNotExist:
+#         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
 
-    try:
-        client = await FactoryClient.objects.aget(id=payload.client_id)
-    except FactoryClient.DoesNotExist:
-        raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
+#     try:
+#         client = await FactoryClient.objects.aget(id=payload.client_id)
+#     except FactoryClient.DoesNotExist:
+#         raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
 
-    if payload.type not in ["purchase", "consumption"]:
-        raise HttpError(
-            400, "잘못된 거래 타입입니다. 'purchase' 또는 'consumption'을 입력해주세요."
-        )
+#     if payload.type not in ["purchase", "consumption"]:
+#         raise HttpError(
+#             400, "잘못된 거래 타입입니다. 'purchase' 또는 'consumption'을 입력해주세요."
+#         )
 
-    if payload.type == "purchase" and payload.price is None:
-        raise HttpError(400, "구매 시에는 가격을 입력해주세요.")
+#     if payload.type == "purchase" and payload.price is None:
+#         raise HttpError(400, "구매 시에는 가격을 입력해주세요.")
 
-    # 재고 부족 체크 (소모인 경우)
-    if payload.type == "consumption":
-        current_stock = material.current_stock
-        if current_stock < payload.quantity:
-            raise HttpError(400, "재고가 부족합니다.")
+#     # 재고 부족 체크 (소모인 경우)
+#     if payload.type == "consumption":
+#         current_stock = material.current_stock
+#         if current_stock < payload.quantity:
+#             raise HttpError(400, "재고가 부족합니다.")
 
-    type_mapping = {
-        "purchase": MaterialHistory.MaterialHistoryType.purchase,
-        "consumption": MaterialHistory.MaterialHistoryType.consumption,
-    }
+#     type_mapping = {
+#         "purchase": MaterialHistory.MaterialHistoryType.purchase,
+#         "consumption": MaterialHistory.MaterialHistoryType.consumption,
+#     }
 
-    material_history = await MaterialHistory.objects.acreate(
-        type=type_mapping[payload.type],
-        material=material,
-        client=client,
-        quantity=payload.quantity,
-        price=payload.price,
-        warehouse_location=payload.warehouse_location,
-        expiration_date=payload.expiration_date,
-        remaining_quantity=payload.quantity,
-    )
+#     material_history = await MaterialHistory.objects.acreate(
+#         type=type_mapping[payload.type],
+#         material=material,
+#         client=client,
+#         quantity=payload.quantity,
+#         price=payload.price,
+#         warehouse_location=payload.warehouse_location,
+#         expiration_date=payload.expiration_date,
+#         remaining_quantity=payload.quantity,
+#     )
 
-    # material을 새로고침하여 업데이트된 재고를 가져옴
-    await sync_to_async(material.refresh_from_db)()
+#     # material을 새로고침하여 업데이트된 재고를 가져옴
+#     await sync_to_async(material.refresh_from_db)()
 
-    return 200, MaterialHistoryDetailOut(
-        id=material_history.id,
-        type=material_history.type,
-        material_id=material_history.material_id,
-        client_id=material_history.client_id,
-        quantity=material_history.quantity,
-        price=material_history.price,
-        lot_number=material_history.lot_number,
-        warehouse_location=material_history.warehouse_location,
-        expiration_date=material_history.expiration_date.isoformat()
-        if material_history.expiration_date
-        else None,
-        total_stock=material.current_stock,
-        remaining_quantity=material_history.remaining_quantity,
-    )
+#     return 200, MaterialHistoryDetailOut(
+#         id=material_history.id,
+#         type=material_history.type,
+#         material_id=material_history.material_id,
+#         client_id=material_history.client_id,
+#         quantity=material_history.quantity,
+#         price=material_history.price,
+#         lot_number=material_history.lot_number,
+#         warehouse_location=material_history.warehouse_location,
+#         expiration_date=material_history.expiration_date.isoformat()
+#         if material_history.expiration_date
+#         else None,
+#         total_stock=material.current_stock,
+#         remaining_quantity=material_history.remaining_quantity,
+#     )
 
 
 @router.post(
     "",
     summary="[C] 원자재 이력 생성 (구매)",
-    description="거래처 명으로 기존 거래처가 있으면 정보를 업데이트 후 사용하고, 없으면 새로 생성합니다. 여러 원자재 구매 이력을 생성하며, 원자재가 없으면 새로 생성하고, 있으면 재고를 업데이트합니다.",
+    description="거래처 ID로 거래처를 조회해 사용합니다. 여러 원자재 구매 이력을 생성하며, 원자재가 없으면 새로 생성하고, 있으면 재고를 업데이트합니다.",
     response={200: MaterialHistoryListOut, 400: dict, 404: dict, 500: dict},
 )
 async def create_material_history(request, payload: MaterialHistoryCreateIn):
@@ -118,32 +115,44 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
 
     factory = await Factory.objects.aget(id=int(factory_id))
 
-    try:
-        client = await FactoryClient.objects.aget(
-            factory=factory, name=payload.client_info.name
-        )
-        updated = False
-        for field in [
-            "business_registration_number",
-            "representative_name",
-            "business_type",
-            "business_category",
-            "address",
-        ]:
-            new_value = getattr(payload.client_info, field)
-            if getattr(client, field) != new_value:
-                setattr(client, field, new_value)
+    # client_id가 있으면 해당 거래처를 조회 후 필요 시 업데이트,
+    # 없으면 client_info로 새 거래처를 생성
+    if payload.client_id is not None:
+        try:
+            client = await FactoryClient.objects.aget(
+                factory=factory,
+                id=payload.client_id,
+            )
+        except FactoryClient.DoesNotExist:
+            raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
+
+        # client_info가 넘어오면 해당 client_id에 대해 정보 업데이트
+        if payload.client_info is not None:
+            updated = False
+            for field in [
+                "business_registration_number",
+                "representative_name",
+                "business_type",
+                "business_category",
+                "address",
+            ]:
+                new_value = getattr(payload.client_info, field)
+                if getattr(client, field) != new_value:
+                    setattr(client, field, new_value)
+                    updated = True
+            # 기존 고객사 수정: is_customer는 기존 값 유지, is_supplier는 True로 강제
+            if client.is_supplier is not True:
+                client.is_supplier = True
                 updated = True
-        # 기존 고객사 수정: is_customer는 기존 값 유지, is_supplier는 True로 강제
-        if client.is_supplier is not True:
-            client.is_supplier = True
-            updated = True
-        if updated:
-            await client.asave()
-    except FactoryClient.DoesNotExist:
+            if updated:
+                await client.asave()
+    else:
+        # client_id가 없으면 client_info가 필수
+        if payload.client_info is None:
+            raise HttpError(400, "client_id가 없을 때는 client_info를 입력해야 합니다.")
+
         client = await FactoryClient.objects.acreate(
             factory=factory,
-            # type=FactoryClient.ClientType.supplier,
             is_customer=False,
             is_supplier=True,
             name=payload.client_info.name,
