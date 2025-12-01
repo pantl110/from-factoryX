@@ -40,6 +40,9 @@ const TopBarContent = ({
   const isProductionLogValid = usePageStatusStore(
     (state) => state.isProductionLogValid
   ); // 생산 내역 입력값이 유효한지 여부
+  const isAllProductionResultComplete = usePageStatusStore(
+    (state) => state.isAllProductionResultComplete
+  ); // 모든 plan의 material_consumed가 true이고 defective_quantity가 입력되어 있는지 여부
   const projectStatusData = usePageStatusStore(
     (state) => state.projectStatusData
   );
@@ -421,6 +424,7 @@ const TopBarContent = ({
               }}
               disabled={
                 !isProductionLogValid ||
+                !isAllProductionResultComplete ||
                 isViewer ||
                 !hasSubscription() ||
                 isManufacturedToDeliveryLoading

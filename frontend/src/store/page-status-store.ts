@@ -46,6 +46,10 @@ export interface PageStatusModel {
   isProductionLogValid: boolean;
   setProductionLogValid: (valid: boolean) => void;
 
+  // production의 "생산 내역" 탭에서 모든 plan의 material_consumed가 true이고 defective_quantity가 입력되어 있는지 여부
+  isAllProductionResultComplete: boolean;
+  setAllProductionResultComplete: (complete: boolean) => void;
+
   // production의 "납품" 상태의 "납품" 탭에서 <반품 등록> 버튼 클릭 시 모달 오픈
   isAddReturnModalOpen: boolean;
   setAddReturnModalOpen: (open: boolean) => void;
@@ -90,6 +94,9 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
     set({ isAllProductionCompleted: completed }),
   isProductionLogValid: false,
   setProductionLogValid: (valid) => set({ isProductionLogValid: valid }),
+  isAllProductionResultComplete: false,
+  setAllProductionResultComplete: (complete) =>
+    set({ isAllProductionResultComplete: complete }),
   isAddReturnModalOpen: false,
   setAddReturnModalOpen: (open) => set({ isAddReturnModalOpen: open }),
   isMoveToStorageModalOpen: false,

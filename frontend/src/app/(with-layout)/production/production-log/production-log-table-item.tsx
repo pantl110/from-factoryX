@@ -237,8 +237,22 @@ const ProductionLogTableItem = ({
               disabled={!hasChanges || !formState.isValid}
             />
             <MiniBtn
-              text="결과 입력"
-              variant="secondary"
+              text={
+                plan.material_consumed &&
+                plan.defective_quantity !== undefined &&
+                plan.defective_quantity !== null &&
+                plan.defective_quantity > 0
+                  ? '상세 보기'
+                  : '결과 입력'
+              }
+              variant={
+                plan.material_consumed &&
+                plan.defective_quantity !== undefined &&
+                plan.defective_quantity !== null &&
+                plan.defective_quantity > 0
+                  ? 'whiteOutline'
+                  : 'secondary'
+              }
               height="h-8"
               onClick={() => setIsProductionResultPanelOpen(true)}
             />

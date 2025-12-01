@@ -94,7 +94,11 @@ export const getExpiryClassName = ({
 
   // remaining_quantity가 있으면 우선 사용 (입고 내역), 없으면 quantity 사용 (소분 내역)
   const availableQuantity =
-    remainingQuantity !== null ? remainingQuantity : quantity !== null ? quantity : null;
+    remainingQuantity !== null
+      ? remainingQuantity
+      : quantity !== null
+        ? quantity
+        : null;
 
   // 수량이 0이거나 없으면 회색 (유통기한 체크 없이)
   if (availableQuantity === null || availableQuantity <= 0) {

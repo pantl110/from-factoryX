@@ -47,8 +47,8 @@ export const ProductionResultPanel = ({
     end_date: plan.end_date ?? '',
   });
   // 불량 수량 상태
-  const [defectiveQuantity, setDefectiveQuantity] = useState<number>(
-    plan.defective_quantity ?? 0
+  const [defectiveQuantity, setDefectiveQuantity] = useState<number | null>(
+    plan.defective_quantity ?? null
   );
 
   // isDirty 상태 관리 (ProductionInfo의 react-hook-form isDirty + DefectRate 변경사항 + LossRate 변경사항)
@@ -76,9 +76,12 @@ export const ProductionResultPanel = ({
     [showToast]
   );
 
-  const handleDefectQuantityChange = useCallback((defectQuantity: number) => {
-    setDefectiveQuantity(defectQuantity);
-  }, []);
+  const handleDefectQuantityChange = useCallback(
+    (defectQuantity: number | null) => {
+      setDefectiveQuantity(defectQuantity);
+    },
+    []
+  );
 
   // ProductionInfo의 react-hook-form isDirty 상태 변경 핸들러
   const handleProductionInfoDirtyChange = useCallback((dirty: boolean) => {
@@ -87,7 +90,8 @@ export const ProductionResultPanel = ({
 
   // 전체 isDirty 상태 계산 (ProductionInfo의 react-hook-form isDirty 또는 DefectRate 변경 시 또는 LossRate 변경 시)
   const isDirty = useMemo(() => {
-    const initialDefectQuantity = plan.defective_quantity ?? 0;
+    // null과 0을 구분하여 변경사항 확인
+    const initialDefectQuantity = plan.defective_quantity ?? null;
     const isDefectRateDirty = defectiveQuantity !== initialDefectQuantity;
     return isProductionInfoDirty || isDefectRateDirty || isLossRateDirty;
   }, [
@@ -134,7 +138,7 @@ export const ProductionResultPanel = ({
 
     try {
       // material consumed 상태 확인
-      const materialConsumed = checkMaterialConsumedRef.current?.() ?? false;
+      const isMaterialConsumed = checkMaterialConsumedRef.current?.() ?? false;
 
       // 1. 먼저 자재 사용 정보 저장
       if (materialUsageSaveRef.current) {
@@ -193,7 +197,7 @@ export const ProductionResultPanel = ({
         defective_quantity: defectiveQuantity,
         avg_production_time: plan.avg_production_time,
         plan_id: plan.id > 0 ? plan.id : undefined,
-        material_consumed: materialConsumed,
+        material_consumed: isMaterialConsumed,
       });
 
       if (result.success) {
@@ -255,7 +259,7 @@ export const ProductionResultPanel = ({
           {/* 불량률 정보 */}
           <DefectRate
             onError={handleDefectRateError}
-            initialDefectQuantity={plan.defective_quantity ?? 0}
+            initialDefectQuantity={plan.defective_quantity ?? null}
             onDefectQuantityChange={handleDefectQuantityChange}
             totalProductionQuantity={currentFormData.quantity}
             onTotalProductionQuantityChange={

@@ -150,13 +150,13 @@ export const LossRate = ({
 
         // 모든 MaterialUsage의 from이 채워져 있어야 함
         // from은 material_history_id 또는 material_repackaging_id 중 하나가 있어야 함
-        const allFromFilled = usages.every(
+        const isAllFromFilled = usages.every(
           (usage) =>
             usage.material_history_id !== null ||
             usage.material_repackaging_id !== null
         );
 
-        if (!allFromFilled) return false;
+        if (!isAllFromFilled) return false;
       }
 
       return true;

@@ -35,6 +35,9 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
   const setProductionLogValid = usePageStatusStore(
     (state) => state.setProductionLogValid
   );
+  const setAllProductionResultComplete = usePageStatusStore(
+    (state) => state.setAllProductionResultComplete
+  );
 
   // 폼 변경사항을 추적하는 상태
   const [formChanges, setFormChanges] = useState<
@@ -93,8 +96,22 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       });
       setRowValidityMap(initialValidity);
       setProductionLogValid(true);
+
+      // 모든 plan의 material_consumed가 true이고 defective_quantity가 입력되어 있는지 확인
+      const isAllProductionResultComplete = plansWithKSTDates.every(
+        (plan: ProjectPlanModel) =>
+          plan.material_consumed === true &&
+          plan.defective_quantity !== undefined &&
+          plan.defective_quantity !== null
+      );
+      setAllProductionResultComplete(isAllProductionResultComplete);
     }
-  }, [projectId, getProjectPlans, setProductionLogValid]);
+  }, [
+    projectId,
+    getProjectPlans,
+    setProductionLogValid,
+    setAllProductionResultComplete,
+  ]);
 
   useEffect(() => {
     loadProjectPlans();
@@ -264,6 +281,21 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
     setProductionLogValid(isAllValid);
   }, [rowValidityMap, projectPlans.length, setProductionLogValid]);
 
+  // projectPlans 변경 시 production result 완료 상태 업데이트
+  useEffect(() => {
+    if (!projectPlans.length) {
+      setAllProductionResultComplete(false);
+      return;
+    }
+    const isAllProductionResultComplete = projectPlans.every(
+      (plan) =>
+        plan.material_consumed === true &&
+        plan.defective_quantity !== undefined &&
+        plan.defective_quantity !== null
+    );
+    setAllProductionResultComplete(isAllProductionResultComplete);
+  }, [projectPlans, setAllProductionResultComplete]);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-100">
@@ -303,7 +335,9 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
                   hasChanges={hasRealChanges}
                   onValidityChange={handleValidityChange}
                   isFirstOfProduct={isFirstOfProduct}
-                  onSaveSuccess={loadProjectPlans}
+                  onSaveSuccess={() => {
+                    loadProjectPlans();
+                  }}
                 />
               );
             })}
