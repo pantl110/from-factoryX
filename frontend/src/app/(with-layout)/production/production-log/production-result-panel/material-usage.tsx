@@ -34,6 +34,7 @@ interface MaterialUsageProps {
   onDelete?: () => void;
   canDelete?: boolean;
   onChange?: (data: MaterialUsageFormData) => void;
+  onIsDirtyChange?: (isDirty: boolean) => void;
 }
 
 export const MaterialUsage = ({
@@ -46,6 +47,7 @@ export const MaterialUsage = ({
   onDelete,
   canDelete = true,
   onChange,
+  onIsDirtyChange,
 }: MaterialUsageProps) => {
   const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -59,18 +61,19 @@ export const MaterialUsage = ({
       ''
   );
 
-  const { control, watch, setValue, reset } = useForm<MaterialUsageFormData>({
-    defaultValues: {
-      id: initialData?.id,
-      material_id: initialData?.material_id ?? materialId,
-      usage_amount:
-        typeof initialData?.usage_amount === 'string'
-          ? parseFloat(initialData.usage_amount)
-          : (initialData?.usage_amount ?? 0),
-      material_history_id: initialData?.material_history_id ?? null,
-      material_repackaging_id: initialData?.material_repackaging_id ?? null,
-    },
-  });
+  const { control, watch, setValue, reset, formState } =
+    useForm<MaterialUsageFormData>({
+      defaultValues: {
+        id: initialData?.id,
+        material_id: initialData?.material_id ?? materialId,
+        usage_amount:
+          typeof initialData?.usage_amount === 'string'
+            ? parseFloat(initialData.usage_amount)
+            : (initialData?.usage_amount ?? 0),
+        material_history_id: initialData?.material_history_id ?? null,
+        material_repackaging_id: initialData?.material_repackaging_id ?? null,
+      },
+    });
 
   const formData = watch();
   const prevFormDataRef = useRef<MaterialUsageFormData | null>(null);
@@ -179,6 +182,11 @@ export const MaterialUsage = ({
       setUsageAmountDisplay('');
     }
   }, [usageAmount]);
+
+  // isDirty 상태를 상위 컴포넌트에 전달
+  useEffect(() => {
+    onIsDirtyChange?.(formState.isDirty);
+  }, [formState.isDirty, onIsDirtyChange]);
 
   return (
     <div className="flex gap-2.5 border-b border-lg pb-5">

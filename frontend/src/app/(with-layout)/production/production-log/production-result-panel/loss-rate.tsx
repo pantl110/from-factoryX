@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Material } from './material';
 import {
   useMaterialProduct,
@@ -17,6 +17,7 @@ interface LossRateProps {
   productionQuantity: number;
   planId?: number;
   onRegisterSaveAllMaterialUsage?: (fn: () => Promise<void>) => void;
+  onIsDirtyChange?: (isDirty: boolean) => void;
 }
 
 export const LossRate = ({
@@ -24,6 +25,7 @@ export const LossRate = ({
   productionQuantity,
   planId,
   onRegisterSaveAllMaterialUsage,
+  onIsDirtyChange,
 }: LossRateProps) => {
   const { getMaterialProductConnections, data, isLoading } =
     useMaterialProduct();
@@ -34,6 +36,7 @@ export const LossRate = ({
   const { mutateAsync: saveMaterialUsage } =
     useCreateOrUpdateMaterialUsageMutation();
   const [allUsages, setAllUsages] = useState<MaterialUsageResponseModel[]>([]);
+  const materialDirtyStatesRef = useRef<Map<number, boolean>>(new Map());
 
   useEffect(() => {
     if (productId) {
@@ -54,6 +57,8 @@ export const LossRate = ({
     };
 
     void loadAllUsages();
+    // planId가 변경되면 materialDirtyStatesRef 초기화
+    materialDirtyStatesRef.current.clear();
   }, [planId, fetchMaterialUsages]);
 
   const materials = useMemo<MaterialProductConnectionModel[]>(() => {
@@ -99,6 +104,19 @@ export const LossRate = ({
     });
   }, [onRegisterSaveAllMaterialUsage, planId, saveMaterialUsage]);
 
+  // Material의 isDirty 상태 변경 핸들러
+  const handleMaterialDirtyChange = useCallback(
+    (materialId: number) => (isDirty: boolean) => {
+      materialDirtyStatesRef.current.set(materialId, isDirty);
+      // 모든 Material의 isDirty 상태를 확인
+      const anyMaterialDirty = Array.from(
+        materialDirtyStatesRef.current.values()
+      ).some((dirty) => dirty);
+      onIsDirtyChange?.(anyMaterialDirty);
+    },
+    [onIsDirtyChange]
+  );
+
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 flex items-center">자재 투입량 정보</h3>
@@ -121,6 +139,7 @@ export const LossRate = ({
                 productionQuantity={productionQuantity}
                 planId={planId}
                 initialUsages={initialUsagesForMaterial}
+                onIsDirtyChange={handleMaterialDirtyChange(m.material_id)}
               />
             );
           });

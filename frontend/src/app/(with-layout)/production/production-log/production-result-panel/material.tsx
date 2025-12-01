@@ -13,6 +13,7 @@ interface MaterialProps {
   productionQuantity: number;
   planId?: number;
   initialUsages?: MaterialUsageResponseModel[];
+  onIsDirtyChange?: (isDirty: boolean) => void;
 }
 
 interface MaterialFormData {
@@ -24,12 +25,14 @@ export const Material = ({
   productionQuantity,
   planId,
   initialUsages,
+  onIsDirtyChange,
 }: MaterialProps) => {
-  const { control, watch, reset, setValue } = useForm<MaterialFormData>({
-    defaultValues: {
-      usages: [],
-    },
-  });
+  const { control, watch, reset, setValue, formState } =
+    useForm<MaterialFormData>({
+      defaultValues: {
+        usages: [],
+      },
+    });
 
   const { fields, append, remove, replace } = useFieldArray({
     control,
@@ -38,6 +41,8 @@ export const Material = ({
 
   const prevInitialUsagesIdsRef = useRef<string>('');
   const prevPlanIdRef = useRef<number | undefined>(undefined);
+  const materialUsageDirtyStatesRef = useRef<Map<number, boolean>>(new Map());
+  const shouldResetAfterAppendRef = useRef<boolean>(false);
 
   // 초기 데이터가 있으면 폼 초기화
   useEffect(() => {
@@ -75,17 +80,24 @@ export const Material = ({
         })
       );
       replace(initialFormData);
+      // replace() 후 reset()을 호출하여 isDirty를 false로 만들기
+      // reset()에 현재 값을 전달하면 값은 유지하면서 isDirty만 false가 됨
+      reset({ usages: initialFormData }, { keepDefaultValues: false });
       prevInitialUsagesIdsRef.current = currentIds;
+      shouldResetAfterAppendRef.current = false;
     } else if (initialUsages !== undefined) {
       // initialUsages가 명시적으로 전달되었고 빈 배열인 경우에만 빈 폼 추가
       // (undefined가 아닌 빈 배열 []로 전달된 경우)
       if (fields.length === 0) {
-        append({
+        const emptyFormData = {
           material_id: material.material_id,
           usage_amount: 0,
           material_history_id: null,
           material_repackaging_id: null,
-        });
+        };
+        append(emptyFormData);
+        // append()는 비동기이므로 다음 렌더링에서 reset()을 호출하도록 플래그 설정
+        shouldResetAfterAppendRef.current = true;
       }
       prevInitialUsagesIdsRef.current = currentIds;
     }
@@ -139,6 +151,38 @@ export const Material = ({
     },
     [setValue]
   );
+
+  // MaterialUsage의 isDirty 상태 변경 핸들러
+  const handleMaterialUsageDirtyChange = useCallback(
+    (index: number) => (isDirty: boolean) => {
+      materialUsageDirtyStatesRef.current.set(index, isDirty);
+      // 모든 MaterialUsage의 isDirty 상태와 Material 폼의 isDirty 상태를 확인
+      const anyMaterialUsageDirty = Array.from(
+        materialUsageDirtyStatesRef.current.values()
+      ).some((dirty) => dirty);
+      const isAnyDirty = formState.isDirty || anyMaterialUsageDirty;
+      onIsDirtyChange?.(isAnyDirty);
+    },
+    [formState.isDirty, onIsDirtyChange]
+  );
+
+  // append() 후 reset()을 호출하여 isDirty를 false로 만들기
+  useEffect(() => {
+    if (shouldResetAfterAppendRef.current && fields.length > 0) {
+      const currentFormData = watch('usages');
+      reset({ usages: currentFormData }, { keepDefaultValues: false });
+      shouldResetAfterAppendRef.current = false;
+    }
+  }, [fields.length, reset, watch]);
+
+  // Material 폼의 isDirty 상태 변경 감지
+  useEffect(() => {
+    const anyMaterialUsageDirty = Array.from(
+      materialUsageDirtyStatesRef.current.values()
+    ).some((dirty) => dirty);
+    const isAnyDirty = formState.isDirty || anyMaterialUsageDirty;
+    onIsDirtyChange?.(isAnyDirty);
+  }, [formState.isDirty, onIsDirtyChange]);
 
   return (
     <div className="flex flex-col gap-5 py-5">
@@ -210,6 +254,7 @@ export const Material = ({
                   onDelete={() => handleDeleteUsage(index)}
                   canDelete={index !== 0}
                   onChange={handleUsageChange(index)}
+                  onIsDirtyChange={handleMaterialUsageDirtyChange(index)}
                 />
               );
             })}

@@ -51,8 +51,9 @@ export const ProductionResultPanel = ({
     plan.defective_quantity ?? 0
   );
 
-  // isDirty 상태 관리 (ProductionInfo의 react-hook-form isDirty + DefectRate 변경사항)
+  // isDirty 상태 관리 (ProductionInfo의 react-hook-form isDirty + DefectRate 변경사항 + LossRate 변경사항)
   const [isProductionInfoDirty, setIsProductionInfoDirty] = useState(false);
+  const [isLossRateDirty, setIsLossRateDirty] = useState(false);
 
   const materialUsageSaveRef = useRef<(() => Promise<void>) | null>(null);
 
@@ -83,12 +84,17 @@ export const ProductionResultPanel = ({
     setIsProductionInfoDirty(dirty);
   }, []);
 
-  // 전체 isDirty 상태 계산 (ProductionInfo의 react-hook-form isDirty 또는 DefectRate 변경 시)
+  // 전체 isDirty 상태 계산 (ProductionInfo의 react-hook-form isDirty 또는 DefectRate 변경 시 또는 LossRate 변경 시)
   const isDirty = useMemo(() => {
     const initialDefectQuantity = plan.defective_quantity ?? 0;
     const isDefectRateDirty = defectiveQuantity !== initialDefectQuantity;
-    return isProductionInfoDirty || isDefectRateDirty;
-  }, [isProductionInfoDirty, defectiveQuantity, plan.defective_quantity]);
+    return isProductionInfoDirty || isDefectRateDirty || isLossRateDirty;
+  }, [
+    isProductionInfoDirty,
+    defectiveQuantity,
+    plan.defective_quantity,
+    isLossRateDirty,
+  ]);
 
   const handleTotalProductionQuantityChange = useCallback(
     (quantity: number) => {
@@ -185,6 +191,7 @@ export const ProductionResultPanel = ({
         }
         // 저장 성공 후 isDirty 상태 초기화
         setIsProductionInfoDirty(false);
+        setIsLossRateDirty(false);
         onSaveSuccess?.();
         onClose();
       } else {
@@ -256,6 +263,7 @@ export const ProductionResultPanel = ({
             onRegisterSaveAllMaterialUsage={(fn) => {
               materialUsageSaveRef.current = fn;
             }}
+            onIsDirtyChange={setIsLossRateDirty}
           />
         </div>
       </Panel>
