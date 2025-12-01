@@ -116,14 +116,7 @@ const ProductItem = ({
             {data?.spec || ''}
           </p>
         </td>
-        <td className="w-[80px] px-3">
-          <p
-            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
-            title={data?.unit || ''}
-          >
-            {data?.unit || ''}
-          </p>
-        </td>
+
         <td
           className="flex-1 px-3"
           onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
@@ -161,8 +154,16 @@ const ProductItem = ({
             />
           )}
         </td>
+        <td className="flex-[0.8] px-3">
+          <p
+            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
+            title={data?.unit || ''}
+          >
+            {data?.unit || ''}
+          </p>
+        </td>
         <td
-          className="w-[100px] px-3"
+          className="flex-1 px-3"
           onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
         >
           {onlyRead ? (

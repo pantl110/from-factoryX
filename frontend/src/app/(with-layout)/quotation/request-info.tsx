@@ -274,9 +274,9 @@ const RequestInfo = ({
                   <th className="text-left px-3 flex-1">제품명</th>
                   <th className="text-left px-3 flex-1">제품코드</th>
                   <th className="text-left px-3 flex-1">규격</th>
-                  <th className="text-left px-3 w-[80px]">단위</th>
                   <th className="text-left px-3 flex-1">제작 수량</th>
-                  <th className="text-left px-3 w-[100px]">단가</th>
+                  <th className="text-left px-3 flex-[0.8]">단위</th>
+                  <th className="text-left px-3 flex-1">단가</th>
                   <th className="text-left px-3 flex-1">금액</th>
                   {!isViewer && hasSubscription() && <th className="w-9" />}
                 </tr>
