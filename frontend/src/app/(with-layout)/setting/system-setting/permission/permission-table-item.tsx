@@ -30,6 +30,7 @@ const PermissionTableItem = ({
 }: PermissionTableItemProps) => {
   const factoryRole = useMemberStore((state) => state.role);
   const isViewer = factoryRole === 'viewer';
+  const isProdManager = factoryRole === 'prod_manager';
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
@@ -93,7 +94,7 @@ const PermissionTableItem = ({
     <>
       <>
         <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-lg group cursor-default">
-          {!isViewer && hasSubscription() && (
+          {!isViewer && !isProdManager && hasSubscription() && (
             <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
           )}
           <p className={`px-3 flex-1 ${textColor}`}>

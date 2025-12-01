@@ -5,15 +5,11 @@ import { CameraIcon, Pencil } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
 // import PhotoUploadModal from './modals/photo-upload-modal';
 import ProfileImage from '@/ui/profile-image';
-import { formatPhoneNumber } from '@/utils/format-number';
+import { formatPhoneNumber, getRoleText } from '@/utils';
 import useToast from '@/hooks/use-toast';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
-import {
-  UserInfoModel,
-  UpdateUserInfoModel,
-  MemberRoleType,
-} from '@/types/data-model';
+import { UserInfoModel, UpdateUserInfoModel } from '@/types/data-model';
 import EditPhotoDropdown from './modals/edit-photo-dropdown';
 import { useMe, useUploadFile } from '@/hooks';
 import useMemberStore from '@/store/member-store';
@@ -135,20 +131,6 @@ const Profile = ({ userInfo }: ProfileProps) => {
     }
   };
 
-  // 권한 텍스트 매핑
-  const getStatusText = (role: MemberRoleType) => {
-    switch (role) {
-      case 'viewer':
-        return '조회자';
-      case 'manager':
-        return '운영자';
-      case 'admin':
-        return '시스템 관리자';
-      default:
-        return role;
-    }
-  };
-
   // 사진이 있는지 확인 (선택된 이미지 또는 기존 프로필 이미지, 삭제되지 않은 경우)
   const hasImage =
     (selectedImageUrl || userInfo?.profile_image) && !isImageDeleted;
@@ -203,7 +185,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
               />
               <Input
                 label="권한"
-                value={role ? getStatusText(role as MemberRoleType) : '-'}
+                value={role ? getRoleText(role) : '-'}
                 disabledSetting={true}
                 required
               />

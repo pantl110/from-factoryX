@@ -22,6 +22,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 const Permission = () => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const isProdManager = role === 'prod_manager';
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
@@ -166,7 +167,10 @@ const Permission = () => {
                   }}
                   hoverColor="hover:bg-secondary-hover"
                   disabled={
-                    !isFactoryInfoComplete || isViewer || !hasSubscription()
+                    !isFactoryInfoComplete ||
+                    isViewer ||
+                    isProdManager ||
+                    !hasSubscription()
                   }
                 />
                 {!isFactoryInfoComplete &&
@@ -181,26 +185,29 @@ const Permission = () => {
                     </div>
                   )}
               </div>
-              {visibleMembers.length > 0 && !isViewer && hasSubscription() && (
-                <>
-                  {/* <MiniBtn
+              {visibleMembers.length > 0 &&
+                !isViewer &&
+                !isProdManager &&
+                hasSubscription() && (
+                  <>
+                    {/* <MiniBtn
                     text="취소"
                     variant="whiteOutline"
                     onClick={() => {
                       setAllChecked(false);
                     }}
                   /> */}
-                  <MiniBtn
-                    text={getDeleteButtonText()}
-                    variant={checkedCount === 0 ? 'whiteOutline' : 'red'}
-                    onClick={() => {
-                      if (checkedCount > 0) {
-                        setIsDeleteModalOpen(true);
-                      }
-                    }}
-                  />
-                </>
-              )}
+                    <MiniBtn
+                      text={getDeleteButtonText()}
+                      variant={checkedCount === 0 ? 'whiteOutline' : 'red'}
+                      onClick={() => {
+                        if (checkedCount > 0) {
+                          setIsDeleteModalOpen(true);
+                        }
+                      }}
+                    />
+                  </>
+                )}
             </div>
           </div>
 

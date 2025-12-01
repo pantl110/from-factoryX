@@ -13,13 +13,14 @@ const PermissionTableHeader = ({
 }: PermissionTableHeaderProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const isProdManager = role === 'prod_manager';
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
 
   return (
     <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-1 border-t border-b border-lg cursor-default">
-      {!isViewer && hasSubscription() && (
+      {!isViewer && !isProdManager && hasSubscription() && (
         <Checkbox isChecked={isAllChecked} onToggle={onToggleAll} />
       )}
       <p className="px-3 flex-1">가입 상태</p>
