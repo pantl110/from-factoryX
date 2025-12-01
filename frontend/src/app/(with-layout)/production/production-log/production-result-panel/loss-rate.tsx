@@ -140,6 +140,9 @@ export const LossRate = ({
                 planId={planId}
                 initialUsages={initialUsagesForMaterial}
                 onIsDirtyChange={handleMaterialDirtyChange(m.material_id)}
+                onRegisterSaveHandler={(fn) => {
+                  materialSaveHandlersRef.current.push(fn);
+                }}
               />
             );
           });

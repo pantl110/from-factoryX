@@ -4,6 +4,7 @@ import { Result } from './result';
 import {
   MaterialProductConnectionModel,
   MaterialUsageResponseModel,
+  MaterialUsageModel,
 } from '@/types/data-model';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useEffect, useCallback, useRef } from 'react';
@@ -14,6 +15,7 @@ interface MaterialProps {
   planId?: number;
   initialUsages?: MaterialUsageResponseModel[];
   onIsDirtyChange?: (isDirty: boolean) => void;
+  onRegisterSaveHandler?: (fn: () => Promise<MaterialUsageModel[]>) => void;
 }
 
 interface MaterialFormData {
@@ -26,6 +28,7 @@ export const Material = ({
   planId,
   initialUsages,
   onIsDirtyChange,
+  onRegisterSaveHandler,
 }: MaterialProps) => {
   const { control, watch, reset, setValue, formState } =
     useForm<MaterialFormData>({
@@ -183,6 +186,37 @@ export const Material = ({
     const isAnyDirty = formState.isDirty || anyMaterialUsageDirty;
     onIsDirtyChange?.(isAnyDirty);
   }, [formState.isDirty, onIsDirtyChange]);
+
+  // 저장 핸들러 등록
+  useEffect(() => {
+    if (!onRegisterSaveHandler || !planId) return;
+
+    onRegisterSaveHandler(async () => {
+      const currentFormData = watch('usages');
+
+      // material_history_id가 null이고 material_repackaging_id가 null이고 usage_amount가 0인 항목은 제외
+      const payloads: MaterialUsageModel[] = currentFormData
+        .filter(
+          (usage) =>
+            !(
+              usage.material_history_id === null &&
+              usage.material_repackaging_id === null &&
+              (usage.usage_amount ?? 0) === 0
+            )
+        )
+        .map((usage) => ({
+          id: usage.id,
+          plan_id: planId,
+          material_id: usage.material_id,
+          original_material_id: material.material_id,
+          usage_amount: usage.usage_amount ?? 0,
+          material_history_id: usage.material_history_id,
+          material_repackaging_id: usage.material_repackaging_id,
+        }));
+
+      return payloads;
+    });
+  }, [onRegisterSaveHandler, planId, material.material_id, watch]);
 
   return (
     <div className="flex flex-col gap-5 py-5">
