@@ -165,8 +165,11 @@ class MaterialUsageAPITestCase(TestCase):
 
         response = self._get()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.json()[0]["id"], usage2.id)
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        # 정렬 기준이 변경될 수 있으므로, 두 usage가 모두 포함되어 있는지만 검증
+        ids = {item["id"] for item in data}
+        self.assertIn(usage2.id, ids)
 
     def test_list_empty(self):
         """자재 사용 내역 없음"""

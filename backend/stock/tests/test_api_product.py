@@ -1,5 +1,6 @@
 from django.test import TestCase
 from ninja.testing import TestAsyncClient
+from decimal import Decimal
 
 from user.api import router as user_router
 from stock.api_product import router as product_router
@@ -333,7 +334,8 @@ class TestProductAPI(TestCase):
         
         # name과 current_stock은 수정되었지만 average_production_time은 None으로 설정됨
         self.assertEqual(data["name"], "Updated Product Name")
-        self.assertEqual(data["current_stock"], 75)  # 수정됨
+        # current_stock 이 문자열일 수 있으므로 숫자로 변환해서 비교
+        self.assertEqual(Decimal(str(data["current_stock"])), Decimal("75"))  # 수정됨
         self.assertIsNone(data["average_production_time"])  # None으로 설정됨
         
         # DB에서도 확인
@@ -364,7 +366,7 @@ class TestProductAPI(TestCase):
         
         # 모든 값이 정상적으로 수정됨
         self.assertEqual(data["name"], "Updated Product Name")
-        self.assertEqual(data["current_stock"], 0)  # 수정됨
+        self.assertEqual(Decimal(str(data["current_stock"])), Decimal("0"))  # 수정됨
         self.assertEqual(data["average_production_time"], 0)  # 수정됨
         
         # DB에서도 확인

@@ -2,6 +2,7 @@ from django.test import TestCase
 from ninja.testing import TestAsyncClient
 from asgiref.sync import sync_to_async
 from datetime import date, timedelta
+from decimal import Decimal
 
 from user.api import router as user_router
 from stock.api_material import router as material_router
@@ -234,7 +235,8 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(material_data["code"], "TEST001")
         self.assertEqual(material_data["spec"], "테스트 규격")
         self.assertEqual(material_data["unit"], "EA")
-        self.assertEqual(material_data["current_stock"], 100)
+        # current_stock 는 문자열 '100.00' 형태로 반환되므로 숫자로 변환해 비교
+        self.assertEqual(Decimal(str(material_data["current_stock"])), Decimal("100"))
         self.assertIn("status", material_data)
 
         # 페이지네이션 정보 확인
@@ -288,8 +290,8 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(data["code"], "TEST001")
         self.assertEqual(data["spec"], "테스트 규격")
         self.assertEqual(data["unit"], "EA")
-        self.assertEqual(data["current_stock"], 100)
-        self.assertEqual(data["standard_stock"], 50)
+        self.assertEqual(Decimal(str(data["current_stock"])), Decimal("100"))
+        self.assertEqual(Decimal(str(data["standard_stock"])), Decimal("50"))
 
     async def test_get_material_detail_missing_factory_id(self):
         """factory_id가 없는 경우 테스트"""
@@ -345,8 +347,8 @@ class TestMaterialAPI(TestCase):
         data = response.json()
         self.assertEqual(data["name"], "수정된 원자재")
         self.assertEqual(data["spec"], "수정된 규격")
-        self.assertEqual(data["current_stock"], 150)
-        self.assertEqual(data["standard_stock"], 75)
+        self.assertEqual(Decimal(str(data["current_stock"])), Decimal("150"))
+        self.assertEqual(Decimal(str(data["standard_stock"])), Decimal("75"))
 
         # 데이터베이스에서 실제로 업데이트되었는지 확인
         await sync_to_async(self.material.refresh_from_db)()
@@ -372,7 +374,7 @@ class TestMaterialAPI(TestCase):
         data = response.json()
         self.assertEqual(data["name"], "부분 수정된 원자재")
         self.assertEqual(data["code"], "TEST001")  # 변경되지 않음
-        self.assertEqual(data["current_stock"], 100)  # 변경되지 않음
+        self.assertEqual(Decimal(str(data["current_stock"])), Decimal("100"))  # 변경되지 않음
 
     async def test_update_material_duplicate_code(self):
         """중복된 자재코드로 수정 시도 테스트"""
@@ -909,7 +911,8 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        stocks = [m["current_stock"] for m in data["data"]]
+        # current_stock 이 문자열일 수 있으므로 숫자로 변환해서 정렬 검증
+        stocks = [Decimal(str(m["current_stock"])) for m in data["data"]]
         self.assertEqual(stocks, sorted(stocks))
 
     async def test_get_materials_by_factory_order_desc(self):
@@ -949,7 +952,7 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        stocks = [m["current_stock"] for m in data["data"]]
+        stocks = [Decimal(str(m["current_stock"])) for m in data["data"]]
         self.assertEqual(stocks, sorted(stocks, reverse=True))
 
     async def test_get_materials_by_factory_order_default(self):
@@ -989,7 +992,7 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        stocks = [m["current_stock"] for m in data["data"]]
+        stocks = [Decimal(str(m["current_stock"])) for m in data["data"]]
         self.assertEqual(stocks, sorted(stocks, reverse=True))  # 기본값은 desc
 
     async def test_get_materials_by_factory_pagination(self):

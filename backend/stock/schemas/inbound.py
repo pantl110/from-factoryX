@@ -182,6 +182,9 @@ class MaterialItemIn(Schema):
     expiration_date: Optional[date] = Field(
         default=None, description="유통기한"
     )
+    remaining_quantity: Optional[Decimal] = Field(
+        default=None, description="해당 입고 LOT의 잔여 수량 (미지정 시 quantity 전체로 설정)"
+    )
 
 
 # Factory Client Info
@@ -206,6 +209,9 @@ class SingleMaterialHistoryCreateIn(Schema):
     )
     expiration_date: Optional[date] = Field(
         default=None, description="유통기한"
+    )
+    remaining_quantity: Optional[Decimal] = Field(
+        default=None, description="해당 입고 LOT의 잔여 수량 (미지정 시 quantity 전체로 설정)"
     )
 
 

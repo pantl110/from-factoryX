@@ -53,6 +53,7 @@ class ProjectPlanAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "project",
+        "material_consumed",
         "status",
         "product",
         "quantity",
@@ -68,7 +69,16 @@ class ProjectPlanAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             "기본 정보",
-            {"fields": ("project", "status", "product", "quantity", "equipment")},
+            {
+                "fields": (
+                    "project",
+                    "status",
+                    "product",
+                    "quantity",
+                    "equipment",
+                    "material_consumed",
+                )
+            },
         ),
         ("일정 정보", {"fields": ("start_date", "end_date", "avg_production_time")}),
         (

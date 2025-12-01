@@ -79,6 +79,7 @@ async def create_single_material_history(
         price=payload.price,
         warehouse_location=payload.warehouse_location,
         expiration_date=payload.expiration_date,
+        remaining_quantity=payload.quantity,
     )
 
     # material을 새로고침하여 업데이트된 재고를 가져옴
@@ -180,6 +181,7 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
             price=material_item.price,
             warehouse_location=material_item.warehouse_location,
             expiration_date=material_item.expiration_date,
+            remaining_quantity=material_item.quantity,
         )
 
         # material을 새로고침하여 업데이트된 재고를 가져옴
