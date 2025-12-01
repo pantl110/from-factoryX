@@ -109,10 +109,10 @@ export const LossRate = ({
     (materialId: number) => (isDirty: boolean) => {
       materialDirtyStatesRef.current.set(materialId, isDirty);
       // 모든 Material의 isDirty 상태를 확인
-      const anyMaterialDirty = Array.from(
+      const hasAnyMaterialDirty = Array.from(
         materialDirtyStatesRef.current.values()
       ).some((dirty) => dirty);
-      onIsDirtyChange?.(anyMaterialDirty);
+      onIsDirtyChange?.(hasAnyMaterialDirty);
     },
     [onIsDirtyChange]
   );

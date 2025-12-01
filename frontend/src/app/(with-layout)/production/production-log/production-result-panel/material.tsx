@@ -1,5 +1,5 @@
 import { MiniBtn } from '@/ui';
-import { MaterialUsage, MaterialUsageFormData } from './material-usage';
+import { MaterialUsage, MaterialUsageFormModel } from './material-usage';
 import { Result } from './result';
 import {
   MaterialProductConnectionModel,
@@ -18,8 +18,8 @@ interface MaterialProps {
   onRegisterSaveHandler?: (fn: () => Promise<MaterialUsageModel[]>) => void;
 }
 
-interface MaterialFormData {
-  usages: MaterialUsageFormData[];
+interface MaterialFormModel {
+  usages: MaterialUsageFormModel[];
 }
 
 export const Material = ({
@@ -31,7 +31,7 @@ export const Material = ({
   onRegisterSaveHandler,
 }: MaterialProps) => {
   const { control, watch, reset, setValue, formState } =
-    useForm<MaterialFormData>({
+    useForm<MaterialFormModel>({
       defaultValues: {
         usages: [],
       },
@@ -52,8 +52,8 @@ export const Material = ({
     if (!planId) return;
 
     // planId가 변경되면 초기화
-    const planIdChanged = prevPlanIdRef.current !== planId;
-    if (planIdChanged) {
+    const hasPlanIdChanged = prevPlanIdRef.current !== planId;
+    if (hasPlanIdChanged) {
       prevPlanIdRef.current = planId;
       prevInitialUsagesIdsRef.current = '';
     }
@@ -65,12 +65,13 @@ export const Material = ({
           .sort()
           .join(',')
       : '';
-    const initialUsagesChanged = prevInitialUsagesIdsRef.current !== currentIds;
+    const hasInitialUsagesChanged =
+      prevInitialUsagesIdsRef.current !== currentIds;
 
-    if (!planIdChanged && !initialUsagesChanged) return;
+    if (!hasPlanIdChanged && !hasInitialUsagesChanged) return;
 
     if (initialUsages && initialUsages.length > 0) {
-      const initialFormData: MaterialUsageFormData[] = initialUsages.map(
+      const initialFormData: MaterialUsageFormModel[] = initialUsages.map(
         (item) => ({
           id: item.id,
           material_id: item.material_id,
@@ -111,6 +112,7 @@ export const Material = ({
     append,
     replace,
     fields.length,
+    reset,
   ]);
 
   const handleAddUsage = () => {
@@ -149,7 +151,7 @@ export const Material = ({
 
   // onChange 핸들러를 useCallback으로 메모이제이션하여 무한 루프 방지
   const handleUsageChange = useCallback(
-    (index: number) => (data: MaterialUsageFormData) => {
+    (index: number) => (data: MaterialUsageFormModel) => {
       setValue(`usages.${index}`, data, { shouldDirty: true });
     },
     [setValue]
@@ -160,10 +162,10 @@ export const Material = ({
     (index: number) => (isDirty: boolean) => {
       materialUsageDirtyStatesRef.current.set(index, isDirty);
       // 모든 MaterialUsage의 isDirty 상태와 Material 폼의 isDirty 상태를 확인
-      const anyMaterialUsageDirty = Array.from(
+      const hasAnyMaterialUsageDirty = Array.from(
         materialUsageDirtyStatesRef.current.values()
       ).some((dirty) => dirty);
-      const isAnyDirty = formState.isDirty || anyMaterialUsageDirty;
+      const isAnyDirty = formState.isDirty || hasAnyMaterialUsageDirty;
       onIsDirtyChange?.(isAnyDirty);
     },
     [formState.isDirty, onIsDirtyChange]
@@ -180,10 +182,10 @@ export const Material = ({
 
   // Material 폼의 isDirty 상태 변경 감지
   useEffect(() => {
-    const anyMaterialUsageDirty = Array.from(
+    const hasAnyMaterialUsageDirty = Array.from(
       materialUsageDirtyStatesRef.current.values()
     ).some((dirty) => dirty);
-    const isAnyDirty = formState.isDirty || anyMaterialUsageDirty;
+    const isAnyDirty = formState.isDirty || hasAnyMaterialUsageDirty;
     onIsDirtyChange?.(isAnyDirty);
   }, [formState.isDirty, onIsDirtyChange]);
 

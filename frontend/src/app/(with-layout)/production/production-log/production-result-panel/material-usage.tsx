@@ -7,7 +7,7 @@ import { LotDropdown } from './lot-dropdown';
 import { handleQuantityInput } from '@/utils';
 import { useForm, Controller } from 'react-hook-form';
 
-export interface MaterialUsageFormData {
+export interface MaterialUsageFormModel {
   id?: number;
   material_id: number;
   usage_amount: number;
@@ -33,7 +33,7 @@ interface MaterialUsageProps {
   };
   onDelete?: () => void;
   canDelete?: boolean;
-  onChange?: (data: MaterialUsageFormData) => void;
+  onChange?: (data: MaterialUsageFormModel) => void;
   onIsDirtyChange?: (isDirty: boolean) => void;
 }
 
@@ -62,7 +62,7 @@ export const MaterialUsage = ({
   );
 
   const { control, watch, setValue, reset, formState } =
-    useForm<MaterialUsageFormData>({
+    useForm<MaterialUsageFormModel>({
       defaultValues: {
         id: initialData?.id,
         material_id: initialData?.material_id ?? materialId,
@@ -76,7 +76,7 @@ export const MaterialUsage = ({
     });
 
   const formData = watch();
-  const prevFormDataRef = useRef<MaterialUsageFormData | null>(null);
+  const prevFormDataRef = useRef<MaterialUsageFormModel | null>(null);
   const prevInitialDataIdRef = useRef<number | undefined>(undefined);
   const currentMaterialId = watch('material_id');
 
