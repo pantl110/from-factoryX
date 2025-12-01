@@ -33,24 +33,37 @@ const ConnetionItem = ({
     }
   };
 
-  // 초기 너비 설정
+  // quantity prop이 변경될 때 displayQuantity 업데이트 (예: 직접 추가 모드에서 돌아올 때)
+  useEffect(() => {
+    if (quantity !== null && quantity !== undefined) {
+      // quantity가 0이면 "0"으로 표시, 그 외에는 포맷팅 적용
+      if (quantity === 0) {
+        setDisplayQuantity('0');
+      } else {
+        const result = handleQuantityInput(quantity.toString());
+        setDisplayQuantity(result.displayValue);
+      }
+    }
+  }, [quantity]);
+
+  // displayQuantity가 변경될 때마다 너비 자동 조정
   useEffect(() => {
     if (inputRef.current) {
-      adjustInputWidth(inputRef.current);
+      // DOM 업데이트 후 너비 조정
+      requestAnimationFrame(() => {
+        if (inputRef.current) {
+          adjustInputWidth(inputRef.current);
+        }
+      });
     }
-  }, []);
+  }, [displayQuantity]);
 
   // 수량 증가
   const handleIncrease = () => {
     const newQuantity = quantity + 0.5;
     onQuantityChange(newQuantity);
-    setDisplayQuantity(newQuantity.toString());
-
-    // 너비 자동 조정
-    const currentInput = inputRef.current;
-    if (currentInput) {
-      setTimeout(() => adjustInputWidth(currentInput), 0);
-    }
+    const result = handleQuantityInput(newQuantity.toString());
+    setDisplayQuantity(result.displayValue);
   };
 
   // 수량 감소
@@ -58,23 +71,12 @@ const ConnetionItem = ({
     if (quantity > 0) {
       const newQuantity = quantity - 0.5;
       onQuantityChange(newQuantity);
-      setDisplayQuantity(newQuantity.toString());
-
-      // 너비 자동 조정
-      const currentInput = inputRef.current;
-      if (currentInput) {
-        setTimeout(() => adjustInputWidth(currentInput), 0);
-      }
+      const result = handleQuantityInput(newQuantity.toString());
+      setDisplayQuantity(result.displayValue);
     } else {
       // quantity가 0이면 그대로 0 유지
       onQuantityChange(0);
       setDisplayQuantity('0');
-
-      // 너비 자동 조정
-      const currentInput = inputRef.current;
-      if (currentInput) {
-        setTimeout(() => adjustInputWidth(currentInput), 0);
-      }
     }
   };
 
@@ -88,7 +90,6 @@ const ConnetionItem = ({
     if (value === '') {
       setDisplayQuantity('0');
       onQuantityChange(0);
-      adjustInputWidth(e.target);
       return;
     }
 
@@ -98,9 +99,6 @@ const ConnetionItem = ({
     if (result.isValid && result.numericValue >= 0) {
       onQuantityChange(result.numericValue);
     }
-
-    // 입력 필드 너비 자동 조정
-    adjustInputWidth(e.target);
   };
 
   // 입력 완료 시 포커스 아웃
@@ -114,12 +112,6 @@ const ConnetionItem = ({
       // 유효하지 않은 값이면 0으로 설정
       setDisplayQuantity('0');
       onQuantityChange(0);
-    }
-
-    // 너비 자동 조정
-    const currentInput = inputRef.current;
-    if (currentInput) {
-      setTimeout(() => adjustInputWidth(currentInput), 0);
     }
   };
 
