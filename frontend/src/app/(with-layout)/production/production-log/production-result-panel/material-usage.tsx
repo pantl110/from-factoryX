@@ -18,6 +18,7 @@ interface MaterialUsageProps {
   resetSignal?: number;
   onChangeSelectedMaterial?: (materialId: number) => void;
   initialLotNumber?: string;
+  initialMaterialId?: number; // material-usage에서 실제 사용된 자재 ID
   onChangeSelectedLot?: (lotInfo: {
     lotNumber: string;
     materialHistoryId: number | null;
@@ -37,6 +38,7 @@ export const MaterialUsage = ({
   resetSignal,
   onChangeSelectedMaterial,
   initialLotNumber,
+  initialMaterialId,
   onChangeSelectedLot,
 }: MaterialUsageProps) => {
   const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});
@@ -46,7 +48,8 @@ export const MaterialUsage = ({
     id: number;
     name: string;
   }>({
-    id: materialId,
+    // material-usage 데이터가 있으면 실제 사용된 자재 ID 사용, 없으면 materialId 사용
+    id: initialMaterialId ?? materialId,
     name: materialName,
   });
   const [selectedLotNumber, setSelectedLotNumber] = useState('');
@@ -68,11 +71,20 @@ export const MaterialUsage = ({
     }
   }, [usageAmount]);
 
-  // 서버에서 내려온 LOT 번호가 있으면 최초 진입 시 한 번 세팅
+  // 서버에서 내려온 material-usage 데이터가 있으면 최초 진입 시 한 번 세팅
   useEffect(() => {
-    if (initialLotNumber === null || initialLotNumber === undefined) return;
-    setSelectedLotNumber(initialLotNumber);
-  }, [initialLotNumber]);
+    // LOT 번호 세팅
+    if (initialLotNumber !== null && initialLotNumber !== undefined) {
+      setSelectedLotNumber(initialLotNumber);
+    }
+    // 실제 사용된 자재 ID 세팅
+    if (initialMaterialId) {
+      setSelectedMaterial((prev) => ({
+        ...prev,
+        id: initialMaterialId,
+      }));
+    }
+  }, [initialLotNumber, initialMaterialId]);
 
   // 전체 삭제 시(상위에서 resetSignal 증가) 첫 행의 표시 값 초기화
   useEffect(() => {
@@ -89,14 +101,19 @@ export const MaterialUsage = ({
       materialHistoryId: null,
       materialRepackagingId: null,
     });
-  }, [resetSignal, materialId, materialName, onChangeSelectedLot]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetSignal]);
   return (
     <div className="flex gap-2.5 border-b border-lg pb-5">
       <div className="flex-1 relative">
         <Input
           label="(대체)자재명"
           button
-          value={selectedMaterial.name}
+          value={
+            selectedMaterial.id === materialId
+              ? materialName
+              : selectedMaterial.name
+          }
           onClickButton={() => setIsDropdownOpen((prev) => !prev)}
         />
         {isDropdownOpen && (

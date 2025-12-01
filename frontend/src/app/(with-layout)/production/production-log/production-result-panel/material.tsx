@@ -275,16 +275,20 @@ export const Material = ({
                 <MaterialUsage
                   key={id}
                   materialName={
-                    // 전체 삭제 이후에는 기준 자재명으로 고정
+                    // 기본 표시 이름은 material_name 사용
                     resetCounter > 0
                       ? material.material_name
                       : (record?.material_name ?? material.material_name)
                   }
                   materialId={
-                    // 전체 삭제 이후에는 기준 자재 ID로 고정
+                    // 대체자재 드롭다운 조회 기준: original_material_id가 있으면 그것을 사용, 없으면 material_id 사용
                     resetCounter > 0
                       ? material.material_id
-                      : (record?.material_id ?? material.material_id)
+                      : (record?.original_material_id ?? material.material_id)
+                  }
+                  initialMaterialId={
+                    // material-usage 데이터가 있으면 실제 사용된 자재 ID 전달
+                    resetCounter > 0 ? undefined : record?.material_id
                   }
                   unit={material.material_unit}
                   initialLotNumber={
