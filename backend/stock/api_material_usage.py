@@ -380,7 +380,7 @@ async def list_material_usages(
                     "plan__project__quotations",
                 )
                 .filter(plan_id=plan_id)
-                .order_by("-created_at")
+                .order_by("created_at")
             )
 
             return [build_material_usage_out(usage) for usage in usages]
