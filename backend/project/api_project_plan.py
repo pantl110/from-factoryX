@@ -115,6 +115,9 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             plan.avg_production_time = payload.avg_production_time
             if payload.status:
                 plan.status = payload.status
+            # material_consumed가 payload에 명시된 경우에만 업데이트
+            if payload.material_consumed is not None:
+                plan.material_consumed = payload.material_consumed
 
             await plan.asave()
 
@@ -283,6 +286,9 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             end_date=payload.end_date,
             avg_production_time=payload.avg_production_time,
             status=payload.status or ProjectPlan.ProductionStatus.pending,
+            material_consumed=payload.material_consumed
+            if payload.material_consumed is not None
+            else False,
         )
 
         # 오늘 생산하는 Plan이면 WorkInstruction 갱신

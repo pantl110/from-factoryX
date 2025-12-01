@@ -190,6 +190,10 @@ class ProjectPlanCreateOrUpdateIn(Schema):
     end_date: datetime
     avg_production_time: int
     status: Optional[str] = None
+    material_consumed: Optional[bool] = Field(
+        None,
+        description="원자재 소모 처리 여부 (옵션, 미전달 시 기존 값 유지)",
+    )
     # total_amount: int  # 총 주문 수량 (buffer_rate 계산 용)
     # total_quantity: int  # 총 생산 수량 (buffer_rate 계산 용)
 
