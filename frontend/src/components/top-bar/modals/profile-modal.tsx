@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import useAuthStore from '@/store/auth-store';
 import useMemberStore from '@/store/member-store';
 import { useLogout } from '@/hooks';
-import { MemberRoleType } from '@/types/data-model';
+import { getRoleText } from '@/utils/get-role-text';
 
 interface ProfileModalProps {
   onClose: () => void;
@@ -37,20 +37,6 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
     };
   }, [onClose]);
 
-  // 권한 텍스트 매핑
-  const getStatusText = (role: MemberRoleType) => {
-    switch (role) {
-      case 'viewer':
-        return '조회자';
-      case 'manager':
-        return '운영자';
-      case 'admin':
-        return '시스템 관리자';
-      default:
-        return role;
-    }
-  };
-
   return (
     <div
       ref={profileModalRef}
@@ -76,9 +62,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex gap-2 items-center">
-              <p className="Me_Body-1 text-sv">
-                {role ? getStatusText(role as MemberRoleType) : '-'}
-              </p>
+              <p className="Me_Body-1 text-sv">{getRoleText(role)}</p>
               {userInfo?.username && (
                 <>
                   <div className="w-[1px] bg-gr h-[56%]"></div>
